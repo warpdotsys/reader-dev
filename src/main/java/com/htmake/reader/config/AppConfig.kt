@@ -23,4 +23,35 @@ class AppConfig {
     var exportCharset = "UTF-8" // 导出字符集
     var exportNoChapterName = false // 不添加章节名
     var exportPictureFile = false // 导出图片
+
+    // workDir alias (falls back to storagePath if empty)
+    var workDir: String = ""
+        get() = if (field.isEmpty()) storagePath else field
+
+    // MongoDB configuration
+    var mongoUri: String = ""
+    var mongoDbName: String = "reader"
+
+    // Shelf update interval (minutes)
+    var shelfUpdateInteval: Int = 30
+
+    // Remote webview API
+    var remoteWebviewApi: String = ""
+
+    // Default user permission settings
+    var defaultUserEnableWebdav: Boolean = true
+    var defaultUserEnableLocalStore: Boolean = true
+    var defaultUserEnableBookSource: Boolean = true
+    var defaultUserEnableRssSource: Boolean = true
+    var defaultUserBookSourceLimit: Int = 100
+    var defaultUserBookLimit: Int = 200
+
+    // Auto backup user data
+    var autoBackupUserData: Boolean = false
+
+    // Minimum user password length
+    var minUserPasswordLength: Int = 8
+
+    // Remote book source update interval (minutes)
+    var remoteBookSourceUpdateInterval: Int = 720
 }
