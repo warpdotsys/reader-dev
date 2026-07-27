@@ -72,6 +72,14 @@ import kotlinx.coroutines.CoroutineScope
 private val logger = KotlinLogging.logger {}
 
 class RssSourceController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
+    suspend fun canEditRssSource(context: RoutingContext): Boolean {
+        if (!appConfig.secure) {
+            return true
+        }
+        val userInfo = context.get("userInfo") as User? ?: return false
+        return userInfo.enable_rss_source
+    }
+
     suspend fun getRssSources(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkAuth(context)) {

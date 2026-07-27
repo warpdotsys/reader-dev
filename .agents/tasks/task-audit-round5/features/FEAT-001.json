@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Add missing methods to BookController, RssSourceController, and RestVerticle/YueduApi that exist in the JAR but are absent or incorrectly implemented in source",
+  "status": "in_progress",
+  "steps": [
+    "1. In BookController.kt, add the missing public method `fun convertPdfToImage(book: Book, force: Boolean = false): Boolean` that converts all PDF pages to images for a book. The JAR signature is: `public final boolean convertPdfToImage(io.legado.app.data.entities.Book, boolean)`. This should use PDFBox to iterate all pages and save each as an image using savePdfPageToImage. The existing suspend fun convertPdfToImage(context: RoutingContext) is a DIFFERENT method (HTTP handler) and must remain.",
+    "2. In BookController.kt, change the existing `private fun convertPdfPageToImage(pdfFile: File, pageIndex: Int, dpi: Float): BufferedImage?` to be public and add an ADDITIONAL public method with JAR signature: `public final void convertPdfPageToImage(io.legado.app.data.entities.Book, int, boolean)` with default params. This version takes a Book, page index, and force flag, resolves the local file from the book, and calls savePdfPageToImage.",
+    "3. In BookController.kt, add the method `fun savePdfPageToImage(doc: PDDocument, renderer: PDFRenderer, pageIndex: Int, dpi: Float, userNameSpace: String, imageDir: File)` matching JAR signature: `public final void savePdfPageToImage(org.apache.pdfbox.pdmodel.PDDocument, org.apache.pdfbox.rendering.PDFRenderer, int, float, java.lang.String, java.io.File)`. This renders a page at given DPI and saves it as PNG in the specified directory. The existing suspend fun savePdfPageToImage(context: RoutingContext) is a DIFFERENT method (HTTP handler) and must remain.",
+    "4. In BookController.kt, add the missing public method `fun saveBookToShelf(book: Book, userNameSpace: String, context: RoutingContext): Pair<Book, String>` matching JAR signature: `public final kotlin.Pair<io.legado.app.data.entities.Book, java.lang.String> saveBookToShelf(io.legado.app.data.entities.Book, java.lang.String, io.vertx.ext.web.RoutingContext)`. This extracts the book-save-to-shelf logic from saveBook() into a reusable helper that returns the saved book and userNameSpace.",
+    "5. In BookController.kt, add the missing public method `suspend fun saveBookCover(book: Book, bookSource: String, userNameSpace: String)` matching JAR signature: `public final java.lang.Object saveBookCover(io.legado.app.data.entities.Book, java.lang.String, java.lang.String, kotlin.coroutines.Continuation<? super kotlin.Unit>)` with a $default variant. This downloads and saves the book cover image locally.",
+    "6. In RssSourceController.kt, add the missing method `suspend fun canEditRssSource(context: RoutingContext): Boolean` matching JAR signature: `public final java.lang.Object canEditRssSource(io.vertx.ext.web.RoutingContext, kotlin.coroutines.Continuation<? super java.lang.Boolean>)`. Follow the pattern from BookSourceController.canEditBookSource() but check userInfo.enable_rss_source instead.",
+    "7. In RestVerticle.kt, add the abstract method `abstract fun getContextPath(): String` to the RestVerticle class.",
+    "8. In YueduApi.kt, add `override fun getContextPath(): String` implementation. Based on the JAR, it should return the configured contextPath (from env property `reader.server.contextPath`, defaulting to empty string)."
+  ],
+  "acceptance_criteria": [
+    "Running `./gradlew compileKotlin compileJava -x test` passes with BUILD SUCCESSFUL",
+    "BookController has convertPdfToImage(Book, Boolean), convertPdfPageToImage(Book, Int, Boolean), savePdfPageToImage(PDDocument, PDFRenderer, Int, Float, String, File), saveBookToShelf(Book, String, RoutingContext), and saveBookCover(Book, String, String) as public methods",
+    "RssSourceController has canEditRssSource(RoutingContext) as a public suspend method",
+    "RestVerticle has abstract fun getContextPath(): String",
+    "YueduApi overrides getContextPath() returning the configured contextPath"
+  ],
+  "verification": [
+    "cd /projects/sandbox/reader-dev && ./gradlew compileKotlin compileJava -x test",
+    "grep -n 'fun convertPdfToImage\\|fun saveBookToShelf\\|fun saveBookCover\\|fun savePdfPageToImage\\|fun convertPdfPageToImage' src/main/java/com/htmake/reader/api/controller/BookController.kt",
+    "grep -n 'fun canEditRssSource' src/main/java/com/htmake/reader/api/controller/RssSourceController.kt",
+    "grep -n 'abstract.*fun getContextPath' src/main/java/com/htmake/reader/verticle/RestVerticle.kt",
+    "grep -n 'override.*fun getContextPath' src/main/java/com/htmake/reader/api/YueduApi.kt"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

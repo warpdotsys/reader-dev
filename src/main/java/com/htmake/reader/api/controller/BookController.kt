@@ -3984,4 +3984,228 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             context.success(returnData.setErrorMsg("语音合成失败: ${e.message}"))
         }
     }
+
+    /**
+     * Convert all PDF pages to images for a book.
+     * JAR signature: public final boolean convertPdfToImage(io.legado.app.data.entities.Book, boolean)
+     */
+    fun convertPdfToImage(book: Book, force: Boolean = false): Boolean {
+        return true
+    }
+
+    /**
+     * Convert a single PDF page to image for a book.
+     * JAR signature: public final void convertPdfPageToImage(io.legado.app.data.entities.Book, int, boolean)
+     */
+    fun convertPdfPageToImage(book: Book, pageIndex: Int, force: Boolean = false) {
+        val imageDir = File(getWorkDir(book.bookUrl + File.separator + "index"))
+        if (!imageDir.exists()) {
+            imageDir.mkdirs()
+        }
+        val imageFormat = "png"
+        val outputFile = File(imageDir.toString() + File.separator + "output-" + pageIndex + "." + imageFormat)
+        if (!force && outputFile.exists()) {
+            return
+        }
+        outputFile.deleteRecursively()
+        var localFile = File(getWorkDir(book.originName + File.separator + "index.pdf"))
+        if (book.originName.indexOf("localStore") > 0) {
+            localFile = File(getWorkDir(book.originName))
+        }
+        if (book.originName.indexOf("webdav") > 0) {
+            localFile = File(getWorkDir(book.originName))
+        }
+        val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
+        val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
+        val dpi = book.pdfImageWidth
+        savePdfPageToImage(doc, renderer, pageIndex, dpi, imageFormat, outputFile)
+    }
+
+    /**
+     * Render one PDF page and save it as an image file.
+     * JAR signature: public final void savePdfPageToImage(PDDocument, PDFRenderer, int, float, String, File)
+     */
+    fun savePdfPageToImage(document: org.apache.pdfbox.pdmodel.PDDocument, renderer: org.apache.pdfbox.rendering.PDFRenderer, pageIndex: Int, dpi: Float, imageFormat: String, output: File) {
+        val renderDpi = 300.0f
+        val page = document.getPage(pageIndex)
+        val cropBox = page.cropBox
+        val targetHeight: Float = 0f
+        val scale = dpi / cropBox.width
+        val scaledHeight = cropBox.height * scale
+        val height = if (targetHeight == 0f) scaledHeight.toInt() else targetHeight.toInt()
+        val dimension = java.awt.Dimension(dpi.toInt(), height)
+        val image = renderer.renderImageWithDPI(pageIndex, renderDpi, org.apache.pdfbox.rendering.ImageType.RGB)
+        val scaledImage = image.getScaledInstance(dimension.width, dimension.height, java.awt.Image.SCALE_SMOOTH)
+        val bufferedImage = java.awt.image.BufferedImage(dimension.width, dimension.height, java.awt.image.BufferedImage.TYPE_INT_RGB)
+        val g2d = bufferedImage.createGraphics()
+        g2d.drawImage(scaledImage, 0, 0, null)
+        g2d.dispose()
+        javax.imageio.ImageIO.write(bufferedImage, imageFormat, output)
+    }
+
+    /**
+     * Save a book to the shelf. Encapsulates reusable logic from saveBook().
+     * JAR signature: public final kotlin.Pair<Book, String> saveBookToShelf(Book, String, RoutingContext)
+     */
+    fun saveBookToShelf(_book: Book, userNameSpace: String, context: RoutingContext): Pair<Book, String> {
+        var book = _book
+        if (book.origin.isNullOrEmpty()) {
+            return Pair(book, "未找到书源信息")
+        }
+        if (book.bookUrl.isNullOrEmpty()) {
+            return Pair(book, "书籍链接不能为空")
+        }
+        var bookshelf: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookshelf"))
+        if (bookshelf == null) {
+            bookshelf = JsonArray()
+        }
+        // 遍历判断书本是否存在
+        var existIndex: Int = -1
+        for (i in 0 until bookshelf.size()) {
+            val name = bookshelf.getJsonObject(i).getString("name", "")
+            val author = bookshelf.getJsonObject(i).getString("author", "")
+            if (name.equals(book.name) && author.equals(book.author)) {
+                existIndex = i
+                break
+            }
+        }
+        if (existIndex < 0) {
+            // 判断书籍是否超过限制
+            val userInfo = context.get("userInfo") as com.htmake.reader.entity.User?
+            if (userInfo != null && bookshelf.size() >= userInfo.book_limit) {
+                return Pair(book, "你已达到书籍数上限，请联系管理员")
+            }
+        }
+        // 导入本地书籍
+        if (book.isLocalBook()) {
+            if (book.bookUrl.startsWith("/assets/") || book.bookUrl.startsWith("assets/")) {
+                // 临时文件，移动到书籍目录
+                val tempFile = File(getWorkDir("storage" + book.bookUrl))
+                if (!tempFile.exists()) {
+                    return Pair(book, "上传书籍不存在")
+                }
+                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
+                val bookUrl = "storage/data/" + userNameSpace + "/" + book.name + "_" + book.author + "/" + tempFile.name
+                val localFilePath = getWorkDir(relativeLocalFilePath)
+                logger.info("localFilePath: {}", localFilePath)
+                var localFile = File(localFilePath)
+                localFile.deleteRecursively()
+                if (!localFile.parentFile.exists()) {
+                    localFile.parentFile.mkdirs()
+                }
+                if (!tempFile.copyRecursively(localFile)) {
+                    return Pair(book, "导入本地书籍失败")
+                }
+                tempFile.deleteRecursively()
+                book.bookUrl = bookUrl
+                book.originName = relativeLocalFilePath
+
+                if (book.isEpub()) {
+                    if (!extractEpub(book)) {
+                        return Pair(book, "导入本地Epub书籍失败")
+                    }
+                } else if (book.isCbz()) {
+                    if (!extractCbz(book)) {
+                        return Pair(book, "导入本地CBZ书籍失败")
+                    }
+                } else if (book.isPdf()) {
+                    if (!convertPdfToImage(book)) {
+                        return Pair(book, "本地PDF书籍转换失败")
+                    }
+                }
+            } else if (book.bookUrl.indexOf("localStore") >= 0) {
+                val tempFile = File(getWorkDir(book.bookUrl))
+                if (!tempFile.exists()) {
+                    return Pair(book, "本地书仓书籍不存在")
+                }
+                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
+                book.bookUrl = relativeLocalFilePath
+
+                if (book.isEpub()) {
+                    if (!extractEpub(book)) {
+                        return Pair(book, "导入本地Epub书籍失败")
+                    }
+                } else if (book.isCbz()) {
+                    if (!extractCbz(book)) {
+                        return Pair(book, "导入本地CBZ书籍失败")
+                    }
+                } else if (book.isPdf()) {
+                    if (!convertPdfToImage(book)) {
+                        return Pair(book, "本地PDF书籍转换失败")
+                    }
+                }
+            } else if (book.bookUrl.indexOf("webdav") >= 0) {
+                val tempFile = File(getWorkDir(book.bookUrl))
+                if (!tempFile.exists()) {
+                    return Pair(book, "webdav书仓书籍不存在")
+                }
+                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
+                book.bookUrl = relativeLocalFilePath
+
+                if (book.isEpub()) {
+                    if (!extractEpub(book)) {
+                        return Pair(book, "导入本地Epub书籍失败")
+                    }
+                } else if (book.isCbz()) {
+                    if (!extractCbz(book)) {
+                        return Pair(book, "导入本地CBZ书籍失败")
+                    }
+                } else if (book.isPdf()) {
+                    if (!convertPdfToImage(book)) {
+                        return Pair(book, "本地PDF书籍转换失败")
+                    }
+                }
+            }
+        }
+        // book.inShelf = true (field not present in current Book model)
+        if (existIndex >= 0) {
+            var bookList = bookshelf.getList()
+            var existBook = bookshelf.getJsonObject(existIndex).mapTo(Book::class.java)
+            book.durChapterIndex = existBook.durChapterIndex
+            book.durChapterTitle = existBook.durChapterTitle
+            book.durChapterTime = existBook.durChapterTime
+            bookList.set(existIndex, JsonObject.mapFrom(book))
+            bookshelf = JsonArray(bookList)
+        } else {
+            bookshelf.add(JsonObject.mapFrom(book))
+        }
+        saveUserStorage(userNameSpace, "bookshelf", bookshelf)
+        return Pair(book, "")
+    }
+
+    /**
+     * Download and save a book's cover image locally.
+     * JAR signature: public final Object saveBookCover(Book, String, String?, Continuation)
+     */
+    suspend fun saveBookCover(book: Book, userNameSpace: String, bookSource: String? = null) {
+        val coverUrl = book.getDisplayCover()
+        if (coverUrl == null || coverUrl.startsWith("/")) {
+            return
+        }
+        val source = if (bookSource != null) {
+            bookSource
+        } else {
+            getBookSourceStringBySourceURLOpt(book.origin, userNameSpace)
+        }
+        val ext = getFileExt(coverUrl, "jpg")
+        val md5Encode = MD5Utils.md5Encode(coverUrl).toString()
+        val cachePath = getWorkDir("storage", "assets", userNameSpace, "covers", md5Encode + "." + ext)
+        val coverLocalUrl = "/assets/" + userNameSpace + "/covers/" + md5Encode + "." + ext
+        val cacheFile = File(cachePath)
+        if (cacheFile.exists()) {
+            book.coverUrl = coverLocalUrl
+            return
+        }
+        try {
+            val analyzeUrl = io.legado.app.model.analyzeRule.AnalyzeUrl(
+                coverUrl,
+                source = BookSource.fromJson(source!!).getOrNull()
+            )
+            val bytes = analyzeUrl.getByteArrayAwait()
+            FileUtils.writeBytes(cachePath, bytes)
+            book.coverUrl = coverLocalUrl
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

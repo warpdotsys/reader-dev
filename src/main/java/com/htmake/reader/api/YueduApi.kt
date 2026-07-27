@@ -87,6 +87,10 @@ class YueduApi : RestVerticle() {
     @Autowired
     private lateinit var env: Environment
 
+    override fun getContextPath(): String {
+        return env.getProperty("reader.server.contextPath", "") ?: ""
+    }
+
     override suspend fun initRouter(router: Router) {
         setupPort()
 

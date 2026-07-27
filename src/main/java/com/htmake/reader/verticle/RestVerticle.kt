@@ -108,6 +108,8 @@ abstract class RestVerticle : CoroutineVerticle() {
         }
     }
 
+    abstract fun getContextPath(): String
+
     abstract suspend fun initRouter(router: Router);
 
     open fun onException(error: Throwable) {
