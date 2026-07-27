@@ -1,0 +1,23 @@
+<div class="tip-title">
+<%=!isSourceGroup ? "当前匹配到多个书源，请选择以下某个书源后继续搜索" : "当前匹配到多个书源分组，请选择以下某个书源分组后继续搜索" %>
+</div>
+<%for(var i = 0; i < list.length; i++) {%>
+    <li>
+        <div class='source-item w3-hover-black' onclick="searchBookWithSourceIndex(<%=i%>)">
+            <div class="source-info">
+                <b><%=list[i].bookSourceName || list[i].name%></b><br/>
+            </div>
+        </div>
+    </li>
+<%}%>
+<style>
+.tip-title {
+    padding: 5px 0;
+}
+.source-item {
+    padding: 5px 0;
+}
+.source-info {
+    font-size: 1em;
+}
+</style>

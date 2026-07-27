@@ -93,6 +93,12 @@ class YueduApi : RestVerticle() {
         // 旧版数据迁移
         migration()
 
+        // simple-web界面
+        router.route("/simple-web/*").handler(StaticHandler.create("simple-web").setDefaultContentEncoding("UTF-8"))
+
+        // bookSourceDebug界面
+        router.route("/bookSourceDebug/*").handler(StaticHandler.create("bookSourceDebug").setDefaultContentEncoding("UTF-8"))
+
         // web界面
         router.route("/*").handler(StaticHandler.create("web").setDefaultContentEncoding("UTF-8"));
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0,minimal-ui,viewport-fit=cover"><meta name="keyword" content="阅读3,在线版"><meta name="description" content=""><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="format-detection" content="telephone=no,email=no,address=no"><meta name="renderer" content="webkit"><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"><meta name="screen-orientation" content="portrait"><meta name="x5-orientation" content="portrait"><meta name="full-screen" content="yes"><meta name="x5-fullscreen" content="true"><meta name="browsermode" content="application"><meta name="x5-page-mode" content="app"><meta name="msapplication-tap-highlight" content="no"><!--[if IE]><link rel="icon" href="favicon.ico" /><![endif]--><title>阅读</title><script>// 通用加载脚本方法
+      function loadScript(src, callback, async) {
+        var script = document.createElement('script');
+        if (async) script.async = 'async';
+        script.src = src;
+
+        if (callback) {
+          script.onload = callback;
+        }
+
+        document.head.appendChild(script);
+      }
+
+      // 通用加载样式方法
+      function loadLink(href, callback, rel, type) {
+        var link = document.createElement('link');
+        link.rel = rel || "stylesheet";
+        link.type = type || "text/css";
+        link.href = href;
+
+        if (callback) {
+          link.onload = callback;
+        }
+
+        document.getElementsByTagName("head")[0].appendChild(link);
+      }
+
+      // 获取单个查询参数
+      function getQueryString(sVar, first) {
+        return decodeURIComponent(window.location.search.replace(new RegExp('^(?:.*' + (first ? '?' : '') + '[&\\?]' + encodeURI(sVar).replace(/[\.\+\*]/g, '\\$&') + '(?:\\=([^&]*))?)?.*$', 'i'), '$1'));
+      }
+
+      window.onerror = function() {
+        if (window.getQueryString('debug')) {
+          alert(JSON.stringify(arguments));
+        }
+      }
+
+      if (window.getQueryString('debug')) {
+        window.loadScript('https://cdn.bootcdn.net/ajax/libs/vConsole/3.9.1/vconsole.min.js', function() {
+          new VConsole();
+        }, true);
+      }
+
+      if (!Function.prototype.bind) {
+        Function.prototype.bind = function (oThis) {
+          if (typeof this !== 'function') {
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+          }
+
+          var aArgs = Array.prototype.slice.call(arguments, 1),
+              fToBind = this,
+              fNOP = function () {},
+              fBound = function () {
+                return fToBind.apply(this instanceof fNOP ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
+              };
+
+          fNOP.prototype = this.prototype;
+          fBound.prototype = new fNOP();
+
+          return fBound;
+        };
+      }</script><link href="css/index.9347d249.css" rel="prefetch"><link href="css/reader.1ebd7f35.css" rel="prefetch"><link href="css/setting.d9b851e0.css" rel="prefetch"><link href="js/index.459d9e84.js" rel="prefetch"><link href="js/index~reader.c43437ec.js" rel="prefetch"><link href="js/reader.6e871769.js" rel="prefetch"><link href="js/setting.6919980b.js" rel="prefetch"><link href="css/app.512ff41b.css" rel="preload" as="style"><link href="css/chunk-vendors.e2dbefc2.css" rel="preload" as="style"><link href="js/app.54619a3e.js" rel="preload" as="script"><link href="js/chunk-vendors.4589d111.js" rel="preload" as="script"><link href="css/chunk-vendors.e2dbefc2.css" rel="stylesheet"><link href="css/app.512ff41b.css" rel="stylesheet"><link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="img/icons/favicon-16x16.png"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="阅读"><link rel="apple-touch-icon" href="img/icons/apple-touch-icon-152x152.png"><link rel="mask-icon" href="img/icons/safari-pinned-tab.svg" color="#ffffff"><meta name="msapplication-TileImage" content="img/icons/msapplication-icon-144x144.png"><meta name="msapplication-TileColor" content="#000000"></head><style>:root {
+      --sat: constant(safe-area-inset-top);
+      --sat: env(safe-area-inset-top);
+      --sar: constant(safe-area-inset-right);
+      --sar: env(safe-area-inset-right);
+      --sab: constant(safe-area-inset-bottom);
+      --sab: env(safe-area-inset-bottom);
+      --sal: constant(safe-area-inset-left);
+      --sal: env(safe-area-inset-left);
+    }
+    body::-webkit-scrollbar {
+      display: none;
+    }
+    body.night-theme::-webkit-scrollbar {
+      background-color: #333 !important;
+    }
+    html,body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }</style><body><noscript><strong>请启用浏览器的Javascript支持</strong></noscript><div id="app"></div><script src="js/flv.min.js"></script><script src="js/hls.min.js"></script><script src="js/dash.all.min.js"></script><script src="js/webtorrent.min.js"></script><script src="js/pear-player.min.js"></script><script src="js/chunk-vendors.4589d111.js"></script><script src="js/app.54619a3e.js"></script></body></html>
