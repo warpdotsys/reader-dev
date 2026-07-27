@@ -4016,9 +4016,13 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             localFile = File(getWorkDir(book.originName))
         }
         val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
-        val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
-        val dpi = book.pdfImageWidth
-        savePdfPageToImage(doc, renderer, pageIndex, dpi, imageFormat, outputFile)
+        try {
+            val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
+            val dpi = book.pdfImageWidth
+            savePdfPageToImage(doc, renderer, pageIndex, dpi, imageFormat, outputFile)
+        } finally {
+            doc.close()
+        }
     }
 
     /**
@@ -4199,7 +4203,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         try {
             val analyzeUrl = io.legado.app.model.analyzeRule.AnalyzeUrl(
                 coverUrl,
-                source = BookSource.fromJson(source!!).getOrNull()
+                source = source?.let { BookSource.fromJson(it).getOrNull() }
             )
             val bytes = analyzeUrl.getByteArrayAwait()
             FileUtils.writeBytes(cachePath, bytes)
