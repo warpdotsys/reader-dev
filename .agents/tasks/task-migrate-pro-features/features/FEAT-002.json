@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Add path-based route aliases in the backend YueduApi.kt so the compiled frontend's URL patterns (/reader3/file/*, /reader3/httpTTS/*, /reader3/book/saveBookConfig, /reader3/user/downloadBackupFile) work alongside the existing flat routes.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Step 1: Add file management path-based aliases in YueduApi.kt initRouter(). After the existing flat file routes (around line 400), add path-based aliases that map to the same controller methods: router.get('/reader3/file/list').coroutineHandler { fileController.list(it) }, router.post('/reader3/file/list').coroutineHandler { fileController.list(it) }, router.post('/reader3/file/upload').coroutineHandler { fileController.upload(it) }, router.get('/reader3/file/download').coroutineHandlerWithoutRes { fileController.download(it) }, router.get('/reader3/file/get').coroutineHandler { fileController.get(it) }, router.post('/reader3/file/get').coroutineHandler { fileController.get(it) }, router.post('/reader3/file/save').coroutineHandler { fileController.save(it) }, router.post('/reader3/file/mkdir').coroutineHandler { fileController.mkdir(it) }, router.post('/reader3/file/delete').coroutineHandler { fileController.delete(it) }, router.post('/reader3/file/deleteMulti').coroutineHandler { fileController.deleteMulti(it) }, router.post('/reader3/file/importPreview').coroutineHandler { fileController.importPreview(it) }, router.post('/reader3/file/restore').coroutineHandler { fileController.restore(it) }, router.post('/reader3/file/parse').coroutineHandler { fileController.parse(it) }",
     "Step 2: Add HttpTTS path-based aliases: router.get('/reader3/httpTTS/list').coroutineHandler { httpTTSController.getHttpTTSList(it) }, router.post('/reader3/httpTTS/save').coroutineHandler { httpTTSController.saveHttpTTS(it) }, router.post('/reader3/httpTTS/saveMulti').coroutineHandler { httpTTSController.saveHttpTTSList(it) }, router.post('/reader3/httpTTS/deleteMulti').coroutineHandler { httpTTSController.deleteHttpTTS(it) }",
@@ -20,5 +20,5 @@
     "Run: grep -c 'reader3/httpTTS/' src/main/java/com/htmake/reader/api/YueduApi.kt (should be >3)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All route aliases added successfully. Build passes with no errors (only pre-existing warnings). /reader3/book/tts was already present (lines 417-418) so no duplicate was added. The /reader3/saveBookConfig flat route already existed at line 235 - the new /reader3/book/saveBookConfig is the path-based alias. The /reader3/downloadBackupFile flat route existed at line 434 - the new /reader3/user/downloadBackupFile is the path-based alias."
 }
