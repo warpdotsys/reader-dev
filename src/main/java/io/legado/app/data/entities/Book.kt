@@ -51,8 +51,7 @@ data class Book(
        var originOrder: Int = 0,                   //书源排序
         var useReplaceRule: Boolean = true,         // 正文使用净化替换规则
         var variable: String? = null,                // 自定义书籍变量信息(用于书源规则检索书籍信息)
-        var readConfig: ReadConfig? = null,
-        var pdfImageWidth: Float = 0f
+        var readConfig: ReadConfig? = null
     ) : BaseBook {
 
     fun isLocalBook(): Boolean {
@@ -137,6 +136,14 @@ data class Book(
             readConfig = ReadConfig()
         }
         return readConfig!!
+    }
+
+    fun getPdfImageWidth(): Float {
+        return config().pdfImageWidth
+    }
+
+    fun setPdfImageWidth(value: Float) {
+        config().pdfImageWidth = value
     }
 
     fun setDelTag(tag: Long) {
@@ -298,7 +305,8 @@ data class Book(
         var reSegment: Boolean = false,
         var imageStyle: String? = null,
         var useReplaceRule: Boolean = false,   // 正文使用净化替换规则
-        var delTag: Long = 0L   //去除标签
+        var delTag: Long = 0L,   //去除标签
+        var pdfImageWidth: Float = 0f
     )
 
     class Converters {

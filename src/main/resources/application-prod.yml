@@ -4,8 +4,7 @@ spring:
 
 reader:
   app:
-    storagePath: 'storage'
-    workDir: ""
+    workDir: "."
     showUI: false
     debug: false
     packaged: false
@@ -39,8 +38,8 @@ reader:
 
   server:
     port: 8080
-    webUrl: http://localhost:${reader.server.port}
     contextPath: ""
+    webUrl: http://localhost:${reader.server.port}${reader.server.contextPath}
 
 logging:
-  path: "./logs"
+  path: "${reader.app.workDir}/logs"

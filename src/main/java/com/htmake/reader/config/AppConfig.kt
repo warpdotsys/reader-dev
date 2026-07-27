@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties(prefix = "reader.app")
 class AppConfig {
-    lateinit var storagePath: String // 存储路径
+    var storagePath: String = "storage" // 存储路径
     var showUI = false // 是否显示UI
     var debug = false  // 是否调试web
     var packaged = false  // 是否打包为app
@@ -24,9 +24,8 @@ class AppConfig {
     var exportNoChapterName = false // 不添加章节名
     var exportPictureFile = false // 导出图片
 
-    // workDir alias (falls back to storagePath if empty)
-    var workDir: String = ""
-        get() = if (field.isEmpty()) storagePath else field
+    // workDir - working directory (replaces storagePath)
+    var workDir: String = "."
 
     // MongoDB configuration
     var mongoUri: String = ""

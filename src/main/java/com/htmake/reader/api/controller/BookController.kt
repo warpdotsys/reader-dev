@@ -456,7 +456,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("pdf图片宽度错误")
         }
         val newBook = editShelfBook(bookInfo, userNameSpace) { existBook ->
-            existBook.pdfImageWidth = pdfImageWidth
+            existBook.setPdfImageWidth(pdfImageWidth)
             logger.info("saveBookConfig: {}", existBook)
             existBook
         }
@@ -4018,7 +4018,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
         try {
             val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
-            val dpi = book.pdfImageWidth
+            val dpi = book.getPdfImageWidth()
             savePdfPageToImage(doc, renderer, pageIndex, dpi, imageFormat, outputFile)
         } finally {
             doc.close()
