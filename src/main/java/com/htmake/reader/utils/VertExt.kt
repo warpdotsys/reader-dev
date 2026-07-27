@@ -15,11 +15,15 @@ import java.io.File
 import java.nio.file.Paths
 import com.htmake.reader.config.AppConfig
 import com.google.gson.reflect.TypeToken
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 import io.legado.app.data.entities.Book
 import io.legado.app.utils.MD5Utils
+import java.util.UUID
+import java.util.Base64 as JavaBase64
 
 /**
  * @Auther: zoharSoul
@@ -265,4 +269,97 @@ fun jsonEncode(value: Any, pretty: Boolean = false): String {
         return prettyGson.toJson(value)
     }
     return gson.toJson(value)
+}
+
+fun parseJsonStringList(jsonStr: String?): List<String> {
+    if (jsonStr.isNullOrBlank()) {
+        return emptyList()
+    }
+    return try {
+        gson.fromJson(jsonStr, object : TypeToken<List<String>>() {}.type)
+    } catch (e: Exception) {
+        emptyList()
+    }
+}
+
+fun listFilesRecursively(dir: File): List<File> {
+    val result = ArrayList<File>()
+    if (!dir.exists()) {
+        return result
+    }
+    if (dir.isFile) {
+        result.add(dir)
+        return result
+    }
+    val files = dir.listFiles()!!
+    for (file in files) {
+        if (file.isFile) {
+            result.add(file)
+        } else if (file.isDirectory) {
+            result.addAll(listFilesRecursively(file))
+        }
+    }
+    return result
+}
+
+fun String.toDir(removeTrailing: Boolean = false): String {
+    return if (removeTrailing) {
+        if (this.endsWith("/")) {
+            this.substring(0, this.length - 1)
+        } else {
+            this
+        }
+    } else {
+        if (this.endsWith(File.separator)) {
+            this
+        } else {
+            this + File.separator
+        }
+    }
+}
+
+inline fun <reified T> arrayType(clazz: Class<T>): Class<Array<T>> {
+    @Suppress("UNCHECKED_CAST")
+    return java.lang.reflect.Array.newInstance(clazz, 0)::class.java as Class<Array<T>>
+}
+
+fun deepListFiles(dir: File, vararg extensions: String): List<File> {
+    val result = ArrayList<File>()
+    if (!dir.exists()) {
+        return result
+    }
+    if (dir.isFile) {
+        if (extensions.isEmpty() || extensions.any { dir.name.endsWith(it, ignoreCase = true) }) {
+            result.add(dir)
+        }
+        return result
+    }
+    val files = dir.listFiles() ?: return result
+    for (file in files) {
+        if (file.isFile) {
+            if (extensions.isEmpty() || extensions.any { file.name.endsWith(it, ignoreCase = true) }) {
+                result.add(file)
+            }
+        } else if (file.isDirectory) {
+            result.addAll(deepListFiles(file, *extensions))
+        }
+    }
+    return result
+}
+
+fun getTraceId(): String {
+    return UUID.randomUUID().toString().subSequence(0, 8).toString()
+}
+
+fun validateEmail(email: String): Boolean {
+    val regex = Regex("^[A-Za-z0-9._%+-]+@(163|126|qq|yahoo|sina|sohu|yeah|139|189|21cn|outlook|gmail|icloud).com$")
+    return regex.matches(email)
+}
+
+fun encodeBase64(text: String): String {
+    return JavaBase64.getEncoder().encodeToString(text.toByteArray(Charsets.UTF_8))
+}
+
+fun decodeBase64(text: String): String {
+    return String(JavaBase64.getDecoder().decode(text), Charsets.UTF_8)
 }

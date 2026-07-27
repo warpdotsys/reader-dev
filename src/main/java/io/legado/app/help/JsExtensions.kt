@@ -7,6 +7,7 @@ import io.legado.app.utils.Base64
 import io.legado.app.constant.AppConst.dateFormat
 import io.legado.app.help.http.*
 import io.legado.app.model.Debug
+import io.legado.app.model.DebugLog
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.analyzeRule.QueryTTF
 import io.legado.app.utils.*
@@ -37,6 +38,14 @@ import java.text.SimpleDateFormat
 interface JsExtensions {
 
     fun getSource(): BaseSource?
+
+    fun getUserNameSpace(): String {
+        return ""
+    }
+
+    fun getLogger(): io.legado.app.model.DebugLog? {
+        return null
+    }
 
     /**
      * 访问网络,返回String

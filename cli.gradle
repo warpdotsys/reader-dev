@@ -98,9 +98,22 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    exclude '**/ReaderUIApplication.kt'
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+sourceSets {
+    main {
+        kotlin {
+            exclude '**/ReaderUIApplication.kt'
+        }
+    }
+}
+
+springBoot {
+    mainClassName = 'com.htmake.reader.ReaderApplicationKt'
 }
