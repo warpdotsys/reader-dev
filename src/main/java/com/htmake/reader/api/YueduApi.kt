@@ -255,10 +255,10 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/getChapterListByRule").coroutineHandler { bookController.getChapterListByRule(it) }
 
         // 书籍分组
-        router.get("/reader3/getBookGroups").coroutineHandler { bookController.getBookGroups(it) }
-        router.post("/reader3/saveBookGroup").coroutineHandler { bookController.saveBookGroup(it) }
-        router.post("/reader3/deleteBookGroup").coroutineHandler { bookController.deleteBookGroup(it) }
-        router.post("/reader3/saveBookGroupOrder").coroutineHandler { bookController.saveBookGroupOrder(it) }
+        router.get("/reader3/getBookGroups").coroutineHandler { bookGroupController.getBookGroups(it) }
+        router.post("/reader3/saveBookGroup").coroutineHandler { bookGroupController.saveBookGroup(it) }
+        router.post("/reader3/deleteBookGroup").coroutineHandler { bookGroupController.deleteBookGroup(it) }
+        router.post("/reader3/saveBookGroupOrder").coroutineHandler { bookGroupController.saveBookGroupOrder(it) }
 
         // 书仓功能
         // 获取书仓文件列表
@@ -397,6 +397,16 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/saveHttpTTS").coroutineHandler { httpTTSController.saveHttpTTS(it) }
         router.post("/reader3/saveHttpTTSList").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
         router.post("/reader3/deleteHttpTTS").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
+
+        /** PDF渲染模块 */
+        router.get("/reader3/convertPdfToImage").coroutineHandlerWithoutRes { bookController.convertPdfToImage(it) }
+        router.post("/reader3/convertPdfToImage").coroutineHandlerWithoutRes { bookController.convertPdfToImage(it) }
+        router.get("/reader3/savePdfPageToImage").coroutineHandler { bookController.savePdfPageToImage(it) }
+        router.post("/reader3/savePdfPageToImage").coroutineHandler { bookController.savePdfPageToImage(it) }
+
+        /** TTS语音合成 */
+        router.get("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
+        router.post("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
 
         /** MongoDB备份恢复 */
         router.post("/reader3/backupToMongodb").coroutineHandler { bookController.backupToMongodb(it) }

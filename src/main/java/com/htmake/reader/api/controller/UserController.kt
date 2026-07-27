@@ -557,13 +557,14 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             context.response().setStatusCode(400).end("参数错误")
             return
         }
-        // Prevent path traversal
-        if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+        val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
+        // Use canonical path resolution to prevent path traversal
+        val file = File(backupDir, fileName).canonicalFile
+        val backupDirCanonical = backupDir.canonicalFile
+        if (!file.path.startsWith(backupDirCanonical.path)) {
             context.response().setStatusCode(400).end("文件名不合法")
             return
         }
-        val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
-        val file = File(backupDir, fileName)
         if (!file.exists()) {
             context.response().setStatusCode(404).end("文件不存在")
             return

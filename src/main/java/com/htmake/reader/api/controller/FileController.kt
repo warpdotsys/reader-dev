@@ -285,7 +285,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("文件不存在")
         }
 
-        val supportedExtensions = listOf("txt", "epub", "umd", "cbz")
+        val supportedExtensions = listOf("txt", "epub", "umd", "cbz", "pdf")
         val fileList = if (file.isDirectory) {
             file.listFiles()?.filter { f ->
                 supportedExtensions.any { ext -> f.name.endsWith(".$ext", ignoreCase = true) }
