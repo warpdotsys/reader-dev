@@ -135,7 +135,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             var passwordEncrypted = genEncryptedPassword(password, salt)
             var newUser = User(username, passwordEncrypted, salt)
 
-            val loginData = saveUserSession(context, userMap, newUser)
+            val loginData = saveUserSession(context, newUser)
             return returnData.setData(loginData)
         } else {
             if (!isLogin) {
@@ -151,7 +151,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             if (passwordEncrypted != userInfo.password) {
                 return returnData.setErrorMsg("密码错误")
             }
-            val loginData = saveUserSession(context, userMap, userInfo)
+            val loginData = saveUserSession(context, userInfo)
             return returnData.setData(loginData)
         }
     }

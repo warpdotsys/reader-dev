@@ -69,6 +69,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
 import io.legado.app.help.coroutine.Coroutine
 
 private val logger = KotlinLogging.logger {}
@@ -78,13 +79,19 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
 
     val appConfig: AppConfig
     val env: Environment
+    val userMutex = Mutex()
 
     init {
         appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
         env = SpringContextUtils.getBean(Environment::class.java)
     }
 
-    suspend fun saveUserSession(context: RoutingContext, userMap: MutableMap<String, Map<String, Any>>, user: User, regenerateToken: Boolean = true): Map<String, Any> {
+    suspend fun saveUserSession(context: RoutingContext, user: User, regenerateToken: Boolean = true): Map<String, Any> {
+        var userMap = mutableMapOf<String, Map<String, Any>>()
+        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+        if (userMapJson != null) {
+            userMap = userMapJson.map as? MutableMap<String, Map<String, Any>> ?: mutableMapOf<String, Map<String, Any>>()
+        }
         user.last_login_at = System.currentTimeMillis()
         if (regenerateToken) {
             user.token = genEncryptedPassword(user.username, System.currentTimeMillis().toString())
@@ -160,7 +167,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                     }
                     if (isLogin) {
                         // 保存用户session
-                        saveUserSession(context, userMap, existedUser, false)
+                        saveUserSession(context, existedUser, false)
                         context.put("username", existedUser.username)
                         context.put("userInfo", existedUser)
                     }

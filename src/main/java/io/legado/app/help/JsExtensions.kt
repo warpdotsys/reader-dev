@@ -210,6 +210,19 @@ interface JsExtensions {
     }
 
     /**
+     * 网络访问head
+     */
+    fun head(urlStr: String, headers: Map<String, String>): Connection.Response {
+        return Jsoup.connect(urlStr)
+            .sslSocketFactory(SSLHelper.unsafeSSLSocketFactory)
+            .ignoreContentType(true)
+            .followRedirects(false)
+            .headers(headers)
+            .method(Connection.Method.HEAD)
+            .execute()
+    }
+
+    /**
      * 网络访问post
      */
     fun post(urlStr: String, body: String, headers: Map<String, String>): Connection.Response {

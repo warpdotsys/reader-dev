@@ -18,9 +18,9 @@ class ReturnData {
         return this
     }
 
-    fun setData(data: Any): ReturnData {
+    fun setData(data: Any, msg: String = ""): ReturnData {
         this.isSuccess = true
-        this.errorMsg = ""
+        this.errorMsg = msg
         this.data = data
         return this
     }
