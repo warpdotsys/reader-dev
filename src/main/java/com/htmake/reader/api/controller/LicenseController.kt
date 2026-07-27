@@ -16,6 +16,7 @@ import com.htmake.reader.utils.toDataClass
 import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.SpringContextUtils
 import com.htmake.reader.utils.jsonEncode
+import io.legado.app.utils.ACache
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
@@ -25,6 +26,14 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     private val webClient: WebClient by lazy {
         SpringContextUtils.getBean("webClient", WebClient::class.java)
+    }
+
+    private var privateKeyContent: String? = null
+
+    private var tryCodeCache: ACache = ACache.get("tryCodeCache", 1000 * 1000L, 100)
+
+    val backupFileNames: Array<String> by lazy {
+        arrayOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
     }
 
     private fun loadActiveLicense(): ActiveLicense? {
@@ -43,12 +52,24 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     /**
-     * Check if the license system is active. In this dev version, all features
-     * are available without a valid license (license is optional).
+     * Check if the license is valid. Returns ReturnData with license info.
+     * In community mode, always returns valid.
      */
-    fun isLicenseValid(): Boolean {
-        // Always return true - all features available without license
-        return true
+    suspend fun isLicenseValid(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        return returnData.setData(mapOf(
+            "valid" to true,
+            "message" to "社区版,全部功能可用"
+        ))
+    }
+
+    /**
+     * Check license validity (non-route overload for scheduled jobs).
+     * In community mode, this is a no-op.
+     */
+    suspend fun checkLicense(license: License) {
+        // No-op in community mode - all features are always valid
+        logger.debug("checkLicense called for license: {}", license.id)
     }
 
     fun checkLicenseFeature(feature: String): Boolean {

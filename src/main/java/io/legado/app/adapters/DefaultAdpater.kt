@@ -4,6 +4,9 @@ import io.legado.app.help.http.StrResponse
 import io.legado.app.model.DebugLog
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRelativePath
+import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.SpringContextUtils
+import com.htmake.reader.config.AppConfig
 import com.htmake.reader.init.appCtx
 
 /**
@@ -41,6 +44,18 @@ class DefaultAdpater : ReaderAdapterInterface {
         contentType: String,
         debugLog: DebugLog?
     ): StrResponse? {
+        val config = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
+        if (config.remoteWebviewApi.isNotEmpty()) {
+            RemoteWebview.setRemoteApi(config.remoteWebviewApi)
+            return RemoteWebview.getStrResponse(
+                url = url,
+                tag = tag,
+                headerMap = headerMap,
+                js_source = js,
+                isPost = postBody.isNotEmpty(),
+                body = postBody
+            )
+        }
         return null
     }
 }

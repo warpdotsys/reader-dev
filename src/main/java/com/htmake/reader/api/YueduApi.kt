@@ -428,6 +428,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/clearInactiveUsers").coroutineHandler { userController.clearInactiveUsers(it) }
 
         /** 许可证模块 */
+        router.get("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
         router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
         router.post("/reader3/importLicense").coroutineHandler { licenseController.importLicense(it) }
         router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
@@ -660,6 +661,27 @@ class YueduApi : RestVerticle() {
                 logger.info("垃圾回收完成")
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * 定期检查许可证有效性 (每6小时)
+     */
+    @Scheduled(cron = "0 0 0/6 * * ?")
+    fun checkLicense()
+    {
+        launch(Dispatchers.IO) {
+            try {
+                val license = com.htmake.reader.utils.getInstalledLicense()
+                if (license != null) {
+                    logger.info("License check: found installed license")
+                    val licenseController = LicenseController(coroutineContext)
+                    licenseController.checkLicense(license)
+                }
+                com.htmake.reader.utils.setLicenseValid(true)
+            } catch (e: Exception) {
+                logger.error("checkLicense error: {}", e.message)
             }
         }
     }

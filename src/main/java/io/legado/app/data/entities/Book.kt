@@ -255,12 +255,7 @@ data class Book(
                 CbzFile.upBookInfo(this, onlyCover)
             } else if (isPdf()) {
                 if (!onlyCover) {
-                    val file = getLocalFile()
-                    if (file.exists()) {
-                        java.io.FileInputStream(file).use { inputStream ->
-                            PdfFile.parseBookInfo(this, inputStream)
-                        }
-                    }
+                    PdfFile.upBookInfo(this)
                 }
             }
         } catch(e: Exception) {

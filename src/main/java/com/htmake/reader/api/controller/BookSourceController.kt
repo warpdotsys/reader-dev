@@ -413,7 +413,7 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
      * Update remote book source subscriptions for a given user namespace.
      * Checks for remote source URLs stored in user config and refreshes them.
      */
-    fun updateRemoteSourceSub(userNameSpace: String) {
+    suspend fun updateRemoteSourceSub(userNameSpace: String, user: User? = null) {
         try {
             val remoteSourceConfig = getUserStorage(userNameSpace, "remoteBookSourceSub")
             if (remoteSourceConfig.isNullOrEmpty()) {

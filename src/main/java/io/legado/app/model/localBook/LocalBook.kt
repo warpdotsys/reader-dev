@@ -46,10 +46,7 @@ object LocalBook {
                 CbzFile.getChapterList(book)
             }
             book.isPdf() -> {
-                val inputStream = getBookInputStream(book)
-                inputStream.use {
-                    PdfFile.getChapterList(book, it)
-                }
+                PdfFile.getChapterList(book)
             }
             else -> {
                 TextFile.getChapterList(book)
@@ -73,10 +70,7 @@ object LocalBook {
                 CbzFile.getContent(book, chapter)
             }
             book.isPdf() -> {
-                val inputStream = getBookInputStream(book)
-                inputStream.use {
-                    PdfFile.getContent(book, chapter, it)
-                }
+                PdfFile.getContent(book, chapter)
             }
             else -> {
                 TextFile.getContent(book, chapter)

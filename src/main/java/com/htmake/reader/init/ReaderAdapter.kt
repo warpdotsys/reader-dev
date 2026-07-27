@@ -5,6 +5,9 @@ import io.legado.app.help.http.StrResponse
 import io.legado.app.model.DebugLog
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRelativePath
+import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.SpringContextUtils
+import com.htmake.reader.config.AppConfig
 
 /**
  * Singleton ReaderAdapter implementation using getWorkDir from VertExt.kt.
@@ -41,8 +44,18 @@ object ReaderAdapter : ReaderAdapterInterface {
         contentType: String,
         debugLog: DebugLog?
     ): StrResponse? {
-        // Remote webview API can be used if configured in AppConfig
-        // For now return null (no remote webview available by default)
+        val config = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
+        if (config.remoteWebviewApi.isNotEmpty()) {
+            RemoteWebview.setRemoteApi(config.remoteWebviewApi)
+            return RemoteWebview.getStrResponse(
+                url = url,
+                tag = tag,
+                headerMap = headerMap,
+                js_source = js,
+                isPost = postBody.isNotEmpty(),
+                body = postBody
+            )
+        }
         return null
     }
 }
