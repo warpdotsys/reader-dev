@@ -11,6 +11,7 @@ import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.localBook.EpubFile
 import io.legado.app.model.localBook.UmdFile
 import io.legado.app.model.localBook.CbzFile
+import io.legado.app.model.localBook.PdfFile
 import java.nio.charset.Charset
 import java.io.File
 import kotlin.math.max
@@ -18,7 +19,7 @@ import kotlin.math.min
 import org.jsoup.Jsoup
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "readConfig", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "realAuthor", "unreadChapterNum", "folderName", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
+@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "readConfig", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "pdf", "realAuthor", "unreadChapterNum", "folderName", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
 data class Book(
         override var bookUrl: String = "",                   // 详情页Url(本地书源存储完整文件路径)
         var tocUrl: String = "",                    // 目录页Url (toc=table of Contents)
@@ -75,6 +76,10 @@ data class Book(
 
     fun isUmd(): Boolean {
         return originName.endsWith(".umd", true)
+    }
+
+    fun isPdf(): Boolean {
+        return originName.endsWith(".pdf", true)
     }
 
     fun isOnLineTxt(): Boolean {
@@ -248,6 +253,15 @@ data class Book(
                 UmdFile.upBookInfo(this, onlyCover)
             } else if (isCbz()) {
                 CbzFile.upBookInfo(this, onlyCover)
+            } else if (isPdf()) {
+                if (!onlyCover) {
+                    val file = getLocalFile()
+                    if (file.exists()) {
+                        java.io.FileInputStream(file).use { inputStream ->
+                            PdfFile.parseBookInfo(this, inputStream)
+                        }
+                    }
+                }
             }
         } catch(e: Exception) {
             e.printStackTrace()

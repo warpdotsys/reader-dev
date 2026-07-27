@@ -226,7 +226,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (file.exists()) {
                 var fileName = it.fileName()
                 val ext = getFileExt(fileName)
-                if (ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz") {
+                if (ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz" && ext != "pdf") {
                     file.deleteRecursively()
                     return returnData.setErrorMsg("不支持导入" + ext + "格式的书籍文件")
                 }
@@ -2298,7 +2298,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 if (file.exists()) {
                     val fileName = file.name
                     val ext = getFileExt(fileName)
-                    if (ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz") {
+                    if (ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz" && ext != "pdf") {
                         return returnData.setErrorMsg("不支持导入" + ext + "格式的书籍文件")
                     }
                     val book = Book.initLocalBook(path, path, getWorkDir())
@@ -3441,6 +3441,242 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         } catch (e: Exception) {
             logger.error("createUserBackup error: {}", e.message)
             return false
+        }
+    }
+
+    /**
+     * Convert a PDF page to image and return it as HTTP response.
+     * Parameters: bookUrl, pageIndex, dpi (optional, default 150)
+     */
+    suspend fun convertPdfToImage(context: RoutingContext) {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            return
+        }
+        var bookUrl: String
+        var pageIndex: Int
+        var dpi: Float
+        if (context.request().method() == HttpMethod.POST) {
+            bookUrl = context.bodyAsJson.getString("url") ?: context.bodyAsJson.getString("bookUrl") ?: ""
+            pageIndex = context.bodyAsJson.getInteger("pageIndex", 0)
+            dpi = context.bodyAsJson.getDouble("dpi", 150.0).toFloat()
+        } else {
+            bookUrl = context.queryParam("url").firstOrNull() ?: ""
+            pageIndex = context.queryParam("pageIndex").firstOrNull()?.toInt() ?: 0
+            dpi = context.queryParam("dpi").firstOrNull()?.toFloat() ?: 150f
+        }
+        if (bookUrl.isNullOrEmpty()) {
+            context.success(returnData.setErrorMsg("请输入书籍链接"))
+            return
+        }
+        var userNameSpace = getUserNameSpace(context)
+        var bookInfo = getShelfBookByURL(bookUrl, userNameSpace)
+        if (bookInfo == null) {
+            context.success(returnData.setErrorMsg("书籍信息错误"))
+            return
+        }
+        if (!bookInfo.isPdf()) {
+            context.success(returnData.setErrorMsg("非PDF书籍"))
+            return
+        }
+        bookInfo.setRootDir(getWorkDir())
+        bookInfo.setUserNameSpace(userNameSpace)
+        val localFile = bookInfo.getLocalFile()
+        if (!localFile.exists()) {
+            context.success(returnData.setErrorMsg("本地书籍文件不存在"))
+            return
+        }
+
+        try {
+            val image = convertPdfPageToImage(localFile, pageIndex, dpi)
+            if (image == null) {
+                context.success(returnData.setErrorMsg("PDF页面渲染失败"))
+                return
+            }
+            val baos = java.io.ByteArrayOutputStream()
+            javax.imageio.ImageIO.write(image, "png", baos)
+            val imageBytes = baos.toByteArray()
+            context.response()
+                .putHeader("Content-Type", "image/png")
+                .putHeader("Cache-Control", "86400")
+                .end(io.vertx.core.buffer.Buffer.buffer(imageBytes))
+        } catch (e: Exception) {
+            logger.error("convertPdfToImage error: {}", e.message)
+            context.success(returnData.setErrorMsg("PDF页面渲染失败: ${e.message}"))
+        }
+    }
+
+    /**
+     * Render a single PDF page to BufferedImage using PDFRenderer.
+     */
+    private fun convertPdfPageToImage(pdfFile: File, pageIndex: Int, dpi: Float): java.awt.image.BufferedImage? {
+        var doc: org.apache.pdfbox.pdmodel.PDDocument? = null
+        try {
+            doc = org.apache.pdfbox.pdmodel.PDDocument.load(pdfFile)
+            if (pageIndex < 0 || pageIndex >= doc.numberOfPages) {
+                return null
+            }
+            val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
+            return renderer.renderImageWithDPI(pageIndex, dpi, org.apache.pdfbox.rendering.ImageType.RGB)
+        } catch (e: Exception) {
+            logger.error("convertPdfPageToImage error: {}", e.message)
+            return null
+        } finally {
+            doc?.close()
+        }
+    }
+
+    /**
+     * Save a rendered PDF page image to storage and return the file path.
+     * Parameters: bookUrl, pageIndex, dpi (optional, default 150)
+     */
+    suspend fun savePdfPageToImage(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        var bookUrl: String
+        var pageIndex: Int
+        var dpi: Float
+        if (context.request().method() == HttpMethod.POST) {
+            bookUrl = context.bodyAsJson.getString("url") ?: context.bodyAsJson.getString("bookUrl") ?: ""
+            pageIndex = context.bodyAsJson.getInteger("pageIndex", 0)
+            dpi = context.bodyAsJson.getDouble("dpi", 150.0).toFloat()
+        } else {
+            bookUrl = context.queryParam("url").firstOrNull() ?: ""
+            pageIndex = context.queryParam("pageIndex").firstOrNull()?.toInt() ?: 0
+            dpi = context.queryParam("dpi").firstOrNull()?.toFloat() ?: 150f
+        }
+        if (bookUrl.isNullOrEmpty()) {
+            return returnData.setErrorMsg("请输入书籍链接")
+        }
+        var userNameSpace = getUserNameSpace(context)
+        var bookInfo = getShelfBookByURL(bookUrl, userNameSpace)
+        if (bookInfo == null) {
+            return returnData.setErrorMsg("书籍信息错误")
+        }
+        if (!bookInfo.isPdf()) {
+            return returnData.setErrorMsg("非PDF书籍")
+        }
+        bookInfo.setRootDir(getWorkDir())
+        bookInfo.setUserNameSpace(userNameSpace)
+        val localFile = bookInfo.getLocalFile()
+        if (!localFile.exists()) {
+            return returnData.setErrorMsg("本地书籍文件不存在")
+        }
+
+        try {
+            val image = convertPdfPageToImage(localFile, pageIndex, dpi)
+            if (image == null) {
+                return returnData.setErrorMsg("PDF页面渲染失败")
+            }
+            // Save image to storage
+            val imageName = "page_${pageIndex}.png"
+            val imageDir = File(getWorkDir("storage", "assets", userNameSpace, "pdf", bookInfo.name + "_" + bookInfo.author))
+            if (!imageDir.exists()) {
+                imageDir.mkdirs()
+            }
+            val imageFile = File(imageDir, imageName)
+            javax.imageio.ImageIO.write(image, "png", imageFile)
+            val imageUrl = "/assets/${userNameSpace}/pdf/${bookInfo.name}_${bookInfo.author}/${imageName}"
+            return returnData.setData(mapOf("path" to imageFile.absolutePath, "url" to imageUrl))
+        } catch (e: Exception) {
+            logger.error("savePdfPageToImage error: {}", e.message)
+            return returnData.setErrorMsg("PDF页面保存失败: ${e.message}")
+        }
+    }
+
+    /**
+     * TTS speak stream: synthesize text to audio using TTSService and stream back.
+     * Parameters: text, voice (optional, default zh-CN-XiaoxiaoNeural),
+     *             rate (optional), pitch (optional), outputFormat (optional)
+     */
+    suspend fun getSpeakStream(context: RoutingContext) {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            return
+        }
+        var text: String
+        var voiceName: String
+        var rate: String
+        var pitch: String
+        var outputFormatStr: String
+        if (context.request().method() == HttpMethod.POST) {
+            text = context.bodyAsJson.getString("text") ?: ""
+            voiceName = context.bodyAsJson.getString("voice") ?: "zh-CN-XiaoxiaoNeural"
+            rate = context.bodyAsJson.getString("rate") ?: "+0%"
+            pitch = context.bodyAsJson.getString("pitch") ?: "+0Hz"
+            outputFormatStr = context.bodyAsJson.getString("outputFormat") ?: ""
+        } else {
+            text = context.queryParam("text").firstOrNull() ?: ""
+            voiceName = context.queryParam("voice").firstOrNull() ?: "zh-CN-XiaoxiaoNeural"
+            rate = context.queryParam("rate").firstOrNull() ?: "+0%"
+            pitch = context.queryParam("pitch").firstOrNull() ?: "+0Hz"
+            outputFormatStr = context.queryParam("outputFormat").firstOrNull() ?: ""
+        }
+        if (text.isNullOrEmpty()) {
+            context.success(returnData.setErrorMsg("请输入文本内容"))
+            return
+        }
+
+        try {
+            // Determine output format
+            val outputFormat = if (outputFormatStr.isNotEmpty()) {
+                try {
+                    com.htmake.reader.lib.tts.constant.OutputFormat.valueOf(outputFormatStr.replace("-", "_"))
+                } catch (e: Exception) {
+                    com.htmake.reader.lib.tts.constant.OutputFormat.audio_24khz_48kbitrate_mono_mp3
+                }
+            } else {
+                com.htmake.reader.lib.tts.constant.OutputFormat.audio_24khz_48kbitrate_mono_mp3
+            }
+
+            // Determine voice
+            val voice = com.htmake.reader.lib.tts.constant.VoiceEnum.fromSortName(voiceName)
+                ?: com.htmake.reader.lib.tts.constant.VoiceEnum.zh_CN_XiaoxiaoNeural
+
+            // Build TTS service
+            val ttsService = com.htmake.reader.lib.tts.service.TTSService.builder()
+                .usingOutputFormat(outputFormat)
+                .usingAzureApi(false)
+                .build()
+
+            // Build SSML
+            val ssml = com.htmake.reader.lib.tts.model.SSML.builder()
+                .synthesisText(text)
+                .voice(voice)
+                .rate(rate)
+                .pitch(pitch)
+                .outputFormat(outputFormat)
+                .build()
+
+            // Synthesize
+            val audioBytes = ttsService.sendText(ssml)
+            if (audioBytes == null || audioBytes.isEmpty()) {
+                context.success(returnData.setErrorMsg("语音合成失败"))
+                return
+            }
+
+            // Determine content type based on output format
+            val contentType = when {
+                outputFormat.value.contains("mp3") -> "audio/mpeg"
+                outputFormat.value.contains("opus") -> "audio/opus"
+                outputFormat.value.contains("ogg") -> "audio/ogg"
+                outputFormat.value.contains("webm") -> "audio/webm"
+                outputFormat.value.contains("pcm") -> "audio/pcm"
+                outputFormat.value.contains("amr") -> "audio/amr"
+                else -> "audio/mpeg"
+            }
+
+            context.response()
+                .putHeader("Content-Type", contentType)
+                .putHeader("Content-Length", audioBytes.size.toString())
+                .end(io.vertx.core.buffer.Buffer.buffer(audioBytes))
+        } catch (e: Exception) {
+            logger.error("getSpeakStream error: {}", e.message)
+            context.success(returnData.setErrorMsg("语音合成失败: ${e.message}"))
         }
     }
 }
