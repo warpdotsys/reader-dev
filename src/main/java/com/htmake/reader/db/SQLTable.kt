@@ -7,16 +7,19 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 /**
- * SQL-based table implementation (stub - not yet implemented).
+ * SQL-based table implementation.
+ * Since no SQL database is configured, delegates all operations to JSONTable.
  */
 class SQLTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, name) {
 
+    private val delegate = JSONTable<T>(userNameSpace, name)
+
     override fun readAll(): JsonArray? {
-        throw NotImplementedError("SQLTable.readAll() is not implemented yet")
+        return delegate.readAll()
     }
 
     override fun <P> findBy(key: String, value: P, clazz: Class<T>): T? {
-        throw NotImplementedError("SQLTable.findBy() is not implemented yet")
+        return delegate.findBy(key, value, clazz)
     }
 
     override fun save(
@@ -24,7 +27,7 @@ class SQLTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, na
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)?,
         checker: ((JsonObject, T) -> Boolean)?
     ) {
-        throw NotImplementedError("SQLTable.save() is not implemented yet")
+        delegate.save(entity, onCheckEnd, checker)
     }
 
     override fun saveMulti(
@@ -32,14 +35,14 @@ class SQLTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, na
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)?,
         checker: ((JsonObject, T) -> Boolean)?
     ) {
-        throw NotImplementedError("SQLTable.saveMulti() is not implemented yet")
+        delegate.saveMulti(entities, onCheckEnd, checker)
     }
 
     override fun delete(predicate: (JsonObject) -> Boolean) {
-        throw NotImplementedError("SQLTable.delete() is not implemented yet")
+        delegate.delete(predicate)
     }
 
     override fun save() {
-        throw NotImplementedError("SQLTable.save() is not implemented yet")
+        delegate.save()
     }
 }

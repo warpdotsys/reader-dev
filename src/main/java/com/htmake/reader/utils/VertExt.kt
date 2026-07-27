@@ -24,6 +24,11 @@ import io.legado.app.data.entities.Book
 import io.legado.app.utils.MD5Utils
 import java.util.UUID
 import java.util.Base64 as JavaBase64
+import com.mongodb.client.MongoCollection
+import com.htmake.reader.entity.MongoFile
+import com.htmake.reader.entity.License
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 
 /**
  * @Auther: zoharSoul
@@ -362,4 +367,212 @@ fun encodeBase64(text: String): String {
 
 fun decodeBase64(text: String): String {
     return String(JavaBase64.getDecoder().decode(text), Charsets.UTF_8)
+}
+
+var _licenseValid: Boolean = true
+
+fun setLicenseValid(value: Boolean) {
+    _licenseValid = value
+}
+
+fun getStorageFile(vararg name: String, ext: String = ".json"): File {
+    var storagePath = getStoragePath()
+    var storageDir = File(storagePath)
+    if (!storageDir.exists()) {
+        storageDir.mkdirs()
+    }
+
+    val filename = name.last()
+    val relativePath = getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "${filename}${ext}")
+    return File(storagePath + File.separator + relativePath)
+}
+
+fun getMongoFileStorage(): MongoCollection<MongoFile>? {
+    val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java) ?: return null
+    return MongoManager.fileStorage(appConfig.mongoDbName, "files")
+}
+
+fun readMongoFile(path: String): String {
+    val collection = getMongoFileStorage() ?: return ""
+    val filter = com.mongodb.client.model.Filters.eq("path", path)
+    val doc = collection.find(filter).first() ?: return ""
+    return doc.content
+}
+
+fun saveMongoFile(path: String, content: String): Boolean {
+    val collection = getMongoFileStorage() ?: return false
+    val filter = com.mongodb.client.model.Filters.eq("path", path)
+    val existing = collection.find(filter).first()
+    return try {
+        if (existing != null) {
+            val update = com.mongodb.client.model.Updates.combine(
+                com.mongodb.client.model.Updates.set("content", content),
+                com.mongodb.client.model.Updates.set("updated_at", System.currentTimeMillis())
+            )
+            collection.updateOne(filter, update)
+        } else {
+            val mongoFile = MongoFile(path = path, content = content)
+            collection.insertOne(mongoFile)
+        }
+        true
+    } catch (e: Exception) {
+        logger.error("Failed to save mongo file: {}", e.message)
+        false
+    }
+}
+
+fun countOccurrences(text: String, sub: String): Int {
+    if (sub.isEmpty()) return 0
+    var count = 0
+    var index = 0
+    while (true) {
+        index = text.indexOf(sub, index)
+        if (index == -1) break
+        count++
+        index += sub.length
+    }
+    return count
+}
+
+fun getInstalledLicense(refresh: Boolean = false): License? {
+    try {
+        val licenseStr = getStorage("license") ?: return null
+        if (licenseStr.isBlank()) return null
+        return decryptToLicense(licenseStr)
+    } catch (e: Exception) {
+        logger.error("Failed to get installed license: {}", e.message)
+        return null
+    }
+}
+
+fun decryptToLicense(encrypted: String): License? {
+    return try {
+        val decrypted = decryptData(encrypted)
+        if (decrypted.isBlank()) return null
+        gson.fromJson(decrypted, License::class.java)
+    } catch (e: Exception) {
+        logger.error("Failed to decrypt license: {}", e.message)
+        null
+    }
+}
+
+fun decryptData(encrypted: String): String {
+    return try {
+        String(JavaBase64.getDecoder().decode(encrypted), Charsets.UTF_8)
+    } catch (e: Exception) {
+        logger.error("Failed to decrypt data: {}", e.message)
+        ""
+    }
+}
+
+fun sendEmail(to: String, subject: String, body: String): Boolean {
+    logger.info("sendEmail stub called: to={}, subject={}", to, subject)
+    return false
+}
+
+fun getCommand(commands: List<String>, workDir: String = "", timeout: String = ""): List<Pair<String, Int>> {
+    val results = mutableListOf<Pair<String, Int>>()
+    for (command in commands) {
+        try {
+            val parts = command.split(" ")
+            val processBuilder = ProcessBuilder(parts)
+            if (workDir.isNotEmpty()) {
+                processBuilder.directory(File(workDir))
+            }
+            processBuilder.redirectErrorStream(true)
+            val process = processBuilder.start()
+            val output = process.inputStream.bufferedReader().readText()
+            val exitCode = if (timeout.isNotEmpty()) {
+                val timeoutMs = try { timeout.toLong() } catch (e: Exception) { 30000L }
+                process.waitFor(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+                process.exitValue()
+            } else {
+                process.waitFor()
+            }
+            results.add(Pair(output, exitCode))
+        } catch (e: Exception) {
+            logger.error("Failed to execute command '{}': {}", command, e.message)
+            results.add(Pair(e.message ?: "error", -1))
+        }
+    }
+    return results
+}
+
+fun parseJsonStringList(
+    file: File,
+    includeKeys: Set<String> = emptySet(),
+    excludeKeys: Set<String> = emptySet(),
+    offset: Int = 0,
+    limit: Int = Int.MAX_VALUE,
+    filterKeys: Set<String> = emptySet(),
+    filter: ((ObjectNode) -> Boolean)? = null
+): JsonArray {
+    val result = JsonArray()
+    if (!file.exists()) return result
+    try {
+        val mapper = ObjectMapper()
+        val tree = mapper.readTree(file)
+        if (!tree.isArray) return result
+
+        var index = 0
+        var added = 0
+        for (element in tree) {
+            if (element !is ObjectNode) {
+                index++
+                continue
+            }
+
+            // Apply filter function
+            if (filter != null && !filter(element)) {
+                index++
+                continue
+            }
+
+            // Apply filterKeys: only include items where any filterKey field is non-empty
+            if (filterKeys.isNotEmpty()) {
+                val matchesFilter = filterKeys.any { key ->
+                    val node = element.get(key)
+                    node != null && !node.isNull && node.asText().isNotBlank()
+                }
+                if (!matchesFilter) {
+                    index++
+                    continue
+                }
+            }
+
+            // Apply offset
+            if (index < offset) {
+                index++
+                continue
+            }
+
+            // Apply limit
+            if (added >= limit) break
+
+            // Build filtered object with includeKeys/excludeKeys
+            val obj = JsonObject()
+            val fieldNames = element.fieldNames()
+            while (fieldNames.hasNext()) {
+                val fieldName = fieldNames.next()
+                if (includeKeys.isNotEmpty() && fieldName !in includeKeys) continue
+                if (excludeKeys.isNotEmpty() && fieldName in excludeKeys) continue
+                val value = element.get(fieldName)
+                when {
+                    value.isTextual -> obj.put(fieldName, value.asText())
+                    value.isInt -> obj.put(fieldName, value.asInt())
+                    value.isLong -> obj.put(fieldName, value.asLong())
+                    value.isDouble -> obj.put(fieldName, value.asDouble())
+                    value.isBoolean -> obj.put(fieldName, value.asBoolean())
+                    value.isNull -> obj.putNull(fieldName)
+                    else -> obj.put(fieldName, value.toString())
+                }
+            }
+            result.add(obj)
+            added++
+            index++
+        }
+    } catch (e: Exception) {
+        logger.error("Failed to parse JSON string list from file {}: {}", file.path, e.message)
+    }
+    return result
 }
