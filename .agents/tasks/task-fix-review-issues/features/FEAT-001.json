@@ -1,0 +1,20 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Add missing ExtKt utility functions, fix parseJsonStringList signature, implement SQLTable with real logic, and add _licenseValid global variable to VertExt.kt",
+  "status": "completed",
+  "steps": [
+    "In src/main/java/com/htmake/reader/utils/VertExt.kt, add the following missing top-level functions matching JAR signatures: getStorageFile(vararg name: String, userNameSpace: String = ''): File, getMongoFileStorage(): MongoCollection<MongoFile>, readMongoFile(path: String): String, saveMongoFile(path: String, content: String): Boolean, countOccurrences(text: String, sub: String): Int, getInstalledLicense(refresh: Boolean = false): License (reads from storage, decrypts, returns License), decryptToLicense(encrypted: String): License (placeholder RSA decrypt that returns decoded License from JSON), decryptData(encrypted: String): String (Base64 decode placeholder), sendEmail(to: String, subject: String, body: String): Boolean (stub returning false with log), getCommand(commands: List<String>, workDir: String, timeout: String): List<Pair<String, Int>> (runs process commands). Also add the _licenseValid var and setLicenseValid(value: Boolean) function.",
+    "In src/main/java/com/htmake/reader/utils/VertExt.kt, add the JAR-compatible parseJsonStringList overload with signature: fun parseJsonStringList(file: File, includeKeys: Set<String> = emptySet(), excludeKeys: Set<String> = emptySet(), offset: Int = 0, limit: Int = Int.MAX_VALUE, filterKeys: Set<String> = emptySet(), filter: ((com.fasterxml.jackson.databind.node.ObjectNode) -> Boolean)? = null): JsonArray. This reads JSON array from file and applies filters. Add jackson-databind import.",
+    "Rewrite src/main/java/com/htmake/reader/db/SQLTable.kt to delegate to JSONTable (since there is no SQL database configured). The SQLTable should delegate all operations to an internal JSONTable instance instead of throwing NotImplementedError. Match the JAR signature: constructor(userNameSpace: String, name: String), readAll(), findBy(), save(entity, onCheckEnd, checker), saveMulti(entities, onCheckEnd, checker), delete(predicate), save()."
+  ],
+  "acceptance_criteria": [
+    "VertExt.kt contains all 11 missing functions: getStorageFile, getMongoFileStorage, readMongoFile, saveMongoFile, countOccurrences, getInstalledLicense, decryptToLicense, decryptData, sendEmail, getCommand, setLicenseValid plus _licenseValid var",
+    "parseJsonStringList overload with (File, Set, Set, Int, Int, Set, Function1) signature exists",
+    "SQLTable no longer throws NotImplementedError - delegates to JSONTable pattern",
+    "Code compiles with ./gradlew compileKotlin"
+  ],
+  "verification": ["cd /projects/sandbox/reader-dev && ./gradlew compileKotlin 2>&1 | tail -20"],
+  "blocked_reason": null,
+  "findings": "Build requires JAVA_TOOL_OPTIONS='-Dhttps.protocols=TLSv1.2 -Djdk.tls.client.protocols=TLSv1.2' due to Java 11.0.2 SSL incompatibility with modern Maven Central TLS. Also copied Java 17 cacerts to /opt/toolchains/.local/share/mise/installs/java/11.0.2/lib/security/cacerts. Build passes with warnings only (unused parameters in stubs are expected). getStorageFile uses ext parameter (default '.json') matching JAR signature rather than userNameSpace as originally stated in feature description."
+}

@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Enhanced utilities and helpers: MongoManager singleton, RemoteWebview singleton, extended ExtKt functions, HttpTTS entity, encoding helpers (BytesEncodingDetect + Encoding moved to io.legado.app.help), SourceAnalyzer package move (copy to io.legado.app.help keeping old for compat), XmlUtils refactor (already partially exists in Ext.kt - just ensure it matches pro), AttemptResult<T>, MapDeserializerDoubleAsIntFix, ParameterizedTypeImpl, MongoFile entity.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Create src/main/java/com/htmake/reader/utils/MongoManager.kt - object singleton with: private var mongoClient: MongoClient?, private var connected: Boolean. Methods: fun connect(uri: String), fun db(name: String): MongoDatabase?, fun fileStorage(dbName: String, collection: String): GridFSBucket?, fun isInit(): Boolean. Uses org.mongodb imports. Only connects if URI is non-empty.",
+    "Step 2: Create src/main/java/com/htmake/reader/utils/RemoteWebview.kt - object singleton with fun getStrResponse(tag: String, url: String, headerMap: Map<String, String>, remoteWebviewApi: String): String? using OkHttp to call the remote webview API endpoint.",
+    "Step 3: Create src/main/java/io/legado/app/data/entities/HttpTTS.kt - data class HttpTTS with fields: id(Long, default System.currentTimeMillis()), name(String), url(String), contentType(String, default \"\"), concurrentRate(String?, override), loginUrl(String?, override), loginUi(String?, default null), header(String?, override), jsLib(String?, default null), enabledCookieJar(Boolean, default false), loginCheckJs(String?, default null), lastUpdateTime(Long, default 0). Implements BaseSource interface with getTag() returning name, getKey() returning id.toString().",
+    "Step 4: Create src/main/java/com/htmake/reader/entity/MongoFile.kt - data class with: path(String), content(String), created_at(Long, default System.currentTimeMillis()), updated_at(Long, default System.currentTimeMillis()).",
+    "Step 5: Create src/main/java/com/htmake/reader/entity/License.kt - data class License with: host(String, default \"\"), userMaxLimit(Int, default 0), expiredAt(Long, default 0), openApi(Boolean, default false), simpleWebExpiredAt(Long, default 0), instances(Int, default 1), type(String, default \"\"), id(String, default \"\"), code(String, default \"\"), verified(Boolean, default false), verifyTime(Long, default 0). Methods: fun isValid(): Boolean, fun validHost(currentHost: String): Boolean, fun toActiveLicense(): ActiveLicense.",
+    "Step 6: Create src/main/java/com/htmake/reader/entity/ActiveLicense.kt - data class extending License fields plus: activeOrder(String, default \"\"), activeTime(Long, default 0), activeIp(String, default \"\"), activeEmail(String, default \"\"), lastOnlineIp(String, default \"\"), lastOnlineTime(Long, default 0), errorMsg(String, default \"\").",
+    "Step 7: Create src/main/java/io/legado/app/help/BytesEncodingDetect.kt (or .java) and src/main/java/io/legado/app/help/Encoding.kt (or .java) - Port the CJK byte-level encoding detection. Encoding is a base class with constant arrays (javaname, nicename, htmlname) for encodings (GB2312, GBK, UTF8, etc.). BytesEncodingDetect extends Encoding with byte detection logic.",
+    "Step 8: Enhance src/main/java/com/htmake/reader/utils/VertExt.kt - Add new extension functions needed by pro: fun parseJsonStringList(jsonStr: String?): List<String>, fun listFilesRecursively(dir: File): List<File>, fun String.toDir(): String (ensures trailing separator), add arrayType() helper for Gson generic type resolution using ParameterizedTypeImpl, add deepListFiles(dir: File, ext: String?): List<File>, add getTraceId(): String (UUID-based trace), add validateEmail(email: String): Boolean, add encodeBase64(data: ByteArray): String / decodeBase64(data: String): ByteArray.",
+    "Step 9: Create src/main/java/com/htmake/reader/utils/AttemptResult.kt - generic Result wrapper: class AttemptResult<T>(val value: T?, val error: Exception?) with fun then(block: (T) -> AttemptResult<R>): AttemptResult<R> for chaining.",
+    "Step 10: Create src/main/java/com/htmake/reader/utils/MapDeserializerDoubleAsIntFix.kt - Gson JsonDeserializer<Map<String, Any>> that converts Double values that are whole numbers to Int/Long.",
+    "Step 11: Create src/main/java/com/htmake/reader/utils/ParameterizedTypeImpl.kt - implements java.lang.reflect.ParameterizedType for runtime generic type creation, used with Gson."
+  ],
+  "acceptance_criteria": [
+    "Project compiles successfully with ./gradlew -b cli.gradle assemble",
+    "MongoManager gracefully handles empty URI (no-op connect)",
+    "HttpTTS entity properly implements BaseSource interface",
+    "All new utility classes have correct package declarations"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20"
+  ],
+  "blocked_reason": null,
+  "findings": "1. Build requires JAVA_HOME=/root/.local/share/mise/installs/java/11.0.2 (Java 11) since the default Java 25 is incompatible with the project's Groovy/Gradle version. 2. cli.gradle was missing source set exclusion for ReaderUIApplication.kt and mainClassName configuration - added both to fix headless CLI build. 3. BytesEncodingDetect and Encoding classes already exist within EncodingDetectHelp.java in io.legado.app.help package (same as pro JAR which was also compiled from that file) - no separate files needed. 4. CookieStore in dev is still an object singleton (not a class with userNameSpace constructor param like in pro) - adapted RemoteWebview accordingly. 5. Added getUserNameSpace() and getLogger() default methods to JsExtensions interface to support HttpTTS implementing BaseSource."
+}

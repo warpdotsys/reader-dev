@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix 7 audit issues from JAR comparison: add saveBookConfig endpoint, fix onCheckEnd boolean inversion, add Book.pdfImageWidth field and isLocalPdf() method, fix forEachUser signature, add /reader3/book/tts route alias, and add cacheBookOnServer(JsonArray, String) internal overload",
+  "status": "completed",
+  "steps": [
+    "1. In src/main/java/io/legado/app/data/entities/Book.kt: Add 'var pdfImageWidth: Float = 0f' as a property in the data class (after readConfig). Also add 'fun isLocalPdf(): Boolean = isLocalBook() && isPdf()' method after the isPdf() method.",
+    "2. In src/main/java/com/htmake/reader/db/JSONTable.kt: In the save() method, change 'onCheckEnd?.invoke(entity, found, allData)' to 'onCheckEnd?.invoke(entity, !found, allData)'. Do the same in saveMulti(). The CURD interface expects isNew (true=new record) but found means 'already exists', so we must invert it.",
+    "3. In src/main/java/com/htmake/reader/api/controller/UserController.kt: Change the forEachUser signature from 'fun forEachUser(handler: (String, User) -> Unit)' to 'suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean)'. Update the body: iterate users calling handler with CoroutineScope; if handler returns false, break the loop. The handler takes only User (not String, User).",
+    "4. In src/main/java/com/htmake/reader/api/controller/BookController.kt: Add a new method 'suspend fun saveBookConfig(context: RoutingContext): ReturnData' that: (a) checks auth, (b) reads bookUrl (String) and pdfImageWidth (Float, default 0f) from POST body or query params, (c) validates bookUrl is not empty, (d) gets userNameSpace, (e) finds book via getShelfBookByURL, (f) validates pdfImageWidth > 0, (g) calls editShelfBook to set existBook.pdfImageWidth = pdfImageWidth, logs it, returns the updated book via returnData.setData(). Error messages: auth='请登录后使用', empty url='书籍链接不能为空', book not found='书籍信息错误', bad width='pdf图片宽度错误'.",
+    "5. In src/main/java/com/htmake/reader/api/controller/BookController.kt: Add internal overload 'suspend fun cacheBookOnServer(chapters: JsonArray, userNameSpace: String)' that iterates the JsonArray (strings of bookUrl), for each: gets book from shelf via getShelfBookByURL, skips if null or isLocalBook (with logger.info), gets bookSource via getBookSourceStringBySourceURLOpt, skips if null/empty, gets chapter list via getLocalChapterList, caches each uncached chapter content to file, saves images via BookHelp.saveImages.",
+    "6. In src/main/java/com/htmake/reader/api/YueduApi.kt: Add route 'router.post(\"/reader3/saveBookConfig\").coroutineHandler { bookController.saveBookConfig(it) }' in the book module section (after saveBookProgress route). Also add '/reader3/book/tts' as GET+POST aliases pointing to bookController.textToSpeech (using coroutineHandlerWithoutRes), placed near the existing textToSpeech routes."
+  ],
+  "acceptance_criteria": [
+    "Book.kt has pdfImageWidth: Float = 0f field and isLocalPdf() method",
+    "JSONTable.kt passes !found (not found) to onCheckEnd in both save() and saveMulti()",
+    "UserController.forEachUser has signature: suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean)",
+    "BookController.saveBookConfig method exists and follows the JAR logic exactly",
+    "BookController.cacheBookOnServer(JsonArray, String) internal overload exists",
+    "YueduApi has POST /reader3/saveBookConfig route registered",
+    "YueduApi has GET and POST /reader3/book/tts routes registered pointing to bookController.textToSpeech",
+    "Project compiles successfully with ./gradlew build -x test"
+  ],
+  "verification": [
+    "Run ./gradlew build -x test and confirm it passes with exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": "All 7 changes compiled successfully. editShelfBook was modified to return Book? (backward compatible since callers that ignored the return value continue to work). The cacheBookOnServer overload uses BookHelp.saveImages with BaseController as CoroutineScope (valid since BaseController implements CoroutineScope)."
+}

@@ -1,0 +1,24 @@
+{
+  "project_type": "Kotlin Spring Boot + Vert.x web reader application",
+  "language": "Kotlin",
+  "build_system": "Gradle (build.gradle.kts), Kotlin 1.5.21, Spring Boot 2.1.6.RELEASE, Vert.x 3.8.5, Java target 1.8",
+  "test_framework": "No test directory found in source",
+  "build_command": "./gradlew build -x test",
+  "test_command": "N/A - no tests exist",
+  "verification_instructions": "Run ./gradlew build -x test to confirm compilation passes",
+  "snapshot_or_generated_files": "src/main/resources/simple-web/ and src/main/resources/web/ contain compiled frontend assets checked into git",
+  "setup_instructions": "Java 11 available via mise. Run ./gradlew build -x test",
+  "environment_constraints": "OPEN_INTERNET, Java 11 (target 1.8), Gradle wrapper available",
+  "contribution_requirements": "Commit to feat/migrate-pro-features branch",
+  "key_patterns": "Controllers extend BaseController(coroutineContext). Routes registered in YueduApi.initRouter(). BookController methods are suspend functions returning ReturnData. editShelfBook(book, userNameSpace) { existBook -> ... } pattern for updating shelf books. getUserNameSpace(context) for namespace. checkAuth(context) for auth check.",
+  "relevant_files": [
+    "src/main/java/com/htmake/reader/api/controller/BookController.kt",
+    "src/main/java/com/htmake/reader/api/controller/UserController.kt",
+    "src/main/java/com/htmake/reader/api/YueduApi.kt",
+    "src/main/java/com/htmake/reader/db/JSONTable.kt",
+    "src/main/java/io/legado/app/data/entities/Book.kt",
+    "src/main/java/com/htmake/reader/api/controller/CURD.kt",
+    "src/main/java/com/htmake/reader/db/DB.kt"
+  ],
+  "directory_structure": "src/main/java/com/htmake/reader/api/ - API layer (YueduApi.kt routes, controller/ subfolder). src/main/java/com/htmake/reader/db/ - DB layer (DB.kt, JSONTable.kt, SQLTable.kt). src/main/java/io/legado/app/data/entities/ - Data entities (Book.kt etc). src/main/resources/ - Static resources (simple-web/, web/)"
+}

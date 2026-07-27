@@ -1,0 +1,19 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Add TTS HTTP endpoints (textToSpeech, ttsByEdge, ttsByApi, ttsByTextToSpeechCn, getHttpTTSByName) and saveBookContent method to BookController, then wire routes in YueduApi",
+  "status": "completed",
+  "steps": [
+    "In src/main/java/com/htmake/reader/api/controller/BookController.kt, add the following methods matching JAR signatures: (1) suspend fun textToSpeech(context: RoutingContext) - main TTS entry point that reads 'text', 'voice'/'ttsName', 'rate', 'pitch' params, resolves TTS source via getHttpTTSByName or falls back to Edge TTS, dispatches to ttsByEdge/ttsByApi/ttsByTextToSpeechCn accordingly. (2) suspend fun ttsByEdge(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) - uses TTSService/SSML to synthesize and stream audio via Edge TTS WebSocket. (3) suspend fun ttsByApi(response: HttpServerResponse, text: String, url: String, params: Map<String, String> = emptyMap()) - calls the HttpTTS source URL with text substituted, streams response. (4) suspend fun ttsByTextToSpeechCn(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) - fallback using texttospeech.cn API. (5) fun getHttpTTSByName(name: String, userNameSpace: String): HttpTTS? - looks up HttpTTS source by name from user storage.",
+    "In src/main/java/com/htmake/reader/api/controller/BookController.kt, add suspend fun saveBookContent(context: RoutingContext): ReturnData - reads bookUrl, chapterIndex, content from request, saves chapter content to the cache directory using getChapterCacheDir pattern already present in the file.",
+    "In src/main/java/com/htmake/reader/api/YueduApi.kt, add route registrations for the new endpoints: router.get('/reader3/textToSpeech').coroutineHandlerWithoutRes { bookController.textToSpeech(it) }, router.post('/reader3/textToSpeech').coroutineHandlerWithoutRes { bookController.textToSpeech(it) }, router.post('/reader3/saveBookContent').coroutineHandler { bookController.saveBookContent(it) }. Add these in the TTS section near getSpeakStream routes."
+  ],
+  "acceptance_criteria": [
+    "BookController contains textToSpeech, ttsByEdge, ttsByApi, ttsByTextToSpeechCn, getHttpTTSByName, saveBookContent methods",
+    "YueduApi has routes for /reader3/textToSpeech and /reader3/saveBookContent",
+    "Code compiles with ./gradlew compileKotlin"
+  ],
+  "verification": ["cd /projects/sandbox/reader-dev && ./gradlew compileKotlin 2>&1 | tail -20"],
+  "blocked_reason": null,
+  "findings": "Used suspendCancellableCoroutine with empty lambda onCancellation {} instead of null (Kotlin 1.5.21 requires non-null handler). Build passes with only pre-existing warnings. JAVA_TOOL_OPTIONS env var required for SSL compatibility."
+}

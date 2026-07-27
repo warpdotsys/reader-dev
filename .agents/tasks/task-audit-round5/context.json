@@ -1,0 +1,22 @@
+{
+  "project_type": "Kotlin/Java Spring Boot + Vert.x web reader application",
+  "language": "Kotlin + Java",
+  "build_system": "Gradle 6.1.1 with Kotlin DSL",
+  "test_framework": "Spring Boot Test (minimal)",
+  "build_command": "./gradlew compileKotlin compileJava -x test",
+  "test_command": "./gradlew compileKotlin compileJava -x test",
+  "verification_instructions": "Run ./gradlew compileKotlin compileJava -x test and verify BUILD SUCCESSFUL",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "Build is already green. Java 11 + Gradle wrapper available.",
+  "environment_constraints": "OPEN_INTERNET. JAR reference at /workspace/jarx/BOOT-INF/classes/. Use javap -p to inspect class signatures.",
+  "contribution_requirements": "All changes must compile. Compare source against decompiled JAR classes for fidelity.",
+  "key_patterns": "Controllers extend BaseController with coroutineContext. Suspend functions for async handlers. CURD interface for CRUD operations. Extension functions in VertExt.kt compiled into ExtKt.class.",
+  "relevant_files": [
+    "src/main/java/com/htmake/reader/api/controller/BookController.kt",
+    "src/main/java/com/htmake/reader/api/controller/RssSourceController.kt",
+    "src/main/java/com/htmake/reader/verticle/RestVerticle.kt",
+    "src/main/java/com/htmake/reader/api/YueduApi.kt",
+    "src/main/java/com/htmake/reader/api/controller/BookSourceController.kt"
+  ],
+  "directory_structure": "src/main/java/com/htmake/reader/ contains api/ (controllers, YueduApi), config/, db/, entity/, init/, utils/, verticle/. src/main/java/io/legado/app/ contains the book engine. src/main/resources/ has web/ and simple-web/ frontends."
+}

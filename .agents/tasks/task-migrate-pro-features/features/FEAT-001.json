@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Foundation layer: DB abstraction (DB, JSONTable, SQLTable), CURD interface, LRUCache, UserMutex, Gson type adapters (IntTypeAdapter, LongTypeAdapter), enhanced AppConfig with new fields (workDir alias, mongoUri, mongoDbName, shelfUpdateInteval, remoteWebviewApi, defaultUser* fields, autoBackupUserData, minUserPasswordLength, remoteBookSourceUpdateInterval, contextPath), enhanced User entity (enable_book_source, enable_rss_source, book_source_limit, book_limit), Adapter system (ReaderAdapterInterface, DefaultAdpater, ReaderAdapterHelper, ReaderAdapter), and build dependency updates (Vert.x 3.8.1->3.8.5, add mongodb-driver-sync:3.8.2, pdfbox:2.0.27, hutool-core:5.8.0.M1, antlr4-runtime:4.7.2, vertx-auth-common).",
+  "status": "completed",
+  "steps": [
+    "Step 1: Update build.gradle.kts dependencies - change vertx from 3.8.1 to 3.8.5, add implementation(\"org.mongodb:mongodb-driver-sync:3.8.2\"), implementation(\"org.apache.pdfbox:pdfbox:2.0.27\"), implementation(\"cn.hutool:hutool-core:5.8.0.M1\"), implementation(\"org.antlr:antlr4-runtime:4.7.2\"), implementation(\"io.vertx:vertx-auth-common:3.8.5\"). Do the same in cli.gradle.",
+    "Step 2: Update AppConfig.kt to add new fields alongside existing ones. Add workDir as an alias (keep storagePath as well for backward compat but add var workDir: String = \"\" with getter that falls back to storagePath). Add: mongoUri(\"\"), mongoDbName(\"reader\"), shelfUpdateInteval(30), remoteWebviewApi(\"\"), defaultUserEnableWebdav(true), defaultUserEnableLocalStore(true), defaultUserEnableBookSource(true), defaultUserEnableRssSource(true), defaultUserBookSourceLimit(100), defaultUserBookLimit(200), autoBackupUserData(false), minUserPasswordLength(8), remoteBookSourceUpdateInterval(720).",
+    "Step 3: Update application.yml and application-prod.yml to add all new AppConfig fields under reader.app. Add reader.server.contextPath: \"\". Update logging.path to use workDir variable pattern. Keep userLimit at 50.",
+    "Step 4: Update User.kt entity to add new fields: enable_book_source(Boolean, default true), enable_rss_source(Boolean, default true), book_source_limit(Int, default 100), book_limit(Int, default 200).",
+    "Step 5: Create src/main/java/com/htmake/reader/utils/LRUCache.kt - thread-safe LRU cache with ConcurrentHashMap and doubly-linked list. Generic class LRUCache<K, V>(capacity: Int) with get(key), put(key, value), remove(key), size(), keys(), clear() methods.",
+    "Step 6: Create src/main/java/com/htmake/reader/utils/UserMutex.kt - singleton object with a LRUCache<String, Mutex>(capacity=256) that provides getUserMutex(username: String): Mutex to get or create a per-user mutex.",
+    "Step 7: Create src/main/java/com/htmake/reader/utils/IntTypeAdapter.kt and LongTypeAdapter.kt - Gson TypeAdapter<Int>/TypeAdapter<Long> implementations that safely handle null, empty string, and floating point values during deserialization.",
+    "Step 8: Create src/main/java/com/htmake/reader/db/DB.kt - abstract class DB<T>(var userNameSpace: String, var name: String) with var cachedValue: JsonArray?, and abstract methods readAll(): JsonArray?, findBy(predicate): JsonArray?, save(entity: T): Boolean, saveMulti(entities: List<T>): Boolean, delete(predicate): Boolean. Include a companion object.",
+    "Step 9: Create src/main/java/com/htmake/reader/db/JSONTable.kt - class JSONTable<T>(userNameSpace, name) extends DB<T>. Implements all abstract methods using JSON file storage via getStorage/saveStorage pattern from VertExt.kt. Uses cachedValue as in-memory cache of the JSON array.",
+    "Step 10: Create src/main/java/com/htmake/reader/db/SQLTable.kt - class SQLTable<T>(userNameSpace, name) extends DB<T>. Stub implementation that throws NotImplementedError for now (the JAR has it but SQL backend is optional/future).",
+    "Step 11: Create src/main/java/com/htmake/reader/api/controller/CURD.kt - interface CURD<T> with methods: getTableName(): String, convertToEntity(json: JsonObject): T, convertToEntityList(json: JsonArray): List<T>, onList(context): ReturnData, checker(context, entity, isNew): Boolean, onCheckEnd(context, entity): Unit, beforeSave(context, entity): Unit, beforeAdd(context, entity): Unit, beforeDelete(context, entity): Unit, checkUserAuth(context): Boolean, getUserNS(context): String, getEntityClass(): Class<T>, list(context): ReturnData, save(context): ReturnData, saveMulti(context): ReturnData, delete(context): ReturnData, deleteMulti(context): ReturnData. Provide default implementations using DB<T> operations.",
+    "Step 12: Create src/main/java/io/legado/app/adapters/ReaderAdapterInterface.kt - interface with fun getWorkDir(subPath: String): String, fun getWorkDir(vararg subDirFiles: String): String, fun getCacheDir(): String, fun getStrResponseByRemoteWebview(tag: String, url: String, headerMap: Map<String, String>): String?",
+    "Step 13: Create src/main/java/io/legado/app/adapters/DefaultAdpater.kt - class implementing ReaderAdapterInterface with default implementations using existing getWorkDir functions.",
+    "Step 14: Create src/main/java/io/legado/app/adapters/ReaderAdapterHelper.kt - object singleton holding var adapter: ReaderAdapterInterface = DefaultAdpater().",
+    "Step 15: Create src/main/java/com/htmake/reader/init/ReaderAdapter.kt - object INSTANCE implementing ReaderAdapterInterface, using getWorkDir from VertExt.kt and the remoteWebviewApi from AppConfig for getStrResponseByRemoteWebview."
+  ],
+  "acceptance_criteria": [
+    "Project compiles successfully with ./gradlew -b cli.gradle assemble",
+    "All new Kotlin files have correct package declarations and imports",
+    "AppConfig new fields have proper default values matching the JAR's application.yml (but userLimit stays 50)",
+    "LRUCache is thread-safe using ConcurrentHashMap",
+    "DB/JSONTable/CURD form a coherent abstraction that BookGroupController can use in later features"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20"
+  ],
+  "blocked_reason": null,
+  "findings": "Build requires Java 11 (JAVA_HOME=/root/.local/share/mise/installs/java/11.0.2). Gradle 6.1.1 is incompatible with Java 17+. The cli.gradle build requires removing ReaderUIApplication.kt first (as done in Dockerfile.source). Build command: export JAVA_HOME=/root/.local/share/mise/installs/java/11.0.2 && export PATH=$JAVA_HOME/bin:$PATH && rm -f src/main/java/com/htmake/reader/ReaderUIApplication.kt && ./gradlew -b cli.gradle clean assemble --info && git checkout -- src/main/java/com/htmake/reader/ReaderUIApplication.kt"
+}

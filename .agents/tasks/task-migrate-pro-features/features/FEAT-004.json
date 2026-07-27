@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "TTS module: Complete Java-based TTS library for Edge/Azure Speech API WebSocket-based text-to-speech. Package: com.htmake.reader.lib.tts with subpackages constant, model, service, util, exceptions.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Create src/main/java/com/htmake/reader/lib/tts/constant/TtsConstants.java - public final class with static final constants: TRUSTED_CLIENT_TOKEN (6A5AA1D4EAFF4E9FB37E23D68491D6F4), EDGE_SPEECH_WSS (wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1), AZURE_SPEECH_WSS (wss://eastus.api.speech.microsoft.com/cognitiveservices/websocket/v1), UA (user agent string for Edge browser).",
+    "Step 2: Create src/main/java/com/htmake/reader/lib/tts/constant/OutputFormat.java - public enum with 28 audio output formats: raw-16khz-16bit-mono-pcm, raw-24khz-16bit-mono-pcm, raw-48khz-16bit-mono-pcm, audio-16khz-32kbitrate-mono-mp3, audio-16khz-64kbitrate-mono-mp3, audio-16khz-128kbitrate-mono-mp3, audio-24khz-48kbitrate-mono-mp3, audio-24khz-96kbitrate-mono-mp3, audio-24khz-160kbitrate-mono-mp3, audio-48khz-96kbitrate-mono-mp3, audio-48khz-192kbitrate-mono-mp3, webm-16khz-16bit-mono-opus, webm-24khz-16bit-mono-opus, ogg-16khz-16bit-mono-opus, ogg-24khz-16bit-mono-opus, ogg-48khz-16bit-mono-opus, riff-8khz-16bit-mono-pcm, riff-16khz-16bit-mono-pcm, riff-24khz-16bit-mono-pcm, riff-48khz-16bit-mono-pcm, etc. Each enum value has a String field for the actual format name.",
+    "Step 3: Create src/main/java/com/htmake/reader/lib/tts/constant/VoiceEnum.java - public enum with 38+ voice options covering zh_HK (HiuGaaiNeural, HiuMaanNeural, WanLungNeural), zh_CN (XiaoxiaoNeural, YunxiNeural, YunjianNeural, XiaoyiNeural, YunyangNeural, XiaochenNeural, XiaohanNeural, XiaomoNeural, XiaoqiuNeural, XiaoruiNeural, XiaoshuangNeural, XiaoxuanNeural, XiaoyanNeural, YunfengNeural, YunhaoNeural, YunxiaNeural, etc.), zh_TW (HsiaoChenNeural, HsiaoYuNeural, YunJheNeural), en_US (JennyNeural, GuyNeural, AriaNeural, DavisNeural, AmberNeural, AnaNeural, AndrewNeural, etc.). Each has locale, voiceName, gender fields.",
+    "Step 4: Create src/main/java/com/htmake/reader/lib/tts/constant/TtsStyleEnum.java - public enum with 34 styles: angry, calm, chat, cheerful, customerservice, depressed, disgruntled, embarrassed, empathetic, envious, excited, fearful, friendly, gentle, hopeful, lyrical, narration-professional, narration-relaxed, newscast, newscast-casual, newscast-formal, poetry-reading, sad, serious, shouting, sports_commentary, sports_commentary_excited, unfriendly, whispering, etc. Each has a display name String.",
+    "Step 5: Create src/main/java/com/htmake/reader/lib/tts/model/SpeechConfig.java - public class with outputFormat (OutputFormat), and a static CONFIG_PATTERN (regex for parsing config from WebSocket responses). Methods: toConfigString() for WebSocket message, static fromString(config) for parsing.",
+    "Step 6: Create src/main/java/com/htmake/reader/lib/tts/model/SSML.java - public class with fields: voice(VoiceEnum or String voiceName), rate(String, e.g. \"+0%\"), pitch(String), volume(String), style(TtsStyleEnum or null), outputFormat(OutputFormat). Methods: toString() generates SSML XML, toSpeakString() wraps in <speak> element with proper xmlns attributes.",
+    "Step 7: Create src/main/java/com/htmake/reader/lib/tts/service/TTSService.java - public class using OkHttp WebSocket to connect to Edge/Azure Speech API. Fields: audioBuffer(ByteArrayOutputStream), latch(CountDownLatch), webSocket(WebSocket). Inner builder class TTSServiceBuilder with voice, text, rate, pitch, volume, style, outputFormat. Method synthesize() connects WebSocket, sends config + SSML, collects audio data via onMessage callbacks (text message for turn.start/turn.end, binary for audio data), waits on latch, returns byte[] audio data. Handles the Edge speech protocol properly.",
+    "Step 8: Create src/main/java/com/htmake/reader/lib/tts/util/Tools.java - public class with static methods: httpGet(String url) using OkHttp, isNoVoice(String text) checks if text has no speakable content, date() returns formatted date string for request ID, getRandomId() generates UUID-style request ID without dashes.",
+    "Step 9: Create src/main/java/com/htmake/reader/lib/tts/exceptions/TtsException.java - public class extends RuntimeException with message field and static factory method of(String message): TtsException."
+  ],
+  "acceptance_criteria": [
+    "Project compiles successfully with all TTS Java files",
+    "TTSService uses OkHttp WebSocket (already a dependency in the project)",
+    "All enums have the correct number of values matching the JAR's decompiled output",
+    "TtsConstants has correct WebSocket URLs and token",
+    "SSML class generates valid SSML XML structure"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20"
+  ],
+  "blocked_reason": null,
+  "findings": "All 9 TTS Java files created successfully matching the decompiled JAR signatures exactly. 38 VoiceEnum values, 28 OutputFormat values, 34 TtsStyleEnum values. TTSService uses okio.Buffer (not ByteArrayOutputStream) for audioBuffer as per the actual decompiled class. Build compiles cleanly with no errors or warnings."
+}
