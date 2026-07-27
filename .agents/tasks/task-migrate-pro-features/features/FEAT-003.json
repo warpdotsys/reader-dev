@@ -1,30 +1,38 @@
 {
   "id": "FEAT-003",
   "type": "feat",
-  "description": "New controllers: BookGroupController (with CURD<BookGroup> implementation + saveBookGroupOrder), FileController (file management with list/upload/download/mkdir/delete/importPreview/restore/parse), HttpTTSController (with CURD<HttpTTS>). Enhanced BookController with new methods (saveBookGroupId, addBookGroupMulti, removeBookGroupMulti, getBookShelfBooks, getShelfBookWithCacheInfo, searchBookMulti, searchBookMultiSSE, searchBookSource, searchBookSourceSSE, searchBookWithSource, importBookPreview, refreshLocalBook, exportBook, exportToEpub, exportToTxt, getAllContents, getBookCover, cacheBookOnServer, cacheBookSSE, bookSourceDebugSSE, backupToMongodb, restoreFromMongodb, saveBookInfoCache, mergeBookCacheInfo, getBookSourceStringBySourceURLOpt, syncBookProgressFromWebdav, saveBookProgressToWebdav, syncFromWebdav, saveToWebdav, createUserBackup, getLastBackFileFromWebdav, getLocalChapterList enhanced). Enhanced UserController with new methods (addUser, resetPassword, clearInactiveUsers, updateUser, getUserInfo, saveUserConfig, getUserConfig, uploadFile, deleteFile, downloadBackupFile, forEachUser). Enhanced WebdavController (webdavMove, webdavCopy, webdavLock, webdavUnLock already exist in dev, just ensure backupToWebdav is complete). Enhanced YueduApi with new scheduled methods and contextPath support.",
-  "status": "completed",
+  "description": "Reverse-engineer the simple-web minified JS/CSS/HTML into readable, maintainable source code in simple-web-src/ directory. The simple-web is a lightweight vanilla JS reader interface with 4 HTML pages (index, reader, search, rss), a custom jQuery-like library (_$), template engine, and page-specific JS modules.",
+  "status": "pending",
   "steps": [
-    "Step 1: Create src/main/java/com/htmake/reader/api/controller/BookGroupController.kt - class BookGroupController(coroutineContext) extends BaseController implements CURD<BookGroup>. Implement all CURD methods using JSONTable<BookGroup> with tableName 'bookGroup'. Add saveBookGroupOrder(context: RoutingContext): ReturnData method that accepts a list of group IDs and reorders them.",
-    "Step 2: Create src/main/java/com/htmake/reader/api/controller/FileController.kt - class FileController(coroutineContext) extends BaseController. Methods: list(context) - list files in user's storage or specified path; upload(context) - handle file upload; download(context) - send file for download; get(context) - get file content; save(context) - save content to file; mkdir(context) - create directory; delete(context)/deleteMulti(context) - delete files; importPreview(context) - preview files for import; restore(context) - restore from backup file; parse(context) - parse file content; checkAccess(context) - verify user has file access permission.",
-    "Step 3: Create src/main/java/com/htmake/reader/api/controller/HttpTTSController.kt - class HttpTTSController(coroutineContext) extends BaseController implements CURD<HttpTTS>. Implement all CURD methods using JSONTable<HttpTTS> with tableName 'httpTTS'.",
-    "Step 4: Enhance BookController.kt - Add the many new methods that exist in the JAR but not in dev. The dev already has many of these routes registered in YueduApi.kt (searchBookMulti, searchBookMultiSSE, bookSourceDebugSSE, cacheBookSSE, getShelfBookWithCacheInfo, exportBook, importBookPreview, refreshLocalBook, saveBookGroupId, addBookGroupMulti, removeBookGroupMulti, searchBookSource, searchBookSourceSSE, searchBookContent, getBookCover). Ensure all method implementations are complete. Add missing methods: backupToMongodb, restoreFromMongodb, convertPdfToImage, convertPdfPageToImage, savePdfPageToImage, exportToEpub, exportToTxt, getAllContents, cacheBookOnServer, searchBookWithSource, saveBookInfoCache, mergeBookCacheInfo, getBookSourceStringBySourceURLOpt, createUserBackup. The existing stub methods in the dev that reference non-existent functionality should be filled in.",
-    "Step 5: Enhance UserController.kt - The dev already has routes for addUser, resetPassword, updateUser, getUserInfo, saveUserConfig, getUserConfig, uploadFile, deleteFile. Ensure these method implementations properly handle the new User fields (enable_book_source, enable_rss_source, book_source_limit, book_limit). Add forEachUser utility method. Ensure formatUser in BaseController includes new User fields in its output.",
-    "Step 6: Update BaseController.kt - Add formatUser output for new User fields. Ensure the checkAuth and related methods work with the enhanced User entity fields.",
-    "Step 7: Update YueduApi.kt - Register routes for new controllers (BookGroupController, FileController, HttpTTSController). Add contextPath support (prefix all routes with configurable contextPath). Add new scheduled methods: remoteBookSourceSubUpdateJob (periodic remote book source update), autoBackup (auto backup user data if enabled), autoGC (periodic garbage collection). Update shelfUpdateJob to use configurable interval. Add the migration() enhancement for workDir support.",
-    "Step 8: Create src/main/java/com/htmake/reader/api/controller/LicenseController.kt - class LicenseController(coroutineContext) extends BaseController. Methods for license management: getLicense, importLicense, generateKeys, generateLicense, isHostValid, decryptLicense, activateLicense, isLicenseValid, checkLicense, sendCodeToEmail, supplyLicense. The license system should be functional but optional (works without a license by default - all features available)."
+    "Step 1: Create simple-web-src/ directory structure: simple-web-src/js/ (source JS), simple-web-src/css/ (source CSS), simple-web-src/html/ (HTML pages), simple-web-src/templates/ (template files), simple-web-src/fonts/ (font files). Also create a simple-web-src/README.md explaining the build process.",
+    "Step 2: Reverse-engineer simple-web-src/js/common.js from assets/js/common-eebd186870.js. This file contains: polyfills (Array.isArray, Array.filter, Array.reduce, Array.includes, Array.forEach, Function.bind, Set polyfill, Element.matches), a custom _$ jQuery-like DOM library with methods (each, eq, first, last, find, parent, hide, show, text, html, outHtml, val, css, attr, removeAttr, remove, append, prepend, hasClass, addClass, removeClass, click, tag, dom, on, emit, once), _$.ajax with {baseURL, token, onResponse, formatURL, get, post} methods, _$.getUrlPra, _$.url.add/update, _$.cookie.set/get, and loadScript/loadLink/getQueryString utility functions. Write clean, well-commented readable source.",
+    "Step 3: Reverse-engineer simple-web-src/js/template.js from the template engine portion of common-eebd186870.js. This is template.js v0.7.1 (https://github.com/yanhaijing/template.js) - extract it as a standalone readable module with proper formatting.",
+    "Step 4: Reverse-engineer simple-web-src/js/indexPage.js from assets/js/indexPage-b028891da7.js (~2.8KB minified). This handles the book shelf page: loading bookshelf data, rendering book list, pagination, search/filter, night mode toggle, menu system.",
+    "Step 5: Reverse-engineer simple-web-src/js/readerPage.js from assets/js/readerPage-8f8136bb4d.js (~62KB minified). This is the largest file - the reading page logic: chapter content loading, page navigation (prev/next chapter), font settings, layout settings, reading progress, book source switching, table of contents, chapter caching, night mode, and the settings menu system.",
+    "Step 6: Reverse-engineer simple-web-src/js/searchPage.js from assets/js/searchPage-fb00c18eb2.js (~10KB minified). Search functionality: multi-source book search, search results display, adding books to shelf.",
+    "Step 7: Reverse-engineer simple-web-src/js/rssPage.js from assets/js/rssPage-aa80334084.js (~27KB minified). RSS reader: source list, article list, article content display.",
+    "Step 8: Reverse-engineer simple-web-src/css/layout.css from assets/css/layout-e22d69a977.css - the main layout stylesheet. Reformat from minified single-line to readable multi-line CSS with comments explaining sections.",
+    "Step 9: Reverse-engineer simple-web-src/css/read.css from assets/css/read-fb14170fb6.css - reading page specific styles. Same treatment as layout.css.",
+    "Step 10: Create simple-web-src/html/ with readable, properly-indented versions of index.html, reader.html, search.html, rss.html. These reference the source JS/CSS paths (not the hashed filenames).",
+    "Step 11: Copy template files from assets/template/*.tmpl to simple-web-src/templates/ (these are already readable). Copy font files reference.",
+    "Step 12: Create simple-web-src/js/polyfill.js from the polyfill-a72c480958.js file (very small, just Promise polyfill detection)."
   ],
   "acceptance_criteria": [
-    "Project compiles successfully with ./gradlew -b cli.gradle assemble",
-    "BookGroupController properly implements CURD<BookGroup> interface",
-    "FileController methods handle file operations safely (path traversal prevention)",
-    "HttpTTSController properly implements CURD<HttpTTS>",
-    "All new routes registered in YueduApi.kt",
-    "contextPath support works (routes prefixed correctly)",
-    "LicenseController compiles and is registered but app works without active license"
+    "simple-web-src/ directory exists with js/, css/, html/, templates/ subdirectories",
+    "All JS files are readable, properly indented, with meaningful variable names and comments",
+    "common.js contains the _$ library, ajax, URL utilities, and polyfills in readable form",
+    "template.js is the properly formatted template.js v0.7.1 library",
+    "readerPage.js is fully decompiled with readable function names and logic flow",
+    "indexPage.js, searchPage.js, rssPage.js are all readable",
+    "CSS files are properly formatted with sections and comments",
+    "HTML files are properly indented and reference source file paths",
+    "A README.md explains the structure and how to build/deploy"
   ],
   "verification": [
-    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20"
+    "Run: find simple-web-src/ -type f | wc -l (should be >15 files)",
+    "Run: wc -l simple-web-src/js/readerPage.js (should be >1000 lines since it's 62KB minified decompiled)",
+    "Run: head -5 simple-web-src/js/common.js (should show readable code with comments)"
   ],
   "blocked_reason": null,
-  "findings": "Build verified successfully with ./gradlew -b cli.gradle clean assemble. All new controllers compile and routes are registered. contextPath support uses Vert.x reroute mechanism. The File.unzip extension function from Ext.kt requires calling it as file.unzip(path) not unzip(file, path). BookSourceController.updateRemoteSourceSub was added as a new method since it did not previously exist. The scheduled jobs use Spring @Scheduled annotations matching the existing pattern."
+  "findings": ""
 }

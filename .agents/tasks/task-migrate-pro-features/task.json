@@ -1,14 +1,7 @@
 {
   "task_id": "task-migrate-pro-features",
-  "task_description": "Migrate all advanced features from reader-pro (JAR at /workspace/jarx/) to reader-dev, organized as logical PR batches. The migration covers: DB abstraction layer, CURD interface, new controllers (BookGroup, File, HttpTTS, License), TTS module, PDF support, enhanced AppConfig/User entities, adapter system, utility classes, enhanced controllers, web resources, and dependency updates.",
-  "status": "completed",
-  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005", "FEAT-006"],
-  "blocked_reason": null,
-  "verification": {
-    "build": "pass",
-    "tests": "pass",
-    "test_quality": "pass",
-    "docker_build": "skipped",
-    "summary": "Build passes cleanly with ./gradlew -b cli.gradle clean assemble --info (BUILD SUCCESSFUL in 48s). No unit tests exist in this project - compilation is the validation. Semantic review performed with 8 issues identified; 4 actionable issues fixed in commit 87cd4f3. Remaining 4 issues are known limitations matching original pro JAR behavior. 7 commits total (6 features + 1 review fix)."
-  }
+  "task_description": "Migrate Pro version features into the reader-dev repository: add missing Vue frontend components for file management, HTTP TTS, license management, book config, TTS playback, caching, user backup, content saving, and remote source subscription. Add backend path-based route aliases. Reverse-engineer simple-web minified code into readable source.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
 }

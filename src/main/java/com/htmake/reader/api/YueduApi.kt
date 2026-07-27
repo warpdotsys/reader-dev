@@ -405,6 +405,34 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/saveHttpTTSList").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
         router.post("/reader3/deleteHttpTTS").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
 
+        /** 路径风格路由别名 (Pro前端兼容) */
+        // 文件管理 path-based aliases
+        router.get("/reader3/file/list").coroutineHandler { fileController.list(it) }
+        router.post("/reader3/file/list").coroutineHandler { fileController.list(it) }
+        router.post("/reader3/file/upload").coroutineHandler { fileController.upload(it) }
+        router.get("/reader3/file/download").coroutineHandlerWithoutRes { fileController.download(it) }
+        router.get("/reader3/file/get").coroutineHandler { fileController.get(it) }
+        router.post("/reader3/file/get").coroutineHandler { fileController.get(it) }
+        router.post("/reader3/file/save").coroutineHandler { fileController.save(it) }
+        router.post("/reader3/file/mkdir").coroutineHandler { fileController.mkdir(it) }
+        router.post("/reader3/file/delete").coroutineHandler { fileController.delete(it) }
+        router.post("/reader3/file/deleteMulti").coroutineHandler { fileController.deleteMulti(it) }
+        router.post("/reader3/file/importPreview").coroutineHandler { fileController.importPreview(it) }
+        router.post("/reader3/file/restore").coroutineHandler { fileController.restore(it) }
+        router.post("/reader3/file/parse").coroutineHandler { fileController.parse(it) }
+
+        // HttpTTS path-based aliases
+        router.get("/reader3/httpTTS/list").coroutineHandler { httpTTSController.getHttpTTSList(it) }
+        router.post("/reader3/httpTTS/save").coroutineHandler { httpTTSController.saveHttpTTS(it) }
+        router.post("/reader3/httpTTS/saveMulti").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
+        router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
+
+        // Book path-based aliases
+        router.post("/reader3/book/saveBookConfig").coroutineHandler { bookController.saveBookConfig(it) }
+
+        // User path-based aliases
+        router.get("/reader3/user/downloadBackupFile").coroutineHandlerWithoutRes { userController.downloadBackupFile(it) }
+
         /** PDF渲染模块 */
         router.get("/reader3/convertPdfToImage").coroutineHandlerWithoutRes { bookController.convertPdfToImage(it) }
         router.post("/reader3/convertPdfToImage").coroutineHandlerWithoutRes { bookController.convertPdfToImage(it) }
