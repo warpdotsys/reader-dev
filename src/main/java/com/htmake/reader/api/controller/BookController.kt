@@ -46,6 +46,8 @@ import org.springframework.stereotype.Component
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.http.HttpServerResponse
+import io.legado.app.data.entities.HttpTTS
 import com.htmake.reader.api.ReturnData
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.FileUtils
@@ -3585,6 +3587,228 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             logger.error("savePdfPageToImage error: {}", e.message)
             return returnData.setErrorMsg("PDF页面保存失败: ${e.message}")
         }
+    }
+
+    /**
+     * TTS entry point: reads params and dispatches to ttsByEdge/ttsByApi/ttsByTextToSpeechCn.
+     */
+    suspend fun textToSpeech(context: RoutingContext) {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            return
+        }
+        var text: String
+        var ttsName: String
+        var rate: String
+        var pitch: String
+        if (context.request().method() == HttpMethod.POST) {
+            text = context.bodyAsJson.getString("text") ?: ""
+            ttsName = context.bodyAsJson.getString("ttsName") ?: context.bodyAsJson.getString("voice") ?: ""
+            rate = context.bodyAsJson.getString("rate") ?: "+0%"
+            pitch = context.bodyAsJson.getString("pitch") ?: "+0Hz"
+        } else {
+            text = context.queryParam("text").firstOrNull() ?: ""
+            ttsName = context.queryParam("ttsName").firstOrNull() ?: context.queryParam("voice").firstOrNull() ?: ""
+            rate = context.queryParam("rate").firstOrNull() ?: "+0%"
+            pitch = context.queryParam("pitch").firstOrNull() ?: "+0Hz"
+        }
+        if (text.isNullOrEmpty()) {
+            context.success(returnData.setErrorMsg("请输入文本内容"))
+            return
+        }
+        val userNameSpace = getUserNameSpace(context)
+        val params = mutableMapOf<String, String>(
+            "voice" to ttsName,
+            "rate" to rate,
+            "pitch" to pitch
+        )
+        val response = context.response()
+        try {
+            if (ttsName.isNotEmpty()) {
+                val httpTTS = getHttpTTSByName(ttsName, userNameSpace)
+                if (httpTTS != null) {
+                    val url = httpTTS.url
+                    if (url.contains("edge-tts") || httpTTS.name.contains("edge", ignoreCase = true)) {
+                        ttsByEdge(response, text, params)
+                    } else {
+                        ttsByApi(response, text, url, params)
+                    }
+                    return
+                }
+            }
+            // Fallback to Edge TTS
+            ttsByEdge(response, text, params)
+        } catch (e: Exception) {
+            logger.error("textToSpeech error: {}", e.message)
+            if (!response.ended()) {
+                context.success(returnData.setErrorMsg("语音合成失败: ${e.message}"))
+            }
+        }
+    }
+
+    /**
+     * TTS via Edge: uses TTSService/SSML pattern to synthesize audio and stream to response.
+     */
+    suspend fun ttsByEdge(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) {
+        val voiceName = params.getOrDefault("voice", "").let {
+            if (it.isEmpty()) "zh-CN-XiaoxiaoNeural" else it
+        }
+        val rate = params.getOrDefault("rate", "+0%")
+        val pitch = params.getOrDefault("pitch", "+0Hz")
+
+        val outputFormat = com.htmake.reader.lib.tts.constant.OutputFormat.audio_24khz_48kbitrate_mono_mp3
+
+        val voice = com.htmake.reader.lib.tts.constant.VoiceEnum.fromSortName(voiceName)
+            ?: com.htmake.reader.lib.tts.constant.VoiceEnum.zh_CN_XiaoxiaoNeural
+
+        val ttsService = com.htmake.reader.lib.tts.service.TTSService.builder()
+            .usingOutputFormat(outputFormat)
+            .usingAzureApi(false)
+            .build()
+
+        val ssml = com.htmake.reader.lib.tts.model.SSML.builder()
+            .synthesisText(text)
+            .voice(voice)
+            .rate(rate)
+            .pitch(pitch)
+            .outputFormat(outputFormat)
+            .build()
+
+        val audioBytes = ttsService.sendText(ssml)
+        if (audioBytes == null || audioBytes.isEmpty()) {
+            throw Exception("Edge TTS合成失败")
+        }
+
+        response
+            .putHeader("Content-Type", "audio/mpeg")
+            .putHeader("Content-Length", audioBytes.size.toString())
+            .end(io.vertx.core.buffer.Buffer.buffer(audioBytes))
+    }
+
+    /**
+     * TTS via API: calls the HttpTTS source URL with text substituted, streams response.
+     */
+    suspend fun ttsByApi(response: HttpServerResponse, text: String, url: String, params: Map<String, String> = emptyMap()) {
+        val encodedText = URLEncoder.encode(text, "UTF-8")
+        val finalUrl = url
+            .replace("{{text}}", encodedText)
+            .replace("{{speakText}}", encodedText)
+            .replace("\${text}", encodedText)
+            .replace("\${speakText}", encodedText)
+
+        val result = kotlinx.coroutines.suspendCancellableCoroutine<ByteArray?> { cont ->
+            webClient.getAbs(finalUrl).timeout(30000).send { ar ->
+                if (ar.succeeded()) {
+                    val bodyBytes = ar.result()?.bodyAsBuffer()?.bytes
+                    cont.resume(bodyBytes) {}
+                } else {
+                    cont.resume(null) {}
+                }
+            }
+        }
+
+        if (result == null || result.isEmpty()) {
+            throw Exception("API TTS请求失败")
+        }
+
+        val contentType = if (url.contains(".mp3") || url.contains("mp3")) "audio/mpeg"
+            else if (url.contains(".wav") || url.contains("wav")) "audio/wav"
+            else "audio/mpeg"
+
+        response
+            .putHeader("Content-Type", contentType)
+            .putHeader("Content-Length", result.size.toString())
+            .end(io.vertx.core.buffer.Buffer.buffer(result))
+    }
+
+    /**
+     * TTS via texttospeech.cn API: fallback TTS using external Chinese TTS service.
+     */
+    suspend fun ttsByTextToSpeechCn(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) {
+        val voiceName = params.getOrDefault("voice", "").let {
+            if (it.isEmpty()) "zh-CN-XiaoxiaoNeural" else it
+        }
+
+        val requestBody = JsonObject()
+            .put("text", text)
+            .put("voice", voiceName)
+
+        val result = kotlinx.coroutines.suspendCancellableCoroutine<ByteArray?> { cont ->
+            webClient.postAbs("https://texttospeech.cn/api/tts")
+                .timeout(30000)
+                .putHeader("Content-Type", "application/json")
+                .sendJsonObject(requestBody) { ar ->
+                    if (ar.succeeded()) {
+                        val bodyBytes = ar.result()?.bodyAsBuffer()?.bytes
+                        cont.resume(bodyBytes) {}
+                    } else {
+                        cont.resume(null) {}
+                    }
+                }
+        }
+
+        if (result == null || result.isEmpty()) {
+            throw Exception("texttospeech.cn TTS请求失败")
+        }
+
+        response
+            .putHeader("Content-Type", "audio/mpeg")
+            .putHeader("Content-Length", result.size.toString())
+            .end(io.vertx.core.buffer.Buffer.buffer(result))
+    }
+
+    /**
+     * Look up HttpTTS source by name from user storage.
+     */
+    fun getHttpTTSByName(name: String, userNameSpace: String): HttpTTS? {
+        if (name.isEmpty()) {
+            return null
+        }
+        val httpTTSList: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "httpTTS"))
+        if (httpTTSList == null) {
+            return null
+        }
+        for (i in 0 until httpTTSList.size()) {
+            val obj = httpTTSList.getJsonObject(i)
+            if (obj != null && obj.getString("name", "") == name) {
+                return obj.mapTo(HttpTTS::class.java)
+            }
+        }
+        return null
+    }
+
+    /**
+     * Save chapter content to cache directory.
+     */
+    suspend fun saveBookContent(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        val bookUrl = context.bodyAsJson.getString("bookUrl") ?: ""
+        val chapterIndex = context.bodyAsJson.getInteger("chapterIndex") ?: -1
+        val content = context.bodyAsJson.getString("content") ?: ""
+
+        if (bookUrl.isEmpty()) {
+            return returnData.setErrorMsg("bookUrl不能为空")
+        }
+        if (chapterIndex < 0) {
+            return returnData.setErrorMsg("chapterIndex不能为空")
+        }
+        if (content.isEmpty()) {
+            return returnData.setErrorMsg("content不能为空")
+        }
+
+        val userNameSpace = getUserNameSpace(context)
+        val bookInfo = getShelfBookByURL(bookUrl, userNameSpace)
+            ?: return returnData.setErrorMsg("书籍未加入书架")
+
+        val cacheDir = getChapterCacheDir(bookInfo, userNameSpace)
+        val chapterFile = File(cacheDir, "${chapterIndex}.txt")
+        chapterFile.writeText(content)
+
+        return returnData.setData("")
     }
 
     /**

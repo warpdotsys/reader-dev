@@ -405,8 +405,13 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/savePdfPageToImage").coroutineHandler { bookController.savePdfPageToImage(it) }
 
         /** TTS语音合成 */
+        router.get("/reader3/textToSpeech").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
+        router.post("/reader3/textToSpeech").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
         router.get("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
         router.post("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
+
+        // 保存书籍章节内容到缓存
+        router.post("/reader3/saveBookContent").coroutineHandler { bookController.saveBookContent(it) }
 
         /** MongoDB备份恢复 */
         router.post("/reader3/backupToMongodb").coroutineHandler { bookController.backupToMongodb(it) }
