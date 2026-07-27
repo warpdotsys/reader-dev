@@ -1,0 +1,35 @@
+<%if(!source.sourceName){%>
+    <div class="center-notice"><b>点击左侧RSS源获取RSS更新</b></div>
+<%}else if(isLoading){%>
+    <div class="center-notice"><b>加载中，请稍候</b></div>
+<%}else if(typeof list === 'string'){%>
+    <div class="center-notice"><b><%=list%></b></div>
+<%}else if(!list.length){%>
+    <div class="center-notice"><b>暂无文章</b></div>
+<%}else{%>
+    <ul class="w3-ul">
+    <%for(var i = 0; i < list.length; i++) {%>
+        <li class="article-list-item w3-hover-black" onclick="getRssArticle(<%=i%>)">
+            <div class="list-title">
+                <%= list[i].title%>
+            </div>
+            <div class="list-subtitle">
+                <%= list[i].pubDate%>
+            </div>
+        </li>
+    <%}%>
+    </ul>
+<%}%>
+<style>
+.article-list-item {
+    text-align: left;
+}
+.article-list-item .list-title {
+    font-weight: bold;
+    padding: 5px;
+}
+.article-list-item .list-subtitle {
+    font-size: 0.8em;
+    padding: 5px;
+}
+</style>

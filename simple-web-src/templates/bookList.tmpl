@@ -1,0 +1,63 @@
+<%if(isSearch && !window.hasSearched){%>
+    <div class="center-notice">
+        <p>1.输入 书名 在全部书源中搜索（多源搜索）</p>
+        <p>2.输入 分组名#书名 在书源分组中搜索（多源搜索）</p>
+        <p>3.输入 书源名@书名 在书源中搜索（单源搜索）</p>
+    </div>
+<%}else if(isLoading){%>
+    <div class="center-notice"><b><%=isSearch ? "正在搜索书籍，请稍后..." : "正在获取书籍信息，请稍后..."%></b></div>
+<%}else if(typeof list === 'string'){%>
+    <div class="center-notice"><b><%=list%></b></div>
+<%}else if(!list.length){%>
+    <div class="center-notice"><b><%=isSearch ? "暂无结果" : "暂无书籍"%></b></div>
+<%}else{%>
+    <ul class='w3-ul'>
+        <%for(var i = 0; i < list.length; i++) {%>
+            <li class="book-info w3-hover-black">
+                <div class='' onclick='showBookInfo(<%:=i%>)'>
+                    <div class="book-name"><%=list[i].name%>
+                        <%if(isSearch){%>
+                        <div class="book-badge">[源：<%=list[i].sourceCount%>]</div>
+                        <%}else{%>
+                        <div class="book-badge">[<%=list[i].totalChapterNum - 1 - list[i].durChapterIndex%>]</div>
+                        <%}%>
+                    </div>
+                    <div class="book-attr">作者: <%=list[i].author%></div>
+                    <%if(!isSearch){%>
+                        <div class="book-attr">已阅章节：<%=list[i].durChapterTitle%></div>
+                    <%}%>
+                    <div class="book-attr">最新章节：<%=list[i].latestChapterTitle%></div>
+                </div>
+            </li>
+        <%}%>
+    </ul>
+<%}%>
+
+<style>
+.book-info {
+    margin-right: 10px;
+    border-bottom: 1px solid #ccc;
+}
+.book-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+.book-badge {
+    float: right;
+    font-weight: lighter;
+}
+.book-attr {
+    padding: 3px 0px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.book-progress {
+    height: 3px;
+    background: #000;
+}
+.dark-theme .book-progress {
+    background: #bbb !important;
+}
+</style>
