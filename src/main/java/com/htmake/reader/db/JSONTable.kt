@@ -69,7 +69,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
             allData.add(entityJson)
         }
 
-        onCheckEnd?.invoke(entity, found, allData)
+        onCheckEnd?.invoke(entity, !found, allData)
 
         cachedValue = allData
         save()
@@ -102,7 +102,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
                 allData.add(entityJson)
             }
 
-            onCheckEnd?.invoke(entity, found, allData)
+            onCheckEnd?.invoke(entity, !found, allData)
         }
 
         cachedValue = allData

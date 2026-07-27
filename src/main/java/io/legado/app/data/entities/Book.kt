@@ -51,7 +51,8 @@ data class Book(
        var originOrder: Int = 0,                   //书源排序
         var useReplaceRule: Boolean = true,         // 正文使用净化替换规则
         var variable: String? = null,                // 自定义书籍变量信息(用于书源规则检索书籍信息)
-        var readConfig: ReadConfig? = null
+        var readConfig: ReadConfig? = null,
+        var pdfImageWidth: Float = 0f
     ) : BaseBook {
 
     fun isLocalBook(): Boolean {
@@ -80,6 +81,10 @@ data class Book(
 
     fun isPdf(): Boolean {
         return originName.endsWith(".pdf", true)
+    }
+
+    fun isLocalPdf(): Boolean {
+        return isLocalBook() && isPdf()
     }
 
     fun isOnLineTxt(): Boolean {

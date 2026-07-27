@@ -627,20 +627,25 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         ))
     }
 
-    fun forEachUser(handler: (String, User) -> Unit) {
+    suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean) {
         var userMap = mutableMapOf<String, Map<String, Any>>()
         var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
         if (userMapJson != null) {
             userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
         }
-        userMap.forEach { (_, value) ->
-            try {
-                val user: User = value.toDataClass()
-                if (user.username.isNotEmpty()) {
-                    handler(user.username, user)
+        kotlinx.coroutines.coroutineScope {
+            for ((_, value) in userMap) {
+                try {
+                    val user: User = value.toDataClass()
+                    if (user.username.isNotEmpty()) {
+                        val shouldContinue = handler(user)
+                        if (!shouldContinue) {
+                            break
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.error("forEachUser error: {}", e.message)
                 }
-            } catch (e: Exception) {
-                logger.error("forEachUser error: {}", e.message)
             }
         }
     }

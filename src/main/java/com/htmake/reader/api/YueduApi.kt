@@ -227,6 +227,9 @@ class YueduApi : RestVerticle() {
         // 保存阅读进度
         router.post("/reader3/saveBookProgress").coroutineHandler { bookController.saveBookProgress(it) }
 
+        // 保存书籍配置
+        router.post("/reader3/saveBookConfig").coroutineHandler { bookController.saveBookConfig(it) }
+
         // 封面
         router.get("/reader3/cover").coroutineHandlerWithoutRes { bookController.getBookCover(it) }
 
@@ -407,6 +410,8 @@ class YueduApi : RestVerticle() {
         /** TTS语音合成 */
         router.get("/reader3/textToSpeech").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
         router.post("/reader3/textToSpeech").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
+        router.get("/reader3/book/tts").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
+        router.post("/reader3/book/tts").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
         router.get("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
         router.post("/reader3/getSpeakStream").coroutineHandlerWithoutRes { bookController.getSpeakStream(it) }
 

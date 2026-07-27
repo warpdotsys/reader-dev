@@ -432,6 +432,37 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         return returnData.setData("")
     }
 
+    suspend fun saveBookConfig(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        var bookUrl: String
+        var pdfImageWidth: Float
+        if (context.request().method() == HttpMethod.POST) {
+            bookUrl = context.bodyAsJson.getString("bookUrl") ?: ""
+            pdfImageWidth = context.bodyAsJson.getFloat("pdfImageWidth", 0f)
+        } else {
+            bookUrl = context.queryParam("bookUrl").firstOrNull() ?: ""
+            pdfImageWidth = context.queryParam("pdfImageWidth").firstOrNull()?.toFloatOrNull() ?: 0f
+        }
+        if (bookUrl.isNullOrEmpty()) {
+            return returnData.setErrorMsg("书籍链接不能为空")
+        }
+        val userNameSpace = getUserNameSpace(context)
+        val bookInfo = getShelfBookByURL(bookUrl, userNameSpace)
+            ?: return returnData.setErrorMsg("书籍信息错误")
+        if (pdfImageWidth <= 0f) {
+            return returnData.setErrorMsg("pdf图片宽度错误")
+        }
+        val newBook = editShelfBook(bookInfo, userNameSpace) { existBook ->
+            existBook.pdfImageWidth = pdfImageWidth
+            logger.info("saveBookConfig: {}", existBook)
+            existBook
+        }
+        return returnData.setData(newBook ?: bookInfo)
+    }
+
     suspend fun getBookContent(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkAuth(context)) {
@@ -1947,7 +1978,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
     }
 
-    fun editShelfBook(book: Book, userNameSpace: String, handler: (Book)->Book) {
+    fun editShelfBook(book: Book, userNameSpace: String, handler: (Book)->Book): Book? {
         var bookshelf: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookshelf"))
         if (bookshelf == null) {
             bookshelf = JsonArray()
@@ -1977,7 +2008,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             bookList.set(existIndex, JsonObject.mapFrom(existBook))
             bookshelf = JsonArray(bookList)
             saveUserStorage(userNameSpace, "bookshelf", bookshelf)
+            return existBook
         }
+        return null
     }
 
     fun saveBookSources(book: Book, sourceList: List<SearchBook>, userNameSpace: String, replace: Boolean = false) {
@@ -3383,6 +3416,54 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             "total" to chapterList.size,
             "cached" to cachedCount
         ))
+    }
+
+    suspend fun cacheBookOnServer(chapters: JsonArray, userNameSpace: String) {
+        for (i in 0 until chapters.size()) {
+            val bookUrl = chapters.getString(i)
+            val bookInfo = getShelfBookByURL(bookUrl, userNameSpace)
+            if (bookInfo == null) {
+                logger.info("未找到书籍信息: {}", bookUrl)
+                continue
+            }
+            if (bookInfo.isLocalBook()) {
+                logger.info("本地书籍跳过缓存: {}", bookUrl)
+                continue
+            }
+            logger.info("开始缓存书籍: {}", bookInfo)
+            val bookSource = getBookSourceStringBySourceURLOpt(bookInfo.origin, userNameSpace)
+            if (bookSource.isNullOrEmpty()) {
+                logger.info("未找到书源信息: {}", bookUrl)
+                continue
+            }
+            val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace)
+            val cacheDir = getChapterCacheDir(bookInfo, userNameSpace)
+            for (chapter in chapterList) {
+                val cacheFile = File(cacheDir, "${chapter.index}.txt")
+                if (cacheFile.exists()) {
+                    continue
+                }
+                try {
+                    val content = WebBook(bookSource, appConfig.debugLog).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
+                    if (content.isNotEmpty()) {
+                        if (!cacheFile.parentFile.exists()) {
+                            cacheFile.parentFile.mkdirs()
+                        }
+                        cacheFile.writeText(content)
+                        // 保存图片
+                        BookHelp.saveImages(
+                            this,
+                            BookSource.fromJson(bookSource).getOrNull() ?: BookSource(),
+                            bookInfo,
+                            chapter,
+                            content
+                        )
+                    }
+                } catch (e: Exception) {
+                    logger.error("cacheBookOnServer chapter {} error: {}", chapter.index, e.message)
+                }
+            }
+        }
     }
 
     fun getBookSourceStringBySourceURLOpt(sourceUrl: String, userNameSpace: String, bookSourceList: List<String>? = null): String? {
