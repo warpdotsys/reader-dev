@@ -403,6 +403,71 @@
         </div>
         <div class="setting-wrapper">
           <div class="setting-title">
+            管理
+          </div>
+          <div class="setting-item">
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showFileManagerDialog('', '文件管理')"
+            >
+              文件管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showHttpTTSDialog = true"
+            >
+              TTS源管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showLicenseDialog = true"
+            >
+              许可证
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showActiveLicenseDialog = true"
+              v-if="$store.state.isManagerMode"
+            >
+              密钥管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showRemoteBookSourceSubDialog = true"
+            >
+              书源订阅
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="downloadBackupFile"
+            >
+              下载数据备份
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="clearInactiveUsers"
+              v-if="$store.state.isManagerMode"
+            >
+              清理不活跃用户
+            </el-tag>
+          </div>
+        </div>
+        <div class="setting-wrapper">
+          <div class="setting-title">
             其它
           </div>
           <div class="setting-item">
@@ -1010,6 +1075,32 @@
       v-model="showWebDAVManageDialog"
       @importFromLocalPathPreview="importMultiBooks"
     ></WebDAV>
+
+    <FileManager
+      v-model="showFileManager"
+      :title="fileManagerTitle"
+      :home="fileManagerHome"
+    ></FileManager>
+
+    <License
+      v-model="showLicenseDialog"
+    ></License>
+
+    <BookConfig
+      v-model="showBookConfigDialog"
+    ></BookConfig>
+
+    <RemoteBookSourceSub
+      v-model="showRemoteBookSourceSubDialog"
+    ></RemoteBookSourceSub>
+
+    <ActiveLicense
+      v-model="showActiveLicenseDialog"
+    ></ActiveLicense>
+
+    <HttpTTS
+      v-model="showHttpTTSDialog"
+    ></HttpTTS>
   </div>
 </template>
 
@@ -1018,6 +1109,12 @@ import { mapGetters } from "vuex";
 import Explore from "../components/Explore.vue";
 import LocalStore from "../components/LocalStore.vue";
 import WebDAV from "../components/WebDAV.vue";
+import FileManager from "../components/FileManager.vue";
+import HttpTTS from "../components/HttpTTS.vue";
+import License from "../components/License.vue";
+import ActiveLicense from "../components/ActiveLicense.vue";
+import BookConfig from "../components/BookConfig.vue";
+import RemoteBookSourceSub from "../components/RemoteBookSourceSub.vue";
 import Axios from "../plugins/axios";
 import { errorTypeList } from "../plugins/config";
 import { setCache, getCache } from "../plugins/cache";
@@ -1031,7 +1128,13 @@ export default {
   components: {
     Explore,
     LocalStore,
-    WebDAV
+    WebDAV,
+    FileManager,
+    HttpTTS,
+    License,
+    ActiveLicense,
+    BookConfig,
+    RemoteBookSourceSub
   },
   data() {
     return {
@@ -1114,6 +1217,15 @@ export default {
       showLocalStoreManageDialog: false,
 
       showWebDAVManageDialog: false,
+
+      showFileManager: false,
+      fileManagerHome: "",
+      fileManagerTitle: "文件管理",
+      showLicenseDialog: false,
+      showBookConfigDialog: false,
+      showRemoteBookSourceSubDialog: false,
+      showActiveLicenseDialog: false,
+      showHttpTTSDialog: false,
 
       importUsedTxtRule: "",
 
@@ -1202,6 +1314,26 @@ export default {
         return;
       }
       this.editBook(book, isAdd, onSuccess);
+    });
+    eventBus.$on("showFileManagerDialog", (home, title) => {
+      this.fileManagerHome = home;
+      this.fileManagerTitle = title;
+      this.showFileManager = true;
+    });
+    eventBus.$on("showBookConfigDialog", () => {
+      this.showBookConfigDialog = true;
+    });
+    eventBus.$on("showLicenseDialog", () => {
+      this.showLicenseDialog = true;
+    });
+    eventBus.$on("showRemoteBookSourceSubDialog", () => {
+      this.showRemoteBookSourceSubDialog = true;
+    });
+    eventBus.$on("showActiveLicenseDialog", () => {
+      this.showActiveLicenseDialog = true;
+    });
+    eventBus.$on("showHttpTTSDialog", () => {
+      this.showHttpTTSDialog = true;
     });
   },
   activated() {
@@ -2763,6 +2895,85 @@ export default {
     },
     joinTGChannel() {
       window.open("https://t.me/facker_channel", "_target");
+    },
+    showFileManagerDialog(home, title) {
+      this.fileManagerHome = home;
+      this.fileManagerTitle = title;
+      this.showFileManager = true;
+    },
+    downloadBackupFile() {
+      const url = buildURL(this.api + "/user/downloadBackupFile", {
+        accessToken: this.$store.state.token
+      });
+      window.open(url, "__blank");
+    },
+    async clearInactiveUsers() {
+      const res = await this.$prompt(
+        "请输入不活跃天数",
+        "清理不活跃用户",
+        {
+          inputValue: "",
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputValidator: val => {
+            if (!val) return "天数不能为空";
+            if (isNaN(parseInt(val))) return "天数必须是数字";
+            return true;
+          }
+        }
+      ).catch(() => false);
+      if (!res || !res.value) return;
+      Axios.post(
+        this.api + "/clearInactiveUsers",
+        { inactiveDay: parseInt(res.value) },
+        { timeout: 0 }
+      ).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("清理不活跃用户成功");
+            this.userList = res.data.data.map(e => ({
+              ...e,
+              userNS: e.username
+            }));
+          }
+        },
+        error => {
+          this.$message.error(
+            "清理不活跃用户失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
+    loadHttpTTS() {
+      Axios.get("/httpTTS/list").then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$store.commit("setHttpTTS", res.data.data || []);
+          }
+        },
+        error => {
+          this.$message.error(
+            "加载httpTTS失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
+    cacheBookOnServer(books) {
+      books = Array.isArray(books) ? books : [books];
+      Axios.post(this.api + "/cacheBookOnServer", {
+        bookUrlList: books.map(e => e.bookUrl)
+      }).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("提交缓存任务成功");
+          }
+        },
+        error => {
+          this.$message.error(
+            "提交缓存任务失败 " + (error && error.toString())
+          );
+        }
+      );
     },
     ensureLoadBookCover() {
       // 手动触发滚动事件，显示书籍封面图片

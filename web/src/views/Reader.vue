@@ -992,6 +992,27 @@ export default {
         cache
       );
     },
+    saveBookContent(url, index, content) {
+      Axios.post("/saveBookContent", { url, index, content }).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("保存内容成功");
+          }
+        },
+        error => {
+          this.$message.error(
+            "保存内容失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
+    getTTSConfig() {
+      return {
+        url: (this.$store.getters.readingBook || {}).bookUrl,
+        index: this.chapterIndex,
+        title: this.title
+      };
+    },
     refreshContent() {
       this.getContent(this.$store.getters.readingBook.index, true);
     },

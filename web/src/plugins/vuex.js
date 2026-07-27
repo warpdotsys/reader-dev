@@ -66,7 +66,8 @@ export default new Vuex.Store({
     customConfigList: [].concat(settings.customConfigList),
     showBookInfo: {},
     cachingBookList: [],
-    bookmarks: []
+    bookmarks: [],
+    httpTTS: []
   },
   mutations: {
     setShelfBooks(state, books) {
@@ -432,6 +433,9 @@ export default new Vuex.Store({
     },
     setBookmarks(state, bookmarks) {
       state.bookmarks = bookmarks;
+    },
+    setHttpTTS(state, httpTTS) {
+      state.httpTTS = httpTTS;
     }
   },
   getters: {
