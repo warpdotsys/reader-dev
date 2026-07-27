@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add missing Pro Vue components to web/src/: FileManager, HttpTTS, License, ActiveLicense, BookConfig, RemoteBookSourceSub. Wire them into Index.vue and Reader.vue with proper show/hide dialogs, event bus integration, and API calls matching the compiled JAR's behavior.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Step 1: Create web/src/components/FileManager.vue - A file manager dialog component. Props: show, home, title. Model: prop='show', event='setShow'. Data: currentPath, fileList, keyword, fileSelection. Uses API endpoints: this.api+'/file/list' (GET with params path,home), this.api+'/file/upload' (POST multipart with path,home params), this.api+'/file/download' (GET with params path,home - opens in window), this.api+'/file/get' (GET with params path,home), this.api+'/file/save' (POST with {path,home,content}), this.api+'/file/mkdir' (POST with {path,name,home}), this.api+'/file/delete' (POST with {path,home}), this.api+'/file/deleteMulti' (POST with {path:[...],home}), this.api+'/file/importPreview' (POST with {path,home}), this.api+'/file/restore' (POST with {path,home}), this.api+'/file/parse' (POST with {path,home}). Features: browse files/directories, upload files, download files, create directories, delete files, edit text files, import books from files, restore from zip backup. Follow the same dialog pattern as LocalStore.vue but with richer file operations.",
     "Step 2: Create web/src/components/HttpTTS.vue - HTTP TTS source management dialog. Props: show. Model: prop='show', event='setShow'. Data: localSelection. Uses API endpoints: this.api+'/httpTTS/list' (GET), this.api+'/httpTTS/save' (POST with TTS object), this.api+'/httpTTS/saveMulti' (POST with array), this.api+'/httpTTS/deleteMulti' (POST with array of selected items). Features: list HTTP TTS sources in table, add new, edit existing (show JSON editor dialog), import from file, delete selected. Follow the same pattern as ReplaceRule.vue component.",
@@ -27,5 +27,5 @@
     "Run: grep -c '/file/list\\|/httpTTS/list\\|/getLicense\\|/book/tts\\|saveBookContent' web/src/components/*.vue web/src/views/*.vue (verify API calls present)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Vue frontend build only works with nodeLinker: node-modules (yarn PnP has Babel/preset compatibility issues pre-existing). Build verified successful with node-modules linker. All 6 components created and wired. loadHttpTTS method referenced by HttpTTS component calls $root.$children[0].loadHttpTTS() - added to Index.vue. The supplyLicense endpoint in the JAR uses a hardcoded external URL, but we kept it using this.api for consistency."
 }
