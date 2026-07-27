@@ -39,6 +39,7 @@ import com.htmake.reader.utils.unzip
 import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
+import com.htmake.reader.utils.MongoManager
 import com.htmake.reader.verticle.RestVerticle
 import com.htmake.reader.SpringEvent
 import org.springframework.stereotype.Component
@@ -3257,5 +3258,189 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val queryIndexInResult = queryIndexInContent - po1
         val newText = content.substring(po1, po2)
         return queryIndexInResult to newText
+    }
+
+    fun backupFileNames(userNameSpace: String): List<String> {
+        return listOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
+    }
+
+    suspend fun backupToMongodb(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        val userNameSpace = getUserNameSpace(context)
+        if (!MongoManager.isInit()) {
+            return returnData.setErrorMsg("MongoDB 未配置或连接失败")
+        }
+        val db = MongoManager.db(appConfig.mongoDbName) ?: return returnData.setErrorMsg("MongoDB 数据库获取失败")
+
+        try {
+            val fileNames = backupFileNames(userNameSpace)
+            for (fileName in fileNames) {
+                val content = getUserStorage(userNameSpace, fileName) ?: continue
+                val collection = db.getCollection("backup_${userNameSpace}")
+                val doc = org.bson.Document()
+                doc.put("name", fileName)
+                doc.put("content", content)
+                doc.put("updated_at", System.currentTimeMillis())
+                // Upsert by name
+                collection.replaceOne(
+                    org.bson.Document("name", fileName),
+                    doc,
+                    com.mongodb.client.model.ReplaceOptions().upsert(true)
+                )
+            }
+        } catch (e: Exception) {
+            logger.error("backupToMongodb error: {}", e.message)
+            return returnData.setErrorMsg("备份失败: ${e.message}")
+        }
+        return returnData.setData("")
+    }
+
+    suspend fun restoreFromMongodb(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        val userNameSpace = getUserNameSpace(context)
+        if (!MongoManager.isInit()) {
+            return returnData.setErrorMsg("MongoDB 未配置或连接失败")
+        }
+        val db = MongoManager.db(appConfig.mongoDbName) ?: return returnData.setErrorMsg("MongoDB 数据库获取失败")
+
+        try {
+            val collection = db.getCollection("backup_${userNameSpace}")
+            val cursor = collection.find()
+            for (doc in cursor) {
+                val name = doc.getString("name") ?: continue
+                val content = doc.getString("content") ?: continue
+                saveUserStorage(userNameSpace, name, content)
+            }
+        } catch (e: Exception) {
+            logger.error("restoreFromMongodb error: {}", e.message)
+            return returnData.setErrorMsg("恢复失败: ${e.message}")
+        }
+        return returnData.setData("")
+    }
+
+    suspend fun cacheBookOnServer(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        val userNameSpace = getUserNameSpace(context)
+        var url: String
+        if (context.request().method() == HttpMethod.POST) {
+            url = context.bodyAsJson.getString("url") ?: ""
+        } else {
+            url = context.queryParam("url").firstOrNull() ?: ""
+        }
+        if (url.isEmpty()) {
+            return returnData.setErrorMsg("请输入书籍链接")
+        }
+
+        val bookInfo = getShelfBookByURL(url, userNameSpace)
+            ?: return returnData.setErrorMsg("书架中未找到该书籍")
+
+        val bookSource = getBookSourceString(context, bookInfo.origin)
+        if (bookSource.isNullOrEmpty()) {
+            return returnData.setErrorMsg("未配置书源")
+        }
+
+        // Get chapter list
+        val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace)
+        if (chapterList.isEmpty()) {
+            return returnData.setErrorMsg("章节列表为空")
+        }
+
+        // Cache all chapters
+        var cachedCount = 0
+        val cacheDir = getChapterCacheDir(bookInfo, userNameSpace)
+        for (chapter in chapterList) {
+            val cacheFile = File(cacheDir, "${chapter.index}.txt")
+            if (cacheFile.exists()) {
+                cachedCount++
+                continue
+            }
+            try {
+                val content = WebBook(bookSource, appConfig.debugLog).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
+                if (content.isNotEmpty()) {
+                    if (!cacheFile.parentFile.exists()) {
+                        cacheFile.parentFile.mkdirs()
+                    }
+                    cacheFile.writeText(content)
+                    cachedCount++
+                }
+            } catch (e: Exception) {
+                logger.error("cacheBookOnServer chapter {} error: {}", chapter.index, e.message)
+            }
+        }
+
+        return returnData.setData(mapOf(
+            "total" to chapterList.size,
+            "cached" to cachedCount
+        ))
+    }
+
+    fun getBookSourceStringBySourceURLOpt(sourceUrl: String, userNameSpace: String, bookSourceList: List<String>? = null): String? {
+        if (sourceUrl.isEmpty()) {
+            return null
+        }
+        val sourceList = bookSourceList ?: loadBookSourceStringList(userNameSpace)
+        for (item in sourceList) {
+            try {
+                val source = item.toMap()
+                val url = source.getOrDefault("bookSourceUrl", "") as? String ?: ""
+                if (url == sourceUrl) {
+                    return item
+                }
+            } catch (e: Exception) {
+                // skip
+            }
+        }
+        return null
+    }
+
+    suspend fun createUserBackup(userNameSpace: String): Boolean {
+        try {
+            val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
+            if (!backupDir.exists()) {
+                backupDir.mkdirs()
+            }
+            val sdf = SimpleDateFormat("yyyy-MM-dd")
+            val backupName = "backup_${sdf.format(System.currentTimeMillis())}.zip"
+            val backupFile = File(backupDir, backupName)
+
+            val dataDir = File(getWorkDir("storage", "data", userNameSpace))
+            val filesToBackup = arrayListOf<File>()
+            val fileNames = backupFileNames(userNameSpace)
+            for (fileName in fileNames) {
+                val file = File(dataDir, "${fileName}.json")
+                if (file.exists()) {
+                    filesToBackup.add(file)
+                }
+            }
+
+            if (filesToBackup.isEmpty()) {
+                return false
+            }
+
+            zip(filesToBackup, backupFile.absolutePath)
+
+            // Keep only last 5 backups
+            val backupFiles = backupDir.listFiles()?.filter { it.name.startsWith("backup_") && it.name.endsWith(".zip") }
+                ?.sortedByDescending { it.lastModified() }
+            if (backupFiles != null && backupFiles.size > 5) {
+                for (i in 5 until backupFiles.size) {
+                    backupFiles[i].delete()
+                }
+            }
+
+            return true
+        } catch (e: Exception) {
+            logger.error("createUserBackup error: {}", e.message)
+            return false
+        }
     }
 }

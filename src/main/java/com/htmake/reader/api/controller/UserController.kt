@@ -386,6 +386,10 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         val username = context.bodyAsJson.getString("username") ?: ""
         val enableWebdav = context.bodyAsJson.getBoolean("enableWebdav")
         val enableLocalStore = context.bodyAsJson.getBoolean("enableLocalStore")
+        val enableBookSource = context.bodyAsJson.getBoolean("enableBookSource")
+        val enableRssSource = context.bodyAsJson.getBoolean("enableRssSource")
+        val bookSourceLimit = context.bodyAsJson.getInteger("bookSourceLimit")
+        val bookLimit = context.bodyAsJson.getInteger("bookLimit")
         if (username.isEmpty()) {
             return returnData.setErrorMsg("参数错误")
         }
@@ -404,6 +408,18 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             }
             if (enableLocalStore != null) {
                 existedUser.put("enable_local_store", enableLocalStore)
+            }
+            if (enableBookSource != null) {
+                existedUser.put("enable_book_source", enableBookSource)
+            }
+            if (enableRssSource != null) {
+                existedUser.put("enable_rss_source", enableRssSource)
+            }
+            if (bookSourceLimit != null) {
+                existedUser.put("book_source_limit", bookSourceLimit)
+            }
+            if (bookLimit != null) {
+                existedUser.put("book_limit", bookLimit)
             }
             userMap.put(username, existedUser)
             saveStorage("data", "users", value = userMap)
@@ -528,5 +544,103 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         logger.info("delete file: {}", file)
         file.deleteRecursively()
         return returnData.setData("")
+    }
+
+    suspend fun downloadBackupFile(context: RoutingContext) {
+        if (!checkAuth(context)) {
+            context.response().setStatusCode(401).end("NEED_LOGIN")
+            return
+        }
+        val userNameSpace = getUserNameSpace(context)
+        val fileName = context.queryParam("fileName").firstOrNull() ?: ""
+        if (fileName.isEmpty()) {
+            context.response().setStatusCode(400).end("参数错误")
+            return
+        }
+        // Prevent path traversal
+        if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            context.response().setStatusCode(400).end("文件名不合法")
+            return
+        }
+        val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
+        val file = File(backupDir, fileName)
+        if (!file.exists()) {
+            context.response().setStatusCode(404).end("文件不存在")
+            return
+        }
+        context.response()
+            .putHeader("Content-Disposition", "attachment; filename=\"${file.name}\"")
+            .putHeader("Content-Type", "application/octet-stream")
+            .sendFile(file.absolutePath)
+    }
+
+    suspend fun clearInactiveUsers(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        if (!appConfig.secure || appConfig.secureKey.isEmpty()) {
+            return returnData.setErrorMsg("不支持的操作")
+        }
+        if (!checkManagerAuth(context)) {
+            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+        }
+        val days = context.bodyAsJson?.getInteger("days", 30) ?: 30
+        if (days <= 0) {
+            return returnData.setErrorMsg("天数必须大于0")
+        }
+
+        var userMap = mutableMapOf<String, MutableMap<String, Any>>()
+        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+        if (userMapJson != null) {
+            userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
+        }
+        val expireTime = System.currentTimeMillis() - days * 86400L * 1000L
+        val deletedUsers = arrayListOf<String>()
+        val keysToRemove = arrayListOf<String>()
+
+        userMap.forEach { (key, value) ->
+            val username = value.getOrDefault("username", "") as? String ?: ""
+            val lastLogin = (value.getOrDefault("last_login_at", 0L) as? Number)?.toLong() ?: 0L
+            if (username.isNotEmpty() && lastLogin < expireTime) {
+                keysToRemove.add(key)
+                deletedUsers.add(username)
+            }
+        }
+
+        keysToRemove.forEach { key ->
+            userMap.remove(key)
+            val userHome = File(getWorkDir("storage", "data", key))
+            if (userHome.exists()) {
+                userHome.deleteRecursively()
+            }
+        }
+
+        if (keysToRemove.isNotEmpty()) {
+            saveStorage("data", "users", value = userMap)
+        }
+
+        return returnData.setData(mapOf(
+            "deletedCount" to deletedUsers.size,
+            "deletedUsers" to deletedUsers
+        ))
+    }
+
+    fun forEachUser(handler: (String, User) -> Unit) {
+        var userMap = mutableMapOf<String, Map<String, Any>>()
+        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+        if (userMapJson != null) {
+            userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
+        }
+        userMap.forEach { (_, value) ->
+            try {
+                val user: User = value.toDataClass()
+                if (user.username.isNotEmpty()) {
+                    handler(user.username, user)
+                }
+            } catch (e: Exception) {
+                logger.error("forEachUser error: {}", e.message)
+            }
+        }
     }
 }

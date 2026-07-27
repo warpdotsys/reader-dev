@@ -268,6 +268,10 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
             "accessToken" to user.username + ":" + user.token,
             "enableWebdav" to user.enable_webdav,
             "enableLocalStore" to user.enable_local_store,
+            "enableBookSource" to user.enable_book_source,
+            "enableRssSource" to user.enable_rss_source,
+            "bookSourceLimit" to user.book_source_limit,
+            "bookLimit" to user.book_limit,
             "createdAt" to user.created_at
         )
     }
