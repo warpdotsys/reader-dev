@@ -118,6 +118,7 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
      * 书籍信息
      */
     suspend fun getBookInfo(book: Book, canReName: Boolean = true): Book {
+        book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
         book.type = bookSource.bookSourceType
         if (!book.infoHtml.isNullOrEmpty()) {
             BookInfo.analyzeBookInfo(
@@ -170,6 +171,7 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
     suspend fun getChapterList(
         book: Book
     ): List<BookChapter> {
+        book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
         book.type = bookSource.bookSourceType
         return if (book.bookUrl == book.tocUrl && !book.tocHtml.isNullOrEmpty()) {
             BookChapterList.analyzeChapterList(
@@ -207,6 +209,7 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
         // bookChapterUrl:String,
         nextChapterUrl: String? = null
     ): String {
+       book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
        if (bookSource.getContentRule().content.isNullOrEmpty()) {
             debugger?.log(bookSource.bookSourceUrl, "⇒正文规则为空,使用章节链接: ${bookChapter.url}")
             return bookChapter.url

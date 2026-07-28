@@ -8,8 +8,7 @@ import java.io.File
 @Suppress("unused")
 class CacheManager(val userNameSpace: String) {
 
-    private val queryTTFMap: MutableMap<String, Pair<Long, QueryTTF>>
-        get() = queryTTFMaps.getOrPut(userNameSpace) { hashMapOf() }
+    private val queryTTFMap = hashMapOf<String, Pair<Long, QueryTTF>>()
     val cacheInstance = ACache.get(
         File(ReaderAdapterHelper.getAdapter().getWorkDir("storage", "cache", "runtimeCache", userNameSpace)),
         50_000_000L,
@@ -73,9 +72,5 @@ class CacheManager(val userNameSpace: String) {
 
     fun delete(key: String) {
         if (key.isNotEmpty()) cacheInstance.remove(key)
-    }
-
-    companion object {
-        private val queryTTFMaps = hashMapOf<String, MutableMap<String, Pair<Long, QueryTTF>>>()
     }
 }

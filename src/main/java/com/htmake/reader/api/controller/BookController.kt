@@ -118,6 +118,12 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         getInvalidBookSourceCache(userNameSpace).put(sourceUrl, jsonEncode(invalidInfo), 600)
     }
 
+    private fun webBook(bookSource: String, debugLog: Boolean, userNameSpace: String): WebBook {
+        return WebBook(bookSource, debugLog).also {
+            it.bookSource.setUserNameSpace(userNameSpace)
+        }
+    }
+
     suspend fun getInvalidBookSources(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkAuth(context)) {
@@ -170,7 +176,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (bookSource.isNullOrEmpty()) {
                 return returnData.setErrorMsg("未配置书源")
             }
-            bookInfo = mergeBookCacheInfo(WebBook(bookSource, appConfig.debugLog).getBookInfo(bookUrl))
+            bookInfo = mergeBookCacheInfo(webBook(bookSource, appConfig.debugLog, getUserNameSpace(context)).getBookInfo(bookUrl))
         }
 
         // 缓存书籍信息
@@ -365,7 +371,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (bookSource.isNullOrEmpty()) {
                 return returnData.setErrorMsg("未配置书源")
             }
-            bookInfo = mergeBookCacheInfo(WebBook(bookSource, appConfig.debugLog).getBookInfo(bookUrl))
+            bookInfo = mergeBookCacheInfo(webBook(bookSource, appConfig.debugLog, userNameSpace).getBookInfo(bookUrl))
             // 缓存书籍信息
             saveBookInfoCache(arrayListOf<Book>(bookInfo))
         } else {
@@ -518,7 +524,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 if (bookInfo != null && !bookInfo.isLocalBook() && bookSource.isNullOrEmpty()) {
                     return returnData.setErrorMsg("未配置书源")
                 }
-                bookInfo = bookInfo ?: mergeBookCacheInfo(WebBook(bookSource ?: "", appConfig.debugLog).getBookInfo(bookUrl))
+                bookInfo = bookInfo ?: mergeBookCacheInfo(webBook(bookSource ?: "", appConfig.debugLog, userNameSpace).getBookInfo(bookUrl))
                 var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace)
                 if (chapterIndex < chapterList.size) {
                     chapterInfo = chapterList.get(chapterIndex)
@@ -624,7 +630,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 }
             }
             try {
-                content = WebBook(bookSource ?: "", appConfig.debugLog).getBookContent(bookInfo, chapterInfo, nextChapterUrl)
+                content = webBook(bookSource ?: "", appConfig.debugLog, userNameSpace).getBookContent(bookInfo, chapterInfo, nextChapterUrl)
                 if (appConfig.cacheChapterContent && chapterCacheFile != null) {
                     chapterCacheFile.writeText(content)
                     // 保存图片
@@ -672,7 +678,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             page = context.queryParam("page").firstOrNull()?.toInt() ?: 1
         }
 
-        var result = WebBook(bookSource, false).exploreBook(ruleFindUrl, page)
+        var result = webBook(bookSource, false, getUserNameSpace(context)).exploreBook(ruleFindUrl, page)
         return returnData.setData(result)
     }
 
@@ -699,7 +705,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("请输入搜索关键字")
         }
         logger.info { "searchBook" }
-        var result = WebBook(bookSource, appConfig.debugLog).searchBook(key, page)
+        var result = webBook(bookSource, appConfig.debugLog, getUserNameSpace(context)).searchBook(key, page)
         return returnData.setData(result)
     }
 
@@ -1086,7 +1092,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             // val costTime = measureTimeMillis {
             try {
                 val start = System.currentTimeMillis()
-                var result = WebBook(bookSourceString, false).searchBook(book.name, 1)
+                var result = webBook(bookSourceString, false, userNameSpace).searchBook(book.name, 1)
                 val end = System.currentTimeMillis()
                 if (result.size > 0) {
                     for (j in 0 until result.size) {
@@ -1336,7 +1342,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (bookSource == null) {
                 return returnData.setErrorMsg("书源信息错误")
             }
-            var newBook = WebBook(bookSource, appConfig.debugLog).getBookInfo(book.bookUrl)
+            var newBook = webBook(bookSource, appConfig.debugLog, userNameSpace).getBookInfo(book.bookUrl)
             book.fillData(newBook, listOf("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTitle", "wordCount"))
         }
         book = mergeBookCacheInfo(book)
@@ -1424,7 +1430,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (bookSourceString.isNullOrEmpty()) {
                 return returnData.setErrorMsg("书源信息错误")
             }
-            WebBook(bookSourceString, appConfig.debugLog).getBookInfo(newBookUrl)
+            webBook(bookSourceString, appConfig.debugLog, userNameSpace).getBookInfo(newBookUrl)
         }
 
         editShelfBook(book, userNameSpace) { existBook ->
@@ -1831,7 +1837,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 newChapterList = LocalBook.getChapterList(book)
             } else {
                 try {
-                    newChapterList = WebBook(bookSource, debugLog).getChapterList(book)
+                    newChapterList = webBook(bookSource, debugLog, userNameSpace).getChapterList(book)
                 } catch(e: Exception) {
                     if (!bookSource.isNullOrEmpty()) {
                         var bookSourceObject = asJsonObject(bookSource)?.mapTo(BookSource::class.java)
@@ -2606,7 +2612,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             response.write("data: " + jsonEncode(mapOf("msg" to msg), false) + "\n\n")
         }
 
-        val webBook = WebBook(bookSourceString)
+        val webBook = webBook(bookSourceString, true, userNameSpace)
 
         debugger.startDebug(webBook, keyword)
 
@@ -2692,7 +2698,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                         var nextChapterInfo = chapterList.get(chapterIndex + 1)
                         nextChapterUrl = nextChapterInfo.url
                     }
-                    var content = WebBook(bookSource, appConfig.debugLog).getBookContent(bookInfo, chapterInfo, nextChapterUrl)
+                    var content = webBook(bookSource, appConfig.debugLog, userNameSpace).getBookContent(bookInfo, chapterInfo, nextChapterUrl)
                     var chapterCacheFile = File(localCacheDir.absolutePath + File.separator + chapterIndex + ".txt")
                     chapterCacheFile.writeText(content)
                     // 保存图片
@@ -3399,7 +3405,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 continue
             }
             try {
-                val content = WebBook(bookSource, appConfig.debugLog).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
+                val content = webBook(bookSource, appConfig.debugLog, userNameSpace).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
                 if (content.isNotEmpty()) {
                     if (!cacheFile.parentFile.exists()) {
                         cacheFile.parentFile.mkdirs()
@@ -3444,7 +3450,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     continue
                 }
                 try {
-                    val content = WebBook(bookSource, appConfig.debugLog).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
+                    val content = webBook(bookSource, appConfig.debugLog, userNameSpace).getBookContent(bookInfo, chapter, chapterList[0].bookUrl)
                     if (content.isNotEmpty()) {
                         if (!cacheFile.parentFile.exists()) {
                             cacheFile.parentFile.mkdirs()
