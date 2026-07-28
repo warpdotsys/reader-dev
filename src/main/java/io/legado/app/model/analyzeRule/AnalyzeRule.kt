@@ -31,12 +31,13 @@ private val logger = KotlinLogging.logger {}
 @Suppress("unused", "RegExpRedundantEscape")
 class AnalyzeRule(
     var ruleData: RuleDataInterface,
-    private val source: BaseSource? = null
+    private val source: BaseSource? = null,
+    var debugLog: io.legado.app.model.DebugLog? = null
 ) : JsExtensions {
 
     override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
 
-    override fun getLogger(): io.legado.app.model.DebugLog? = source?.getLogger()
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 
     val book get() = ruleData as? BaseBook
 
@@ -671,7 +672,7 @@ class AnalyzeRule(
     override fun ajax(urlStr: String): String? {
         return runBlocking {
             kotlin.runCatching {
-                val analyzeUrl = AnalyzeUrl(urlStr, source = source, ruleData = book)
+                val analyzeUrl = AnalyzeUrl(urlStr, source = source, ruleData = book, debugLog = debugLog)
                 analyzeUrl.getStrResponseAwait().body
             }.onFailure {
                 log("ajax(${urlStr}) error\n${it.stackTraceToString()}")
@@ -724,6 +725,21 @@ class AnalyzeRule(
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
             WebBook(bookSource).getBookInfo(book)
+        }
+    }
+
+    fun reGetBook() {
+        runBlocking {
+            val bookSource = source as? BookSource
+            val book = book as? Book
+            if (bookSource == null || book == null) return@runBlocking
+            val refreshedBook = WebBook(bookSource, false, debugLog)
+                .searchBook(book.name)
+                .firstOrNull { it.name == book.name && it.author == book.author }
+                ?: return@runBlocking
+            book.bookUrl = refreshedBook.bookUrl
+            refreshedBook.variableMap.forEach { (key, value) -> book.putVariable(key, value) }
+            WebBook(bookSource, false, debugLog).getBookInfo(book, false)
         }
     }
 
