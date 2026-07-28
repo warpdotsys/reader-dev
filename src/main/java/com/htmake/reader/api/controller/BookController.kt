@@ -3480,7 +3480,15 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
     }
 
-    fun getBookSourceStringBySourceURLOpt(sourceUrl: String, userNameSpace: String, bookSourceList: List<String>? = null): String? {
+    fun getBookSourceStringBySourceURLOpt(sourceUrl: String, userNameSpace: String): String? {
+        return findBookSourceStringBySourceURLOpt(sourceUrl, userNameSpace, null)
+    }
+
+    private fun findBookSourceStringBySourceURLOpt(
+        sourceUrl: String,
+        userNameSpace: String,
+        bookSourceList: List<String>?
+    ): String? {
         if (sourceUrl.isEmpty()) {
             return null
         }
