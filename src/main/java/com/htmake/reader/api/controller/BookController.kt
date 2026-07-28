@@ -78,7 +78,11 @@ import io.legado.app.help.BookHelp
 import org.springframework.scheduling.annotation.Scheduled
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.analyzeRule.AnalyzeUrl
+import io.legado.app.exception.NoStackTraceException
 import java.nio.file.Paths
+import java.io.InputStream
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
@@ -3904,10 +3908,59 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         for (i in 0 until httpTTSList.size()) {
             val obj = httpTTSList.getJsonObject(i)
             if (obj != null && obj.getString("name", "") == name) {
-                return obj.mapTo(HttpTTS::class.java)
+                return obj.mapTo(HttpTTS::class.java).also { it.setUserNameSpace(userNameSpace) }
             }
         }
         return null
+    }
+
+    suspend fun getSpeakStream(
+        httpTTS: HttpTTS,
+        speakText: String,
+        speechRate: Int
+    ): InputStream? {
+        var downloadErrorNo = 0
+        while (true) {
+            try {
+                val analyzeUrl = AnalyzeUrl(
+                    mUrl = httpTTS.url,
+                    speakText = speakText,
+                    speakSpeed = speechRate,
+                    source = httpTTS,
+                    headerMapF = httpTTS.getHeaderMap(true)
+                )
+                var response = analyzeUrl.getResponseAwait()
+                httpTTS.loginCheckJs?.takeIf { it.isNotBlank() }?.let { checkJs ->
+                    response = analyzeUrl.evalJS(checkJs, response) as okhttp3.Response
+                }
+
+                response.header("Content-Type")?.let { contentType ->
+                    if (contentType == "application/json") {
+                        throw NoStackTraceException(response.body?.string().orEmpty())
+                    }
+                    httpTTS.contentType.takeIf { it.isNotBlank() }?.let { expectedContentType ->
+                        if (!Regex(expectedContentType).matches(contentType)) {
+                            throw NoStackTraceException(
+                                "TTS服务器返回错误：${response.body?.string().orEmpty()}"
+                            )
+                        }
+                    }
+                }
+                downloadErrorNo = 0
+                return response.body?.byteStream()
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                downloadErrorNo++
+                if (e is SocketTimeoutException || e is ConnectException) {
+                    if (downloadErrorNo <= 5) continue
+                    logger.error("tts timeout or connection error after 5 retries", e)
+                    throw e
+                }
+                logger.error("tts download error", e)
+                if (downloadErrorNo > 5) throw e
+                return null
+            }
+        }
     }
 
     /**
