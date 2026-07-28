@@ -95,6 +95,17 @@ class WebBook(
 
     }
 
+    suspend fun preciseSearch(name: String, author: String): Result<Book> = runCatching {
+        val book = searchBook(name)
+            .firstOrNull { it.name == name && it.author == author }
+            ?.toBook()
+            ?: throw NoSuchElementException("Book not found: $name - $author")
+        if (book.tocUrl.isBlank()) {
+            getBookInfo(book, false)
+        }
+        book
+    }
+
     /**
      * 发现
      */

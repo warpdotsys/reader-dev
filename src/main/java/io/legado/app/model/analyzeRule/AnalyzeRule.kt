@@ -733,13 +733,15 @@ class AnalyzeRule(
             val bookSource = source as? BookSource
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
-            val refreshedBook = WebBook(bookSource, false, debugLog)
-                .searchBook(book.name)
-                .firstOrNull { it.name == book.name && it.author == book.author }
+            val refreshedBook = WebBook(bookSource, false, debugLog, getUserNameSpace())
+                .preciseSearch(book.name, book.author)
+                .getOrNull()
                 ?: return@runBlocking
             book.bookUrl = refreshedBook.bookUrl
             refreshedBook.variableMap.forEach { (key, value) -> book.putVariable(key, value) }
-            WebBook(bookSource, false, debugLog).getBookInfo(book, false)
+            if (refreshedBook.tocUrl.isNotBlank()) {
+                book.tocUrl = refreshedBook.tocUrl
+            }
         }
     }
 
