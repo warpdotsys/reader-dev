@@ -703,7 +703,7 @@ class AnalyzeRule(
             val bookSource = source as? BookSource
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
-            val books = WebBook(bookSource).searchBook(book.name)
+            val books = WebBook(bookSource, false, null, getUserNameSpace()).searchBook(book.name)
             books.forEach {
                 if (it.name == book.name && it.author == book.author) {
                     book.bookUrl = it.bookUrl
@@ -724,7 +724,7 @@ class AnalyzeRule(
             val bookSource = source as? BookSource
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
-            WebBook(bookSource).getBookInfo(book)
+            WebBook(bookSource, false, null, getUserNameSpace()).getBookInfo(book, false)
         }
     }
 
