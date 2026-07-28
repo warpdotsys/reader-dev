@@ -349,7 +349,20 @@ class AnalyzeUrl(
         setCookie(source?.getKey())
         val strResponse: StrResponse
         if (this.useWebView && useWebView) {
-            throw Exception("不支持webview")
+            strResponse = io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
+                source?.getTag() ?: "",
+                url,
+                "",
+                "",
+                headerMap,
+                body ?: "",
+                "",
+                headerMap["User-Agent"] ?: "",
+                false,
+                jsStr ?: "",
+                headerMap["Content-Type"] ?: "",
+                debugLog
+            ) ?: throw Exception("远程 WebView 未配置")
         } else {
             strResponse = getProxyClient(proxy, debugLog).newCallStrResponse(retry) {
                 addHeaders(headerMap)

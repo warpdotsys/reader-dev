@@ -33,7 +33,7 @@ interface CURD<T> {
 
     fun checker(json: JsonObject, entity: T): Boolean
 
-    fun onCheckEnd(entity: T, isNew: Boolean, allData: JsonArray) {
+    fun onCheckEnd(entity: T, exists: Boolean, allData: JsonArray) {
     }
 
     fun beforeSave(entity: T, db: DB<T>): ReturnData? {
@@ -107,7 +107,7 @@ interface CURD<T> {
             }
         }
 
-        db.save(entity, { e, isNew, data -> onCheckEnd(e, isNew, data) }, { obj, e -> checker(obj, e) })
+        db.save(entity, { e, exists, data -> onCheckEnd(e, exists, data) }, { obj, e -> checker(obj, e) })
         return returnData.setData("")
     }
 
@@ -135,7 +135,7 @@ interface CURD<T> {
             }
         }
 
-        db.saveMulti(entities, { e, isNew, data -> onCheckEnd(e, isNew, data) }, { obj, e -> checker(obj, e) })
+        db.saveMulti(entities, { e, exists, data -> onCheckEnd(e, exists, data) }, { obj, e -> checker(obj, e) })
         return returnData.setData("")
     }
 

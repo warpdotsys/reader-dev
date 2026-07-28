@@ -24,6 +24,13 @@ import io.legado.app.data.entities.Book
 import io.legado.app.utils.MD5Utils
 import java.util.UUID
 import java.util.Base64 as JavaBase64
+import java.security.KeyFactory
+import java.security.spec.X509EncodedKeySpec
+import io.legado.app.utils.EncoderUtils
+import javax.net.ssl.SSLSocketFactory
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import com.mongodb.client.MongoCollection
 import com.htmake.reader.entity.MongoFile
 import com.htmake.reader.entity.License
@@ -369,7 +376,7 @@ fun decodeBase64(text: String): String {
     return String(JavaBase64.getDecoder().decode(text), Charsets.UTF_8)
 }
 
-var _licenseValid: Boolean = true
+var _licenseValid: Boolean = false
 
 fun setLicenseValid(value: Boolean) {
     _licenseValid = value
@@ -434,11 +441,14 @@ fun countOccurrences(text: String, sub: String): Int {
     return count
 }
 
-fun getInstalledLicense(refresh: Boolean = false): License? {
+fun getInstalledLicense(ignoreInvalid: Boolean = false): License? {
     try {
-        val licenseStr = getStorage("license") ?: return null
+        val licenseFile = getStorageFile("data", "license", ext = ".key")
+        if (!licenseFile.exists()) return null
+        val licenseStr = licenseFile.readText()
         if (licenseStr.isBlank()) return null
-        return decryptToLicense(licenseStr)
+        if (!ignoreInvalid && !_licenseValid) return null
+        return decryptToLicense(licenseStr)?.takeIf { it.verified }
     } catch (e: Exception) {
         logger.error("Failed to get installed license: {}", e.message)
         return null
@@ -458,7 +468,10 @@ fun decryptToLicense(encrypted: String): License? {
 
 fun decryptData(encrypted: String): String {
     return try {
-        String(JavaBase64.getDecoder().decode(encrypted), Charsets.UTF_8)
+        val publicKey = KeyFactory.getInstance("RSA").generatePublic(
+            X509EncodedKeySpec(JavaBase64.getDecoder().decode("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj0G3qEPjVTvVd7pXFUVYZFHT8KaoG4onc5rLUKqFQ2DCh/5hFK9t2nKh2XB+C2Jp/GSK2ONwD7ceXenmA6uvr90uCK/gp6j62XFVRvc8sIm0d/bGbzZFJRk3HKtxEckBmASduPObY691DVVixxNtUrSJktx/TZaB42pUQk4j+7FuOVNNPra44hDdnyGhmYBBf2B4kjXVMjL+0NCblFIN1+qjmcol44k6NFKFF54q05bjR3CRyYdAnNTCOyt9va0oB6lDlKHplSZmAOH9JGMUki/HDJbABESXMnyIpux27w9SQ8aJStYttnJWHALO1hiFJsxbz5KUkldH6Ny1p/2W5QIDAQAB"))
+        )
+        EncoderUtils.decryptSegmentByPublicKey(encrypted, publicKey)
     } catch (e: Exception) {
         logger.error("Failed to decrypt data: {}", e.message)
         ""
@@ -466,8 +479,39 @@ fun decryptData(encrypted: String): String {
 }
 
 fun sendEmail(to: String, subject: String, body: String): Boolean {
-    logger.info("sendEmail stub called: to={}, subject={}", to, subject)
-    return false
+    val host = System.getProperty("reader.smtp.host") ?: System.getenv("READER_SMTP_HOST") ?: return false
+    val port = (System.getProperty("reader.smtp.port") ?: System.getenv("READER_SMTP_PORT") ?: "465").toIntOrNull() ?: return false
+    val username = System.getProperty("reader.smtp.username") ?: System.getenv("READER_SMTP_USERNAME") ?: return false
+    val password = System.getProperty("reader.smtp.password") ?: System.getenv("READER_SMTP_PASSWORD") ?: return false
+    val from = System.getProperty("reader.smtp.from") ?: System.getenv("READER_SMTP_FROM") ?: username
+
+    return runCatching {
+        val socket = SSLSocketFactory.getDefault().createSocket(host, port)
+        socket.use { securedSocket ->
+            val reader = BufferedReader(InputStreamReader(securedSocket.inputStream, Charsets.UTF_8))
+            val writer = OutputStreamWriter(securedSocket.outputStream, Charsets.UTF_8)
+            fun command(value: String, expected: Int): Boolean {
+                writer.write(value)
+                writer.flush()
+                return reader.readLine()?.startsWith(expected.toString()) == true
+            }
+            if (reader.readLine()?.startsWith("220") != true) return@use false
+            if (!command("EHLO reader\r\n", 250) || !command("AUTH LOGIN\r\n", 334)) return@use false
+            if (!command("${encodeBase64(username)}\r\n", 334) || !command("${encodeBase64(password)}\r\n", 235)) return@use false
+            if (!command("MAIL FROM:<$from>\r\n", 250) || !command("RCPT TO:<$to>\r\n", 250) || !command("DATA\r\n", 354)) return@use false
+            val boundary = "----Reader-${UUID.randomUUID()}"
+            val message = buildString {
+                append("From: <$from>\r\nTo: <$to>\r\n")
+                append("Subject: =?UTF-8?B?${encodeBase64(subject)}?=\r\n")
+                append("MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$boundary\"\r\n\r\n")
+                append("--$boundary\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n")
+                append(encodeBase64(body)).append("\r\n--$boundary--\r\n.\r\n")
+            }
+            val delivered = command(message, 250)
+            command("QUIT\r\n", 221)
+            delivered
+        }
+    }.onFailure { logger.error("Failed to send email", it) }.getOrDefault(false)
 }
 
 fun getCommand(commands: List<String>, workDir: String = "", timeout: String = ""): List<Pair<String, Int>> {

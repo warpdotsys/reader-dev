@@ -43,9 +43,10 @@ open class DB<T>(
     companion object {
         @JvmStatic
         fun <T> table(userNameSpace: String, name: String, type: String = "json"): DB<T> {
-            return when (type) {
-                "sql" -> SQLTable(userNameSpace, name)
-                else -> JSONTable(userNameSpace, name)
+            return if (type.equals("SQL", ignoreCase = true)) {
+                SQLTable(userNameSpace, name)
+            } else {
+                JSONTable(userNameSpace, name)
             }
         }
     }

@@ -25,29 +25,41 @@ private val logger = KotlinLogging.logger {}
 
 class FileController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
 
-    private fun getUserFileDir(userNameSpace: String): File {
-        val dir = File(getWorkDir("storage", "data", userNameSpace, "files"))
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-        return dir
-    }
-
     private fun resolveSecurePath(baseDir: File, relativePath: String): File? {
-        val resolved = File(baseDir, relativePath).canonicalFile
-        val baseDirCanonical = baseDir.canonicalFile
-        // Prevent path traversal
-        if (!resolved.path.startsWith(baseDirCanonical.path)) {
+        val basePath = baseDir.toPath().toAbsolutePath().normalize()
+        val resolved = basePath.resolve(relativePath).normalize()
+        if (!resolved.startsWith(basePath)) {
             return null
         }
-        return resolved
+        return resolved.toFile()
     }
 
-    suspend fun checkAccess(context: RoutingContext): Boolean {
-        if (!checkAuth(context)) {
-            return false
+    private fun requestedHome(context: RoutingContext): String {
+        return when {
+            context.request().method() == HttpMethod.POST && context.fileUploads().isNotEmpty() -> context.request().getParam("home") ?: ""
+            context.request().method() == HttpMethod.POST -> context.bodyAsJson?.getString("home", "") ?: ""
+            else -> context.queryParam("home").firstOrNull() ?: ""
         }
-        return true
+    }
+
+    private fun getFileHome(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): File? {
+        val home = requestedHome(context)
+        val userNameSpace = getUserNameSpace(context)
+        val directory = when (home) {
+            "__WEBDAV__" -> File(getUserWebdavHome(context))
+            "__LOCAL_STORE__" -> {
+                if ((isSave || isDelete) && !checkManagerAuth(context)) return null
+                File(getWorkDir("storage", "localStore"))
+            }
+            "__HOME__" -> File(getWorkDir("storage", "data", userNameSpace))
+            "__STORAGE__" -> {
+                if (!checkManagerAuth(context)) return null
+                File(getWorkDir("storage"))
+            }
+            else -> return null
+        }
+        if (!directory.exists()) directory.mkdirs()
+        return directory
     }
 
     suspend fun list(context: RoutingContext): ReturnData {
@@ -55,14 +67,13 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = if (context.request().method() == HttpMethod.POST) {
             context.bodyAsJson?.getString("path", "") ?: ""
         } else {
             context.queryParam("path").firstOrNull() ?: ""
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
         val targetDir = if (path.isEmpty()) {
             baseDir
         } else {
@@ -95,9 +106,8 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (context.fileUploads() == null || context.fileUploads().isEmpty()) {
             return returnData.setErrorMsg("请上传文件")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.request().getParam("path") ?: ""
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
         val targetDir = if (path.isEmpty()) {
             baseDir
         } else {
@@ -112,7 +122,8 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         context.fileUploads().forEach {
             val file = File(it.uploadedFileName())
             if (file.exists()) {
-                val newFile = File(targetDir, it.fileName())
+                val fileName = File(it.fileName()).name
+                val newFile = resolveSecurePath(targetDir, fileName) ?: return@forEach
                 if (newFile.exists()) {
                     newFile.delete()
                 }
@@ -129,14 +140,16 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             context.response().setStatusCode(401).end("NEED_LOGIN")
             return
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.queryParam("path").firstOrNull() ?: ""
         if (path.isEmpty()) {
             context.response().setStatusCode(400).end("请输入文件路径")
             return
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context) ?: run {
+            context.response().setStatusCode(403).end("非法访问")
+            return
+        }
         val file = resolveSecurePath(baseDir, path)
         if (file == null || !file.exists() || file.isDirectory) {
             context.response().setStatusCode(404).end("文件不存在")
@@ -154,7 +167,6 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = if (context.request().method() == HttpMethod.POST) {
             context.bodyAsJson?.getString("path", "") ?: ""
         } else {
@@ -164,7 +176,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path)
         if (file == null || !file.exists() || file.isDirectory) {
             return returnData.setErrorMsg("文件不存在")
@@ -179,14 +191,13 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.bodyAsJson?.getString("path", "") ?: ""
         val content = context.bodyAsJson?.getString("content", "") ?: ""
         if (path.isEmpty()) {
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (!file.parentFile.exists()) {
@@ -201,13 +212,12 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.bodyAsJson?.getString("path", "") ?: ""
         if (path.isEmpty()) {
             return returnData.setErrorMsg("请输入目录路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
         val dir = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (!dir.exists()) {
@@ -221,13 +231,12 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.bodyAsJson?.getString("path", "") ?: ""
         if (path.isEmpty()) {
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context, isDelete = true) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (file.exists()) {
@@ -241,7 +250,6 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val body = context.bodyAsString
         if (body.isNullOrEmpty()) {
             return returnData.setErrorMsg("参数错误")
@@ -253,7 +261,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("参数错误")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context, isDelete = true) ?: return returnData.setErrorMsg("非法访问")
         for (path in paths) {
             val file = resolveSecurePath(baseDir, path) ?: continue
             if (file.exists()) {
@@ -268,7 +276,6 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = if (context.request().method() == HttpMethod.POST) {
             context.bodyAsJson?.getString("path", "") ?: ""
         } else {
@@ -278,7 +285,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (!file.exists()) {
@@ -316,13 +323,13 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = context.bodyAsJson?.getString("path", "") ?: ""
         if (path.isEmpty()) {
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val userNameSpace = getUserNameSpace(context)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (!file.exists()) {
@@ -347,7 +354,6 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         val path = if (context.request().method() == HttpMethod.POST) {
             context.bodyAsJson?.getString("path", "") ?: ""
         } else {
@@ -357,7 +363,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setErrorMsg("请输入文件路径")
         }
 
-        val baseDir = getUserFileDir(userNameSpace)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
         val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
 
         if (!file.exists() || file.isDirectory) {

@@ -2,15 +2,11 @@ package com.htmake.reader.api.controller
 
 import io.legado.app.data.entities.BookGroup
 import io.vertx.ext.web.RoutingContext
-import mu.KotlinLogging
 import com.htmake.reader.api.ReturnData
 import com.htmake.reader.db.DB
-import com.htmake.reader.utils.gson
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import kotlin.coroutines.CoroutineContext
-
-private val logger = KotlinLogging.logger {}
 
 class BookGroupController(coroutineContext: CoroutineContext): BaseController(coroutineContext), CURD<BookGroup> {
 
@@ -23,7 +19,44 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
     }
 
     override fun checker(json: JsonObject, entity: BookGroup): Boolean {
-        return json.getInteger("groupId", 0) == entity.groupId
+        return json.getLong("groupId", 0L) == entity.groupId
+    }
+
+    override fun onList(list: JsonArray, userNameSpace: String): JsonArray {
+        if (list.size() > 0) {
+            return list
+        }
+        val defaultGroups = JsonArray()
+            .add(JsonObject().put("groupId", -1L).put("groupName", "全部").put("order", -10).put("show", true))
+            .add(JsonObject().put("groupId", -2L).put("groupName", "本地").put("order", -9).put("show", true))
+            .add(JsonObject().put("groupId", -3L).put("groupName", "音频").put("order", -8).put("show", true))
+            .add(JsonObject().put("groupId", -4L).put("groupName", "未分组").put("order", -7).put("show", true))
+            .add(JsonObject().put("groupId", -5L).put("groupName", "更新错误").put("order", -6).put("show", true))
+        saveUserStorage(userNameSpace, getTableName(), defaultGroups)
+        return defaultGroups
+    }
+
+    override fun beforeSave(entity: BookGroup, db: DB<BookGroup>): ReturnData? {
+        return if (entity.groupName.isEmpty()) ReturnData().setErrorMsg("分组名称不能为空") else null
+    }
+
+    override fun onCheckEnd(entity: BookGroup, exists: Boolean, allData: JsonArray) {
+        if (exists) {
+            return
+        }
+        var maxOrder = 0
+        var idsSum = 0L
+        for (item in allData) {
+            val group = item as? JsonObject ?: continue
+            maxOrder = maxOf(maxOrder, group.getInteger("order", 0))
+            idsSum += maxOf(group.getLong("groupId", 0L), 0L)
+        }
+        var groupId = 1L
+        while (groupId and idsSum != 0L) {
+            groupId = groupId shl 1
+        }
+        entity.groupId = groupId
+        entity.order = maxOrder + 1
     }
 
     override suspend fun checkUserAuth(context: RoutingContext): Boolean {
@@ -56,9 +89,9 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
         if (body.isNullOrEmpty()) {
             return returnData.setErrorMsg("参数错误")
         }
-        val groupIds: List<Int> = try {
+        val groupIds: List<Long> = try {
             val arr = JsonArray(body)
-            (0 until arr.size()).map { arr.getInteger(it) }
+            (0 until arr.size()).map { arr.getLong(it) }
         } catch (e: Exception) {
             return returnData.setErrorMsg("参数错误")
         }
@@ -71,7 +104,7 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
         for ((order, groupId) in groupIds.withIndex()) {
             for (i in 0 until allData.size()) {
                 val obj = allData.getJsonObject(i) ?: continue
-                if (obj.getInteger("groupId", 0) == groupId) {
+                if (obj.getLong("groupId", 0L) == groupId) {
                     obj.put("order", order)
                     reordered.add(obj)
                     break
@@ -81,7 +114,7 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
         // Add any groups not in the order list
         for (i in 0 until allData.size()) {
             val obj = allData.getJsonObject(i) ?: continue
-            val gid = obj.getInteger("groupId", 0)
+            val gid = obj.getLong("groupId", 0L)
             if (!groupIds.contains(gid)) {
                 reordered.add(obj)
             }

@@ -1454,15 +1454,15 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
         var bookUrl: String
-        var groupId: Int
+        var groupId: Long
         if (context.request().method() == HttpMethod.POST) {
             // post 请求
             bookUrl = context.bodyAsJson.getString("bookUrl")
-            groupId = context.bodyAsJson.getInteger("groupId", 0)
+            groupId = context.bodyAsJson.getLong("groupId", 0L)
         } else {
             // get 请求
             bookUrl = context.queryParam("bookUrl").firstOrNull() ?: ""
-            groupId = context.queryParam("groupId").firstOrNull()?.toInt() ?: 0
+            groupId = context.queryParam("groupId").firstOrNull()?.toLongOrNull() ?: 0L
         }
         if (bookUrl.isNullOrEmpty()) {
             return returnData.setErrorMsg("书籍链接不能为空")
@@ -1492,7 +1492,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val groupId: Int = context.bodyAsJson.getInteger("groupId", 0)
+        val groupId = context.bodyAsJson.getLong("groupId", 0L)
         if (groupId <= 0) {
             return returnData.setErrorMsg("分组信息错误")
         }
@@ -1515,7 +1515,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val groupId: Int = context.bodyAsJson.getInteger("groupId", 0)
+        val groupId = context.bodyAsJson.getLong("groupId", 0L)
         if (groupId <= 0) {
             return returnData.setErrorMsg("分组信息错误")
         }
@@ -1664,16 +1664,16 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             bookGroupList = JsonArray(groupList)
         } else {
             // 新增分组
-            if (bookGroup.groupId >= 0) {
+            if (bookGroup.groupId >= 0L) {
                 var maxOrder = 0;
-                val idsSum = bookGroupList.sumBy{
-                    val id = asJsonObject(it)?.getInteger("groupId", 0) ?: 0
+                val idsSum = bookGroupList.sumOf {
+                    val id = asJsonObject(it)?.getLong("groupId", 0L) ?: 0L
                     val order = asJsonObject(it)?.getInteger("order", 0) ?: 0
                     maxOrder = if (order > maxOrder) order else maxOrder
-                    if (id > 0) id else 0
+                    if (id > 0L) id else 0L
                 }
-                var id = 1
-                while (id and idsSum != 0) {
+                var id = 1L
+                while (id and idsSum != 0L) {
                     id = id.shl(1)
                 }
                 bookGroup.groupId = id
@@ -1702,9 +1702,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (bookGroupList == null) {
             bookGroupList = JsonArray()
         }
-        var orderMap: MutableMap<Int, Int> = mutableMapOf()
+        var orderMap: MutableMap<Long, Int> = mutableMapOf()
         for (i in 0 until bookGroupOrder.size()) {
-            orderMap.put(bookGroupOrder.getJsonObject(i).getInteger("groupId"), bookGroupOrder.getJsonObject(i).getInteger("order"))
+            orderMap[bookGroupOrder.getJsonObject(i).getLong("groupId")] = bookGroupOrder.getJsonObject(i).getInteger("order")
         }
         // 遍历判断书本是否存在
         var groupList = bookGroupList.getList()
@@ -3990,7 +3990,36 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
      * JAR signature: public final boolean convertPdfToImage(io.legado.app.data.entities.Book, boolean)
      */
     fun convertPdfToImage(book: Book, force: Boolean = false): Boolean {
-        return true
+        if (!book.isPdf()) {
+            return false
+        }
+        return try {
+            book.setRootDir(getWorkDir())
+            val localFile = book.getLocalFile()
+            if (!localFile.isFile) {
+                logger.error("PDF source does not exist: {}", localFile)
+                return false
+            }
+            val imageDir = File(getWorkDir(book.bookUrl, "index"))
+            if (!imageDir.exists() && !imageDir.mkdirs()) {
+                return false
+            }
+            org.apache.pdfbox.pdmodel.PDDocument.load(localFile).use { document ->
+                val renderer = org.apache.pdfbox.rendering.PDFRenderer(document)
+                val imageWidth = book.getPdfImageWidth().takeIf { it > 0f } ?: 1080f
+                for (pageIndex in 0 until document.numberOfPages) {
+                    val output = File(imageDir, "output-$pageIndex.png")
+                    if (!force && output.isFile) {
+                        continue
+                    }
+                    savePdfPageToImage(document, renderer, pageIndex, imageWidth, "png", output)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            logger.error("convertPdfToImage failed for {}", book.bookUrl, e)
+            false
+        }
     }
 
     /**
@@ -4008,12 +4037,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
         outputFile.deleteRecursively()
-        var localFile = File(getWorkDir(book.originName + File.separator + "index.pdf"))
-        if (book.originName.indexOf("localStore") > 0) {
-            localFile = File(getWorkDir(book.originName))
-        }
-        if (book.originName.indexOf("webdav") > 0) {
-            localFile = File(getWorkDir(book.originName))
+        book.setRootDir(getWorkDir())
+        val localFile = book.getLocalFile()
+        if (!localFile.isFile) {
+            throw IllegalArgumentException("PDF source does not exist: $localFile")
         }
         val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
         try {

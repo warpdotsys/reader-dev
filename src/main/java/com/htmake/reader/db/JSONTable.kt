@@ -18,7 +18,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         if (cachedValue != null) {
             return cachedValue
         }
-        val jsonStr = getStorage(userNameSpace, name)
+        val jsonStr = getStorage("data", userNameSpace, name)
         if (jsonStr != null && jsonStr.isNotEmpty()) {
             try {
                 cachedValue = JsonArray(jsonStr)
@@ -49,27 +49,26 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         checker: ((JsonObject, T) -> Boolean)?
     ) {
         val allData = readAll() ?: JsonArray()
-        var found = false
+        var existingIndex = -1
 
         if (checker != null) {
             for (i in 0 until allData.size()) {
                 val obj = allData.getJsonObject(i)
                 if (obj != null && checker(obj, entity)) {
-                    // Update existing entry
-                    val entityJson = JsonObject(gson.toJson(entity))
-                    allData.list[i] = entityJson.map
-                    found = true
+                    existingIndex = i
                     break
                 }
             }
         }
 
-        if (!found) {
-            val entityJson = JsonObject(gson.toJson(entity))
+        onCheckEnd?.invoke(entity, existingIndex >= 0, allData)
+
+        val entityJson = JsonObject(gson.toJson(entity))
+        if (existingIndex >= 0) {
+            allData.list[existingIndex] = entityJson.map
+        } else {
             allData.add(entityJson)
         }
-
-        onCheckEnd?.invoke(entity, !found, allData)
 
         cachedValue = allData
         save()
@@ -83,26 +82,26 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         val allData = readAll() ?: JsonArray()
 
         for (entity in entities) {
-            var found = false
+            var existingIndex = -1
 
             if (checker != null) {
                 for (i in 0 until allData.size()) {
                     val obj = allData.getJsonObject(i)
                     if (obj != null && checker(obj, entity)) {
-                        val entityJson = JsonObject(gson.toJson(entity))
-                        allData.list[i] = entityJson.map
-                        found = true
+                        existingIndex = i
                         break
                     }
                 }
             }
 
-            if (!found) {
-                val entityJson = JsonObject(gson.toJson(entity))
+            onCheckEnd?.invoke(entity, existingIndex >= 0, allData)
+
+            val entityJson = JsonObject(gson.toJson(entity))
+            if (existingIndex >= 0) {
+                allData.list[existingIndex] = entityJson.map
+            } else {
                 allData.add(entityJson)
             }
-
-            onCheckEnd?.invoke(entity, !found, allData)
         }
 
         cachedValue = allData
@@ -125,7 +124,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
     override fun save() {
         val data = cachedValue ?: return
         try {
-            saveStorage(userNameSpace, name, value = data)
+            saveStorage("data", userNameSpace, name, value = data)
         } catch (e: Exception) {
             logger.error("Failed to save JSON for {}/{}: {}", userNameSpace, name, e.message)
         }

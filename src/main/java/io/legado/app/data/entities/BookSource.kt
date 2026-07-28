@@ -35,10 +35,13 @@ data class BookSource(
     var customOrder: Int = 0,                 // 手动排序编号
     var enabled: Boolean = true,            // 是否启用
     var enabledExplore: Boolean = true,     //启用发现
+    var enabledCookieJar: Boolean? = null,
     override var concurrentRate: String? = null,    //并发率
     override var header: String? = null,
     override var loginUrl: String? = null,             // 登录地址
+    var loginUi: String? = null,
     var loginCheckJs: String? = null,           // 登录检测js
+    var variableComment: String? = null,
     var lastUpdateTime: Long = 0,             // 最后更新时间，用于排序
     var weight: Int = 0,                      // 智能排序的权重
     var exploreUrl: String? = null,                 // 发现url

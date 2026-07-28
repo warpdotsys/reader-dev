@@ -35,7 +35,7 @@ data class Book(
        var customIntro: String? = null,      // 简介内容(用户修改)
        var charset: String? = null,                // 自定义字符集名称(仅适用于本地书籍)
         var type: Int = 0,                          // @BookType
-       var group: Int = 0,                         // 自定义分组索引号
+       var group: Long = 0L,                       // 自定义分组索引号
         var latestChapterTitle: String? = null,     // 最新章节标题
         var latestChapterTime: Long = System.currentTimeMillis(),            // 最新章节标题更新时间
         var lastCheckTime: Long = System.currentTimeMillis(),                // 最近一次更新书籍信息的时间
@@ -51,7 +51,9 @@ data class Book(
        var originOrder: Int = 0,                   //书源排序
         var useReplaceRule: Boolean = true,         // 正文使用净化替换规则
         var variable: String? = null,                // 自定义书籍变量信息(用于书源规则检索书籍信息)
-        var readConfig: ReadConfig? = null
+        var readConfig: ReadConfig? = null,
+        var isInShelf: Boolean = false,
+        var lastCheckError: String? = null
     ) : BaseBook {
 
     fun isLocalBook(): Boolean {

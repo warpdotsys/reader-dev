@@ -45,6 +45,9 @@ import com.htmake.reader.utils.unzip
 import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
+import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.init.ReaderAdapter
+import io.legado.app.adapters.ReaderAdapterHelper
 import com.htmake.reader.verticle.RestVerticle
 import com.htmake.reader.SpringEvent
 import org.springframework.stereotype.Component
@@ -93,6 +96,11 @@ class YueduApi : RestVerticle() {
 
     override suspend fun initRouter(router: Router) {
         setupPort()
+
+        if (appConfig.remoteWebviewApi.isNotEmpty()) {
+            RemoteWebview.setRemoteApi(appConfig.remoteWebviewApi)
+        }
+        ReaderAdapterHelper.setAdapter(ReaderAdapter)
 
         // 旧版数据迁移
         migration()
@@ -188,6 +196,7 @@ class YueduApi : RestVerticle() {
 
         // 读取远程书源文件
         router.post("/reader3/readRemoteSourceFile").coroutineHandlerWithoutRes { bookSourceController.readRemoteSourceFile(it) }
+        router.post("/reader3/saveFromRemoteSource").coroutineHandlerWithoutRes { bookSourceController.saveFromRemoteSource(it) }
 
         // 设置默认书源
         router.post("/reader3/setAsDefaultBookSources").coroutineHandler { bookSourceController.setAsDefaultBookSources(it) }
@@ -426,6 +435,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/httpTTS/save").coroutineHandler { httpTTSController.saveHttpTTS(it) }
         router.post("/reader3/httpTTS/saveMulti").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
         router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
+        router.post("/reader3/httpTTS/delete").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
 
         // Book path-based aliases
         router.post("/reader3/book/saveBookConfig").coroutineHandler { bookController.saveBookConfig(it) }
@@ -716,7 +726,7 @@ class YueduApi : RestVerticle() {
                     val licenseController = LicenseController(coroutineContext)
                     licenseController.checkLicense(license)
                 }
-                com.htmake.reader.utils.setLicenseValid(true)
+                com.htmake.reader.utils.setLicenseValid(license != null && license.isValid())
             } catch (e: Exception) {
                 logger.error("checkLicense error: {}", e.message)
             }

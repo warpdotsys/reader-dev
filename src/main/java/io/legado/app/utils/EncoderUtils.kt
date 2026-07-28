@@ -2,6 +2,11 @@ package io.legado.app.utils
 
 import io.legado.app.utils.Base64
 import java.security.spec.AlgorithmParameterSpec
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.io.ByteArrayOutputStream
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -336,6 +341,32 @@ object EncoderUtils {
         iv: ByteArray? = null
     ): ByteArray? {
         return symmetricTemplate(data, key, "DESede", transformation, iv, false)
+    }
+
+    fun encryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String =
+        rsaSegmentBase64(input.toByteArray(Charsets.UTF_8), privateKey, Cipher.ENCRYPT_MODE, keySize / 8 - 11)
+
+    fun decryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String =
+        String(rsaSegmentBytes(Base64.decode(input, Base64.NO_WRAP), publicKey, Cipher.DECRYPT_MODE, keySize / 8), Charsets.UTF_8)
+
+    fun generateKeys(): KeyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+
+    private fun rsaSegmentBase64(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): String {
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        ByteArrayOutputStream().use { output ->
+            input.asList().chunked(blockSize).forEach { block -> output.write(cipher.doFinal(block.toByteArray())) }
+            return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+        }
+    }
+
+    private fun rsaSegmentBytes(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): ByteArray {
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        ByteArrayOutputStream().use { output ->
+            input.asList().chunked(blockSize).forEach { block -> output.write(cipher.doFinal(block.toByteArray())) }
+            return output.toByteArray()
+        }
     }
 
 }
