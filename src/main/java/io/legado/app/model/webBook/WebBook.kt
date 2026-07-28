@@ -40,6 +40,11 @@ class WebBook(
     val userNS: String
         get() = userNameSpace ?: bookSource.getUserNameSpace().ifEmpty { "unknow" }
 
+    private fun prepareSource() {
+        bookSource.setUserNameSpace(userNS)
+        bookSource.setLogger(debugger)
+    }
+
     val debugger: DebugLog?
         get() {
             if (debugLogger != null) {
@@ -58,7 +63,7 @@ class WebBook(
         key: String,
         page: Int? = 1
     ): List<SearchBook> {
-        bookSource.setUserNameSpace(userNS)
+        prepareSource()
         val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
         return bookSource.searchUrl?.let { searchUrl ->
             val analyzeUrl = AnalyzeUrl(
@@ -113,7 +118,7 @@ class WebBook(
         url: String,
         page: Int? = 1
     ): List<SearchBook> {
-        bookSource.setUserNameSpace(userNS)
+        prepareSource()
         val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
         val analyzeUrl = AnalyzeUrl(
             mUrl = url,
@@ -146,7 +151,8 @@ class WebBook(
      * 书籍信息
      */
     suspend fun getBookInfo(book: Book, canReName: Boolean = true): Book {
-        book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
+        book.setUserNameSpace(userNS)
+        prepareSource()
         book.type = bookSource.bookSourceType
         if (!book.infoHtml.isNullOrEmpty()) {
             BookInfo.analyzeBookInfo(
@@ -168,6 +174,7 @@ class WebBook(
      */
     suspend fun getBookInfo(bookUrl: String, canReName: Boolean = true): Book {
         val book = Book()
+        book.setUserNameSpace(userNS)
         book.bookUrl = bookUrl
         book.origin = bookSource.bookSourceUrl
         book.originName = bookSource.bookSourceName
@@ -200,7 +207,8 @@ class WebBook(
     suspend fun getChapterList(
         book: Book
     ): List<BookChapter> {
-        book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
+        book.setUserNameSpace(userNS)
+        prepareSource()
         book.type = bookSource.bookSourceType
         return if (book.bookUrl == book.tocUrl && !book.tocHtml.isNullOrEmpty()) {
             BookChapterList.analyzeChapterList(
@@ -239,7 +247,8 @@ class WebBook(
         // bookChapterUrl:String,
         nextChapterUrl: String? = null
     ): String {
-       book.getUserNameSpace().takeIf { it.isNotEmpty() }?.let(bookSource::setUserNameSpace)
+       book.setUserNameSpace(userNS)
+       prepareSource()
        if (bookSource.getContentRule().content.isNullOrEmpty()) {
             debugger?.log(bookSource.bookSourceUrl, "⇒正文规则为空,使用章节链接: ${bookChapter.url}")
             return bookChapter.url
