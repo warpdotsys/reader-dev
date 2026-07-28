@@ -27,21 +27,21 @@ object ReaderAdapter : ReaderAdapterInterface {
     }
 
     override fun getCacheDir(): String {
-        return appCtx.cacheDir
+        return getWorkDir("storage", "cache")
     }
 
     override suspend fun getStrResponseByRemoteWebview(
-        tag: String,
-        url: String,
-        origin: String,
-        referer: String,
-        headerMap: Map<String, String>,
-        postBody: String,
-        cookieStore: String,
-        userAgent: String,
-        isAutoContent: Boolean,
-        js: String,
-        contentType: String,
+        url: String?,
+        html: String?,
+        encode: String?,
+        tag: String?,
+        headerMap: Map<String, String>?,
+        sourceRegex: String?,
+        javaScript: String?,
+        proxy: String?,
+        post: Boolean,
+        body: String?,
+        userNameSpace: String,
         debugLog: DebugLog?
     ): StrResponse? {
         val config = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
@@ -49,13 +49,19 @@ object ReaderAdapter : ReaderAdapterInterface {
             RemoteWebview.setRemoteApi(config.remoteWebviewApi)
             return RemoteWebview.getStrResponse(
                 url = url,
+                html = html,
+                encode = encode ?: headerMap?.get("charset"),
                 tag = tag,
                 headerMap = headerMap,
-                js_source = js,
-                isPost = postBody.isNotEmpty(),
-                body = postBody
+                sourceRegex = sourceRegex,
+                js_source = javaScript,
+                proxy = proxy,
+                isPost = post,
+                body = body,
+                userNameSpace = userNameSpace,
+                debugLog = debugLog
             )
         }
-        return null
+        throw Exception("不支持webview")
     }
 }

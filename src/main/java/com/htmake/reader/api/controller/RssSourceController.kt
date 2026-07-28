@@ -220,6 +220,7 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         for (i in 0 until list.size()) {
             var _rssSource = list.getJsonObject(i).mapTo(RssSource::class.java)
             if (_rssSource.sourceUrl.equals(url)) {
+                _rssSource.setUserNameSpace(userNameSpace)
                 return _rssSource
             }
         }

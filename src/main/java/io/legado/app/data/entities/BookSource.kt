@@ -35,11 +35,11 @@ data class BookSource(
     var customOrder: Int = 0,                 // 手动排序编号
     var enabled: Boolean = true,            // 是否启用
     var enabledExplore: Boolean = true,     //启用发现
-    var enabledCookieJar: Boolean? = null,
+    override var enabledCookieJar: Boolean? = null,
     override var concurrentRate: String? = null,    //并发率
     override var header: String? = null,
     override var loginUrl: String? = null,             // 登录地址
-    var loginUi: String? = null,
+    override var loginUi: String? = null,
     var loginCheckJs: String? = null,           // 登录检测js
     var variableComment: String? = null,
     var lastUpdateTime: Long = 0,             // 最后更新时间，用于排序
@@ -54,6 +54,23 @@ data class BookSource(
     var bookSourceComment: String? = null,           // 注释
     var respondTime: Long = 180000L,               // 响应时间，用于排序
 ) : BaseSource {
+    @Transient
+    private var _userNameSpace: String = ""
+
+    @Transient
+    private var debugLog: io.legado.app.model.DebugLog? = null
+
+    fun setUserNameSpace(value: String) {
+        _userNameSpace = value
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
+
+    fun setLogger(value: io.legado.app.model.DebugLog?) {
+        debugLog = value
+    }
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 //    @Ignore
 //    @IgnoredOnParcel
     private var searchRuleV: SearchRule? = null

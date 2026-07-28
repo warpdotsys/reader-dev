@@ -15,17 +15,17 @@ interface ReaderAdapterInterface {
     fun getCacheDir(): String
 
     suspend fun getStrResponseByRemoteWebview(
-        tag: String,
-        url: String,
-        origin: String,
-        referer: String,
-        headerMap: Map<String, String>,
-        postBody: String,
-        cookieStore: String,
-        userAgent: String,
-        isAutoContent: Boolean,
-        js: String,
-        contentType: String,
-        debugLog: DebugLog?
+        url: String? = null,
+        html: String? = null,
+        encode: String? = null,
+        tag: String? = null,
+        headerMap: Map<String, String>? = null,
+        sourceRegex: String? = null,
+        javaScript: String? = null,
+        proxy: String? = null,
+        post: Boolean = false,
+        body: String? = null,
+        userNameSpace: String = "",
+        debugLog: DebugLog? = null
     ): StrResponse?
 }

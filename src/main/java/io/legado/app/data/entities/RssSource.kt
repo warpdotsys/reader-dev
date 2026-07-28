@@ -18,11 +18,11 @@ data class RssSource(
     var sourceComment: String? = null,
     var enabled: Boolean = true,
     var variableComment: String? = null,
-    var enabledCookieJar: Boolean? = null,
+    override var enabledCookieJar: Boolean? = null,
     override var concurrentRate: String? = null,    //并发率
     override  var header: String? = null,            // 请求头
     override var loginUrl: String? = null,          // 登录地址
-    var loginUi: String? = null,
+    override var loginUi: String? = null,
     var loginCheckJs: String? = null,               //登录检测js
     var sortUrl: String? = null,
     var singleUrl: Boolean = false,
@@ -42,6 +42,23 @@ data class RssSource(
     var loadWithBaseUrl: Boolean = true,
     var customOrder: Int = 0
 ): BaseSource {
+    @Transient
+    private var _userNameSpace: String = ""
+
+    @Transient
+    private var debugLog: io.legado.app.model.DebugLog? = null
+
+    fun setUserNameSpace(value: String) {
+        _userNameSpace = value
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
+
+    fun setLogger(value: io.legado.app.model.DebugLog?) {
+        debugLog = value
+    }
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 
     override fun getTag(): String {
         return sourceName

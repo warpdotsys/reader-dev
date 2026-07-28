@@ -9,10 +9,10 @@ data class HttpTTS(
     var contentType: String = "",
     override var concurrentRate: String? = null,
     override var loginUrl: String? = null,
-    var loginUi: String? = null,
+    override var loginUi: String? = null,
     override var header: String? = null,
     var jsLib: String? = null,
-    var enabledCookieJar: Boolean? = false,
+    override var enabledCookieJar: Boolean? = false,
     var loginCheckJs: String? = null,
     var lastUpdateTime: Long = 0
 ) : BaseSource {

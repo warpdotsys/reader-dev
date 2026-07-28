@@ -15,8 +15,9 @@ import io.legado.app.utils.*
 interface BaseSource : JsExtensions {
 
     var concurrentRate: String? // 并发率
+    var enabledCookieJar: Boolean?
     var loginUrl: String?       // 登录地址
-    // var loginUi: String?   // 登录UI
+    var loginUi: String?       // 登录UI
     var header: String?         // 请求头
 
     fun getTag(): String
@@ -73,7 +74,7 @@ interface BaseSource : JsExtensions {
      * 获取用于登录的头部信息
      */
     fun getLoginHeader(): String? {
-        return CacheManager.get("loginHeader_${getKey()}")
+        return cacheManager().get("loginHeader_${getKey()}")
     }
 
     fun getLoginHeaderMap(): Map<String, String>? {
@@ -85,11 +86,11 @@ interface BaseSource : JsExtensions {
      * 保存登录头部信息,map格式,访问时自动添加
      */
     fun putLoginHeader(header: String) {
-        CacheManager.put("loginHeader_${getKey()}", header)
+        cacheManager().put("loginHeader_${getKey()}", header)
     }
 
     fun removeLoginHeader() {
-        CacheManager.delete("loginHeader_${getKey()}")
+        cacheManager().delete("loginHeader_${getKey()}")
     }
 
     /**
@@ -99,7 +100,7 @@ interface BaseSource : JsExtensions {
     fun getLoginInfo(): String? {
         try {
             val key = AppConst.userAgent.encodeToByteArray(0, 8)
-            val cache = CacheManager.get("userInfo_${getKey()}") ?: return null
+            val cache = cacheManager().get("userInfo_${getKey()}") ?: return null
             val encodeBytes = EncoderUtils.base64Decode(cache, Base64.DEFAULT).toByteArray()
             val decodeBytes = EncoderUtils.decryptAES(encodeBytes, key)
                 ?: return null
@@ -122,7 +123,7 @@ interface BaseSource : JsExtensions {
             val key = (AppConst.userAgent).encodeToByteArray(0, 8)
             val encodeBytes = EncoderUtils.encryptAES(info.toByteArray(), key)
             val encodeStr = Base64.encodeToString(encodeBytes, Base64.DEFAULT)
-            CacheManager.put("userInfo_${getKey()}", encodeStr)
+            cacheManager().put("userInfo_${getKey()}", encodeStr)
             true
         } catch (e: Exception) {
             log("保存登陆信息出错 " + e.localizedMessage)
@@ -131,19 +132,19 @@ interface BaseSource : JsExtensions {
     }
 
     fun removeLoginInfo() {
-        CacheManager.delete("userInfo_${getKey()}")
+        cacheManager().delete("userInfo_${getKey()}")
     }
 
     fun setVariable(variable: String?) {
         if (variable != null) {
-            CacheManager.put("sourceVariable_${getKey()}", variable)
+            cacheManager().put("sourceVariable_${getKey()}", variable)
         } else {
-            CacheManager.delete("sourceVariable_${getKey()}")
+            cacheManager().delete("sourceVariable_${getKey()}")
         }
     }
 
     fun getVariable(): String? {
-        return CacheManager.get("sourceVariable_${getKey()}")
+        return cacheManager().get("sourceVariable_${getKey()}")
     }
 
     /**
@@ -156,8 +157,12 @@ interface BaseSource : JsExtensions {
         bindings["java"] = this
         bindings["source"] = this
         bindings["baseUrl"] = getKey()
-        bindings["cookie"] = CookieStore
-        bindings["cache"] = CacheManager
+        bindings["cookie"] = cookieStore()
+        bindings["cache"] = cacheManager()
         return AppConst.SCRIPT_ENGINE.eval(jsStr, bindings)
     }
+
+    private fun cacheManager() = CacheManager(getUserNameSpace())
+
+    private fun cookieStore() = CookieStore(getUserNameSpace())
 }

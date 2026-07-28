@@ -151,11 +151,11 @@ interface JsExtensions {
      */
     fun cacheFile(urlStr: String, saveTime: Int = 0): String? {
         val key = md5Encode16(urlStr)
-        val cache = CacheManager.getFile(key)
+        val cache = CacheManager(getUserNameSpace()).getFile(key)
         if (cache.isNullOrBlank()) {
             log("首次下载 $urlStr")
             val value = ajax(urlStr) ?: return null
-            CacheManager.putFile(key, value, saveTime)
+            CacheManager(getUserNameSpace()).putFile(key, value, saveTime)
             return value
         }
         return cache
@@ -165,8 +165,9 @@ interface JsExtensions {
      *js实现读取cookie
      */
     fun getCookie(tag: String, key: String? = null): String {
-        val cookie = CookieStore.getCookie(tag)
-        val cookieMap = CookieStore.cookieToMap(cookie)
+        val cookieStore = CookieStore(getUserNameSpace())
+        val cookie = cookieStore.getCookie(tag)
+        val cookieMap = cookieStore.cookieToMap(cookie)
         return if (key != null) {
             cookieMap[key] ?: ""
         } else {
@@ -479,15 +480,16 @@ interface JsExtensions {
     fun queryTTF(str: String?): QueryTTF? {
         str ?: return null
         val key = md5Encode16(str)
-        var qTTF = CacheManager.getQueryTTF(key)
+        val cacheManager = CacheManager(getUserNameSpace())
+        var qTTF = cacheManager.getQueryTTF(key)
         if (qTTF != null) return qTTF
         val font: ByteArray? = when {
             str.isAbsUrl() -> runBlocking {
-                var x = CacheManager.getByteArray(key)
+                var x = cacheManager.getByteArray(key)
                 if (x == null) {
                     x = okHttpClient.newCall { url(str) }.bytes()
                     x.let {
-                        CacheManager.put(key, it)
+                        cacheManager.put(key, it)
                     }
                 }
                 return@runBlocking x
@@ -497,7 +499,7 @@ interface JsExtensions {
         }
         font ?: return null
         qTTF = QueryTTF(font)
-        CacheManager.put(key, qTTF)
+        cacheManager.put(key, qTTF)
         return qTTF
     }
 

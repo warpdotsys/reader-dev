@@ -34,6 +34,10 @@ class AnalyzeRule(
     private val source: BaseSource? = null
 ) : JsExtensions {
 
+    override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = source?.getLogger()
+
     val book get() = ruleData as? BaseBook
 
     var chapter: BookChapter? = null
@@ -644,8 +648,8 @@ class AnalyzeRule(
     fun evalJS(jsStr: String, result: Any?): Any? {
         val bindings = SimpleBindings()
         bindings["java"] = this
-        bindings["cookie"] = CookieStore
-        bindings["cache"] = CacheManager
+        bindings["cookie"] = CookieStore(getUserNameSpace())
+        bindings["cache"] = CacheManager(getUserNameSpace())
         bindings["source"] = source
         bindings["book"] = book
         bindings["result"] = result

@@ -42,12 +42,69 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
         }
     }
 
+    /**
+     * Validates the requested file home and stores its resolved directory on the request.
+     * A null result means the request may continue.
+     */
+    suspend fun checkAccess(
+        context: RoutingContext,
+        isSave: Boolean = false,
+        isDelete: Boolean = false
+    ): ReturnData? {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        context.put("__FILE_HOME__", null)
+        when (requestedHome(context)) {
+            "__WEBDAV__" -> {
+                if (appConfig.secure) {
+                    val userInfo = context.get("userInfo") as User?
+                        ?: return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+                    if (!userInfo.enable_webdav) return returnData.setErrorMsg("未开启webdav功能")
+                }
+                context.put("__FILE_HOME__", File(getUserWebdavHome(context)))
+            }
+            "__LOCAL_STORE__" -> {
+                if (appConfig.secure) {
+                    val userInfo = context.get("userInfo") as User?
+                        ?: return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+                    if (!userInfo.enable_local_store) return returnData.setErrorMsg("未开启本地书仓功能")
+                }
+                if ((isSave || isDelete) && !checkManagerAuth(context)) {
+                    return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+                }
+                context.put("__FILE_HOME__", File(getWorkDir("storage", "localStore")))
+            }
+            "__HOME__" -> context.put(
+                "__FILE_HOME__",
+                File(getWorkDir("storage", "data", getUserNameSpace(context)))
+            )
+            "__STORAGE__" -> {
+                if (!checkManagerAuth(context)) {
+                    return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+                }
+                context.put("__FILE_HOME__", File(getWorkDir("storage")))
+            }
+            else -> return returnData.setErrorMsg("非法访问")
+        }
+        return null
+    }
+
     private fun getFileHome(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): File? {
+        (context.get("__FILE_HOME__") as? File)?.let { directory ->
+            if (!directory.exists()) directory.mkdirs()
+            return directory
+        }
         val home = requestedHome(context)
         val userNameSpace = getUserNameSpace(context)
         val directory = when (home) {
-            "__WEBDAV__" -> File(getUserWebdavHome(context))
+            "__WEBDAV__" -> {
+                if (appConfig.secure && (context.get("userInfo") as? User)?.enable_webdav != true) return null
+                File(getUserWebdavHome(context))
+            }
             "__LOCAL_STORE__" -> {
+                if (appConfig.secure && (context.get("userInfo") as? User)?.enable_local_store != true) return null
                 if ((isSave || isDelete) && !checkManagerAuth(context)) return null
                 File(getWorkDir("storage", "localStore"))
             }
@@ -64,6 +121,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun list(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -100,6 +158,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun upload(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context, isSave = true)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -136,6 +195,11 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     suspend fun download(context: RoutingContext) {
+        val accessResult = checkAccess(context)
+        if (accessResult != null) {
+            context.response().setStatusCode(403).end(accessResult.errorMsg ?: "非法访问")
+            return
+        }
         if (!checkAuth(context)) {
             context.response().setStatusCode(401).end("NEED_LOGIN")
             return
@@ -164,6 +228,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun get(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -188,6 +253,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun save(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context, isSave = true)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -209,6 +275,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun mkdir(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context, isSave = true)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -228,6 +295,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun delete(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context, isDelete = true)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -247,6 +315,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun deleteMulti(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context, isDelete = true)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -273,6 +342,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun importPreview(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -320,6 +390,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun restore(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
@@ -351,6 +422,7 @@ class FileController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun parse(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        checkAccess(context)?.let { return it }
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }

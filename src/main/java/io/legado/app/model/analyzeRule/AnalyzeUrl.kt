@@ -63,6 +63,10 @@ class AnalyzeUrl(
     private var useWebView: Boolean = false
     private var webJs: String? = null
 
+    override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
+
+    override fun getLogger(): DebugLog? = source?.getLogger()
+
     init {
         if (!mUrl.isDataUrl()) {
             val urlMatcher = paramPattern.matcher(baseUrl)
@@ -235,8 +239,8 @@ class AnalyzeUrl(
         val bindings = SimpleBindings()
         bindings["java"] = this
         bindings["baseUrl"] = baseUrl
-        bindings["cookie"] = CookieStore
-        bindings["cache"] = CacheManager
+        bindings["cookie"] = CookieStore(getUserNameSpace())
+        bindings["cache"] = CacheManager(getUserNameSpace())
         bindings["page"] = page
         bindings["key"] = key
         bindings["speakText"] = speakText
@@ -350,18 +354,16 @@ class AnalyzeUrl(
         val strResponse: StrResponse
         if (this.useWebView && useWebView) {
             strResponse = io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
-                source?.getTag() ?: "",
-                url,
-                "",
-                "",
-                headerMap,
-                body ?: "",
-                "",
-                headerMap["User-Agent"] ?: "",
-                false,
-                jsStr ?: "",
-                headerMap["Content-Type"] ?: "",
-                debugLog
+                url = url,
+                tag = source?.getKey(),
+                headerMap = headerMap,
+                sourceRegex = sourceRegex,
+                javaScript = webJs ?: jsStr,
+                proxy = proxy,
+                post = isPost(),
+                body = body,
+                userNameSpace = getUserNameSpace(),
+                debugLog = debugLog
             ) ?: throw Exception("远程 WebView 未配置")
         } else {
             strResponse = getProxyClient(proxy, debugLog).newCallStrResponse(retry) {
@@ -507,12 +509,13 @@ class AnalyzeUrl(
      *@param tag 书源url 缺省为传入的url
      */
     private fun setCookie(tag: String?) {
-        val cookie = CookieStore.getCookie(tag ?: url)
+        val cookieStore = CookieStore(getUserNameSpace())
+        val cookie = cookieStore.getCookie(tag ?: url)
         if (cookie.isNotEmpty()) {
-            val cookieMap = CookieStore.cookieToMap(cookie)
-            val customCookieMap = CookieStore.cookieToMap(headerMap["Cookie"] ?: "")
+            val cookieMap = cookieStore.cookieToMap(cookie)
+            val customCookieMap = cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
             cookieMap.putAll(customCookieMap)
-            val newCookie = CookieStore.mapToCookie(cookieMap)
+            val newCookie = cookieStore.mapToCookie(cookieMap)
             newCookie?.let {
                 headerMap.put("Cookie", it)
             }
