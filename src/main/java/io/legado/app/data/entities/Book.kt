@@ -194,7 +194,7 @@ data class Book(
         _userNameSpace = nameSpace
     }
 
-    fun getUserNameSpace(): String {
+    override fun getUserNameSpace(): String {
         return _userNameSpace
     }
 

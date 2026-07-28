@@ -33,6 +33,7 @@ object Rss {
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${sortUrl}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")
         return RssParserByRule.parseXML(sortName, sortUrl, body, rssSource, ruleData, debugLog)
+            .also { (articles) -> articles.forEach { it.setUserNameSpace(rssSource.getUserNameSpace()) } }
     }
 
     suspend fun getContent(
@@ -41,6 +42,7 @@ object Rss {
         rssSource: RssSource,
         debugLog: DebugLog?
     ): String {
+        rssArticle.setUserNameSpace(rssSource.getUserNameSpace())
         val analyzeUrl = AnalyzeUrl(
             rssArticle.link,
             baseUrl = rssArticle.origin,

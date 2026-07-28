@@ -116,6 +116,7 @@ object BookList {
         book.originName = bookSource.bookSourceName
         book.originOrder = bookSource.customOrder
         book.type = bookSource.bookSourceType
+        book.setUserNameSpace(analyzeRule.getUserNameSpace())
         analyzeRule.ruleData = book
         BookInfo.analyzeBookInfo(
             book,
@@ -155,6 +156,7 @@ object BookList {
         searchBook.originName = bookSource.bookSourceName
         searchBook.type = bookSource.bookSourceType
         searchBook.originOrder = bookSource.customOrder
+        searchBook.setUserNameSpace(analyzeRule.getUserNameSpace())
         analyzeRule.ruleData = searchBook
         analyzeRule.setContent(item)
         if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取书名")

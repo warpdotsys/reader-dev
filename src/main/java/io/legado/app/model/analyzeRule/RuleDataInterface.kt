@@ -4,6 +4,8 @@ interface RuleDataInterface {
 
     val variableMap: HashMap<String, String>
 
+    fun getUserNameSpace(): String
+
     fun putVariable(key: String, value: String?)
 
     fun getVariable(key: String): String? {

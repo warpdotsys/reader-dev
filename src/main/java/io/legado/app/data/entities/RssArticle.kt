@@ -18,6 +18,8 @@ data class RssArticle(
     var variable: String? = null
 ): RuleDataInterface {
 
+    private var _userNameSpace = ""
+
     override fun hashCode() = link.hashCode()
 
     override fun equals(other: Any?): Boolean {
@@ -38,6 +40,12 @@ data class RssArticle(
         }
         variable = GSON.toJson(variableMap)
     }
+
+    fun setUserNameSpace(nameSpace: String) {
+        _userNameSpace = nameSpace
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
 
     // fun toStar() = RssStar(
     //     origin = origin,

@@ -174,6 +174,7 @@ object BookChapterList {
             elements.forEachIndexed { index, item ->
                 analyzeRule.setContent(item)
                 val bookChapter = BookChapter(bookUrl = book.bookUrl, baseUrl = redirectUrl)
+                bookChapter.setUserNameSpace(book.getUserNameSpace())
                 analyzeRule.chapter = bookChapter
                 bookChapter.title = analyzeRule.getString(nameRule)
                 bookChapter.url = analyzeRule.getString(urlRule)
