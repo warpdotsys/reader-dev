@@ -63,6 +63,7 @@ class AnalyzeUrl(
     private var retry: Int = 0
     private var useWebView: Boolean = false
     private var webJs: String? = null
+    private val enabledCookieJar = source?.enabledCookieJar ?: false
 
     override fun getUserNameSpace(): String = ruleData?.getUserNameSpace()?.ifEmpty { "unknow" } ?: "unknow"
 
@@ -518,8 +519,15 @@ class AnalyzeUrl(
      *@param tag 书源url 缺省为传入的url
      */
     private fun setCookie(tag: String?) {
+        val domain = NetworkUtils.getSubDomain(tag ?: url)
+        if (domain.isEmpty()) return
         val cookieStore = CookieStore(getUserNameSpace())
-        val cookie = cookieStore.getCookie(tag ?: url)
+        if (enabledCookieJar) {
+            cookieStore.getCookie("${domain}_cookieJar")?.let {
+                cookieStore.replaceCookie(domain, it)
+            }
+        }
+        val cookie = cookieStore.getCookie(domain)
         if (cookie.isNotEmpty()) {
             val cookieMap = cookieStore.cookieToMap(cookie)
             val customCookieMap = cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
