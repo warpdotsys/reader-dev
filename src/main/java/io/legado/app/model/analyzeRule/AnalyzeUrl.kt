@@ -64,7 +64,7 @@ class AnalyzeUrl(
     private var useWebView: Boolean = false
     private var webJs: String? = null
 
-    override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
+    override fun getUserNameSpace(): String = ruleData?.getUserNameSpace()?.ifEmpty { "unknow" } ?: "unknow"
 
     override fun getLogger(): DebugLog? = debugLog
 

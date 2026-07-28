@@ -35,7 +35,7 @@ class AnalyzeRule(
     var debugLog: io.legado.app.model.DebugLog? = null
 ) : JsExtensions {
 
-    override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
+    override fun getUserNameSpace(): String = ruleData.getUserNameSpace()
 
     override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 
