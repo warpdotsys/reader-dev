@@ -37,6 +37,7 @@ class AnalyzeUrl(
     private val ruleData: RuleDataInterface? = null,
     private val chapter: BookChapter? = null,
     headerMapF: Map<String, String>? = null,
+    var debugLog: DebugLog? = null
 ) : JsExtensions {
     companion object {
         val paramPattern: Pattern = Pattern.compile("\\s*,\\s*(?=\\{)")
@@ -65,7 +66,7 @@ class AnalyzeUrl(
 
     override fun getUserNameSpace(): String = source?.getUserNameSpace() ?: ""
 
-    override fun getLogger(): DebugLog? = source?.getLogger()
+    override fun getLogger(): DebugLog? = debugLog
 
     init {
         if (!mUrl.isDataUrl()) {
@@ -343,8 +344,7 @@ class AnalyzeUrl(
     suspend fun getStrResponseAwait(
         jsStr: String? = null,
         sourceRegex: String? = null,
-        useWebView: Boolean = true,
-        debugLog: DebugLog? = null
+        useWebView: Boolean = true
     ): StrResponse {
         if (type != null) {
             return StrResponse(url, StringUtils.byteToHexString(getByteArrayAwait()))
@@ -386,19 +386,27 @@ class AnalyzeUrl(
                 }
             }
         }
+        saveCookieJar(strResponse.raw)
         fetchEnd(concurrentRecord)
         return strResponse
+    }
+
+    fun saveCookieJar(response: Response) {
+        val cookieList = response.headers("Set-Cookie")
+        if (cookieList.isEmpty()) return
+        val cookieStore = CookieStore(getUserNameSpace())
+        val domain = NetworkUtils.getSubDomain(url)
+        cookieList.forEach { cookieStore.replaceCookie("${domain}_cookieJar", it) }
     }
 
     @JvmOverloads
     fun getStrResponse(
         jsStr: String? = null,
         sourceRegex: String? = null,
-        useWebView: Boolean = true,
-        debugLog: DebugLog? = null
+        useWebView: Boolean = true
     ): StrResponse {
         return runBlocking {
-            getStrResponseAwait(jsStr, sourceRegex, useWebView, debugLog)
+            getStrResponseAwait(jsStr, sourceRegex, useWebView)
         }
     }
 
@@ -409,7 +417,7 @@ class AnalyzeUrl(
         val concurrentRecord = fetchStart()
         setCookie(source?.getKey())
         @Suppress("BlockingMethodInNonBlockingContext")
-        val response = getProxyClient(proxy).newCallResponse(retry) {
+        val response = getProxyClient(proxy, debugLog).newCallResponse(retry) {
             addHeaders(headerMap)
             when (method) {
                 RequestMethod.POST -> {
@@ -428,6 +436,7 @@ class AnalyzeUrl(
                 else -> get(urlNoQuery, fieldMap, true)
             }
         }
+        saveCookieJar(response)
         fetchEnd(concurrentRecord)
         return response
     }

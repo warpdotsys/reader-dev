@@ -55,8 +55,9 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
                 source = bookSource,
                 ruleData = variableBook,
                 headerMapF = bookSource.getHeaderMap(true),
+                debugLog = debugger
             )
-            var res = analyzeUrl.getStrResponseAwait(debugLog = debugger)
+            var res = analyzeUrl.getStrResponseAwait()
             //检测书源是否已登录
             bookSource.loginCheckJs?.let { checkJs ->
                 if (checkJs.isNotBlank()) {
@@ -94,9 +95,10 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
             baseUrl = bookSource.bookSourceUrl,
             source = bookSource,
             ruleData = variableBook,
-            headerMapF = bookSource.getHeaderMap(true)
+            headerMapF = bookSource.getHeaderMap(true),
+            debugLog = debugger
         )
-        var res = analyzeUrl.getStrResponseAwait(debugLog = debugger)
+        var res = analyzeUrl.getStrResponseAwait()
         //检测书源是否已登录
         bookSource.loginCheckJs?.let { checkJs ->
             if (checkJs.isNotBlank()) {
@@ -150,9 +152,10 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
             baseUrl = bookSource.bookSourceUrl,
             source = bookSource,
             ruleData = book,
-            headerMapF = bookSource.getHeaderMap(true)
+            headerMapF = bookSource.getHeaderMap(true),
+            debugLog = debugger
         )
-        var res = analyzeUrl.getStrResponseAwait(debugLog = debugger)
+        var res = analyzeUrl.getStrResponseAwait()
         //检测书源是否已登录
         bookSource.loginCheckJs?.let { checkJs ->
             if (checkJs.isNotBlank()) {
@@ -187,9 +190,10 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
                 baseUrl = book.bookUrl,
                 source = bookSource,
                 ruleData = book,
-                headerMapF = bookSource.getHeaderMap(true)
+                headerMapF = bookSource.getHeaderMap(true),
+                debugLog = debugger
             )
-            var res = analyzeUrl.getStrResponseAwait(debugLog = debugger)
+            var res = analyzeUrl.getStrResponseAwait()
             //检测书源是否已登录
             bookSource.loginCheckJs?.let { checkJs ->
                 if (checkJs.isNotBlank()) {
@@ -228,12 +232,12 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
             source = bookSource,
             ruleData = book,
             chapter = bookChapter,
-            headerMapF = bookSource.getHeaderMap(true)
+            headerMapF = bookSource.getHeaderMap(true),
+            debugLog = debugger
         )
         var res = analyzeUrl.getStrResponseAwait(
             jsStr = bookSource.getContentRule().webJs,
-            sourceRegex = bookSource.getContentRule().sourceRegex,
-            debugLog = debugger
+            sourceRegex = bookSource.getContentRule().sourceRegex
         )
         return BookContent.analyzeContent(
             res.body,
