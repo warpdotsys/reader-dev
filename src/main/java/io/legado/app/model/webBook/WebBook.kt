@@ -20,12 +20,25 @@ import kotlinx.coroutines.withContext
 
 private val logger = KotlinLogging.logger {}
 
-class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debugLogger: DebugLog? = null) {
+class WebBook(
+    val bookSource: BookSource,
+    val debugLog: Boolean = true,
+    var debugLogger: DebugLog? = null,
+    var userNameSpace: String? = null
+) {
 
-    constructor(bookSourceString: String, debugLog: Boolean = true) : this(BookSource.fromJson(bookSourceString).getOrNull() ?: BookSource(), debugLog)
+    constructor(
+        bookSourceString: String,
+        debugLog: Boolean = true,
+        debugLogger: DebugLog? = null,
+        userNameSpace: String? = null
+    ) : this(BookSource.fromJson(bookSourceString).getOrNull() ?: BookSource(), debugLog, debugLogger, userNameSpace)
 
     val sourceUrl: String
         get() = bookSource.bookSourceUrl
+
+    val userNS: String
+        get() = userNameSpace ?: bookSource.getUserNameSpace().ifEmpty { "unknow" }
 
     val debugger: DebugLog?
         get() {
@@ -45,7 +58,8 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
         key: String,
         page: Int? = 1
     ): List<SearchBook> {
-        val variableBook = SearchBook()
+        bookSource.setUserNameSpace(userNS)
+        val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
         return bookSource.searchUrl?.let { searchUrl ->
             val analyzeUrl = AnalyzeUrl(
                 mUrl = searchUrl,
@@ -88,7 +102,8 @@ class WebBook(val bookSource: BookSource, val debugLog: Boolean = true, var debu
         url: String,
         page: Int? = 1
     ): List<SearchBook> {
-        val variableBook = SearchBook()
+        bookSource.setUserNameSpace(userNS)
+        val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
         val analyzeUrl = AnalyzeUrl(
             mUrl = url,
             page = page,

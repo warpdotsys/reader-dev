@@ -123,9 +123,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     private fun webBook(bookSource: String, debugLog: Boolean, userNameSpace: String): WebBook {
-        return WebBook(bookSource, debugLog).also {
-            it.bookSource.setUserNameSpace(userNameSpace)
-        }
+        return WebBook(bookSource, debugLog, userNameSpace = userNameSpace)
     }
 
     suspend fun getInvalidBookSources(context: RoutingContext): ReturnData {
