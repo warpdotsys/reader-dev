@@ -586,45 +586,21 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkManagerAuth(context)) {
             return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
         }
-        val days = context.bodyAsJson?.getInteger("days", 30) ?: 30
-        if (days <= 0) {
-            return returnData.setErrorMsg("天数必须大于0")
-        }
+        val inactiveDay = context.bodyAsJson?.getInteger("inactiveDay", 0) ?: 0
+        clearInactiveUsers(inactiveDay)
+        return returnData.setData("")
+    }
 
-        var userMap = mutableMapOf<String, MutableMap<String, Any>>()
-        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-        if (userMapJson != null) {
-            userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
-        }
-        val expireTime = System.currentTimeMillis() - days * 86400L * 1000L
-        val deletedUsers = arrayListOf<String>()
-        val keysToRemove = arrayListOf<String>()
-
-        userMap.forEach { (key, value) ->
-            val username = value.getOrDefault("username", "") as? String ?: ""
-            val lastLogin = (value.getOrDefault("last_login_at", 0L) as? Number)?.toLong() ?: 0L
-            if (username.isNotEmpty() && lastLogin < expireTime) {
-                keysToRemove.add(key)
-                deletedUsers.add(username)
+    suspend fun clearInactiveUsers(day: Int) {
+        val expireTime = System.currentTimeMillis() - day * 86400L * 1000L
+        forEachUser { user ->
+            if (user.last_login_at >= expireTime) {
+                false
+            } else {
+                File(getWorkDir("storage", "data", user.username)).deleteRecursively()
+                true
             }
         }
-
-        keysToRemove.forEach { key ->
-            userMap.remove(key)
-            val userHome = File(getWorkDir("storage", "data", key))
-            if (userHome.exists()) {
-                userHome.deleteRecursively()
-            }
-        }
-
-        if (keysToRemove.isNotEmpty()) {
-            saveStorage("data", "users", value = userMap)
-        }
-
-        return returnData.setData(mapOf(
-            "deletedCount" to deletedUsers.size,
-            "deletedUsers" to deletedUsers
-        ))
     }
 
     suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean) {

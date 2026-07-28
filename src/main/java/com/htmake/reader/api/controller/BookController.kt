@@ -1862,7 +1862,11 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         return localChapterList
     }
 
-    suspend fun getBookSourceString(context: RoutingContext, sourceUrl: String = ""): String? {
+    suspend fun getBookSourceString(
+        context: RoutingContext,
+        sourceUrl: String = "",
+        withExploreUrl: Boolean = false
+    ): String? {
         var bookSourceString: String? = null
         if (context.request().method() == HttpMethod.POST) {
             var bookSource = context.bodyAsJson.getJsonObject("bookSource")
