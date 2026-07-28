@@ -3495,6 +3495,47 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         return null
     }
 
+    suspend fun createUserBackup(
+        userNameSpace: String,
+        backupDir: String,
+        latestZipFilePath: String? = null
+    ): File? {
+        val today = SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis())
+        val stagingDir = File(getWorkDir("storage", "data", userNameSpace, "backup$today"))
+        stagingDir.deleteRecursively()
+        try {
+            if (latestZipFilePath != null && !File(latestZipFilePath).unzip(stagingDir.absolutePath)) {
+                return null
+            }
+
+            for (fileName in backupFileNames(userNameSpace)) {
+                val source = File(getWorkDir("storage", "data", userNameSpace, "$fileName.json"))
+                if (!source.exists()) continue
+                val destination = File(stagingDir, source.name)
+                destination.deleteRecursively()
+                source.copyTo(destination, overwrite = true)
+            }
+
+            val webdavBooks = File(getWorkDir("storage", "data", userNameSpace, "webdav", "books"))
+            if (webdavBooks.exists()) {
+                val destination = File(stagingDir, "books")
+                destination.deleteRecursively()
+                webdavBooks.copyRecursively(destination, overwrite = true)
+            }
+
+            val output = FileUtils.createFileWithReplace(
+                File(backupDir, "backup$today.zip").absolutePath
+            )
+            val files = stagingDir.listFiles()?.toList().orEmpty()
+            return if (files.isNotEmpty() && io.legado.app.utils.ZipUtils.zipFiles(files, output)) output else null
+        } catch (e: Exception) {
+            logger.error("createUserBackup error: {}", e.message)
+            return null
+        } finally {
+            stagingDir.deleteRecursively()
+        }
+    }
+
     suspend fun createUserBackup(userNameSpace: String): Boolean {
         try {
             val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
