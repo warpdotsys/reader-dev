@@ -1955,7 +1955,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         return null
     }
 
-    fun saveShelfBookProgress(book: Book, bookChapter: BookChapter, userNameSpace: String) {
+    suspend fun saveShelfBookProgress(book: Book, bookChapter: BookChapter, userNameSpace: String) {
         editShelfBook(book, userNameSpace) { existBook ->
             existBook.durChapterIndex = bookChapter.index
             existBook.durChapterTitle = bookChapter.title
@@ -1990,7 +1990,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
     }
 
-    fun editShelfBook(book: Book, userNameSpace: String, handler: (Book)->Book): Book? {
+    suspend fun editShelfBook(book: Book, userNameSpace: String, handler: (Book)->Book): Book? {
         var bookshelf: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookshelf"))
         if (bookshelf == null) {
             bookshelf = JsonArray()
