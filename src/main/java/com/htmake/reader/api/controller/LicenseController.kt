@@ -28,6 +28,9 @@ import io.legado.app.utils.EncoderUtils
 import java.security.KeyFactory
 import java.security.PrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Base64
 import java.util.UUID
 import io.legado.app.utils.ACache
@@ -137,6 +140,16 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
                 setLicenseValid(isValid)
                 if (!isValid) {
                     logger.info("密钥错误：{}", result?.getString("errorMsg") ?: "")
+                }
+                result?.getJsonObject("repeat")?.let { repeat ->
+                    logger.info(
+                        "请勿重复使用授权，上次检查时间：{}，上次检查ip：{}",
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(repeat.getLong("lastOnlineTime", 0L)),
+                            ZoneId.systemDefault()
+                        ),
+                        repeat.getString("lastOnlineIp")
+                    )
                 }
             }.onFailure {
                 logger.info("check license error: {}", it.message)
