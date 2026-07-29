@@ -21,6 +21,7 @@ import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.setLicenseValid
 import com.htmake.reader.utils.validateEmail
 import com.htmake.reader.utils.sendEmail
+import com.htmake.reader.utils.success
 import io.legado.app.utils.EncoderUtils
 import java.security.KeyFactory
 import java.security.PrivateKey
@@ -128,26 +129,48 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         ))
     }
 
-    suspend fun importLicense(context: RoutingContext): ReturnData {
+    suspend fun importLicense(context: RoutingContext) {
         val returnData = ReturnData()
         if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            return
         }
         if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+            context.success(returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码"))
+            return
         }
-        val licenseKey = context.bodyAsJson?.getString("content", context.bodyAsJson?.getString("licenseKey", "")) ?: ""
-        if (licenseKey.isEmpty()) {
-            return returnData.setErrorMsg("请输入许可证密钥")
+        val content = context.bodyAsJson?.getString("content") ?: ""
+        if (content.isEmpty()) {
+            context.success(returnData.setErrorMsg("请输入密钥"))
+            return
         }
 
-        val license = decryptToLicense(licenseKey) ?: return returnData.setErrorMsg("许可证密钥错误")
-        if (license.expiredAt > 0 && !license.isValid()) return returnData.setErrorMsg("许可证已过期")
-        val licenseFile = com.htmake.reader.utils.getStorageFile("data", "license", ext = ".key")
-        licenseFile.parentFile.mkdirs()
-        licenseFile.writeText(licenseKey)
-        setLicenseValid(license.verified)
-        return returnData.setData(mapOf("active" to license.verified, "valid" to license.isValid(), "license" to license))
+        webClient.postAbs("https://r.htmake.com/reader3/activateLicense")
+            .timeout(5000)
+            .sendJsonObject(JsonObject().put("content", content)) { response ->
+                runCatching {
+                    val payload = response.result()?.bodyAsJsonObject()
+                        ?: throw response.cause() ?: Exception("密钥激活失败")
+                    if (payload.getBoolean("isSuccess", false) != true) {
+                        throw Exception(payload.getString("errorMsg") ?: "密钥激活失败")
+                    }
+                    val licenseKey = payload.getJsonObject("data")?.getString("result")
+                        ?: throw Exception("密钥错误")
+                    val license = decryptToLicense(licenseKey) ?: throw Exception("密钥错误")
+                    if (!license.validHost(context.request().host())) {
+                        throw Exception("密钥授权域名错误")
+                    }
+                    licenseKey to license
+                }.onSuccess { (licenseKey, license) ->
+                    val licenseFile = com.htmake.reader.utils.getStorageFile("data", "license", ext = ".key")
+                    licenseFile.parentFile.mkdirs()
+                    licenseFile.writeText(licenseKey)
+                    context.success(returnData.setData(mapOf("license" to license)))
+                }.onFailure { error ->
+                    logger.info("import license error: {}", error.message)
+                    context.success(returnData.setErrorMsg(error.message ?: "密钥激活错误"))
+                }
+            }
     }
 
     suspend fun activateLicense(context: RoutingContext): ReturnData {

@@ -477,7 +477,7 @@ class YueduApi : RestVerticle() {
         /** 许可证模块 */
         router.get("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
         router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
-        router.post("/reader3/importLicense").coroutineHandler { licenseController.importLicense(it) }
+        router.post("/reader3/importLicense").coroutineHandlerWithoutRes { licenseController.importLicense(it) }
         router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
         router.get("/reader3/checkLicense").coroutineHandler { licenseController.checkLicense(it) }
         router.post("/reader3/supplyLicense").coroutineHandler { licenseController.supplyLicense(it) }
