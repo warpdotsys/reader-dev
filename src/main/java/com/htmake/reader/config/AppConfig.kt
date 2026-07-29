@@ -14,7 +14,7 @@ class AppConfig {
     var inviteCode = ""   // 注册邀请码
     var secureKey = ""    // 管理密码
     var cacheChapterContent = false // 是否缓存章节内容
-    var userLimit = 50    // 用户上限
+    var userLimit = 15    // 用户上限
     var userBookLimit = 200    // 用户书籍上限
     var debugLog = false  // 调试日志
     var autoClearInactiveUser = 0  // 自动清理不活跃用户
@@ -25,24 +25,24 @@ class AppConfig {
     var exportPictureFile = false // 导出图片
 
     // workDir - working directory (replaces storagePath)
-    var workDir: String = "."
+    var workDir: String = ""
 
     // MongoDB configuration
     var mongoUri: String = ""
     var mongoDbName: String = "reader"
 
     // Shelf update interval (minutes)
-    var shelfUpdateInteval: Int = 30
+    var shelfUpdateInteval: Int = 10
 
     // Remote webview API
     var remoteWebviewApi: String = ""
 
     // Default user permission settings
-    var defaultUserEnableWebdav: Boolean = true
-    var defaultUserEnableLocalStore: Boolean = true
+    var defaultUserEnableWebdav: Boolean = false
+    var defaultUserEnableLocalStore: Boolean = false
     var defaultUserEnableBookSource: Boolean = true
     var defaultUserEnableRssSource: Boolean = true
-    var defaultUserBookSourceLimit: Int = 100
+    var defaultUserBookSourceLimit: Int = 200
     var defaultUserBookLimit: Int = 200
 
     // Auto backup user data
