@@ -516,10 +516,8 @@ fun countOccurrences(text: String, sub: String): Int {
 
 fun getInstalledLicense(ignoreInvalid: Boolean = false): License {
     try {
-        val licenseFile = getStorageFile("data", "license", ext = ".key")
-        if (!licenseFile.exists()) return License()
-        val licenseStr = licenseFile.readText()
-        if (licenseStr.isBlank() || (!ignoreInvalid && !_licenseValid)) return License()
+        val licenseStr = getStorage("data", "license", ext = ".key")
+        if (licenseStr.isNullOrEmpty() || (!ignoreInvalid && !_licenseValid)) return License()
         val license = decryptToLicense(licenseStr)
         logger.info("license: {}", license)
         return license?.takeIf { it.verified } ?: License()
