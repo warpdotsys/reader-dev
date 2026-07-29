@@ -27,6 +27,7 @@ import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.fillData
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRandomString
+import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.genEncryptedPassword
 import com.htmake.reader.entity.User
 import com.htmake.reader.utils.SpringContextUtils
@@ -74,8 +75,9 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
     val userMaxCount = 50
 
     private fun getUserLimit(context: RoutingContext): Int {
-        if (context.request().host().equals("reader.htmake.com")) {
-            return 500;
+        val license = getInstalledLicense()
+        if (license.validHost(context.request().host())) {
+            return Math.min(Math.max(appConfig.userLimit, 1), license.userMaxLimit)
         }
         return Math.min(Math.max(appConfig.userLimit, 1), userMaxCount)
     }

@@ -721,7 +721,7 @@ class YueduApi : RestVerticle() {
     @Scheduled(cron = "0 4/15 7-23 * * ?")
     fun checkLicense()
     {
-        val license = com.htmake.reader.utils.getInstalledLicense(true) ?: return
+        val license = com.htmake.reader.utils.getInstalledLicense(true)
         if (license.type == "default") return
         launch(Dispatchers.IO) {
             try {

@@ -145,7 +145,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     fun checkLicenseFeature(feature: String): Boolean {
-        return getInstalledLicense()?.isValid() == true
+        return getInstalledLicense().isValid()
     }
 
     suspend fun getLicense(context: RoutingContext): ReturnData {
@@ -233,9 +233,9 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun checkLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        val license = getInstalledLicense(true) ?: return returnData.setData(mapOf("valid" to false))
+        val license = getInstalledLicense(true)
         checkLicense(license)
-        return returnData.setData(mapOf("valid" to (getInstalledLicense()?.isValid() == true)))
+        return returnData.setData(mapOf("valid" to getInstalledLicense().isValid()))
     }
 
     suspend fun supplyLicense(context: RoutingContext): ReturnData {
@@ -293,7 +293,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
     suspend fun isHostValid(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         val host = context.request().getParam("host") ?: context.bodyAsJson?.getString("host", "") ?: ""
-        return returnData.setData(mapOf("isValid" to (getInstalledLicense()?.validHost(host) == true)))
+        return returnData.setData(mapOf("isValid" to getInstalledLicense().validHost(host)))
     }
 
     suspend fun decryptLicense(context: RoutingContext): ReturnData {
