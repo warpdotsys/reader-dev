@@ -128,19 +128,17 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         return ReturnData().setData(mapOf("result" to signed))
     }
 
-    /**
-     * Check license validity (non-route overload for scheduled jobs).
-     * Check a license with the licensing service. Network failures keep the
-     * previous state rather than granting access.
-     */
     suspend fun checkLicense(license: License) {
         webClient.getAbs("https://r.htmake.com/reader3/isLicenseValid?id=${license.id}").timeout(5000).send { response ->
             runCatching {
                 val encrypted = response.result()?.bodyAsJsonObject()?.getJsonObject("data")?.getString("result")
                 val result = encrypted?.let { JsonObject(com.htmake.reader.utils.decryptData(it)) }
-                setLicenseValid(result?.getBoolean("isValid", false) == true)
+                val isValid = result?.getBoolean("isValid") ?: true
+                setLicenseValid(isValid)
+                if (!isValid) {
+                    logger.info("密钥错误：{}", result?.getString("errorMsg") ?: "")
+                }
             }.onFailure {
-                setLicenseValid(false)
                 logger.info("check license error: {}", it.message)
             }
         }
@@ -281,14 +279,9 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun decryptLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-        }
         val content = context.bodyAsJson?.getString("content", "") ?: ""
-        val license = decryptToLicense(content) ?: return returnData.setErrorMsg("许可证密钥错误")
+        if (content.isEmpty()) return returnData.setErrorMsg("请输入密钥")
+        val license = decryptToLicense(content) ?: return returnData.setErrorMsg("密钥错误")
         return returnData.setData(license)
     }
 

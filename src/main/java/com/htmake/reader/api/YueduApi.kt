@@ -476,6 +476,7 @@ class YueduApi : RestVerticle() {
 
         /** 许可证模块 */
         router.get("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
+        router.post("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
         router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
         router.post("/reader3/importLicense").coroutineHandlerWithoutRes { licenseController.importLicense(it) }
         router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
@@ -484,6 +485,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/generateKeys").coroutineHandler { licenseController.generateKeys(it) }
         router.post("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
         router.get("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
+        router.post("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
         router.post("/reader3/decryptLicense").coroutineHandler { licenseController.decryptLicense(it) }
         router.post("/reader3/sendCodeToEmail").coroutineHandler { licenseController.sendCodeToEmail(it) }
     }
