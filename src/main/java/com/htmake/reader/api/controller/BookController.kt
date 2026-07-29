@@ -3307,8 +3307,19 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         return queryIndexInResult to newText
     }
 
-    fun backupFileNames(userNameSpace: String): List<String> {
-        return listOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
+    private val backupFileNames by lazy {
+        arrayOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
+    }
+
+    private fun mongoUserNamespaces(): List<String> {
+        val namespaces = arrayListOf("default")
+        if (!appConfig.secure) return namespaces
+        val users = asJsonObject(getStorage("data", "users"))?.map ?: return namespaces
+        users.values.forEach { value ->
+            val username = (value as? Map<*, *>)?.get("username") as? String ?: ""
+            if (username.isNotEmpty()) namespaces += username
+        }
+        return namespaces
     }
 
     suspend fun backupToMongodb(context: RoutingContext): ReturnData {
@@ -3316,32 +3327,21 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         if (!MongoManager.isInit()) {
-            return returnData.setErrorMsg("MongoDB 未配置或连接失败")
+            return returnData.setErrorMsg("请先设置 mongoUri")
         }
-        val db = MongoManager.db(appConfig.mongoDbName) ?: return returnData.setErrorMsg("MongoDB 数据库获取失败")
+        if (!checkManagerAuth(context)) {
+            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+        }
 
-        try {
-            val fileNames = backupFileNames(userNameSpace)
-            for (fileName in fileNames) {
-                val content = getUserStorage(userNameSpace, fileName) ?: continue
-                val collection = db.getCollection("backup_${userNameSpace}")
-                val doc = org.bson.Document()
-                doc.put("name", fileName)
-                doc.put("content", content)
-                doc.put("updated_at", System.currentTimeMillis())
-                // Upsert by name
-                collection.replaceOne(
-                    org.bson.Document("name", fileName),
-                    doc,
-                    com.mongodb.client.model.ReplaceOptions().upsert(true)
-                )
+        mongoUserNamespaces().forEach { userNameSpace ->
+            backupFileNames.forEach { fileName ->
+                getUserStorage(userNameSpace, fileName)?.let { content ->
+                    saveUserStorage(userNameSpace, fileName, content)
+                }
             }
-        } catch (e: Exception) {
-            logger.error("backupToMongodb error: {}", e.message)
-            return returnData.setErrorMsg("备份失败: ${e.message}")
         }
+        getStorage("users")?.let { saveStorage("users", value = it) }
         return returnData.setData("")
     }
 
@@ -3350,23 +3350,23 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val userNameSpace = getUserNameSpace(context)
         if (!MongoManager.isInit()) {
-            return returnData.setErrorMsg("MongoDB 未配置或连接失败")
+            return returnData.setErrorMsg("请先设置 mongoUri")
         }
-        val db = MongoManager.db(appConfig.mongoDbName) ?: return returnData.setErrorMsg("MongoDB 数据库获取失败")
+        if (!checkManagerAuth(context)) {
+            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+        }
 
-        try {
-            val collection = db.getCollection("backup_${userNameSpace}")
-            val cursor = collection.find()
-            for (doc in cursor) {
-                val name = doc.getString("name") ?: continue
-                val content = doc.getString("content") ?: continue
-                saveUserStorage(userNameSpace, name, content)
+        mongoUserNamespaces().forEach { userNameSpace ->
+            backupFileNames.forEach { fileName ->
+                val file = File(getWorkDir("storage", "data", userNameSpace, "$fileName.json"))
+                if (file.exists()) file.delete()
             }
-        } catch (e: Exception) {
-            logger.error("restoreFromMongodb error: {}", e.message)
-            return returnData.setErrorMsg("恢复失败: ${e.message}")
+        }
+        val usersFile = File(getWorkDir("storage", "users.json"))
+        if (usersFile.exists()) {
+            usersFile.delete()
+            getStorage("users")
         }
         return returnData.setData("")
     }
@@ -3518,7 +3518,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 return null
             }
 
-            for (fileName in backupFileNames(userNameSpace)) {
+            for (fileName in backupFileNames) {
                 val source = File(getWorkDir("storage", "data", userNameSpace, "$fileName.json"))
                 if (!source.exists()) continue
                 val destination = File(stagingDir, source.name)
@@ -3558,7 +3558,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
             val dataDir = File(getWorkDir("storage", "data", userNameSpace))
             val filesToBackup = arrayListOf<File>()
-            val fileNames = backupFileNames(userNameSpace)
+            val fileNames = backupFileNames
             for (fileName in fileNames) {
                 val file = File(dataDir, "${fileName}.json")
                 if (file.exists()) {
