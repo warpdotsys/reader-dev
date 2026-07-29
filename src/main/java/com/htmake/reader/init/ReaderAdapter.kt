@@ -6,8 +6,6 @@ import io.legado.app.model.DebugLog
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
-import com.htmake.reader.utils.SpringContextUtils
-import com.htmake.reader.config.AppConfig
 
 /**
  * Singleton ReaderAdapter implementation using getWorkDir from VertExt.kt.
@@ -44,24 +42,19 @@ object ReaderAdapter : ReaderAdapterInterface {
         userNameSpace: String,
         debugLog: DebugLog?
     ): StrResponse? {
-        val config = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
-        if (config.remoteWebviewApi.isNotEmpty()) {
-            RemoteWebview.setRemoteApi(config.remoteWebviewApi)
-            return RemoteWebview.getStrResponse(
-                url = url,
-                html = html,
-                encode = encode ?: headerMap?.get("charset"),
-                tag = tag,
-                headerMap = headerMap,
-                sourceRegex = sourceRegex,
-                js_source = javaScript,
-                proxy = proxy,
-                isPost = post,
-                body = body,
-                userNameSpace = userNameSpace,
-                debugLog = debugLog
-            )
-        }
-        throw Exception("不支持webview")
+        return RemoteWebview.getStrResponse(
+            url = url,
+            html = html,
+            encode = encode.takeUnless { it.isNullOrEmpty() } ?: headerMap?.get("charset"),
+            tag = tag,
+            headerMap = headerMap,
+            sourceRegex = sourceRegex,
+            js_source = javaScript,
+            proxy = proxy,
+            isPost = post,
+            body = body,
+            userNameSpace = userNameSpace,
+            debugLog = debugLog
+        )
     }
 }
