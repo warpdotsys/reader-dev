@@ -783,11 +783,8 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
         val bookController = BookController(coroutineContext)
 
         val userNameSpace = getUserNameSpace(context)
-        var latestZipFilePath = bookController.getLastBackFileFromWebdav(userNameSpace)
-        if (latestZipFilePath == null) {
-            return returnData.setErrorMsg("请先使用阅读App备份到webdav")
-        }
-        if (!bookController.saveToWebdav(latestZipFilePath, userNameSpace)) {
+        val latestZipFilePath = bookController.getLastBackFileFromWebdav(userNameSpace)
+        if (!bookController.saveToWebdav(latestZipFilePath ?: "", userNameSpace)) {
             return returnData.setErrorMsg("备份失败")
         }
         return returnData.setData("")
