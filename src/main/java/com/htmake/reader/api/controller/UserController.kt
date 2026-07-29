@@ -609,7 +609,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         }
         val inactiveDay = context.bodyAsJson?.getInteger("inactiveDay", 0) ?: 0
         clearInactiveUsers(inactiveDay)
-        return returnData.setData("")
+        return getUserList(context)
     }
 
     suspend fun clearInactiveUsers(day: Int) {
