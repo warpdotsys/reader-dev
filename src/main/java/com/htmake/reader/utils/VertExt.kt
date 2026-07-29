@@ -59,20 +59,35 @@ private val storageLocks = LRUCache<String, ReadWriteLock>(MAX_CACHE_SIZE)
 
 fun getWorkDir(subPath: String = ""): String {
     if (!workDirInit && workDirPath.isEmpty()) {
-        var osName = System.getProperty("os.name")
-        var currentDir = System.getProperty("user.dir")
-        logger.info("osName: {} currentDir: {}", osName, currentDir)
-        // MacOS 存放目录为用户目录
-        if (osName.startsWith("Mac OS", true) && !currentDir.startsWith("/Users/")) {
-            workDirPath = Paths.get(System.getProperty("user.home"), ".reader").toString()
-        } else {
-            workDirPath = currentDir
+        val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
+        if (appConfig != null && appConfig.workDir.isNotEmpty() && appConfig.workDir != ".") {
+            val workDirFile = File(appConfig.workDir)
+            if (workDirFile.exists() && !workDirFile.isDirectory) {
+                logger.error("reader.app.workDir={} is not a directory", appConfig.workDir)
+            } else {
+                if (!workDirFile.exists()) {
+                    logger.info("reader.app.workDir={} not exists, creating", appConfig.workDir)
+                    workDirFile.mkdirs()
+                }
+                workDirPath = workDirFile.absolutePath
+            }
         }
+        if (workDirPath.isEmpty()) {
+            val osName = System.getProperty("os.name")
+            val currentDir = System.getProperty("user.dir")
+            logger.info("osName: {} currentDir: {}", osName, currentDir)
+            if (osName.startsWith("Mac OS", true) && !currentDir.startsWith("/Users/")) {
+                workDirPath = Paths.get(System.getProperty("user.home"), ".reader").toString()
+            } else {
+                workDirPath = currentDir
+            }
+        }
+        logger.info("Using workdir: {}", workDirPath)
         workDirInit = true
     }
-    var path = Paths.get(workDirPath, subPath);
+    val path = Paths.get(workDirPath, subPath)
 
-    return path.toString();
+    return path.toString()
 }
 
 fun getWorkDir(vararg subDirFiles: String): String {
