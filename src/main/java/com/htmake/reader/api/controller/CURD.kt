@@ -19,7 +19,7 @@ interface CURD<T> {
     fun getTableName(): String
 
     fun convertToEntity(json: JsonObject): T {
-        return gson.fromJson(json.toString(), getEntityClass())
+        return json.mapTo(getEntityClass())
     }
 
     fun convertToEntityList(json: String): Array<T> {
@@ -57,7 +57,7 @@ interface CURD<T> {
     suspend fun list(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkUserAuth(context)) {
-            return returnData.setErrorMsg("NEED_LOGIN")
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
         val userNS = getUserNS(context)
         val db = DB.table<T>(userNS, getTableName())
@@ -69,42 +69,15 @@ interface CURD<T> {
     suspend fun save(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkUserAuth(context)) {
-            return returnData.setErrorMsg("NEED_LOGIN")
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        val entity = convertToEntity(context.bodyAsJson)
         val userNS = getUserNS(context)
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val jsonObj = try {
-            JsonObject(body)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val entity = convertToEntity(jsonObj)
         val db = DB.table<T>(userNS, getTableName())
 
         val beforeResult = beforeSave(entity, db)
         if (beforeResult != null) {
             return beforeResult
-        }
-
-        // Check if entity already exists
-        val allData = db.readAll() ?: JsonArray()
-        var found = false
-        for (i in 0 until allData.size()) {
-            val obj = allData.getJsonObject(i)
-            if (obj != null && checker(obj, entity)) {
-                found = true
-                break
-            }
-        }
-
-        if (!found) {
-            val addResult = beforeAdd(entity, db)
-            if (addResult != null) {
-                return addResult
-            }
         }
 
         db.save(entity, { e, exists, data -> onCheckEnd(e, exists, data) }, { obj, e -> checker(obj, e) })
@@ -114,18 +87,11 @@ interface CURD<T> {
     suspend fun saveMulti(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkUserAuth(context)) {
-            return returnData.setErrorMsg("NEED_LOGIN")
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        val entities = convertToEntityList(context.bodyAsString)
+        if (entities.isEmpty()) return returnData.setErrorMsg("参数错误")
         val userNS = getUserNS(context)
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val entities = try {
-            convertToEntityList(body)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
         val db = DB.table<T>(userNS, getTableName())
 
         for (entity in entities) {
@@ -142,19 +108,10 @@ interface CURD<T> {
     suspend fun delete(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkUserAuth(context)) {
-            return returnData.setErrorMsg("NEED_LOGIN")
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        val entity = convertToEntity(context.bodyAsJson)
         val userNS = getUserNS(context)
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val jsonObj = try {
-            JsonObject(body)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val entity = convertToEntity(jsonObj)
         val db = DB.table<T>(userNS, getTableName())
 
         val beforeResult = beforeDelete(entity, db)
@@ -169,18 +126,11 @@ interface CURD<T> {
     suspend fun deleteMulti(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkUserAuth(context)) {
-            return returnData.setErrorMsg("NEED_LOGIN")
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        val entities = convertToEntityList(context.bodyAsString)
+        if (entities.isEmpty()) return returnData.setErrorMsg("参数错误")
         val userNS = getUserNS(context)
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
-        val entities = try {
-            convertToEntityList(body)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("PARAM_ERROR")
-        }
         val db = DB.table<T>(userNS, getTableName())
 
         for (entity in entities) {
@@ -188,8 +138,8 @@ interface CURD<T> {
             if (beforeResult != null) {
                 return beforeResult
             }
-            db.delete { obj -> checker(obj, entity) }
         }
+        db.delete { obj -> entities.any { entity -> checker(obj, entity) } }
         return returnData.setData("")
     }
 }
