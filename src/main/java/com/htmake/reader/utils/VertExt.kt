@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
+import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
 import mu.KotlinLogging
 import com.htmake.reader.entity.BasicError
@@ -36,6 +37,7 @@ import com.htmake.reader.entity.MongoFile
 import com.htmake.reader.entity.License
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import org.slf4j.MDC
 
 /**
  * @Auther: zoharSoul
@@ -81,6 +83,15 @@ fun RoutingContext.error(throwable: Throwable) {
             .putHeader("content-type", "application/json; charset=utf-8")
             .setStatusCode(500)
             .end(errorJson)
+}
+
+fun Route.globalHandler(handler: Handler<RoutingContext>) {
+    this.handler { context ->
+        val traceId = context.get<String>("traceId").takeUnless { it.isNullOrEmpty() } ?: getTraceId()
+        MDC.put("traceId", traceId)
+        context.put("traceId", traceId)
+        handler.handle(context)
+    }
 }
 
 fun getWorkDir(subPath: String = ""): String {
