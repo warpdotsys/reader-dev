@@ -629,6 +629,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 chapterCacheFile = File(localCacheDir.absolutePath + File.separator + chapterIndex + ".txt")
                 if (chapterCacheFile.exists()) {
                     content = chapterCacheFile.readText()
+                    if (content.contains("<img")) {
+                        content = updateImageLinkInContent(bookInfo, chapterInfo, content)
+                    }
                     logger.info("使用缓存的章节内容: {}", chapterCacheFile.toString())
                     return returnData.setData(content)
                 }
@@ -4282,5 +4285,53 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private suspend fun saveLocalBookCover(book: Book, userNameSpace: String) {
+        val coverUrl = book.getDisplayCover()
+        if (coverUrl.isNullOrEmpty() || coverUrl.startsWith("/")) return
+        val ext = getFileExt(coverUrl, "jpg")
+        val md5Encode = MD5Utils.md5Encode(coverUrl).toString()
+        val cachePath = getWorkDir("storage", "assets", userNameSpace, "covers", "$md5Encode.$ext")
+        val cachedCoverUrl = "/assets/$userNameSpace/covers/$md5Encode.$ext"
+        val cacheFile = File(cachePath)
+        if (cacheFile.exists()) {
+            book.coverUrl = cachedCoverUrl
+            return
+        }
+        try {
+            val analyzeUrl = io.legado.app.model.analyzeRule.AnalyzeUrl(coverUrl)
+            val bytes = analyzeUrl.getByteArrayAwait()
+            if (bytes.isNotEmpty()) {
+                cacheFile.parentFile?.mkdirs()
+                cacheFile.writeBytes(bytes)
+                book.coverUrl = cachedCoverUrl
+            }
+        } catch (e: Exception) {
+            logger.error("saveLocalBookCover error: {}", e.message)
+        }
+    }
+
+    private fun updateImageLinkInContent(book: Book, chapter: BookChapter, content: String): String {
+        val dataDir = getWorkDir("storage", "data")
+        val lines = content.split("\n")
+        val sb = StringBuilder()
+        for (text in lines) {
+            var lineText = text
+            val matcher = io.legado.app.constant.AppPattern.imgPattern.matcher(text)
+            while (matcher.find()) {
+                val src = matcher.group(1) ?: continue
+                if (src.contains("__API_ROOT__")) continue
+                val absUrl = io.legado.app.utils.NetworkUtils.getAbsoluteURL(chapter.url, src)
+                val imageFile = io.legado.app.help.BookHelp.getImage(book, absUrl)
+                if (imageFile.exists()) {
+                    val relativePath = imageFile.path.replace(dataDir, "").replace("\\", "/")
+                    val replacement = "__API_ROOT__/storage/data$relativePath"
+                    lineText = lineText.replace(src, replacement, false)
+                }
+            }
+            sb.append(lineText).append("\n")
+        }
+        return sb.toString().removeSuffix("\n")
     }
 }
