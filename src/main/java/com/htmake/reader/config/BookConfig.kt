@@ -3,7 +3,7 @@ package com.htmake.reader.config
 import java.io.File
 
 object BookConfig {
-    val javascriptVersion = "reader-inject-javascript-1.1.0"
+    val javascriptVersion = "reader-inject-javascript-1.9.0"
     val epubInjectJavascript = """
     //<![CDATA[
     // ${javascriptVersion}
@@ -23,13 +23,14 @@ object BookConfig {
         head.appendChild(reader_style_dom);
 
         function reader_setStyle(style) {
-            reader_style_dom.innerText = style;
-            reader_notifyHeight();
-            setTimeout(reader_notifyHeight, 100);
+            reader_style_dom.textContent = style;
+            reader_notifySize();
+            setTimeout(reader_notifySize, 100);
         }
 
-        function reader_notifyHeight() {
+        function reader_notifySize() {
             reader_notify("setHeight", document.documentElement.scrollHeight || document.body.scrollHeight)
+            reader_notify("setWidth", document.documentElement.scrollWidth || document.body.scrollWidth)
         }
 
         function reader_listenFromParent(event) {
@@ -83,11 +84,11 @@ object BookConfig {
         window.document.addEventListener('message', reader_listenFromParent);
         window.addEventListener('message', reader_listenFromParent);
         window.addEventListener('load', function() {
-            reader_notifyHeight();
+            reader_notifySize();
             reader_notify("load", window.location.href);
         });
-        window.addEventListener('resize', reader_notifyHeight);
-        document.addEventListener('DOMNodeInserted', reader_notifyHeight, false);
+        window.addEventListener('resize', reader_notifySize);
+        document.addEventListener('DOMNodeInserted', reader_notifySize, false);
         document.addEventListener('click', function(event) {
             var linkElement = reader_getLinkElement(event.target)
             var imageElement = reader_getImageElement(event.target)
@@ -126,6 +127,31 @@ object BookConfig {
                     clientY: event.clientY
                 });
             }
+        });
+        document.addEventListener("touchstart", function(event) {
+            reader_notify("touchstart", {
+                target: event.target.nodeName,
+                touches: [{
+                    clientX: event.touches[0].clientX,
+                    clientY: event.touches[0].clientY,
+                }]
+            });
+        });
+        document.addEventListener("touchmove", function(event) {
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            reader_notify("touchmove", {
+                target: event.target.nodeName,
+                touches: [{
+                    clientX: event.touches[0].clientX,
+                    clientY: event.touches[0].clientY,
+                }]
+            });
+        });
+        document.addEventListener("touchend", function(event) {
+            reader_notify("touchend", {
+                target: event.target.nodeName
+            });
         });
         window.addEventListener("keydown", function(event) {
             event.preventDefault();
