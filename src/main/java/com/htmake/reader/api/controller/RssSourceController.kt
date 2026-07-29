@@ -77,7 +77,7 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
             return true
         }
         val userInfo = context.get("userInfo") as User? ?: return false
-        return userInfo.enable_rss_source
+        return userInfo.enable_book_source
     }
 
     suspend fun getRssSources(context: RoutingContext): ReturnData {
@@ -98,7 +98,11 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val rssSource = context.bodyAsJson.mapTo(RssSource::class.java)
+        if (!canEditRssSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
+        val rssSource = RssSource.fromJson(context.bodyAsString).getOrNull()
+            ?: return returnData.setErrorMsg("参数错误")
         if (rssSource.sourceUrl.isEmpty()) {
             return returnData.setErrorMsg("RSS链接不能为空")
         }
@@ -114,7 +118,8 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         // 遍历判断是否存在
         var existIndex: Int = -1
         for (i in 0 until rssSourceList.size()) {
-            var _rssSource = rssSourceList.getJsonObject(i).mapTo(RssSource::class.java)
+            val _rssSource = RssSource.fromJson(rssSourceList.getJsonObject(i).toString()).getOrNull()
+                ?: continue
             if (_rssSource.sourceUrl.equals(rssSource.sourceUrl)) {
                 existIndex = i
                 break;
@@ -139,6 +144,9 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        if (!canEditRssSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
         val rssSourceJsonArray = context.bodyAsJsonArray
         if (rssSourceJsonArray == null) {
             return returnData.setErrorMsg("参数错误")
@@ -149,7 +157,8 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
             rssSourceList = JsonArray()
         }
         for (k in 0 until rssSourceJsonArray.size()) {
-            var rssSource = rssSourceJsonArray.getJsonObject(k).mapTo(RssSource::class.java)
+            val rssSource = RssSource.fromJson(rssSourceJsonArray.getJsonObject(k).toString()).getOrNull()
+                ?: continue
             if (rssSource.sourceUrl.isEmpty()) {
                 continue
             }
@@ -159,7 +168,8 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
             // 遍历判断是否存在
             var existIndex: Int = -1
             for (i in 0 until rssSourceList!!.size()) {
-                var _rssSource = rssSourceList.getJsonObject(i).mapTo(RssSource::class.java)
+                val _rssSource = RssSource.fromJson(rssSourceList.getJsonObject(i).toString()).getOrNull()
+                    ?: continue
                 if (_rssSource.sourceUrl.equals(rssSource.sourceUrl)) {
                     existIndex = i
                     break;
@@ -186,7 +196,11 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val rssSource = context.bodyAsJson.mapTo(RssSource::class.java)
+        if (!canEditRssSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
+        val rssSource = RssSource.fromJson(context.bodyAsString).getOrNull()
+            ?: return returnData.setErrorMsg("参数错误")
         var userNameSpace = getUserNameSpace(context)
         var rssSourceList: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "rssSources"))
         if (rssSourceList == null) {
@@ -195,7 +209,8 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
         // 遍历判断是否存在
         var existIndex: Int = -1
         for (i in 0 until rssSourceList.size()) {
-            var _rssSource = rssSourceList.getJsonObject(i).mapTo(RssSource::class.java)
+            val _rssSource = RssSource.fromJson(rssSourceList.getJsonObject(i).toString()).getOrNull()
+                ?: continue
             if (_rssSource.sourceUrl.equals(rssSource.sourceUrl)) {
                 existIndex = i
                 break;
@@ -218,9 +233,9 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
             return null
         }
         for (i in 0 until list.size()) {
-            var _rssSource = list.getJsonObject(i).mapTo(RssSource::class.java)
+            val _rssSource = RssSource.fromJson(list.getJsonObject(i).toString()).getOrNull()
+                ?: continue
             if (_rssSource.sourceUrl.equals(url)) {
-                _rssSource.setUserNameSpace(userNameSpace)
                 return _rssSource
             }
         }
