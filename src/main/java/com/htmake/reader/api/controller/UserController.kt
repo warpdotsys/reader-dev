@@ -72,7 +72,7 @@ import kotlinx.coroutines.CoroutineScope
 private val logger = KotlinLogging.logger {}
 
 class UserController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
-    val userMaxCount = 50
+    val userMaxCount = 15
 
     private fun getUserLimit(context: RoutingContext): Int {
         val license = getInstalledLicense()
