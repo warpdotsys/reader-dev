@@ -88,43 +88,23 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
         val userNameSpace = getUserNameSpace(context)
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("参数错误")
+        val bookGroupOrder = context.bodyAsJson?.getJsonArray("order") ?: return returnData.setErrorMsg("参数错误")
+        var bookGroupList = com.htmake.reader.utils.asJsonArray(getUserStorage(userNameSpace, "bookGroup")) ?: JsonArray()
+        val orderMap = mutableMapOf<Long, Int>()
+        for (i in 0 until bookGroupOrder.size()) {
+            val item = bookGroupOrder.getJsonObject(i) ?: continue
+            val groupId = item.getLong("groupId") ?: continue
+            val order = item.getInteger("order") ?: continue
+            orderMap[groupId] = order
         }
-        val groupIds: List<Long> = try {
-            val arr = JsonArray(body)
-            (0 until arr.size()).map { arr.getLong(it) }
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("参数错误")
+        val groupList = bookGroupList.getList()
+        for (i in 0 until bookGroupList.size()) {
+            val group = bookGroupList.getJsonObject(i)?.mapTo(BookGroup::class.java) ?: continue
+            orderMap[group.groupId]?.let { group.order = it }
+            groupList[i] = JsonObject.mapFrom(group)
         }
-
-        val db = DB.table<BookGroup>(userNameSpace, getTableName())
-        val allData = db.readAll() ?: JsonArray()
-
-        // Reorder groups based on the provided order
-        val reordered = JsonArray()
-        for ((order, groupId) in groupIds.withIndex()) {
-            for (i in 0 until allData.size()) {
-                val obj = allData.getJsonObject(i) ?: continue
-                if (obj.getLong("groupId", 0L) == groupId) {
-                    obj.put("order", order)
-                    reordered.add(obj)
-                    break
-                }
-            }
-        }
-        // Add any groups not in the order list
-        for (i in 0 until allData.size()) {
-            val obj = allData.getJsonObject(i) ?: continue
-            val gid = obj.getLong("groupId", 0L)
-            if (!groupIds.contains(gid)) {
-                reordered.add(obj)
-            }
-        }
-
-        db.cachedValue = reordered
-        db.save()
+        bookGroupList = JsonArray(groupList)
+        saveUserStorage(userNameSpace, "bookGroup", bookGroupList)
         return returnData.setData("")
     }
 }
