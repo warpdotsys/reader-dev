@@ -77,18 +77,55 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     private fun signLicense(license: License): String? {
-        val key = privateKey() ?: return null
-        return EncoderUtils.encryptSegmentByPrivateKey(jsonEncode(license), key)
+        return signPayload(license)
     }
 
-    /**
-     * Check if the license is valid. Returns ReturnData with license info.
-     * Validate the locally installed and remotely-confirmed license state.
-     */
+    private fun signPayload(payload: Any): String? {
+        val key = privateKey() ?: return null
+        return EncoderUtils.encryptSegmentByPrivateKey(jsonEncode(payload), key)
+    }
+
     suspend fun isLicenseValid(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        val license = getInstalledLicense()
-        return returnData.setData(mapOf("valid" to (license?.isValid() == true), "license" to license))
+        val id = if (context.request().method() == HttpMethod.POST) {
+            context.bodyAsJson?.getString("id") ?: ""
+        } else {
+            context.queryParam("id").firstOrNull() ?: ""
+        }
+        val activeLicenseList = asJsonArray(getStorage("data", "activeLicense")) ?: JsonArray()
+        var activeLicense: ActiveLicense? = null
+        var activeLicenseIndex = -1
+        for (index in 0 until activeLicenseList.size()) {
+            val candidate = activeLicenseList.getJsonObject(index).mapTo(ActiveLicense::class.java)
+            if (candidate.id == id) {
+                activeLicense = candidate
+                activeLicenseIndex = index
+                break
+            }
+        }
+
+        val result = linkedMapOf<String, Any>()
+        val ip = context.request().getHeader("X-Real-IP").takeUnless { it.isNullOrEmpty() }
+            ?: context.request().remoteAddress()?.host().orEmpty()
+        if (activeLicense == null) {
+            result["isValid"] = false
+            result["errorMsg"] = "密钥未激活"
+        } else {
+            result["isValid"] = activeLicense.verified
+            result["errorMsg"] = activeLicense.errorMsg
+            val lastOnlineTime = activeLicense.lastOnlineTime
+            if (lastOnlineTime != null && System.currentTimeMillis() < lastOnlineTime + 600_000 && ip != activeLicense.lastOnlineIp) {
+                result["repeat"] = mapOf(
+                    "lastOnlineTime" to lastOnlineTime,
+                    "lastOnlineIp" to activeLicense.lastOnlineIp
+                )
+            }
+            activeLicense.lastOnlineTime = System.currentTimeMillis()
+            activeLicense.lastOnlineIp = ip
+            activeLicenseList.set(activeLicenseIndex, JsonObject.mapFrom(activeLicense))
+            saveStorage("data", "activeLicense", value = activeLicenseList)
+        }
+        val signed = signPayload(result) ?: return ReturnData().setErrorMsg("未配置许可证私钥")
+        return ReturnData().setData(mapOf("result" to signed))
     }
 
     /**
