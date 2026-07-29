@@ -144,10 +144,6 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         }
     }
 
-    fun checkLicenseFeature(feature: String): Boolean {
-        return getInstalledLicense().isValid()
-    }
-
     suspend fun getLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         return returnData.setData(mapOf("license" to getInstalledLicense()))
@@ -229,13 +225,6 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         saveStorage("data", "activeLicense", value = activeLicenseList)
         val signed = signLicense(license) ?: return returnData.setErrorMsg("未配置许可证私钥")
         return returnData.setData(mapOf("result" to signed))
-    }
-
-    suspend fun checkLicense(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        val license = getInstalledLicense(true)
-        checkLicense(license)
-        return returnData.setData(mapOf("valid" to getInstalledLicense().isValid()))
     }
 
     suspend fun supplyLicense(context: RoutingContext): ReturnData {

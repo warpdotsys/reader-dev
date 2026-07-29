@@ -486,7 +486,6 @@ class YueduApi : RestVerticle() {
         router.get("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
         router.post("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
         router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
-        router.get("/reader3/checkLicense").coroutineHandler { licenseController.checkLicense(it) }
         router.post("/reader3/supplyLicense").coroutineHandler { licenseController.supplyLicense(it) }
         router.get("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
         router.post("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
