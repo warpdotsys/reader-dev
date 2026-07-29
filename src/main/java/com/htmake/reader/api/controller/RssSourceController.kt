@@ -77,7 +77,7 @@ class RssSourceController(coroutineContext: CoroutineContext): BaseController(co
             return true
         }
         val userInfo = context.get("userInfo") as User? ?: return false
-        return userInfo.enable_book_source
+        return userInfo.enable_rss_source
     }
 
     suspend fun getRssSources(context: RoutingContext): ReturnData {

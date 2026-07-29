@@ -33,6 +33,9 @@ class AppConfig {
 
     // Shelf update interval (minutes)
     var shelfUpdateInteval: Int = 10
+    var shelfUpdateInterval: Int
+        get() = shelfUpdateInteval
+        set(value) { shelfUpdateInteval = value }
 
     // Remote webview API
     var remoteWebviewApi: String = ""
