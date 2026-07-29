@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 
 object BookContent {
 
@@ -43,7 +44,9 @@ object BookContent {
         val contentRule = bookSource.getContentRule()
         val analyzeRule = AnalyzeRule(book, bookSource, debugLog).setContent(body, baseUrl)
         analyzeRule.setRedirectUrl(redirectUrl)
+        analyzeRule.chapter = bookChapter
         analyzeRule.nextChapterUrl = mNextChapterUrl
+        coroutineContext.ensureActive()
         var contentData = analyzeContent(
             book, baseUrl, redirectUrl, body, contentRule, bookChapter, bookSource, mNextChapterUrl
         )
@@ -56,6 +59,7 @@ object BookContent {
                     == NetworkUtils.getAbsoluteURL(redirectUrl, mNextChapterUrl)
                 ) break
                 nextUrlList.add(nextUrl)
+                coroutineContext.ensureActive()
                 val res = AnalyzeUrl(
                     mUrl = nextUrl,
                     source = bookSource,
@@ -75,6 +79,7 @@ object BookContent {
             }
             debugLog?.log(bookSource.bookSourceUrl, "◇本章总页数:${nextUrlList.size}")
         } else if (contentData.second.size > 1) {
+            coroutineContext.ensureActive()
             debugLog?.log(bookSource.bookSourceUrl, "◇并发解析正文,总页数:${contentData.second.size}")
             withContext(IO) {
                 val asyncArray = Array(contentData.second.size) {
@@ -95,6 +100,7 @@ object BookContent {
                     }
                 }
                 asyncArray.forEach { coroutine ->
+                    coroutineContext.ensureActive()
                     content.append("\n").append(coroutine.await())
                 }
             }
@@ -108,7 +114,7 @@ object BookContent {
         debugLog?.log(bookSource.bookSourceUrl, "└${bookChapter.title}")
         debugLog?.log(bookSource.bookSourceUrl, "┌获取正文内容 (长度：${contentStr.length})")
         if (contentStr.length > 300) {
-            debugLog?.log(bookSource.bookSourceUrl, "└\n${contentStr.substring(0, 50)} ... ${contentStr.substring(contentStr.length - 30, contentStr.length)}")
+            debugLog?.log(bookSource.bookSourceUrl, "└\n${contentStr.substring(0, 150)} ... ${contentStr.substring(contentStr.length - 150)}")
         } else {
             debugLog?.log(bookSource.bookSourceUrl, "└\n${contentStr}")
         }
@@ -130,6 +136,7 @@ object BookContent {
     ): Pair<String, List<String>> {
         val analyzeRule = AnalyzeRule(book, bookSource, debugLog)
         analyzeRule.setContent(body, baseUrl)
+        analyzeRule.chapter = chapter
         val rUrl = analyzeRule.setRedirectUrl(redirectUrl)
         analyzeRule.nextChapterUrl = nextChapterUrl
         val nextUrlList = arrayListOf<String>()
