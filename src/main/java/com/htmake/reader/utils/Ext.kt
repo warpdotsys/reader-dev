@@ -1,3 +1,6 @@
+@file:JvmName("ExtKt")
+@file:JvmMultifileClass
+
 package com.htmake.reader.utils
 
 import io.vertx.core.buffer.Buffer

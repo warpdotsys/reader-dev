@@ -1,16 +1,14 @@
+@file:JvmName("ExtKt")
+@file:JvmMultifileClass
+
 package com.htmake.reader.utils
 
 import com.google.common.base.Throwables
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
-import io.vertx.ext.web.Route
-import io.vertx.ext.web.RoutingContext
 import mu.KotlinLogging
-import com.htmake.reader.entity.BasicError
-import java.net.URLDecoder
 import java.net.URLEncoder
 import java.io.File
 import java.nio.file.Paths
@@ -37,7 +35,6 @@ import com.htmake.reader.entity.MongoFile
 import com.htmake.reader.entity.License
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import org.slf4j.MDC
 
 /**
  * @Auther: zoharSoul
@@ -52,47 +49,6 @@ val prettyGson = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(
 var storageFinalPath = ""
 var workDirPath = ""
 var workDirInit = false
-
-fun RoutingContext.success(any: Any?) {
-    val toJson: String = if (any is JsonObject) {
-        any.toString()
-    } else {
-        gson.toJson(any)
-    }
-    this.response()
-            .putHeader("content-type", "application/json; charset=utf-8")
-            .end(toJson)
-}
-
-fun RoutingContext.error(throwable: Throwable) {
-    val path = URLDecoder.decode(this.request().absoluteURI(), "UTF-8")
-    val basicError = BasicError(
-            "Internal Server Error",
-            throwable.toString(),
-            throwable.message.toString(),
-            path,
-            500,
-            System.currentTimeMillis()
-    )
-
-    val errorJson = gson.toJson(basicError)
-    logger.error("Internal Server Error", throwable)
-    logger.error { errorJson }
-
-    this.response()
-            .putHeader("content-type", "application/json; charset=utf-8")
-            .setStatusCode(500)
-            .end(errorJson)
-}
-
-fun Route.globalHandler(handler: Handler<RoutingContext>) {
-    this.handler { context ->
-        val traceId = context.get<String>("traceId").takeUnless { it.isNullOrEmpty() } ?: getTraceId()
-        MDC.put("traceId", traceId)
-        context.put("traceId", traceId)
-        handler.handle(context)
-    }
-}
 
 fun getWorkDir(subPath: String = ""): String {
     if (!workDirInit && workDirPath.isEmpty()) {
@@ -152,7 +108,7 @@ fun getStoragePath(): String {
     return storagePath;
 }
 
-fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false) {
+fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false, ext: String = ".json") {
     val toJson: String = if (value is JsonObject || value is JsonArray) {
         value.toString()
     } else if (pretty) {
@@ -168,7 +124,7 @@ fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false) {
     }
 
     val filename = name.last()
-    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "${filename}.json"))
+    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "$filename$ext"))
     // val file = File(storagePath + "/${name}.json")
     logger.info("Save file to storage name: {} path: {}", name, file.absoluteFile)
 
@@ -182,7 +138,7 @@ fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false) {
     file.writeText(toJson)
 }
 
-fun getStorage(vararg name: String): String?  {
+fun getStorage(vararg name: String, ext: String = ".json"): String?  {
     var storagePath = getStoragePath()
     var storageDir = File(storagePath)
     if (!storageDir.exists()) {
@@ -190,7 +146,7 @@ fun getStorage(vararg name: String): String?  {
     }
 
     val filename = name.last()
-    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "${filename}.json"))
+    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "$filename$ext"))
     logger.info("Read file from storage name: {} path: {}", name, file.absoluteFile)
     if (!file.exists()) {
         return null
