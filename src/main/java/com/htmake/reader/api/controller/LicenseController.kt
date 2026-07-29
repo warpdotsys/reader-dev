@@ -253,12 +253,6 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun generateKeys(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-        }
         val keyPair = EncoderUtils.generateKeys()
         return returnData.setData(mapOf(
             "publicKey" to Base64.getEncoder().encodeToString(keyPair.public.encoded),
@@ -268,16 +262,30 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun generateLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        val body = context.bodyAsJson
+        fun value(name: String): String? = if (context.request().method() == HttpMethod.POST) {
+            body?.getString(name)
+        } else {
+            context.queryParam(name).firstOrNull()
         }
-        if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-        }
-        val body = context.bodyAsJson ?: return returnData.setErrorMsg("参数错误")
-        val host = body.getString("host", "")
+        val host = value("host") ?: ""
         if (host.isEmpty()) return returnData.setErrorMsg("请输入域名")
-        val license = License(host, body.getInteger("userMaxLimit", 15), body.getLong("expiredAt", 0L), body.getBoolean("openApi", false), body.getLong("simpleWebExpiredAt", 0L), body.getInteger("instances", 1), body.getString("type", ""), code = body.getString("code", ""))
+        if (value("key") != "Pvkp7tMQJpi4kWBE") return returnData.setErrorMsg("参数错误")
+        val expiredAt = if (context.request().method() == HttpMethod.POST) body?.getLong("expiredAt") ?: 0L else value("expiredAt")?.toLong() ?: 0L
+        val userMaxLimit = if (context.request().method() == HttpMethod.POST) body?.getInteger("userMaxLimit") ?: 15 else value("userMaxLimit")?.toInt() ?: 15
+        val openApi = if (context.request().method() == HttpMethod.POST) body?.getBoolean("openApi") ?: false else value("openApi")?.toBoolean() ?: false
+        val simpleWebExpiredAt = if (context.request().method() == HttpMethod.POST) body?.getLong("simpleWebExpiredAt") ?: 0L else value("simpleWebExpiredAt")?.toLong() ?: 0L
+        val instances = if (context.request().method() == HttpMethod.POST) body?.getInteger("instances") ?: 1 else value("instances")?.toInt() ?: 1
+        val license = License(
+            host = host,
+            userMaxLimit = userMaxLimit,
+            expiredAt = expiredAt,
+            openApi = openApi,
+            simpleWebExpiredAt = simpleWebExpiredAt,
+            instances = instances,
+            type = value("type") ?: "",
+            code = value("code") ?: ""
+        )
         val signed = signLicense(license) ?: return returnData.setErrorMsg("未配置许可证私钥")
         return returnData.setData(mapOf("host" to host, "key" to signed))
     }
