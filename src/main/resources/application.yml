@@ -14,7 +14,7 @@ reader:
     proxyUsername: ""
     proxyPassword: ""
     cacheChapterContent: true
-    userLimit: 50
+    userLimit: 15
     userBookLimit: 200
     debugLog: false
     autoClearInactiveUser: 0
