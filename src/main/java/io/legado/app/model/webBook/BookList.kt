@@ -34,7 +34,7 @@ object BookList {
                 "error_get_web_content"
         )
         debugLog?.log(bookSource.bookSourceUrl, "≡获取成功:${analyzeUrl.ruleUrl}")
-        val analyzeRule = AnalyzeRule(variableBook, bookSource)
+        val analyzeRule = AnalyzeRule(variableBook, bookSource, debugLog)
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
         analyzeRule.setRedirectUrl(baseUrl)
         bookSource.bookUrlPattern?.let {

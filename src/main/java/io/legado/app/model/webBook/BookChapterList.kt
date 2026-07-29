@@ -142,7 +142,7 @@ object BookChapterList {
         log: Boolean = false,
         debugLog: DebugLog? = null
     ): Pair<List<BookChapter>, List<String>>  {
-        val analyzeRule = AnalyzeRule(book, bookSource)
+        val analyzeRule = AnalyzeRule(book, bookSource, debugLog)
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
         analyzeRule.setRedirectUrl(redirectUrl)
         //获取目录列表
