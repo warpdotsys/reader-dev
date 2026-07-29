@@ -92,24 +92,22 @@ fun getStoragePath(): String {
     if (storageFinalPath.isNotEmpty()) {
         return storageFinalPath;
     }
-    var appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
-    var storageDir = File("storage")
+    var storagePath = ""
+    val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
     if (appConfig != null) {
-        // logger.info("storagePath from appConfig: {}", appConfig.storagePath)
-        storageDir = File(appConfig.storagePath)
-    }
-    if (storageDir.isAbsolute()) {
-        return storageDir.toString();
-    }
-    var storagePath = getWorkDir(storageDir.toString())
-    if (appConfig != null) {
+        storagePath = getWorkDir("storage")
         storageFinalPath = storagePath
+    } else {
+        storagePath = File("storage").path
     }
+    logger.info("Using storagePath: {}", storagePath)
     return storagePath;
 }
 
 fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false, ext: String = ".json") {
-    val toJson: String = if (value is JsonObject || value is JsonArray) {
+    val toJson: String = if (value is String) {
+        value
+    } else if (value is JsonObject || value is JsonArray) {
         value.toString()
     } else if (pretty) {
         prettyGson.toJson(value)
