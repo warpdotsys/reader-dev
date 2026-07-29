@@ -376,7 +376,7 @@ fun decodeBase64(text: String): String {
     return String(JavaBase64.getDecoder().decode(text), Charsets.UTF_8)
 }
 
-var _licenseValid: Boolean = false
+var _licenseValid: Boolean = true
 
 fun setLicenseValid(value: Boolean) {
     _licenseValid = value
