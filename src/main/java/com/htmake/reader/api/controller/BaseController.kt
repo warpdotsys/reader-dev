@@ -195,6 +195,8 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
             var userNS = context.queryParam("userNS").firstOrNull()
             if (userNS != null && userNS.isNotEmpty()) {
                 context.put("userNameSpace", userNS)
+            } else {
+                context.remove("userNameSpace")
             }
             return true
         }
