@@ -28,6 +28,7 @@ import com.htmake.reader.utils.fillData
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRandomString
 import com.htmake.reader.utils.getInstalledLicense
+import com.htmake.reader.utils.listFilesRecursively
 import com.htmake.reader.utils.genEncryptedPassword
 import com.htmake.reader.entity.User
 import com.htmake.reader.utils.SpringContextUtils
@@ -462,11 +463,15 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
                 userInfo = formatUser(user)
             }
         }
+        val fonts = listFilesRecursively(File(getWorkDir("storage", "assets", "fonts")))
+            .filter { !it.name.startsWith(".") && it.isFile && getFileExt(it.name) == "ttf" }
+            .map { mapOf("name" to it.name, "size" to it.length()) }
 
         return returnData.setData(mapOf(
             "userInfo" to userInfo,
             "secure" to secure,
-            "secureKey" to secureKey?.isNotEmpty()
+            "secureKey" to secureKey?.isNotEmpty(),
+            "fonts" to fonts
         ))
     }
 
@@ -620,25 +625,26 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean) {
+        if (!appConfig.secure) return
         var userMap = mutableMapOf<String, Map<String, Any>>()
         var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
         if (userMapJson != null) {
             userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
         }
         kotlinx.coroutines.coroutineScope {
-            for ((_, value) in userMap) {
-                try {
-                    val user: User = value.toDataClass()
-                    if (user.username.isNotEmpty()) {
-                        val shouldContinue = handler(user)
-                        if (!shouldContinue) {
-                            break
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger.error("forEachUser error: {}", e.message)
+            var hasChanged = false
+            val iterator = userMap.entries.iterator()
+            while (iterator.hasNext()) {
+                val (_, value) = iterator.next()
+                val username = value["username"] as? String ?: ""
+                if (username.isEmpty()) continue
+                val user: User = userMap[username]?.toDataClass() ?: continue
+                if (handler(user)) {
+                    hasChanged = true
+                    iterator.remove()
                 }
             }
+            if (hasChanged) saveStorage("data", "users", value = userMap)
         }
     }
 }
