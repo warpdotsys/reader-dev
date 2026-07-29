@@ -440,9 +440,9 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
 
         launch(Dispatchers.IO) {
             webClient.getAbs(url).timeout(3000).send {
-                var body = it.result()?.bodyAsString()
+                val body = it.result()?.bodyAsJsonArray()
                 if (body != null) {
-                    context.success(returnData.setData(arrayListOf(body)))
+                    context.success(saveBookSources(context, body))
                 } else {
                     context.success(returnData.setErrorMsg("远程书源链接错误"))
                 }
@@ -484,56 +484,22 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         return returnData.setData("")
     }
 
-    /**
-     * Update remote book source subscriptions for a given user namespace.
-     * Checks for remote source URLs stored in user config and refreshes them.
-     */
     suspend fun updateRemoteSourceSub(userNameSpace: String, user: User? = null) {
-        try {
-            val remoteSourceConfig = getUserStorage(userNameSpace, "remoteBookSourceSub")
-            if (remoteSourceConfig.isNullOrEmpty()) {
-                return
+        val remoteBookSourceList = asJsonArray(getUserStorage(userNameSpace, "remoteBookSourceSub")) ?: return
+        for (i in 0 until remoteBookSourceList.size()) {
+            val remoteBookSource = remoteBookSourceList.getJsonObject(i) ?: continue
+            val url = remoteBookSource.getString("link") ?: continue
+            if (url.isEmpty()) continue
+            try {
+                val sourceList = withContext(Dispatchers.IO) { JsonArray(URL(url).readText()) }
+                logger.info("updateRemoteSourceSub link={}, result={}", url, saveUserBookSources(userNameSpace, user, sourceList).errorMsg)
+                remoteBookSourceList.set(i, remoteBookSource.put("lastSyncTime", System.currentTimeMillis()))
+                saveUserStorage(userNameSpace, "remoteBookSourceSub", remoteBookSourceList)
+            } catch (e: Exception) {
+                logger.error("updateRemoteSourceSub from {} error", url, e)
             }
-            val remoteSourceArray = asJsonArray(remoteSourceConfig) ?: return
-            for (i in 0 until remoteSourceArray.size()) {
-                val sourceObj = remoteSourceArray.getJsonObject(i) ?: continue
-                val url = sourceObj.getString("url", "") ?: ""
-                if (url.isEmpty()) continue
-                try {
-                    // Fetch remote source content
-                    val content = URL(url).readText()
-                    if (content.isNotEmpty()) {
-                        // Parse and merge into user's book sources
-                        val remoteSources = JsonArray(content)
-                        var existingSources = asJsonArray(getUserStorage(userNameSpace, "bookSource")) ?: JsonArray()
-                        for (j in 0 until remoteSources.size()) {
-                            val remoteSource = remoteSources.getJsonObject(j) ?: continue
-                            val remoteUrl = remoteSource.getString("bookSourceUrl", "") ?: ""
-                            if (remoteUrl.isEmpty()) continue
-                            // Check if source already exists
-                            var found = false
-                            for (k in 0 until existingSources.size()) {
-                                val existing = existingSources.getJsonObject(k) ?: continue
-                                if (existing.getString("bookSourceUrl", "") == remoteUrl) {
-                                    // Update existing
-                                    existingSources.list[k] = remoteSource.map
-                                    found = true
-                                    break
-                                }
-                            }
-                            if (!found) {
-                                existingSources.add(remoteSource)
-                            }
-                        }
-                        saveUserStorage(userNameSpace, "bookSource", existingSources)
-                    }
-                } catch (e: Exception) {
-                    logger.error("updateRemoteSourceSub from {} error: {}", url, e.message)
-                }
-            }
-        } catch (e: Exception) {
-            logger.error("updateRemoteSourceSub error for {}: {}", userNameSpace, e.message)
         }
+        generateBookSourceMap(userNameSpace)
     }
 
     suspend fun saveFromRemoteSource(context: RoutingContext) {
