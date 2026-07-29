@@ -430,6 +430,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/file/deleteMulti").coroutineHandler { fileController.deleteMulti(it) }
         router.post("/reader3/file/importPreview").coroutineHandler { fileController.importPreview(it) }
         router.post("/reader3/file/restore").coroutineHandler { fileController.restore(it) }
+        router.get("/reader3/file/parse").coroutineHandler { fileController.parse(it) }
         router.post("/reader3/file/parse").coroutineHandler { fileController.parse(it) }
 
         // HttpTTS path-based aliases
