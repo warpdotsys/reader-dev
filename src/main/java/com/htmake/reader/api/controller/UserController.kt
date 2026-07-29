@@ -568,32 +568,24 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     suspend fun downloadBackupFile(context: RoutingContext) {
+        val returnData = ReturnData()
         if (!checkAuth(context)) {
-            context.response().setStatusCode(401).end("NEED_LOGIN")
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
             return
         }
+        val bookController = BookController(coroutineContext)
         val userNameSpace = getUserNameSpace(context)
-        val fileName = context.queryParam("fileName").firstOrNull() ?: ""
-        if (fileName.isEmpty()) {
-            context.response().setStatusCode(400).end("参数错误")
-            return
-        }
-        val backupDir = File(getWorkDir("storage", "data", userNameSpace, "backup"))
-        // Use canonical path resolution to prevent path traversal
-        val file = File(backupDir, fileName).canonicalFile
-        val backupDirCanonical = backupDir.canonicalFile
-        if (!file.path.startsWith(backupDirCanonical.path)) {
-            context.response().setStatusCode(400).end("文件名不合法")
-            return
-        }
-        if (!file.exists()) {
-            context.response().setStatusCode(404).end("文件不存在")
+        val latestZipFilePath = bookController.getLastBackFileFromWebdav(userNameSpace)
+        val backupDir = getWorkDir("storage", "data", userNameSpace, "backup")
+        val backupFile = bookController.createUserBackup(userNameSpace, backupDir, latestZipFilePath)
+        if (backupFile == null) {
+            context.success(returnData.setErrorMsg("备份失败"))
             return
         }
         context.response()
-            .putHeader("Content-Disposition", "attachment; filename=\"${file.name}\"")
-            .putHeader("Content-Type", "application/octet-stream")
-            .sendFile(file.absolutePath)
+            .putHeader("Cache-Control", "86400")
+            .putHeader("Content-Disposition", "attachment; filename=${URLEncoder.encode(backupFile.name, "UTF-8")}")
+            .sendFile(backupFile.toString())
     }
 
     suspend fun clearInactiveUsers(context: RoutingContext): ReturnData {
