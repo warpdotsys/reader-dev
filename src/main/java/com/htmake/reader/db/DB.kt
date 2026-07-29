@@ -10,10 +10,10 @@ open class DB<T>(
     val userNameSpace: String,
     val name: String
 ) {
-    var cachedValue: JsonArray? = null
+    var cachedValue: JsonArray = JsonArray()
 
-    open fun readAll(): JsonArray? {
-        return null
+    open fun readAll(): JsonArray {
+        return JsonArray()
     }
 
     open fun <P> findBy(key: String, value: P, clazz: Class<T>): T? {
@@ -23,14 +23,14 @@ open class DB<T>(
     open fun save(
         entity: T,
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = null,
-        checker: ((JsonObject, T) -> Boolean)? = null
+        checker: (JsonObject, T) -> Boolean
     ) {
     }
 
     open fun saveMulti(
         entities: Array<T>,
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = null,
-        checker: ((JsonObject, T) -> Boolean)? = null
+        checker: (JsonObject, T) -> Boolean
     ) {
     }
 

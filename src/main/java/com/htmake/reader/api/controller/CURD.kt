@@ -61,7 +61,7 @@ interface CURD<T> {
         }
         val userNS = getUserNS(context)
         val db = DB.table<T>(userNS, getTableName())
-        val allData = db.readAll() ?: JsonArray()
+        val allData = db.readAll()
         val result = onList(allData, userNS)
         return returnData.setData(result.list)
     }
