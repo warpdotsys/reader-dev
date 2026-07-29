@@ -597,32 +597,39 @@ fun sendEmail(to: String, subject: String, body: String): Boolean {
     }.onFailure { logger.error("Failed to send email", it) }.getOrDefault(false)
 }
 
-fun getCommand(commands: List<String>, workDir: String = "", timeout: String = ""): List<Pair<String, Int>> {
-    val results = mutableListOf<Pair<String, Int>>()
-    for (command in commands) {
-        try {
-            val parts = command.split(" ")
-            val processBuilder = ProcessBuilder(parts)
-            if (workDir.isNotEmpty()) {
-                processBuilder.directory(File(workDir))
-            }
-            processBuilder.redirectErrorStream(true)
-            val process = processBuilder.start()
-            val output = process.inputStream.bufferedReader().readText()
-            val exitCode = if (timeout.isNotEmpty()) {
-                val timeoutMs = try { timeout.toLong() } catch (e: Exception) { 30000L }
-                process.waitFor(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
-                process.exitValue()
-            } else {
-                process.waitFor()
-            }
-            results.add(Pair(output, exitCode))
-        } catch (e: Exception) {
-            logger.error("Failed to execute command '{}': {}", command, e.message)
-            results.add(Pair(e.message ?: "error", -1))
+fun getCommand(to: List<String>, subject: String, body: String): List<Pair<String, Int>> {
+    val username = System.getProperty("reader.smtp.username") ?: System.getenv("READER_SMTP_USERNAME") ?: ""
+    val password = System.getProperty("reader.smtp.password") ?: System.getenv("READER_SMTP_PASSWORD") ?: ""
+    val from = System.getProperty("reader.smtp.from") ?: System.getenv("READER_SMTP_FROM") ?: username
+    val fromName = System.getProperty("reader.smtp.fromName") ?: System.getenv("READER_SMTP_FROM_NAME") ?: "Reader"
+    val separator = "----=_Part_${System.currentTimeMillis()}${UUID.randomUUID()}"
+    val commands = mutableListOf("HELO sendmail\r\n" to 250)
+
+    if (username.isNotEmpty()) {
+        commands.add("AUTH LOGIN\r\n" to 334)
+        commands.add("${encodeBase64(username)}\r\n" to 334)
+        commands.add("${encodeBase64(password)}\r\n" to 235)
+    }
+    commands.add("MAIL FROM: <$from>\r\n" to 250)
+
+    var header = "FROM: $fromName<$from>\r\n"
+    to.forEachIndexed { index, recipient ->
+        commands.add("RCPT TO: <$recipient>\r\n" to 250)
+        header += when {
+            to.size == 1 -> "TO: <$recipient>\r\n"
+            index == 0 -> "TO: <$recipient>"
+            index == to.lastIndex -> ",<$recipient>\r\n"
+            else -> ",<$recipient>"
         }
     }
-    return results
+    header += "Subject: =?UTF-8?B?${encodeBase64(subject)}?=\r\n"
+    header += "Content-Type: multipart/alternative;\r\n\tboundary=\"$separator\"\r\nMIME-Version: 1.0\r\n"
+    header += "\r\n--$separator\r\nContent-Type:text/html; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+    header += "${encodeBase64(body)}\r\n--$separator\r\n\r\n.\r\n"
+    commands.add("DATA\r\n" to 354)
+    commands.add(header to 250)
+    commands.add("QUIT\r\n" to 221)
+    return commands
 }
 
 fun parseJsonStringList(
