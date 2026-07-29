@@ -11,7 +11,12 @@ import io.vertx.core.json.JsonArray
 import mu.KotlinLogging
 import java.net.URLEncoder
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import com.htmake.reader.config.AppConfig
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.ParameterizedType
@@ -49,6 +54,8 @@ val prettyGson = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(
 var storageFinalPath = ""
 var workDirPath = ""
 var workDirInit = false
+private const val MAX_CACHE_SIZE = 1000
+private val storageLocks = LRUCache<String, ReadWriteLock>(MAX_CACHE_SIZE)
 
 fun getWorkDir(subPath: String = ""): String {
     if (!workDirInit && workDirPath.isEmpty()) {
@@ -115,41 +122,120 @@ fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false, ext: S
         gson.toJson(value)
     }
 
-    var storagePath = getStoragePath()
-    var storageDir = File(storagePath)
+    val storagePath = getStoragePath()
+    val storageDir = File(storagePath)
     if (!storageDir.exists()) {
         storageDir.mkdirs()
     }
 
     val filename = name.last()
-    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "$filename$ext"))
-    // val file = File(storagePath + "/${name}.json")
+    val path = getRelativePath(*name.copyOfRange(0, name.size - 1), "$filename$ext")
+    val file = File(storagePath, path)
     logger.info("Save file to storage name: {} path: {}", name, file.absoluteFile)
 
     if (!file.parentFile.exists()) {
         file.parentFile.mkdirs()
     }
 
-    if (!file.exists()) {
-        file.createNewFile()
+    val lock = storageLock(file)
+    var acquired = false
+    try {
+        acquired = lock.writeLock().tryLock(10, TimeUnit.SECONDS)
+        if (!acquired) {
+            throw Exception("保存文件超时: ${file.absolutePath}")
+        }
+
+        val baseName = file.nameWithoutExtension
+        val temp = Files.createTempFile(file.parentFile.toPath().toAbsolutePath(), baseName, ".temp")
+        Files.write(temp, toJson.toByteArray(Charsets.UTF_8))
+
+        val filePath = file.toPath()
+        val backupPath = file.parentFile.toPath().resolve("$baseName.backup.json").toAbsolutePath()
+        if (Files.exists(filePath)) {
+            Files.move(filePath, backupPath, StandardCopyOption.ATOMIC_MOVE)
+        }
+        Files.move(temp, filePath, StandardCopyOption.ATOMIC_MOVE)
+        Files.deleteIfExists(temp)
+
+        if (baseName.length >= 32) {
+            Files.deleteIfExists(backupPath)
+        }
+        if (baseName == "users") {
+            val verifyFile = File(storagePath, getRelativePath(*name.copyOfRange(0, name.size - 1), ".$baseName.key"))
+            if (!verifyFile.exists()) {
+                verifyFile.createNewFile()
+            }
+            val verification = MD5Utils.md5Encode("userCount=${countOccurrences(toJson, "username")}").toString().takeLast(16)
+            verifyFile.writeText(verification)
+        }
+        saveMongoFile(path, toJson)
+    } catch (e: Exception) {
+        logger.error("保存文件失败: ", e)
+        throw Exception("保存文件失败: ${file.absolutePath}")
+    } finally {
+        if (acquired) {
+            lock.writeLock().unlock()
+        }
     }
-    file.writeText(toJson)
 }
 
 fun getStorage(vararg name: String, ext: String = ".json"): String?  {
-    var storagePath = getStoragePath()
-    var storageDir = File(storagePath)
+    val storagePath = getStoragePath()
+    val storageDir = File(storagePath)
     if (!storageDir.exists()) {
         storageDir.mkdirs()
     }
 
     val filename = name.last()
-    val file = File(getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "$filename$ext"))
+    val path = getRelativePath(*name.copyOfRange(0, name.size - 1), "$filename$ext")
+    val file = File(storagePath, path)
     logger.info("Read file from storage name: {} path: {}", name, file.absoluteFile)
     if (!file.exists()) {
+        val content = readMongoFile(path)
+        if (content.isNotEmpty()) {
+            if (!file.parentFile.exists()) {
+                file.parentFile.mkdirs()
+            }
+            file.createNewFile()
+            file.writeText(content)
+            return content
+        }
         return null
     }
-    return file.readText()
+
+    val lock = storageLock(file)
+    var acquired = false
+    try {
+        acquired = lock.readLock().tryLock(10, TimeUnit.SECONDS)
+        if (!acquired) {
+            throw Exception("读取文件超时: ${file.absolutePath}")
+        }
+        var content = file.readText()
+        if (content.isEmpty()) {
+            val mongoContent = readMongoFile(path)
+            if (mongoContent.isNotEmpty()) {
+                file.writeText(mongoContent)
+                content = mongoContent
+            }
+        }
+        if (filename == "users") {
+            val verifyFile = File(storagePath, getRelativePath(*name.copyOfRange(0, name.size - 1), ".$filename.key"))
+            if (verifyFile.exists()) {
+                val verification = MD5Utils.md5Encode("userCount=${countOccurrences(content, "username")}").toString().takeLast(16)
+                if (verifyFile.readText() != verification) {
+                    throw Exception("用户数据被篡改，请联系开发者修复")
+                }
+            }
+        }
+        return content
+    } catch (e: Exception) {
+        logger.error("读取文件失败: ", e)
+        throw Exception("读取文件失败: ${file.absolutePath}")
+    } finally {
+        if (acquired) {
+            lock.readLock().unlock()
+        }
+    }
 }
 
 fun asJsonArray(value: Any?): JsonArray? {
@@ -348,20 +434,27 @@ fun setLicenseValid(value: Boolean) {
 }
 
 fun getStorageFile(vararg name: String, ext: String = ".json"): File {
-    var storagePath = getStoragePath()
-    var storageDir = File(storagePath)
+    val storagePath = getStoragePath()
+    val storageDir = File(storagePath)
     if (!storageDir.exists()) {
         storageDir.mkdirs()
     }
 
     val filename = name.last()
-    val relativePath = getRelativePath(storagePath, *name.copyOfRange(0, name.size - 1), "${filename}${ext}")
-    return File(storagePath + File.separator + relativePath)
+    val relativePath = getRelativePath(*name.copyOfRange(0, name.size - 1), "${filename}${ext}")
+    return File(storagePath, relativePath)
+}
+
+private fun storageLock(file: File): ReadWriteLock {
+    synchronized(storageLocks) {
+        return storageLocks.get(file.absolutePath)
+            ?: ReentrantReadWriteLock().also { storageLocks.put(file.absolutePath, it) }
+    }
 }
 
 fun getMongoFileStorage(): MongoCollection<MongoFile>? {
     val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java) ?: return null
-    return MongoManager.fileStorage(appConfig.mongoDbName, "files")
+    return MongoManager.fileStorage(appConfig.mongoDbName, "storage")
 }
 
 fun readMongoFile(path: String): String {
