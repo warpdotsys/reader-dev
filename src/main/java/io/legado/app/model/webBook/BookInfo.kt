@@ -8,11 +8,13 @@ import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.StringUtils.wordCountFormat
 import io.legado.app.utils.htmlFormat
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 
 object BookInfo {
 
     @Throws(Exception::class)
-    fun analyzeBookInfo(
+    suspend fun analyzeBookInfo(
         book: Book,
         body: String?,
         bookSource: BookSource,
@@ -32,7 +34,7 @@ object BookInfo {
     }
 
     @Throws(Exception::class)
-    fun analyzeBookInfo(
+    suspend fun analyzeBookInfo(
         book: Book,
         body: String?,
         analyzeRule: AnalyzeRule,
@@ -48,11 +50,13 @@ object BookInfo {
         val infoRule = bookSource.getBookInfoRule()
         infoRule.init?.let {
             if (it.isNotEmpty()) {
+                coroutineContext.ensureActive()
                 debugLog?.log(bookSource.bookSourceUrl, "≡执行详情页初始化规则")
                 analyzeRule.setContent(analyzeRule.getElement(it))
             }
         }
         val mCanReName = canReName && !infoRule.canReName.isNullOrBlank()
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取书名")
         BookHelp.formatBookName(analyzeRule.getString(infoRule.name)).let {
             if (it.isNotEmpty() && (mCanReName || book.name.isEmpty())) {
@@ -60,6 +64,7 @@ object BookInfo {
             }
             debugLog?.log(bookSource.bookSourceUrl, "└${it}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取作者")
         BookHelp.formatBookAuthor(analyzeRule.getString(infoRule.author)).let {
             if (it.isNotEmpty() && (mCanReName || book.author.isEmpty())) {
@@ -67,6 +72,7 @@ object BookInfo {
             }
             debugLog?.log(bookSource.bookSourceUrl, "└${it}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取分类")
         try {
             analyzeRule.getStringList(infoRule.kind)
@@ -78,6 +84,7 @@ object BookInfo {
         } catch (e: Exception) {
             debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取字数")
         try {
             wordCountFormat(analyzeRule.getString(infoRule.wordCount)).let {
@@ -87,6 +94,7 @@ object BookInfo {
         } catch (e: Exception) {
             debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取最新章节")
         try {
             analyzeRule.getString(infoRule.lastChapter).let {
@@ -96,6 +104,7 @@ object BookInfo {
         } catch (e: Exception) {
             debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取简介")
         try {
             analyzeRule.getString(infoRule.intro).let {
@@ -105,6 +114,7 @@ object BookInfo {
         } catch (e: Exception) {
             debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取封面链接")
         try {
             analyzeRule.getString(infoRule.coverUrl).let {
@@ -117,6 +127,7 @@ object BookInfo {
         } catch (e: Exception) {
             debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
         }
+        coroutineContext.ensureActive()
         debugLog?.log(bookSource.bookSourceUrl, "┌获取目录链接")
         book.tocUrl = analyzeRule.getString(infoRule.tocUrl, isUrl = true)
         if (book.tocUrl.isEmpty()) book.tocUrl = baseUrl
