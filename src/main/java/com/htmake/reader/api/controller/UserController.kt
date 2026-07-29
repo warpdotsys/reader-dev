@@ -107,8 +107,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             if (username.length < 5) {
                 return returnData.setErrorMsg("用户名不能低于5位")
             }
-            if (password.length < 8) {
-                return returnData.setErrorMsg("密码不能低于8位")
+            if (password.length < appConfig.minUserPasswordLength) {
+                return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
             }
             if (username.equals("default")) {
                 return returnData.setErrorMsg("用户名不能为非法字符")
@@ -135,7 +135,14 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             // 自动注册
             var salt = getRandomString(8)
             var passwordEncrypted = genEncryptedPassword(password, salt)
-            var newUser = User(username, passwordEncrypted, salt)
+            var newUser = User(username, passwordEncrypted, salt).apply {
+                enable_webdav = appConfig.defaultUserEnableWebdav
+                enable_local_store = appConfig.defaultUserEnableLocalStore
+                enable_book_source = appConfig.defaultUserEnableBookSource
+                enable_rss_source = appConfig.defaultUserEnableRssSource
+                book_source_limit = appConfig.defaultUserBookSourceLimit
+                book_limit = appConfig.defaultUserBookLimit
+            }
 
             val loginData = saveUserSession(context, newUser)
             return returnData.setData(loginData)
@@ -246,8 +253,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (username.length < 5) {
             return returnData.setErrorMsg("用户名不能低于5位")
         }
-        if (password.length < 8) {
-            return returnData.setErrorMsg("密码不能低于8位")
+        if (password.length < appConfig.minUserPasswordLength) {
+            return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
         }
         if (username.equals("default")) {
             return returnData.setErrorMsg("用户名不能为非法字符")
@@ -277,7 +284,14 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         // 自动注册
         var salt = getRandomString(8)
         var passwordEncrypted = genEncryptedPassword(password, salt)
-        var newUser = User(username, passwordEncrypted, salt)
+        var newUser = User(username, passwordEncrypted, salt).apply {
+            enable_webdav = context.bodyAsJson.getBoolean("enableWebdav") ?: appConfig.defaultUserEnableWebdav
+            enable_local_store = context.bodyAsJson.getBoolean("enableLocalStore") ?: appConfig.defaultUserEnableLocalStore
+            enable_book_source = context.bodyAsJson.getBoolean("enableBookSource") ?: appConfig.defaultUserEnableBookSource
+            enable_rss_source = context.bodyAsJson.getBoolean("enableRssSource") ?: appConfig.defaultUserEnableRssSource
+            book_source_limit = context.bodyAsJson.getInteger("bookSourceLimit") ?: appConfig.defaultUserBookSourceLimit
+            book_limit = context.bodyAsJson.getInteger("bookLimit") ?: appConfig.defaultUserBookLimit
+        }
         userMap.put(newUser.username, newUser.toMap())
         saveStorage("data", "users", value = userMap)
 
@@ -304,8 +318,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (password.isNullOrEmpty()) {
             return returnData.setErrorMsg("请输入密码")
         }
-        if (password.length < 8) {
-            return returnData.setErrorMsg("密码不能低于8位")
+        if (password.length < appConfig.minUserPasswordLength) {
+            return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
         }
         if (username.equals("default")) {
             return returnData.setErrorMsg("用户不存在")
