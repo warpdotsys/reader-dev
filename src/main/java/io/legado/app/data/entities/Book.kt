@@ -11,7 +11,6 @@ import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.localBook.EpubFile
 import io.legado.app.model.localBook.UmdFile
 import io.legado.app.model.localBook.CbzFile
-import io.legado.app.model.localBook.PdfFile
 import java.nio.charset.Charset
 import java.io.File
 import kotlin.math.max
@@ -176,6 +175,9 @@ data class Book(
     }
 
     fun getLocalFile(): File {
+        if (originName.startsWith(rootDir)) {
+            originName = originName.replaceFirst(rootDir, "")
+        }
         if (isEpub() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 epub文件
             return FileUtils.getFile(File(rootDir + originName), "index.epub")
@@ -183,6 +185,9 @@ data class Book(
         if (isCbz() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 cbz文件
             return FileUtils.getFile(File(rootDir + originName), "index.cbz")
+        }
+        if (isPdf() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
+            return FileUtils.getFile(File(rootDir + originName), "index.pdf")
         }
         return File(rootDir + originName)
     }
@@ -225,6 +230,7 @@ data class Book(
         ).apply {
             this.infoHtml = this@Book.infoHtml
             this.tocHtml = this@Book.tocHtml
+            this.setUserNameSpace(this@Book.getUserNameSpace())
         }
     }
 
@@ -267,10 +273,6 @@ data class Book(
                 UmdFile.upBookInfo(this, onlyCover)
             } else if (isCbz()) {
                 CbzFile.upBookInfo(this, onlyCover)
-            } else if (isPdf()) {
-                if (!onlyCover) {
-                    PdfFile.upBookInfo(this)
-                }
             }
         } catch(e: Exception) {
             e.printStackTrace()
@@ -308,7 +310,7 @@ data class Book(
         var imageStyle: String? = null,
         var useReplaceRule: Boolean = false,   // 正文使用净化替换规则
         var delTag: Long = 0L,   //去除标签
-        var pdfImageWidth: Float = 0f
+        var pdfImageWidth: Float = 800f
     )
 
     class Converters {
