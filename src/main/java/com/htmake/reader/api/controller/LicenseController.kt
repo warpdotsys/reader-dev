@@ -194,14 +194,12 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun supplyLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
         val email = context.bodyAsJson?.getString("email", "") ?: ""
         val code = context.bodyAsJson?.getString("code", "") ?: ""
+        if (email.isEmpty() || code.isEmpty()) return returnData.setErrorMsg("参数错误")
         val cached = tryCodeCache.getAsString(email)
         tryCodeCache.remove(email)
-        if (email.isEmpty() || code != cached) return returnData.setErrorMsg("验证码错误")
+        if (code != cached) return returnData.setErrorMsg("验证码错误")
         val license = License(host = "*", userMaxLimit = 15, simpleWebExpiredAt = System.currentTimeMillis() + 7 * 86400_000L, instances = 1, type = "trial", code = email)
         val signed = signLicense(license) ?: return returnData.setErrorMsg("未配置许可证私钥")
         return returnData.setData(mapOf("key" to signed))
