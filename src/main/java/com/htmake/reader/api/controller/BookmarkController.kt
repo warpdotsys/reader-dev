@@ -23,9 +23,14 @@ class BookmarkController(coroutineContext: CoroutineContext): BaseController(cor
     }
 
     override fun checker(json: JsonObject, entity: Bookmark): Boolean {
-        val jsonBookName = json.getString("bookName", "")
-        val jsonBookAuthor = json.getString("bookAuthor", "")
-        return jsonBookName == entity.bookName && jsonBookAuthor == entity.bookAuthor
+        return entity.time == json.getLong("time")
+    }
+
+    override fun beforeSave(entity: Bookmark, db: DB<Bookmark>): ReturnData? {
+        if (entity.bookName.isEmpty() && entity.bookAuthor.isEmpty()) {
+            return ReturnData().setErrorMsg("书签信息错误")
+        }
+        return null
     }
 
     override suspend fun checkUserAuth(context: RoutingContext): Boolean {

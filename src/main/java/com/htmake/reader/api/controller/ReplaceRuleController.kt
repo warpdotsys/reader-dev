@@ -23,8 +23,17 @@ class ReplaceRuleController(coroutineContext: CoroutineContext): BaseController(
     }
 
     override fun checker(json: JsonObject, entity: ReplaceRule): Boolean {
-        val jsonId = json.getLong("id", 0L)
-        return jsonId == entity.id
+        return entity.name == json.getString("name")
+    }
+
+    override fun beforeSave(entity: ReplaceRule, db: DB<ReplaceRule>): ReturnData? {
+        if (entity.name.isEmpty()) {
+            return ReturnData().setErrorMsg("名称不能为空")
+        }
+        if (entity.pattern.isEmpty()) {
+            return ReturnData().setErrorMsg("规则不能为空")
+        }
+        return null
     }
 
     override suspend fun checkUserAuth(context: RoutingContext): Boolean {
