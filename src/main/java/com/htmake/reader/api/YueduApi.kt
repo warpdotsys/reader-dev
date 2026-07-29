@@ -68,7 +68,9 @@ import java.lang.Runtime
 import kotlin.collections.mutableMapOf
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import java.text.SimpleDateFormat;
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.model.rss.Rss
@@ -716,23 +718,19 @@ class YueduApi : RestVerticle() {
         }
     }
 
-    /**
-     * 定期检查许可证有效性 (每6小时)
-     */
-    @Scheduled(cron = "0 0 0/6 * * ?")
+    @Scheduled(cron = "0 4/15 7-23 * * ?")
     fun checkLicense()
     {
+        val license = com.htmake.reader.utils.getInstalledLicense(true) ?: return
+        if (license.type == "default") return
         launch(Dispatchers.IO) {
             try {
-                val license = com.htmake.reader.utils.getInstalledLicense()
-                if (license != null) {
-                    logger.info("License check: found installed license")
-                    val licenseController = LicenseController(coroutineContext)
-                    licenseController.checkLicense(license)
-                }
-                com.htmake.reader.utils.setLicenseValid(license != null && license.isValid())
+                delay(Random.nextLong(10, 121) * 1000)
+                delay(Random.nextLong(1, 11) * 1000)
+                logger.info("开始检查授权是否正常")
+                LicenseController(coroutineContext).checkLicense(license)
             } catch (e: Exception) {
-                logger.error("checkLicense error: {}", e.message)
+                e.printStackTrace()
             }
         }
     }
