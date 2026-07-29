@@ -1,467 +1,312 @@
 package com.htmake.reader.api.controller
 
-import io.vertx.ext.web.RoutingContext
-import io.vertx.core.json.JsonObject
-import io.vertx.core.json.JsonArray
-import io.vertx.core.http.HttpMethod
-import mu.KotlinLogging
 import com.htmake.reader.api.ReturnData
 import com.htmake.reader.entity.User
 import com.htmake.reader.utils.getWorkDir
-import com.htmake.reader.utils.jsonEncode
-import com.htmake.reader.utils.asJsonArray
-import com.htmake.reader.utils.asJsonObject
-import com.htmake.reader.utils.toDataClass
-import com.htmake.reader.utils.toMap
-import com.htmake.reader.utils.getStorage
-import com.htmake.reader.utils.saveStorage
-import com.htmake.reader.utils.deleteRecursively
-import com.htmake.reader.utils.unzip
+import com.htmake.reader.utils.listFilesRecursively
+import com.htmake.reader.utils.success
+import io.legado.app.data.entities.Book
+import io.legado.app.exception.TocEmptyException
+import io.legado.app.model.localBook.LocalBook
+import io.vertx.core.http.HttpMethod
+import io.vertx.ext.web.RoutingContext
+import mu.KotlinLogging
 import java.io.File
-import java.nio.file.Paths
+import java.net.URLEncoder
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
 
-class FileController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
+class FileController(coroutineContext: CoroutineContext) : BaseController(coroutineContext) {
 
     private fun resolveSecurePath(baseDir: File, relativePath: String): File? {
         val basePath = baseDir.toPath().toAbsolutePath().normalize()
-        val resolved = basePath.resolve(relativePath).normalize()
-        if (!resolved.startsWith(basePath)) {
-            return null
-        }
-        return resolved.toFile()
+        val resolved = basePath.resolve(relativePath.removePrefix("/").removePrefix("\\")).normalize()
+        return resolved.takeIf { it.startsWith(basePath) }?.toFile()
     }
 
-    private fun requestedHome(context: RoutingContext): String {
-        return when {
-            context.request().method() == HttpMethod.POST && context.fileUploads().isNotEmpty() -> context.request().getParam("home") ?: ""
-            context.request().method() == HttpMethod.POST -> context.bodyAsJson?.getString("home", "") ?: ""
-            else -> context.queryParam("home").firstOrNull() ?: ""
-        }
+    private fun requestedHome(context: RoutingContext): String = when {
+        context.request().method() == HttpMethod.POST && context.fileUploads().isNotEmpty() ->
+            context.request().getParam("home") ?: ""
+        context.request().method() == HttpMethod.POST -> context.bodyAsJson?.getString("home", "") ?: ""
+        else -> context.queryParam("home").firstOrNull() ?: ""
     }
 
-    /**
-     * Validates the requested file home and stores its resolved directory on the request.
-     * A null result means the request may continue.
-     */
-    suspend fun checkAccess(
-        context: RoutingContext,
-        isSave: Boolean = false,
-        isDelete: Boolean = false
-    ): ReturnData? {
+    private fun requestPath(context: RoutingContext, key: String = "path"): String = if (context.request().method() == HttpMethod.POST) {
+        context.bodyAsJson?.getString(key) ?: ""
+    } else {
+        context.queryParam(key).firstOrNull() ?: ""
+    }
+
+    private fun getFileHome(context: RoutingContext): File? = context.get<File>("__FILE_HOME__")
+
+    suspend fun checkAccess(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): ReturnData? {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
+        if (!checkAuth(context)) return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         context.put("__FILE_HOME__", null)
-        when (requestedHome(context)) {
+        val directory = when (requestedHome(context)) {
             "__WEBDAV__" -> {
                 if (appConfig.secure) {
-                    val userInfo = context.get("userInfo") as User?
+                    val userInfo = context.get<User>("userInfo")
                         ?: return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
                     if (!userInfo.enable_webdav) return returnData.setErrorMsg("未开启webdav功能")
                 }
-                context.put("__FILE_HOME__", File(getUserWebdavHome(context)))
+                File(getUserWebdavHome(context))
             }
             "__LOCAL_STORE__" -> {
                 if (appConfig.secure) {
-                    val userInfo = context.get("userInfo") as User?
+                    val userInfo = context.get<User>("userInfo")
                         ?: return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
                     if (!userInfo.enable_local_store) return returnData.setErrorMsg("未开启本地书仓功能")
                 }
                 if ((isSave || isDelete) && !checkManagerAuth(context)) {
                     return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
                 }
-                context.put("__FILE_HOME__", File(getWorkDir("storage", "localStore")))
+                File(getWorkDir("storage", "localStore"))
             }
-            "__HOME__" -> context.put(
-                "__FILE_HOME__",
-                File(getWorkDir("storage", "data", getUserNameSpace(context)))
-            )
+            "__HOME__" -> File(getWorkDir("storage", "data", getUserNameSpace(context)))
             "__STORAGE__" -> {
-                if (!checkManagerAuth(context)) {
-                    return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-                }
-                context.put("__FILE_HOME__", File(getWorkDir("storage")))
+                if (!checkManagerAuth(context)) return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+                File(getWorkDir("storage"))
             }
             else -> return returnData.setErrorMsg("非法访问")
         }
+        directory.mkdirs()
+        context.put("__FILE_HOME__", directory)
+        logger.info { "context.__FILE_HOME__ $directory" }
         return null
     }
 
-    private fun getFileHome(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): File? {
-        (context.get("__FILE_HOME__") as? File)?.let { directory ->
-            if (!directory.exists()) directory.mkdirs()
-            return directory
-        }
-        val home = requestedHome(context)
-        val userNameSpace = getUserNameSpace(context)
-        val directory = when (home) {
-            "__WEBDAV__" -> {
-                if (appConfig.secure && (context.get("userInfo") as? User)?.enable_webdav != true) return null
-                File(getUserWebdavHome(context))
-            }
-            "__LOCAL_STORE__" -> {
-                if (appConfig.secure && (context.get("userInfo") as? User)?.enable_local_store != true) return null
-                if ((isSave || isDelete) && !checkManagerAuth(context)) return null
-                File(getWorkDir("storage", "localStore"))
-            }
-            "__HOME__" -> File(getWorkDir("storage", "data", userNameSpace))
-            "__STORAGE__" -> {
-                if (!checkManagerAuth(context)) return null
-                File(getWorkDir("storage"))
-            }
-            else -> return null
-        }
-        if (!directory.exists()) directory.mkdirs()
-        return directory
-    }
-
     suspend fun list(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        val returnData = ReturnData()
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val path = requestPath(context).ifEmpty { "/" }
+        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不存在")
+        logger.info { "file: $path $file" }
+        if (!file.exists()) {
+            if (path != "/") return returnData.setErrorMsg("路径不存在")
+            file.mkdirs()
         }
-        val path = if (context.request().method() == HttpMethod.POST) {
-            context.bodyAsJson?.getString("path", "") ?: ""
-        } else {
-            context.queryParam("path").firstOrNull() ?: ""
-        }
-
-        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
-        val targetDir = if (path.isEmpty()) {
-            baseDir
-        } else {
-            resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-        }
-
-        if (!targetDir.exists() || !targetDir.isDirectory) {
-            return returnData.setData(arrayListOf<Any>())
-        }
-
-        val files = targetDir.listFiles() ?: return returnData.setData(arrayListOf<Any>())
-        val fileList = files.map { file ->
+        if (!file.isDirectory) return returnData.setErrorMsg("路径不是目录")
+        val files = file.listFiles() ?: emptyArray()
+        val fileList = files.filterNot { it.name.startsWith(".") }.map { item ->
             mapOf(
-                "name" to file.name,
-                "path" to file.relativeTo(baseDir).path,
-                "isDirectory" to file.isDirectory,
-                "size" to file.length(),
-                "lastModified" to file.lastModified()
+                "name" to item.name,
+                "size" to item.length(),
+                "path" to "/" + item.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                "lastModified" to item.lastModified(),
+                "isDirectory" to item.isDirectory
             )
-        }.sortedWith(compareByDescending<Map<String, Any>> { it["isDirectory"] as Boolean }.thenBy { (it["name"] as String).lowercase() })
-
+        }
         return returnData.setData(fileList)
     }
 
     suspend fun upload(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
+        if (context.fileUploads().isEmpty()) return returnData.setErrorMsg("请上传文件")
         checkAccess(context, isSave = true)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (context.fileUploads() == null || context.fileUploads().isEmpty()) {
-            return returnData.setErrorMsg("请上传文件")
-        }
-        val path = context.request().getParam("path") ?: ""
-        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
-        val targetDir = if (path.isEmpty()) {
-            baseDir
-        } else {
-            resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-        }
-
-        if (!targetDir.exists()) {
-            targetDir.mkdirs()
-        }
-
-        val uploadedFiles = arrayListOf<String>()
-        context.fileUploads().forEach {
-            val file = File(it.uploadedFileName())
-            if (file.exists()) {
-                val fileName = File(it.fileName()).name
-                val newFile = resolveSecurePath(targetDir, fileName) ?: return@forEach
-                if (newFile.exists()) {
-                    newFile.delete()
-                }
-                file.copyTo(newFile, overwrite = true)
-                file.delete()
-                uploadedFiles.add(newFile.relativeTo(baseDir).path)
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val path = (context.request().getParam("path") ?: "").ifEmpty { "/" }
+        val targetDir = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不存在")
+        val fileList = ArrayList<Map<String, Any>>()
+        context.fileUploads().forEach { upload ->
+            val source = File(upload.uploadedFileName())
+            if (!source.exists()) return@forEach
+            val destination = resolveSecurePath(targetDir, File(upload.fileName()).name) ?: return@forEach
+            destination.parentFile.mkdirs()
+            if (destination.exists()) destination.delete()
+            if (source.copyTo(destination, overwrite = false).exists()) {
+                fileList += mapOf(
+                    "name" to destination.name,
+                    "size" to destination.length(),
+                    "path" to "/" + destination.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                    "lastModified" to destination.lastModified(),
+                    "isDirectory" to destination.isDirectory
+                )
             }
+            source.deleteRecursively()
         }
-        return returnData.setData(uploadedFiles)
+        return returnData.setData(fileList)
     }
 
     suspend fun download(context: RoutingContext) {
         val accessResult = checkAccess(context)
         if (accessResult != null) {
-            context.response().setStatusCode(403).end(accessResult.errorMsg ?: "非法访问")
+            context.success(accessResult)
             return
         }
-        if (!checkAuth(context)) {
-            context.response().setStatusCode(401).end("NEED_LOGIN")
-            return
+        val returnData = ReturnData()
+        val path = requestPath(context)
+        val stream = if (context.request().method() == HttpMethod.POST) {
+            context.bodyAsJson?.getInteger("stream", 0) ?: 0
+        } else {
+            context.queryParam("stream").firstOrNull()?.toIntOrNull() ?: 0
         }
-        val path = context.queryParam("path").firstOrNull() ?: ""
         if (path.isEmpty()) {
-            context.response().setStatusCode(400).end("请输入文件路径")
+            context.success(returnData.setErrorMsg("参数错误"))
             return
         }
-
-        val baseDir = getFileHome(context) ?: run {
-            context.response().setStatusCode(403).end("非法访问")
+        val baseDir = getFileHome(context)
+        val file = baseDir?.let { resolveSecurePath(it, path) }
+        if (file == null) {
+            context.success(returnData.setErrorMsg("参数错误"))
             return
         }
-        val file = resolveSecurePath(baseDir, path)
-        if (file == null || !file.exists() || file.isDirectory) {
-            context.response().setStatusCode(404).end("文件不存在")
+        logger.info { "file: $path $file" }
+        if (!file.exists()) {
+            context.success(returnData.setErrorMsg("路径不存在"))
             return
         }
-
-        context.response()
-            .putHeader("Content-Disposition", "attachment; filename=\"${file.name}\"")
-            .putHeader("Content-Type", "application/octet-stream")
-            .sendFile(file.absolutePath)
+        val response = context.response().putHeader("Cache-Control", "86400")
+        if (stream <= 0) response.putHeader("Content-Disposition", "attachment; filename=${URLEncoder.encode(file.name, "UTF-8")}")
+        response.sendFile(file.toString())
     }
 
     suspend fun get(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val path = if (context.request().method() == HttpMethod.POST) {
-            context.bodyAsJson?.getString("path", "") ?: ""
-        } else {
-            context.queryParam("path").firstOrNull() ?: ""
-        }
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
-        }
-
-        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path)
-        if (file == null || !file.exists() || file.isDirectory) {
-            return returnData.setErrorMsg("文件不存在")
-        }
-
-        val content = file.readText(Charsets.UTF_8)
-        return returnData.setData(content)
+        val returnData = ReturnData()
+        val path = requestPath(context)
+        if (path.isEmpty()) return returnData.setErrorMsg("参数错误")
+        val file = getFileHome(context)?.let { resolveSecurePath(it, path) } ?: return returnData.setErrorMsg("参数错误")
+        logger.info { "file: $path $file" }
+        if (!file.exists()) return returnData.setErrorMsg("路径不存在")
+        return returnData.setData(file.readText())
     }
 
     suspend fun save(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context, isSave = true)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
+        val returnData = ReturnData()
         val path = context.bodyAsJson?.getString("path", "") ?: ""
         val content = context.bodyAsJson?.getString("content", "") ?: ""
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
-        }
-
-        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (!file.parentFile.exists()) {
-            file.parentFile.mkdirs()
-        }
-        file.writeText(content, Charsets.UTF_8)
+        if (path.isEmpty()) return returnData.setErrorMsg("参数错误")
+        val file = getFileHome(context)?.let { resolveSecurePath(it, path) } ?: return returnData.setErrorMsg("参数错误")
+        logger.info { "file: $path $file" }
+        file.parentFile.mkdirs()
+        file.writeText(content)
         return returnData.setData("")
     }
 
     suspend fun mkdir(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context, isSave = true)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
+        val returnData = ReturnData()
         val path = context.bodyAsJson?.getString("path", "") ?: ""
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入目录路径")
-        }
-
-        val baseDir = getFileHome(context, isSave = true) ?: return returnData.setErrorMsg("非法访问")
-        val dir = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
+        val name = context.bodyAsJson?.getString("name", "") ?: ""
+        if (path.isEmpty() || name.isEmpty() || name.startsWith(".")) return returnData.setErrorMsg("参数错误")
+        val parent = getFileHome(context)?.let { resolveSecurePath(it, path) } ?: return returnData.setErrorMsg("参数错误")
+        val directory = resolveSecurePath(parent, name) ?: return returnData.setErrorMsg("参数错误")
+        logger.info { "file: $path $directory" }
+        if (directory.exists()) return returnData.setErrorMsg("路径已存在")
+        directory.mkdirs()
         return returnData.setData("")
     }
 
     suspend fun delete(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context, isDelete = true)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val path = context.bodyAsJson?.getString("path", "") ?: ""
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
-        }
-
-        val baseDir = getFileHome(context, isDelete = true) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (file.exists()) {
-            file.deleteRecursively()
-        }
+        val returnData = ReturnData()
+        val path = requestPath(context)
+        if (path.isEmpty()) return returnData.setErrorMsg("参数错误")
+        val file = getFileHome(context)?.let { resolveSecurePath(it, path) } ?: return returnData.setErrorMsg("参数错误")
+        logger.info { "file: $path $file" }
+        if (!file.exists()) return returnData.setErrorMsg("路径不存在")
+        file.deleteRecursively()
         return returnData.setData("")
     }
 
     suspend fun deleteMulti(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context, isDelete = true)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val body = context.bodyAsString
-        if (body.isNullOrEmpty()) {
-            return returnData.setErrorMsg("参数错误")
-        }
-        val paths: List<String> = try {
-            val arr = JsonArray(body)
-            (0 until arr.size()).map { arr.getString(it) }
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("参数错误")
-        }
-
-        val baseDir = getFileHome(context, isDelete = true) ?: return returnData.setErrorMsg("非法访问")
-        for (path in paths) {
-            val file = resolveSecurePath(baseDir, path) ?: continue
-            if (file.exists()) {
-                file.deleteRecursively()
-            }
+        val returnData = ReturnData()
+        val paths = context.bodyAsJson?.getJsonArray("path") ?: return returnData.setErrorMsg("参数错误")
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        paths.forEach { value ->
+            val path = value as? String ?: return@forEach
+            if (path.isNotEmpty()) resolveSecurePath(baseDir, path)?.deleteRecursively()
         }
         return returnData.setData("")
     }
 
     suspend fun importPreview(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val path = if (context.request().method() == HttpMethod.POST) {
-            context.bodyAsJson?.getString("path", "") ?: ""
-        } else {
-            context.queryParam("path").firstOrNull() ?: ""
-        }
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
-        }
-
-        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (!file.exists()) {
-            return returnData.setErrorMsg("文件不存在")
-        }
-
-        val supportedExtensions = listOf("txt", "epub", "umd", "cbz", "pdf")
-        val fileList = if (file.isDirectory) {
-            file.listFiles()?.filter { f ->
-                supportedExtensions.any { ext -> f.name.endsWith(".$ext", ignoreCase = true) }
-            }?.map { f ->
-                mapOf(
-                    "name" to f.name,
-                    "path" to f.relativeTo(baseDir).path,
-                    "size" to f.length()
-                )
-            } ?: emptyList()
-        } else {
-            if (supportedExtensions.any { ext -> file.name.endsWith(".$ext", ignoreCase = true) }) {
-                listOf(mapOf(
-                    "name" to file.name,
-                    "path" to file.relativeTo(baseDir).path,
-                    "size" to file.length()
-                ))
-            } else {
-                emptyList()
+        val returnData = ReturnData()
+        val paths = context.bodyAsJson?.getJsonArray("path") ?: return returnData.setErrorMsg("参数错误")
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val userNameSpace = getUserNameSpace(context)
+        val rootDir = getWorkDir().let { if (it.endsWith(File.separator)) it else it + File.separator }
+        val fileList = ArrayList<Map<String, Any>>()
+        paths.forEach { value ->
+            val path = value as? String ?: return@forEach
+            if (path.isEmpty()) return@forEach
+            val file = resolveSecurePath(baseDir, path) ?: return@forEach
+            logger.info { "localFile: $path $file" }
+            if (!file.exists() || file.isDirectory) return@forEach
+            val ext = getFileExt(file.name)
+            if (ext !in setOf("txt", "epub", "umd", "cbz", "pdf")) {
+                return returnData.setErrorMsg("不支持导入${ext}格式的书籍文件")
+            }
+            var relativePath = file.path
+            if (relativePath.startsWith(rootDir)) relativePath = relativePath.removePrefix(rootDir)
+            val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)
+            book.setUserNameSpace(userNameSpace)
+            try {
+                fileList += mapOf("book" to book, "chapters" to LocalBook.getChapterList(book))
+            } catch (_: TocEmptyException) {
+                fileList += mapOf("book" to book, "chapters" to arrayListOf<Any>())
             }
         }
-
         return returnData.setData(fileList)
     }
 
     suspend fun restore(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val path = context.bodyAsJson?.getString("path", "") ?: ""
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
-        }
-
-        val userNameSpace = getUserNameSpace(context)
-        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (!file.exists()) {
-            return returnData.setErrorMsg("文件不存在")
-        }
-
-        if (!file.name.endsWith(".zip", ignoreCase = true)) {
-            return returnData.setErrorMsg("仅支持zip格式的备份文件")
-        }
-
-        try {
-            val dataDir = File(getWorkDir("storage", "data", userNameSpace))
-            file.unzip(dataDir.absolutePath)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("恢复失败: ${e.message}")
+        val returnData = ReturnData()
+        val path = requestPath(context).ifEmpty { "/" }
+        if (getFileExt(path) != "zip") return returnData.setErrorMsg("路径不是zip备份文件")
+        val file = getFileHome(context)?.let { resolveSecurePath(it, path) } ?: return returnData.setErrorMsg("参数错误")
+        logger.info { "file: $path $file" }
+        if (!file.exists()) return returnData.setErrorMsg("路径不存在")
+        if (!BookController(coroutineContext).syncFromWebdav(file.toString(), getUserNameSpace(context))) {
+            return returnData.setErrorMsg("恢复失败")
         }
         return returnData.setData("")
     }
 
     suspend fun parse(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
         checkAccess(context)?.let { return it }
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        val path = if (context.request().method() == HttpMethod.POST) {
-            context.bodyAsJson?.getString("path", "") ?: ""
+        val returnData = ReturnData()
+        val path = requestPath(context).ifEmpty { "/" }
+        val import = if (context.request().method() == HttpMethod.POST) {
+            context.bodyAsJson?.getInteger("import", 0) ?: 0
         } else {
-            context.queryParam("path").firstOrNull() ?: ""
+            context.queryParam("import").firstOrNull()?.toIntOrNull() ?: 0
         }
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("请输入文件路径")
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val directory = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不存在")
+        logger.info { "file: $path $directory" }
+        if (!directory.exists()) return returnData.setErrorMsg("路径不存在")
+        if (!directory.isDirectory) return returnData.setErrorMsg("路径不是目录")
+        val userNameSpace = getUserNameSpace(context)
+        val rootDir = getWorkDir().let { if (it.endsWith(File.separator)) it else it + File.separator }
+        val bookController = BookController(coroutineContext)
+        val fileList = ArrayList<Map<String, Any>>()
+        listFilesRecursively(directory).forEach { file ->
+            if (file.name.startsWith(".") || !file.isFile || getFileExt(file.name) !in setOf("txt", "epub", "umd", "cbz", "pdf")) return@forEach
+            var relativePath = file.path
+            if (relativePath.startsWith(rootDir)) relativePath = relativePath.removePrefix(rootDir)
+            val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)
+            book.setUserNameSpace(userNameSpace)
+            if (import > 0) {
+                val result = bookController.saveBookToShelf(book, userNameSpace, context)
+                if (result.second.isEmpty()) fileList += mapOf("name" to file.name)
+            } else {
+                fileList += mapOf(
+                    "name" to file.name,
+                    "size" to file.length(),
+                    "path" to "/" + file.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                    "lastModified" to file.lastModified(),
+                    "book" to book
+                )
+            }
         }
-
-        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("非法访问")
-        val file = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("路径不合法")
-
-        if (!file.exists() || file.isDirectory) {
-            return returnData.setErrorMsg("文件不存在")
-        }
-
-        val content = try {
-            file.readText(Charsets.UTF_8)
-        } catch (e: Exception) {
-            return returnData.setErrorMsg("文件读取失败: ${e.message}")
-        }
-
-        // Try to parse as JSON
-        try {
-            val jsonArray = JsonArray(content)
-            return returnData.setData(jsonArray.list)
-        } catch (e: Exception) {
-            // Not a JSON array
-        }
-        try {
-            val jsonObj = JsonObject(content)
-            return returnData.setData(jsonObj.map)
-        } catch (e: Exception) {
-            // Not a JSON object
-        }
-
-        return returnData.setData(content)
+        return returnData.setData(fileList)
     }
 }
