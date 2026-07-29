@@ -113,20 +113,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun getLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-        }
-        val license = getInstalledLicense(true)
-            ?: return returnData.setData(mapOf("active" to false, "valid" to false))
-        return returnData.setData(mapOf(
-            "active" to license.verified,
-            "valid" to license.isValid(),
-            "license" to license,
-            "message" to if (license.isValid()) "已激活" else "许可证已过期"
-        ))
+        return returnData.setData(mapOf("license" to getInstalledLicense()))
     }
 
     suspend fun importLicense(context: RoutingContext) {
