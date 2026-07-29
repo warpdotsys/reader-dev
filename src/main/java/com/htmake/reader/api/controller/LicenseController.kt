@@ -199,24 +199,35 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun activateLicense(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (!checkManagerAuth(context)) {
-            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
-        }
         val content = context.bodyAsJson?.getString("content", "") ?: ""
-        val license = decryptToLicense(content) ?: return returnData.setErrorMsg("许可证密钥错误")
+        if (content.isEmpty()) return returnData.setErrorMsg("请输入密钥")
+        val license = decryptToLicense(content) ?: return returnData.setErrorMsg("密钥错误")
         if (license.verified) return returnData.setErrorMsg("许可证已被使用")
-        if (license.expiredAt > 0 && !license.isValid()) return returnData.setErrorMsg("许可证已过期")
+        val activeLicenseList = asJsonArray(getStorage("data", "activeLicense")) ?: JsonArray()
+        var activeTimes = 0
+        for (index in 0 until activeLicenseList.size()) {
+            val activeLicense = activeLicenseList.getJsonObject(index).mapTo(ActiveLicense::class.java)
+            if (activeLicense.type == license.type && activeLicense.code == license.code) {
+                activeTimes++
+            }
+        }
+        if (activeTimes >= license.instances) return returnData.setErrorMsg("密钥已超过最大使用次数")
+
+        val ip = context.request().getHeader("X-Real-IP").takeUnless { it.isNullOrEmpty() }
+            ?: context.request().remoteAddress()?.host().orEmpty()
         license.verified = true
         license.verifyTime = System.currentTimeMillis()
         license.id = UUID.randomUUID().toString()
+        val activeLicense = license.toActiveLicense().apply {
+            activeOrder = activeTimes + 1
+            activeTime = System.currentTimeMillis()
+            activeIp = ip
+            activeEmail = ""
+        }
+        activeLicenseList.add(JsonObject.mapFrom(activeLicense))
+        logger.info("activeLicenseList: {}", activeLicenseList)
+        saveStorage("data", "activeLicense", value = activeLicenseList)
         val signed = signLicense(license) ?: return returnData.setErrorMsg("未配置许可证私钥")
-        val licenseFile = com.htmake.reader.utils.getStorageFile("data", "license", ext = ".key")
-        licenseFile.parentFile.mkdirs()
-        licenseFile.writeText(signed)
-        setLicenseValid(true)
         return returnData.setData(mapOf("result" to signed))
     }
 
