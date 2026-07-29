@@ -195,9 +195,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
                     }
                     licenseKey to license
                 }.onSuccess { (licenseKey, license) ->
-                    val licenseFile = com.htmake.reader.utils.getStorageFile("data", "license", ext = ".key")
-                    licenseFile.parentFile.mkdirs()
-                    licenseFile.writeText(licenseKey)
+                    saveStorage("data", "license", value = licenseKey, ext = ".key")
                     context.success(returnData.setData(mapOf("license" to license)))
                 }.onFailure { error ->
                     logger.info("import license error: {}", error.message)
