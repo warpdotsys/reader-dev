@@ -7,6 +7,9 @@ import com.htmake.reader.db.DB
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import kotlin.coroutines.CoroutineContext
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class BookGroupController(coroutineContext: CoroutineContext): BaseController(coroutineContext), CURD<BookGroup> {
 
