@@ -69,6 +69,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.withLock
 
 private val logger = KotlinLogging.logger {}
 
@@ -183,30 +184,29 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             var tmp = accessToken.split(":", limit=2)
             if (tmp.size >= 2) {
                 accessToken = tmp[1]
-
-                var userMap = mutableMapOf<String, MutableMap<String, Any>>()
-                var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-                if (userMapJson != null) {
-                    userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
-                }
-                var currentUser = userMap.getOrDefault(username, null)
-                if (currentUser == null) {
-                    return returnData.setErrorMsg("系统错误")
-                }
-                var tokenMapVal = currentUser.getOrDefault("token_map", null)
-                if (tokenMapVal != null) {
-                    var tokenMap: MutableMap<String, Long>? = tokenMapVal as MutableMap<String, Long>?
+                val updated = userMutex.withLock {
+                    var userMap = mutableMapOf<String, MutableMap<String, Any>>()
+                    var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+                    if (userMapJson != null) {
+                        userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
+                    }
+                    val currentUser = userMap.getOrDefault(username, null) ?: return@withLock false
+                    val tokenMapVal = currentUser.getOrDefault("token_map", null)
+                    val tokenMap = tokenMapVal as? MutableMap<String, Long>
                     if (tokenMap != null) {
                         tokenMap.remove(accessToken)
                         currentUser.put("token_map", tokenMap)
                     }
+                    if (currentUser.getOrDefault("token", "") == accessToken) {
+                        currentUser.put("token", "")
+                    }
+                    userMap[username] = currentUser
+                    saveStorage("data", "users", value = userMap)
+                    true
                 }
-                if (currentUser.getOrDefault("token", "").equals(accessToken)) {
-                    currentUser.put("token", "")
+                if (!updated) {
+                    return returnData.setErrorMsg("系统错误")
                 }
-
-                userMap.put(username, currentUser)
-                saveStorage("data", "users", value = userMap)
             }
         }
         return returnData.setErrorMsg("请重新登录").setData("NEED_LOGIN")

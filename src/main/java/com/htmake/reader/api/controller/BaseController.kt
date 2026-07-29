@@ -70,6 +70,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import io.legado.app.help.coroutine.Coroutine
 
 private val logger = KotlinLogging.logger {}
@@ -87,37 +88,39 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
     }
 
     suspend fun saveUserSession(context: RoutingContext, user: User, regenerateToken: Boolean = true): Map<String, Any> {
-        var userMap = mutableMapOf<String, Map<String, Any>>()
-        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-        if (userMapJson != null) {
-            userMap = userMapJson.map as? MutableMap<String, Map<String, Any>> ?: mutableMapOf<String, Map<String, Any>>()
-        }
-        user.last_login_at = System.currentTimeMillis()
-        if (regenerateToken) {
-            user.token = genEncryptedPassword(user.username, System.currentTimeMillis().toString())
-            var tokenMap: MutableMap<String, Long>? = null
-            var expire = System.currentTimeMillis() + loginExpireDays * 86400 * 1000
-            if (user.token_map != null) {
-                tokenMap = user.token_map as? MutableMap<String, Long>
+        return userMutex.withLock {
+            var userMap = mutableMapOf<String, Map<String, Any>>()
+            var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+            if (userMapJson != null) {
+                userMap = userMapJson.map as? MutableMap<String, Map<String, Any>> ?: mutableMapOf<String, Map<String, Any>>()
             }
-            if (tokenMap == null) {
-                tokenMap = mutableMapOf(user.token to expire)
-            } else {
-                tokenMap.put(user.token, expire)
+            user.last_login_at = System.currentTimeMillis()
+            if (regenerateToken) {
+                user.token = genEncryptedPassword(user.username, System.currentTimeMillis().toString())
+                var tokenMap: MutableMap<String, Long>? = null
+                var expire = System.currentTimeMillis() + loginExpireDays * 86400 * 1000
+                if (user.token_map != null) {
+                    tokenMap = user.token_map as? MutableMap<String, Long>
+                }
+                if (tokenMap == null) {
+                    tokenMap = mutableMapOf(user.token to expire)
+                } else {
+                    tokenMap.put(user.token, expire)
+                }
+                // 删除已过期token
+                tokenMap.values.removeAll { it < user.last_login_at }
+                user.token_map = tokenMap
             }
-            // 删除已过期token
-            tokenMap.values.removeAll { it < user.last_login_at }
-            user.token_map = tokenMap
+            userMap.put(user.username, user.toMap())
+            saveStorage("data", "users", value = userMap)
+
+            val loginData = formatUser(user)
+
+            context.session().put("username", user.username)
+            context.put("username", user.username)
+
+            loginData
         }
-        userMap.put(user.username, user.toMap())
-        saveStorage("data", "users", value = userMap)
-
-        val loginData = formatUser(user)
-
-        context.session().put("username", user.username)
-        context.put("username", user.username)
-
-        return loginData
     }
 
     suspend fun checkAuth(context: RoutingContext): Boolean {
