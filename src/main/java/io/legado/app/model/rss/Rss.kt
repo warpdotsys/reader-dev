@@ -54,7 +54,7 @@ object Rss {
         val body = analyzeUrl.getStrResponseAwait().body
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${rssArticle.link}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")
-        val analyzeRule = AnalyzeRule(rssArticle, rssSource)
+        val analyzeRule = AnalyzeRule(rssArticle, rssSource, debugLog)
         analyzeRule.setContent(body)
             .setBaseUrl(NetworkUtils.getAbsoluteURL(rssArticle.origin, rssArticle.link))
         return analyzeRule.getString(ruleContent)
