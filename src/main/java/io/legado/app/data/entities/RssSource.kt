@@ -134,6 +134,7 @@ data class RssSource(
                     sourceGroup = doc.readString("$.sourceGroup"),
                     sourceComment = doc.readString("$.sourceComment"),
                     enabled = doc.readBool("$.enabled") ?: true,
+                    enabledCookieJar = doc.readBool("$.enabledCookieJar") ?: false,
                     concurrentRate = doc.readString("$.concurrentRate"),
                     header = doc.readString("$.header"),
                     loginUrl = doc.readString("$.loginUrl"),
