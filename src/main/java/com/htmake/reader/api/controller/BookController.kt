@@ -47,6 +47,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerResponse
+import io.vertx.core.MultiMap
 import io.legado.app.data.entities.HttpTTS
 import com.htmake.reader.api.ReturnData
 import io.legado.app.utils.MD5Utils
@@ -56,6 +57,7 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.nio.charset.Charset
 import java.util.UUID;
+import java.util.Base64
 import io.vertx.ext.web.client.WebClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -3731,173 +3733,105 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
     }
 
-    /**
-     * TTS entry point: reads params and dispatches to ttsByEdge/ttsByApi/ttsByTextToSpeechCn.
-     */
     suspend fun textToSpeech(context: RoutingContext) {
-        val returnData = ReturnData()
         if (!checkAuth(context)) {
-            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            context.response().setStatusCode(403).end("未登录")
             return
         }
-        var text: String
-        var ttsName: String
-        var rate: String
-        var pitch: String
-        if (context.request().method() == HttpMethod.POST) {
-            text = context.bodyAsJson.getString("text") ?: ""
-            ttsName = context.bodyAsJson.getString("ttsName") ?: context.bodyAsJson.getString("voice") ?: ""
-            rate = context.bodyAsJson.getString("rate") ?: "+0%"
-            pitch = context.bodyAsJson.getString("pitch") ?: "+0Hz"
-        } else {
-            text = context.queryParam("text").firstOrNull() ?: ""
-            ttsName = context.queryParam("ttsName").firstOrNull() ?: context.queryParam("voice").firstOrNull() ?: ""
-            rate = context.queryParam("rate").firstOrNull() ?: "+0%"
-            pitch = context.queryParam("pitch").firstOrNull() ?: "+0Hz"
-        }
-        if (text.isNullOrEmpty()) {
-            context.success(returnData.setErrorMsg("请输入文本内容"))
+        val body = if (context.request().method() == HttpMethod.POST) context.bodyAsJson else null
+        fun value(name: String): String = body?.getString(name) ?: context.queryParam(name).firstOrNull() ?: ""
+        val text = value("text")
+        val type = value("type").ifEmpty { "edge" }
+        if (text.isEmpty()) {
+            context.response().setStatusCode(404).end("参数错误")
             return
         }
-        val userNameSpace = getUserNameSpace(context)
-        val params = mutableMapOf<String, String>(
-            "voice" to ttsName,
-            "rate" to rate,
-            "pitch" to pitch
+        val options = mapOf(
+            "voice" to value("voice"),
+            "pitch" to value("pitch"),
+            "rate" to value("rate"),
+            "base64" to value("base64")
         )
-        val response = context.response()
-        try {
-            if (ttsName.isNotEmpty()) {
-                val httpTTS = getHttpTTSByName(ttsName, userNameSpace)
-                if (httpTTS != null) {
-                    val url = httpTTS.url
-                    if (url.contains("edge-tts") || httpTTS.name.contains("edge", ignoreCase = true)) {
-                        ttsByEdge(response, text, params)
-                    } else {
-                        ttsByApi(response, text, url, params)
-                    }
-                    return
-                }
-            }
-            // Fallback to Edge TTS
-            ttsByEdge(response, text, params)
-        } catch (e: Exception) {
-            logger.error("textToSpeech error: {}", e.message)
-            if (!response.ended()) {
-                context.success(returnData.setErrorMsg("语音合成失败: ${e.message}"))
-            }
+        when (type) {
+            "edge" -> ttsByEdge(context.response(), text, options)
+            "textToSpeechCn" -> ttsByTextToSpeechCn(context.response(), text, options)
+            else -> ttsByApi(context.response(), text, getUserNameSpace(context), options)
         }
     }
 
-    /**
-     * TTS via Edge: uses TTSService/SSML pattern to synthesize audio and stream to response.
-     */
     suspend fun ttsByEdge(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) {
-        val voiceName = params.getOrDefault("voice", "").let {
-            if (it.isEmpty()) "zh-CN-XiaoxiaoNeural" else it
-        }
-        val rate = params.getOrDefault("rate", "+0%")
-        val pitch = params.getOrDefault("pitch", "+0Hz")
-
-        val outputFormat = com.htmake.reader.lib.tts.constant.OutputFormat.audio_24khz_48kbitrate_mono_mp3
-
-        val voice = com.htmake.reader.lib.tts.constant.VoiceEnum.fromSortName(voiceName)
+        val voice = com.htmake.reader.lib.tts.constant.VoiceEnum.fromSortName(params["voice"])
             ?: com.htmake.reader.lib.tts.constant.VoiceEnum.zh_CN_XiaoxiaoNeural
-
         val ttsService = com.htmake.reader.lib.tts.service.TTSService.builder()
-            .usingOutputFormat(outputFormat)
-            .usingAzureApi(false)
             .build()
-
         val ssml = com.htmake.reader.lib.tts.model.SSML.builder()
             .synthesisText(text)
             .voice(voice)
-            .rate(rate)
-            .pitch(pitch)
-            .outputFormat(outputFormat)
+            .rate(params["rate"].orEmpty().ifEmpty { "0" })
+            .pitch(params["pitch"].orEmpty().ifEmpty { "0" } + "%")
+            .style(com.htmake.reader.lib.tts.constant.TtsStyleEnum.chat)
             .build()
-
         val audioBytes = ttsService.sendText(ssml)
-        if (audioBytes == null || audioBytes.isEmpty()) {
-            throw Exception("Edge TTS合成失败")
+        if (params["base64"] == "1") {
+            response.putHeader("content-type", "application/json; charset=utf-8")
+                .end(jsonEncode(ReturnData().setData(Base64.getEncoder().encodeToString(audioBytes))))
+        } else {
+            response.putHeader("Content-Type", "audio/mpeg").end(io.vertx.core.buffer.Buffer.buffer(audioBytes))
         }
-
-        response
-            .putHeader("Content-Type", "audio/mpeg")
-            .putHeader("Content-Length", audioBytes.size.toString())
-            .end(io.vertx.core.buffer.Buffer.buffer(audioBytes))
     }
 
-    /**
-     * TTS via API: calls the HttpTTS source URL with text substituted, streams response.
-     */
-    suspend fun ttsByApi(response: HttpServerResponse, text: String, url: String, params: Map<String, String> = emptyMap()) {
-        val encodedText = URLEncoder.encode(text, "UTF-8")
-        val finalUrl = url
-            .replace("{{text}}", encodedText)
-            .replace("{{speakText}}", encodedText)
-            .replace("\${text}", encodedText)
-            .replace("\${speakText}", encodedText)
-
-        val result = kotlinx.coroutines.suspendCancellableCoroutine<ByteArray?> { cont ->
-            webClient.getAbs(finalUrl).timeout(30000).send { ar ->
-                if (ar.succeeded()) {
-                    val bodyBytes = ar.result()?.bodyAsBuffer()?.bytes
-                    cont.resume(bodyBytes) {}
-                } else {
-                    cont.resume(null) {}
-                }
-            }
+    suspend fun ttsByApi(response: HttpServerResponse, text: String, userNameSpace: String, params: Map<String, String> = emptyMap()) {
+        val voice = params["voice"].orEmpty()
+        if (voice.isEmpty()) {
+            response.setStatusCode(404).end()
+            return
         }
-
-        if (result == null || result.isEmpty()) {
-            throw Exception("API TTS请求失败")
+        val httpTTS = getHttpTTSByName(voice, userNameSpace)
+        if (httpTTS == null) {
+            response.setStatusCode(404).end()
+            return
         }
-
-        val contentType = if (url.contains(".mp3") || url.contains("mp3")) "audio/mpeg"
-            else if (url.contains(".wav") || url.contains("wav")) "audio/wav"
-            else "audio/mpeg"
-
-        response
-            .putHeader("Content-Type", contentType)
-            .putHeader("Content-Length", result.size.toString())
-            .end(io.vertx.core.buffer.Buffer.buffer(result))
+        val speechRate = (5 + ((params["rate"]?.toDoubleOrNull() ?: 1.0) - 0.5) * 30).toInt()
+        val stream = getSpeakStream(httpTTS, text, speechRate)
+        if (stream == null) {
+            response.setStatusCode(404).end()
+            return
+        }
+        val bytes = stream.readBytes()
+        if (params["base64"] == "1") {
+            response.putHeader("content-type", "application/json; charset=utf-8")
+                .end(jsonEncode(ReturnData().setData(Base64.getEncoder().encodeToString(bytes))))
+        } else {
+            response.putHeader("Content-Type", httpTTS.contentType.ifEmpty { "audio/mpeg" })
+                .end(io.vertx.core.buffer.Buffer.buffer(bytes))
+        }
     }
 
-    /**
-     * TTS via texttospeech.cn API: fallback TTS using external Chinese TTS service.
-     */
     suspend fun ttsByTextToSpeechCn(response: HttpServerResponse, text: String, params: Map<String, String> = emptyMap()) {
-        val voiceName = params.getOrDefault("voice", "").let {
-            if (it.isEmpty()) "zh-CN-XiaoxiaoNeural" else it
+        val form = MultiMap.caseInsensitiveMultiMap()
+        form.add("language", "中文（普通话，简体）")
+        form.add("voice", "zh-CN-XiaoxiaoNeural")
+        form.add("text", text)
+        form.add("role", "0")
+        form.add("style", "0")
+        form.add("rate", "0")
+        form.add("pitch", "0")
+        form.add("kbitrate", "audio-16khz-32kbitrate-mono-mp3")
+        form.add("silence", "")
+        form.add("styledegree", "1")
+        form.add("user_id", "")
+        form.add("yzm", "")
+        params.forEach { (key, value) -> form.set(key, value) }
+        val result = kotlinx.coroutines.suspendCancellableCoroutine<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>?> { cont ->
+            webClient.postAbs("https://www.text-to-speech.cn/getSpeek.php")
+                .timeout(5000)
+                .putHeader("Origin", "https://www.text-to-speech.cn")
+                .putHeader("Referer", "https://www.text-to-speech.cn/")
+                .putHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
+                .sendForm(form) { ar -> cont.resume(if (ar.succeeded()) ar.result() else null) {} }
         }
-
-        val requestBody = JsonObject()
-            .put("text", text)
-            .put("voice", voiceName)
-
-        val result = kotlinx.coroutines.suspendCancellableCoroutine<ByteArray?> { cont ->
-            webClient.postAbs("https://texttospeech.cn/api/tts")
-                .timeout(30000)
-                .putHeader("Content-Type", "application/json")
-                .sendJsonObject(requestBody) { ar ->
-                    if (ar.succeeded()) {
-                        val bodyBytes = ar.result()?.bodyAsBuffer()?.bytes
-                        cont.resume(bodyBytes) {}
-                    } else {
-                        cont.resume(null) {}
-                    }
-                }
-        }
-
-        if (result == null || result.isEmpty()) {
-            throw Exception("texttospeech.cn TTS请求失败")
-        }
-
-        response
-            .putHeader("Content-Type", "audio/mpeg")
-            .putHeader("Content-Length", result.size.toString())
-            .end(io.vertx.core.buffer.Buffer.buffer(result))
+        val download = result?.bodyAsJsonObject()?.getString("download")
+        if (download != null) response.setStatusCode(302).putHeader("Location", download).end() else response.setStatusCode(404).end()
     }
 
     /**
