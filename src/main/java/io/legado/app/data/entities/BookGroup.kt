@@ -9,7 +9,7 @@ data class BookGroup(
 //        @PrimaryKey
         var groupId: Long = 0L,
         var groupName: String = "",
+        var cover: String? = null,
         var order: Int = 0,
-        var show: Boolean = true,
-        var cover: String? = null
+        var show: Boolean = true
 )
