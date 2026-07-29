@@ -418,7 +418,7 @@ class AnalyzeUrl(
         val concurrentRecord = fetchStart()
         setCookie(source?.getKey())
         @Suppress("BlockingMethodInNonBlockingContext")
-        val response = getProxyClient(proxy, debugLog).newCallResponse(retry) {
+        val response = getProxyClient(proxy).newCallResponse(retry) {
             addHeaders(headerMap)
             when (method) {
                 RequestMethod.POST -> {
@@ -437,7 +437,6 @@ class AnalyzeUrl(
                 else -> get(urlNoQuery, fieldMap, true)
             }
         }
-        saveCookieJar(response)
         fetchEnd(concurrentRecord)
         return response
     }

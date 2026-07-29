@@ -174,31 +174,13 @@ class WebBook(
      */
     suspend fun getBookInfo(bookUrl: String, canReName: Boolean = true): Book {
         val book = Book()
-        book.setUserNameSpace(userNS)
         book.bookUrl = bookUrl
         book.origin = bookSource.bookSourceUrl
         book.originName = bookSource.bookSourceName
         book.originOrder = bookSource.customOrder
         book.type = bookSource.bookSourceType
-        val analyzeUrl = AnalyzeUrl(
-            mUrl = book.bookUrl,
-            baseUrl = bookSource.bookSourceUrl,
-            source = bookSource,
-            ruleData = book,
-            headerMapF = bookSource.getHeaderMap(true),
-            debugLog = debugger
-        )
-        var res = analyzeUrl.getStrResponseAwait()
-        //检测书源是否已登录
-        bookSource.loginCheckJs?.let { checkJs ->
-            if (checkJs.isNotBlank()) {
-                res = analyzeUrl.evalJS(checkJs, result = res) as StrResponse
-            }
-        }
-
-        BookInfo.analyzeBookInfo(book, res.body, bookSource, book.bookUrl, res.url, canReName, debugLog = debugger)
-        book.tocHtml = null
-        return book
+        book.setUserNameSpace(userNS)
+        return getBookInfo(book, canReName)
     }
 
     /**
