@@ -21,7 +21,7 @@ data class ReplaceRule(
     var scopeContent: Boolean = true,
     @get:JsonProperty("isEnabled") var isEnabled: Boolean = true,
     @get:JsonProperty("isRegex") var isRegex: Boolean = false,
-    var timeoutMillisecond: Long = 0L,
+    var timeoutMillisecond: Long = 3000L,
 //    @ColumnInfo(name = "sortOrder")
     var order: Int = 0
 )
