@@ -6,19 +6,19 @@ data class HttpTTS(
     val id: Long = System.currentTimeMillis(),
     var name: String = "",
     var url: String = "",
-    var contentType: String = "",
-    override var concurrentRate: String? = null,
+    var contentType: String? = null,
+    override var concurrentRate: String? = "0",
     override var loginUrl: String? = null,
     override var loginUi: String? = null,
     override var header: String? = null,
     var jsLib: String? = null,
     override var enabledCookieJar: Boolean? = false,
     var loginCheckJs: String? = null,
-    var lastUpdateTime: Long = 0
+    var lastUpdateTime: Long = System.currentTimeMillis()
 ) : BaseSource {
 
     @Transient
-    private var _userNameSpace: String? = null
+    private var _userNameSpace: String = ""
 
     @Transient
     private var debugLog: DebugLog? = null
@@ -28,15 +28,15 @@ data class HttpTTS(
     }
 
     override fun getKey(): String {
-        return id.toString()
+        return "httpTts:$id"
     }
 
-    fun setUserNameSpace(value: String?) {
+    fun setUserNameSpace(value: String) {
         _userNameSpace = value
     }
 
     override fun getUserNameSpace(): String {
-        return _userNameSpace ?: ""
+        return _userNameSpace
     }
 
     fun setLogger(value: DebugLog?) {

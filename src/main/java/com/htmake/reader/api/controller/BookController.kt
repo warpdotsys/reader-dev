@@ -3802,7 +3802,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             response.putHeader("content-type", "application/json; charset=utf-8")
                 .end(jsonEncode(ReturnData().setData(Base64.getEncoder().encodeToString(bytes))))
         } else {
-            response.putHeader("Content-Type", httpTTS.contentType.ifEmpty { "audio/mpeg" })
+            response.putHeader("Content-Type", httpTTS.contentType ?: "audio/mpeg")
                 .end(io.vertx.core.buffer.Buffer.buffer(bytes))
         }
     }
@@ -3878,7 +3878,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     if (contentType == "application/json") {
                         throw NoStackTraceException(response.body?.string().orEmpty())
                     }
-                    httpTTS.contentType.takeIf { it.isNotBlank() }?.let { expectedContentType ->
+                    httpTTS.contentType?.takeIf { it.isNotBlank() }?.let { expectedContentType ->
                         if (!Regex(expectedContentType).matches(contentType)) {
                             throw NoStackTraceException(
                                 "TTS服务器返回错误：${response.body?.string().orEmpty()}"
