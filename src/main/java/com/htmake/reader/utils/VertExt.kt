@@ -48,8 +48,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode
  */
 val logger = KotlinLogging.logger {}
 
-val gson = GsonBuilder().disableHtmlEscaping().create()
-val prettyGson = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create()
+val gson = GsonBuilder()
+    .registerTypeAdapter(object : TypeToken<Map<String, Any>>() {}.type, MapDeserializerDoubleAsIntFix())
+    .registerTypeAdapter(Int::class.javaPrimitiveType!!, IntTypeAdapter())
+    .registerTypeAdapter(Long::class.javaPrimitiveType!!, LongTypeAdapter())
+    .disableHtmlEscaping()
+    .create()
+val prettyGson = GsonBuilder()
+    .registerTypeAdapter(object : TypeToken<Map<String, Any>>() {}.type, MapDeserializerDoubleAsIntFix())
+    .registerTypeAdapter(Int::class.javaPrimitiveType!!, IntTypeAdapter())
+    .registerTypeAdapter(Long::class.javaPrimitiveType!!, LongTypeAdapter())
+    .disableHtmlEscaping()
+    .setPrettyPrinting()
+    .create()
 
 var storageFinalPath = ""
 var workDirPath = ""
