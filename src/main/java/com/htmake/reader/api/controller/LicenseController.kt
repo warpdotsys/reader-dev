@@ -1,6 +1,7 @@
 package com.htmake.reader.api.controller
 
 import io.vertx.ext.web.RoutingContext
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.web.client.WebClient
@@ -12,6 +13,7 @@ import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.saveStorage
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.asJsonObject
+import com.htmake.reader.utils.asJsonArray
 import com.htmake.reader.utils.toDataClass
 import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.SpringContextUtils
@@ -257,16 +259,28 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
 
     suspend fun sendCodeToEmail(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        val email = context.request().getParam("email") ?: context.bodyAsJson?.getString("email", "") ?: ""
-        if (!validateEmail(email)) return returnData.setErrorMsg("邮箱错误")
-        if (!tryCodeCache.getAsString(email).isNullOrEmpty()) return returnData.setData("", "验证码仍在有效期内")
+        val email = if (context.request().method() == HttpMethod.POST) {
+            context.bodyAsJson?.getString("email") ?: ""
+        } else {
+            context.queryParam("email").firstOrNull() ?: ""
+        }
+        if (email.isEmpty()) return returnData.setErrorMsg("邮箱错误")
+        if (!validateEmail(email)) {
+            return returnData.setErrorMsg("仅支持 163|126|qq|yahoo|sina|sohu|yeah|139|189|21cn|outlook|gmail|icloud 等邮箱")
+        }
+        val activeLicenseList = asJsonArray(getStorage("data", "activeLicense")) ?: JsonArray()
+        if (activeLicenseList.any { item ->
+                val activeLicense = item as? JsonObject
+                activeLicense?.getString("type") == "trial" && activeLicense.getString("code") == email
+            }) {
+            return returnData.setErrorMsg("该邮箱已被使用")
+        }
+        if (!tryCodeCache.getAsString(email).isNullOrEmpty()) {
+            return returnData.setData("", "您的验证码仍在有效期内，请勿重复获取")
+        }
         val code = UUID.randomUUID().toString().substring(0, 6)
         tryCodeCache.put(email, code, 900)
-        return if (sendEmail(email, "Reader Kindle端的试用申请验证", "您的验证码是: $code，15分钟内有效，请勿回复")) {
-            returnData.setData("", "请查收邮件")
-        } else {
-            tryCodeCache.remove(email)
-            returnData.setErrorMsg("邮件发送失败")
-        }
+        sendEmail(email, "Reader Kindle端的试用申请验证", "您正在申请Reader Kindle端的试用，验证码是: $code，15分钟内有效，请勿回复")
+        return returnData.setData("", "请查收邮件")
     }
 }
