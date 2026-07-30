@@ -73,6 +73,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import java.text.SimpleDateFormat;
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.utils.ACache
@@ -220,7 +221,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             cacheFile.parentFile.mkdirs()
         }
 
-        launch(Dispatchers.IO) {
+        launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
+            logger.info("get cover error: {}", exception.message)
+            context.response().setStatusCode(404).end()
+        }) {
             webClient.getAbs(coverUrl).timeout(3000).send {
                 var bodyBytes = it.result()?.bodyAsBuffer()?.getBytes()
                 if (bodyBytes != null) {
@@ -1127,7 +1131,8 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 if (result.size > 0) {
                     for (j in 0 until result.size) {
                         var _book = result.get(j)
-                        if (accurate && _book.name.equals(book.name) && _book.author.equals(book.author)) {
+                        if (accurate && _book.name.equals(book.name) &&
+                            (book.author.isNullOrEmpty() || _book.author.equals(book.author))) {
                             _book.time = end - start
                             resultList.add(_book)
                         } else if (!accurate && (_book.name.indexOf(book.name, ignoreCase=true) >= 0 || _book.author.indexOf(book.name, ignoreCase=true) >= 0)) {
