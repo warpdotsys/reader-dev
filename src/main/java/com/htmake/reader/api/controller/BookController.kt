@@ -31,6 +31,7 @@ import com.htmake.reader.utils.toDataClass
 import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.fillData
 import com.htmake.reader.utils.getWorkDir
+import com.htmake.reader.utils.getStorageFile
 import com.htmake.reader.utils.getRandomString
 import com.htmake.reader.utils.genEncryptedPassword
 import com.htmake.reader.entity.User
@@ -1829,10 +1830,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             } else {
                 bookSourceUrl = context.queryParam("bookSourceUrl").firstOrNull() ?: ""
             }
-            bookSourceString = getBookSourceStringBySourceURL(bookSourceUrl, userNameSpace)
+            bookSourceString = getBookSourceStringBySourceURLOpt(bookSourceUrl, userNameSpace)
         }
         if (bookSourceString.isNullOrEmpty() && !sourceUrl.isNullOrEmpty()) {
-            bookSourceString = getBookSourceStringBySourceURL(sourceUrl, userNameSpace)
+            bookSourceString = getBookSourceStringBySourceURLOpt(sourceUrl, userNameSpace)
         }
         return bookSourceString
     }
@@ -1894,6 +1895,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (_book.bookUrl.equals(url)) {
                 _book.setRootDir(getWorkDir())
                 _book.setUserNameSpace(userNameSpace)
+                _book.isInShelf = true
                 return _book
             }
         }
@@ -3424,7 +3426,12 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     fun getBookSourceStringBySourceURLOpt(sourceUrl: String, userNameSpace: String): String? {
-        return findBookSourceStringBySourceURLOpt(sourceUrl, userNameSpace, null)
+        val storageKey = if (getStorageFile("data", userNameSpace, "bookSource").exists()) {
+            userNameSpace
+        } else {
+            "default"
+        }
+        return findBookSourceStringBySourceURLOpt(sourceUrl, storageKey, null)
     }
 
     private fun findBookSourceStringBySourceURLOpt(
