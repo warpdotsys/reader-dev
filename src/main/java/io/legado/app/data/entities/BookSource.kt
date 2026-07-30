@@ -172,6 +172,7 @@ data class BookSource(
                 && equal(bookUrlPattern, source.bookUrlPattern)
                 && enabled == source.enabled
                 && enabledExplore == source.enabledExplore
+                && enabledCookieJar == source.enabledCookieJar
                 && equal(header, source.header)
                 && equal(loginUrl, source.loginUrl)
                 && equal(exploreUrl, source.exploreUrl)
