@@ -2101,133 +2101,49 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 return false
             }
             descDirFile.deleteRecursively()
-            if (zipFile.unzip(descDir)) {
-                // 同步 书源
-                val bookSourceFile = File(descDir + File.separator + "bookSource.json")
-                if (bookSourceFile.exists()) {
-                    val userBookSourceFile = File(getWorkDir("storage", "data", userNameSpace, "bookSource.json"))
-                    userBookSourceFile.deleteRecursively()
-                    bookSourceFile.renameTo(userBookSourceFile)
-                }
-                // 同步 书架
-                val bookshelfFile = File(descDir + File.separator + "bookshelf.json")
-                if (bookshelfFile.exists()) {
-                    val userBookSourceFile = File(getWorkDir("storage", "data", userNameSpace, "bookshelf.json"))
-                    userBookSourceFile.deleteRecursively()
-                    bookshelfFile.renameTo(userBookSourceFile)
-                }
-                // 同步 书籍分组
-                val bookGroupFile = File(descDir + File.separator + "bookGroup.json")
-                if (bookGroupFile.exists()) {
-                    val userBookGroupFile = File(getWorkDir("storage", "data", userNameSpace, "bookGroup.json"))
-                    userBookGroupFile.deleteRecursively()
-                    bookGroupFile.renameTo(userBookGroupFile)
-                }
-                // 同步 RSS订阅
-                val rssSourcesFile = File(descDir + File.separator + "rssSources.json")
-                if (rssSourcesFile.exists()) {
-                    val userRssSourcesFile = File(getWorkDir("storage", "data", userNameSpace, "rssSources.json"))
-                    userRssSourcesFile.deleteRecursively()
-                    rssSourcesFile.renameTo(userRssSourcesFile)
-                }
-                // 同步 替换规则
-                val replaceRuleFile = File(descDir + File.separator + "replaceRule.json")
-                if (replaceRuleFile.exists()) {
-                    val userReplaceRuleFile = File(getWorkDir("storage", "data", userNameSpace, "replaceRule.json"))
-                    userReplaceRuleFile.deleteRecursively()
-                    replaceRuleFile.renameTo(userReplaceRuleFile)
-                }
-                // 同步 书签
-                val bookmarkFile = File(descDir + File.separator + "bookmark.json")
-                if (bookmarkFile.exists()) {
-                    val userBookmarkFile = File(getWorkDir("storage", "data", userNameSpace, "bookmark.json"))
-                    userBookmarkFile.deleteRecursively()
-                    bookmarkFile.renameTo(userBookmarkFile)
-                }
-                // 同步阅读进度
-                var bookProgressDir = File(userHome + File.separator + "bookProgress")
-                if (!bookProgressDir.exists()) {
-                    bookProgressDir = File(userHome + File.separator +  "legado" + File.separator +  "bookProgress")
-                }
-                if (bookProgressDir.exists() && bookProgressDir.isDirectory()) {
-                    bookProgressDir.listFiles().forEach{
-                        syncBookProgressFromWebdav(it, userNameSpace)
-                    }
-                }
-                return true
+            io.legado.app.utils.ZipUtils.unzipFile(zipFile, descDirFile)
+            for (fileName in backupFileNames) {
+                val backupFile = File(descDir + File.separator + fileName)
+                if (!backupFile.exists()) continue
+                val userDataFile = File(getWorkDir("storage", "data", userNameSpace, fileName))
+                userDataFile.deleteRecursively()
+                backupFile.copyRecursively(userDataFile)
             }
+            val backupBooksDir = File(descDir + File.separator + "books")
+            if (backupBooksDir.exists()) {
+                val webdavBooksDir = File(getWorkDir("storage", "data", userNameSpace, "webdav", "books"))
+                webdavBooksDir.deleteRecursively()
+                backupBooksDir.copyRecursively(webdavBooksDir)
+            }
+            // 同步阅读进度
+            var bookProgressDir = File(userHome + File.separator + "bookProgress")
+            if (!bookProgressDir.exists()) {
+                bookProgressDir = File(userHome + File.separator +  "legado" + File.separator +  "bookProgress")
+            }
+            if (bookProgressDir.exists() && bookProgressDir.isDirectory()) {
+                bookProgressDir.listFiles()?.forEach {
+                    syncBookProgressFromWebdav(it, userNameSpace)
+                }
+            }
+            return true
         } catch(e: Exception) {
             e.printStackTrace()
         } finally {
             descDirFile.deleteRecursively()
         }
-        return true;
+        return false
     }
 
-    suspend fun saveToWebdav(latestZipFilePath: String, userNameSpace: String): Boolean {
-        var descDir = getWorkDir("storage", "data", userNameSpace, "tmp")
-        var descDirFile = File(descDir)
-        descDirFile.deleteRecursively()
-        try {
-            val userHome = getUserWebdavHome(userNameSpace)
-            var legadoHome = userHome
-            if (latestZipFilePath.indexOf("legado") > 0) {
-                legadoHome = userHome + File.separator + "legado"
-            }
-            var zipFile = File(latestZipFilePath)
-            if (zipFile.unzip(descDir)) {
-                // 同步 书源
-                val userBookSourceFile = File(getWorkDir("storage", "data", userNameSpace, "bookSource.json"))
-                if (userBookSourceFile.exists()) {
-                    val bookSourceFile = File(descDir + File.separator + "bookSource.json")
-                    bookSourceFile.deleteRecursively()
-                    userBookSourceFile.copyRecursively(bookSourceFile)
-                }
-                // 同步 书架
-                val userBookshelfFile = File(getWorkDir("storage", "data", userNameSpace, "bookshelf.json"))
-                if (userBookshelfFile.exists()) {
-                    val bookshelfFile = File(descDir + File.separator + "bookshelf.json")
-                    bookshelfFile.deleteRecursively()
-                    userBookshelfFile.copyRecursively(bookshelfFile)
-                }
-                // 同步 书籍分组
-                val userBookGroupFile = File(getWorkDir("storage", "data", userNameSpace, "bookGroup.json"))
-                if (userBookGroupFile.exists()) {
-                    val bookGroupFile = File(descDir + File.separator + "bookGroup.json")
-                    bookGroupFile.deleteRecursively()
-                    userBookGroupFile.renameTo(bookGroupFile)
-                }
-                // 同步 RSS订阅
-                val userRssSourcesFile = File(getWorkDir("storage", "data", userNameSpace, "rssSources.json"))
-                if (userRssSourcesFile.exists()) {
-                    val rssSourcesFile = File(descDir + File.separator + "rssSources.json")
-                    rssSourcesFile.deleteRecursively()
-                    userRssSourcesFile.renameTo(rssSourcesFile)
-                }
-                // 同步 替换规则
-                val userReplaceRuleFile = File(getWorkDir("storage", "data", userNameSpace, "replaceRule.json"))
-                if (userReplaceRuleFile.exists()) {
-                    val replaceRuleFile = File(descDir + File.separator + "replaceRule.json")
-                    replaceRuleFile.deleteRecursively()
-                    userReplaceRuleFile.renameTo(replaceRuleFile)
-                }
-                // 同步 书签
-                val userBookmarkFile = File(getWorkDir("storage", "data", userNameSpace, "bookmark.json"))
-                if (userBookmarkFile.exists()) {
-                    val bookmarkFile = File(descDir + File.separator + "bookmark.json")
-                    bookmarkFile.deleteRecursively()
-                    userBookmarkFile.renameTo(bookmarkFile)
-                }
-                // 压缩
-                val today = SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis())
-                return descDirFile.zip(legadoHome + File.separator + "backup" + today + ".zip")
-            }
-        } catch(e: Exception) {
-            e.printStackTrace()
-        }  finally {
-            descDirFile.deleteRecursively()
+    suspend fun saveToWebdav(userNameSpace: String, latestZipFilePath: String? = null): Boolean {
+        val userHome = getUserWebdavHome(userNameSpace)
+        var legadoHome = userHome
+        val resolvedZipFilePath = latestZipFilePath ?: getLastBackFileFromWebdav(userNameSpace)
+        if (resolvedZipFilePath == null) {
+            legadoHome = userHome + File.separator + "legado"
+        } else if (resolvedZipFilePath.indexOf("legado") > 0) {
+            legadoHome = userHome + File.separator + "legado"
         }
-        return false;
+        return createUserBackup(userNameSpace, legadoHome, resolvedZipFilePath) != null
     }
 
     suspend fun getLastBackFileFromWebdav(userNameSpace: String): String? {
@@ -3255,7 +3171,18 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     private val backupFileNames by lazy {
-        arrayOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
+        arrayOf(
+            "bookSource.json",
+            "bookshelf.json",
+            "bookGroup.json",
+            "rssSources.json",
+            "replaceRule.json",
+            "bookmark.json",
+            "userConfig.json",
+            "httpTTS.json",
+            "remoteBookSourceSub.json",
+            "txtTocRule.json"
+        )
     }
 
     private fun mongoUserNamespaces(): List<String> {
@@ -3471,7 +3398,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             }
 
             for (fileName in backupFileNames) {
-                val source = File(getWorkDir("storage", "data", userNameSpace, "$fileName.json"))
+                val source = File(getWorkDir("storage", "data", userNameSpace, fileName))
                 if (!source.exists()) continue
                 val destination = File(stagingDir, source.name)
                 destination.deleteRecursively()
@@ -3512,7 +3439,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             val filesToBackup = arrayListOf<File>()
             val fileNames = backupFileNames
             for (fileName in fileNames) {
-                val file = File(dataDir, "${fileName}.json")
+                val file = File(dataDir, fileName)
                 if (file.exists()) {
                     filesToBackup.add(file)
                 }
@@ -3984,36 +3911,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
      * JAR signature: public final boolean convertPdfToImage(io.legado.app.data.entities.Book, boolean)
      */
     fun convertPdfToImage(book: Book, force: Boolean = false): Boolean {
-        if (!book.isPdf()) {
-            return false
-        }
-        return try {
-            book.setRootDir(getWorkDir())
-            val localFile = book.getLocalFile()
-            if (!localFile.isFile) {
-                logger.error("PDF source does not exist: {}", localFile)
-                return false
-            }
-            val imageDir = File(getWorkDir(book.bookUrl, "index"))
-            if (!imageDir.exists() && !imageDir.mkdirs()) {
-                return false
-            }
-            org.apache.pdfbox.pdmodel.PDDocument.load(localFile).use { document ->
-                val renderer = org.apache.pdfbox.rendering.PDFRenderer(document)
-                val imageWidth = book.getPdfImageWidth().takeIf { it > 0f } ?: 1080f
-                for (pageIndex in 0 until document.numberOfPages) {
-                    val output = File(imageDir, "output-$pageIndex.png")
-                    if (!force && output.isFile) {
-                        continue
-                    }
-                    savePdfPageToImage(document, renderer, pageIndex, imageWidth, "png", output)
-                }
-            }
-            true
-        } catch (e: Exception) {
-            logger.error("convertPdfToImage failed for {}", book.bookUrl, e)
-            false
-        }
+        return true
     }
 
     /**
@@ -4031,16 +3929,18 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
         outputFile.deleteRecursively()
-        book.setRootDir(getWorkDir())
-        val localFile = book.getLocalFile()
-        if (!localFile.isFile) {
-            throw IllegalArgumentException("PDF source does not exist: $localFile")
+        var localFile = File(getWorkDir(book.originName + File.separator + "index.pdf"))
+        if (book.originName.indexOf("localStore") > 0) {
+            localFile = File(getWorkDir(book.originName))
+        }
+        if (book.originName.indexOf("webdav") > 0) {
+            localFile = File(getWorkDir(book.originName))
         }
         val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
         try {
             val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
-            val dpi = book.getPdfImageWidth()
-            savePdfPageToImage(doc, renderer, pageIndex, dpi, imageFormat, outputFile)
+            val targetWidth = book.getPdfImageWidth()
+            savePdfPageToImage(doc, renderer, pageIndex, targetWidth, imageFormat, outputFile)
         } finally {
             doc.close()
         }

@@ -784,7 +784,7 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
 
         val userNameSpace = getUserNameSpace(context)
         val latestZipFilePath = bookController.getLastBackFileFromWebdav(userNameSpace)
-        if (!bookController.saveToWebdav(latestZipFilePath ?: "", userNameSpace)) {
+        if (!bookController.saveToWebdav(userNameSpace, latestZipFilePath)) {
             return returnData.setErrorMsg("备份失败")
         }
         return returnData.setData("")
