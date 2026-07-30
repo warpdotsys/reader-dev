@@ -1483,6 +1483,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         // 删除书籍目录
         val localBookPath = File(getWorkDir("storage", "data", userNameSpace, book.name + "_" + book.author))
         localBookPath.deleteRecursively()
+        if (book.coverUrl?.startsWith("/") == true) {
+            FileUtils.deleteFile(getWorkDir("storage" + book.coverUrl))
+        }
 
         return returnData.setData("删除书籍成功")
     }
