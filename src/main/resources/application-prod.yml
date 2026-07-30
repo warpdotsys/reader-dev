@@ -25,13 +25,12 @@ reader:
     mongoUri: ""
     mongoDbName: "reader"
     shelfUpdateInteval: 30
-    shelfUpdateInterval: 30
     remoteWebviewApi: ""
     defaultUserEnableWebdav: true
     defaultUserEnableLocalStore: true
     defaultUserEnableBookSource: true
     defaultUserEnableRssSource: true
-    defaultUserBookSourceLimit: 200
+    defaultUserBookSourceLimit: 100
     defaultUserBookLimit: 200
     autoBackupUserData: false
     minUserPasswordLength: 8

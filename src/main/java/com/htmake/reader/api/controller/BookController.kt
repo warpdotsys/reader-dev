@@ -59,6 +59,7 @@ import java.nio.charset.Charset
 import java.util.UUID;
 import java.util.Base64
 import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.coroutines.awaitResult
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import java.io.File
@@ -648,6 +649,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                         chapterInfo,
                         content
                     )
+                    content = updateImageLinkInContent(bookInfo, chapterInfo, content)
                 }
             } catch(e: Exception) {
                 if (!bookSource.isNullOrEmpty()) {
@@ -1353,6 +1355,8 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             book.fillData(newBook, listOf("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTitle", "wordCount"))
         }
         book = mergeBookCacheInfo(book)
+        saveBookCover(book, userNameSpace)
+        saveLocalBookCover(book, userNameSpace)
 
         if (existIndex >= 0) {
             var bookList = bookshelf.getList()
@@ -4299,16 +4303,13 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             book.coverUrl = cachedCoverUrl
             return
         }
-        try {
-            val analyzeUrl = io.legado.app.model.analyzeRule.AnalyzeUrl(coverUrl)
-            val bytes = analyzeUrl.getByteArrayAwait()
-            if (bytes.isNotEmpty()) {
-                cacheFile.parentFile?.mkdirs()
-                cacheFile.writeBytes(bytes)
-                book.coverUrl = cachedCoverUrl
-            }
-        } catch (e: Exception) {
-            logger.error("saveLocalBookCover error: {}", e.message)
+        val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+            webClient.getAbs(coverUrl).timeout(3000).send(handler)
+        }
+        val bodyBytes = response.bodyAsBuffer()?.bytes
+        if (bodyBytes != null) {
+            cacheFile.writeBytes(bodyBytes)
+            book.coverUrl = cachedCoverUrl
         }
     }
 
@@ -4325,13 +4326,12 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 val absUrl = io.legado.app.utils.NetworkUtils.getAbsoluteURL(chapter.url, src)
                 val imageFile = io.legado.app.help.BookHelp.getImage(book, absUrl)
                 if (imageFile.exists()) {
-                    val relativePath = imageFile.path.replace(dataDir, "").replace("\\", "/")
-                    val replacement = "__API_ROOT__/storage/data$relativePath"
-                    lineText = lineText.replace(src, replacement, false)
+                    val imageUrl = "__API_ROOT__" + imageFile.path.replace(dataDir, "/book-assets")
+                    lineText = lineText.replace(src, "$imageUrl\" data-error=\"$src")
                 }
             }
             sb.append(lineText).append("\n")
         }
-        return sb.toString().removeSuffix("\n")
+        return sb.toString()
     }
 }
