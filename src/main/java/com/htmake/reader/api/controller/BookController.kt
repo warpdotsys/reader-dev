@@ -640,7 +640,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         } else {
             // 查找章节缓存
             var chapterCacheFile: File? = null
-            if (refresh <= 0 && appConfig.cacheChapterContent) {
+            if (bookInfo.isInShelf && refresh <= 0 && appConfig.cacheChapterContent) {
                 val localCacheDir = getChapterCacheDir(bookInfo, userNameSpace)
                 chapterCacheFile = File(localCacheDir.absolutePath + File.separator + chapterIndex + ".txt")
                 if (chapterCacheFile.exists()) {
@@ -1256,142 +1256,23 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
         var book = context.bodyAsJson.mapTo(Book::class.java)
-        if (book.origin.isNullOrEmpty()) {
-            return returnData.setErrorMsg("未找到书源信息")
-        }
-        if (book.bookUrl.isNullOrEmpty()) {
-            return returnData.setErrorMsg("书籍链接不能为空")
-        }
-        var userNameSpace = getUserNameSpace(context)
-        var bookshelf: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookshelf"))
-        if (bookshelf == null) {
-            bookshelf = JsonArray()
-        }
-
-        // 遍历判断书本是否存在
-        var existIndex: Int = -1
-        for (i in 0 until bookshelf.size()) {
-            var _book = bookshelf.getJsonObject(i).mapTo(Book::class.java)
-            if (_book.name.equals(book.name) && _book.author.equals(book.author)) {
-                existIndex = i
-                break;
+        val userNameSpace = getUserNameSpace(context)
+        var bookSource: String? = null
+        if (!book.isLocalBook()) {
+            bookSource = getBookSourceStringBySourceURLOpt(book.origin, userNameSpace)
+                ?: return returnData.setErrorMsg("书源信息错误")
+            if (book.tocUrl.isNullOrEmpty()) {
+                webBook(bookSource, appConfig.debugLog, userNameSpace).getBookInfo(book)
             }
+            book = mergeBookCacheInfo(book)
         }
-        if (existIndex < 0) {
-            // 判断书籍是否超过限制
-            if (bookshelf.size() >= appConfig.userBookLimit) {
-                return returnData.setErrorMsg("超过用户书籍数上限")
-            }
-        }
-        // 导入本地书籍
-        if (book.isLocalBook()) {
-            if (book.bookUrl.startsWith("/assets/")) {
-                // 临时文件，移动到书籍目录
-                // storage/assets/default/book/《极道天魔》（校对版全本）作者：滚开/《极道天魔》（校对版全本）作者：滚开.txt
-                val tempFile = File(getWorkDir("storage" + book.bookUrl))
-                if (!tempFile.exists()) {
-                    return returnData.setErrorMsg("上传书籍不存在")
-                }
-                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
-                val localFilePath = getWorkDir(relativeLocalFilePath)
-                logger.info("localFilePath: {}", localFilePath)
-                var localFile = File(localFilePath)
-                localFile.deleteRecursively()
-                if (!localFile.parentFile.exists()) {
-                    localFile.parentFile.mkdirs()
-                }
-                if (!tempFile.copyRecursively(localFile)) {
-                    return returnData.setErrorMsg("导入本地书籍失败")
-                }
-                tempFile.deleteRecursively()
-                // 修改书籍信息
-                book.bookUrl = relativeLocalFilePath
-                book.originName = relativeLocalFilePath
-
-                if (book.isEpub()) {
-                    // 解压文件 index.epub
-                    if (!extractEpub(book)) {
-                        return returnData.setErrorMsg("导入本地Epub书籍失败")
-                    }
-                } else if (book.isCbz()) {
-                    // 解压文件 index.cbz
-                    if (!extractCbz(book)) {
-                        return returnData.setErrorMsg("导入本地CBZ书籍失败")
-                    }
-                }
-            } else if (book.bookUrl.indexOf("storage/localStore") >= 0) {
-                // 本地书仓，不用移动书籍
-                val tempFile = File(getWorkDir(book.bookUrl))
-                if (!tempFile.exists()) {
-                    return returnData.setErrorMsg("本地书仓书籍不存在")
-                }
-                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
-                book.bookUrl = relativeLocalFilePath
-
-                if (book.isEpub()) {
-                    // 解压文件 index.epub
-                    if (!extractEpub(book)) {
-                        return returnData.setErrorMsg("导入本地Epub书籍失败")
-                    }
-                } else if (book.isCbz()) {
-                    // 解压文件 index.cbz
-                    if (!extractCbz(book)) {
-                        return returnData.setErrorMsg("导入本地CBZ书籍失败")
-                    }
-                }
-            } else if (book.bookUrl.indexOf("webdav/") >= 0) {
-                // webdav书仓，不用移动书籍
-                val tempFile = File(getWorkDir(book.bookUrl))
-                if (!tempFile.exists()) {
-                    return returnData.setErrorMsg("webdav书仓书籍不存在")
-                }
-                val relativeLocalFilePath = Paths.get("storage", "data", userNameSpace, book.name + "_" + book.author, tempFile.name).toString()
-                book.bookUrl = relativeLocalFilePath
-
-                if (book.isEpub()) {
-                    // 解压文件 index.epub
-                    if (!extractEpub(book)) {
-                        return returnData.setErrorMsg("导入本地Epub书籍失败")
-                    }
-                } else if (book.isCbz()) {
-                    // 解压文件 index.cbz
-                    if (!extractCbz(book)) {
-                        return returnData.setErrorMsg("导入本地CBZ书籍失败")
-                    }
-                }
-            }
-        } else if (book.tocUrl.isNullOrEmpty()) {
-            // 补全书籍信息
-            var bookSource = getBookSourceStringBySourceURL(book.origin, userNameSpace)
-            if (bookSource == null) {
-                return returnData.setErrorMsg("书源信息错误")
-            }
-            var newBook = webBook(bookSource, appConfig.debugLog, userNameSpace).getBookInfo(book.bookUrl)
-            book.fillData(newBook, listOf("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTitle", "wordCount"))
-        }
-        book = mergeBookCacheInfo(book)
-        saveBookCover(book, userNameSpace)
+        saveBookCover(book, userNameSpace, bookSource)
         saveLocalBookCover(book, userNameSpace)
-
-        if (existIndex >= 0) {
-            var bookList = bookshelf.getList()
-            var existBook = bookshelf.getJsonObject(existIndex).mapTo(Book::class.java)
-            book.durChapterIndex = existBook.durChapterIndex
-            book.durChapterTitle = existBook.durChapterTitle
-            book.durChapterTime = existBook.durChapterTime
-
-            bookList.set(existIndex, JsonObject.mapFrom(book))
-            bookshelf = JsonArray(bookList)
-        } else {
-            bookshelf.add(JsonObject.mapFrom(book))
+        val result = saveBookToShelf(book, userNameSpace, context)
+        if (result.second.isNotEmpty()) {
+            return returnData.setErrorMsg(result.second)
         }
-        // 保存书源信息
-        val sourceList = listOf(book.toSearchBook())
-        saveBookSources(book, sourceList, userNameSpace)
-
-        // logger.info("bookshelf: {}", bookshelf)
-        saveUserStorage(userNameSpace, "bookshelf", bookshelf)
-        return returnData.setData(book)
+        return returnData.setData(result.first)
     }
 
     suspend fun setBookSource(context: RoutingContext): ReturnData {
@@ -4297,6 +4178,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         } else {
             bookshelf.add(JsonObject.mapFrom(book))
         }
+        saveBookSources(book, listOf(book.toSearchBook()), userNameSpace)
         saveUserStorage(userNameSpace, "bookshelf", bookshelf)
         return Pair(book, "")
     }
