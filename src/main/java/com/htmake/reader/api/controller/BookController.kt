@@ -1672,7 +1672,6 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 var book = bookList.get(i)
                 bookInfoCache.put(book.bookUrl, jsonEncode(JsonObject.mapFrom(book).map))
             }
-            saveStorage("cache", "bookInfoCache", value = bookInfoCache)
         }
         return bookList
     }
