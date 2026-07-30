@@ -72,6 +72,7 @@ import kotlin.system.measureTimeMillis
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import java.text.SimpleDateFormat;
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.utils.ACache
@@ -412,7 +413,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
         // 缓存章节列表
         logger.info("bookInfo: {}", bookInfo)
-        var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", refresh > 0, getUserNameSpace(context))
+        var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", refresh > 0, getUserNameSpace(context), false)
 
         return returnData.setData(chapterList)
     }
@@ -447,7 +448,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!bookInfo.isLocalBook() && bookSource.isNullOrEmpty()) {
             return returnData.setErrorMsg("未配置书源")
         }
-        var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace)
+        var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace, false)
         if (chapterIndex >= chapterList.size) {
             return returnData.setErrorMsg("章节不存在")
         }
@@ -546,7 +547,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     return returnData.setErrorMsg("未配置书源")
                 }
                 bookInfo = bookInfo ?: mergeBookCacheInfo(webBook(bookSource ?: "", appConfig.debugLog, userNameSpace).getBookInfo(bookUrl))
-                var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace)
+                var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace, false)
                 if (chapterIndex < chapterList.size) {
                     chapterInfo = chapterList.get(chapterIndex)
                     // 书架书籍保存阅读进度
@@ -582,7 +583,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 return returnData.setErrorMsg("本地源书籍文件不存在")
             }
             if (chapterInfo == null) {
-                var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace)
+                var chapterList = getLocalChapterList(bookInfo, bookSource ?: "", false, userNameSpace, false)
                 for(i in 0 until chapterList.size) {
                     if (chapterUrl == chapterList.get(i).url) {
                         chapterInfo = chapterList.get(i)
@@ -778,6 +779,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 searchBookMulti")
             isEnd = true
+            coroutineContext.cancel()
         }
         var resultList = arrayListOf<SearchBook>()
         var resultMap = mutableMapOf<String, Int>()
@@ -869,6 +871,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 searchBookMultiSSE")
             isEnd = true
+            coroutineContext.cancel()
         }
         var resultList = arrayListOf<SearchBook>()
         var resultMap = mutableMapOf<String, Int>()
@@ -964,6 +967,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 searchBookSource")
             isEnd = true
+            coroutineContext.cancel()
         }
         searchSize = if(searchSize > 0) searchSize else 5
         var resultList = arrayListOf<SearchBook>()
@@ -1072,6 +1076,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 searchBookSourceSSE")
             isEnd = true
+            coroutineContext.cancel()
         }
 
         limitConcurrent(concurrentCount, lastIndex + 1, userBookSourceList.size, {it->
@@ -1359,7 +1364,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
 
         // 更新目录
-        getLocalChapterList(newBookInfo, bookSourceString ?: "", true, userNameSpace)
+        getLocalChapterList(newBookInfo, bookSourceString ?: "", true, userNameSpace, false)
         return returnData.setData(newBookInfo)
     }
 
@@ -2468,7 +2473,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
 
         var userNameSpace = getUserNameSpace(context)
-        var bookSourceString = getBookSourceBySourceURL(bookSourceUrl, userNameSpace).first
+        var bookSourceString = getBookSourceStringBySourceURLOpt(bookSourceUrl, userNameSpace)
         if (bookSourceString.isNullOrEmpty()) {
             response.write("event: error\n")
             response.end("data: " + jsonEncode(returnData.setErrorMsg("未配置书源"), false) + "\n\n")
@@ -2481,7 +2486,12 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             response.write("data: " + jsonEncode(mapOf("msg" to msg), false) + "\n\n")
         }
 
-        val webBook = webBook(bookSourceString, true, userNameSpace)
+        val webBook = webBook(bookSourceString, false, userNameSpace)
+
+        context.request().connection().closeHandler {
+            logger.info("客户端已断开链接，停止 bookSourceDebugSSE")
+            coroutineContext.cancel()
+        }
 
         debugger.startDebug(webBook, keyword)
 
@@ -2540,7 +2550,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
 
-        var chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace)
+        var chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace, false)
         var cachedChapterContentSet = mutableSetOf<Int>()
         if (refresh <= 0) {
             cachedChapterContentSet = getCachedChapterContentSet(bookInfo, userNameSpace)
@@ -2553,6 +2563,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 cacheBookSSE")
             isEnd = true
+            coroutineContext.cancel()
         }
 
         concurrentCount = if(concurrentCount > 0) concurrentCount else 24
@@ -2713,7 +2724,14 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
 
-        if (bookInfo.isLocalBook()) {
+        if (bookInfo.isLocalBook() && !bookInfo.isLocalTxt()) {
+            val localFile = bookInfo.getLocalFile()
+            context.response().putHeader("Cache-Control", "300")
+                            .putHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(localFile.name, "UTF-8"))
+                            .sendFile(localFile.toString())
+            return
+        }
+        if (bookInfo.isLocalTxt() && isEpub <= 0) {
             val localFile = bookInfo.getLocalFile()
             context.response().putHeader("Cache-Control", "300")
                             .putHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(localFile.name, "UTF-8"))
@@ -2721,16 +2739,16 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
         var bookSource = getBookSourceString(context, bookInfo.origin)
-        if (bookSource.isNullOrEmpty()) {
+        if (!bookInfo.isLocalBook() && bookSource.isNullOrEmpty()) {
             context.success(returnData.setErrorMsg("未配置书源"))
             return
         }
         var exportDir = File(getWorkDir("storage", "assets", userNameSpace, "export"))
 
         val bookFile = if (isEpub > 0) {
-            exportToEpub(exportDir, bookInfo, bookSource, userNameSpace)
+            exportToEpub(exportDir, bookInfo, bookSource ?: "", userNameSpace)
         } else {
-            exportToTxt(exportDir, bookInfo, bookSource, userNameSpace)
+            exportToTxt(exportDir, bookInfo, bookSource ?: "", userNameSpace)
         }
         context.response().putHeader("Cache-Control", "300")
                         .putHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(bookFile.name, "UTF-8"))
@@ -2776,7 +2794,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }"
 
         append(qy, null)
-        var chapterList = getLocalChapterList(book, bookSourceString, false, userNameSpace)
+        var chapterList = getLocalChapterList(book, bookSourceString, false, userNameSpace, false)
         val localCacheDir = getChapterCacheDir(book, userNameSpace)
 
         chapterList.forEachIndexed { index, chapter ->
@@ -2899,10 +2917,11 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
         } else if (coverUrl.startsWith("/")) {
             // 本地 /assets 封面
-            val coverFile = File(getWorkDir("storage", coverUrl.substring(1)))
+            val coverPath = coverUrl.replace("/", File.separator).substring(1)
+            val coverFile = File(getWorkDir("storage", coverPath))
             val byteArray: ByteArray = coverFile.readBytes()
             epubBook.coverImage = Resource(byteArray, "Images/cover.jpg")
-        } else {
+        } else if (!bookSourceString.isNullOrEmpty()) {
             var ext = getFileExt(coverUrl, "jpg")
             val md5Encode = MD5Utils.md5Encode(coverUrl).toString()
             var cachePath = getWorkDir("storage", "cache", md5Encode + "." + ext)
@@ -2940,7 +2959,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         userNameSpace: String
     ) {
         //正文
-        var chapterList = getLocalChapterList(book, bookSourceString, false, userNameSpace)
+        var chapterList = getLocalChapterList(book, bookSourceString, false, userNameSpace, false)
         val localCacheDir = getChapterCacheDir(book, userNameSpace)
 
         chapterList.forEachIndexed { index, chapter ->
@@ -2949,7 +2968,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (!appConfig.exportNoChapterName) {
                 content += chapter.title + "\n"
             }
-            if (chapterCacheFile.exists()) {
+            if (book.isLocalTxt()) {
+                content += LocalBook.getContent(book, chapter) ?: ""
+            } else if (chapterCacheFile.exists()) {
                 content += chapterCacheFile.readText() + "\n"
             } else {
                 content += "暂无缓存内容。\n"
@@ -3001,7 +3022,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                         val img = LazyResource(fp, href, originalHref)
                         epubBook.resources.add(img)
                     }
-                    text1 = text1.replace(src, "../${href}")
+                    text1 = text1.replace(it, "../${href}")
                 }
             }
             data.append(text1).append("\n")
@@ -3073,6 +3094,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         context.request().connection().closeHandler{
             logger.info("客户端已断开链接，停止 searchBookContent")
             isEnd = true
+            coroutineContext.cancel()
         }
 
         logger.info("searchBookContent keyword: {} lastIndex: {}", keyword, lastIndex)
@@ -3270,7 +3292,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
 
         // Get chapter list
-        val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace)
+        val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace, false)
         if (chapterList.isEmpty()) {
             return returnData.setErrorMsg("章节列表为空")
         }
@@ -3322,7 +3344,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 logger.info("未找到书源信息: {}", bookUrl)
                 continue
             }
-            val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace)
+            val chapterList = getLocalChapterList(bookInfo, bookSource, false, userNameSpace, false)
             val cacheDir = getChapterCacheDir(bookInfo, userNameSpace)
             for (chapter in chapterList) {
                 val cacheFile = File(cacheDir, "${chapter.index}.txt")
