@@ -1698,8 +1698,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val concurrentCount = 16
         val userBookSourceStringList = loadBookSourceStringList(userNameSpace)
         val mutex = Mutex()
+        val syncMutex = Mutex()
         limitConcurrent(concurrentCount, 0, bookshelf.size()) {
             var book = bookshelf.getJsonObject(it).mapTo(Book::class.java)
+            book.isInShelf = true
             if (!book.isLocalBook() && book.canUpdate && refresh) {
                 try {
                     var bookSource = getBookSourceStringBySourceURL(book.origin, userNameSpace, userBookSourceStringList)
@@ -1721,7 +1723,12 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     e.printStackTrace()
                 }
             }
-            bookList.add(book)
+            syncMutex.lock()
+            try {
+                bookList.add(book)
+            } finally {
+                syncMutex.unlock()
+            }
         }
         return bookList
     }
