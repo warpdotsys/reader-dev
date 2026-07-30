@@ -1345,6 +1345,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             existBook.originName = newBookInfo.originName
             existBook.bookUrl = newBookInfo.bookUrl
             existBook.tocUrl = newBookInfo.tocUrl
+            existBook.isInShelf = true
             if (existBook.coverUrl.isNullOrEmpty() && !newBookInfo.coverUrl.isNullOrEmpty()) {
                 existBook.coverUrl = newBookInfo.coverUrl
             }
@@ -1529,7 +1530,6 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun getBookGroups(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        checkAuth(context)
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
