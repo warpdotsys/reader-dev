@@ -51,13 +51,28 @@ export default {
   watch: {
     show(isVisible) {
       if (isVisible) {
-        //
+        this.$nextTick(this.runScript);
       }
     }
   },
   methods: {
     cancel() {
       this.$emit("setShow", false);
+    },
+    runScript() {
+      try {
+        const scriptList = this.$refs.rssArticleContentRef.querySelectorAll(
+          "script"
+        );
+        if (scriptList.length) {
+          for (let i = 0; i < scriptList.length; i++) {
+            const scriptText = scriptList[i].innerText;
+            new Function(scriptText)();
+          }
+        }
+      } catch (error) {
+        this.$message.error("执行脚本出错: " + error);
+      }
     },
     rssArticleClickHandler(e) {
       if (

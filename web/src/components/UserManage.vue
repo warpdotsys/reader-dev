@@ -11,21 +11,21 @@
     v-if="$store.getters.isNormalPage"
     :before-close="cancel"
   >
-    <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >用户管理
-        <span class="float-right span-btn" @click="showAddUserDialog()"
-          >新增</span
-        >
-        <span class="float-right span-btn" @click="clearInactiveUser()"
-          >清理不活跃用户</span
-        >
+    <div class="custom-dialog-title flex-title" slot="title">
+      <span class="el-dialog__title">用户管理 </span>
+      <span class="title-center">
+        <el-input
+          class="search-input"
+          size="mini"
+          placeholder="输入关键字搜索"
+          v-model="search"
+        ></el-input>
       </span>
     </div>
     <div class="source-container table-container">
       <el-table
         :data="showList"
-        :height="dialogContentHeight"
+        :height="dialogContentHeight - 42"
         @selection-change="manageUserSelection = $event"
         @sort-change="sortChange"
       >
@@ -40,22 +40,33 @@
           property="username"
           label="用户名"
           min-width="100"
-          sortable
+          sortable="custom"
           :fixed="$store.state.miniInterface"
         ></el-table-column>
         <el-table-column
           property="lastLoginAt"
           label="上次登录"
+          sortable="custom"
           :formatter="formatTableField"
           min-width="120"
         ></el-table-column>
         <el-table-column
           property="createdAt"
           label="注册时间"
+          sortable="custom"
           :formatter="formatTableField"
           min-width="120"
         ></el-table-column>
-        <el-table-column property="enableWebdav" label="WebDAV" min-width="80">
+        <el-table-column
+          property="enableWebdav"
+          label="WebDAV"
+          min-width="80"
+          :filters="[
+            { text: '开启', value: true },
+            { text: '关闭', value: false }
+          ]"
+          :filter-method="filterHandler"
+        >
           <template slot-scope="scope">
             <el-switch
               v-if="scope.row.userNS !== 'default'"
@@ -73,6 +84,11 @@
           property="enableLocalStore"
           label="书仓"
           min-width="80"
+          :filters="[
+            { text: '开启', value: true },
+            { text: '关闭', value: false }
+          ]"
+          :filter-method="filterHandler"
         >
           <template slot-scope="scope">
             <el-switch
@@ -87,46 +103,78 @@
             </el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120px">
+        <el-table-column label="操作" width="100px">
           <template slot-scope="scope">
-            <el-button type="text" @click="editUser(scope.row)">编辑</el-button>
-            <el-button type="text" @click="resetPassword(scope.row)"
+            <el-button
+              v-if="scope.row.userNS !== 'default'"
+              class="text-button"
+              type="text"
+              @click="editUser(scope.row)"
+              >修改</el-button
+            >
+            <el-button
+              v-if="scope.row.userNS !== 'default'"
+              class="text-button"
+              type="text"
+              @click="resetPassword(scope.row)"
               >重置密码</el-button
             >
-            <el-button type="text" @click="setAsDefaultBookSources(scope.row)"
+            <el-button
+              v-if="scope.row.userNS !== 'default'"
+              class="text-button"
+              type="text"
+              @click="setAsDefaultBookSources(scope.row)"
               >设为默认书源</el-button
             >
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        @current-change="pagination.page = $event"
-        @size-change="pagination.size = $event"
-        :current-page="pagination.page"
-        :page-size="pagination.size"
-        :page-sizes="[25, 50, 100]"
-        layout="total, sizes, prev, pager, next"
-        :total="filterList.length"
-      >
-      </el-pagination>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteUserList"
-        >批量删除</el-button
-      >
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteUserBookSource"
-        >删除用户书源</el-button
-      >
-      <span class="check-tip">已选择 {{ manageUserSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteUserList"
+          >批量删除<span v-if="manageUserSelection.length">
+            ({{ manageUserSelection.length }})</span
+          ></el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteUserBookSource"
+          >使用默认书源</el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="clearInactiveUser()"
+          >清理</el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="showAddUserDialog()"
+          >新增</el-button
+        >
+      </div>
+      <div class="source-pagination">
+        <el-pagination
+          :current-page="pagination.page"
+          :page-sizes="[25, 50, 100, 200, 300, 400, filterList.length]"
+          :page-size="pagination.size"
+          layout="total, sizes, prev, pager, next"
+          :total="filterList.length"
+          :pager-count="$store.state.miniInterface ? 5 : 7"
+          @update:currentPage="pagination.page = $event"
+          @update:pageSize="pagination.size = $event"
+        ></el-pagination>
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -215,14 +263,11 @@ export default {
     cancel() {
       this.$emit("setShow", false);
     },
-    showAddUserDialog() {
-      eventBus.$emit("showAddUserDialog");
-    },
-    editUser(user) {
-      eventBus.$emit("showAddUserDialog", user);
-    },
     sortChange({ prop, order }) {
       this.sortable = { prop, order };
+    },
+    showAddUserDialog() {
+      eventBus.$emit("showUserFormDialog");
     },
     async clearInactiveUser() {
       const res = await this.$prompt(
@@ -302,7 +347,10 @@ export default {
       }
       Axios.post(
         this.api + "/deleteUsers",
-        this.manageUserSelection.map(v => v.username)
+        this.manageUserSelection.map(v => v.username),
+        {
+          timeout: 0
+        }
       ).then(
         res => {
           if (res.data.isSuccess) {
@@ -387,6 +435,9 @@ export default {
         }
       );
     },
+    editUser(user) {
+      eventBus.$emit("showUserFormDialog", user);
+    },
     async setAsDefaultBookSources(user) {
       const res = await this.$confirm(
         `确认要将用户${user.username}的书源设为默认书源（新用户有效）吗?`,
@@ -421,10 +472,7 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         inputValidator(v) {
-          if (!v) {
-            return "密码不能为空";
-          }
-          return true;
+          return !!v || "密码不能为空";
         }
       }).catch(() => {
         return false;
@@ -445,6 +493,9 @@ export default {
           this.$message.error("重置密码失败 " + (error && error.toString()));
         }
       );
+    },
+    filterHandler(value, row, column) {
+      return row[column.property] === value;
     }
   }
 };
@@ -452,5 +503,21 @@ export default {
 <style lang="stylus" scoped>
 .float-right {
   float: right;
+}
+.float-left {
+  float: left;
+}
+.dialog-footer {
+  .float-left {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+}
+.text-button {
+  padding: 3px 5px;
+}
+.source-pagination {
+  margin-top: 5px;
+  text-align: right;
 }
 </style>

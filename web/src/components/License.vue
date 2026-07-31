@@ -30,7 +30,11 @@
       </div>
       <div class="license-item">
         <span class="license-name">过期时间</span>
-        <span class="license-value">{{ formatTime(license.expiredAt) }}</span>
+        <span class="license-value">{{
+          license.expiredAt === 0
+            ? "永久有效"
+            : new Date(license.expiredAt).format("yy-MM-dd hh:mm")
+        }}</span>
       </div>
       <div class="license-item">
         <span class="license-name">用户上限</span>
@@ -39,7 +43,12 @@
       <div class="license-item">
         <span class="license-name">kindle端</span>
         <span class="license-value"
-          >{{ formatTime(license.simpleWebExpiredAt) }} 过期</span
+          >{{
+            license.simpleWebExpiredAt === 0
+              ? "永久有效"
+              : new Date(license.simpleWebExpiredAt).format("yy-MM-dd hh:mm")
+          }}
+          过期</span
         >
         <span class="span-btn" @click="supplyLicense">申请7天试用</span>
       </div>
@@ -84,10 +93,6 @@ export default {
   methods: {
     cancel() {
       this.$emit("setShow", false);
-    },
-    formatTime(val) {
-      if (!val) return "永久有效";
-      return new Date(val).format("yy-MM-dd hh:mm");
     },
     getLicense() {
       Axios.get(this.api + "/getLicense").then(
@@ -194,5 +199,24 @@ export default {
 <style lang="stylus" scoped>
 .float-right {
   float: right;
+}
+.license-item {
+  font-size: 14px;
+  padding: 10px 5px;
+  color: #888;
+
+  .license-name {
+    display: inline-block;
+    width: 65px;
+    margin-right: 5px;
+    font-weight: 700;
+  }
+
+  .span-btn {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 15px;
+    margin-left: 10px;
+  }
 }
 </style>

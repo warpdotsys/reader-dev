@@ -40,6 +40,24 @@ const defaultDayConfig = {
   autoReadingPixel: 1,
   autoReadingLineTime: 1000,
   pageMode: "自适应",
+  topPadding: 0,
+  bottomPadding: 0,
+  horizontalPadding: 0,
+  epubMode: "iframe",
+  chapterRequestTimeout: 10,
+  quickKeyMode: "默认",
+  quickKey: {
+    ArrowUp: "上一页",
+    ArrowDown: "下一页",
+    ArrowLeft: "上一章",
+    ArrowRight: "下一章",
+    Escape: "返回",
+    Space: "下半页",
+    PageUp: "下一页",
+    PageDown: "上一页",
+    Home: "首页",
+    End: "尾页"
+  },
   selectionAction: "操作弹窗"
 };
 const defaultNightConfig = {
@@ -65,6 +83,24 @@ const defaultNightConfig = {
   autoReadingPixel: 1,
   autoReadingLineTime: 1000,
   pageMode: "自适应",
+  topPadding: 0,
+  bottomPadding: 0,
+  horizontalPadding: 0,
+  epubMode: "iframe",
+  chapterRequestTimeout: 10,
+  quickKeyMode: "默认",
+  quickKey: {
+    ArrowUp: "上一页",
+    ArrowDown: "下一页",
+    ArrowLeft: "上一章",
+    ArrowRight: "下一章",
+    Escape: "返回",
+    Space: "下半页",
+    PageUp: "下一页",
+    PageDown: "上一页",
+    Home: "首页",
+    End: "尾页"
+  },
   selectionAction: "操作弹窗"
 };
 const settings = {

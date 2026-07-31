@@ -151,14 +151,6 @@ export default {
         this.isShowBookGroupSettingDialog = this.isSet;
         this.bookGroupSelection = [];
         this.computeBookGroupList();
-        if (this.isSet) {
-          this.$nextTick(() => {
-            this.$refs.bookGroupTableRef.clearSelection();
-            this.getBookGroupListForBook(this.showBookInfo.group).forEach(v => {
-              this.$refs.bookGroupTableRef.toggleRowSelection(v, true);
-            });
-          });
-        }
       }
     },
     isSet(value) {
@@ -187,6 +179,14 @@ export default {
     opened() {
       this.$refs.bookGroupTableRef.doLayout();
       this.setDragable();
+      if (this.isSet) {
+        this.$nextTick(() => {
+          this.$refs.bookGroupTableRef.clearSelection();
+          this.getBookGroupListForBook(this.showBookInfo.group).forEach(v => {
+            this.$refs.bookGroupTableRef.toggleRowSelection(v, true);
+          });
+        });
+      }
     },
     loadBookGroup(refresh) {
       return this.$root.$children[0].loadBookGroup(refresh);

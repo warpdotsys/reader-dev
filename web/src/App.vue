@@ -80,7 +80,7 @@
 
     <UserManage v-model="showUserManageDialog" />
 
-    <AddUser v-model="showAddUserDialog" />
+    <AddUser :user="userForm" v-model="showUserFormDialog" />
 
     <BookGroup v-model="showBookGroupDialog" :isSet="isSetBookGroup" />
 
@@ -119,12 +119,15 @@
     />
 
     <Bookmark v-model="showBookmarkDialog" :book="bookmarkInBook" />
+
+    <BookCover :book="bookCoverBook" v-model="showBookCoverDialog" />
   </div>
 </template>
 
 <script>
 import Axios from "./plugins/axios";
 import eventBus from "./plugins/eventBus";
+import { getCache, setCache } from "./plugins/cache";
 import ImageViewer from "element-ui/packages/image/src/image-viewer.vue";
 import ReplaceRule from "./components/ReplaceRule.vue";
 import ReplaceRuleForm from "./components/ReplaceRuleForm.vue";
@@ -133,6 +136,7 @@ import BookManage from "./components/BookManage.vue";
 import BookInfo from "./components/BookInfo.vue";
 import UserManage from "./components/UserManage.vue";
 import AddUser from "./components/AddUser.vue";
+import BookCover from "./components/BookCover.vue";
 import BookGroup from "./components/BookGroup.vue";
 import HttpTTS from "./components/HttpTTS.vue";
 import FileManager from "./components/FileManager.vue";
@@ -218,6 +222,7 @@ export default {
     BookInfo,
     UserManage,
     AddUser,
+    BookCover,
     BookGroup,
     HttpTTS,
     FileManager,
@@ -257,7 +262,10 @@ export default {
       showBookInfoDialog: false,
 
       showUserManageDialog: false,
-      showAddUserDialog: false,
+      showUserFormDialog: false,
+      userForm: {},
+      showBookCoverDialog: false,
+      bookCoverBook: {},
 
       showBookGroupDialog: false,
       isSetBookGroup: false,
@@ -408,8 +416,13 @@ export default {
     eventBus.$on("showActiveLicenseDialog", () => {
       this.showActiveLicenseDialog = true;
     });
-    eventBus.$on("showAddUserDialog", () => {
-      this.showAddUserDialog = true;
+    eventBus.$on("showUserFormDialog", user => {
+      this.showUserFormDialog = true;
+      this.userForm = user || {};
+    });
+    eventBus.$on("showBookCoverDialog", book => {
+      this.showBookCoverDialog = true;
+      this.bookCoverBook = book;
     });
     eventBus.$on("showBookGroupDialog", isSet => {
       this.showBookGroupDialog = true;
@@ -906,6 +919,111 @@ export default {
     },
     closeViewer() {
       this.$store.commit("setPreviewImgList", false);
+    },
+    async deleteBook(book) {
+      if (!(book && (book.name || book.bookUrl))) {
+        this.$message.error("书籍信息错误");
+        return;
+      }
+      const res = await this.$confirm(
+        "此操作将删除书籍信息以及阅读进度, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      ).catch(() => {
+        return false;
+      });
+      if (!res) {
+        return;
+      }
+      Axios.post(this.api + "/deleteBook", book).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("删除成功");
+            this.loadBookShelf();
+          }
+        },
+        error => {
+          this.$message.error("删除失败 " + (error && error.toString()));
+        }
+      );
+    },
+    // 与 JAR (reader-pro 3.2.14) App.vue 一致：阅读设置里的"保存/同步"依赖 $root.$children[0].saveUserConfig/restoreUserConfig
+    async saveUserConfig(skipConfirm) {
+      if (!window.localStorage) {
+        this.$message.error("当前终端不支持localStorage");
+        return;
+      }
+      if (!skipConfirm) {
+        const res = await this.$confirm(
+          "确认要备份当前终端的阅读配置、书架设置、搜索设置、自定义配置方案、朗读配置吗?",
+          "提示"
+        ).catch(() => {
+          return false;
+        });
+        if (!res) {
+          return;
+        }
+      }
+      const userConfig = {};
+      [
+        "config",
+        "shelfConfig",
+        "searchConfig",
+        "customConfigList",
+        "speechVoiceConfig"
+      ].forEach(key => {
+        const val = getCache(key);
+        if (val) {
+          userConfig[key] = val;
+        }
+      });
+      Axios.post(this.api + "/saveUserConfig", userConfig).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("备份配置成功");
+          }
+        },
+        error => {
+          this.$message.error("备份配置失败 " + (error && error.toString()));
+        }
+      );
+    },
+    async restoreUserConfig(skipConfirm) {
+      if (!window.localStorage) {
+        this.$message.error("当前终端不支持localStorage");
+        return;
+      }
+      if (!skipConfirm) {
+        const res = await this.$confirm(
+          "确认要从备份文件中恢复当前终端的阅读配置、书架设置、搜索设置、自定义配置方案、朗读方案吗?",
+          "提示"
+        ).catch(() => {
+          return false;
+        });
+        if (!res) {
+          return;
+        }
+      }
+      Axios.get(this.api + "/getUserConfig").then(
+        res => {
+          if (res.data.isSuccess) {
+            for (const key in res.data.data) {
+              if (Object.hasOwnProperty.call(res.data.data, key)) {
+                setCache(key, res.data.data[key]);
+              }
+            }
+            this.$store.dispatch("syncFromLocalStorage");
+            this.$message.success("同步配置成功");
+          }
+        },
+        error => {
+          this.$message.error("同步配置失败 " + (error && error.toString()));
+        }
+      );
     }
   }
 };

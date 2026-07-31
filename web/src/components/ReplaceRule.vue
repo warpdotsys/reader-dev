@@ -12,16 +12,7 @@
     :before-close="cancel"
   >
     <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >替换规则管理
-        <span class="float-right span-btn" @click="uploadFile">导入</span>
-        <input
-          ref="fileRef"
-          type="file"
-          @change="onFileChange($event)"
-          style="display:none"
-        />
-      </span>
+      <span class="el-dialog__title">替换规则管理</span>
     </div>
     <div class="source-container table-container">
       <el-table
@@ -67,15 +58,36 @@
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteReplaceRules"
-        >批量删除</el-button
-      >
-      <span class="check-tip">已选择 {{ localSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteReplaceRules"
+          >批量删除
+          <span v-if="localSelection.length"> ({{ localSelection.length }})</span></el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="uploadFile"
+          >导入</el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="addNew"
+          >添加</el-button
+        >
+        <input
+          ref="fileRef"
+          type="file"
+          @change="onFileChange($event)"
+          style="display:none"
+        />
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -163,12 +175,29 @@ export default {
     editReplaceRule(row) {
       eventBus.$emit("showReplaceRuleForm", { ...row }, false);
     },
+    addNew() {
+      eventBus.$emit(
+        "showReplaceRuleForm",
+        {
+          name: "文本替换",
+          pattern: "",
+          replacement: "",
+          isRegex: false,
+          isEnabled: true,
+          scope: this.$store.getters.readingBook
+            ? this.$store.getters.readingBook.name +
+              ";" +
+              this.$store.getters.readingBook.bookUrl
+            : "*"
+        },
+        false
+      );
+    },
     uploadFile() {
       this.$refs.fileRef.dispatchEvent(new MouseEvent("click"));
     },
     onFileChange(event) {
       const rawFile = event.target.files && event.target.files[0];
-      // console.log("rawFile", rawFile);
       const reader = new FileReader();
       reader.onload = e => {
         const data = e.target.result;
@@ -182,7 +211,6 @@ export default {
         }
       };
       reader.onerror = () => {
-        // console.log("FileReader error", e);
         // FileReader 读取出错，只能上传读取了
         let param = new FormData();
         param.append("file", rawFile);
@@ -191,7 +219,6 @@ export default {
         }).then(
           res => {
             if (res.data.isSuccess) {
-              //
               let ruleList = [];
               res.data.data.forEach(v => {
                 try {
@@ -255,5 +282,15 @@ export default {
 <style lang="stylus" scoped>
 .float-left {
   float: left;
+}
+.dialog-footer {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  .float-left {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
 }
 </style>

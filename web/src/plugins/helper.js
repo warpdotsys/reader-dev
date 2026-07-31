@@ -113,6 +113,10 @@ export const cacheFirstRequest = async function(
       .getItem(cacheKey)
       .then(cacheResponse => {
         if (cacheResponse) {
+          // 与 JAR (reader-pro) 一致：缓存命中时标记 isCache，便于调用方保存阅读进度
+          if (typeof cacheResponse === "object") {
+            cacheResponse.isCache = true;
+          }
           return cacheResponse;
         }
         // console.log("Cache not found in new cache");

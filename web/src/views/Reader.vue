@@ -11,6 +11,16 @@
   >
     <div class="tool-bar" :style="leftBarTheme">
       <div class="tools">
+        <div
+          class="tool-icon"
+          @click="toShelf"
+          :style="$store.state.miniInterface ? { order: -1 } : {}"
+        >
+          <div class="iconfont">
+            &#58920;
+          </div>
+          <div class="icon-text">首页</div>
+        </div>
         <el-popover
           placement="right"
           :width="popperWidth"
@@ -65,7 +75,7 @@
           popper-class="popper-component"
         >
           <PopCata
-            @getContent="getContent"
+            @gotoChapter="gotoChapter"
             ref="popCata"
             class="popup"
             @refresh="refreshCatalog"
@@ -103,16 +113,6 @@
             <div class="icon-text">设置</div>
           </div>
         </el-popover>
-        <div
-          class="tool-icon"
-          @click="toShelf"
-          :style="$store.state.miniInterface ? { order: -1 } : {}"
-        >
-          <div class="iconfont">
-            &#58920;
-          </div>
-          <div class="icon-text">首页</div>
-        </div>
         <div
           class="tool-icon"
           @click="toTop(0)"
@@ -186,6 +186,31 @@
           <div
             class="float-btn"
             :style="popupAbsoluteBtnStyle"
+            @click="toggleEditContent"
+            v-if="!isAudio && !isVideo && !isEpub && !isCbz && !isPdf"
+            :class="isEditContent ? 'editing' : ''"
+          >
+            <i class="el-icon-edit"></i>
+          </div>
+          <div
+            class="float-btn"
+            :style="popupAbsoluteBtnStyle"
+            @click="showCacheContent"
+            v-if="!isAudio && !isVideo && !isEpub"
+          >
+            <i class="el-icon-download"></i>
+          </div>
+          <div
+            class="float-btn"
+            :style="popupAbsoluteBtnStyle"
+            @click="readOriginal"
+            v-if="isPdf"
+          >
+            <i class="el-icon-reading"></i>
+          </div>
+          <div
+            class="float-btn"
+            :style="popupAbsoluteBtnStyle"
             @click="refreshContent"
           >
             <i class="el-icon-refresh-right"></i>
@@ -194,7 +219,8 @@
             class="float-btn"
             :style="popupAbsoluteBtnStyle"
             @click="toggleAutoReading()"
-            v-if="!isEpub && !isCarToon && !isAudio && !isVideo"
+            v-if="!isAudio && !isVideo"
+            :class="autoReading ? 'auto-reading' : ''"
           >
             <i class="el-icon-view"></i>
           </div>
@@ -202,13 +228,7 @@
             class="float-btn"
             :style="popupAbsoluteBtnStyle"
             @click="showReadBar = !showReadBar"
-            v-if="
-              (speechAvalable || ttsType !== 'local') &&
-                !isEpub &&
-                !isCarToon &&
-                !isAudio &&
-                !isVideo
-            "
+            v-if="!isAudio && !isVideo"
           >
             <i class="el-icon-headset"></i>
           </div>
@@ -335,19 +355,22 @@
             >
           </div>
           <div class="setting-value">
-            <el-select
-              v-model="ttsType"
-              size="mini"
-              filterable
-              placeholder="请选择朗读方式"
-            >
-              <el-option
-                v-for="(item, index) in ttsTypeList"
-                :key="'tts-type-' + index"
-                :label="item.name"
-                :value="item.value"
-              ></el-option>
-            </el-select>
+            <div class="voice-list">
+              <el-select
+                class="voice-select"
+                v-model="ttsType"
+                size="mini"
+                filterable
+                placeholder="请选择朗读方式"
+              >
+                <el-option
+                  v-for="(item, index) in ttsTypeList"
+                  :key="'tts-type-' + index"
+                  :label="item.name"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+            </div>
           </div>
           <div class="setting-oneline" v-if="ttsType !== 'local'">
             <span class="setting-title">连读优化：</span>
@@ -355,25 +378,28 @@
               v-model="cacheTTSAudio"
               active-color="#13ce66"
               inactive-color="#ff4949"
+              :active-value="true"
+              :inactive-value="false"
             ></el-switch>
           </div>
-        </div>
-        <div class="setting-item" v-if="showSpeechConfig">
           <div class="setting-title">语音库</div>
           <div class="setting-value">
-            <el-select
-              v-model="voiceName"
-              size="mini"
-              filterable
-              placeholder="请选择语音库"
-            >
-              <el-option
-                v-for="(voice, index) in voiceList"
-                :key="'voice-' + index"
-                :label="voice.LocalName || voice.name"
-                :value="voice.name"
-              ></el-option>
-            </el-select>
+            <div class="voice-list">
+              <el-select
+                class="voice-select"
+                v-model="voiceName"
+                size="mini"
+                filterable
+                placeholder="请选择语音库"
+              >
+                <el-option
+                  v-for="(voice, index) in voiceList"
+                  :key="'search-type-' + index"
+                  :label="voice.LocalName || voice.name"
+                  :value="voice.name"
+                ></el-option>
+              </el-select>
+            </div>
           </div>
         </div>
         <div class="setting-item" v-if="showSpeechConfig">
@@ -393,7 +419,7 @@
               </div>
               <span class="setting-btn" @click="changeSpeechRate(1)">重置</span>
             </div>
-            <div class="progress">
+            <div class="progress" v-show="ttsType !== 'httpTTS'">
               <span class="progress-tip">语调</span>
               <div class="progress-bar">
                 <el-slider
@@ -442,9 +468,16 @@
         <div :style="showMenuZoneStyle"><span>点击显示菜单</span></div>
         <div :style="showNextPageStyle"><span>点击后一页</span></div>
         <div class="close-btn" @click="showClickZone = false">关闭</div>
+        <div :style="showPrevPageExtraStyle"></div>
+        <div :style="showNextPageExtraStyle"></div>
       </div>
       <div class="top-bar" ref="top">
         {{ $store.state.miniInterface ? title : "" }}
+        <span
+          class="right-timestr"
+          v-if="$store.state.miniInterface && !isSlideRead"
+          >{{ timeStr }}</span
+        >
       </div>
       <div
         class="content"
@@ -453,7 +486,7 @@
         @touchend="handleTouchEnd"
         @click="handlerClick"
       >
-        <div class="content-inner" v-if="show">
+        <div class="content-inner" v-if="show" :style="contentInnerStyle">
           <Content
             class="book-content"
             :title="title"
@@ -463,23 +496,28 @@
             :style="contentStyle"
             :showChapterList="showChapterList"
             :isScrollRead="isScrollRead"
+            :isSlideRead="isSlideRead"
+            :isEditContent="isEditContent"
             ref="bookContentRef"
             @prevChapter="toLastChapter"
             @nextChapter="toNextChapter"
             @updateProgress="saveReadingPosition"
             @iframeLoad="$emit('iframeLoad')"
-            @contentChange="computePages()"
+            @contentChange="onContentChange"
             @epubClick="eventHandler"
             @epubLocationChange="epubLocationChangeHandler"
             @epubClickHash="epubClickHash"
             @epubKeydown="keydownHandler($event, true)"
+            @epubTouch="epubTouch"
           />
         </div>
       </div>
       <div class="bottom-bar" ref="bottom">
         <audio
           ref="ttsAudio"
-          preload="auto"
+          preload="preload"
+          src
+          autoplay
           @ended="onTTSAudioEnded"
           @error="onTTSAudioError"
           @play="onTTSAudioPlay"
@@ -512,6 +550,7 @@ import Animate from "../plugins/animate";
 import { setCache, getCache } from "../plugins/cache";
 import { simplized, traditionalized } from "../plugins/chinese";
 import { ttsVoiceList } from "../plugins/ttsVoices";
+import { isOnlyWhitespace, stripWhitespace } from "../plugins/ttsWhitespace";
 import {
   cacheFirstRequest,
   LimitResquest,
@@ -556,8 +595,10 @@ export default {
         });
         return;
       }
-      this.$once("showContent", () => {
-        this.showMatchKeyword(data);
+      this.onNextContentRendered(() => {
+        this.$nextTick(() => {
+          this.showMatchKeyword(data);
+        });
       });
       this.getContent(data.chapterIndex);
     });
@@ -565,7 +606,6 @@ export default {
       if (this._inactive) {
         return;
       }
-      // console.log(this.chapterIndex, bookmark);
       if (this.chapterIndex === bookmark.chapterIndex) {
         this.showBookmark(bookmark);
         return;
@@ -577,10 +617,18 @@ export default {
         });
         return;
       }
-      this.$once("showContent", () => {
-        this.showBookmark(bookmark);
+      this.onNextContentRendered(() => {
+        this.$nextTick(() => {
+          this.showBookmark(bookmark);
+        });
       });
       this.getContent(bookmark.chapterIndex);
+    });
+    // 书签弹窗的"添加"按钮
+    eventBus.$on("addBookmark", () => {
+      if (!this._inactive) {
+        this.addBookmark();
+      }
     });
   },
   activated() {
@@ -654,9 +702,7 @@ export default {
       }
     },
     readSettingsVisible(visible) {
-      if (!visible) {
-        //
-      }
+      //
     },
     title(title) {
       if (title) {
@@ -669,6 +715,9 @@ export default {
       if (!val) {
         this.contentStyle = {};
         this.transformX = 0;
+        if (this.isEpub) {
+          this.$refs.bookContentRef.transformX(0);
+        }
       }
       this.$nextTick(() => {
         this.computePages(() => {
@@ -725,7 +774,7 @@ export default {
               this.getBookContent(
                 this.$store.getters.readingBook.index + 1,
                 {
-                  timeout: 30000,
+                  timeout: 1000 * this.$store.getters.config.chapterRequestTimeout,
                   silent: true
                 },
                 false,
@@ -740,7 +789,6 @@ export default {
     },
     filterRules() {
       if (this.isScrollRead) {
-        //
         this.computeShowChapterList();
       } else {
         this.content = this.filterContent(this.originalContent);
@@ -845,8 +893,6 @@ export default {
       return this.autoReading ||
         this.showReadBar ||
         this.isVideo ||
-        this.isEpub ||
-        this.isCarToon ||
         this.isAudio
         ? false
         : this.$store.getters.isSlideRead;
@@ -865,11 +911,21 @@ export default {
       return this.isScrollRead && this.$store.state.miniInterface;
     },
     chapterClass() {
-      if (this.isSlideRead) return "slide-reader";
-      if (this.isEpub) return "epub";
-      if (this.isCarToon) return "cartoon";
-      if (this.isAudio) return "audio";
-      if (this.isVideo) return "video";
+      if (this.isSlideRead) {
+        return "slide-reader";
+      }
+      if (this.isEpub) {
+        return this.config.epubMode === "iframe" ? "epub-iframe" : "epub-dom";
+      }
+      if (this.isCarToon) {
+        return "cartoon";
+      }
+      if (this.isAudio) {
+        return "audio";
+      }
+      if (this.isVideo) {
+        return "video";
+      }
       return "";
     },
     chapterTheme() {
@@ -959,7 +1015,7 @@ export default {
       }
     },
     showPrevPageStyle() {
-      if (this.isSlideRead) {
+      if (this.isSlideRead && this.$store.getters.config.clickMethod !== "固定模式") {
         // 左半部
         return {
           left: 0,
@@ -975,7 +1031,10 @@ export default {
           left: 0,
           top: 0,
           right: 0,
-          bottom: this.windowSize.height / 2 + "px",
+          bottom:
+            (this.$store.getters.config.clickMethod === "固定模式"
+              ? this.windowSize.height * 0.7
+              : this.windowSize.height / 2) + "px",
           background: "#43987324"
         };
       }
@@ -991,7 +1050,7 @@ export default {
       };
     },
     showNextPageStyle() {
-      if (this.isSlideRead) {
+      if (this.isSlideRead && this.$store.getters.config.clickMethod !== "固定模式") {
         // 右半部
         return {
           right: 0,
@@ -1007,10 +1066,39 @@ export default {
           left: 0,
           bottom: 0,
           right: 0,
-          top: this.windowSize.height / 2 + "px",
+          top:
+            (this.$store.getters.config.clickMethod === "固定模式"
+              ? this.windowSize.height * 0.7
+              : this.windowSize.height / 2) + "px",
           background: "#6b1a7324"
         };
       }
+    },
+    showNextPageExtraStyle() {
+      if (this.$store.getters.config.clickMethod === "固定模式") {
+        return {
+          top: this.windowSize.height * 0.3 + "px",
+          bottom: this.windowSize.height * 0.3 + "px",
+          right: 0,
+          left: this.windowSize.width * 0.7 + "px",
+          background: "#6b1a7324",
+          paddingRight: this.windowSize.width * 0.2 + "px"
+        };
+      }
+      return { display: "none" };
+    },
+    showPrevPageExtraStyle() {
+      if (this.$store.getters.config.clickMethod === "固定模式") {
+        return {
+          top: this.windowSize.height * 0.3 + "px",
+          bottom: this.windowSize.height * 0.3 + "px",
+          left: 0,
+          right: this.windowSize.width * 0.7 + "px",
+          background: "#43987324",
+          paddingRight: this.windowSize.width * 0.2 + "px"
+        };
+      }
+      return { display: "none" };
     },
     loginAuth() {
       return this.$store.state.loginAuth;
@@ -1018,16 +1106,10 @@ export default {
     filterRules() {
       return this.$store.state.filterRules;
     },
+    httpTTSList() {
+      return this.$store.state.httpTTS;
+    },
     themeBtnStyle() {
-      // if (this.$store.getters.isNight) {
-      //   return {
-      //     background: "#f7f7f7"
-      //   };
-      // } else {
-      //   return {
-      //     background: "#222"
-      //   };
-      // }
       return {
         background: this.$store.getters.currentThemeConfig.popupPure
       };
@@ -1120,7 +1202,7 @@ export default {
       if (this.ttsType === "edge") {
         return ttsVoiceList;
       }
-      return this.$store.state.httpTTS || [];
+      return this.httpTTSList;
     },
     isCarToon() {
       return (
@@ -1140,6 +1222,12 @@ export default {
     isEpub() {
       const bookUrl = (this.$store.getters.readingBook || {}).bookUrl;
       return !this.error && bookUrl && bookUrl.toLowerCase().endsWith(".epub");
+    },
+    isEpubResolve() {
+      return this.isEpub && this.config.epubMode !== "iframe";
+    },
+    isEpubIframe() {
+      return this.isEpub && this.config.epubMode === "iframe";
     },
     isCbz() {
       const bookUrl = (this.$store.getters.readingBook || {}).bookUrl;
@@ -1165,6 +1253,9 @@ export default {
     },
     chineseFont() {
       return this.config.chineseFont;
+    },
+    slideDistance() {
+      return 16 + this.config.horizontalPadding;
     }
   },
   methods: {
@@ -1192,10 +1283,9 @@ export default {
         return;
       }
       {
-        this.$message.error("请在书架选择书籍");
+        this.$message.error("缓存信息丢失,请在书架选择书籍！");
         this.title = "";
-        this.originalContent = "";
-        this.content = "缓存信息丢失,请在书架选择书籍";
+        this.content = "缓存信息丢失,请在书架选择书籍！";
         this.error = true;
         this.show = true;
       }
@@ -1249,7 +1339,6 @@ export default {
         this.lastReadingBook.index !== readingBook.index
       ) {
         this.title = "";
-        this.originalContent = "";
         this.show = false;
         this.loading = this.$loading({
           target: this.$refs.content,
@@ -1268,10 +1357,12 @@ export default {
           this.computeShowChapterList().then(() => {
             this.autoShowPosition(true);
           });
-        } else if (this.isEpub) {
-          this.autoShowPosition(true);
+        } else if (this.isEpubIframe) {
+          this.autoShowPosition();
         } else {
-          this.startSavePosition = true;
+          this.$nextTick(() => {
+            this.autoShowPosition(true);
+          });
         }
         setTimeout(() => {
           this.$store.commit("setReadingBook", this.lastReadingBook);
@@ -1293,7 +1384,6 @@ export default {
       this.popBookSourceVisible = false;
       this.show = false;
       this.tryRefresh = false;
-      // TODO 使用相似度比较，校正章节index
       this.loadCatalog(true, true);
     },
     loadCatalog(refresh, init) {
@@ -1398,45 +1488,28 @@ export default {
           throw error;
         });
     },
-    getTTSConfig(text) {
-      let pitch = this.speechPitch;
-      let rate = this.speechRate;
-      if (this.ttsType === "textToSpeechCn") {
-        pitch = parseInt(50 * (pitch - 1));
-        rate = parseInt(200 * (rate - 1));
-      } else if (this.ttsType === "edge") {
-        pitch = parseInt(50 * (pitch - 1));
-      }
-      const config = {
-        text,
-        type: this.ttsType,
-        voice: this.voiceName,
-        pitch: "" + pitch,
-        rate: "" + rate,
-        accessToken: this.$store.state.token
-      };
-      const book = this.$store.getters.readingBook || {};
-      const cacheText =
-        "" + text + config.type + config.voice + config.pitch + config.rate;
-      return {
-        config,
-        cacheKey:
-          "localCache@ttsData@" +
-          book.name +
-          "_" +
-          book.author +
-          "@" +
-          cacheText.MD5(32)
-      };
-    },
     refreshContent() {
       this.autoShowPosition();
       this.getContent(this.$store.getters.readingBook.index, true);
     },
+    gotoChapter(index) {
+      if (typeof this.$store.getters.readingBook.catalog[index] === "undefined") {
+        this.$message.error("章节信息错误");
+        return;
+      }
+      let book = { ...this.$store.getters.readingBook };
+      book.index = index;
+      this.$store.commit("setReadingBook", book);
+      if (this.isScrollRead) {
+        this.scrollStartChapterIndex = index;
+        this.computeShowChapterList(true);
+        return;
+      }
+      this.getContent(index);
+    },
     getContent(index, refresh) {
       //展示进度条
       this.show = false;
-      this.originalContent = "";
       this.contentInnerStyle = {};
       if (!this.loading || !this.loading.visible) {
         this.loading = this.$loading({
@@ -1463,7 +1536,6 @@ export default {
       if (!this.$store.getters.readingBook.catalog[index]) {
         if (this.tryRefresh) {
           this.tryRefresh = false;
-          this.originalContent = "获取章节内容失败，请更新目录！";
           this.content = "获取章节内容失败，请更新目录！";
           this.error = true;
           this.show = true;
@@ -1475,11 +1547,9 @@ export default {
         }
         return;
       }
-      //let chapterUrl = this.$store.getters.readingBook.catalog[index].url;
       let chapterName = this.$store.getters.readingBook.catalog[index].title;
       let chapterIndex = this.$store.getters.readingBook.catalog[index].index;
       this.title = chapterName;
-      const now = new Date().getTime();
       if (this.isScrollRead) {
         this.scrollStartChapterIndex = chapterIndex;
       }
@@ -1492,8 +1562,8 @@ export default {
             // 已经换书或者换章节了
             return;
           }
-          if (now + 100 > new Date().getTime()) {
-            // 不超过 100ms 假定为获取缓存，此时发送进度保存请求
+          if (res.data.isCache) {
+            // 命中缓存，此时发送进度保存请求
             this.saveBookProgress();
           }
           if (res.data.isSuccess) {
@@ -1512,7 +1582,6 @@ export default {
             this.show = true;
             this.$emit("showContent");
           } else {
-            this.originalContent = "获取章节内容失败！\n" + res.data.errorMsg;
             this.content = "获取章节内容失败！\n" + res.data.errorMsg;
             this.addChapterContentToCache({
               bookUrl,
@@ -1538,9 +1607,7 @@ export default {
             // 已经换书或者换章节了
             return;
           }
-          this.originalContent =
-            "获取章节内容失败！\n" + (error && error.toString());
-          this.content = this.originalContent;
+          this.content = "获取章节内容失败！\n" + (error && error.toString());
           this.addChapterContentToCache({
             bookUrl,
             index: index,
@@ -1561,6 +1628,90 @@ export default {
           throw error;
         }
       );
+    },
+    toggleEditContent() {
+      if (this.isEditContent) {
+        this.isEditContent = false;
+        this.saveContent();
+      } else {
+        this.isEditContent = true;
+      }
+    },
+    async saveContent() {
+      const res = await this.$confirm("是否保存章节内容?", "提示", {
+        confirmButtonText: "保存",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).catch(() => {
+        return false;
+      });
+      if (!res) {
+        this.autoShowPosition();
+        this.getContent(this.$store.getters.readingBook.index);
+        return;
+      }
+      const content = this.getTextContent(this.getContentParagraphContainer());
+      const cacheKey =
+        "localCache@" +
+        this.$store.getters.readingBook.name +
+        "_" +
+        this.$store.getters.readingBook.author +
+        "@" +
+        this.$store.getters.readingBook.bookUrl +
+        "@chapterContent-" +
+        this.chapterIndex;
+      return Axios.post(this.api + "/saveBookContent", {
+        url: this.$store.getters.readingBook.bookUrl,
+        index: this.chapterIndex,
+        content
+      })
+        .then(res => {
+          if (res.data.isSuccess) {
+            return window.$cacheStorage
+              .removeItem(cacheKey)
+              .catch(() => {})
+              .then(() => {
+                this.$message.success("保存成功！注意：刷新章节内容将会失效");
+              });
+          }
+          return res;
+        })
+        .catch(error => {
+          this.$message.error(
+            "保存章节内容失败 " + (error && error.toString())
+          );
+        });
+    },
+    getTextContent(element) {
+      if (!element) {
+        return "";
+      }
+      if (element.nodeName === "H3") {
+        return "";
+      }
+      if (element.nodeName === "P") {
+        return element.innerText;
+      }
+      if (element.nodeName === "IMG") {
+        const clone = element.cloneNode(true);
+        const errorSrc = clone.getAttribute("data-error");
+        clone.removeAttribute("data-error");
+        clone.removeAttribute("data-src");
+        clone.removeAttribute("lazy");
+        clone.setAttribute("src", errorSrc);
+        return clone.outerHTML;
+      }
+      if (element.nodeName === "#text") {
+        return element.nodeValue;
+      }
+      let text = "";
+      for (let i = 0; i < element.childNodes.length; i++) {
+        if (i > 0 && element.childNodes[i].nodeName !== "#text") {
+          text += "\n";
+        }
+        text += this.getTextContent(element.childNodes[i]);
+      }
+      return text.replace(/^\n*/, "").replace(/\n*$/, "");
     },
     filterContent(content) {
       if (this.isEpub || this.isAudio || this.isVideo || this.isPdf) {
@@ -1593,7 +1744,7 @@ export default {
                   rule.replacement
                 );
               } else {
-                content = content.replace(rule.pattern, rule.replacement);
+                content = content.replaceAll(rule.pattern, rule.replacement);
               }
             }
           }
@@ -1847,6 +1998,9 @@ export default {
     toShelf() {
       this.$router.push("/");
     },
+    onContentChange() {
+      this.computePages();
+    },
     computePages(cb) {
       if (!this.$refs.bookContentRef || !this.$refs.bookContentRef.$el) {
         setTimeout(() => {
@@ -1855,20 +2009,36 @@ export default {
         return;
       }
       if (this.isSlideRead) {
-        this.totalPages = Math.ceil(
-          this.$refs.bookContentRef.$el.scrollWidth /
-            (this.windowSize.width - 16)
-        );
+        if (this.isEpub) {
+          this.totalPages = Math.ceil(
+            this.$refs.bookContentRef.iframeSize.scrollWidth /
+              (this.windowSize.width - this.slideDistance)
+          );
+        } else {
+          this.totalPages = Math.ceil(
+            this.$refs.bookContentRef.$el.scrollWidth /
+              (this.windowSize.width - this.slideDistance)
+          );
+        }
       } else {
+        let pageHeight = this.windowSize.height - this.scrollOffset;
         this.totalPages = Math.ceil(
-          this.$refs.bookContentRef.$el.scrollHeight /
-            (this.windowSize.height - this.scrollOffset)
+          this.$refs.bookContentRef.$el.scrollHeight / pageHeight
         );
+        if (!this.isScrollRead) {
+          // 最后一页的填充高度，让"加载下一章"按钮出现在最后一页
+          const paddingBottom =
+            pageHeight * this.totalPages -
+            this.$refs.bookContentRef.$el.scrollHeight -
+            68;
+          this.contentInnerStyle = { "padding-bottom": paddingBottom + "px" };
+        }
       }
       if (this.showLastPage) {
         this.showPage(this.totalPages, 0);
         this.showLastPage = false;
       }
+      this.$emit("afterComputePages");
       cb && cb();
     },
     nextPage(moveX) {
@@ -1882,13 +2052,13 @@ export default {
         if (this.currentPage < this.totalPages) {
           if (typeof moveX === "undefined") {
             this.transformX =
-              -(this.windowSize.width - 16) * (this.currentPage - 1);
+              -(this.windowSize.width - this.slideDistance) * (this.currentPage - 1);
           }
           this.currentPage += 1;
           this.transforming = true;
           this.transform(
             typeof moveX === "undefined"
-              ? -(this.windowSize.width - 16)
+              ? -(this.windowSize.width - this.slideDistance)
               : moveX,
             this.animateMSTime
           );
@@ -1901,18 +2071,14 @@ export default {
           });
         }
       } else {
-        if (
-          (document.documentElement.scrollTop || document.body.scrollTop) +
-            this.windowSize.height <
-          document.documentElement.scrollHeight
-        ) {
+        if (this.nearBottom(10)) {
+          this.currentPage = 1;
+          this.toNextChapter();
+        } else {
           this.currentPage += 1;
           const moveY = this.windowSize.height - this.scrollOffset;
           this.transforming = true;
           this.scrollContent(moveY, this.animateMSTime);
-        } else {
-          this.currentPage = 1;
-          this.toNextChapter();
         }
       }
     },
@@ -1927,19 +2093,23 @@ export default {
         if (this.currentPage > 1) {
           if (typeof moveX === "undefined") {
             this.transformX =
-              -(this.windowSize.width - 16) * (this.currentPage - 1);
+              -(this.windowSize.width - this.slideDistance) * (this.currentPage - 1);
           }
           this.currentPage -= 1;
           this.transforming = true;
           this.transform(
-            typeof moveX === "undefined" ? this.windowSize.width - 16 : moveX,
+            typeof moveX === "undefined"
+              ? this.windowSize.width - this.slideDistance
+              : moveX,
             this.animateMSTime
           );
         } else {
-          this.showLastPage = true;
+          this.onNextContentPagesInit(() => {
+            this.showPage(this.totalPages, 0);
+          });
           this.toLastChapter(() => {
             if (typeof moveX !== "undefined") {
-              // 没有下一章，但是已经做了动画，恢复
+              // 没有上一章，但是已经做了动画，恢复
               this.showPage(this.currentPage, 0);
             }
           });
@@ -1954,6 +2124,9 @@ export default {
           this.scrollContent(moveY, this.animateMSTime);
         } else {
           this.currentPage = 1;
+          this.onNextContentPagesInit(() => {
+            this.showPage(this.totalPages, 0);
+          });
           this.toLastChapter();
         }
       }
@@ -1965,7 +2138,7 @@ export default {
       this.currentPage = Math.min(page, this.totalPages);
       if (this.isSlideRead) {
         const moveX =
-          -(this.windowSize.width - 16) * (this.currentPage - 1) -
+          -(this.windowSize.width - this.slideDistance) * (this.currentPage - 1) -
           this.transformX;
         this.transform(
           moveX,
@@ -1981,11 +2154,20 @@ export default {
         );
       }
     },
-    transform(moveX, duration) {
+    transform(moveX, duration, reset) {
+      if (reset) {
+        this.transformX = 0;
+      }
       const onEnd = () => {
-        this.contentStyle = {
-          transform: `translateX(${this.transformX + moveX}px)`
-        };
+        if (this.isEpub) {
+          if (this.$refs.bookContentRef) {
+            this.$refs.bookContentRef.transformX(this.transformX + moveX);
+          }
+        } else {
+          this.contentStyle = {
+            transform: `translateX(${this.transformX + moveX}px)`
+          };
+        }
         this.transformX += moveX;
         this.transforming = false;
         // 保存进度
@@ -2003,15 +2185,20 @@ export default {
         duration: duration || 500,
         timing: timing,
         draw: progress => {
-          this.contentStyle = {
-            transform: `translateX(${this.transformX + moveX * progress}px)`
-          };
+          if (this.isEpub) {
+            if (this.$refs.bookContentRef) {
+              this.$refs.bookContentRef.transformX(this.transformX + moveX * progress);
+            }
+          } else {
+            this.contentStyle = {
+              transform: `translateX(${this.transformX + moveX * progress}px)`
+            };
+          }
         },
         onEnd
       });
     },
     scrollContent(moveY, duration, isAccurate) {
-      // console.log("scrollContent", moveY);
       const lastScrollTop = isAccurate
         ? 0
         : document.documentElement.scrollTop || document.body.scrollTop;
@@ -2040,6 +2227,14 @@ export default {
         onEnd
       });
     },
+    nearBottom(distance) {
+      // 与 JAR 全局 mixin 中的 nearBottom 一致
+      return (
+        document.documentElement.clientHeight +
+          (document.documentElement.scrollTop || document.body.scrollTop) >=
+        document.documentElement.scrollHeight - distance
+      );
+    },
     handlerClick(e) {
       if (this.isEpub) {
         return;
@@ -2057,11 +2252,6 @@ export default {
       if (this.isAudio || this.isVideo) {
         return;
       }
-      if (this.isEpub) {
-        return;
-      }
-      // e.preventDefault();
-      // e.stopPropagation();
       this.lastTouch = false;
       this.lastMoveX = false;
       if (e.touches && e.touches[0]) {
@@ -2075,12 +2265,18 @@ export default {
       if (e.touches && e.touches[0] && this.lastTouch) {
         this.lastMoveY = e.touches[0].clientY - this.lastTouch.clientY;
         if (this.isSlideRead) {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault && e.preventDefault();
+          e.stopPropagation && e.stopPropagation();
           const moveX = e.touches[0].clientX - this.lastTouch.clientX;
-          this.contentStyle = {
-            transform: `translateX(${this.transformX + moveX}px)`
-          };
+          if (this.isEpub) {
+            if (this.$refs.bookContentRef) {
+              this.$refs.bookContentRef.transformX(this.transformX + moveX);
+            }
+          } else {
+            this.contentStyle = {
+              transform: `translateX(${this.transformX + moveX}px)`
+            };
+          }
           this.lastMoveX = moveX;
         }
       }
@@ -2100,13 +2296,17 @@ export default {
         this.transformX += this.lastMoveX;
         if (this.lastMoveX > 0) {
           // 上一页
-          this.prevPage(this.windowSize.width - 16 - this.lastMoveX);
+          this.prevPage(this.windowSize.width - this.slideDistance - this.lastMoveX);
         } else {
           // 下一页
-          this.nextPage(-(this.windowSize.width - 16) - this.lastMoveX);
+          this.nextPage(
+            -(this.windowSize.width - this.slideDistance) - this.lastMoveX
+          );
         }
       } else if (Math.abs(this.lastMoveY) <= 3 && this.lastTouch) {
-        this.eventHandler(this.lastTouch);
+        if (!this.isEpub) {
+          this.eventHandler(this.lastTouch);
+        }
       }
       setTimeout(() => {
         this.lastTouch = false;
@@ -2114,8 +2314,29 @@ export default {
         this.lastMoveY = false;
       }, 300);
     },
+    epubTouch(data) {
+      switch (data.event) {
+        case "touchstart":
+          this.handleTouchStart(data.data);
+          break;
+        case "touchmove":
+          this.handleTouchMove(data.data);
+          break;
+        default:
+          this.handleTouchEnd();
+      }
+    },
     epubClickHash(rect) {
-      if (typeof rect.top !== "undefined") {
+      if (this.isSlideRead) {
+        if (typeof rect.left !== "undefined") {
+          this.showPage(
+            this.currentPage +
+              Math.round(rect.left / (this.windowSize.width - this.slideDistance)) +
+              (rect.left > 0 ? 1 : 0),
+            0
+          );
+        }
+      } else if (typeof rect.top !== "undefined") {
         this.scrollContent(
           rect.top -
             (this.$store.state.miniInterface
@@ -2158,7 +2379,6 @@ export default {
       }
     },
     eventHandler(point) {
-      // console.log(point);
       if (this.checkSelection(true)) {
         // 选择文本
         this.ignoreNextClick = true;
@@ -2186,9 +2406,6 @@ export default {
         }
         return;
       }
-      if (this.isVideo) {
-        return;
-      }
       if (this.autoReading) {
         this.showToolBar = !this.showToolBar;
         return;
@@ -2200,53 +2417,76 @@ export default {
       // 根据点击位置判断操作
       const midX = this.windowSize.width / 2;
       const midY = this.windowSize.height / 2;
-      if (this.isEpub) {
+      const zoneWidth = this.windowSize.width * 0.2;
+      const zoneHeight = this.windowSize.height * 0.2;
+      if (this.isEpub && this.config.epubMode === "iframe") {
         point.clientY =
           point.clientY +
           45 -
           (document.documentElement.scrollTop || document.body.scrollTop);
       }
       if (
-        Math.abs(point.clientY - midY) <= this.windowSize.height * 0.2 &&
-        Math.abs(point.clientX - midX) <= this.windowSize.width * 0.2
+        Math.abs(point.clientY - midY) <= zoneHeight &&
+        Math.abs(point.clientX - midX) <= zoneWidth
       ) {
         // 点击中部区域显示菜单
         if (!this.showReadBar) {
           this.showToolBar = !this.showToolBar;
         }
-      } else if (this.$store.getters.config.clickMethod === "下一页") {
-        // 全屏点击下一页
-        this.showToolBar = false;
-        this.nextPage();
-        return;
-      } else if (this.$store.getters.config.clickMethod === "不翻页") {
-        // 全屏点击不翻页
-        this.showToolBar = !this.showToolBar;
-        return;
-      } else if (this.isSlideRead) {
-        if (point.clientX > midX) {
-          // 点击右侧，下一页
-          this.showToolBar = false;
-          this.nextPage();
-        } else if (point.clientX < midX) {
-          // 点击左侧，上一页
-          this.showToolBar = false;
-          this.prevPage();
-        }
       } else {
-        if (point.clientY > midY) {
-          // 点击下部，下一页
+        if (this.isVideo) {
+          return;
+        }
+        if (this.$store.getters.config.clickMethod === "下一页") {
+          // 全屏点击下一页
           this.showToolBar = false;
           this.nextPage();
-        } else if (point.clientY < midY) {
-          // 点击上部，上一页
-          this.showToolBar = false;
-          this.prevPage();
+          return;
+        }
+        if (this.$store.getters.config.clickMethod === "不翻页") {
+          // 全屏点击不翻页
+          this.showToolBar = !this.showToolBar;
+          return;
+        }
+        if (this.$store.getters.config.clickMethod === "固定模式") {
+          // 固定模式：上半部/左半部区域翻上一页，下半部/右半部区域翻下一页
+          if (
+            point.clientY < midY - zoneHeight ||
+            (point.clientY > midY - zoneHeight && point.clientX < midX - zoneWidth)
+          ) {
+            this.showToolBar = false;
+            this.prevPage();
+          } else if (
+            point.clientY > midY + zoneHeight ||
+            (point.clientY < midY + zoneHeight && point.clientX > midX + zoneWidth)
+          ) {
+            this.showToolBar = false;
+            this.nextPage();
+          }
+        } else if (this.isSlideRead) {
+          if (point.clientX > midX) {
+            // 点击右侧，下一页
+            this.showToolBar = false;
+            this.nextPage();
+          } else if (point.clientX < midX) {
+            // 点击左侧，上一页
+            this.showToolBar = false;
+            this.prevPage();
+          }
+        } else {
+          if (point.clientY > midY) {
+            // 点击下部，下一页
+            this.showToolBar = false;
+            this.nextPage();
+          } else if (point.clientY < midY) {
+            // 点击上部，上一页
+            this.showToolBar = false;
+            this.prevPage();
+          }
         }
       }
     },
     keydownHandler(event, force) {
-      // console.log("keyup", event);
       if (
         this.popBookSourceVisible ||
         this.popBookShelfVisible ||
@@ -2267,44 +2507,161 @@ export default {
         38: "ArrowUp",
         39: "ArrowRight",
         40: "ArrowDown",
-        27: "Escape"
+        27: "Escape",
+        32: "Space",
+        33: "PageUp",
+        34: "PageDown",
+        35: "End",
+        36: "Home"
       };
-      const eventKey = event.key || keyCodeMap[event.keyCode];
-      switch (eventKey) {
-        case "ArrowLeft":
-          event.preventDefault && event.preventDefault();
-          event.stopPropagation && event.stopPropagation();
-          this.showToolBar = false;
-          if (this.isSlideRead) {
-            this.prevPage();
-          } else {
-            this.toLastChapter();
-          }
-          break;
-        case "ArrowRight":
-          event.preventDefault && event.preventDefault();
-          event.stopPropagation && event.stopPropagation();
-          this.showToolBar = false;
-          if (this.isSlideRead) {
-            this.nextPage();
-          } else {
-            this.toNextChapter();
-          }
-          break;
-        case "ArrowUp":
+      const eventKey =
+        event.code === "Space" ? "Space" : event.key || keyCodeMap[event.keyCode];
+      if (this.config.quickKeyMode !== "自定义") {
+        switch (eventKey) {
+          case "ArrowLeft":
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            if (this.isSlideRead) {
+              this.prevPage();
+            } else {
+              this.toLastChapter();
+            }
+            break;
+          case "ArrowRight":
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            if (this.isSlideRead) {
+              this.nextPage();
+            } else {
+              this.toNextChapter();
+            }
+            break;
+          case "ArrowUp":
+          case "PageUp":
+            if (this.isSlideRead || eventKey === "PageUp") {
+              event.preventDefault && event.preventDefault();
+              event.stopPropagation && event.stopPropagation();
+              this.showToolBar = false;
+              this.prevPage();
+            }
+            break;
+          case "ArrowDown":
+          case "PageDown":
+            if (this.isSlideRead || eventKey === "PageDown") {
+              event.preventDefault && event.preventDefault();
+              event.stopPropagation && event.stopPropagation();
+              this.showToolBar = false;
+              this.nextPage();
+            } else if (!this.isSlideRead && this.nearBottom(10)) {
+              this.currentPage = 1;
+              this.toNextChapter();
+            }
+            break;
+          case "Escape":
+            this.toShelf();
+            break;
+          case "Home":
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            this.showPage(0, 0);
+            break;
+          case "End":
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            this.showPage(this.totalPages, 0);
+            break;
+          case "Space":
+            if (!this.isSlideRead) {
+              event.preventDefault && event.preventDefault();
+              event.stopPropagation && event.stopPropagation();
+              this.showToolBar = false;
+              if (this.nearBottom(10)) {
+                this.currentPage = 1;
+                this.toNextChapter();
+              } else {
+                this.scrollContent(this.windowSize.height / 2, this.animateMSTime);
+              }
+            }
+            break;
+        }
+      } else {
+        this.quickKeyHandle(eventKey, event);
+      }
+    },
+    quickKeyHandle(key, event) {
+      if (!this.config.quickKey || !this.config.quickKey[key]) {
+        return;
+      }
+      const option = this.config.quickKey[key];
+      switch (option) {
+        case "上一页":
           event.preventDefault && event.preventDefault();
           event.stopPropagation && event.stopPropagation();
           this.showToolBar = false;
           this.prevPage();
           break;
-        case "ArrowDown":
+        case "下一页":
           event.preventDefault && event.preventDefault();
           event.stopPropagation && event.stopPropagation();
           this.showToolBar = false;
           this.nextPage();
           break;
-        case "Escape":
+        case "上半页":
+          if (!this.isSlideRead) {
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            if (this.nearBottom(10)) {
+              this.toLastChapter();
+            } else {
+              this.scrollContent(-this.windowSize.height / 2, this.animateMSTime);
+            }
+          }
+          break;
+        case "下半页":
+          if (!this.isSlideRead) {
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            this.showToolBar = false;
+            if (this.nearBottom(10)) {
+              this.currentPage = 1;
+              this.toNextChapter();
+            } else {
+              this.scrollContent(this.windowSize.height / 2, this.animateMSTime);
+            }
+          }
+          break;
+        case "上一章":
+          event.preventDefault && event.preventDefault();
+          event.stopPropagation && event.stopPropagation();
+          this.toLastChapter();
+          break;
+        case "下一章":
+          event.preventDefault && event.preventDefault();
+          event.stopPropagation && event.stopPropagation();
+          this.currentPage = 1;
+          this.toNextChapter();
+          break;
+        case "返回":
           this.toShelf();
+          break;
+        case "首页":
+          event.preventDefault && event.preventDefault();
+          event.stopPropagation && event.stopPropagation();
+          this.showToolBar = false;
+          this.showPage(0, 0);
+          break;
+        case "尾页":
+          event.preventDefault && event.preventDefault();
+          event.stopPropagation && event.stopPropagation();
+          this.showToolBar = false;
+          this.showPage(this.totalPages, 0);
+          break;
+        default:
           break;
       }
     },
@@ -2318,10 +2675,34 @@ export default {
     },
     checkSelection(show) {
       let text = "";
-      if (window.getSelection) {
-        text = window.getSelection().toString();
-      } else if (document.selection && document.selection.type != "Control") {
-        text = document.selection.createRange().text;
+      if (this.isEpubIframe) {
+        // epub iframe 模式，从 iframe 内部获取选中文本
+        if (
+          this.$refs.bookContentRef &&
+          this.$refs.bookContentRef.$el &&
+          this.$refs.bookContentRef.$el.contentWindow &&
+          this.$refs.bookContentRef.$el.contentWindow.getSelection
+        ) {
+          text = this.$refs.bookContentRef.$el.contentWindow
+            .getSelection()
+            .toString();
+        } else if (
+          this.$refs.bookContentRef &&
+          this.$refs.bookContentRef.$el &&
+          this.$refs.bookContentRef.$el.contentWindow &&
+          this.$refs.bookContentRef.$el.contentWindow.document &&
+          this.$refs.bookContentRef.$el.contentWindow.document.selection &&
+          this.$refs.bookContentRef.$el.contentWindow.document.selection.type !=
+            "Control"
+        ) {
+          text = this.$refs.bookContentRef.$el.contentWindow.document.selection.createRange().text;
+        }
+      } else {
+        if (window.getSelection) {
+          text = window.getSelection().toString();
+        } else if (document.selection && document.selection.type != "Control") {
+          text = document.selection.createRange().text;
+        }
       }
       if (text && show) {
         setTimeout(() => {
@@ -2336,6 +2717,9 @@ export default {
       return text;
     },
     async showTextOperate(text) {
+      if (this.isEditContent) {
+        return;
+      }
       const res = await this.$confirm(`请选择操作?`, "提示", {
         confirmButtonText: "添加过滤规则",
         cancelButtonText: "添加书签",
@@ -2363,17 +2747,8 @@ export default {
         return;
       }
 
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, "0");
-      const dd = String(now.getDate()).padStart(2, "0");
-      const hh = String(now.getHours()).padStart(2, "0");
-      const min = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
-      const timeStr = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-
       const replaceRule = Object.assign({}, defaultReplaceRule, {
-        name: `文本替换 ${timeStr}`,
+        name: "文本替换",
         pattern: text,
         replacement: "",
         isRegex: false,
@@ -2387,57 +2762,12 @@ export default {
       eventBus.$emit("showReplaceRuleForm", replaceRule, true, () => {
         this.showTextFilterPrompting = false;
       });
-      // const h = this.$createElement;
-      // const bgColor = this.isNight ? "#121212" : "#eee";
-      // const preEle = h(
-      //   "pre",
-      //   {
-      //     key: "" + new Date().getTime(),
-      //     attrs: {
-      //       contenteditable: "true"
-      //     },
-      //     style: `margin-top: 10px;background: ${bgColor};padding: 10px;border: 1px solid ${bgColor};border-radius: 5px;white-space: pre-wrap;word-wrap: break-word;word-break: break-all;`
-      //   },
-      //   text
-      // );
-      // const result = await this.$prompt(
-      //   h("div", null, [
-      //     h("p", null, "是否要将下列文字替换为输入内容:"),
-      //     preEle
-      //   ]),
-      //   "操作确认",
-      //   {
-      //     inputPlaceholder: "留空为过滤"
-      //   }
-      // ).catch(() => {});
-      // if (result && result.action === "confirm") {
-      //   text = ((preEle.elm || {}).innerText || "")
-      //     .replace(/^\s+/, "")
-      //     .replace(/\s+$/, "");
-      //   if (text) {
-      //     this.$store.commit("addFilterRule", {
-      //       name: "文本替换",
-      //       pattern: text,
-      //       replacement: result.value || "",
-      //       isRegex: false,
-      //       isEnabled: true,
-      //       scope:
-      //         this.$store.getters.readingBook.name +
-      //         ";" +
-      //         this.$store.getters.readingBook.bookUrl
-      //     });
-      //   } else {
-      //     this.$message.error("过滤内容为空!");
-      //   }
-      // }
-      // this.showTextFilterPrompting = false;
     },
     async showAddBookmark(text) {
       if (this.showAddBookmarking) {
         return;
       }
       let pureText = text.replace(/^\s+/, "").replace(/\s+$/, "");
-      // console.log(pureText);
       const paragraph = this.getContentMatchParagraph(pureText, 1, 0.7);
       if (!paragraph) {
         this.$message.error("选择1-2段整段文字才能定位段落");
@@ -2453,7 +2783,7 @@ export default {
       ) {
         // 补全内容
         let paragraphIndex = -1;
-        const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
+        const list = this.getContentParagraphList();
         for (let i = 0; i < list.length; i++) {
           if (paragraphIndex > 0 && i > paragraphIndex) {
             paragraphList.push(list[i]);
@@ -2469,9 +2799,29 @@ export default {
           }
         }
       }
-      // console.log(paragraphList, bookText);
+      this.showAddBookmarkForm(bookText);
+    },
+    addBookmark() {
+      // 从当前段落开始取 5 段内容
+      const current = this.getCurrentParagraph();
+      const list = this.getContentParagraphList();
+      let bookText = "";
+      let paragraphIndex = -1;
+      for (let i = 0; i < list.length; i++) {
+        if (current === list[i]) {
+          paragraphIndex = i;
+        }
+        if (paragraphIndex >= 0 && i >= paragraphIndex) {
+          bookText += list[i].innerText + "\n";
+          if (i >= paragraphIndex + 5) {
+            break;
+          }
+        }
+      }
+      this.showAddBookmarkForm(bookText);
+    },
+    showAddBookmarkForm(bookText) {
       bookText = bookText.replace(/\\n*$/, "");
-
       const bookmark = Object.assign({}, defaultBookmark, {
         bookName: this.$store.getters.readingBook.name,
         bookAuthor: this.$store.getters.readingBook.author,
@@ -2526,6 +2876,13 @@ export default {
       if (this.error || !this.voiceName) {
         return;
       }
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (error) {
+          // 浏览器实现可能在取消时抛错
+        }
+      }
       if (this.speechEndTime > 0 && new Date().getTime() > this.speechEndTime) {
         this.$message.info("定时关闭朗读");
         this.speechEndTime = 0;
@@ -2537,8 +2894,203 @@ export default {
       if (!window.speechSynthesis) {
         return;
       }
+      this.speechCurrent();
+    },
+    async speechCurrentByTTS() {
+      const paragraph = this.getCurrentParagraph();
+      if (!paragraph) {
+        this.speechNext();
+        return;
+      }
+      let text = paragraph.innerText;
+      if (isOnlyWhitespace(text)) {
+        setTimeout(() => this.speechNext(), 300);
+        return;
+      }
+      text = stripWhitespace(text);
+      if (!text) {
+        this.speechNext();
+        return;
+      }
+      const { config, cacheKey } = this.getTTSConfig(text);
+      this.currentTTSCacheKey = cacheKey;
+      let src = this.api + "/book/tts?" + this.serializeTTSConfig(config);
+      if (this.cacheTTSAudio) {
+        src = (await this.getCachedTTSAudioURL(cacheKey)) || src;
+      }
+      if (this.$refs.ttsAudio) {
+        this.$refs.ttsAudio.src = src;
+        this.$refs.ttsAudio.load();
+        this.$refs.ttsAudio.play().catch(() => {});
+      }
+      this.showParagraph(paragraph, true);
+      paragraph.className = "reading";
+    },
+    serializeTTSConfig(config) {
+      return Object.keys(config)
+        .map(
+          key =>
+            encodeURIComponent(key) +
+            "=" +
+            encodeURIComponent(config[key] == null ? "" : config[key])
+        )
+        .join("&");
+    },
+    getTTSConfig(text) {
+      let pitch = this.speechPitch;
+      let rate = this.speechRate;
+      if (this.ttsType === "textToSpeechCn") {
+        pitch = parseInt(50 * (pitch - 1));
+        rate = parseInt(200 * (rate - 1));
+      } else if (this.ttsType === "edge") {
+        pitch = parseInt(50 * (pitch - 1));
+      }
+      const config = {
+        text,
+        type: this.ttsType,
+        voice: this.voiceName,
+        pitch: "" + pitch,
+        rate: "" + rate,
+        accessToken: this.$store.state.token
+      };
+      const book = this.$store.getters.readingBook || {};
+      const cacheText =
+        "" + text + config.type + config.voice + config.pitch + config.rate;
+      return {
+        config,
+        cacheKey:
+          "localCache@ttsData@" +
+          book.name +
+          "_" +
+          book.author +
+          "@" +
+          cacheText.MD5(32)
+      };
+    },
+    onTTSAudioPlay() {
+      this.speechSpeaking = true;
+      this.skipAutoNext = false;
+      if (this.cacheTTSAudio) {
+        this.cacheNextParagraphTTSAudio(1);
+        this.cacheNextParagraphTTSAudio(2);
+        this.cacheNextParagraphTTSAudio(3);
+      }
+    },
+    onTTSAudioPause() {
+      this.speechSpeaking = false;
+      this.skipAutoNext = false;
+    },
+    onTTSAudioEnded() {
+      if (this.currentTTSCacheKey) {
+        window.$cacheStorage
+          .removeItem(this.currentTTSCacheKey)
+          .catch(() => {});
+      }
+      if (this.skipAutoNext) {
+        this.skipAutoNext = false;
+        this.speechSpeaking = false;
+      } else {
+        this.speechNext();
+      }
+    },
+    onTTSAudioError(event) {
+      if (this.speechSpeaking) {
+        if (event.error || event.name) {
+          this.$message.error(
+            `朗读错误:  ${event.type || ""}  ${event.error ||
+              event.name ||
+              event.toString()}`
+          );
+        }
+        this.speechSpeaking = false;
+      }
+    },
+    async getCachedTTSAudioURL(cacheKey) {
+      try {
+        const base64 = await window.$cacheStorage.getItem(cacheKey).catch(() => {
+          return false;
+        });
+        if (!base64) {
+          return null;
+        }
+        return this.base64ToBlob(base64, "audio/mpeg");
+      } catch (error) {
+        return null;
+      }
+    },
+    async cacheNextParagraphTTSAudio(distance) {
+      const paragraph = this.getNextParagraph(distance);
+      if (!paragraph) {
+        return;
+      }
+      let text = paragraph.innerText;
+      if (isOnlyWhitespace(text)) {
+        return this.cacheNextParagraphTTSAudio(distance + 1);
+      }
+      text = stripWhitespace(text);
+      if (!text) {
+        return this.cacheNextParagraphTTSAudio(distance + 1);
+      }
+      const { config, cacheKey } = this.getTTSConfig(text);
+      try {
+        if (await window.$cacheStorage.getItem(cacheKey)) {
+          return;
+        }
+        await Axios.post(
+          this.api + "/book/tts",
+          { ...config, base64: "1" },
+          { silent: true }
+        ).then(res => {
+          if (res.data && res.data.isSuccess && res.data.data) {
+            return window.$cacheStorage
+              .setItem(cacheKey, res.data.data)
+              .catch(() => {});
+          }
+          return null;
+        });
+      } catch (error) {
+        // 预缓存失败不影响当前朗读
+      }
+    },
+    async base64ToBlob(base64, type) {
+      const binary = window.atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type });
+      // iPhone/iPad 上 createObjectURL 无法用于 audio 播放，退回 dataURL
+      if (
+        window.navigator.userAgent.indexOf("iPhone") >= 0 ||
+        window.navigator.userAgent.indexOf("iPad") >= 0
+      ) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      return window.URL.createObjectURL(blob);
+    },
+    speechCurrent() {
+      if (!window.speechSynthesis) {
+        return;
+      }
       const voice = this.voiceList.find(v => v.name === this.voiceName);
-      if (!voice) return;
+      if (!voice) {
+        return;
+      }
+      const paragraph = this.getCurrentParagraph();
+      if (!paragraph) {
+        this.speechNext();
+        return;
+      }
+      const text = stripWhitespace(paragraph.innerText);
+      if (!text) {
+        this.speechNext();
+        return;
+      }
       if (window.speechSynthesis.speaking) {
         try {
           window.speechSynthesis.cancel();
@@ -2547,12 +3099,7 @@ export default {
         }
       }
 
-      const paragraph = this.getCurrentParagraph();
-      if (!paragraph.innerText) {
-        this.speechNext();
-        return;
-      }
-      this.utterance = new SpeechSynthesisUtterance(paragraph.innerText);
+      this.utterance = new SpeechSynthesisUtterance(text);
 
       this.utterance.onstart = () => {
         this.speechSpeaking = true;
@@ -2568,14 +3115,20 @@ export default {
         }
       };
       this.utterance.onerror = event => {
-        if (event.error || event.name) {
+        if (
+          event.error !== "canceled" &&
+          event.error !== "interrupted" &&
+          (event.error || event.name)
+        ) {
           this.$message.error(
             `朗读错误:  ${event.type || ""}  ${event.error ||
               event.name ||
               event.toString()}`
           );
         }
-        this.speechSpeaking = window.speechSynthesis.speaking || false;
+        setTimeout(() => {
+          this.speechSpeaking = window.speechSynthesis.speaking || false;
+        }, 200);
       };
       this.utterance.voice = voice;
       this.utterance.pitch = this.speechPitch;
@@ -2611,127 +3164,7 @@ export default {
       }, 100);
     },
     toggleSpeech() {
-      this.speechSpeaking ? this.stopSpeech() : this.startSpeech();
-    },
-    async speechCurrentByTTS() {
-      const paragraph = this.getCurrentParagraph();
-      if (!paragraph) {
-        this.speechNext();
-        return;
-      }
-      const text = (paragraph.innerText || "").replace(/\s+/g, " ").trim();
-      if (!text) {
-        setTimeout(() => this.speechNext(), 300);
-        return;
-      }
-      const { config, cacheKey } = this.getTTSConfig(text);
-      this.currentTTSCacheKey = cacheKey;
-      let src = this.api + "/book/tts?" + this.serializeTTSConfig(config);
-      if (this.cacheTTSAudio) {
-        src = (await this.getCachedTTSAudioURL(cacheKey)) || src;
-      }
-      if (this.$refs.ttsAudio) {
-        this.$refs.ttsAudio.src = src;
-        this.$refs.ttsAudio.load();
-        this.$refs.ttsAudio.play().catch(() => {});
-      }
-      this.showParagraph(paragraph, true);
-      paragraph.className = "reading";
-      if (this.cacheTTSAudio && !src.startsWith("blob:")) {
-        this.cacheTTS(config, cacheKey);
-      }
-    },
-    serializeTTSConfig(config) {
-      return Object.keys(config)
-        .map(
-          key =>
-            encodeURIComponent(key) +
-            "=" +
-            encodeURIComponent(config[key] == null ? "" : config[key])
-        )
-        .join("&");
-    },
-    async cacheTTS(config, cacheKey) {
-      try {
-        const res = await Axios.post(
-          this.api + "/book/tts",
-          { ...config, base64: "1" },
-          { silent: true }
-        );
-        if (res.data && res.data.isSuccess && res.data.data) {
-          await window.$cacheStorage.setItem(cacheKey, res.data.data);
-        }
-      } catch (error) {
-        // 预缓存失败不影响当前朗读
-      }
-    },
-    async getCachedTTSAudioURL(cacheKey) {
-      try {
-        const base64 = await window.$cacheStorage.getItem(cacheKey);
-        if (!base64) return null;
-        return this.base64ToBlob(base64, "audio/mpeg");
-      } catch (error) {
-        return null;
-      }
-    },
-    base64ToBlob(base64, type) {
-      const binary = window.atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      return window.URL.createObjectURL(new Blob([bytes], { type }));
-    },
-    onTTSAudioPlay() {
-      this.speechSpeaking = true;
-      this.skipAutoNext = false;
-      if (this.cacheTTSAudio) {
-        this.cacheNextParagraphTTSAudio(1);
-        this.cacheNextParagraphTTSAudio(2);
-        this.cacheNextParagraphTTSAudio(3);
-      }
-    },
-    onTTSAudioPause() {
-      this.speechSpeaking = false;
-      this.skipAutoNext = false;
-    },
-    onTTSAudioEnded() {
-      if (this.currentTTSCacheKey) {
-        window.$cacheStorage
-          .removeItem(this.currentTTSCacheKey)
-          .catch(() => {});
-      }
-      if (this.skipAutoNext) {
-        this.skipAutoNext = false;
-        this.speechSpeaking = false;
-      } else {
-        this.speechNext();
-      }
-    },
-    onTTSAudioError(event) {
-      if (this.speechSpeaking) {
-        this.$message.error(
-          `朗读错误:  ${event.type || ""}  ${event.error ||
-            event.name ||
-            event.toString()}`
-        );
-        this.speechSpeaking = false;
-      }
-    },
-    async cacheNextParagraphTTSAudio(distance) {
-      const paragraph = this.getNextParagraph(distance);
-      if (!paragraph) return;
-      const text = (paragraph.innerText || "").replace(/\s+/g, " ").trim();
-      if (!text) {
-        return this.cacheNextParagraphTTSAudio(distance + 1);
-      }
-      const { config, cacheKey } = this.getTTSConfig(text);
-      try {
-        if (await window.$cacheStorage.getItem(cacheKey)) return;
-        await this.cacheTTS(config, cacheKey);
-      } catch (error) {
-        // 预缓存失败不影响当前朗读
-      }
+      this.speechSpeaking ? this.stopSpeech(true) : this.startSpeech();
     },
     speechPrev() {
       if (
@@ -2741,7 +3174,7 @@ export default {
         this.stopSpeech();
       }
       const current = this.getCurrentParagraph();
-      const prev = this.getPrevParagraph();
+      const prev = this.getPrevParagraph(1);
       if (prev) {
         this.showParagraph(prev, true);
         current && (current.className = "");
@@ -2749,7 +3182,7 @@ export default {
         this.startSpeech();
       } else {
         // 上一章
-        this.$once("showContent", () => {
+        this.onNextContentRendered(() => {
           setTimeout(() => {
             this.startSpeech();
           }, 100);
@@ -2765,7 +3198,7 @@ export default {
         this.stopSpeech();
       }
       const current = this.getCurrentParagraph();
-      const next = this.getNextParagraph();
+      const next = this.getNextParagraph(1);
       if (next) {
         this.showParagraph(next, true);
         current && (current.className = "");
@@ -2773,7 +3206,7 @@ export default {
         this.startSpeech();
       } else {
         // 下一章
-        this.$once("showContent", () => {
+        this.onNextContentRendered(() => {
           setTimeout(() => {
             this.startSpeech();
           }, 100);
@@ -2785,13 +3218,13 @@ export default {
       if (!this.$refs.bookContentRef || !this.$refs.bookContentRef.$el) {
         return null;
       }
-      const readingEle = this.$refs.bookContentRef.$el.querySelectorAll(
+      const readingEle = this.getContentParagraphContainer().querySelectorAll(
         ".reading"
       );
       let currentParagraph = null;
       if (!readingEle.length) {
         // 没有正在读的段落，遍历找到当前页面的第一段
-        const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
+        const list = this.getContentParagraphList();
         for (let i = 0; i < list.length; i++) {
           const elePos = list[i].getBoundingClientRect();
           if (this.isSlideRead) {
@@ -2802,10 +3235,13 @@ export default {
             }
           } else {
             // 段尾出现在视野里
+            let bottom = elePos.bottom;
+            if (this.isEpubIframe) {
+              bottom -= document.documentElement.scrollTop || document.body.scrollTop;
+            }
             if (
-              elePos.bottom >
-              30 +
-                20 +
+              bottom >
+              50 +
                 (window.webAppDistance | 0) +
                 (this.$store.state.safeArea.top | 0)
             ) {
@@ -2829,7 +3265,7 @@ export default {
       ) {
         return null;
       }
-      const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
+      const list = this.getContentParagraphList();
       for (let i = 0; i < list.length; i++) {
         if (i > 0 && current === list[i]) {
           return list[i - distance] || null;
@@ -2847,7 +3283,7 @@ export default {
       ) {
         return null;
       }
-      const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
+      const list = this.getContentParagraphList();
       for (let i = 0; i < list.length; i++) {
         if (current === list[i]) {
           return list[i + distance] || null;
@@ -2856,8 +3292,8 @@ export default {
       return null;
     },
     exitRead() {
-      this.stopSpeech();
       const current = this.getCurrentParagraph();
+      this.stopSpeech(true);
       this.showReadBar = false;
       this.showParagraph(current);
     },
@@ -2869,9 +3305,9 @@ export default {
         // 跳转位置
         this.$nextTick(() => {
           const pos = paragraph.getBoundingClientRect();
-          if (pos.left > this.windowSize.width - 16) {
+          if (pos.left > this.windowSize.width - this.slideDistance) {
             this.showPage(
-              Math.round(pos.left / (this.windowSize.width - 16)) + 1,
+              Math.round(pos.left / (this.windowSize.width - this.slideDistance)) + 1,
               0
             );
           }
@@ -2880,8 +3316,12 @@ export default {
         // 跳转位置
         this.$nextTick(() => {
           const pos = paragraph.getBoundingClientRect();
+          let top = pos.top;
+          if (this.isEpubIframe) {
+            top -= document.documentElement.scrollTop || document.body.scrollTop;
+          }
           this.scrollContent(
-            pos.top -
+            top -
               (this.$store.state.miniInterface
                 ? this.getFirstParagraphPos().bottom
                 : 0) -
@@ -3002,42 +3442,29 @@ export default {
       if (this.isScrollRead) {
         const lastScrollTop = this.lastScrollTop || 0;
         if (lastScrollTop > 0 && scrollTop == 0) {
-          // 往上滚动到顶
-          // if (!this.preCaching) {
-          //   this.preCaching = true;
-          //   const prevIndex = this.showChapterList[0].index - 1;
-          //   if (prevIndex > 0) {
-          //     this.showPrevChapterSize = this.chapterIndex - prevIndex;
-          //     this.loadShowChapter(prevIndex).then(() => {
-          //       setTimeout(() => {
-          //         this.preCaching = false;
-          //       }, 3000);
-          //     });
-          //   }
-          // }
+          // 往上滚动到顶，不做处理
         } else if (
           scrollTop >
-          document.documentElement.scrollHeight - 4 * this.windowSize.height // 倒数第四页
+            document.documentElement.scrollHeight - 2 * this.windowSize.height && // 倒数第二页
+          !this.preCaching &&
+          this.startSavePosition
         ) {
-          // 往下滚动到 倒数第三页
-          if (!this.preCaching && this.startSavePosition) {
-            this.preCaching = true;
-            let nextIndex = this.chapterIndex + 1;
-            if (this.showChapterList.length) {
-              nextIndex =
-                this.showChapterList[this.showChapterList.length - 1].index + 1;
-            }
-            this.showNextChapterSize = nextIndex - this.chapterIndex;
-            // console.log("到底部了，加载下一章");
-            this.loadShowChapter(nextIndex)
-              .then(() => {
-                this.computeShowChapterList();
-                this.preCaching = false;
-              })
-              .catch(() => {
-                this.preCaching = false;
-              });
+          // 往下滚动到 倒数第二页
+          this.preCaching = true;
+          let nextIndex = this.chapterIndex + 1;
+          if (this.showChapterList.length) {
+            nextIndex =
+              this.showChapterList[this.showChapterList.length - 1].index + 1;
           }
+          this.showNextChapterSize = nextIndex - this.chapterIndex;
+          this.loadShowChapter(nextIndex)
+            .then(() => {
+              this.computeShowChapterList();
+              this.preCaching = false;
+            })
+            .catch(() => {
+              this.preCaching = false;
+            });
         }
       }
       this.lastScrollTop = scrollTop;
@@ -3049,34 +3476,22 @@ export default {
     },
     // 只会在进入的时候调用
     showPosition(pos, callback) {
+      if (!this.$refs.bookContentRef) {
+        setTimeout(() => {
+          this.showPosition(pos, callback);
+        }, 10);
+        return;
+      }
       if (this.isAudio || this.isVideo) {
         // seek
-        if (!this.$refs.bookContentRef) {
-          setTimeout(() => {
-            this.showPosition(pos, callback);
-          }, 10);
-          return;
-        }
         this.$refs.bookContentRef.ensureSeekTime(pos);
+        callback && callback();
       } else if (this.isEpub || this.isCarToon) {
         // 跳转
         this.scrollContent(pos, 0, true);
-        if (this.isEpub) {
-          this.$once("iframeLoad", () => {
-            this.scrollContent(pos, 0, true);
-            callback && callback();
-          });
-        }
+        callback && callback();
       } else {
-        if (!this.$refs.bookContentRef) {
-          setTimeout(() => {
-            this.showPosition(pos, callback);
-          }, 10);
-          return;
-        }
-        const list = this.$refs.bookContentRef.$el.querySelectorAll(
-          ".reading-chapter h3,p"
-        );
+        const list = this.getContentParagraphList(true);
         for (let i = 0; i < list.length; i++) {
           if (
             list[i].dataset &&
@@ -3095,7 +3510,15 @@ export default {
         if (this.error || !this.startSavePosition) {
           return;
         }
-        let position = 0;
+        // 保存页码
+        setCache(
+          "bookChapterPage@" +
+            this.$store.getters.readingBook.name +
+            "_" +
+            this.$store.getters.readingBook.author,
+          this.currentPage
+        );
+        let position = null;
         if (this.isAudio || this.isVideo) {
           position = this.$refs.bookContentRef
             ? this.$refs.bookContentRef.currentTime
@@ -3141,13 +3564,15 @@ export default {
             }
           }
         }
-        setCache(
-          "bookChapterProgress@" +
-            this.$store.getters.readingBook.name +
-            "_" +
-            this.$store.getters.readingBook.author,
-          position
-        );
+        if (position !== null) {
+          setCache(
+            "bookChapterProgress@" +
+              this.$store.getters.readingBook.name +
+              "_" +
+              this.$store.getters.readingBook.author,
+            position
+          );
+        }
       } catch (error) {
         //
       }
@@ -3172,13 +3597,70 @@ export default {
               this.startSavePosition = true;
             });
           });
+        } else {
+          // 没有段落进度，尝试恢复页码
+          const lastPage = getCache(
+            "bookChapterPage@" +
+              this.$store.getters.readingBook.name +
+              "_" +
+              this.$store.getters.readingBook.author
+          );
+          if (lastPage && +lastPage) {
+            this.$nextTick(() => {
+              this.computePages(() => {
+                this.showPage(+lastPage, 0);
+              });
+            });
+          }
         }
       };
       if (immediate) {
         handler();
       } else {
-        this.$once("showContent", handler);
+        this.onNextContentRendered(handler);
       }
+    },
+    onNextContentRendered(callback) {
+      if (this.isEpub) {
+        this.$once("iframeLoad", () => {
+          this.$nextTick(() => {
+            callback && callback();
+          });
+        });
+      } else if (this.isCarToon) {
+        this.$once("lazyload", () => {
+          this.$nextTick(() => {
+            callback && callback();
+          });
+        });
+      } else {
+        this.$once("showContent", () => {
+          this.$nextTick(() => {
+            callback && callback();
+          });
+        });
+      }
+    },
+    onNextContentPagesInit(callback) {
+      if (this.isEpub) {
+        this.$once("iframeLoad", () => {
+          this.$nextTick(() => {
+            callback && callback();
+          });
+        });
+        return;
+      }
+      let contentReady = false;
+      this.$once("showContent", () => {
+        contentReady = true;
+      });
+      const handler = () => {
+        if (contentReady) {
+          this.$off("afterComputePages", handler);
+          callback && callback();
+        }
+      };
+      this.$on("afterComputePages", handler);
     },
     wakeLock() {
       if ("WakeLock" in window && "request" in window.WakeLock) {
@@ -3188,12 +3670,9 @@ export default {
           const signal = controller.signal;
           window.WakeLock.request("screen", { signal }).catch(e => {
             if (e.name === "AbortError") {
-              // console.log("Wake Lock was aborted");
-            } else {
-              // console.error(`${e.name}, ${e.message}`);
+              //
             }
           });
-          // console.log("Wake Lock is active");
           return controller;
         };
 
@@ -3227,11 +3706,10 @@ export default {
           try {
             wakeLock = await navigator.wakeLock.request("screen");
             wakeLock.addEventListener("release", () => {
-              // console.log("Wake Lock was released");
+              //
             });
-            // console.log("Wake Lock is active");
           } catch (e) {
-            // console.error(`${e.name}, ${e.message}`);
+            //
           }
         };
         requestWakeLock();
@@ -3261,6 +3739,7 @@ export default {
     lazyloadHandler() {
       if (!this.isAudio && !this.isVideo) {
         this.computePages();
+        this.$emit("lazyload");
       }
     },
     setMobileScrollBarHidden(hidden) {
@@ -3284,15 +3763,12 @@ export default {
       this.showCacheContentZone = !this.showCacheContentZone;
     },
     cacheChapterContent(cacheCount) {
-      //
       let cacheChapterList = [];
       if (cacheCount === true) {
-        //
         cacheChapterList = cacheChapterList.concat(
           this.catalog.slice(this.chapterIndex + 1, this.catalog.length)
         );
       } else {
-        //
         cacheChapterList = cacheChapterList.concat(
           this.catalog.slice(
             this.chapterIndex + 1,
@@ -3323,7 +3799,7 @@ export default {
           return this.getBookContent(
             v.index,
             {
-              timeout: 30000,
+              timeout: 1000 * this.$store.getters.config.chapterRequestTimeout,
               silent: true
             },
             false,
@@ -3342,7 +3818,9 @@ export default {
     startAutoReading() {
       this.showToolBar = false;
       this.autoReading = true;
-      this.autoRead();
+      this.$nextTick(() => {
+        this.autoRead();
+      });
     },
     autoRead() {
       if (!this.autoReading) {
@@ -3375,7 +3853,6 @@ export default {
         } catch (error) {
           //
         }
-        // console.log(delayTime, next);
         this.autoReadingTimer = setTimeout(() => {
           current.className = "";
           next.className = "reading";
@@ -3387,7 +3864,7 @@ export default {
         }, delayTime);
       } else {
         // 下一章
-        this.$once("showContent", () => {
+        this.onNextContentRendered(() => {
           setTimeout(() => {
             this.autoRead();
           }, 100);
@@ -3417,7 +3894,6 @@ export default {
         scrollTop + this.windowSize.height <
         document.documentElement.scrollHeight
       ) {
-        // console.log(delayTime, next);
         this.autoReadingTimer = setTimeout(() => {
           // 滚动
           this.scrollContent(this.config.autoReadingPixel, 0);
@@ -3425,7 +3901,7 @@ export default {
         }, this.config.autoReadingLineTime);
       } else {
         // 下一章
-        this.$once("showContent", () => {
+        this.onNextContentRendered(() => {
           setTimeout(() => {
             this.autoReadByPixel();
           }, 100);
@@ -3471,9 +3947,11 @@ export default {
       }
       if (this.config.chineseFont === "简体") {
         return simplized(text);
-      } else {
+      } else if (this.config.chineseFont === "繁体") {
         return traditionalized(text);
       }
+      // 原文
+      return text;
     },
     showSearchBookContentDialog() {
       let book = { ...this.$store.getters.readingBook };
@@ -3493,10 +3971,31 @@ export default {
         }, 10);
         return;
       }
+      if (this.isEpubResolve && !(this.$refs.bookContentRef.$el && this.$refs.bookContentRef.$el.shadowRoot)) {
+        setTimeout(() => {
+          this.showMatchKeyword(data);
+        }, 10);
+        return;
+      }
+      if (this.isEpubIframe) {
+        try {
+          if (
+            !this.$refs.bookContentRef.$el ||
+            !this.$refs.bookContentRef.$el.contentWindow ||
+            !this.$refs.bookContentRef.$el.contentWindow.document ||
+            !this.$refs.bookContentRef.$el.contentWindow.document.querySelectorAll("body")
+          ) {
+            setTimeout(() => {
+              this.showMatchKeyword(data);
+            }, 10);
+            return;
+          }
+        } catch (error) {
+          return;
+        }
+      }
       try {
-        const list = this.$refs.bookContentRef.$el.querySelectorAll(
-          ".reading-chapter h3,p"
-        );
+        const list = this.getContentParagraphList(true);
         let matchCount = 0;
         for (let i = 0; i < list.length; i++) {
           const pContent = list[i].innerText;
@@ -3526,7 +4025,7 @@ export default {
     },
     getParagraphListInView() {
       // 获取视口内的所有段落
-      const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
+      const list = this.getContentParagraphList();
       const paragraphList = [];
       for (let i = 0; i < list.length; i++) {
         const elePos = list[i].getBoundingClientRect();
@@ -3539,8 +4038,7 @@ export default {
           // 段尾出现在视野里
           if (
             elePos.bottom >
-              30 +
-                20 +
+              50 +
                 (window.webAppDistance | 0) +
                 (this.$store.state.safeArea.top | 0) &&
             elePos.bottom < this.windowSize.height
@@ -3559,6 +4057,32 @@ export default {
       book = Object.assign(book, shelfBook || {});
       eventBus.$emit("showBookmarkDialog", book);
     },
+    getContentParagraphContainer() {
+      if (!this.isEpub) {
+        return this.$refs.bookContentRef.$el;
+      }
+      if (!this.isEpubIframe) {
+        return this.$refs.bookContentRef.$el.shadowRoot;
+      }
+      try {
+        return this.$refs.bookContentRef.$el.contentWindow.document;
+      } catch (error) {
+        return this.$refs.bookContentRef.$el;
+      }
+    },
+    getContentParagraphList(showOnlyReadingChapter) {
+      let list;
+      if (this.isEpub) {
+        list = this.getContentParagraphContainer().querySelectorAll(
+          "h1,h2,h3,h4,p"
+        );
+      } else {
+        list = this.getContentParagraphContainer().querySelectorAll(
+          showOnlyReadingChapter ? ".reading-chapter h3,p" : "h3,p"
+        );
+      }
+      return list;
+    },
     getContentMatchParagraph(text, distance, minDistance) {
       distance = distance || 0.7;
       // 正则过滤标点符号后，近似匹配每一段内容
@@ -3568,9 +4092,7 @@ export default {
         .map(v => v.replace(symboRegex, ""))
         .filter(v => v);
       try {
-        const list = this.$refs.bookContentRef.$el.querySelectorAll(
-          ".reading-chapter h3,p"
-        );
+        const list = this.getContentParagraphList(true);
         let paragraph = null;
         for (let i = 0; i < list.length; i++) {
           let isMatch = true;
@@ -3643,7 +4165,66 @@ export default {
         }, 10);
         return;
       }
+      if (
+        this.isEpubResolve &&
+        !(this.$refs.bookContentRef.$el && this.$refs.bookContentRef.$el.shadowRoot)
+      ) {
+        setTimeout(() => {
+          this.showBookmark(bookmark);
+        }, 10);
+        return;
+      }
+      if (this.isEpubIframe) {
+        try {
+          if (
+            !this.$refs.bookContentRef.$el ||
+            !this.$refs.bookContentRef.$el.contentWindow ||
+            !this.$refs.bookContentRef.$el.contentWindow.document ||
+            !this.$refs.bookContentRef.$el.contentWindow.document.querySelectorAll("body")
+          ) {
+            setTimeout(() => {
+              this.showBookmark(bookmark);
+            }, 10);
+            return;
+          }
+        } catch (error) {
+          return;
+        }
+      }
       this.showContentMatchParagraph(bookmark.bookText);
+    },
+    readOriginal() {
+      if (this.isPdf && this.$store.getters.readingBook.originName) {
+        if (
+          this.$store.getters.readingBook.originName.indexOf("localStore") >= 0 ||
+          this.$store.getters.readingBook.originName.indexOf("webdav") >= 0
+        ) {
+          const url =
+            this.api +
+            "/file/download?" +
+            this.serializeTTSConfig({
+              home:
+                this.$store.getters.readingBook.originName.indexOf(
+                  "localStore"
+                ) >= 0
+                  ? "__LOCAL_STORE__"
+                  : "__WEBDAV__",
+              path: this.$store.getters.readingBook.originName.replace(
+                /^.*(localStore|webdav)/g,
+                ""
+              ),
+              stream: 1,
+              accessToken: this.$store.state.token
+            });
+          window.open(url, "__blank");
+        } else {
+          const bookUrl = this.$store.getters.readingBook.bookUrl.replace(
+            "storage/data",
+            "book-assets"
+          );
+          window.open(bookUrl, "__blank");
+        }
+      }
     }
   }
 };
@@ -3652,6 +4233,11 @@ export default {
 <style lang="stylus" scoped>
 >>>.popper-component {
   margin-left: 10px;
+}
+
+.dplayer-quality-list {
+  max-height: 45vh;
+  overflow: auto !important;
 }
 
 .chapter-wrapper {
@@ -3797,7 +4383,7 @@ export default {
         pointer-events: all;
         margin-top: 20px;
 
-        .el-icon-refresh-right, .el-icon-headset, .el-icon-view {
+        .el-icon-refresh-right, .el-icon-headset, .el-icon-view, .el-icon-edit, .el-icon-download, .el-icon-reading {
           line-height: 36px;
         }
         .el-icon-moon {
@@ -3808,6 +4394,10 @@ export default {
           color: #666;
           line-height: 34px;
         }
+      }
+
+      .auto-reading, .editing {
+        color: red;
       }
     }
 
@@ -3913,6 +4503,11 @@ export default {
               }
             }
           }
+
+          .voice-select {
+            margin: 0 auto;
+            width: 240px;
+          }
         }
 
         .progress {
@@ -4010,6 +4605,11 @@ export default {
     .top-bar {
       height: 44px;
       padding: 10px;
+
+      .right-timestr {
+        display: inline-block;
+        float: right;
+      }
     }
     .bottom-bar {
       width: 100%;
@@ -4038,6 +4638,25 @@ export default {
       padding-bottom: 0 !important;
       display: flex;
       align-items: center;
+    }
+  }
+
+  .chapter.video {
+    .top-bar, .bottom-bar {
+      display: none;
+    }
+    .content-inner {
+      height: calc(var(--vh, 1vh) * 100);
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      display: flex;
+      align-items: center;
+
+      .book-content {
+        width: 100%;
+        height: 100%;
+      }
     }
   }
 }
@@ -4308,11 +4927,13 @@ export default {
     height: 100%;
 
     .bottom-bar {
-      height: 24px;
+      height: calc(24px + var(--bottom-padding, 0px));
       position: absolute;
       bottom: 0;
       padding: 0 16px;
-      padding-bottom: 6px;
+      padding-left: calc(16px + var(--horizontal-padding, 0px));
+      padding-right: calc(16px + var(--horizontal-padding, 0px));
+      padding-bottom: calc(6px + var(--bottom-padding, 0px));
       display: flex;
       justify-content: space-between;
       font-size: 12px;
@@ -4325,14 +4946,18 @@ export default {
     .content {
       position: absolute;
       overflow: visible;
-      top: 30px;
-      top: calc(30px + constant(safe-area-inset-top));
-      top: calc(30px + env(safe-area-inset-top));
-      bottom: 24px;
+      top: calc(30px + var(--top-padding, 0px));
+      top: calc(30px + constant(safe-area-inset-top) + var(--top-padding, 0px));
+      top: calc(30px + env(safe-area-inset-top) + var(--top-padding, 0px));
+      bottom: calc(24px + var(--bottom-padding, 0px));
+      left: 0;
+      right: 0;
     }
 
     .content-inner {
-      margin: 0 16px;
+      margin: 0;
+      margin-left: calc(16px + var(--horizontal-padding, 0px));
+      margin-right: calc(16px + var(--horizontal-padding, 0px));
       overflow: hidden;
       text-align: justify;
       padding: 0;
@@ -4341,10 +4966,19 @@ export default {
 
     .book-content {
       height: 100%;
-      -webkit-columns: calc(100vw - 32px) 1;
-      -webkit-column-gap: 32px;
-      columns: calc(100vw - 16px) 1;
-      column-gap: 16px;
+
+      img {
+        break-inside: avoid;
+      }
+    }
+
+    &:not(.epub-iframe) {
+      .book-content {
+        -webkit-columns: calc(100vw - 16px - var(--horizontal-padding, 0px)) 1;
+        -webkit-column-gap: calc(16px + var(--horizontal-padding, 0px));
+        columns: calc(100vw - 16px - var(--horizontal-padding, 0px)) 1;
+        column-gap: calc(16px + var(--horizontal-padding, 0px));
+      }
     }
   }
 }

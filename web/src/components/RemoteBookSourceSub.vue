@@ -33,11 +33,7 @@
           :fixed="$store.state.miniInterface"
         >
         </el-table-column>
-        <el-table-column
-          property="link"
-          label="链接"
-          min-width="150px"
-        >
+        <el-table-column property="link" label="链接" min-width="150px">
         </el-table-column>
         <el-table-column
           property="lastSyncTime"
@@ -92,6 +88,35 @@
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 
+const getFile = (path, home) =>
+  Axios.get("/file/get", {
+    params: { path, home: home || "__HOME__" },
+    silent: true
+  })
+    .then(res => {
+      return res.data.isSuccess ? res.data.data : null;
+    })
+    .catch(() => {
+      return null;
+    });
+
+const saveFile = (path, content, home) =>
+  Axios.post(
+    "/file/save",
+    {
+      path,
+      content,
+      home: home || "__HOME__"
+    },
+    { silent: true }
+  )
+    .then(res => {
+      return !!res.data.isSuccess;
+    })
+    .catch(() => {
+      return null;
+    });
+
 export default {
   model: {
     prop: "show",
@@ -131,24 +156,16 @@ export default {
     cancel() {
       this.$emit("setShow", false);
     },
-    loadRemoteBookSourceList() {
-      Axios.get("/file/get", {
-        params: { path: this.filePath, home: "__HOME__" },
-        silent: true
-      })
-        .then(res => {
-          if (res.data.isSuccess && res.data.data) {
-            try {
-              const data = JSON.parse(res.data.data);
-              if (Array.isArray(data)) {
-                this.remoteBookSourceList = data;
-              }
-            } catch (e) {
-              // ignore
-            }
+    async loadRemoteBookSourceList() {
+      const data = await getFile(this.filePath);
+      if (data) {
+        try {
+          const list = JSON.parse(data);
+          if (Array.isArray(list)) {
+            this.remoteBookSourceList = list;
           }
-        })
-        .catch(() => null);
+        } catch (error) {}
+      }
     },
     async deleteRemoteBookSourceSub() {
       if (!this.localSelection.length) {
@@ -163,10 +180,14 @@ export default {
           cancelButtonText: "取消",
           type: "warning"
         }
-      ).catch(() => false);
-      if (!res) return;
+      ).catch(() => {
+        return false;
+      });
+      if (!res) {
+        return;
+      }
       const remaining = this.remoteBookSourceList.filter(
-        t => !this.localSelection.includes(t)
+        item => !this.localSelection.includes(item)
       );
       this.saveData(remaining);
     },
@@ -177,12 +198,12 @@ export default {
           this.loadingIndex = -1;
           this.$root.$children[0].loadBookSource(true);
           if (res.data.isSuccess) {
-            this.remoteBookSourceList[index].lastSyncTime = new Date().getTime();
+            this.remoteBookSourceList[index].lastSyncTime =
+              new Date().getTime();
             this.saveData(this.remoteBookSourceList, true);
           }
         },
         error => {
-          this.loadingIndex = -1;
           this.$message.error("同步失败 " + (error && error.toString()));
         }
       );
@@ -202,8 +223,12 @@ export default {
         showCancelButton: true,
         confirmButtonText: "确定",
         cancelButtonText: "取消"
-      }).catch(error => (error === "close" ? "close" : error));
-      if (res !== "confirm") return false;
+      }).catch(error => {
+        return error === "close" ? "close" : error;
+      });
+      if (res !== "confirm") {
+        return false;
+      }
       const list = [].concat(this.remoteBookSourceList);
       if (isAdd) {
         list.push(item);
@@ -212,26 +237,15 @@ export default {
       }
       this.saveData(list);
     },
-    saveData(data, silent) {
-      Axios.post(
-        "/file/save",
-        {
-          path: this.filePath,
-          content: JSON.stringify(data),
-          home: "__HOME__"
-        },
-        { silent: true }
-      )
-        .then(res => {
-          if (res.data.isSuccess) {
-            this.localSelection = [];
-            if (!silent) {
-              this.$message.success("操作成功");
-            }
-            this.loadRemoteBookSourceList();
-          }
-        })
-        .catch(() => null);
+    async saveData(data, silent) {
+      const res = await saveFile(this.filePath, JSON.stringify(data));
+      if (res) {
+        this.localSelection = [];
+        if (!silent) {
+          this.$message.success("操作成功");
+        }
+        this.loadRemoteBookSourceList();
+      }
     }
   }
 };
@@ -242,5 +256,11 @@ export default {
 }
 .float-right {
   float: right;
+}
+.dialog-footer {
+  .float-left {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
 }
 </style>
