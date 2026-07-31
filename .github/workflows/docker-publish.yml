@@ -38,9 +38,6 @@ jobs:
           generate_release_notes: true
 
   build-and-push:
-
-jobs:
-  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
