@@ -102,6 +102,11 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
                   v-if="scope.row.origin !== 'loc_book'"
+                  command="cacheBookOnServer"
+                  >服务器缓存</el-dropdown-item
+                >
+                <el-dropdown-item
+                  v-if="scope.row.origin !== 'loc_book'"
                   command="cacheBookSSE"
                   >缓存到服务器</el-dropdown-item
                 >
@@ -376,6 +381,23 @@ export default {
     },
     cacheBook(book, command) {
       this[command](book);
+    },
+    cacheBookOnServer(book) {
+      const books = Array.isArray(book) ? book : [book];
+      Axios.post(this.api + "/cacheBookOnServer", {
+        bookUrlList: books.map(v => v.bookUrl)
+      }).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("提交缓存任务成功");
+          }
+        },
+        error => {
+          this.$message.error(
+            "提交缓存任务失败 " + (error && error.toString())
+          );
+        }
+      );
     },
     async cacheBookSSE(book) {
       const tryClose = () => {
