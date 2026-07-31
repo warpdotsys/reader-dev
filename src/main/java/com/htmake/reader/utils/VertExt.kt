@@ -206,11 +206,6 @@ fun saveStorage(vararg name: String, value: Any, pretty: Boolean = false, ext: S
 
 fun getStorage(vararg name: String, ext: String = ".json"): String?  {
     val storagePath = getStoragePath()
-    val storageDir = File(storagePath)
-    if (!storageDir.exists()) {
-        storageDir.mkdirs()
-    }
-
     val filename = name.last()
     val path = getRelativePath(*name.copyOfRange(0, name.size - 1), "$filename$ext")
     val file = File(storagePath, path)

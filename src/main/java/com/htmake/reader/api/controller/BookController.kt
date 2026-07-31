@@ -86,6 +86,7 @@ import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.model.rss.Rss
+import io.legado.app.model.Debug
 import io.legado.app.model.Debugger
 import io.legado.app.help.BookHelp
 import org.springframework.scheduling.annotation.Scheduled
@@ -99,6 +100,7 @@ import java.io.InputStream
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.slf4j.MDCContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.Deferred
@@ -228,7 +230,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             cacheFile.parentFile.mkdirs()
         }
 
-        launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
+        launch(MDCContext() + Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
             logger.info("get cover error: {}", exception.message)
             context.response().setStatusCode(404).end()
         }) {
@@ -841,20 +843,24 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            lastIndex = it
-            val bookSourceList = parseJsonStringList(
-                bookSourceFile,
-                startIndex = it,
-                endIndex = it,
-                filter = if (bookSourceGroup.isEmpty()) null else { node ->
-                    val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
-                    sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+            if (it <= urlMap.size) {
+                lastIndex = Math.max(lastIndex, it)
+                val bookSourceList = parseJsonStringList(
+                    bookSourceFile,
+                    startIndex = it,
+                    endIndex = it,
+                    filter = if (bookSourceGroup.isEmpty()) null else { node ->
+                        val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
+                        sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+                    }
+                )
+                if (bookSourceList == null || bookSourceList.isEmpty) {
+                    emptyList<SearchBook>()
+                } else {
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
                 }
-            )
-            if (bookSourceList == null || bookSourceList.isEmpty) {
-                emptyList<SearchBook>()
             } else {
-                searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
+                emptyList<SearchBook>()
             }
         }) {list, loopCount ->
             // logger.info("list: {}", list)
@@ -951,27 +957,30 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             coroutineContext.cancel()
         }
         var resultList = arrayListOf<SearchBook>()
-        var resultMap = mutableMapOf<String, Int>()
         val book = Book()
         book.name = key
         val bookSourceFile = getStorageFile("data", userNameSpace, "bookSource").let {
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            lastIndex = it
-            val bookSourceList = parseJsonStringList(
-                bookSourceFile,
-                startIndex = it,
-                endIndex = it,
-                filter = if (bookSourceGroup.isEmpty()) null else { node ->
-                    val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
-                    sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+            if (it <= urlMap.size) {
+                lastIndex = Math.max(lastIndex, it)
+                val bookSourceList = parseJsonStringList(
+                    bookSourceFile,
+                    startIndex = it,
+                    endIndex = it,
+                    filter = if (bookSourceGroup.isEmpty()) null else { node ->
+                        val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
+                        sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+                    }
+                )
+                if (bookSourceList == null || bookSourceList.isEmpty) {
+                    emptyList<SearchBook>()
+                } else {
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
                 }
-            )
-            if (bookSourceList == null || bookSourceList.isEmpty) {
-                emptyList<SearchBook>()
             } else {
-                searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
+                emptyList<SearchBook>()
             }
         }) {list, loopCount ->
             // logger.info("list: {}", list)
@@ -980,12 +989,8 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 val bookList = it as? Collection<SearchBook>
                 bookList?.forEach { book ->
                     // 按照 书名 + 作者名 过滤
-                    val bookKey = book.name + '_' + book.author
-                    if (!resultMap.containsKey(bookKey)) {
-                        resultList.add(book)
-                        loopResult.add(book)
-                        resultMap.put(bookKey, 1)
-                    }
+                    resultList.add(book)
+                    loopResult.add(book)
                 }
             }
             // 返回本轮数据
@@ -1057,20 +1062,24 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            lastIndex = it
-            val bookSourceList = parseJsonStringList(
-                bookSourceFile,
-                startIndex = it,
-                endIndex = it,
-                filter = if (bookSourceGroup.isEmpty()) null else { node ->
-                    val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
-                    sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+            if (it <= urlMap.size) {
+                lastIndex = Math.max(lastIndex, it)
+                val bookSourceList = parseJsonStringList(
+                    bookSourceFile,
+                    startIndex = it,
+                    endIndex = it,
+                    filter = if (bookSourceGroup.isEmpty()) null else { node ->
+                        val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
+                        sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+                    }
+                )
+                if (bookSourceList == null || bookSourceList.isEmpty) {
+                    emptyList<SearchBook>()
+                } else {
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
                 }
-            )
-            if (bookSourceList == null || bookSourceList.isEmpty) {
-                emptyList<SearchBook>()
             } else {
-                searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
+                emptyList<SearchBook>()
             }
         }) {list, loopCount ->
             // logger.info("list: {}", list)
@@ -1168,20 +1177,24 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
         val maxSize = urlMap.size
         limitConcurrent(concurrentCount, lastIndex + 1, maxSize, { it ->
-            lastIndex = it
-            val bookSourceList = parseJsonStringList(
-                bookSourceFile,
-                startIndex = it,
-                endIndex = it,
-                filter = if (bookSourceGroup.isEmpty()) null else { node ->
-                    val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
-                    sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+            if (it <= maxSize) {
+                lastIndex = Math.max(lastIndex, it)
+                val bookSourceList = parseJsonStringList(
+                    bookSourceFile,
+                    startIndex = it,
+                    endIndex = it,
+                    filter = if (bookSourceGroup.isEmpty()) null else { node ->
+                        val sourceGroup = node.get("bookSourceGroup")?.asText() ?: ""
+                        sourceGroup.isNotEmpty() && (sourceGroup + ",").contains(bookSourceGroup + ",")
+                    }
+                )
+                if (bookSourceList == null || bookSourceList.isEmpty) {
+                    emptyList<SearchBook>()
+                } else {
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
                 }
-            )
-            if (bookSourceList == null || bookSourceList.isEmpty) {
-                emptyList<SearchBook>()
             } else {
-                searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
+                emptyList<SearchBook>()
             }
         }) {list, loopCount ->
             // logger.info("list: {}", list)
@@ -2933,7 +2946,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             logger.info("cacheBookOnServer error: {}", exception.message)
         }
         val userNameSpace = getUserNameSpace(context)
-        launch(Dispatchers.IO + exceptionHandler) {
+        launch(MDCContext() + Dispatchers.IO + exceptionHandler) {
             cacheBookOnServer(bookUrlList, userNameSpace)
         }
         return returnData.setData("")
@@ -3064,7 +3077,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
         val body = if (context.request().method() == HttpMethod.POST) context.bodyAsJson else null
-        fun value(name: String): String = body?.getString(name) ?: context.queryParam(name).firstOrNull() ?: ""
+        fun value(name: String): String = if (body != null) body.getString(name) ?: "" else context.queryParam(name).firstOrNull() ?: ""
         val text = value("text")
         val type = value("type").ifEmpty { "edge" }
         if (text.isEmpty()) {
@@ -3082,7 +3095,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             logger.info("tts error: {}", exception.message)
             response.setStatusCode(404).end()
         }
-        launch(Dispatchers.IO + exceptionHandler) {
+        launch(MDCContext() + Dispatchers.IO + exceptionHandler) {
             when (type) {
                 "edge" -> ttsByEdge(response, text, options)
                 "textToSpeechCn" -> ttsByTextToSpeechCn(response, text, options)
@@ -3160,16 +3173,27 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         form.add("user_id", "")
         form.add("yzm", "")
         params?.forEach { (key, value) -> form.set(key, value) }
-        val result = kotlinx.coroutines.suspendCancellableCoroutine<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>?> { cont ->
+        val result = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
             webClient.postAbs("https://www.text-to-speech.cn/getSpeek.php")
                 .timeout(5000)
                 .putHeader("Origin", "https://www.text-to-speech.cn")
                 .putHeader("Referer", "https://www.text-to-speech.cn/")
                 .putHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
-                .sendForm(form) { ar -> cont.resume(if (ar.succeeded()) ar.result() else null) {} }
+                .sendForm(form) { ar -> handler.handle(ar) }
         }
-        val download = result?.bodyAsJsonObject()?.getString("download")
-        if (download != null) response.setStatusCode(302).putHeader("Location", download).end() else response.setStatusCode(404).end()
+        logger.info("res: {}", result)
+        val json = result.bodyAsJsonObject()
+        logger.info("jsonRes: {}", json)
+        if (json != null) {
+            val download = json.getString("download")
+            if (download != null) {
+                response.setStatusCode(302).putHeader("Location", download).end()
+            } else {
+                response.setStatusCode(404).end()
+            }
+        } else {
+            response.setStatusCode(404).end()
+        }
     }
 
     /**
@@ -3206,7 +3230,8 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     speakText = speakText,
                     speakSpeed = speechRate,
                     source = httpTTS,
-                    headerMapF = httpTTS.getHeaderMap(true)
+                    headerMapF = httpTTS.getHeaderMap(true),
+                    debugLog = Debug.INSTANCE
                 )
                 var response = analyzeUrl.getResponseAwait()
                 httpTTS.loginCheckJs?.takeIf { it.isNotBlank() }?.let { checkJs ->
@@ -3216,18 +3241,18 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 coroutineContext.ensureActive()
                 response.header("Content-Type")?.let { contentType ->
                     if (contentType == "application/json") {
-                        throw NoStackTraceException(response.body?.string().orEmpty())
+                        throw NoStackTraceException(response.body!!.string())
                     }
                     httpTTS.contentType?.takeIf { it.isNotBlank() }?.let { expectedContentType ->
                         if (!Regex(expectedContentType).matches(contentType)) {
                             throw NoStackTraceException(
-                                "TTS服务器返回错误：${response.body?.string().orEmpty()}"
+                                "TTS服务器返回错误：${response.body!!.string()}"
                             )
                         }
                     }
                 }
                 coroutineContext.ensureActive()
-                val body = response.body ?: throw NoStackTraceException("TTS服务器未返回音频")
+                val body = response.body!!
                 downloadErrorNo = 0
                 return body.byteStream()
             } catch (e: Exception) {

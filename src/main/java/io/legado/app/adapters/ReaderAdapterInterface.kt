@@ -8,7 +8,7 @@ import io.legado.app.model.DebugLog
  */
 interface ReaderAdapterInterface {
 
-    fun getWorkDir(subPath: String): String
+    fun getWorkDir(subPath: String = ""): String
 
     fun getWorkDir(vararg subDirFiles: String): String
 

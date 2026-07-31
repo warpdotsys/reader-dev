@@ -42,7 +42,7 @@ open class DB<T>(
 
     companion object {
         fun <T> table(userNameSpace: String, name: String, driver: String = "JSON"): DB<T> {
-            return if (driver.equals("SQL", ignoreCase = true)) {
+            return if (driver == "SQL") {
                 SQLTable(userNameSpace, name)
             } else {
                 JSONTable(userNameSpace, name)

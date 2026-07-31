@@ -149,6 +149,7 @@ object BookConfig {
                     clientY: event.touches[0].clientY,
                 }]
             });
+
         });
         document.addEventListener("touchend", function(event) {
             // console.log(event)

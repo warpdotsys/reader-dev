@@ -39,13 +39,9 @@ interface JsExtensions {
 
     fun getSource(): BaseSource?
 
-    fun getUserNameSpace(): String {
-        return ""
-    }
+    fun getUserNameSpace(): String
 
-    fun getLogger(): io.legado.app.model.DebugLog? {
-        return null
-    }
+    fun getLogger(): io.legado.app.model.DebugLog?
 
     /**
      * 访问网络,返回String

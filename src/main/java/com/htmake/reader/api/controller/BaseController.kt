@@ -92,7 +92,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
             var userMap = mutableMapOf<String, Map<String, Any>>()
             var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
             if (userMapJson != null) {
-                userMap = userMapJson.map as? MutableMap<String, Map<String, Any>> ?: mutableMapOf<String, Map<String, Any>>()
+                userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
             }
             user.last_login_at = System.currentTimeMillis()
             if (regenerateToken) {

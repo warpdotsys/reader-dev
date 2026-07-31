@@ -58,7 +58,6 @@ object BookChapterList {
                 var nextUrl = chapterData.second[0]
                 while (nextUrl.isNotEmpty() && !nextUrlList.contains(nextUrl)) {
                     nextUrlList.add(nextUrl)
-                    coroutineContext.ensureActive()
                     AnalyzeUrl(
                         mUrl = nextUrl,
                         source = bookSource,
@@ -77,7 +76,6 @@ object BookChapterList {
                 debugLog?.log(bookSource.bookSourceUrl, "◇目录总页数:${nextUrlList.size}")
             }
             else -> {
-                coroutineContext.ensureActive()
                 debugLog?.log(bookSource.bookSourceUrl, "◇并发解析目录,总页数:${chapterData.second.size}")
                 withContext(IO) {
                     val asyncArray = Array(chapterData.second.size) {
@@ -98,7 +96,6 @@ object BookChapterList {
                         }
                     }
                     asyncArray.forEach { coroutine ->
-                        coroutineContext.ensureActive()
                         chapterList.addAll(coroutine.await())
                     }
                 }

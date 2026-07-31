@@ -352,7 +352,7 @@ class AnalyzeUrl(
         }
         val concurrentRecord = fetchStart()
         setCookie(source?.getKey())
-        val strResponse: StrResponse
+        val strResponse: StrResponse?
         if (this.useWebView && useWebView) {
             strResponse = if (method == RequestMethod.POST) {
                 io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
@@ -376,7 +376,7 @@ class AnalyzeUrl(
                     userNameSpace = getUserNameSpace(),
                     debugLog = debugLog
                 )
-            } ?: throw Exception("远程 WebView 未配置")
+            }
         } else {
             strResponse = getProxyClient(proxy, debugLog).newCallStrResponse(retry) {
                 addHeaders(headerMap)
@@ -398,9 +398,9 @@ class AnalyzeUrl(
                 }
             }
         }
-        saveCookieJar(strResponse.raw)
+        saveCookieJar(strResponse!!.raw)
         fetchEnd(concurrentRecord)
-        return strResponse
+        return strResponse!!
     }
 
     fun saveCookieJar(response: Response) {

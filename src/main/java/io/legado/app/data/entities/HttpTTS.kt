@@ -1,7 +1,9 @@
 package io.legado.app.data.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.legado.app.model.DebugLog
 
+@JsonIgnoreProperties("headerMap", "source", "userNameSpace")
 data class HttpTTS(
     val id: Long = System.currentTimeMillis(),
     var name: String = "",

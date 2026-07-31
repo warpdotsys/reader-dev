@@ -18,7 +18,7 @@ data class RssSource(
     var sourceComment: String? = null,
     var enabled: Boolean = true,
     var variableComment: String? = null,
-    override var enabledCookieJar: Boolean? = null,
+    override var enabledCookieJar: Boolean? = false,
     override var concurrentRate: String? = null,    //并发率
     override  var header: String? = null,            // 请求头
     override var loginUrl: String? = null,          // 登录地址

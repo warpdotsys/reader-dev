@@ -96,7 +96,7 @@ class PdfFile(book: Book) {
         }
         book.latestChapterTitle = chapterList.lastOrNull()?.title
         book.totalChapterNum = chapterList.size
-        closeQuietly(document)
+        okhttp3.internal.Util.closeQuietly(document)
         return chapterList
     }
 
@@ -111,17 +111,8 @@ class PdfFile(book: Book) {
         if (chapterList.size > 0) {
             chapterList[chapterList.size - 1].end = document.numberOfPages.toLong()
         }
-        closeQuietly(document)
+        okhttp3.internal.Util.closeQuietly(document)
         return chapterList
-    }
-
-    private fun closeQuietly(document: PDDocument) {
-        try {
-            document.close()
-        } catch (e: RuntimeException) {
-            throw e
-        } catch (_: Exception) {
-        }
     }
 
     private fun processOutline(
