@@ -1359,11 +1359,7 @@ export default {
       if (val && this.showImportBookDialog) {
         let groupId = 0;
         val.forEach(v => {
-          if (typeof BigInt === "function") {
-            groupId = Number(BigInt(groupId) | BigInt(v));
-          } else {
-            groupId |= v;
-          }
+          groupId |= v;
         });
         this.importBookInfo.group = groupId;
       }
@@ -2784,10 +2780,7 @@ export default {
       if (res === "confirm") {
         let group = 0;
         info.groupId.forEach(value => {
-          group =
-            typeof BigInt === "function"
-              ? Number(BigInt(group) | BigInt(value))
-              : group | value;
+          group = group | value;
         });
         return {
           ...(book ? { name: info.name, author: info.author } : {}),
@@ -2869,9 +2862,6 @@ export default {
 
       return this.shelfBooks.filter(v => {
         if (bookGroup === 0) return true;
-        if (typeof BigInt === "function") {
-          return (BigInt(v.group || 0) & BigInt(bookGroup)) > BigInt(0);
-        }
         return v.group & bookGroup;
       });
     },
@@ -3040,7 +3030,6 @@ export default {
           );
         }
       );
-      this.bookSourceChecker = limitFunc;
     },
     editBookSourceHeader(bookSource) {
       const editHandler = book => {

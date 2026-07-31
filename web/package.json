@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "codejar": "^3.5.0",
-    "core-js": "^3.3.2",
+    "codejar": "3.5.0",
+    "core-js": "3.38.0",
     "element-ui": "^2.15.9",
     "localforage": "^1.10.0",
     "prismjs": "^1.25.0",
