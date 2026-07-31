@@ -281,6 +281,7 @@ import jump from "../plugins/jump";
 import Animate from "../plugins/animate";
 import { setCache, getCache } from "../plugins/cache";
 import { simplized, traditionalized } from "../plugins/chinese";
+import { ttsVoiceList } from "../plugins/ttsVoices";
 import {
   cacheFirstRequest,
   LimitResquest,
@@ -893,24 +894,7 @@ export default {
         return this.localVoiceList;
       }
       if (this.ttsType === "edge") {
-        return [
-          "zh-CN-XiaoxiaoNeural",
-          "zh-CN-XiaoyiNeural",
-          "zh-CN-YunjianNeural",
-          "zh-CN-YunxiNeural",
-          "zh-CN-YunxiaNeural",
-          "zh-CN-YunyangNeural",
-          "zh-HK-HiuGaaiNeural",
-          "zh-HK-HiuMaanNeural",
-          "zh-HK-WanLungNeural",
-          "zh-TW-HsiaoChenNeural",
-          "zh-TW-YunJheNeural",
-          "zh-TW-HsiaoYuNeural",
-          "en-US-AriaNeural",
-          "en-US-ChristopherNeural",
-          "en-US-JennyNeural",
-          "en-US-GuyNeural"
-        ].map(name => ({ name, LocalName: name }));
+        return ttsVoiceList;
       }
       return this.$store.state.httpTTS || [];
     },
