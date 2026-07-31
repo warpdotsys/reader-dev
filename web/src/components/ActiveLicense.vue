@@ -191,7 +191,9 @@ export default {
           if (Array.isArray(list)) {
             this.list = list;
           }
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       }
     },
     async deleteItems() {

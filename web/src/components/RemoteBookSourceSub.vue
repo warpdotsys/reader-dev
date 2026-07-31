@@ -164,7 +164,9 @@ export default {
           if (Array.isArray(list)) {
             this.remoteBookSourceList = list;
           }
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       }
     },
     async deleteRemoteBookSourceSub() {
