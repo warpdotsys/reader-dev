@@ -2411,7 +2411,7 @@ export default {
         return;
       }
       const res = await this.$confirm(
-        "确认要备份当前终端的阅读配置、书架设置、搜索设置、自定义配置方案吗?",
+        "确认要备份当前终端的阅读配置、书架设置、搜索设置、自定义配置方案、朗读配置吗?",
         "提示"
       ).catch(() => {
         return false;
@@ -2445,7 +2445,7 @@ export default {
         return;
       }
       const res = await this.$confirm(
-        "确认要从备份文件中恢复当前终端的阅读配置、书架设置、搜索设置、自定义配置方案吗?",
+        "确认要从备份文件中恢复当前终端的阅读配置、书架设置、搜索设置、自定义配置方案、朗读方案吗?",
         "提示"
       ).catch(() => {
         return false;
