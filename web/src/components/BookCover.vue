@@ -130,7 +130,9 @@ export default {
             this.searchEventSource.close();
           }
           this.searchEventSource = null;
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       };
       if (this.loadingMore) {
         close();
@@ -159,7 +161,9 @@ export default {
               this.$message.error(data.errorMsg);
             }
           }
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       });
       const startLength = this.coverList.length;
       this.searchEventSource.addEventListener("end", event => {
@@ -175,7 +179,9 @@ export default {
           if (this.coverList.length === startLength) {
             this.$message.error("没有更多啦");
           }
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       });
       this.searchEventSource.addEventListener("message", event => {
         try {
@@ -193,7 +199,9 @@ export default {
               );
             }
           }
-        } catch (error) {}
+        } catch (error) {
+        /* ignore */
+      }
       });
     },
     async setCover(coverUrl) {

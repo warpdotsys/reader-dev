@@ -701,7 +701,7 @@ export default {
         });
       }
     },
-    readSettingsVisible(visible) {
+    readSettingsVisible() {
       //
     },
     title(title) {
