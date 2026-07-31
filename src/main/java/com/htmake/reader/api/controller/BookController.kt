@@ -3231,7 +3231,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     speakSpeed = speechRate,
                     source = httpTTS,
                     headerMapF = httpTTS.getHeaderMap(true),
-                    debugLog = Debug.INSTANCE
+                    debugLog = Debug
                 )
                 var response = analyzeUrl.getResponseAwait()
                 httpTTS.loginCheckJs?.takeIf { it.isNotBlank() }?.let { checkJs ->

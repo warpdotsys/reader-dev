@@ -2,6 +2,7 @@ package com.htmake.reader.api.controller
 
 import io.legado.app.data.entities.HttpTTS
 import io.legado.app.utils.GSON
+import io.legado.app.utils.fromJsonObject
 import io.vertx.ext.web.RoutingContext
 import mu.KotlinLogging
 import com.htmake.reader.api.ReturnData
@@ -39,7 +40,7 @@ class HttpTTSController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     override fun convertToEntityList(json: String): Array<HttpTTS> {
-        return asJsonArray(json).map { GSON.fromJsonObject<HttpTTS>(it.toString()).getOrNull()!! }.toTypedArray()
+        return asJsonArray(json)!!.map { GSON.fromJsonObject<HttpTTS>(it.toString()).getOrNull()!! }.toTypedArray()
     }
 
     override suspend fun checkUserAuth(context: RoutingContext): Boolean {

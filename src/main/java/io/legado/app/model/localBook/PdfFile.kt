@@ -96,8 +96,17 @@ class PdfFile(book: Book) {
         }
         book.latestChapterTitle = chapterList.lastOrNull()?.title
         book.totalChapterNum = chapterList.size
-        okhttp3.internal.Util.closeQuietly(document)
+        closeQuietly(document)
         return chapterList
+    }
+
+    private fun closeQuietly(document: PDDocument) {
+        try {
+            document.close()
+        } catch (e: RuntimeException) {
+            throw e
+        } catch (_: Exception) {
+        }
     }
 
     private fun getChapterListByOutline(): ArrayList<BookChapter> {
@@ -111,7 +120,7 @@ class PdfFile(book: Book) {
         if (chapterList.size > 0) {
             chapterList[chapterList.size - 1].end = document.numberOfPages.toLong()
         }
-        okhttp3.internal.Util.closeQuietly(document)
+        closeQuietly(document)
         return chapterList
     }
 
