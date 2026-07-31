@@ -26,7 +26,20 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'gradle'
+      - name: Cache Gradle wrapper
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
       - name: Make gradlew executable
         run: chmod +x gradlew
       - name: Compile Kotlin
         run: ./gradlew compileKotlin compileJava -x test
+      - name: Build web
+        run: cd web && npm ci && npm run build
