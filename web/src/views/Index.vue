@@ -671,7 +671,7 @@
         @touchend="handleTouchEnd"
         @scroll="scrollHandler"
       >
-        <div class="wrapper" :style="shelfViewStyle">
+        <div class="wrapper" :style="shelfViewStyle" :class="shelfViewClass">
           <div
             class="book"
             :style="showNavigation ? { minWidth: '360px !important' } : {}"
@@ -3338,6 +3338,16 @@ export default {
       }
       return {};
     },
+    shelfViewClass() {
+      const viewCate = this.$store.state.shelfConfig.viewCate;
+      if (viewCate === "list") {
+        return "list-mode";
+      }
+      if (viewCate && viewCate.startsWith("column-")) {
+        return "column-mode";
+      }
+      return "";
+    },
     config() {
       return this.$store.getters.config;
     },
@@ -3834,6 +3844,24 @@ export default {
         grid-template-columns: repeat(auto-fill, 380px);
         justify-content: space-around;
         grid-gap: 10px;
+
+        &.list-mode {
+          grid-template-columns: 1fr;
+          justify-content: initial;
+
+          .book {
+            width: auto;
+          }
+        }
+
+        &.column-mode {
+          justify-content: initial;
+
+          .book {
+            width: auto;
+            min-width: 0;
+          }
+        }
 
         .book {
           user-select: none;

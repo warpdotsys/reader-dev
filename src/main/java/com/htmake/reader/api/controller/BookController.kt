@@ -234,7 +234,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             logger.info("get cover error: {}", exception.message)
             context.response().setStatusCode(404).end()
         }) {
-            webClient.getAbs(coverUrl).timeout(3000).send {
+            webClient.getAbs(coverUrl)
+                .putHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .putHeader("Referer", coverUrl.substringBeforeLast("/"))
+                .timeout(10000).send {
                 var bodyBytes = it.result()?.bodyAsBuffer()?.getBytes()
                 if (bodyBytes != null) {
                     var res = context.response().putHeader("Cache-Control", "86400")
@@ -3493,6 +3496,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             }
         }
         book.isInShelf = true
+        if (existIndex < 0) {
+            // 新书加入书架时更新阅读时间，使其按 durChapterTime 排在最前
+            book.durChapterTime = System.currentTimeMillis()
+        }
         if (existIndex >= 0) {
             var bookList = bookshelf.getList()
             var existBook = bookshelf.getJsonObject(existIndex).mapTo(Book::class.java)
