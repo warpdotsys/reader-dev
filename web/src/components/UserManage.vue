@@ -89,9 +89,7 @@
         </el-table-column>
         <el-table-column label="操作" width="120px">
           <template slot-scope="scope">
-            <el-button type="text" @click="editUser(scope.row)"
-              >编辑</el-button
-            >
+            <el-button type="text" @click="editUser(scope.row)">编辑</el-button>
             <el-button type="text" @click="resetPassword(scope.row)"
               >重置密码</el-button
             >
@@ -189,7 +187,11 @@ export default {
           a = b;
           b = t;
         }
-        return a[this.sortable.prop] > b[this.sortable.prop] ? 1 : a[this.sortable.prop] < b[this.sortable.prop] ? -1 : 0;
+        return a[this.sortable.prop] > b[this.sortable.prop]
+          ? 1
+          : a[this.sortable.prop] < b[this.sortable.prop]
+          ? -1
+          : 0;
       });
     },
     showList() {

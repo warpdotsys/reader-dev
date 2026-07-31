@@ -14,7 +14,9 @@
     <div class="custom-dialog-title" slot="title">
       <span class="el-dialog__title"
         >授权管理
-        <span class="float-right span-btn" @click="importLicense">更新密钥</span>
+        <span class="float-right span-btn" @click="importLicense"
+          >更新密钥</span
+        >
       </span>
     </div>
     <div>
@@ -95,136 +97,7 @@ export default {
           }
         },
         error => {
-          this.$message.error(
-            "获取授权失败 " + (error && error.toString())
-          );
-        }
-      );
-    },
-    async importLicense() {
-      const res = await this.$prompt("请输入密钥", "更新密钥", {
-        inputValue: "",
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        inputValidator(v) {
-          if (!v) {
-            return "密钥不能为空";
-          }
-          return true;
-        }
-      }).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      return this.comfirmImport(res.value);
-    },
-    async comfirmImport(key) {
-      const res = await this.$confirm("确认要更新密钥吗?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      }).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      Axios.post(this.api + "/importLicense", {
-        content: key
-      }).then(
-        res => {
-          if (res.data.isSuccess) {
-            this.$message.success("更新密钥成功");
-            this.license = res.data.data.license;
-          }
-        },
-        error => {
-          this.$message.error(
-            "更新密钥失败 " + (error && error.toString())
-          );
-        }
-      );
-    },
-    async supplyLicense() {
-      const res = await this.$prompt(
-        "请输入邮箱进行验证，每个邮箱仅限试用一次，有效期7天",
-        "验证邮箱",
-        {
-          inputValue: "",
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          inputValidator(v) {
-            if (!v) {
-              return "邮箱不能为空";
-            }
-            return true;
-          }
-        }
-      ).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      const email = res.value;
-      if (
-        !email.match(
-          /@(163|126|qq|yahoo|sina|sohu|yeah|139|189|21cn|outlook|gmail|icloud).com$/
-        )
-      ) {
-        this.$message.error(
-          "仅支持163|126|qq|yahoo|sina|sohu|yeah|139|189|21cn|outlook|gmail|icloud等邮箱"
-        );
-        return;
-      }
-      Axios.post(this.api + "/sendCodeToEmail", {
-        email
-      }).then(
-        res => {
-          if (res.data.isSuccess) {
-            this.showVerifyCodePrompt(email);
-          }
-        },
-        error => {
-          this.$message.error(
-            "发送验证码失败 " + (error && error.toString())
-          );
-        }
-      );
-    },
-    async showVerifyCodePrompt(email) {
-      const res = await this.$prompt("请输入验证码", "验证邮箱", {
-        inputValue: "",
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        inputValidator(v) {
-          if (!v) {
-            return "验证码不能为空";
-          }
-          return true;
-        }
-      }).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      Axios.post(this.api + "/supplyLicense", {
-        email,
-        code: res.value
-      }).then(
-        res => {
-          if (res.data.isSuccess) {
-            this.$message.success("申请试用密钥成功，有效期7天，请谨慎更新");
-            this.license = res.data.data.license;
-          }
-        },
-        error => {
-          this.$message.error(
-            "申请试用失败 " + (error && error.toString())
-          );
+          this.$message.error("获取授权失败 " + (error && error.toString()));
         }
       );
     },
@@ -258,9 +131,7 @@ export default {
           }
         },
         error => {
-          this.$message.error(
-            "发送验证码失败 " + (error && error.toString())
-          );
+          this.$message.error("发送验证码失败 " + (error && error.toString()));
         }
       );
     },
@@ -284,9 +155,7 @@ export default {
           }
         },
         error => {
-          this.$message.error(
-            "申请试用失败 " + (error && error.toString())
-          );
+          this.$message.error("申请试用失败 " + (error && error.toString()));
         }
       );
     },
@@ -315,9 +184,7 @@ export default {
           }
         },
         error => {
-          this.$message.error(
-            "更新密钥失败 " + (error && error.toString())
-          );
+          this.$message.error("更新密钥失败 " + (error && error.toString()));
         }
       );
     }

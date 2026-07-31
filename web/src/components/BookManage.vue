@@ -352,7 +352,9 @@ export default {
       this.$store.state.bookGroupList.forEach(v => {
         if (
           v.groupId > 0 &&
-          Long.fromNumber(v.groupId).and(Long.fromNumber(book.group)).greaterThan(0)
+          Long.fromNumber(v.groupId)
+            .and(Long.fromNumber(book.group))
+            .greaterThan(0)
         ) {
           groups.push(v.groupName);
         }

@@ -141,9 +141,7 @@
         <div class="recent-wrapper" v-show="$store.getters.hasLogin">
           <div class="recent-title">
             最近阅读
-            <span
-              class="right-text"
-              @click="$store.commit('clearReadingBook')"
+            <span class="right-text" @click="$store.commit('clearReadingBook')"
               >清除</span
             >
           </div>
@@ -602,7 +600,11 @@
         </div>
         <div
           class="title-btn"
-          v-if="$store.getters.isNormalPage && isSearchResult && !isShowSearchBookSourceListDesc"
+          v-if="
+            $store.getters.isNormalPage &&
+              isSearchResult &&
+              !isShowSearchBookSourceListDesc
+          "
           @click="loadMore"
         >
           <i class="el-icon-loading" v-if="loadingMore"></i>
@@ -610,7 +612,11 @@
         </div>
         <div
           class="title-btn"
-          v-if="$store.getters.isNormalPage && isSearchResult && isShowSearchBookSourceListDesc"
+          v-if="
+            $store.getters.isNormalPage &&
+              isSearchResult &&
+              isShowSearchBookSourceListDesc
+          "
           @click="displaySearchResult"
         >
           返回搜索
@@ -1142,29 +1148,19 @@
       :home="fileManagerHome"
     ></FileManager>
 
-    <License
-      v-model="showLicenseDialog"
-    ></License>
+    <License v-model="showLicenseDialog"></License>
 
-    <BookConfig
-      v-model="showBookConfigDialog"
-    ></BookConfig>
+    <BookConfig v-model="showBookConfigDialog"></BookConfig>
 
-    <ShelfSettings
-      v-model="showShelfSettingsDialog"
-    ></ShelfSettings>
+    <ShelfSettings v-model="showShelfSettingsDialog"></ShelfSettings>
 
     <RemoteBookSourceSub
       v-model="showRemoteBookSourceSubDialog"
     ></RemoteBookSourceSub>
 
-    <ActiveLicense
-      v-model="showActiveLicenseDialog"
-    ></ActiveLicense>
+    <ActiveLicense v-model="showActiveLicenseDialog"></ActiveLicense>
 
-    <HttpTTS
-      v-model="showHttpTTSDialog"
-    ></HttpTTS>
+    <HttpTTS v-model="showHttpTTSDialog"></HttpTTS>
   </div>
 </template>
 
@@ -1360,7 +1356,9 @@ export default {
       if (val && this.showImportBookDialog) {
         let groupId = 0;
         val.forEach(v => {
-          groupId = Long.fromNumber(groupId).or(Long.fromNumber(v)).toNumber();
+          groupId = Long.fromNumber(groupId)
+            .or(Long.fromNumber(v))
+            .toNumber();
         });
         this.importBookInfo.group = groupId;
       }
@@ -2722,11 +2720,7 @@ export default {
       });
 
       if (url && url.indexOf("assets") >= 0) {
-        Axios.post(
-          this.api + "/deleteFile",
-          { url },
-          { silent: true }
-        ).then(
+        Axios.post(this.api + "/deleteFile", { url }, { silent: true }).then(
           () => {
             //
           },
@@ -2781,7 +2775,9 @@ export default {
       if (res === "confirm") {
         let group = 0;
         info.groupId.forEach(value => {
-          group = Long.fromNumber(group).or(Long.fromNumber(value)).toNumber();
+          group = Long.fromNumber(group)
+            .or(Long.fromNumber(value))
+            .toNumber();
         });
         return {
           ...(book ? { name: info.name, author: info.author } : {}),
@@ -3042,10 +3038,7 @@ export default {
           book.header || JSON.stringify({ Cookie: "" }, null, 4),
           (content, close) => {
             try {
-              if (
-                !content.startsWith("@js:") &&
-                !content.startsWith("<js>")
-              ) {
+              if (!content.startsWith("@js:") && !content.startsWith("<js>")) {
                 JSON.parse(content);
               }
               book.header = content;
@@ -3235,20 +3228,16 @@ export default {
       eventBus.$emit("showLicenseDialog");
     },
     async clearInactiveUsers() {
-      const res = await this.$prompt(
-        "请输入不活跃天数",
-        "清理不活跃用户",
-        {
-          inputValue: "",
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          inputValidator: val => {
-            if (!val) return "天数不能为空";
-            if (isNaN(parseInt(val))) return "天数必须是数字";
-            return true;
-          }
+      const res = await this.$prompt("请输入不活跃天数", "清理不活跃用户", {
+        inputValue: "",
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValidator: val => {
+          if (!val) return "天数不能为空";
+          if (isNaN(parseInt(val))) return "天数必须是数字";
+          return true;
         }
-      ).catch(() => false);
+      }).catch(() => false);
       if (!res || !res.value) return;
       Axios.post(
         this.api + "/clearInactiveUsers",
@@ -3279,9 +3268,7 @@ export default {
           }
         },
         error => {
-          this.$message.error(
-            "加载httpTTS失败 " + (error && error.toString())
-          );
+          this.$message.error("加载httpTTS失败 " + (error && error.toString()));
         }
       );
     },
@@ -3484,9 +3471,7 @@ export default {
       return this.bookSourceShowSearchResult.filter(v =>
         this.showSourceGroup === "未分组"
           ? !v.bookSourceGroup
-          : (v.bookSourceGroup || "")
-              .split(",")
-              .includes(this.showSourceGroup)
+          : (v.bookSourceGroup || "").split(",").includes(this.showSourceGroup)
       );
     },
     bookSourceShowResultPageList() {
@@ -3560,7 +3545,9 @@ export default {
       if (this.importBookInfo.originName.toLowerCase().endsWith(".txt")) {
         // txt
         return this.$store.state.txtTocRules;
-      } else if (this.importBookInfo.originName.toLowerCase().endsWith(".epub")) {
+      } else if (
+        this.importBookInfo.originName.toLowerCase().endsWith(".epub")
+      ) {
         // epub
         return [
           { name: "根据 Spin 获取章节，使用 Toc 补充章节名", rule: "spin+toc" },
@@ -3577,12 +3564,12 @@ export default {
         ];
       }
     },
-      isShowActiveLicenseBtn() {
-        return (
-          this.$store.state.isManagerMode &&
-          window.location.host.indexOf("htmake") >= 0
-        );
-      }
+    isShowActiveLicenseBtn() {
+      return (
+        this.$store.state.isManagerMode &&
+        window.location.host.indexOf("htmake") >= 0
+      );
+    }
   }
 };
 </script>
