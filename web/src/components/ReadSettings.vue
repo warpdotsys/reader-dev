@@ -6,7 +6,12 @@
   >
     <div class="settings-title">
       设置
-      <div class="title-btn" @click="resetConfig">重置为默认配置</div>
+      <div class="title-btn" @click="resetConfig">重置</div>
+      <div class="title-btn" @click="restoreConfig">同步</div>
+      <div class="title-btn" @click="backupConfig">保存</div>
+      <div class="title-btn" @click="toggleNotAutoSync">{{
+        notAutoSync ? "自动同步" : "取消自动同步"
+      }}</div>
     </div>
     <div class="setting-list">
       <ul>
@@ -292,6 +297,60 @@
           <span class="setting-item-title font-color-title">字体颜色</span>
           <el-color-picker v-model="config.fontColor"></el-color-picker>
         </li>
+        <li v-if="$store.state.miniInterface">
+          <span class="setting-item-title">左右边距</span>
+          <div class="resize">
+            <span class="less" @click="decConfig('horizontalPadding')"
+              ><i class="el-icon-minus"></i></span
+            ><b></b>
+            <span class="lang">
+              <el-input
+                class="setting-input"
+                v-model="config.horizontalPadding"
+                size="mini"
+              ></el-input></span
+            ><b></b>
+            <span class="less" @click="incConfig('horizontalPadding')"
+              ><i class="el-icon-plus"></i
+            ></span>
+          </div>
+        </li>
+        <li v-if="$store.state.miniInterface">
+          <span class="setting-item-title">顶部边距</span>
+          <div class="resize">
+            <span class="less" @click="decConfig('topPadding')"
+              ><i class="el-icon-minus"></i></span
+            ><b></b>
+            <span class="lang">
+              <el-input
+                class="setting-input"
+                v-model="config.topPadding"
+                size="mini"
+              ></el-input></span
+            ><b></b>
+            <span class="less" @click="incConfig('topPadding')"
+              ><i class="el-icon-plus"></i
+            ></span>
+          </div>
+        </li>
+        <li v-if="$store.state.miniInterface">
+          <span class="setting-item-title">底部边距</span>
+          <div class="resize">
+            <span class="less" @click="decConfig('bottomPadding')"
+              ><i class="el-icon-minus"></i></span
+            ><b></b>
+            <span class="lang">
+              <el-input
+                class="setting-input"
+                v-model="config.bottomPadding"
+                size="mini"
+              ></el-input></span
+            ><b></b>
+            <span class="less" @click="incConfig('bottomPadding')"
+              ><i class="el-icon-plus"></i
+            ></span>
+          </div>
+        </li>
         <li>
           <span class="setting-item-title">页面模式</span>
           <div class="selection-zone">
@@ -430,6 +489,56 @@
             >
           </div>
         </li>
+        <li>
+          <span class="setting-item-title">请求超时</span>
+          <div class="resize">
+            <span class="less" @click="decConfig('chapterRequestTimeout')"
+              ><i class="el-icon-minus"></i></span
+            ><b></b>
+            <span class="lang">
+              <el-input
+                class="setting-input"
+                v-model="config.chapterRequestTimeout"
+                size="mini"
+              ></el-input></span
+            ><b></b>
+            <span class="less" @click="incConfig('chapterRequestTimeout')"
+              ><i class="el-icon-plus"></i
+            ></span>
+          </div>
+        </li>
+        <el-divider></el-divider>
+        <li>
+          <span class="setting-item-title">快捷键</span>
+          <div class="selection-zone">
+            <span
+              class="span-item"
+              v-for="(mode, index) in quickKeyModes"
+              :key="index"
+              :class="{ selected: config.quickKeyMode === mode }"
+              @click="setQuickKeyMode(mode)"
+              >{{ mode }}</span
+            >
+          </div>
+        </li>
+        <template v-if="config.quickKeyMode === '自定义'">
+          <li
+            v-for="(keyItem, index) in quickKeyList"
+            :key="'quickKey-' + index"
+          >
+            <span class="setting-item-title">{{ keyItem.label }}</span>
+            <div class="selection-zone">
+              <span
+                class="span-item"
+                v-for="(option, optionIndex) in quickKeyOps"
+                :key="optionIndex"
+                :class="{ selected: config.quickKey[keyItem.key] === option }"
+                @click="setQuickKeyOpt(keyItem.key, option)"
+                >{{ option }}</span
+              >
+            </div>
+          </li>
+        </template>
         <el-divider></el-divider>
         <li class="operation-zone">
           <span class="span-btn" @click="showClickZone">显示翻页区域</span>
@@ -496,14 +605,39 @@ export default {
       ],
       fonts: ["系统", "黑体", "楷体", "宋体", "仿宋"],
       readMethods: ["上下滑动", "左右滑动", "上下滚动", "上下滚动2"],
-      clickMethods: ["下一页", "自动", "不翻页"],
+      clickMethods: ["下一页", "自动", "不翻页", "固定模式"],
       selectionActions: ["操作弹窗", "忽略"],
       pageModes: ["自适应", "手机模式"],
       pageTypes: ["正常", "Kindle"],
       themeTypes: ["day", "night"],
       configDefaultTypeList: ["白天默认", "黑夜默认"],
       autoReadingMethods: ["像素滚动", "段落滚动"],
-      chineseFonts: ["简体", "繁体"],
+      chineseFonts: ["简体", "繁体", "原文"],
+      quickKeyModes: ["默认", "自定义"],
+      quickKeyOps: [
+        "上一页",
+        "下一页",
+        "上半页",
+        "下半页",
+        "上一章",
+        "下一章",
+        "首页",
+        "尾页",
+        "返回",
+        "不操作"
+      ],
+      quickKeyList: [
+        { key: "ArrowUp", label: "上键" },
+        { key: "ArrowDown", label: "下键" },
+        { key: "ArrowLeft", label: "左键" },
+        { key: "ArrowRight", label: "右键" },
+        { key: "Space", label: "空格" },
+        { key: "PageUp", label: "PgUp" },
+        { key: "PageDown", label: "PgDn" },
+        { key: "Home", label: "Home" },
+        { key: "End", label: "End" },
+        { key: "Escape", label: "Esc" }
+      ],
 
       customFontName: "",
       customFonts: customFonts,
@@ -522,7 +656,11 @@ export default {
           min: Math.min(Math.floor(window.innerWidth / 160), 4) * 160,
           max: Math.floor(window.innerWidth / 160) * 160,
           delta: 160
-        }
+        },
+        horizontalPadding: { min: 0, delta: 1 },
+        topPadding: { min: 0, delta: 1 },
+        bottomPadding: { min: 0, delta: 1 },
+        chapterRequestTimeout: { min: 0, max: 300, delta: 1 }
       }
     };
   },
@@ -549,6 +687,9 @@ export default {
       return this.$store.state.customConfigList.find(
         v => v.name === this.$store.state.config.customConfig
       );
+    },
+    notAutoSync() {
+      return this.$store.state.notAutoSync;
     }
   },
   watch: {
@@ -556,6 +697,10 @@ export default {
       deep: true,
       handler(val) {
         this.$store.commit("setConfig", { ...val });
+        if (!this.notAutoSync && this.$root.$children[0]) {
+          this.$root.$children[0].saveUserConfig &&
+            this.$root.$children[0].saveUserConfig(true);
+        }
       }
     }
   },
@@ -604,6 +749,28 @@ export default {
     setReadMethod(readMethod) {
       this.$emit("readMethodChange");
       this.config = { ...this.config, readMethod };
+    },
+    setQuickKeyMode(quickKeyMode) {
+      this.config = { ...this.config, quickKeyMode };
+    },
+    setQuickKeyOpt(key, option) {
+      this.config = {
+        ...this.config,
+        quickKey: { ...this.config.quickKey, [key]: option }
+      };
+    },
+    toggleNotAutoSync() {
+      this.$store.commit("setNotAutoSync", !this.notAutoSync);
+    },
+    backupConfig() {
+      if (this.$root.$children[0] && this.$root.$children[0].saveUserConfig) {
+        this.$root.$children[0].saveUserConfig();
+      }
+    },
+    restoreConfig() {
+      if (this.$root.$children[0] && this.$root.$children[0].restoreUserConfig) {
+        this.$root.$children[0].restoreUserConfig();
+      }
     },
     setConfig(name, value) {
       const data = {};
@@ -780,7 +947,15 @@ export default {
         }
       );
     },
-    resetConfig() {
+    async resetConfig() {
+      const res = await this.$confirm("确认要重置为默认配置吗?", "提示").catch(
+        () => {
+          return false;
+        }
+      );
+      if (!res) {
+        return;
+      }
       this.config = { ...settings.config };
     },
     showClickZone() {

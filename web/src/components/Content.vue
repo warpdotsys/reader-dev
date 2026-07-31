@@ -1,4 +1,5 @@
 <script>
+import DPlayer from "dplayer";
 import { loadFont } from "../plugins/helper";
 export default {
   name: "Content",
@@ -10,7 +11,8 @@ export default {
       currentSpeed: 1,
       audioVolume: 100,
       startTime: 0,
-      iframeStyle: {}
+      iframeStyle: {},
+      iframeSize: { scrollHeight: 0, scrollWidth: 0 }
     };
   },
   props: [
@@ -19,10 +21,16 @@ export default {
     "title",
     "showContent",
     "isScrollRead",
+    "isSlideRead",
     "showChapterList",
-    "currentShowChapter"
+    "currentShowChapter",
+    "isEditContent"
   ],
   render() {
+    if (this.isVideo) {
+      // 视频
+      return this.renderVideo();
+    }
     if (this.showContent) {
       if (
         this.$store.getters.currentChapter &&
@@ -55,11 +63,12 @@ export default {
         <div
           class="content-body chapter-content reading-chapter"
           style={this.containerStyle}
+          attrs={{ contenteditable: this.isEditContent }}
           v-lazy-container={{
             selector: "img"
           }}
         >
-          {this.isCbz ? null : <h3 data-pos={0}>{this.title}</h3>}
+          {this.isCbz || this.isPdf ? null : <h3 data-pos={0}>{this.title}</h3>}
           {this.content.split(/\n+/).map(a => {
             a = a.replace(/^\s+/g, "");
             if (!a) {
@@ -72,7 +81,7 @@ export default {
               // 将 src 替换为 data-src 懒加载
               a = a
                 .replace(/src=/g, "data-src=")
-                .replace("__API_ROOT__", this.$store.getters.apiRoot);
+                .replace(/__API_ROOT__/g, this.$store.getters.apiRoot);
               return (
                 <div
                   style={this.containerStyle}
@@ -100,6 +109,9 @@ export default {
     }
     window.contentCom = this;
     this.loadCustomFontFamil();
+  },
+  unmounted() {
+    delete window.contentCom;
   },
   computed: {
     readingBook() {
@@ -134,14 +146,25 @@ export default {
     isAudio() {
       return !this.error && this.readingBook.type === 1;
     },
+    isVideo() {
+      return !this.error && this.readingBook.type === 4;
+    },
     isEpub() {
       return (
         !this.error && this.readingBook.bookUrl.toLowerCase().endsWith(".epub")
       );
     },
+    isEpubIframe() {
+      return this.$store.getters.config.epubMode === "iframe";
+    },
     isCbz() {
       return (
         !this.error && this.readingBook.bookUrl.toLowerCase().endsWith(".cbz")
+      );
+    },
+    isPdf() {
+      return (
+        !this.error && this.readingBook.bookUrl.toLowerCase().endsWith(".pdf")
       );
     },
     containerStyle() {
@@ -177,12 +200,12 @@ export default {
   },
   watch: {
     containerStyle() {
-      if (this.isEpub) {
+      if (this.isEpub && this.isEpubIframe) {
         this.setIframeStyle();
       }
     },
     pStyle() {
-      if (this.isEpub) {
+      if (this.isEpub && this.isEpubIframe) {
         this.setIframeStyle();
       }
     },
@@ -193,6 +216,28 @@ export default {
     },
     currentCustomFontFamily() {
       this.loadCustomFontFamil();
+    },
+    isSlideRead() {
+      if (this.isEpub && this.isEpubIframe) {
+        this.iframeStyle = {};
+        this.setIframeStyle();
+        if (this.isSlideRead) {
+          this.syncIframeWidth();
+        } else {
+          this.syncIframeHeight();
+        }
+        this.sendToIframe("execute", {
+          script: 'document.body.style.transform="translateX(0px)";'
+        });
+      }
+    },
+    showContent: {
+      handler(val) {
+        if (val && this.isVideo) {
+          this.initDplayer();
+        }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -228,7 +273,7 @@ export default {
                 ]}
                 data-index={chapter.index}
               >
-                {this.isCbz ? null : <h3 data-pos={0}>{chapter.title}</h3>}
+                {this.isCbz || this.isPdf ? null : <h3 data-pos={0}>{chapter.title}</h3>}
                 {chapter.content.split(/\n+/).map(a => {
                   a = a.replace(/^\s+/g, "");
                   if (!a) {
@@ -285,7 +330,8 @@ export default {
             vOn:stalled={this.audioEvent}
             vOn:suspend={this.onsuspend}
             vOn:loadeddata={this.audioEvent}
-            vOn:loadedmetadata={this.audioEvent}
+            vOn:loadedmetadata={this.computeDuration}
+            vOn:durationchange={this.computeDuration}
             vOn:canplay={this.onCanPlay}
             vOn:canplaythrough={this.audioEvent}
             vOn:waiting={this.onWaiting}
@@ -394,6 +440,47 @@ export default {
         </div>
       );
     },
+    renderVideo() {
+      return <div ref="dplayer"></div>;
+    },
+    initDplayer() {
+      if (this.$refs.dplayer) {
+        if (this.dplayer) {
+          this.dplayer.destroy();
+        }
+        // 视频内容为 JSON 配置：{"video":{"url":"..."},"danmaku":{"id":"...","api":"..."},"subtitle":{...}}
+        // 或纯视频地址
+        let options = { video: { url: this.content } };
+        try {
+          options = JSON.parse(this.content);
+          if (typeof options === "string") {
+            options = { video: { url: this.content } };
+          }
+        } catch (error) {
+          //
+        }
+        this.dplayer = new DPlayer({
+          container: this.$refs.dplayer,
+          ...options,
+          preventClickToggle: true,
+          autoplay: true
+        });
+        this.dplayer.on("durationchange", () => {
+          if (this.startTime) {
+            this.dplayer.seek(this.startTime);
+            this.startTime = null;
+          }
+        });
+        this.dplayer.on("timeupdate", () => {
+          this.currentTime = this.dplayer.video.currentTime | 0;
+          this.$emit("updateProgress");
+        });
+      } else {
+        setTimeout(() => {
+          this.initDplayer();
+        }, 50);
+      }
+    },
     renderEpub() {
       return (
         <iframe
@@ -404,60 +491,116 @@ export default {
         ></iframe>
       );
     },
+    iframeEvent(event, data) {
+      switch (event) {
+        case "inited":
+          this.iframeStyle = {};
+          this.setIframeStyle();
+          if (this.isSlideRead) {
+            this.syncIframeWidth();
+          } else {
+            this.syncIframeHeight();
+          }
+          break;
+        case "load":
+          setTimeout(() => {
+            this.$emit("iframeLoad");
+            this.$emit("epubLocationChange", data);
+          }, 100);
+          break;
+        case "setHeight":
+          this.iframeSize.scrollHeight = data;
+          if (!this.isSlideRead) {
+            this.iframeStyle = {
+              ...this.iframeStyle,
+              height: Math.max(data, this.windowSize.height * 0.8) + "px"
+            };
+            this.$emit("contentChange");
+          }
+          break;
+        case "setWidth":
+          this.iframeSize.scrollWidth = data;
+          if (this.isSlideRead) {
+            this.$emit("contentChange");
+          }
+          break;
+        case "click":
+          this.$emit("epubClick", data);
+          break;
+        case "clickHash":
+          this.$emit("epubClickHash", data);
+          break;
+        case "keydown":
+          this.$emit("epubKeydown", data);
+          break;
+        case "previewImageList":
+          this.$store.commit("setPreviewImageIndex", data.imageIndex);
+          this.$store.commit("setPreviewImgList", data.imageList);
+          break;
+        case "clickA":
+          this.$emit("epubLocationChange", data);
+          break;
+        case "touchstart":
+        case "touchmove":
+        case "touchend":
+          this.$emit("epubTouch", { event, data });
+          break;
+        default:
+          break;
+      }
+    },
     initIframe() {
       window.addEventListener("message", event => {
         if (
           this.$refs.iframe &&
           event.source === this.$refs.iframe.contentWindow
         ) {
-          //
           let message;
           try {
             message = JSON.parse(event.data);
           } catch (error) {
             return;
           }
-          if (message.event === "inited") {
-            this.iframeStyle = {};
-            // 设置iframe样式
-            this.setIframeStyle();
-            // 同步iframe高度
-            this.syncIframeHeight();
-          } else if (message.event === "load") {
-            setTimeout(() => {
-              this.$emit("iframeLoad");
-              this.$emit("epubLocationChange", message.data);
-            }, 100);
-          } else if (message.event === "setHeight") {
-            this.iframeStyle = {
-              ...this.iframeStyle,
-              height:
-                Math.max(message.data, this.windowSize.height * 0.8) + "px"
-            };
-            this.$emit("contentChange");
-          } else if (message.event === "click") {
-            this.$emit("epubClick", message.data);
-          } else if (message.event === "clickHash") {
-            this.$emit("epubClickHash", message.data);
-          } else if (message.event === "keydown") {
-            this.$emit("epubKeydown", message.data);
-          } else if (message.event === "previewImageList") {
-            this.$store.commit("setPreviewImageIndex", message.data.imageIndex);
-            this.$store.commit("setPreviewImgList", message.data.imageList);
-          }
-          // else if (message.event === "clickA") {
-          //   this.$emit("locationChange", message.data);
-          // }
+          this.iframeEvent(message.event, message.data);
         }
       });
     },
     syncIframeHeight() {
-      this.sendToIframe("execute", {
-        script:
-          "reader_notify('setHeight', document.documentElement.scrollHeight || document.body.scrollHeight)"
-      });
+      this.ensure(() => {
+        this.$refs.iframe.syncIframeHeight();
+      }, () => this.$refs.iframe);
+    },
+    syncIframeWidth() {
+      this.ensure(() => {
+        this.$refs.iframe.syncIframeWidth();
+      }, () => this.$refs.iframe);
+    },
+    ensure(callback, check) {
+      if (check && check()) {
+        callback && callback();
+      } else {
+        setTimeout(() => {
+          this.ensure(callback, check);
+        }, 10);
+      }
+    },
+    transformX(x) {
+      this.ensure(() => {
+        this.$refs.iframe.transformX(x);
+      }, () => this.$refs.iframe);
+    },
+    syncCSSProperty() {
+      this.ensure(() => {
+        this.$refs.iframe.syncCSSProperty();
+      }, () => this.$refs.iframe);
     },
     setIframeStyle() {
+      if (!this.$refs.iframe) {
+        setTimeout(() => {
+          this.setIframeStyle();
+        }, 10);
+        return;
+      }
       let bodyStyle = "";
       for (const i in this.containerStyle) {
         if (Object.hasOwnProperty.call(this.containerStyle, i)) {
@@ -484,7 +627,17 @@ export default {
       pStyle +=
         "font-weight: " + this.containerStyle.fontWeight + " !important;";
       pStyle += "color: " + this.containerStyle.color + " !important;";
-
+      let imgStyle = "";
+      if (this.isSlideRead) {
+        imgStyle =
+          "\n          height: 100%;\n          " +
+          "columns: calc(100vw - 16px - var(--horizontal-padding, 0px)) 1;\n" +
+          "          column-gap: calc(16px + var(--horizontal-padding, 0px));\n        ";
+      }
+      let imgRules = "";
+      if (this.isSlideRead) {
+        imgRules = "\n          break-inside: avoid;\n        ";
+      }
       this.sendToIframe("setStyle", {
         style: `
         *::-webkit-scrollbar {
@@ -496,19 +649,30 @@ export default {
           outline: none !important;
         }
         html {
+          ${this.isSlideRead ? "height: 100%;" : ""}
           min-height: 100%;
         }
         body {
           margin: 0 !important;
           ${bodyStyle}
         }
+        .reading {
+          color: red !important;
+        }
         body p {
           ${pStyle}
         }
-        img {
+        body h1, body h2, body h3, body h4 {
+          font-family: ${this.containerStyle.fontFamily} !important;
+          font-weight: ${this.containerStyle.fontWeight} !important;
+          color: ${this.containerStyle.color} !important;
+        }
+        img, body img {
           display: block;
-          max-width: 100vw !important;
+          max-width: ${this.isSlideRead ? "100vw" : "100%"} !important;
           height: auto !important;
+          ${imgStyle}
+          ${imgRules}
         }`
       });
     },

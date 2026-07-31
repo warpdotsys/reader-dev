@@ -544,7 +544,7 @@ export default {
           }
         },
         error => {
-          this.$message.error("操作失败 " + (error && error.toString()));
+          this.$message.error("操作失败" + (error && error.toString()));
         }
       );
     },
@@ -587,10 +587,6 @@ export default {
         path: row.path,
         accessToken: this.$store.state.token
       };
-      if (this.$store.state.isManagerMode && this.$store.state.secureKey) {
-        params.secureKey = this.$store.state.secureKey;
-        params.userNS = this.$store.state.userNS;
-      }
       const url = buildURL(this.api + "/file/download", params);
       window.open(url, "__blank");
     },
@@ -659,5 +655,14 @@ export default {
 }
 .float-right {
   float: right;
+}
+.dialog-footer {
+  .float-left {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+}
+.text-button {
+  padding: 3px 5px;
 }
 </style>

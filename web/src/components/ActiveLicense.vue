@@ -12,10 +12,7 @@
     :before-close="cancel"
   >
     <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >密钥管理
-        <span class="float-right span-btn" @click="showForm">生成密钥</span>
-      </span>
+      <span class="el-dialog__title">密钥管理 </span>
     </div>
     <div class="source-container table-container">
       <el-table
@@ -36,17 +33,9 @@
           :fixed="$store.state.miniInterface"
         >
         </el-table-column>
-        <el-table-column
-          property="code"
-          label="Code"
-          min-width="100px"
-        >
+        <el-table-column property="code" label="Code" min-width="100px">
         </el-table-column>
-        <el-table-column
-          property="type"
-          label="类型"
-          min-width="100px"
-        >
+        <el-table-column property="type" label="类型" min-width="100px">
         </el-table-column>
         <el-table-column
           property="userMaxLimit"
@@ -123,6 +112,35 @@ import Axios from "../plugins/axios";
 import eventBus from "../plugins/eventBus";
 import { getCache, setCache } from "../plugins/cache";
 
+const getFile = (path, home) =>
+  Axios.get("/file/get", {
+    params: { path, home: home || "__HOME__" },
+    silent: true
+  })
+    .then(res => {
+      return res.data.isSuccess ? res.data.data : null;
+    })
+    .catch(() => {
+      return null;
+    });
+
+const saveFile = (path, content, home) =>
+  Axios.post(
+    "/file/save",
+    {
+      path,
+      content,
+      home: home || "__HOME__"
+    },
+    { silent: true }
+  )
+    .then(res => {
+      return !!res.data.isSuccess;
+    })
+    .catch(() => {
+      return null;
+    });
+
 export default {
   model: {
     prop: "show",
@@ -165,24 +183,18 @@ export default {
     cancel() {
       this.$emit("setShow", false);
     },
-    loadList() {
-      Axios.get(this.api + "/file/get", {
-        params: { path: this.filePath, home: "__STORAGE__" },
-        silent: true
-      })
-        .then(res => {
-          if (res.data.isSuccess && res.data.data) {
-            try {
-              const data = JSON.parse(res.data.data);
-              if (Array.isArray(data)) {
-                this.list = data;
-              }
-            } catch (e) {
-              // ignore
-            }
+    async loadList() {
+      const data = await getFile(this.filePath, "__STORAGE__");
+      if (data) {
+        try {
+          const list = JSON.parse(data);
+          if (Array.isArray(list)) {
+            this.list = list;
           }
-        })
-        .catch(() => null);
+        } catch (error) {
+        /* ignore */
+      }
+      }
     },
     async deleteItems() {
       if (!this.localSelection.length) {
@@ -193,15 +205,19 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      }).catch(() => false);
-      if (!res) return;
+      }).catch(() => {
+        return false;
+      });
+      if (!res) {
+        return;
+      }
       const remaining = this.list.filter(
-        t => !this.localSelection.includes(t)
+        item => !this.localSelection.includes(item)
       );
       this.saveData(remaining);
     },
     async showForm() {
-      let config = getCache("lastGenerateLicenseConfig") || {
+      let config = getCache("lastGenerateLicenseConfig", {
         host: "*",
         userMaxLimit: 15,
         expiredAt: 0,
@@ -210,7 +226,7 @@ export default {
         key: "Pvkp7tMQJpi4kWBE",
         type: "basic",
         code: ""
-      };
+      });
       const items = [
         { name: "host", label: "Host", type: "input" },
         { name: "userMaxLimit", label: "用户上限", type: "input" },
@@ -227,9 +243,12 @@ export default {
         showCancelButton: true,
         confirmButtonText: "确定",
         cancelButtonText: "取消"
-      }).catch(error => (error === "close" ? "close" : error));
-      if (res !== "confirm") return false;
-
+      }).catch(error => {
+        return error === "close" ? "close" : error;
+      });
+      if (res !== "confirm") {
+        return false;
+      }
       config.userMaxLimit = parseInt(config.userMaxLimit);
       config.expiredAt = "" + config.expiredAt;
       if (config.expiredAt && config.expiredAt.indexOf("-") > 0) {
@@ -251,7 +270,7 @@ export default {
         config.simpleWebExpiredAt = parseInt(config.simpleWebExpiredAt);
       }
       setCache("lastGenerateLicenseConfig", config);
-      Axios.post(this.api + "/generateLicense", config).then(
+      Axios.post("/generateLicense", config).then(
         res => {
           if (res.data.isSuccess) {
             eventBus.$emit(
@@ -263,27 +282,23 @@ export default {
         },
         error => {
           this.$message.error("生成密钥失败 " + (error && error.toString()));
+          throw error;
         }
       );
     },
-    saveData(data) {
-      Axios.post(
-        this.api + "/file/save",
-        {
-          path: this.filePath,
-          content: JSON.stringify(data),
-          home: "__STORAGE__"
-        },
-        { silent: true }
-      )
-        .then(res => {
-          if (res.data.isSuccess) {
-            this.localSelection = [];
-            this.$message.success("操作成功");
-            this.loadList();
-          }
-        })
-        .catch(() => null);
+    async saveData(data, silent) {
+      const res = await saveFile(
+        this.filePath,
+        JSON.stringify(data),
+        "__STORAGE__"
+      );
+      if (res) {
+        this.localSelection = [];
+        if (!silent) {
+          this.$message.success("操作成功");
+        }
+        this.loadList();
+      }
     }
   }
 };
@@ -294,5 +309,11 @@ export default {
 }
 .float-right {
   float: right;
+}
+.dialog-footer {
+  .float-left {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
 }
 </style>

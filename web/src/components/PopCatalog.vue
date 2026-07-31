@@ -27,12 +27,26 @@
           <i class="el-icon-loading" v-if="refreshLoading"></i>
           {{ refreshLoading ? "刷新中..." : "刷新" }}
         </span>
+        <span class="span-btn" @click="isSearching = !isSearching">{{
+          isSearching ? "取消" : "搜索"
+        }}</span>
+      </div>
+      <div class="title-btn" v-show="isSearching">
+        <el-input
+          class="booksource-filter-input"
+          size="mini"
+          placeholder="搜索目录"
+          v-model="searchKeyword"
+        ></el-input>
+        <span class="span-btn" @click="isSearching = !isSearching">{{
+          isSearching ? "取消" : "搜索"
+        }}</span>
       </div>
     </div>
     <div
       class="data-wrapper"
       ref="cataData"
-      :class="{ night: $store.getters.isNight, day: !$store.getters.isNight }"
+      :class="{ night: $store.getters.isNight, day: !$store.getters.isNight, expand: expand }"
     >
       <div class="cata">
         <div
@@ -68,8 +82,11 @@ export default {
     return {
       refreshLoading: false,
       asc: true,
+      expand: false,
       cachedCataMap: {},
-      tocUrl: ""
+      tocUrl: "",
+      isSearching: false,
+      searchKeyword: ""
     };
   },
   props: ["visible"],
@@ -84,6 +101,16 @@ export default {
       return this.$store.getters.readingBook.catalog || [];
     },
     cataList() {
+      if (this.isSearching && this.searchKeyword) {
+        if (this.asc) {
+          return this.catalog.filter(item =>
+            (item.title || "").includes(this.searchKeyword)
+          );
+        }
+        return [].concat(this.catalog).reverse().filter(item =>
+          (item.title || "").includes(this.searchKeyword)
+        );
+      }
       if (this.asc) {
         return this.catalog;
       } else {
@@ -155,7 +182,7 @@ export default {
     gotoChapter(note) {
       const index = this.catalog.indexOf(note);
       this.$emit("close");
-      this.$emit("getContent", index);
+      this.$emit("gotoChapter", index);
     },
     refreshChapter() {
       this.refreshLoading = true;
@@ -351,11 +378,21 @@ export default {
         color: #606266;
       }
     }
+    .booksource-filter-input {
+      width: 200px;
+      display: inline-block;
+      margin-left: 15px;
+    }
   }
 
   .data-wrapper {
     height: 300px;
     overflow: auto;
+
+    &.expand {
+      height: 85vh;
+    }
+
 
     .cata {
       display: flex;

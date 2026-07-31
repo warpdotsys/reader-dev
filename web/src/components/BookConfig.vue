@@ -90,14 +90,14 @@ export default {
       this.$emit("setShow", false);
     },
     save() {
-      Axios.post(this.api + "/book/saveBookConfig", {
+      Axios.post("/book/saveBookConfig", {
         bookUrl: this.$store.state.showBookInfo.bookUrl,
         ...this.bookConfig
       }).then(
         res => {
           if (res.data.isSuccess) {
             this.$message.success("更新成功");
-            this.$store.commit("setShowBookInfo", res.data.data);
+            this.showBookInfo = res.data.data;
             this.$store.commit("updateShelfBook", res.data.data);
           }
         },

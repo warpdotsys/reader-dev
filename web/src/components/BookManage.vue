@@ -11,25 +11,26 @@
     v-if="$store.getters.isNormalPage"
     :before-close="cancel"
   >
-    <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >书架管理
+    <div class="custom-dialog-title flex-title" slot="title">
+      <span class="el-dialog__title">书架管理 </span>
+      <span class="title-center">
+        <el-input
+          v-model="search"
+          size="mini"
+          placeholder="输入关键字搜索"
+          class="search-input"
+        ></el-input>
+      </span>
+      <span class="action-zone" v-show="!$store.state.miniInterface">
         <span class="float-right small-tip">❗️只能缓存文本内容</span>
       </span>
     </div>
     <div class="source-container table-container">
-      <el-input
-        v-model="searchQuery"
-        placeholder="搜索书名或作者"
-        size="small"
-        clearable
-        class="search-input"
-        prefix-icon="el-icon-search"
-      ></el-input>
       <el-table
-        :data="filteredBookList"
+        :data="showList"
         :height="dialogContentHeight - 42"
         @selection-change="manageBookSelection = $event"
+        @sort-change="sortChange"
       >
         <el-table-column
           type="selection"
@@ -42,6 +43,7 @@
           property="name"
           label="书名名"
           min-width="100"
+          sortable="custom"
           :fixed="$store.state.miniInterface"
         >
           <template slot-scope="scope">
@@ -57,9 +59,17 @@
         <el-table-column
           property="author"
           label="作者"
+          sortable="custom"
           min-width="100"
-        ></el-table-column>
-        <el-table-column label="分组" min-width="120">
+        >
+        </el-table-column>
+        <el-table-column
+          property="group"
+          label="分组"
+          min-width="120"
+          :filters="bookGroupFilters"
+          :filter-method="filterHandler"
+        >
           <template slot-scope="scope">
             {{ renderBookGroup(scope.row) }}
           </template>
@@ -68,8 +78,8 @@
           <template slot-scope="scope">
             <span>共 {{ scope.row.totalChapterNum }} 章</span><br />
             <span v-if="scope.row.origin !== 'loc_book'">
-              服务器缓存： {{ scope.row.cachedChapterCount || 0 }} 章 <br
-            /></span>
+              服务器缓存： {{ scope.row.cachedChapterCount || 0 }} 章 <br />
+            </span>
             <span>浏览器缓存： {{ scope.row.localCacheCount }} 章</span>
           </template>
         </el-table-column>
@@ -90,7 +100,10 @@
               @click="setBookGroup(scope.row)"
               >分组</el-button
             >
-            <el-dropdown @command="cacheBook(scope.row, $event)">
+            <el-dropdown
+              :trigger="$store.state.touchable ? 'click' : 'hover'"
+              @command="cacheBook(scope.row, $event)"
+            >
               <el-button class="text-button" type="text" size="medium">
                 <span v-if="isCaching(scope.row)">
                   <i class="el-icon-loading"></i> 缓存中
@@ -123,7 +136,10 @@
                 >
               </el-dropdown-menu>
             </el-dropdown>
-            <el-dropdown @command="exportBook(scope.row, $event)">
+            <el-dropdown
+              :trigger="$store.state.touchable ? 'click' : 'hover'"
+              @command="exportBook(scope.row, $event)"
+            >
               <el-button class="text-button" type="text" size="medium">
                 导出<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
@@ -137,41 +153,75 @@
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteBookList"
-        >批量删除</el-button
-      >
-      <el-dropdown class="float-left" @command="addBookGroupMulti">
-        <el-button type="primary" size="medium">
-          批量添加分组<i class="el-icon-arrow-down el-icon--right"></i>
-        </el-button>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item
-            v-for="(bookGroup, index) in bookGroupList"
-            :key="'bookGroup-' + index"
-            :command="bookGroup"
-            >{{ bookGroup.groupName }}</el-dropdown-item
-          >
-        </el-dropdown-menu>
-      </el-dropdown>
-      <el-dropdown class="float-left" @command="removeBookGroupMulti">
-        <el-button type="primary" size="medium">
-          批量移除分组<i class="el-icon-arrow-down el-icon--right"></i>
-        </el-button>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item
-            v-for="(bookGroup, index) in bookGroupList"
-            :key="'bookGroup-' + index"
-            :command="bookGroup"
-            >{{ bookGroup.groupName }}</el-dropdown-item
-          >
-        </el-dropdown-menu>
-      </el-dropdown>
-      <span class="check-tip">已选择 {{ manageBookSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-dropdown
+          class="float-left"
+          :trigger="$store.state.touchable ? 'click' : 'hover'"
+          @command="multiOperate"
+        >
+          <el-button type="primary" size="medium">
+            操作
+            <span v-if="manageBookSelection.length">
+              ({{ manageBookSelection.length }})
+            </span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="deleteBookList"
+              >批量删除</el-dropdown-item
+            >
+            <el-dropdown-item command="addBookGroupMulti"
+              >添加分组</el-dropdown-item
+            >
+            <el-dropdown-item command="removeBookGroupMulti"
+              >删除分组</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-dropdown
+          class="float-left"
+          :trigger="$store.state.touchable ? 'click' : 'hover'"
+          @command="cacheBookMulti"
+        >
+          <el-button type="primary" size="medium">
+            缓存
+            <span v-if="manageBookSelection.length">
+              ({{ manageBookSelection.length }})
+            </span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="cacheBookOnServer"
+              >服务器缓存</el-dropdown-item
+            >
+            <el-dropdown-item command="cacheBookSSE"
+              >缓存到服务器</el-dropdown-item
+            >
+            <el-dropdown-item command="cacheBookLocal"
+              >缓存到浏览器</el-dropdown-item
+            >
+            <el-dropdown-item command="deleteBookCache"
+              >删除服务器缓存</el-dropdown-item
+            >
+            <el-dropdown-item command="deleteBookLocalCache"
+              >删除浏览器缓存</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-button v-if="multiOperating" size="medium" @click="cancelMulti"
+          >取消批量操作</el-button
+        >
+      </div>
+      <div class="source-pagination">
+        <el-pagination
+          :current-page.sync="pagination.page"
+          :page-sizes="[25, 50, 100, 200, 300, 400, filterList.length]"
+          :page-size.sync="pagination.size"
+          layout="total, sizes, prev, pager, next"
+          :total="filterList.length"
+          :pager-count="$store.state.miniInterface ? 5 : 7"
+        ></el-pagination>
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -192,25 +242,24 @@ export default {
   name: "BookManage",
   data() {
     return {
-      searchQuery: "",
       bookList: [],
-      manageBookSelection: []
+      manageBookSelection: [],
+      search: "",
+      pagination: { page: 1, size: 25 },
+      sortable: { prop: "", order: null },
+      multiOperating: false
     };
   },
   props: ["show"],
   computed: {
     ...mapGetters(["dialogWidth", "dialogTop", "dialogContentHeight"]),
-    filteredBookList() {
-      const q = this.searchQuery.trim().toLowerCase();
-      if (!q) return this.bookList;
-      return this.bookList.filter(
-        v =>
-          v.name.toLowerCase().includes(q) ||
-          (v.author || "").toLowerCase().includes(q)
-      );
-    },
     bookGroupList() {
       return this.$store.state.bookGroupList.filter(v => v.groupId > 0);
+    },
+    bookGroupFilters() {
+      return [{ text: "未分组", value: 0 }].concat(
+        this.bookGroupList.map(v => ({ text: v.groupName, value: v.groupId }))
+      );
     },
     cachingBookList: {
       get() {
@@ -226,6 +275,38 @@ export default {
         map[v.bookUrl] = true;
       });
       return map;
+    },
+    filterList() {
+      return this.bookList.filter(
+        v => !this.search || v.name.toLowerCase().includes(this.search.toLowerCase())
+      );
+    },
+    sortList() {
+      if (!this.sortable.prop || !this.sortable.order) {
+        return this.filterList;
+      }
+      const list = [].concat(this.filterList);
+      return list.sort((a, b) => {
+        if (this.sortable.order !== "ascending") {
+          const t = a;
+          a = b;
+          b = t;
+        }
+        return a[this.sortable.prop] > b[this.sortable.prop]
+          ? 1
+          : a[this.sortable.prop] < b[this.sortable.prop]
+          ? -1
+          : 0;
+      });
+    },
+    showList() {
+      const offset = (this.pagination.page - 1) * this.pagination.size;
+      return offset > this.sortList.length
+        ? []
+        : this.sortList.slice(
+            offset,
+            Math.min(offset + this.pagination.size, this.sortList.length)
+          );
     }
   },
   created() {
@@ -254,6 +335,9 @@ export default {
     },
     isBookSelectable() {
       return true;
+    },
+    sortChange({ prop, order }) {
+      this.sortable = { prop, order };
     },
     async loadBookCacheInfo() {
       return Axios.get(this.api + "/getShelfBookWithCacheInfo").then(
@@ -300,22 +384,60 @@ export default {
         }
       );
     },
-    async addBookGroupMulti(bookGroup) {
-      return this.operateBookGroupMulti(bookGroup, true);
+    async addBookGroupMulti() {
+      return this.operateBookGroupMulti(true);
     },
-    async removeBookGroupMulti(bookGroup) {
-      return this.operateBookGroupMulti(bookGroup);
+    async removeBookGroupMulti() {
+      return this.operateBookGroupMulti();
     },
-    async operateBookGroupMulti(bookGroup, isAdd) {
+    async operateBookGroupMulti(isAdd) {
       const operate = isAdd ? "添加" : "移除";
       if (!this.manageBookSelection.length) {
         this.$message.error("请选择需要" + operate + "分组的书籍");
         return;
       }
-      const res = await this.$confirm(
+      const formData = { groupId: "" };
+      const formItems = [
+        {
+          name: "groupId",
+          label: operate + "分组",
+          type: "select",
+          placeholder: "请选择分组",
+          multiple: false,
+          options: this.bookGroupList.map(v => ({
+            label: v.groupName,
+            value: v.groupId
+          }))
+        }
+      ];
+      const res = await this.$msgbox({
+        title: isAdd ? "批量添加分组" : "批量删除分组",
+        message: this.renderForm(
+          isAdd ? "addBookGroupMulti" : "removeBookGroupMulti",
+          formData,
+          formItems,
+          value => {
+            formData.groupId = 0 | value.groupId;
+          }
+        ),
+        showCancelButton: true,
+        confirmButtonText: "确定",
+        cancelButtonText: "取消"
+      }).catch(e => {
+        return e === "close" && "close";
+      });
+      if (res !== "confirm") {
+        return;
+      }
+      const group = this.bookGroupList.find(v => v.groupId === formData.groupId);
+      if (!group) {
+        this.$message.error("请选择分组");
+        return;
+      }
+      const confirmed = await this.$confirm(
         isAdd
-          ? `确认要将所选择的书籍添加到${bookGroup.groupName}分组吗?`
-          : `确认要将所选择的书籍从${bookGroup.groupName}分组中移除吗?`,
+          ? `确认要将所选择的书籍添加到${group.groupName}分组吗?`
+          : `确认要将所选择的书籍从${group.groupName}分组中移除吗?`,
         "提示",
         {
           confirmButtonText: "确定",
@@ -325,13 +447,13 @@ export default {
       ).catch(() => {
         return false;
       });
-      if (!res) {
+      if (!confirmed) {
         return;
       }
       Axios.post(
         this.api + (isAdd ? "/addBookGroupMulti" : "/removeBookGroupMulti"),
         {
-          groupId: bookGroup.groupId,
+          groupId: group.groupId,
           bookList: this.manageBookSelection
         }
       ).then(
@@ -359,7 +481,14 @@ export default {
           groups.push(v.groupName);
         }
       });
+      if (!groups.length) {
+        groups.push("未分组");
+      }
       return groups.join(" ");
+    },
+    filterHandler(value, row, column) {
+      const property = column["property"];
+      return row[property] === value;
     },
     showBookInfo(book) {
       eventBus.$emit("showBookInfoDialog", book);
@@ -374,15 +503,248 @@ export default {
       eventBus.$emit("showBookGroupDialog", true);
     },
     isCaching(book) {
-      if (this.cachingBookMap[book.bookUrl]) return true;
-      if (window.cacheEventSource && window.cacheEventSource[book.bookUrl])
-        return true;
-      if (window.cacheRequestHandle && window.cacheRequestHandle[book.bookUrl])
-        return true;
-      return false;
+      return (
+        !!this.cachingBookMap[book.bookUrl] ||
+        !!(window.cacheEventSource && window.cacheEventSource[book.bookUrl]) ||
+        !!(window.cacheRequestHandle && window.cacheRequestHandle[book.bookUrl])
+      );
     },
     cacheBook(book, command) {
       this[command](book);
+    },
+    cancelMulti() {
+      if (this.multiOperating) {
+        if (
+          this.multiCachingHandler.cancel(),
+          this.multiOperating === "cacheBookSSE" ||
+            this.multiOperating === "cacheBookLocal"
+        ) {
+          for (let i = 0; i < this.lastSelection.length; i++) {
+            if (this.isCaching(this.lastSelection[i])) {
+              this[this.multiOperating](this.lastSelection[i]);
+            }
+          }
+        }
+        this.multiOperating = false;
+        this.lastSelection = [];
+        this.$message.info("批量操作已取消");
+      }
+    },
+    multiOperate(command) {
+      if (this.manageBookSelection.length) {
+        this[command]();
+      } else {
+        this.$message.error("请选择需要操作的书籍");
+      }
+    },
+    async cacheBookMulti(command) {
+      if (this.multiOperating) {
+        this.$message.error("正在批量操作，请取消后再试");
+        return;
+      }
+      if (!this.manageBookSelection.length) {
+        this.$message.error("请选择需要操作的书籍");
+        return;
+      }
+      if (command === "deleteBookCache" || command === "deleteBookLocalCache") {
+        const res = await this.$confirm(
+          `确认要批量删除${
+            command === "deleteBookCache" ? "服务器上" : "浏览器中"
+          }所选书籍的缓存章节吗?`,
+          "提示",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }
+        ).catch(() => {
+          return false;
+        });
+        if (!res) {
+          return;
+        }
+      }
+      if (command === "cacheBookOnServer") {
+        const res = await this.$confirm(
+          "确认要在服务器上批量缓存所选书籍的章节内容吗?",
+          "提示",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }
+        ).catch(() => {
+          return false;
+        });
+        if (!res) {
+          return;
+        }
+        this.cacheBookOnServer(this.manageBookSelection);
+        return;
+      }
+      this.multiOperating = command;
+      this.lastSelection = [].concat(this.manageBookSelection);
+      this.multiCachingHandler = LimitResquest(2, handler => {
+        if (handler.isEnd()) {
+          this.multiOperating = false;
+          this.lastSelection = [];
+          this.$message.success("批量操作完成");
+        }
+      });
+      for (let i = 0; i < this.manageBookSelection.length; i++) {
+        this.multiCachingHandler(() => {
+          return this[command](this.manageBookSelection[i]);
+        });
+      }
+      this.$message.info("批量操作未完成/取消之前请勿关闭当前页面");
+    },
+    cacheBookSSE(book) {
+      const self = this;
+      return new Promise((resolve, reject) => {
+        const tryClose = function() {
+          try {
+            if (
+              window.cacheEventSource[book.bookUrl] &&
+              window.cacheEventSource[book.bookUrl].readyState !==
+                window.cacheEventSource[book.bookUrl].CLOSED
+            ) {
+              window.cacheEventSource[book.bookUrl].close();
+            }
+            window.cacheEventSource[book.bookUrl] = null;
+            delete window.cacheEventSource[book.bookUrl];
+            const index = self.cachingBookList.findIndex(
+              v => v.bookUrl === book.bookUrl
+            );
+            self.cachingBookList.splice(index, 1);
+            self.cachingBookList = [].concat(self.cachingBookList);
+          } catch (error) {
+            //
+          }
+        };
+        if (self.isCaching(book)) {
+          // 取消缓存
+          self.$message.info("已取消缓存");
+          reject("已取消缓存");
+          if (window.cacheEventSource[book.bookUrl]) {
+            tryClose();
+          }
+          return;
+        }
+        const params = {
+          url: book.bookUrl,
+          refresh: 0
+        };
+        const url = buildURL(self.api + "/cacheBookSSE", params);
+        tryClose();
+        self.cachingBookList = self.cachingBookList.concat([book]);
+        window.cacheEventSource[book.bookUrl] = new EventSource(url, {
+          withCredentials: true
+        });
+        window.cacheEventSource[book.bookUrl].addEventListener("error", e => {
+          tryClose();
+          try {
+            if (e.data) {
+              const result = JSON.parse(e.data);
+              if (result && result.errorMsg) {
+                self.$message.error(result.errorMsg);
+                reject(result.errorMsg);
+              }
+            }
+          } catch (error) {
+            //
+          }
+        });
+        window.cacheEventSource[book.bookUrl].addEventListener("end", e => {
+          self.$message.info(book.name + "缓存到服务器完成");
+          resolve(book.name + "缓存到服务器完成");
+          tryClose();
+          try {
+            if (e.data) {
+              // const result = JSON.parse(e.data);
+              // console.log(result);
+            }
+          } catch (error) {
+            //
+          }
+        });
+        window.cacheEventSource[book.bookUrl].addEventListener("message", e => {
+          try {
+            if (e.data) {
+              const result = JSON.parse(e.data);
+              if (result && result.cachedCount) {
+                const index = self.bookList.findIndex(
+                  v => v.bookUrl === book.bookUrl
+                );
+                self.$set(self.bookList, index, {
+                  ...book,
+                  cachedChapterCount: result.cachedCount
+                });
+              }
+            }
+          } catch (error) {
+            //
+          }
+        });
+      });
+    },
+    cacheBookLocal(book) {
+      const self = this;
+      return new Promise((resolve, reject) => {
+        if (self.isCaching(book)) {
+          // 取消缓存
+          self.$message.info("已取消缓存");
+          reject("已取消缓存");
+          if (window.cacheRequestHandle[book.bookUrl]) {
+            window.cacheRequestHandle[book.bookUrl].cancel();
+            window.cacheRequestHandle[book.bookUrl] = null;
+            delete window.cacheRequestHandle[book.bookUrl];
+          }
+          return;
+        }
+        let isComputing = false;
+        const computeCache = function() {
+          self.computeCachedCata([book]).then(bookList => {
+            isComputing = false;
+            const index = self.bookList.findIndex(
+              v => v.bookUrl === book.bookUrl
+            );
+            self.$set(self.bookList, index, {
+              ...book,
+              localCacheCount: bookList[0].localCacheCount
+            });
+          });
+        };
+        window.cacheRequestHandle[book.bookUrl] = LimitResquest(
+          2,
+          handler => {
+            if (!isComputing) {
+              isComputing = true;
+              computeCache();
+            }
+            if (handler.isEnd()) {
+              self.$message.success("缓存到浏览器完成");
+              resolve("缓存到浏览器完成");
+              computeCache();
+            }
+          }
+        );
+        for (let i = 0; i < book.totalChapterNum; i++) {
+          (function(chapterIndex) {
+            window.cacheRequestHandle[book.bookUrl](() => {
+              return self.$root.$children[0].getBookContent(
+                chapterIndex,
+                {
+                  timeout: 1000 * self.$store.getters.config.chapterRequestTimeout,
+                  silent: true
+                },
+                false,
+                true,
+                book
+              );
+            });
+          })(i);
+        }
+      });
     },
     cacheBookOnServer(book) {
       const books = Array.isArray(book) ? book : [book];
@@ -401,147 +763,13 @@ export default {
         }
       );
     },
-    async cacheBookSSE(book) {
-      const tryClose = () => {
-        try {
-          if (
-            window.cacheEventSource[book.bookUrl] &&
-            window.cacheEventSource[book.bookUrl].readyState !=
-              window.cacheEventSource[book.bookUrl].CLOSED
-          ) {
-            window.cacheEventSource[book.bookUrl].close();
-          }
-          window.cacheEventSource[book.bookUrl] = null;
-          delete window.cacheEventSource[book.bookUrl];
-          const index = this.cachingBookList.findIndex(
-            v => v.bookUrl === book.bookUrl
-          );
-          this.cachingBookList.splice(index, 1);
-          this.cachingBookList = [].concat(this.cachingBookList);
-        } catch (error) {
-          //
-        }
-      };
-      if (this.isCaching(book)) {
-        // 取消缓存
-        this.$message.info("已取消缓存");
-        if (window.cacheEventSource[book.bookUrl]) {
-          tryClose();
-        }
-        return;
-      }
-
-      const params = {
-        url: book.bookUrl,
-        refresh: 0
-      };
-
-      const url = buildURL(this.api + "/cacheBookSSE", params);
-
-      tryClose();
-
-      this.cachingBookList = this.cachingBookList.concat([book]);
-      window.cacheEventSource[book.bookUrl] = new EventSource(url, {
-        withCredentials: true
-      });
-      window.cacheEventSource[book.bookUrl].addEventListener("error", e => {
-        tryClose();
-        try {
-          if (e.data) {
-            const result = JSON.parse(e.data);
-            if (result && result.errorMsg) {
-              this.$message.error(result.errorMsg);
-            }
-          }
-        } catch (error) {
-          //
-        }
-      });
-      window.cacheEventSource[book.bookUrl].addEventListener("end", e => {
-        this.$message.info(book.name + "缓存到服务器完成");
-        tryClose();
-        try {
-          if (e.data) {
-            // const result = JSON.parse(e.data);
-            // console.log(result);
-          }
-        } catch (error) {
-          //
-        }
-      });
-      window.cacheEventSource[book.bookUrl].addEventListener("message", e => {
-        try {
-          if (e.data) {
-            const result = JSON.parse(e.data);
-            if (result && result.cachedCount) {
-              const index = this.bookList.findIndex(
-                v => v.bookUrl === book.bookUrl
-              );
-              this.$set(this.bookList, index, {
-                ...book,
-                cachedChapterCount: result.cachedCount
-              });
-            }
-          }
-        } catch (error) {
-          //
-        }
-      });
-    },
-    cacheBookLocal(book) {
-      if (this.isCaching(book)) {
-        // 取消缓存
-        this.$message.info("已取消缓存");
-        if (window.cacheRequestHandle[book.bookUrl]) {
-          window.cacheRequestHandle[book.bookUrl].cancel();
-        }
-        return;
-      }
-      let isComputing = false;
-      const computeCache = () => {
-        this.computeCachedCata([book]).then(bookList => {
-          isComputing = false;
-          const index = this.bookList.findIndex(
-            v => v.bookUrl === book.bookUrl
-          );
-          this.$set(this.bookList, index, {
-            ...book,
-            localCacheCount: bookList[0].localCacheCount
-          });
-        });
-      };
-      this.cachingHandler = LimitResquest(2, handler => {
-        if (!isComputing) {
-          isComputing = true;
-          computeCache();
-        }
-        if (handler.isEnd()) {
-          this.$message.success("缓存到浏览器完成");
-          computeCache();
-        }
-      });
-      for (let i = 0; i < book.totalChapterNum; i++) {
-        this.cachingHandler(() => {
-          return this.$root.$children[0].getBookContent(
-            i,
-            {
-              timeout: 30000,
-              silent: true
-            },
-            false,
-            true,
-            book
-          );
-        });
-      }
-    },
     exportBook(book, type) {
       const url = buildURL(this.api + "/exportBook", {
         url: book.bookUrl,
-        isEpub: type === "epub" ? 1 : 0
+        isEpub: type === "epub" ? 1 : 0,
+        accessToken: this.$store.state.token
       });
-
-      window.open(url, "_target");
+      window.open(url, "__blank");
     },
     computeCachedCata(bookList, returnCacheMap) {
       const cachePrefixMap = {};
@@ -563,13 +791,12 @@ export default {
           for (const bookUrl in cachePrefixMap) {
             if (key.startsWith(cachePrefixMap[bookUrl].key)) {
               try {
-                let index = parseInt(
+                const index = parseInt(
                   key.replace(cachePrefixMap[bookUrl].key, "")
                 );
                 cachePrefixMap[bookUrl].map[index] = true;
               } catch (error) {
                 //
-                // console.error(error);
               }
               break;
             }
@@ -591,67 +818,83 @@ export default {
           });
         });
     },
-    async deleteBookCache(book) {
-      const res = await this.$confirm(
-        `确认要删除服务器上《${book.name}》的缓存章节吗?`,
-        "提示",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }
-      ).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      Axios.post(this.api + "/deleteBookCache", {
-        bookUrl: book.bookUrl
-      }).then(
-        res => {
-          if (res.data.isSuccess) {
-            this.$message.success("删除服务器缓存成功");
-            this.loadBookCacheInfo();
-          }
-        },
-        error => {
-          this.$message.error(
-            "删除服务器缓存失败 " + (error && error.toString())
-          );
-        }
-      );
-    },
-    async deleteBookLocalCache(book) {
-      const res = await this.$confirm(
-        `确认要删除浏览器中《${book.name}》的缓存章节吗?`,
-        "提示",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }
-      ).catch(() => {
-        return false;
-      });
-      if (!res) {
-        return;
-      }
-      this.computeCachedCata([book], true)
-        .then(list => {
-          const op = [];
-          for (const index in list[book.bookUrl].map) {
-            const cacheKey = list[book.bookUrl].key + index;
-            op.push(window.$cacheStorage.removeItem(cacheKey));
-          }
-          return Promise.all(op);
-        })
-        .then(() => {
-          this.$message.success("删除浏览器缓存成功");
-          this.computeCachedCata([].concat(this.bookList)).then(v => {
-            this.bookList = v;
+    deleteBookCache(book, confirmFlag) {
+      const self = this;
+      return new Promise(async (resolve, reject) => {
+        if (confirmFlag) {
+          const res = await self.$confirm(
+            `确认要删除服务器上《${book.name}》的缓存章节吗?`,
+            "提示",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning"
+            }
+          ).catch(() => {
+            return false;
           });
-        });
+          if (!res) {
+            reject("canceled");
+            return;
+          }
+        }
+        Axios.post(self.api + "/deleteBookCache", {
+          bookUrl: book.bookUrl
+        }).then(
+          res => {
+            if (res.data.isSuccess) {
+              self.$message.success("删除服务器缓存成功");
+              self.loadBookCacheInfo();
+              resolve("");
+            }
+          },
+          error => {
+            self.$message.error(
+              "删除服务器缓存失败 " + (error && error.toString())
+            );
+            reject(error);
+          }
+        );
+      });
+    },
+    deleteBookLocalCache(book, confirmFlag) {
+      const self = this;
+      return new Promise(async (resolve, reject) => {
+        if (confirmFlag) {
+          const res = await self.$confirm(
+            `确认要删除浏览器中《${book.name}》的缓存章节吗?`,
+            "提示",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning"
+            }
+          ).catch(() => {
+            return false;
+          });
+          if (!res) {
+            reject("canceled");
+            return;
+          }
+        }
+        self
+          .computeCachedCata([book], true)
+          .then(cacheMap => {
+            const ops = [];
+            for (const index in cacheMap[book.bookUrl].map) {
+              const cacheKey = cacheMap[book.bookUrl].key + index;
+              ops.push(window.$cacheStorage.removeItem(cacheKey));
+            }
+            return Promise.all(ops);
+          })
+          .then(() => {
+            self.$message.success("删除浏览器缓存成功");
+            resolve("删除浏览器缓存成功");
+            self.computeCachedCata([].concat(self.bookList)).then(v => {
+              self.bookList = v;
+            });
+          });
+      });
     }
   }
 };
@@ -665,16 +908,34 @@ export default {
   margin-right: 10px;
 }
 .dialog-footer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
   .float-left {
     margin-right: 5px;
+    margin-bottom: 5px;
+  }
+}
+.flex-title {
+  display: flex;
+  justify-content: space-between;
+  .title-center {
+    flex: 1;
+    text-align: center;
+  }
+  .search-input {
+    width: 200px;
+    margin-top: -2px;
   }
 }
 .source-container {
-  .search-input {
-    margin-bottom: 10px;
-  }
   .text-button {
     padding: 3px 5px;
+  }
+  .source-pagination {
+    margin-top: 5px;
+    text-align: right;
   }
 }
 </style>
