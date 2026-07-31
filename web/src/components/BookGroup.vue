@@ -101,6 +101,7 @@
 </template>
 
 <script>
+import Long from "long";
 import Axios from "../plugins/axios";
 import { mapGetters } from "vuex";
 import Dragable from "sortablejs";
@@ -207,7 +208,11 @@ export default {
       }
 
       return this.shelfBooks.filter(v =>
-        bookGroup === 0 ? true : v.group & bookGroup
+        bookGroup === 0
+          ? true
+          : Long.fromNumber(v.group || 0)
+              .and(Long.fromNumber(bookGroup))
+              .greaterThan(0)
       );
     },
     toggleBookGroupShow(bookGroup, show) {
@@ -307,7 +312,7 @@ export default {
       Axios.post(this.api + "/saveBookGroupId", {
         bookUrl: this.showBookInfo.bookUrl,
         groupId: this.bookGroupSelection.reduce((c, v) => {
-          return c | v.groupId;
+          return Long.fromNumber(c).or(Long.fromNumber(v.groupId)).toNumber();
         }, 0)
       }).then(
         res => {
@@ -326,7 +331,10 @@ export default {
     getBookGroupListForBook(bookGroup) {
       const groups = [];
       this.$store.state.bookGroupList.forEach(v => {
-        if (v.groupId > 0 && (v.groupId & bookGroup) !== 0) {
+        if (
+          v.groupId > 0 &&
+          Long.fromNumber(v.groupId).and(Long.fromNumber(bookGroup)).greaterThan(0)
+        ) {
           groups.push(v);
         }
       });

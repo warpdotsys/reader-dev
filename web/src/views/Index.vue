@@ -1169,6 +1169,7 @@
 </template>
 
 <script>
+import Long from "long";
 import { mapGetters } from "vuex";
 import Explore from "../components/Explore.vue";
 import LocalStore from "../components/LocalStore.vue";
@@ -1359,7 +1360,7 @@ export default {
       if (val && this.showImportBookDialog) {
         let groupId = 0;
         val.forEach(v => {
-          groupId |= v;
+          groupId = Long.fromNumber(groupId).or(Long.fromNumber(v)).toNumber();
         });
         this.importBookInfo.group = groupId;
       }
@@ -2780,7 +2781,7 @@ export default {
       if (res === "confirm") {
         let group = 0;
         info.groupId.forEach(value => {
-          group = group | value;
+          group = Long.fromNumber(group).or(Long.fromNumber(value)).toNumber();
         });
         return {
           ...(book ? { name: info.name, author: info.author } : {}),
@@ -2862,7 +2863,9 @@ export default {
 
       return this.shelfBooks.filter(v => {
         if (bookGroup === 0) return true;
-        return v.group & bookGroup;
+        return Long.fromNumber(v.group || 0)
+          .and(Long.fromNumber(bookGroup))
+          .greaterThan(0);
       });
     },
     loadRssSources(refresh) {
