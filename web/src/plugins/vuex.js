@@ -48,7 +48,7 @@ export default new Vuex.Store({
     userList: [].concat(defaultNS),
     userNS: "default",
     showManagerMode: false,
-    version: "v3.2.14-05250935",
+    version: "v4.0.0",
     filterRules: [],
     speechVoiceConfig: { ...settings.speechVoiceConfig },
     safeArea: {

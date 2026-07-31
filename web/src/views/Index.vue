@@ -671,7 +671,7 @@
         @touchend="handleTouchEnd"
         @scroll="scrollHandler"
       >
-        <div class="wrapper">
+        <div class="wrapper" :style="shelfViewStyle">
           <div
             class="book"
             :style="showNavigation ? { minWidth: '360px !important' } : {}"
@@ -3324,6 +3324,20 @@ export default {
       "dialogContentHeight",
       "popupWidth"
     ]),
+    shelfViewStyle() {
+      const viewCate = this.$store.state.shelfConfig.viewCate;
+      if (viewCate === "list") {
+        return { gridTemplateColumns: "1fr" };
+      }
+      if (viewCate && viewCate.startsWith("column-")) {
+        const n = viewCate.replace("column-", "");
+        if (n === "100" || n === "150" || n === "200") {
+          return { gridTemplateColumns: `repeat(auto-fill, ${n}px)` };
+        }
+        return { gridTemplateColumns: `repeat(${n}, 1fr)` };
+      }
+      return {};
+    },
     config() {
       return this.$store.getters.config;
     },
