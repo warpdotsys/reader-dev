@@ -84,6 +84,22 @@
 
     <BookGroup v-model="showBookGroupDialog" :isSet="isSetBookGroup" />
 
+    <HttpTTS v-model="showHttpTTSDialog" />
+
+    <FileManager
+      v-model="showFileManagerDialog"
+      :home="fileManagerHome"
+      :title="fileManagerTitle"
+    />
+
+    <License v-model="showLicenseDialog" />
+
+    <BookConfig v-model="showBookConfigDialog" />
+
+    <RemoteBookSourceSub v-model="showRemoteBookSourceSubDialog" />
+
+    <ActiveLicense v-model="showActiveLicenseDialog" />
+
     <RssSourceList v-model="showRssSourceListDialog" />
     <RssArticleList v-model="showRssArticleListDialog" :rssSource="rssSource" />
     <RssArticle
@@ -118,6 +134,12 @@ import BookInfo from "./components/BookInfo.vue";
 import UserManage from "./components/UserManage.vue";
 import AddUser from "./components/AddUser.vue";
 import BookGroup from "./components/BookGroup.vue";
+import HttpTTS from "./components/HttpTTS.vue";
+import FileManager from "./components/FileManager.vue";
+import License from "./components/License.vue";
+import BookConfig from "./components/BookConfig.vue";
+import RemoteBookSourceSub from "./components/RemoteBookSourceSub.vue";
+import ActiveLicense from "./components/ActiveLicense.vue";
 import RssSourceList from "./components/RssSourceList.vue";
 import RssArticleList from "./components/RssArticleList.vue";
 import RssArticle from "./components/RssArticle.vue";
@@ -197,6 +219,12 @@ export default {
     UserManage,
     AddUser,
     BookGroup,
+    HttpTTS,
+    FileManager,
+    License,
+    BookConfig,
+    RemoteBookSourceSub,
+    ActiveLicense,
     RssSourceList,
     RssArticleList,
     RssArticle,
@@ -233,6 +261,15 @@ export default {
 
       showBookGroupDialog: false,
       isSetBookGroup: false,
+
+      showHttpTTSDialog: false,
+      showFileManagerDialog: false,
+      fileManagerHome: "",
+      fileManagerTitle: "文件管理",
+      showLicenseDialog: false,
+      showBookConfigDialog: false,
+      showRemoteBookSourceSubDialog: false,
+      showActiveLicenseDialog: false,
 
       showRssSourceListDialog: false,
       showRssArticleListDialog: false,
@@ -348,6 +385,28 @@ export default {
     });
     eventBus.$on("showUserManageDialog", () => {
       this.showUserManageDialog = true;
+    });
+    eventBus.$on("showHttpTTSDialog", () => {
+      this.showHttpTTSDialog = true;
+    });
+    eventBus.$on("showFileManagerDialog", data => {
+      this.showFileManagerDialog = true;
+      if (data) {
+        this.fileManagerHome = data.home || "";
+        this.fileManagerTitle = data.title || "文件管理";
+      }
+    });
+    eventBus.$on("showLicenseDialog", () => {
+      this.showLicenseDialog = true;
+    });
+    eventBus.$on("showBookConfigDialog", () => {
+      this.showBookConfigDialog = true;
+    });
+    eventBus.$on("showRemoteBookSourceSubDialog", () => {
+      this.showRemoteBookSourceSubDialog = true;
+    });
+    eventBus.$on("showActiveLicenseDialog", () => {
+      this.showActiveLicenseDialog = true;
     });
     eventBus.$on("showAddUserDialog", () => {
       this.showAddUserDialog = true;
