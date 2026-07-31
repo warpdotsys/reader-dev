@@ -17,13 +17,17 @@
         <span class="float-right span-btn" @click="showAddUserDialog()"
           >新增</span
         >
+        <span class="float-right span-btn" @click="clearInactiveUser()"
+          >清理不活跃用户</span
+        >
       </span>
     </div>
     <div class="source-container table-container">
       <el-table
-        :data="userList"
+        :data="showList"
         :height="dialogContentHeight"
         @selection-change="manageUserSelection = $event"
+        @sort-change="sortChange"
       >
         <el-table-column
           type="selection"
@@ -36,6 +40,7 @@
           property="username"
           label="用户名"
           min-width="100"
+          sortable
           :fixed="$store.state.miniInterface"
         ></el-table-column>
         <el-table-column
@@ -82,8 +87,11 @@
             </el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100px">
+        <el-table-column label="操作" width="120px">
           <template slot-scope="scope">
+            <el-button type="text" @click="editUser(scope.row)"
+              >编辑</el-button
+            >
             <el-button type="text" @click="resetPassword(scope.row)"
               >重置密码</el-button
             >
@@ -93,6 +101,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @current-change="pagination.page = $event"
+        @size-change="pagination.size = $event"
+        :current-page="pagination.page"
+        :page-size="pagination.size"
+        :page-sizes="[25, 50, 100]"
+        layout="total, sizes, prev, pager, next"
+        :total="filterList.length"
+      >
+      </el-pagination>
     </div>
     <div slot="footer" class="dialog-footer">
       <el-button
@@ -129,7 +147,16 @@ export default {
   name: "UserManage",
   data() {
     return {
-      manageUserSelection: []
+      manageUserSelection: [],
+      search: "",
+      pagination: {
+        page: 1,
+        size: 25
+      },
+      sortable: {
+        prop: "",
+        order: null
+      }
     };
   },
   props: ["show"],
@@ -142,6 +169,37 @@ export default {
       set(val) {
         this.$store.commit("setUserList", val);
       }
+    },
+    filterList() {
+      return this.userList.filter(
+        v =>
+          v.userNS !== "default" &&
+          (!this.search ||
+            v.username.toLowerCase().includes(this.search.toLowerCase()))
+      );
+    },
+    sortList() {
+      if (!this.sortable.prop || !this.sortable.order) {
+        return this.filterList;
+      }
+      const list = [].concat(this.filterList);
+      return list.sort((a, b) => {
+        if (this.sortable.order !== "ascending") {
+          const t = a;
+          a = b;
+          b = t;
+        }
+        return a[this.sortable.prop] > b[this.sortable.prop] ? 1 : a[this.sortable.prop] < b[this.sortable.prop] ? -1 : 0;
+      });
+    },
+    showList() {
+      const start = (this.pagination.page - 1) * this.pagination.size;
+      return start > this.sortList.length
+        ? []
+        : this.sortList.slice(
+            start,
+            Math.min(start + this.pagination.size, this.sortList.length)
+          );
     }
   },
   watch: {
@@ -157,6 +215,58 @@ export default {
     },
     showAddUserDialog() {
       eventBus.$emit("showAddUserDialog");
+    },
+    editUser(user) {
+      eventBus.$emit("showAddUserDialog", user);
+    },
+    sortChange({ prop, order }) {
+      this.sortable = { prop, order };
+    },
+    async clearInactiveUser() {
+      const res = await this.$prompt(
+        "请输入需要清理的未登录天数",
+        "清理不活跃用户",
+        {
+          inputValue: 31,
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputValidator(v) {
+            if (!v) {
+              return "天数不能为空";
+            }
+            return !isNaN(parseInt(v)) || "天数必须是数字";
+          }
+        }
+      ).catch(() => {
+        return false;
+      });
+      if (!res || !res.value) {
+        return;
+      }
+      Axios.post(
+        this.api + "/clearInactiveUsers",
+        {
+          inactiveDay: parseInt(res.value)
+        },
+        {
+          timeout: 0
+        }
+      ).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("清理不活跃用户成功");
+            this.userList = res.data.data.map(v => ({
+              ...v,
+              userNS: v.username
+            }));
+          }
+        },
+        error => {
+          this.$message.error(
+            "清理不活跃用户失败 " + (error && error.toString())
+          );
+        }
+      );
     },
     formatTableField(row, column, cellValue) {
       switch (column.property) {
