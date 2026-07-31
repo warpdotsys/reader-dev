@@ -166,7 +166,27 @@ class WebBook(
             )
             return book
         } else {
-            return getBookInfo(book.bookUrl, canReName)
+            val analyzeUrl = AnalyzeUrl(
+                mUrl = book.bookUrl,
+                baseUrl = bookSource.bookSourceUrl,
+                source = bookSource,
+                ruleData = book,
+                headerMapF = bookSource.getHeaderMap(true),
+                debugLog = debugger
+            )
+            var response = analyzeUrl.getStrResponseAwait()
+            bookSource.loginCheckJs?.takeIf { it.isNotBlank() }?.let { checkJs ->
+                response = analyzeUrl.evalJS(checkJs, response) as StrResponse
+            }
+            BookInfo.analyzeBookInfo(
+                book,
+                response.body,
+                bookSource,
+                book.bookUrl,
+                response.url,
+                canReName
+            )
+            return book
         }
     }
 
