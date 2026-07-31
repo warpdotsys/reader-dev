@@ -111,6 +111,7 @@ object BookChapterList {
         if (!reverse) {
             chapterList.reverse()
         }
+        coroutineContext.ensureActive()
         val lh = LinkedHashSet(chapterList)
         val list = ArrayList(lh)
         // if (!book.getReverseToc()) {
@@ -118,6 +119,7 @@ object BookChapterList {
         // }
         debugLog?.log(book.origin, "◇目录总数:${list.size}")
         list.forEachIndexed { index, bookChapter ->
+            coroutineContext.ensureActive()
             bookChapter.index = index
         }
         if (list.size > 0) {
@@ -131,6 +133,7 @@ object BookChapterList {
             // book.lastCheckTime = System.currentTimeMillis()
         }
         book.totalChapterNum = list.size
+        coroutineContext.ensureActive()
         return list
     }
 
@@ -180,11 +183,11 @@ object BookChapterList {
                 coroutineContext.ensureActive()
                 analyzeRule.setContent(item)
                 val bookChapter = BookChapter(bookUrl = book.bookUrl, baseUrl = redirectUrl)
-                bookChapter.setUserNameSpace(book.getUserNameSpace())
                 analyzeRule.chapter = bookChapter
                 bookChapter.title = analyzeRule.getString(nameRule)
                 bookChapter.url = analyzeRule.getString(urlRule)
                 bookChapter.tag = analyzeRule.getString(upTimeRule)
+                bookChapter.setUserNameSpace(book.getUserNameSpace())
                 val isVolume = analyzeRule.getString(isVolumeRule)
                 bookChapter.isVolume = false
                 if (isVolume.isTrue()) {
@@ -205,6 +208,8 @@ object BookChapterList {
                         bookChapter.title = "\uD83D\uDD12" + bookChapter.title
                     }
                     chapterList.add(bookChapter)
+                } else if (log) {
+                    debugLog?.log(bookSource.bookSourceUrl, "章节名为空")
                 }
             }
             if(log) debugLog?.log(bookSource.bookSourceUrl, "└目录列表解析完成")

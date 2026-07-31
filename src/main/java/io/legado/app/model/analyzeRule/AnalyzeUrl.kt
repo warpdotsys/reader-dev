@@ -65,7 +65,7 @@ class AnalyzeUrl(
     private var webJs: String? = null
     private val enabledCookieJar = source?.enabledCookieJar ?: false
 
-    override fun getUserNameSpace(): String = ruleData?.getUserNameSpace()?.ifEmpty { "unknow" } ?: "unknow"
+    override fun getUserNameSpace(): String = ruleData?.getUserNameSpace() ?: "unknow"
 
     override fun getLogger(): DebugLog? = debugLog
 
@@ -354,18 +354,29 @@ class AnalyzeUrl(
         setCookie(source?.getKey())
         val strResponse: StrResponse
         if (this.useWebView && useWebView) {
-            strResponse = io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
-                url = url,
-                tag = source?.getKey(),
-                headerMap = headerMap,
-                sourceRegex = sourceRegex,
-                javaScript = webJs ?: jsStr,
-                proxy = proxy,
-                post = isPost(),
-                body = body,
-                userNameSpace = getUserNameSpace(),
-                debugLog = debugLog
-            ) ?: throw Exception("远程 WebView 未配置")
+            strResponse = if (method == RequestMethod.POST) {
+                io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
+                    url = urlNoQuery,
+                    tag = source?.getKey(),
+                    headerMap = headerMap,
+                    sourceRegex = sourceRegex,
+                    javaScript = webJs ?: jsStr,
+                    post = true,
+                    body = body,
+                    userNameSpace = getUserNameSpace(),
+                    debugLog = debugLog
+                )
+            } else {
+                io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
+                    url = url,
+                    tag = source?.getKey(),
+                    headerMap = headerMap,
+                    sourceRegex = sourceRegex,
+                    javaScript = webJs ?: jsStr,
+                    userNameSpace = getUserNameSpace(),
+                    debugLog = debugLog
+                )
+            } ?: throw Exception("远程 WebView 未配置")
         } else {
             strResponse = getProxyClient(proxy, debugLog).newCallStrResponse(retry) {
                 addHeaders(headerMap)

@@ -2,15 +2,11 @@ package io.legado.app.model.rss
 
 import io.legado.app.data.entities.RssArticle
 import io.legado.app.data.entities.RssSource
-import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.model.DebugLog
 import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.analyzeRule.RuleData
 import io.legado.app.utils.NetworkUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlin.coroutines.CoroutineContext
 
 object Rss {
     suspend fun getArticles(
@@ -19,7 +15,7 @@ object Rss {
         rssSource: RssSource,
         page: Int,
         debugLog: DebugLog?
-    ): Pair<MutableList<RssArticle>, String?> {
+    ): Pair<List<RssArticle>, String?> {
         val ruleData = RuleData()
         val analyzeUrl = AnalyzeUrl(
             sortUrl,
@@ -33,7 +29,6 @@ object Rss {
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${sortUrl}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")
         return RssParserByRule.parseXML(sortName, sortUrl, body, rssSource, ruleData, debugLog)
-            .also { (articles) -> articles.forEach { it.setUserNameSpace(rssSource.getUserNameSpace()) } }
     }
 
     suspend fun getContent(
@@ -42,7 +37,6 @@ object Rss {
         rssSource: RssSource,
         debugLog: DebugLog?
     ): String {
-        rssArticle.setUserNameSpace(rssSource.getUserNameSpace())
         val analyzeUrl = AnalyzeUrl(
             rssArticle.link,
             baseUrl = rssArticle.origin,

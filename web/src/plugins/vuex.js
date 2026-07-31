@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import settings, { customFonts, syncConfigFiled } from "./config";
-import { setCache, getCache } from "../plugins/cache";
+import { setCache, getCache, removeCache } from "../plugins/cache";
 import { Message } from "element-ui";
 
 const defaultNS = [{ username: "默认", userNS: "default" }];
@@ -9,7 +9,8 @@ const builtInBookGroup = [
   { groupId: -1, groupName: "全部", order: -10, show: true },
   { groupId: -2, groupName: "本地", order: -9, show: true },
   { groupId: -3, groupName: "音频", order: -8, show: true },
-  { groupId: -4, groupName: "未分组", order: -7, show: true }
+  { groupId: -4, groupName: "未分组", order: -7, show: true },
+  { groupId: -5, groupName: "更新错误", order: -6, show: true }
 ];
 Vue.use(Vuex);
 
@@ -22,7 +23,11 @@ const getCurrentUserName = state => {
 export default new Vuex.Store({
   state: {
     connected: false,
-    api: getCache("api_prefix") || location.host + "/reader3",
+    api:
+      getCache("api_prefix") ||
+      location.host +
+        location.pathname.replace("index.html", "").replace(/\/$/, "") +
+        "/reader3",
     shelfBooks: [],
     readingBook: {},
     config: { ...settings.config },
@@ -43,7 +48,7 @@ export default new Vuex.Store({
     userList: [].concat(defaultNS),
     userNS: "default",
     showManagerMode: false,
-    version: process.env.VUE_APP_BUILD_VERSION,
+    version: "v3.2.14-05250935",
     filterRules: [],
     speechVoiceConfig: { ...settings.speechVoiceConfig },
     safeArea: {
@@ -63,11 +68,12 @@ export default new Vuex.Store({
     previewImgList: [],
     searchConfig: { ...settings.searchConfig },
     txtTocRules: [],
-    customConfigList: [].concat(settings.customConfigList),
+    customConfigList: [],
     showBookInfo: {},
     cachingBookList: [],
     bookmarks: [],
-    httpTTS: []
+    httpTTS: [],
+    notAutoSync: false
   },
   mutations: {
     setShelfBooks(state, books) {
@@ -95,7 +101,10 @@ export default new Vuex.Store({
           originName: v.originName,
           totalChapterNum: v.totalChapterNum,
           type: v.type,
-          group: v.group
+          group: v.group,
+          lastCheckError: v.lastCheckError,
+          wordCount: v.wordCount,
+          readConfig: v.readConfig
         };
       });
     },
@@ -137,16 +146,15 @@ export default new Vuex.Store({
             totalChapterNum:
               book.totalChapterNum || state.shelfBooks[index].totalChapterNum,
             type: book.type || state.shelfBooks[index].type,
-            group: book.group || state.shelfBooks[index].group
+            group: book.group || state.shelfBooks[index].group,
+            readConfig: book.readConfig || state.shelfBooks[index].readConfig
           }
         };
         state.shelfBooks = [].concat(state.shelfBooks);
       }
     },
-    setReadingBook(state, readingBook) {
-      state.readingBook = readingBook;
-      // 更新书架信息
-      setTimeout(() => {
+    setReadingBook(state, readingBook, isCache) {
+      if (!isCache && state.shelfBooks && state.shelfBooks.length) {
         for (let i = 0; i < state.shelfBooks.length; i++) {
           if (state.shelfBooks[i].bookUrl === readingBook.bookUrl) {
             const title = ((readingBook.catalog || [])[readingBook.index] || {})
@@ -165,13 +173,18 @@ export default new Vuex.Store({
           }
         }
         state.shelfBooks = [].concat(state.shelfBooks);
-      }, 100);
+      }
+      state.readingBook = readingBook;
       // eslint-disable-next-line no-unused-vars
       const { catalog, latestChapterTitle, intro, ...info } = readingBook;
       setCache(
         getCurrentUserName(state) + "@readingRecent",
         JSON.stringify(info)
       );
+    },
+    clearReadingBook(state) {
+      state.readingBook = {};
+      removeCache(getCurrentUserName(state) + "@readingRecent");
     },
     setConfig(state, config) {
       delete config.name;
@@ -425,6 +438,15 @@ export default new Vuex.Store({
       state.customConfigList = [].concat(customConfigList);
       setCache("customConfigList", JSON.stringify(customConfigList));
     },
+    setCustomConfig(state, customConfig) {
+      const config = state.customConfigList.find(v => v.name === customConfig);
+      if (config) {
+        const nextConfig = { ...state.config, ...config };
+        nextConfig.customConfig = config.name;
+        state.config = nextConfig;
+        setCache("config", JSON.stringify(nextConfig));
+      }
+    },
     setShowBookInfo(state, book) {
       state.showBookInfo = book;
     },
@@ -436,18 +458,28 @@ export default new Vuex.Store({
     },
     setHttpTTS(state, httpTTS) {
       state.httpTTS = httpTTS;
+    },
+    setNotAutoSync(state, notAutoSync) {
+      state.notAutoSync = notAutoSync;
+      setCache("notAutoSync", notAutoSync);
     }
   },
   getters: {
     api: state => {
       if (
         state.api.startsWith("http://") ||
-        state.api.startsWith("https://") ||
-        state.api.startsWith("//")
+        state.api.startsWith("https://")
       ) {
         return state.api;
       }
-      return "//" + state.api;
+      if (state.api.startsWith("//")) {
+        return window.location.protocol.startsWith("http")
+          ? state.api
+          : "http:" + state.api;
+      }
+      return window.location.protocol.startsWith("http")
+        ? "//" + state.api
+        : "http://" + state.api;
     },
     apiRoot: (state, getters) => {
       return getters.api.replace(/\/reader3\/?/, "");
@@ -562,9 +594,10 @@ export default new Vuex.Store({
     bookSourceGroupList: state => {
       const groupsMap = {};
       state.bookSourceList.forEach(v => {
-        if (v.bookSourceGroup) {
-          groupsMap[v.bookSourceGroup] = (groupsMap[v.bookSourceGroup] | 0) + 1;
-        }
+        if (v.bookSourceGroup)
+          v.bookSourceGroup.split(",").forEach(group => {
+            groupsMap[group] = (groupsMap[group] | 0) + 1;
+          });
       });
       const groups = [
         {
@@ -592,6 +625,9 @@ export default new Vuex.Store({
     },
     config: state => {
       return state.config;
+    },
+    shelfConfig: state => {
+      return state.shelfConfig;
     },
     collapseMenu: state => {
       return state.miniInterface;
@@ -635,9 +671,22 @@ export default new Vuex.Store({
           v => v.bookUrl === state.readingBook.bookUrl
         ) || {})
       };
+    },
+    hasLogin: state => {
+      return !state.isSecureMode || (state.isSecureMode && state.userInfo.username);
     }
   },
   actions: {
+    init({ commit }) {
+      try {
+        const notAutoSync = getCache("notAutoSync");
+        if (notAutoSync !== null) {
+          commit("setNotAutoSync", notAutoSync);
+        }
+      } catch (error) {
+        // Ignore unavailable local storage.
+      }
+    },
     syncFromLocalStorage({ commit, getters }) {
       try {
         // 获取配置
@@ -657,7 +706,7 @@ export default new Vuex.Store({
           if (typeof readingRecent.index == "undefined") {
             readingRecent.index = 0;
           }
-          commit("setReadingBook", readingRecent);
+          commit("setReadingBook", readingRecent, true);
         }
       } catch (error) {
         //
@@ -676,6 +725,11 @@ export default new Vuex.Store({
         const customConfigList = getCache("customConfigList");
         if (customConfigList && Array.isArray(customConfigList)) {
           commit("setCustomConfigList", customConfigList);
+        } else {
+          commit("setCustomConfigList", [].concat(settings.customConfigList));
+        }
+        if (getters.config && getters.config.customConfig) {
+          commit("setCustomConfig", getters.config.customConfig);
         }
       } catch (error) {
         //

@@ -3,13 +3,11 @@
 
 package com.htmake.reader.utils
 
-import com.google.common.base.Throwables
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import mu.KotlinLogging
-import java.net.URLEncoder
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -19,13 +17,13 @@ import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import com.htmake.reader.config.AppConfig
 import com.google.gson.reflect.TypeToken
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 import io.legado.app.data.entities.Book
+import io.legado.app.utils.FileUtils
 import io.legado.app.utils.MD5Utils
+import io.legado.app.utils.MapDeserializerDoubleAsIntFix
 import java.util.UUID
 import java.util.Base64 as JavaBase64
 import java.security.KeyFactory
@@ -38,6 +36,7 @@ import java.io.OutputStreamWriter
 import com.mongodb.client.MongoCollection
 import com.htmake.reader.entity.MongoFile
 import com.htmake.reader.entity.License
+import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 
@@ -218,7 +217,7 @@ fun getStorage(vararg name: String, ext: String = ".json"): String?  {
     logger.info("Read file from storage name: {} path: {}", name, file.absoluteFile)
     if (!file.exists()) {
         val content = readMongoFile(path)
-        if (content.isNotEmpty()) {
+        if (!content.isNullOrEmpty()) {
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
@@ -239,7 +238,7 @@ fun getStorage(vararg name: String, ext: String = ".json"): String?  {
         var content = file.readText()
         if (content.isEmpty()) {
             val mongoContent = readMongoFile(path)
-            if (mongoContent.isNotEmpty()) {
+            if (!mongoContent.isNullOrEmpty()) {
                 file.writeText(mongoContent)
                 content = mongoContent
             }
@@ -268,7 +267,12 @@ fun asJsonArray(value: Any?): JsonArray? {
     if (value is JsonArray) {
         return value
     } else if (value is String) {
-        return JsonArray(value)
+        return try {
+            JsonArray(value)
+        } catch (e: Exception) {
+            logger.error("解析内容出错: {}  内容: \n{}", e, value)
+            throw e
+        }
     }
     return null
 }
@@ -277,7 +281,12 @@ fun asJsonObject(value: Any?): JsonObject? {
     if (value is JsonObject) {
         return value
     } else if (value is String) {
-        return JsonObject(value)
+        return try {
+            JsonObject(value)
+        } catch (e: Exception) {
+            logger.error("解析内容出错: {}  内容: \n{}", e, value)
+            throw e
+        }
     }
     return null
 }
@@ -360,17 +369,6 @@ fun jsonEncode(value: Any, pretty: Boolean = false): String {
     return gson.toJson(value)
 }
 
-fun parseJsonStringList(jsonStr: String?): List<String> {
-    if (jsonStr.isNullOrBlank()) {
-        return emptyList()
-    }
-    return try {
-        gson.fromJson(jsonStr, object : TypeToken<List<String>>() {}.type)
-    } catch (e: Exception) {
-        emptyList()
-    }
-}
-
 fun listFilesRecursively(dir: File): List<File> {
     val result = ArrayList<File>()
     if (!dir.exists()) {
@@ -382,29 +380,23 @@ fun listFilesRecursively(dir: File): List<File> {
     }
     val files = dir.listFiles()!!
     for (file in files) {
-        if (file.isFile) {
-            result.add(file)
-        } else if (file.isDirectory) {
+        result.add(file)
+        if (file.isDirectory) {
             result.addAll(listFilesRecursively(file))
         }
     }
     return result
 }
 
-fun String.toDir(removeTrailing: Boolean = false): String {
-    return if (removeTrailing) {
-        if (this.endsWith("/")) {
-            this.substring(0, this.length - 1)
-        } else {
-            this
-        }
-    } else {
-        if (this.endsWith(File.separator)) {
-            this
-        } else {
-            this + File.separator
-        }
+fun String.toDir(absolute: Boolean = false): String {
+    var path = this
+    if (path.endsWith("/")) {
+        path = path.substring(0, path.length - 1)
     }
+    if (absolute && !path.startsWith("/")) {
+        path = "/$path"
+    }
+    return path
 }
 
 inline fun <reified T> arrayType(clazz: Class<T>): Class<Array<T>> {
@@ -412,25 +404,17 @@ inline fun <reified T> arrayType(clazz: Class<T>): Class<Array<T>> {
     return java.lang.reflect.Array.newInstance(clazz, 0)::class.java as Class<Array<T>>
 }
 
-fun deepListFiles(dir: File, vararg extensions: String): List<File> {
+fun deepListFiles(dir: File, allowExtensions: Array<String>?): List<File> {
     val result = ArrayList<File>()
-    if (!dir.exists()) {
-        return result
-    }
-    if (dir.isFile) {
-        if (extensions.isEmpty() || extensions.any { dir.name.endsWith(it, ignoreCase = true) }) {
-            result.add(dir)
-        }
-        return result
-    }
     val files = dir.listFiles() ?: return result
     for (file in files) {
-        if (file.isFile) {
-            if (extensions.isEmpty() || extensions.any { file.name.endsWith(it, ignoreCase = true) }) {
-                result.add(file)
-            }
-        } else if (file.isDirectory) {
-            result.addAll(deepListFiles(file, *extensions))
+        if (file.isDirectory) {
+            result.addAll(deepListFiles(file, allowExtensions))
+            continue
+        }
+        val extension = FileUtils.getExtension(file.name)
+        if (allowExtensions == null || allowExtensions.contentDeepToString().contains(extension, ignoreCase = false)) {
+            result.add(file)
         }
     }
     return result
@@ -447,10 +431,6 @@ fun validateEmail(email: String): Boolean {
 
 fun encodeBase64(text: String): String {
     return JavaBase64.getEncoder().encodeToString(text.toByteArray(Charsets.UTF_8))
-}
-
-fun decodeBase64(text: String): String {
-    return String(JavaBase64.getDecoder().decode(text), Charsets.UTF_8)
 }
 
 var _licenseValid: Boolean = true
@@ -479,35 +459,44 @@ private fun storageLock(file: File): ReadWriteLock {
 }
 
 fun getMongoFileStorage(): MongoCollection<MongoFile>? {
-    val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java) ?: return null
+    val appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
     return MongoManager.fileStorage(appConfig.mongoDbName, "storage")
 }
 
-fun readMongoFile(path: String): String {
-    val collection = getMongoFileStorage() ?: return ""
-    val filter = com.mongodb.client.model.Filters.eq("path", path)
-    val doc = collection.find(filter).first() ?: return ""
-    return doc.content
+fun readMongoFile(path: String): String? {
+    if (!MongoManager.isInit()) {
+        return null
+    }
+    logger.info("Get mongoFile {}", path)
+    val collection = getMongoFileStorage() ?: return null
+    val doc = collection.find(com.mongodb.client.model.Filters.eq("path", path)).first()
+    return doc?.content
 }
 
 fun saveMongoFile(path: String, content: String): Boolean {
+    if (!MongoManager.isInit()) {
+        return false
+    }
+    logger.info("Save mongoFile {}", path)
     val collection = getMongoFileStorage() ?: return false
     val filter = com.mongodb.client.model.Filters.eq("path", path)
     val existing = collection.find(filter).first()
+    if (existing != null) {
+        existing.content = content
+        existing.updated_at = System.currentTimeMillis()
+        val result = collection.replaceOne(
+            filter,
+            existing,
+            com.mongodb.client.model.ReplaceOptions().upsert(true)
+        )
+        return result.modifiedCount > 0L
+    }
     return try {
-        if (existing != null) {
-            val update = com.mongodb.client.model.Updates.combine(
-                com.mongodb.client.model.Updates.set("content", content),
-                com.mongodb.client.model.Updates.set("updated_at", System.currentTimeMillis())
-            )
-            collection.updateOne(filter, update)
-        } else {
-            val mongoFile = MongoFile(path = path, content = content)
-            collection.insertOne(mongoFile)
-        }
+        collection.insertOne(MongoFile(path = path, content = content))
         true
     } catch (e: Exception) {
-        logger.error("Failed to save mongo file: {}", e.message)
+        logger.info("Save mongoFile {} failed", path)
+        e.printStackTrace()
         false
     }
 }
@@ -526,82 +515,88 @@ fun countOccurrences(text: String, sub: String): Int {
 }
 
 fun getInstalledLicense(ignoreInvalid: Boolean = false): License {
-    try {
-        val licenseStr = getStorage("data", "license", ext = ".key")
-        if (licenseStr.isNullOrEmpty() || (!ignoreInvalid && !_licenseValid)) return License()
-        val license = decryptToLicense(licenseStr)
-        logger.info("license: {}", license)
-        return license?.takeIf { it.verified } ?: License()
-    } catch (e: Exception) {
-        logger.error("Failed to get installed license: {}", e.message)
+    val licenseKeyString = getStorage("data", "license", ext = ".key")
+    if (licenseKeyString.isNullOrEmpty() || (!ignoreInvalid && !_licenseValid)) {
         return License()
     }
+    val license = decryptToLicense(licenseKeyString)
+    logger.info("license: {}", license)
+    return license?.takeIf { it.verified } ?: License()
 }
 
 fun decryptToLicense(encrypted: String): License? {
-    return try {
-        val decrypted = decryptData(encrypted)
-        if (decrypted.isBlank()) return null
-        gson.fromJson(decrypted, License::class.java)
-    } catch (e: Exception) {
-        logger.error("Failed to decrypt license: {}", e.message)
-        null
-    }
+    if (encrypted.isEmpty()) return null
+    val decrypted = decryptData(encrypted) ?: return null
+    return decrypted.toMap().toDataClass()
 }
 
-fun decryptData(encrypted: String): String {
-    return try {
-        val publicKey = KeyFactory.getInstance("RSA").generatePublic(
-            X509EncodedKeySpec(JavaBase64.getDecoder().decode("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj0G3qEPjVTvVd7pXFUVYZFHT8KaoG4onc5rLUKqFQ2DCh/5hFK9t2nKh2XB+C2Jp/GSK2ONwD7ceXenmA6uvr90uCK/gp6j62XFVRvc8sIm0d/bGbzZFJRk3HKtxEckBmASduPObY691DVVixxNtUrSJktx/TZaB42pUQk4j+7FuOVNNPra44hDdnyGhmYBBf2B4kjXVMjL+0NCblFIN1+qjmcol44k6NFKFF54q05bjR3CRyYdAnNTCOyt9va0oB6lDlKHplSZmAOH9JGMUki/HDJbABESXMnyIpux27w9SQ8aJStYttnJWHALO1hiFJsxbz5KUkldH6Ny1p/2W5QIDAQAB"))
-        )
-        EncoderUtils.decryptSegmentByPublicKey(encrypted, publicKey)
-    } catch (e: Exception) {
-        logger.error("Failed to decrypt data: {}", e.message)
-        ""
-    }
+fun decryptData(content: String): String? {
+    val publicKeyString = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj0G3qEPjVTvVd7pXFUVYZFHT8KaoG4onc5rLUKqFQ2DCh/5hFK9t2nKh2XB+C2Jp/GSK2ONwD7ceXenmA6uvr90uCK/gp6j62XFVRvc8sIm0d/bGbzZFJRk3HKtxEckBmASduPObY691DVVixxNtUrSJktx/TZaB42pUQk4j+7FuOVNNPra44hDdnyGhmYBBf2B4kjXVMjL+0NCblFIN1+qjmcol44k6NFKFF54q05bjR3CRyYdAnNTCOyt9va0oB6lDlKHplSZmAOH9JGMUki/HDJbABESXMnyIpux27w9SQ8aJStYttnJWHALO1hiFJsxbz5KUkldH6Ny1p/2W5QIDAQAB"
+    val publicKey = KeyFactory.getInstance("RSA").generatePublic(
+        X509EncodedKeySpec(JavaBase64.getDecoder().decode(publicKeyString))
+    )
+    return EncoderUtils.decryptSegmentByPublicKey(content, publicKey)
 }
 
-fun sendEmail(to: String, subject: String, body: String): Boolean {
-    val host = System.getProperty("reader.smtp.host") ?: System.getenv("READER_SMTP_HOST") ?: return false
-    val port = (System.getProperty("reader.smtp.port") ?: System.getenv("READER_SMTP_PORT") ?: "465").toIntOrNull() ?: return false
-    val username = System.getProperty("reader.smtp.username") ?: System.getenv("READER_SMTP_USERNAME") ?: return false
-    val password = System.getProperty("reader.smtp.password") ?: System.getenv("READER_SMTP_PASSWORD") ?: return false
-    val from = System.getProperty("reader.smtp.from") ?: System.getenv("READER_SMTP_FROM") ?: username
-
-    return runCatching {
+fun sendEmail(toEmail: String, subject: String, body: String): Boolean {
+    val host = "smtp.qiye.aliyun.com"
+    val port = 465
+    return try {
         val socket = SSLSocketFactory.getDefault().createSocket(host, port)
-        socket.use { securedSocket ->
-            val reader = BufferedReader(InputStreamReader(securedSocket.inputStream, Charsets.UTF_8))
-            val writer = OutputStreamWriter(securedSocket.outputStream, Charsets.UTF_8)
-            fun command(value: String, expected: Int): Boolean {
-                writer.write(value)
-                writer.flush()
-                return reader.readLine()?.startsWith(expected.toString()) == true
-            }
-            if (reader.readLine()?.startsWith("220") != true) return@use false
-            if (!command("EHLO reader\r\n", 250) || !command("AUTH LOGIN\r\n", 334)) return@use false
-            if (!command("${encodeBase64(username)}\r\n", 334) || !command("${encodeBase64(password)}\r\n", 235)) return@use false
-            if (!command("MAIL FROM:<$from>\r\n", 250) || !command("RCPT TO:<$to>\r\n", 250) || !command("DATA\r\n", 354)) return@use false
-            val boundary = "----Reader-${UUID.randomUUID()}"
-            val message = buildString {
-                append("From: <$from>\r\nTo: <$to>\r\n")
-                append("Subject: =?UTF-8?B?${encodeBase64(subject)}?=\r\n")
-                append("MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$boundary\"\r\n\r\n")
-                append("--$boundary\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n")
-                append(encodeBase64(body)).append("\r\n--$boundary--\r\n.\r\n")
-            }
-            val delivered = command(message, 250)
-            command("QUIT\r\n", 221)
-            delivered
+        val writer = OutputStreamWriter(socket.getOutputStream())
+        val reader = BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.UTF_8))
+        val response = reader.readLine()
+        if (response?.startsWith("220") != true) {
+            logger.error("Error connecting to the SMTP server.")
+            writer.close()
+            reader.close()
+            socket.close()
+            return false
         }
-    }.onFailure { logger.error("Failed to send email", it) }.getOrDefault(false)
+        val commandList = getCommand(listOf(toEmail), subject, body)
+        var result = false
+        var index = 0
+        while (index < commandList.size && sendEmailCommand(writer, reader, commandList[index])) {
+            result = true
+            index++
+        }
+        writer.close()
+        reader.close()
+        socket.close()
+        result && index == commandList.size
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
+}
+
+private fun sendEmailCommand(
+    writer: OutputStreamWriter,
+    reader: BufferedReader,
+    command: Pair<String, Int>
+): Boolean {
+    val (value, expected) = command
+    logger.debug("Send command {}, expect code {}", value.trim(), expected)
+    writer.write(value)
+    writer.flush()
+    val response = reader.readLine()
+    logger.debug("Response {}", response)
+    if (response.isNullOrEmpty()) {
+        logger.error("SMTP server no response.")
+        return false
+    }
+    if (!response.startsWith(expected.toString())) {
+        logger.error("Error response from SMTP server.")
+        return false
+    }
+    return true
 }
 
 fun getCommand(to: List<String>, subject: String, body: String): List<Pair<String, Int>> {
-    val username = System.getProperty("reader.smtp.username") ?: System.getenv("READER_SMTP_USERNAME") ?: ""
-    val password = System.getProperty("reader.smtp.password") ?: System.getenv("READER_SMTP_PASSWORD") ?: ""
-    val from = System.getProperty("reader.smtp.from") ?: System.getenv("READER_SMTP_FROM") ?: username
-    val fromName = System.getProperty("reader.smtp.fromName") ?: System.getenv("READER_SMTP_FROM_NAME") ?: "Reader"
+    val username = "no-reply@onmy.top"
+    val password = "no-reply@1."
+    val from = "no-reply@onmy.top"
+    val fromName = "Reader"
     val separator = "----=_Part_${System.currentTimeMillis()}${UUID.randomUUID()}"
     val commands = mutableListOf("HELO sendmail\r\n" to 250)
 
@@ -634,79 +629,83 @@ fun getCommand(to: List<String>, subject: String, body: String): List<Pair<Strin
 
 fun parseJsonStringList(
     file: File,
-    includeKeys: Set<String> = emptySet(),
-    excludeKeys: Set<String> = emptySet(),
-    offset: Int = 0,
-    limit: Int = Int.MAX_VALUE,
-    filterKeys: Set<String> = emptySet(),
+    fields: Set<String>? = null,
+    exclude: Set<String>? = null,
+    startIndex: Int = 0,
+    endIndex: Int = Int.MAX_VALUE,
+    checkNotEmpty: Set<String>? = null,
     filter: ((ObjectNode) -> Boolean)? = null
-): JsonArray {
-    val result = JsonArray()
-    if (!file.exists()) return result
-    try {
-        val mapper = ObjectMapper()
-        val tree = mapper.readTree(file)
-        if (!tree.isArray) return result
-
-        var index = 0
-        var added = 0
-        for (element in tree) {
-            if (element !is ObjectNode) {
-                index++
-                continue
-            }
-
-            // Apply filter function
-            if (filter != null && !filter(element)) {
-                index++
-                continue
-            }
-
-            // Apply filterKeys: only include items where any filterKey field is non-empty
-            if (filterKeys.isNotEmpty()) {
-                val matchesFilter = filterKeys.any { key ->
-                    val node = element.get(key)
-                    node != null && !node.isNull && node.asText().isNotBlank()
-                }
-                if (!matchesFilter) {
-                    index++
-                    continue
-                }
-            }
-
-            // Apply offset
-            if (index < offset) {
-                index++
-                continue
-            }
-
-            // Apply limit
-            if (added >= limit) break
-
-            // Build filtered object with includeKeys/excludeKeys
-            val obj = JsonObject()
-            val fieldNames = element.fieldNames()
-            while (fieldNames.hasNext()) {
-                val fieldName = fieldNames.next()
-                if (includeKeys.isNotEmpty() && fieldName !in includeKeys) continue
-                if (excludeKeys.isNotEmpty() && fieldName in excludeKeys) continue
-                val value = element.get(fieldName)
-                when {
-                    value.isTextual -> obj.put(fieldName, value.asText())
-                    value.isInt -> obj.put(fieldName, value.asInt())
-                    value.isLong -> obj.put(fieldName, value.asLong())
-                    value.isDouble -> obj.put(fieldName, value.asDouble())
-                    value.isBoolean -> obj.put(fieldName, value.asBoolean())
-                    value.isNull -> obj.putNull(fieldName)
-                    else -> obj.put(fieldName, value.toString())
-                }
-            }
-            result.add(obj)
-            added++
-            index++
-        }
-    } catch (e: Exception) {
-        logger.error("Failed to parse JSON string list from file {}: {}", file.path, e.message)
+): JsonArray? {
+    if (!file.exists()) {
+        return null
     }
-    return result
+    return try {
+        val objectMapper = ObjectMapper()
+        val resultList = JsonArray()
+        var currentIndex = -1
+        objectMapper.factory.createParser(file).use { parser ->
+            if (parser.nextToken() == JsonToken.START_ARRAY) {
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                    if (parser.currentToken() != JsonToken.START_OBJECT) {
+                        continue
+                    }
+                    if (fields.isNullOrEmpty()) {
+                        if (filter == null) {
+                            currentIndex++
+                            if (currentIndex < startIndex) {
+                                parser.skipChildren()
+                                continue
+                            }
+                            if (currentIndex > endIndex) {
+                                break
+                            }
+                            val objectNode = parser.readValueAsTree<ObjectNode>()
+                            exclude?.forEach { objectNode.remove(it) }
+                            resultList.add(objectNode.toString())
+                            continue
+                        }
+                        val objectNode = parser.readValueAsTree<ObjectNode>()
+                        if (filter(objectNode)) {
+                            currentIndex++
+                        }
+                        if (currentIndex < startIndex) {
+                            continue
+                        }
+                        if (currentIndex > endIndex) {
+                            break
+                        }
+                        resultList.add(objectNode.toString())
+                        continue
+                    }
+
+                    currentIndex++
+                    if (currentIndex < startIndex) {
+                        parser.skipChildren()
+                        continue
+                    }
+                    if (currentIndex > endIndex) {
+                        break
+                    }
+                    val item = JsonObject()
+                    while (parser.nextToken() != JsonToken.END_OBJECT) {
+                        val fieldName = parser.currentName
+                        parser.nextToken()
+                        when {
+                            fields.contains(fieldName) -> item.put(fieldName, parser.valueAsString)
+                            checkNotEmpty?.contains(fieldName) == true -> item.put(
+                                fieldName,
+                                !parser.valueAsString.isNullOrEmpty()
+                            )
+                            else -> parser.skipChildren()
+                        }
+                    }
+                    resultList.add(item.toString())
+                }
+            }
+        }
+        resultList
+    } catch (e: Exception) {
+        logger.error("解析文件内容出错: {} 文件: \n{}", e, file)
+        throw e
+    }
 }

@@ -12,10 +12,7 @@
     :before-close="cancel"
   >
     <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >书源订阅管理
-        <span class="float-right span-btn" @click="showForm(null)">新增</span>
-      </span>
+      <span class="el-dialog__title">书源订阅管理 </span>
     </div>
     <div class="source-container table-container">
       <el-table
@@ -31,7 +28,7 @@
         </el-table-column>
         <el-table-column
           property="name"
-          min-width="120px"
+          min-width="150px"
           label="名称"
           :fixed="$store.state.miniInterface"
         >
@@ -39,14 +36,14 @@
         <el-table-column
           property="link"
           label="链接"
-          min-width="200px"
+          min-width="150px"
         >
         </el-table-column>
         <el-table-column
           property="lastSyncTime"
-          label="最后同步"
+          label="上次同步"
           :formatter="formatTableField"
-          width="120px"
+          min-width="150px"
         >
         </el-table-column>
         <el-table-column label="操作" width="120px">
@@ -54,28 +51,39 @@
             <el-button
               type="text"
               @click="showForm(scope.row, scope.$index)"
-              >编辑</el-button
+              >修改</el-button
             >
             <el-button
               type="text"
               @click="sync(scope.row, scope.$index)"
-              :loading="loadingIndex === scope.$index"
-              >同步</el-button
+              :disabled="loadingIndex >= 0"
+              ><i
+                v-if="loadingIndex === scope.$index"
+                class="el-icon-loading"
+              ></i
+              >{{ loadingIndex === scope.$index ? "同步中" : "同步" }}</el-button
             >
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteRemoteBookSourceSub"
-        >批量删除</el-button
-      >
-      <span class="check-tip">已选择 {{ localSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteRemoteBookSourceSub"
+          >批量删除<span v-if="localSelection.length"> ({{ localSelection.length }})</span></el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="showForm(false)"
+          >新增</el-button
+        >
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -182,49 +190,27 @@ export default {
     async showForm(item, index) {
       const isAdd = !item;
       item = { ...(item || { name: "", link: "", lastSyncTime: null }) };
-      const res = await this.$prompt(
-        isAdd ? "请输入订阅信息 (JSON格式)" : "编辑订阅信息",
-        isAdd ? "新增订阅" : "编辑订阅",
-        {
-          inputType: "textarea",
-          inputValue: JSON.stringify(
-            { name: item.name, link: item.link },
-            null,
-            2
-          ),
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          inputValidator: val => {
-            try {
-              const obj = JSON.parse(val);
-              if (!obj.name) return "名称不能为空";
-              if (!obj.link) return "链接不能为空";
-              return true;
-            } catch (e) {
-              return "必须是JSON格式";
-            }
-          }
-        }
-      ).catch(() => false);
-      if (!res) return;
-      try {
-        const data = JSON.parse(res.value);
-        let list = [].concat(this.remoteBookSourceList);
-        if (isAdd) {
-          list = list.concat([
-            { name: data.name, link: data.link, lastSyncTime: null }
-          ]);
-        } else {
-          list[index] = {
-            ...list[index],
-            name: data.name,
-            link: data.link
-          };
-        }
-        this.saveData(list);
-      } catch (e) {
-        this.$message.error("格式错误");
+      const items = [
+        { name: "name", label: "名称", type: "input" },
+        { name: "link", label: "链接", type: "input" }
+      ];
+      const res = await this.$msgbox({
+        title: isAdd ? "新增订阅" : "编辑订阅",
+        message: this.renderForm(this.filePath, item, items, value => {
+          item = value;
+        }),
+        showCancelButton: true,
+        confirmButtonText: "确定",
+        cancelButtonText: "取消"
+      }).catch(error => (error === "close" ? "close" : error));
+      if (res !== "confirm") return false;
+      const list = [].concat(this.remoteBookSourceList);
+      if (isAdd) {
+        list.push(item);
+      } else {
+        list[index] = item;
       }
+      this.saveData(list);
     },
     saveData(data, silent) {
       Axios.post(

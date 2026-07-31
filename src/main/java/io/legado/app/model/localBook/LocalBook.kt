@@ -103,14 +103,14 @@ object LocalBook {
     fun deleteBook(book: Book) {
         kotlin.runCatching {
             var bookFile = book.getLocalFile();
-            if (book.isLocalTxt() || book.isUmd() || book.isPdf()) {
+            if (book.isLocalTxt() || book.isUmd()) {
                 if (bookFile.exists()) {
                     bookFile.delete()
                 }
             }
             if (book.isEpub()) {
-                bookFile = bookFile.parentFile
-                if (bookFile != null && bookFile.exists()) {
+                bookFile = bookFile.parentFile!!
+                if (bookFile.exists()) {
                     FileUtils.delete(bookFile, true)
                 }
             }

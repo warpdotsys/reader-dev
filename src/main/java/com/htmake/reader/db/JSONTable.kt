@@ -17,11 +17,11 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         return dataList
     }
 
-    override fun <P> findBy(key: String, value: P, clazz: Class<T>): T? {
+    override fun <P> findBy(field: String, value: P, clazz: Class<T>): T? {
         val allData = readAll()
         for (i in 0 until allData.size()) {
             val obj = allData.getJsonObject(i)
-            if (value == obj.getValue(key)) {
+            if (value == obj.getValue(field)) {
                 return obj.mapTo(clazz)
             }
         }
@@ -66,7 +66,6 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
 
         for (entity in entities) {
             var existingIndex = -1
-
             for (i in 0 until allData.size()) {
                 val obj = allData.getJsonObject(i)
                 if (checker(obj, entity)) {

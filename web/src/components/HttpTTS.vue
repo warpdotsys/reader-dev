@@ -12,17 +12,7 @@
     :before-close="cancel"
   >
     <div class="custom-dialog-title" slot="title">
-      <span class="el-dialog__title"
-        >HttpTTS管理
-        <span class="float-right span-btn" @click="uploadFile">导入</span>
-        <span class="float-right span-btn" @click="addNew">新增</span>
-        <input
-          ref="fileRef"
-          type="file"
-          @change="onFileChange($event)"
-          style="display:none"
-        />
-      </span>
+      <span class="el-dialog__title">HttpTTS管理</span>
     </div>
     <div class="source-container table-container">
       <el-table
@@ -43,9 +33,9 @@
           :fixed="$store.state.miniInterface"
         >
         </el-table-column>
-        <el-table-column property="url" label="链接" min-width="200px">
+        <el-table-column property="url" label="链接" min-width="150px">
         </el-table-column>
-        <el-table-column label="操作" width="80px">
+        <el-table-column label="操作" width="100px">
           <template slot-scope="scope">
             <el-button type="text" @click="editItem(scope.row)"
               >编辑</el-button
@@ -55,15 +45,35 @@
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteReplaceRules"
-        >批量删除</el-button
-      >
-      <span class="check-tip">已选择 {{ localSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteReplaceRules"
+          >批量删除<span v-if="localSelection.length"> ({{ localSelection.length }})</span></el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="uploadFile"
+          >导入</el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="addNew"
+          >添加</el-button
+        >
+        <input
+          ref="fileRef"
+          type="file"
+          @change="onFileChange($event)"
+          style="display:none"
+        />
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -185,6 +195,9 @@ export default {
     },
     onFileChange(event) {
       const rawFile = event.target.files && event.target.files[0];
+      if (!rawFile) {
+        return;
+      }
       const reader = new FileReader();
       reader.onload = e => {
         const data = e.target.result;

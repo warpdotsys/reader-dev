@@ -3,11 +3,10 @@ package com.htmake.reader.utils
 import io.legado.app.help.http.StrResponse
 import io.legado.app.help.http.getProxyClient
 import io.legado.app.help.http.newCallStrResponse
+import io.legado.app.help.http.postJson
 import io.legado.app.model.DebugLog
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.help.http.CookieStore
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 
 object RemoteWebview {
     var remoteWebviewApi: String = ""
@@ -53,7 +52,7 @@ object RemoteWebview {
 
         val strResponse = getProxyClient(null, debugLog).newCallStrResponse(0) {
             url(apiUrl)
-            post(requestBody.toRequestBody("application/json".toMediaType()))
+            postJson(requestBody)
         }
 
         // Handle cookies from remote webview response

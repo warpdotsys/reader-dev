@@ -4,6 +4,7 @@ import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.SearchBook
+import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.http.StrResponse
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.webBook.BookChapterList
@@ -38,7 +39,7 @@ class WebBook(
         get() = bookSource.bookSourceUrl
 
     val userNS: String
-        get() = userNameSpace ?: bookSource.getUserNameSpace().ifEmpty { "unknow" }
+        get() = userNameSpace ?: "unknow"
 
     private fun prepareSource() {
         bookSource.setUserNameSpace(userNS)
@@ -63,8 +64,8 @@ class WebBook(
         key: String,
         page: Int? = 1
     ): List<SearchBook> {
-        prepareSource()
         val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
+        prepareSource()
         return bookSource.searchUrl?.let { searchUrl ->
             val analyzeUrl = AnalyzeUrl(
                 mUrl = searchUrl,
@@ -104,7 +105,7 @@ class WebBook(
         val book = searchBook(name)
             .firstOrNull { it.name == name && it.author == author }
             ?.toBook()
-            ?: throw NoSuchElementException("Book not found: $name - $author")
+            ?: throw NoStackTraceException("未搜索到 $name($author) 书籍")
         if (book.tocUrl.isBlank()) {
             getBookInfo(book, false)
         }
@@ -118,8 +119,8 @@ class WebBook(
         url: String,
         page: Int? = 1
     ): List<SearchBook> {
-        prepareSource()
         val variableBook = SearchBook().also { it.setUserNameSpace(userNS) }
+        prepareSource()
         val analyzeUrl = AnalyzeUrl(
             mUrl = url,
             page = page,
@@ -151,9 +152,9 @@ class WebBook(
      * 书籍信息
      */
     suspend fun getBookInfo(book: Book, canReName: Boolean = true): Book {
+        book.type = bookSource.bookSourceType
         book.setUserNameSpace(userNS)
         prepareSource()
-        book.type = bookSource.bookSourceType
         if (!book.infoHtml.isNullOrEmpty()) {
             BookInfo.analyzeBookInfo(
                 book,
@@ -189,9 +190,9 @@ class WebBook(
     suspend fun getChapterList(
         book: Book
     ): List<BookChapter> {
+        book.type = bookSource.bookSourceType
         book.setUserNameSpace(userNS)
         prepareSource()
-        book.type = bookSource.bookSourceType
         return if (book.bookUrl == book.tocUrl && !book.tocHtml.isNullOrEmpty()) {
             BookChapterList.analyzeChapterList(
                 book,

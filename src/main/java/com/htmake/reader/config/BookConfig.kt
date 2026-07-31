@@ -129,6 +129,7 @@ object BookConfig {
             }
         });
         document.addEventListener("touchstart", function(event) {
+            // console.log(event)
             reader_notify("touchstart", {
                 target: event.target.nodeName,
                 touches: [{
@@ -138,6 +139,7 @@ object BookConfig {
             });
         });
         document.addEventListener("touchmove", function(event) {
+            // console.log(event)
             event.preventDefault && event.preventDefault();
             event.stopPropagation && event.stopPropagation();
             reader_notify("touchmove", {
@@ -149,6 +151,7 @@ object BookConfig {
             });
         });
         document.addEventListener("touchend", function(event) {
+            // console.log(event)
             reader_notify("touchend", {
                 target: event.target.nodeName
             });

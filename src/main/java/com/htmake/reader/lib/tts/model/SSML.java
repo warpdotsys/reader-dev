@@ -106,11 +106,6 @@ public class SSML implements Serializable {
         );
     }
 
-    // Synthetic access constructor for builder
-    SSML(String synthesisText, VoiceEnum voice, String rate, String pitch, String volume, TtsStyleEnum style, OutputFormat outputFormat, SSML dummy) {
-        this(synthesisText, voice, rate, pitch, volume, style, outputFormat);
-    }
-
     public static class SSMLBuilder {
 
         private String synthesisText;

@@ -9,21 +9,14 @@ import java.lang.reflect.Type
 class IntTypeAdapter : JsonSerializer<Int>, JsonDeserializer<Int> {
 
     override fun serialize(src: Int?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-        return JsonPrimitive(src ?: 0)
+        return JsonPrimitive(src.toString())
     }
 
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Int {
-        if (json == null || json.isJsonNull) {
-            return 0
+    override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): Int? {
+        if (!json.isJsonPrimitive) {
+            return null
         }
-        val str = json.asString
-        if (str.isNullOrEmpty()) {
-            return 0
-        }
-        return try {
-            str.toDouble().toInt()
-        } catch (e: NumberFormatException) {
-            0
-        }
+        val primitive = json.asJsonPrimitive
+        return if (primitive.isNumber) primitive.asNumber.toInt() else null
     }
 }

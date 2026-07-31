@@ -3,6 +3,7 @@ package io.legado.app.help
 import cn.hutool.crypto.digest.DigestUtil
 import cn.hutool.crypto.symmetric.AES
 import cn.hutool.crypto.symmetric.DESede
+import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.utils.Base64
 import io.legado.app.constant.AppConst.dateFormat
 import io.legado.app.help.http.*
@@ -18,7 +19,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import com.htmake.reader.init.appCtx
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -151,11 +151,12 @@ interface JsExtensions {
      */
     fun cacheFile(urlStr: String, saveTime: Int = 0): String? {
         val key = md5Encode16(urlStr)
-        val cache = CacheManager(getUserNameSpace()).getFile(key)
+        val cacheManager = CacheManager(getUserNameSpace())
+        val cache = cacheManager.getFile(key)
         if (cache.isNullOrBlank()) {
             log("首次下载 $urlStr")
             val value = ajax(urlStr) ?: return null
-            CacheManager(getUserNameSpace()).putFile(key, value, saveTime)
+            cacheManager.putFile(key, value, saveTime)
             return value
         }
         return cache
@@ -201,33 +202,45 @@ interface JsExtensions {
      * js实现重定向拦截,网络访问get
      */
     fun get(urlStr: String, headers: Map<String, String>): Connection.Response {
-        return Jsoup.connect(urlStr)
+        val response = Jsoup.connect(urlStr)
             .sslSocketFactory(SSLHelper.unsafeSSLSocketFactory)
             .ignoreContentType(true)
             .followRedirects(false)
             .headers(headers)
             .method(Connection.Method.GET)
             .execute()
+        val cookieStore = CookieStore(getUserNameSpace())
+        cookieStore.mapToCookie(response.cookies())?.let {
+            val domain = NetworkUtils.getSubDomain(urlStr)
+            cookieStore.replaceCookie("${domain}_cookieJar", it)
+        }
+        return response
     }
 
     /**
      * 网络访问head
      */
     fun head(urlStr: String, headers: Map<String, String>): Connection.Response {
-        return Jsoup.connect(urlStr)
+        val response = Jsoup.connect(urlStr)
             .sslSocketFactory(SSLHelper.unsafeSSLSocketFactory)
             .ignoreContentType(true)
             .followRedirects(false)
             .headers(headers)
             .method(Connection.Method.HEAD)
             .execute()
+        val cookieStore = CookieStore(getUserNameSpace())
+        cookieStore.mapToCookie(response.cookies())?.let {
+            val domain = NetworkUtils.getSubDomain(urlStr)
+            cookieStore.replaceCookie("${domain}_cookieJar", it)
+        }
+        return response
     }
 
     /**
      * 网络访问post
      */
     fun post(urlStr: String, body: String, headers: Map<String, String>): Connection.Response {
-        return Jsoup.connect(urlStr)
+        val response = Jsoup.connect(urlStr)
             .sslSocketFactory(SSLHelper.unsafeSSLSocketFactory)
             .ignoreContentType(true)
             .followRedirects(false)
@@ -235,6 +248,12 @@ interface JsExtensions {
             .headers(headers)
             .method(Connection.Method.POST)
             .execute()
+        val cookieStore = CookieStore(getUserNameSpace())
+        cookieStore.mapToCookie(response.cookies())?.let {
+            val domain = NetworkUtils.getSubDomain(urlStr)
+            cookieStore.replaceCookie("${domain}_cookieJar", it)
+        }
+        return response
     }
 
     /**
@@ -302,7 +321,7 @@ interface JsExtensions {
     fun utf8ToGbk(str: String): String {
         val utf8 = String(str.toByteArray(charset("UTF-8")))
         val unicode = String(utf8.toByteArray(), charset("UTF-8"))
-        return String(unicode.toByteArray(charset("GBK")))
+        return String(unicode.toByteArray(charset("GBK")), Charsets.UTF_8)
     }
 
     fun encodeURI(str: String): String {
@@ -333,7 +352,7 @@ interface JsExtensions {
      * @return File
      */
     fun getFile(path: String): File {
-        val cachePath = appCtx.cacheDir
+        val cachePath = ReaderAdapterHelper.getAdapter().getCacheDir()
         val aPath: String = if (path.startsWith(File.separator)) {
             cachePath + path
         } else {
@@ -485,14 +504,7 @@ interface JsExtensions {
         if (qTTF != null) return qTTF
         val font: ByteArray? = when {
             str.isAbsUrl() -> runBlocking {
-                var x = cacheManager.getByteArray(key)
-                if (x == null) {
-                    x = okHttpClient.newCall { url(str) }.bytes()
-                    x.let {
-                        cacheManager.put(key, it)
-                    }
-                }
-                return@runBlocking x
+                return@runBlocking okHttpClient.newCall { url(str) }.bytes()
             }
             str.indexOf("storage/") > 0 -> File(str).readBytes()
             else -> base64DecodeToByteArray(str)
@@ -529,6 +541,7 @@ interface JsExtensions {
      * 弹窗提示
      */
     fun toast(msg: Any?) {
+        getLogger()?.log("toast: " + msg.toString())
         Debug.log("toast: " + msg.toString())
     }
 
@@ -536,6 +549,7 @@ interface JsExtensions {
      * 弹窗提示 停留时间较长
      */
     fun longToast(msg: Any?) {
+        getLogger()?.log("longToast: " + msg.toString())
         Debug.log("longToast: " + msg.toString())
     }
 
@@ -543,6 +557,7 @@ interface JsExtensions {
      * 输出调试日志
      */
     fun log(msg: String): String {
+        getLogger()?.log(msg)
         Debug.log(msg)
         return msg
     }
@@ -600,7 +615,7 @@ interface JsExtensions {
     fun aesDecodeToString(
         str: String, key: String, transformation: String, iv: String
     ): String? {
-        return aesDecodeToByteArray(str, key, transformation, iv)?.let { String(it) }
+        return aesDecodeToByteArray(str, key, transformation, iv)?.let { String(it, Charsets.UTF_8) }
     }
 
     /**
@@ -639,7 +654,7 @@ interface JsExtensions {
     fun aesBase64DecodeToString(
         str: String, key: String, transformation: String, iv: String
     ): String? {
-        return aesBase64DecodeToByteArray(str, key, transformation, iv)?.let { String(it) }
+        return aesBase64DecodeToByteArray(str, key, transformation, iv)?.let { String(it, Charsets.UTF_8) }
     }
 
     /**
@@ -676,7 +691,7 @@ interface JsExtensions {
     fun aesEncodeToString(
         data: String, key: String, transformation: String, iv: String
     ): String? {
-        return aesEncodeToByteArray(data, key, transformation, iv)?.let { String(it) }
+        return aesEncodeToByteArray(data, key, transformation, iv)?.let { String(it, Charsets.UTF_8) }
     }
 
     /**
@@ -713,7 +728,7 @@ interface JsExtensions {
     fun aesEncodeToBase64String(
         data: String, key: String, transformation: String, iv: String
     ): String? {
-        return aesEncodeToBase64ByteArray(data, key, transformation, iv)?.let { String(it) }
+        return aesEncodeToBase64ByteArray(data, key, transformation, iv)?.let { String(it, Charsets.UTF_8) }
     }
 
     fun androidId(): String {
@@ -762,7 +777,7 @@ interface JsExtensions {
         padding: String,
         iv: String
     ): String? {
-        return DESede(mode, padding, key.toByteArray(), iv.toByteArray()).decryptStr(data)
+        return DESede(mode, padding, key.toByteArray(Charsets.UTF_8), iv.toByteArray(Charsets.UTF_8)).decryptStr(data)
     }
 
     /**
@@ -823,7 +838,7 @@ interface JsExtensions {
             key.encodeToByteArray(),
             transformation,
             iv.encodeToByteArray()
-        )?.let { String(it) }
+        )?.let { String(it, Charsets.UTF_8) }
     }
 
     fun desBase64DecodeToString(
@@ -834,7 +849,7 @@ interface JsExtensions {
             key.encodeToByteArray(),
             transformation,
             iv.encodeToByteArray()
-        )?.let { String(it) }
+        )?.let { String(it, Charsets.UTF_8) }
     }
 
     fun desEncodeToString(
@@ -845,7 +860,7 @@ interface JsExtensions {
             key.encodeToByteArray(),
             transformation,
             iv.encodeToByteArray()
-        )?.let { String(it) }
+        )?.let { String(it, Charsets.UTF_8) }
     }
 
     fun desEncodeToBase64String(
@@ -856,7 +871,7 @@ interface JsExtensions {
             key.encodeToByteArray(),
             transformation,
             iv.encodeToByteArray()
-        )?.let { String(it) }
+        )?.let { String(it, Charsets.UTF_8) }
     }
     /**
      * 3DES加密并转为Base64
@@ -875,7 +890,7 @@ interface JsExtensions {
         padding: String,
         iv: String
     ): String? {
-        return DESede(mode, padding, key.toByteArray(), iv.toByteArray()).encryptBase64(data)
+        return DESede(mode, padding, key.toByteArray(Charsets.UTF_8), iv.toByteArray(Charsets.UTF_8)).encryptBase64(data)
     }
 
     /**

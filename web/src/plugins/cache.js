@@ -21,3 +21,7 @@ export const getCache = (key, defaultVal = null) => {
     return val;
   }
 };
+
+export const removeCache = key => {
+  window.localStorage && window.localStorage.removeItem(key);
+};

@@ -22,19 +22,16 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
     }
 
     override fun checker(json: JsonObject, entity: BookGroup): Boolean {
-        return json.getLong("groupId", 0L) == entity.groupId
+        return json.getLong("groupId") == entity.groupId
     }
 
     override fun onList(list: JsonArray, userNameSpace: String): JsonArray {
         if (list.size() > 0) {
             return list
         }
-        val defaultGroups = JsonArray()
-            .add(JsonObject().put("groupId", -1L).put("groupName", "全部").put("order", -10).put("show", true))
-            .add(JsonObject().put("groupId", -2L).put("groupName", "本地").put("order", -9).put("show", true))
-            .add(JsonObject().put("groupId", -3L).put("groupName", "音频").put("order", -8).put("show", true))
-            .add(JsonObject().put("groupId", -4L).put("groupName", "未分组").put("order", -7).put("show", true))
-            .add(JsonObject().put("groupId", -5L).put("groupName", "更新错误").put("order", -6).put("show", true))
+        val defaultGroups = com.htmake.reader.utils.asJsonArray("""
+            [{"groupId":-1,"groupName":"全部","order":-10,"show":true},{"groupId":-2,"groupName":"本地","order":-9,"show":true},{"groupId":-3,"groupName":"音频","order":-8,"show":true},{"groupId":-4,"groupName":"未分组","order":-7,"show":true},{"groupId":-5,"groupName":"更新错误","order":-6,"show":true}]
+            """) ?: JsonArray()
         saveUserStorage(userNameSpace, getTableName(), defaultGroups)
         return defaultGroups
     }

@@ -8,7 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 object UserMutex {
 
     val mutex = Mutex()
-    val lockerMap = LRUCache<String, Mutex>(256)
+    val lockerMap = LRUCache<String, Mutex>(10)
 
     suspend fun getLocker(username: String): Mutex {
         mutex.lock()

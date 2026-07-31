@@ -3,7 +3,9 @@ package io.legado.app.data.entities
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.model.analyzeRule.RuleDataInterface
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
+@JsonIgnoreProperties("variableMap", "_userNameSpace", "userNameSpace")
 data class RssArticle(
     var origin: String = "",
     var sort: String = "",

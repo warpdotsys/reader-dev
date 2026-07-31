@@ -2,12 +2,8 @@ package io.legado.app.adapters
 
 import io.legado.app.help.http.StrResponse
 import io.legado.app.model.DebugLog
-import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRelativePath
-import com.htmake.reader.utils.RemoteWebview
-import com.htmake.reader.utils.SpringContextUtils
-import com.htmake.reader.config.AppConfig
-import com.htmake.reader.init.appCtx
+import java.nio.file.Paths
 
 /**
  * Default implementation of ReaderAdapterInterface using existing getWorkDir functions.
@@ -15,11 +11,19 @@ import com.htmake.reader.init.appCtx
 class DefaultAdpater : ReaderAdapterInterface {
 
     override fun getWorkDir(subPath: String): String {
-        return getWorkDir(subPath)
+        var workDirPath = ""
+        val osName = System.getProperty("os.name")
+        val currentDir = System.getProperty("user.dir")
+        if (osName.startsWith("Mac OS", true) && !currentDir.startsWith("/Users/")) {
+            workDirPath = Paths.get(System.getProperty("user.home"), ".reader").toString()
+        } else {
+            workDirPath = currentDir
+        }
+        return Paths.get(workDirPath, subPath).toString()
     }
 
     override fun getWorkDir(vararg subDirFiles: String): String {
-        return com.htmake.reader.utils.getWorkDir(getRelativePath(*subDirFiles))
+        return getWorkDir(getRelativePath(*subDirFiles))
     }
 
     fun getRelativePath(vararg subDirFiles: String): String {

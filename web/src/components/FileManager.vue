@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :title="title || '文件管理'"
+    :title="title"
     :visible.sync="show"
     :width="dialogWidth"
     :top="dialogTop"
@@ -13,18 +13,13 @@
   >
     <div class="custom-dialog-title" slot="title">
       <span class="el-dialog__title"
-        >{{ title || '文件管理' }}
-        <span class="float-right span-btn" @click="upload">上传</span>
-        <span class="float-right span-btn" @click="mkdir">新建目录</span>
-        <span class="float-right span-btn" @click="resolveBooks" v-if="!resolveMode">解析书籍</span>
-        <span class="float-right span-btn" @click="resolveAndImportBooks" v-if="!resolveMode">一键导入</span>
-        <input
-          ref="bookRef"
-          type="file"
-          multiple="multiple"
-          @change="onFileChange($event)"
-          style="display:none"
-        />
+        >{{ this.title }}
+        <span class="float-right span-btn" @click="resolveAndImportBooks"
+          >一键导入</span
+        >
+        <span class="float-right span-btn" @click="resolveBooks"
+          >解析书籍</span
+        >
       </span>
     </div>
     <div class="source-container table-container">
@@ -44,47 +39,9 @@
         <el-table-column
           property="name"
           min-width="150px"
-          label="文件名"
-          :fixed="$store.state.miniInterface"
-        >
-          <template slot-scope="scope">
-            <span v-if="!scope.row.isDirectory && !resolveMode">{{ scope.row.name }}</span>
-            <span v-if="resolveMode">{{ scope.row.name }}</span>
-            <el-link
-              type="primary"
-              v-if="scope.row.isDirectory && !resolveMode"
-              @click="showFileList(scope.row.path)"
-              >{{ scope.row.name }}</el-link
-            >
-          </template>
-        </el-table-column>
-        <el-table-column
-          property="size"
-          label="大小"
-          :formatter="formatTableField"
-          min-width="100px"
-          v-if="!resolveMode"
-        ></el-table-column>
-        <el-table-column
-          property="lastModified"
-          label="修改时间"
-          :formatter="formatTableField"
-          width="120px"
-          v-if="!resolveMode"
-        ></el-table-column>
-        <el-table-column
-          property="book.author"
-          label="作者"
-          min-width="100px"
-          v-if="resolveMode"
-          :filters="authorList"
-          :filter-method="filterAuthor"
-        ></el-table-column>
-        <el-table-column
-          label="状态"
-          width="80px"
-          v-if="resolveMode"
-          column-key="importStatus"
+          :label="resolveMode ? '书名' : '文件名'"
+          sortable
+          :sort-method="sortMethod"
           :filters="[
             { text: '已导入', value: 'imported' },
             { text: '未导入', value: 'unImport' },
@@ -92,86 +49,109 @@
             { text: '目录', value: 'directory' }
           ]"
           :filter-method="filterHandler"
+          :fixed="$store.state.miniInterface"
         >
           <template slot-scope="scope">
-            <span v-if="scope.row.isImported" style="color:#67c23a">已导入</span>
-            <span v-else-if="scope.row.canImport">可导入</span>
-            <span v-else-if="scope.row.isDirectory">目录</span>
-            <span v-else>-</span>
+            <span v-if="scope.row.isImported" class="imported-book-name">{{ scope.row.name }}</span>
+            <span v-else-if="!scope.row.isDirectory">{{ scope.row.name }}</span>
+            <el-link
+              type="primary"
+              v-if="scope.row.isDirectory"
+              @click="showFileList(scope.row.path)"
+              >{{ scope.row.name }}</el-link
+            >
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140px" v-if="!resolveMode">
+        <el-table-column
+          v-if="resolveMode"
+          property="book.author"
+          label="作者名"
+          min-width="100px"
+          sortable
+          :filters="authorList"
+          :filter-method="filterAuthor"
+        ></el-table-column>
+        <el-table-column
+          property="size"
+          label="大小"
+          sortable
+          :formatter="formatTableField"
+          min-width="100px"
+        ></el-table-column>
+        <el-table-column
+          property="lastModified"
+          label="修改时间"
+          sortable
+          :formatter="formatTableField"
+          width="120px"
+        ></el-table-column>
+        <el-table-column align="right" width="140px">
           <template slot="header">
-            <el-input
-              v-model="keyword"
-              size="mini"
-              placeholder="输入关键字搜索"
-            />
+            <el-input v-model="keyword" size="mini" placeholder="搜索本页" />
           </template>
           <template slot-scope="scope">
+            <el-dropdown
+              v-if="!scope.row.isDirectory"
+              :trigger="$store.state.touchable ? 'click' : 'hover'"
+              @command="operateFile(scope.row, $event)"
+            >
+              <el-button type="text" size="medium" class="text-button"
+                >操作<i class="el-icon-arrow-down el-icon--right"></i
+              ></el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="downloadFile">下载</el-dropdown-item>
+                <el-dropdown-item
+                  v-if="scope.row.name.endsWith('.zip')"
+                  command="restoreFromFile"
+                  >还原</el-dropdown-item
+                >
+                <el-dropdown-item
+                  v-if="scope.row.name.endsWith('.json')"
+                  command="editFile"
+                  >编辑</el-dropdown-item
+                >
+                <el-dropdown-item
+                  v-if="scope.row.canImport"
+                  command="importFromFile"
+                  >加入书架</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
             <el-button
-              type="text"
-              @click="operateFile(scope.row, 'deleteFile')"
-              style="color: #f56c6c"
               v-if="!scope.row.toParent"
+              type="text"
+              style="color:#f56c6c"
+              @click="deleteFile(scope.row)"
               >删除</el-button
-            >
-            <el-button
-              type="text"
-              @click="operateFile(scope.row, 'editFile')"
-              v-if="!scope.row.toParent && !scope.row.isDirectory"
-              >编辑</el-button
-            >
-            <el-button
-              type="text"
-              @click="operateFile(scope.row, 'downloadFile')"
-              v-if="!scope.row.toParent && !scope.row.isDirectory"
-              >下载</el-button
-            >
-            <el-button
-              type="text"
-              @click="operateFile(scope.row, 'importFromFile')"
-              v-if="canImport(scope.row)"
-              >导入</el-button
-            >
-            <el-button
-              type="text"
-              @click="operateFile(scope.row, 'restoreFromFile')"
-              v-if="scope.row.name && scope.row.name.endsWith('.zip')"
-              >恢复</el-button
-            >
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="80px" v-if="resolveMode">
-          <template slot-scope="scope">
-            <el-button
-              type="text"
-              @click="operateFile(scope.row, 'importFromFile')"
-              v-if="scope.row.canImport && !scope.row.isImported"
-              >导入</el-button
             >
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
+      <el-dropdown
         class="float-left"
-        @click="deleteFileList"
-        v-if="!resolveMode"
-        >批量删除</el-button
+        :trigger="$store.state.touchable ? 'click' : 'hover'"
+        @command="operate"
       >
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="importFromFile(true)"
-        >批量导入</el-button
-      >
-      <span class="check-tip">已选择 {{ fileSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+        <el-button type="primary" size="medium"
+          >操作<span v-if="fileSelection.length"> ({{ fileSelection.length }})</span
+          ><i class="el-icon-arrow-down el-icon--right"></i
+        ></el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="deleteFileList">批量删除</el-dropdown-item>
+          <el-dropdown-item command="importFromFile">批量加入书架</el-dropdown-item>
+          <el-dropdown-item command="mkdir">新建目录</el-dropdown-item>
+          <el-dropdown-item command="upload">上传文件</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <input
+        ref="bookRef"
+        type="file"
+        multiple="multiple"
+        @change="onFileChange($event)"
+        style="display:none"
+      />
     </div>
   </el-dialog>
 </template>
@@ -321,7 +301,7 @@ export default {
                     this.fileList = res.data.data.map(t => ({
                       ...t,
                       isImported: !!this.localBook.find(
-                        e => e.originName.indexOf(t.path) >= 0
+                        e => e.originName && e.originName.indexOf(t.path) >= 0
                       ),
                       canImport: this.canImport(t)
                     }));
@@ -420,7 +400,7 @@ export default {
               isImported:
                 !e.isDirectory &&
                 !!this.localBook.find(
-                  b => b.originName.indexOf(e.path) >= 0
+                  b => b.originName && b.originName.indexOf(e.path) >= 0
                 ),
               canImport: this.canImport(e)
             }));
@@ -602,11 +582,16 @@ export default {
       this.$refs.bookRef.dispatchEvent(new MouseEvent("click"));
     },
     downloadFile(row) {
-      const url = buildURL(this.api + "/file/download", {
+      const params = {
         home: this.home,
         path: row.path,
         accessToken: this.$store.state.token
-      });
+      };
+      if (this.$store.state.isManagerMode && this.$store.state.secureKey) {
+        params.secureKey = this.$store.state.secureKey;
+        params.userNS = this.$store.state.userNS;
+      }
+      const url = buildURL(this.api + "/file/download", params);
       window.open(url, "__blank");
     },
     onFileChange(event) {

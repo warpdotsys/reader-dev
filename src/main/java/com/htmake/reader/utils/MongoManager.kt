@@ -19,9 +19,6 @@ object MongoManager {
     }
 
     fun connect(uri: String) {
-        if (uri.isBlank()) {
-            return
-        }
         try {
             val client = MongoClients.create(uri)
             mongoClient = client

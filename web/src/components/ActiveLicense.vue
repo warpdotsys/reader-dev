@@ -31,50 +31,88 @@
         </el-table-column>
         <el-table-column
           property="host"
-          min-width="120px"
+          min-width="150px"
           label="Host"
           :fixed="$store.state.miniInterface"
         >
         </el-table-column>
         <el-table-column
+          property="code"
+          label="Code"
+          min-width="100px"
+        >
+        </el-table-column>
+        <el-table-column
+          property="type"
+          label="类型"
+          min-width="100px"
+        >
+        </el-table-column>
+        <el-table-column
           property="userMaxLimit"
           label="用户上限"
-          width="80px"
+          min-width="100px"
         >
         </el-table-column>
         <el-table-column
           property="expiredAt"
           label="过期时间"
           :formatter="formatTableField"
-          min-width="120px"
+          min-width="100px"
+        >
+        </el-table-column>
+        <el-table-column
+          property="simpleWebExpiredAt"
+          label="Kindle过期"
+          :formatter="formatTableField"
+          min-width="150px"
         >
         </el-table-column>
         <el-table-column
           property="activeTime"
           label="激活时间"
           :formatter="formatTableField"
-          min-width="120px"
+          min-width="150px"
+        >
+        </el-table-column>
+        <el-table-column
+          property="activeIp"
+          label="激活IP"
+          min-width="100px"
         >
         </el-table-column>
         <el-table-column
           property="lastOnlineTime"
-          label="最后在线"
+          label="上次在线时间"
           :formatter="formatTableField"
-          min-width="120px"
+          min-width="150px"
+        >
+        </el-table-column>
+        <el-table-column
+          property="lastOnlineIp"
+          label="上次在线IP"
+          min-width="100px"
         >
         </el-table-column>
       </el-table>
     </div>
     <div slot="footer" class="dialog-footer">
-      <el-button
-        type="primary"
-        size="medium"
-        class="float-left"
-        @click="deleteItems"
-        >批量删除</el-button
-      >
-      <span class="check-tip">已选择 {{ localSelection.length }} 个</span>
-      <el-button size="medium" @click="cancel">取消</el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="deleteItems"
+          >批量删除<span v-if="localSelection.length"> ({{ localSelection.length }})</span></el-button
+        >
+        <el-button
+          type="primary"
+          size="medium"
+          class="float-left"
+          @click="showForm"
+          >生成密钥</el-button
+        >
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -128,7 +166,7 @@ export default {
       this.$emit("setShow", false);
     },
     loadList() {
-      Axios.get("/file/get", {
+      Axios.get(this.api + "/file/get", {
         params: { path: this.filePath, home: "__STORAGE__" },
         silent: true
       })
@@ -173,70 +211,64 @@ export default {
         type: "basic",
         code: ""
       };
-
-      const res = await this.$prompt("请输入配置 (JSON格式)", "生成密钥", {
-        inputType: "textarea",
-        inputValue: JSON.stringify(config, null, 2),
+      const items = [
+        { name: "host", label: "Host", type: "input" },
+        { name: "userMaxLimit", label: "用户上限", type: "input" },
+        { name: "expiredAt", label: "过期时间", type: "input" },
+        { name: "simpleWebExpiredAt", label: "Kindle有效期", type: "input" },
+        { name: "type", label: "类型", type: "input" },
+        { name: "code", label: "Code", type: "input" }
+      ];
+      const res = await this.$msgbox({
+        title: "生成密钥",
+        message: this.renderForm(this.filePath, config, items, value => {
+          config = value;
+        }),
+        showCancelButton: true,
         confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        inputValidator: val => {
-          try {
-            JSON.parse(val);
-            return true;
-          } catch (e) {
-            return "必须是JSON格式";
-          }
-        }
-      }).catch(() => false);
-      if (!res) return;
+        cancelButtonText: "取消"
+      }).catch(error => (error === "close" ? "close" : error));
+      if (res !== "confirm") return false;
 
-      try {
-        config = JSON.parse(res.value);
-        config.userMaxLimit = parseInt(config.userMaxLimit);
-        config.expiredAt = "" + config.expiredAt;
-        if (config.expiredAt && config.expiredAt.indexOf("-") > 0) {
-          config.expiredAt = new Date(
-            config.expiredAt.replace(/-/g, "/") + " 23:59:59"
-          ).getTime();
-        } else {
-          config.expiredAt = parseInt(config.expiredAt);
-        }
-        config.simpleWebExpiredAt = "" + config.simpleWebExpiredAt;
-        if (
-          config.simpleWebExpiredAt &&
-          config.simpleWebExpiredAt.indexOf("-") > 0
-        ) {
-          config.simpleWebExpiredAt = new Date(
-            config.simpleWebExpiredAt.replace(/-/g, "/") + " 23:59:59"
-          ).getTime();
-        } else {
-          config.simpleWebExpiredAt = parseInt(config.simpleWebExpiredAt);
-        }
-        setCache("lastGenerateLicenseConfig", config);
-
-        Axios.post("/generateLicense", config).then(
-          res => {
-            if (res.data.isSuccess) {
-              eventBus.$emit(
-                "showEditor",
-                "生成授权",
-                JSON.stringify(res.data.data, null, 4)
-              );
-            }
-          },
-          error => {
-            this.$message.error(
-              "生成密钥失败 " + (error && error.toString())
+      config.userMaxLimit = parseInt(config.userMaxLimit);
+      config.expiredAt = "" + config.expiredAt;
+      if (config.expiredAt && config.expiredAt.indexOf("-") > 0) {
+        config.expiredAt = new Date(
+          config.expiredAt.replace(/-/g, "/") + " 23:59:59"
+        ).getTime();
+      } else {
+        config.expiredAt = parseInt(config.expiredAt);
+      }
+      config.simpleWebExpiredAt = "" + config.simpleWebExpiredAt;
+      if (
+        config.simpleWebExpiredAt &&
+        config.simpleWebExpiredAt.indexOf("-") > 0
+      ) {
+        config.simpleWebExpiredAt = new Date(
+          config.simpleWebExpiredAt.replace(/-/g, "/") + " 23:59:59"
+        ).getTime();
+      } else {
+        config.simpleWebExpiredAt = parseInt(config.simpleWebExpiredAt);
+      }
+      setCache("lastGenerateLicenseConfig", config);
+      Axios.post(this.api + "/generateLicense", config).then(
+        res => {
+          if (res.data.isSuccess) {
+            eventBus.$emit(
+              "showEditor",
+              "生成授权",
+              JSON.stringify(res.data.data, null, 4)
             );
           }
-        );
-      } catch (e) {
-        this.$message.error("配置必须是JSON格式");
-      }
+        },
+        error => {
+          this.$message.error("生成密钥失败 " + (error && error.toString()));
+        }
+      );
     },
     saveData(data) {
       Axios.post(
-        "/file/save",
+        this.api + "/file/save",
         {
           path: this.filePath,
           content: JSON.stringify(data),

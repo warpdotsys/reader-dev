@@ -22,7 +22,7 @@ data class License(
     fun validHost(queryHost: String): Boolean {
         if (!isValid() || queryHost.isEmpty()) return false
         if (host == "*") return true
-        val queryParts = queryHost.substringBefore(':').split('.')
+        val queryParts = queryHost.split(':')[0].split('.')
         for (hostname in host.split(',')) {
             val parts = hostname.split('.')
             if (parts.size != queryParts.size) continue

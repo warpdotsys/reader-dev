@@ -13,6 +13,7 @@ import io.legado.app.help.JsExtensions
 import io.legado.app.help.http.CookieStore
 import io.legado.app.utils.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.jsoup.nodes.Entities
 import org.mozilla.javascript.NativeObject
 import java.net.URL
@@ -729,18 +730,17 @@ class AnalyzeRule(
     }
 
     fun reGetBook() {
+        val bookSource = source as? BookSource
+        val book = book as? Book
+        if (bookSource == null || book == null) return
         runBlocking {
-            val bookSource = source as? BookSource
-            val book = book as? Book
-            if (bookSource == null || book == null) return@runBlocking
-            val refreshedBook = WebBook(bookSource, false, debugLog, getUserNameSpace())
-                .preciseSearch(book.name, book.author)
-                .getOrNull()
-                ?: return@runBlocking
-            book.bookUrl = refreshedBook.bookUrl
-            refreshedBook.variableMap.forEach { (key, value) -> book.putVariable(key, value) }
-            if (refreshedBook.tocUrl.isNotBlank()) {
-                book.tocUrl = refreshedBook.tocUrl
+            withTimeout(30 * 60 * 1000L) {
+                val refreshedBook = WebBook(bookSource, false, null, getUserNameSpace())
+                    .preciseSearch(book.name, book.author)
+                    .getOrThrow()
+                book.bookUrl = refreshedBook.bookUrl
+                refreshedBook.variableMap.forEach { (key, value) -> book.putVariable(key, value) }
+                WebBook(bookSource, false, null, getUserNameSpace()).getBookInfo(book, false)
             }
         }
     }

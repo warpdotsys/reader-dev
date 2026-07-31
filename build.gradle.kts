@@ -85,6 +85,7 @@ dependencies {
     implementation("io.vertx:vertx-core:3.8.5")
     implementation("io.vertx:vertx-lang-kotlin:3.8.5")
     implementation("io.vertx:vertx-lang-kotlin-coroutines:3.8.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2")
     implementation("io.vertx:vertx-web:3.8.5")
     implementation("io.vertx:vertx-web-client:3.8.5")
     implementation("io.vertx:vertx-auth-common:3.8.5")

@@ -76,19 +76,23 @@
     <div class="read-bar" :style="rightBarTheme">
       <div class="float-btn-zone">
         <div class="float-left-btn-zone">
-          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showBookmarkDialog">
+          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showBookmarkDialog"
+            v-if="!isAudio && !isVideo">
             <i class="el-icon-collection-tag"></i>
           </div>
-          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showSearchBookContentDialog">
+          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showSearchBookContentDialog"
+            v-if="!isAudio && !isVideo">
             <i class="el-icon-search"></i>
           </div>
           <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showReadingBookInfo">
             <i class="el-icon-info"></i>
           </div>
-          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toTop(0)" v-if="$store.state.miniInterface">
+          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toTop(0)"
+            v-if="$store.state.miniInterface && !isSlideRead && !isAudio && !isVideo">
             <i class="el-icon-top"></i>
           </div>
-          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toBottom(0)" v-if="$store.state.miniInterface">
+          <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toBottom(0)"
+            v-if="$store.state.miniInterface && !isSlideRead && !isAudio && !isVideo">
             <i class="el-icon-bottom"></i>
           </div>
         </div>
@@ -97,11 +101,11 @@
             <i class="el-icon-refresh-right"></i>
           </div>
           <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toggleAutoReading()"
-            v-if="!isEpub && !isCarToon && !isAudio">
+            v-if="!isEpub && !isCarToon && !isAudio && !isVideo">
             <i class="el-icon-view"></i>
           </div>
           <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="showReadBar = !showReadBar"
-            v-if="speechAvalable && !isEpub && !isCarToon && !isAudio">
+            v-if="(speechAvalable || ttsType !== 'local') && !isEpub && !isCarToon && !isAudio && !isVideo">
             <i class="el-icon-headset"></i>
           </div>
           <div class="float-btn" :style="popupAbsoluteBtnStyle" @click="toogleNight">
@@ -110,7 +114,7 @@
           </div>
         </div>
       </div>
-      <div class="progress" v-if="$store.state.miniInterface && !isAudio">
+      <div class="progress" v-if="$store.state.miniInterface && !isAudio && !isVideo">
         <div class="progress-bar">
           <el-slider v-model="currentPage" :min="1" :max="totalPages" :show-tooltip="false" @change="showPage"
             @input="progressValue = $event"></el-slider>
@@ -176,14 +180,28 @@
           </div>
         </div>
         <div class="setting-item" v-if="showSpeechConfig">
+          <div class="setting-title">
+            朗读方式
+            <span class="float-right" @click="showHttpTTSDialog">HttpTTS 管理</span>
+          </div>
+          <div class="setting-value">
+            <el-select v-model="ttsType" size="mini" filterable placeholder="请选择朗读方式">
+              <el-option v-for="(item, index) in ttsTypeList" :key="'tts-type-' + index" :label="item.name"
+                :value="item.value"></el-option>
+            </el-select>
+          </div>
+          <div class="setting-oneline" v-if="ttsType !== 'local'">
+            <span class="setting-title">连读优化：</span>
+            <el-switch v-model="cacheTTSAudio" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          </div>
+        </div>
+        <div class="setting-item" v-if="showSpeechConfig">
           <div class="setting-title">语音库</div>
           <div class="setting-value">
-            <div class="voice-list">
-              <el-radio-group v-model="voiceName" size="small" class="radio-group">
-                <el-radio-button class="radio-button" :label="voice.name" :key="index"
-                  v-for="(voice, index) in voiceList"></el-radio-button>
-              </el-radio-group>
-            </div>
+            <el-select v-model="voiceName" size="mini" filterable placeholder="请选择语音库">
+              <el-option v-for="(voice, index) in voiceList" :key="'voice-' + index" :label="voice.LocalName || voice.name"
+                :value="voice.name"></el-option>
+            </el-select>
           </div>
         </div>
         <div class="setting-item" v-if="showSpeechConfig">
@@ -239,6 +257,8 @@
         </div>
       </div>
       <div class="bottom-bar" ref="bottom">
+        <audio ref="ttsAudio" preload="auto" @ended="onTTSAudioEnded" @error="onTTSAudioError"
+          @play="onTTSAudioPlay" @pause="onTTSAudioPause"></audio>
         <span v-if="isSlideRead">{{
           `第${currentPage}/${totalPages}页 ${readingProgress}`
           }}</span>
@@ -458,17 +478,21 @@ export default {
       }
     },
     readingBook(val, oldVal) {
-      if (val.bookUrl !== oldVal.bookUrl) {
+      if (val && val.bookUrl !== (oldVal || {}).bookUrl) {
         this.startSavePosition = false;
         this.autoShowPosition();
       }
     },
     currentPage(val, oldVal) {
       // 还剩两页的时候，预读下一章节
-      if (val !== oldVal && val >= this.totalPages - 2) {
+      const readingBook = this.$store.getters.readingBook || {};
+      if (
+        val !== oldVal &&
+        val >= this.totalPages - 2 &&
+        readingBook.catalog
+      ) {
         if (
-          this.$store.getters.readingBook.index <
-          this.$store.getters.readingBook.catalog.length - 1
+          readingBook.index < readingBook.catalog.length - 1
         ) {
           if (!this.isScrollRead) {
             if (!this.preCaching) {
@@ -494,12 +518,12 @@ export default {
         //
         this.computeShowChapterList();
       } else {
-        this.content = this.filterContent(this.content);
+        this.content = this.filterContent(this.originalContent);
       }
     },
     chineseFont() {
       this.title = this.filterContent(this.title);
-      this.content = this.filterContent(this.content);
+      this.content = this.filterContent(this.originalContent);
       this.computeShowChapterList();
     },
     shouldHideMobileScrollBar(val) {
@@ -509,6 +533,7 @@ export default {
   data() {
     return {
       title: "",
+      originalContent: "",
       content: "",
       error: false,
       popCataVisible: false,
@@ -530,9 +555,15 @@ export default {
 
       speechAvalable: false,
       showReadBar: false,
-      voiceList: [],
+      localVoiceList: [],
       speechSpeaking: false,
       showSpeechConfig: true,
+      ttsTypeList: [
+        { name: "浏览器", value: "local" },
+        { name: "大声朗读", value: "edge" },
+        { name: "HttpTTS", value: "httpTTS" }
+      ],
+      currentTTSCacheKey: null,
 
       currentParagraph: null,
 
@@ -550,7 +581,9 @@ export default {
       showPrevChapterSize: 0,
 
       speechMinutes: 0,
-      speechEndTime: 0
+      speechEndTime: 0,
+      isEditContent: false,
+      contentInnerStyle: {}
     };
   },
   computed: {
@@ -586,6 +619,7 @@ export default {
     isSlideRead() {
       return this.autoReading ||
         this.showReadBar ||
+        this.isVideo ||
         this.isEpub ||
         this.isCarToon ||
         this.isAudio
@@ -596,6 +630,7 @@ export default {
       return (
         !this.isEpub &&
         !this.isAudio &&
+        !this.isVideo &&
         !this.isSlideRead &&
         (this.config.readMethod === "上下滚动" ||
           this.config.readMethod === "上下滚动2")
@@ -605,15 +640,12 @@ export default {
       return this.isScrollRead && this.$store.state.miniInterface;
     },
     chapterClass() {
-      return this.isSlideRead
-        ? "slide-reader"
-        : this.isEpub
-          ? "epub"
-          : this.isCarToon
-            ? "cartoon"
-            : this.isAudio
-              ? "audio"
-              : "";
+      if (this.isSlideRead) return "slide-reader";
+      if (this.isEpub) return "epub";
+      if (this.isCarToon) return "cartoon";
+      if (this.isAudio) return "audio";
+      if (this.isVideo) return "video";
+      return "";
     },
     chapterTheme() {
       let readingStyle = this.showReadBar
@@ -664,7 +696,10 @@ export default {
           ? 0
           : -(this.readWidthConfig / 2) + "px",
         zIndex: 200,
-        display: this.speechAvalable && this.showReadBar ? "block" : "none",
+        display:
+          (this.speechAvalable || this.ttsType !== "local") && this.showReadBar
+            ? "block"
+            : "none",
         width: this.$store.state.miniInterface ? "100vw" : "500px"
       };
     },
@@ -825,27 +860,97 @@ export default {
         });
       }
     },
+    ttsType: {
+      get() {
+        return this.$store.state.speechVoiceConfig.ttsType;
+      },
+      set(val) {
+        if (
+          val !== this.$store.state.speechVoiceConfig.ttsType &&
+          this.speechSpeaking
+        ) {
+          this.restartSpeech();
+        }
+        this.$store.commit("setSpeechVoiceConfig", {
+          ...this.$store.state.speechVoiceConfig,
+          ttsType: val
+        });
+      }
+    },
+    cacheTTSAudio: {
+      get() {
+        return this.$store.state.speechVoiceConfig.cacheTTSAudio;
+      },
+      set(val) {
+        this.$store.commit("setSpeechVoiceConfig", {
+          ...this.$store.state.speechVoiceConfig,
+          cacheTTSAudio: val
+        });
+      }
+    },
+    voiceList() {
+      if (this.ttsType === "local") {
+        return this.localVoiceList;
+      }
+      if (this.ttsType === "edge") {
+        return [
+          "zh-CN-XiaoxiaoNeural",
+          "zh-CN-XiaoyiNeural",
+          "zh-CN-YunjianNeural",
+          "zh-CN-YunxiNeural",
+          "zh-CN-YunxiaNeural",
+          "zh-CN-YunyangNeural",
+          "zh-HK-HiuGaaiNeural",
+          "zh-HK-HiuMaanNeural",
+          "zh-HK-WanLungNeural",
+          "zh-TW-HsiaoChenNeural",
+          "zh-TW-YunJheNeural",
+          "zh-TW-HsiaoYuNeural",
+          "en-US-AriaNeural",
+          "en-US-ChristopherNeural",
+          "en-US-JennyNeural",
+          "en-US-GuyNeural"
+        ].map(name => ({ name, LocalName: name }));
+      }
+      return this.$store.state.httpTTS || [];
+    },
     isCarToon() {
       return (
         !this.error &&
         !this.isEpub &&
         !this.isCbz &&
+        !this.isPdf &&
         (this.content || "").indexOf("<img") >= 0
       );
     },
     isAudio() {
-      return !this.error && this.$store.getters.readingBook.type === 1;
+      return !this.error && (this.$store.getters.readingBook || {}).type === 1;
+    },
+    isVideo() {
+      return !this.error && (this.$store.getters.readingBook || {}).type === 4;
     },
     isEpub() {
+      const bookUrl = (this.$store.getters.readingBook || {}).bookUrl;
       return (
         !this.error &&
-        this.$store.getters.readingBook.bookUrl.toLowerCase().endsWith(".epub")
+        bookUrl &&
+        bookUrl.toLowerCase().endsWith(".epub")
       );
     },
     isCbz() {
+      const bookUrl = (this.$store.getters.readingBook || {}).bookUrl;
       return (
         !this.error &&
-        this.$store.getters.readingBook.bookUrl.toLowerCase().endsWith(".cbz")
+        bookUrl &&
+        bookUrl.toLowerCase().endsWith(".cbz")
+      );
+    },
+    isPdf() {
+      const bookUrl = (this.$store.getters.readingBook || {}).bookUrl;
+      return (
+        !this.error &&
+        bookUrl &&
+        bookUrl.toLowerCase().endsWith(".pdf")
       );
     },
     scrollOffset() {
@@ -868,46 +973,111 @@ export default {
   },
   methods: {
     init(refresh) {
-      if (this.$store.getters.readingBook) {
+      const readingBook = this.$store.getters.readingBook || {};
+      if (readingBook.bookUrl) {
+        this.initBook(refresh);
+        return;
+      }
+      const bookUrl = this.$route && this.$route.query && this.$route.query.bookUrl;
+      if (bookUrl) {
         if (
-          refresh ||
-          !this.lastReadingBook ||
-          this.lastReadingBook.bookUrl !==
-          this.$store.getters.readingBook.bookUrl
+          !(this.$store.getters.shelfBooks || []).length &&
+          this.$root.$children[0] &&
+          this.$root.$children[0].loadBookShelf
         ) {
-          this.title = "";
-          this.show = false;
-          this.loading = this.$loading({
-            target: this.$refs.content,
-            lock: true,
-            text: "正在获取内容",
-            spinner: "el-icon-loading",
-            background: "rgba(0,0,0,0)"
-          });
-          this.lastReadingBook = this.$store.getters.readingBook;
-          // 跳转记住的位置
-          this.autoShowPosition();
-          this.loadCatalog(false, true);
-        } else {
-          if (this.isScrollRead) {
-            this.scrollStartChapterIndex = this.chapterIndex;
-            this.showPrevChapterSize = 0;
-            this.computeShowChapterList().then(() => {
-              this.autoShowPosition(true);
-            });
-          } else if (this.isEpub) {
-            // 跳转记住的位置
-            this.autoShowPosition(true);
-          } else {
-            this.startSavePosition = true;
-          }
-          setTimeout(() => {
-            // console.log("setReadingBook", this.lastReadingBook);
-            this.$store.commit("setReadingBook", this.lastReadingBook);
-          }, 100);
+          this.$root.$children[0]
+            .loadBookShelf()
+            .then(() => this.initBookFromUrl(refresh))
+            .catch(() => this.initBookFromUrl(refresh));
+          return;
         }
-      } else {
+        this.initBookFromUrl(refresh);
+        return;
+      }
+      {
         this.$message.error("请在书架选择书籍");
+        this.title = "";
+        this.originalContent = "";
+        this.content = "缓存信息丢失,请在书架选择书籍";
+        this.error = true;
+        this.show = true;
+      }
+    },
+    initBookFromUrl(refresh) {
+      const bookUrl = this.$route && this.$route.query && this.$route.query.bookUrl;
+      const shelfBook = (this.$store.getters.shelfBooks || []).find(
+        book => book.bookUrl === bookUrl
+      );
+      if (!shelfBook) {
+        this.$message.error("缓存信息丢失,请在书架选择书籍！");
+        this.title = "";
+        this.originalContent = "";
+        this.content = "缓存信息丢失,请在书架选择书籍！";
+        this.error = true;
+        this.show = true;
+        return;
+      }
+      this.$store.commit("setReadingBook", {
+        ...shelfBook,
+        name: shelfBook.name,
+        bookUrl: shelfBook.bookUrl,
+        index:
+          shelfBook.index !== undefined
+            ? shelfBook.index
+            : shelfBook.durChapterIndex !== undefined
+              ? shelfBook.durChapterIndex
+              : 0,
+        type: shelfBook.type,
+        coverUrl: shelfBook.customCoverUrl || shelfBook.coverUrl,
+        tocUrl: shelfBook.tocUrl,
+        author: shelfBook.author,
+        origin: shelfBook.origin,
+        originName: shelfBook.originName,
+        latestChapterTitle: shelfBook.latestChapterTitle,
+        intro: shelfBook.intro
+      });
+      this.initBook(refresh);
+    },
+    initBook(refresh) {
+      const readingBook = this.$store.getters.readingBook || {};
+      if (!readingBook.bookUrl) {
+        this.$message.error("请在书架选择书籍");
+        return;
+      }
+      if (
+        refresh ||
+        !this.lastReadingBook ||
+        this.lastReadingBook.bookUrl !== readingBook.bookUrl ||
+        this.lastReadingBook.index !== readingBook.index
+      ) {
+        this.title = "";
+        this.originalContent = "";
+        this.show = false;
+        this.loading = this.$loading({
+          target: this.$refs.content,
+          lock: true,
+          text: "正在获取内容",
+          spinner: "el-icon-loading",
+          background: "rgba(0,0,0,0)"
+        });
+        this.lastReadingBook = readingBook;
+        this.autoShowPosition();
+        this.loadCatalog(false, true);
+      } else {
+        if (this.isScrollRead) {
+          this.scrollStartChapterIndex = this.chapterIndex;
+          this.showPrevChapterSize = 0;
+          this.computeShowChapterList().then(() => {
+            this.autoShowPosition(true);
+          });
+        } else if (this.isEpub) {
+          this.autoShowPosition(true);
+        } else {
+          this.startSavePosition = true;
+        }
+        setTimeout(() => {
+          this.$store.commit("setReadingBook", this.lastReadingBook);
+        }, 100);
       }
     },
     changeBook(book) {
@@ -915,6 +1085,10 @@ export default {
       this.popBookShelfVisible = false;
       this.show = false;
       this.$store.commit("setReadingBook", book);
+      this.$router.push({
+        path: "/reader",
+        query: { bookUrl: book.bookUrl }
+      });
       this.loadCatalog(true, true);
     },
     changeBookSource() {
@@ -943,8 +1117,9 @@ export default {
             var index = book.index || 0;
             this.getContent(index);
           } else {
-            if (init) {
+          if (init) {
               this.title = "";
+              this.originalContent = "获取章节目录失败！\n" + res.data.errorMsg;
               this.content = "获取章节目录失败！\n" + res.data.errorMsg;
               this.error = true;
               this.show = true;
@@ -993,32 +1168,77 @@ export default {
       );
     },
     saveBookContent(url, index, content) {
-      Axios.post("/saveBookContent", { url, index, content }).then(
-        res => {
+      const cacheKey =
+        "localCache@" +
+        this.$store.getters.readingBook.name +
+        "_" +
+        this.$store.getters.readingBook.author +
+        "@" +
+        url +
+        "@chapterContent-" +
+        index;
+      return Axios.post(this.api + "/saveBookContent", {
+        url,
+        index,
+        content
+      })
+        .then(res => {
           if (res.data.isSuccess) {
-            this.$message.success("保存内容成功");
+            return window.$cacheStorage
+              .removeItem(cacheKey)
+              .catch(() => {})
+              .then(() => {
+                this.$message.success("保存成功！注意：刷新章节内容将会失效");
+              });
           }
-        },
-        error => {
+          return res;
+        })
+        .catch(error => {
           this.$message.error(
-            "保存内容失败 " + (error && error.toString())
+            "保存章节内容失败 " + (error && error.toString())
           );
-        }
-      );
+          throw error;
+        });
     },
-    getTTSConfig() {
+    getTTSConfig(text) {
+      let pitch = this.speechPitch;
+      let rate = this.speechRate;
+      if (this.ttsType === "textToSpeechCn") {
+        pitch = parseInt(50 * (pitch - 1));
+        rate = parseInt(200 * (rate - 1));
+      } else if (this.ttsType === "edge") {
+        pitch = parseInt(50 * (pitch - 1));
+      }
+      const config = {
+        text,
+        type: this.ttsType,
+        voice: this.voiceName,
+        pitch: "" + pitch,
+        rate: "" + rate,
+        accessToken: this.$store.state.token
+      };
+      const book = this.$store.getters.readingBook || {};
+      const cacheText = "" + text + config.type + config.voice + config.pitch + config.rate;
       return {
-        url: (this.$store.getters.readingBook || {}).bookUrl,
-        index: this.chapterIndex,
-        title: this.title
+        config,
+        cacheKey:
+          "localCache@ttsData@" +
+          book.name +
+          "_" +
+          book.author +
+          "@" +
+          cacheText.MD5(32)
       };
     },
     refreshContent() {
+      this.autoShowPosition();
       this.getContent(this.$store.getters.readingBook.index, true);
     },
     getContent(index, refresh) {
       //展示进度条
       this.show = false;
+      this.originalContent = "";
+      this.contentInnerStyle = {};
       if (!this.loading || !this.loading.visible) {
         this.loading = this.$loading({
           target: this.$refs.content,
@@ -1044,6 +1264,7 @@ export default {
       if (!this.$store.getters.readingBook.catalog[index]) {
         if (this.tryRefresh) {
           this.tryRefresh = false;
+          this.originalContent = "获取章节内容失败，请更新目录！";
           this.content = "获取章节内容失败，请更新目录！";
           this.error = true;
           this.show = true;
@@ -1078,6 +1299,7 @@ export default {
           }
           if (res.data.isSuccess) {
             let data = res.data.data;
+            this.originalContent = data;
             this.content = this.filterContent(data);
             this.addChapterContentToCache({
               bookUrl,
@@ -1091,6 +1313,7 @@ export default {
             this.show = true;
             this.$emit("showContent");
           } else {
+            this.originalContent = "获取章节内容失败！\n" + res.data.errorMsg;
             this.content = "获取章节内容失败！\n" + res.data.errorMsg;
             this.addChapterContentToCache({
               bookUrl,
@@ -1116,7 +1339,8 @@ export default {
             // 已经换书或者换章节了
             return;
           }
-          this.content = "获取章节内容失败！\n" + (error && error.toString());
+          this.originalContent = "获取章节内容失败！\n" + (error && error.toString());
+          this.content = this.originalContent;
           this.addChapterContentToCache({
             bookUrl,
             index: index,
@@ -1139,7 +1363,7 @@ export default {
       );
     },
     filterContent(content) {
-      if (this.isEpub || this.isAudio) {
+      if (this.isEpub || this.isAudio || this.isVideo || this.isPdf) {
         return content;
       }
       if (!content) {
@@ -1153,7 +1377,7 @@ export default {
           ) {
             return;
           }
-          const scope = rule.scope.split(";");
+          const scope = (rule.scope || "*").split(";");
           if (
             scope[0] === "*" ||
             scope[0] === this.$store.getters.readingBook.name
@@ -1177,7 +1401,7 @@ export default {
       } catch (error) {
         //
       }
-      content.replace(/\\n+/g, "\n");
+      content = content.replace(/\\n+/g, "\n");
       content = this.formatChinese(content);
       return content;
     },
@@ -1628,7 +1852,7 @@ export default {
       if (this.lastSelection) {
         return;
       }
-      if (this.isAudio) {
+      if (this.isAudio || this.isVideo) {
         return;
       }
       if (this.isEpub) {
@@ -1760,7 +1984,14 @@ export default {
         }
         return;
       }
+      if (this.isVideo) {
+        return;
+      }
       if (this.autoReading) {
+        this.showToolBar = !this.showToolBar;
+        return;
+      }
+      if (this.isEditContent) {
         this.showToolBar = !this.showToolBar;
         return;
       }
@@ -1826,7 +2057,7 @@ export default {
       if (!force && document.activeElement !== document.body) {
         return;
       }
-      if (this.isAudio) {
+      if (this.isAudio || this.isVideo) {
         return;
       }
       const keyCodeMap = {
@@ -2061,7 +2292,7 @@ export default {
       }
     },
     fetchVoiceList() {
-      this.voiceList = window.speechSynthesis.getVoices().sort((a, b) => {
+      this.localVoiceList = window.speechSynthesis.getVoices().sort((a, b) => {
         if (a.lang.startsWith("zh-") && b.lang.startsWith("zh-")) {
           return a.lang > b.lang ? 1 : a.lang < b.lang ? -1 : 0;
         } else if (a.lang.startsWith("zh-")) {
@@ -2086,29 +2317,31 @@ export default {
         this.speechEndTime = 0;
       }
     },
+    showHttpTTSDialog() {
+      eventBus.$emit("showHttpTTSDialog");
+    },
     startSpeech() {
-      if (this.error) {
+      if (this.error || !this.voiceName) {
         return;
       }
-      if (!this.voiceName) {
+      if (this.speechEndTime > 0 && new Date().getTime() > this.speechEndTime) {
+        this.$message.info("定时关闭朗读");
+        this.speechEndTime = 0;
+        return;
+      }
+      if (this.ttsType !== "local") {
+        return this.speechCurrentByTTS();
+      }
+      if (!window.speechSynthesis) {
         return;
       }
       const voice = this.voiceList.find(v => v.name === this.voiceName);
-      if (!voice) {
-        return;
-      }
-
+      if (!voice) return;
       if (window.speechSynthesis.speaking) {
-        return;
-      }
-
-      if (this.speechSpeaking) {
-        if (
-          this.speechEndTime > 0 &&
-          new Date().getTime() > this.speechEndTime
-        ) {
-          this.$message.info("定时关闭朗读");
-          return;
+        try {
+          window.speechSynthesis.cancel();
+        } catch (error) {
+          // 浏览器实现可能在取消时抛错
         }
       }
 
@@ -2151,13 +2384,19 @@ export default {
       this.speechSpeaking = true;
       window.speechSynthesis.speak(this.utterance);
     },
-    stopSpeech() {
+    stopSpeech(clearCurrent) {
       try {
         this.skipAutoNext = true;
-        window.speechSynthesis.cancel();
-        const current = this.getCurrentParagraph();
-        if (current) {
-          current.className = "";
+        if (this.ttsType === "local") {
+          window.speechSynthesis.cancel();
+        } else if (this.$refs.ttsAudio) {
+          this.$refs.ttsAudio.pause();
+        }
+        if (clearCurrent) {
+          const current = this.getCurrentParagraph();
+          if (current) {
+            current.className = "";
+          }
         }
       } catch (error) {
         //
@@ -2172,15 +2411,129 @@ export default {
     toggleSpeech() {
       this.speechSpeaking ? this.stopSpeech() : this.startSpeech();
     },
+    async speechCurrentByTTS() {
+      const paragraph = this.getCurrentParagraph();
+      if (!paragraph) {
+        this.speechNext();
+        return;
+      }
+      const text = (paragraph.innerText || "").replace(/\s+/g, " ").trim();
+      if (!text) {
+        setTimeout(() => this.speechNext(), 300);
+        return;
+      }
+      const { config, cacheKey } = this.getTTSConfig(text);
+      this.currentTTSCacheKey = cacheKey;
+      let src = this.api + "/book/tts?" + this.serializeTTSConfig(config);
+      if (this.cacheTTSAudio) {
+        src = (await this.getCachedTTSAudioURL(cacheKey)) || src;
+      }
+      if (this.$refs.ttsAudio) {
+        this.$refs.ttsAudio.src = src;
+        this.$refs.ttsAudio.load();
+        this.$refs.ttsAudio.play().catch(() => {});
+      }
+      this.showParagraph(paragraph, true);
+      paragraph.className = "reading";
+      if (this.cacheTTSAudio && !src.startsWith("blob:")) {
+        this.cacheTTS(config, cacheKey);
+      }
+    },
+    serializeTTSConfig(config) {
+      return Object.keys(config)
+        .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(config[key] == null ? "" : config[key]))
+        .join("&");
+    },
+    async cacheTTS(config, cacheKey) {
+      try {
+        const res = await Axios.post(
+          this.api + "/book/tts",
+          { ...config, base64: "1" },
+          { silent: true }
+        );
+        if (res.data && res.data.isSuccess && res.data.data) {
+          await window.$cacheStorage.setItem(cacheKey, res.data.data);
+        }
+      } catch (error) {
+        // 预缓存失败不影响当前朗读
+      }
+    },
+    async getCachedTTSAudioURL(cacheKey) {
+      try {
+        const base64 = await window.$cacheStorage.getItem(cacheKey);
+        if (!base64) return null;
+        return this.base64ToBlob(base64, "audio/mpeg");
+      } catch (error) {
+        return null;
+      }
+    },
+    base64ToBlob(base64, type) {
+      const binary = window.atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return window.URL.createObjectURL(new Blob([bytes], { type }));
+    },
+    onTTSAudioPlay() {
+      this.speechSpeaking = true;
+      this.skipAutoNext = false;
+      if (this.cacheTTSAudio) {
+        this.cacheNextParagraphTTSAudio(1);
+        this.cacheNextParagraphTTSAudio(2);
+        this.cacheNextParagraphTTSAudio(3);
+      }
+    },
+    onTTSAudioPause() {
+      this.speechSpeaking = false;
+      this.skipAutoNext = false;
+    },
+    onTTSAudioEnded() {
+      if (this.currentTTSCacheKey) {
+        window.$cacheStorage.removeItem(this.currentTTSCacheKey).catch(() => {});
+      }
+      if (this.skipAutoNext) {
+        this.skipAutoNext = false;
+        this.speechSpeaking = false;
+      } else {
+        this.speechNext();
+      }
+    },
+    onTTSAudioError(event) {
+      if (this.speechSpeaking) {
+        this.$message.error(
+          `朗读错误:  ${event.type || ""}  ${event.error || event.name || event.toString()}`
+        );
+        this.speechSpeaking = false;
+      }
+    },
+    async cacheNextParagraphTTSAudio(distance) {
+      const paragraph = this.getNextParagraph(distance);
+      if (!paragraph) return;
+      const text = (paragraph.innerText || "").replace(/\s+/g, " ").trim();
+      if (!text) {
+        return this.cacheNextParagraphTTSAudio(distance + 1);
+      }
+      const { config, cacheKey } = this.getTTSConfig(text);
+      try {
+        if (await window.$cacheStorage.getItem(cacheKey)) return;
+        await this.cacheTTS(config, cacheKey);
+      } catch (error) {
+        // 预缓存失败不影响当前朗读
+      }
+    },
     speechPrev() {
-      if (window.speechSynthesis.speaking) {
+      if (
+        this.speechSpeaking ||
+        (window.speechSynthesis && window.speechSynthesis.speaking)
+      ) {
         this.stopSpeech();
       }
       const current = this.getCurrentParagraph();
       const prev = this.getPrevParagraph();
       if (prev) {
         this.showParagraph(prev, true);
-        current.className = "";
+        current && (current.className = "");
         prev.className = "reading";
         this.startSpeech();
       } else {
@@ -2194,14 +2547,17 @@ export default {
       }
     },
     speechNext() {
-      if (window.speechSynthesis.speaking) {
+      if (
+        this.speechSpeaking ||
+        (window.speechSynthesis && window.speechSynthesis.speaking)
+      ) {
         this.stopSpeech();
       }
       const current = this.getCurrentParagraph();
       const next = this.getNextParagraph();
       if (next) {
         this.showParagraph(next, true);
-        current.className = "";
+        current && (current.className = "");
         next.className = "reading";
         this.startSpeech();
       } else {
@@ -2215,6 +2571,9 @@ export default {
       }
     },
     getCurrentParagraph() {
+      if (!this.$refs.bookContentRef || !this.$refs.bookContentRef.$el) {
+        return null;
+      }
       const readingEle = this.$refs.bookContentRef.$el.querySelectorAll(
         ".reading"
       );
@@ -2249,22 +2608,30 @@ export default {
       }
       return currentParagraph;
     },
-    getPrevParagraph() {
+    getPrevParagraph(distance) {
+      distance = distance || 1;
       const current = this.getCurrentParagraph();
+      if (!current || !this.$refs.bookContentRef || !this.$refs.bookContentRef.$el) {
+        return null;
+      }
       const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
       for (let i = 0; i < list.length; i++) {
         if (i > 0 && current === list[i]) {
-          return list[i - 1];
+          return list[i - distance] || null;
         }
       }
       return null;
     },
-    getNextParagraph() {
+    getNextParagraph(distance) {
+      distance = distance || 1;
       const current = this.getCurrentParagraph();
+      if (!current || !this.$refs.bookContentRef || !this.$refs.bookContentRef.$el) {
+        return null;
+      }
       const list = this.$refs.bookContentRef.$el.querySelectorAll("h3,p");
       for (let i = 0; i < list.length; i++) {
         if (current === list[i]) {
-          return list[i + 1];
+          return list[i + distance] || null;
         }
       }
       return null;
@@ -2465,7 +2832,7 @@ export default {
     },
     // 只会在进入的时候调用
     showPosition(pos, callback) {
-      if (this.isAudio) {
+      if (this.isAudio || this.isVideo) {
         // seek
         if (!this.$refs.bookContentRef) {
           setTimeout(() => {
@@ -2512,7 +2879,7 @@ export default {
           return;
         }
         let position = 0;
-        if (this.isAudio) {
+        if (this.isAudio || this.isVideo) {
           position = this.$refs.bookContentRef
             ? this.$refs.bookContentRef.currentTime
             : 0;
@@ -2675,7 +3042,7 @@ export default {
       }
     },
     lazyloadHandler() {
-      if (!this.isAudio) {
+      if (!this.isAudio && !this.isVideo) {
         this.computePages();
       }
     },
@@ -2857,7 +3224,7 @@ export default {
       }
       this.autoReading = false;
       const current = this.getCurrentParagraph();
-      current.className = "";
+      current && (current.className = "");
     },
     toggleAutoReading() {
       if (this.autoReading) {
@@ -2875,7 +3242,14 @@ export default {
       eventBus.$emit("showBookInfoDialog", book);
     },
     formatChinese(text) {
-      if (this.isEpub || this.isAudio || this.isCbz || this.isCarToon) {
+      if (
+        this.isEpub ||
+        this.isAudio ||
+        this.isVideo ||
+        this.isPdf ||
+        this.isCbz ||
+        this.isCarToon
+      ) {
         return text;
       }
       if (this.config.chineseFont === "简体") {

@@ -16,7 +16,7 @@ open class DB<T>(
         return JsonArray()
     }
 
-    open fun <P> findBy(key: String, value: P, clazz: Class<T>): T? {
+    open fun <P> findBy(field: String, value: P, clazz: Class<T>): T? {
         return null
     }
 
@@ -41,9 +41,8 @@ open class DB<T>(
     }
 
     companion object {
-        @JvmStatic
-        fun <T> table(userNameSpace: String, name: String, type: String = "json"): DB<T> {
-            return if (type.equals("SQL", ignoreCase = true)) {
+        fun <T> table(userNameSpace: String, name: String, driver: String = "JSON"): DB<T> {
+            return if (driver.equals("SQL", ignoreCase = true)) {
                 SQLTable(userNameSpace, name)
             } else {
                 JSONTable(userNameSpace, name)

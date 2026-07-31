@@ -5,9 +5,10 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Thread-safe LRU cache with ConcurrentHashMap and doubly-linked list.
  */
-class LRUCache<K, V>(private val cacheCapacity: Int) {
+class LRUCache<K, V>(size: Int) {
 
-    private val caches = ConcurrentHashMap<K, CacheNode>()
+    private var cacheCapacity = size
+    private val caches = ConcurrentHashMap<K, CacheNode>(size)
     private var first: CacheNode? = null
     private var last: CacheNode? = null
 
@@ -18,34 +19,32 @@ class LRUCache<K, V>(private val cacheCapacity: Int) {
         var value: V? = null
     }
 
-    @Synchronized
     fun put(key: K, value: V) {
-        val node = caches[key]
-        if (node == null) {
+        val existingNode = caches[key]
+        val node: CacheNode
+        if (existingNode == null) {
             if (caches.size >= cacheCapacity) {
+                caches.remove(last?.key)
                 removeLast()
             }
-            val newNode = CacheNode()
-            newNode.key = key
-            newNode.value = value
-            moveToFirst(newNode)
-            caches[key] = newNode
+            node = CacheNode()
+            node.key = key
         } else {
-            node.value = value
-            moveToFirst(node)
+            node = existingNode
         }
+        node.value = value
+        moveToFirst(node)
+        caches[key] = node
     }
 
-    @Synchronized
     fun get(key: K): V? {
         val node = caches[key] ?: return null
         moveToFirst(node)
         return node.value
     }
 
-    @Synchronized
     fun remove(key: K): CacheNode? {
-        val node = caches.remove(key) ?: return null
+        val node = caches[key] ?: return null
         if (node.pre != null) {
             node.pre!!.next = node.next
         }
@@ -61,13 +60,6 @@ class LRUCache<K, V>(private val cacheCapacity: Int) {
         return node
     }
 
-    @Synchronized
-    fun size(): Int = caches.size
-
-    @Synchronized
-    fun keys(): Set<K> = caches.keys.toSet()
-
-    @Synchronized
     fun clear() {
         caches.clear()
         first = null
@@ -76,34 +68,28 @@ class LRUCache<K, V>(private val cacheCapacity: Int) {
 
     private fun moveToFirst(node: CacheNode) {
         if (node == first) return
-        // Remove from current position
-        if (node.pre != null) {
-            node.pre!!.next = node.next
-        }
         if (node.next != null) {
             node.next!!.pre = node.pre
+        }
+        if (node.pre != null) {
+            node.pre!!.next = node.next
         }
         if (node == last) {
             last = node.pre
         }
-        // Move to first
-        node.pre = null
-        node.next = first
-        if (first != null) {
-            first!!.pre = node
-        }
-        first = node
-        if (last == null) {
+        if (first == null || last == null) {
+            first = node
             last = node
+            return
         }
+        node.next = first
+        first!!.pre = node
+        first = node
+        first!!.pre = null
     }
 
     private fun removeLast() {
         if (last != null) {
-            val key = last!!.key
-            if (key != null) {
-                caches.remove(key)
-            }
             if (last!!.pre != null) {
                 last!!.pre!!.next = null
             } else {
@@ -117,9 +103,8 @@ class LRUCache<K, V>(private val cacheCapacity: Int) {
         val sb = StringBuilder()
         var node = first
         while (node != null) {
-            sb.append("${node.key}=${node.value}")
+            sb.append(String.format("%s:%s ", node.key, node.value))
             node = node.next
-            if (node != null) sb.append(", ")
         }
         return sb.toString()
     }

@@ -35,10 +35,11 @@ import com.htmake.reader.utils.unzip
 import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
-import com.htmake.reader.utils.getFileExtetion
+import io.legado.app.utils.FileUtils.getFileExtetion
 import com.htmake.reader.verticle.RestVerticle
 import com.htmake.reader.SpringEvent
 import org.springframework.stereotype.Component
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.core.http.HttpMethod
@@ -71,7 +72,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import io.legado.app.help.coroutine.Coroutine
 
 private val logger = KotlinLogging.logger {}
 
@@ -112,7 +112,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                 user.token_map = tokenMap
             }
             userMap.put(user.username, user.toMap())
-            saveStorage("data", "users", value = userMap)
+            saveStorage("data", "users", value = Json.encode(userMap))
 
             val loginData = formatUser(user)
 
@@ -395,25 +395,4 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
         // }
     }
 
-    suspend fun runBlocking(concurrentCount: Int, startIndex: Int, endIndex: Int, handler: suspend CoroutineScope.(Int) -> Any, needContinue: (ArrayList<Any>, Int) -> Boolean) {
-        var lastIndex = startIndex
-
-        Coroutine.async(this, coroutineContext) {
-            handler(lastIndex)
-        }.timeout(30000L)
-        .onSuccess(Dispatchers.IO) {
-            if (lastIndex < endIndex - concurrentCount && needContinue(arrayListOf(it), 0)) {
-                lastIndex += concurrentCount
-                runBlocking(concurrentCount, lastIndex, endIndex, handler, needContinue)
-            }
-        }
-        .onError(Dispatchers.IO) {
-            if (lastIndex < endIndex - concurrentCount) {
-                lastIndex += concurrentCount
-                runBlocking(concurrentCount, lastIndex, endIndex, handler, needContinue)
-            } else {
-                needContinue(arrayListOf(), 0)
-            }
-        }
-    }
 }

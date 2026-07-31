@@ -3,7 +3,6 @@ package com.htmake.reader.lib.tts.util;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +51,7 @@ public class Tools {
 
     public static void sleep(int seconds) {
         try {
-            Thread.sleep(seconds * 1000L);
+            Thread.sleep(seconds * 1000);
         } catch (InterruptedException e) {
             // ignored
         }

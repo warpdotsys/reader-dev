@@ -296,7 +296,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
             book.setUserNameSpace(userNameSpace)
             if (import > 0) {
                 val result = bookController.saveBookToShelf(book, userNameSpace, context)
-                if (result.second.isEmpty()) fileList += mapOf("name" to file.name)
+                if (result.second == null && result.first.isInShelf) fileList += mapOf("name" to file.name)
             } else {
                 fileList += mapOf(
                     "name" to file.name,

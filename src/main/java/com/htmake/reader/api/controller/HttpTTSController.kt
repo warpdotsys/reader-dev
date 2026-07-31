@@ -23,8 +23,55 @@ class HttpTTSController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     override fun checker(json: JsonObject, entity: HttpTTS): Boolean {
-        val jsonId = json.getLong("id", 0L)
-        return jsonId == entity.id
+        return entity.name == json.getString("name")
+    }
+
+    override fun beforeSave(entity: HttpTTS, db: DB<HttpTTS>): ReturnData? {
+        val returnData = ReturnData()
+        if (entity.name.isEmpty()) return returnData.setErrorMsg("名称不能为空")
+        if (entity.url.isEmpty()) return returnData.setErrorMsg("链接不能为空")
+        return null
+    }
+
+    private fun convertJsonObject(json: JsonObject): HttpTTS {
+        val id = json.getLong("id") ?: System.currentTimeMillis()
+        val name = json.getString("name") ?: throw IllegalArgumentException("name is required")
+        val url = json.getString("url") ?: throw IllegalArgumentException("url is required")
+        val loginUi = json.getValue("loginUi")?.let { value ->
+            when (value) {
+                is JsonArray, is List<*> -> gson.toJson(value)
+                else -> value.toString()
+            }
+        }
+        return HttpTTS(
+            id = id,
+            name = name,
+            url = url,
+            contentType = json.getString("contentType"),
+            concurrentRate = json.getString("concurrentRate"),
+            loginUrl = json.getString("loginUrl"),
+            loginUi = loginUi,
+            header = json.getString("header"),
+            jsLib = json.getString("jsLib"),
+            enabledCookieJar = json.getBoolean("enabledCookieJar") ?: false,
+            loginCheckJs = json.getString("loginCheckJs"),
+            lastUpdateTime = System.currentTimeMillis()
+        )
+    }
+
+    override fun convertToEntity(json: JsonObject): HttpTTS {
+        return convertJsonObject(json)
+    }
+
+    override fun convertToEntityList(json: String): Array<HttpTTS> {
+        val jsonArray = JsonArray(json)
+        return jsonArray.map { value ->
+            val item = when (value) {
+                is JsonObject -> value
+                else -> JsonObject(gson.toJson(value))
+            }
+            convertJsonObject(item)
+        }.toTypedArray()
     }
 
     override suspend fun checkUserAuth(context: RoutingContext): Boolean {

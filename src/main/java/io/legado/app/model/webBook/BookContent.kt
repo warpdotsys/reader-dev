@@ -48,7 +48,8 @@ object BookContent {
         analyzeRule.nextChapterUrl = mNextChapterUrl
         coroutineContext.ensureActive()
         var contentData = analyzeContent(
-            book, baseUrl, redirectUrl, body, contentRule, bookChapter, bookSource, mNextChapterUrl
+            book, baseUrl, redirectUrl, body, contentRule, bookChapter, bookSource,
+            mNextChapterUrl, debugLog = debugLog
         )
         content.append(contentData.first)
         if (contentData.second.size == 1) {
@@ -70,7 +71,7 @@ object BookContent {
                 res.body?.let { nextBody ->
                     contentData = analyzeContent(
                         book, nextUrl, res.url, nextBody, contentRule,
-                        bookChapter, bookSource, mNextChapterUrl, false
+                        bookChapter, bookSource, mNextChapterUrl, false, debugLog
                     )
                     nextUrl =
                         if (contentData.second.isNotEmpty()) contentData.second[0] else ""
@@ -95,7 +96,7 @@ object BookContent {
                         val res = analyzeUrl.getStrResponseAwait()
                         analyzeContent(
                             book, urlStr, res.url, res.body!!, contentRule,
-                            bookChapter, bookSource, mNextChapterUrl, false
+                            bookChapter, bookSource, mNextChapterUrl, false, debugLog
                         ).first
                     }
                 }

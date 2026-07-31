@@ -11,11 +11,7 @@ import com.htmake.reader.entity.License
 import com.htmake.reader.entity.ActiveLicense
 import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.saveStorage
-import com.htmake.reader.utils.getWorkDir
-import com.htmake.reader.utils.asJsonObject
 import com.htmake.reader.utils.asJsonArray
-import com.htmake.reader.utils.toDataClass
-import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.SpringContextUtils
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.decryptToLicense
@@ -24,6 +20,7 @@ import com.htmake.reader.utils.setLicenseValid
 import com.htmake.reader.utils.validateEmail
 import com.htmake.reader.utils.sendEmail
 import com.htmake.reader.utils.success
+import io.legado.app.utils.Base64
 import io.legado.app.utils.EncoderUtils
 import java.security.KeyFactory
 import java.security.PrivateKey
@@ -31,10 +28,8 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Base64
 import java.util.UUID
 import io.legado.app.utils.ACache
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
@@ -53,21 +48,6 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         arrayOf("bookSource", "bookshelf", "bookmark", "replaceRule", "rssSource", "bookGroup", "httpTTS")
     }
 
-    private fun loadActiveLicense(): ActiveLicense? {
-        val json = getStorage("data", "license")
-        if (json.isNullOrEmpty()) return null
-        return try {
-            val obj = asJsonObject(json)
-            obj?.map?.toDataClass<ActiveLicense>()
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun saveActiveLicense(license: ActiveLicense) {
-        saveStorage("data", "license", value = license.toMap())
-    }
-
     private fun privateKey(): PrivateKey? {
         if (privateKeyContent.isNullOrEmpty()) {
             val file = com.htmake.reader.utils.getStorageFile("data", "privateKey", ext = ".key")
@@ -75,7 +55,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         }
         val encoded = privateKeyContent ?: return null
         return runCatching {
-            KeyFactory.getInstance("RSA").generatePrivate(PKCS8EncodedKeySpec(Base64.getDecoder().decode(encoded)))
+            KeyFactory.getInstance("RSA").generatePrivate(PKCS8EncodedKeySpec(Base64.decode(encoded, Base64.NO_WRAP)))
         }.onFailure { logger.error("Unable to load license private key", it) }.getOrNull()
     }
 
@@ -255,8 +235,8 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         val returnData = ReturnData()
         val keyPair = EncoderUtils.generateKeys()
         return returnData.setData(mapOf(
-            "publicKey" to Base64.getEncoder().encodeToString(keyPair.public.encoded),
-            "privateKey" to Base64.getEncoder().encodeToString(keyPair.private.encoded)
+            "publicKey" to Base64.encodeToString(keyPair.public.encoded, Base64.NO_WRAP),
+            "privateKey" to Base64.encodeToString(keyPair.private.encoded, Base64.NO_WRAP)
         ))
     }
 
@@ -283,16 +263,20 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
             openApi = openApi,
             simpleWebExpiredAt = simpleWebExpiredAt,
             instances = instances,
-            type = value("type") ?: "",
-            code = value("code") ?: ""
+            type = value("type") ?: ""
         )
+        value("code")?.takeIf { it.isNotEmpty() }?.let { license.code = it }
         val signed = signLicense(license) ?: return returnData.setErrorMsg("未配置许可证私钥")
         return returnData.setData(mapOf("host" to host, "key" to signed))
     }
 
     suspend fun isHostValid(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        val host = context.request().getParam("host") ?: context.bodyAsJson?.getString("host", "") ?: ""
+        val host = if (context.request().method() == HttpMethod.POST) {
+            context.bodyAsJson?.getString("host") ?: ""
+        } else {
+            context.queryParam("host").firstOrNull() ?: ""
+        }
         return returnData.setData(mapOf("isValid" to getInstalledLicense().validHost(host)))
     }
 

@@ -16,9 +16,10 @@ import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 import org.jsoup.Jsoup
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 
-@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "readConfig", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "pdf", "realAuthor", "unreadChapterNum", "folderName", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
+@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "realAuthor", "unreadChapterNum", "folderName", "pdfImageWidth", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
 data class Book(
         override var bookUrl: String = "",                   // 详情页Url(本地书源存储完整文件路径)
         var tocUrl: String = "",                    // 目录页Url (toc=table of Contents)
@@ -51,6 +52,7 @@ data class Book(
         var useReplaceRule: Boolean = true,         // 正文使用净化替换规则
         var variable: String? = null,                // 自定义书籍变量信息(用于书源规则检索书籍信息)
         var readConfig: ReadConfig? = null,
+        @get:JsonProperty("isInShelf")
         var isInShelf: Boolean = false,
         var lastCheckError: String? = null
     ) : BaseBook {
@@ -67,6 +69,10 @@ data class Book(
         return isLocalBook() && originName.endsWith(".epub", true)
     }
 
+    fun isLocalPdf(): Boolean {
+        return isLocalBook() && isPdf()
+    }
+
     fun isEpub(): Boolean {
         return originName.endsWith(".epub", true)
     }
@@ -81,10 +87,6 @@ data class Book(
 
     fun isPdf(): Boolean {
         return originName.endsWith(".pdf", true)
-    }
-
-    fun isLocalPdf(): Boolean {
-        return isLocalBook() && isPdf()
     }
 
     fun isOnLineTxt(): Boolean {
@@ -139,14 +141,6 @@ data class Book(
         return readConfig!!
     }
 
-    fun getPdfImageWidth(): Float {
-        return config().pdfImageWidth
-    }
-
-    fun setPdfImageWidth(value: Float) {
-        config().pdfImageWidth = value
-    }
-
     fun setDelTag(tag: Long) {
         config().delTag =
             if ((config().delTag and tag) == tag) config().delTag and tag.inv() else config().delTag or tag
@@ -154,6 +148,14 @@ data class Book(
 
     fun getDelTag(tag: Long): Boolean {
         return config().delTag and tag == tag
+    }
+
+    fun getPdfImageWidth(): Float {
+        return config().pdfImageWidth
+    }
+
+    fun setPdfImageWidth(value: Float) {
+        config().pdfImageWidth = value
     }
 
     fun getFolderName(): String {
@@ -178,6 +180,7 @@ data class Book(
         if (originName.startsWith(rootDir)) {
             originName = originName.replaceFirst(rootDir, "")
         }
+        logger.info("getLocalFile rootDir: {} originName: {}", rootDir, originName)
         if (isEpub() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 epub文件
             return FileUtils.getFile(File(rootDir + originName), "index.epub")

@@ -69,7 +69,11 @@ const defaultNightConfig = {
 };
 const settings = {
   shelfConfig: {
-    showBookGroup: -1
+    showBookGroup: -1,
+    viewCate: "list",
+    bookOrder: "durChapterTime",
+    imageProxy: "noProxy",
+    virtualOptimize: "yes"
   },
   searchConfig: {
     searchType: "multi",
@@ -85,6 +89,8 @@ const settings = {
     pageType: "正常"
   },
   speechVoiceConfig: {
+    ttsType: "local",
+    cacheTTSAudio: false,
     voiceName: "",
     speechRate: 1,
     speechPitch: 1

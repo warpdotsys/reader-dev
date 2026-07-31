@@ -9,21 +9,14 @@ import java.lang.reflect.Type
 class LongTypeAdapter : JsonSerializer<Long>, JsonDeserializer<Long> {
 
     override fun serialize(src: Long?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-        return JsonPrimitive(src ?: 0L)
+        return JsonPrimitive(src.toString())
     }
 
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Long {
-        if (json == null || json.isJsonNull) {
-            return 0L
+    override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): Long? {
+        if (!json.isJsonPrimitive) {
+            return null
         }
-        val str = json.asString
-        if (str.isNullOrEmpty()) {
-            return 0L
-        }
-        return try {
-            str.toDouble().toLong()
-        } catch (e: NumberFormatException) {
-            0L
-        }
+        val primitive = json.asJsonPrimitive
+        return if (primitive.isNumber) primitive.asNumber.toLong() else null
     }
 }

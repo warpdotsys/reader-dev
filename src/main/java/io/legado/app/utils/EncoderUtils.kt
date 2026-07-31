@@ -358,16 +358,19 @@ object EncoderUtils {
     fun encryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String =
         rsaSegmentBase64(input.toByteArray(Charsets.UTF_8), privateKey, Cipher.ENCRYPT_MODE, keySize / 8 - 11)
 
-    fun decryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String =
+    fun decryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String? =
         String(rsaSegmentBytes(Base64.decode(input, Base64.NO_WRAP), publicKey, Cipher.DECRYPT_MODE, keySize / 8), Charsets.UTF_8)
 
     fun encryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String =
         rsaSegmentBase64(input.toByteArray(Charsets.UTF_8), publicKey, Cipher.ENCRYPT_MODE, keySize / 8 - 11)
 
-    fun decryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String =
+    fun decryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String? =
         String(rsaSegmentBytes(Base64.decode(input, Base64.NO_WRAP), privateKey, Cipher.DECRYPT_MODE, keySize / 8), Charsets.UTF_8)
 
-    fun generateKeys(): KeyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+    fun generateKeys(): KeyPair {
+        val generator = KeyPairGenerator.getInstance("RSA")
+        return generator.genKeyPair()
+    }
 
     private fun rsaBase64(input: String, key: java.security.Key, mode: Int): String {
         val cipher = Cipher.getInstance("RSA")
@@ -382,21 +385,43 @@ object EncoderUtils {
     }
 
     private fun rsaSegmentBase64(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): String {
+        val output = ByteArrayOutputStream()
         val cipher = Cipher.getInstance("RSA")
         cipher.init(mode, key)
-        ByteArrayOutputStream().use { output ->
-            input.asList().chunked(blockSize).forEach { block -> output.write(cipher.doFinal(block.toByteArray())) }
-            return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+        var offset = 0
+        while (input.size - offset > 0) {
+            val block: ByteArray
+            if (input.size - offset >= blockSize) {
+                block = cipher.doFinal(input, offset, blockSize)
+                offset += blockSize
+            } else {
+                block = cipher.doFinal(input, offset, input.size - offset)
+                offset = input.size
+            }
+            output.write(block)
         }
+        output.close()
+        return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
     private fun rsaSegmentBytes(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): ByteArray {
+        val output = ByteArrayOutputStream()
         val cipher = Cipher.getInstance("RSA")
         cipher.init(mode, key)
-        ByteArrayOutputStream().use { output ->
-            input.asList().chunked(blockSize).forEach { block -> output.write(cipher.doFinal(block.toByteArray())) }
-            return output.toByteArray()
+        var offset = 0
+        while (input.size - offset > 0) {
+            val block: ByteArray
+            if (input.size - offset >= blockSize) {
+                block = cipher.doFinal(input, offset, blockSize)
+                offset += blockSize
+            } else {
+                block = cipher.doFinal(input, offset, input.size - offset)
+                offset = input.size
+            }
+            output.write(block)
         }
+        output.close()
+        return output.toByteArray()
     }
 
 }

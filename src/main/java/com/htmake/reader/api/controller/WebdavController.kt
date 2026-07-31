@@ -18,6 +18,7 @@ import com.htmake.reader.config.BookConfig
 import io.legado.app.constant.DeepinkBookSource
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.success
+import com.htmake.reader.utils.globalHandler
 import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.saveStorage
 import com.htmake.reader.utils.asJsonArray
@@ -73,9 +74,30 @@ private val logger = KotlinLogging.logger {}
 
 class WebdavController(coroutineContext: CoroutineContext, router: Router, onHandlerError: (RoutingContext, Exception) -> Unit): BaseController(coroutineContext) {
 
+    private fun decodedPath(path: String): String {
+        return URLDecoder.decode(path.replace("/reader3/webdav/", "/", true), "UTF-8")
+    }
+
+    private fun requestPath(context: RoutingContext): String {
+        return decodedPath(context.request().path())
+    }
+
+    private fun resolveWebdavPath(context: RoutingContext, path: String): File? {
+        val home = File(getUserWebdavHome(context)).toPath().toAbsolutePath().normalize()
+        val relative = path.replace('\\', '/').removePrefix("/")
+        val resolved = home.resolve(relative).normalize()
+        return resolved.takeIf { it.startsWith(home) }?.toFile()
+    }
+
+    private fun destinationPath(context: RoutingContext): File? {
+        val destination = context.request().getHeader("Destination") ?: return null
+        val destinationPath = runCatching { URL(destination).path }.getOrNull() ?: return null
+        return resolveWebdavPath(context, decodedPath(destinationPath))
+    }
+
     init {
         // webdav 服务
-        router.route("/reader3/webdav*").handler {
+        router.route("/reader3/webdav*").globalHandler {
             it.addHeadersEndHandler { _ ->
                 var res = it.response()
                 res.putHeader("DAV", "1,2")
@@ -102,12 +124,12 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
                     rawMethod.equals("UNLOCK")
                 ) {
                     it.response().setStatusCode(401).end()
-                    return@handler
+                    return@globalHandler
                 } else if(rawMethod.equals("OPTIONS")) {
                     var authorization = it.request().getHeader("Authorization")
                     if (authorization != null) {
                         it.response().setStatusCode(401).end()
-                        return@handler
+                        return@globalHandler
                     }
                 }
             }
@@ -228,10 +250,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavList(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(404).end()
+            return
+        }
         if (!file.exists()) {
             context.response().setStatusCode(404).end()
             return
@@ -314,10 +337,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavMkdir(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(400).end()
+            return
+        }
         if (file.exists()) {
             // 文件夹存在时，返回成功
             context.response().setStatusCode(201).end()
@@ -332,10 +356,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavUpload(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(400).end()
+            return
+        }
         if (!file.parentFile.exists()) {
             context.response().setStatusCode(409).end()
             return
@@ -361,10 +386,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavDownload(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(404).end()
+            return
+        }
         if (!file.exists()) {
             context.response().setStatusCode(404).end()
             return
@@ -379,10 +405,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavDelete(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(404).end()
+            return
+        }
         if (!file.exists()) {
             context.response().setStatusCode(404).end()
             return
@@ -392,11 +419,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavMove(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(412).end()
+            return
+        }
         if (!file.exists()) {
             context.response().setStatusCode(412).end()
             return
@@ -406,15 +433,13 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
             context.response().setStatusCode(400).end()
             return
         }
-        var destinationUrl = URL(destination)
-        destination = destinationUrl.path?.replace("/reader3/webdav/", "/", true)
-        if (destination == null) {
+        val destinationFile = destinationPath(context)
+        if (destinationFile == null) {
             context.response().setStatusCode(400).end()
             return
         }
 
         var overwrite = context.request().getHeader("Overwrite")
-        var destinationFile = File(home + URLDecoder.decode(destination, "UTF-8"))
         if (destinationFile.exists()) {
             if (overwrite == null || overwrite.isEmpty()) {
                 context.response().setStatusCode(412).end()
@@ -428,11 +453,11 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
     }
 
     suspend fun webdavCopy(context: RoutingContext) {
-        var home = getUserWebdavHome(context)
-        var path = context.request().path().replace("/reader3/webdav/", "/", true)
-        path = URLDecoder.decode(path, "UTF-8")
-
-        var file = File(home + path)
+        val file = resolveWebdavPath(context, requestPath(context))
+        if (file == null) {
+            context.response().setStatusCode(412).end()
+            return
+        }
         if (!file.exists()) {
             context.response().setStatusCode(412).end()
             return
@@ -442,15 +467,13 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
             context.response().setStatusCode(400).end()
             return
         }
-        var destinationUrl = URL(destination)
-        destination = destinationUrl.path?.replace("/reader3/webdav/", "/", true)
-        if (destination == null) {
+        val destinationFile = destinationPath(context)
+        if (destinationFile == null) {
             context.response().setStatusCode(400).end()
             return
         }
 
         var overwrite = context.request().getHeader("Overwrite")
-        var destinationFile = File(home + URLDecoder.decode(destination, "UTF-8"))
         if (destinationFile.exists()) {
             if (overwrite == null || overwrite.isEmpty()) {
                 context.response().setStatusCode(412).end()
@@ -509,261 +532,6 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
             return
         }
         context.response().putHeader("Lock-Token", lockToken).setStatusCode(204).end()
-    }
-
-
-    suspend fun getWebdavFileList(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-            }
-            if (!userInfo.enable_webdav) {
-                return returnData.setErrorMsg("未开启webdav功能")
-            }
-        }
-        var path: String
-        if (context.request().method() == HttpMethod.POST) {
-            // post 请求
-            path = context.bodyAsJson.getString("path") ?: ""
-        } else {
-            // get 请求
-            path = context.queryParam("path").firstOrNull() ?: ""
-            path = URLDecoder.decode(path, "UTF-8")
-        }
-        if (path.isEmpty()) {
-            path = "/"
-        }
-        var home = getUserWebdavHome(context)
-        var file = File(home + path)
-        logger.info("file: {} {}", path, file)
-        if (!file.exists()) {
-            return returnData.setErrorMsg("路径不存在")
-        }
-        if (!file.isDirectory()) {
-            return returnData.setErrorMsg("路径不是目录")
-        }
-        var fileList = arrayListOf<Map<String, Any>>()
-        file.listFiles().forEach{
-            if (!it.name.startsWith(".")) {
-                fileList.add(mapOf(
-                    "name" to it.name,
-                    "size" to it.length(),
-                    "path" to it.toString().replace(home, ""),
-                    "lastModified" to it.lastModified(),
-                    "isDirectory" to it.isDirectory()
-                ))
-            }
-        }
-        return returnData.setData(fileList)
-    }
-
-    suspend fun getWebdavFile(context: RoutingContext) {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
-            return
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
-                return
-            }
-            if (!userInfo.enable_webdav) {
-                context.success(returnData.setErrorMsg("未开启webdav功能"))
-                return
-            }
-        }
-        var path: String
-        if (context.request().method() == HttpMethod.POST) {
-            // post 请求
-            path = context.bodyAsJson.getString("path") ?: ""
-        } else {
-            // get 请求
-            path = context.queryParam("path").firstOrNull() ?: ""
-            path = URLDecoder.decode(path, "UTF-8")
-        }
-        if (path.isEmpty()) {
-            context.success(returnData.setErrorMsg("参数错误"))
-            return
-        }
-        var home = getUserWebdavHome(context)
-        var file = File(home + path)
-        logger.info("file: {} {}", path, file)
-        if (!file.exists()) {
-            context.success(returnData.setErrorMsg("路径不存在"))
-            return
-        }
-        context.response()
-                .putHeader("Cache-Control", "86400")
-                .putHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.name, "UTF-8"))
-                .sendFile(file.toString())
-    }
-
-    suspend fun uploadFileToWebdav(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (context.fileUploads() == null || context.fileUploads().isEmpty()) {
-            return returnData.setErrorMsg("请上传文件")
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-            }
-            if (!userInfo.enable_webdav) {
-                return returnData.setErrorMsg("未开启webdav功能")
-            }
-        }
-        var path = context.request().getParam("path")
-        if (path.isNullOrEmpty()) {
-            path = "/"
-        }
-        var fileList = arrayListOf<Map<String, Any>>()
-        var home = getUserWebdavHome(context) + path + File.separator
-
-        // logger.info("type: {}", type)
-        context.fileUploads().forEach {
-            var file = File(it.uploadedFileName())
-            logger.info("uploadFile: {} {} {}", it.uploadedFileName(), it.fileName(), file)
-            if (file.exists()) {
-                var fileName = it.fileName()
-                var newFile = File(home + fileName)
-                if (!newFile.parentFile.exists()) {
-                    newFile.parentFile.mkdirs()
-                }
-                if (newFile.exists()) {
-                    newFile.delete()
-                }
-                logger.info("moveTo: {}", newFile)
-                if (file.copyRecursively(newFile)) {
-                    fileList.add(mapOf(
-                        "name" to newFile.name,
-                        "size" to newFile.length(),
-                        "path" to newFile.toString().replace(home, ""),
-                        "lastModified" to newFile.lastModified(),
-                        "isDirectory" to newFile.isDirectory()
-                    ))
-                }
-                file.deleteRecursively()
-            }
-        }
-        return returnData.setData(fileList)
-    }
-
-    suspend fun deleteWebdavFile(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-            }
-            if (!userInfo.enable_webdav) {
-                return returnData.setErrorMsg("未开启webdav功能")
-            }
-        }
-        var path: String
-        if (context.request().method() == HttpMethod.POST) {
-            // post 请求
-            path = context.bodyAsJson.getString("path") ?: ""
-        } else {
-            // get 请求
-            path = context.queryParam("path").firstOrNull() ?: ""
-            path = URLDecoder.decode(path, "UTF-8")
-        }
-        if (path.isEmpty()) {
-            return returnData.setErrorMsg("参数错误")
-        }
-        var home = getUserWebdavHome(context)
-        var file = File(home + path)
-        logger.info("file: {} {}", path, file)
-        if (!file.exists()) {
-            return returnData.setErrorMsg("路径不存在")
-        }
-        file.deleteRecursively()
-        return returnData.setData("")
-    }
-
-    suspend fun deleteWebdavFileList(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-            }
-            if (!userInfo.enable_webdav) {
-                return returnData.setErrorMsg("未开启webdav功能")
-            }
-        }
-        var path = context.bodyAsJson.getJsonArray("path")
-        if (path == null) {
-            return returnData.setErrorMsg("参数错误")
-        }
-        var home = getUserWebdavHome(context)
-        path.forEach {
-            var filePath = URLDecoder.decode(it as String? ?: "", "UTF-8")
-            if (filePath.isNotEmpty()) {
-                var file = File(home + filePath)
-                file.deleteRecursively()
-            }
-        }
-        return returnData.setData("")
-    }
-
-    suspend fun restoreFromWebdav(context: RoutingContext): ReturnData {
-        val returnData = ReturnData()
-        if (!checkAuth(context)) {
-            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-        }
-        if (appConfig.secure) {
-            var userInfo = context.get("userInfo") as User?
-            if (userInfo == null) {
-                return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-            }
-            if (!userInfo.enable_webdav) {
-                return returnData.setErrorMsg("未开启webdav功能")
-            }
-        }
-        var path: String
-        if (context.request().method() == HttpMethod.POST) {
-            // post 请求
-            path = context.bodyAsJson.getString("path") ?: ""
-        } else {
-            // get 请求
-            path = context.queryParam("path").firstOrNull() ?: ""
-            path = URLDecoder.decode(path, "UTF-8")
-        }
-        if (path.isEmpty()) {
-            path = "/"
-        }
-        var ext = getFileExt(path)
-        if (ext != "zip") {
-            return returnData.setErrorMsg("路径不是zip备份文件")
-        }
-        var home = getUserWebdavHome(context)
-        var file = File(home + path)
-        logger.info("file: {} {}", path, file)
-        if (!file.exists()) {
-            return returnData.setErrorMsg("路径不存在")
-        }
-        val bookController = BookController(coroutineContext)
-        if (!bookController.syncFromWebdav(file.toString(), getUserNameSpace(context))) {
-            return returnData.setErrorMsg("恢复失败")
-        }
-        return returnData.setData("")
     }
 
     suspend fun backupToWebdav(context: RoutingContext): ReturnData {

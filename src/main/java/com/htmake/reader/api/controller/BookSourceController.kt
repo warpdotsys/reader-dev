@@ -47,7 +47,6 @@ import com.htmake.reader.api.ReturnData
 import io.legado.app.utils.MD5Utils
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.net.URL;
 import java.util.UUID;
 import io.vertx.ext.web.client.WebClient
 import org.springframework.beans.factory.annotation.Autowired
@@ -65,10 +64,11 @@ import io.legado.app.model.rss.Rss
 import org.springframework.scheduling.annotation.Scheduled
 import io.legado.app.model.localBook.LocalBook
 import java.nio.file.Paths
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.slf4j.MDCContext
+import io.vertx.kotlin.coroutines.awaitResult
 
 private val logger = KotlinLogging.logger {}
 
@@ -79,21 +79,20 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         webClient = SpringContextUtils.getBean("webClient", WebClient::class.java)
     }
 
-    fun getUserBookSourceJsonOpt(userNameSpace: String, includeKeys: Set<String>? = null, filterKeys: Set<String>? = null): JsonArray? {
+    fun getUserBookSourceJsonOpt(userNameSpace: String, fields: Set<String>? = null, checkNotEmpty: Set<String>? = null): JsonArray? {
         var bookSourceFile = getStorageFile("data", userNameSpace, "bookSource")
         if (!bookSourceFile.exists()) {
             bookSourceFile = getStorageFile("data", "default", "bookSource")
         }
-        return parseJsonStringList(bookSourceFile, includeKeys = includeKeys ?: emptySet(), filterKeys = filterKeys ?: emptySet())
+        return parseJsonStringList(bookSourceFile, fields = fields, checkNotEmpty = checkNotEmpty)
     }
 
     fun getUserBookSourceJson(userNameSpace: String): JsonArray? {
         var bookSourceList: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookSource"))
         if (bookSourceList == null && !userNameSpace.equals("default")) {
-            // 用户书源文件不存在，拷贝系统书源
+            // 用户书源文件不存在时使用默认书源，但不创建用户副本。
             var systemBookSourceList: JsonArray? = asJsonArray(getUserStorage("default", "bookSource"))
             if (systemBookSourceList != null) {
-                saveUserStorage(userNameSpace, "bookSource", systemBookSourceList.getList())
                 bookSourceList = systemBookSourceList
             }
         }
@@ -112,6 +111,9 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         val returnData = ReturnData()
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
         }
         val bookSource = BookSource.fromJson(context.bodyAsString).getOrNull()
         if (bookSource == null) {
@@ -138,11 +140,16 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             sourceList.set(existIndex, JsonObject.mapFrom(bookSource))
             bookSourceList = JsonArray(sourceList)
         } else {
+            val user = context.get("userInfo") as User?
+            if (user != null && bookSourceList.size() >= user.book_source_limit) {
+                return returnData.setErrorMsg("你已达到书源数上限，请联系管理员")
+            }
             bookSourceList.add(JsonObject.mapFrom(bookSource))
         }
 
         // logger.info("bookSourceList: {}", bookSourceList)
         saveUserStorage(userNameSpace, "bookSource", bookSourceList)
+        generateBookSourceMap(userNameSpace, bookSourceList)
         return returnData.setData("")
     }
 
@@ -151,42 +158,14 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
         val bookSourceJsonArray = context.bodyAsJsonArray
         if (bookSourceJsonArray == null) {
             return returnData.setErrorMsg("参数错误")
         }
-        var userNameSpace = getUserNameSpace(context)
-        var bookSourceList = getUserBookSourceJson(userNameSpace)
-        if (bookSourceList == null) {
-            bookSourceList = JsonArray()
-        }
-        for (k in 0 until bookSourceJsonArray.size()) {
-            val bookSource = BookSource.fromJson(bookSourceJsonArray.getJsonObject(k).toString()).getOrNull()
-            if (bookSource == null) {
-                continue
-            }
-            // var bookSource = bookSourceJsonArray.getJsonObject(k).mapTo(BookSource::class.java)
-            // 遍历判断书本是否存在
-            var existIndex: Int = -1
-            for (i in 0 until bookSourceList!!.size()) {
-                var _bookSource = bookSourceList.getJsonObject(i).mapTo(BookSource::class.java)
-                if (_bookSource.bookSourceUrl.equals(bookSource.bookSourceUrl)) {
-                    existIndex = i
-                    break;
-                }
-            }
-            if (existIndex >= 0) {
-                var sourceList = bookSourceList.getList()
-                sourceList.set(existIndex, JsonObject.mapFrom(bookSource))
-                bookSourceList = JsonArray(sourceList)
-            } else {
-                bookSourceList.add(JsonObject.mapFrom(bookSource))
-            }
-        }
-
-        // logger.info("bookSourceList: {}", bookSourceList)
-        saveUserStorage(userNameSpace, "bookSource", bookSourceList!!)
-        return returnData.setData("")
+        return saveBookSources(context, bookSourceJsonArray)
     }
 
     fun saveBookSources(context: RoutingContext, bookSourceJsonArray: JsonArray): ReturnData {
@@ -261,24 +240,16 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             return returnData.setErrorMsg("书源链接不能为空")
         }
 
-        var userNameSpace = getUserNameSpace(context)
-        var bookSourceList = getUserBookSourceJson(userNameSpace)
-        if (bookSourceList == null) {
-            bookSourceList = JsonArray()
-        }
-        // 遍历判断书本是否存在
-        var existIndex: Int = -1
-        for (i in 0 until bookSourceList.size()) {
-            var _bookSource = bookSourceList.getJsonObject(i).mapTo(BookSource::class.java)
-            if (_bookSource.bookSourceUrl.equals(bookSourceUrl)) {
-                existIndex = i
-                break;
-            }
-        }
+        val userNameSpace = getUserNameSpace(context)
+        val existIndex = getBookSourceMap(userNameSpace).getOrDefault(bookSourceUrl, -1)
         if (existIndex < 0) {
             return returnData.setErrorMsg("书源信息不存在")
         }
-
+        val bookSourceList = getUserBookSourceJson(userNameSpace)
+            ?: return returnData.setErrorMsg("书源信息不存在")
+        if (existIndex >= bookSourceList.size()) {
+            return returnData.setErrorMsg("书源信息不存在")
+        }
         return returnData.setData(bookSourceList.getJsonObject(existIndex).map)
     }
 
@@ -293,23 +264,14 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             // get 请求
             simple = context.queryParam("simple").firstOrNull()?.toInt() ?: 0
         }
-        var userNameSpace = getUserNameSpace(context)
-        var bookSourceList = getUserBookSourceJson(userNameSpace)
+        val userNameSpace = getUserNameSpace(context)
+        val bookSourceList = getUserBookSourceJsonOpt(
+            userNameSpace,
+            fields = if (simple > 0) setOf("bookSourceGroup", "bookSourceName", "bookSourceUrl") else null,
+            checkNotEmpty = if (simple > 0) setOf("exploreUrl") else null
+        )
         if (bookSourceList != null) {
-            if (simple > 0) {
-                var list = arrayListOf<Map<String, Any?>>()
-                for (i in 0 until bookSourceList.size()) {
-                    var bookSource = bookSourceList.getJsonObject(i).mapTo(BookSource::class.java)
-                    list.add(mapOf<String, Any?>(
-                        "bookSourceGroup" to bookSource.bookSourceGroup,
-                        "bookSourceName" to bookSource.bookSourceName,
-                        "bookSourceUrl" to bookSource.bookSourceUrl,
-                        "exploreUrl" to bookSource.exploreUrl
-                    ))
-                }
-                return returnData.setData(list)
-            }
-            return returnData.setData(bookSourceList.getList())
+            return returnData.setData(bookSourceList.getList().map { JsonObject(it as String).map })
         }
         return returnData.setData(arrayListOf<Int>())
     }
@@ -319,28 +281,25 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
-        val bookSource = context.bodyAsJson.mapTo(BookSource::class.java)
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
+        val bookSource = BookSource.fromJson(context.bodyAsString).getOrNull()
+            ?: return returnData.setErrorMsg("参数错误")
 
-        var userNameSpace = getUserNameSpace(context)
+        val userNameSpace = getUserNameSpace(context)
         var bookSourceList = getUserBookSourceJson(userNameSpace)
         if (bookSourceList == null) {
             bookSourceList = JsonArray()
         }
-        // 遍历判断书本是否存在
-        var existIndex: Int = -1
-        for (i in 0 until bookSourceList.size()) {
-            var _bookSource = bookSourceList.getJsonObject(i).mapTo(BookSource::class.java)
-            if (_bookSource.bookSourceUrl.equals(bookSource.bookSourceUrl)) {
-                existIndex = i
-                break;
-            }
-        }
+        val existIndex = getBookSourceMap(userNameSpace).getOrDefault(bookSource.bookSourceUrl, -1)
         if (existIndex >= 0) {
             bookSourceList.remove(existIndex)
         }
 
         // logger.info("bookSourceList: {}", bookSourceList)
         saveUserStorage(userNameSpace, "bookSource", bookSourceList)
+        generateBookSourceMap(userNameSpace, bookSourceList)
         return returnData.setData("")
     }
 
@@ -349,7 +308,11 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
         val bookSourceJsonArray = context.bodyAsJsonArray
+            ?: return returnData.setErrorMsg("参数错误")
 
         var userNameSpace = getUserNameSpace(context)
         var bookSourceList = getUserBookSourceJson(userNameSpace)
@@ -374,6 +337,7 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
 
         // logger.info("bookSourceList: {}", bookSourceList)
         saveUserStorage(userNameSpace, "bookSource", bookSourceList)
+        generateBookSourceMap(userNameSpace, bookSourceList)
         return returnData.setData("")
     }
 
@@ -382,8 +346,12 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         if (!checkAuth(context)) {
             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
         }
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
         var userNameSpace = getUserNameSpace(context)
         saveUserStorage(userNameSpace, "bookSource", JsonArray())
+        generateBookSourceMap(userNameSpace, JsonArray())
         return returnData.setData("")
     }
 
@@ -403,6 +371,7 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
 
         // 保存为默认书源
         saveUserStorage("default", "bookSource", bookSourceList.getList())
+        generateBookSourceMap("default", bookSourceList)
         return returnData.setData("设置默认书源成功")
     }
 
@@ -421,33 +390,6 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             }
         }
         return returnData.setData(sourceList.getList())
-    }
-
-    suspend fun readRemoteSourceFile(context: RoutingContext) {
-        val returnData = ReturnData()
-        var url: String
-        if (context.request().method() == HttpMethod.POST) {
-            // post 请求
-            url = context.bodyAsJson.getString("url") ?: ""
-        } else {
-            // get 请求
-            url = context.queryParam("url").firstOrNull() ?: ""
-        }
-        if (url.isNullOrEmpty()) {
-            context.success(returnData.setErrorMsg("请输入远程书源链接"))
-            return
-        }
-
-        launch(Dispatchers.IO) {
-            webClient.getAbs(url).timeout(3000).send {
-                val body = it.result()?.bodyAsJsonArray()
-                if (body != null) {
-                    context.success(saveBookSources(context, body))
-                } else {
-                    context.success(returnData.setErrorMsg("远程书源链接错误"))
-                }
-            }
-        }
     }
 
     suspend fun deleteUserBookSource(context: RoutingContext): ReturnData {
@@ -491,10 +433,15 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             val url = remoteBookSource.getString("link") ?: continue
             if (url.isEmpty()) continue
             try {
-                val sourceList = withContext(Dispatchers.IO) { JsonArray(URL(url).readText()) }
-                logger.info("updateRemoteSourceSub link={}, result={}", url, saveUserBookSources(userNameSpace, user, sourceList).errorMsg)
-                remoteBookSourceList.set(i, remoteBookSource.put("lastSyncTime", System.currentTimeMillis()))
-                saveUserStorage(userNameSpace, "remoteBookSourceSub", remoteBookSourceList)
+                val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+                    webClient.getAbs(url).timeout(3000).send(handler)
+                }
+                val sourceList = response.bodyAsJsonArray()
+                if (sourceList != null) {
+                    logger.info("updateRemoteSourceSub link={}, result={}", url, saveUserBookSources(userNameSpace, user, sourceList).errorMsg)
+                    remoteBookSourceList.set(i, remoteBookSource.put("lastSyncTime", System.currentTimeMillis()))
+                    saveUserStorage(userNameSpace, "remoteBookSourceSub", remoteBookSourceList)
+                }
             } catch (e: Exception) {
                 logger.error("updateRemoteSourceSub from {} error", url, e)
             }
@@ -519,7 +466,7 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             return
         }
 
-        launch(Dispatchers.IO) {
+        launch(MDCContext() + Dispatchers.IO) {
             webClient.getAbs(url).timeout(3000).send {
                 var body = it.result()?.bodyAsString()
                 if (body != null) {

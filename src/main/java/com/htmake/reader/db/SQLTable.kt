@@ -18,11 +18,11 @@ class SQLTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, na
         return dataList
     }
 
-    override fun <P> findBy(key: String, value: P, clazz: Class<T>): T? {
+    override fun <P> findBy(field: String, value: P, clazz: Class<T>): T? {
         val dataList = readAll()
         for (i in 0 until dataList.size()) {
             val obj = dataList.getJsonObject(i)
-            if (value == obj.getValue(key)) {
+            if (value == obj.getValue(field)) {
                 return obj.mapTo(clazz)
             }
         }

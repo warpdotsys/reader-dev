@@ -12,10 +12,14 @@ import io.vertx.ext.web.handler.SessionHandler
 import io.vertx.ext.web.sstore.LocalSessionStore
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.slf4j.MDCContext
 import mu.KotlinLogging
 import com.htmake.reader.utils.error
+import com.htmake.reader.utils.globalHandler
 import com.htmake.reader.utils.success
+import com.htmake.reader.utils.toDir
 import java.net.URLDecoder
 
 
@@ -31,13 +35,13 @@ abstract class RestVerticle : CoroutineVerticle() {
         super.start()
         router = Router.router(vertx)
         val cookieName = "reader.session"
-	    router.route().handler(
+	    router.route().globalHandler(
             SessionHandler.create(LocalSessionStore.create(vertx))
-                            .setSessionCookieName(cookieName)
-                            .setSessionTimeout(7L * 86400 * 1000)
-                            .setSessionCookiePath("/")
-        );
-        router.route().handler {
+                .setSessionCookieName(cookieName)
+                .setSessionTimeout(7L * 86400 * 1000)
+                .setSessionCookiePath("/")
+        )
+        router.route().globalHandler {
             it.addHeadersEndHandler { _ ->
                 val cookie = it.getCookie(cookieName)
                 if (cookie != null) {
@@ -50,7 +54,7 @@ abstract class RestVerticle : CoroutineVerticle() {
         }
 
         // CORS support
-        router.route().handler {
+        router.route().globalHandler {
             it.addHeadersEndHandler { _ ->
                 val origin = it.request().getHeader("Origin")
                 if (origin != null && origin.isNotEmpty()) {
@@ -70,18 +74,18 @@ abstract class RestVerticle : CoroutineVerticle() {
             }
         }
 
-        router.route().handler(BodyHandler.create())
+        router.route().globalHandler(BodyHandler.create())
 
-        router.route().handler(LoggerHandler.create(LoggerFormat.DEFAULT));
-        router.route("/reader3/*").handler {
+        router.route().globalHandler(LoggerHandler.create(LoggerFormat.DEFAULT))
+        router.route("/reader3/*").globalHandler {
             logger.info("{} {}", it.request().rawMethod(), URLDecoder.decode(it.request().absoluteURI(), "UTF-8"))
-            if (!it.request().rawMethod().equals("PUT") && (it.fileUploads() == null || it.fileUploads().isEmpty()) && it.bodyAsString.length > 0 && it.bodyAsString.length < 1000) {
+            if (!it.request().rawMethod().equals("PUT") && (it.fileUploads() == null || it.fileUploads().isEmpty()) && !it.bodyAsString.isNullOrEmpty() && it.bodyAsString.length < 1000) {
                 logger.info("Request body: {}", it.bodyAsString)
             }
             it.next()
         }
 
-        router.get("/health").handler { it.success("ok!") }
+        router.get("/health").globalHandler { it.success("ok!") }
 
         initRouter(router)
 
@@ -91,16 +95,23 @@ abstract class RestVerticle : CoroutineVerticle() {
 //        }
 
         router.route().last().failureHandler { ctx ->
-            ctx.error(ctx.failure())
+            ctx.failure()?.let { ctx.error(it) }
         }
 
+        val contextPath = getContextPath()
+        val mainRouter = if (contextPath.isNotEmpty()) {
+            Router.router(vertx).also { it.mountSubRouter(contextPath.toDir(true), router) }
+        } else {
+            router
+        }
         logger.info("port: {}", port)
-        vertx.createHttpServer().requestHandler(router).exceptionHandler{error ->
+        vertx.createHttpServer().requestHandler(mainRouter).exceptionHandler { error ->
             onException(error)
         }.listen(port) { res ->
             if (res.succeeded()) {
                 logger.info("Server running at: http://localhost:{}", port);
                 logger.info("Web reader running at: http://localhost:{}", port);
+                println("ReaderApplication Started")
                 started();
             } else {
                 onStartError();
@@ -131,12 +142,16 @@ abstract class RestVerticle : CoroutineVerticle() {
     /**
      * An extension method for simplifying coroutines usage with Vert.x Web routers
      */
-    fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Any) {
-        handler { ctx ->
-            val job = launch(Dispatchers.IO) {
+    fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Any?) {
+        globalHandler { ctx ->
+            var job: Job? = null
+            ctx.request().connection().closeHandler {
+                logger.info("客户端已断开链接，终止运行")
+                job?.cancel()
+            }
+            job = launch(MDCContext() + Dispatchers.IO) {
                 try {
                     ctx.success(fn(ctx))
-//                    fn(ctx)
                 } catch (e: Exception) {
                     onHandlerError(ctx, e)
                 }
@@ -144,9 +159,14 @@ abstract class RestVerticle : CoroutineVerticle() {
         }
     }
 
-    fun Route.coroutineHandlerWithoutRes(fn: suspend (RoutingContext) -> Any) {
-        handler { ctx ->
-            val job = launch(Dispatchers.IO) {
+    fun Route.coroutineHandlerWithoutRes(fn: suspend (RoutingContext) -> Any?) {
+        globalHandler { ctx ->
+            var job: Job? = null
+            ctx.request().connection().closeHandler {
+                logger.info("客户端已断开链接，终止运行")
+                job?.cancel()
+            }
+            job = launch(MDCContext() + Dispatchers.IO) {
                 try {
                     fn(ctx)
                 } catch (e: Exception) {

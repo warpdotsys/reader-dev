@@ -15,30 +15,32 @@
       <span class="el-dialog__title"
         >授权管理
         <span class="float-right span-btn" @click="importLicense">更新密钥</span>
-        <span class="float-right span-btn" @click="supplyLicense">申请7天试用</span>
       </span>
     </div>
-    <div class="source-container">
-      <el-form label-width="120px">
-        <el-form-item label="Host">
-          <span>{{ license.host || '-' }}</span>
-        </el-form-item>
-        <el-form-item label="用户上限">
-          <span>{{ license.userMaxLimit }}</span>
-        </el-form-item>
-        <el-form-item label="过期时间">
-          <span>{{ formatTime(license.expiredAt) }}</span>
-        </el-form-item>
-        <el-form-item label="开放API">
-          <span>{{ license.openApi ? '是' : '否' }}</span>
-        </el-form-item>
-        <el-form-item label="Kindle有效期">
-          <span>{{ formatTime(license.simpleWebExpiredAt) }}</span>
-        </el-form-item>
-      </el-form>
-    </div>
-    <div slot="footer" class="dialog-footer">
-      <el-button size="medium" @click="cancel">关闭</el-button>
+    <div>
+      <div class="license-item">
+        <span class="license-name">授权类型</span>
+        <span class="license-value">{{ license.type }}</span>
+      </div>
+      <div class="license-item">
+        <span class="license-name">授权域名</span>
+        <span class="license-value">{{ license.host }}</span>
+      </div>
+      <div class="license-item">
+        <span class="license-name">过期时间</span>
+        <span class="license-value">{{ formatTime(license.expiredAt) }}</span>
+      </div>
+      <div class="license-item">
+        <span class="license-name">用户上限</span>
+        <span class="license-value">{{ license.userMaxLimit }} 人</span>
+      </div>
+      <div class="license-item">
+        <span class="license-name">kindle端</span>
+        <span class="license-value"
+          >{{ formatTime(license.simpleWebExpiredAt) }} 过期</span
+        >
+        <span class="span-btn" @click="supplyLicense">申请7天试用</span>
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -46,6 +48,8 @@
 <script>
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
+
+const licenseApi = "https://r.htmake.com";
 
 export default {
   model: {
@@ -80,7 +84,7 @@ export default {
       this.$emit("setShow", false);
     },
     formatTime(val) {
-      if (!val) return "永久";
+      if (!val) return "永久有效";
       return new Date(val).format("yy-MM-dd hh:mm");
     },
     getLicense() {
@@ -120,7 +124,7 @@ export default {
         );
         return;
       }
-      Axios.post(this.api + "/sendCodeToEmail", { email }).then(
+      Axios.post(licenseApi + "/reader3/sendCodeToEmail", { email }).then(
         res => {
           if (res.data.isSuccess) {
             this.showVerifyCodePrompt(email);
@@ -142,7 +146,7 @@ export default {
       }).catch(() => false);
       if (!codeRes) return;
       Axios.post(
-        this.api + "/supplyLicense",
+        licenseApi + "/reader3/supplyLicense",
         { email, code: codeRes.value },
         { alert: false }
       ).then(

@@ -76,6 +76,12 @@ private val logger = KotlinLogging.logger {}
 class UserController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
     val userMaxCount = 15
 
+    private fun assetUserHome(userNameSpace: String): File? {
+        val assetsRoot = File(getWorkDir("storage", "assets")).toPath().toAbsolutePath().normalize()
+        val userHome = assetsRoot.resolve(userNameSpace).normalize()
+        return userHome.takeIf { it.startsWith(assetsRoot) }?.toFile()
+    }
+
     private fun getUserLimit(context: RoutingContext): Int {
         val license = getInstalledLicense()
         if (license.validHost(context.request().host())) {
@@ -254,8 +260,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (username.length < 5) {
             return returnData.setErrorMsg("用户名不能低于5位")
         }
-        if (password.length < appConfig.minUserPasswordLength) {
-            return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
+        if (password.length < 8) {
+            return returnData.setErrorMsg("密码不能低于8位")
         }
         if (username.equals("default")) {
             return returnData.setErrorMsg("用户名不能为非法字符")
@@ -518,13 +524,30 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (type.isNullOrEmpty()) {
             type = "images"
         }
+        val assetType = type ?: "images"
+        if (assetType == "." || assetType == ".." || assetType.contains('/') || assetType.contains('\\')) {
+            return returnData.setErrorMsg("文件类型错误")
+        }
+        val assetHome = assetUserHome(userNameSpace) ?: return returnData.setErrorMsg("文件路径错误")
+        val typeHome = assetHome.toPath().resolve(assetType).normalize()
+        if (!typeHome.startsWith(assetHome.toPath().toAbsolutePath().normalize())) {
+            return returnData.setErrorMsg("文件路径错误")
+        }
         // logger.info("type: {}", type)
         context.fileUploads().forEach {
             var file = File(it.uploadedFileName())
             logger.info("uploadFile: {} {} {}", it.uploadedFileName(), it.fileName(), file)
             if (file.exists()) {
-                var fileName = it.fileName()
-                var newFile = File(getWorkDir("storage", "assets", userNameSpace, type, fileName))
+                var fileName = File(it.fileName().replace('\\', '/')).name
+                if (fileName.isEmpty() || fileName == "." || fileName == "..") {
+                    file.deleteRecursively()
+                    return@forEach
+                }
+                var newFile = typeHome.resolve(fileName).normalize().toFile()
+                if (!newFile.toPath().startsWith(typeHome)) {
+                    file.deleteRecursively()
+                    return@forEach
+                }
                 if (!newFile.parentFile.exists()) {
                     newFile.parentFile.mkdirs()
                 }
@@ -533,7 +556,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
                 }
                 logger.info("moveTo: {}", newFile)
                 if (file.copyRecursively(newFile)) {
-                    fileList.add("/assets/" + userNameSpace + "/" + type + "/" + fileName)
+                    fileList.add("/assets/" + userNameSpace + "/" + assetType + "/" + fileName)
                 }
                 file.deleteRecursively()
             }
@@ -561,7 +584,16 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!url.startsWith("/assets/" + userNameSpace + "/")) {
             return returnData.setErrorMsg("文件链接错误")
         }
-        var file = File(getWorkDir("storage" + url))
+        val assetHome = assetUserHome(userNameSpace) ?: return returnData.setErrorMsg("文件链接错误")
+        val relativePath = url.removePrefix("/assets/" + userNameSpace + "/")
+        if (relativePath.isEmpty()) {
+            return returnData.setErrorMsg("文件链接错误")
+        }
+        val filePath = assetHome.toPath().resolve(relativePath.replace('\\', '/')).normalize()
+        if (!filePath.startsWith(assetHome.toPath().toAbsolutePath().normalize())) {
+            return returnData.setErrorMsg("文件链接错误")
+        }
+        var file = filePath.toFile()
         logger.info("delete file: {}", file)
         file.deleteRecursively()
         return returnData.setData("")
