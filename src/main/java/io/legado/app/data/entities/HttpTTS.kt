@@ -1,7 +1,12 @@
 package io.legado.app.data.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.jayway.jsonpath.DocumentContext
 import io.legado.app.model.DebugLog
+import io.legado.app.utils.GSON
+import io.legado.app.utils.jsonPath
+import io.legado.app.utils.readLong
+import io.legado.app.utils.readString
 
 @JsonIgnoreProperties("headerMap", "source", "userNameSpace")
 data class HttpTTS(
@@ -49,5 +54,30 @@ data class HttpTTS(
         return debugLog
     }
 
-    companion object
+    companion object {
+        fun fromJsonDoc(doc: DocumentContext): Result<HttpTTS> = runCatching {
+            val loginUi = doc.read<Any>("$.loginUi")
+            HttpTTS(
+                id = doc.readLong("$.id") ?: System.currentTimeMillis(),
+                name = doc.readString("$.name")!!,
+                url = doc.readString("$.url")!!,
+                contentType = doc.readString("$.contentType"),
+                concurrentRate = doc.readString("$.concurrentRate"),
+                loginUrl = doc.readString("$.loginUrl"),
+                loginUi = if (loginUi is List<*>) GSON.toJson(loginUi) else loginUi?.toString(),
+                header = doc.readString("$.header"),
+                loginCheckJs = doc.readString("$.loginCheckJs")
+            )
+        }
+
+        fun fromJson(json: String): Result<HttpTTS> = runCatching {
+            fromJsonDoc(jsonPath.parse(json)).getOrThrow()
+        }
+
+        fun fromJsonArray(jsonArray: String): Result<List<HttpTTS>> = runCatching {
+            jsonPath.parse(jsonArray).read<Array<Any>>("$").map {
+                fromJsonDoc(it as DocumentContext).getOrThrow()
+            }.toList()
+        }
+    }
 }

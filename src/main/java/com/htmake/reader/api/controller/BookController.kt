@@ -842,8 +842,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val bookSourceFile = getStorageFile("data", userNameSpace, "bookSource").let {
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
+        var maxSize = urlMap.size
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            if (it <= urlMap.size) {
+            if (it <= maxSize) {
                 lastIndex = Math.max(lastIndex, it)
                 val bookSourceList = parseJsonStringList(
                     bookSourceFile,
@@ -855,6 +856,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     }
                 )
                 if (bookSourceList == null || bookSourceList.isEmpty) {
+                    maxSize = it
                     emptyList<SearchBook>()
                 } else {
                     searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
@@ -962,8 +964,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val bookSourceFile = getStorageFile("data", userNameSpace, "bookSource").let {
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
+        var maxSize = urlMap.size
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            if (it <= urlMap.size) {
+            if (it <= maxSize) {
                 lastIndex = Math.max(lastIndex, it)
                 val bookSourceList = parseJsonStringList(
                     bookSourceFile,
@@ -975,6 +978,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     }
                 )
                 if (bookSourceList == null || bookSourceList.isEmpty) {
+                    maxSize = it
                     emptyList<SearchBook>()
                 } else {
                     searchBookWithSource(bookSourceList.getString(0), book, accurate, userNameSpace)
@@ -1061,8 +1065,9 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val bookSourceFile = getStorageFile("data", userNameSpace, "bookSource").let {
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
+        var maxSize = urlMap.size
         limitConcurrent(concurrentCount, lastIndex + 1, urlMap.size, { it ->
-            if (it <= urlMap.size) {
+            if (it <= maxSize) {
                 lastIndex = Math.max(lastIndex, it)
                 val bookSourceList = parseJsonStringList(
                     bookSourceFile,
@@ -1074,6 +1079,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     }
                 )
                 if (bookSourceList == null || bookSourceList.isEmpty) {
+                    maxSize = it
                     emptyList<SearchBook>()
                 } else {
                     searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
@@ -1175,7 +1181,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         val bookSourceFile = getStorageFile("data", userNameSpace, "bookSource").let {
             if (it.exists()) it else getStorageFile("data", "default", "bookSource")
         }
-        val maxSize = urlMap.size
+        var maxSize = urlMap.size
         limitConcurrent(concurrentCount, lastIndex + 1, maxSize, { it ->
             if (it <= maxSize) {
                 lastIndex = Math.max(lastIndex, it)
@@ -1189,6 +1195,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     }
                 )
                 if (bookSourceList == null || bookSourceList.isEmpty) {
+                    maxSize = it
                     emptyList<SearchBook>()
                 } else {
                     searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
@@ -3210,7 +3217,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         for (i in 0 until httpTTSList.size()) {
             val obj = httpTTSList.getJsonObject(i)
             if (obj != null) {
-                val parsed = GSON.fromJsonObject<HttpTTS>(obj.toString()).getOrNull()
+                val parsed = HttpTTS.fromJson(obj.toString()).getOrNull()
                 if (parsed?.name == name) return parsed
             }
         }
