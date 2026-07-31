@@ -38,6 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2'
     // vertx
     implementation "io.vertx:vertx-core:3.8.5"
     implementation "io.vertx:vertx-lang-kotlin:3.8.5"
