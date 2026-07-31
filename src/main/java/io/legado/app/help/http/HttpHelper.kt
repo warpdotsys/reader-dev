@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import java.io.IOException
+import io.legado.app.constant.AppConst
 import io.legado.app.model.DebugLog
 
 private val proxyClientCache: ConcurrentHashMap<String, OkHttpClient> by lazy {
@@ -42,12 +43,18 @@ val okHttpClient: OkHttpClient by lazy {
         .followSslRedirects(true)
         .addInterceptor(Interceptor { chain ->
             val request = chain.request()
-                .newBuilder()
-                .addHeader("Keep-Alive", "300")
+            val builder = request.newBuilder()
+            if (request.header("User-Agent") == null) {
+                builder.addHeader("User-Agent", AppConst.userAgent)
+            } else if (request.header("User-Agent") == "null") {
+                builder.removeHeader("User-Agent")
+            }
+            builder
+                .addHeader("Keep-Alive", "10")
                 .addHeader("Connection", "Keep-Alive")
                 .addHeader("Cache-Control", "no-cache")
                 .build()
-            chain.proceed(request)
+            chain.proceed(builder.build())
         })
     // if (AppConfig.isCronet) {
     //     builder.addInterceptor(CronetInterceptor())
@@ -127,24 +134,3 @@ fun getProxyClient(proxy: String? = null, debugLog: DebugLog? = null): OkHttpCli
     }
     return okHttpClient
 }
-
-// suspend fun getWebViewSrc(params: AjaxWebView.AjaxParams): StrResponse =
-//     suspendCancellableCoroutine { block ->
-//         val webView = AjaxWebView()
-//         block.invokeOnCancellation {
-//             webView.destroyWebView()
-//         }
-//         webView.callback = object : AjaxWebView.Callback() {
-//             override fun onResult(response: StrResponse) {
-
-//                 if (!block.isCompleted)
-//                     block.resume(response)
-//             }
-
-//             override fun onError(error: Throwable) {
-//                 if (!block.isCompleted)
-//                     block.cancel(error)
-//             }
-//         }
-//         webView.load(params)
-//     }

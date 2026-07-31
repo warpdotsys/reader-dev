@@ -11,6 +11,7 @@ import io.legado.app.model.webBook.WebBook
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.core.net.impl.URIDecoder
 import mu.KotlinLogging
 import com.htmake.reader.config.AppConfig
 import com.htmake.reader.config.BookConfig
@@ -22,6 +23,10 @@ import com.htmake.reader.api.controller.UserController
 import com.htmake.reader.api.controller.WebdavController
 import com.htmake.reader.api.controller.ReplaceRuleController
 import com.htmake.reader.api.controller.BookmarkController
+import com.htmake.reader.api.controller.BookGroupController
+import com.htmake.reader.api.controller.FileController
+import com.htmake.reader.api.controller.HttpTTSController
+import com.htmake.reader.api.controller.LicenseController
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.getStorage
@@ -41,6 +46,11 @@ import com.htmake.reader.utils.unzip
 import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
+import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.getInstalledLicense
+import com.htmake.reader.utils.getTraceId
+import com.htmake.reader.init.ReaderAdapter
+import io.legado.app.adapters.ReaderAdapterHelper
 import com.htmake.reader.verticle.RestVerticle
 import com.htmake.reader.SpringEvent
 import org.springframework.stereotype.Component
@@ -61,7 +71,9 @@ import java.lang.Runtime
 import kotlin.collections.mutableMapOf
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import java.text.SimpleDateFormat;
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.model.rss.Rss
@@ -72,6 +84,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.slf4j.MDCContext
+import org.slf4j.MDC
+import java.util.Calendar
 
 private val logger = KotlinLogging.logger {}
 
@@ -83,8 +98,21 @@ class YueduApi : RestVerticle() {
     @Autowired
     private lateinit var env: Environment
 
+    override fun getContextPath(): String {
+        return env.getProperty("reader.server.contextPath", "") ?: ""
+    }
+
     override suspend fun initRouter(router: Router) {
         setupPort()
+
+        if (appConfig.mongoUri.isNotEmpty()) {
+            com.htmake.reader.utils.MongoManager.connect(appConfig.mongoUri)
+        }
+
+        if (appConfig.remoteWebviewApi.isNotEmpty()) {
+            RemoteWebview.setRemoteApi(appConfig.remoteWebviewApi)
+        }
+        ReaderAdapterHelper.setAdapter(ReaderAdapter)
 
         // 旧版数据迁移
         migration()
@@ -105,8 +133,22 @@ class YueduApi : RestVerticle() {
         }
         router.route("/assets/*").handler(StaticHandler.create().setAllowRootFileSystemAccess(true).setWebRoot(assetsDir).setDefaultContentEncoding("UTF-8"));
 
-        // epub资源
+        // 书籍资源
         var dataDir = getWorkDir("storage", "data");
+        router.route("/book-assets/*").handler {
+            var path = it.request().path().replace("/book-assets/", "/", true)
+            path = URIDecoder.decodeURIComponent(path, false)
+            if ((path.endsWith("html", true) || path.endsWith("htm", true))) {
+                val filePath = File(dataDir + path)
+                if (filePath.exists()) {
+                    BookConfig.injectJavascriptToEpubChapter(filePath.toString())
+                }
+            }
+            it.next()
+        }
+        router.route("/book-assets/*").handler(StaticHandler.create().setAllowRootFileSystemAccess(true).setWebRoot(dataDir).setDefaultContentEncoding("UTF-8"))
+
+        // epub资源
         router.route("/epub/*").handler {
             var path = it.request().path().replace("/epub/", "/", true)
             path = URLDecoder.decode(path, "UTF-8")
@@ -121,9 +163,31 @@ class YueduApi : RestVerticle() {
         }
         router.route("/epub/*").handler(StaticHandler.create().setAllowRootFileSystemAccess(true).setWebRoot(dataDir).setDefaultContentEncoding("UTF-8"));
 
+        // simple-web界面
+        router.route("/simple-web").handler {
+            if (it.request().path().endsWith("/simple-web")) {
+                val location = URLDecoder.decode(it.request().absoluteURI(), "UTF-8")
+                    .replace("/simple-web", "/simple-web/", false)
+                it.response().putHeader("Location", location).setStatusCode(302).end()
+            } else {
+                it.next()
+            }
+        }
+        router.route("/simple-web/*").handler {
+            val license = getInstalledLicense()
+            val simpleWebExpiredAt = if (license.validHost(it.request().host())) license.simpleWebExpiredAt else 0L
+            if (simpleWebExpiredAt != 0L && simpleWebExpiredAt < System.currentTimeMillis()) {
+                it.response().putHeader("content-type", "text/html; charset=UTF-8")
+                    .setStatusCode(403)
+                    .end("<html><head><title>未激活该功能</title></head><body><div style='text-align: center;padding: 30px 0;'>未激活该功能，请加<a href='https://t.me/+pQ8HDlANPZ84ZWNl'>TG群</a>激活</div></body></html>")
+            } else {
+                it.next()
+            }
+        }
+        router.route("/simple-web/*").handler(StaticHandler.create("simple-web").setDefaultContentEncoding("UTF-8"))
+
         // 获取系统信息
         router.get("/reader3/getSystemInfo").coroutineHandler { getSystemInfo(it) }
-
 
         ////////// 接口部分
         val bookController = BookController(coroutineContext)
@@ -135,6 +199,10 @@ class YueduApi : RestVerticle() {
         }
         val replaceRuleController = ReplaceRuleController(coroutineContext)
         val bookmarkController = BookmarkController(coroutineContext)
+        val bookGroupController = BookGroupController(coroutineContext)
+        val fileController = FileController(coroutineContext)
+        val httpTTSController = HttpTTSController(coroutineContext)
+        val licenseController = LicenseController(coroutineContext)
 
         /** 书源模块 */
         router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }
@@ -152,8 +220,7 @@ class YueduApi : RestVerticle() {
         // 上传书源文件
         router.post("/reader3/readSourceFile").coroutineHandler { bookSourceController.readSourceFile(it) }
 
-        // 读取远程书源文件
-        router.post("/reader3/readRemoteSourceFile").coroutineHandlerWithoutRes { bookSourceController.readRemoteSourceFile(it) }
+        router.post("/reader3/saveFromRemoteSource").coroutineHandlerWithoutRes { bookSourceController.saveFromRemoteSource(it) }
 
         // 设置默认书源
         router.post("/reader3/setAsDefaultBookSources").coroutineHandler { bookSourceController.setAsDefaultBookSources(it) }
@@ -225,23 +292,10 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/getChapterListByRule").coroutineHandler { bookController.getChapterListByRule(it) }
 
         // 书籍分组
-        router.get("/reader3/getBookGroups").coroutineHandler { bookController.getBookGroups(it) }
-        router.post("/reader3/saveBookGroup").coroutineHandler { bookController.saveBookGroup(it) }
-        router.post("/reader3/deleteBookGroup").coroutineHandler { bookController.deleteBookGroup(it) }
-        router.post("/reader3/saveBookGroupOrder").coroutineHandler { bookController.saveBookGroupOrder(it) }
-
-        // 书仓功能
-        // 获取书仓文件列表
-        router.get("/reader3/getLocalStoreFileList").coroutineHandler { bookController.getLocalStoreFileList(it) }
-        // 下载书仓文件
-        router.get("/reader3/getLocalStoreFile").coroutineHandlerWithoutRes { bookController.getLocalStoreFile(it) }
-        // 删除书仓文件
-        router.post("/reader3/deleteLocalStoreFile").coroutineHandler { bookController.deleteLocalStoreFile(it) }
-        router.post("/reader3/deleteLocalStoreFileList").coroutineHandler { bookController.deleteLocalStoreFileList(it) }
-        // 从本地书仓/webdav导入
-        router.post("/reader3/importFromLocalPathPreview").coroutineHandler { bookController.importFromLocalPathPreview(it) }
-        // 上传文件到书仓
-        router.post("/reader3/uploadFileToLocalStore").coroutineHandler { bookController.uploadFileToLocalStore(it) }
+        router.get("/reader3/getBookGroups").coroutineHandler { bookGroupController.getBookGroups(it) }
+        router.post("/reader3/saveBookGroup").coroutineHandler { bookGroupController.saveBookGroup(it) }
+        router.post("/reader3/deleteBookGroup").coroutineHandler { bookGroupController.deleteBookGroup(it) }
+        router.post("/reader3/saveBookGroupOrder").coroutineHandler { bookGroupController.saveBookGroupOrder(it) }
 
         // 调试书源
         router.get("/reader3/bookSourceDebugSSE").coroutineHandlerWithoutRes { bookController.bookSourceDebugSSE(it) }
@@ -298,28 +352,6 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/updateUser").coroutineHandler { userController.updateUser(it) }
 
 
-        /** webdav模块 */
-        // 获取webdav备份列表
-        router.get("/reader3/getWebdavFileList").coroutineHandler { webdavController.getWebdavFileList(it) }
-
-        // 下载webdav文件
-        router.get("/reader3/getWebdavFile").coroutineHandlerWithoutRes { webdavController.getWebdavFile(it) }
-
-        // 上传webdav文件
-        router.post("/reader3/uploadFileToWebdav").coroutineHandler { webdavController.uploadFileToWebdav(it) }
-
-        // 删除webdav文件
-        router.get("/reader3/deleteWebdavFile").coroutineHandler { webdavController.deleteWebdavFile(it) }
-        router.post("/reader3/deleteWebdavFile").coroutineHandler { webdavController.deleteWebdavFile(it) }
-        router.post("/reader3/deleteWebdavFileList").coroutineHandler { webdavController.deleteWebdavFileList(it) }
-
-        // 从webdav备份恢复
-        router.post("/reader3/restoreFromWebdav").coroutineHandler { webdavController.restoreFromWebdav(it) }
-
-        // 备份到webdav
-        router.post("/reader3/backupToWebdav").coroutineHandler { webdavController.backupToWebdav(it) }
-
-
         /** rss模块 */
         // rss
         router.get("/reader3/getRssSources").coroutineHandler { rssSourceController.getRssSources(it) }
@@ -346,6 +378,64 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/saveBookmarks").coroutineHandler { bookmarkController.saveBookmarks(it) }
         router.post("/reader3/deleteBookmark").coroutineHandler { bookmarkController.deleteBookmark(it) }
         router.post("/reader3/deleteBookmarks").coroutineHandler { bookmarkController.deleteBookmarks(it) }
+
+        router.post("/reader3/book/saveBookConfig").coroutineHandler { bookController.saveBookConfig(it) }
+        router.get("/reader3/user/downloadBackupFile").coroutineHandlerWithoutRes { userController.downloadBackupFile(it) }
+
+        router.get("/reader3/book/tts").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
+        router.post("/reader3/book/tts").coroutineHandlerWithoutRes { bookController.textToSpeech(it) }
+        // 保存书籍章节内容到缓存
+        router.post("/reader3/saveBookContent").coroutineHandler { bookController.saveBookContent(it) }
+
+        /** MongoDB备份恢复 */
+        router.post("/reader3/backupToMongodb").coroutineHandler { bookController.backupToMongodb(it) }
+        router.post("/reader3/restoreFromMongodb").coroutineHandler { bookController.restoreFromMongodb(it) }
+
+        /** 缓存书籍到服务器 */
+        router.post("/reader3/cacheBookOnServer").coroutineHandler { bookController.cacheBookOnServer(it) }
+
+        /** 清理不活跃用户 */
+        router.post("/reader3/clearInactiveUsers").coroutineHandler { userController.clearInactiveUsers(it) }
+
+        /** 许可证模块 */
+        router.get("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
+        router.post("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
+        router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
+        router.post("/reader3/importLicense").coroutineHandlerWithoutRes { licenseController.importLicense(it) }
+        router.get("/reader3/generateKeys").coroutineHandler { licenseController.generateKeys(it) }
+        router.post("/reader3/generateKeys").coroutineHandler { licenseController.generateKeys(it) }
+        router.get("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
+        router.post("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
+        router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
+        router.post("/reader3/supplyLicense").coroutineHandler { licenseController.supplyLicense(it) }
+        router.get("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
+        router.post("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
+        router.post("/reader3/decryptLicense").coroutineHandler { licenseController.decryptLicense(it) }
+        router.post("/reader3/sendCodeToEmail").coroutineHandler { licenseController.sendCodeToEmail(it) }
+
+        /** webdav备份 */
+        router.post("/reader3/backupToWebdav").coroutineHandler { webdavController.backupToWebdav(it) }
+
+        /** 文件管理模块 */
+        router.get("/reader3/file/list").coroutineHandler { fileController.list(it) }
+        router.get("/reader3/file/get").coroutineHandler { fileController.get(it) }
+        router.post("/reader3/file/save").coroutineHandler { fileController.save(it) }
+        router.post("/reader3/file/mkdir").coroutineHandler { fileController.mkdir(it) }
+        router.get("/reader3/file/download").coroutineHandlerWithoutRes { fileController.download(it) }
+        router.post("/reader3/file/upload").coroutineHandler { fileController.upload(it) }
+        router.post("/reader3/file/delete").coroutineHandler { fileController.delete(it) }
+        router.post("/reader3/file/deleteMulti").coroutineHandler { fileController.deleteMulti(it) }
+        router.post("/reader3/file/importPreview").coroutineHandler { fileController.importPreview(it) }
+        router.post("/reader3/file/restore").coroutineHandler { fileController.restore(it) }
+        router.get("/reader3/file/parse").coroutineHandler { fileController.parse(it) }
+        router.post("/reader3/file/parse").coroutineHandler { fileController.parse(it) }
+
+        /** HttpTTS模块 */
+        router.get("/reader3/httpTTS/list").coroutineHandler { httpTTSController.getHttpTTSList(it) }
+        router.post("/reader3/httpTTS/save").coroutineHandler { httpTTSController.saveHttpTTS(it) }
+        router.post("/reader3/httpTTS/saveMulti").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
+        router.post("/reader3/httpTTS/delete").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
+        router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
     }
 
     suspend fun setupPort() {
@@ -367,11 +457,6 @@ class YueduApi : RestVerticle() {
             } else if (!dataDir.exists()) {
                 // 旧版本不管了
                 dataDir.mkdirs()
-                // 可能存在旧版本，尝试迁移
-                // var backupDir = File(getWorkDir("storage-backup"))
-                // storageDir.renameTo(backupDir)
-                // dataDir.parentFile.mkdirs()
-                // backupDir.copyRecursively(dataDir)
             }
         } catch(e: Exception) {
             e.printStackTrace()
@@ -383,6 +468,7 @@ class YueduApi : RestVerticle() {
     }
 
     override fun onStartError() {
+        logger.error("应用启动失败，请检查" + port + "端口是否被占用")
         SpringContextUtils.getApplicationContext().publishEvent(SpringEvent(this as java.lang.Object, "START_ERROR", "应用启动失败，请检查" + port + "端口是否被占用"));
     }
 
@@ -402,11 +488,44 @@ class YueduApi : RestVerticle() {
         var freeMemory = "" + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "M"
         var totalMemory = "" + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "M"
         var maxMemory = "" + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "M"
+        val userController = UserController(coroutineContext)
+        var dayLoginUser = 0
+        var sevenDayLoginUser = 0
+        var monthLoginUser = 0
+        var keepUser = 0
+        var dayRegisterUser = 0
+        var sevenDayRegisterUser = 0
+        var monthRegisterUser = 0
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        userController.forEachUser { user ->
+            if (user.last_login_at >= System.currentTimeMillis() - 86400000L) dayLoginUser++
+            if (user.last_login_at >= System.currentTimeMillis() - 604800000L) sevenDayLoginUser++
+            if (user.last_login_at >= calendar.timeInMillis) monthLoginUser++
+            if (user.created_at >= System.currentTimeMillis() - 86400000L) dayRegisterUser++
+            if (user.created_at >= System.currentTimeMillis() - 604800000L) sevenDayRegisterUser++
+            if (user.created_at >= calendar.timeInMillis) monthRegisterUser++
+            if (user.last_login_at >= user.created_at + 604800000L &&
+                user.last_login_at >= System.currentTimeMillis() - 604800000L) keepUser++
+            false
+        }
         return returnData.setData(mapOf(
             "fonts" to systemFont,
             "freeMemory" to freeMemory,
             "totalMemory" to totalMemory,
-            "maxMemory" to maxMemory
+            "maxMemory" to maxMemory,
+            "dayRegisterUser" to dayRegisterUser,
+            "dayLoginUser" to dayLoginUser,
+            "sevenDayRegisterUser" to sevenDayRegisterUser,
+            "sevenDayLoginUser" to sevenDayLoginUser,
+            "monthRegisterUser" to monthRegisterUser,
+            "monthLoginUser" to monthLoginUser,
+            "keepUser" to keepUser
         ))
     }
 
@@ -415,12 +534,21 @@ class YueduApi : RestVerticle() {
      */
 
     /**
-     * 每十分钟检查一次书架书籍更新
+     * 定期检查书架书籍更新 (使用配置的间隔时间)
      */
     @Scheduled(cron = "0 0/10 * * * ?")
     fun shelfUpdateJob()
     {
-        launch(Dispatchers.IO) {
+        if (appConfig.shelfUpdateInteval <= 0) {
+            return
+        }
+        val now = Calendar.getInstance()
+        val minuteFromToday = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+        if (minuteFromToday % appConfig.shelfUpdateInteval != 0) {
+            return
+        }
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
             try {
                 val bookController = BookController(coroutineContext)
 
@@ -429,22 +557,12 @@ class YueduApi : RestVerticle() {
                 bookController.getBookShelfBooks(true, "default")
 
                 // 刷新用户书架
-                if (appConfig.secure) {
-                    var userMap = mutableMapOf<String, Map<String, Any>>()
-                    var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-                    if (userMapJson != null) {
-                        userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
+                val userController = UserController(coroutineContext)
+                userController.forEachUser { user ->
+                    if (user.last_login_at >= System.currentTimeMillis() - 259200000L) {
+                        bookController.getBookShelfBooks(true, user.username)
                     }
-                    userMap.forEach{
-                        try {
-                            var ns = it.value.getOrDefault("username", "") as String? ?: ""
-                            if (ns.isNotEmpty()) {
-                                bookController.getBookShelfBooks(true, ns)
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
+                    false
                 }
                 logger.info("书架书籍更新检查结束")
             } catch (e: Exception) {
@@ -462,39 +580,109 @@ class YueduApi : RestVerticle() {
         if (appConfig.autoClearInactiveUser <= 0 || !appConfig.secure) {
             return
         }
-        launch(Dispatchers.IO) {
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
             try {
                 logger.info("开始清理 {} 天未登录用户", appConfig.autoClearInactiveUser)
-
-                var userMap = mutableMapOf<String, Map<String, Any>>()
-                var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-                if (userMapJson != null) {
-                    userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
-                }
-                val expireTime = System.currentTimeMillis() - appConfig.autoClearInactiveUser * 86400L * 1000L
-                userMap.keys.forEach{
-                    try {
-                        var user = userMap.get(it)
-                        if (user != null) {
-                            var username = user.getOrDefault("username", "") as String? ?: ""
-                            var last_login_at = user.getOrDefault("last_login_at", 0) as Long? ?: 0L
-                            if (username.isNotEmpty() && last_login_at < expireTime) {
-                                logger.info("delete user: {}", user)
-                                // 删除用户信息
-                                userMap.remove(username)
-                                // 移除用户目录
-                                var userHome = File(getWorkDir("storage", "data", username))
-                                logger.info("delete userHome: {}", userHome)
-                                if (userHome.exists()) {
-                                    userHome.deleteRecursively()
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
+                UserController(coroutineContext).clearInactiveUsers(appConfig.autoClearInactiveUser)
                 logger.info("不活跃用户自动清理结束")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * 自动备份用户数据 (每天凌晨2点)
+     */
+    @Scheduled(cron = "0 50 23 * * ?")
+    fun autoBackup()
+    {
+        if (!appConfig.autoBackupUserData) {
+            return
+        }
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
+            try {
+                logger.info("开始备份用户数据")
+                val bookController = BookController(coroutineContext)
+
+                // 备份默认用户
+                bookController.saveToWebdav("default")
+
+                // 备份其他用户
+                val userController = UserController(coroutineContext)
+                userController.forEachUser { user ->
+                    if (user.last_login_at >= System.currentTimeMillis() - 259200000L) {
+                        bookController.saveToWebdav(user.username)
+                    }
+                    false
+                }
+                logger.info("备份用户数据结束")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * 定期执行垃圾回收
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    fun autoGC()
+    {
+        System.gc()
+    }
+
+    @Scheduled(cron = "0 4/15 7-23 * * ?")
+    fun checkLicense()
+    {
+        val license = com.htmake.reader.utils.getInstalledLicense(true)
+        if (license.type == "default") return
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
+            try {
+                delay(Random.nextLong(10, 121) * 1000)
+                delay(Random.nextLong(1, 11) * 1000)
+                logger.info("开始检查授权是否正常")
+                LicenseController(coroutineContext).checkLicense(license)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * 远程书源订阅更新
+     */
+    @Scheduled(cron = "0 0/10 * * * ?")
+    fun remoteBookSourceSubUpdateJob()
+    {
+        if (appConfig.remoteBookSourceUpdateInterval <= 0) {
+            return
+        }
+        val now = Calendar.getInstance()
+        val minuteFromToday = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+        if (minuteFromToday % appConfig.remoteBookSourceUpdateInterval != 0) {
+            return
+        }
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
+            try {
+                logger.info("开始检查远程书源更新")
+                val bookSourceController = BookSourceController(coroutineContext)
+                // Update for default namespace
+                bookSourceController.updateRemoteSourceSub("default")
+
+                // Update for all users
+                val userController = UserController(coroutineContext)
+                userController.forEachUser { user ->
+                    if (user.last_login_at >= System.currentTimeMillis() - 259200000L) {
+                        bookSourceController.updateRemoteSourceSub(user.username)
+                    }
+                    false
+                }
+                logger.info("远程书源更新检查结束")
             } catch (e: Exception) {
                 e.printStackTrace()
             }

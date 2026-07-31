@@ -11,11 +11,13 @@ import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.StringUtils.wordCountFormat
 import io.legado.app.utils.htmlFormat
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 
 object BookList {
 
     @Throws(Exception::class)
-    fun analyzeBookList(
+    suspend fun analyzeBookList(
         body: String?,
         bookSource: BookSource,
         analyzeUrl: AnalyzeUrl,
@@ -34,7 +36,7 @@ object BookList {
                 "error_get_web_content"
         )
         debugLog?.log(bookSource.bookSourceUrl, "≡获取成功:${analyzeUrl.ruleUrl}")
-        val analyzeRule = AnalyzeRule(variableBook, bookSource)
+        val analyzeRule = AnalyzeRule(variableBook, bookSource, debugLog)
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
         analyzeRule.setRedirectUrl(baseUrl)
         bookSource.bookUrlPattern?.let {
@@ -64,6 +66,7 @@ object BookList {
         }
         debugLog?.log(bookSource.bookSourceUrl, "┌获取书籍列表")
         collections = analyzeRule.getElements(ruleList)
+        coroutineContext.ensureActive()
         if (collections.isEmpty() && bookSource.bookUrlPattern.isNullOrEmpty()) {
             debugLog?.log(bookSource.bookSourceUrl, "└列表为空,按详情页解析")
             getInfoItem(body, analyzeRule, bookSource, analyzeUrl, baseUrl, variableBook.variable, debugLog = debugLog)?.let { searchBook ->
@@ -81,6 +84,7 @@ object BookList {
             val ruleWordCount = analyzeRule.splitSourceRule(bookListRule.wordCount)
             debugLog?.log(bookSource.bookSourceUrl, "└列表大小:${collections.size}")
             for ((index, item) in collections.withIndex()) {
+                coroutineContext.ensureActive()
                 getSearchItem(
                     item, analyzeRule, bookSource, baseUrl, variableBook.variable, index == 0,
                     ruleName = ruleName, ruleBookUrl = ruleBookUrl, ruleAuthor = ruleAuthor,
@@ -101,7 +105,7 @@ object BookList {
         return bookList
     }
 
-    private fun getInfoItem(
+    private suspend fun getInfoItem(
         body: String,
         analyzeRule: AnalyzeRule,
         bookSource: BookSource,
@@ -116,6 +120,7 @@ object BookList {
         book.originName = bookSource.bookSourceName
         book.originOrder = bookSource.customOrder
         book.type = bookSource.bookSourceType
+        book.setUserNameSpace(analyzeRule.getUserNameSpace())
         analyzeRule.ruleData = book
         BookInfo.analyzeBookInfo(
             book,
@@ -133,7 +138,7 @@ object BookList {
         return null
     }
 
-    private fun getSearchItem(
+    private suspend fun getSearchItem(
         item: Any,
         analyzeRule: AnalyzeRule,
         bookSource: BookSource,
@@ -155,15 +160,19 @@ object BookList {
         searchBook.originName = bookSource.bookSourceName
         searchBook.type = bookSource.bookSourceType
         searchBook.originOrder = bookSource.customOrder
+        searchBook.setUserNameSpace(analyzeRule.getUserNameSpace())
         analyzeRule.ruleData = searchBook
         analyzeRule.setContent(item)
+        coroutineContext.ensureActive()
         if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取书名")
         searchBook.name = BookHelp.formatBookName(analyzeRule.getString(ruleName))
         if (log) debugLog?.log(bookSource.bookSourceUrl, "└${searchBook.name}")
         if (searchBook.name.isNotEmpty()) {
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取作者")
             searchBook.author = BookHelp.formatBookAuthor(analyzeRule.getString(ruleAuthor))
             if (log) debugLog?.log(bookSource.bookSourceUrl, "└${searchBook.author}")
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取分类")
             try {
                 searchBook.kind = analyzeRule.getStringList(ruleKind)?.joinToString(",")
@@ -171,6 +180,7 @@ object BookList {
             } catch (e: Exception) {
                 if (log) debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
             }
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取字数")
             try {
                 searchBook.wordCount = wordCountFormat(analyzeRule.getString(ruleWordCount))
@@ -178,6 +188,7 @@ object BookList {
             } catch (e: java.lang.Exception) {
                 if (log) debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
             }
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取最新章节")
             try {
                 searchBook.latestChapterTitle = analyzeRule.getString(ruleLastChapter)
@@ -185,6 +196,7 @@ object BookList {
             } catch (e: java.lang.Exception) {
                 if (log) debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
             }
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取简介")
             try {
                 searchBook.intro = analyzeRule.getString(ruleIntro).htmlFormat()
@@ -192,6 +204,7 @@ object BookList {
             } catch (e: java.lang.Exception) {
                 if (log) debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
             }
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取封面链接")
             try {
                 analyzeRule.getString(ruleCoverUrl).let {
@@ -202,6 +215,7 @@ object BookList {
             } catch (e: java.lang.Exception) {
                 if (log) debugLog?.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
             }
+            coroutineContext.ensureActive()
             if (log) debugLog?.log(bookSource.bookSourceUrl, "┌获取详情页链接")
             searchBook.bookUrl = analyzeRule.getString(ruleBookUrl, isUrl = true)
             if (searchBook.bookUrl.isEmpty()) {

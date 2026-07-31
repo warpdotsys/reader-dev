@@ -12,6 +12,16 @@ object FileUtils {
     const val MB: Long = 1048576
     const val KB: Long = 1024
 
+    fun getFileExtetion(url: String, defaultExt: String = ""): String {
+        return try {
+            val file = url.split("?", ignoreCase = true, limit = 2)[0].split("/").last()
+            val dotPos = file.lastIndexOf('.')
+            if (dotPos >= 0) file.substring(dotPos + 1) else defaultExt
+        } catch (e: Exception) {
+            defaultExt
+        }
+    }
+
     fun exists(root: File, vararg subDirFiles: String): Boolean {
         return getFile(root, *subDirFiles).exists()
     }

@@ -9,7 +9,7 @@ import io.legado.app.model.analyzeRule.RuleDataInterface
 import io.legado.app.utils.NetworkUtils
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-@JsonIgnoreProperties("variableMap")
+@JsonIgnoreProperties("variableMap", "_userNameSpace", "userNameSpace")
 data class BookChapter(
         var url: String = "",               // 章节地址
         var title: String = "",              // 章节标题
@@ -26,6 +26,8 @@ data class BookChapter(
         var variable: String? = null        //变量
 ): RuleDataInterface {
 
+    private var _userNameSpace = ""
+
     @delegate:Transient
     override val variableMap: HashMap<String, String> by lazy {
         GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
@@ -39,6 +41,12 @@ data class BookChapter(
         }
         variable = GSON.toJson(variableMap)
     }
+
+    fun setUserNameSpace(nameSpace: String) {
+        _userNameSpace = nameSpace
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
 
     override fun hashCode() = url.hashCode()
 

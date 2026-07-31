@@ -172,6 +172,7 @@
 </template>
 
 <script>
+import Long from "long";
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 import eventBus from "../plugins/eventBus";
@@ -344,7 +345,10 @@ export default {
     renderBookGroup(book) {
       const groups = [];
       this.$store.state.bookGroupList.forEach(v => {
-        if (v.groupId > 0 && (v.groupId & book.group) !== 0) {
+        if (
+          v.groupId > 0 &&
+          Long.fromNumber(v.groupId).and(Long.fromNumber(book.group)).greaterThan(0)
+        ) {
           groups.push(v.groupName);
         }
       });

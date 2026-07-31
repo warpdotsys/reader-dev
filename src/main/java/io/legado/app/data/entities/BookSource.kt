@@ -24,22 +24,30 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 //    tableName = "book_sources",
 //    indices = [(Index(value = ["bookSourceUrl"], unique = false))]
 //)
-@JsonIgnoreProperties("headerMap", "source")
+@JsonIgnoreProperties(
+    "headerMap", "source", "_userNameSpace", "userNameSpace",
+    "loginHeader", "loginHeaderMap", "loginInfo", "loginInfoMap"
+)
 data class BookSource(
+    var bookSourceUrl: String = "",            // 地址，包括 http/https
     var bookSourceName: String = "",           // 名称
     var bookSourceGroup: String? = null,       // 分组
 //    @PrimaryKey
-    var bookSourceUrl: String = "",           // 地址，包括 http/https
     var bookSourceType: Int = 0,               // 类型，0 文本，1 音频
     var bookUrlPattern: String? = null,       //详情页url正则
     var customOrder: Int = 0,                 // 手动排序编号
     var enabled: Boolean = true,            // 是否启用
     var enabledExplore: Boolean = true,     //启用发现
+    override var enabledCookieJar: Boolean? = false,
     override var concurrentRate: String? = null,    //并发率
     override var header: String? = null,
     override var loginUrl: String? = null,             // 登录地址
+    override var loginUi: String? = null,
     var loginCheckJs: String? = null,           // 登录检测js
+    var bookSourceComment: String? = null,       // 注释
+    var variableComment: String? = null,
     var lastUpdateTime: Long = 0,             // 最后更新时间，用于排序
+    var respondTime: Long = 180000L,               // 响应时间，用于排序
     var weight: Int = 0,                      // 智能排序的权重
     var exploreUrl: String? = null,                 // 发现url
     var ruleExplore: ExploreRule? = null,           // 发现规则
@@ -48,9 +56,24 @@ data class BookSource(
     var ruleBookInfo: BookInfoRule? = null,         // 书籍信息页规则
     var ruleToc: TocRule? = null,                   // 目录页规则
     var ruleContent: ContentRule? = null,            // 正文页规则
-    var bookSourceComment: String? = null,           // 注释
-    var respondTime: Long = 180000L,               // 响应时间，用于排序
 ) : BaseSource {
+    @Transient
+    private var _userNameSpace: String = ""
+
+    @Transient
+    private var debugLog: io.legado.app.model.DebugLog? = null
+
+    fun setUserNameSpace(value: String) {
+        _userNameSpace = value
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
+
+    fun setLogger(value: io.legado.app.model.DebugLog?) {
+        debugLog = value
+    }
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 //    @Ignore
 //    @IgnoredOnParcel
     private var searchRuleV: SearchRule? = null
@@ -149,6 +172,7 @@ data class BookSource(
                 && equal(bookUrlPattern, source.bookUrlPattern)
                 && enabled == source.enabled
                 && enabledExplore == source.enabledExplore
+                && enabledCookieJar == source.enabledCookieJar
                 && equal(header, source.header)
                 && equal(loginUrl, source.loginUrl)
                 && equal(exploreUrl, source.exploreUrl)

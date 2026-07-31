@@ -9,7 +9,7 @@ import io.legado.app.constant.AppConst
 import javax.script.SimpleBindings
 import io.legado.app.utils.*
 
-@JsonIgnoreProperties("headerMap", "source")
+@JsonIgnoreProperties("headerMap", "userNameSpace", "loginHeader", "loginHeaderMap", "loginInfo", "loginInfoMap")
 data class RssSource(
     var sourceUrl: String = "",
     var sourceName: String = "",
@@ -17,10 +17,12 @@ data class RssSource(
     var sourceGroup: String? = null,
     var sourceComment: String? = null,
     var enabled: Boolean = true,
+    var variableComment: String? = null,
+    override var enabledCookieJar: Boolean? = false,
     override var concurrentRate: String? = null,    //并发率
     override  var header: String? = null,            // 请求头
     override var loginUrl: String? = null,          // 登录地址
-    // var loginUi: List<RowUi>? = null,               //登录UI
+    override var loginUi: String? = null,
     var loginCheckJs: String? = null,               //登录检测js
     var sortUrl: String? = null,
     var singleUrl: Boolean = false,
@@ -40,6 +42,23 @@ data class RssSource(
     var loadWithBaseUrl: Boolean = true,
     var customOrder: Int = 0
 ): BaseSource {
+    @Transient
+    private var _userNameSpace: String = ""
+
+    @Transient
+    private var debugLog: io.legado.app.model.DebugLog? = null
+
+    fun setUserNameSpace(value: String) {
+        _userNameSpace = value
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
+
+    fun setLogger(value: io.legado.app.model.DebugLog?) {
+        debugLog = value
+    }
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 
     override fun getTag(): String {
         return sourceName
@@ -115,6 +134,7 @@ data class RssSource(
                     sourceGroup = doc.readString("$.sourceGroup"),
                     sourceComment = doc.readString("$.sourceComment"),
                     enabled = doc.readBool("$.enabled") ?: true,
+                    enabledCookieJar = doc.readBool("$.enabledCookieJar") ?: false,
                     concurrentRate = doc.readString("$.concurrentRate"),
                     header = doc.readString("$.header"),
                     loginUrl = doc.readString("$.loginUrl"),

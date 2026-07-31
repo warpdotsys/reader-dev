@@ -37,6 +37,7 @@ class AnalyzeUrl(
     private val ruleData: RuleDataInterface? = null,
     private val chapter: BookChapter? = null,
     headerMapF: Map<String, String>? = null,
+    var debugLog: DebugLog? = null
 ) : JsExtensions {
     companion object {
         val paramPattern: Pattern = Pattern.compile("\\s*,\\s*(?=\\{)")
@@ -62,6 +63,11 @@ class AnalyzeUrl(
     private var retry: Int = 0
     private var useWebView: Boolean = false
     private var webJs: String? = null
+    private val enabledCookieJar = source?.enabledCookieJar ?: false
+
+    override fun getUserNameSpace(): String = ruleData?.getUserNameSpace() ?: "unknow"
+
+    override fun getLogger(): DebugLog? = debugLog
 
     init {
         if (!mUrl.isDataUrl()) {
@@ -235,8 +241,8 @@ class AnalyzeUrl(
         val bindings = SimpleBindings()
         bindings["java"] = this
         bindings["baseUrl"] = baseUrl
-        bindings["cookie"] = CookieStore
-        bindings["cache"] = CacheManager
+        bindings["cookie"] = CookieStore(getUserNameSpace())
+        bindings["cache"] = CacheManager(getUserNameSpace())
         bindings["page"] = page
         bindings["key"] = key
         bindings["speakText"] = speakText
@@ -339,17 +345,38 @@ class AnalyzeUrl(
     suspend fun getStrResponseAwait(
         jsStr: String? = null,
         sourceRegex: String? = null,
-        useWebView: Boolean = true,
-        debugLog: DebugLog? = null
+        useWebView: Boolean = true
     ): StrResponse {
         if (type != null) {
             return StrResponse(url, StringUtils.byteToHexString(getByteArrayAwait()))
         }
         val concurrentRecord = fetchStart()
         setCookie(source?.getKey())
-        val strResponse: StrResponse
+        val strResponse: StrResponse?
         if (this.useWebView && useWebView) {
-            throw Exception("不支持webview")
+            strResponse = if (method == RequestMethod.POST) {
+                io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
+                    url = urlNoQuery,
+                    tag = source?.getKey(),
+                    headerMap = headerMap,
+                    sourceRegex = sourceRegex,
+                    javaScript = webJs ?: jsStr,
+                    post = true,
+                    body = body,
+                    userNameSpace = getUserNameSpace(),
+                    debugLog = debugLog
+                )
+            } else {
+                io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(
+                    url = url,
+                    tag = source?.getKey(),
+                    headerMap = headerMap,
+                    sourceRegex = sourceRegex,
+                    javaScript = webJs ?: jsStr,
+                    userNameSpace = getUserNameSpace(),
+                    debugLog = debugLog
+                )
+            }
         } else {
             strResponse = getProxyClient(proxy, debugLog).newCallStrResponse(retry) {
                 addHeaders(headerMap)
@@ -371,19 +398,27 @@ class AnalyzeUrl(
                 }
             }
         }
+        saveCookieJar(strResponse!!.raw)
         fetchEnd(concurrentRecord)
-        return strResponse
+        return strResponse!!
+    }
+
+    fun saveCookieJar(response: Response) {
+        val cookieList = response.headers("Set-Cookie")
+        if (cookieList.isEmpty()) return
+        val cookieStore = CookieStore(getUserNameSpace())
+        val domain = NetworkUtils.getSubDomain(url)
+        cookieList.forEach { cookieStore.replaceCookie("${domain}_cookieJar", it) }
     }
 
     @JvmOverloads
     fun getStrResponse(
         jsStr: String? = null,
         sourceRegex: String? = null,
-        useWebView: Boolean = true,
-        debugLog: DebugLog? = null
+        useWebView: Boolean = true
     ): StrResponse {
         return runBlocking {
-            getStrResponseAwait(jsStr, sourceRegex, useWebView, debugLog)
+            getStrResponseAwait(jsStr, sourceRegex, useWebView)
         }
     }
 
@@ -494,12 +529,20 @@ class AnalyzeUrl(
      *@param tag 书源url 缺省为传入的url
      */
     private fun setCookie(tag: String?) {
-        val cookie = CookieStore.getCookie(tag ?: url)
+        val domain = NetworkUtils.getSubDomain(tag ?: url)
+        if (domain.isEmpty()) return
+        val cookieStore = CookieStore(getUserNameSpace())
+        if (enabledCookieJar) {
+            cookieStore.getCookie("${domain}_cookieJar")?.let {
+                cookieStore.replaceCookie(domain, it)
+            }
+        }
+        val cookie = cookieStore.getCookie(domain)
         if (cookie.isNotEmpty()) {
-            val cookieMap = CookieStore.cookieToMap(cookie)
-            val customCookieMap = CookieStore.cookieToMap(headerMap["Cookie"] ?: "")
+            val cookieMap = cookieStore.cookieToMap(cookie)
+            val customCookieMap = cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
             cookieMap.putAll(customCookieMap)
-            val newCookie = CookieStore.mapToCookie(cookieMap)
+            val newCookie = cookieStore.mapToCookie(cookieMap)
             newCookie?.let {
                 headerMap.put("Cookie", it)
             }

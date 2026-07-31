@@ -37,6 +37,8 @@ data class SearchBook(
     var originOrder: Int = 0
 ) :  BaseBook, Comparable<SearchBook> {
 
+    private var _userNameSpace = ""
+
 //    @Ignore
 //    @IgnoredOnParcel
     override var infoHtml: String? = null
@@ -76,6 +78,12 @@ data class SearchBook(
         variable = GSON.toJson(variableMap)
     }
 
+    fun setUserNameSpace(nameSpace: String) {
+        _userNameSpace = nameSpace
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
+
 //    @Ignore
 //    @IgnoredOnParcel
     var origins: LinkedHashSet<String>? = null
@@ -107,6 +115,7 @@ data class SearchBook(
         ).apply {
             this.infoHtml = this@SearchBook.infoHtml
             this.tocUrl = this@SearchBook.tocUrl
+            this.setUserNameSpace(this@SearchBook.getUserNameSpace())
         }
     }
 }

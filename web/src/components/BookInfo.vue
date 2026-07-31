@@ -87,6 +87,7 @@
 </template>
 
 <script>
+import Long from "long";
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 import eventBus from "../plugins/eventBus";
@@ -143,7 +144,10 @@ export default {
       const groupName = [];
       let unGroupName = "";
       this.$store.state.bookGroupList.forEach(v => {
-        if (v.groupId > 0 && (v.groupId & value) !== 0) {
+        if (
+          v.groupId > 0 &&
+          Long.fromNumber(v.groupId).and(Long.fromNumber(value)).greaterThan(0)
+        ) {
           groupName.push(v.groupName);
         } else if (v.groupId === -4) {
           unGroupName = v.groupName;

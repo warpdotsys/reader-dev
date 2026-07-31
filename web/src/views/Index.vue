@@ -28,7 +28,7 @@
         <div class="navigation-sub-title">
           清风不识字，何故乱翻书
         </div>
-        <div class="search-wrapper">
+        <div class="search-wrapper" v-show="$store.getters.hasLogin">
           <el-input
             size="mini"
             placeholder="搜索书籍"
@@ -39,7 +39,10 @@
             <i slot="prefix" class="el-input__icon el-icon-search"></i>
           </el-input>
         </div>
-        <div class="setting-wrapper search-setting">
+        <div
+          class="setting-wrapper search-setting"
+          v-show="$store.getters.hasLogin"
+        >
           <div class="setting-title">
             搜索设置
           </div>
@@ -79,6 +82,20 @@
               >
               </el-option>
             </el-select>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="searchBookManual"
+              >精确搜书</el-tag
+            >
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="saveBookManual"
+              >手动加书</el-tag
+            >
           </div>
           <div
             class="setting-item"
@@ -121,9 +138,14 @@
             </el-select>
           </div>
         </div>
-        <div class="recent-wrapper">
+        <div class="recent-wrapper" v-show="$store.getters.hasLogin">
           <div class="recent-title">
             最近阅读
+            <span
+              class="right-text"
+              @click="$store.commit('clearReadingBook')"
+              >清除</span
+            >
           </div>
           <div class="reading-recent">
             <el-tag
@@ -137,9 +159,15 @@
             </el-tag>
           </div>
         </div>
-        <div class="setting-wrapper">
+        <div class="setting-wrapper" v-show="$store.getters.hasLogin">
           <div class="setting-title">
             后端设定
+            <span
+              class="right-text"
+              v-if="isTauri"
+              @click="$router.push({ path: '/setting' })"
+              >设置</span
+            >
           </div>
           <div class="setting-item">
             <el-tag
@@ -153,7 +181,7 @@
             </el-tag>
           </div>
         </div>
-        <div class="setting-wrapper">
+        <div class="setting-wrapper" v-show="$store.getters.hasLogin">
           <div class="setting-title">
             书源设置
           </div>
@@ -172,7 +200,7 @@
               trigger="click"
               :visible-arrow="false"
               v-model="popExploreVisible"
-              popper-class="popper-component"
+              popper-class="popper-component explore-popover"
             >
               <Explore
                 ref="popExplore"
@@ -205,9 +233,9 @@
               type="info"
               :effect="isNight ? 'dark' : 'light'"
               class="setting-btn"
-              @click="loadRemoteBookSource"
+              @click="showRemoteBookSourceSubDialog = true"
             >
-              远程书源
+              书源订阅
             </el-tag>
             <el-tag
               type="info"
@@ -233,11 +261,19 @@
             />
           </div>
         </div>
-        <div class="setting-wrapper">
+        <div class="setting-wrapper" v-show="$store.getters.hasLogin">
           <div class="setting-title">
             书架设置
           </div>
           <div class="setting-item">
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showShelfSettingsDialog = true"
+            >
+              书架设置
+            </el-tag>
             <el-tag
               type="info"
               :effect="$store.getters.isNight ? 'dark' : 'light'"
@@ -273,13 +309,29 @@
               type="info"
               :effect="$store.getters.isNight ? 'dark' : 'light'"
               class="setting-btn"
-              @click="showLocalStoreManageDialog = true"
+              @click="showFileManagerDialog('__LOCAL_STORE__', '书仓文件管理')"
               v-if="
                 !$store.state.isSecureMode ||
                   $store.state.userInfo.enableLocalStore
               "
             >
               浏览书仓
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showBookmarkDialog"
+            >
+              书签管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showReplaceRuleDialog"
+            >
+              替换规则
             </el-tag>
             <el-tag
               type="info"
@@ -297,18 +349,18 @@
             用户空间
             <span
               class="right-text"
-              v-if="$store.state.isSecureMode && $store.state.userInfo.username"
+              v-if="$store.getters.hasLogin"
               @click="logout()"
               >注销</span
             >
             <span
               class="right-text"
-              v-else
+              v-else-if="$store.state.isSecureMode"
               @click="$store.commit('setShowLogin', true)"
               >登录</span
             >
           </div>
-          <div class="setting-item" v-if="$store.state.showManagerMode">
+          <div class="setting-item" v-if="$store.state.isManagerMode">
             <el-select
               size="mini"
               v-model="userNS"
@@ -325,7 +377,24 @@
               </el-option>
             </el-select>
           </div>
-          <div class="setting-item">
+          <div class="setting-item" v-show="$store.getters.hasLogin">
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              v-if="isShowActiveLicenseBtn"
+              @click="showActiveLicenseDialog"
+            >
+              授权管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="showLicense"
+            >
+              查看授权信息
+            </el-tag>
             <el-tag
               type="info"
               :effect="isNight ? 'dark' : 'light'"
@@ -333,7 +402,7 @@
               @click="saveUserConfig"
               v-if="localStorageAvaliable"
             >
-              备份用户配置
+              备份我的配置
             </el-tag>
             <el-tag
               type="info"
@@ -342,16 +411,32 @@
               @click="restoreUserConfig"
               v-if="localStorageAvaliable"
             >
-              同步用户配置
+              同步我的配置
             </el-tag>
             <el-tag
               type="info"
               :effect="isNight ? 'dark' : 'light'"
               class="setting-btn"
-              @click="loadUserList"
-              v-if="$store.state.showManagerMode"
+              @click="showFileManagerDialog('__HOME__', '用户数据管理')"
             >
-              加载用户空间
+              我的数据管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="downloadBackupFile"
+            >
+              下载数据备份
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              v-if="$store.state.showManagerMode && !$store.state.isManagerMode"
+              @click="loadUserList"
+            >
+              进入管理模式
             </el-tag>
             <el-tag
               type="info"
@@ -360,7 +445,16 @@
               v-if="$store.state.isManagerMode"
               @click="showUserManageDialog()"
             >
-              管理用户空间
+              用户权限管理
+            </el-tag>
+            <el-tag
+              type="info"
+              :effect="isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              v-if="$store.state.isManagerMode"
+              @click="showFileManagerDialog('__STORAGE__', '数据目录管理')"
+            >
+              数据目录管理
             </el-tag>
             <el-tag
               type="info"
@@ -379,7 +473,7 @@
             !$store.state.isSecureMode || $store.state.userInfo.enableWebdav
           "
         >
-          <div class="setting-title">
+          <div class="setting-title" v-show="$store.getters.hasLogin">
             WebDAV
           </div>
           <div class="setting-item">
@@ -387,7 +481,7 @@
               type="info"
               :effect="isNight ? 'dark' : 'light'"
               class="setting-btn"
-              @click="showWebDAVManageDialog = true"
+              @click="showFileManagerDialog('__WEBDAV__', 'WebDAV文件管理')"
             >
               文件管理
             </el-tag>
@@ -398,29 +492,6 @@
               @click="backupToWebdav"
             >
               保存备份
-            </el-tag>
-          </div>
-        </div>
-        <div class="setting-wrapper">
-          <div class="setting-title">
-            其它
-          </div>
-          <div class="setting-item">
-            <el-tag
-              type="info"
-              :effect="isNight ? 'dark' : 'light'"
-              class="setting-btn"
-              @click="showMPCode"
-            >
-              关注公众号【假装大佬】
-            </el-tag>
-            <el-tag
-              type="info"
-              :effect="isNight ? 'dark' : 'light'"
-              class="setting-btn"
-              @click="joinTGChannel"
-            >
-              加入TG频道【假装大佬】
             </el-tag>
           </div>
         </div>
@@ -466,6 +537,15 @@
               清空章节内容缓存
               <span>{{ localCacheStats.chapterContent }}</span>
             </el-tag>
+            <el-tag
+              type="info"
+              :effect="$store.getters.isNight ? 'dark' : 'light'"
+              class="setting-btn"
+              @click="clearCache('ttsData')"
+            >
+              清空TTS缓存
+              <span>{{ localCacheStats.ttsData }}</span>
+            </el-tag>
           </div>
         </div>
       </div>
@@ -503,7 +583,15 @@
           v-if="$store.getters.isNormalPage && collapseMenu"
           @click.stop="toggleMenu"
         ></i>
-        {{ isSearchResult ? (isExploreResult ? "探索" : "搜索") : "书架" }}
+        {{
+          isSearchResult
+            ? isExploreResult
+              ? "探索"
+              : isShowSearchBookSourceListDesc
+              ? "书源"
+              : "搜索"
+            : "书架"
+        }}
         ({{ bookList.length }})
         <div
           class="title-btn"
@@ -514,11 +602,18 @@
         </div>
         <div
           class="title-btn"
-          v-if="$store.getters.isNormalPage && isSearchResult"
+          v-if="$store.getters.isNormalPage && isSearchResult && !isShowSearchBookSourceListDesc"
           @click="loadMore"
         >
           <i class="el-icon-loading" v-if="loadingMore"></i>
           {{ loadingMore ? "加载中..." : "加载更多" }}
+        </div>
+        <div
+          class="title-btn"
+          v-if="$store.getters.isNormalPage && isSearchResult && isShowSearchBookSourceListDesc"
+          @click="displaySearchResult"
+        >
+          返回搜索
         </div>
         <div
           class="title-btn"
@@ -553,11 +648,9 @@
         v-if="!isSearchResult && showBookEditButton"
       >
         <el-input
-          v-model="shelfSearch"
-          placeholder="搜索书名或作者"
-          size="small"
-          clearable
-          prefix-icon="el-icon-search"
+          v-model="keyword"
+          placeholder="搜索书架"
+          size="mini"
         ></el-input>
       </div>
       <div class="book-group-wrapper" v-if="!isSearchResult">
@@ -661,6 +754,13 @@
                 >
                   加入书架
                 </el-tag>
+                <span
+                  class="source-count"
+                  v-if="book.sourceCount > 1"
+                  @click.stop="showSearchBookSourceList(book)"
+                >
+                  {{ book.sourceCount }} 个书源
+                </span>
               </div>
             </div>
           </div>
@@ -702,6 +802,20 @@
           class="float-left"
           >全选</el-checkbox
         >
+        <el-checkbox
+          border
+          size="medium"
+          class="float-left"
+          @change="handleCheckWebviewChange"
+          >Webview 源</el-checkbox
+        >
+        <el-checkbox
+          border
+          size="medium"
+          class="float-left"
+          @change="handleCheckJSChange"
+          >JavaScript 源</el-checkbox
+        >
         <span class="check-tip">已选择 {{ checkedSourceIndex.length }} 个</span>
         <el-button
           size="medium"
@@ -722,7 +836,7 @@
       :top="dialogTop"
       @closed="
         isShowFailureBookSource = false;
-        showSourceGroup = '';
+        showSourceGroup = '全部';
       "
       :fullscreen="collapseMenu"
       :class="isWebApp && !isNight ? 'status-bar-light-bg-dialog' : ''"
@@ -814,7 +928,8 @@
           <el-table-column
             property="bookSourceName"
             label="书源名称"
-            min-width="120"
+            min-width="60"
+            sortable
             :fixed="$store.state.miniInterface"
           ></el-table-column>
           <el-table-column
@@ -844,13 +959,23 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="100px"
+            width="120px"
             v-if="!isShowFailureBookSource"
           >
             <template slot-scope="scope">
               <el-button type="text" @click="editBookSource(scope.row)"
                 >编辑</el-button
               >
+              <el-button type="text" @click="editBookSourceHeader(scope.row)"
+                >请求头</el-button
+              >
+            </template>
+            <template slot="header">
+              <el-input
+                v-model="bookSourceKeyword"
+                size="mini"
+                placeholder="搜索书源"
+              ></el-input>
             </template>
           </el-table-column>
         </el-table>
@@ -1010,14 +1135,52 @@
       v-model="showWebDAVManageDialog"
       @importFromLocalPathPreview="importMultiBooks"
     ></WebDAV>
+
+    <FileManager
+      v-model="showFileManager"
+      :title="fileManagerTitle"
+      :home="fileManagerHome"
+    ></FileManager>
+
+    <License
+      v-model="showLicenseDialog"
+    ></License>
+
+    <BookConfig
+      v-model="showBookConfigDialog"
+    ></BookConfig>
+
+    <ShelfSettings
+      v-model="showShelfSettingsDialog"
+    ></ShelfSettings>
+
+    <RemoteBookSourceSub
+      v-model="showRemoteBookSourceSubDialog"
+    ></RemoteBookSourceSub>
+
+    <ActiveLicense
+      v-model="showActiveLicenseDialog"
+    ></ActiveLicense>
+
+    <HttpTTS
+      v-model="showHttpTTSDialog"
+    ></HttpTTS>
   </div>
 </template>
 
 <script>
+import Long from "long";
 import { mapGetters } from "vuex";
 import Explore from "../components/Explore.vue";
 import LocalStore from "../components/LocalStore.vue";
 import WebDAV from "../components/WebDAV.vue";
+import FileManager from "../components/FileManager.vue";
+import HttpTTS from "../components/HttpTTS.vue";
+import License from "../components/License.vue";
+import ActiveLicense from "../components/ActiveLicense.vue";
+import BookConfig from "../components/BookConfig.vue";
+import ShelfSettings from "../components/ShelfSettings.vue";
+import RemoteBookSourceSub from "../components/RemoteBookSourceSub.vue";
 import Axios from "../plugins/axios";
 import { errorTypeList } from "../plugins/config";
 import { setCache, getCache } from "../plugins/cache";
@@ -1031,7 +1194,14 @@ export default {
   components: {
     Explore,
     LocalStore,
-    WebDAV
+    WebDAV,
+    FileManager,
+    HttpTTS,
+    License,
+    ActiveLicense,
+    BookConfig,
+    ShelfSettings,
+    RemoteBookSourceSub
   },
   data() {
     return {
@@ -1043,12 +1213,12 @@ export default {
       isSearchResult: false,
       isExploreResult: false,
       searchResult: [],
+      oldSearchResult: [],
       searchPage: 1,
       refreshLoading: false,
       searchLastIndex: -1,
 
       showBookEditButton: false,
-      shelfSearch: "",
 
       popExploreVisible: false,
       loadingMore: false,
@@ -1082,11 +1252,12 @@ export default {
         window.localStorage.getItem &&
         window.localStorage.setItem,
 
-      showSourceGroup: "",
+      showSourceGroup: "全部",
       bookSourcePagination: {
         page: 1,
         size: 25
       },
+      bookSourceKeyword: "",
       checkBookSourceConfig: {
         keyword: "斗罗大陆",
         timeout: 5000,
@@ -1101,19 +1272,35 @@ export default {
 
       rssSource: {},
 
-      concurrentList: [12, 18, 24, 30, 36, 42, 48, 54, 60],
+      concurrentList: [1, 2, 4, 8, 12, 18, 24, 30, 36, 42, 48, 54, 60],
 
       localCacheStats: {
         total: "0 Bytes",
         bookSourceList: "0 Bytes",
         rssSources: "0 Bytes",
         chapterList: "0 Bytes",
-        chapterContent: "0 Bytes"
+        chapterContent: "0 Bytes",
+        ttsData: "0 Bytes"
       },
 
       showLocalStoreManageDialog: false,
 
       showWebDAVManageDialog: false,
+
+      showFileManager: false,
+      fileManagerHome: "",
+      fileManagerTitle: "文件管理",
+      showLicenseDialog: false,
+      showBookConfigDialog: false,
+      showRemoteBookSourceSubDialog: false,
+      showActiveLicenseDialog: false,
+      showHttpTTSDialog: false,
+      showShelfSettingsDialog: false,
+
+      isTauri: window.__TAURI__,
+      keyword: "",
+      searchBookSourceListMap: {},
+      isShowSearchBookSourceListDesc: false,
 
       importUsedTxtRule: "",
 
@@ -1173,7 +1360,7 @@ export default {
       if (val && this.showImportBookDialog) {
         let groupId = 0;
         val.forEach(v => {
-          groupId |= v;
+          groupId = Long.fromNumber(groupId).or(Long.fromNumber(v)).toNumber();
         });
         this.importBookInfo.group = groupId;
       }
@@ -1183,6 +1370,11 @@ export default {
         // 手动处理 el-image 图片加载
         setTimeout(this.ensureLoadBookCover);
       });
+    },
+    showBookEditButton(val) {
+      if (!val) {
+        this.keyword = "";
+      }
     }
   },
   mounted() {
@@ -1190,7 +1382,6 @@ export default {
     this.navigationClass =
       this.collapseMenu && !this.showNavigation ? "navigation-hidden" : "";
     window.shelfPage = this;
-    this.init();
     eventBus.$on("onSourceFileChange", (event, isRssSource) => {
       if (this._inactive) {
         return;
@@ -1203,10 +1394,39 @@ export default {
       }
       this.editBook(book, isAdd, onSuccess);
     });
+    eventBus.$on("importPreview", books => {
+      if (!this._inactive) {
+        this.importMultiBooks(books);
+      }
+    });
+    eventBus.$on("showFileManagerDialog", (home, title) => {
+      this.fileManagerHome = home;
+      this.fileManagerTitle = title;
+      this.showFileManager = true;
+    });
+    eventBus.$on("showBookConfigDialog", () => {
+      this.showBookConfigDialog = true;
+    });
+    eventBus.$on("showLicenseDialog", () => {
+      this.showLicenseDialog = true;
+    });
+    eventBus.$on("showRemoteBookSourceSubDialog", () => {
+      this.showRemoteBookSourceSubDialog = true;
+    });
+    eventBus.$on("showActiveLicenseDialog", () => {
+      this.showActiveLicenseDialog = true;
+    });
+    eventBus.$on("showHttpTTSDialog", () => {
+      this.showHttpTTSDialog = true;
+    });
   },
   activated() {
     document.title = "阅读";
     this.scanCacheStorage();
+    this.loadBookshelf();
+    if (this.lastScrollTop) {
+      this.$refs.bookList.scrollTop = 0 | this.lastScrollTop;
+    }
   },
   methods: {
     init(refresh) {
@@ -1291,6 +1511,54 @@ export default {
     loadBookSource(refresh) {
       return this.$root.$children[0].loadBookSource(refresh);
     },
+    searchBookManual() {
+      this.$prompt("请输入书籍链接", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue: this.search,
+        inputPattern: /^(http|https):\/\/.+$/,
+        inputErrorMessage: "url 形式不正确"
+      })
+        .then(({ value }) => this.searchBookDirectly(value))
+        .catch(() => {});
+    },
+    searchBookDirectly(url) {
+      this.isSearchResult = true;
+      this.isExploreResult = false;
+      this.isShowSearchBookSourceListDesc = false;
+      this.loadingMore = true;
+      Axios.post(
+        this.api + "/getBookInfo",
+        { url, bookSourceUrl: this.searchConfig.bookSourceUrl },
+        { timeout: 30000 }
+      ).then(
+        res => {
+          this.loadingMore = false;
+          if (res.data.isSuccess) {
+            if (res.data.data && res.data.data.name && res.data.data.author) {
+              this.searchResult = [res.data.data];
+            } else {
+              this.$message.error("没有搜索到书籍");
+            }
+          }
+        },
+        error => {
+          this.loadingMore = false;
+          this.$message.error("搜索书籍失败 " + (error && error.toString()));
+        }
+      );
+    },
+    saveBookManual() {
+      const book = {
+        bookUrl: "书籍链接",
+        tocUrl: "目录链接",
+        origin: this.searchConfig.bookSourceUrl,
+        originName: "花生小说",
+        name: "书名",
+        author: "作者"
+      };
+      this.editBook(book, true, () => this.loadBookshelf());
+    },
     searchBook(page) {
       if (!this.$store.state.connected) {
         this.$message.error("后端未连接");
@@ -1314,6 +1582,8 @@ export default {
       if (page === 1) {
         // 重新搜索
         this.searchLastIndex = -1;
+        this.searchBookSourceListMap = {};
+        this.isShowSearchBookSourceListDesc = false;
       }
       if (this.searchConfig.searchType === "multi" && window.EventSource) {
         this.searchBookByEventStream(page);
@@ -1357,10 +1627,27 @@ export default {
               resultList = res.data.data.list;
             }
             var data = [].concat(this.searchResult);
+            var sourceMap = data.reduce((map, item) => {
+              map[item.name + "_" + item.author] = item;
+              return map;
+            }, {});
             var length = data.length;
             resultList.forEach(v => {
               if (!this.searchResultMap[v.bookUrl]) {
-                data.push(v);
+                const sourceKey = v.name + "_" + v.author;
+                if (sourceMap[sourceKey]) {
+                  sourceMap[sourceKey].sourceCount =
+                    sourceMap[sourceKey].sourceCount || 1;
+                  sourceMap[sourceKey].sourceCount += 1;
+                } else {
+                  v.sourceCount = 1;
+                  sourceMap[sourceKey] = v;
+                  data.push(v);
+                }
+                if (!this.searchBookSourceListMap[sourceKey]) {
+                  this.searchBookSourceListMap[sourceKey] = [];
+                }
+                this.searchBookSourceListMap[sourceKey].push(v);
               }
             });
             this.searchResult = data;
@@ -1439,14 +1726,17 @@ export default {
         this.loadingMore = false;
         tryClose();
         try {
+          let result = null;
           if (e.data) {
-            const result = JSON.parse(e.data);
+            result = JSON.parse(e.data);
             if (result && result.lastIndex) {
               this.searchLastIndex = result.lastIndex;
             }
           }
           if (this.searchResult.length === oldSearchResultLength) {
-            this.$message.error("没有更多啦");
+            this.$message.error(
+              result && result.isEnd ? "没有更多啦" : "本次未搜索到数据"
+            );
           }
         } catch (error) {
           //
@@ -1461,9 +1751,26 @@ export default {
             }
             if (result.data) {
               var data = [].concat(this.searchResult);
+              var sourceMap = data.reduce((map, item) => {
+                map[item.name + "_" + item.author] = item;
+                return map;
+              }, {});
               result.data.forEach(v => {
                 if (!this.searchResultMap[v.bookUrl]) {
-                  data.push(v);
+                  const sourceKey = v.name + "_" + v.author;
+                  if (sourceMap[sourceKey]) {
+                    sourceMap[sourceKey].sourceCount =
+                      sourceMap[sourceKey].sourceCount || 1;
+                    sourceMap[sourceKey].sourceCount += 1;
+                  } else {
+                    v.sourceCount = 1;
+                    sourceMap[sourceKey] = v;
+                    data.push(v);
+                  }
+                  if (!this.searchBookSourceListMap[sourceKey]) {
+                    this.searchBookSourceListMap[sourceKey] = [];
+                  }
+                  this.searchBookSourceListMap[sourceKey].push(v);
                 }
               });
               this.searchResult = data;
@@ -1474,6 +1781,16 @@ export default {
         }
       });
     },
+    showSearchBookSourceList(book) {
+      this.oldSearchResult = [].concat(this.searchResult);
+      this.searchResult =
+        this.searchBookSourceListMap[book.name + "_" + book.author] || [];
+      this.isShowSearchBookSourceListDesc = true;
+    },
+    displaySearchResult() {
+      this.searchResult = this.oldSearchResult;
+      this.isShowSearchBookSourceListDesc = false;
+    },
     toDetail(book) {
       if (!book.bookUrl) {
         return;
@@ -1483,6 +1800,7 @@ export default {
         // return;
       }
       this.$store.commit("setReadingBook", {
+        ...book,
         name: book.name,
         bookUrl: book.bookUrl,
         index: book.index ?? book.durChapterIndex ?? 0,
@@ -1496,14 +1814,20 @@ export default {
         intro: book.intro
       });
       this.$router.push({
-        path: "/reader" + (this.isSearchResult ? "?search=1" : "")
+        path: "/reader",
+        query: this.isSearchResult
+          ? { search: 1, bookUrl: book.bookUrl }
+          : { bookUrl: book.bookUrl }
       });
     },
     async addBookToShelf(book) {
-      const customImportBookInfo = await this.customImportBookInfo({
-        title: "设置分组",
-        cancelButtonText: "暂不加入"
-      });
+      const customImportBookInfo = await this.customImportBookInfo(
+        {
+          title: "修改书籍",
+          cancelButtonText: "暂不加入"
+        },
+        { ...book }
+      );
       if (customImportBookInfo === false) {
         return;
       }
@@ -1671,6 +1995,7 @@ export default {
     backToShelf() {
       this.isSearchResult = false;
       this.isExploreResult = false;
+      this.isShowSearchBookSourceListDesc = false;
       this.searchResult = [];
       this.loadingMore = false;
     },
@@ -1684,6 +2009,7 @@ export default {
     showSearchList(data) {
       this.isSearchResult = true;
       this.isExploreResult = true;
+      this.isShowSearchBookSourceListDesc = false;
       this.loadingMore = false;
       this.searchResult = data;
     },
@@ -1783,7 +2109,7 @@ export default {
         );
       };
       reader.readAsText(rawFile);
-      if (this.isRssSource) {
+      if (isRssSource) {
         this.$refs.rssInputRef.value = null;
       } else {
         this.$refs.fileRef.value = null;
@@ -1854,7 +2180,7 @@ export default {
               }
               return i;
             })
-            .filter(v => v)
+            .filter(v => v !== false)
         : [];
       if (val && hasFilterd) {
         this.$message.info("部分使用了Javascript和Webview的书源未勾选");
@@ -1866,6 +2192,26 @@ export default {
       this.checkAll = checkedCount === this.importSourceList.length;
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.importSourceList.length;
+    },
+    handleCheckWebviewChange(value) {
+      this.checkedSourceIndex = this.importSourceList
+        .map((source, index) => {
+          const sourceText = JSON.stringify(source);
+          return sourceText.match(/[\\\"]*webView[\\\"]*:/)
+            ? value && index
+            : this.checkedSourceIndex.includes(index) && index;
+        })
+        .filter(index => index !== false);
+    },
+    handleCheckJSChange(value) {
+      this.checkedSourceIndex = this.importSourceList
+        .map((source, index) => {
+          const sourceText = JSON.stringify(source);
+          return sourceText.indexOf("@js:") !== -1
+            ? value && index
+            : this.checkedSourceIndex.includes(index) && index;
+        })
+        .filter(index => index !== false);
     },
     getSourceTag(source) {
       const sourceStr = JSON.stringify(source);
@@ -1895,7 +2241,8 @@ export default {
       Axios.post(
         this.api +
           (this.isImportRssSource ? "/saveRssSources" : "/saveBookSources"),
-        sourceList
+        sourceList,
+        { timeout: 300000 }
       ).then(
         res => {
           if (res.data.isSuccess) {
@@ -1962,6 +2309,21 @@ export default {
       );
     },
     async checkBookSource() {
+      if (this.isCheckingBookSource) {
+        const cancel = await this.$confirm(
+          "正在检测失效书源, 是否终止?",
+          "提示",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }
+        ).catch(() => false);
+        if (cancel) {
+          this.bookSourceChecker && this.bookSourceChecker.cancel();
+        }
+        return;
+      }
       if (!this.checkBookSourceConfig.keyword) {
         this.$message.error("请输入搜索关键词");
         return;
@@ -2359,28 +2721,56 @@ export default {
         this.$emit("importEnd");
       });
 
-      Axios.post(
-        this.api + "/deleteFile",
-        {
-          url
-        },
-        {
-          silent: true
-        }
-      ).then(
-        () => {
-          //
-        },
-        () => {
-          //
-        }
-      );
+      if (url && url.indexOf("assets") >= 0) {
+        Axios.post(
+          this.api + "/deleteFile",
+          { url },
+          { silent: true }
+        ).then(
+          () => {
+            //
+          },
+          () => {
+            //
+          }
+        );
+      }
     },
-    async customImportBookInfo(options) {
-      this.importBookGroup = [];
+    async customImportBookInfo(options, book) {
+      const info = book || { groupId: [] };
+      info.groupId = [];
+      const items = [
+        {
+          name: "groupId",
+          label: "分组",
+          type: "select",
+          placeholder: "请选择分组",
+          options: this.bookGroupSetList.map(v => ({
+            label: v.groupName,
+            value: v.groupId
+          }))
+        }
+      ];
+      if (book && book.name) {
+        items.unshift(
+          { name: "name", label: "书名", type: "input" },
+          { name: "author", label: "作者", type: "input" }
+        );
+      }
       const res = await this.$msgbox({
         title: "统一设置分组",
-        message: this.renderComp(),
+        message: this.renderForm(
+          book ? "customImportBookInfo" : "customImportBookGroup",
+          info,
+          items,
+          value => {
+            if (book) {
+              info.name = value.name;
+              info.author = value.author;
+            }
+            info.groupId = value.groupId;
+          }
+        ),
         showCancelButton: true,
         confirmButtonText: "确定",
         cancelButtonText: "取消导入",
@@ -2389,8 +2779,13 @@ export default {
         return action === "close" ? "close" : false;
       });
       if (res === "confirm") {
+        let group = 0;
+        info.groupId.forEach(value => {
+          group = Long.fromNumber(group).or(Long.fromNumber(value)).toNumber();
+        });
         return {
-          group: this.importBookGroup.reduce((v, c) => v | c, 0)
+          ...(book ? { name: info.name, author: info.author } : {}),
+          group
         };
       } else {
         return false;
@@ -2461,11 +2856,17 @@ export default {
       } else if (bookGroup === -4) {
         // 未分组
         return this.shelfBooks.filter(v => v.group === 0);
+      } else if (bookGroup === -5) {
+        // 更新错误
+        return this.shelfBooks.filter(v => v.canUpdate && v.lastCheckError);
       }
 
-      return this.shelfBooks.filter(v =>
-        bookGroup === 0 ? true : v.group & bookGroup
-      );
+      return this.shelfBooks.filter(v => {
+        if (bookGroup === 0) return true;
+        return Long.fromNumber(v.group || 0)
+          .and(Long.fromNumber(bookGroup))
+          .greaterThan(0);
+      });
     },
     loadRssSources(refresh) {
       return this.$root.$children[0].loadRssSources(refresh);
@@ -2633,6 +3034,56 @@ export default {
         }
       );
     },
+    editBookSourceHeader(bookSource) {
+      const editHandler = book => {
+        eventBus.$emit(
+          "showEditor",
+          "编辑书源请求头header",
+          book.header || JSON.stringify({ Cookie: "" }, null, 4),
+          (content, close) => {
+            try {
+              if (
+                !content.startsWith("@js:") &&
+                !content.startsWith("<js>")
+              ) {
+                JSON.parse(content);
+              }
+              book.header = content;
+              Axios.post(this.api + "/saveBookSource", book).then(
+                res => {
+                  if (res.data.isSuccess) {
+                    close();
+                    this.$message.success("保存书源成功");
+                    this.loadBookSource(true);
+                  }
+                },
+                error => {
+                  this.$message.error(
+                    "保存书源失败 " + (error && error.toString())
+                  );
+                }
+              );
+            } catch (e) {
+              this.$message.error("书源请求头必须是JSON格式/脚本格式");
+            }
+          }
+        );
+      };
+      Axios.post(this.api + "/getBookSource", {
+        bookSourceUrl: bookSource.bookSourceUrl
+      }).then(
+        res => {
+          if (res.data.isSuccess) {
+            editHandler(res.data.data);
+          }
+        },
+        error => {
+          this.$message.error(
+            "加载书源信息失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
     updateForce() {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
@@ -2674,7 +3125,8 @@ export default {
         rssSources: (await this.analyseLocalStorage("rssSources")).totalBytes,
         chapterList: (await this.analyseLocalStorage("chapterList")).totalBytes,
         chapterContent: (await this.analyseLocalStorage("chapterContent"))
-          .totalBytes
+          .totalBytes,
+        ttsData: (await this.analyseLocalStorage("ttsData")).totalBytes
       };
     },
     analyseLocalStorage(match) {
@@ -2764,6 +3216,92 @@ export default {
     joinTGChannel() {
       window.open("https://t.me/facker_channel", "_target");
     },
+    showFileManagerDialog(home, title) {
+      eventBus.$emit("showFileManagerDialog", home, title);
+    },
+    downloadBackupFile() {
+      const url = buildURL(this.api + "/user/downloadBackupFile", {
+        accessToken: this.$store.state.token
+      });
+      window.open(url, "__blank");
+    },
+    showBookmarkDialog() {
+      eventBus.$emit("showBookmarkDialog");
+    },
+    showReplaceRuleDialog() {
+      eventBus.$emit("showReplaceRuleDialog");
+    },
+    showLicense() {
+      eventBus.$emit("showLicenseDialog");
+    },
+    async clearInactiveUsers() {
+      const res = await this.$prompt(
+        "请输入不活跃天数",
+        "清理不活跃用户",
+        {
+          inputValue: "",
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputValidator: val => {
+            if (!val) return "天数不能为空";
+            if (isNaN(parseInt(val))) return "天数必须是数字";
+            return true;
+          }
+        }
+      ).catch(() => false);
+      if (!res || !res.value) return;
+      Axios.post(
+        this.api + "/clearInactiveUsers",
+        { inactiveDay: parseInt(res.value) },
+        { timeout: 0 }
+      ).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("清理不活跃用户成功");
+            this.userList = res.data.data.map(e => ({
+              ...e,
+              userNS: e.username
+            }));
+          }
+        },
+        error => {
+          this.$message.error(
+            "清理不活跃用户失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
+    loadHttpTTS() {
+      Axios.get(this.api + "/httpTTS/list").then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$store.commit("setHttpTTS", res.data.data || []);
+          }
+        },
+        error => {
+          this.$message.error(
+            "加载httpTTS失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
+    cacheBookOnServer(books) {
+      books = Array.isArray(books) ? books : [books];
+      Axios.post(this.api + "/cacheBookOnServer", {
+        bookUrlList: books.map(e => e.bookUrl)
+      }).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$message.success("提交缓存任务成功");
+          }
+        },
+        error => {
+          this.$message.error(
+            "提交缓存任务失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
     ensureLoadBookCover() {
       // 手动触发滚动事件，显示书籍封面图片
       this.$refs.bookList.dispatchEvent(new MouseEvent("scroll"));
@@ -2805,12 +3343,13 @@ export default {
     },
     bookList() {
       if (this.isSearchResult) return this.searchResult;
-      const q = this.shelfSearch.trim().toLowerCase();
+      const q = this.keyword;
       if (!q) return this.showShelfBooks;
       return this.showShelfBooks.filter(
         v =>
-          v.name.toLowerCase().includes(q) ||
-          (v.author || "").toLowerCase().includes(q)
+          (v.name || "").indexOf(q) >= 0 ||
+          (v.author || "").indexOf(q) >= 0 ||
+          (v.kind || "").indexOf(q) >= 0
       );
     },
     bookCoverList() {
@@ -2881,62 +3420,50 @@ export default {
         : this.bookSourceList;
     },
     bookSourceGroupList() {
-      const groupsMap = {};
-      this.bookSourceList.forEach(v => {
-        if (v.bookSourceGroup) {
-          groupsMap[v.bookSourceGroup] = (groupsMap[v.bookSourceGroup] | 0) + 1;
-        }
-      });
-      const groups = [
-        {
-          name: "全部分组",
-          value: "",
-          count: this.bookSourceList.length
-        }
-      ];
-      for (const i in groupsMap) {
-        if (Object.hasOwnProperty.call(groupsMap, i)) {
-          groups.push({
-            name: i,
-            value: i,
-            count: groupsMap[i]
-          });
-        }
-      }
-      return groups;
+      return this.$store.getters.bookSourceGroupList;
     },
     bookSourceShowGroup() {
-      if (!this.isShowFailureBookSource) {
-        const groups = new Set();
-        this.bookSourceShowList.forEach(v => {
-          v.bookSourceGroup && groups.add(v.bookSourceGroup);
-        });
-        groups.add("未分组");
-        return Array.from(groups);
-      } else {
-        return [].concat(errorTypeList).concat(["timeout"]);
+      if (this.isShowFailureBookSource) {
+        return ["全部"].concat(errorTypeList).concat(["timeout"]);
       }
+      const groups = new Set(["全部"]);
+      this.bookSourceShowList.forEach(v => {
+        if (v.bookSourceGroup) {
+          v.bookSourceGroup.split(",").forEach(group => {
+            if (group) groups.add(group);
+          });
+        }
+      });
+      groups.add("未分组");
+      return Array.from(groups);
+    },
+    bookSourceShowSearchResult() {
+      if (!this.bookSourceKeyword) return this.bookSourceShowList;
+      return this.bookSourceShowList.filter(
+        v =>
+          (v.bookSourceName || "").indexOf(this.bookSourceKeyword) >= 0 ||
+          (v.bookSourceUrl || "").indexOf(this.bookSourceKeyword) >= 0
+      );
     },
     bookSourceShowLength() {
       return this.bookSourceShowResult.length;
     },
     bookSourceShowResult() {
-      if (!this.showSourceGroup) {
-        return this.bookSourceShowList;
+      if (!this.showSourceGroup || this.showSourceGroup === "全部") {
+        return this.bookSourceShowSearchResult;
       }
       if (this.isShowFailureBookSource) {
-        return this.bookSourceShowList.filter(v =>
-          this.showSourceGroup
-            ? v.errorMsg.indexOf(this.showSourceGroup) >= 0
-            : true
-        );
-      } else {
-        return this.bookSourceShowList.filter(v =>
-          this.showSourceGroup === "未分组"
-            ? !v.bookSourceGroup
-            : v.bookSourceGroup === this.showSourceGroup
+        return this.bookSourceShowSearchResult.filter(
+          v => !v.errorMsg || v.errorMsg.indexOf(this.showSourceGroup) >= 0
         );
       }
+      return this.bookSourceShowSearchResult.filter(v =>
+        this.showSourceGroup === "未分组"
+          ? !v.bookSourceGroup
+          : (v.bookSourceGroup || "")
+              .split(",")
+              .includes(this.showSourceGroup)
+      );
     },
     bookSourceShowResultPageList() {
       const start =
@@ -2994,7 +3521,8 @@ export default {
           this.importBookInfo &&
           this.importBookInfo.originName &&
           (this.importBookInfo.originName.toLowerCase().endsWith(".txt") ||
-            this.importBookInfo.originName.toLowerCase().endsWith(".epub"))
+            this.importBookInfo.originName.toLowerCase().endsWith(".epub") ||
+            this.importBookInfo.originName.toLowerCase().endsWith(".pdf"))
         );
       } catch (e) {
         // console.log(e);
@@ -3008,7 +3536,7 @@ export default {
       if (this.importBookInfo.originName.toLowerCase().endsWith(".txt")) {
         // txt
         return this.$store.state.txtTocRules;
-      } else {
+      } else if (this.importBookInfo.originName.toLowerCase().endsWith(".epub")) {
         // epub
         return [
           { name: "根据 Spin 获取章节，使用 Toc 补充章节名", rule: "spin+toc" },
@@ -3018,8 +3546,19 @@ export default {
           { name: "根据 Toc 获取章节，强制使用 Spin 章节名", rule: "toc<spin" },
           { name: "根据 Toc 获取章节", rule: "toc" }
         ];
+      } else {
+        return [
+          { name: "使用书签作为章节", rule: "outline" },
+          { name: "一页一章", rule: "page" }
+        ];
       }
-    }
+    },
+      isShowActiveLicenseBtn() {
+        return (
+          this.$store.state.isManagerMode &&
+          window.location.host.indexOf("htmake") >= 0
+        );
+      }
   }
 };
 </script>

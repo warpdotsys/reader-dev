@@ -10,8 +10,8 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import com.htmake.reader.utils.getFileExtetion
-import com.htmake.reader.utils.xml2map
+import io.legado.app.utils.FileUtils.getFileExtetion
+import io.legado.app.utils.XmlUtils.xml2map
 
 class CbzFile(var book: Book) {
     var info: MutableMap<String, Any>? = null

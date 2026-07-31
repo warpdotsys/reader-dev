@@ -1,6 +1,6 @@
 reader:
   app:
-    storagePath: storage
+    workDir: "."
     showUI: false
     debug: false
     packaged: false
@@ -14,14 +14,28 @@ reader:
     proxyUsername: ""
     proxyPassword: ""
     cacheChapterContent: true
-    userLimit: 50
+    userLimit: 15
     userBookLimit: 200
     debugLog: false
     autoClearInactiveUser: 0
+    mongoUri: ""
+    mongoDbName: "reader"
+    shelfUpdateInteval: 30
+    remoteWebviewApi: ""
+    defaultUserEnableWebdav: true
+    defaultUserEnableLocalStore: true
+    defaultUserEnableBookSource: true
+    defaultUserEnableRssSource: true
+    defaultUserBookSourceLimit: 100
+    defaultUserBookLimit: 200
+    autoBackupUserData: false
+    minUserPasswordLength: 8
+    remoteBookSourceUpdateInterval: 720
 
   server:
     port: 8080
-    webUrl: http://localhost:${reader.server.port}
+    contextPath: ""
+    webUrl: http://localhost:${reader.server.port}${reader.server.contextPath}
 
 logging:
-  path: "./logs"
+  path: "${reader.app.workDir}/logs"

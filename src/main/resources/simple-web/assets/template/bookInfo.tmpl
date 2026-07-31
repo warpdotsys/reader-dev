@@ -1,0 +1,43 @@
+<div id="bookInfo">
+    <div>
+        <p>作者: <%=bookInfo.author%></p>
+        <% if(bookInfo.durChapterTitle) {%>
+        <p>已阅章节：<%=bookInfo.durChapterTitle%></p>
+        <%}%>
+        <p>
+            最新章节：<a href="./reader.html?bookUrl=<%:=encodeBookUrl%>"><%=bookInfo.latestChapterTitle%></a>
+        </p>
+    </div>
+    <div class="book-operate">
+        <%if(!bookInfo.isInShelf){%>
+            <a class="detail-button" onclick="saveBook()">加入书架</a>
+        <%}else{%>
+            <a class="detail-button" href="./reader.html?bookUrl=<%:=encodeBookUrl%>">继续阅读</a>
+            <a class="detail-button" onclick="refreshChapterList('<%:=bookInfo.bookUrl%>')">更新章节</a>
+            <a class="detail-button" onclick="changeSource('<%:=bookInfo.bookUrl%>')">更换书源</a>
+        <%}%>
+    </div>
+</div>
+<style>
+#bookInfo {
+    margin-left: 10px;
+    min-width: 100%;
+}
+.book-operate {
+    padding-bottom: 16px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+.detail-button {
+    border-style: solid;
+    border-color: #000;
+    border-width: 1px;
+    font-size: 1em;
+    margin: 9px;
+    padding: 5px;
+}
+
+a {
+    text-decoration: none;
+}
+</style>

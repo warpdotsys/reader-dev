@@ -45,6 +45,9 @@ object LocalBook {
             book.isCbz() -> {
                 CbzFile.getChapterList(book)
             }
+            book.isPdf() -> {
+                PdfFile.getChapterList(book)
+            }
             else -> {
                 TextFile.getChapterList(book)
             }
@@ -65,6 +68,9 @@ object LocalBook {
             }
             book.isCbz() -> {
                 CbzFile.getContent(book, chapter)
+            }
+            book.isPdf() -> {
+                PdfFile.getContent(book, chapter)
             }
             else -> {
                 TextFile.getContent(book, chapter)
@@ -103,8 +109,8 @@ object LocalBook {
                 }
             }
             if (book.isEpub()) {
-                bookFile = bookFile.parentFile
-                if (bookFile != null && bookFile.exists()) {
+                bookFile = bookFile.parentFile!!
+                if (bookFile.exists()) {
                     FileUtils.delete(bookFile, true)
                 }
             }

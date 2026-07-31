@@ -13,6 +13,7 @@ import io.legado.app.help.JsExtensions
 import io.legado.app.help.http.CookieStore
 import io.legado.app.utils.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.jsoup.nodes.Entities
 import org.mozilla.javascript.NativeObject
 import java.net.URL
@@ -31,8 +32,13 @@ private val logger = KotlinLogging.logger {}
 @Suppress("unused", "RegExpRedundantEscape")
 class AnalyzeRule(
     var ruleData: RuleDataInterface,
-    private val source: BaseSource? = null
+    private val source: BaseSource? = null,
+    var debugLog: io.legado.app.model.DebugLog? = null
 ) : JsExtensions {
+
+    override fun getUserNameSpace(): String = ruleData.getUserNameSpace()
+
+    override fun getLogger(): io.legado.app.model.DebugLog? = debugLog
 
     val book get() = ruleData as? BaseBook
 
@@ -641,11 +647,11 @@ class AnalyzeRule(
     /**
      * 执行JS
      */
-    fun evalJS(jsStr: String, result: Any?): Any? {
+    fun evalJS(jsStr: String, result: Any? = null): Any? {
         val bindings = SimpleBindings()
         bindings["java"] = this
-        bindings["cookie"] = CookieStore
-        bindings["cache"] = CacheManager
+        bindings["cookie"] = CookieStore(getUserNameSpace())
+        bindings["cache"] = CacheManager(getUserNameSpace())
         bindings["source"] = source
         bindings["book"] = book
         bindings["result"] = result
@@ -667,7 +673,7 @@ class AnalyzeRule(
     override fun ajax(urlStr: String): String? {
         return runBlocking {
             kotlin.runCatching {
-                val analyzeUrl = AnalyzeUrl(urlStr, source = source, ruleData = book)
+                val analyzeUrl = AnalyzeUrl(urlStr, source = source, ruleData = book, debugLog = debugLog)
                 analyzeUrl.getStrResponseAwait().body
             }.onFailure {
                 log("ajax(${urlStr}) error\n${it.stackTraceToString()}")
@@ -698,7 +704,7 @@ class AnalyzeRule(
             val bookSource = source as? BookSource
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
-            val books = WebBook(bookSource).searchBook(book.name)
+            val books = WebBook(bookSource, false, null, getUserNameSpace()).searchBook(book.name)
             books.forEach {
                 if (it.name == book.name && it.author == book.author) {
                     book.bookUrl = it.bookUrl
@@ -719,7 +725,23 @@ class AnalyzeRule(
             val bookSource = source as? BookSource
             val book = book as? Book
             if (bookSource == null || book == null) return@runBlocking
-            WebBook(bookSource).getBookInfo(book)
+            WebBook(bookSource, false, null, getUserNameSpace()).getBookInfo(book)
+        }
+    }
+
+    fun reGetBook() {
+        val bookSource = source as? BookSource
+        val book = book as? Book
+        if (bookSource == null || book == null) return
+        runBlocking {
+            withTimeout(30 * 60 * 1000L) {
+                val refreshedBook = WebBook(bookSource, false, null, getUserNameSpace())
+                    .preciseSearch(book.name, book.author)
+                    .getOrThrow()
+                book.bookUrl = refreshedBook.bookUrl
+                refreshedBook.variableMap.forEach { (key, value) -> book.putVariable(key, value) }
+                WebBook(bookSource, false, null, getUserNameSpace()).getBookInfo(book, false)
+            }
         }
     }
 

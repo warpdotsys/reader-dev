@@ -6,13 +6,21 @@ import io.legado.app.utils.TextUtils
 import io.legado.app.data.entities.Cookie
 import io.legado.app.help.http.api.CookieManager
 import io.legado.app.utils.NetworkUtils
+import io.legado.app.adapters.ReaderAdapterHelper
+import io.legado.app.utils.ACache
+import java.io.File
 
-// TODO 处理cookie
-object CookieStore : CookieManager {
+class CookieStore(val userNameSpace: String) : CookieManager {
+
+    val cacheInstance = ACache.get(
+        File(ReaderAdapterHelper.getAdapter().getWorkDir("storage", "cache", "cookie", userNameSpace)),
+        50_000_000L,
+        1_000_000
+    )
 
     override fun setCookie(url: String, cookie: String?) {
-        // val cookieBean = Cookie(NetworkUtils.getSubDomain(url), cookie ?: "")
-        // appDb.cookieDao.insert(cookieBean)
+        val domain = NetworkUtils.getSubDomain(url)
+        if (domain.isNotEmpty()) cacheInstance.put(domain, cookie ?: "")
     }
 
     override fun replaceCookie(url: String, cookie: String) {
@@ -31,13 +39,14 @@ object CookieStore : CookieManager {
     }
 
     override fun getCookie(url: String): String {
-        // val cookieBean = appDb.cookieDao.get(NetworkUtils.getSubDomain(url))
-        // return cookieBean?.cookie ?: ""
-        return ""
+        val domain = NetworkUtils.getSubDomain(url)
+        return if (domain.isEmpty()) "" else cacheInstance.getAsString(domain) ?: ""
     }
 
+    fun getKey(url: String, key: String): String = cookieToMap(getCookie(url))[key] ?: ""
+
     override fun removeCookie(url: String) {
-        // appDb.cookieDao.delete(NetworkUtils.getSubDomain(url))
+        NetworkUtils.getSubDomain(url).takeIf { it.isNotEmpty() }?.let(cacheInstance::remove)
     }
 
     override fun cookieToMap(cookie: String): MutableMap<String, String> {
@@ -78,7 +87,7 @@ object CookieStore : CookieManager {
     }
 
     fun clear() {
-        // appDb.cookieDao.deleteOkHttp()
+        cacheInstance.clear()
     }
 
 }

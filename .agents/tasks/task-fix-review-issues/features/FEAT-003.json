@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Rewrite PdfFile with cFile+Companion pattern, implement LicenseController fully, fix isLicenseValid return type, add checkLicense scheduled job, fix updateRemoteSourceSub signature, wire RemoteWebview into adapters, update CI workflow",
+  "status": "completed",
+  "steps": [
+    "Rewrite src/main/java/io/legado/app/model/localBook/PdfFile.kt to use cFile+Companion pattern matching JAR: class PdfFile(book: Book) with instance fields (book, info: Map, cover: InputStream?), instance methods (parseBookInfo(), upBookInfo(), updateCover(), getContent(chapter), getChapterList(), getChapterListByPage(), getChapterListByOutline(), processOutline(doc, chapters, outlineNode)). companion object with: private var cFile: PdfFile? = null, synchronized fun getPdfFile(book: Book): PdfFile (creates/reuses cFile), fun getChapterList(book: Book): ArrayList<BookChapter>, fun getContent(book: Book, chapter: BookChapter): String?, fun upBookInfo(book: Book, isRefresh: Boolean = false).",
+    "Rewrite src/main/java/com/htmake/reader/api/controller/LicenseController.kt to match JAR structure: (1) Add fields: private val webClient by lazy { SpringContextUtils.getBean(...) }, private var privateKeyContent: String? = null, private var tryCodeCache: ACache (initialized with ACache.get(...)), private val backupFileNames by lazy { listOf('bookSource','bookshelf','bookmark','replaceRule','rssSource','bookGroup','httpTTS') }. (2) Change isLicenseValid to: suspend fun isLicenseValid(context: RoutingContext): ReturnData that returns ReturnData with license validity info (always valid in community mode). (3) Change checkLicense to: suspend fun checkLicense(license: License) that validates license (no-op in community). Keep all existing endpoint methods but ensure they use the new fields where appropriate.",
+    "In src/main/java/com/htmake/reader/api/YueduApi.kt: (1) Add router.get('/reader3/isLicenseValid').coroutineHandler { licenseController.isLicenseValid(it) } route. (2) Add a @Scheduled checkLicense() method that periodically validates the license (calls getInstalledLicense and verifies - no-op in community mode). Place it alongside other @Scheduled methods.",
+    "In src/main/java/com/htmake/reader/api/controller/BookSourceController.kt, change updateRemoteSourceSub signature from fun updateRemoteSourceSub(userNameSpace: String) to suspend fun updateRemoteSourceSub(userNameSpace: String, user: com.htmake.reader.entity.User? = null) to match JAR signature. The user parameter can default to null for backward compatibility. Update the caller in YueduApi.kt remoteBookSourceSubUpdateJob to pass null or construct a User.",
+    "In src/main/java/com/htmake/reader/init/ReaderAdapter.kt, update getStrResponseByRemoteWebview to delegate to RemoteWebview.getStrResponse when AppConfig.remoteWebviewApi is configured. Import RemoteWebview and AppConfig, check if remoteWebviewApi is non-empty, and call RemoteWebview.getStrResponse with the parameters.",
+    "In src/main/java/io/legado/app/adapters/DefaultAdpater.kt, update getStrResponseByRemoteWebview to also delegate to RemoteWebview.getStrResponse (same pattern as ReaderAdapter).",
+    "Update .github/workflows/pull-request.yml to: (1) trigger on 'opened' event type in addition to existing types. (2) Remove the condition that checks github.repository == 'hectorqin/reader'. (3) Simplify the build step to just run ./gradlew compileKotlin (no need for web build or jar assembly for PR checks). Keep Java 8 setup."
+  ],
+  "acceptance_criteria": [
+    "PdfFile uses cFile+Companion pattern with class (not object), has getChapterList(Book), getContent(Book, BookChapter), upBookInfo(Book, Boolean) on Companion",
+    "LicenseController has privateKeyContent, tryCodeCache, backupFileNames fields, isLicenseValid returns ReturnData",
+    "YueduApi has checkLicense @Scheduled method and isLicenseValid route",
+    "updateRemoteSourceSub accepts (String, User?) parameter",
+    "ReaderAdapter and DefaultAdpater delegate to RemoteWebview when configured",
+    "pull-request.yml triggers on opened PRs and runs ./gradlew compileKotlin",
+    "Code compiles with ./gradlew compileKotlin"
+  ],
+  "verification": ["cd /projects/sandbox/reader-dev && ./gradlew compileKotlin 2>&1 | tail -20"],
+  "blocked_reason": null,
+  "findings": "PdfFile rewritten with cFile+Companion pattern; Book.kt updated to use PdfFile.upBookInfo(this) instead of parseBookInfo with InputStream; LocalBook.kt updated to use PdfFile.getChapterList(book) and PdfFile.getContent(book, chapter) without InputStream params; LicenseController backupFileNames made public val (auto-generates getBackupFileNames getter matching JAR); ACache.get takes (cacheName, maxSize, maxCount) overload; checkLicense scheduled job added to YueduApi with 6-hour interval."
+}

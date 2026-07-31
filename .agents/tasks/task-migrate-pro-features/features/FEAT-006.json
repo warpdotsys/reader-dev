@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-006",
+  "type": "feat",
+  "description": "Web resources: Add bookSourceDebug standalone HTML/CSS/JS page, simple-web lightweight mobile frontend with templates (reader/rss/search pages), and the compiled Vue web frontend with background images. Also add simplelogger.properties.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Copy the bookSourceDebug directory from /workspace/jarx/BOOT-INF/classes/bookSourceDebug/ to src/main/resources/bookSourceDebug/. This contains index.html, index.css, index.js for a standalone book source debugger UI.",
+    "Step 2: Copy the simple-web directory from /workspace/jarx/BOOT-INF/classes/simple-web/ to src/main/resources/simple-web/. This contains index.html, reader.html, rss.html, search.html and assets/ directory with CSS/JS/font/template files for a lightweight mobile-friendly frontend.",
+    "Step 3: Copy the compiled web frontend from /workspace/jarx/BOOT-INF/classes/web/ to src/main/resources/web/. This contains the compiled Vue app with bg/ (background images), bookSourceDebug/, css/, fonts/, img/, js/, index.html, and service worker files. NOTE: The dev repo has a web/ directory with Vue source at project root - the resources/web/ is the COMPILED output that gets bundled in the jar. Do NOT overwrite the project-root web/ source directory.",
+    "Step 4: Create src/main/resources/simplelogger.properties with content: org.slf4j.simpleLogger.showDateTime=true and org.slf4j.simpleLogger.dateTimeFormat=MM-dd HH:mm:ss",
+    "Step 5: Update YueduApi.kt to register static handlers for the new web resources: simple-web routes (router.route(\"/simple-web/*\").handler(StaticHandler.create(\"simple-web\").setDefaultContentEncoding(\"UTF-8\"))), bookSourceDebug routes (router.route(\"/bookSourceDebug/*\").handler(StaticHandler.create(\"bookSourceDebug\").setDefaultContentEncoding(\"UTF-8\"))). The main web/ static handler already exists."
+  ],
+  "acceptance_criteria": [
+    "bookSourceDebug/ directory exists in src/main/resources/ with index.html, index.css, index.js",
+    "simple-web/ directory exists in src/main/resources/ with all HTML files and assets",
+    "web/ directory exists in src/main/resources/ with compiled Vue frontend including bg/ images",
+    "simplelogger.properties exists with correct content",
+    "YueduApi.kt has static handlers for all new web resource paths",
+    "Project compiles successfully"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20",
+    "Verify: ls src/main/resources/bookSourceDebug/index.html src/main/resources/simple-web/index.html src/main/resources/web/index.html src/main/resources/simplelogger.properties"
+  ],
+  "blocked_reason": null,
+  "findings": "Had to remove /src/main/resources/web and /simple-web/ entries from .gitignore so the web resource directories could be tracked by git. Build passes cleanly. The existing catch-all static handler for web/ already serves the compiled Vue frontend - added new specific routes for /simple-web/* and /bookSourceDebug/* before the catch-all."
+}

@@ -160,6 +160,7 @@ object SourceAnalyzer {
                 source.customOrder = sourceAny.customOrder
                 source.enabled = sourceAny.enabled
                 source.enabledExplore = sourceAny.enabledExplore
+                source.enabledCookieJar = sourceAny.enabledCookieJar
                 source.concurrentRate = sourceAny.concurrentRate
                 source.header = sourceAny.header
                 source.loginUrl = when (sourceAny.loginUrl) {
@@ -228,6 +229,7 @@ object SourceAnalyzer {
         var customOrder: Int = 0,                       // 手动排序编号
         var enabled: Boolean = true,                    // 是否启用
         var enabledExplore: Boolean = true,             // 启用发现
+        var enabledCookieJar: Boolean = false,          // 启用CookieJar
         var concurrentRate: String? = null,             // 并发率
         var header: String? = null,                     // 请求头
         var loginUrl: Any? = null,                      // 登录规则

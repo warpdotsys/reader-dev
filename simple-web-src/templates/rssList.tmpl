@@ -1,0 +1,25 @@
+<%if(isLoading){%>
+    <div class="center-notice"><b>加载中，请稍候</b></div>
+<%}else if(typeof list === 'string'){%>
+    <div class="center-notice"><b><%=list%></b></div>
+<%}else if(!list.length){%>
+    <div class="center-notice"><b>暂无RSS源</b></div>
+<%}else{%>
+    <ul class="w3-ul">
+        <%for(var i = 0; i < list.length; i++) {%>
+            <li class="rss-list-item nowrap w3-hover-black" onclick="getRssArticles(<%=i%>)">
+            <%=list[i].sourceName%>
+            </li>
+        <%}%>
+    </ul>
+<%}%>
+
+<style>
+.center-notice {
+    padding: 10px;
+    margin: auto;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+</style>

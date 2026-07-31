@@ -114,6 +114,84 @@ try {
               };
         }
         return noImage;
+      },
+      renderForm(name, info, items, onChange) {
+        this.$createElement;
+        Vue.component(name, {
+          render() {
+            const h = arguments[0];
+            return h(
+              "div",
+              { style: { textAlign: "center" } },
+              items.map(item => {
+                switch (item.type) {
+                  case "input":
+                    return h("div", { class: "form-item" }, [
+                      h(
+                        "span",
+                        { style: { display: "inline-block", width: "85px" } },
+                        [item.label, "："]
+                      ),
+                      h("el-input", {
+                        attrs: { size: "mini" },
+                        style: { width: "172px" },
+                        model: {
+                          value: this.info[item.name],
+                          callback: value => this.$set(this.info, item.name, value)
+                        }
+                      })
+                    ]);
+                  case "select":
+                    return h("div", { class: "form-item" }, [
+                      h(
+                        "span",
+                        { style: { display: "inline-block", width: "85px" } },
+                        [item.label, "："]
+                      ),
+                      h(
+                        "el-select",
+                        {
+                          attrs: {
+                            size: "mini",
+                            filterable: true,
+                            multiple:
+                              typeof item.multiple === "undefined" ||
+                              item.multiple,
+                            placeholder: item.placeholder || ""
+                          },
+                          model: {
+                            value: this.info[item.name],
+                            callback: value => this.$set(this.info, item.name, value)
+                          }
+                        },
+                        item.options.map((option, index) =>
+                          h("el-option", {
+                            key: item.name + "-op-" + index,
+                            attrs: { label: option.label, value: option.value }
+                          })
+                        )
+                      )
+                    ]);
+                  default:
+                    return null;
+                }
+              })
+            );
+          },
+          data() {
+            return { info, items };
+          },
+          watch: {
+            info: {
+              handler(value) {
+                onChange(value);
+              },
+              deep: true
+            }
+          }
+        });
+        const component = Vue.component(name);
+        return this.$createElement(component);
       }
     }
   });

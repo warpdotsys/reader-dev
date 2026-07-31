@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "PDF support: PdfFile utility class for parsing PDF books using PDFBox, and BookController PDF methods (convertPdfToImage, convertPdfPageToImage, savePdfPageToImage). Also add the getSpeakStream integration with TTS.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Create src/main/java/io/legado/app/model/localBook/PdfFile.kt - object PdfFile with methods: parseBookInfo(book: Book, inputStream: InputStream) - extracts title, author, cover from PDF metadata; getChapterList(book: Book, inputStream: InputStream): ArrayList<BookChapter> - delegates to getChapterListByOutline or getChapterListByPage; getChapterListByPage(book: Book, inputStream: InputStream): ArrayList<BookChapter> - creates one chapter per page; getChapterListByOutline(book: Book, inputStream: InputStream): ArrayList<BookChapter> - uses PDF bookmarks/outline as chapters; processOutline(bookmarks: PDOutlineItem, chapters: ArrayList<BookChapter>, book: Book) - recursively processes outline tree; getContent(book: Book, chapter: BookChapter, inputStream: InputStream): String - extracts text from PDF page(s) for the given chapter. Uses org.apache.pdfbox.pdmodel.* and org.apache.pdfbox.text.PDFTextStripper.",
+    "Step 2: Update src/main/java/io/legado/app/model/localBook/LocalBook.kt - Add PDF support to the existing local book handling. In getChapterList, detect .pdf extension and delegate to PdfFile.getChapterList. In getContent, handle PDF chapters. In importFile/getBookInputStream, handle PDF files. Ensure parseBookInfo handles PDF via PdfFile.",
+    "Step 3: Add PDF methods to BookController.kt - Add convertPdfToImage(context: RoutingContext): render a PDF page as image and return it as response. Uses PDFRenderer from PDFBox. convertPdfPageToImage(book, pageIndex): renders a single page to BufferedImage. savePdfPageToImage(context): saves a rendered PDF page image to storage. These methods require book URL parameter and page index, load the PDF with PDDocument, render with PDFRenderer at specified DPI.",
+    "Step 4: Integrate TTS speak stream in BookController - Add/update getSpeakStream(context: RoutingContext) method to use the TTSService from FEAT-004. It should accept text + voice parameters, synthesize audio using TTSService, and stream the audio bytes back in the HTTP response with appropriate content-type header (audio/mpeg or based on outputFormat)."
+  ],
+  "acceptance_criteria": [
+    "Project compiles with PDFBox integration",
+    "PdfFile object has all required methods (parseBookInfo, getChapterList, getChapterListByPage, getChapterListByOutline, getContent)",
+    "LocalBook handles .pdf extension in chapter listing and content extraction",
+    "BookController PDF conversion methods compile and use PDFRenderer",
+    "getSpeakStream integrates TTSService for TTS audio generation"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/reader-dev && ./gradlew -b cli.gradle clean assemble --info 2>&1 | tail -20"
+  ],
+  "blocked_reason": null,
+  "findings": "Build succeeds. PDFBox 2.0.27 PDPageDestination.retrievePageNumber() used for outline page resolution (avoids deprecated getPage() pattern). Vert.x JsonObject has getDouble but not getFloat, so used getDouble().toFloat() for DPI parameter. TTSService integration uses sendText(SSML) which returns byte[] directly. VoiceEnum.fromSortName (note: typo in original code is 'SortName' not 'ShortName') used for voice lookup."
+}

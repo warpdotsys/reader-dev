@@ -17,8 +17,11 @@ data class ReplaceRule(
     var pattern: String = "",
     var replacement: String = "",
     var scope: String? = null,
+    var scopeTitle: Boolean = false,
+    var scopeContent: Boolean = true,
     @get:JsonProperty("isEnabled") var isEnabled: Boolean = true,
     @get:JsonProperty("isRegex") var isRegex: Boolean = false,
+    var timeoutMillisecond: Long = 3000L,
 //    @ColumnInfo(name = "sortOrder")
     var order: Int = 0
 )

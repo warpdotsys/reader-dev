@@ -1,35 +1,37 @@
 package io.legado.app.help
 
-import io.legado.app.data.entities.Cache
 import io.legado.app.model.analyzeRule.QueryTTF
 import io.legado.app.utils.ACache
+import io.legado.app.adapters.ReaderAdapterHelper
+import java.io.File
 
-// TODO 处理缓存
 @Suppress("unused")
-object CacheManager {
+class CacheManager(val userNameSpace: String) {
 
     private val queryTTFMap = hashMapOf<String, Pair<Long, QueryTTF>>()
+    val cacheInstance = ACache.get(
+        File(ReaderAdapterHelper.getAdapter().getWorkDir("storage", "cache", "runtimeCache", userNameSpace)),
+        50_000_000L,
+        1_000_000
+    )
 
     /**
      * saveTime 单位为秒
      */
     @JvmOverloads
     fun put(key: String, value: Any, saveTime: Int = 0) {
+        if (key.isEmpty()) return
         val deadline =
             if (saveTime == 0) 0 else System.currentTimeMillis() + saveTime * 1000
         when (value) {
             is QueryTTF -> queryTTFMap[key] = Pair(deadline, value)
-            is ByteArray -> ACache.get().put(key, value, saveTime)
-            else -> {
-                val cache = Cache(key, value.toString(), deadline)
-                // appDb.cacheDao.insert(cache)
-            }
+            is ByteArray -> cacheInstance.put(key, value, saveTime)
+            else -> cacheInstance.put(key, value.toString(), saveTime)
         }
     }
 
     fun get(key: String): String? {
-        // return appDb.cacheDao.get(key, System.currentTimeMillis())
-        return null
+        return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsString)
     }
 
     fun getInt(key: String): Int? {
@@ -49,7 +51,7 @@ object CacheManager {
     }
 
     fun getByteArray(key: String): ByteArray? {
-        return ACache.get().getAsBinary(key)
+        return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsBinary)
     }
 
     fun getQueryTTF(key: String): QueryTTF? {
@@ -61,14 +63,14 @@ object CacheManager {
     }
 
     fun putFile(key: String, value: String, saveTime: Int = 0) {
-        ACache.get().put(key, value, saveTime)
+        if (key.isNotEmpty()) cacheInstance.put(key, value, saveTime)
     }
 
     fun getFile(key: String): String? {
-        return ACache.get().getAsString(key)
+        return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsString)
     }
 
     fun delete(key: String) {
-        ACache.get().remove(key)
+        if (key.isNotEmpty()) cacheInstance.remove(key)
     }
 }

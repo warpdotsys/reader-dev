@@ -35,10 +35,11 @@ import com.htmake.reader.utils.unzip
 import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
-import com.htmake.reader.utils.getFileExtetion
+import io.legado.app.utils.FileUtils.getFileExtetion
 import com.htmake.reader.verticle.RestVerticle
 import com.htmake.reader.SpringEvent
 import org.springframework.stereotype.Component
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.core.http.HttpMethod
@@ -69,7 +70,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import io.legado.app.help.coroutine.Coroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private val logger = KotlinLogging.logger {}
 
@@ -78,39 +80,47 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
 
     val appConfig: AppConfig
     val env: Environment
+    val userMutex = Mutex()
 
     init {
         appConfig = SpringContextUtils.getBean("appConfig", AppConfig::class.java)
         env = SpringContextUtils.getBean(Environment::class.java)
     }
 
-    suspend fun saveUserSession(context: RoutingContext, userMap: MutableMap<String, Map<String, Any>>, user: User, regenerateToken: Boolean = true): Map<String, Any> {
-        user.last_login_at = System.currentTimeMillis()
-        if (regenerateToken) {
-            user.token = genEncryptedPassword(user.username, System.currentTimeMillis().toString())
-            var tokenMap: MutableMap<String, Long>? = null
-            var expire = System.currentTimeMillis() + loginExpireDays * 86400 * 1000
-            if (user.token_map != null) {
-                tokenMap = user.token_map as? MutableMap<String, Long>
+    suspend fun saveUserSession(context: RoutingContext, user: User, regenerateToken: Boolean = true): Map<String, Any> {
+        return userMutex.withLock {
+            var userMap = mutableMapOf<String, Map<String, Any>>()
+            var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+            if (userMapJson != null) {
+                userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
             }
-            if (tokenMap == null) {
-                tokenMap = mutableMapOf(user.token to expire)
-            } else {
-                tokenMap.put(user.token, expire)
+            user.last_login_at = System.currentTimeMillis()
+            if (regenerateToken) {
+                user.token = genEncryptedPassword(user.username, System.currentTimeMillis().toString())
+                var tokenMap: MutableMap<String, Long>? = null
+                var expire = System.currentTimeMillis() + loginExpireDays * 86400 * 1000
+                if (user.token_map != null) {
+                    tokenMap = user.token_map as? MutableMap<String, Long>
+                }
+                if (tokenMap == null) {
+                    tokenMap = mutableMapOf(user.token to expire)
+                } else {
+                    tokenMap.put(user.token, expire)
+                }
+                // 删除已过期token
+                tokenMap.values.removeAll { it < user.last_login_at }
+                user.token_map = tokenMap
             }
-            // 删除已过期token
-            tokenMap.values.removeAll { it < user.last_login_at }
-            user.token_map = tokenMap
+            userMap.put(user.username, user.toMap())
+            saveStorage("data", "users", value = Json.encode(userMap))
+
+            val loginData = formatUser(user)
+
+            context.session().put("username", user.username)
+            context.put("username", user.username)
+
+            loginData
         }
-        userMap.put(user.username, user.toMap())
-        saveStorage("data", "users", value = userMap)
-
-        val loginData = formatUser(user)
-
-        context.session().put("username", user.username)
-        context.put("username", user.username)
-
-        return loginData
     }
 
     suspend fun checkAuth(context: RoutingContext): Boolean {
@@ -160,7 +170,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                     }
                     if (isLogin) {
                         // 保存用户session
-                        saveUserSession(context, userMap, existedUser, false)
+                        saveUserSession(context, existedUser, false)
                         context.put("username", existedUser.username)
                         context.put("userInfo", existedUser)
                     }
@@ -185,6 +195,8 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
             var userNS = context.queryParam("userNS").firstOrNull()
             if (userNS != null && userNS.isNotEmpty()) {
                 context.put("userNameSpace", userNS)
+            } else {
+                context.remove("userNameSpace")
             }
             return true
         }
@@ -268,6 +280,10 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
             "accessToken" to user.username + ":" + user.token,
             "enableWebdav" to user.enable_webdav,
             "enableLocalStore" to user.enable_local_store,
+            "enableBookSource" to user.enable_book_source,
+            "enableRssSource" to user.enable_rss_source,
+            "bookSourceLimit" to user.book_source_limit,
+            "bookLimit" to user.book_limit,
             "createdAt" to user.created_at
         )
     }
@@ -379,25 +395,4 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
         // }
     }
 
-    suspend fun runBlocking(concurrentCount: Int, startIndex: Int, endIndex: Int, handler: suspend CoroutineScope.(Int) -> Any, needContinue: (ArrayList<Any>, Int) -> Boolean) {
-        var lastIndex = startIndex
-
-        Coroutine.async(this, coroutineContext) {
-            handler(lastIndex)
-        }.timeout(30000L)
-        .onSuccess(Dispatchers.IO) {
-            if (lastIndex < endIndex - concurrentCount && needContinue(arrayListOf(it), 0)) {
-                lastIndex += concurrentCount
-                runBlocking(concurrentCount, lastIndex, endIndex, handler, needContinue)
-            }
-        }
-        .onError(Dispatchers.IO) {
-            if (lastIndex < endIndex - concurrentCount) {
-                lastIndex += concurrentCount
-                runBlocking(concurrentCount, lastIndex, endIndex, handler, needContinue)
-            } else {
-                needContinue(arrayListOf(), 0)
-            }
-        }
-    }
 }

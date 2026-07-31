@@ -2,6 +2,11 @@ package io.legado.app.utils
 
 import io.legado.app.utils.Base64
 import java.security.spec.AlgorithmParameterSpec
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.io.ByteArrayOutputStream
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -336,6 +341,87 @@ object EncoderUtils {
         iv: ByteArray? = null
     ): ByteArray? {
         return symmetricTemplate(data, key, "DESede", transformation, iv, false)
+    }
+
+    fun encryptByPrivateKey(input: String, privateKey: PrivateKey): String =
+        rsaBase64(input, privateKey, Cipher.ENCRYPT_MODE)
+
+    fun decryptByPublicKey(input: String, publicKey: PublicKey): String =
+        rsaString(input, publicKey, Cipher.DECRYPT_MODE)
+
+    fun encryptByPublicKey(input: String, publicKey: PublicKey): String =
+        rsaBase64(input, publicKey, Cipher.ENCRYPT_MODE)
+
+    fun decryptByPrivateKey(input: String, privateKey: PrivateKey): String =
+        rsaString(input, privateKey, Cipher.DECRYPT_MODE)
+
+    fun encryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String =
+        rsaSegmentBase64(input.toByteArray(Charsets.UTF_8), privateKey, Cipher.ENCRYPT_MODE, keySize / 8 - 11)
+
+    fun decryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String? =
+        String(rsaSegmentBytes(Base64.decode(input, Base64.NO_WRAP), publicKey, Cipher.DECRYPT_MODE, keySize / 8), Charsets.UTF_8)
+
+    fun encryptSegmentByPublicKey(input: String, publicKey: PublicKey, keySize: Int = 2048): String =
+        rsaSegmentBase64(input.toByteArray(Charsets.UTF_8), publicKey, Cipher.ENCRYPT_MODE, keySize / 8 - 11)
+
+    fun decryptSegmentByPrivateKey(input: String, privateKey: PrivateKey, keySize: Int = 2048): String? =
+        String(rsaSegmentBytes(Base64.decode(input, Base64.NO_WRAP), privateKey, Cipher.DECRYPT_MODE, keySize / 8), Charsets.UTF_8)
+
+    fun generateKeys(): KeyPair {
+        val generator = KeyPairGenerator.getInstance("RSA")
+        return generator.genKeyPair()
+    }
+
+    private fun rsaBase64(input: String, key: java.security.Key, mode: Int): String {
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        return Base64.encodeToString(cipher.doFinal(input.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
+    }
+
+    private fun rsaString(input: String, key: java.security.Key, mode: Int): String {
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        return String(cipher.doFinal(Base64.decode(input, Base64.NO_WRAP)), Charsets.UTF_8)
+    }
+
+    private fun rsaSegmentBase64(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): String {
+        val output = ByteArrayOutputStream()
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        var offset = 0
+        while (input.size - offset > 0) {
+            val block: ByteArray
+            if (input.size - offset >= blockSize) {
+                block = cipher.doFinal(input, offset, blockSize)
+                offset += blockSize
+            } else {
+                block = cipher.doFinal(input, offset, input.size - offset)
+                offset = input.size
+            }
+            output.write(block)
+        }
+        output.close()
+        return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+    }
+
+    private fun rsaSegmentBytes(input: ByteArray, key: java.security.Key, mode: Int, blockSize: Int): ByteArray {
+        val output = ByteArrayOutputStream()
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(mode, key)
+        var offset = 0
+        while (input.size - offset > 0) {
+            val block: ByteArray
+            if (input.size - offset >= blockSize) {
+                block = cipher.doFinal(input, offset, blockSize)
+                offset += blockSize
+            } else {
+                block = cipher.doFinal(input, offset, input.size - offset)
+                offset = input.size
+            }
+            output.write(block)
+        }
+        output.close()
+        return output.toByteArray()
     }
 
 }

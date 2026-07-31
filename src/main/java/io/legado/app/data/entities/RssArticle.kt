@@ -3,7 +3,9 @@ package io.legado.app.data.entities
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.model.analyzeRule.RuleDataInterface
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
+@JsonIgnoreProperties("variableMap", "_userNameSpace", "userNameSpace")
 data class RssArticle(
     var origin: String = "",
     var sort: String = "",
@@ -17,6 +19,8 @@ data class RssArticle(
     var read: Boolean = false,
     var variable: String? = null
 ): RuleDataInterface {
+
+    private var _userNameSpace = ""
 
     override fun hashCode() = link.hashCode()
 
@@ -38,6 +42,12 @@ data class RssArticle(
         }
         variable = GSON.toJson(variableMap)
     }
+
+    fun setUserNameSpace(nameSpace: String) {
+        _userNameSpace = nameSpace
+    }
+
+    override fun getUserNameSpace(): String = _userNameSpace
 
     // fun toStar() = RssStar(
     //     origin = origin,

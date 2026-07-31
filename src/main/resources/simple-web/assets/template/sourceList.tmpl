@@ -1,0 +1,27 @@
+<%for(var i = 0; i < list.length; i++) {%>
+    <li>
+        <div class='source-item w3-hover-black' onclick="setBookSource('<%:=bookUrl%>', <%:=i%>)">
+            <div class="source-info">
+                <b><%=bookUrl==list[i].bookUrl?"✔️":""%><%=list[i].originName%></b><br/>
+                <span class="small-tip"><%=list[i].latestChapterTitle%></span>
+            </div>
+        </div>
+    </li>
+<%}%>
+<div class="load-more">
+    <b onclick="loadMoreBookSource('<%:=bookUrl%>')">加载更多书源</b>
+</div>
+<style>
+.source-item {
+    padding: 5px 0;
+}
+.source-info {
+    font-size: 1em;
+}
+.small-tip {
+    font-size: 0.8em;
+}
+.load-more {
+    text-align: center;
+}
+</style>

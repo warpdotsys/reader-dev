@@ -16,9 +16,10 @@ import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 import org.jsoup.Jsoup
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 
-@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "readConfig", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "realAuthor", "unreadChapterNum", "folderName", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
+@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "realAuthor", "unreadChapterNum", "folderName", "pdfImageWidth", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
 data class Book(
         override var bookUrl: String = "",                   // 详情页Url(本地书源存储完整文件路径)
         var tocUrl: String = "",                    // 目录页Url (toc=table of Contents)
@@ -34,7 +35,7 @@ data class Book(
        var customIntro: String? = null,      // 简介内容(用户修改)
        var charset: String? = null,                // 自定义字符集名称(仅适用于本地书籍)
         var type: Int = 0,                          // @BookType
-       var group: Int = 0,                         // 自定义分组索引号
+       var group: Long = 0L,                       // 自定义分组索引号
         var latestChapterTitle: String? = null,     // 最新章节标题
         var latestChapterTime: Long = System.currentTimeMillis(),            // 最新章节标题更新时间
         var lastCheckTime: Long = System.currentTimeMillis(),                // 最近一次更新书籍信息的时间
@@ -50,7 +51,10 @@ data class Book(
        var originOrder: Int = 0,                   //书源排序
         var useReplaceRule: Boolean = true,         // 正文使用净化替换规则
         var variable: String? = null,                // 自定义书籍变量信息(用于书源规则检索书籍信息)
-        var readConfig: ReadConfig? = null
+        var readConfig: ReadConfig? = null,
+        @get:JsonProperty("isInShelf")
+        var isInShelf: Boolean = false,
+        var lastCheckError: String? = null
     ) : BaseBook {
 
     fun isLocalBook(): Boolean {
@@ -65,6 +69,10 @@ data class Book(
         return isLocalBook() && originName.endsWith(".epub", true)
     }
 
+    fun isLocalPdf(): Boolean {
+        return isLocalBook() && isPdf()
+    }
+
     fun isEpub(): Boolean {
         return originName.endsWith(".epub", true)
     }
@@ -75,6 +83,10 @@ data class Book(
 
     fun isUmd(): Boolean {
         return originName.endsWith(".umd", true)
+    }
+
+    fun isPdf(): Boolean {
+        return originName.endsWith(".pdf", true)
     }
 
     fun isOnLineTxt(): Boolean {
@@ -138,6 +150,14 @@ data class Book(
         return config().delTag and tag == tag
     }
 
+    fun getPdfImageWidth(): Float {
+        return config().pdfImageWidth
+    }
+
+    fun setPdfImageWidth(value: Float) {
+        config().pdfImageWidth = value
+    }
+
     fun getFolderName(): String {
         //防止书名过长,只取9位
         var folderName = name.replace(AppPattern.fileNameRegex, "")
@@ -157,6 +177,10 @@ data class Book(
     }
 
     fun getLocalFile(): File {
+        if (originName.startsWith(rootDir)) {
+            originName = originName.replaceFirst(rootDir, "")
+        }
+        logger.info("getLocalFile rootDir: {} originName: {}", rootDir, originName)
         if (isEpub() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 epub文件
             return FileUtils.getFile(File(rootDir + originName), "index.epub")
@@ -164,6 +188,9 @@ data class Book(
         if (isCbz() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 cbz文件
             return FileUtils.getFile(File(rootDir + originName), "index.cbz")
+        }
+        if (isPdf() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
+            return FileUtils.getFile(File(rootDir + originName), "index.pdf")
         }
         return File(rootDir + originName)
     }
@@ -175,7 +202,7 @@ data class Book(
         _userNameSpace = nameSpace
     }
 
-    fun getUserNameSpace(): String {
+    override fun getUserNameSpace(): String {
         return _userNameSpace
     }
 
@@ -206,6 +233,7 @@ data class Book(
         ).apply {
             this.infoHtml = this@Book.infoHtml
             this.tocHtml = this@Book.tocHtml
+            this.setUserNameSpace(this@Book.getUserNameSpace())
         }
     }
 
@@ -284,7 +312,8 @@ data class Book(
         var reSegment: Boolean = false,
         var imageStyle: String? = null,
         var useReplaceRule: Boolean = false,   // 正文使用净化替换规则
-        var delTag: Long = 0L   //去除标签
+        var delTag: Long = 0L,   //去除标签
+        var pdfImageWidth: Float = 800f
     )
 
     class Converters {

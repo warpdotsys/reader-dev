@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 
 object BookChapterList {
 
@@ -61,8 +62,9 @@ object BookChapterList {
                         mUrl = nextUrl,
                         source = bookSource,
                         ruleData = book,
-                        headerMapF = bookSource.getHeaderMap()
-                    ).getStrResponseAwait(debugLog = debugLog).body?.let { nextBody ->
+                        headerMapF = bookSource.getHeaderMap(),
+                        debugLog = debugLog
+                    ).getStrResponseAwait().body?.let { nextBody ->
                         chapterData = analyzeChapterList(
                             book, nextUrl, nextUrl,
                             nextBody, tocRule, listRule, bookSource, true, false, debugLog
@@ -83,9 +85,10 @@ object BookChapterList {
                                 mUrl = urlStr,
                                 source = bookSource,
                                 ruleData = book,
-                                headerMapF = bookSource.getHeaderMap()
+                                headerMapF = bookSource.getHeaderMap(),
+                                debugLog = debugLog
                             )
-                            val res = analyzeUrl.getStrResponseAwait(debugLog = debugLog)
+                            val res = analyzeUrl.getStrResponseAwait()
                             analyzeChapterList(
                                 book, urlStr, res.url,
                                 res.body!!, tocRule, listRule, bookSource, false, false, debugLog
@@ -105,6 +108,7 @@ object BookChapterList {
         if (!reverse) {
             chapterList.reverse()
         }
+        coroutineContext.ensureActive()
         val lh = LinkedHashSet(chapterList)
         val list = ArrayList(lh)
         // if (!book.getReverseToc()) {
@@ -112,6 +116,7 @@ object BookChapterList {
         // }
         debugLog?.log(book.origin, "◇目录总数:${list.size}")
         list.forEachIndexed { index, bookChapter ->
+            coroutineContext.ensureActive()
             bookChapter.index = index
         }
         if (list.size > 0) {
@@ -125,10 +130,11 @@ object BookChapterList {
             // book.lastCheckTime = System.currentTimeMillis()
         }
         book.totalChapterNum = list.size
+        coroutineContext.ensureActive()
         return list
     }
 
-    private fun analyzeChapterList(
+    private suspend fun analyzeChapterList(
         book: Book,
         baseUrl: String,
         redirectUrl: String,
@@ -140,7 +146,7 @@ object BookChapterList {
         log: Boolean = false,
         debugLog: DebugLog? = null
     ): Pair<List<BookChapter>, List<String>>  {
-        val analyzeRule = AnalyzeRule(book, bookSource)
+        val analyzeRule = AnalyzeRule(book, bookSource, debugLog)
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
         analyzeRule.setRedirectUrl(redirectUrl)
         //获取目录列表
@@ -162,6 +168,7 @@ object BookChapterList {
             }
             if(log) debugLog?.log(bookSource.bookSourceUrl, "└" + TextUtils.join("，\n", nextUrlList))
         }
+        coroutineContext.ensureActive()
         if (elements.isNotEmpty()) {
             if(log) debugLog?.log(bookSource.bookSourceUrl, "┌解析目录列表")
             val nameRule = analyzeRule.splitSourceRule(tocRule.chapterName)
@@ -169,13 +176,15 @@ object BookChapterList {
             val vipRule = analyzeRule.splitSourceRule(tocRule.isVip)
             val upTimeRule = analyzeRule.splitSourceRule(tocRule.updateTime)
             val isVolumeRule = analyzeRule.splitSourceRule(tocRule.isVolume)
-            elements.forEachIndexed { index, item ->
+            for ((index, item) in elements.withIndex()) {
+                coroutineContext.ensureActive()
                 analyzeRule.setContent(item)
                 val bookChapter = BookChapter(bookUrl = book.bookUrl, baseUrl = redirectUrl)
                 analyzeRule.chapter = bookChapter
                 bookChapter.title = analyzeRule.getString(nameRule)
                 bookChapter.url = analyzeRule.getString(urlRule)
                 bookChapter.tag = analyzeRule.getString(upTimeRule)
+                bookChapter.setUserNameSpace(book.getUserNameSpace())
                 val isVolume = analyzeRule.getString(isVolumeRule)
                 bookChapter.isVolume = false
                 if (isVolume.isTrue()) {
@@ -196,14 +205,20 @@ object BookChapterList {
                         bookChapter.title = "\uD83D\uDD12" + bookChapter.title
                     }
                     chapterList.add(bookChapter)
+                } else if (log) {
+                    debugLog?.log(bookSource.bookSourceUrl, "章节名为空")
                 }
             }
             if(log) debugLog?.log(bookSource.bookSourceUrl, "└目录列表解析完成")
-            if(log) debugLog?.log(bookSource.bookSourceUrl, "≡首章信息")
-            if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节名称:${chapterList[0].title}")
-            if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节链接:${chapterList[0].url}")
-            if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节信息:${chapterList[0].tag}")
-            if(log) debugLog?.log(bookSource.bookSourceUrl, "◇是否卷名:${chapterList[0].isVolume}")
+            if (chapterList.isNotEmpty()) {
+                if(log) debugLog?.log(bookSource.bookSourceUrl, "≡首章信息")
+                if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节名称:${chapterList[0].title}")
+                if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节链接:${chapterList[0].url}")
+                if(log) debugLog?.log(bookSource.bookSourceUrl, "◇章节信息:${chapterList[0].tag}")
+                if(log) debugLog?.log(bookSource.bookSourceUrl, "◇是否卷名:${chapterList[0].isVolume}")
+            } else if (log) {
+                debugLog?.log(bookSource.bookSourceUrl, "章节列表为空")
+            }
         }
         return Pair(chapterList, nextUrlList)
     }

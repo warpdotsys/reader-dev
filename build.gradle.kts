@@ -82,11 +82,13 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     // vertx
-    implementation("io.vertx:vertx-core:3.8.1")
-    implementation("io.vertx:vertx-lang-kotlin:3.8.1")
-    implementation("io.vertx:vertx-lang-kotlin-coroutines:3.8.1")
-    implementation("io.vertx:vertx-web:3.8.1")
-    implementation("io.vertx:vertx-web-client:3.8.1")
+    implementation("io.vertx:vertx-core:3.8.5")
+    implementation("io.vertx:vertx-lang-kotlin:3.8.5")
+    implementation("io.vertx:vertx-lang-kotlin-coroutines:3.8.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2")
+    implementation("io.vertx:vertx-web:3.8.5")
+    implementation("io.vertx:vertx-web-client:3.8.5")
+    implementation("io.vertx:vertx-auth-common:3.8.5")
 
     // json
     implementation("com.google.code.gson:gson:2.8.5")
@@ -122,6 +124,16 @@ dependencies {
 
     //加解密类库
     implementation("cn.hutool:hutool-crypto:5.8.0.M1")
+    implementation("cn.hutool:hutool-core:5.8.0.M1")
+
+    // mongodb
+    implementation("org.mongodb:mongodb-driver-sync:3.8.2")
+
+    // pdf
+    implementation("org.apache.pdfbox:pdfbox:2.0.27")
+
+    // antlr
+    implementation("org.antlr:antlr4-runtime:4.7.2")
 
     // 转换繁体
     // implementation("com.github.liuyueyi.quick-chinese-transfer:quick-transfer-core:0.2.1")
@@ -139,6 +151,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.moduleName = "reader_pro"
 }
 
 application {

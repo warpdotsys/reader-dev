@@ -27,6 +27,8 @@ import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.fillData
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRandomString
+import com.htmake.reader.utils.getInstalledLicense
+import com.htmake.reader.utils.listFilesRecursively
 import com.htmake.reader.utils.genEncryptedPassword
 import com.htmake.reader.entity.User
 import com.htmake.reader.utils.SpringContextUtils
@@ -67,15 +69,23 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.withLock
 
 private val logger = KotlinLogging.logger {}
 
 class UserController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
-    val userMaxCount = 50
+    val userMaxCount = 15
+
+    private fun assetUserHome(userNameSpace: String): File? {
+        val assetsRoot = File(getWorkDir("storage", "assets")).toPath().toAbsolutePath().normalize()
+        val userHome = assetsRoot.resolve(userNameSpace).normalize()
+        return userHome.takeIf { it.startsWith(assetsRoot) }?.toFile()
+    }
 
     private fun getUserLimit(context: RoutingContext): Int {
-        if (context.request().host().equals("reader.htmake.com")) {
-            return 500;
+        val license = getInstalledLicense()
+        if (license.validHost(context.request().host())) {
+            return Math.min(Math.max(appConfig.userLimit, 1), license.userMaxLimit)
         }
         return Math.min(Math.max(appConfig.userLimit, 1), userMaxCount)
     }
@@ -105,8 +115,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             if (username.length < 5) {
                 return returnData.setErrorMsg("用户名不能低于5位")
             }
-            if (password.length < 8) {
-                return returnData.setErrorMsg("密码不能低于8位")
+            if (password.length < appConfig.minUserPasswordLength) {
+                return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
             }
             if (username.equals("default")) {
                 return returnData.setErrorMsg("用户名不能为非法字符")
@@ -133,9 +143,16 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             // 自动注册
             var salt = getRandomString(8)
             var passwordEncrypted = genEncryptedPassword(password, salt)
-            var newUser = User(username, passwordEncrypted, salt)
+            var newUser = User(username, passwordEncrypted, salt).apply {
+                enable_webdav = appConfig.defaultUserEnableWebdav
+                enable_local_store = appConfig.defaultUserEnableLocalStore
+                enable_book_source = appConfig.defaultUserEnableBookSource
+                enable_rss_source = appConfig.defaultUserEnableRssSource
+                book_source_limit = appConfig.defaultUserBookSourceLimit
+                book_limit = appConfig.defaultUserBookLimit
+            }
 
-            val loginData = saveUserSession(context, userMap, newUser)
+            val loginData = saveUserSession(context, newUser)
             return returnData.setData(loginData)
         } else {
             if (!isLogin) {
@@ -151,7 +168,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             if (passwordEncrypted != userInfo.password) {
                 return returnData.setErrorMsg("密码错误")
             }
-            val loginData = saveUserSession(context, userMap, userInfo)
+            val loginData = saveUserSession(context, userInfo)
             return returnData.setData(loginData)
         }
     }
@@ -173,30 +190,29 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             var tmp = accessToken.split(":", limit=2)
             if (tmp.size >= 2) {
                 accessToken = tmp[1]
-
-                var userMap = mutableMapOf<String, MutableMap<String, Any>>()
-                var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-                if (userMapJson != null) {
-                    userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
-                }
-                var currentUser = userMap.getOrDefault(username, null)
-                if (currentUser == null) {
-                    return returnData.setErrorMsg("系统错误")
-                }
-                var tokenMapVal = currentUser.getOrDefault("token_map", null)
-                if (tokenMapVal != null) {
-                    var tokenMap: MutableMap<String, Long>? = tokenMapVal as MutableMap<String, Long>?
+                val updated = userMutex.withLock {
+                    var userMap = mutableMapOf<String, MutableMap<String, Any>>()
+                    var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+                    if (userMapJson != null) {
+                        userMap = userMapJson.map as MutableMap<String, MutableMap<String, Any>>
+                    }
+                    val currentUser = userMap.getOrDefault(username, null) ?: return@withLock false
+                    val tokenMapVal = currentUser.getOrDefault("token_map", null)
+                    val tokenMap = tokenMapVal as? MutableMap<String, Long>
                     if (tokenMap != null) {
                         tokenMap.remove(accessToken)
                         currentUser.put("token_map", tokenMap)
                     }
+                    if (currentUser.getOrDefault("token", "") == accessToken) {
+                        currentUser.put("token", "")
+                    }
+                    userMap[username] = currentUser
+                    saveStorage("data", "users", value = userMap)
+                    true
                 }
-                if (currentUser.getOrDefault("token", "").equals(accessToken)) {
-                    currentUser.put("token", "")
+                if (!updated) {
+                    return returnData.setErrorMsg("系统错误")
                 }
-
-                userMap.put(username, currentUser)
-                saveStorage("data", "users", value = userMap)
             }
         }
         return returnData.setErrorMsg("请重新登录").setData("NEED_LOGIN")
@@ -275,7 +291,14 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         // 自动注册
         var salt = getRandomString(8)
         var passwordEncrypted = genEncryptedPassword(password, salt)
-        var newUser = User(username, passwordEncrypted, salt)
+        var newUser = User(username, passwordEncrypted, salt).apply {
+            enable_webdav = context.bodyAsJson.getBoolean("enableWebdav") ?: appConfig.defaultUserEnableWebdav
+            enable_local_store = context.bodyAsJson.getBoolean("enableLocalStore") ?: appConfig.defaultUserEnableLocalStore
+            enable_book_source = context.bodyAsJson.getBoolean("enableBookSource") ?: appConfig.defaultUserEnableBookSource
+            enable_rss_source = context.bodyAsJson.getBoolean("enableRssSource") ?: appConfig.defaultUserEnableRssSource
+            book_source_limit = context.bodyAsJson.getInteger("bookSourceLimit") ?: appConfig.defaultUserBookSourceLimit
+            book_limit = context.bodyAsJson.getInteger("bookLimit") ?: appConfig.defaultUserBookLimit
+        }
         userMap.put(newUser.username, newUser.toMap())
         saveStorage("data", "users", value = userMap)
 
@@ -302,8 +325,8 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (password.isNullOrEmpty()) {
             return returnData.setErrorMsg("请输入密码")
         }
-        if (password.length < 8) {
-            return returnData.setErrorMsg("密码不能低于8位")
+        if (password.length < appConfig.minUserPasswordLength) {
+            return returnData.setErrorMsg("密码不能低于${appConfig.minUserPasswordLength}位")
         }
         if (username.equals("default")) {
             return returnData.setErrorMsg("用户不存在")
@@ -386,6 +409,10 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         val username = context.bodyAsJson.getString("username") ?: ""
         val enableWebdav = context.bodyAsJson.getBoolean("enableWebdav")
         val enableLocalStore = context.bodyAsJson.getBoolean("enableLocalStore")
+        val enableBookSource = context.bodyAsJson.getBoolean("enableBookSource")
+        val enableRssSource = context.bodyAsJson.getBoolean("enableRssSource")
+        val bookSourceLimit = context.bodyAsJson.getInteger("bookSourceLimit")
+        val bookLimit = context.bodyAsJson.getInteger("bookLimit")
         if (username.isEmpty()) {
             return returnData.setErrorMsg("参数错误")
         }
@@ -404,6 +431,18 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
             }
             if (enableLocalStore != null) {
                 existedUser.put("enable_local_store", enableLocalStore)
+            }
+            if (enableBookSource != null) {
+                existedUser.put("enable_book_source", enableBookSource)
+            }
+            if (enableRssSource != null) {
+                existedUser.put("enable_rss_source", enableRssSource)
+            }
+            if (bookSourceLimit != null) {
+                existedUser.put("book_source_limit", bookSourceLimit)
+            }
+            if (bookLimit != null) {
+                existedUser.put("book_limit", bookLimit)
             }
             userMap.put(username, existedUser)
             saveStorage("data", "users", value = userMap)
@@ -430,11 +469,15 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
                 userInfo = formatUser(user)
             }
         }
+        val fonts = listFilesRecursively(File(getWorkDir("storage", "assets", "fonts")))
+            .filter { !it.name.startsWith(".") && it.isFile && getFileExt(it.name) == "ttf" }
+            .map { mapOf("name" to it.name, "size" to it.length()) }
 
         return returnData.setData(mapOf(
             "userInfo" to userInfo,
             "secure" to secure,
-            "secureKey" to secureKey?.isNotEmpty()
+            "secureKey" to secureKey?.isNotEmpty(),
+            "fonts" to fonts
         ))
     }
 
@@ -481,13 +524,30 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (type.isNullOrEmpty()) {
             type = "images"
         }
+        val assetType = type ?: "images"
+        if (assetType == "." || assetType == ".." || assetType.contains('/') || assetType.contains('\\')) {
+            return returnData.setErrorMsg("文件类型错误")
+        }
+        val assetHome = assetUserHome(userNameSpace) ?: return returnData.setErrorMsg("文件路径错误")
+        val typeHome = assetHome.toPath().resolve(assetType).normalize()
+        if (!typeHome.startsWith(assetHome.toPath().toAbsolutePath().normalize())) {
+            return returnData.setErrorMsg("文件路径错误")
+        }
         // logger.info("type: {}", type)
         context.fileUploads().forEach {
             var file = File(it.uploadedFileName())
             logger.info("uploadFile: {} {} {}", it.uploadedFileName(), it.fileName(), file)
             if (file.exists()) {
-                var fileName = it.fileName()
-                var newFile = File(getWorkDir("storage", "assets", userNameSpace, type, fileName))
+                var fileName = File(it.fileName().replace('\\', '/')).name
+                if (fileName.isEmpty() || fileName == "." || fileName == "..") {
+                    file.deleteRecursively()
+                    return@forEach
+                }
+                var newFile = typeHome.resolve(fileName).normalize().toFile()
+                if (!newFile.toPath().startsWith(typeHome)) {
+                    file.deleteRecursively()
+                    return@forEach
+                }
                 if (!newFile.parentFile.exists()) {
                     newFile.parentFile.mkdirs()
                 }
@@ -496,7 +556,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
                 }
                 logger.info("moveTo: {}", newFile)
                 if (file.copyRecursively(newFile)) {
-                    fileList.add("/assets/" + userNameSpace + "/" + type + "/" + fileName)
+                    fileList.add("/assets/" + userNameSpace + "/" + assetType + "/" + fileName)
                 }
                 file.deleteRecursively()
             }
@@ -524,9 +584,91 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!url.startsWith("/assets/" + userNameSpace + "/")) {
             return returnData.setErrorMsg("文件链接错误")
         }
-        var file = File(getWorkDir("storage" + url))
+        val assetHome = assetUserHome(userNameSpace) ?: return returnData.setErrorMsg("文件链接错误")
+        val relativePath = url.removePrefix("/assets/" + userNameSpace + "/")
+        if (relativePath.isEmpty()) {
+            return returnData.setErrorMsg("文件链接错误")
+        }
+        val filePath = assetHome.toPath().resolve(relativePath.replace('\\', '/')).normalize()
+        if (!filePath.startsWith(assetHome.toPath().toAbsolutePath().normalize())) {
+            return returnData.setErrorMsg("文件链接错误")
+        }
+        var file = filePath.toFile()
         logger.info("delete file: {}", file)
         file.deleteRecursively()
         return returnData.setData("")
+    }
+
+    suspend fun downloadBackupFile(context: RoutingContext) {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
+            return
+        }
+        val bookController = BookController(coroutineContext)
+        val userNameSpace = getUserNameSpace(context)
+        val latestZipFilePath = bookController.getLastBackFileFromWebdav(userNameSpace)
+        val backupDir = getWorkDir("storage", "data", userNameSpace, "backup")
+        val backupFile = bookController.createUserBackup(userNameSpace, backupDir, latestZipFilePath)
+        if (backupFile == null) {
+            context.success(returnData.setErrorMsg("备份失败"))
+            return
+        }
+        context.response()
+            .putHeader("Cache-Control", "86400")
+            .putHeader("Content-Disposition", "attachment; filename=${URLEncoder.encode(backupFile.name, "UTF-8")}")
+            .sendFile(backupFile.toString())
+    }
+
+    suspend fun clearInactiveUsers(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        if (!appConfig.secure || appConfig.secureKey.isEmpty()) {
+            return returnData.setErrorMsg("不支持的操作")
+        }
+        if (!checkManagerAuth(context)) {
+            return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
+        }
+        val inactiveDay = context.bodyAsJson?.getInteger("inactiveDay", 0) ?: 0
+        clearInactiveUsers(inactiveDay)
+        return getUserList(context)
+    }
+
+    suspend fun clearInactiveUsers(day: Int) {
+        val expireTime = System.currentTimeMillis() - day * 86400L * 1000L
+        forEachUser { user ->
+            if (user.last_login_at >= expireTime) {
+                false
+            } else {
+                File(getWorkDir("storage", "data", user.username)).deleteRecursively()
+                true
+            }
+        }
+    }
+
+    suspend fun forEachUser(handler: suspend CoroutineScope.(User) -> Boolean) {
+        if (!appConfig.secure) return
+        var userMap = mutableMapOf<String, Map<String, Any>>()
+        var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
+        if (userMapJson != null) {
+            userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
+        }
+        kotlinx.coroutines.coroutineScope {
+            var hasChanged = false
+            val iterator = userMap.entries.iterator()
+            while (iterator.hasNext()) {
+                val (_, value) = iterator.next()
+                val username = value["username"] as? String ?: ""
+                if (username.isEmpty()) continue
+                val user: User = userMap[username]?.toDataClass() ?: continue
+                if (handler(user)) {
+                    hasChanged = true
+                    iterator.remove()
+                }
+            }
+            if (hasChanged) saveStorage("data", "users", value = userMap)
+        }
     }
 }
