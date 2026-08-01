@@ -443,7 +443,8 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
                     saveUserStorage(userNameSpace, "remoteBookSourceSub", remoteBookSourceList)
                 }
             } catch (e: Exception) {
-                logger.error("updateRemoteSourceSub from {} error", url, e)
+                logger.error("更新远程书源失败", e)
+                throw Exception("更新远程书源失败")
             }
         }
         generateBookSourceMap(userNameSpace)

@@ -189,7 +189,7 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
         val content = context.bodyAsJson?.getString("content", "") ?: ""
         if (content.isEmpty()) return returnData.setErrorMsg("请输入密钥")
         val license = decryptToLicense(content) ?: return returnData.setErrorMsg("密钥错误")
-        if (license.verified) return returnData.setErrorMsg("许可证已被使用")
+        if (license.verified) return returnData.setErrorMsg("密钥已被使用")
         val activeLicenseList = asJsonArray(getStorage("data", "activeLicense")) ?: JsonArray()
         var activeTimes = 0
         for (index in 0 until activeLicenseList.size()) {

@@ -3274,15 +3274,15 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 downloadErrorNo++
                 if (e is SocketTimeoutException || e is ConnectException) {
                     if (downloadErrorNo <= 5) continue
-                    logger.error("tts超时或连接错误超过5次\n{}", e.localizedMessage, e)
+                    logger.error("超时或连接错误超过5次\n{}", e.localizedMessage, e)
                     throw e
                 }
-                logger.error("tts下载错误\n{}", e.localizedMessage, e)
+                logger.error("下载错误\n{}", e.localizedMessage, e)
                 if (downloadErrorNo > 5) {
                     logger.error("TTS服务器连续5次错误，已暂停阅读。", e)
                     throw e
                 }
-                logger.error("TTS下载音频出错，使用无声音频代替。\n朗读文本：{}", speakText)
+                logger.error("下载音频出错，使用无声音频代替。\n朗读文本：{}", speakText)
                 return null
             }
         }
