@@ -1,19 +1,27 @@
+# ---- Build web frontend (npm deps layer cached) ----
 FROM node:16-alpine AS build-web
-ADD . /app
 WORKDIR /app/web
-RUN npm ci && npm run build
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+COPY web/ ./
+RUN npm run build
 
-# Build jar
+# ---- Build jar (gradle deps layer cached) ----
 FROM gradle:7-jdk8 AS build-env
 ENV JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"
-ADD --chown=gradle:gradle . /app
 WORKDIR /app
+# 先复制构建脚本并预下载依赖，该层可被 docker 层缓存复用
+COPY --chown=gradle:gradle cli.gradle gradle ./
+RUN gradle -b cli.gradle dependencies --no-daemon || true
+# 复制源码与前端产物
+ADD --chown=gradle:gradle . /app
 COPY --from=build-web /app/web/dist /app/src/main/resources/web
 RUN \
     rm src/main/java/com/htmake/reader/ReaderUIApplication.kt; \
-    gradle -b cli.gradle assemble --info; \
+    gradle -b cli.gradle assemble --no-daemon; \
     mv ./build/libs/*.jar ./build/libs/reader.jar
 
+# ---- Runtime ----
 FROM amazoncorretto:8u442-alpine3.21-jre
 RUN \
     apk add --no-cache ca-certificates tini tzdata; \
