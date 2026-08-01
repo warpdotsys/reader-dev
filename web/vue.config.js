@@ -86,6 +86,15 @@ module.exports = {
   devServer: {
     port: 8081
   },
+  configureWebpack: {
+    resolve: {
+      alias: {
+        // 使用完整版 Vue（含编译器）：Index.vue 等存在内联 template 字符串组件，
+        // runtime-only 构建无法编译，会导致列表组件渲染为空
+        "vue$": "vue/dist/vue.esm.js"
+      }
+    }
+  },
   // 编译依赖为 es5
   transpileDependencies: ["element-ui", "codejar", "vue-lazyload"],
   pwa: {
