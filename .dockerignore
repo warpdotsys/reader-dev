@@ -44,3 +44,7 @@ out
 /bin
 /file-uploads
 node_modules
+
+# git 与 CI 元数据（减小 build context）
+.git
+.github
