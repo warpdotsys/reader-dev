@@ -233,6 +233,15 @@
 <script>
 import Long from "long";
 import { mapGetters } from "vuex";
+import {
+  defineComponent,
+  ref,
+  shallowRef,
+  reactive,
+  watch,
+  onMounted,
+  onBeforeUnmount
+} from "vue";
 import Axios from "../plugins/axios";
 import { errorTypeList } from "../plugins/config";
 import { setCache } from "../plugins/cache";
@@ -281,105 +290,89 @@ const BookKind = {
 /**
  * 虚拟列表（列表优化）
  */
-const VirtList = {
+const VirtList = defineComponent({
   name: "VirtList",
   props: {
     list: { type: Array, default: () => [] },
     itemKey: { type: [String, Number], required: true },
     minSize: { type: Number, default: 20 },
     itemGap: { type: Number, default: 0 },
-    itemClass: { type: [String, Array, Object], default: "" },
-    itemStyle: { type: [String, Array, Object], default: "" },
-    buffer: { type: Number, default: 0 }
+    renderControl: { type: Function, default: undefined },
+    fixed: { type: Boolean, default: false },
+    buffer: { type: Number, default: 0 },
+    bufferTop: { type: Number, default: 0 },
+    bufferBottom: { type: Number, default: 0 },
+    scrollDistance: { type: Number, default: 0 },
+    horizontal: { type: Boolean, default: false },
+    start: { type: Number, default: 0 },
+    offset: { type: Number, default: 0 },
+    listStyle: { type: [String, Array, Object], default: "" },
+    listClass: { type: [String, Array, Object], default: "" },
+    itemStyle: { type: [String, Array, Object, Function], default: "" },
+    itemClass: { type: [String, Array, Object, Function], default: "" }
   },
-  data() {
-    return {
+  emits: ["scroll", "toTop", "toBottom", "itemResize", "rangeUpdate"],
+  setup(props, { emit }) {
+    const clientRefEl = ref(null);
+    const listRefEl = ref(null);
+    const sizesMap = reactive(new Map());
+    const reactiveData = reactive({
       scrollTop: 0,
-      viewportHeight: 0,
+      viewportSize: 0,
+      clientSize: 0,
       renderBegin: 0,
       renderEnd: 0,
-      itemSizes: {}
-    };
-  },
-  computed: {
-    listTotalSize() {
-      let total = 0;
-      this.list.forEach(item => {
-        total += this.getItemSize(item) + this.itemGap;
-      });
-      return total;
-    },
-    virtualSize() {
-      let total = 0;
-      for (let i = 0; i < this.renderBegin; i++) {
-        total += this.getItemSize(this.list[i]) + this.itemGap;
-      }
-      return total;
-    },
-    renderList() {
-      return this.list.slice(this.renderBegin, this.renderEnd + 1);
-    }
-  },
-  watch: {
-    list() {
-      this.$nextTick(() => this.updateRange());
-    }
-  },
-  mounted() {
-    this.$nextTick(() => {
-      const client = this.$refs.client;
-      if (client) {
-        client.addEventListener("scroll", this.updateRange);
-      }
-      this.updateRange();
+      virtualSize: 0,
+      inViewBegin: 0,
+      inViewEnd: 0,
+      bufferTop: props.bufferTop || props.buffer,
+      bufferBottom: props.bufferBottom || props.buffer
     });
-  },
-  beforeDestroy() {
-    const client = this.$refs.client;
-    if (client) {
-      client.removeEventListener("scroll", this.updateRange);
-    }
-  },
-  updated() {
-    const refs = this.$refs.items || [];
-    refs.forEach((el, index) => {
-      this.recordSize(this.renderBegin + index, el);
-    });
-  },
-  methods: {
-    getItemSize(item) {
+    const renderList = shallowRef([]);
+    let resizeObserver = null;
+
+    const getItemSize = item => {
       if (!item) {
-        return this.minSize;
+        return props.minSize;
       }
-      const key = item[this.itemKey];
-      return this.itemSizes[key] || this.minSize;
-    },
-    getItemOffset(index) {
+      return sizesMap.get(item[props.itemKey]) || props.minSize;
+    };
+    const getOffset = index => {
       let top = 0;
       for (let i = 0; i < index; i++) {
-        top += this.getItemSize(this.list[i]) + this.itemGap;
+        top += getItemSize(props.list[i]) + props.itemGap;
       }
       return top;
-    },
-    updateRange() {
-      const client = this.$refs.client;
+    };
+    const listTotalSize = () => {
+      let total = 0;
+      for (let i = 0; i < props.list.length; i++) {
+        total += getItemSize(props.list[i]) + props.itemGap;
+      }
+      return total;
+    };
+    const updateRange = () => {
+      const client = clientRefEl.value;
       if (!client) {
         return;
       }
       const scrollTop = client.scrollTop;
       const height = client.clientHeight || 0;
-      this.scrollTop = scrollTop;
-      this.viewportHeight = height;
-      if (!this.list.length) {
-        this.renderBegin = 0;
-        this.renderEnd = -1;
+      reactiveData.scrollTop = scrollTop;
+      reactiveData.viewportSize = height;
+      reactiveData.clientSize = height;
+      if (!props.list.length) {
+        reactiveData.renderBegin = 0;
+        reactiveData.renderEnd = -1;
+        reactiveData.virtualSize = 0;
+        renderList.value = [];
         return;
       }
       let begin = 0;
       let acc = 0;
-      for (let i = 0; i < this.list.length; i++) {
-        const size = this.getItemSize(this.list[i]) + this.itemGap;
-        if (acc + size > scrollTop - this.minSize) {
+      for (let i = 0; i < props.list.length; i++) {
+        const size = getItemSize(props.list[i]) + props.itemGap;
+        if (acc + size > scrollTop - props.minSize) {
           begin = i;
           break;
         }
@@ -387,85 +380,234 @@ const VirtList = {
       }
       let end = begin;
       let acc2 = 0;
-      for (let i = begin; i < this.list.length; i++) {
-        acc2 += this.getItemSize(this.list[i]) + this.itemGap;
+      for (let i = begin; i < props.list.length; i++) {
+        acc2 += getItemSize(props.list[i]) + props.itemGap;
         end = i;
-        if (acc2 > height + this.minSize * 2) {
+        if (acc2 > height + props.minSize * 2) {
           break;
         }
       }
-      this.renderBegin = Math.max(0, begin);
-      this.renderEnd = Math.min(this.list.length - 1, end + 2);
-    },
-    recordSize(index, el) {
-      const item = this.list[index];
-      if (!item || !el) {
+      const inViewBegin = Math.max(0, begin - reactiveData.bufferTop);
+      const inViewEnd = Math.min(
+        props.list.length - 1,
+        end + 2 + reactiveData.bufferBottom
+      );
+      reactiveData.inViewBegin = inViewBegin;
+      reactiveData.inViewEnd = inViewEnd;
+      if (props.renderControl) {
+        const ctrl = props.renderControl(inViewBegin, inViewEnd);
+        reactiveData.renderBegin = Math.max(0, ctrl.begin);
+        reactiveData.renderEnd = Math.min(props.list.length - 1, ctrl.end);
+      } else {
+        reactiveData.renderBegin = inViewBegin;
+        reactiveData.renderEnd = inViewEnd;
+      }
+      reactiveData.virtualSize = getOffset(reactiveData.renderBegin);
+      renderList.value = props.list.slice(
+        reactiveData.renderBegin,
+        reactiveData.renderEnd + 1
+      );
+      emit("rangeUpdate", reactiveData.renderBegin, reactiveData.renderEnd);
+    };
+    const manualRender = (begin, end) => {
+      const b = Math.max(0, begin);
+      const e = Math.min(props.list.length - 1, end);
+      reactiveData.renderBegin = b;
+      reactiveData.renderEnd = e;
+      reactiveData.virtualSize = getOffset(b);
+      renderList.value = props.list.slice(b, e + 1);
+    };
+    const forceUpdate = () => {
+      updateRange();
+    };
+    const reset = () => {
+      reactiveData.renderBegin = 0;
+      reactiveData.renderEnd = -1;
+      reactiveData.virtualSize = 0;
+      reactiveData.inViewBegin = 0;
+      reactiveData.inViewEnd = 0;
+      renderList.value = [];
+    };
+    const scrollToIndex = index => {
+      const client = clientRefEl.value;
+      if (!client || !props.list.length) {
         return;
       }
-      const key = item[this.itemKey];
-      const h = el.offsetHeight;
-      if (h && h !== this.itemSizes[key]) {
-        this.itemSizes[key] = h;
-        this.$forceUpdate();
-      }
-    },
-    scrollToIndex(index) {
-      if (index < 0 || !this.list.length) {
-        return;
-      }
-      const client = this.$refs.client;
+      const idx = Math.max(0, Math.min(index, props.list.length - 1));
+      client.scrollTop = getOffset(idx);
+      updateRange();
+    };
+    const scrollToTop = () => {
+      scrollToIndex(0);
+      emit("toTop", 0);
+    };
+    const scrollToBottom = () => {
+      scrollToIndex(props.list.length - 1);
+      emit("toBottom", props.list.length - 1);
+    };
+    const scrollToOffset = offset => {
+      const client = clientRefEl.value;
       if (!client) {
         return;
       }
-      client.scrollTop = this.getItemOffset(index);
-      this.updateRange();
-    },
-    scrollToTop() {
-      this.scrollToIndex(0);
-    },
-    scrollToBottom() {
-      this.scrollToIndex(this.list.length - 1);
-    }
+      client.scrollTop = offset;
+      updateRange();
+    };
+    const scrollIntoView = index => {
+      scrollToIndex(index);
+    };
+    const deleteItemSize = key => {
+      sizesMap.delete(key);
+    };
+    const recordSize = (index, el) => {
+      const item = props.list[index];
+      if (!item || !el) {
+        return;
+      }
+      const key = item[props.itemKey];
+      const size = props.horizontal ? el.offsetWidth : el.offsetHeight;
+      if (size && size !== sizesMap.get(key)) {
+        sizesMap.set(key, size);
+        updateRange();
+      }
+    };
+    const getItemPosByIndex = index => {
+      return {
+        start: getOffset(index),
+        end: getOffset(index) + getItemSize(props.list[index])
+      };
+    };
+
+    watch(
+      () => props.list.length,
+      () => {
+        if (props.list.length <= 0) {
+          reset();
+        } else {
+          updateRange();
+        }
+      },
+      { immediate: true }
+    );
+
+    onMounted(() => {
+      const client = clientRefEl.value;
+      if (client) {
+        client.addEventListener("scroll", updateRange);
+      }
+      if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => updateRange());
+        if (client) {
+          resizeObserver.observe(client);
+        }
+        if (listRefEl.value) {
+          resizeObserver.observe(listRefEl.value);
+        }
+      }
+      if (props.start) {
+        scrollToIndex(props.start);
+      } else if (props.offset) {
+        scrollToOffset(props.offset);
+      } else {
+        updateRange();
+      }
+    });
+    onBeforeUnmount(() => {
+      const client = clientRefEl.value;
+      if (client) {
+        client.removeEventListener("scroll", updateRange);
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
+    });
+
+    return {
+      props,
+      renderList,
+      clientRefEl,
+      listRefEl,
+      reactiveData,
+      sizesMap,
+      resizeObserver,
+      getOffset,
+      listTotalSize,
+      reset,
+      scrollToIndex,
+      manualRender,
+      scrollIntoView,
+      scrollToTop,
+      scrollToBottom,
+      scrollToOffset,
+      getItemSize,
+      deleteItemSize,
+      forceUpdate,
+      recordSize,
+      getItemPosByIndex
+    };
   },
-  render(h) {
-    const children = this.renderList.map((item, i) => {
-      const index = this.renderBegin + i;
+  render() {
+    const { renderList, reactiveData } = this;
+    const {
+      itemGap,
+      itemKey,
+      horizontal,
+      listStyle,
+      listClass,
+      itemStyle,
+      itemClass
+    } = this.props;
+    const slotFn = this.$scopedSlots.default;
+    const h = this.$createElement;
+    const items = renderList.map((item, i) => {
+      const index = reactiveData.renderBegin + i;
+      const style =
+        typeof itemStyle === "function" ? itemStyle(item, index) : itemStyle;
       return h(
         "div",
         {
-          key: item[this.itemKey],
+          key: item[itemKey],
           ref: "items",
           refInFor: true,
-          class: this.itemClass,
-          style: [
-            this.itemStyle,
-            this.itemGap ? `padding: ${this.itemGap / 2}px 0;` : ""
-          ],
+          class: [itemClass, "virt-list__item"],
+          style: [style, itemGap ? `padding: ${itemGap / 2}px 0;` : ""],
           attrs: { "data-index": index }
         },
-        [this.$scopedSlots.default({ itemData: item, index })]
+        slotFn ? slotFn({ itemData: item, index }) : []
       );
     });
+    const sizeProp = horizontal ? "minWidth" : "minHeight";
+    const padProp = horizontal ? "paddingLeft" : "paddingTop";
+    const totalSize = this.listTotalSize();
     return h(
       "div",
       {
-        ref: "client",
+        ref: "clientRefEl",
         class: "virt-list__client",
         style: "width: 100%; height: 100%; overflow: auto;"
       },
       [
-        h("div", { style: `min-height: ${this.listTotalSize}px;` }, [
-          h("div", { style: `height: ${this.virtualSize}px;` }),
-          children
-        ])
+        h(
+          "div",
+          {
+            ref: "listRefEl",
+            class: ["virt-list__inner", listClass],
+            style: [
+              listStyle,
+              {
+                [sizeProp]: totalSize + "px",
+                [padProp]: reactiveData.virtualSize + "px"
+              }
+            ]
+          },
+          items
+        )
       ]
     );
   }
-};
+});
 
-/**
- * 书架列表（列表视图）
- */
 const BookList = {
   name: "BookList",
   components: { BookKind },
