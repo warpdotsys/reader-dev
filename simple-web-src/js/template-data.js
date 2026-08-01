@@ -27,35 +27,35 @@
  * @param {string} extraClass - Optional CSS class to add
  */
 function showTip(title, closeText, bodyHtml, extraClass) {
-    .html(title);
-    .html(closeText);
-    .html(bodyHtml);
-    .css("display", "block");
+    $("#tipName").html(title);
+    $("#tipClose").html(closeText);
+    $("#tipBody").html(bodyHtml);
+    $("#tipBox").css("display", "block");
 
     // Remove previous extra class if any
-    var lastClass = .attr("data-lastclass");
+    var lastClass = $("#tipBox").attr("data-lastclass");
     if (lastClass) {
-        .removeClass(lastClass);
+        $("#tipBox").removeClass(lastClass);
     }
 
     // Add new extra class
     if (extraClass) {
-        .addClass(extraClass);
-        .attr("data-lastclass", extraClass);
+        $("#tipBox").addClass(extraClass);
+        $("#tipBox").attr("data-lastclass", extraClass);
     }
 
-    .attr("class", "dropdown-backdrop");
+    $("#dropdown-backdrop").attr("class", "dropdown-backdrop");
 }
 
 /**
  * Close the tip dialog
  */
 function closeTip() {
-    .attr("class", "");
-    .css("display", "none");
-    var lastClass = .attr("data-lastclass");
+    $("#dropdown-backdrop").attr("class", "");
+    $("#tipBox").css("display", "none");
+    var lastClass = $("#tipBox").attr("data-lastclass");
     if (lastClass) {
-        .removeClass(lastClass);
+        $("#tipBox").removeClass(lastClass);
     }
 }
 
@@ -67,8 +67,8 @@ function isHtml(str) {
 }
 
 // Tip dialog event handlers
-.click(function () { closeTip(); });
-.click(function (e) { closeTip(); });
+$("#tipClose").click(function () { closeTip(); });
+$("#dropdown-backdrop").click(function (e) { closeTip(); });
 
 // ============================================================
 // Section 2: Title Manager
@@ -277,22 +277,14 @@ function loadMoreBookSource(bookUrl) {
 
 function showLoginBox() {
     showTip("登录", "关闭",
-        "<div class='login-form'>
-" +
-        "    <form action='/login' onsubmit='return doLogin(this, true);'>
-" +
-        "       <label>用户名：<input type='text' name='username' /></label>
-" +
-        "       <label>密　码：<input type='text' name='password' /></label>
-" +
-        "       <label>邀请码：<input type='text' name='code' /></label>
-" +
-        "       <button type='submit' onclick='doLogin(this.parentNode, false)'>注册</button>
-" +
-        "       <button type='submit' onclick='doLogin(this.parentNode, true)'>登录</button>
-" +
-        "   </form>
-" +
+        "<div class='login-form'>\n" +
+        "    <form action='/login' onsubmit='return doLogin(this, true);'>\n" +
+        "       <label>用户名：<input type='text' name='username' /></label>\n" +
+        "       <label>密　码：<input type='text' name='password' /></label>\n" +
+        "       <label>邀请码：<input type='text' name='code' /></label>\n" +
+        "       <button type='submit' onclick='doLogin(this.parentNode, false)'>注册</button>\n" +
+        "       <button type='submit' onclick='doLogin(this.parentNode, true)'>登录</button>\n" +
+        "   </form>\n" +
         "</div>",
         "top-tip"
     );
@@ -367,9 +359,9 @@ window.darkThemeWatcher = new Watcher(false);
 var isBlack = $.cookie.get("black");
 if (isBlack && isBlack.toString() === "true") {
     window.darkThemeWatcher.update(true);
-    .attr("class", "dark-theme");
+    $("html").attr("class", "dark-theme");
 } else {
-    .attr("class", "white-theme");
+    $("html").attr("class", "white-theme");
 }
 
 // ============================================================
@@ -388,29 +380,18 @@ function showSettingBox() {
     }
 
     showTip("设置", "关闭",
-        "<div class='login-form'>
-" +
-        "    <form action='' onsubmit='return saveSetting(this);'>
-" +
-        "       <label>上边界：<input type='text' name='top' value='" + values[0] + "' /></label>
-" +
-        "       <label>下边界：<input type='text' name='bottom' value='" + values[1] + "' /></label>
-" +
-        "       <label>左边界：<input type='text' name='left' value='" + values[2] + "' /></label>
-" +
-        "       <label>右边界：<input type='text' name='right' value='" + values[3] + "' /></label>
-" +
-        "       <label>最大高度：<input type='text' name='maxHeight' value='" + values[4] + "' /></label>
-" +
-        "       <input id='hideSBInput' type='hidden' name='hideSB' value='" + values[5] + "' />
-" +
+        "<div class='login-form'>\n" +
+        "    <form action='' onsubmit='return saveSetting(this);'>\n" +
+        "       <label>上边界：<input type='text' name='top' value='" + values[0] + "' /></label>\n" +
+        "       <label>下边界：<input type='text' name='bottom' value='" + values[1] + "' /></label>\n" +
+        "       <label>左边界：<input type='text' name='left' value='" + values[2] + "' /></label>\n" +
+        "       <label>右边界：<input type='text' name='right' value='" + values[3] + "' /></label>\n" +
+        "       <label>最大高度：<input type='text' name='maxHeight' value='" + values[4] + "' /></label>\n" +
+        "       <input id='hideSBInput' type='hidden' name='hideSB' value='" + values[5] + "' />\n" +
         "       <label>隐藏滚动条：<span style='border: 1px solid #ddd;display: inline-block; padding: 3px 10px;' onclick='toggleScrollBarHidden(this)'>" +
-        (values[5] == 1 ? "已开启" : "已关闭") + "</span></label>
-" +
-        "       <button type='submit'>保存</button>
-" +
-        "   </form>
-" +
+        (values[5] == 1 ? "已开启" : "已关闭") + "</span></label>\n" +
+        "       <button type='submit'>保存</button>\n" +
+        "   </form>\n" +
         "</div>",
         "top-tip"
     );
@@ -423,13 +404,11 @@ function clearStorage() {
 }
 
 function showErrorMsg() {
-    showTip("温馨提示", "关闭", "<pre class='notice-info'>
-" + errorMsg + "</pre>");
+    showTip("温馨提示", "关闭", "<pre class='notice-info'>\n" + errorMsg + "</pre>");
 }
 
 function showNotice(msg) {
-    showTip("温馨提示", "关闭", "<pre class='notice-info'>
-" + msg + "</pre>");
+    showTip("温馨提示", "关闭", "<pre class='notice-info'>\n" + msg + "</pre>");
 }
 
 function isInteger(val) {
@@ -465,12 +444,12 @@ function saveSetting(form) {
 }
 
 function toggleScrollBarHidden(el) {
-    var val = .val();
+    var val = $("#hideSBInput").val();
     if (parseInt(val) === 1) {
-        .val("0");
+        $("#hideSBInput").val("0");
         el.innerText = "已关闭";
     } else {
-        .val("1");
+        $("#hideSBInput").val("1");
         el.innerText = "已开启";
     }
 }
@@ -479,7 +458,7 @@ function updatePagePosition() {
     var pageName = window.location.pathname.split("/");
     pageName = pageName[pageName.length - 1].replace(".html", "").toLowerCase();
     var saved = $.cookie.get(pageName + "bj");
-    var box = ;
+    var box = $("#pageBox");
 
     if (saved) {
         var vals = saved.split(",");
@@ -492,15 +471,15 @@ function updatePagePosition() {
             if (0 | vals[5]) {
                 var maxH = 0 | vals[4];
                 maxH = maxH > window.innerHeight / 2 ? maxH : window.innerHeight;
-                .css("max-height", maxH + "px");
-                .css("overflow", "hidden");
-                .css("max-height", maxH + "px");
-                .css("overflow", "hidden");
+                $("body").css("max-height", maxH + "px");
+                $("body").css("overflow", "hidden");
+                $("html").css("max-height", maxH + "px");
+                $("html").css("overflow", "hidden");
             } else {
-                if (.css("max-height")) .css("max-height", "none");
-                .css("overflow", "auto");
-                if (.css("max-height")) .css("max-height", "none");
-                .css("overflow", "auto");
+                if ($("body").css("max-height")) $("body").css("max-height", "none");
+                $("body").css("overflow", "auto");
+                if ($("html").css("max-height")) $("html").css("max-height", "none");
+                $("html").css("overflow", "auto");
             }
 
             if (window.reader && window.reader.viewDisplay) {
@@ -558,9 +537,9 @@ function debounce(fn, delay) {
  * Switch active menu tab
  */
 function chooseMenu(element, sectionId) {
-    .removeClass("choose");
-    .addClass("choose");
-    .addClass("choose");
+    $(".choose").removeClass("choose");
+    $(element).addClass("choose");
+    $("#" + sectionId).addClass("choose");
 }
 
 /**
@@ -675,8 +654,8 @@ var Pagination = function () {
     this.list = [];
     this.page = 1;
     this.pageCount = 1;
-    this.next = ;
-    this.before = ;
+    this.next = $("#next");
+    this.before = $("#before");
     this.pageIndexList = [];
     this.containerHeight = 0;
     this.onPageChange = null;
@@ -690,12 +669,12 @@ var Pagination = function () {
      * @param {number} initialPage - Starting page number
      */
     this.init = function (itemSelector, offset, containerSelector, onPageChange, initialPage) {
-        this.list = ;
+        this.list = $(itemSelector);
         if (!this.list || !this.list.length) return;
 
         this.onPageChange = onPageChange;
         containerSelector = containerSelector || ".right_t.flexone";
-        this.containerHeight = [0].offsetHeight - offset;
+        this.containerHeight = $(containerSelector)[0].offsetHeight - offset;
         this.computePage();
         this.page = initialPage || 1;
         this.display(this.page);
@@ -728,7 +707,7 @@ var Pagination = function () {
 
     /** Set pagination icon state */
     this.set = function (which, className) {
-        .removeClass(which + "Y").removeClass(which + "N").addClass(className);
+        $("#" + which + "_img").removeClass(which + "Y").removeClass(which + "N").addClass(className);
     };
 
     this.beforeClick = function () { this.display(this.page - 1); };
@@ -749,7 +728,7 @@ var Pagination = function () {
         var start = this.pageIndexList[this.page - 1];
         var end = this.pageIndexList[this.page];
         for (var i = start; i < end; i++) {
-            .css("display", "block");
+            $(this.list[i]).css("display", "block");
         }
 
         // Update pagination icons
@@ -763,5 +742,128 @@ var Pagination = function () {
         } else {
             this.set("before", "beforeY");
         }
+    };
+};
+
+// ============================================================
+// Section 14: Menu Class
+// ============================================================
+
+var Menu = function () {
+    /**
+     * Check whether dark theme is enabled (cookie "black" === "true")
+     */
+    function isBlackTheme() {
+        var black = $.cookie.get("black");
+        return !(!black || black.toString() !== "true");
+    }
+
+    /**
+     * Generate the dropdown menu items (小说书架/RSS阅读/小说搜索/页面设置/清除缓存/登录退出)
+     * @param {boolean} isLogin - Whether the user is currently logged in
+     */
+    this.generateMenu = function (isLogin) {
+        console.log("isLogin", isLogin);
+
+        // Current page name (index / rss / search / reader)
+        var pageName = window.location.pathname.split("/");
+        pageName = pageName[pageName.length - 1].replace(".html", "").toLowerCase();
+
+        var items = [
+            { key: "小说书架", url: "index" },
+            { key: "RSS阅读", url: "rss" },
+            { key: "小说搜索", url: "search" },
+            { key: "页面设置", url: "", action: "showSettingBox" },
+            { key: "清除缓存", url: "", action: "clearStorage" },
+            { key: isLogin ? "退出登录" : "登录", url: "", action: isLogin ? "doLogout" : "showLoginBox" }
+        ];
+
+        // Icon shown beside the current page's menu item
+        var currentPageIcon = isBlackTheme()
+            ? '<img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAA39JREFUeF7tWu111DAQ3KkASggVEDoIHYQKIBUkVABUAKmAUAFQAVABSQfQQVLB8uY9mef4JGtXJ1v2+fQnPyJLmtHspw6y8YGN45cjAUcFbJyBowlsQQCq+k5EvgD4M8R70ApQ1VMR+Swi/EsC3myGAFW9FJFPA8DPhio4OAWo6tNw6+cR895RwUERECT/VUROEr7tAQAJ+j8OhgBVpX3T3lPjQUTOANweHAGqSuA7Dq4HNAqe/1+1AoK9U/Jn3pvv5q+WgEGIc8l+9SYQwP8QkUcOLcLCBYCbsWRvdQowOLsObxb86nyAA/xbAMMkKCqE1SjA4Ok7gNGUN2UGqyDAAf47gFgGmHQDiyfAAf4uJDr3ngp30QQ4wDPROQHgAr9YJ2hMcLqLTmZ5FiUsUgGOmyfGVwC+WcDG5iyOACf4DwDel4JfnAk4wbvC3eLDoBN8kcdfrAk4wdPpncYanCWm0NwHOMET40sAP0vALk4BqnolIh8dYPZ2esO9sgoIMZmtpOJQEwPoKGy6z91proXYUQICeNbd7KubykvLpqrKfJ2dHOv4G+zenenlNkgSMADfrXMD4CK36Nj/Hc2M/jIvhs3Mfc7Q/zZKQAJ89x1NgWpw34aqsl3929DJ6Z/RXNuXkLJDQAZ8twdby0xBd97aUocwrjv8fBK7H1WAqvKGaPO5QQUwJD3qs48QQJv31OqT2X2OgNwDQ/97kkCJjjYeVZXtKb7VecZkdm/xAR4SuN4VgOsYuoJwx2Wqx/sU82NRgLf62nFlOxGi0OP/AjD20OE4Un5qLg/wkkB/QL9wH5we/UnqoTJ2uqp5fh6+4WlMVUtIYK7AFNd7k3s1NyyAh3OsqTCLj+clGzi+mTzkxc6SJYAfBTlPSUJxU9NBcHSqiYAZSKha4npIMRMQSKBDo6N74tkkM/caAMviJsNFQCCBWSLNoQYJs2R7Y8y6CahMQjPpd6QUERBIYIhjr6B0VOnqlm6+NwGBBG/K3O3bzOu784Acw4W5/uwJTwpHsQn0F3Q2N5skPJMSEMzBkjLPnuvnFFxFAd0mhrphtjI3B7yKE4xtMkLCHQBLp8l69irzqiogmAJ/uharG5rH/Bhj1QlIkLCImD8bAQMSWD9Ue8ysovveIpMooOcUCf7c+pu92uAs601KgOUAreccCWh9A633Pyqg9Q203n/zCvgHXclLUIktpWUAAAAASUVORK5CYII=" style="width: 16px;height:16px;">'
+            : '<img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAB9ElEQVR4nO2a4ZGCMBBGXwmUQAmUQAmWQAfawVmCHZgOvA7uOtAOzg60A+4Hw8jcAWYlycaQN7N/M98LYROikMlkMplM6nwApXYIDSrgDLSA0Y0Sni2d+LBKzUChKIAT/+VXsQoq4Idx+Ra460XzT8O0eC9faYXzzZGVyhfAFyuVH25xq5S/MS/f0vWF5Gh4Lr56+Z1SPq886/RJH3Zs5T+1AvrEVv5Cty0mha38ncTkbQ44Se/1tk++BTZKGb0hkd/rRPSHRN7oRPSHRD65ji+Rv5PY1ZZEvgVqlZSe2CGT32uELPCz1TTI5FWOuQWPS4fG4bgbZPJXFJreUL6vo4NxbS8zhhX8pDcm39eJ159GiVw++Lf9nHxfZ+Rbkc24Ubz3tiFvyJbm1K81Ub33IOvON+ya40Ewptp7P6QZCTRXW4djtUTykWOQhR7bIV7p+N9+dF7DIAt/5vHeFsz/UDlWUZ7zDfJJqLC/0RlWlJcbBd3np1RGWlHf6PqehLe41PQ5CXU4jWWUdE/LpfwhpIALKtxNwpU3WPpjuJqEOnBup9QskzehA/ugIeGub0uDfAKiPPAsQXK5GfWBZwkGu6Vf6sQLg2F+AvZawUJiGJe/KGYKytSRuVbMFJy/k2BU0yjRT0LyjW+OkkT/s5fJZDKZFPgF2+acfXQipdoAAAAASUVORK5CYII=" style="width: 16px;height:16px;">';
+
+        var menuEl = $("#Real_Menu");
+        var html = "";
+        menuEl.html("");
+        for (var i = 0; i < items.length; i++) {
+            html += '<li data-url="' + items[i].url + '" data-action="' + (items[i].action || "") + '">' +
+                '<div class="display_inline">' + (pageName === items[i].url.toLowerCase() ? currentPageIcon : "") + "</div>" +
+                items[i].key + "</li>";
+        }
+        menuEl.append(html);
+    };
+
+    /**
+     * Initialize the menu: bind dropdown toggle, backdrop, item clicks, theme and pagination buttons
+     */
+    this.initMenu = function () {
+        var self = this;
+
+        // Regenerate the menu when login state changes (immediately) and when theme changes
+        isLoginWatcher.onChange(function (isLogin) { self.generateMenu(isLogin); }, true);
+        window.darkThemeWatcher.onChange(function (dark) { self.generateMenu(dark); });
+
+        var menu = $("#Menu");
+
+        // Toggle dropdown open/close
+        $("#Menu_button").click(function (e) {
+            var dropup = $("#dropup2");
+            if (menu.attr("data-menu") === "false") {
+                dropup.addClass("open");
+                menu.attr("data-menu", "true");
+            } else {
+                dropup.removeClass("open");
+                menu.attr("data-menu", "false");
+            }
+            $("#dropdown-backdrop").attr("class", "dropdown-backdrop");
+        });
+
+        // Close dropdown when clicking the backdrop
+        $("#dropdown-backdrop").click(function (e) {
+            $("#dropup2").removeClass("open");
+            $("#tipBox").css("display", "none");
+            menu.attr("data-menu", "false");
+            $("#dropdown-backdrop").attr("class", "");
+        });
+
+        // Handle menu item clicks: navigate to page or run action
+        $("#Real_Menu").on("click", "li", function (e) {
+            var url = $(this).attr("data-url");
+            if (url) {
+                window.open("./" + url + ".html", "_self");
+            } else {
+                var action = $(this).attr("data-action");
+                console.log(action);
+                if (action) {
+                    $("#dropup2").removeClass("open");
+                    $("#tipBox").css("display", "none");
+                    menu.attr("data-menu", "false");
+                    $("#dropdown-backdrop").attr("class", "");
+                    window[action]();
+                }
+            }
+        });
+
+        // Dark / white theme toggle
+        $("#white").click(function () {
+            if (isBlackTheme()) {
+                $.cookie.set("black", "false");
+                $("html").attr("class", "white-theme");
+                window.darkThemeWatcher.update(false);
+            } else {
+                $.cookie.set("black", "true");
+                $("html").attr("class", "dark-theme");
+                window.darkThemeWatcher.update(true);
+            }
+        });
+
+        // Pagination buttons (only act when a global `pagination` exists, e.g. index/rss/search pages)
+        $("#before").click(function () {
+            if (window.pagination !== undefined) pagination.beforeClick();
+        });
+        $("#next").click(function () {
+            if (window.pagination !== undefined) pagination.nextClick();
+        });
     };
 };
