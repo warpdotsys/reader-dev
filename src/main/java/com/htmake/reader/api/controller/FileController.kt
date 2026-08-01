@@ -238,6 +238,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
             if (path.isEmpty()) return@forEach
             val file = resolveSecurePath(baseDir, path) ?: return@forEach
             logger.info { "localFile: $path $file" }
+            logger.debug("rootDir: {} path: {}", rootDir, file.path)
             if (!file.exists() || file.isDirectory) return@forEach
             val ext = getFileExt(file.name)
             if (ext !in setOf("txt", "epub", "umd", "cbz", "pdf")) {
@@ -245,6 +246,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
             }
             var relativePath = file.path
             if (relativePath.startsWith(rootDir)) relativePath = relativePath.removePrefix(rootDir)
+            logger.debug("relative path: {}", relativePath)
             val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)
             book.setUserNameSpace(userNameSpace)
             try {
@@ -290,10 +292,13 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
         val fileList = ArrayList<Map<String, Any>>()
         listFilesRecursively(directory).forEach { file ->
             if (file.name.startsWith(".") || !file.isFile || getFileExt(file.name) !in setOf("txt", "epub", "umd", "cbz", "pdf")) return@forEach
+            logger.debug("rootDir: {} path: {}", rootDir, file.path)
             var relativePath = file.path
             if (relativePath.startsWith(rootDir)) relativePath = relativePath.removePrefix(rootDir)
+            logger.debug("relative path: {}", relativePath)
             val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)
             book.setUserNameSpace(userNameSpace)
+            logger.debug("book {}", book)
             if (import > 0) {
                 val result = bookController.saveBookToShelf(book, userNameSpace, context)
                 if (result.second == null && result.first.isInShelf) fileList += mapOf("name" to file.name)

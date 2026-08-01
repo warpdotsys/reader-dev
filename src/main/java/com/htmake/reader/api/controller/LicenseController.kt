@@ -5,6 +5,11 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.coroutines.awaitResult
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.slf4j.MDCContext
 import mu.KotlinLogging
 import com.htmake.reader.api.ReturnData
 import com.htmake.reader.entity.License
@@ -112,28 +117,30 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
     }
 
     suspend fun checkLicense(license: License) {
-        webClient.getAbs("https://r.htmake.com/reader3/isLicenseValid?id=${license.id}").timeout(5000).send { response ->
-            runCatching {
-                val encrypted = response.result()?.bodyAsJsonObject()?.getJsonObject("data")?.getString("result")
-                val result = encrypted?.let { JsonObject(com.htmake.reader.utils.decryptData(it)) }
-                val isValid = result?.getBoolean("isValid") ?: true
-                setLicenseValid(isValid)
-                if (!isValid) {
-                    logger.info("密钥错误：{}", result?.getString("errorMsg") ?: "")
-                }
-                result?.getJsonObject("repeat")?.let { repeat ->
-                    logger.info(
-                        "请勿重复使用授权，上次检查时间：{}，上次检查ip：{}",
-                        LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(repeat.getLong("lastOnlineTime", 0L)),
-                            ZoneId.systemDefault()
-                        ),
-                        repeat.getString("lastOnlineIp")
-                    )
-                }
-            }.onFailure {
-                logger.info("check license error: {}", it.message)
+        val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+            webClient.getAbs("https://r.htmake.com/reader3/isLicenseValid?id=${license.id}").timeout(5000).send(handler)
+        }
+        logger.info("isLicenseValid: {}", response.bodyAsJsonObject())
+        runCatching {
+            val encrypted = response.bodyAsJsonObject()?.getJsonObject("data")?.getString("result")
+            val result = encrypted?.let { JsonObject(com.htmake.reader.utils.decryptData(it)) }
+            val isValid = result?.getBoolean("isValid") ?: true
+            setLicenseValid(isValid)
+            if (!isValid) {
+                logger.info("密钥错误：{}", result?.getString("errorMsg") ?: "")
             }
+            result?.getJsonObject("repeat")?.let { repeat ->
+                logger.info(
+                    "请勿重复使用授权，上次检查时间：{}，上次检查ip：{}",
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(repeat.getLong("lastOnlineTime", 0L)),
+                        ZoneId.systemDefault()
+                    ),
+                    repeat.getString("lastOnlineIp")
+                )
+            }
+        }.onFailure {
+            logger.info("check license error: {}", it.message)
         }
     }
 
@@ -158,30 +165,38 @@ class LicenseController(coroutineContext: CoroutineContext): BaseController(coro
             return
         }
 
-        webClient.postAbs("https://r.htmake.com/reader3/activateLicense")
-            .timeout(5000)
-            .sendJsonObject(JsonObject().put("content", content)) { response ->
-                runCatching {
-                    val payload = response.result()?.bodyAsJsonObject()
-                        ?: throw response.cause() ?: Exception("密钥激活失败")
-                    if (payload.getBoolean("isSuccess", false) != true) {
-                        throw Exception(payload.getString("errorMsg") ?: "密钥激活失败")
-                    }
-                    val licenseKey = payload.getJsonObject("data")?.getString("result")
-                        ?: throw Exception("密钥错误")
-                    val license = decryptToLicense(licenseKey) ?: throw Exception("密钥错误")
-                    if (!license.validHost(context.request().host())) {
-                        throw Exception("密钥授权域名错误")
-                    }
-                    licenseKey to license
-                }.onSuccess { (licenseKey, license) ->
-                    saveStorage("data", "license", value = licenseKey, ext = ".key")
-                    context.success(returnData.setData(mapOf("license" to license)))
-                }.onFailure { error ->
-                    logger.info("import license error: {}", error.message)
-                    context.success(returnData.setErrorMsg(error.message ?: "密钥激活错误"))
+        launch(
+            MDCContext() + Dispatchers.IO +
+                CoroutineExceptionHandler { _, e ->
+                    logger.info("activate license error: {}", e.message)
+                    context.success(returnData.setErrorMsg(e.message ?: "密钥激活失败:"))
                 }
-            }
+        ) {
+            webClient.postAbs("https://r.htmake.com/reader3/activateLicense")
+                .timeout(5000)
+                .sendJsonObject(JsonObject().put("content", content)) { response ->
+                    runCatching {
+                        val payload = response.result()?.bodyAsJsonObject()
+                            ?: throw response.cause() ?: Exception("密钥激活失败")
+                        if (payload.getBoolean("isSuccess", false) != true) {
+                            throw Exception(payload.getString("errorMsg") ?: "密钥激活失败")
+                        }
+                        val licenseKey = payload.getJsonObject("data")?.getString("result")
+                            ?: throw Exception("密钥错误")
+                        val license = decryptToLicense(licenseKey) ?: throw Exception("密钥错误")
+                        if (!license.validHost(context.request().host())) {
+                            throw Exception("密钥授权域名错误")
+                        }
+                        licenseKey to license
+                    }.onSuccess { (licenseKey, license) ->
+                        saveStorage("data", "license", value = licenseKey, ext = ".key")
+                        context.success(returnData.setData(mapOf("license" to license)))
+                    }.onFailure { error ->
+                        logger.info("import license error: {}", error.message)
+                        context.success(returnData.setErrorMsg(error.message ?: "密钥激活错误"))
+                    }
+                }
+        }
     }
 
     suspend fun activateLicense(context: RoutingContext): ReturnData {
