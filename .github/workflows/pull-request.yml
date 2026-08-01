@@ -70,7 +70,16 @@ jobs:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        id: web-node-modules
+        with:
+          path: web/node_modules
+          key: ${{ runner.os }}-web-node-modules-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-web-node-modules-
       - name: Install dependencies
+        if: steps.web-node-modules.outputs.cache-hit != 'true'
         run: cd web && npm ci
       - name: Build web
         run: cd web && npm run build
