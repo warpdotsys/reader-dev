@@ -1,8 +1,12 @@
 <template>
   <div class="popup-wrapper" :style="popupTheme">
     <div class="title-zone">
-      <div class="title">来源({{ bookSource.length }})</div>
-      <div :class="{ 'title-btn': true, loading: loadingMore }">
+      <div class="title">来源({{ showBookSourceList.length }})</div>
+      <div
+        class="title-btn"
+        v-show="!isSearching"
+        :class="{ loading: loading }"
+      >
         <el-select
           size="mini"
           v-model="bookSourceGroup"
@@ -18,6 +22,9 @@
           >
           </el-option>
         </el-select>
+        <span class="span-btn" @click="expand = !expand">{{
+          expand ? "收起" : "展开"
+        }}</span>
         <span :class="{ loading: loading }" @click="refresh">
           <i class="el-icon-loading" v-if="loading"></i>
           {{ loading ? "刷新中..." : "刷新" }}
@@ -29,17 +36,39 @@
           <i class="el-icon-loading" v-if="loadingMore"></i>
           {{ loadingMore ? "加载中..." : "加载更多" }}
         </span>
+        <span class="span-btn" @click="isSearching = !isSearching">{{
+          isSearching ? "取消" : "搜索"
+        }}</span>
+      </div>
+      <div
+        class="title-btn"
+        v-show="isSearching"
+        :class="{ loading: loadingMore }"
+      >
+        <el-input
+          class="booksource-filter-input"
+          size="mini"
+          placeholder="搜索书源"
+          v-model="searchKeyword"
+        ></el-input>
+        <span class="span-btn" @click="isSearching = !isSearching">{{
+          isSearching ? "取消" : "搜索"
+        }}</span>
       </div>
     </div>
     <div
       class="data-wrapper"
       ref="sourceList"
-      :class="{ night: $store.getters.isNight, day: !$store.getters.isNight }"
+      :class="{
+        night: $store.getters.isNight,
+        day: !$store.getters.isNight,
+        expand: expand
+      }"
     >
       <div class="source-list">
         <div
           class="source-item"
-          v-for="(searchBook, index) in bookSource"
+          v-for="(searchBook, index) in showBookSourceList"
           :class="{ selected: isSelected(searchBook) }"
           :key="index"
           @click="changeBookSource(searchBook)"
@@ -76,7 +105,10 @@ export default {
       bookSourceGroup: "",
       bookSourceGroupIndexMap: {},
       loading: false,
-      loadingMore: false
+      expand: false,
+      loadingMore: false,
+      isSearching: false,
+      searchKeyword: ""
     };
   },
   props: ["visible"],
@@ -97,6 +129,13 @@ export default {
     },
     readingBook() {
       return this.$store.getters.readingBook || {};
+    },
+    showBookSourceList() {
+      return this.isSearching && this.searchKeyword
+        ? this.bookSource.filter(t =>
+            (t.latestChapterTitle || "").includes(this.searchKeyword)
+          )
+        : this.bookSource;
     }
   },
   mounted() {},
@@ -379,6 +418,9 @@ export default {
     .booksource-group-select {
       width: 140px;
     }
+    .booksource-filter-input {
+      width: 200px;
+    }
     .source-count {
       display: inline-block;
       color: #606266;
@@ -394,6 +436,10 @@ export default {
   .data-wrapper {
     height: 300px;
     overflow: auto;
+
+    &.expand {
+      height: 85vh;
+    }
 
     .source-list {
       .source-item {

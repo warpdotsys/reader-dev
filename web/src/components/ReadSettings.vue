@@ -9,9 +9,9 @@
       <div class="title-btn" @click="resetConfig">重置</div>
       <div class="title-btn" @click="restoreConfig">同步</div>
       <div class="title-btn" @click="backupConfig">保存</div>
-      <div class="title-btn" @click="toggleNotAutoSync">{{
-        notAutoSync ? "自动同步" : "取消自动同步"
-      }}</div>
+      <div class="title-btn" @click="toggleNotAutoSync">
+        {{ notAutoSync ? "自动同步" : "取消自动同步" }}
+      </div>
     </div>
     <div class="setting-list">
       <ul>
@@ -490,6 +490,22 @@
           </div>
         </li>
         <li>
+          <span class="setting-item-title">Epub解析</span>
+          <div class="selection-zone">
+            <span
+              class="span-item"
+              v-for="(mode, index) in epubModes"
+              :key="index"
+              :class="{ selected: config.epubMode == mode }"
+              @click="setEpubMode(mode)"
+              >{{ mode }}</span
+            >
+            <span class="small-tip"
+              >❗️解析可能导致显示问题，但是翻页性能较好，样式支持更多，也支持简繁切换。</span
+            >
+          </div>
+        </li>
+        <li>
           <span class="setting-item-title">请求超时</span>
           <div class="resize">
             <span class="less" @click="decConfig('chapterRequestTimeout')"
@@ -613,6 +629,7 @@ export default {
       configDefaultTypeList: ["白天默认", "黑夜默认"],
       autoReadingMethods: ["像素滚动", "段落滚动"],
       chineseFonts: ["简体", "繁体", "原文"],
+      epubModes: ["iframe", "解析"],
       quickKeyModes: ["默认", "自定义"],
       quickKeyOps: [
         "上一页",
@@ -750,6 +767,10 @@ export default {
       this.$emit("readMethodChange");
       this.config = { ...this.config, readMethod };
     },
+    setEpubMode(epubMode) {
+      this.$emit("epubModeChange");
+      this.config = { ...this.config, epubMode };
+    },
     setQuickKeyMode(quickKeyMode) {
       this.config = { ...this.config, quickKeyMode };
     },
@@ -768,7 +789,10 @@ export default {
       }
     },
     restoreConfig() {
-      if (this.$root.$children[0] && this.$root.$children[0].restoreUserConfig) {
+      if (
+        this.$root.$children[0] &&
+        this.$root.$children[0].restoreUserConfig
+      ) {
         this.$root.$children[0].restoreUserConfig();
       }
     },
@@ -1296,6 +1320,10 @@ export default {
           cursor: pointer;
           color: #ed4259;
         }
+      }
+
+      .small-tip {
+        font-size: 13px;
       }
     }
   }
