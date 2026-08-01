@@ -27,35 +27,35 @@
  * @param {string} extraClass - Optional CSS class to add
  */
 function showTip(title, closeText, bodyHtml, extraClass) {
-    .html(title);
-    .html(closeText);
-    .html(bodyHtml);
-    .css("display", "block");
+    $("#tipName").html(title);
+    $("#tipClose").html(closeText);
+    $("#tipBody").html(bodyHtml);
+    $("#tipBox").css("display", "block");
 
     // Remove previous extra class if any
-    var lastClass = .attr("data-lastclass");
+    var lastClass = $("#tipBox").attr("data-lastclass");
     if (lastClass) {
-        .removeClass(lastClass);
+        $("#tipBox").removeClass(lastClass);
     }
 
     // Add new extra class
     if (extraClass) {
-        .addClass(extraClass);
-        .attr("data-lastclass", extraClass);
+        $("#tipBox").addClass(extraClass);
+        $("#tipBox").attr("data-lastclass", extraClass);
     }
 
-    .attr("class", "dropdown-backdrop");
+    $("#dropdown-backdrop").attr("class", "dropdown-backdrop");
 }
 
 /**
  * Close the tip dialog
  */
 function closeTip() {
-    .attr("class", "");
-    .css("display", "none");
-    var lastClass = .attr("data-lastclass");
+    $("#dropdown-backdrop").attr("class", "");
+    $("#tipBox").css("display", "none");
+    var lastClass = $("#tipBox").attr("data-lastclass");
     if (lastClass) {
-        .removeClass(lastClass);
+        $("#tipBox").removeClass(lastClass);
     }
 }
 
@@ -67,8 +67,8 @@ function isHtml(str) {
 }
 
 // Tip dialog event handlers
-.click(function () { closeTip(); });
-.click(function (e) { closeTip(); });
+$("#tipClose").click(function () { closeTip(); });
+$("#dropdown-backdrop").click(function (e) { closeTip(); });
 
 // ============================================================
 // Section 2: Title Manager
@@ -277,22 +277,14 @@ function loadMoreBookSource(bookUrl) {
 
 function showLoginBox() {
     showTip("登录", "关闭",
-        "<div class='login-form'>
-" +
-        "    <form action='/login' onsubmit='return doLogin(this, true);'>
-" +
-        "       <label>用户名：<input type='text' name='username' /></label>
-" +
-        "       <label>密　码：<input type='text' name='password' /></label>
-" +
-        "       <label>邀请码：<input type='text' name='code' /></label>
-" +
-        "       <button type='submit' onclick='doLogin(this.parentNode, false)'>注册</button>
-" +
-        "       <button type='submit' onclick='doLogin(this.parentNode, true)'>登录</button>
-" +
-        "   </form>
-" +
+        "<div class='login-form'>\n" +
+        "    <form action='/login' onsubmit='return doLogin(this, true);'>\n" +
+        "       <label>用户名：<input type='text' name='username' /></label>\n" +
+        "       <label>密　码：<input type='text' name='password' /></label>\n" +
+        "       <label>邀请码：<input type='text' name='code' /></label>\n" +
+        "       <button type='submit' onclick='doLogin(this.parentNode, false)'>注册</button>\n" +
+        "       <button type='submit' onclick='doLogin(this.parentNode, true)'>登录</button>\n" +
+        "   </form>\n" +
         "</div>",
         "top-tip"
     );
@@ -367,9 +359,9 @@ window.darkThemeWatcher = new Watcher(false);
 var isBlack = $.cookie.get("black");
 if (isBlack && isBlack.toString() === "true") {
     window.darkThemeWatcher.update(true);
-    .attr("class", "dark-theme");
+    $("html").attr("class", "dark-theme");
 } else {
-    .attr("class", "white-theme");
+    $("html").attr("class", "white-theme");
 }
 
 // ============================================================
@@ -388,29 +380,18 @@ function showSettingBox() {
     }
 
     showTip("设置", "关闭",
-        "<div class='login-form'>
-" +
-        "    <form action='' onsubmit='return saveSetting(this);'>
-" +
-        "       <label>上边界：<input type='text' name='top' value='" + values[0] + "' /></label>
-" +
-        "       <label>下边界：<input type='text' name='bottom' value='" + values[1] + "' /></label>
-" +
-        "       <label>左边界：<input type='text' name='left' value='" + values[2] + "' /></label>
-" +
-        "       <label>右边界：<input type='text' name='right' value='" + values[3] + "' /></label>
-" +
-        "       <label>最大高度：<input type='text' name='maxHeight' value='" + values[4] + "' /></label>
-" +
-        "       <input id='hideSBInput' type='hidden' name='hideSB' value='" + values[5] + "' />
-" +
+        "<div class='login-form'>\n" +
+        "    <form action='' onsubmit='return saveSetting(this);'>\n" +
+        "       <label>上边界：<input type='text' name='top' value='" + values[0] + "' /></label>\n" +
+        "       <label>下边界：<input type='text' name='bottom' value='" + values[1] + "' /></label>\n" +
+        "       <label>左边界：<input type='text' name='left' value='" + values[2] + "' /></label>\n" +
+        "       <label>右边界：<input type='text' name='right' value='" + values[3] + "' /></label>\n" +
+        "       <label>最大高度：<input type='text' name='maxHeight' value='" + values[4] + "' /></label>\n" +
+        "       <input id='hideSBInput' type='hidden' name='hideSB' value='" + values[5] + "' />\n" +
         "       <label>隐藏滚动条：<span style='border: 1px solid #ddd;display: inline-block; padding: 3px 10px;' onclick='toggleScrollBarHidden(this)'>" +
-        (values[5] == 1 ? "已开启" : "已关闭") + "</span></label>
-" +
-        "       <button type='submit'>保存</button>
-" +
-        "   </form>
-" +
+        (values[5] == 1 ? "已开启" : "已关闭") + "</span></label>\n" +
+        "       <button type='submit'>保存</button>\n" +
+        "   </form>\n" +
         "</div>",
         "top-tip"
     );
@@ -423,13 +404,11 @@ function clearStorage() {
 }
 
 function showErrorMsg() {
-    showTip("温馨提示", "关闭", "<pre class='notice-info'>
-" + errorMsg + "</pre>");
+    showTip("温馨提示", "关闭", "<pre class='notice-info'>\n" + errorMsg + "</pre>");
 }
 
 function showNotice(msg) {
-    showTip("温馨提示", "关闭", "<pre class='notice-info'>
-" + msg + "</pre>");
+    showTip("温馨提示", "关闭", "<pre class='notice-info'>\n" + msg + "</pre>");
 }
 
 function isInteger(val) {
@@ -465,12 +444,12 @@ function saveSetting(form) {
 }
 
 function toggleScrollBarHidden(el) {
-    var val = .val();
+    var val = $("#hideSBInput").val();
     if (parseInt(val) === 1) {
-        .val("0");
+        $("#hideSBInput").val("0");
         el.innerText = "已关闭";
     } else {
-        .val("1");
+        $("#hideSBInput").val("1");
         el.innerText = "已开启";
     }
 }
@@ -479,7 +458,7 @@ function updatePagePosition() {
     var pageName = window.location.pathname.split("/");
     pageName = pageName[pageName.length - 1].replace(".html", "").toLowerCase();
     var saved = $.cookie.get(pageName + "bj");
-    var box = ;
+    var box = $("#pageBox");
 
     if (saved) {
         var vals = saved.split(",");
@@ -492,15 +471,15 @@ function updatePagePosition() {
             if (0 | vals[5]) {
                 var maxH = 0 | vals[4];
                 maxH = maxH > window.innerHeight / 2 ? maxH : window.innerHeight;
-                .css("max-height", maxH + "px");
-                .css("overflow", "hidden");
-                .css("max-height", maxH + "px");
-                .css("overflow", "hidden");
+                $("body").css("max-height", maxH + "px");
+                $("body").css("overflow", "hidden");
+                $("html").css("max-height", maxH + "px");
+                $("html").css("overflow", "hidden");
             } else {
-                if (.css("max-height")) .css("max-height", "none");
-                .css("overflow", "auto");
-                if (.css("max-height")) .css("max-height", "none");
-                .css("overflow", "auto");
+                if ($("body").css("max-height")) $("body").css("max-height", "none");
+                $("body").css("overflow", "auto");
+                if ($("html").css("max-height")) $("html").css("max-height", "none");
+                $("html").css("overflow", "auto");
             }
 
             if (window.reader && window.reader.viewDisplay) {
@@ -558,9 +537,9 @@ function debounce(fn, delay) {
  * Switch active menu tab
  */
 function chooseMenu(element, sectionId) {
-    .removeClass("choose");
-    .addClass("choose");
-    .addClass("choose");
+    $(".choose").removeClass("choose");
+    $(element).addClass("choose");
+    $("#" + sectionId).addClass("choose");
 }
 
 /**
@@ -675,8 +654,8 @@ var Pagination = function () {
     this.list = [];
     this.page = 1;
     this.pageCount = 1;
-    this.next = ;
-    this.before = ;
+    this.next = $("#next");
+    this.before = $("#before");
     this.pageIndexList = [];
     this.containerHeight = 0;
     this.onPageChange = null;
@@ -690,12 +669,12 @@ var Pagination = function () {
      * @param {number} initialPage - Starting page number
      */
     this.init = function (itemSelector, offset, containerSelector, onPageChange, initialPage) {
-        this.list = ;
+        this.list = $(itemSelector);
         if (!this.list || !this.list.length) return;
 
         this.onPageChange = onPageChange;
         containerSelector = containerSelector || ".right_t.flexone";
-        this.containerHeight = [0].offsetHeight - offset;
+        this.containerHeight = $(containerSelector)[0].offsetHeight - offset;
         this.computePage();
         this.page = initialPage || 1;
         this.display(this.page);
@@ -728,7 +707,7 @@ var Pagination = function () {
 
     /** Set pagination icon state */
     this.set = function (which, className) {
-        .removeClass(which + "Y").removeClass(which + "N").addClass(className);
+        $("#" + which + "_img").removeClass(which + "Y").removeClass(which + "N").addClass(className);
     };
 
     this.beforeClick = function () { this.display(this.page - 1); };
@@ -749,7 +728,7 @@ var Pagination = function () {
         var start = this.pageIndexList[this.page - 1];
         var end = this.pageIndexList[this.page];
         for (var i = start; i < end; i++) {
-            .css("display", "block");
+            $(this.list[i]).css("display", "block");
         }
 
         // Update pagination icons

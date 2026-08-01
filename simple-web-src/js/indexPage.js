@@ -42,7 +42,7 @@ function onKeywordChange() {
  * Filter and sort books based on keyword input
  */
 function computeShowBookList() {
-    var keyword = .val().replace(/^\s+/g, "").replace(/\s+$/g, "");
+    var keyword = $("#keyword").val().replace(/^\s+/g, "").replace(/\s+$/g, "");
     var allBooks = bookListWatcher.getValue();
 
     // Sort by last read time (most recent first)
@@ -81,7 +81,7 @@ function computeShowBookList() {
  */
 function onPageInit() {
     bookApi.getBookshelf();
-    var container = ;
+    var container = $("#booklist");
 
     showBookListWatcher.onChange(function (books) {
         if (books && books.length > 0) {
@@ -90,9 +90,9 @@ function onPageInit() {
                 container.append(html);
                 pagination.init(".book-info", 0);
             });
-            .text("(" + books.length + ")");
+            $("#bookNum").text("(" + books.length + ")");
         } else {
-            .text("(0)");
+            $("#bookNum").text("(0)");
             container.html("");
             container.append(
                 "<div style='font-size: 1.6em;margin-top: 140px;text-align: center'>\n" +
@@ -118,17 +118,17 @@ var bookInfoWatcher = new Watcher();
  * Show book info popup for book at given index
  */
 function showBookInfo(index) {
+    var book = showBookListWatcher.getValue()[index];
     bookInfoWatcher.onChange(function (bookInfo) {
         renderTmpl("bookInfo", {
             bookInfo: bookInfo,
             isSearch: false,
             encodeBookUrl: encodeURIComponent(bookInfo.bookUrl)
         }, function (html) {
-            showTip(bookInfo.name, "关闭", html);
+            showTip(book.name, "关闭", html);
         });
     });
 
-    var book = showBookListWatcher.getValue()[index];
     bookInfoWatcher.update(book);
 }
 
@@ -174,8 +174,8 @@ function changeSource(bookUrl) {
             });
         } else {
             showTip(bookInfo.name + "(" + bookInfo.originName + ")", "关闭",
-                '<div style="text-align: center;">\n    <b onclick='loadMoreBookSource("' +
-                bookUrl + '")'> 加载更多书源</b>\n</div>');
+                '<div style="text-align: center;">\n    <b onclick=\'loadMoreBookSource("' +
+                bookUrl + '")\'>加载更多书源</b>\n</div>');
         }
     }, true);
 

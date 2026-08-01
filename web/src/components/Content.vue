@@ -1,8 +1,10 @@
 <script>
 import DPlayer from "dplayer";
 import { loadFont } from "../plugins/helper";
+import ShadowIframe from "./ShadowIframe.vue";
 export default {
   name: "Content",
+  components: { ShadowIframe },
   data() {
     return {
       currentTime: 0,
@@ -104,8 +106,6 @@ export default {
   mounted() {
     if (this.isAudio) {
       this.play(true);
-    } else if (this.isEpub) {
-      this.initIframe();
     }
     window.contentCom = this;
     this.loadCustomFontFamil();
@@ -226,9 +226,7 @@ export default {
         } else {
           this.syncIframeHeight();
         }
-        this.sendToIframe("execute", {
-          script: 'document.body.style.transform="translateX(0px)";'
-        });
+        this.transformX(0);
       }
     },
     showContent: {
@@ -482,13 +480,24 @@ export default {
       }
     },
     renderEpub() {
+      if (!this.content.startsWith("/book-assets")) {
+        return null;
+      }
+      let src = this.content;
+      if (!src.startsWith("/")) {
+        src = "/" + src;
+      }
       return (
-        <iframe
+        <ShadowIframe
           class="epub-iframe"
           ref="iframe"
           style={this.iframeStyle}
-          src={this.$store.getters.apiRoot + this.content}
-        ></iframe>
+          attrs={{
+            src: this.$store.getters.apiRoot + src,
+            renderType: this.isEpubIframe ? "iframe" : "shadowDom"
+          }}
+          on={{ iframeEvent: this.iframeEvent }}
+        ></ShadowIframe>
       );
     },
     iframeEvent(event, data) {
@@ -627,19 +636,34 @@ export default {
       pStyle +=
         "font-weight: " + this.containerStyle.fontWeight + " !important;";
       pStyle += "color: " + this.containerStyle.color + " !important;";
-      let imgStyle = "";
+      let bodyExtraStyle = "";
       if (this.isSlideRead) {
-        imgStyle =
+        bodyExtraStyle =
           "\n          height: 100%;\n          " +
-          "columns: calc(100vw - 16px - var(--horizontal-padding, 0px)) 1;\n" +
+          (this.isEpubIframe ? "overflow: hidden;" : "") +
+          "\n          columns: calc(100vw - 16px - var(--horizontal-padding, 0px)) 1;\n" +
           "          column-gap: calc(16px + var(--horizontal-padding, 0px));\n        ";
       }
       let imgRules = "";
       if (this.isSlideRead) {
         imgRules = "\n          break-inside: avoid;\n        ";
       }
-      this.sendToIframe("setStyle", {
-        style: `
+      let headingStyle =
+        "font-family: " + this.containerStyle.fontFamily + " !important;";
+      headingStyle +=
+        "font-weight: " + this.containerStyle.fontWeight + " !important;";
+      headingStyle += "color: " + this.containerStyle.color + " !important;";
+      let customFont = "";
+      if (this.currentCustomFontFamily) {
+        customFont = `
+        @font-face {
+          font-family: "${this.currentCustomFontFamily.name}";
+          src: url("${this.currentCustomFontFamily.url}");
+        }`;
+      }
+      this.ensure(() => {
+        this.$refs.iframe.setIframeStyle(`
+        ${customFont}
         *::-webkit-scrollbar {
           display: none;
           width: 0 !important;
@@ -655,6 +679,7 @@ export default {
         body {
           margin: 0 !important;
           ${bodyStyle}
+          ${bodyExtraStyle}
         }
         .reading {
           color: red !important;
@@ -663,35 +688,15 @@ export default {
           ${pStyle}
         }
         body h1, body h2, body h3, body h4 {
-          font-family: ${this.containerStyle.fontFamily} !important;
-          font-weight: ${this.containerStyle.fontWeight} !important;
-          color: ${this.containerStyle.color} !important;
+          ${headingStyle}
         }
         img, body img {
           display: block;
-          max-width: ${this.isSlideRead ? "100vw" : "100%"} !important;
+          max-width: ${this.isEpubIframe ? "100vw" : "100%"} !important;
           height: auto !important;
-          ${imgStyle}
           ${imgRules}
-        }`
-      });
-    },
-    sendToIframe(event, data) {
-      if (!this.$refs.iframe) {
-        setTimeout(() => {
-          this.sendToIframe(event, data);
-        }, 10);
-        return;
-      }
-      this.$refs.iframe &&
-        this.$refs.iframe.contentWindow &&
-        this.$refs.iframe.contentWindow.postMessage(
-          JSON.stringify({
-            event,
-            ...data
-          }),
-          "*"
-        );
+        }`);
+      }, () => this.$refs.iframe);
     },
     formatTime(val) {
       if (!val) {

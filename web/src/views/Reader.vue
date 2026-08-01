@@ -549,7 +549,7 @@ import jump from "../plugins/jump";
 import Animate from "../plugins/animate";
 import { setCache, getCache } from "../plugins/cache";
 import { simplized, traditionalized } from "../plugins/chinese";
-import { ttsVoiceList } from "../plugins/ttsVoices";
+import { ttsVoiceDialects } from "../plugins/ttsVoices";
 import { isOnlyWhitespace, stripWhitespace } from "../plugins/ttsWhitespace";
 import {
   cacheFirstRequest,
@@ -1200,7 +1200,11 @@ export default {
         return this.localVoiceList;
       }
       if (this.ttsType === "edge") {
-        return ttsVoiceList;
+        const mandarin = ttsVoiceDialects["中文（普通话，简体）"] || {};
+        return (mandarin.LocalName || []).map((LocalName, index) => ({
+          LocalName,
+          name: (mandarin.ShortName || [])[index]
+        }));
       }
       return this.httpTTSList;
     },
