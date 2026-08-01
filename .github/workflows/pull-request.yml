@@ -15,7 +15,33 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/main/**'
+              - 'src/test/**'
+              - '*.gradle'
+              - '*.gradle.kts'
+              - 'gradle/**'
+              - 'settings.gradle'
+              - 'cli.gradle'
+              - 'build.gradle.kts'
+            web:
+              - 'web/**'
+              - 'simple-web-src/**'
+
+  build-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,20 +52,34 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'gradle'
-      - name: Cache Gradle wrapper
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Compile Kotlin
+        run: ./gradlew compileKotlin compileJava -x test
+
+  build-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-      - name: Compile Kotlin
-        run: ./gradlew compileKotlin compileJava -x test
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        id: web-node-modules
+        with:
+          path: web/node_modules
+          key: ${{ runner.os }}-web-node-modules-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-web-node-modules-
+      - name: Install dependencies
+        if: steps.web-node-modules.outputs.cache-hit != 'true'
+        run: cd web && npm ci
       - name: Build web
-        run: cd web && npm ci && npm run build
+        run: cd web && npm run build

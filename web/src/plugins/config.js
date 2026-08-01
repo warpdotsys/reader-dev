@@ -40,6 +40,7 @@ const defaultDayConfig = {
   autoReadingPixel: 1,
   autoReadingLineTime: 1000,
   pageMode: "自适应",
+  selectionAction: "操作弹窗",
   topPadding: 0,
   bottomPadding: 0,
   horizontalPadding: 0,
@@ -57,8 +58,7 @@ const defaultDayConfig = {
     PageDown: "上一页",
     Home: "首页",
     End: "尾页"
-  },
-  selectionAction: "操作弹窗"
+  }
 };
 const defaultNightConfig = {
   configDefaultType: "黑夜默认",
@@ -83,6 +83,7 @@ const defaultNightConfig = {
   autoReadingPixel: 1,
   autoReadingLineTime: 1000,
   pageMode: "自适应",
+  selectionAction: "操作弹窗",
   topPadding: 0,
   bottomPadding: 0,
   horizontalPadding: 0,
@@ -100,8 +101,7 @@ const defaultNightConfig = {
     PageDown: "上一页",
     Home: "首页",
     End: "尾页"
-  },
-  selectionAction: "操作弹窗"
+  }
 };
 const settings = {
   shelfConfig: {

@@ -25,6 +25,15 @@ function hashParam(key, val) {
     }
   }
 }
+function debounce(func, delay) {
+  let timerId;
+  return function(...args) {
+    clearTimeout(timerId);
+    timerId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
 // 创建源规则容器对象
 function Container() {
   let ruleJson = {};
@@ -35,7 +44,7 @@ function Container() {
   let contentJson = {};
 
   // 基本以及其他
-  $$(".rules .base").forEach((item) => (ruleJson[item.title] = ""));
+  $$(".rules .base").forEach(item => (ruleJson[item.title] = ""));
   ruleJson.lastUpdateTime = 0;
   ruleJson.customOrder = 0;
   ruleJson.weight = 0;
@@ -43,33 +52,33 @@ function Container() {
   ruleJson.enabledExplore = true;
 
   // 搜索规则
-  $$(".rules .ruleSearch").forEach((item) => (searchJson[item.title] = ""));
+  $$(".rules .ruleSearch").forEach(item => (searchJson[item.title] = ""));
   ruleJson.ruleSearch = searchJson;
 
   // 发现规则
-  $$(".rules .ruleExplore").forEach((item) => (exploreJson[item.title] = ""));
+  $$(".rules .ruleExplore").forEach(item => (exploreJson[item.title] = ""));
   ruleJson.ruleExplore = exploreJson;
 
   // 详情页规则
-  $$(".rules .ruleBookInfo").forEach((item) => (bookInfoJson[item.title] = ""));
+  $$(".rules .ruleBookInfo").forEach(item => (bookInfoJson[item.title] = ""));
   ruleJson.ruleBookInfo = bookInfoJson;
 
   // 目录规则
-  $$(".rules .ruleToc").forEach((item) => (tocJson[item.title] = ""));
+  $$(".rules .ruleToc").forEach(item => (tocJson[item.title] = ""));
   ruleJson.ruleToc = tocJson;
 
   // 正文规则
-  $$(".rules .ruleContent").forEach((item) => (contentJson[item.title] = ""));
+  $$(".rules .ruleContent").forEach(item => (contentJson[item.title] = ""));
   ruleJson.ruleContent = contentJson;
 
   return ruleJson;
 }
 // 选项卡Tab切换事件处理
 function showTab(tabName) {
-  $$(".tabtitle>*").forEach((node) => {
+  $$(".tabtitle>*").forEach(node => {
     node.className = node.className.replace(" this", "");
   });
-  $$(".tabbody>*").forEach((node) => {
+  $$(".tabbody>*").forEach(node => {
     node.className = node.className.replace(" this", "");
   });
   $(`.tabbody>.${$(`.tabtitle>*[name=${tabName}]`).className}`).className +=
@@ -85,11 +94,11 @@ function newRule(rule) {
 var RuleSources = [];
 if (localStorage.getItem("debug@BookSources")) {
   RuleSources = JSON.parse(localStorage.getItem("debug@BookSources"));
-  RuleSources.forEach((item) => ($("#RuleList").innerHTML += newRule(item)));
+  RuleSources.forEach(item => ($("#RuleList").innerHTML += newRule(item)));
 }
 // 页面加载完成事件
 window.onload = () => {
-  $$(".tabtitle>*").forEach((item) => {
+  $$(".tabtitle>*").forEach(item => {
     item.addEventListener("click", () => {
       showTab(item.innerHTML);
     });
@@ -102,8 +111,8 @@ function HttpGet(url) {
     mode: "cors",
     credentials: "include"
   })
-    .then((res) => res.json())
-    .catch((err) => console.error("Error:", err));
+    .then(res => res.json())
+    .catch(err => console.error("Error:", err));
 }
 // 提交数据
 function HttpPost(url, data) {
@@ -116,14 +125,14 @@ function HttpPost(url, data) {
       "Content-Type": "application/json;charset=utf-8"
     })
   })
-    .then((res) => res.json())
-    .catch((err) => console.error("Error:", err));
+    .then(res => res.json())
+    .catch(err => console.error("Error:", err));
 }
 // 将源表单转化为源对象
 function rule2json() {
   let RuleJSON = Container();
   // 转换base
-  Object.keys(RuleJSON).forEach((key) => {
+  Object.keys(RuleJSON).forEach(key => {
     if (!key.startsWith("rule")) {
       RuleJSON[key] = $("#" + key).value;
     }
@@ -131,7 +140,7 @@ function rule2json() {
 
   // 转换搜索规则
   let searchJson = {};
-  Object.keys(RuleJSON.ruleSearch).forEach((key) => {
+  Object.keys(RuleJSON.ruleSearch).forEach(key => {
     if ($("#" + "ruleSearch_" + key).value)
       searchJson[key] = $("#" + "ruleSearch_" + key).value;
   });
@@ -139,7 +148,7 @@ function rule2json() {
 
   // 转换发现规则
   let exploreJson = {};
-  Object.keys(RuleJSON.ruleExplore).forEach((key) => {
+  Object.keys(RuleJSON.ruleExplore).forEach(key => {
     if ($("#" + "ruleExplore_" + key).value)
       exploreJson[key] = $("#" + "ruleExplore_" + key).value;
   });
@@ -147,7 +156,7 @@ function rule2json() {
 
   // 转换详情页规则
   let bookInfoJson = {};
-  Object.keys(RuleJSON.ruleBookInfo).forEach((key) => {
+  Object.keys(RuleJSON.ruleBookInfo).forEach(key => {
     if ($("#" + "ruleBookInfo_" + key).value)
       bookInfoJson[key] = $("#" + "ruleBookInfo_" + key).value;
   });
@@ -155,7 +164,7 @@ function rule2json() {
 
   // 转换目录规则
   let tocJson = {};
-  Object.keys(RuleJSON.ruleToc).forEach((key) => {
+  Object.keys(RuleJSON.ruleToc).forEach(key => {
     if ($("#" + "ruleToc_" + key).value)
       tocJson[key] = $("#" + "ruleToc_" + key).value;
   });
@@ -163,7 +172,7 @@ function rule2json() {
 
   // 转换正文规则
   let contentJson = {};
-  Object.keys(RuleJSON.ruleContent).forEach((key) => {
+  Object.keys(RuleJSON.ruleContent).forEach(key => {
     if ($("#" + "ruleContent_" + key).value)
       contentJson[key] = $("#" + "ruleContent_" + key).value;
   });
@@ -191,7 +200,7 @@ function rule2json() {
 function json2rule(RuleEditor) {
   let RuleJSON = Container();
   // 转换base
-  Object.keys(RuleJSON).forEach((key) => {
+  Object.keys(RuleJSON).forEach(key => {
     if (!key.startsWith("rule")) {
       let val = RuleEditor[key];
       if (typeof val == "number") {
@@ -207,7 +216,7 @@ function json2rule(RuleEditor) {
   // 转换搜索规则
   if (RuleEditor.ruleSearch) {
     let searchJson = RuleEditor.ruleSearch;
-    Object.keys(RuleJSON.ruleSearch).forEach((key) => {
+    Object.keys(RuleJSON.ruleSearch).forEach(key => {
       $("#" + "ruleSearch_" + key).value = searchJson[key]
         ? searchJson[key]
         : "";
@@ -217,7 +226,7 @@ function json2rule(RuleEditor) {
   // 转换发现规则
   if (RuleEditor.ruleExplore) {
     let exploreJson = RuleEditor.ruleExplore;
-    Object.keys(RuleJSON.ruleExplore).forEach((key) => {
+    Object.keys(RuleJSON.ruleExplore).forEach(key => {
       $("#" + "ruleExplore_" + key).value = exploreJson[key]
         ? exploreJson[key]
         : "";
@@ -227,7 +236,7 @@ function json2rule(RuleEditor) {
   // 转换详情页规则
   if (RuleEditor.ruleBookInfo) {
     let bookInfoJson = RuleEditor.ruleBookInfo;
-    Object.keys(RuleJSON.ruleBookInfo).forEach((key) => {
+    Object.keys(RuleJSON.ruleBookInfo).forEach(key => {
       $("#" + "ruleBookInfo_" + key).value = bookInfoJson[key]
         ? bookInfoJson[key]
         : "";
@@ -237,7 +246,7 @@ function json2rule(RuleEditor) {
   // 转换目录规则
   if (RuleEditor.ruleToc) {
     let tocJson = RuleEditor.ruleToc;
-    Object.keys(RuleJSON.ruleToc).forEach((key) => {
+    Object.keys(RuleJSON.ruleToc).forEach(key => {
       $("#" + "ruleToc_" + key).value = tocJson[key] ? tocJson[key] : "";
     });
   }
@@ -245,7 +254,7 @@ function json2rule(RuleEditor) {
   // 转换正文规则
   if (RuleEditor.ruleContent) {
     let contentJson = RuleEditor.ruleContent;
-    Object.keys(RuleJSON.ruleContent).forEach((key) => {
+    Object.keys(RuleJSON.ruleContent).forEach(key => {
       $("#" + "ruleContent_" + key).value = contentJson[key]
         ? contentJson[key]
         : "";
@@ -288,10 +297,10 @@ function redo() {
 }
 function setRule(editRule) {
   let checkRule = RuleSources.find(
-    (x) => x.bookSourceUrl == editRule.bookSourceUrl
+    x => x.bookSourceUrl == editRule.bookSourceUrl
   );
   if ($(`input[id="${editRule.bookSourceUrl}"]`)) {
-    Object.keys(checkRule).forEach((key) => {
+    Object.keys(checkRule).forEach(key => {
       checkRule[key] = editRule[key];
     });
     $(
@@ -302,18 +311,18 @@ function setRule(editRule) {
     $("#RuleList").innerHTML += newRule(editRule);
   }
 }
-$$("input").forEach((item) => {
+$$("input").forEach(item => {
   item.addEventListener("change", () => {
     todo();
   });
 });
-$$("textarea").forEach((item) => {
+$$("textarea").forEach(item => {
   item.addEventListener("change", () => {
     todo();
   });
 });
 // 处理按钮点击事件
-$(".menu").addEventListener("click", (e) => {
+$(".menu").addEventListener("click", e => {
   let thisNode = e.target;
   thisNode =
     thisNode.parentNode.nodeName == "svg"
@@ -326,20 +335,20 @@ $(".menu").addEventListener("click", (e) => {
   thisNode.setAttribute("class", "busy");
   switch (thisNode.id) {
     case "push":
-      $$("#RuleList>label>div").forEach((item) => {
+      $$("#RuleList>label>div").forEach(item => {
         item.className = "";
       });
       (async () => {
         await HttpPost(`/saveBookSources`, RuleSources)
-          .then((json) => {
+          .then(json => {
             if (json.isSuccess) {
               let okData = json.data;
               if (Array.isArray(okData)) {
                 let failMsg = ``;
                 if (RuleSources.length > okData.length) {
-                  RuleSources.forEach((item) => {
+                  RuleSources.forEach(item => {
                     if (
-                      okData.find((x) => x.bookSourceUrl == item.bookSourceUrl)
+                      okData.find(x => x.bookSourceUrl == item.bookSourceUrl)
                     ) {
                       //
                     } else {
@@ -364,7 +373,7 @@ $(".menu").addEventListener("click", (e) => {
               alert(`批量推送源失败!\nErrorMsg: ${json.errorMsg}`);
             }
           })
-          .catch((err) => {
+          .catch(err => {
             alert(`批量推送源失败,无法连接到「Reader」!\n${err}`);
           });
         thisNode.setAttribute("class", "");
@@ -374,14 +383,14 @@ $(".menu").addEventListener("click", (e) => {
       showTab("源列表");
       (async () => {
         await HttpGet(`/getBookSources`)
-          .then((json) => {
+          .then(json => {
             if (json.isSuccess) {
               $("#RuleList").innerHTML = "";
               localStorage.setItem(
                 "debug@BookSources",
                 JSON.stringify((RuleSources = json.data))
               );
-              RuleSources.forEach((item) => {
+              RuleSources.forEach(item => {
                 $("#RuleList").innerHTML += newRule(item);
               });
               alert(`成功拉取 ${RuleSources.length} 条源`);
@@ -389,7 +398,7 @@ $(".menu").addEventListener("click", (e) => {
               alert(`批量拉取源失败!\nErrorMsg: ${json.errorMsg}`);
             }
           })
-          .catch((err) => {
+          .catch(err => {
             alert(`批量拉取源失败,无法连接到「Reader」!\n${err}`);
           });
         thisNode.setAttribute("class", "");
@@ -410,7 +419,7 @@ $(".menu").addEventListener("click", (e) => {
       $("#RuleJsonString").value = JSON.stringify(rule2json(), null, 4);
       break;
     case "initial":
-      $$(".rules textarea").forEach((item) => {
+      $$(".rules textarea").forEach(item => {
         item.value = "";
       });
       todo();
@@ -427,13 +436,23 @@ $(".menu").addEventListener("click", (e) => {
       //   .replace(/^.*?:/, "ws:")
       //   .replace(/\d+$/, port => parseInt(port) + 1);
       let DebugInfos = $("#DebugConsole");
+      let shouldScroll = false;
+      const debounceScrollIfNeeded = debounce(scrollIfNeeded, 100);
       function DebugPrint(msg) {
         DebugInfos.value += `\n${msg}`;
-        DebugInfos.scrollTop = DebugInfos.scrollHeight;
+        shouldScroll = true;
+        debounceScrollIfNeeded();
+        // DebugInfos.scrollTop = DebugInfos.scrollHeight;
+      }
+      function scrollIfNeeded() {
+        if (shouldScroll) {
+          DebugInfos.scrollTop = DebugInfos.scrollHeight;
+          shouldScroll = false;
+        }
       }
       let saveRule = [rule2json()];
       HttpPost(`/saveBookSources`, saveRule)
-        .then((sResult) => {
+        .then(sResult => {
           if (sResult.isSuccess) {
             let sKey = $("#DebugKey").value ? $("#DebugKey").value : "我的";
             $(
@@ -512,7 +531,7 @@ $(".menu").addEventListener("click", (e) => {
             // };
           } else throw `${sResult.errorMsg}`;
         })
-        .catch((err) => {
+        .catch(err => {
           DebugPrint(`调试过程意外中止，以下是详细错误信息:\n${err}`);
           thisNode.setAttribute("class", "");
         });
@@ -521,7 +540,7 @@ $(".menu").addEventListener("click", (e) => {
       (async () => {
         let saveRule = [rule2json()];
         await HttpPost(`/saveBookSource`, saveRule[0])
-          .then((json) => {
+          .then(json => {
             alert(
               json.isSuccess
                 ? `源《${saveRule[0].bookSourceName}》已成功保存到「Reader」`
@@ -529,7 +548,7 @@ $(".menu").addEventListener("click", (e) => {
             );
             setRule(saveRule[0]);
           })
-          .catch((err) => {
+          .catch(err => {
             alert(`保存源失败,无法连接到「Reader」!\n${err}`);
           });
         thisNode.setAttribute("class", "");
@@ -541,14 +560,14 @@ $(".menu").addEventListener("click", (e) => {
     thisNode.setAttribute("class", "");
   }, 500);
 });
-$("#DebugKey").addEventListener("keydown", (e) => {
+$("#DebugKey").addEventListener("keydown", e => {
   if (e.keyCode == 13) {
     let clickEvent = document.createEvent("MouseEvents");
     clickEvent.initEvent("click", true, false);
     $("#debug").dispatchEvent(clickEvent);
   }
 });
-$("#Filter").addEventListener("keydown", (e) => {
+$("#Filter").addEventListener("keydown", e => {
   if (e.keyCode == 13) {
     let cashList = [];
     $("#RuleList").innerHTML = "";
@@ -557,7 +576,7 @@ $("#Filter").addEventListener("keydown", (e) => {
       cashList = RuleSources;
     } else {
       let patt = new RegExp(sKey);
-      RuleSources.forEach((source) => {
+      RuleSources.forEach(source => {
         if (
           patt.test(source.bookSourceUrl) ||
           patt.test(source.bookSourceName) ||
@@ -567,18 +586,18 @@ $("#Filter").addEventListener("keydown", (e) => {
         }
       });
     }
-    cashList.forEach((source) => {
+    cashList.forEach(source => {
       $("#RuleList").innerHTML += newRule(source);
     });
   }
 });
 
 // 列表规则更改事件
-$("#RuleList").addEventListener("click", (e) => {
+$("#RuleList").addEventListener("click", e => {
   let editRule = null;
   if (e.target && e.target.getAttribute("name") == "rule") {
     editRule = rule2json();
-    json2rule(RuleSources.find((x) => x.bookSourceUrl == e.target.id));
+    json2rule(RuleSources.find(x => x.bookSourceUrl == e.target.id));
   } else return;
   if (editRule.bookSourceUrl == "") return;
   if (editRule.bookSourceName == "")
@@ -590,7 +609,7 @@ $("#RuleList").addEventListener("click", (e) => {
   localStorage.setItem("debug@BookSources", JSON.stringify(RuleSources));
 });
 // 处理列表按钮事件
-$(".tab3>.titlebar").addEventListener("click", (e) => {
+$(".tab3>.titlebar").addEventListener("click", e => {
   let thisNode = e.target;
   if (thisNode.nodeName != "BUTTON") return;
   switch (thisNode.id) {
@@ -620,12 +639,12 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
                     JSON.stringify((RuleSources = newSources))
                   );
                   $("#RuleList").innerHTML = "";
-                  RuleSources.forEach((item) => {
+                  RuleSources.forEach(item => {
                     $("#RuleList").innerHTML += newRule(item);
                   });
                 } else {
                   newSources = newSources.filter(
-                    (item) =>
+                    item =>
                       !JSON.stringify(RuleSources).includes(item.bookSourceUrl)
                   );
                   RuleSources.push(...newSources);
@@ -633,7 +652,7 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
                     "debug@BookSources",
                     JSON.stringify(RuleSources)
                   );
-                  newSources.forEach((item) => {
+                  newSources.forEach(item => {
                     $("#RuleList").innerHTML += newRule(item);
                   });
                 }
@@ -655,7 +674,7 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
         .replace(/.*?\s(\d+)\s(\d+)\s(\d+:\d+:\d+).*/, "$2$1$3")
         .replace(/:/g, "")}.json`;
       let myBlob = new Blob([JSON.stringify(RuleSources, null, 4)], {
-        type: "application/json",
+        type: "application/json"
       });
       fileExport.href = window.URL.createObjectURL(myBlob);
       fileExport.click();
@@ -669,13 +688,13 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
       if (confirm(`确定要删除选定源吗?\n(同时删除APP内源)`)) {
         let selectRuleUrl = selectRule.id;
         let deleteSources = RuleSources.filter(
-          (item) => item.bookSourceUrl == selectRuleUrl
+          item => item.bookSourceUrl == selectRuleUrl
         ); // 提取待删除的源
         let laveSources = RuleSources.filter(
-          (item) => !(item.bookSourceUrl == selectRuleUrl)
+          item => !(item.bookSourceUrl == selectRuleUrl)
         ); // 提取待留下的源
         HttpPost(`/deleteBookSources`, deleteSources)
-          .then((json) => {
+          .then(json => {
             if (json.isSuccess) {
               let selectNode = document.getElementById(selectRuleUrl)
                 .parentNode;
@@ -685,7 +704,7 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
                 JSON.stringify((RuleSources = laveSources))
               );
               if ($("#bookSourceUrl").value == selectRuleUrl) {
-                $$(".rules textarea").forEach((item) => {
+                $$(".rules textarea").forEach(item => {
                   item.value = "";
                 });
                 todo();
@@ -694,7 +713,7 @@ $(".tab3>.titlebar").addEventListener("click", (e) => {
               console.log(`以上源已删除!`);
             }
           })
-          .catch((err) => {
+          .catch(err => {
             alert(`删除源失败,无法连接到「Reader」!\n${err}`);
           });
       }

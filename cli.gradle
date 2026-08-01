@@ -17,7 +17,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'kotlin'
 
 group = 'com.htmake'
-version = '4.0.3'
+version = '4.0.4'
 sourceCompatibility = '1.8'
 
 repositories {
