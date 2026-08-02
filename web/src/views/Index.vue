@@ -104,15 +104,7 @@
         </div>
       </div>
       <div class="bottom-icons">
-        <a
-          href="https://github.com/warpdotsys/reader-dev"
-          target="_blank"
-          title="reader-dev · Forked from hectorqin/reader &amp; changshengyu/reader"
-          ><div class="bottom-icon"><img v-if="isNight" :src="require('../assets/imgs/github.png')" alt="" /><img v-else :src="require('../assets/imgs/github2.png')" alt="" /></div
-        ></a>
-        <span class="bottom-fork-tip" title="Forked from hectorqin/reader &amp; changshengyu/reader"
-          >Fork of hectorqin/reader · changshengyu/reader</span
-        >
+        <a href="https://github.com/warpdotsys/reader-dev" target="_blank"><div class="bottom-icon"><img v-if="isNight" :src="require('../assets/imgs/github.png')" alt="" /><img v-else :src="require('../assets/imgs/github2.png')" alt="" /></div></a>
         <span class="theme-item" :style="themeColor" ref="themes" @click="toogleNight"><i class="el-icon-moon" v-if="!isNight"></i><i class="el-icon-sunny" v-else></i></span>
       </div>
     </div>
@@ -3764,13 +3756,7 @@ export default {
           width: 36px;
           height: 36px;
         }
-.bottom-fork-tip {
-  font-size: 10px;
-  color: #999;
-  margin: 0 8px;
-  cursor: default;
-  user-select: none;
-}
+
       }
 
       .theme-item {
