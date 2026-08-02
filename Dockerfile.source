@@ -12,13 +12,13 @@ ENV JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"
 WORKDIR /app
 # 先复制构建脚本并预下载依赖，该层可被 docker 层缓存复用
 COPY --chown=gradle:gradle cli.gradle settings.gradle gradle ./
-RUN gradle -b cli.gradle dependencies --no-daemon || true
+RUN gradle -b cli.gradle dependencies --no-daemon -Dorg.gradle.vfs.watch=false || true
 # 复制源码与前端产物
 ADD --chown=gradle:gradle . /app
 COPY --from=build-web /app/web/dist /app/src/main/resources/web
 RUN \
     rm src/main/java/com/htmake/reader/ReaderUIApplication.kt; \
-    gradle -b cli.gradle assemble --no-daemon; \
+    gradle -b cli.gradle assemble --no-daemon -Dorg.gradle.vfs.watch=false; \
     mv ./build/libs/*.jar ./build/libs/reader.jar
 
 # ---- Runtime ----
