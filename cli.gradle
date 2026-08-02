@@ -125,18 +125,33 @@ sourceSets {
 
 springBoot {
     mainClassName = 'com.htmake.reader.ReaderApplicationKt'
+    // 安全修复：显式声明覆盖 BOM/传递依赖版本（force 对 spring-boot BOM 无效）
+    implementation 'ch.qos.logback:logback-classic:1.2.13'
+    implementation 'ch.qos.logback:logback-core:1.2.13'
+    implementation 'org.yaml:snakeyaml:1.31'
+    implementation 'net.minidev:json-smart:2.4.9'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'com.squareup.okio:okio:2.10.0'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    implementation 'commons-codec:commons-codec:1.17.0'
+    implementation 'io.netty:netty-codec:4.1.136.Final'
+    implementation 'io.netty:netty-common:4.1.136.Final'
+    implementation 'io.netty:netty-buffer:4.1.136.Final'
+    implementation 'io.netty:netty-transport:4.1.136.Final'
+    implementation 'io.netty:netty-transport-native-unix-common:4.1.136.Final'
+    // jackson 2.18.8（修 jackson-core/databind 最新 CVE）
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.8'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.18.8'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.8'
+    // hutool 5.8.25（修 CVE-2023-51075/51080）
+    implementation 'cn.hutool:hutool-crypto:5.8.25'
+    implementation 'cn.hutool:hutool-core:5.8.25'
+    // spring 5.2.20+（修 CVE-2022-22965 CRITICAL / 22968 / 22970 / 20863）
+    implementation 'org.springframework:spring-beans:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-context:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-expression:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-core:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-aop:5.2.20.RELEASE'
 }
 
-// 安全修复：覆盖 spring-boot BOM 管理的库版本
-configurations.all {
-    resolutionStrategy {
-        force 'ch.qos.logback:logback-classic:1.2.13'
-        force 'ch.qos.logback:logback-core:1.2.13'
-        force 'org.yaml:snakeyaml:1.31'
-        force 'net.minidev:json-smart:2.4.9'
-        force 'org.apache.commons:commons-lang3:3.18.0'
-        force 'com.squareup.okio:okio:2.10.0'
-        force 'org.apache.httpcomponents:httpclient:4.5.14'
-        force 'commons-codec:commons-codec:1.17.0'
-    }
-}
+
