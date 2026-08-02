@@ -1085,7 +1085,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     maxSize = it
                     emptyList<SearchBook>()
                 } else {
-                    searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate = true, userNameSpace = userNameSpace)
                 }
             } else {
                 emptyList<SearchBook>()
@@ -1201,7 +1201,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     maxSize = it
                     emptyList<SearchBook>()
                 } else {
-                    searchBookWithSource(bookSourceList.getString(0), book, accurate = false, userNameSpace = userNameSpace)
+                    searchBookWithSource(bookSourceList.getString(0), book, accurate = true, userNameSpace = userNameSpace)
                 }
             } else {
                 emptyList<SearchBook>()
@@ -1316,7 +1316,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 } else {
                     var bookSource = getBookSourceStringBySourceURLOpt(searchBook.origin, userNameSpace)
                     if (bookSource != null) {
-                        searchBookWithSource(bookSource, book, accurate = false, userNameSpace = userNameSpace)
+                        searchBookWithSource(bookSource, book, accurate = true, userNameSpace = userNameSpace)
                     } else {
                         arrayListOf<SearchBook>()
                     }
