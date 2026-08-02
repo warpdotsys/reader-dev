@@ -11,7 +11,7 @@ FROM gradle:7-jdk8 AS build-env
 ENV JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"
 WORKDIR /app
 # 先复制构建脚本并预下载依赖，该层可被 docker 层缓存复用
-COPY --chown=gradle:gradle cli.gradle gradle ./
+COPY --chown=gradle:gradle cli.gradle settings.gradle gradle ./
 RUN gradle -b cli.gradle dependencies --no-daemon || true
 # 复制源码与前端产物
 ADD --chown=gradle:gradle . /app
