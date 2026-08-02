@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.5.21'
+    ext.kotlin_version = '1.6.0'
     repositories {
         mavenCentral()
     }
@@ -40,16 +40,24 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2'
     // vertx
-    implementation "io.vertx:vertx-core:3.8.5"
-    implementation "io.vertx:vertx-lang-kotlin:3.8.5"
-    implementation "io.vertx:vertx-lang-kotlin-coroutines:3.8.5"
-    implementation 'io.vertx:vertx-web:3.8.5'
-    implementation 'io.vertx:vertx-web-client:3.8.5'
-    implementation 'io.vertx:vertx-auth-common:3.8.5'
+    // netty 升级（修 CVE-2019-20444 等；vertx 兼容 netty 4.1.x）
+    implementation "io.netty:netty-codec-http:4.1.136.Final"
+    implementation "io.netty:netty-handler:4.1.136.Final"
+    implementation "io.netty:netty-codec-http2:4.1.136.Final"
+    implementation "io.netty:netty-resolver-dns:4.1.136.Final"
+    implementation "io.vertx:vertx-core:3.9.4"
+    implementation "io.vertx:vertx-lang-kotlin:3.9.4"
+    implementation "io.vertx:vertx-lang-kotlin-coroutines:3.9.4"
+    implementation 'io.vertx:vertx-web:3.9.4'
+    implementation 'io.vertx:vertx-web-client:3.9.4'
+    implementation 'io.vertx:vertx-auth-common:3.9.4'
 
     // json
-    implementation "com.google.code.gson:gson:2.8.5"
+    implementation "com.google.code.gson:gson:2.8.9"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.5"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.13.5"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.5"
 
     // log
     implementation "io.github.microutils:kotlin-logging:1.6.24"
@@ -58,7 +66,7 @@ dependencies {
     implementation "com.google.guava:guava:28.0-jre"
 
     // 网络
-    implementation "com.squareup.okhttp3:okhttp:4.9.1"
+    implementation "com.squareup.okhttp3:okhttp:4.9.2"
     implementation "com.squareup.okhttp3:logging-interceptor:4.1.0"
     // Retrofit
     implementation "com.squareup.retrofit2:retrofit:2.6.1"
@@ -69,9 +77,9 @@ dependencies {
     implementation(fileTree(dir: 'src/lib', include: ['rhino-*.jar']))
 
     // 规则相关
-    implementation "org.jsoup:jsoup:1.14.1"
+    implementation "org.jsoup:jsoup:1.15.3"
     implementation "cn.wanghaomiao:JsoupXpath:2.5.0"
-    implementation "com.jayway.jsonpath:json-path:2.6.0"
+    implementation "com.jayway.jsonpath:json-path:2.9.0"
 
     // xml
     // 弃用 xmlpull-1.1.4.0，因为它需要 Java9
@@ -80,8 +88,8 @@ dependencies {
     // implementation "com.github.stefanhaustein:kxml2:2.4.2"
 
     //加解密类库
-    implementation "cn.hutool:hutool-crypto:5.8.0.M1"
-    implementation "cn.hutool:hutool-core:5.8.0.M1"
+    implementation "cn.hutool:hutool-crypto:5.8.22"
+    implementation "cn.hutool:hutool-core:5.8.22"
 
     // mongodb
     implementation "org.mongodb:mongodb-driver-sync:3.8.2"
@@ -117,4 +125,18 @@ sourceSets {
 
 springBoot {
     mainClassName = 'com.htmake.reader.ReaderApplicationKt'
+}
+
+// 安全修复：覆盖 spring-boot BOM 管理的库版本
+configurations.all {
+    resolutionStrategy {
+        force 'ch.qos.logback:logback-classic:1.2.13'
+        force 'ch.qos.logback:logback-core:1.2.13'
+        force 'org.yaml:snakeyaml:1.31'
+        force 'net.minidev:json-smart:2.4.9'
+        force 'org.apache.commons:commons-lang3:3.18.0'
+        force 'com.squareup.okio:okio:2.10.0'
+        force 'org.apache.httpcomponents:httpclient:4.5.14'
+        force 'commons-codec:commons-codec:1.17.0'
+    }
 }
