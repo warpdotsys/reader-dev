@@ -8,7 +8,7 @@ buildscript {
     }
 }
 plugins {
-    id 'org.springframework.boot' version '2.2.11.RELEASE'
+    id 'org.springframework.boot' version '2.7.12'
     id 'java'
     id "org.jetbrains.kotlin.plugin.spring" version "1.3.61"
 }
@@ -125,11 +125,11 @@ dependencies {
     implementation 'cn.hutool:hutool-crypto:5.8.25'
     implementation 'cn.hutool:hutool-core:5.8.25'
     // spring 5.2.20+（修 CVE-2022-22965 CRITICAL / 22968 / 22970 / 20863）
-    implementation 'org.springframework:spring-beans:5.2.22.RELEASE'
-    implementation 'org.springframework:spring-context:5.2.22.RELEASE'
-    implementation 'org.springframework:spring-expression:5.2.22.RELEASE'
-    implementation 'org.springframework:spring-core:5.2.22.RELEASE'
-    implementation 'org.springframework:spring-aop:5.2.22.RELEASE'
+    implementation 'org.springframework:spring-beans:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-context:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-expression:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-core:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-aop:5.2.24.RELEASE'
 }
 compileKotlin {
     kotlinOptions {
