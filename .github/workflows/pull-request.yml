@@ -10,19 +10,16 @@ concurrency:
   group: ${{ github.head_ref }}
   cancel-in-progress: true
 
-# 安全：公开仓库 + self-hosted runner —— fork PR 的代码可能含恶意内容，
-# 只在同仓库分支的 PR 上用 self-hosted；fork PR 落到隔离的托管 runner。
-# 另请在仓库 Settings → Actions 中设置 fork PR workflow 需批准或禁用。
+defaults:
+  run:
+    shell: bash
+
 permissions:
   contents: read
 
-defaults:
-  run:
-    shell: cmd
-
 jobs:
   changes:
-    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'self-hosted' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
@@ -48,7 +45,7 @@ jobs:
   build-backend:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
-    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'self-hosted' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -58,13 +55,15 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'gradle'
+      - name: Make gradlew executable
+        run: chmod +x gradlew
       - name: Compile Kotlin
-        run: gradlew.bat compileKotlin compileJava -x test
+        run: ./gradlew compileKotlin compileJava -x test
 
   build-web:
     needs: changes
     if: needs.changes.outputs.web == 'true'
-    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'self-hosted' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
