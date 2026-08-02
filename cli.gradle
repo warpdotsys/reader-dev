@@ -41,12 +41,12 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2'
     // vertx
     // netty 升级（修 CVE-2019-20444 等；vertx 兼容 netty 4.1.x）
-    implementation "io.vertx:vertx-core:3.9.4"
-    implementation "io.vertx:vertx-lang-kotlin:3.9.4"
-    implementation "io.vertx:vertx-lang-kotlin-coroutines:3.9.4"
-    implementation 'io.vertx:vertx-web:3.9.4'
-    implementation 'io.vertx:vertx-web-client:3.9.4'
-    implementation 'io.vertx:vertx-auth-common:3.9.4'
+    implementation "io.vertx:vertx-core:3.9.16"
+    implementation "io.vertx:vertx-lang-kotlin:3.9.16"
+    implementation "io.vertx:vertx-lang-kotlin-coroutines:3.9.16"
+    implementation 'io.vertx:vertx-web:3.9.16'
+    implementation 'io.vertx:vertx-web-client:3.9.16'
+    implementation 'io.vertx:vertx-auth-common:3.9.16'
 
     // json
     implementation "com.google.code.gson:gson:2.8.9"
@@ -104,16 +104,6 @@ dependencies {
     implementation 'org.springframework:spring-expression:5.2.20.RELEASE'
     implementation 'org.springframework:spring-core:5.2.20.RELEASE'
     implementation 'org.springframework:spring-aop:5.2.20.RELEASE'
-    // netty 4.1.68（修 CVE-2019-20444 CRITICAL + CVE-2021-37136/37137；单独验证兼容性）
-    implementation 'io.netty:netty-codec-http:4.1.68.Final'
-    implementation 'io.netty:netty-handler:4.1.68.Final'
-    implementation 'io.netty:netty-codec-http2:4.1.68.Final'
-    implementation 'io.netty:netty-resolver-dns:4.1.68.Final'
-    implementation 'io.netty:netty-codec:4.1.68.Final'
-    implementation 'io.netty:netty-codec-dns:4.1.68.Final'
-    implementation 'io.netty:netty-common:4.1.68.Final'
-    implementation 'io.netty:netty-buffer:4.1.68.Final'
-    implementation 'io.netty:netty-transport:4.1.68.Final'
     // 安全修复：显式声明覆盖 BOM/传递依赖版本（force 对 spring-boot BOM 无效）
     implementation 'ch.qos.logback:logback-classic:1.2.13'
     implementation 'ch.qos.logback:logback-core:1.2.13'
