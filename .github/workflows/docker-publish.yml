@@ -78,5 +78,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # self-hosted：本地磁盘缓存（无网络传输，跨 run 持久，快于 gha 远程缓存）
+          cache-from: type=local,src=/tmp/buildx-cache
+          cache-to: type=local,dest=/tmp/buildx-cache,mode=max
