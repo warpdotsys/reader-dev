@@ -92,9 +92,15 @@ module.exports = {
       alias: {
         // 使用完整版 Vue（含编译器）：Index.vue 等存在内联 template 字符串组件，
         // runtime-only 构建无法编译，会导致列表组件渲染为空
-        "vue$": "vue/dist/vue.esm.js"
+        "vue$": "vue/dist/vue.common.js"
       }
     }
+  },
+  chainWebpack: config => {
+    // chainWebpack 在 vue-cli 内部插件（base.js 设置 runtime alias）之后执行，
+    // 覆盖为 CJS 完整版：ESM 完整版会被 webpack tree-shaking 删掉编译器，
+    // CommonJS 入口（prod=vue.common.prod.js 压缩完整版）不会被静态分析删除
+    config.resolve.alias.set("vue$", "vue/dist/vue.common.js")
   },
   // 编译依赖为 es5
   transpileDependencies: ["element-ui", "codejar", "vue-lazyload"],
