@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: docker-publish
-  cancel-in-progress: false
+  # 同 tag 重复触发（tag push + workflow_dispatch）时取消旧 run，只保留最新
+  cancel-in-progress: true
 
 jobs:
   release:
