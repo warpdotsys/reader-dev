@@ -98,6 +98,12 @@ dependencies {
 
     // 转换繁体
     // implementation "com.github.liuyueyi.quick-chinese-transfer:quick-transfer-core:0.2.1"
+    // spring 5.2.20（修 CVE-2022-22965 CRITICAL；单独验证兼容性）
+    implementation 'org.springframework:spring-beans:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-context:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-expression:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-core:5.2.20.RELEASE'
+    implementation 'org.springframework:spring-aop:5.2.20.RELEASE'
     // 安全修复：显式声明覆盖 BOM/传递依赖版本（force 对 spring-boot BOM 无效）
     implementation 'ch.qos.logback:logback-classic:1.2.13'
     implementation 'ch.qos.logback:logback-core:1.2.13'
