@@ -17,7 +17,7 @@ concurrency:
 jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    runs-on: DE
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -40,7 +40,7 @@ jobs:
           generate_release_notes: true
 
   build-and-push:
-    runs-on: DE
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
