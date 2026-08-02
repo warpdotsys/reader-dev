@@ -186,6 +186,7 @@ class WebBook(
                 response.url,
                 canReName
             )
+            book.tocHtml = null
             return book
         }
     }
