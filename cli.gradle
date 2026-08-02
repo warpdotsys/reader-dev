@@ -6,6 +6,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+}
 plugins {
     id 'org.springframework.boot' version '2.1.6.RELEASE'
     id 'java'
@@ -151,7 +152,4 @@ sourceSets {
 
 springBoot {
     mainClassName = 'com.htmake.reader.ReaderApplicationKt'
-
 }
-
-
