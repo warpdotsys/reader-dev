@@ -41,10 +41,10 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2'
     // vertx
     // netty 升级（修 CVE-2019-20444 等；vertx 兼容 netty 4.1.x）
-    implementation "io.netty:netty-codec-http:4.1.136.Final"
-    implementation "io.netty:netty-handler:4.1.136.Final"
-    implementation "io.netty:netty-codec-http2:4.1.136.Final"
-    implementation "io.netty:netty-resolver-dns:4.1.136.Final"
+    implementation "io.netty:netty-codec-http:4.1.68.Final"
+    implementation "io.netty:netty-handler:4.1.68.Final"
+    implementation "io.netty:netty-codec-http2:4.1.68.Final"
+    implementation "io.netty:netty-resolver-dns:4.1.68.Final"
     implementation "io.vertx:vertx-core:3.9.4"
     implementation "io.vertx:vertx-lang-kotlin:3.9.4"
     implementation "io.vertx:vertx-lang-kotlin-coroutines:3.9.4"
@@ -111,12 +111,12 @@ dependencies {
     implementation 'com.squareup.okio:okio:2.10.0'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     implementation 'commons-codec:commons-codec:1.17.0'
-    implementation 'io.netty:netty-codec:4.1.136.Final'
-    implementation 'io.netty:netty-codec-dns:4.1.136.Final'
-    implementation 'io.netty:netty-common:4.1.136.Final'
-    implementation 'io.netty:netty-buffer:4.1.136.Final'
-    implementation 'io.netty:netty-transport:4.1.136.Final'
-    implementation 'io.netty:netty-transport-native-unix-common:4.1.136.Final'
+    implementation 'io.netty:netty-codec:4.1.68.Final'
+    implementation 'io.netty:netty-codec-dns:4.1.68.Final'
+    implementation 'io.netty:netty-common:4.1.68.Final'
+    implementation 'io.netty:netty-buffer:4.1.68.Final'
+    implementation 'io.netty:netty-transport:4.1.68.Final'
+    implementation 'io.netty:netty-transport-native-unix-common:4.1.68.Final'
     // jackson 2.18.8（修 jackson-core/databind 最新 CVE）
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.8'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.18.8'
