@@ -83,6 +83,7 @@ function customWorkboxPlugin(generateCacheKey, checkResponse) {
 module.exports = {
   publicPath: "./",
   productionSourceMap: false,
+  runtimeCompiler: true,
   devServer: {
     port: 8081
   },
