@@ -9,7 +9,7 @@
     "sync": "yarn build && rm -rf ../src/main/resources/web && mv dist ../src/main/resources/web"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.33.0",
     "codejar": "3.5.0",
     "core-js": "3.38.0",
     "dplayer": "^1.27.1",
