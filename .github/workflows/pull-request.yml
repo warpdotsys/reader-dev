@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   changes:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ${{ (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') && 'DE' || 'ubuntu-latest' }}
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -44,7 +45,7 @@ jobs:
 
   build-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: github.actor != 'dependabot[bot]' && needs.changes.outputs.backend == 'true'
     runs-on: ${{ (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') && 'DE' || 'ubuntu-latest' }}
     steps:
       - name: Checkout
@@ -62,7 +63,7 @@ jobs:
 
   build-web:
     needs: changes
-    if: needs.changes.outputs.web == 'true'
+    if: github.actor != 'dependabot[bot]' && needs.changes.outputs.web == 'true'
     runs-on: ${{ (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') && 'DE' || 'ubuntu-latest' }}
     steps:
       - name: Checkout
