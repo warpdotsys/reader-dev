@@ -151,6 +151,7 @@ export default {
         const template = doc.documentElement.outerHTML;
         this.renderShadowDom(template, url);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
         this.initing = false;
       }
