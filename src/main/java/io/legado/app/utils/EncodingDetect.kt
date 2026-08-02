@@ -11,20 +11,10 @@ import java.io.FileInputStream
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object EncodingDetect {
 
-    private val headTagRegex = "(?i)<head>[\\s\\S]*?</head>".toRegex()
-
     fun getHtmlEncode(bytes: ByteArray): String {
         try {
-            val htmlStr = String(bytes)
-            var head: String? = null
-            val startIndex = htmlStr.indexOf("<head>", ignoreCase = true)
-            if (startIndex > -1) {
-                val endIndex = htmlStr.indexOf("</head>", startIndex, ignoreCase = true)
-                if (endIndex > -1) {
-                    head = htmlStr.substring(startIndex, endIndex + "</head>".length)
-                }
-            }
-            val doc = Jsoup.parseBodyFragment(head ?: headTagRegex.find(htmlStr)!!.value)
+            val htmlStr = String(bytes, Charsets.UTF_8)
+            val doc = Jsoup.parse(htmlStr)
             val metaTags = doc.getElementsByTag("meta")
             var charsetStr: String
             for (metaTag in metaTags) {
@@ -35,11 +25,12 @@ object EncodingDetect {
                 val httpEquiv = metaTag.attr("http-equiv")
                 if (httpEquiv.equals("content-type", true)) {
                     val content = metaTag.attr("content")
-                    val idx = content.indexOf("charset=", ignoreCase = true)
-                    charsetStr = if (idx > -1) {
-                        content.substring(idx + "charset=".length)
+                    if (content.toLowerCase().contains("charset")) {
+                        charsetStr = content.substring(
+                            content.toLowerCase().indexOf("charset") + "charset=".length
+                        )
                     } else {
-                        content.substringAfter(";")
+                        charsetStr = content.substring(content.toLowerCase().indexOf(";") + 1)
                     }
                     if (charsetStr.isNotEmpty()) {
                         return charsetStr
