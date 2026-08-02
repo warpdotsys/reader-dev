@@ -1938,11 +1938,11 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
         for (k in 0 until sourceList.size) {
             var searchBook = sourceList.get(k)
-            // 遍历判断书本是否存在
+            // 遍历判断书源是否存在（同一书源只保留一条，避免同名同作者多版本重复）
             var existIndex: Int = -1
             for (i in 0 until bookSourceList.size()) {
                 var _searchBook = bookSourceList.getJsonObject(i).mapTo(SearchBook::class.java)
-                if (_searchBook.bookUrl.equals(searchBook.bookUrl)) {
+                if (_searchBook.origin.equals(searchBook.origin)) {
                     existIndex = i
                     break;
                 }
