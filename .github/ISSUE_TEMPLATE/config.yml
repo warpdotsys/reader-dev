@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 项目主页
+    url: https://github.com/warpdotsys/reader-dev
+    about: 项目主页与 Release

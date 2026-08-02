@@ -48,3 +48,12 @@ node_modules
 # git 与 CI 元数据（减小 build context）
 .git
 .github
+
+# 文档/元数据（不影响构建：修改这些文件不触发 Docker 层缓存失效）
+README.md
+LICENSE
+docs/
+*.md
+web/README.md
+web/LICENSE
+web/*.md
