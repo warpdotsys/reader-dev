@@ -24,6 +24,7 @@ RUN \
 # ---- Runtime ----
 FROM amazoncorretto:8u442-alpine3.21-jre
 RUN \
+    apk upgrade --no-cache; \
     apk add --no-cache ca-certificates tini tzdata; \
     update-ca-certificates; \
     rm -rf /var/cache/apk/*;
