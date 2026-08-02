@@ -1,5 +1,6 @@
 <script>
 import DPlayer from "dplayer";
+import ShadowIframe from "./ShadowIframe.vue";
 import { loadFont } from "../plugins/helper";
 export default {
   name: "Content",
@@ -482,13 +483,14 @@ export default {
       }
     },
     renderEpub() {
+      if (!this.content.startsWith("/book-assets")) {
+        return null;
+      }
       return (
-        <iframe
-          class="epub-iframe"
-          ref="iframe"
-          style={this.iframeStyle}
+        <ShadowIframe
           src={this.$store.getters.apiRoot + this.content}
-        ></iframe>
+          renderType={this.isEpubIframe ? "iframe" : "shadowDom"}
+        />
       );
     },
     iframeEvent(event, data) {

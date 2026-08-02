@@ -3939,7 +3939,6 @@ export default {
         this.isEpub ||
         this.isAudio ||
         this.isVideo ||
-        this.isPdf ||
         this.isCbz ||
         this.isCarToon
       ) {

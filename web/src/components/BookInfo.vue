@@ -1,6 +1,5 @@
 <template>
   <el-dialog
-    title="书籍信息"
     :visible.sync="show"
     :width="dialogSmallWidth"
     :fullscreen="$store.state.miniInterface"
@@ -9,6 +8,29 @@
     "
     :before-close="cancel"
   >
+    <template #title>
+      <span class="book-info-title">书籍信息</span>
+      <span class="book-info-title-btns">
+        <el-button
+          type="text"
+          v-if="isInShelf && $route.name === 'index'"
+          @click="editBook"
+          >编辑</el-button
+        >
+        <el-button type="text" v-if="isInShelf" @click="showBookConfig"
+          >设置</el-button
+        >
+        <el-button type="text" v-if="isInShelf" @click="deleteBook"
+          >移出书架</el-button
+        >
+        <el-button type="text" v-if="isInShelf" @click="triggerBookCoverRefClick"
+          >修改封面</el-button
+        >
+        <el-button type="text" v-if="!isInShelf" @click="saveBook(showBookInfo, true)"
+          >加入书架</el-button
+        >
+      </span>
+    </template>
     <div class="book-info-container" v-if="show">
       <div class="book-cover">
         <div class="book-cover-bg" :style="bookCoverBgStyle"></div>
@@ -17,7 +39,7 @@
             v-lazy="getCover(getBookCoverUrl(showBookInfo))"
             :key="showBookInfo.name"
             alt=""
-            @click="triggerBookCoverRefClick"
+            @click="handleCoverClick"
           />
           <input
             ref="bookCoverRef"
@@ -60,6 +82,9 @@
             >
             </el-switch>
           </span>
+        </div>
+        <div class="book-prop last-check-error" v-if="showBookInfo.lastCheckError">
+          错误：{{ showBookInfo.lastCheckError }}
         </div>
         <div class="book-prop book-group" v-if="isInShelf">
           分组： {{ displayGroupName(showBookInfo.group) }}
@@ -188,6 +213,30 @@ export default {
     getBookCoverUrl(book) {
       return book.customCoverUrl || book.coverUrl;
     },
+    handleCoverClick() {
+      this.$confirm("请选择操作?", "提示", {
+        confirmButtonText: "上传封面",
+        cancelButtonText: "选择其它书源",
+        type: "warning"
+      })
+        .then(() => {
+          this.triggerBookCoverRefClick();
+        })
+        .catch(() => {
+          eventBus.$emit("showBookCoverDialog");
+        });
+    },
+    deleteBook() {
+      this.$root.$children[0].deleteBook(this.showBookInfo);
+    },
+    editBook() {
+      eventBus.$emit("editBook", this.showBookInfo, false, () => {
+        this.$emit("setShow", false);
+      });
+    },
+    showBookConfig() {
+      eventBus.$emit("showBookConfigDialog");
+    },
     triggerBookCoverRefClick() {
       this.$refs.bookCoverRef.dispatchEvent(new MouseEvent("click"));
     },
@@ -266,6 +315,19 @@ export default {
 };
 </script>
 <style lang="stylus" scoped>
+.book-info-title-btns {
+  float: right;
+  margin-top: -3px;
+
+  .el-button {
+    margin-left: 8px;
+    font-size: 13px;
+  }
+}
+.last-check-error {
+  color: #f56c6c;
+  font-size: 12px;
+}
 .book-info-container {
   .book-cover {
     width: 100%;

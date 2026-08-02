@@ -1619,8 +1619,6 @@ export default {
         chapterList: "0 Bytes",
         chapterContent: "0 Bytes"
       },
-      showLocalStoreManageDialog: false,
-      showWebDAVManageDialog: false,
       importUsedTxtRule: "",
       showAddUser: false,
       addUserForm: {
