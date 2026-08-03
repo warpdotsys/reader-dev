@@ -397,12 +397,10 @@ export default {
     eventBus.$on("showHttpTTSDialog", () => {
       this.showHttpTTSDialog = true;
     });
-    eventBus.$on("showFileManagerDialog", data => {
+    eventBus.$on("showFileManagerDialog", (home, title) => {
       this.showFileManagerDialog = true;
-      if (data) {
-        this.fileManagerHome = data.home || "";
-        this.fileManagerTitle = data.title || "文件管理";
-      }
+      this.fileManagerHome = home || "";
+      this.fileManagerTitle = title || "文件管理";
     });
     eventBus.$on("showLicenseDialog", () => {
       this.showLicenseDialog = true;
