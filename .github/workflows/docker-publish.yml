@@ -114,5 +114,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # self-hosted：只读使用本地缓存（multi-arch 双平台 cache-to mode=max 曾撑爆 runner 磁盘 ENOSPC）
-          cache-from: type=local,src=/tmp/buildx-cache
+          # 不使用构建缓存：multi-arch 双平台本地缓存曾撑爆 runner 磁盘（ENOSPC），一次性全量构建
