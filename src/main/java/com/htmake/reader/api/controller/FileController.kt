@@ -69,7 +69,15 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
                 if (!checkManagerAuth(context)) return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
                 File(getWorkDir("storage"))
             }
-            else -> return returnData.setErrorMsg("非法访问")
+            else -> {
+                // 空 home 回退用户数据目录（JAR 继承 bug：home= 空值误报"非法访问"，
+                // 兼容旧客户端/手动构造 URL 的 file/list 等请求）
+                if (requestedHome(context).isEmpty()) {
+                    File(getWorkDir("storage", "data", getUserNameSpace(context)))
+                } else {
+                    return returnData.setErrorMsg("非法访问")
+                }
+            }
         }
         directory.mkdirs()
         context.put("__FILE_HOME__", directory)
