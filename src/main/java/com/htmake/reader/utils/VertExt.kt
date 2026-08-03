@@ -26,16 +26,8 @@ import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.MapDeserializerDoubleAsIntFix
 import java.util.UUID
 import java.util.Base64 as JavaBase64
-import java.security.KeyFactory
-import java.security.spec.X509EncodedKeySpec
-import io.legado.app.utils.EncoderUtils
-import javax.net.ssl.SSLSocketFactory
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 import com.mongodb.client.MongoCollection
 import com.htmake.reader.entity.MongoFile
-import com.htmake.reader.entity.License
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -428,12 +420,6 @@ fun encodeBase64(text: String): String {
     return JavaBase64.getEncoder().encodeToString(text.toByteArray(Charsets.UTF_8))
 }
 
-var _licenseValid: Boolean = true
-
-fun setLicenseValid(value: Boolean) {
-    _licenseValid = value
-}
-
 fun getStorageFile(vararg name: String, ext: String = ".json"): File {
     val storagePath = getStoragePath()
     val storageDir = File(storagePath)
@@ -507,119 +493,6 @@ fun countOccurrences(text: String, sub: String): Int {
         index += sub.length
     }
     return count
-}
-
-fun getInstalledLicense(ignoreInvalid: Boolean = false): License {
-    val licenseKeyString = getStorage("data", "license", ext = ".key")
-    if (licenseKeyString.isNullOrEmpty() || (!ignoreInvalid && !_licenseValid)) {
-        return License()
-    }
-    val license = decryptToLicense(licenseKeyString)
-    logger.info("license: {}", license)
-    return license?.takeIf { it.verified } ?: License()
-}
-
-fun decryptToLicense(encrypted: String): License? {
-    if (encrypted.isEmpty()) return null
-    val decrypted = decryptData(encrypted) ?: return null
-    return decrypted.toMap().toDataClass()
-}
-
-fun decryptData(content: String): String? {
-    val publicKeyString = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj0G3qEPjVTvVd7pXFUVYZFHT8KaoG4onc5rLUKqFQ2DCh/5hFK9t2nKh2XB+C2Jp/GSK2ONwD7ceXenmA6uvr90uCK/gp6j62XFVRvc8sIm0d/bGbzZFJRk3HKtxEckBmASduPObY691DVVixxNtUrSJktx/TZaB42pUQk4j+7FuOVNNPra44hDdnyGhmYBBf2B4kjXVMjL+0NCblFIN1+qjmcol44k6NFKFF54q05bjR3CRyYdAnNTCOyt9va0oB6lDlKHplSZmAOH9JGMUki/HDJbABESXMnyIpux27w9SQ8aJStYttnJWHALO1hiFJsxbz5KUkldH6Ny1p/2W5QIDAQAB"
-    val publicKey = KeyFactory.getInstance("RSA").generatePublic(
-        X509EncodedKeySpec(JavaBase64.getDecoder().decode(publicKeyString))
-    )
-    return EncoderUtils.decryptSegmentByPublicKey(content, publicKey)
-}
-
-fun sendEmail(toEmail: String, subject: String, body: String): Boolean {
-    val host = "smtp.qiye.aliyun.com"
-    val port = 465
-    return try {
-        val socket = SSLSocketFactory.getDefault().createSocket(host, port)
-        val writer = OutputStreamWriter(socket.getOutputStream())
-        val reader = BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.UTF_8))
-        val response = reader.readLine()
-        if (response?.startsWith("220") != true) {
-            logger.error("Error connecting to the SMTP server.")
-            writer.close()
-            reader.close()
-            socket.close()
-            return false
-        }
-        val commandList = getCommand(listOf(toEmail), subject, body)
-        var result = false
-        var index = 0
-        while (index < commandList.size && sendEmailCommand(writer, reader, commandList[index])) {
-            result = true
-            index++
-        }
-        writer.close()
-        reader.close()
-        socket.close()
-        result && index == commandList.size
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
-}
-
-private fun sendEmailCommand(
-    writer: OutputStreamWriter,
-    reader: BufferedReader,
-    command: Pair<String, Int>
-): Boolean {
-    val (value, expected) = command
-    logger.debug("Send command {}, expect code {}", value.trim(), expected)
-    writer.write(value)
-    writer.flush()
-    val response = reader.readLine()
-    logger.debug("Response {}", response)
-    if (response.isNullOrEmpty()) {
-        logger.error("SMTP server no response.")
-        return false
-    }
-    if (!response.startsWith(expected.toString())) {
-        logger.error("Error response from SMTP server.")
-        return false
-    }
-    return true
-}
-
-fun getCommand(to: List<String>, subject: String, body: String): List<Pair<String, Int>> {
-    val username = "no-reply@onmy.top"
-    val password = "no-reply@1."
-    val from = "no-reply@onmy.top"
-    val fromName = "Reader"
-    val separator = "----=_Part_${System.currentTimeMillis()}${UUID.randomUUID()}"
-    val commands = mutableListOf("HELO sendmail\r\n" to 250)
-
-    if (username.isNotEmpty()) {
-        commands.add("AUTH LOGIN\r\n" to 334)
-        commands.add("${encodeBase64(username)}\r\n" to 334)
-        commands.add("${encodeBase64(password)}\r\n" to 235)
-    }
-    commands.add("MAIL FROM: <$from>\r\n" to 250)
-
-    var header = "FROM: $fromName<$from>\r\n"
-    to.forEachIndexed { index, recipient ->
-        commands.add("RCPT TO: <$recipient>\r\n" to 250)
-        header += when {
-            to.size == 1 -> "TO: <$recipient>\r\n"
-            index == 0 -> "TO: <$recipient>"
-            index == to.lastIndex -> ",<$recipient>\r\n"
-            else -> ",<$recipient>"
-        }
-    }
-    header += "Subject: =?UTF-8?B?${encodeBase64(subject)}?=\r\n"
-    header += "Content-Type: multipart/alternative;\r\n\tboundary=\"$separator\"\r\nMIME-Version: 1.0\r\n"
-    header += "\r\n--$separator\r\nContent-Type:text/html; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
-    header += "${encodeBase64(body)}\r\n--$separator\r\n\r\n.\r\n"
-    commands.add("DATA\r\n" to 354)
-    commands.add(header to 250)
-    commands.add("QUIT\r\n" to 221)
-    return commands
 }
 
 fun parseJsonStringList(

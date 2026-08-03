@@ -92,13 +92,9 @@
       :title="fileManagerTitle"
     />
 
-    <License v-model="showLicenseDialog" />
-
     <BookConfig v-model="showBookConfigDialog" />
 
     <RemoteBookSourceSub v-model="showRemoteBookSourceSubDialog" />
-
-    <ActiveLicense v-model="showActiveLicenseDialog" />
 
     <RssSourceList v-model="showRssSourceListDialog" />
     <RssArticleList v-model="showRssArticleListDialog" :rssSource="rssSource" />
@@ -140,10 +136,8 @@ import BookCover from "./components/BookCover.vue";
 import BookGroup from "./components/BookGroup.vue";
 import HttpTTS from "./components/HttpTTS.vue";
 import FileManager from "./components/FileManager.vue";
-import License from "./components/License.vue";
 import BookConfig from "./components/BookConfig.vue";
 import RemoteBookSourceSub from "./components/RemoteBookSourceSub.vue";
-import ActiveLicense from "./components/ActiveLicense.vue";
 import RssSourceList from "./components/RssSourceList.vue";
 import RssArticleList from "./components/RssArticleList.vue";
 import RssArticle from "./components/RssArticle.vue";
@@ -226,10 +220,8 @@ export default {
     BookGroup,
     HttpTTS,
     FileManager,
-    License,
     BookConfig,
     RemoteBookSourceSub,
-    ActiveLicense,
     RssSourceList,
     RssArticleList,
     RssArticle,
@@ -274,10 +266,8 @@ export default {
       showFileManagerDialog: false,
       fileManagerHome: "",
       fileManagerTitle: "文件管理",
-      showLicenseDialog: false,
       showBookConfigDialog: false,
       showRemoteBookSourceSubDialog: false,
-      showActiveLicenseDialog: false,
 
       showRssSourceListDialog: false,
       showRssArticleListDialog: false,
@@ -402,17 +392,11 @@ export default {
       this.fileManagerHome = home || "";
       this.fileManagerTitle = title || "文件管理";
     });
-    eventBus.$on("showLicenseDialog", () => {
-      this.showLicenseDialog = true;
-    });
     eventBus.$on("showBookConfigDialog", () => {
       this.showBookConfigDialog = true;
     });
     eventBus.$on("showRemoteBookSourceSubDialog", () => {
       this.showRemoteBookSourceSubDialog = true;
-    });
-    eventBus.$on("showActiveLicenseDialog", () => {
-      this.showActiveLicenseDialog = true;
     });
     eventBus.$on("showUserFormDialog", user => {
       this.showUserFormDialog = true;

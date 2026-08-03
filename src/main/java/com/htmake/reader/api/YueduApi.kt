@@ -26,7 +26,6 @@ import com.htmake.reader.api.controller.BookmarkController
 import com.htmake.reader.api.controller.BookGroupController
 import com.htmake.reader.api.controller.FileController
 import com.htmake.reader.api.controller.HttpTTSController
-import com.htmake.reader.api.controller.LicenseController
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.getStorage
@@ -47,7 +46,6 @@ import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
-import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.getTraceId
 import com.htmake.reader.init.ReaderAdapter
 import io.legado.app.adapters.ReaderAdapterHelper
@@ -174,15 +172,7 @@ class YueduApi : RestVerticle() {
             }
         }
         router.route("/simple-web/*").handler {
-            val license = getInstalledLicense()
-            val simpleWebExpiredAt = if (license.validHost(it.request().host())) license.simpleWebExpiredAt else 0L
-            if (simpleWebExpiredAt != 0L && simpleWebExpiredAt < System.currentTimeMillis()) {
-                it.response().putHeader("content-type", "text/html; charset=UTF-8")
-                    .setStatusCode(403)
-                    .end("<html><head><title>未激活该功能</title></head><body><div style='text-align: center;padding: 30px 0;'>未激活该功能，请加<a href='https://t.me/+pQ8HDlANPZ84ZWNl'>TG群</a>激活</div></body></html>")
-            } else {
-                it.next()
-            }
+            it.next()
         }
         router.route("/simple-web/*").handler(StaticHandler.create("simple-web").setDefaultContentEncoding("UTF-8"))
 
@@ -202,7 +192,6 @@ class YueduApi : RestVerticle() {
         val bookGroupController = BookGroupController(coroutineContext)
         val fileController = FileController(coroutineContext)
         val httpTTSController = HttpTTSController(coroutineContext)
-        val licenseController = LicenseController(coroutineContext)
 
         /** 书源模块 */
         router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }
@@ -396,22 +385,6 @@ class YueduApi : RestVerticle() {
 
         /** 清理不活跃用户 */
         router.post("/reader3/clearInactiveUsers").coroutineHandler { userController.clearInactiveUsers(it) }
-
-        /** 许可证模块 */
-        router.get("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
-        router.post("/reader3/isLicenseValid").coroutineHandler { licenseController.isLicenseValid(it) }
-        router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
-        router.post("/reader3/importLicense").coroutineHandlerWithoutRes { licenseController.importLicense(it) }
-        router.get("/reader3/generateKeys").coroutineHandler { licenseController.generateKeys(it) }
-        router.post("/reader3/generateKeys").coroutineHandler { licenseController.generateKeys(it) }
-        router.get("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
-        router.post("/reader3/generateLicense").coroutineHandler { licenseController.generateLicense(it) }
-        router.post("/reader3/activateLicense").coroutineHandler { licenseController.activateLicense(it) }
-        router.post("/reader3/supplyLicense").coroutineHandler { licenseController.supplyLicense(it) }
-        router.get("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
-        router.post("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
-        router.post("/reader3/decryptLicense").coroutineHandler { licenseController.decryptLicense(it) }
-        router.post("/reader3/sendCodeToEmail").coroutineHandler { licenseController.sendCodeToEmail(it) }
 
         /** webdav备份 */
         router.post("/reader3/backupToWebdav").coroutineHandler { webdavController.backupToWebdav(it) }
@@ -632,24 +605,6 @@ class YueduApi : RestVerticle() {
     fun autoGC()
     {
         System.gc()
-    }
-
-    @Scheduled(cron = "0 4/15 7-23 * * ?")
-    fun checkLicense()
-    {
-        val license = com.htmake.reader.utils.getInstalledLicense(true)
-        if (license.type == "default") return
-        MDC.put("traceId", getTraceId())
-        launch(MDCContext() + Dispatchers.IO) {
-            try {
-                delay(Random.nextLong(10, 121) * 1000)
-                delay(Random.nextLong(1, 11) * 1000)
-                logger.info("开始检查授权是否正常")
-                LicenseController(coroutineContext).checkLicense(license)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     /**

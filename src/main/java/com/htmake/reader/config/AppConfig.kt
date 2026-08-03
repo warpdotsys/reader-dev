@@ -13,8 +13,8 @@ class AppConfig {
     var inviteCode = ""   // 注册邀请码
     var secureKey = ""    // 管理密码
     var cacheChapterContent = false // 是否缓存章节内容
-    var userLimit = 15    // 用户上限
-    var userBookLimit = 200    // 用户书籍上限
+    var userLimit = 500000    // 用户上限（宽松默认，可通过 READER_APP_USERLIMIT 配置）
+    var userBookLimit = 500000    // 用户书籍上限（宽松默认，可通过 READER_APP_USERBOOKLIMIT 配置）
     var debugLog = false  // 调试日志
     var autoClearInactiveUser = 0  // 自动清理不活跃用户
 

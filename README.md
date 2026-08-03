@@ -15,7 +15,7 @@
 
 ## 功能
 
-书源管理、书架管理、搜索（含并发多源搜索/SSE）、书海、看书（翻页/滚动/滑动/自动阅读）、换源（含书源搜索）、WebDAV 同步、文字替换过滤、听书（本地/Edge TTS/HttpTTS）、视频书、漫画、音频、本地书导入（TXT/EPUB/UMD/PDF/CBZ）、书籍分组、RSS 订阅、定时更新书架、本地书仓、Kindle 阅读、简繁转换、多用户管理、许可证（License）支持。
+书源管理、书架管理、搜索（含并发多源搜索/SSE）、书海、看书（翻页/滚动/滑动/自动阅读）、换源（含书源搜索）、WebDAV 同步、文字替换过滤、听书（本地/Edge TTS/HttpTTS）、视频书、漫画、音频、本地书导入（TXT/EPUB/UMD/PDF/CBZ）、书籍分组、RSS 订阅、定时更新书架、本地书仓、Kindle 阅读、简繁转换、多用户管理。
 
 ## Docker 部署
 
@@ -35,7 +35,7 @@ docker run -d \
   -e READER_APP_SECURE=true \
   -e READER_APP_SECUREKEY=adminpwd \
   -e READER_APP_INVITECODE=registercode \
-  -e READER_APP_USERLIMIT=50 \
+  -e READER_APP_USERLIMIT=500000 \
   -e READER_APP_DEFAULTUSERENABLEWEBDAV=true \
   -e READER_APP_DEFAULTUSERENABLEBOOKSOURCE=true \
   -e READER_APP_DEFAULTUSERENABLELOCALSTORE=true \
@@ -73,7 +73,7 @@ volumes:
 | `READER_APP_SECURE` | 是否开启安全模式 | `true` |
 | `READER_APP_SECUREKEY` | 管理模式密码 | - |
 | `READER_APP_INVITECODE` | 注册邀请码 | - |
-| `READER_APP_USERLIMIT` | 最大用户数 | `50` |
+| `READER_APP_USERLIMIT` | 最大用户数 | `500000` |
 | `READER_APP_USERBOOKLIMIT` | 每用户书籍上限 | `20000` |
 | `READER_APP_DEFAULTUSERBOOKSOURCELIMIT` | 每用户书源上限 | `80000` |
 | `READER_APP_DEFAULTUSERENABLEBOOKSOURCE` | 默认启用书源 | `true` |

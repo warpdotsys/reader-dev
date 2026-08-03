@@ -73,8 +73,6 @@
             <el-select size="mini" v-model="userNS" class="setting-select" filterable placeholder="请选择用户空间"><el-option v-for="(item, index) in userList" :key="'source-' + index" :label="item.username" :value="item.userNS"></el-option></el-select>
           </div>
           <div class="setting-item" v-show="$store.getters.hasLogin">
-            <el-tag type="info" :effect="isNight ? 'dark' : 'light'" class="setting-btn" v-if="isShowActiveLicenseBtn" @click="showActiveLicenseDialog"> 授权管理 </el-tag>
-            <el-tag type="info" :effect="isNight ? 'dark' : 'light'" class="setting-btn" @click="showLicense"> 查看授权信息 </el-tag>
             <el-tag type="info" :effect="isNight ? 'dark' : 'light'" class="setting-btn" @click="saveUserConfig" v-if="localStorageAvaliable"> 备份我的配置 </el-tag>
             <el-tag type="info" :effect="isNight ? 'dark' : 'light'" class="setting-btn" @click="restoreUserConfig" v-if="localStorageAvaliable"> 同步我的配置 </el-tag>
             <el-tag type="info" :effect="isNight ? 'dark' : 'light'" class="setting-btn" @click="showFileManagerDialog('__HOME__', '用户数据管理')"> 我的数据管理 </el-tag>
@@ -2943,9 +2941,6 @@ export default {
       this.loadBookGroup(true);
       eventBus.$emit("showBookGroupDialog", false);
     },
-    showActiveLicenseDialog() {
-      eventBus.$emit("showActiveLicenseDialog");
-    },
     showFileManagerDialog(home, title) {
       eventBus.$emit("showFileManagerDialog", home, title);
     },
@@ -2960,9 +2955,6 @@ export default {
     },
     showReplaceRuleDialog() {
       eventBus.$emit("showReplaceRuleDialog");
-    },
-    showLicense() {
-      eventBus.$emit("showLicenseDialog");
     },
     getShowShelfBooks(bookGroup) {
       // 处理特殊分组
@@ -3598,12 +3590,6 @@ export default {
         ];
       }
     },
-    isShowActiveLicenseBtn() {
-      return (
-        this.$store.state.isManagerMode &&
-        window.location.host.indexOf("htmake") >= 0
-      );
-    }
   }
 };
 </script>

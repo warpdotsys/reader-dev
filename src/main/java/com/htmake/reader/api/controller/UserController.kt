@@ -27,7 +27,6 @@ import com.htmake.reader.utils.toMap
 import com.htmake.reader.utils.fillData
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRandomString
-import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.listFilesRecursively
 import com.htmake.reader.utils.genEncryptedPassword
 import com.htmake.reader.entity.User
@@ -83,11 +82,7 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     private fun getUserLimit(context: RoutingContext): Int {
-        val license = getInstalledLicense()
-        if (license.validHost(context.request().host())) {
-            return Math.min(Math.max(appConfig.userLimit, 1), license.userMaxLimit)
-        }
-        return Math.min(Math.max(appConfig.userLimit, 1), userMaxCount)
+        return Math.max(appConfig.userLimit, 1)
     }
 
     suspend fun login(context: RoutingContext): ReturnData {
