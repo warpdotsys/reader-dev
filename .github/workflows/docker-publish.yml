@@ -114,6 +114,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # self-hosted：本地磁盘缓存（无网络传输，跨 run 持久，快于 gha 远程缓存）
+          # self-hosted：只读使用本地缓存（multi-arch 双平台 cache-to mode=max 曾撑爆 runner 磁盘 ENOSPC）
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache,mode=max
