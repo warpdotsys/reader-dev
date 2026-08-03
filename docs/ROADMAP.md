@@ -1,7 +1,26 @@
 # Reader-dev 路线图（Roadmap）
 
-> 状态：远期规划（非当前实施项）。当前主线：JAR 兼容维护 + 自托管许可系统。
-> 更新日期：2026-08-02
+> 状态：Rust 重构已在 master 分支启动（开发中，不发版）；Kotlin 稳定版维护移至 legacy 分支。
+> 更新日期：2026-08-03
+
+---
+
+## Rust 重构开发策略（2026-08-03 起）
+
+- **分支布局**：`master` 分支 = Rust 重构开发分支（空分支起步）；Kotlin 稳定版保留在 `legacy` 分支
+- **开发中不发版、不 release**：master 分支上的提交/标签不会发布 Docker 镜像或 GitHub Release
+- **可 pre-release / 临时 tag**：master 允许打 pre-release/临时 tag 作开发里程碑，但不触发发布
+- **docker-publish 发版 guard**：工作流含「发版保护」步骤——仅当触发 SHA 是 `origin/legacy` 的祖先时允许发版（`OK 允许发版`），否则直接 `exit 1` 拒绝（`Rust 开发分支禁止发版（防止用户误更新）`）
+
+## Rust 重构吸收计划功能
+
+Rust 重构版将吸收以下远期计划能力（编号对应下文各远期小节）：
+
+| 能力 | 远期编号 | 说明 |
+| --- | --- | --- |
+| SQLite 兼容迁移 | 远期 2 | JSON → SQLite 一键迁移（自动检测 / 增量迁移 / 校验 / 备份回滚） |
+| legado 多规则解析 | 远期 3 | CSS Selector / JSONPath / XPath / Regex / JavaScript 多规则引擎 |
+| 书籍格式扩展 | 远期 4 | MOBI / AZW3 / AZW / FB2 等本地书籍格式支持 |
 
 ---
 
