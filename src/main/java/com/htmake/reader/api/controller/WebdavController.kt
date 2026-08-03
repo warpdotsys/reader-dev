@@ -126,11 +126,10 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
                     it.response().setStatusCode(401).end()
                     return@globalHandler
                 } else if(rawMethod.equals("OPTIONS")) {
-                    var authorization = it.request().getHeader("Authorization")
-                    if (authorization != null) {
-                        it.response().setStatusCode(401).end()
-                        return@globalHandler
-                    }
+                    // CORS 预检请求不校验认证：浏览器/WebDAV 客户端预检会携带 Authorization 头，
+                    // 此处返回 401 会导致客户端报"非法访问"、无法同步（JAR 继承 bug）
+                    it.response().setStatusCode(200).end()
+                    return@globalHandler
                 }
             }
             when (rawMethod) {
@@ -208,7 +207,6 @@ class WebdavController(coroutineContext: CoroutineContext, router: Router, onHan
             return true
         }
         var authorization = context.request().getHeader("Authorization")
-        logger.info("authorization: {}", authorization)
         if (authorization == null || authorization.isEmpty()) {
             return false
         }
