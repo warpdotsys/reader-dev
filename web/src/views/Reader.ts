@@ -4492,7 +4492,7 @@ export const style = `>>>.popper-component {
               margin-right: 10px;
 
               .el-radio-button__inner {
-                border-radius: 4px 4px 4px 4px;
+                border-radius: 8px;
               }
             }
           }
@@ -4711,7 +4711,7 @@ export const style = `>>>.popper-component {
   }
 
   >>>.play-pause-btn {
-    color: #409EFF;
+    color: #4f46e5;
   }
 }
 
@@ -4992,7 +4992,7 @@ html.mobile-scroll-read::-webkit-scrollbar
 
 .voice-list {
   .el-radio-button__inner {
-    border-radius: 4px !important;
+    border-radius: 8px !important;
     border-left: 1px solid #DCDFE6;
     box-shadow: none;
   }

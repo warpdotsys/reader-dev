@@ -1216,7 +1216,7 @@ export const stylusStyle = `
     color: #ddd;
   }
   .el-pager li.active {
-    color: #409EFF;
+    color: #4f46e5;
   }
   .code-editor {
     .token.operator,

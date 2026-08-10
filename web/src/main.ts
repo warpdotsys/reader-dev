@@ -10,6 +10,7 @@ import noImage from "./assets/imgs/noImage.png";
 import VueLazyload from "vue-lazyload";
 import { jsonEncode } from "./plugins/safe-json-stringify";
 import localforage from "localforage";
+import "./styles/v5-theme.css";
 
 declare module "*.vue" {
   import Vue from "vue";

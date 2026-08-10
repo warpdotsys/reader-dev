@@ -3832,8 +3832,8 @@ export const style = `
 
       .book-group-btn.selected {
         color: #fff;
-        background: #409EFF;
-        border-color: #409EFF;
+        background: #4f46e5;
+        border-color: #4f46e5;
       }
     }
 
@@ -3981,8 +3981,8 @@ export const style = `
 
     .source-group-btn.selected {
       color: #fff;
-      background: #409EFF;
-      border-color: #409EFF;
+      background: #4f46e5;
+      border-color: #4f46e5;
     }
   }
 
@@ -4139,10 +4139,10 @@ export const style = `
     transition-duration: 0.5s;
   }
   .el-icon-close:hover {
-    color: #409eff;
+    color: #4f46e5;
   }
   .el-icon-edit:hover {
-    color: #409eff;
+    color: #4f46e5;
   }
 }
 
@@ -4158,7 +4158,7 @@ export const style = `
   height: 300px;
   padding: 0;
   border: 1px solid #e4e7ed;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
@@ -4186,7 +4186,7 @@ export const style = `
   background-color: #eee;
 }
 .virtual-item.is-selected {
-  color: #409eff;
+  color: #4f46e5;
   background-color: #dbeeff;
 }
 .virt-list__client {
