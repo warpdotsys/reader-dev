@@ -1,0 +1,193 @@
+// package com.htmake.reader.config
+
+// import java.io.File
+
+// object BookConfig
+pub struct BookConfig;
+
+impl BookConfig {
+    pub const JAVASCRIPT_VERSION: &'static str = "reader-inject-javascript-1.9.0";
+
+    pub fn epub_inject_javascript() -> String {
+        let javascript_version = Self::JAVASCRIPT_VERSION;
+        return format!("
+    //<![CDATA[
+    // {}", javascript_version) + "
+    if (!window.reader_inited) {
+        function reader_notify(event, data, id) {
+            if (window.self !== window.top) {
+                window.top.postMessage(JSON.stringify({
+                    id: id,
+                    event: event,
+                    data: data
+                }), '*');
+            }
+        }
+
+        var reader_style_dom = document.createElement('style');
+        var head = document.head || document.getElementsByTagName('head')[0];
+        head.appendChild(reader_style_dom);
+
+        function reader_setStyle(style) {
+            reader_style_dom.textContent = style;
+            reader_notifySize();
+            setTimeout(reader_notifySize, 100);
+        }
+
+        function reader_notifySize() {
+            reader_notify(\"setHeight\", document.documentElement.scrollHeight || document.body.scrollHeight)
+            reader_notify(\"setWidth\", document.documentElement.scrollWidth || document.body.scrollWidth)
+        }
+
+        function reader_listenFromParent(event) {
+            reader_notify('received', {
+                data: event.data
+            })
+            let data;
+            try {
+                data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            } catch (error) {
+                // console.error(error);
+                return;
+            }
+
+            if (!data) {
+                return;
+            }
+            reader_notify(\"data \", data);
+            if (data.event === 'setStyle') {
+                reader_setStyle(data.style);
+            } else if (data.event === 'execute') {
+                eval(data.script);
+            } else if (data.id) {
+                if (window.nativeCallback[data.id]) {
+                    window.nativeCallback[data.id](data);
+                    delete window.nativeCallback[data.id]
+                }
+            }
+        }
+
+
+        function reader_getLinkElement(element) {
+            if (!element || !element.nodeName) {
+                return false;
+            }
+            if (element.nodeName.toLowerCase() === \"a\") {
+                return element;
+            }
+            return reader_getLinkElement(element.parentNode)
+        }
+
+        function reader_getImageElement(element) {
+            if (!element || !element.nodeName) {
+                return false;
+            }
+            if (element.nodeName.toLowerCase() === \"img\") {
+                return element;
+            }
+        }
+
+        window.document.addEventListener('message', reader_listenFromParent);
+        window.addEventListener('message', reader_listenFromParent);
+        window.addEventListener('load', function() {
+            reader_notifySize();
+            reader_notify(\"load\", window.location.href);
+        });
+        window.addEventListener('resize', reader_notifySize);
+        document.addEventListener('DOMNodeInserted', reader_notifySize, false);
+        document.addEventListener('click', function(event) {
+            var linkElement = reader_getLinkElement(event.target)
+            var imageElement = reader_getImageElement(event.target)
+            if (linkElement) {
+                // 点击链接跳转
+                if (linkElement.pathname === window.location.pathname) {
+                    // 页内跳转
+                    var hashElement = document.querySelector(linkElement.hash)
+                    if (hashElement) {
+                        reader_notify(\"clickHash\", hashElement.getBoundingClientRect())
+                    }
+                } else {
+                    // 跳转其他页面
+                    reader_notify(\"clickA\", event.target.href);
+                }
+            } else if (imageElement) {
+                var imgList = document.querySelectorAll(\"img\");
+                if (imgList.length) {
+                    var imgUrlList = [];
+                    var index = 0;
+                    for (let i = 0; i < imgList.length; i++) {
+                        imgUrlList.push(imgList[i].src);
+                        if (imgList[i] === imageElement) {
+                            index = i;
+                        }
+                    }
+                    reader_notify(\"previewImageList\", {
+                        imageList: imgUrlList,
+                        imageIndex: index
+                    });
+                }
+            } else {
+                reader_notify(\"click\", {
+                    target: event.target.nodeName,
+                    clientX: event.clientX,
+                    clientY: event.clientY
+                });
+            }
+        });
+        document.addEventListener(\"touchstart\", function(event) {
+            // console.log(event)
+            reader_notify(\"touchstart\", {
+                target: event.target.nodeName,
+                touches: [{
+                    clientX: event.touches[0].clientX,
+                    clientY: event.touches[0].clientY,
+                }]
+            });
+        });
+        document.addEventListener(\"touchmove\", function(event) {
+            // console.log(event)
+            event.preventDefault && event.preventDefault();
+            event.stopPropagation && event.stopPropagation();
+            reader_notify(\"touchmove\", {
+                target: event.target.nodeName,
+                touches: [{
+                    clientX: event.touches[0].clientX,
+                    clientY: event.touches[0].clientY,
+                }]
+            });
+
+        });
+        document.addEventListener(\"touchend\", function(event) {
+            // console.log(event)
+            reader_notify(\"touchend\", {
+                target: event.target.nodeName
+            });
+        });
+        window.addEventListener(\"keydown\", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            reader_notify(\"keydown\", {
+                key: event.key,
+                keyCode: event.keyCode
+            });
+        });
+        reader_notify(\"inited\");
+
+        window.reader_inited = true;
+    }
+    //]]>
+    ";
+    }
+
+    // fun injectJavascriptToEpubChapter(filePath: String) {
+    pub fn inject_javascript_to_epub_chapter(file_path: &str) {
+        let file = File::new(file_path);
+        if file.exists() {
+            let mut content = file.read_text();
+            if content.index_of(Self::JAVASCRIPT_VERSION) < 0 {
+                content = content.replace("<head>", format!("<head><script type=\"text/javascript\">{}</script>", Self::epub_inject_javascript()).as_str());
+                file.write_text(content);
+            }
+        }
+    }
+}
