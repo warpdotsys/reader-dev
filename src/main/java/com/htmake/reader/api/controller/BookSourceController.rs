@@ -705,7 +705,7 @@ impl BookSourceController {
     // }
     pub fn read_source_file(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
-        let uploads = context.file_uploads().unwrap_or_default();
+        let uploads = context.file_uploads_opt().unwrap_or_default();
         if uploads.is_empty() {
             return_data.set_error_msg(String::from("请上传文件"));
             return return_data;

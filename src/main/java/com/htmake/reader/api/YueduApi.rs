@@ -1,4 +1,4 @@
-﻿use crate::prelude::*;
+use crate::prelude::*;
 // fix: 显式导入消解 prelude glob 歧义 / 缺省名称（stubs 占位 + vertext 真实实现）
 use crate::stubs::io::vertx::Router;
 use crate::stubs::{
@@ -29,6 +29,14 @@ pub struct YueduApi {
 }
 
 impl YueduApi {
+    pub fn new() -> YueduApi {
+        YueduApi {
+            app_config: crate::com_htmake_reader_config_appconfig::AppConfig::default(),
+            env: Environment,
+            port: 8080,
+        }
+    }
+
     // override fun getContextPath(): String {
     //     return env.getProperty("reader.server.contextPath", "") ?: ""
     // }
@@ -152,7 +160,8 @@ impl YueduApi {
         router.route_with_path("/*").handler_static(StaticHandler::create("web").set_default_content_encoding("UTF-8"));
 
         // assets
-        let assets_dir = get_work_dir_multi(&["storage", "assets"]);
+        // fix: 目录经 Box::leak 转 'static（handler 闭包需 'static 且多个闭包共享）
+        let assets_dir: &'static String = Box::leak(Box::new(get_work_dir_multi(&["storage", "assets"])));
         let assets_dir_file = File::new(&assets_dir);
         if !assets_dir_file.exists() {
             assets_dir_file.mkdirs();
@@ -165,8 +174,8 @@ impl YueduApi {
         router.route_with_path("/assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(assets_dir).set_default_content_encoding("UTF-8"));
 
         // 书籍资源
-        let data_dir = get_work_dir_multi(&["storage", "data"]);
-        router.route_with_path("/book-assets/*").handler(|it| {
+        let data_dir: &'static String = Box::leak(Box::new(get_work_dir_multi(&["storage", "data"])));
+        router.route_with_path("/book-assets/*").handler(move |it| {
             let mut path = it.request().path().replace("/book-assets/", "/");
             path = uri_decode_component(&path, false);
             if path.to_lowercase().ends_with("html") || path.to_lowercase().ends_with("htm") {
@@ -180,7 +189,7 @@ impl YueduApi {
         router.route_with_path("/book-assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir.clone()).set_default_content_encoding("UTF-8"));
 
         // epub资源
-        router.route_with_path("/epub/*").handler(|it| {
+        router.route_with_path("/epub/*").handler(move |it| {
             let mut path = it.request().path().replace("/epub/", "/");
             path = url_decode(&path, "UTF-8");
             if path.to_lowercase().ends_with("html") {
@@ -195,7 +204,7 @@ impl YueduApi {
         router.route_with_path("/epub/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir).set_default_content_encoding("UTF-8"));
 
         // simple-web界面
-        router.route_with_path("/simple-web").handler(|it| {
+        router.route_with_path("/simple-web").handler(move |it| {
             if it.request().path().ends_with("/simple-web") {
                 let location = url_decode(&it.request().absolute_uri(), "UTF-8")
                     .replace("/simple-web", "/simple-web/");
@@ -204,244 +213,247 @@ impl YueduApi {
                 it.next();
             }
         });
-        router.route_with_path("/simple-web/*").handler(|it| {
+        router.route_with_path("/simple-web/*").handler(move |it| {
             it.next();
         });
         router.route_with_path("/simple-web/*").handler_static(StaticHandler::create("simple-web").set_default_content_encoding("UTF-8"));
 
+        // fix: handler 闭包需 'static，self 为 &mut 借用——init_router 中 self 的可变使用（setup_port/migration）均在闭包定义前，之后仅只读，转 &'static 引用
+        let self_ref: &'static YueduApi = unsafe { &*(self as *const YueduApi) };
         // 获取系统信息
-        router.get("/reader3/getSystemInfo").coroutine_handler(|it| self.get_system_info(it));
+        router.get("/reader3/getSystemInfo").coroutine_handler(move |it| self_ref.get_system_info(it));
 
         ////////// 接口部分
-        let book_controller = BookController::new();
-        let book_source_controller = BookSourceController::new();
-        let rss_source_controller = RssSourceController::new();
-        let user_controller = UserController::new();
-        let webdav_controller = WebdavController::new(BaseController::new(), router, Box::new(|ctx, error| {
-            self.on_handler_error(ctx, error);
-        }));
-        let replace_rule_controller = ReplaceRuleController::new();
-        let bookmark_controller = BookmarkController::new();
-        let book_group_controller = BookGroupController::new();
-        let file_controller = FileController::new();
-        let http_tts_controller = HttpTTSController::new();
+        // fix: 控制器经 Box::leak 转 'static（handler 闭包需 'static，控制器生命周期=程序运行期）
+        let book_controller: &'static BookController = Box::leak(Box::new(BookController::new()));
+        let book_source_controller: &'static BookSourceController = Box::leak(Box::new(BookSourceController::new()));
+        let rss_source_controller: &'static RssSourceController = Box::leak(Box::new(RssSourceController::new()));
+        let user_controller: &'static UserController = Box::leak(Box::new(UserController::new()));
+        let webdav_controller: &'static WebdavController = Box::leak(Box::new(WebdavController::new(BaseController::new(), router, Box::new(move |ctx, error| {
+            self_ref.on_handler_error(ctx, error);
+        }))));
+        let replace_rule_controller: &'static ReplaceRuleController = Box::leak(Box::new(ReplaceRuleController::new()));
+        let bookmark_controller: &'static BookmarkController = Box::leak(Box::new(BookmarkController::new()));
+        let book_group_controller: &'static BookGroupController = Box::leak(Box::new(BookGroupController::new()));
+        let file_controller: &'static FileController = Box::leak(Box::new(FileController::new()));
+        let http_tts_controller: &'static HttpTTSController = Box::leak(Box::new(HttpTTSController::new()));
 
         /** 书源模块 */
-        router.post("/reader3/saveBookSource").coroutine_handler(|it| book_source_controller.save_book_source(it));
-        router.post("/reader3/saveBookSources").coroutine_handler(|it| book_source_controller.save_book_sources_ctx(it));
+        router.post("/reader3/saveBookSource").coroutine_handler(move |it| book_source_controller.save_book_source(it));
+        router.post("/reader3/saveBookSources").coroutine_handler(move |it| book_source_controller.save_book_sources_ctx(it));
 
-        router.get("/reader3/getBookSource").coroutine_handler(|it| book_source_controller.get_book_source(it));
-        router.post("/reader3/getBookSource").coroutine_handler(|it| book_source_controller.get_book_source(it));
-        router.get("/reader3/getBookSources").coroutine_handler(|it| book_source_controller.get_book_sources(it));
-        router.post("/reader3/getBookSources").coroutine_handler(|it| book_source_controller.get_book_sources(it));
+        router.get("/reader3/getBookSource").coroutine_handler(move |it| book_source_controller.get_book_source(it));
+        router.post("/reader3/getBookSource").coroutine_handler(move |it| book_source_controller.get_book_source(it));
+        router.get("/reader3/getBookSources").coroutine_handler(move |it| book_source_controller.get_book_sources(it));
+        router.post("/reader3/getBookSources").coroutine_handler(move |it| book_source_controller.get_book_sources(it));
 
-        router.post("/reader3/deleteAllBookSources").coroutine_handler(|it| book_source_controller.delete_all_book_sources(it));
-        router.post("/reader3/deleteBookSource").coroutine_handler(|it| book_source_controller.delete_book_source(it));
-        router.post("/reader3/deleteBookSources").coroutine_handler(|it| book_source_controller.delete_book_sources(it));
+        router.post("/reader3/deleteAllBookSources").coroutine_handler(move |it| book_source_controller.delete_all_book_sources(it));
+        router.post("/reader3/deleteBookSource").coroutine_handler(move |it| book_source_controller.delete_book_source(it));
+        router.post("/reader3/deleteBookSources").coroutine_handler(move |it| book_source_controller.delete_book_sources(it));
 
         // 上传书源文件
-        router.post("/reader3/readSourceFile").coroutine_handler(|it| book_source_controller.read_source_file(it));
+        router.post("/reader3/readSourceFile").coroutine_handler(move |it| book_source_controller.read_source_file(it));
 
-        router.post("/reader3/saveFromRemoteSource").coroutine_handler_without_res(|it| book_source_controller.save_from_remote_source(it));
+        router.post("/reader3/saveFromRemoteSource").coroutine_handler_without_res(move |it| book_source_controller.save_from_remote_source(it));
 
         // 设置默认书源
-        router.post("/reader3/setAsDefaultBookSources").coroutine_handler(|it| book_source_controller.set_as_default_book_sources(it));
-        router.post("/reader3/deleteUserBookSource").coroutine_handler(|it| book_source_controller.delete_user_book_source(it));
-        router.post("/reader3/deleteBookSourcesFile").coroutine_handler(|it| book_source_controller.delete_book_sources_file(it));
+        router.post("/reader3/setAsDefaultBookSources").coroutine_handler(move |it| book_source_controller.set_as_default_book_sources(it));
+        router.post("/reader3/deleteUserBookSource").coroutine_handler(move |it| book_source_controller.delete_user_book_source(it));
+        router.post("/reader3/deleteBookSourcesFile").coroutine_handler(move |it| book_source_controller.delete_book_sources_file(it));
 
         /** 书籍模块 */
         // 书架
-        router.get("/reader3/getBookshelf").coroutine_handler(|it| book_controller.get_bookshelf(it));
-        router.get("/reader3/getShelfBook").coroutine_handler(|it| book_controller.get_shelf_book(it));
-        router.post("/reader3/saveBook").coroutine_handler(|it| book_controller.save_book(it));
-        router.post("/reader3/deleteBook").coroutine_handler(|it| book_controller.delete_book(it));
-        router.post("/reader3/deleteBooks").coroutine_handler(|it| book_controller.delete_books(it));
+        router.get("/reader3/getBookshelf").coroutine_handler(move |it| book_controller.get_bookshelf(it));
+        router.get("/reader3/getShelfBook").coroutine_handler(move |it| book_controller.get_shelf_book(it));
+        router.post("/reader3/saveBook").coroutine_handler(move |it| book_controller.save_book(it));
+        router.post("/reader3/deleteBook").coroutine_handler(move |it| book_controller.delete_book(it));
+        router.post("/reader3/deleteBooks").coroutine_handler(move |it| book_controller.delete_books(it));
 
         // 失效书源
-        router.post("/reader3/getInvalidBookSources").coroutine_handler(|it| book_controller.get_invalid_book_sources(it));
+        router.post("/reader3/getInvalidBookSources").coroutine_handler(move |it| book_controller.get_invalid_book_sources(it));
 
         // 探索
-        router.post("/reader3/exploreBook").coroutine_handler(|it| book_controller.explore_book(it));
-        router.get("/reader3/exploreBook").coroutine_handler(|it| book_controller.explore_book(it));
+        router.post("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it));
+        router.get("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it));
 
         // 搜索
-        router.get("/reader3/searchBook").coroutine_handler(|it| book_controller.search_book(it));
-        router.post("/reader3/searchBook").coroutine_handler(|it| book_controller.search_book(it));
-        router.get("/reader3/searchBookMulti").coroutine_handler(|it| book_controller.search_book_multi(it));
-        router.post("/reader3/searchBookMulti").coroutine_handler(|it| book_controller.search_book_multi(it));
-        router.get("/reader3/searchBookMultiSSE").coroutine_handler_without_res(|it| book_controller.search_book_multi_sse(it));
+        router.get("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it));
+        router.post("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it));
+        router.get("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it));
+        router.post("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it));
+        router.get("/reader3/searchBookMultiSSE").coroutine_handler_without_res(move |it| book_controller.search_book_multi_sse(it));
 
         // 书籍详情
-        router.get("/reader3/getBookInfo").coroutine_handler(|it| book_controller.get_book_info(it));
-        router.post("/reader3/getBookInfo").coroutine_handler(|it| book_controller.get_book_info(it));
+        router.get("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it));
+        router.post("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it));
 
         // 章节列表
-        router.get("/reader3/getChapterList").coroutine_handler(|it| book_controller.get_chapter_list(it));
-        router.post("/reader3/getChapterList").coroutine_handler(|it| book_controller.get_chapter_list(it));
+        router.get("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it));
+        router.post("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it));
 
         // 内容
-        router.get("/reader3/getBookContent").coroutine_handler(|it| book_controller.get_book_content(it));
-        router.post("/reader3/getBookContent").coroutine_handler(|it| book_controller.get_book_content(it));
+        router.get("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it));
+        router.post("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it));
 
         // 保存阅读进度
-        router.post("/reader3/saveBookProgress").coroutine_handler(|it| book_controller.save_book_progress(it));
+        router.post("/reader3/saveBookProgress").coroutine_handler(move |it| book_controller.save_book_progress(it));
 
         // 封面
-        router.get("/reader3/cover").coroutine_handler_without_res(|it| book_controller.get_book_cover(it));
+        router.get("/reader3/cover").coroutine_handler_without_res(move |it| book_controller.get_book_cover(it));
 
         // 搜索其它来源
-        router.get("/reader3/searchBookSource").coroutine_handler(|it| book_controller.search_book_source(it));
-        router.post("/reader3/searchBookSource").coroutine_handler(|it| book_controller.search_book_source(it));
-        router.get("/reader3/getAvailableBookSource").coroutine_handler(|it| book_controller.get_available_book_source(it));
-        router.post("/reader3/getAvailableBookSource").coroutine_handler(|it| book_controller.get_available_book_source(it));
-        router.get("/reader3/searchBookSourceSSE").coroutine_handler_without_res(|it| book_controller.search_book_source_sse(it));
+        router.get("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it));
+        router.post("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it));
+        router.get("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it));
+        router.post("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it));
+        router.get("/reader3/searchBookSourceSSE").coroutine_handler_without_res(move |it| book_controller.search_book_source_sse(it));
 
         // 换源
-        router.get("/reader3/setBookSource").coroutine_handler(|it| book_controller.set_book_source(it));
-        router.post("/reader3/setBookSource").coroutine_handler(|it| book_controller.set_book_source(it));
+        router.get("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it));
+        router.post("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it));
 
         // 修改分组
-        router.post("/reader3/saveBookGroupId").coroutine_handler(|it| book_controller.save_book_group_id(it));
-        router.post("/reader3/addBookGroupMulti").coroutine_handler(|it| book_controller.add_book_group_multi(it));
-        router.post("/reader3/removeBookGroupMulti").coroutine_handler(|it| book_controller.remove_book_group_multi(it));
+        router.post("/reader3/saveBookGroupId").coroutine_handler(move |it| book_controller.save_book_group_id(it));
+        router.post("/reader3/addBookGroupMulti").coroutine_handler(move |it| book_controller.add_book_group_multi(it));
+        router.post("/reader3/removeBookGroupMulti").coroutine_handler(move |it| book_controller.remove_book_group_multi(it));
 
         // 导入本地文件
-        router.post("/reader3/importBookPreview").coroutine_handler(|it| book_controller.import_book_preview(it));
-        router.post("/reader3/refreshLocalBook").coroutine_handler(|it| book_controller.refresh_local_book(it));
+        router.post("/reader3/importBookPreview").coroutine_handler(move |it| book_controller.import_book_preview(it));
+        router.post("/reader3/refreshLocalBook").coroutine_handler(move |it| book_controller.refresh_local_book(it));
 
         // 获取txt章节规则
-        router.get("/reader3/getTxtTocRules").coroutine_handler(|it| book_controller.get_txt_toc_rules(it));
-        router.post("/reader3/getChapterListByRule").coroutine_handler(|it| book_controller.get_chapter_list_by_rule(it));
+        router.get("/reader3/getTxtTocRules").coroutine_handler(move |it| book_controller.get_txt_toc_rules(it));
+        router.post("/reader3/getChapterListByRule").coroutine_handler(move |it| book_controller.get_chapter_list_by_rule(it));
 
         // 书籍分组
-        router.get("/reader3/getBookGroups").coroutine_handler(|it| book_group_controller.get_book_groups(it));
-        router.post("/reader3/saveBookGroup").coroutine_handler(|it| book_group_controller.save_book_group(it));
-        router.post("/reader3/deleteBookGroup").coroutine_handler(|it| book_group_controller.delete_book_group(it));
-        router.post("/reader3/saveBookGroupOrder").coroutine_handler(|it| book_group_controller.save_book_group_order(it));
+        router.get("/reader3/getBookGroups").coroutine_handler(move |it| book_group_controller.get_book_groups(it));
+        router.post("/reader3/saveBookGroup").coroutine_handler(move |it| book_group_controller.save_book_group(it));
+        router.post("/reader3/deleteBookGroup").coroutine_handler(move |it| book_group_controller.delete_book_group(it));
+        router.post("/reader3/saveBookGroupOrder").coroutine_handler(move |it| book_group_controller.save_book_group_order(it));
 
         // 调试书源
-        router.get("/reader3/bookSourceDebugSSE").coroutine_handler_without_res(|it| book_controller.book_source_debug_sse(it));
+        router.get("/reader3/bookSourceDebugSSE").coroutine_handler_without_res(move |it| book_controller.book_source_debug_sse(it));
 
         // 缓存书籍章节
-        router.get("/reader3/cacheBookSSE").coroutine_handler_without_res(|it| book_controller.cache_book_sse(it));
+        router.get("/reader3/cacheBookSSE").coroutine_handler_without_res(move |it| book_controller.cache_book_sse(it));
         // 获取书籍缓存信息
-        router.get("/reader3/getShelfBookWithCacheInfo").coroutine_handler(|it| book_controller.get_shelf_book_with_cache_info(it));
+        router.get("/reader3/getShelfBookWithCacheInfo").coroutine_handler(move |it| book_controller.get_shelf_book_with_cache_info(it));
         // 删除书籍章节缓存
-        router.post("/reader3/deleteBookCache").coroutine_handler(|it| book_controller.delete_book_cache(it));
+        router.post("/reader3/deleteBookCache").coroutine_handler(move |it| book_controller.delete_book_cache(it));
 
         // 导出书籍
-        router.post("/reader3/exportBook").coroutine_handler_without_res(|it| book_controller.export_book(it));
-        router.get("/reader3/exportBook").coroutine_handler_without_res(|it| book_controller.export_book(it));
+        router.post("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it));
+        router.get("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it));
 
         // 全文搜索
-        router.get("/reader3/searchBookContent").coroutine_handler(|it| book_controller.search_book_content(it));
-        router.post("/reader3/searchBookContent").coroutine_handler(|it| book_controller.search_book_content(it));
+        router.get("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it));
+        router.post("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it));
 
         /** 用户模块 */
         // 上传文件
-        router.post("/reader3/uploadFile").coroutine_handler(|it| user_controller.upload_file(it));
+        router.post("/reader3/uploadFile").coroutine_handler(move |it| user_controller.upload_file(it));
 
         // 删除文件
-        router.post("/reader3/deleteFile").coroutine_handler(|it| user_controller.delete_file(it));
+        router.post("/reader3/deleteFile").coroutine_handler(move |it| user_controller.delete_file(it));
 
         // 登录
-        router.post("/reader3/login").coroutine_handler(|it| user_controller.login(it));
+        router.post("/reader3/login").coroutine_handler(move |it| user_controller.login(it));
         // 注销登录
-        router.post("/reader3/logout").coroutine_handler(|it| user_controller.logout(it));
+        router.post("/reader3/logout").coroutine_handler(move |it| user_controller.logout(it));
 
         // 获取用户信息
-        router.get("/reader3/getUserInfo").coroutine_handler(|it| user_controller.get_user_info(it));
+        router.get("/reader3/getUserInfo").coroutine_handler(move |it| user_controller.get_user_info(it));
 
         // 用户备份本地配置
-        router.post("/reader3/saveUserConfig").coroutine_handler(|it| user_controller.save_user_config(it));
+        router.post("/reader3/saveUserConfig").coroutine_handler(move |it| user_controller.save_user_config(it));
 
         // 用户恢复本地配置
-        router.get("/reader3/getUserConfig").coroutine_handler(|it| user_controller.get_user_config(it));
+        router.get("/reader3/getUserConfig").coroutine_handler(move |it| user_controller.get_user_config(it));
 
         // 获取用户列表
-        router.get("/reader3/getUserList").coroutine_handler(|it| user_controller.get_user_list(it));
+        router.get("/reader3/getUserList").coroutine_handler(move |it| user_controller.get_user_list(it));
 
         // 删除用户
-        router.post("/reader3/deleteUsers").coroutine_handler(|it| user_controller.delete_users(it));
+        router.post("/reader3/deleteUsers").coroutine_handler(move |it| user_controller.delete_users(it));
 
         // 添加用户
-        router.post("/reader3/addUser").coroutine_handler(|it| user_controller.add_user(it));
+        router.post("/reader3/addUser").coroutine_handler(move |it| user_controller.add_user(it));
 
         // 重置用户密码
-        router.post("/reader3/resetPassword").coroutine_handler(|it| user_controller.reset_password(it));
+        router.post("/reader3/resetPassword").coroutine_handler(move |it| user_controller.reset_password(it));
 
         // 更新用户
-        router.post("/reader3/updateUser").coroutine_handler(|it| user_controller.update_user(it));
+        router.post("/reader3/updateUser").coroutine_handler(move |it| user_controller.update_user(it));
 
 
         /** rss模块 */
         // rss
-        router.get("/reader3/getRssSources").coroutine_handler(|it| rss_source_controller.get_rss_sources(it));
-        router.post("/reader3/saveRssSource").coroutine_handler(|it| rss_source_controller.save_rss_source(it));
-        router.post("/reader3/saveRssSources").coroutine_handler(|it| rss_source_controller.save_rss_sources(it));
-        router.post("/reader3/deleteRssSource").coroutine_handler(|it| rss_source_controller.delete_rss_source(it));
+        router.get("/reader3/getRssSources").coroutine_handler(move |it| rss_source_controller.get_rss_sources(it));
+        router.post("/reader3/saveRssSource").coroutine_handler(move |it| rss_source_controller.save_rss_source(it));
+        router.post("/reader3/saveRssSources").coroutine_handler(move |it| rss_source_controller.save_rss_sources(it));
+        router.post("/reader3/deleteRssSource").coroutine_handler(move |it| rss_source_controller.delete_rss_source(it));
         // rss 列表
-        router.get("/reader3/getRssArticles").coroutine_handler(|it| rss_source_controller.get_rss_articles(it));
-        router.post("/reader3/getRssArticles").coroutine_handler(|it| rss_source_controller.get_rss_articles(it));
+        router.get("/reader3/getRssArticles").coroutine_handler(move |it| rss_source_controller.get_rss_articles(it));
+        router.post("/reader3/getRssArticles").coroutine_handler(move |it| rss_source_controller.get_rss_articles(it));
         // rss 内容
-        router.get("/reader3/getRssContent").coroutine_handler(|it| rss_source_controller.get_rss_content(it));
-        router.post("/reader3/getRssContent").coroutine_handler(|it| rss_source_controller.get_rss_content(it));
+        router.get("/reader3/getRssContent").coroutine_handler(move |it| rss_source_controller.get_rss_content(it));
+        router.post("/reader3/getRssContent").coroutine_handler(move |it| rss_source_controller.get_rss_content(it));
 
         /** 替换规则模块 */
-        router.get("/reader3/getReplaceRules").coroutine_handler(|it| replace_rule_controller.get_replace_rules(it));
-        router.post("/reader3/saveReplaceRule").coroutine_handler(|it| replace_rule_controller.save_replace_rule(it));
-        router.post("/reader3/saveReplaceRules").coroutine_handler(|it| replace_rule_controller.save_replace_rules(it));
-        router.post("/reader3/deleteReplaceRule").coroutine_handler(|it| replace_rule_controller.delete_replace_rule(it));
-        router.post("/reader3/deleteReplaceRules").coroutine_handler(|it| replace_rule_controller.delete_replace_rules(it));
+        router.get("/reader3/getReplaceRules").coroutine_handler(move |it| replace_rule_controller.get_replace_rules(it));
+        router.post("/reader3/saveReplaceRule").coroutine_handler(move |it| replace_rule_controller.save_replace_rule(it));
+        router.post("/reader3/saveReplaceRules").coroutine_handler(move |it| replace_rule_controller.save_replace_rules(it));
+        router.post("/reader3/deleteReplaceRule").coroutine_handler(move |it| replace_rule_controller.delete_replace_rule(it));
+        router.post("/reader3/deleteReplaceRules").coroutine_handler(move |it| replace_rule_controller.delete_replace_rules(it));
 
         /** 书签模块 */
-        router.get("/reader3/getBookmarks").coroutine_handler(|it| bookmark_controller.get_bookmarks(it));
-        router.post("/reader3/saveBookmark").coroutine_handler(|it| bookmark_controller.save_bookmark(it));
-        router.post("/reader3/saveBookmarks").coroutine_handler(|it| bookmark_controller.save_bookmarks(it));
-        router.post("/reader3/deleteBookmark").coroutine_handler(|it| bookmark_controller.delete_bookmark(it));
-        router.post("/reader3/deleteBookmarks").coroutine_handler(|it| bookmark_controller.delete_bookmarks(it));
+        router.get("/reader3/getBookmarks").coroutine_handler(move |it| bookmark_controller.get_bookmarks(it));
+        router.post("/reader3/saveBookmark").coroutine_handler(move |it| bookmark_controller.save_bookmark(it));
+        router.post("/reader3/saveBookmarks").coroutine_handler(move |it| bookmark_controller.save_bookmarks(it));
+        router.post("/reader3/deleteBookmark").coroutine_handler(move |it| bookmark_controller.delete_bookmark(it));
+        router.post("/reader3/deleteBookmarks").coroutine_handler(move |it| bookmark_controller.delete_bookmarks(it));
 
-        router.post("/reader3/book/saveBookConfig").coroutine_handler(|it| book_controller.save_book_config(it));
-        router.get("/reader3/user/downloadBackupFile").coroutine_handler_without_res(|it| user_controller.download_backup_file(it));
+        router.post("/reader3/book/saveBookConfig").coroutine_handler(move |it| book_controller.save_book_config(it));
+        router.get("/reader3/user/downloadBackupFile").coroutine_handler_without_res(move |it| user_controller.download_backup_file(it));
 
-        router.get("/reader3/book/tts").coroutine_handler_without_res(|it| book_controller.text_to_speech(it));
-        router.post("/reader3/book/tts").coroutine_handler_without_res(|it| book_controller.text_to_speech(it));
+        router.get("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it));
+        router.post("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it));
         // 保存书籍章节内容到缓存
-        router.post("/reader3/saveBookContent").coroutine_handler(|it| book_controller.save_book_content(it));
+        router.post("/reader3/saveBookContent").coroutine_handler(move |it| book_controller.save_book_content(it));
 
         /** MongoDB备份恢复 */
-        router.post("/reader3/backupToMongodb").coroutine_handler(|it| book_controller.backup_to_mongodb(it));
-        router.post("/reader3/restoreFromMongodb").coroutine_handler(|it| book_controller.restore_from_mongodb(it));
+        router.post("/reader3/backupToMongodb").coroutine_handler(move |it| book_controller.backup_to_mongodb(it));
+        router.post("/reader3/restoreFromMongodb").coroutine_handler(move |it| book_controller.restore_from_mongodb(it));
 
         /** 缓存书籍到服务器 */
-        router.post("/reader3/cacheBookOnServer").coroutine_handler(|it| book_controller.cache_book_on_server(it));
+        router.post("/reader3/cacheBookOnServer").coroutine_handler(move |it| book_controller.cache_book_on_server(it));
 
         /** 清理不活跃用户 */
-        router.post("/reader3/clearInactiveUsers").coroutine_handler(|it| user_controller.clear_inactive_users_ctx(it));
+        router.post("/reader3/clearInactiveUsers").coroutine_handler(move |it| user_controller.clear_inactive_users_ctx(it));
 
         /** webdav备份 */
-        router.post("/reader3/backupToWebdav").coroutine_handler(|it| webdav_controller.backup_to_webdav(it));
+        router.post("/reader3/backupToWebdav").coroutine_handler(move |it| webdav_controller.backup_to_webdav(it));
 
         /** 文件管理模块 */
-        router.get("/reader3/file/list").coroutine_handler(|it| file_controller.list(it));
-        router.get("/reader3/file/get").coroutine_handler(|it| file_controller.get(it));
-        router.post("/reader3/file/save").coroutine_handler(|it| file_controller.save(it));
-        router.post("/reader3/file/mkdir").coroutine_handler(|it| file_controller.mkdir(it));
-        router.get("/reader3/file/download").coroutine_handler_without_res(|it| file_controller.download(it));
-        router.post("/reader3/file/upload").coroutine_handler(|it| file_controller.upload(it));
-        router.post("/reader3/file/delete").coroutine_handler(|it| file_controller.delete(it));
-        router.post("/reader3/file/deleteMulti").coroutine_handler(|it| file_controller.delete_multi(it));
-        router.post("/reader3/file/importPreview").coroutine_handler(|it| file_controller.import_preview(it));
-        router.post("/reader3/file/restore").coroutine_handler(|it| file_controller.restore(it));
-        router.get("/reader3/file/parse").coroutine_handler(|it| file_controller.parse(it));
-        router.post("/reader3/file/parse").coroutine_handler(|it| file_controller.parse(it));
+        router.get("/reader3/file/list").coroutine_handler(move |it| file_controller.list(it));
+        router.get("/reader3/file/get").coroutine_handler(move |it| file_controller.get(it));
+        router.post("/reader3/file/save").coroutine_handler(move |it| file_controller.save(it));
+        router.post("/reader3/file/mkdir").coroutine_handler(move |it| file_controller.mkdir(it));
+        router.get("/reader3/file/download").coroutine_handler_without_res(move |it| file_controller.download(it));
+        router.post("/reader3/file/upload").coroutine_handler(move |it| file_controller.upload(it));
+        router.post("/reader3/file/delete").coroutine_handler(move |it| file_controller.delete(it));
+        router.post("/reader3/file/deleteMulti").coroutine_handler(move |it| file_controller.delete_multi(it));
+        router.post("/reader3/file/importPreview").coroutine_handler(move |it| file_controller.import_preview(it));
+        router.post("/reader3/file/restore").coroutine_handler(move |it| file_controller.restore(it));
+        router.get("/reader3/file/parse").coroutine_handler(move |it| file_controller.parse(it));
+        router.post("/reader3/file/parse").coroutine_handler(move |it| file_controller.parse(it));
 
         /** HttpTTS模块 */
-        router.get("/reader3/httpTTS/list").coroutine_handler(|it| http_tts_controller.get_http_tts_list(it));
-        router.post("/reader3/httpTTS/save").coroutine_handler(|it| http_tts_controller.save_http_tts(it));
-        router.post("/reader3/httpTTS/saveMulti").coroutine_handler(|it| http_tts_controller.save_http_tts_list(it));
-        router.post("/reader3/httpTTS/delete").coroutine_handler(|it| http_tts_controller.delete_http_tts(it));
-        router.post("/reader3/httpTTS/deleteMulti").coroutine_handler(|it| http_tts_controller.delete_http_tts(it));
+        router.get("/reader3/httpTTS/list").coroutine_handler(move |it| http_tts_controller.get_http_tts_list(it));
+        router.post("/reader3/httpTTS/save").coroutine_handler(move |it| http_tts_controller.save_http_tts(it));
+        router.post("/reader3/httpTTS/saveMulti").coroutine_handler(move |it| http_tts_controller.save_http_tts_list(it));
+        router.post("/reader3/httpTTS/delete").coroutine_handler(move |it| http_tts_controller.delete_http_tts(it));
+        router.post("/reader3/httpTTS/deleteMulti").coroutine_handler(move |it| http_tts_controller.delete_http_tts(it));
     }
 
     // suspend fun setupPort() {

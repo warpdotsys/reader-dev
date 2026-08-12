@@ -43,7 +43,7 @@ impl FileController {
     //     else -> context.queryParam("home").firstOrNull() ?: ""
     // }
     fn requested_home(&self, context: &RoutingContext) -> String {
-        if context.request().method() == HttpMethod::POST && !context.file_uploads().unwrap_or_default().is_empty() {
+        if context.request().method() == HttpMethod::POST && !context.file_uploads_opt().unwrap_or_default().is_empty() {
             return context.request().get_param("home").unwrap_or(String::from(""));
         }
         if context.request().method() == HttpMethod::POST {
@@ -284,7 +284,7 @@ impl FileController {
     // }
     pub fn upload(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
-        if context.file_uploads().unwrap_or_default().is_empty() {
+        if context.file_uploads_opt().unwrap_or_default().is_empty() {
             return_data.set_error_msg(String::from("请上传文件"));
             return return_data;
         }
@@ -307,7 +307,7 @@ impl FileController {
             }
         };
         let mut file_list: Vec<std::collections::HashMap<String, Box<dyn std::any::Any>>> = Vec::new();
-        for upload in context.file_uploads().unwrap_or_default() {
+        for upload in context.file_uploads_opt().unwrap_or_default() {
             let source = File::new(&upload.uploaded_file_name());
             if !source.exists() {
                 continue;

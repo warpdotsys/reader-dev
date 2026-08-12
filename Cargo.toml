@@ -2,13 +2,23 @@
 name = "reader"
 version = "0.1.0"
 edition = "2021"
-description = "reader-dev legacy 分支全量 Rust 转录"
+description = "reader-dev legacy 分支全量 Rust 转录（可运行版）"
 
 [dependencies]
 regex = "1"
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
 url = "2"
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.6", features = ["fs"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls", "gzip"] }
+boa_engine = "0.21"
+scraper = "0.23"
+quick-xml = "0.37"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+percent-encoding = "2"
+mime_guess = "2"
 
 [profile.dev]
 debug = false

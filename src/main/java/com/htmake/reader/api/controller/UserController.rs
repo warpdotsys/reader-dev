@@ -1029,7 +1029,7 @@ impl UserController {
         if !self.base.check_auth(context) {
             return return_data.set_data_owned(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
         }
-        if context.file_uploads().unwrap_or_default().is_empty() {
+        if context.file_uploads_opt().unwrap_or_default().is_empty() {
             return return_data.set_error_msg_owned(String::from("请上传文件"));
         }
         let user_name_space = self.base.get_user_name_space(context);
@@ -1051,7 +1051,7 @@ impl UserController {
             return return_data.set_error_msg_owned(String::from("文件路径错误"));
         }
         // logger().info("type: {}", type)
-        for upload in context.file_uploads().unwrap_or_default() {
+        for upload in context.file_uploads_opt().unwrap_or_default() {
             let file = File::new(&upload.uploaded_file_name());
             logger().info(format!("uploadFile: {} {} {}", upload.uploaded_file_name(), upload.file_name(), file.to_string()));
             if file.exists() {

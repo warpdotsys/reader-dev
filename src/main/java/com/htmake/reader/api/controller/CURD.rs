@@ -1,4 +1,4 @@
-﻿use crate::prelude::*;
+use crate::prelude::*;
 // fix: 显式导入消解 prelude 多 glob 重导出歧义（JsonObject/JsonArray ← stubs；DB ← com_htmake_reader_db_db）
 use crate::stubs::{JsonArray, JsonObject};
 use crate::com_htmake_reader_db_db::DB;
@@ -280,7 +280,7 @@ pub trait CURD<T> {
 // 外部依赖类型占位 (external dependency types: io.vertx / DB / gson / ReturnData)
 // fix: RoutingContext 保留为本地占位——prelude glob 唯一可见的 RoutingContext（stubs 内嵌 vertx 模块不可 glob），
 // stubs.rs 内已为其补充 request/body_as_json/getUser 等方法
-pub struct RoutingContext;
+pub type RoutingContext = crate::stubs::io::vertx::RoutingContext;
 // fix: JsonObject/JsonArray 直接使用 stubs 占位（原本地单元结构体与 stubs::body_as_json 返回类型不一致）
 // fix: DB 直接使用 com_htmake_reader_db_db::DB（原本地占位缺少 table/read_all/save/save_multi/delete 方法）
 

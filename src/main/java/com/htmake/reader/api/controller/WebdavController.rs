@@ -194,13 +194,16 @@ impl WebdavController {
     //         }
     //     }
     // }
-    pub fn new(base: BaseController, router: &mut Router, on_handler_error: Box<dyn Fn(&RoutingContext, &Exception)>) -> WebdavController {
+    pub fn new(base: BaseController, router: &mut Router, on_handler_error: Box<dyn Fn(&RoutingContext, &Exception)>) -> Box<WebdavController> {
         // webdav 服务
-        let webdav_controller = WebdavController {
+        // fix: 路由闭包需 'static，构造中的 self 以 Box 固定地址 + 裸指针供闭包引用（Box 移动不改变堆地址）
+        let boxed = Box::new(WebdavController {
             base,
             on_handler_error,
-        };
-        router.route_with_path("/reader3/webdav*").global_handler_curd(&|it| {
+        });
+        let wd_ptr = &*boxed as *const WebdavController;
+        router.route_with_path("/reader3/webdav*").global_handler_curd(move |it| {
+            let webdav_controller = unsafe { &*wd_ptr };
             it.add_headers_end_handler(|_| {
                 let mut res = it.response();
                 res.put_header("DAV", "1,2");
@@ -329,7 +332,7 @@ impl WebdavController {
                 _ => it.response().set_status_code(405).end(String::new()),
             }
         });
-        webdav_controller
+        boxed
     }
 
     // fun checkAuthorization(context: RoutingContext): Boolean {

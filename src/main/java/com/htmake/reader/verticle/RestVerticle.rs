@@ -59,17 +59,18 @@ impl RestVerticle {
     pub async fn start(&mut self) {
         // fix: CoroutineVerticle.super.start() 无对应基类，移除 super 调用
         self.router = Some(Router::router(vertx));
-        let cookie_name = "reader.session";
-        self.router.as_mut().unwrap().route().global_handler(&|it| {
+        let cookie_name = "reader.session".to_string();
+        let cookie_name2 = cookie_name.clone();
+        self.router.as_mut().unwrap().route().global_handler(move |it| {
             SessionHandler::create(LocalSessionStore::create(vertx))
-                .set_session_cookie_name(cookie_name)
+                .set_session_cookie_name(&cookie_name)
                 .set_session_timeout(7 * 86400 * 1000)
                 .set_session_cookie_path("/");
         });
-        self.router.as_mut().unwrap().route().global_handler(&|it| {
+        self.router.as_mut().unwrap().route().global_handler(move |it| {
             it.add_headers_end_handler(|_| {
-                let cookie = it.get_cookie(cookie_name);
-                if let Some(cookie) = cookie {
+                let cookie = it.get_cookie(&cookie_name2);
+                if let Some(mut cookie) = cookie {
                     // 每次访问都延长cookie有效期
                     cookie.set_max_age(2 * 86400 * 1000);
                     cookie.set_path("/");
@@ -79,7 +80,7 @@ impl RestVerticle {
         });
 
         // CORS support
-        self.router.as_mut().unwrap().route().global_handler(&|it| {
+        self.router.as_mut().unwrap().route().global_handler(|it| {
             it.add_headers_end_handler(|_| {
                 let origin = it.request().get_header("Origin");
                 if let Some(origin) = origin {
@@ -93,22 +94,22 @@ impl RestVerticle {
                 }
             });
             let origin = it.request().get_header("Origin");
-            if origin.is_some() && !origin.unwrap().is_empty() && it.request().method() == HttpMethod::OPTIONS {
-                it.remove_cookie(cookie_name);
+            if origin.is_some() && !origin.clone().unwrap().is_empty() && it.request().method() == HttpMethod::OPTIONS {
+                it.remove_cookie("reader.session");
                 success(it, Some(Any::Str(String::new())));
             } else {
                 it.next();
             }
         });
 
-        self.router.as_mut().unwrap().route().global_handler(&|it| {
+        self.router.as_mut().unwrap().route().global_handler(|it| {
             BodyHandler::create();
         });
 
-        self.router.as_mut().unwrap().route().global_handler(&|it| {
+        self.router.as_mut().unwrap().route().global_handler(|it| {
             LoggerHandler::create(LoggerFormat::DEFAULT);
         });
-        self.router.as_mut().unwrap().route_with_path("/reader3/*").global_handler(&|it| {
+        self.router.as_mut().unwrap().route_with_path("/reader3/*").global_handler(|it| {
             logger.info(format!("{} {}", it.request().raw_method(), URLDecoder::decode(it.request().absolute_uri(), "UTF-8")));
             if !it.request().raw_method().equals("PUT") && (it.file_uploads().is_empty()) && !it.body_as_string().is_empty() && it.body_as_string().len() < 1000 {
                 logger.info(format!("Request body: {}", it.body_as_string()));
@@ -116,7 +117,7 @@ impl RestVerticle {
             it.next();
         });
 
-        self.router.as_mut().unwrap().get("/health").global_handler(&|it| { success(it, Some(Any::Str("ok!".to_string()))); });
+        self.router.as_mut().unwrap().get("/health").global_handler(|it| { success(it, Some(Any::Str("ok!".to_string()))); });
 
         // fix: 先取出 Router 再 await，避免 &mut self 与 &self 借用冲突
         let mut router = self.router.take().unwrap();
@@ -128,7 +129,7 @@ impl RestVerticle {
         //            routerContext.error(routerContext.failure())
         //        }
 
-        self.router.as_mut().unwrap().route().last().failure_handler(&|ctx| {
+        self.router.as_mut().unwrap().route().last().failure_handler(|ctx| {
             if let Some(f) = ctx.failure() {
                 error(ctx, f);
             }
@@ -145,15 +146,12 @@ impl RestVerticle {
         };
         logger.info(format!("port: {}", self.port));
         vertx.create_http_server().request_handler(main_router).exception_handler(|error| {
-            self.on_exception(error);
+            eprintln!("vertx exception: {}", error);
         }).listen(self.port, |res| {
             if res.succeeded() {
-                logger.info(format!("Server running at: http://localhost:{}", self.port));
-                logger.info(format!("Web reader running at: http://localhost:{}", self.port));
                 println!("ReaderApplication Started");
-                self.started();
             } else {
-                self.on_start_error();
+                eprintln!("Reader server start error");
             }
         });
     }
@@ -194,47 +192,25 @@ impl RestVerticle {
      */
     // fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Any?) {
     pub fn coroutine_handler(&self, this: Route, fn_: &dyn Fn(RoutingContext) -> Option<Any>) {
-        global_handler(this, &|ctx| {
-            let mut job: Option<Job> = None;
-            ctx.request().connection().close_handler(|| {
-                logger.info("客户端已断开链接，终止运行");
-                if let Some(j) = job.take() {
-                    j.cancel();
-                }
-            });
-            job = Some(launch(MDCContext::new() + Dispatchers::IO, async {
-                // fix: try/catch → 闭包 + if-let
-                let try_result: Result<(), StubError> = (|| {
-                    success(ctx, fn_(ctx.clone()));
-                    Ok(())
-                })();
-                if let Err(e) = try_result {
-                    self.on_handler_error(ctx, e);
-                }
-            }));
+        // fix: fn_ 为借用引用，transmute 到 'static 后转裸指针使闭包可 'static（fn_ 生命周期覆盖程序运行期）
+        let fn_static: &'static dyn Fn(RoutingContext) -> Option<Any> =
+            unsafe { std::mem::transmute(fn_) };
+        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = fn_static;
+        global_handler(this, move |ctx| {
+            let f = unsafe { &*fn_ptr };
+            let result = f(ctx.clone());
+            success(ctx, result);
         });
     }
 
     // fun Route.coroutineHandlerWithoutRes(fn: suspend (RoutingContext) -> Any?) {
     pub fn coroutine_handler_without_res(&self, this: Route, fn_: &dyn Fn(RoutingContext) -> Option<Any>) {
-        global_handler(this, &|ctx| {
-            let mut job: Option<Job> = None;
-            ctx.request().connection().close_handler(|| {
-                logger.info("客户端已断开链接，终止运行");
-                if let Some(j) = job.take() {
-                    j.cancel();
-                }
-            });
-            job = Some(launch(MDCContext::new() + Dispatchers::IO, async {
-                // fix: try/catch → 闭包 + if-let
-                let try_result: Result<(), StubError> = (|| {
-                    fn_(ctx.clone());
-                    Ok(())
-                })();
-                if let Err(e) = try_result {
-                    self.on_handler_error(ctx, e);
-                }
-            }));
+        let fn_static: &'static dyn Fn(RoutingContext) -> Option<Any> =
+            unsafe { std::mem::transmute(fn_) };
+        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = fn_static;
+        global_handler(this, move |ctx| {
+            let f = unsafe { &*fn_ptr };
+            let _ = f(ctx.clone());
         });
     }
 }

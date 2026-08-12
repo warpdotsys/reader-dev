@@ -50,12 +50,15 @@ pub fn error(this: &mut RoutingContext, throwable: Throwable) {
 }
 
 // fun Route.globalHandler(handler: Handler<RoutingContext>) {
-pub fn global_handler(mut this: Route, handler: &dyn Fn(&mut RoutingContext)) {
-    let wrapped = |context: &mut RoutingContext| {
-        let trace_id = context.get::<String>("traceId").filter(|it| !it.is_empty()).unwrap_or_else(|| get_trace_id());
+pub fn global_handler<F>(mut this: Route, handler: F)
+where
+    F: Fn(&mut RoutingContext) + 'static,
+{
+    let wrapped = move |context: &mut RoutingContext| {
+        let trace_id = context.get_user::<String>("traceId").filter(|it| !it.is_empty()).unwrap_or_else(|| get_trace_id());
         MDC::put("traceId", trace_id.clone());
         context.put("traceId", trace_id);
         handler(context);
     };
-    this.global_handler(&wrapped);
+    this.global_handler(wrapped);
 }

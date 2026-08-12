@@ -1513,6 +1513,12 @@ impl JsonArray {
     pub fn from_list(list: Vec<JsonObject>) -> JsonArray {
         JsonArray(list.into_iter().map(|o| o.to_string()).collect())
     }
+    // Kotlin `JsonArray(String)` 反序列化
+    pub fn from_json(s: String) -> Option<JsonArray> {
+        serde_json::from_str::<Vec<serde_json::Value>>(&s)
+            .ok()
+            .map(|v| JsonArray(v.into_iter().map(|x| x.to_string()).collect()))
+    }
     pub fn size(&self) -> i32 {
         self.0.len() as i32
     }
@@ -3030,224 +3036,13 @@ pub mod io {
             self.0.clone()
         }
     }
-    pub mod vertx {
-        // fix: RoutingContext::method 返回 stubs 模块级 HttpMethod（嵌套模块需自行导入）
-        use super::super::HttpMethod;
-        use super::super::Throwable;
-        use super::super::JsonArray;
-        use super::super::JsonObject;
-        pub mod ext {
-            pub mod web {
-                pub mod client {
-                    pub struct HttpResponse<T>(pub T);
-                }
-            }
+        pub mod vertx {
+            include!("runtime/vertx.rs");
         }
-        pub mod core {
-            pub mod buffer {
-                pub struct Buffer;
-                impl Buffer {
-                    // io.vertx.core.buffer.Buffer.getBytes()
-                    pub fn get_bytes(&self) -> Vec<u8> {
-                        Vec::new()
-                    }
-                }
-            }
-        }
-        pub struct Vertx;
-        impl Vertx {
-            pub fn vertx() -> Self {
-                Vertx
-            }
-            pub fn create_http_server(&self) -> HttpServer {
-                HttpServer
-            }
-        }
-        #[derive(Clone)]
-        pub struct Router;
-        impl Router {
-            pub fn router(_vertx: Vertx) -> Router {
-                Router
-            }
-            pub fn route(&mut self) -> Route {
-                Route
-            }
-            pub fn route_with_path(&mut self, _path: &str) -> Route {
-                Route
-            }
-            pub fn get(&mut self, _path: &str) -> Route {
-                Route
-            }
-            pub fn mount_sub_router(&mut self, _mount_point: String, _sub_router: Router) {}
-        }
-        #[derive(Clone)]
-        pub struct Route;
-        impl Route {
-            pub fn global_handler(&mut self, _handler: &dyn FnMut(&mut RoutingContext)) {}
-            pub fn last(&mut self) -> Route {
-                Route
-            }
-            pub fn failure_handler(&mut self, _handler: &dyn FnMut(&mut RoutingContext)) {}
-        }
-        #[derive(Clone)]
-        pub struct RoutingContext;
-        impl RoutingContext {
-            pub fn new() -> Self {
-                RoutingContext
-            }
-            pub fn request(&self) -> RoutingContext {
-                RoutingContext
-            }
-            pub fn method(&self) -> HttpMethod {
-                HttpMethod::GET
-            }
-            pub fn body(&self) -> Option<String> {
-                None
-            }
-            pub fn query_param(&self, _name: &str) -> Option<String> {
-                None
-            }
-            pub fn path_param(&self, _name: &str) -> String {
-                String::new()
-            }
-            pub fn response(&self) -> RoutingContext {
-                RoutingContext
-            }
-            pub fn put_header(&mut self, _k: &str, _v: &str) -> &mut Self {
-                self
-            }
-            pub fn end(&mut self, _s: String) {}
-            pub fn json(&mut self, _s: String) {}
-            pub fn fail(&mut self, _code: i32, _msg: String) {}
-            pub fn next(&self) {}
-            pub fn absolute_uri(&self) -> String {
-                String::new()
-            }
-            pub fn raw_method(&self) -> String {
-                String::new()
-            }
-            pub fn get_header(&self, _name: &str) -> Option<String> {
-                None
-            }
-            pub fn add_headers_end_handler(&self, _f: impl FnOnce(())) {}
-            pub fn file_uploads(&self) -> Vec<String> {
-                Vec::new()
-            }
-            pub fn body_as_string(&self) -> String {
-                String::new()
-            }
-            pub fn get_cookie(&self, _name: &str) -> Option<Cookie> {
-                None
-            }
-            pub fn remove_cookie(&self, _name: &str) {}
-            pub fn connection(&self) -> RoutingContext {
-                RoutingContext
-            }
-            pub fn close_handler(&self, _f: impl FnOnce()) {}
-            pub fn failure(&self) -> Option<Throwable> {
-                None
-            }
-            // ---- 控制器转录所需 io.vertx.ext.web 方法（附加占位） ----
-            pub fn set_status_code(&mut self, _code: i32) -> &mut Self {
-                self
-            }
-            pub fn send_file(&mut self, _path: String) {}
-            pub fn get_body(&self) -> core::buffer::Buffer {
-                core::buffer::Buffer
-            }
-            pub fn put<T: 'static>(&self, _key: &str, _value: T) {}
-            pub fn get_user<T: 'static>(&self, _key: &str) -> Option<T> {
-                None
-            }
-            pub fn body_as_json(&self) -> Option<JsonObject> {
-                None
-            }
-            pub fn body_as_json_array(&self) -> Option<JsonArray> {
-                None
-            }
-        }
-        // ---- Vert.x Web 处理器占位（RestVerticle 使用） ----
-        pub struct SessionHandler;
-        impl SessionHandler {
-            pub fn create(_store: LocalSessionStore) -> SessionHandler {
-                SessionHandler
-            }
-            pub fn set_session_cookie_name(&self, _name: &str) -> SessionHandler {
-                SessionHandler
-            }
-            pub fn set_session_timeout(&self, _timeout: i64) -> SessionHandler {
-                SessionHandler
-            }
-            pub fn set_session_cookie_path(&self, _path: &str) -> SessionHandler {
-                SessionHandler
-            }
-        }
-        pub struct LocalSessionStore;
-        impl LocalSessionStore {
-            pub fn create(_vertx: Vertx) -> LocalSessionStore {
-                LocalSessionStore
-            }
-        }
-        pub struct BodyHandler;
-        impl BodyHandler {
-            pub fn create() -> BodyHandler {
-                BodyHandler
-            }
-        }
-        pub struct LoggerHandler;
-        impl LoggerHandler {
-            pub fn create(_format: LoggerFormat) -> LoggerHandler {
-                LoggerHandler
-            }
-        }
-        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-        pub enum LoggerFormat {
-            DEFAULT,
-        }
-        pub struct URLDecoder;
-        impl URLDecoder {
-            pub fn decode(_s: String, _encoding: &str) -> String {
-                _s
-            }
-        }
-        pub struct Cookie;
-        impl Cookie {
-            pub fn set_max_age(&self, _age: i64) {}
-            pub fn set_path(&self, _path: &str) {}
-        }
-        pub struct HttpServer;
-        impl HttpServer {
-            pub fn request_handler(&mut self, _router: Router) -> HttpServer {
-                HttpServer
-            }
-            pub fn exception_handler<F: FnMut(Throwable)>(&mut self, _f: F) -> HttpServer {
-                HttpServer
-            }
-            pub fn listen<F: FnMut(AsyncResult)>(&mut self, _port: i32, _handler: F) {}
-        }
-        pub struct AsyncResult;
-        impl AsyncResult {
-            pub fn succeeded(&self) -> bool {
-                true
-            }
-        }
-        pub struct Worker;
-        pub struct Deferred;
-    }
 }
 
 // ---- HttpMethod ----
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum HttpMethod {
-    GET,
-    POST,
-    PUT,
-    DELETE,
-    HEAD,
-    OPTIONS,
-    PATCH,
-    TRACE,
-}
+pub use crate::stubs::io::vertx::HttpMethod;
 
 // ---- Pair ----
 #[derive(Clone, Debug)]
@@ -3755,13 +3550,19 @@ pub fn string_format(fmt: &str, args: &[String]) -> String {
 // ---- WebClient 占位（BookSourceController 远程书源同步） ----
 
 #[derive(Clone, Debug, Default)]
-pub struct HttpResponse;
+pub struct HttpResponse {
+    pub status: u16,
+    pub body: String,
+}
 impl HttpResponse {
+    pub fn new() -> HttpResponse {
+        HttpResponse { status: 0, body: String::new() }
+    }
     pub fn body_as_json_array(&self) -> Option<JsonArray> {
-        None
+        JsonArray::from_json(self.body.clone())
     }
     pub fn body_as_string(&self) -> Option<String> {
-        None
+        Some(self.body.clone())
     }
 }
 
@@ -3772,30 +3573,48 @@ impl SendResult {
     }
 }
 
-pub struct WebClient;
-impl WebClient {
-    pub fn new() -> WebClient {
-        WebClient
-    }
-    pub fn get_abs(&self, _url: &str) -> WebRequest {
-        WebRequest
-    }
-}
 
-pub struct WebRequest;
+pub struct WebRequest {
+    pub url: String,
+    pub client: Option<reqwest::blocking::Client>,
+    pub timeout_ms: Option<u64>,
+}
 impl WebRequest {
-    pub fn timeout(mut self, _millis: u64) -> WebRequest {
+    pub fn timeout(mut self, millis: u64) -> WebRequest {
+        self.timeout_ms = Some(millis);
         self
     }
-    pub fn send(&self, _handler: &dyn Fn(SendResult)) {}
+    pub fn send(&self, handler: &dyn Fn(SendResult)) {
+        let result = self.client.as_ref().and_then(|c| {
+            let mut req = c.get(&self.url);
+            if let Some(t) = self.timeout_ms {
+                req = req.timeout(std::time::Duration::from_millis(t));
+            }
+            req.send().ok()
+        });
+        let resp = result.map(|r| HttpResponse {
+            status: r.status().as_u16(),
+            body: r.text().unwrap_or_default(),
+        });
+        handler(SendResult(resp.ok_or_else(|| StubError::new("request failed"))));
+    }
 }
 
-// Kotlin io.vertx.kotlin.coroutines.awaitResult → 同步占位
-pub fn await_result<F>(_f: F) -> HttpResponse
+// Kotlin io.vertx.kotlin.coroutines.awaitResult → 同步执行
+pub fn await_result<F>(f: F) -> HttpResponse
 where
     F: FnOnce(&dyn Fn(SendResult)),
 {
-    HttpResponse
+    let result: std::cell::RefCell<HttpResponse> = std::cell::RefCell::new(HttpResponse::default());
+    {
+        let out: &dyn Fn(SendResult) = &|it: SendResult| {
+            if let Some(r) = it.result() {
+                *result.borrow_mut() = r;
+            }
+        };
+        f(out);
+    }
+    result.into_inner()
 }
 
 // ---- serde / log 模块别名 ----
@@ -5272,29 +5091,6 @@ impl ThrowableExt for Box<dyn std::error::Error> {
 }
 // ---- fix: CURD.rs 占位 RoutingContext 为 prelude glob 唯一可见的 RoutingContext（stubs 内嵌 vertx 模块不可 glob），
 // 补充 RssSourceController 转录所需方法（RssSourceController.rs E0308/E0599 修复）----
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn request(&self) -> crate::com_htmake_reader_api_controller_curd::RoutingContext {
-        crate::com_htmake_reader_api_controller_curd::RoutingContext
-    }
-    pub fn method(&self) -> HttpMethod {
-        HttpMethod::GET
-    }
-    pub fn query_param(&self, _name: &str) -> Option<String> {
-        None
-    }
-    pub fn get_user<T: 'static>(&self, _key: &str) -> Option<T> {
-        None
-    }
-    pub fn body_as_string(&self) -> String {
-        String::new()
-    }
-    pub fn body_as_json(&self) -> Option<JsonObject> {
-        None
-    }
-    pub fn body_as_json_array(&self) -> Option<JsonArray> {
-        None
-    }
-}
 
 
 // ---------------- UserController 转录补充（追加） ----------------
@@ -5311,25 +5107,6 @@ impl Environment {
 }
 
 // fix: UserController 转录所需 RoutingContext 方法（追加到 CURD 占位 RoutingContext）
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn get_param(&self, _name: &str) -> Option<String> {
-        None
-    }
-    pub fn session(&self) -> Session {
-        Session
-    }
-    pub fn success(&self, _data: &crate::com_htmake_reader_api_returndata::ReturnData) {}
-    pub fn file_uploads(&self) -> Option<Vec<FileUpload>> {
-        None
-    }
-    pub fn response(&self) -> crate::com_htmake_reader_api_controller_curd::RoutingContext {
-        crate::com_htmake_reader_api_controller_curd::RoutingContext
-    }
-    pub fn put_header(&mut self, _k: &str, _v: &str) -> &mut Self {
-        self
-    }
-    pub fn send_file(&mut self, _path: String) {}
-}
 
 // fix: io.vertx.ext.web.Session 占位（UserController/BaseController 使用）
 pub struct Session;
@@ -5519,48 +5296,8 @@ impl ObjectMapper {
 pub enum DeserializationFeature {
     FAIL_ON_UNKNOWN_PROPERTIES,
 }
-pub struct WebClientOptions {
-    pub is_try_use_compression: bool,
-    pub log_activity: bool,
-    pub is_follow_redirects: bool,
-    pub is_trust_all: bool,
-}
-impl WebClientOptions {
-    pub fn new() -> WebClientOptions {
-        WebClientOptions {
-            is_try_use_compression: false,
-            log_activity: false,
-            is_follow_redirects: false,
-            is_trust_all: false,
-        }
-    }
-}
-pub struct HttpClientOptions;
-impl HttpClientOptions {
-    pub fn new() -> HttpClientOptions {
-        HttpClientOptions
-    }
-    pub fn set_trust_all(self, _trust_all: bool) -> HttpClientOptions {
-        self
-    }
-}
-pub struct HttpClient;
-impl WebClient {
-    pub fn wrap(_client: HttpClient, _options: WebClientOptions) -> WebClient {
-        WebClient::new()
-    }
-}
-impl io::vertx::Vertx {
-    pub fn create_http_client(&self, _options: HttpClientOptions) -> HttpClient {
-        HttpClient
-    }
-    pub fn deploy_verticle(&self, _verticle: &crate::com_htmake_reader_api_yueduapi::YueduApi) {}
-}
-impl Clone for io::vertx::Vertx {
-    fn clone(&self) -> Self {
-        io::vertx::Vertx
-    }
-}
+
+pub use crate::stubs::io::vertx::{HttpClient, HttpClientOptions, WebClient, WebClientOptions};
 
 // ================= CbzFile 转录补充（io.legado.app.model.localBook.CbzFile 使用，additive） =================
 
@@ -6444,21 +6181,7 @@ impl InputStreamMarkReset for Box<dyn InputStream> {
 // ================= YueduApi 转录修复补充（追加；只追加不改写） =================
 
 // ---- io.vertx.ext.web.handler.StaticHandler 占位（YueduApi 静态资源路由） ----
-pub struct StaticHandler;
-impl StaticHandler {
-    pub fn create(_root: &str) -> StaticHandler {
-        StaticHandler
-    }
-    pub fn set_default_content_encoding(&self, _encoding: &str) -> StaticHandler {
-        StaticHandler
-    }
-    pub fn set_allow_root_file_system_access(&self, _allow: bool) -> StaticHandler {
-        StaticHandler
-    }
-    pub fn set_web_root(&self, _root: String) -> StaticHandler {
-        StaticHandler
-    }
-}
+pub use crate::stubs::io::vertx::StaticHandler;
 
 // ---- java.lang.Runtime 占位（YueduApi.getSystemInfo） ----
 pub struct Runtime;
@@ -6513,40 +6236,50 @@ impl ApplicationContext {
 }
 
 // ---- CURD RoutingContext 方法补充（YueduApi 静态资源路由 / onHandlerError） ----
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn path(&self) -> String {
-        String::new()
-    }
-    pub fn absolute_uri(&self) -> String {
-        String::new()
-    }
-    pub fn next(&self) {}
-    pub fn head_written(&self) -> bool {
-        false
-    }
-    pub fn set_status_code(&mut self, _code: i32) -> &mut Self {
-        self
-    }
-    pub fn end(&mut self, _s: String) {}
-}
 
 // ---- Router.post（YueduApi 路由注册） ----
 pub trait RouterPostExt {
-    fn post(&mut self, _path: &str) -> crate::stubs::io::vertx::Route;
+    fn post(&mut self, path: &str) -> crate::stubs::io::vertx::Route;
 }
 impl RouterPostExt for crate::stubs::io::vertx::Router {
-    fn post(&mut self, _path: &str) -> crate::stubs::io::vertx::Route {
-        crate::stubs::io::vertx::Route
+    fn post(&mut self, path: &str) -> crate::stubs::io::vertx::Route {
+        crate::stubs::io::vertx::Router::post(self, path)
     }
 }
 
-// ---- Route 处理器链（YueduApi 路由注册；闭包借用 self/局部变量，不要求 'static） ----
+// ---- Route 处理器链（YueduApi 路由注册） ----
 pub trait RouteHandlerExt {
-    fn handler<'a>(&mut self, _h: impl FnMut(&mut crate::com_htmake_reader_api_controller_curd::RoutingContext) + 'a) {}
-    fn coroutine_handler<'a, R>(&mut self, _f: impl Fn(&crate::com_htmake_reader_api_controller_curd::RoutingContext) -> R + 'a) {}
-    fn coroutine_handler_without_res<'a, R>(&mut self, _f: impl Fn(&crate::com_htmake_reader_api_controller_curd::RoutingContext) -> R + 'a) {}
+    fn handler<F>(&mut self, h: F)
+    where
+        F: FnMut(&mut crate::stubs::io::vertx::RoutingContext) + 'static;
+    fn coroutine_handler<R: 'static>(&mut self, f: impl Fn(&mut crate::stubs::io::vertx::RoutingContext) -> R + 'static);
+    fn coroutine_handler_without_res<R: 'static>(&mut self, f: impl Fn(&mut crate::stubs::io::vertx::RoutingContext) -> R + 'static);
 }
-impl RouteHandlerExt for crate::stubs::io::vertx::Route {}
+impl RouteHandlerExt for crate::stubs::io::vertx::Route {
+    fn handler<F>(&mut self, h: F)
+    where
+        F: FnMut(&mut crate::stubs::io::vertx::RoutingContext) + 'static,
+    {
+        crate::stubs::io::vertx::Route::handler(self, h);
+    }
+    fn coroutine_handler<R: 'static>(&mut self, f: impl Fn(&mut crate::stubs::io::vertx::RoutingContext) -> R + 'static) {
+        crate::stubs::io::vertx::Route::handler(self, move |ctx| {
+            let r = f(ctx);
+            // fix: 控制器方法返回 ReturnData，统一写回 JSON 响应
+            let any = &r as &dyn std::any::Any;
+            if let Some(rd) = any.downcast_ref::<crate::com_htmake_reader_api_returndata::ReturnData>() {
+                ctx.success(rd);
+            } else {
+                ctx.json(String::new());
+            }
+        });
+    }
+    fn coroutine_handler_without_res<R>(&mut self, f: impl Fn(&mut crate::stubs::io::vertx::RoutingContext) -> R + 'static) {
+        crate::stubs::io::vertx::Route::handler(self, move |ctx| {
+            let _ = f(ctx);
+        });
+    }
+}
 
 // ---- ReaderAdapter 实现 ReaderAdapterInterface（YueduApi.initRouter setAdapter；原 impl 被注释） ----
 impl crate::io_legado_app_adapters_readeradapterinterface::ReaderAdapterInterface for crate::com_htmake_reader_init_readeradapter::ReaderAdapter {
@@ -6955,11 +6688,6 @@ impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
 }
 
 // fix: VertRoute.global_handler 使用 io.vertx.ext.web.RoutingContext.get(key)（追加）
-impl io::vertx::RoutingContext {
-    pub fn get<T: 'static>(&self, _key: &str) -> Option<T> {
-        None
-    }
-}
 
 // ---------------- WrapOutputStream / UmdBook 转录修复：`dyn Write` 输出流 trait 占位（Umd 写出专用方法集） ----------------
 
@@ -7572,12 +7300,6 @@ impl crate::io_legado_app_data_entities_booksource::BookSource {
 // ---------------- FileController 转录补充（追加） ----------------
 
 // fix: FileController.getFileHome/checkAccess 使用（Kotlin RoutingContext.get<File>() / put）
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn get_file(&self, _key: &str) -> Option<crate::stubs::File> {
-        None
-    }
-    pub fn put<T: 'static>(&self, _key: &str, _value: T) {}
-}
 
 // fix: FileController.list/upload/parse 使用（Kotlin java.io.File.relativeTo / copyTo）
 impl crate::stubs::File {
@@ -8100,11 +7822,6 @@ impl crate::io_legado_app_data_entities_basebook::BaseBook for crate::io_legado_
 // ---- fix: WebdavController.rs 类型检查修复所需补充（追加，勿删） ----
 
 // fix: stubs::io::vertx::RoutingContext 缺 path()（Kotlin HttpServerRequest.path()；WebdavController.requestPath 使用）
-impl io::vertx::RoutingContext {
-    pub fn path(&self) -> String {
-        String::new()
-    }
-}
 
 // fix: stubs::BookController 缺 syncBookProgressFromWebdav（WebdavController.webdavUpload 使用）
 impl BookController {
@@ -8118,25 +7835,17 @@ impl crate::com_htmake_reader_api_controller_basecontroller::BaseController {
         false
     }
 }
-// fix: stubs::io::vertx::Route::global_handler 使用 io::vertx::RoutingContext（与项目 CURD RoutingContext 约定不一致），
-//      WebdavController 路由处理需要 CURD RoutingContext 版本（追加）
+// fix: WebdavController 路由处理需要 CURD RoutingContext 版本（与 io::vertx 版已统一为同一类型）
 impl io::vertx::Route {
-    pub fn global_handler_curd(&mut self, _handler: &dyn FnMut(&mut crate::com_htmake_reader_api_controller_curd::RoutingContext)) {}
+    pub fn global_handler_curd<F>(&mut self, handler: F)
+    where
+        F: FnMut(&mut crate::stubs::io::vertx::RoutingContext) + 'static,
+    {
+        crate::stubs::io::vertx::Route::global_handler_static(self, handler);
+    }
 }
 
 // fix: CURD 占位 RoutingContext 补充 WebdavController 所需方法（get_header/raw_method/get_body/add_headers_end_handler；追加）
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn get_header(&self, _name: &str) -> Option<String> {
-        None
-    }
-    pub fn raw_method(&self) -> String {
-        String::new()
-    }
-    pub fn get_body(&self) -> crate::stubs::io::vertx::core::buffer::Buffer {
-        crate::stubs::io::vertx::core::buffer::Buffer
-    }
-    pub fn add_headers_end_handler(&self, _f: impl FnOnce(())) {}
-}
 // ================= AnalyzeByJSoup 转录修复补充（追加；只追加不改写） =================
 
 // fix: jsoup Elements.iter()/add_all()/clear()（AnalyzeByJSoup 使用）
@@ -8368,13 +8077,6 @@ impl crate::io_legado_app_lib_icu4j_charsetdetector::CharsetDetector {
 // ---------------- BaseController/BookGroupController 类型检查修复补充（追加，勿删） ----------------
 
 // fix: Kotlin RoutingContext.get<String>(key)（BaseController.getUserNameSpace 使用）
-impl crate::com_htmake_reader_api_controller_curd::RoutingContext {
-    pub fn get(&self, _key: &str) -> Option<String> {
-        None
-    }
-    // Kotlin RoutingContext.remove(key)（BaseController.checkManagerAuth 使用）
-    pub fn remove(&self, _key: &str) {}
-}
 
 // Kotlin JsonObject.getLong(key)（BookGroupController.checker/saveBookGroupOrder 使用；无默认值版本返回 Option）
 impl JsonObject {
