@@ -47,3 +47,6 @@ out
 /server/logs
 /server/storage
 /server/target
+target/
+target_*/
+*.txt

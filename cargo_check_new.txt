@@ -1,7 +1,0 @@
-﻿cargo :     Blocking waiting for file lock on build directory
-At line:1 char:1
-+ cargo check 2>&1 | Out-File -FilePath cargo_check_new.txt -Encoding u ...
-+ ~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 

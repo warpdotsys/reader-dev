@@ -1,8 +1,0 @@
-﻿cargo :     Blocking waiting for file lock on build directory
-At line:1 char:1
-+ cargo build -p displaydoc 2>&1 | Out-File -FilePath cargo_dd.txt -Enc ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-    Finished `dev` profile [unoptimized] target(s) in 2m 18s

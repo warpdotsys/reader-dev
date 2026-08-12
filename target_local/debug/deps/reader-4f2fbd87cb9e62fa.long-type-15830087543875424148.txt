@@ -1,1 +1,0 @@
-std::option::Option<std::rc::Rc<std::cell::RefCell<CacheNode<std::string::String, stubs::Mutex>>>>

@@ -1,1 +1,0 @@
-me_ag2s_epublib_domain_epubresourceprovider::EpubResourceProvider: me_ag2s_epublib_domain_lazyresourceprovider::LazyResourceProvider
