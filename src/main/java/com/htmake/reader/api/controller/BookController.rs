@@ -113,7 +113,7 @@
 // import org.mozilla.javascript.WrappedException
 // import io.legado.app.help.coroutine.Coroutine
 
-static LOGGER: () = ();
+static LOGGER: Log = Log;
 
 struct BookController {
     coroutine_context: CoroutineContext,
@@ -135,14 +135,14 @@ impl BookController {
     }
 
     fn get_invalid_book_source_cache(&self, user_name_space: String) -> ACache {
-        let cache_dir = File::new(get_work_dir("storage", "cache", "invalidBookSourceCache", user_name_space));
+        let cache_dir = File::new(get_work_dir_multi(&["storage", "cache", "invalidBookSourceCache", user_name_space]));
         // 缓存 5M 的失效书源信息
         let invalid_book_source_cache = ACache::get(cache_dir, 1000 * 1000 * 5, 1000000);
         return invalid_book_source_cache;
     }
 
     fn is_invalid_book_source(&self, book_source: BookSource, user_name_space: String) -> bool {
-        return self.get_invalid_book_source_cache(user_name_space).get_as_string(book_source.book_source_url) != null;
+        return self.get_invalid_book_source_cache(user_name_space).get_as_string(book_source.book_source_url) != None;
     }
 
     fn add_invalid_book_source(&self, source_url: String, invalid_info: Map<String, Any>, user_name_space: String) {
@@ -151,7 +151,7 @@ impl BookController {
     }
 
     fn get_book_chapters_cache(&self, user_name_space: String) -> ACache {
-        let cache_dir = File::new(get_work_dir("storage", "cache", "bookChaptersCache", user_name_space));
+        let cache_dir = File::new(get_work_dir_multi(&["storage", "cache", "bookChaptersCache", user_name_space]));
         return ACache::get(cache_dir, 1000 * 1000 * 5, 1000000);
     }
 
@@ -161,15 +161,15 @@ impl BookController {
 
     async fn get_invalid_book_sources(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let invalid_book_source_cache = self.get_invalid_book_source_cache(user_name_space);
-        let cache_dir = File::new(get_work_dir("storage", "cache", "invalidBookSourceCache", user_name_space));
+        let cache_dir = File::new(get_work_dir_multi(&["storage", "cache", "invalidBookSourceCache", user_name_space]));
         let files = cache_dir.list_files();
         let invalid_book_source_list = array_list!<Map<String, Any>>();
-        if files != null {
+        if files != None {
             for f in files {
                 if let Some(info) = invalid_book_source_cache.get_by_hash_code(f.name) {
                     invalid_book_source_list.add(info.to_map());
@@ -185,33 +185,33 @@ impl BookController {
         let book_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_json_object("searchBook").get_string("bookUrl") ?: "";
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_json_object("searchBook").get_string("bookUrl").unwrap_or_default();
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
+            book_url = context.query_param("url").unwrap_or("".to_string());
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
-        LOGGER.info("getBookInfo with bookUrl: {}", book_url);
-        let book_info: Option<Book> = null;
-        if self.check_auth(context) {
-            book_info = self.get_shelf_book_by_url(book_url, self.get_user_name_space(context));
+        LOGGER.info(format!("getBookInfo with bookUrl: {}", book_url));
+        let book_info: Option<Book> = None;
+        if self.base.check_auth(context) {
+            book_info = self.get_shelf_book_by_url(book_url, self.base.get_user_name_space(context));
         }
-        if book_info == null {
+        if book_info == None {
             // 看看有没有缓存数据
-            let book_source: Option<String> = null;
+            let book_source: Option<String> = None;
             let cache_info: Option<Book> = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
-            if cache_info != null {
+            if cache_info != None {
                 // 使用缓存的书籍信息包含的书源
                 book_source = self.get_book_source_string(context, cache_info.origin);
             } else {
                 book_source = self.get_book_source_string(context);
             }
-            if book_source.is_null_or_empty() {
+            if book_source.map_or(true, |s| s.is_empty()) {
                 return return_data.set_error_msg("未配置书源");
             }
-            book_info = self.merge_book_cache_info(self.web_book(book_source, app_config.debug_log, self.get_user_name_space(context)).get_book_info(book_url));
+            book_info = self.merge_book_cache_info(self.web_book(book_source, self.base.get_app_config_debug_log(), self.base.get_user_name_space(context)).get_book_info(book_url));
         }
 
         // 缓存书籍信息
@@ -220,17 +220,17 @@ impl BookController {
     }
 
     async fn get_book_cover(&self, context: RoutingContext) {
-        let cover_url = context.query_param("path").first_or_null() ?: "";
-        if cover_url.is_null_or_empty() {
+        let cover_url = context.query_param("path").unwrap_or("".to_string());
+        if cover_url.map_or(true, |s| s.is_empty()) {
             context.response().set_status_code(404).end();
             return;
         }
-        let ext = self.get_file_ext(cover_url, "png");
+        let ext = self.base.get_file_ext(cover_url, "png");
         let md5_encode = MD5Utils::md5_encode(cover_url).to_string();
         let cache_path = get_work_dir("storage", "cache", "bookCoverCache", md5_encode + "." + ext);
         let cache_file = File::new(cache_path);
         if cache_file.exists() {
-            LOGGER.info("send cache: {}", cache_file);
+            LOGGER.info(format!("send cache: {}", cache_file));
             context.response().put_header("Cache-Control", "86400").send_file(cache_file.to_string());
             return;
         }
@@ -239,8 +239,8 @@ impl BookController {
             cache_file.parent_file.mkdirs();
         }
 
-        launch(MDCContext() + Dispatchers::IO + CoroutineExceptionHandler { _, exception ->
-            LOGGER.info("get cover error: {}", exception.message);
+        launch(MDCContext() + Dispatchers::IO + CoroutineExceptionHandler |_, exception| {
+            LOGGER.info(format!("get cover error: {}", exception.message));
             context.response().set_status_code(404).end();
         }) {
             web_client.get_abs(cover_url)
@@ -248,7 +248,7 @@ impl BookController {
                 .put_header("Referer", cover_url.substring_before_last("/"))
                 .timeout(10000).send {
                 let body_bytes = it.result()?.body_as_buffer()?.get_bytes();
-                if body_bytes != null {
+                if body_bytes != None {
                     let res = context.response().put_header("Cache-Control", "86400");
                     cache_file.write_bytes(body_bytes);
                     res.send_file(cache_file.to_string());
@@ -261,20 +261,20 @@ impl BookController {
 
     async fn import_book_preview(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        if context.file_uploads() == null || context.file_uploads().is_empty() {
+        if context.file_uploads() == None || context.file_uploads().is_empty() {
             return return_data.set_error_msg("请上传书籍文件");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let file_list = array_list!<Map<String, Any>>();
         for it in context.file_uploads() {
             let file = File::new(it.uploaded_file_name());
-            LOGGER.info("uploadFile: {} {} {}", it.uploaded_file_name(), it.file_name(), file);
+            LOGGER.info(format!("uploadFile: {} {} {}", it.uploaded_file_name()), it.file_name(), file);
             if file.exists() {
                 let mut file_name = it.file_name();
-                let ext = self.get_file_ext(file_name);
+                let ext = self.base.get_file_ext(file_name);
                 if ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz" && ext != "pdf" {
                     file.delete_recursively();
                     return return_data.set_error_msg("不支持导入" + ext + "格式的书籍文件");
@@ -300,16 +300,17 @@ impl BookController {
                 if new_file.exists() {
                     new_file.delete();
                 }
-                LOGGER.info("moveTo: {}", new_file);
+                LOGGER.info(format!("moveTo: {}", new_file));
                 if file.copy_recursively(new_file) {
                     let book = Book::init_local_book(local_file_url, local_file_path, get_work_dir());
                     book.set_user_name_space(user_name_space);
-                    try {
+                    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                         let chapters = LocalBook::get_chapter_list(book);
                         file_list.add(map!("book" to book, "chapters" to chapters));
-                    } catch (e: TocEmptyException) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                         file_list.add(map!("book" to book, "chapters" to array_list!<i32>()));
                     }
+        }
                 }
                 file.delete_recursively();
             }
@@ -319,12 +320,12 @@ impl BookController {
 
     async fn get_txt_toc_rules(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let rules = ArrayList::<TxtTocRule>::new();
         rules.add_all(DefaultData::txtTocRules);
-        let custom_rules = GSON.from_json_array::<TxtTocRule>(self.get_user_storage(self.get_user_name_space(context), "txtTocRule"))
+        let custom_rules = GSON.from_json_array::<TxtTocRule>(self.base.get_user_storage(self.base.get_user_name_space(context), "txtTocRule"))
             .get_or_null()
             ?: empty_list();
         rules.add_all(custom_rules);
@@ -333,98 +334,98 @@ impl BookController {
 
     async fn get_chapter_list_by_rule(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let book = context.body_as_json.map_to::<Book>();
-        if book.origin.is_null_or_empty() {
+        let book = context.body_as_json().map_to::<Book>();
+        if book.origin.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未找到书源信息");
         }
         if !book.is_local_txt() && !book.is_local_epub() && !book.is_local_pdf() {
             return return_data.set_error_msg("非本地txt/epub/pdf书籍");
         }
         book.set_root_dir(get_work_dir());
-        book.set_user_name_space(self.get_user_name_space(context));
+        book.set_user_name_space(self.base.get_user_name_space(context));
         let chapters = LocalBook::get_chapter_list(book);
         return return_data.set_data(map!("book" to book, "chapters" to chapters));
     }
 
     async fn refresh_local_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("bookUrl");
+            book_url = context.body_as_json().get_string("bookUrl");
         } else {
             // get 请求
-            book_url = context.query_param("bookUrl").first_or_null() ?: "";
+            book_url = context.query_param("bookUrl").unwrap_or("".to_string());
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
         // 根据书籍url获取书本信息
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null {
+        if book_info == None {
             return return_data.set_error_msg("书籍信息错误");
         }
         book_info.update_from_local(true);
 
-        self.edit_shelf_book(book_info, user_name_space) { exist_book ->
+        self.edit_shelf_book(book_info, user_name_space, |exist_book| {
             exist_book.cover_url = book_info.cover_url;
-            LOGGER.info("refreshLocalBook: {}", exist_book);
+            LOGGER.info(format!("refreshLocalBook: {}", exist_book));
             exist_book
-        }
+        })
 
         return return_data.set_data(book_info);
     }
 
     async fn get_chapter_list(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         let mut refresh: i32 = 0;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_json_object("book").get_string("bookUrl") ?: "";
-            refresh = context.body_as_json.get_integer("refresh", 0);
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_json_object("book").get_string("bookUrl").unwrap_or_default();
+            refresh = context.body_as_json().get_integer("refresh", 0);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
         // 根据书籍url获取书本信息
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        let book_source: Option<String> = null;
-        if book_info == null {
+        let book_source: Option<String> = None;
+        if book_info == None {
             // 看看有没有缓存数据
             let cache_info: Option<Book> = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
-            if cache_info != null {
+            if cache_info != None {
                 // 使用缓存的书籍信息包含的书源
                 book_source = self.get_book_source_string(context, cache_info.origin);
             } else {
                 // 看看有没有传入书源
                 book_source = self.get_book_source_string(context);
             }
-            if book_source.is_null_or_empty() {
+            if book_source.map_or(true, |s| s.is_empty()) {
                 return return_data.set_error_msg("未配置书源");
             }
-            book_info = self.merge_book_cache_info(self.web_book(book_source, app_config.debug_log, user_name_space).get_book_info(book_url));
+            book_info = self.merge_book_cache_info(self.web_book(book_source, self.base.get_app_config_debug_log(), user_name_space).get_book_info(book_url));
             // 缓存书籍信息
             self.save_book_info_cache(array_list![book_info]);
         } else {
             book_source = self.get_book_source_string(context, book_info.origin);
         }
-        if !book_info.is_local_book() && book_source.is_null_or_empty() {
+        if !book_info.is_local_book() && book_source.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未配置书源");
         }
         book_info.set_root_dir(get_work_dir());
@@ -432,48 +433,48 @@ impl BookController {
         if book_info.is_local_book() {
             let local_file = book_info.get_local_file();
             if !local_file.exists() {
-                LOGGER.info("localFile: {} not exists", local_file);
+                LOGGER.info(format!("localFile: {} not exists", local_file));
                 return return_data.set_error_msg("本地书籍源文件不存在");
             }
         }
         // 缓存章节列表
-        LOGGER.info("bookInfo: {}", book_info);
-        let chapter_list = self.get_local_chapter_list(book_info, book_source ?: "", refresh > 0, self.get_user_name_space(context), false);
+        LOGGER.info(format!("bookInfo: {}", book_info));
+        let chapter_list = self.get_local_chapter_list(book_info, book_source.unwrap_or(""), refresh > 0, self.base.get_user_name_space(context), false);
 
         return return_data.set_data(chapter_list);
     }
 
     async fn save_book_progress(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         let chapter_index: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_json_object("searchBook").get_string("bookUrl") ?: "";
-            chapter_index = context.body_as_json.get_integer("index", -1);
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_json_object("searchBook").get_string("bookUrl").unwrap_or_default();
+            chapter_index = context.body_as_json().get_integer("index", -1);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            chapter_index = context.query_param("index").first_or_null()?.to_int() ?: -1;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            chapter_index = context.query_param("index")?.to_int().unwrap_or(-1);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         // 看看有没有加入书架
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null || book_info.origin.is_null_or_empty() {
+        if book_info == None || book_info.origin.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书籍未加入书架");
         }
         let book_source = self.get_book_source_string_by_source_url_opt(book_info.origin, user_name_space);
 
-        if !book_info.is_local_book() && book_source.is_null_or_empty() {
+        if !book_info.is_local_book() && book_source.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未配置书源");
         }
-        let chapter_list = self.get_local_chapter_list(book_info, book_source ?: "", false, user_name_space, false);
+        let chapter_list = self.get_local_chapter_list(book_info, book_source.unwrap_or(""), false, user_name_space, false);
         if chapter_index >= chapter_list.size {
             return return_data.set_error_msg("章节不存在");
         }
@@ -487,38 +488,38 @@ impl BookController {
 
     async fn save_book_config(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         let pdf_image_width: f32;
         if context.request().method() == HttpMethod::POST {
-            book_url = context.body_as_json.get_string("bookUrl") ?: "";
-            pdf_image_width = context.body_as_json.get_float("pdfImageWidth", 0.0);
+            book_url = context.body_as_json().get_string("bookUrl").unwrap_or_default();
+            pdf_image_width = context.body_as_json().get_float("pdfImageWidth", 0.0);
         } else {
-            book_url = context.query_param("bookUrl").first_or_null() ?: "";
-            pdf_image_width = context.query_param("pdfImageWidth").first_or_null()?.to_float_or_null() ?: 0.0;
+            book_url = context.query_param("bookUrl").unwrap_or("".to_string());
+            pdf_image_width = context.query_param("pdfImageWidth")?.to_float_or_null().unwrap_or(0.0);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书籍链接不能为空");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space)
             ?: return return_data.set_error_msg("书籍信息错误");
         if pdf_image_width <= 0.0 {
             return return_data.set_error_msg("pdf图片宽度错误");
         }
-        let new_book = self.edit_shelf_book(book_info, user_name_space) { exist_book ->
+        let new_book = self.edit_shelf_book(book_info, user_name_space, |exist_book| {
             exist_book.set_pdf_image_width(pdf_image_width);
-            LOGGER.info("saveBookConfig: {}", exist_book);
+            LOGGER.info(format!("saveBookConfig: {}", exist_book));
             exist_book
-        }
-        return return_data.set_data(new_book ?: book_info);
+        })
+        return return_data.set_data(new_book.unwrap_or(book_info));
     }
 
     async fn get_book_content(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let chapter_url: String;
@@ -529,53 +530,53 @@ impl BookController {
         let epub_content: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            chapter_url = context.body_as_json.get_string("chapterUrl") ?: context.body_as_json.get_json_object("bookChapter")?.get_string("url") ?: "";
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_json_object("searchBook")?.get_string("bookUrl") ?: "";
-            chapter_index = context.body_as_json.get_integer("index", -1);
-            cache = context.body_as_json.get_integer("cache", 0);
-            refresh = context.body_as_json.get_integer("refresh", 0);
-            epub_content = context.body_as_json.get_integer("epubContent", 0);
+            chapter_url = context.body_as_json().get_string("chapterUrl").unwrap_or(context.body_as_json)().get_json_object("bookChapter")?.get_string("url").unwrap_or_default();
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_json_object("searchBook")?.get_string("bookUrl").unwrap_or_default();
+            chapter_index = context.body_as_json().get_integer("index", -1);
+            cache = context.body_as_json().get_integer("cache", 0);
+            refresh = context.body_as_json().get_integer("refresh", 0);
+            epub_content = context.body_as_json().get_integer("epubContent", 0);
         } else {
             // get 请求
-            chapter_url = context.query_param("chapterUrl").first_or_null() ?: "";
-            book_url = context.query_param("url").first_or_null() ?: "";
-            chapter_index = context.query_param("index").first_or_null()?.to_int() ?: -1;
-            cache = context.query_param("cache").first_or_null()?.to_int() ?: 0;
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
-            epub_content = context.query_param("epubContent").first_or_null()?.to_int() ?: 0;
+            chapter_url = context.query_param("chapterUrl").unwrap_or("".to_string());
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            chapter_index = context.query_param("index")?.to_int().unwrap_or(-1);
+            cache = context.query_param("cache")?.to_int().unwrap_or(0);
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
+            epub_content = context.query_param("epubContent")?.to_int().unwrap_or(0);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
         let mut book_source = self.get_book_source_string(context);
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let mut is_in_book_shelf = false;
-        let mut book_info: Option<Book> = null;
-        let mut chapter_info: Option<BookChapter> = null;
-        let mut next_chapter_url: Option<String> = null;
-        if !book_url.is_null_or_empty() {
+        let mut book_info: Option<Book> = None;
+        let mut chapter_info: Option<BookChapter> = None;
+        let mut next_chapter_url: Option<String> = None;
+        if !book_url.map_or(true, |s| s.is_empty()) {
             // 看看有没有加入书架
             book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-            if book_info != null && !book_info.origin.is_null_or_empty() {
+            if book_info != None && !book_info.origin.map_or(true, |s| s.is_empty()) {
                 is_in_book_shelf = true;
                 book_source = self.get_book_source_string_by_source_url_opt(book_info.origin, user_name_space);
             }
             // 看看有没有缓存数据
             let cache_info: Option<Book> = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
-            if cache_info != null {
+            if cache_info != None {
                 // 使用缓存的书籍信息包含的书源
                 book_source = self.get_book_source_string(context, cache_info.origin);
             }
-            if chapter_url.is_null_or_empty() && chapter_index >= 0 {
+            if chapter_url.map_or(true, |s| s.is_empty()) && chapter_index >= 0 {
                 // 根据 url 和 index 获取章节内容
-                if book_url.is_null_or_empty() {
+                if book_url.map_or(true, |s| s.is_empty()) {
                     return return_data.set_error_msg("请输入书籍链接");
                 }
-                if book_info != null && !book_info.is_local_book() && book_source.is_null_or_empty() {
+                if book_info != None && !book_info.is_local_book() && book_source.map_or(true, |s| s.is_empty()) {
                     return return_data.set_error_msg("未配置书源");
                 }
-                book_info = book_info ?: self.merge_book_cache_info(self.web_book(book_source ?: "", app_config.debug_log, user_name_space).get_book_info(book_url));
-                let chapter_list = self.get_local_chapter_list(book_info, book_source ?: "", false, user_name_space, false);
+                book_info = book_info.unwrap_or(self.merge_book_cache_info(self.web_book(book_source.unwrap_or_default()), self.base.get_app_config_debug_log(), user_name_space).get_book_info(book_url));
+                let chapter_list = self.get_local_chapter_list(book_info, book_source.unwrap_or(""), false, user_name_space, false);
                 if chapter_index < chapter_list.size {
                     chapter_info = chapter_list.get(chapter_index);
                     // 书架书籍保存阅读进度
@@ -592,13 +593,13 @@ impl BookController {
                 }
             }
         }
-        if book_info == null {
+        if book_info == None {
             return return_data.set_error_msg("获取书籍信息失败");
         }
-        if !book_info.is_local_book() && book_source.is_null_or_empty() {
+        if !book_info.is_local_book() && book_source.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未配置书源");
         }
-        if chapter_info == null || chapter_url.is_null_or_empty() {
+        if chapter_info == None || chapter_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("获取章节链接失败");
         }
 
@@ -610,15 +611,15 @@ impl BookController {
             if !local_file.exists() {
                 return return_data.set_error_msg("本地源书籍文件不存在");
             }
-            if chapter_info == null {
-                let chapter_list = self.get_local_chapter_list(book_info, book_source ?: "", false, user_name_space, false);
+            if chapter_info == None {
+                let chapter_list = self.get_local_chapter_list(book_info, book_source.unwrap_or(""), false, user_name_space, false);
                 for i in 0..chapter_list.size {
                     if chapter_url == chapter_list.get(i).url {
                         chapter_info = chapter_list.get(i);
                         break;
                     }
                 }
-                if chapter_info == null {
+                if chapter_info == None {
                     return return_data.set_error_msg("获取章节信息失败");
                 }
             }
@@ -629,7 +630,7 @@ impl BookController {
 
                 let epub_root_dir = book_info.get_epub_root_dir();
                 let chapter_file_path = get_work_dir(book_info.book_url, "index", epub_root_dir, chapter_info.url);
-                LOGGER.info("chapterFilePath: {} {}", chapter_file_path, epub_root_dir);
+                LOGGER.info(format!("chapterFilePath: {} {}", chapter_file_path, epub_root_dir));
                 if !File::new(chapter_file_path).exists() {
                     return return_data.set_error_msg("章节文件不存在");
                 }
@@ -657,12 +658,12 @@ impl BookController {
                     return return_data.set_error_msg("CBZ书籍解压失败");
                 }
                 let chapter_file_path = get_work_dir(book_info.book_url, "index", chapter_info.url);
-                LOGGER.info("chapterFilePath: {}", chapter_file_path);
+                LOGGER.info(format!("chapterFilePath: {}", chapter_file_path));
                 let chapter_file = File::new(chapter_file_path);
                 if !chapter_file.exists() {
                     return return_data.set_error_msg("章节文件不存在");
                 }
-                let ext = self.get_file_ext(chapter_file.name).to_lowercase();
+                let ext = self.base.get_file_ext(chapter_file.name).to_lowercase();
                 let image_ext = list!("jpg", "jpeg", "gif", "png", "bmp", "webp", "svg");
                 let file_url = "__API_ROOT__" + book_info.book_url.replace("\\", "/").replace("storage/data/", "/book-assets/") + "/index/" + chapter_info.url;
                 if !image_ext.contains(ext) {
@@ -677,12 +678,12 @@ impl BookController {
                 }
                 let start = chapter_info.start;
                 let end = chapter_info.end;
-                if start != null && end != null && start <= end {
+                if start != None && end != None && start <= end {
                     let public_book_url = book_info.book_url.replace("\\", "/").replace("storage/data/", "/book-assets/");
                     for page in start..end {
                         self.convert_pdf_page_to_image(book_info, page.to_int(), refresh > 0);
                         let page_file = File::new(get_work_dir(book_info.book_url, "index", "output-$page.png"));
-                        LOGGER.info("chapterFilePath: {}", page_file.absolute_path);
+                        LOGGER.info(format!("chapterFilePath: {}", page_file.absolute_path));
                         if !page_file.exists() {
                             return return_data.set_error_msg("章节文件不存在");
                         }
@@ -693,13 +694,13 @@ impl BookController {
                 return return_data.set_data(content);
             }
             let book_content = LocalBook::get_content(book_info, chapter_info);
-            if book_content == null {
+            if book_content == None {
                 return return_data.set_error_msg("获取章节内容失败");
             }
             content = book_content;
         } else {
             // 查找章节缓存
-            let mut chapter_cache_file: Option<File> = null;
+            let mut chapter_cache_file: Option<File> = None;
             if book_info.is_in_shelf && refresh <= 0 && app_config.cache_chapter_content {
                 let local_cache_dir = self.get_chapter_cache_dir(book_info, user_name_space);
                 chapter_cache_file = File::new(local_cache_dir.absolute_path + File::separator + chapter_index + ".txt");
@@ -708,28 +709,28 @@ impl BookController {
                     if content.contains("<img") {
                         content = self.update_image_link_in_content(book_info, chapter_info, content);
                     }
-                    LOGGER.info("使用缓存的章节内容: {}", chapter_cache_file.to_string());
+                    LOGGER.info(format!("使用缓存的章节内容: {}", chapter_cache_file.to_string()));
                     return return_data.set_data(content);
                 }
             }
-            try {
-                content = self.web_book(book_source ?: "", app_config.debug_log, user_name_space).get_book_content(book_info, chapter_info, next_chapter_url);
-                if app_config.cache_chapter_content && chapter_cache_file != null {
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                content = self.web_book(book_source.unwrap_or(""), self.base.get_app_config_debug_log(), user_name_space).get_book_content(book_info, chapter_info, next_chapter_url);
+                if app_config.cache_chapter_content && chapter_cache_file != None {
                     chapter_cache_file.write_text(content);
                     // 保存图片
                     BookHelp::save_images(
                         self,
-                        BookSource::from_json(book_source ?: "").get_or_null() ?: BookSource::new(),
+                        BookSource::from_json(book_source.unwrap_or("")).get_or_null().unwrap_or(BookSource)::new(),
                         book_info,
                         chapter_info,
                         content
                     );
                     content = self.update_image_link_in_content(book_info, chapter_info, content);
                 }
-            } catch (e: Exception) {
-                if !book_source.is_null_or_empty() {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+                if !book_source.map_or(true, |s| s.is_empty()) {
                     let book_source_object = as_json_object(book_source)?.map_to::<BookSource>();
-                    if book_source_object != null {
+                    if book_source_object != None {
                         // 标记为失败源
                         let info = mutable_map_of!("sourceUrl" to book_source_object.book_source_url, "time" to System::current_time_millis(), "error" to e.to_string());
                         self.add_invalid_book_source(book_source_object.book_source_url, info, user_name_space);
@@ -738,6 +739,7 @@ impl BookController {
                 throw e;
             }
         }
+        }
 
         return return_data.set_data(content);
     }
@@ -745,57 +747,57 @@ impl BookController {
     async fn explore_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
         // 如果登录了，就使用用户的书源
-        self.check_auth(context);
+        self.base.check_auth(context);
         let book_source = self.get_book_source_string(context);
-        if book_source.is_null_or_empty() {
+        if book_source.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未配置书源");
         }
         let page: i32;
         let rule_find_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            rule_find_url = context.body_as_json.get_string("ruleFindUrl");
-            page = context.body_as_json.get_integer("page", 1);
+            rule_find_url = context.body_as_json().get_string("ruleFindUrl");
+            page = context.body_as_json().get_integer("page", 1);
         } else {
             // get 请求
-            rule_find_url = context.query_param("ruleFindUrl").first_or_null() ?: "";
-            page = context.query_param("page").first_or_null()?.to_int() ?: 1;
+            rule_find_url = context.query_param("ruleFindUrl").unwrap_or("".to_string());
+            page = context.query_param("page")?.to_int().unwrap_or(1);
         }
 
-        let result = self.web_book(book_source, false, self.get_user_name_space(context)).explore_book(rule_find_url, page);
+        let result = self.web_book(book_source, false, self.base.get_user_name_space(context)).explore_book(rule_find_url, page);
         return return_data.set_data(result);
     }
 
     async fn search_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
         // 如果登录了，就使用用户的书源
-        self.check_auth(context);
+        self.base.check_auth(context);
         let book_source = self.get_book_source_string(context);
-        if book_source.is_null_or_empty() {
+        if book_source.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("未配置书源");
         }
         let key: String;
         let page: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            key = context.body_as_json.get_string("key");
-            page = context.body_as_json.get_integer("page", 1);
+            key = context.body_as_json().get_string("key");
+            page = context.body_as_json().get_integer("page", 1);
         } else {
             // get 请求
-            key = context.query_param("key").first_or_null() ?: "";
-            page = context.query_param("page").first_or_null()?.to_int() ?: 1;
+            key = context.query_param("key").unwrap_or("".to_string());
+            page = context.query_param("page")?.to_int().unwrap_or(1);
         }
-        if key.is_null_or_empty() {
+        if key.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入搜索关键字");
         }
         LOGGER.info { "searchBook" };
-        let result = self.web_book(book_source, app_config.debug_log, self.get_user_name_space(context)).search_book(key, page);
+        let result = self.web_book(book_source, self.base.get_app_config_debug_log(), self.base.get_user_name_space(context)).search_book(key, page);
         return return_data.set_data(result);
     }
 
     async fn search_book_multi(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let mut key: String;
@@ -805,25 +807,25 @@ impl BookController {
         let mut concurrent_count: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            key = context.body_as_json.get_string("key", "");
-            book_source_group = context.body_as_json.get_string("bookSourceGroup", "");
-            last_index = context.body_as_json.get_integer("lastIndex", -1);
-            search_size = context.body_as_json.get_integer("searchSize", 20);
-            concurrent_count = context.body_as_json.get_integer("concurrentCount", 36);
+            key = context.body_as_json().get_string("key", "");
+            book_source_group = context.body_as_json().get_string("bookSourceGroup", "");
+            last_index = context.body_as_json().get_integer("lastIndex", -1);
+            search_size = context.body_as_json().get_integer("searchSize", 20);
+            concurrent_count = context.body_as_json().get_integer("concurrentCount", 36);
         } else {
             // get 请求
-            key = context.query_param("key").first_or_null() ?: "";
-            book_source_group = context.query_param("bookSourceGroup").first_or_null() ?: "";
-            last_index = context.query_param("lastIndex").first_or_null()?.to_int() ?: -1;
-            search_size = context.query_param("searchSize").first_or_null()?.to_int() ?: 20;
-            concurrent_count = context.query_param("concurrentCount").first_or_null()?.to_int() ?: 36;
+            key = context.query_param("key").unwrap_or("".to_string());
+            book_source_group = context.query_param("bookSourceGroup").unwrap_or("".to_string());
+            last_index = context.query_param("lastIndex")?.to_int().unwrap_or(-1);
+            search_size = context.query_param("searchSize")?.to_int().unwrap_or(20);
+            concurrent_count = context.query_param("concurrentCount")?.to_int().unwrap_or(36);
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let url_map = BookSourceController::new(self.coroutine_context).get_book_source_map(user_name_space);
         if url_map.is_empty() {
             return return_data.set_error_msg("未配置书源");
         }
-        if key.is_null_or_empty() {
+        if key.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入搜索关键字");
         }
         let mut accurate = false;
@@ -831,7 +833,7 @@ impl BookController {
             accurate = true;
             key = key.replace_first("=", "");
         }
-        if key.is_null_or_empty() {
+        if key.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入搜索关键字");
         }
         if last_index >= url_map.size - 1 {
@@ -840,10 +842,10 @@ impl BookController {
 
         search_size = if search_size > 0 { search_size } else { 20 };
         concurrent_count = if concurrent_count > 0 { concurrent_count } else { 36 };
-        LOGGER.info("searchBookMulti from lastIndex: {} searchSize: {}", last_index, search_size);
+        LOGGER.info(format!("searchBookMulti from lastIndex: {} searchSize: {}", last_index, search_size));
         let mut is_end = false;
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 searchBookMulti");
+            LOGGER.info(format!("客户端已断开链接，停止 searchBookMulti"));
             is_end = true;
             self.coroutine_context.cancel();
         }
@@ -855,19 +857,19 @@ impl BookController {
             if it.exists() { it } else { get_storage_file("data", "default", "bookSource") }
         };
         let mut max_size = url_map.size;
-        self.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
+        self.base.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
             if it <= max_size {
                 last_index = Math::max(last_index, it);
                 let book_source_list = parse_json_string_list(
                     book_source_file,
                     start_index = it,
                     end_index = it,
-                    filter = if book_source_group.is_empty() { null } else { |node| {
-                        let source_group = node.get("bookSourceGroup")?.as_text() ?: "";
+                    filter = if book_source_group.is_empty() { None } else { |node| {
+                        let source_group = node.get("bookSourceGroup")?.as_text().unwrap_or("");
                         source_group.is_not_empty() && (source_group + ",").contains(book_source_group + ",")
                     } }
                 );
-                if book_source_list == null || book_source_list.is_empty {
+                if book_source_list == None || book_source_list.is_empty {
                     max_size = it;
                     empty_list::<SearchBook>()
                 } else {
@@ -891,7 +893,7 @@ impl BookController {
                     }
                 }
             }
-            LOGGER.info("Loog: {} resultList.size: {}", loop_count, result_list.size);
+            LOGGER.info(format!("Loog: {} resultList.size: {}", loop_count, result_list.size));
             if is_end || loop_count >= self.concurrent_loop_count {
                 // 超过最大轮次，终止执行
                 false
@@ -908,7 +910,7 @@ impl BookController {
         let response = context.response().put_header("Content-Type", "text/event-stream")
             .put_header("Cache-Control", "no-cache")
             .set_chunked(true);
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用"), false) + "\n\n");
             return;
@@ -920,27 +922,27 @@ impl BookController {
         let mut concurrent_count: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            key = context.body_as_json.get_string("key", "");
-            book_source_group = context.body_as_json.get_string("bookSourceGroup", "");
-            last_index = context.body_as_json.get_integer("lastIndex", -1);
-            search_size = context.body_as_json.get_integer("searchSize", 50);
-            concurrent_count = context.body_as_json.get_integer("concurrentCount", 24);
+            key = context.body_as_json().get_string("key", "");
+            book_source_group = context.body_as_json().get_string("bookSourceGroup", "");
+            last_index = context.body_as_json().get_integer("lastIndex", -1);
+            search_size = context.body_as_json().get_integer("searchSize", 50);
+            concurrent_count = context.body_as_json().get_integer("concurrentCount", 24);
         } else {
             // get 请求
-            key = context.query_param("key").first_or_null() ?: "";
-            book_source_group = context.query_param("bookSourceGroup").first_or_null() ?: "";
-            last_index = context.query_param("lastIndex").first_or_null()?.to_int() ?: -1;
-            search_size = context.query_param("searchSize").first_or_null()?.to_int() ?: 50;
-            concurrent_count = context.query_param("concurrentCount").first_or_null()?.to_int() ?: 24;
+            key = context.query_param("key").unwrap_or("".to_string());
+            book_source_group = context.query_param("bookSourceGroup").unwrap_or("".to_string());
+            last_index = context.query_param("lastIndex")?.to_int().unwrap_or(-1);
+            search_size = context.query_param("searchSize")?.to_int().unwrap_or(50);
+            concurrent_count = context.query_param("concurrentCount")?.to_int().unwrap_or(24);
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let url_map = BookSourceController::new(self.coroutine_context).get_book_source_map(user_name_space);
         if url_map.is_empty() {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("未配置书源"), false) + "\n\n");
             return;
         }
-        if key.is_null_or_empty() {
+        if key.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请输入搜索关键字"), false) + "\n\n");
             return;
@@ -950,7 +952,7 @@ impl BookController {
             accurate = true;
             key = key.replace_first("=", "");
         }
-        if key.is_null_or_empty() {
+        if key.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请输入搜索关键字"), false) + "\n\n");
             return;
@@ -963,11 +965,11 @@ impl BookController {
 
         search_size = if search_size > 0 { search_size } else { 50 };
         concurrent_count = if concurrent_count > 0 { concurrent_count } else { 24 };
-        LOGGER.info("searchBookMulti from lastIndex: {} concurrentCount: {} searchSize: {}", last_index, concurrent_count, search_size);
+        LOGGER.info(format!("searchBookMulti from lastIndex: {} concurrentCount: {} searchSize: {}", last_index, concurrent_count, search_size));
 
         let mut is_end = false;
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 searchBookMultiSSE");
+            LOGGER.info(format!("客户端已断开链接，停止 searchBookMultiSSE"));
             is_end = true;
             self.coroutine_context.cancel();
         }
@@ -978,19 +980,19 @@ impl BookController {
             if it.exists() { it } else { get_storage_file("data", "default", "bookSource") }
         };
         let mut max_size = url_map.size;
-        self.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
+        self.base.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
             if it <= max_size {
                 last_index = Math::max(last_index, it);
                 let book_source_list = parse_json_string_list(
                     book_source_file,
                     start_index = it,
                     end_index = it,
-                    filter = if book_source_group.is_empty() { null } else { |node| {
-                        let source_group = node.get("bookSourceGroup")?.as_text() ?: "";
+                    filter = if book_source_group.is_empty() { None } else { |node| {
+                        let source_group = node.get("bookSourceGroup")?.as_text().unwrap_or("");
                         source_group.is_not_empty() && (source_group + ",").contains(book_source_group + ",")
                     } }
                 );
-                if book_source_list == null || book_source_list.is_empty {
+                if book_source_list == None || book_source_list.is_empty {
                     max_size = it;
                     empty_list::<SearchBook>()
                 } else {
@@ -1014,7 +1016,7 @@ impl BookController {
             }
             // 返回本轮数据
             response.write("data: " + json_encode(map!("lastIndex" to last_index, "data" to loop_result), false) + "\n\n");
-            LOGGER.info("Loog: {} resultList.size: {}", loop_count, result_list.size);
+            LOGGER.info(format!("Loog: {} resultList.size: {}", loop_count, result_list.size));
 
             if is_end || loop_count >= self.concurrent_loop_count {
                 // 超过最大轮次，终止执行
@@ -1029,7 +1031,7 @@ impl BookController {
 
     async fn search_book_source(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
@@ -1038,39 +1040,39 @@ impl BookController {
         let book_source_group: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url");
-            last_index = context.body_as_json.get_integer("lastIndex", -1);
-            search_size = context.body_as_json.get_integer("searchSize", 5);
-            book_source_group = context.body_as_json.get_string("bookSourceGroup", "");
+            book_url = context.body_as_json().get_string("url");
+            last_index = context.body_as_json().get_integer("lastIndex", -1);
+            search_size = context.body_as_json().get_integer("searchSize", 5);
+            book_source_group = context.body_as_json().get_string("bookSourceGroup", "");
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            last_index = context.query_param("lastIndex").first_or_null()?.to_int() ?: -1;
-            search_size = context.query_param("searchSize").first_or_null()?.to_int() ?: 5;
-            book_source_group = context.query_param("bookSourceGroup").first_or_null() ?: "";
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            last_index = context.query_param("lastIndex")?.to_int().unwrap_or(-1);
+            search_size = context.query_param("searchSize")?.to_int().unwrap_or(5);
+            book_source_group = context.query_param("bookSourceGroup").unwrap_or("".to_string());
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let url_map = BookSourceController::new(self.coroutine_context).get_book_source_map(user_name_space);
         if url_map.is_empty() {
             return return_data.set_error_msg("未配置书源");
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
         if last_index >= url_map.size - 1 {
             return return_data.set_error_msg("没有更多了");
         }
         let mut book = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book == null {
+        if book == None {
             book = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
         }
-        if book == null {
+        if book == None {
             return return_data.set_error_msg("书籍信息错误");
         }
-        LOGGER.info("searchBookSource from lastIndex: {}", last_index);
+        LOGGER.info(format!("searchBookSource from lastIndex: {}", last_index));
         let mut is_end = false;
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 searchBookSource");
+            LOGGER.info(format!("客户端已断开链接，停止 searchBookSource"));
             is_end = true;
             self.coroutine_context.cancel();
         }
@@ -1081,19 +1083,19 @@ impl BookController {
             if it.exists() { it } else { get_storage_file("data", "default", "bookSource") }
         };
         let mut max_size = url_map.size;
-        self.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
+        self.base.limit_concurrent(concurrent_count, last_index + 1, url_map.size, |it| {
             if it <= max_size {
                 last_index = Math::max(last_index, it);
                 let book_source_list = parse_json_string_list(
                     book_source_file,
                     start_index = it,
                     end_index = it,
-                    filter = if book_source_group.is_empty() { null } else { |node| {
-                        let source_group = node.get("bookSourceGroup")?.as_text() ?: "";
+                    filter = if book_source_group.is_empty() { None } else { |node| {
+                        let source_group = node.get("bookSourceGroup")?.as_text().unwrap_or("");
                         source_group.is_not_empty() && (source_group + ",").contains(book_source_group + ",")
                     } }
                 );
-                if book_source_list == null || book_source_list.is_empty {
+                if book_source_list == None || book_source_list.is_empty {
                     max_size = it;
                     empty_list::<SearchBook>()
                 } else {
@@ -1127,7 +1129,7 @@ impl BookController {
             .put_header("Cache-Control", "no-cache")
             .set_chunked(true);
 
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用"), false) + "\n\n");
             return;
@@ -1140,37 +1142,37 @@ impl BookController {
 
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url");
-            last_index = context.body_as_json.get_integer("lastIndex", -1);
-            search_size = context.body_as_json.get_integer("searchSize", 30);
-            book_source_group = context.body_as_json.get_string("bookSourceGroup", "");
-            refresh = context.body_as_json.get_integer("refresh", 0);
+            book_url = context.body_as_json().get_string("url");
+            last_index = context.body_as_json().get_integer("lastIndex", -1);
+            search_size = context.body_as_json().get_integer("searchSize", 30);
+            book_source_group = context.body_as_json().get_string("bookSourceGroup", "");
+            refresh = context.body_as_json().get_integer("refresh", 0);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            last_index = context.query_param("lastIndex").first_or_null()?.to_int() ?: -1;
-            search_size = context.query_param("searchSize").first_or_null()?.to_int() ?: 30;
-            book_source_group = context.query_param("bookSourceGroup").first_or_null() ?: "";
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            last_index = context.query_param("lastIndex")?.to_int().unwrap_or(-1);
+            search_size = context.query_param("searchSize")?.to_int().unwrap_or(30);
+            book_source_group = context.query_param("bookSourceGroup").unwrap_or("".to_string());
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let url_map = BookSourceController::new(self.coroutine_context).get_book_source_map(user_name_space);
         if url_map.is_empty() {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("未配置书源"), false) + "\n\n");
             return;
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请输入书籍链接"), false) + "\n\n");
             return;
         }
 
         let mut book = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book == null {
+        if book == None {
             book = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
         }
-        if book == null {
+        if book == None {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("书籍信息错误"), false) + "\n\n");
             return;
@@ -1184,10 +1186,10 @@ impl BookController {
         search_size = if search_size > 0 { search_size } else { 30 };
         let mut result_list = array_list!<SearchBook>();
         let concurrent_count = Math::max(search_size * 2, 24);
-        LOGGER.info("searchBookMulti from lastIndex: {} concurrentCount: {} searchSize: {}", last_index, concurrent_count, search_size);
+        LOGGER.info(format!("searchBookMulti from lastIndex: {} concurrentCount: {} searchSize: {}", last_index, concurrent_count, search_size));
         let mut is_end = false;
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 searchBookSourceSSE");
+            LOGGER.info(format!("客户端已断开链接，停止 searchBookSourceSSE"));
             is_end = true;
             self.coroutine_context.cancel();
         }
@@ -1196,19 +1198,19 @@ impl BookController {
             if it.exists() { it } else { get_storage_file("data", "default", "bookSource") }
         };
         let mut max_size = url_map.size;
-        self.limit_concurrent(concurrent_count, last_index + 1, max_size, |it| {
+        self.base.limit_concurrent(concurrent_count, last_index + 1, max_size, |it| {
             if it <= max_size {
                 last_index = Math::max(last_index, it);
                 let book_source_list = parse_json_string_list(
                     book_source_file,
                     start_index = it,
                     end_index = it,
-                    filter = if book_source_group.is_empty() { null } else { |node| {
-                        let source_group = node.get("bookSourceGroup")?.as_text() ?: "";
+                    filter = if book_source_group.is_empty() { None } else { |node| {
+                        let source_group = node.get("bookSourceGroup")?.as_text().unwrap_or("");
                         source_group.is_not_empty() && (source_group + ",").contains(book_source_group + ",")
                     } }
                 );
-                if book_source_list == null || book_source_list.is_empty {
+                if book_source_list == None || book_source_list.is_empty {
                     max_size = it;
                     empty_list::<SearchBook>()
                 } else {
@@ -1229,7 +1231,7 @@ impl BookController {
             }
             // 返回本轮数据
             response.write("data: " + json_encode(map!("lastIndex" to last_index, "data" to loop_result), false) + "\n\n");
-            LOGGER.info("Loog: {} resultList.size: {}", loop_count, result_list.size);
+            LOGGER.info(format!("Loog: {} resultList.size: {}", loop_count, result_list.size));
 
             if is_end || loop_count >= self.concurrent_loop_count {
                 // 超过最大轮次，终止执行
@@ -1246,15 +1248,15 @@ impl BookController {
     async fn search_book_with_source(&self, book_source_string: String, book: Book, accurate: bool = true, user_name_space: String = "default") -> ArrayList<SearchBook> {
         let mut result_list = array_list!<SearchBook>();
         let book_source = as_json_object(book_source_string)?.map_to::<BookSource>();
-        if book_source == null {
+        if book_source == None {
             return result_list;
         }
         if self.is_invalid_book_source(book_source, user_name_space) {
             return result_list;
         }
-        with_context(Dispatchers::IO) {
+        with_context(Dispatchers::IO, || {
             // val costTime = measureTimeMillis {
-            try {
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let start = System::current_time_millis();
                 let mut result = self.web_book(book_source_string, false, user_name_space).search_book(book.name, 1);
                 let end = System::current_time_millis();
@@ -1262,7 +1264,7 @@ impl BookController {
                     for j in 0..result.size {
                         let mut _book = result.get(j);
                         if accurate && _book.name.equals(book.name) &&
-                            (book.author.is_null_or_empty() || _book.author.equals(book.author)) {
+                            (book.author.map_or(true, |s| s.is_empty()) || _book.author.equals(book.author)) {
                             _book.time = end - start;
                             result_list.add(_book);
                         } else if !accurate && (_book.name.index_of(book.name, ignore_case = true) >= 0 || _book.author.index_of(book.name, ignore_case = true) >= 0) {
@@ -1271,48 +1273,48 @@ impl BookController {
                         }
                     }
                 }
-            } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                 // 标记为失败源
                 let info = mutable_map_of!("sourceUrl" to book_source.book_source_url, "time" to System::current_time_millis(), "error" to e.to_string());
                 self.add_invalid_book_source(book_source.book_source_url, info, user_name_space);
 
                 e.print_stack_trace();
             }
-            // }
-            // logger.info("searchBookWithSource in Thread: {} Cost: {}", Thread.currentThread().name, costTime)
         }
+            // }
+        });
         return result_list;
     }
 
     async fn get_available_book_source(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         let refresh: i32 = 0;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url");
-            refresh = context.body_as_json.get_integer("refresh", 0);
+            book_url = context.body_as_json().get_string("url");
+            refresh = context.body_as_json().get_integer("refresh", 0);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let mut book = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book == null {
+        if book == None {
             book = book_info_cache.get_as_string(book_url)?.to_map()?.to_data_class();
         }
-        if book == null {
+        if book == None {
             return return_data.set_error_msg("书籍信息错误");
         }
-        let mut book_source_list: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
-        if book_source_list != null && book_source_list.size() > 0 {
+        let mut book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
+        if book_source_list != None && book_source_list.size() > 0 {
             if refresh <= 0 {
                 return return_data.set_data(book_source_list.get_list());
             }
@@ -1320,13 +1322,13 @@ impl BookController {
             // 刷新源
             let mut result_list = array_list!<SearchBook>();
             let concurrent_count = 16;
-            self.limit_concurrent(concurrent_count, 0, book_source_list.size(), |it| {
+            self.base.limit_concurrent(concurrent_count, 0, book_source_list.size(), |it| {
                 let search_book = book_source_list.get_json_object(it).map_to::<SearchBook>();
                 if search_book.origin.equals("loc_book") {
                     array_list!(search_book)
                 } else {
                     let book_source = self.get_book_source_string_by_source_url_opt(search_book.origin, user_name_space);
-                    if book_source != null {
+                    if book_source != None {
                         self.search_book_with_source(book_source, book, accurate = true, user_name_space = user_name_space)
                     } else {
                         array_list!::<SearchBook>()
@@ -1351,40 +1353,40 @@ impl BookController {
 
     async fn get_bookshelf(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let refresh: i32 = 0;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            refresh = context.body_as_json.get_integer("refresh", 0);
+            refresh = context.body_as_json().get_integer("refresh", 0);
         } else {
             // get 请求
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
         }
-        let book_list = self.get_book_shelf_books(refresh > 0, self.get_user_name_space(context));
+        let book_list = self.get_book_shelf_books(refresh > 0, self.base.get_user_name_space(context));
         return return_data.set_data(book_list);
     }
 
     async fn get_shelf_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            url = context.body_as_json.get_string("url");
+            url = context.body_as_json().get_string("url");
         } else {
             // get 请求
-            url = context.query_param("url").first_or_null() ?: "";
+            url = context.query_param("url").unwrap_or("".to_string());
         }
-        if url.is_null_or_empty() {
+        if url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书源链接不能为空");
         }
 
-        let book = self.get_shelf_book_by_url(url, self.get_user_name_space(context));
-        if book == null {
+        let book = self.get_shelf_book_by_url(url, self.base.get_user_name_space(context));
+        if book == None {
             return return_data.set_error_msg("书籍不存在");
         }
         return return_data.set_data(book);
@@ -1392,32 +1394,32 @@ impl BookController {
 
     async fn save_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let mut book = context.body_as_json.map_to::<Book>();
-        let user_name_space = self.get_user_name_space(context);
-        let mut book_source: Option<String> = null;
+        let mut book = context.body_as_json().map_to::<Book>();
+        let user_name_space = self.base.get_user_name_space(context);
+        let mut book_source: Option<String> = None;
         if !book.is_local_book() {
             book_source = self.get_book_source_string_by_source_url_opt(book.origin, user_name_space)
                 ?: return return_data.set_error_msg("书源信息错误");
-            if book.toc_url.is_null_or_empty() {
-                self.web_book(book_source, app_config.debug_log, user_name_space).get_book_info(book);
+            if book.toc_url.map_or(true, |s| s.is_empty()) {
+                self.web_book(book_source, self.base.get_app_config_debug_log(), user_name_space).get_book_info(book);
             }
             book = self.merge_book_cache_info(book);
         }
         self.save_book_cover(book, user_name_space, book_source);
         self.save_local_book_cover(book, user_name_space);
         let result = self.save_book_to_shelf(book, user_name_space, context);
-        if result.second != null {
-            return return_data.set_error_msg(result.second ?: "");
+        if result.second != None {
+            return return_data.set_error_msg(result.second.unwrap_or(""));
         }
         return return_data.set_data(result.first);
     }
 
     async fn set_book_source(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
@@ -1425,39 +1427,39 @@ impl BookController {
         let book_source_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("bookUrl");
-            new_book_url = context.body_as_json.get_string("newUrl");
-            book_source_url = context.body_as_json.get_string("bookSourceUrl");
+            book_url = context.body_as_json().get_string("bookUrl");
+            new_book_url = context.body_as_json().get_string("newUrl");
+            book_source_url = context.body_as_json().get_string("bookSourceUrl");
         } else {
             // get 请求
-            book_url = context.query_param("bookUrl").first_or_null() ?: "";
-            new_book_url = context.query_param("newUrl").first_or_null() ?: "";
-            book_source_url = context.query_param("bookSourceUrl").first_or_null() ?: "";
+            book_url = context.query_param("bookUrl").unwrap_or("".to_string());
+            new_book_url = context.query_param("newUrl").unwrap_or("".to_string());
+            book_source_url = context.query_param("bookSourceUrl").unwrap_or("".to_string());
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书籍链接不能为空");
         }
-        if new_book_url.is_null_or_empty() {
+        if new_book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("新源书籍链接不能为空");
         }
-        if book_source_url.is_null_or_empty() {
+        if book_source_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书源链接不能为空");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book == null {
+        if book == None {
             return return_data.set_error_msg("书籍信息错误");
         }
         // 查找是否存在该书源
         let book_source_string = self.get_book_source_string_by_source_url_opt(book_source_url, user_name_space);
 
-        let mut search_book: Option<Book> = null;
-        if book_source_string.is_null_or_empty() {
+        let mut search_book: Option<Book> = None;
+        if book_source_string.map_or(true, |s| s.is_empty()) {
             // 判断是不是本地书籍
-            let local_book_source_list = as_json_array(self.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
+            let local_book_source_list = as_json_array(self.base.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
 
             // 遍历判断书本是否存在
-            if local_book_source_list != null {
+            if local_book_source_list != None {
                 for i in 0..local_book_source_list.size() {
                     let _search_book = local_book_source_list.get_json_object(i).map_to::<SearchBook>();
                     if _search_book.book_url.equals(new_book_url) {
@@ -1466,66 +1468,67 @@ impl BookController {
                     }
                 }
             }
-            if search_book == null {
+            if search_book == None {
                 return return_data.set_error_msg("书源信息错误");
             }
         }
 
-        let mut new_book_info = if search_book != null {
+        let mut new_book_info = if search_book != None {
             search_book
         } else {
-            if book_source_string.is_null_or_empty() {
+            if book_source_string.map_or(true, |s| s.is_empty()) {
                 return return_data.set_error_msg("书源信息错误");
             }
-            self.web_book(book_source_string, app_config.debug_log, user_name_space).get_book_info(new_book_url, false)
+            self.web_book(book_source_string, self.base.get_app_config_debug_log(), user_name_space).get_book_info(new_book_url, false)
         };
 
-        self.edit_shelf_book(book, user_name_space) { exist_book ->
+        self.edit_shelf_book(book, user_name_space, |exist_book| {
             exist_book.origin = new_book_info.origin;
             exist_book.origin_name = new_book_info.origin_name;
             exist_book.book_url = new_book_info.book_url;
             exist_book.toc_url = new_book_info.toc_url;
             exist_book.is_in_shelf = true;
-            if exist_book.cover_url.is_null_or_empty() && !new_book_info.cover_url.is_null_or_empty() {
+            if exist_book.cover_url.map_or(true, |s| s.is_empty()) && !new_book_info.cover_url.map_or(true, |s| s.is_empty()) {
                 exist_book.cover_url = new_book_info.cover_url;
             }
 
-            LOGGER.info("setBookSource: {}", exist_book);
+            LOGGER.info(format!("setBookSource: {}", exist_book));
 
             new_book_info = exist_book;
 
             exist_book
-        };
+        });
 
         // 更新目录；JAR 保持目录刷新失败不影响书源切换结果
-        try {
-            self.get_local_chapter_list(new_book_info, book_source_string ?: "", true, user_name_space, false);
-        } catch (_: Exception) {
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            self.get_local_chapter_list(new_book_info, book_source_string.unwrap_or(""), true, user_name_space, false);
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+        }
         }
         return return_data.set_data(new_book_info);
     }
     async fn save_book_group_id(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         let group_id: i64;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("bookUrl");
-            group_id = context.body_as_json.get_long("groupId", 0);
+            book_url = context.body_as_json().get_string("bookUrl");
+            group_id = context.body_as_json().get_long("groupId", 0);
         } else {
             // get 请求
-            book_url = context.query_param("bookUrl").first_or_null() ?: "";
-            group_id = context.query_param("groupId").first_or_null()?.to_long_or_null() ?: 0;
+            book_url = context.query_param("bookUrl").unwrap_or("".to_string());
+            group_id = context.query_param("groupId")?.to_long_or_null().unwrap_or(0);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("书籍链接不能为空");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let mut book = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book == null {
+        if book == None {
             return return_data.set_error_msg("书籍信息错误");
         }
 
@@ -1533,11 +1536,11 @@ impl BookController {
             return return_data.set_error_msg("分组信息错误");
         }
 
-        self.edit_shelf_book(book, user_name_space) { exist_book ->
+        self.edit_shelf_book(book, user_name_space, |exist_book| {
             exist_book.group = group_id;
-            LOGGER.info("saveBookGroupId: {}", exist_book);
+            LOGGER.info(format!("saveBookGroupId: {}", exist_book));
             exist_book
-        };
+        });
 
         book.group = group_id;
         return return_data.set_data(book);
@@ -1545,22 +1548,22 @@ impl BookController {
 
     async fn add_book_group_multi(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let group_id = context.body_as_json.get_long("groupId", 0);
+        let group_id = context.body_as_json().get_long("groupId", 0);
         if group_id <= 0 {
             return return_data.set_error_msg("分组信息错误");
         }
-        let user_name_space = self.get_user_name_space(context);
-        let book_json_array = context.body_as_json.get_json_array("bookList", JsonArray::new());
+        let user_name_space = self.base.get_user_name_space(context);
+        let book_json_array = context.body_as_json().get_json_array("bookList", JsonArray::new());
         for k in 0..book_json_array.size() {
             let book = book_json_array.get_json_object(k).map_to::<Book>();
-            self.edit_shelf_book(book, user_name_space) { exist_book ->
+            self.edit_shelf_book(book, user_name_space, |exist_book| {
                 exist_book.group = exist_book.group or group_id;
-                LOGGER.info("saveBookGroupId: {}", exist_book);
+                LOGGER.info(format!("saveBookGroupId: {}", exist_book));
                 exist_book
-            };
+            });
         }
 
         return return_data.set_data("");
@@ -1568,22 +1571,22 @@ impl BookController {
 
     async fn remove_book_group_multi(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let group_id = context.body_as_json.get_long("groupId", 0);
+        let group_id = context.body_as_json().get_long("groupId", 0);
         if group_id <= 0 {
             return return_data.set_error_msg("分组信息错误");
         }
-        let user_name_space = self.get_user_name_space(context);
-        let book_json_array = context.body_as_json.get_json_array("bookList", JsonArray::new());
+        let user_name_space = self.base.get_user_name_space(context);
+        let book_json_array = context.body_as_json().get_json_array("bookList", JsonArray::new());
         for k in 0..book_json_array.size() {
             let book = book_json_array.get_json_object(k).map_to::<Book>();
-            self.edit_shelf_book(book, user_name_space) { exist_book ->
+            self.edit_shelf_book(book, user_name_space, |exist_book| {
                 exist_book.group = exist_book.group xor group_id;
-                LOGGER.info("saveBookGroupId: {}", exist_book);
+                LOGGER.info(format!("saveBookGroupId: {}", exist_book));
                 exist_book
-            };
+            });
         }
 
         return return_data.set_data("");
@@ -1591,13 +1594,13 @@ impl BookController {
 
     async fn delete_book(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let mut book = context.body_as_json.map_to::<Book>();
-        let user_name_space = self.get_user_name_space(context);
-        let mut bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-        if bookshelf == null {
+        let mut book = context.body_as_json().map_to::<Book>();
+        let user_name_space = self.base.get_user_name_space(context);
+        let mut bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+        if bookshelf == None {
             bookshelf = JsonArray::new();
         }
         // 遍历判断书本是否存在
@@ -1620,7 +1623,7 @@ impl BookController {
         }
         bookshelf.remove(exist_index);
         // logger.info("bookshelf: {}", bookshelf)
-        self.save_user_storage(user_name_space, "bookshelf", bookshelf);
+        self.base.save_user_storage(user_name_space, "bookshelf", bookshelf);
 
         // 删除书籍目录
         let local_book_path = File::new(get_work_dir("storage", "data", user_name_space, book.name + "_" + book.author));
@@ -1634,14 +1637,14 @@ impl BookController {
 
     async fn delete_books(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let book_json_array = context.body_as_json_array;
+        let book_json_array = context.body_as_json_array();
 
-        let user_name_space = self.get_user_name_space(context);
-        let mut bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-        if bookshelf == null {
+        let user_name_space = self.base.get_user_name_space(context);
+        let mut bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+        if bookshelf == None {
             bookshelf = JsonArray::new();
         }
         let requested_urls = hash_set!<String>();
@@ -1662,7 +1665,7 @@ impl BookController {
             local_book_path.delete_recursively();
         }
 
-        self.save_user_storage(user_name_space, "bookshelf", bookshelf);
+        self.base.save_user_storage(user_name_space, "bookshelf", bookshelf);
         return return_data.set_data("");
     }
 
@@ -1679,15 +1682,15 @@ impl BookController {
     async fn merge_book_cache_info(&self, book: Book) -> Book {
         let cache_info: Option<Book> = book_info_cache.get_as_string(book.book_url)?.to_map()?.to_data_class();
 
-        if cache_info != null {
+        if cache_info != None {
             return book.fill_data(cache_info, list!("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTitle", "wordCount"));
         }
         return book;
     }
 
     async fn get_book_shelf_books(&self, refresh: bool = false, user_name_space: String) -> List<Book> {
-        let bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-        if bookshelf == null {
+        let bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+        if bookshelf == None {
             return array_list!::<Book>();
         }
         if bookshelf.size() == 0 {
@@ -1697,14 +1700,14 @@ impl BookController {
         let concurrent_count = 16;
         let mutex = Mutex::new();
         let sync_mutex = Mutex::new();
-        self.limit_concurrent(concurrent_count, 0, bookshelf.size()) {
+        self.base.limit_concurrent(concurrent_count, 0, bookshelf.size(), |it| {
             let mut book = bookshelf.get_json_object(it).map_to::<Book>();
             book.is_in_shelf = true;
             if !book.is_local_book() && book.can_update && refresh {
-                try {
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     let book_source = self.get_book_source_string_by_source_url_opt(book.origin, user_name_space);
-                    if book_source != null {
-                        with_context(Dispatchers::IO) {
+                    if book_source != None {
+                        with_context(Dispatchers::IO, || {
                             let book_chapter_list = self.get_local_chapter_list(book, book_source, refresh, user_name_space, false, mutex);
                             if book_chapter_list.size > 0 {
                                 let book_chapter = book_chapter_list.last();
@@ -1715,33 +1718,33 @@ impl BookController {
                                 book.last_check_count = book_chapter_list.size - book.total_chapter_num;
                             }
                             book.total_chapter_num = book_chapter_list.size;
-                        }
+                        });
                     }
-                } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                     e.print_stack_trace();
                 }
+        }
             }
             sync_mutex.lock();
-            try {
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 book_list.add(book);
-            } finally {
-                sync_mutex.unlock();
-            }
-        };
+            }));
+            sync_mutex.unlock();
+        });
         return book_list;
     }
 
-    async fn get_local_chapter_list(&self, book: Book, book_source: Option<String>, refresh: bool = false, user_name_space: String, debug_log: bool = true, mutex: Option<Mutex> = null) -> List<BookChapter> {
+    async fn get_local_chapter_list(&self, book: Book, book_source: Option<String>, refresh: bool = false, user_name_space: String, debug_log: bool = true, mutex: Option<Mutex> = None) -> List<BookChapter> {
         let md5_encode = MD5Utils::md5_encode(book.book_url).to_string();
         let book_chapters_cache = self.get_book_chapters_cache(user_name_space);
         let cache_key = book.name + "_" + book.author + md5_encode;
         let chapter_list = if book.is_in_shelf {
-            as_json_array(self.get_user_storage(user_name_space, book.name + "_" + book.author, md5_encode))
+            as_json_array(self.base.get_user_storage(user_name_space, book.name + "_" + book.author, md5_encode))
         } else {
             as_json_array(book_chapters_cache.get_as_string(cache_key))
         };
 
-        if chapter_list == null || refresh {
+        if chapter_list == None || refresh {
             let mut new_chapter_list: List<BookChapter>;
             book.set_root_dir(get_work_dir());
             book.set_user_name_space(user_name_space);
@@ -1759,8 +1762,8 @@ impl BookController {
                 }
                 new_chapter_list = LocalBook::get_chapter_list(book);
             } else {
-                try {
-                    let book_source_object = book_source?.let { BookSource::from_json(it).get_or_null() };
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    let book_source_object = book_source.and_then(|it| BookSource::from_json(it).get_or_null());
                     if let Some(book_source_object) = book_source_object {
                         if let Some(pre_update_js) = book_source_object.rule_toc.pre_update_js {
                             AnalyzeRule::new(book, book_source_object).eval_js(pre_update_js);
@@ -1771,30 +1774,28 @@ impl BookController {
                         self.web_book(source, debug_log, user_name_space).get_book_info(book, false);
                     }
                     new_chapter_list = self.web_book(source, debug_log, user_name_space).get_chapter_list(book);
-                } catch (e: Exception) {
-                    if !book_source.is_null_or_empty() {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+                    if !book_source.map_or(true, |s| s.is_empty()) {
                         let book_source_object = BookSource::from_json(book_source).get_or_null();
-                        if book_source_object != null {
+                        if book_source_object != None {
                             // 标记为失败源
                             let info = mutable_map_of!("sourceUrl" to book_source_object.book_source_url, "time" to System::current_time_millis(), "error" to e.to_string());
                             self.add_invalid_book_source(book_source_object.book_source_url, info, user_name_space);
                         }
                     }
-                    if mutex != null { mutex.lock() }
-                    try {
+                    if mutex != None { mutex.lock() }
+                    {
                         book.last_check_error = e.to_string();
-                        self.edit_shelf_book(book, user_name_space) { exist_book ->
+                        self.edit_shelf_book(book, user_name_space, |exist_book| {
                             exist_book.last_check_error = e.to_string();
                             exist_book
-                        };
-                    } finally {
-                        if let Some(mutex) = mutex { mutex.unlock() }
+                        });
                     }
-                    throw e;
-                }
+                    panic!("{}", e);
             }
+        }
             if book.is_in_shelf {
-                self.save_user_storage(user_name_space, get_relative_path(book.name + "_" + book.author, md5_encode), new_chapter_list);
+                self.base.save_user_storage(user_name_space, get_relative_path(book.name + "_" + book.author, md5_encode), new_chapter_list);
             } else {
                 book_chapters_cache.put(cache_key, json_encode(new_chapter_list), 3600);
             }
@@ -1808,32 +1809,33 @@ impl BookController {
         }
         return local_chapter_list;
     }
+    }
     async fn get_book_source_string(
         &self,
         context: RoutingContext,
         source_url: String = "",
         with_explore_url: bool = false
     ) -> Option<String> {
-        let mut book_source_string: Option<String> = null;
+        let mut book_source_string: Option<String> = None;
         if context.request().method() == HttpMethod::POST {
-            let book_source = context.body_as_json.get_json_object("bookSource");
-            if book_source != null {
+            let book_source = context.body_as_json().get_json_object("bookSource");
+            if book_source != None {
                 book_source_string = book_source.to_string();
             }
         }
-        let user_name_space = self.get_user_name_space(context);
-        if book_source_string.is_null_or_empty() {
+        let user_name_space = self.base.get_user_name_space(context);
+        if book_source_string.map_or(true, |s| s.is_empty()) {
             let book_source_url: String;
             if context.request().method() == HttpMethod::POST {
-                book_source_url = context.body_as_json.get_string("bookSourceUrl", "");
+                book_source_url = context.body_as_json().get_string("bookSourceUrl", "");
             } else {
-                book_source_url = context.query_param("bookSourceUrl").first_or_null() ?: "";
+                book_source_url = context.query_param("bookSourceUrl").unwrap_or("".to_string());
             }
             if book_source_url.is_not_blank() {
                 book_source_string = self.get_book_source_string_by_source_url_opt(book_source_url, user_name_space);
             }
         }
-        if book_source_string.is_null_or_empty() && source_url.is_not_blank() {
+        if book_source_string.map_or(true, |s| s.is_empty()) && source_url.is_not_blank() {
             book_source_string = self.get_book_source_string_by_source_url_opt(source_url, user_name_space);
         }
         return book_source_string;
@@ -1841,11 +1843,11 @@ impl BookController {
 
     fn get_shelf_book_by_url(&self, url: String, user_name_space: String) -> Option<Book> {
         if url.is_empty() {
-            return null;
+            return None;
         }
-        let bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-        if bookshelf == null {
-            return null;
+        let bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+        if bookshelf == None {
+            return None;
         }
         for i in 0..bookshelf.size() {
             let _book = bookshelf.get_json_object(i).map_to::<Book>();
@@ -1856,11 +1858,11 @@ impl BookController {
                 return _book;
             }
         }
-        return null;
+        return None;
     }
 
     async fn save_shelf_book_progress(&self, book: Book, book_chapter: BookChapter, user_name_space: String) {
-        self.edit_shelf_book(book, user_name_space) { exist_book ->
+        self.edit_shelf_book(book, user_name_space, |exist_book| {
             exist_book.dur_chapter_index = book_chapter.index;
             exist_book.dur_chapter_title = book_chapter.title;
             exist_book.dur_chapter_time = System::current_time_millis();
@@ -1868,13 +1870,13 @@ impl BookController {
             // logger.info("saveShelfBookProgress: {}", existBook)
 
             exist_book
-        };
+        });
     }
 
-    async fn save_shelf_book_latest_chapter(&self, book: Book, book_chapter_list: List<BookChapter>, user_name_space: String, mutex: Option<Mutex> = null) {
-        try {
+    async fn save_shelf_book_latest_chapter(&self, book: Book, book_chapter_list: List<BookChapter>, user_name_space: String, mutex: Option<Mutex> = None) {
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             if let Some(mutex) = mutex { mutex.lock() }
-            self.edit_shelf_book(book, user_name_space) { exist_book ->
+            self.edit_shelf_book(book, user_name_space, |exist_book| {
                 if book_chapter_list.size > 0 {
                     let book_chapter = book_chapter_list.last();
                     exist_book.latest_chapter_title = book_chapter.title;
@@ -1883,7 +1885,7 @@ impl BookController {
                     exist_book.last_check_count = book_chapter_list.size - exist_book.total_chapter_num;
                     exist_book.last_check_time = System::current_time_millis();
                 }
-                exist_book.last_check_error = null;
+                exist_book.last_check_error = None;
                 exist_book.total_chapter_num = book_chapter_list.size;
                 book.latest_chapter_title = exist_book.latest_chapter_title;
                 book.last_check_count = exist_book.last_check_count;
@@ -1891,20 +1893,19 @@ impl BookController {
                 book.last_check_error = exist_book.last_check_error;
                 book.total_chapter_num = exist_book.total_chapter_num;
                 exist_book
-            };
-        } finally {
+            });
+        }));
             if let Some(mutex) = mutex { mutex.unlock() }
-        }
     }
 
     async fn edit_shelf_book(&self, book: Book, user_name_space: String, handler: (Book)->Book) -> Option<Book> {
         let mutex = UserMutex::get_locker(user_name_space + "@bookshelf");
-        LOGGER.info("wait for lock {}", user_name_space + "@bookshelf");
+        LOGGER.info(format!("wait for lock {}", user_name_space + "@bookshelf"));
         mutex.lock();
-        try {
-            LOGGER.info("lock success");
-            let mut bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-            if bookshelf == null {
+        {
+            LOGGER.info(format!("lock success"));
+            let mut bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+            if bookshelf == None {
                 bookshelf = JsonArray::new();
             }
             let mut exist_index: i32 = -1;
@@ -1926,11 +1927,10 @@ impl BookController {
 
                 book_list.set(exist_index, JsonObject::map_from(exist_book));
                 bookshelf = JsonArray::new(book_list);
-                self.save_user_storage(user_name_space, "bookshelf", bookshelf);
+                self.base.save_user_storage(user_name_space, "bookshelf", bookshelf);
                 return exist_book;
             }
-            return null;
-        } finally {
+            return None;
             mutex.unlock();
         }
     }
@@ -1941,10 +1941,8 @@ impl BookController {
         }
         let mut book_source_list = JsonArray::new();
         if !replace {
-            let local_book_source_list = as_json_array(self.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
-            if local_book_source_list != null {
-                book_source_list = local_book_source_list;
-            }
+            let local_book_source_list = as_json_array(self.base.get_user_storage(user_name_space, book.name + "_" + book.author, "bookSource"));
+            book_source_list = local_book_source_list;
         }
 
         for k in 0..source_list.size {
@@ -1968,7 +1966,7 @@ impl BookController {
         }
 
         // logger.info("bookSourceList: {}", bookSourceList)
-        self.save_user_storage(user_name_space, get_relative_path(book.name + "_" + book.author, "bookSource"), book_source_list);
+        self.base.save_user_storage(user_name_space, get_relative_path(book.name + "_" + book.author, "bookSource"), book_source_list);
     }
 
     fn extract_epub(&self, book: Book, force: bool = false) -> bool {
@@ -2012,30 +2010,30 @@ impl BookController {
     }
 
     async fn sync_book_progress_from_webdav(&self, progress_file_path: Any, user_name_space: String) {
-        let mut progress_file: Option<File> = null;
+        let mut progress_file: Option<File> = None;
         match progress_file_path {
             File => progress_file = progress_file_path,
             String => progress_file = File::new(progress_file_path),
         }
-        if progress_file == null {
+        if progress_file == None {
             return;
         }
         let book = as_json_object(progress_file.read_text())?.map_to::<Book>();
-        if book != null {
-            self.edit_shelf_book(book, user_name_space) { exist_book ->
+        if book != None {
+            self.edit_shelf_book(book, user_name_space, |exist_book| {
                 exist_book.dur_chapter_index = book.dur_chapter_index;
                 exist_book.dur_chapter_pos = book.dur_chapter_pos;
                 exist_book.dur_chapter_time = book.dur_chapter_time;
                 exist_book.dur_chapter_title = book.dur_chapter_title;
 
-                LOGGER.info("syncShelfBookProgress: {}", exist_book);
+                LOGGER.info(format!("syncShelfBookProgress: {}", exist_book));
                 exist_book
-            };
+            });
         }
     }
 
     async fn save_book_progress_to_webdav(&self, book: Book, book_chapter: BookChapter, user_name_space: String) {
-        let user_home = self.get_user_webdav_home(user_name_space);
+        let user_home = self.base.get_user_webdav_home(user_name_space);
         let mut book_progress_dir = File::new(user_home + File::separator + "bookProgress");
         if !book_progress_dir.exists() {
             book_progress_dir = File::new(user_home + File::separator + "legado" + File::separator + "bookProgress");
@@ -2057,8 +2055,8 @@ impl BookController {
     async fn sync_from_webdav(&self, zip_file_path: String, user_name_space: String) -> bool {
         let desc_dir = get_work_dir("storage", "data", user_name_space, "tmp");
         let desc_dir_file = File::new(desc_dir);
-        try {
-            let user_home = self.get_user_webdav_home(user_name_space);
+        {
+            let user_home = self.base.get_user_webdav_home(user_name_space);
             let zip_file = File::new(zip_file_path);
             if !zip_file.exists() {
                 return false;
@@ -2091,36 +2089,33 @@ impl BookController {
                 }
             }
             return true;
-        } catch (e: Exception) {
-            e.print_stack_trace();
-        } finally {
-            desc_dir_file.delete_recursively();
         }
+            desc_dir_file.delete_recursively();
         return false;
     }
 
-    async fn save_to_webdav(&self, user_name_space: String, latest_zip_file_path: Option<String> = null) -> bool {
-        let user_home = self.get_user_webdav_home(user_name_space);
+    async fn save_to_webdav(&self, user_name_space: String, latest_zip_file_path: Option<String> = None) -> bool {
+        let user_home = self.base.get_user_webdav_home(user_name_space);
         let mut legado_home = user_home;
-        let resolved_zip_file_path = latest_zip_file_path ?: self.get_last_back_file_from_webdav(user_name_space);
-        if resolved_zip_file_path == null {
+        let resolved_zip_file_path = latest_zip_file_path.unwrap_or(self.get_last_back_file_from_webdav(user_name_space));
+        if resolved_zip_file_path == None {
             legado_home = user_home + File::separator + "legado";
         } else if resolved_zip_file_path.index_of("legado") > 0 {
             legado_home = user_home + File::separator + "legado";
         }
-        return self.create_user_backup(user_name_space, legado_home, resolved_zip_file_path) != null;
+        return self.create_user_backup(user_name_space, legado_home, resolved_zip_file_path) != None;
     }
 
     async fn get_last_back_file_from_webdav(&self, user_name_space: String) -> Option<String> {
-        let user_home = self.get_user_webdav_home(user_name_space);
+        let user_home = self.base.get_user_webdav_home(user_name_space);
         let mut legado_home = File::new(user_home + File::separator + "legado");
         if !legado_home.exists() {
             legado_home = File::new(user_home);
         }
         if !legado_home.exists() {
-            return null;
+            return None;
         }
-        let mut latest_zip_file: Option<String> = null;
+        let mut latest_zip_file: Option<String> = None;
         let zip_file_reg = Regex::new("^backup[0-9-]+.zip$", RegexOption::IGNORE_CASE);    //忽略大小写
         let mut files = legado_home.list_files().unwrap();
         files.sort_by_descending {
@@ -2142,34 +2137,34 @@ impl BookController {
             .put_header("Cache-Control", "no-cache")
             .set_chunked(true);
 
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用"), false) + "\n\n");
             return;
         }
-        let book_source_url = context.query_param("bookSourceUrl").first_or_null() ?: "";
-        let keyword = context.query_param("keyword").first_or_null() ?: "";
+        let book_source_url = context.query_param("bookSourceUrl").unwrap_or("".to_string());
+        let keyword = context.query_param("keyword").unwrap_or("".to_string());
 
-        if book_source_url.is_null_or_empty() {
+        if book_source_url.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("未配置书源"), false) + "\n\n");
             return;
         }
-        if keyword.is_null_or_empty() {
+        if keyword.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请输入搜索关键词"), false) + "\n\n");
             return;
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_source_string = self.get_book_source_string_by_source_url_opt(book_source_url, user_name_space);
-        if book_source_string.is_null_or_empty() {
+        if book_source_string.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("未配置书源"), false) + "\n\n");
             return;
         }
 
-        LOGGER.info("bookSourceDebugSSE bookSource: {} keyword: {}", book_source_string, keyword);
+        LOGGER.info(format!("bookSourceDebugSSE bookSource: {} keyword: {}", book_source_string, keyword));
 
         let debugger = Debugger::new(|msg| {
             response.write("data: " + json_encode(map!("msg" to msg), false) + "\n\n");
@@ -2178,7 +2173,7 @@ impl BookController {
         let web_book = self.web_book(book_source_string, false, user_name_space);
 
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 bookSourceDebugSSE");
+            LOGGER.info(format!("客户端已断开链接，停止 bookSourceDebugSSE"));
             self.coroutine_context.cancel();
         }
 
@@ -2194,7 +2189,7 @@ impl BookController {
             .put_header("Cache-Control", "no-cache")
             .set_chunked(true);
 
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用"), false) + "\n\n");
             return;
@@ -2204,24 +2199,24 @@ impl BookController {
         let mut concurrent_count: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_string("bookUrl") ?: "";
-            refresh = context.body_as_json.get_integer("refresh", 0);
-            concurrent_count = context.body_as_json.get_integer("concurrentCount", 24);
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_string("bookUrl").unwrap_or_default();
+            refresh = context.body_as_json().get_integer("refresh", 0);
+            concurrent_count = context.body_as_json().get_integer("concurrentCount", 24);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            refresh = context.query_param("refresh").first_or_null()?.to_int() ?: 0;
-            concurrent_count = context.query_param("concurrentCount").first_or_null()?.to_int() ?: 24;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            refresh = context.query_param("refresh")?.to_int().unwrap_or(0);
+            concurrent_count = context.query_param("concurrentCount")?.to_int().unwrap_or(24);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请输入书籍链接"), false) + "\n\n");
             return;
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null {
+        if book_info == None {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("请先加入书架"), false) + "\n\n");
             return;
@@ -2232,7 +2227,7 @@ impl BookController {
             return;
         }
         let book_source = self.get_book_source_string(context, book_info.origin);
-        if book_source.is_null_or_empty() {
+        if book_source.map_or(true, |s| s.is_empty()) {
             response.write("event: error\n");
             response.end("data: " + json_encode(return_data.set_error_msg("未配置书源"), false) + "\n\n");
             return;
@@ -2249,40 +2244,41 @@ impl BookController {
         let mut failed_count = 0;
 
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 cacheBookSSE");
+            LOGGER.info(format!("客户端已断开链接，停止 cacheBookSSE"));
             is_end = true;
             self.coroutine_context.cancel();
         }
 
         concurrent_count = if concurrent_count > 0 { concurrent_count } else { 24 };
-        LOGGER.info("cacheBookSSE concurrentCount: {} refresh: {}", concurrent_count, refresh);
-        self.limit_concurrent(concurrent_count, 0, chapter_list.size, |it| {
+        LOGGER.info(format!("cacheBookSSE concurrentCount: {} refresh: {}", concurrent_count, refresh));
+        self.base.limit_concurrent(concurrent_count, 0, chapter_list.size, |it| {
             if !cached_chapter_content_set.contains(it) {
                 let chapter_index = it;
                 let chapter_info = chapter_list.get(it);
-                try {
-                    let mut next_chapter_url: Option<String> = null;
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    let mut next_chapter_url: Option<String> = None;
                     if chapter_index + 1 < chapter_list.size {
                         let next_chapter_info = chapter_list.get(chapter_index + 1);
                         next_chapter_url = next_chapter_info.url;
                     }
-                    let content = self.web_book(book_source, app_config.debug_log, user_name_space).get_book_content(book_info, chapter_info, next_chapter_url);
+                    let content = self.web_book(book_source, self.base.get_app_config_debug_log(), user_name_space).get_book_content(book_info, chapter_info, next_chapter_url);
                     let chapter_cache_file = File::new(local_cache_dir.absolute_path + File::separator + chapter_index + ".txt");
                     chapter_cache_file.write_text(content);
                     // 保存图片
                     BookHelp::save_images(
                         self,
-                        BookSource::from_json(book_source).get_or_null() ?: BookSource::new(),
+                        BookSource::from_json(book_source).get_or_null().unwrap_or(BookSource)::new(),
                         book_info,
                         chapter_info,
                         content
                     );
                     success_count++;
                     cached_chapter_content_set.add(chapter_index);
-                } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                     is_end = true;
                     failed_count++;
                 }
+        }
             }
             it
         }, |list, loop_count| {
@@ -2296,7 +2292,7 @@ impl BookController {
                     "failedCount" to failed_count
                 );
                 response.write("data: " + json_encode(result, false) + "\n\n");
-                LOGGER.info("Loog: {} list.size: {} result: {}", loop_count, list.size, result);
+                LOGGER.info(format!("Loog: {} list.size: {} result: {}", loop_count, list.size, result));
                 true
             }
         });
@@ -2310,24 +2306,24 @@ impl BookController {
 
     async fn delete_book_cache(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_string("bookUrl") ?: "";
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_string("bookUrl").unwrap_or_default();
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
+            book_url = context.query_param("url").unwrap_or("".to_string());
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null {
+        if book_info == None {
             return return_data.set_error_msg("请先加入书架");
         }
         if book_info.is_local_book() {
@@ -2362,10 +2358,10 @@ impl BookController {
 
     async fn get_shelf_book_with_cache_info(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_list = self.get_book_shelf_books(false, user_name_space);
         let mut result = mutable_list_of::<Any>();
         for i in 0..book_list.size {
@@ -2384,7 +2380,7 @@ impl BookController {
 
     async fn export_book(&self, context: RoutingContext) {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             context.success(return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用"));
             return;
         }
@@ -2392,22 +2388,22 @@ impl BookController {
         let is_epub: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_string("bookUrl") ?: "";
-            is_epub = context.body_as_json.get_integer("isEpub", 0);
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_string("bookUrl").unwrap_or_default();
+            is_epub = context.body_as_json().get_integer("isEpub", 0);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            is_epub = context.query_param("isEpub").first_or_null()?.to_int() ?: 0;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            is_epub = context.query_param("isEpub")?.to_int().unwrap_or(0);
         }
 
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             context.success(return_data.set_error_msg("请输入书籍链接"));
             return;
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null {
+        if book_info == None {
             context.success(return_data.set_error_msg("请先加入书架"));
             return;
         }
@@ -2427,16 +2423,16 @@ impl BookController {
             return;
         }
         let book_source = self.get_book_source_string(context, book_info.origin);
-        if !book_info.is_local_book() && book_source.is_null_or_empty() {
+        if !book_info.is_local_book() && book_source.map_or(true, |s| s.is_empty()) {
             context.success(return_data.set_error_msg("未配置书源"));
             return;
         }
         let export_dir = File::new(get_work_dir("storage", "assets", user_name_space, "export"));
 
         let book_file = if is_epub > 0 {
-            self.export_to_epub(export_dir, book_info, book_source ?: "", user_name_space)
+            self.export_to_epub(export_dir, book_info, book_source.unwrap_or(""), user_name_space)
         } else {
-            self.export_to_txt(export_dir, book_info, book_source ?: "", user_name_space)
+            self.export_to_txt(export_dir, book_info, book_source.unwrap_or(""), user_name_space)
         };
         context.response().put_header("Cache-Control", "300")
                         .put_header("Content-Disposition", "attachment; filename=" + URLEncoder::encode(book_file.name, "UTF-8"))
@@ -2448,7 +2444,7 @@ impl BookController {
         let book_path = FileUtils::get_path(export_dir, filename);
         let book_file = FileUtils::create_file_with_replace(book_path);
         // val stringBuilder = StringBuilder()
-        self.get_all_contents(book_info, book_source, user_name_space) { text, src_list ->
+        self.get_all_contents(book_info, book_source, user_name_space, |text, src_list| {
             book_file.append_text(text, Charset::for_name(app_config.export_charset));
             // stringBuilder.append(text)
             // srcList?.forEach {
@@ -2463,7 +2459,7 @@ impl BookController {
             //         ).writeBytes(vFile.readBytes())
             //     }
             // }
-        };
+        });
         return book_file;
     }
 
@@ -2478,7 +2474,7 @@ impl BookController {
         // val contentProcessor = ContentProcessor.get(book.name, book.origin)
         let qy = "${book.name}\n作者：${book.get_real_author()}\n简介：${HtmlFormatter::format(book.get_display_intro())}";
 
-        append(qy, null);
+        append(qy, None);
         let chapter_list = self.get_local_chapter_list(book, book_source_string, false, user_name_space, false);
         let local_cache_dir = self.get_chapter_cache_dir(book, user_name_space);
 
@@ -2494,14 +2490,14 @@ impl BookController {
                 content += "暂无缓存内容。\n";
             }
 
-            append.invoke("\n\n" + content, null);
+            append.invoke("\n\n" + content, None);
 
-            // BookHelp.getContent(book, chapter).let { content ->
+            // BookHelp.getContent(book, chapter).let |content| {
             //     val content1 = contentProcessor
             //         .getContent(
             //             book,
             //             chapter,
-            //             content ?: "null",
+            //             content.unwrap_or("null"),
             //             includeTitle = !appConfig.exportNoChapterName,
             //             useReplace = useReplace,
             //             chineseConvert = false,
@@ -2512,7 +2508,6 @@ impl BookController {
             //         val srcList = arrayListOf<Triple<String, Int, String>>()
             //         content?.split("\n")?.forEachIndexed { index, text ->
             //             val matcher = AppPattern.imgPattern.matcher(text)
-            //             while (matcher.find()) {
             //                 matcher.group(1)?.let {
             //                     val src = NetworkUtils.getAbsoluteURL(chapter.url, it)
             //                     srcList.add(Triple(chapter.title, index, src))
@@ -2521,7 +2516,7 @@ impl BookController {
             //         }
             //         append.invoke("\n\n$content1", srcList)
             //     } else {
-            //         append.invoke("\n\n$content1", null)
+            //         append.invoke("\n\n$content1", None)
             //     }
             // }
         }
@@ -2596,7 +2591,7 @@ impl BookController {
 
     async fn set_cover(&self, book: Book, epub_book: EpubBook, book_source_string: String) {
         let cover_url = book.get_display_cover();
-        if cover_url == null {
+        if cover_url == None {
             // TODO 默认封面
 
         } else if cover_url.starts_with("/") {
@@ -2605,8 +2600,8 @@ impl BookController {
             let cover_file = File::new(get_work_dir("storage", cover_path));
             let byte_array: ByteArray = cover_file.read_bytes();
             epub_book.cover_image = Resource::new(byte_array, "Images/cover.jpg");
-        } else if !book_source_string.is_null_or_empty() {
-            let ext = self.get_file_ext(cover_url, "jpg");
+        } else if !book_source_string.map_or(true, |s| s.is_empty()) {
+            let ext = self.base.get_file_ext(cover_url, "jpg");
             let md5_encode = MD5Utils::md5_encode(cover_url).to_string();
             let cache_path = get_work_dir("storage", "cache", md5_encode + "." + ext);
             let cache_file = File::new(cache_path);
@@ -2616,19 +2611,20 @@ impl BookController {
                 return;
             }
             let analyze_url = AnalyzeUrl::new(cover_url, source = BookSource::from_json(book_source_string).get_or_null());
-            try {
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 analyze_url.get_byte_array_await().let {
                     epub_book.cover_image = Resource::new(it, "Images/cover.jpg");
                 }
-            } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                 e.print_stack_trace();
             } finally {
 
             }
+        }
             // webClient.getAbs(coverUrl).timeout(3000).send
             // webClient.getAbs(coverUrl).timeout(3000).send {
             //     var bodyBytes = it.result()?.bodyAsBuffer()?.getBytes()
-            //     if (bodyBytes != null) {
+            //     if (bodyBytes != None) {
             //         epubBook.coverImage = Resource(bodyBytes, "Images/cover.jpg")
             //     }
             // }
@@ -2654,7 +2650,7 @@ impl BookController {
                 content += chapter.title + "\n";
             }
             if book.is_local_txt() {
-                content += LocalBook::get_content(book, chapter) ?: "";
+                content += LocalBook::get_content(book, chapter).unwrap_or("");
             } else if chapter_cache_file.exists() {
                 content += chapter_cache_file.read_text() + "\n";
             } else {
@@ -2677,7 +2673,7 @@ impl BookController {
             epub_book.add_section(
                 title,
                 ResourceUtil::create_chapter_resource(
-                    title.replace("\uD83D\uDD12", ""),
+                    title.replace("\u{1F512}", ""),
                     content1,
                     content_model,
                     "Text/chapter_${index}.html"
@@ -2731,7 +2727,7 @@ impl BookController {
     async fn search_book_content(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
 
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         let book_url: String;
@@ -2740,50 +2736,50 @@ impl BookController {
         let size: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_url = context.body_as_json.get_string("url") ?: context.body_as_json.get_string("bookUrl") ?: "";
-            keyword = context.body_as_json.get_string("keyword") ?: "";
-            last_index = context.body_as_json.get_integer("lastIndex", 0);
-            size = context.body_as_json.get_integer("size", 20);
+            book_url = context.body_as_json().get_string("url").unwrap_or(context.body_as_json)().get_string("bookUrl").unwrap_or_default();
+            keyword = context.body_as_json().get_string("keyword").unwrap_or_default();
+            last_index = context.body_as_json().get_integer("lastIndex", 0);
+            size = context.body_as_json().get_integer("size", 20);
         } else {
             // get 请求
-            book_url = context.query_param("url").first_or_null() ?: "";
-            keyword = context.query_param("keyword").first_or_null() ?: "";
-            last_index = context.query_param("lastIndex").first_or_null()?.to_int() ?: 0;
-            size = context.query_param("size").first_or_null()?.to_int() ?: 20;
+            book_url = context.query_param("url").unwrap_or("".to_string());
+            keyword = context.query_param("keyword").unwrap_or("".to_string());
+            last_index = context.query_param("lastIndex")?.to_int().unwrap_or(0);
+            size = context.query_param("size")?.to_int().unwrap_or(20);
         }
-        if book_url.is_null_or_empty() {
+        if book_url.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入书籍链接");
         }
-        if keyword.is_null_or_empty() {
+        if keyword.map_or(true, |s| s.is_empty()) {
             return return_data.set_error_msg("请输入搜索关键词");
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-        if book_info == null {
+        if book_info == None {
             return return_data.set_error_msg("请先加入书架");
         }
-        let mut book_source: Option<String> = null;
+        let mut book_source: Option<String> = None;
         if !book_info.is_local_book() {
             book_source = self.get_book_source_string(context, book_info.origin);
-            if book_source.is_null_or_empty() {
+            if book_source.map_or(true, |s| s.is_empty()) {
                 return return_data.set_error_msg("未配置书源");
             }
         }
 
-        let chapter_list = self.get_local_chapter_list(book_info, book_source ?: "", false, user_name_space);
+        let chapter_list = self.get_local_chapter_list(book_info, book_source.unwrap_or(""), false, user_name_space);
         if last_index >= chapter_list.size {
             return return_data.set_error_msg("没有更多了");
         }
 
         let mut is_end = false;
         context.request().connection().close_handler {
-            LOGGER.info("客户端已断开链接，停止 searchBookContent");
+            LOGGER.info(format!("客户端已断开链接，停止 searchBookContent"));
             is_end = true;
             self.coroutine_context.cancel();
         }
 
-        LOGGER.info("searchBookContent keyword: {} lastIndex: {}", keyword, last_index);
+        LOGGER.info(format!("searchBookContent keyword: {} lastIndex: {}", keyword, last_index));
         let mut result_list = mutable_list_of::<SearchResult>();
         last_index += 1;
         let mut current_index = last_index;
@@ -2805,7 +2801,7 @@ impl BookController {
     async fn search_chapter(&self, book: Book, chapter: BookChapter, query: String) -> List<SearchResult> {
         let search_results_within_chapter: MutableList<SearchResult> = mutable_list_of();
         let chapter_content = BookHelp::get_content(book, chapter);
-        if chapter_content != null {
+        if chapter_content != None {
             // withContext(Dispatchers.IO) {
             //     chapter.title = when (AppConfig.chineseConverterType) {
             //         1 -> ChineseUtils.t2s(chapter.title)
@@ -2820,7 +2816,7 @@ impl BookController {
             //     ).joinToString("")
             // }
             let positions = self.search_position(chapter_content, query);
-            LOGGER.info("positions: {}", positions);
+            LOGGER.info(format!("positions: {}", positions));
             for (index, position) in positions.enumerate() {
                 let construct = self.get_result_and_query_index(chapter_content, position, query);
                 let result = SearchResult::new(
@@ -2895,9 +2891,9 @@ impl BookController {
     fn mongo_user_namespaces(&self) -> List<String> {
         let mut namespaces = array_list!("default");
         if !app_config.secure { return namespaces }
-        let users = as_json_object(get_storage("data", "users"))?.map ?: return namespaces;
+        let users = as_json_object(get_storage("data", "users"))?.map.unwrap_or(return) namespaces;
         for value in users.values {
-            let username = (value as? Map<*, *>)?.get("username") as? String ?: "";
+            let username = (value as? Map<*, *>)?.get("username") as? String.unwrap_or("");
             if username.is_not_empty() { namespaces += username }
         }
         return namespaces;
@@ -2905,20 +2901,20 @@ impl BookController {
 
     async fn backup_to_mongodb(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         if !MongoManager::is_init() {
             return return_data.set_error_msg("请先设置 mongoUri");
         }
-        if !self.check_manager_auth(context) {
+        if !self.base.check_manager_auth(context) {
             return return_data.set_data("NEED_SECURE_KEY").set_error_msg("请输入管理密码");
         }
 
         for user_name_space in self.mongo_user_namespaces() {
             for file_name in self.backup_file_names {
-                if let Some(content) = self.get_user_storage(user_name_space, file_name) {
-                    self.save_user_storage(user_name_space, file_name, content);
+                if let Some(content) = self.base.get_user_storage(user_name_space, file_name) {
+                    self.base.save_user_storage(user_name_space, file_name, content);
                 }
             }
         }
@@ -2928,13 +2924,13 @@ impl BookController {
 
     async fn restore_from_mongodb(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
         if !MongoManager::is_init() {
             return return_data.set_error_msg("请先设置 mongoUri");
         }
-        if !self.check_manager_auth(context) {
+        if !self.base.check_manager_auth(context) {
             return return_data.set_data("NEED_SECURE_KEY").set_error_msg("请输入管理密码");
         }
 
@@ -2944,7 +2940,7 @@ impl BookController {
                 if file.exists() { file.delete() }
             }
         }
-        let users_file = File::new(get_work_dir("storage", "users.json"));
+        let users_file = File::new(get_work_dir_multi(&["storage", "users.json"]));
         if users_file.exists() {
             users_file.delete();
             get_storage("users");
@@ -2954,17 +2950,17 @@ impl BookController {
 
     async fn cache_book_on_server(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let book_url_list = context.body_as_json.get_json_array("bookUrlList") ?: JsonArray::new();
+        let book_url_list = context.body_as_json().get_json_array("bookUrlList") ?: JsonArray::new();
         if book_url_list.is_empty {
             return return_data.set_error_msg("请输入书籍链接");
         }
         let exception_handler = CoroutineExceptionHandler::new(|_, exception| {
-            LOGGER.info("cacheBookOnServer error: {}", exception.message);
+            LOGGER.info(format!("cacheBookOnServer error: {}", exception.message));
         });
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         launch(MDCContext() + Dispatchers::IO + exception_handler) {
             self.cache_book_on_server(book_url_list, user_name_space);
         };
@@ -2975,18 +2971,18 @@ impl BookController {
         for i in 0..chapters.size() {
             let book_url = chapters.get_string(i);
             let book_info = self.get_shelf_book_by_url(book_url, user_name_space);
-            if book_info == null {
-                LOGGER.info("未找到书籍信息: {}", book_url);
+            if book_info == None {
+                LOGGER.info(format!("未找到书籍信息: {}", book_url));
                 continue;
             }
             if book_info.is_local_book() {
-                LOGGER.info("本地书籍跳过缓存: {}", book_url);
+                LOGGER.info(format!("本地书籍跳过缓存: {}", book_url));
                 continue;
             }
-            LOGGER.info("开始缓存书籍: {}", book_info);
+            LOGGER.info(format!("开始缓存书籍: {}", book_info));
             let book_source = self.get_book_source_string_by_source_url_opt(book_info.origin, user_name_space);
-            if book_source.is_null_or_empty() {
-                LOGGER.info("未找到书源信息: {}", book_url);
+            if book_source.map_or(true, |s| s.is_empty()) {
+                LOGGER.info(format!("未找到书源信息: {}", book_url));
                 continue;
             }
             let chapter_list = self.get_local_chapter_list(book_info, book_source, false, user_name_space, false);
@@ -2998,35 +2994,36 @@ impl BookController {
                 }
                 let chapter = chapter_list[chapter_index];
                 let next_chapter_url = chapter_list.get_or_null(chapter_index + 1)?.url;
-                try {
-                    let content = self.web_book(book_source, app_config.debug_log, user_name_space)
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    let content = self.web_book(book_source, self.base.get_app_config_debug_log(), user_name_space)
                         .get_book_content(book_info, chapter, next_chapter_url);
                     let cache_file = File::new(cache_dir, "${chapter_index}.txt");
                     cache_file.write_text(content);
-                    let parsed_source = BookSource::from_json(book_source).get_or_null() ?: BookSource::new();
+                    let parsed_source = BookSource::from_json(book_source).get_or_null().unwrap_or(BookSource)::new();
                     BookHelp::save_images(self, parsed_source, book_info, chapter, content);
                     cached_chapter_content_set.add(chapter_index);
-                } catch (e: Exception) {
-                    LOGGER.info("cacheBookOnServer error: {}", e.message);
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+                    LOGGER.info(format!("cacheBookOnServer error: {}", e.message));
                 }
+        }
             }
-            LOGGER.info("缓存书籍完成: {}", book_info);
+            LOGGER.info(format!("缓存书籍完成: {}", book_info));
         }
     }
 
     fn get_book_source_string_by_source_url_opt(&self, source_url: String, user_name_space: String) -> Option<String> {
         if source_url.is_blank() {
-            return null;
+            return None;
         }
         let mut source_file = get_storage_file("data", user_name_space, "bookSource");
         if !source_file.exists() {
             source_file = get_storage_file("data", "default", "bookSource");
             if !source_file.exists() {
-                return null;
+                return None;
             }
         }
-        try {
-            let mut result: Option<String> = null;
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut result: Option<String> = None;
             let parser = ObjectMapper::new().factory.create_parser(source_file);
             if parser.next_token() == JsonToken::START_ARRAY {
                 while parser.next_token() != JsonToken::END_ARRAY {
@@ -3040,11 +3037,12 @@ impl BookController {
                     }
                 }
             }
-            LOGGER.info("{}", result);
+            LOGGER.info(format!("{}", result));
             return result;
-        } catch (e: Exception) {
-            LOGGER.error("解析文件内容出错: {}  文件: \n{}", e, source_file);
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+            LOGGER.error(format!("解析文件内容出错: {}  文件: \n{}", e, source_file));
             throw e;
+        }
         }
     }
 
@@ -3052,14 +3050,14 @@ impl BookController {
         &self,
         user_name_space: String,
         backup_dir: String,
-        latest_zip_file_path: Option<String> = null
+        latest_zip_file_path: Option<String> = None
     ) -> Option<File> {
         let today = SimpleDateFormat::new("yyyy-MM-dd").format(System::current_time_millis());
         let staging_dir = File::new(get_work_dir("storage", "data", user_name_space, "backup" + today));
         staging_dir.delete_recursively();
-        try {
-            if latest_zip_file_path != null && !File::new(latest_zip_file_path).unzip(staging_dir.absolute_path) {
-                return null;
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            if latest_zip_file_path != None && !File::new(latest_zip_file_path).unzip(staging_dir.absolute_path) {
+                return None;
             }
 
             for file_name in self.backup_file_names {
@@ -3080,23 +3078,24 @@ impl BookController {
             let output = FileUtils::create_file_with_replace(
                 File::new(backup_dir, "backup" + today + ".zip").absolute_path
             );
-            let files = staging_dir.list_files()?.to_list() ?: return null;
-            return if io.legado.app.utils.ZipUtils.zip_files(files, output) { output } else { null };
-        } catch (e: Exception) {
-            LOGGER.error("createUserBackup error: {}", e.message);
-            return null;
+            let files = staging_dir.list_files()?.to_list().unwrap_or(return) None;
+            return if io.legado.app.utils.ZipUtils.zip_files(files, output) { output } else { None };
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
+            LOGGER.error(format!("createUserBackup error: {}", e.message));
+            return None;
         } finally {
             staging_dir.delete_recursively();
+        }
         }
     }
 
     async fn text_to_speech(&self, context: RoutingContext) {
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             context.response().set_status_code(403).end("未登录");
             return;
         }
-        let body = if context.request().method() == HttpMethod::POST { context.body_as_json } else { null };
-        fn value(name: String) -> String = if body != null { body.get_string(name) ?: "" } else { context.query_param(name).first_or_null() ?: "" };
+        let body = if context.request().method() == HttpMethod::POST { context.body_as_json() } else { None };
+        fn value(name: String) -> String = if body != None { body.get_string(name).unwrap_or("") } else { context.query_param(name).unwrap_or("") };
         let text = value("text");
         let type = value("type").if_empty { "edge" };
         if text.is_empty() {
@@ -3111,24 +3110,24 @@ impl BookController {
         );
         let response = context.response();
         let exception_handler = CoroutineExceptionHandler::new(|_, exception| {
-            LOGGER.info("tts error: {}", exception.message);
+            LOGGER.info(format!("tts error: {}", exception.message));
             response.set_status_code(404).end();
         });
         launch(MDCContext() + Dispatchers::IO + exception_handler) {
             match type {
                 "edge" => self.tts_by_edge(response, text, options),
                 "textToSpeechCn" => self.tts_by_text_to_speech_cn(response, text, options),
-                _ => self.tts_by_api(response, text, self.get_user_name_space(context), options),
+                _ => self.tts_by_api(response, text, self.base.get_user_name_space(context), options),
             }
         };
     }
 
-    async fn tts_by_edge(&self, response: HttpServerResponse, text: String, params: Option<Map<String, String>> = null) {
+    async fn tts_by_edge(&self, response: HttpServerResponse, text: String, params: Option<Map<String, String>> = None) {
         let voice = com.htmake.reader.lib.tts.constant.VoiceEnum::from_sort_name(params?.get("voice"))
             ?: com.htmake.reader.lib.tts.constant.VoiceEnum::zh_CN_XiaoxiaoNeural;
-        let rate = if params?.contains_key("rate") == true { params["rate"] ?: "0" } else { "0" };
+        let rate = if params?.contains_key("rate") == true { params["rate"].unwrap_or("0") } else { "0" };
         let pitch = if params?.contains_key("pitch") == true {
-            (params["pitch"] ?: "null") + "%"
+            (params["pitch"].unwrap_or("null")) + "%"
         } else {
             "0%"
         };
@@ -3150,20 +3149,20 @@ impl BookController {
         }
     }
 
-    async fn tts_by_api(&self, response: HttpServerResponse, text: String, user_name_space: String, params: Option<Map<String, String>> = null) {
+    async fn tts_by_api(&self, response: HttpServerResponse, text: String, user_name_space: String, params: Option<Map<String, String>> = None) {
         let voice = params?.get("voice");
-        if voice.is_null_or_empty() {
+        if voice.map_or(true, |s| s.is_empty()) {
             response.set_status_code(404).end();
             return;
         }
         let http_tts = self.get_http_tts_by_name(voice, user_name_space);
-        if http_tts == null {
+        if http_tts == None {
             response.set_status_code(404).end();
             return;
         }
-        let speech_rate = (5 + ((params?.get("rate")?.to_double() ?: 1.0) - 0.5) * 30).to_int();
+        let speech_rate = (5 + ((params?.get("rate")?.to_double().unwrap_or(1.0)) - 0.5) * 30).to_int();
         let stream = self.get_speak_stream(http_tts, text, speech_rate);
-        if stream == null {
+        if stream == None {
             response.set_status_code(404).end();
             return;
         }
@@ -3172,12 +3171,12 @@ impl BookController {
             response.put_header("content-type", "application/json; charset=utf-8")
                 .end(json_encode(ReturnData::new().set_data(Base64::get_encoder().encode_to_string(bytes))));
         } else {
-            response.put_header("Content-Type", http_tts.content_type ?: "audio/mpeg")
+            response.put_header("Content-Type", http_tts.content_type.unwrap_or("audio/mpeg"))
                 .end(io.vertx.core.buffer.Buffer::buffer(bytes));
         }
     }
 
-    async fn tts_by_text_to_speech_cn(&self, response: HttpServerResponse, text: String, params: Option<Map<String, String>> = null) {
+    async fn tts_by_text_to_speech_cn(&self, response: HttpServerResponse, text: String, params: Option<Map<String, String>> = None) {
         let form = MultiMap::case_insensitive_multi_map();
         form.add("language", "中文（普通话，简体）");
         form.add("voice", "zh-CN-XiaoxiaoNeural");
@@ -3202,14 +3201,14 @@ impl BookController {
                 .put_header("Origin", "https://www.text-to-speech.cn")
                 .put_header("Referer", "https://www.text-to-speech.cn/")
                 .put_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
-                .send_form(form) { ar -> handler.handle(ar) };
+                .send_form(form, |ar| { handler.handle(ar) });
         });
-        LOGGER.info("res: {}", result);
+        LOGGER.info(format!("res: {}", result));
         let json = result.body_as_json_object();
-        LOGGER.info("jsonRes: {}", json);
-        if json != null {
+        LOGGER.info(format!("jsonRes: {}", json));
+        if json != None {
             let download = json.get_string("download");
-            if download != null {
+            if download != None {
                 response.set_status_code(302).put_header("Location", download).end();
             } else {
                 response.set_status_code(404).end();
@@ -3222,20 +3221,20 @@ impl BookController {
     /// Look up HttpTTS source by name from user storage.
     fn get_http_tts_by_name(&self, name: String, user_name_space: String) -> Option<HttpTTS> {
         if name.is_empty() {
-            return null;
+            return None;
         }
-        let http_tts_list: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "httpTTS"));
-        if http_tts_list == null {
-            return null;
+        let http_tts_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "httpTTS"));
+        if http_tts_list == None {
+            return None;
         }
         for i in 0..http_tts_list.size() {
             let obj = http_tts_list.get_json_object(i);
-            if obj != null {
+            if obj != None {
                 let parsed = HttpTTS::from_json(obj.to_string()).get_or_null();
                 if parsed?.name == name { return parsed }
             }
         }
-        return null;
+        return None;
     }
     async fn get_speak_stream(
         &self,
@@ -3245,7 +3244,7 @@ impl BookController {
     ) -> Option<InputStream> {
         let mut download_error_no = 0;
         loop {
-            try {
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let analyze_url = AnalyzeUrl::new(
                     m_url = http_tts.url,
                     speak_text = speak_text,
@@ -3276,43 +3275,44 @@ impl BookController {
                 let body = response.body!!;
                 download_error_no = 0;
                 return body.byte_stream();
-            } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
                 if e is kotlinx.coroutines.CancellationException { throw e }
                 if e is ScriptException || e is WrappedException {
-                    LOGGER.error("js错误\n{}", e.localized_message, e);
+                    LOGGER.error(format!("js错误\n{}", e.localized_message, e));
                     throw e;
                 }
                 download_error_no++;
                 if e is SocketTimeoutException || e is ConnectException {
                     if download_error_no <= 5 { continue }
-                    LOGGER.error("tts超时或连接错误超过5次\n{}", e.localized_message, e);
+                    LOGGER.error(format!("tts超时或连接错误超过5次\n{}", e.localized_message, e));
                     throw e;
                 }
-                LOGGER.error("tts下载错误\n{}", e.localized_message, e);
+                LOGGER.error(format!("tts下载错误\n{}", e.localized_message, e));
                 if download_error_no > 5 {
-                    LOGGER.error("TTS服务器连续5次错误，已暂停阅读。", e);
+                    LOGGER.error(format!("TTS服务器连续5次错误，已暂停阅读。", e));
                     throw e;
                 }
-                LOGGER.error("TTS下载音频出错，使用无声音频代替。\n朗读文本：{}", speak_text);
-                return null;
+                LOGGER.error(format!("TTS下载音频出错，使用无声音频代替。\n朗读文本：{}", speak_text));
+                return None;
             }
+        }
         }
     }
 
     async fn save_book_content(&self, context: RoutingContext) -> ReturnData {
         let return_data = ReturnData::new();
-        if !self.check_auth(context) {
+        if !self.base.check_auth(context) {
             return return_data.set_data("NEED_LOGIN").set_error_msg("请登录后使用");
         }
-        let book_url = context.body_as_json.get_string("url") ?: "";
-        let chapter_index = context.body_as_json.get_integer("index", -1);
-        let content = context.body_as_json.get_string("content") ?: "";
+        let book_url = context.body_as_json().get_string("url").unwrap_or_default();
+        let chapter_index = context.body_as_json().get_integer("index", -1);
+        let content = context.body_as_json().get_string("content").unwrap_or_default();
 
         if book_url.is_empty() {
             return return_data.set_error_msg("请输入书籍链接");
         }
 
-        let user_name_space = self.get_user_name_space(context);
+        let user_name_space = self.base.get_user_name_space(context);
         let book_info = self.get_shelf_book_by_url(book_url, user_name_space)
             ?: return return_data.set_error_msg("获取书籍信息失败");
 
@@ -3357,13 +3357,12 @@ impl BookController {
             local_file = File::new(get_work_dir(book.origin_name));
         }
         let doc = org.apache.pdfbox.pdmodel.PDDocument::load(local_file);
-        try {
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let renderer = org.apache.pdfbox.rendering.PDFRenderer::new(doc);
             let target_width = book.get_pdf_image_width();
             self.save_pdf_page_to_image(doc, renderer, page_index, target_width, image_format, output_file);
-        } finally {
+        }));
             doc.close();
-        }
     }
 
     /// Render one PDF page and save it as an image file.
@@ -3381,7 +3380,7 @@ impl BookController {
         let scaled_image = image.get_scaled_instance(dimension.width, dimension.height, java.awt.Image::SCALE_SMOOTH);
         let buffered_image = java.awt.image.BufferedImage::new(dimension.width, dimension.height, java.awt.image.BufferedImage::TYPE_INT_RGB);
         let g2d = buffered_image.create_graphics();
-        g2d.draw_image(scaled_image, 0, 0, null);
+        g2d.draw_image(scaled_image, 0, 0, None);
         g2d.dispose();
         javax.imageio.ImageIO::write(buffered_image, image_format, output);
     }
@@ -3390,14 +3389,14 @@ impl BookController {
     /// JAR signature: public final kotlin.Pair<Book, String?> saveBookToShelf(Book, String, RoutingContext)
     fn save_book_to_shelf(&self, _book: Book, user_name_space: String, context: RoutingContext) -> Pair<Book, Option<String>> {
         let mut book = _book;
-        if book.origin.is_null_or_empty() {
+        if book.origin.map_or(true, |s| s.is_empty()) {
             return Pair::new(book, "未找到书源信息");
         }
-        if book.book_url.is_null_or_empty() {
+        if book.book_url.map_or(true, |s| s.is_empty()) {
             return Pair::new(book, "书籍链接不能为空");
         }
-        let mut bookshelf: Option<JsonArray> = as_json_array(self.get_user_storage(user_name_space, "bookshelf"));
-        if bookshelf == null {
+        let mut bookshelf: Option<JsonArray> = as_json_array(self.base.get_user_storage(user_name_space, "bookshelf"));
+        if bookshelf == None {
             bookshelf = JsonArray::new();
         }
         // 遍历判断书本是否存在
@@ -3413,7 +3412,7 @@ impl BookController {
         if exist_index < 0 {
             // 判断书籍是否超过限制
             let user_info = context.get("userInfo") as com.htmake.reader.entity.User?;
-            if user_info != null && bookshelf.size() >= user_info.book_limit {
+            if user_info != None && bookshelf.size() >= user_info.book_limit {
                 return Pair::new(book, "你已达到书籍数上限，请联系管理员");
             }
         }
@@ -3428,7 +3427,7 @@ impl BookController {
                 let relative_local_file_path = Paths::get("storage", "data", user_name_space, book.name + "_" + book.author, temp_file.name).to_string();
                 let book_url = "storage/data/" + user_name_space + "/" + book.name + "_" + book.author + "/" + temp_file.name;
                 let local_file_path = get_work_dir(relative_local_file_path);
-                LOGGER.info("localFilePath: {}", local_file_path);
+                LOGGER.info(format!("localFilePath: {}", local_file_path));
                 let local_file = File::new(local_file_path);
                 local_file.delete_recursively();
                 if !local_file.parent_file.exists() {
@@ -3510,7 +3509,7 @@ impl BookController {
             book.dur_chapter_title = exist_book.dur_chapter_title;
             book.dur_chapter_time = exist_book.dur_chapter_time;
             let old_cover_url = exist_book.get_display_cover();
-            if !old_cover_url.is_null_or_empty() && old_cover_url.starts_with("/") && old_cover_url != book.get_display_cover() {
+            if !old_cover_url.map_or(true, |s| s.is_empty()) && old_cover_url.starts_with("/") && old_cover_url != book.get_display_cover() {
                 FileUtils::delete_file(get_work_dir("storage" + old_cover_url));
             }
             book_list.set(exist_index, JsonObject::map_from(book));
@@ -3519,23 +3518,23 @@ impl BookController {
             bookshelf.add(JsonObject::map_from(book));
         }
         self.save_book_sources(book, list!(book.to_search_book()), user_name_space);
-        self.save_user_storage(user_name_space, "bookshelf", bookshelf);
-        return Pair::new(book, null);
+        self.base.save_user_storage(user_name_space, "bookshelf", bookshelf);
+        return Pair::new(book, None);
     }
 
     /// Download and save a book's cover image locally.
     /// JAR signature: public final Object saveBookCover(Book, String, String?, Continuation)
-    async fn save_book_cover(&self, book: Book, user_name_space: String, book_source: Option<String> = null) {
+    async fn save_book_cover(&self, book: Book, user_name_space: String, book_source: Option<String> = None) {
         let cover_url = book.get_display_cover();
-        if cover_url == null || cover_url.starts_with("/") {
+        if cover_url == None || cover_url.starts_with("/") {
             return;
         }
-        let source = if book_source != null {
+        let source = if book_source != None {
             book_source
         } else {
             self.get_book_source_string_by_source_url_opt(book.origin, user_name_space)
         };
-        let ext = self.get_file_ext(cover_url, "jpg");
+        let ext = self.base.get_file_ext(cover_url, "jpg");
         let md5_encode = MD5Utils::md5_encode(cover_url).to_string();
         let cache_path = get_work_dir("storage", "assets", user_name_space, "covers", md5_encode + "." + ext);
         let cover_local_url = "/assets/" + user_name_space + "/covers/" + md5_encode + "." + ext;
@@ -3544,23 +3543,24 @@ impl BookController {
             book.cover_url = cover_local_url;
             return;
         }
-        try {
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let analyze_url = io.legado.app.model.analyzeRule.AnalyzeUrl::new(
                 cover_url,
-                source = source?.let { BookSource::from_json(it).get_or_null() }
+                source = source.and_then(|it| BookSource::from_json(it).get_or_null())
             );
             let bytes = analyze_url.get_byte_array_await();
             FileUtils::write_bytes(cache_path, bytes);
             book.cover_url = cover_local_url;
-        } catch (e: Exception) {
+})) { Ok(_) => {}, Err(e) => { let e = crate::stubs::panic_message(e);
             e.print_stack_trace();
+        }
         }
     }
 
     async fn save_local_book_cover(&self, book: Book, user_name_space: String) {
         let cover_url = book.get_display_cover();
-        if cover_url.is_null_or_empty() || cover_url.starts_with("/") { return }
-        let ext = self.get_file_ext(cover_url, "jpg");
+        if cover_url.map_or(true, |s| s.is_empty()) || cover_url.starts_with("/") { return }
+        let ext = self.base.get_file_ext(cover_url, "jpg");
         let md5_encode = MD5Utils::md5_encode(cover_url).to_string();
         let cache_path = get_work_dir("storage", "assets", user_name_space, "covers", "${md5_encode}.${ext}");
         let cached_cover_url = "/assets/${user_name_space}/covers/${md5_encode}.${ext}";
@@ -3573,21 +3573,21 @@ impl BookController {
             web_client.get_abs(cover_url).timeout(3000).send(handler);
         });
         let body_bytes = response.body_as_buffer()?.bytes;
-        if body_bytes != null {
+        if body_bytes != None {
             cache_file.write_bytes(body_bytes);
             book.cover_url = cached_cover_url;
         }
     }
 
     fn update_image_link_in_content(&self, book: Book, chapter: BookChapter, content: String) -> String {
-        let data_dir = get_work_dir("storage", "data");
+        let data_dir = get_work_dir_multi(&["storage", "data"]);
         let lines = content.split("\n");
         let sb = StringBuilder::new();
         for text in lines {
             let mut line_text = text;
             let matcher = io.legado.app.constant.AppPattern::imgPattern.matcher(text);
             while matcher.find() {
-                let src = matcher.group(1) ?: continue;
+                let src = matcher.group(1).unwrap_or(continue);
                 if src.contains("__API_ROOT__") { continue }
                 let abs_url = io.legado.app.utils.NetworkUtils::get_absolute_url(chapter.url, src);
                 let image_file = io.legado.app.help.BookHelp::get_image(book, abs_url);

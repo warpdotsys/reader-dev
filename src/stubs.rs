@@ -8353,3 +8353,14 @@ impl KeyPair {
         &DUMMY_PRIVATE_KEY
     }
 }
+
+pub fn panic_message(e: Box<dyn std::any::Any + Send>) -> String {
+    if let Some(s) = e.downcast_ref::<&str>() {
+        s.to_string()
+    } else if let Some(s) = e.downcast_ref::<String>() {
+        s.clone()
+    } else {
+        format!("{:?}", e)
+    }
+}
+
