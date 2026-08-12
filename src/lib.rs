@@ -1387,6 +1387,9 @@ pub mod runtime {
     pub mod json_path {
         include!("runtime/json_path.rs");
     }
+    pub mod okhttp {
+        include!("runtime/okhttp.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }

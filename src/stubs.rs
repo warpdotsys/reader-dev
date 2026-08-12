@@ -593,71 +593,161 @@ impl Mutex {
     pub fn unlock(&self) {}
 }
 
-// ---------------- okhttp3 Request / Response 占位 ----------------
+// ---------------- okhttp3 Request / Response（真实请求数据载体） ----------------
 
 #[derive(Debug, Clone, Default)]
-pub struct Request;
+pub struct Request {
+    pub method: String,
+    pub url: String,
+    pub headers: HashMap<String, String>,
+    pub body: Option<String>,
+    pub form_fields: HashMap<String, String>,
+}
 
 impl Request {
     pub fn builder() -> RequestBuilder {
-        RequestBuilder
+        RequestBuilder::default()
+    }
+    pub fn header(&self, name: &str) -> Option<&str> {
+        self.headers.get(name).map(|s| s.as_str())
+    }
+    pub fn new_builder(&self) -> RequestBuilder {
+        RequestBuilder::default()
+    }
+    pub fn url(&self) -> HttpUrl {
+        HttpUrl(self.url.clone())
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct RequestBuilder;
+pub struct RequestBuilder {
+    pub inner: std::cell::RefCell<Request>,
+}
 
 impl RequestBuilder {
-    pub fn url(&self, _url: &str) -> &Self {
+    pub fn url(&self, url: &str) -> &Self {
+        self.inner.borrow_mut().url = url.to_string();
         self
     }
     // okhttp3 Request.Builder.post(requestBody)
-    pub fn post(&self, _body: RequestBody) -> &Self {
+    pub fn post(&self, body: RequestBody) -> &Self {
+        let mut r = self.inner.borrow_mut();
+        r.method = String::from("POST");
+        r.body = Some(body.text);
+        self
+    }
+    pub fn get(&self) -> &Self {
+        self.inner.borrow_mut().method = String::from("GET");
+        self
+    }
+    pub fn add_header<N: AsRef<str>, V: AsRef<str>>(&self, name: N, value: V) -> &Self {
+        self.inner
+            .borrow_mut()
+            .headers
+            .insert(name.as_ref().to_string(), value.as_ref().to_string());
+        self
+    }
+    pub fn remove_header(&self, name: &str) -> &Self {
+        self.inner.borrow_mut().headers.remove(name);
+        self
+    }
+    pub fn header<N: AsRef<str>, V: AsRef<str>>(&self, name: N, value: V) -> &Self {
+        self.add_header(name, value)
+    }
+    pub fn add_form_field<K: AsRef<str>, V: AsRef<str>>(&self, name: K, value: V) -> &Self {
+        self.inner.borrow_mut().form_fields.insert(
+            name.as_ref().to_string(),
+            value.as_ref().to_string(),
+        );
+        self
+    }
+    pub fn set_body(&self, text: impl AsRef<str>) -> &Self {
+        self.inner.borrow_mut().body = Some(text.as_ref().to_string());
         self
     }
     pub fn build(&self) -> Request {
-        Request
+        self.inner.borrow().clone()
     }
 }
 
-// okhttp3 MediaType / RequestBody 占位（AnalyzeUrl.toRequestBody 使用）
+// okhttp3 MediaType / RequestBody（RequestBody 携带文本）
 #[derive(Debug, Clone, Default)]
 pub struct MediaType;
 
 #[derive(Debug, Clone, Default)]
-pub struct RequestBody;
+pub struct RequestBody {
+    pub text: String,
+}
 
-#[derive(Debug, Clone, Default)]
-pub struct Response;
-
-impl Response {
-    pub fn execute(&self) -> Response {
-        Response
+impl RequestBody {
+    pub fn new() -> Self {
+        RequestBody::default()
     }
-    pub fn is_successful(&self) -> bool {
-        true
-    }
-    pub fn code(&self) -> i32 {
-        200
-    }
-    pub fn body(&self) -> Body {
-        Body
-    }
-    // okhttp3 Response.headers(name) -> List<String>（AnalyzeUrl.saveCookieJar 使用）
-    pub fn headers(&self, _name: &str) -> Vec<String> {
-        Vec::new()
-    }
-    pub fn to_string(&self) -> String {
-        String::new()
+    pub fn from_text(text: impl Into<String>) -> RequestBody {
+        RequestBody { text: text.into() }
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Body;
+pub struct Response {
+    pub status: i32,
+    pub headers: HashMap<String, String>,
+    pub body_text: String,
+    pub url: String,
+}
+
+impl Response {
+    pub fn message_str(&self) -> String {
+        String::new()
+    }
+    pub fn execute(&self) -> Response {
+        self.clone()
+    }
+    pub fn is_successful(&self) -> bool {
+        self.status >= 200 && self.status < 400
+    }
+    pub fn code(&self) -> i32 {
+        self.status
+    }
+    pub fn body(&self) -> Body {
+        Body {
+            text: self.body_text.clone(),
+        }
+    }
+    // okhttp3 Response.headers(name) -> List<String>（AnalyzeUrl.saveCookieJar 使用）
+    pub fn headers(&self, name: &str) -> Vec<String> {
+        match self.headers.get(name) {
+            Some(v) => vec![v.clone()],
+            None => Vec::new(),
+        }
+    }
+    pub fn to_string(&self) -> String {
+        self.url.clone()
+    }
+    pub fn request(&self) -> Request {
+        Request {
+            url: self.url.clone(),
+            ..Default::default()
+        }
+    }
+    pub fn body_option(&self) -> Option<ResponseBody> {
+        Some(ResponseBody {
+            text: Some(self.body_text.clone()),
+        })
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Body {
+    pub text: String,
+}
 
 impl Body {
     pub fn string(&self) -> String {
-        String::new()
+        self.text.clone()
+    }
+    pub fn bytes(&self) -> Vec<u8> {
+        self.text.clone().into_bytes()
     }
 }
 
@@ -4609,10 +4699,13 @@ pub struct Chain;
 
 impl Chain {
     pub fn request(&self) -> Request {
-        Request
+        Request::default()
     }
-    pub fn proceed(&self, _request: Request) -> Response {
-        Response
+    pub fn proceed(&self, request: Request) -> Response {
+        match crate::runtime::okhttp::execute(&request) {
+            Ok(r) => r,
+            Err(_) => Response::default(),
+        }
     }
 }
 
@@ -4679,33 +4772,6 @@ impl Clone for OkHttpClient {
     }
 }
 
-impl Request {
-    pub fn header(&self, _name: &str) -> Option<&str> {
-        None
-    }
-    pub fn new_builder(&self) -> RequestBuilder {
-        RequestBuilder
-    }
-}
-
-impl RequestBuilder {
-    pub fn add_header<N: AsRef<str>, V: AsRef<str>>(&self, _name: N, _value: V) -> &Self {
-        self
-    }
-    pub fn remove_header(&self, _name: &str) -> &Self {
-        self
-    }
-    pub fn header<N: AsRef<str>, V: AsRef<str>>(&self, _name: N, _value: V) -> &Self {
-        self
-    }
-}
-
-impl Response {
-    pub fn request(&self) -> Request {
-        Request
-    }
-}
- 
 // ---- BookHelp / BaseController 转录所需 kotlinx.coroutines 占位 ----
 
 // fix: Kotlin kotlinx.coroutines.delay(ms) 占位（不实际休眠）
@@ -4752,15 +4818,29 @@ pub trait CallAdapter {
 }
 
 // retrofit2.Call<T> 占位
-pub struct Call<T>(std::marker::PhantomData<T>);
+pub struct Call<T> {
+    pub request: Option<Request>,
+    pub phantom: std::marker::PhantomData<T>,
+}
 
 impl<T> Call<T> {
+    pub fn new() -> Self {
+        Call {
+            request: None,
+            phantom: std::marker::PhantomData,
+        }
+    }
     pub fn cancel(&self) {}
-    // fix: Kotlin call.enqueue(Callback) 占位——回调不实际触发
-    pub fn enqueue<F>(&self, _callback: F)
+    // 真实执行：blocking 请求后回调
+    pub fn enqueue<F>(&self, callback: F)
     where
         F: FnOnce(Result<Response, Throwable>) + Send + 'static,
     {
+        let result = match &self.request {
+            Some(req) => crate::runtime::okhttp::execute(req),
+            None => Err(Throwable::new("call has no request".to_string())),
+        };
+        callback(result);
     }
 }
 
@@ -6021,15 +6101,6 @@ impl ByteArrayExt for Vec<u8> {
     }
 }
 
-// okhttp3 Response.body()/message() 占位访问器（OkHttpUtils 使用；stubs Response 为无字段单位结构体）
-impl Response {
-    pub fn body_option(&self) -> Option<ResponseBody> {
-        None
-    }
-    pub fn message_str(&self) -> String {
-        String::new()
-    }
-}
 
 // okhttp3 ResponseBody.contentType()（OkHttpUtils.text 使用）
 impl ResponseBody {
@@ -6046,16 +6117,13 @@ impl MediaType {
 }
 
 // retrofit2 Call<T> 构造（OkHttpClient.new_call 占位返回使用）
-impl<T> Call<T> {
-    pub fn new() -> Self {
-        Call(std::marker::PhantomData)
-    }
-}
-
-// okhttp3 OkHttpClient.newCall(Request)（OkHttpUtils.new_call_response/new_call/new_call_str_response 使用）——占位不实际发请求
+// okhttp3 OkHttpClient.newCall(Request)（OkHttpUtils.new_call_response/new_call/new_call_str_response 使用）——真实执行
 impl OkHttpClient {
-    pub fn new_call(&self, _request: Request) -> Call<Response> {
-        Call::new()
+    pub fn new_call(&self, request: Request) -> Call<Response> {
+        Call {
+            request: Some(request),
+            phantom: std::marker::PhantomData,
+        }
     }
 }
 
@@ -6488,13 +6556,18 @@ impl Protocol {
 pub struct Headers;
 
 #[derive(Debug, Clone, Default)]
-pub struct ResponseBuilder;
+pub struct ResponseBuilder {
+    pub inner: std::cell::RefCell<Response>,
+}
 
 impl ResponseBuilder {
     pub fn new() -> ResponseBuilder {
-        ResponseBuilder
+        ResponseBuilder {
+            inner: std::cell::RefCell::new(Response::default()),
+        }
     }
-    pub fn code(&self, _code: i32) -> &Self {
+    pub fn code(&self, code: i32) -> &Self {
+        self.inner.borrow_mut().status = code;
         self
     }
     pub fn message(&self, _message: &str) -> &Self {
@@ -6503,11 +6576,12 @@ impl ResponseBuilder {
     pub fn protocol(&self, _protocol: Protocol) -> &Self {
         self
     }
-    pub fn request(&self, _request: Request) -> &Self {
+    pub fn request(&self, request: Request) -> &Self {
+        self.inner.borrow_mut().url = request.url.clone();
         self
     }
     pub fn build(&self) -> Response {
-        Response
+        self.inner.borrow().clone()
     }
 }
 
@@ -6527,12 +6601,6 @@ impl Response {
     }
 }
 
-impl Request {
-    // okhttp3 Request.url（StrResponse.url 使用；占位恒空）
-    pub fn url(&self) -> HttpUrl {
-        HttpUrl(String::new())
-    }
-}
 
 // ---------------- retrofit2 Converter / Converter.Factory 占位（ByteConverter/EncodeConverter 使用） ----------------
 
@@ -8203,7 +8271,7 @@ impl Clone for crate::me_ag2s_epublib_domain_author::Author {
 // fix: Tools.http_get 所需——retrofit2 Call<T>.execute() 占位（占位不实际发请求，恒返回空 Response）
 impl<T> Call<T> {
     pub fn execute(&self) -> Response {
-        Response
+        Response::default()
     }
 }
 // fix: Ext.rs unzip 中 output_stream 改为 Option<FileOutputStream> 后，OptionOutputStreamWriteExt 补实现（追加）
