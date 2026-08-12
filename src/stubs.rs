@@ -390,8 +390,14 @@ pub struct SimpleBindings {
     pub map: HashMap<String, Box<dyn AnyDebug>>,
 }
 
-pub trait AnyDebug: std::any::Any + std::fmt::Debug {}
-impl<T: std::any::Any + std::fmt::Debug> AnyDebug for T {}
+pub trait AnyDebug: std::any::Any + std::fmt::Debug {
+    fn as_any(&self) -> &dyn std::any::Any;
+}
+impl<T: std::any::Any + std::fmt::Debug> AnyDebug for T {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
 
 impl SimpleBindings {
     pub fn new() -> Self {
@@ -434,10 +440,10 @@ pub struct ScriptEngine;
 impl ScriptEngine {
     pub fn eval(
         &self,
-        _js: String,
-        _bindings: &mut SimpleBindings,
+        js: String,
+        bindings: &mut SimpleBindings,
     ) -> Option<Box<dyn AnyDebug>> {
-        None
+        crate::runtime::js::eval_js_script(&js, bindings).map(|any| Box::new(any) as Box<dyn AnyDebug>)
     }
 }
 
@@ -8581,5 +8587,21 @@ impl JsonObject {
         T: serde::de::DeserializeOwned,
     {
         serde_json::from_str::<T>(&self.0).ok()
+    }
+}
+
+impl WebRequest {
+    // JS 引擎同步请求（java.ajax 使用）
+    pub fn send_blocking(&self) -> String {
+        self.client.as_ref()
+            .and_then(|c| {
+                let mut req = c.get(&self.url);
+                if let Some(t) = self.timeout_ms {
+                    req = req.timeout(std::time::Duration::from_millis(t));
+                }
+                req.send().ok()
+            })
+            .and_then(|r| r.text().ok())
+            .unwrap_or_default()
     }
 }

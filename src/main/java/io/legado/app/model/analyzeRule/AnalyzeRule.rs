@@ -556,7 +556,7 @@ impl AnalyzeRule {
         bindings.put("src", self.content.clone());
         bindings.put("nextChapterUrl", self.next_chapter_url.clone());
         // fix: 引擎占位恒返回 None；若有值包装为 Any::Str 标记
-        SCRIPT_ENGINE.eval(js_str, &mut bindings).map(|v| Box::new(Any::Str(format!("{:?}", v))))
+        SCRIPT_ENGINE.eval(js_str, &mut bindings).and_then(|v| v.as_any().downcast_ref::<Any>().map(|a| Box::new(a.clone())))
     }
 
     // override fun getSource(): BaseSource? {

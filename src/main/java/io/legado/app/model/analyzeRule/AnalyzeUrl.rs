@@ -412,7 +412,7 @@ impl AnalyzeUrl {
         bindings.set("book", self.rule_data.as_ref().map(|r| r.get_user_name_space())); // bindings["book"] = ruleData as? Book
         bindings.set("source", self.source.as_ref().map(|s| s.get_key())); // bindings["source"] = source
         bindings.set("result", result.cloned());
-        SCRIPT_ENGINE.eval(js_str, &mut bindings).map(|v| JsValue { value: Some(format!("{:?}", v)) })
+        SCRIPT_ENGINE.eval(js_str, &mut bindings).map(|v| { let a = v.as_any().downcast_ref::<crate::stubs::Any>().map(|a| crate::stubs::any_to_value(a).to_string()).unwrap_or_default(); JsValue { value: Some(a) } })
     }
 
     pub fn put(&mut self, key: String, value: String) -> String {

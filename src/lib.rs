@@ -1378,6 +1378,9 @@ pub mod test {
 // pub mod probe_check;
 
 pub mod runtime {
+    pub mod js {
+        include!("runtime/js.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }
