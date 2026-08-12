@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -12,6 +13,7 @@
  *
  * @author paul
  */
+#[derive(Clone)]
 pub struct TOCReference {
   resource: Option<Resource>,
   fragment_id: Option<String>,
@@ -29,7 +31,7 @@ impl TOCReference {
   // @SuppressWarnings("unused")
   pub fn get_comparator_by_title_ignore_case() -> fn(&TOCReference, &TOCReference) -> std::cmp::Ordering {
     return |toc_reference1: &TOCReference, toc_reference2: &TOCReference| {
-      String::CASE_INSENSITIVE_ORDER.compare(toc_reference1.get_title().as_ref().unwrap_or(&String::new()), toc_reference2.get_title().as_ref().unwrap_or(&String::new()))
+      toc_reference1.get_title().as_ref().unwrap_or(&String::new()).to_lowercase().cmp(&toc_reference2.get_title().as_ref().unwrap_or(&String::new()).to_lowercase())
     };
   }
 

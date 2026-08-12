@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::GSON;
 // package io.legado.app.data.entities
 
 // import io.legado.app.utils.GSON
@@ -9,6 +11,11 @@
 // import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 // @JsonIgnoreProperties("variableMap", "_userNameSpace", "userNameSpace")
+// fix: AnalyzeUrl companion 的 paramPattern 转录为其私有模块级函数, 此处按同样式提供等价正则
+fn PARAM_PATTERN() -> Pattern {
+    Pattern::compile(r"\s*,\s*(?=\{)")
+}
+
 pub struct BookChapter {
     pub url: String,               // 章节地址
     pub title: String,             // 章节标题
@@ -39,7 +46,9 @@ impl BookChapter {
         if let Some(cached) = self.variable_map_cache.borrow().as_ref() {
             return cached.clone();
         }
-        let map = GSON::from_json_object::<HashMap<String, String>>(self.variable.as_ref())
+        let map = GSON::from_json_object::<HashMap<String, String>>(
+            self.variable.clone().unwrap_or_default()
+        )
             .get_or_null()
             .unwrap_or_else(HashMap::new);
         *self.variable_map_cache.borrow_mut() = Some(map.clone());
@@ -66,13 +75,14 @@ impl BookChapter {
     }
 
     pub fn get_absolute_url(&self) -> String {
-        let mut url_matcher = AnalyzeUrl::param_pattern.matcher(&self.url);
+        let pattern = PARAM_PATTERN();
+        let mut url_matcher = pattern.matcher(self.url.clone());
         let url_before = if url_matcher.find() {
             self.url[0..url_matcher.start()].to_string()
         } else {
             self.url.clone()
         };
-        let url_absolute_before = NetworkUtils::get_absolute_url(&self.base_url, &url_before);
+        let url_absolute_before = NetworkUtils::getAbsoluteURL(Some(&self.base_url), &url_before);
         if url_before.len() == self.url.len() {
             url_absolute_before
         } else {
@@ -81,7 +91,7 @@ impl BookChapter {
     }
 
     pub fn get_file_name(&self) -> String {
-        format!("{:05}-{}.nb", self.index, MD5Utils::md5_encode16(&self.title))
+        format!("{:05}-{}.nb", self.index, MD5Utils::md5Encode16(&self.title))
     }
 }
 

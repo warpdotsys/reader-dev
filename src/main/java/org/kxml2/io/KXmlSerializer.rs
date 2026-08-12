@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -188,7 +189,8 @@ impl KXmlSerializer {
             }
             // Does nothing smart about orphan surrogates, just output them "as is"
         }
-        if c as i32 >= ' ' as i32 && c != '@' && (c as i32 < 127 || self.unicode) {
+        // fix: parenthesize so `<` is a comparison, not generic arguments
+        if c as i32 >= ' ' as i32 && c != '@' && ((c as i32) < 127 || self.unicode) {
             self.writer.as_mut().unwrap().write_char(c as i32);
         }
         else {
@@ -214,9 +216,10 @@ impl KXmlSerializer {
 
     pub fn end_document(&mut self) -> Result<(), String> {
         while self.depth > 0 {
+            // fix: E0308 end_tag 的 name 参数为 String，元素栈中存的是 Option<String>，unwrap 默认空串
             self.end_tag(
                 self.element_stack[(self.depth * 3 - 3) as usize].clone(),
-                self.element_stack[(self.depth * 3 - 1) as usize].clone())?;
+                self.element_stack[(self.depth * 3 - 1) as usize].clone().unwrap_or_default())?;
         }
         self.flush()
     }
@@ -231,12 +234,16 @@ impl KXmlSerializer {
 
     pub fn get_feature(&self, name: String) -> bool {
         //return false;
-        return (
+        // fix: Java ternary (?:) converted to if/else
+        return if
             "http://xmlpull.org/v1/doc/features.html#indent-output"
                 .eq(
-                    &name))
-            ? self.indent[self.depth as usize]
-            : false;
+                    &name) {
+            self.indent[self.depth as usize]
+        }
+        else {
+            false
+        };
     }
 
     pub fn get_prefix(&mut self, namespace: Option<String>, create: bool) -> Option<String> {
@@ -316,7 +323,9 @@ impl KXmlSerializer {
     }
 
     pub fn ignorable_whitespace(&mut self, s: String) -> Result<(), String> {
-        self.text(s)
+        // fix: E0308 text 返回 Result<&KXmlSerializer, String>，先 ? 再返回 Ok(())
+        self.text(s)?;
+        Ok(())
     }
 
     pub fn set_feature(&mut self, name: String, value: bool) {
@@ -443,7 +452,7 @@ impl KXmlSerializer {
     pub fn start_tag(&mut self, namespace: Option<String>, name: String) -> Result<&KXmlSerializer, String> {
         self.check(false)?;
 
-        //        if (namespace == null)
+        //        if (namespace == None)
         //            namespace = "";
 
         if self.indent[self.depth as usize] {
@@ -485,7 +494,8 @@ impl KXmlSerializer {
         let mut esp = esp as usize;
         self.element_stack[esp] = namespace;
         esp += 1;
-        self.element_stack[esp] = prefix;
+        // fix: E0382 prefix 为 Option<String> 非 Copy，先存入栈后仍需借用，改 clone
+        self.element_stack[esp] = prefix.clone();
         esp += 1;
         self.element_stack[esp] = Some(name.clone());
 
@@ -536,7 +546,7 @@ impl KXmlSerializer {
         /*        if (cnt != nspCounts[depth]) {
                     writer.write(' ');
                     writer.write("xmlns");
-                    if (nspStack[cnt * 2] != null) {
+                    if (nspStack[cnt * 2] != None) {
                         writer.write(':');
                         writer.write(nspStack[cnt * 2]);
                     }
@@ -577,7 +587,7 @@ impl KXmlSerializer {
         if !self.pending {
             self.depth -= 1;
         }
-        //        if (namespace == null)
+        //        if (namespace == None)
         //          namespace = "";
 
         if (namespace.is_none()

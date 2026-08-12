@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use std::io::Read;
 // package me.ag2s.umdlib.umd;
 //
 // import java.io.IOException;
@@ -20,7 +22,8 @@
 
 pub struct UmdReader<'a> {
     pub book: UmdBook,
-    pub input_stream: &'a mut dyn Read,
+    // fix: new() 无法为 &'a mut dyn Read 提供空初值，改为 Option，read() 时再填入
+    pub input_stream: Option<&'a mut dyn Read>,
     pub _additional_check_number: i32,
     pub _total_content_len: i32,
     pub end: bool,
@@ -31,7 +34,7 @@ impl<'a> UmdReader<'a> {
     pub fn new() -> Self {
         UmdReader {
             book: UmdBook::new(),
-            input_stream: &mut [0u8; 0],
+            input_stream: None,
             _additional_check_number: 0,
             _total_content_len: 0,
             end: false,
@@ -40,18 +43,17 @@ impl<'a> UmdReader<'a> {
 
     pub fn read(&mut self, input_stream: &'a mut dyn Read) -> UmdBook {
         self.book = UmdBook::new();
-        self.input_stream = input_stream;
-        let mut reader = StreamReader::new(self.input_stream);
+        let prev = std::mem::replace(&mut self.input_stream, Some(input_stream));
+        let mut reader = StreamReader::new(prev.unwrap());
         let mut umd_header = UmdHeader::new();
-        self.book.set_header(umd_header.clone());
-        if reader.read_int_le() != 0xde9a9b89 {
+        if reader.read_int_le() != (0xde9a9b89u32 as i32) {
             panic!("Wrong header");
         }
         let mut num1: i16 = -1;
         let mut ch = reader.read_byte();
         while ch == 35 {
             //int num2=reader.readByte();
-            let seg_type = reader.read_short_le();
+            let mut seg_type = reader.read_short_le();
             let seg_flag = reader.read_byte();
             let len = (reader.read_uint8() - 5) as i16;
 
@@ -75,8 +77,11 @@ impl<'a> UmdReader<'a> {
             }
             num1 = seg_type;
         }
+        // fix: Java 中 book 与 umdHeader 为同一引用，解析完成后一次性写入，语义等价
+        self.book.set_header(umd_header);
         println!("{}", self.book.get_header().to_string());
-        return self.book.clone();
+        // fix: UmdBook 无 Clone，解析结果用 mem::replace 取出（self.book 位于 &mut self 后）
+        return std::mem::replace(&mut self.book, UmdBook::new());
     }
 
     fn read_additional_section(&mut self, seg_type: i16, additional_check_number: i32, length: i32, reader: &mut StreamReader) {
@@ -99,7 +104,7 @@ impl<'a> UmdReader<'a> {
                 println!("{}", length / 4);
                 self.book.set_num(length / 4);
                 for _i in 0..length / 4 {
-                    self.book.get_chapters_mut().add_content_length(reader.read_int_le());
+                    self.book.chapters.add_content_length(reader.read_int_le());
                 }
             }
             132 => {
@@ -108,14 +113,14 @@ impl<'a> UmdReader<'a> {
                 println!("{}", additional_check_number);
                 if self._additional_check_number != additional_check_number {
                     println!("{}", length);
-                    self.book.get_chapters_mut().contents.write(&UmdUtils::decompress(&reader.read_bytes(length as usize)));
-                    self.book.get_chapters_mut().contents.flush();
+                    self.book.chapters.contents.write(&UmdUtils::decompress(&reader.read_bytes(length as usize)));
+                    self.book.chapters.contents.flush();
                 } else {
                     for _i in 0..self.book.get_num() {
                         let len = reader.read_uint8();
                         let title = reader.read_bytes(len as usize);
                         //System.out.println(UmdUtils.unicodeBytesToString(title));
-                        self.book.get_chapters_mut().add_title_bytes(title);
+                        self.book.chapters.add_title_bytes(title);
                     }
                 }
             }
@@ -183,7 +188,7 @@ impl<'a> UmdReader<'a> {
             11 => {
                 //内容长度 DCTS_CMD_ID_FILE_LENGTH
                 self._total_content_len = reader.read_int_le();
-                self.book.get_chapters_mut().set_total_content_len(self._total_content_len);
+                self.book.chapters.set_total_content_len(self._total_content_len);
                 println!("内容长度:{}", self._total_content_len);
             }
             12 => {
@@ -246,6 +251,7 @@ impl std::fmt::Display for UmdReader<'_> {
     // @Override
     // public String toString() {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        return write!(f, "UmdReader{{book={}}}", self.book);
+        // fix: UmdBook 无 Display 实现，改用其 header 展示（UmdHeader 已实现 Display）
+        return write!(f, "UmdReader{{book={}}}", self.book.get_header());
     }
 }

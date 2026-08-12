@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -87,6 +88,11 @@ impl EpubBook {
         self.add_section_with_fragment(parent_section, section_title, resource, None)
     }
 
+    // fix: Java 重载 addSection(String, Resource) 转录改名，避免与父节点版重名
+    pub fn add_section_at_root(&mut self, title: String, resource: Resource) -> TOCReference {
+        self.add_section_with_fragment_at_root(title, resource, None)
+    }
+
     /**
      * Adds the resource to the table of contents of the book as a child
      * section of the given parentSection
@@ -100,34 +106,22 @@ impl EpubBook {
     pub fn add_section_with_fragment(
             &mut self, parent_section: &mut TOCReference, section_title: String, resource: Resource,
             fragment_id: Option<String>) -> TOCReference {
-        self.get_resources().add(resource.clone());
+        self.resources.add(resource.clone());
         if self.spine.find_first_resource_by_id(&resource.get_id()) < 0 {
-            self.spine.add_spine_reference(SpineReference::new(resource.clone()));
+            self.spine.add_spine_reference(SpineReference::new(Some(resource.clone())));
         }
         return parent_section.add_child_section(
-                TOCReference::with_fragment(section_title, resource, fragment_id));
+                TOCReference::with_fragment(Some(section_title), Some(resource), fragment_id));
     }
 
-    pub fn add_section(&mut self, title: String, resource: Resource) -> TOCReference {
-        self.add_section_with_fragment(title, resource, None)
-    }
-
-    /**
-     * Adds a resource to the book's set of resources, table of contents and
-     * if there is no resource with the id in the spine also adds it to the spine.
-     *
-     * @param title      title
-     * @param resource   resource
-     * @param fragmentId fragmentId
-     * @return The table of contents
-     */
-    pub fn add_section_with_fragment(
+    // fix: Java 重载 addSectionWithFragment(String, Resource, String) 转录改名，避免与父节点版重名
+    pub fn add_section_with_fragment_at_root(
             &mut self, title: String, resource: Resource, fragment_id: Option<String>) -> TOCReference {
-        self.get_resources().add(resource.clone());
+        self.resources.add(resource.clone());
         let toc_reference = self.table_of_contents
-                .add_toc_reference(TOCReference::with_fragment(title, resource.clone(), fragment_id));
+                .add_toc_reference(TOCReference::with_fragment(Some(title), Some(resource.clone()), fragment_id));
         if self.spine.find_first_resource_by_id(&resource.get_id()) < 0 {
-            self.spine.add_spine_reference(SpineReference::new(resource));
+            self.spine.add_spine_reference(SpineReference::new(Some(resource)));
         }
         return toc_reference;
     }
@@ -214,7 +208,10 @@ impl EpubBook {
      * @return The book's cover page as a Resource
      */
     pub fn get_cover_page(&self) -> Option<Resource> {
-        let mut cover_page = self.guide.get_cover_page();
+        // fix: Guide::get_cover_page() 需要 &mut self，改为只读扫描引用列表（等价逻辑）
+        let mut cover_page = self.guide.get_references().iter()
+                .find(|guide_reference| guide_reference.get_type().eq(GuideReference::COVER))
+                .and_then(|guide_reference| guide_reference.get_resource().clone());
         if cover_page.is_none() {
             cover_page = self.spine.get_resource(0);
         }
@@ -295,7 +292,7 @@ impl EpubBook {
         EpubBook::add_to_contents_result(&self.get_cover_page(), &mut result);
 
         for spine_reference in self.get_spine().get_spine_references() {
-            EpubBook::add_to_contents_result(&Some(spine_reference.get_resource().clone()), &mut result);
+            EpubBook::add_to_contents_result(&spine_reference.get_resource().clone(), &mut result);
         }
 
         for resource in self.get_table_of_contents().get_all_unique_resources() {
@@ -303,7 +300,7 @@ impl EpubBook {
         }
 
         for guide_reference in self.get_guide().get_references() {
-            EpubBook::add_to_contents_result(&Some(guide_reference.get_resource().clone()), &mut result);
+            EpubBook::add_to_contents_result(&guide_reference.get_resource().clone(), &mut result);
         }
 
         let mut result_resources: Vec<Resource> = Vec::new();
@@ -316,7 +313,7 @@ impl EpubBook {
     fn add_to_contents_result(resource: &Option<Resource>,
                                             all_reachable_resources: &mut Vec<(String, Resource)>) {
         if resource.is_some() && (!all_reachable_resources.iter()
-                .any(|(href, _)| href.eq(&resource.as_ref().unwrap().get_href()))) {
+                .any(|(href, _)| href.eq(resource.as_ref().unwrap().get_href()))) {
             all_reachable_resources.push((resource.as_ref().unwrap().get_href().clone(), resource.as_ref().unwrap().clone()));
         }
     }

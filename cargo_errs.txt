@@ -1,0 +1,418 @@
+error[E0425]: cannot find type `Headers` in this scope
+   --> src\..\src\main\java\io\legado\app\help\http\StrResponse.rs:114:31
+    |
+114 |     pub fn headers(&self) -> &Headers {
+    |                               ^^^^^^^
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\QueryTTF.rs:43:1
+    |
+ 43 | pub struct Header {
+    | ----------------- similarly named struct `Header` defined here
+    |
+help: a struct with a similar name exists
+    |
+114 -     pub fn headers(&self) -> &Headers {
+114 +     pub fn headers(&self) -> &Header {
+    |
+
+error[E0404]: expected trait, found enum `Any`
+  --> src\..\src\main\java\io\legado\app\model\rss\RssParserByRule.rs:97:24
+   |
+97 |         item: &Box<dyn Any>,
+====
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:48:45
+   |
+48 |     pub fn with_date_and_event_string(date: java_util_Date, event: String) -> Date {
+   |                                             ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:120:47
+    |
+120 |   pub fn equals(&self, other_identifier: &dyn Any) -> bool {
+    |                                               ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+    |
+
+error[E0404]: expected trait, found enum `Any`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\MediaType.rs:66:47
+   |
+66 |   pub fn equals(&self, other_media_type: &dyn Any) -> bool {
+====
+    = help: consider adding an explicit import of `Any` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:120:47
+    |
+120 |   pub fn equals(&self, other_identifier: &dyn Any) -> bool {
+    |                                               ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `Any` to disambiguate
+note: `Any` could also refer to the enum imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `TextUtils` is ambiguous
+   --> src\..\src\main\java\io\legado\app\help\http\CookieStore.rs:81:12
+    |
+ 81 |         if TextUtils::is_empty(url) || TextUtils::is_empty(cookie) {
+    |            ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `TextUtils` could refer to the struct imported here
+   --> src\lib.rs:905:13
+    |
+905 |     pub use crate::io_legado_app_utils_textutils::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+note: `TextUtils` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `TextUtils` is ambiguous
+   --> src\..\src\main\java\io\legado\app\help\http\CookieStore.rs:81:40
+    |
+ 81 |         if TextUtils::is_empty(url) || TextUtils::is_empty(cookie) {
+    |                                        ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `TextUtils` could refer to the struct imported here
+   --> src\lib.rs:905:13
+    |
+905 |     pub use crate::io_legado_app_utils_textutils::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+note: `TextUtils` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `TextUtils` is ambiguous
+   --> src\..\src\main\java\io\legado\app\help\http\CookieStore.rs:85:12
+    |
+ 85 |         if TextUtils::is_empty(&old_cookie) {
+    |            ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `TextUtils` could refer to the struct imported here
+   --> src\lib.rs:905:13
+    |
+905 |     pub use crate::io_legado_app_utils_textutils::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `TextUtils` to disambiguate
+note: `TextUtils` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+...
+930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `MediaType` in the type namespace is first re-exp
+orted here
+
+error: `MediaType` is ambiguous
+   --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:19:22
+    |
+ 19 |   media_type: Option<MediaType>,
+    |                      ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `MediaType` could refer to the struct imported here
+   --> src\lib.rs:930:13
+    |
+930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `MediaType` to disambiguate
+note: `MediaType` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `MediaType` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `MediaType` is ambiguous
+   --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:60:110
+    |
+ 60 | ...: String, original_href: String, media_type: Option<MediaType>) -> LazyResource {
+    |                                                        ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `MediaType` could refer to the struct imported here
+   --> src\lib.rs:930:13
+    |
+930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `MediaType` to disambiguate
+note: `MediaType` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Charset` in the value namespace is first re-exported 
+here
+
+error: `Charset` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\QueryTTF.rs:247:56
+    |
+247 |     pub fn read_strings(&mut self, len: i32, charset: &Charset) -> String {
+    |                                                        ^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Charset` could refer to the struct imported here
+   --> src\lib.rs:959:13
+    |
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `Charset` to disambiguate
+note: `Charset` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `Charset` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `Charset` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\QueryTTF.rs:328:50
+    |
+328 |             d.tag = font_reader.read_strings(4, &Charset::US_ASCII); // d.tag = fontReader.ReadStrings(4, Standar
+dCharsets.US_ASCII)
+    |                                                  ^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Charset` could refer to the struct imported here
+   --> src\lib.rs:959:13
+    |
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `Charset` to disambiguate
+note: `Charset` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+====
+    = help: consider adding an explicit import of `Charset` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `Charset` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\QueryTTF.rs:748:56
+    |
+748 |             let charset = if record.platform_id == 1 { Charset::UTF_8 } else { Charset::UTF_16BE };
+    |                                                        ^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Charset` could refer to the struct imported here
+   --> src\lib.rs:959:13
+    |
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `Charset` to disambiguate
+note: `Charset` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `Charset` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `Charset` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\QueryTTF.rs:748:80
+    |
+748 |             let charset = if record.platform_id == 1 { Charset::UTF_8 } else { Charset::UTF_16BE };
+    |                                                                                ^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Charset` could refer to the struct imported here
+   --> src\lib.rs:959:13
+    |
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `Charset` to disambiguate
+note: `Charset` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `File` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `File` is ambiguous
+   --> src\..\src\main\java\io\legado\app\help\http\CookieStore.rs:30:17
+    |
+ 30 |                 File::new(&ReaderAdapterHelper::get_adapter().get_work_dir(
+    |                 ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `File` could refer to the struct imported here
+   --> src\lib.rs:962:13
+    |
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `File` to disambiguate
+note: `File` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `File` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `File` is ambiguous
+   --> src\..\src\main\java\io\legado\app\utils\EncodingDetect.rs:55:30
+    |
+ 55 |         Self::getEncode_file(File::new(filePath))
+    |                              ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `File` could refer to the struct imported here
+   --> src\lib.rs:962:13
+    |
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `File` to disambiguate
+note: `File` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `File` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `File` is ambiguous
+   --> src\..\src\main\java\io\legado\app\utils\EncodingDetect.rs:61:34
+    |
+ 61 |     pub fn getEncode_file(file: &File) -> String {
+    |                                  ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `File` could refer to the struct imported here
+   --> src\lib.rs:962:13
+    |
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `File` to disambiguate
+note: `File` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `File` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `File` is ambiguous
+   --> src\..\src\main\java\io\legado\app\utils\EncodingDetect.rs:66:35
+    |
+ 66 |     fn getFileBytes(file: Option<&File>) -> Vec<u8> {
+    |                                   ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `File` could refer to the struct imported here
+   --> src\lib.rs:962:13
+    |
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `File` to disambiguate
+note: `File` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+    = help: consider adding an explicit import of `File` to disambiguate
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a f
+uture release!
+    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/114095>
+
+error: `FileInputStream` is ambiguous
+   --> src\..\src\main\java\io\legado\app\utils\EncodingDetect.rs:70:33
+    |
+ 70 |                 let mut input = FileInputStream::new(file);
+    |                                 ^^^^^^^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `FileInputStream` could refer to the struct imported here
+   --> src\lib.rs:962:13
+    |
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: consider adding an explicit import of `FileInputStream` to disambiguate
+note: `FileInputStream` could also refer to the struct imported here
+   --> src\lib.rs:745:13
+    |
+====
+help: you can add the `dyn` keyword if you want a trait object
+   |
+28 |     pub debug_logger: Option<dyn DebugLog>,
+   |                              +++
+
+error[E0782]: expected a type, found a trait
+  --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:23:29
+   |
+23 |   resource_provider: Option<LazyResourceProvider>,
+   |                             ^^^^^^^^^^^^^^^^^^^^
+   |
+help: you can add the `dyn` keyword if you want a trait object
+   |
+23 |   resource_provider: Option<dyn LazyResourceProvider>,
+   |                             +++
+
+error[E0782]: expected a type, found a trait
+  --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:16:14
+   |
+16 |   in_stream: InputStream,
+   |              ^^^^^^^^^^^
+====
+   |                         ^^^^^^^^^^^^^^ use of unresolved module or unlinked crate `java_util_Date`
+   |
+   = help: if you wanted to use a crate named `java_util_Date`, use `cargo add java_util_Date` to add it to your `Cargo
+.toml`
+
+error[E0433]: cannot find type `UUID` in this scope
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:37:54
+   |
+37 |     Identifier::with_value(Scheme::UUID.to_string(), UUID::random_uuid().to_string())
+   |                                                      ^^^^ use of undeclared type `UUID`
+   |
+help: a struct with a similar name exists
+   |
+37 -     Identifier::with_value(Scheme::UUID.to_string(), UUID::random_uuid().to_string())
+37 +     Identifier::with_value(Scheme::UUID.to_string(), Uuid::random_uuid().to_string())
+   |
+
+error[E0423]: expected function, found module `super`
+  --> src\..\src\main\java\com\htmake\reader\SpringEvent.rs:25:9
+   |
+25 |         super(source);
+====

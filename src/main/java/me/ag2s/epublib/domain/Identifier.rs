@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0404/E0659——prelude glob 的 `Any` 是 stubs 枚举，需 std::any::Any trait，显式导入覆盖
+use std::any::Any;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;
@@ -12,6 +15,8 @@
  *
  * @author paul
  */
+// fix: 克隆（get_book_id_identifier 使用 identifier.clone()），派生 Clone
+#[derive(Clone)]
 pub struct Identifier {
 
   book_id: bool,
@@ -19,21 +24,23 @@ pub struct Identifier {
   value: String,
 }
 
-impl Identifier {
+// fix: Java 的嵌套接口 `Identifier.Scheme` 无法在 Rust impl 内声明 trait，已移到模块级
+// fix: E0790——trait 关联常量不能以 `Scheme::UUID` 访问，改为单元 struct + 关联常量
+pub struct Scheme;
+impl Scheme {
+  pub const UUID: &'static str = "UUID";
+  pub const ISBN: &'static str = "ISBN";
+  pub const URL: &'static str = "URL";
+  pub const URI: &'static str = "URI";
+}
 
-  // @SuppressWarnings("unused")
-  pub trait Scheme {
-    const UUID: &'static str = "UUID";
-    const ISBN: &'static str = "ISBN";
-    const URL: &'static str = "URL";
-    const URI: &'static str = "URI";
-  }
+impl Identifier {
 
   /**
    * Creates an Identifier with as value a random UUID and scheme "UUID"
    */
   pub fn new() -> Identifier {
-    Identifier::with_value(Identifier::Scheme::UUID.to_string(), UUID::random_uuid().to_string())
+    Identifier::with_value(Scheme::UUID.to_string(), Uuid::random_uuid().to_string())
   }
 
 
@@ -112,8 +119,8 @@ impl Identifier {
   }
 
   pub fn hash_code(&self) -> i32 {
-    StringUtil::default_if_null(&self.scheme).hash_code() ^ StringUtil
-        ::default_if_null(&self.value).hash_code()
+    StringUtil::default_if_null(&self.scheme).hashCode() ^ StringUtil
+        ::default_if_null(&self.value).hashCode()
   }
 
   pub fn equals(&self, other_identifier: &dyn Any) -> bool {

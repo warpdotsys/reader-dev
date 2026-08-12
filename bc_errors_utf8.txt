@@ -1,0 +1,390 @@
+﻿error: format argument must be a string literal ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:747:24
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1788:28
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1792:28
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1795:28
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1839:28
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3117:24
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3345:32
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3349:36
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3362:59
+error: argument never used ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3364:77
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3365:28
+error: argument never used ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3370:87
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3371:28
+error: argument never used ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3373:76
+error: argument never used ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3375:67
+error: format argument must be a string literal ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3376:28
+error: cannot find macro `list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3609:38
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3185:23
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2957:30
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2860:37
+error: cannot find macro `mutable_set_of` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2409:42
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2359:45
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2348:30
+error: cannot find macro `mutable_set_of` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2294:46
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2240:45
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2227:51
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2097:46
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1850:38
+error: cannot find macro `mutable_map_of` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1823:40
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1728:29
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1726:20
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1723:20
+error: cannot find macro `list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1715:47
+error: cannot find macro `hash_set` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1680:31
+error: cannot find macro `hash_set` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1679:30
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1378:37
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1361:25
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1355:21
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1350:35
+error: cannot find macro `mutable_map_of` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1305:28
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1273:31
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1269:45
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1257:51
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1248:31
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1207:31
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1202:70
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1143:37
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1096:31
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1045:45
+error: cannot find macro `map` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1034:51
+error: cannot find macro `array_list` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1022:31
+error: cannot find macro `array_list` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:988:31
+error: cannot find macro `map` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:916:37
+error: cannot find macro `mutable_map_of` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:860:30
+error: cannot find macro `array_list` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:859:31
+error: cannot find macro `mutable_map_of` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:743:36
+error: cannot find macro `list` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:672:33
+error: cannot find macro `map` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:654:25
+error: cannot find macro `array_list` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:429:39
+error: cannot find macro `map` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:355:37
+error: cannot find macro `map` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:317:39
+error: cannot find macro `map` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:313:39
+error: cannot find macro `array_list` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:220:35
+error[E0434]: can't capture dynamic environment in a fn item ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3177:16
+error[E0434]: can't capture dynamic environment in a fn item ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3177:31
+error[E0434]: can't capture dynamic environment in a fn item ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3177:76
+error[E0433]: cannot find module or crate `org` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3459:48
+error[E0433]: cannot find module or crate `org` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3459:100
+error[E0425]: cannot find value `book_info_cache` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:206:44
+error[E0425]: cannot find value `web_client` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:249:13
+error[E0425]: cannot find value `it` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:253:34
+error[E0425]: cannot find value `book_info_cache` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:416:44
+error[E0425]: cannot find value `book_info_cache` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:570:44
+error[E0405]: cannot find trait `Collection` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:896:40
+error[E0405]: cannot find trait `Collection` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1024:40
+error[E0425]: cannot find value `book_info_cache` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1083:20
+error[E0405]: cannot find trait `Collection` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1130:40
+error[E0425]: cannot find value `book_info_cache` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1193:20
+error[E0405]: cannot find trait `Collection` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1250:40
+error[E0425]: cannot find value `book_info_cache` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1338:20
+error[E0405]: cannot find trait `Collection` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1367:44
+error[E0425]: cannot find value `book_info_cache` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1705:17
+error[E0425]: cannot find value `book_info_cache` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1712:40
+error[E0425]: cannot find value `it` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1733:54
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2118:13
+error[E0425]: cannot find type `MutableSet` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2407:91
+error[E0425]: cannot find type `MutableMap` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2430:63
+error[E0425]: cannot find type `Triple` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2530:39
+error[E0425]: cannot find type `MutableList` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2864:44
+error[E0425]: cannot find type `MutableList` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2900:23
+error[E0404]: expected trait, found type alias `Map` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2961:39
+error[E0404]: expected trait, found struct `String` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2961:97
+error[E0425]: cannot find type `JsonNode` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3102:31
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3156:23
+error[E0425]: cannot find type `HttpServerResponse` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3205:43
+error[E0425]: cannot find value `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3206:21
+error[E0425]: cannot find value `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3207:24
+error[E0425]: cannot find value `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3214:27
+error[E0425]: cannot find value `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3216:20
+error[E0425]: cannot find value `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3221:20
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3228:67
+error[E0425]: cannot find type `HttpServerResponse` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3232:42
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3255:22
+error[E0425]: cannot find type `HttpServerResponse` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3259:56
+error[E0425]: cannot find value `web_client` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3279:13
+error[E0425]: cannot find value `org` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3445:19
+error[E0425]: cannot find value `org` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3448:28
+error[E0425]: cannot find value `java` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3467:25
+error[E0425]: cannot find value `org` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3468:76
+error[E0425]: cannot find value `java` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3469:89
+error[E0425]: cannot find value `java` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3470:30
+error[E0425]: cannot find value `java` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3470:98
+error[E0425]: cannot find value `javax` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3474:9
+error[E0433]: cannot find module or crate `com` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3503:63
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3637:31
+error[E0425]: cannot find value `web_client` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3664:13
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3679:27
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3683:31
+error[E0423]: expected value, found module `io` ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3684:34
+error[E0658]: default values on fields are experimental ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:125:31
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1343:42
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1588:79
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1611:79
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1631:35
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1633:25
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1675:35
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1677:25
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1688:44
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1705:64
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1721:31
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1892:31
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1955:39
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1957:29
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1976:44
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1977:29
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1992:36
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2013:47
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2014:36
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2016:38
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3022:90
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3036:52
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3306:35
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3487:35
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3489:25
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3604:40
+error: `JsonArray` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3605:25
+error: `JsonObject` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3607:27
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:140:35
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:152:77
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:156:35
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:171:35
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:232:26
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:299:42
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:308:87
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:352:27
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:436:32
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:612:32
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:637:41
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:665:41
+error: `get_work_dir` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:690:51
+error: `get_storage_file` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:865:22
+error: `get_storage_file` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:866:42
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:927:37
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:954:37
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:959:37
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:969:37
+error: `json_encode` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:974:37
+error: `get_storage_file` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:992:22
+error: `get_storage_file` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:993:42
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1034:39
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1045:33
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1099:22
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1100:42
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1154:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1182:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1187:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1197:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1202:37
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1218:22
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1219:42
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1257:39
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1269:33
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1658:41
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1661:36
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1693:45
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1705:52
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1783:31
+error: `get_relative_path` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1843:57
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1845:52
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1899:36
+error: `get_relative_path` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2021:49
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2025:42
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2028:49
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2031:45
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2035:45
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2045:37
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2048:44
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2051:40
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2055:40
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2097:34
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2108:24
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2122:48
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2128:50
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2199:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2207:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2212:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2220:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2227:39
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2240:33
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2251:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2270:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2278:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2283:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2289:37
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2353:43
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2359:33
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2399:36
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2489:36
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2660:40
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2666:30
+error: `get_storage` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2959:36
+error: `get_storage` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2987:27
+error: `save_storage` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2987:50
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3005:38
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3009:36
+error: `get_storage` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3012:13
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3086:31
+error: `get_storage_file` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3088:27
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3129:37
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3138:40
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3145:42
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3226:22
+error: `json_encode` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3252:22
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3409:13
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3428:35
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3438:40
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3440:36
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3443:36
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3512:43
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3518:39
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3546:43
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3567:43
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3602:40
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3628:26
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3656:26
+error: `get_work_dir` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3674:24
+error: `Any` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:150:85
+error: `Any` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:173:55
+error: `Any` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:274:40
+error: `Any` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2064:72
+error: `Any` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2425:44
+error: `Any` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2430:82
+error: `Base64` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3226:61
+error: `Base64` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3252:61
+error: `FileUtils` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:286:29
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1661:13
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2503:25
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2504:25
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2586:25
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2587:25
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3152:26
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3602:17
+error: `FileUtils` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3642:13
+error: `GSON` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:333:28
+error: `Date` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2782:28
+error: `Charset` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2507:41
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:140:25
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:156:25
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:171:25
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:233:26
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:276:24
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:294:45
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:297:45
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:299:32
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:639:21
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:667:36
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:690:41
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:708:48
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:711:38
+error: `File` is ambiguous ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:711:80
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1658:31
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1693:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2025:32
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2025:71
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2028:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2028:81
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2031:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2035:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2045:27
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2045:66
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2048:34
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2048:76
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2051:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2055:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2065:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2067:13
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2068:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2089:37
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2089:59
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2091:33
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2091:55
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2091:84
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2096:29
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2096:71
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2109:29
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2113:28
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2120:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2120:56
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2122:38
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2126:36
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2126:57
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2128:40
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2133:41
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2133:63
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2135:37
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2135:59
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2135:88
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2159:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2161:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2168:31
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2168:53
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2170:27
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2323:46
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2323:88
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2397:82
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2400:31
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2489:26
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2501:47
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2501:119
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2541:42
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2541:84
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2584:52
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2584:119
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2659:53
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2660:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2667:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2709:42
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2709:84
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3005:28
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3009:26
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3067:38
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3127:17
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3129:27
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3132:39
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3133:49
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3138:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3140:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3145:32
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3147:35
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3153:17
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3406:28
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3408:32
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3414:9
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3428:25
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3428:64
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3433:27
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3433:61
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3438:30
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3438:72
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3440:26
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3443:26
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3459:202
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3512:33
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3520:34
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3546:33
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3567:33
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3630:26
+error: `File` is ambiguous ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3658:26
+error: relaxed bounds are not permitted in trait object types ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:896:38
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1024:38
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1130:38
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1250:38
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1367:42
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2961:37
+error: relaxed bounds are not permitted in trait object types ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2961:95
+error[E0433]: cannot find type `CoroutineExceptionHandler` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:245:49
+error[E0433]: cannot find type `Math` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:288:52
+error[E0433]: cannot find type `Math` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:871:30
+error[E0433]: cannot find type `Math` in this scope ::    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:998:30
+error[E0433]: cannot find type `Math` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1097:32
+error[E0433]: cannot find type `Math` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1105:30
+error[E0433]: cannot find type `Math` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1208:32
+error[E0433]: cannot find type `Math` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1224:30
+error[E0433]: cannot find type `RegexOption` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2176:62
+error[E0433]: cannot find type `CoroutineExceptionHandler` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3026:33
+error[E0433]: cannot find type `CoroutineExceptionHandler` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3192:33
+error[E0433]: cannot find type `MultiMap` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3260:20
+error[E0433]: cannot find module or crate `okhttp3` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3339:75
+error[E0425]: cannot find function `require_not_null` in this scope ::     --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1811:34
+

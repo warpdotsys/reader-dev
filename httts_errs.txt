@@ -1,0 +1,243 @@
+﻿
+  cargo_check.txt:1889:    |
+  cargo_check.txt:1890:    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:1891:help: consider importing this trait instead
+  cargo_check.txt:1892:    |
+  cargo_check.txt:1893:  1 + use std::any::Any;
+  cargo_check.txt:1894:    |
+  cargo_check.txt:1895:
+  cargo_check.txt:1896:error[E0425]: cannot find type `DocumentContext` in this scope
+> cargo_check.txt:1897:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:110:31
+  cargo_check.txt:1898:    |
+  cargo_check.txt:1899:110 |     pub fn from_json_doc(doc: DocumentContext) -> Result<HttpTTS> {
+  cargo_check.txt:1900:    |                               ^^^^^^^^^^^^^^^
+  cargo_check.txt:1901:    |
+  cargo_check.txt:1902:   ::: src\..\src\main\java\com\htmake\reader\api\controller\CURD.rs:265:1
+  cargo_check.txt:1903:    |
+  cargo_check.txt:1904:265 | pub struct RoutingContext;
+  cargo_check.txt:1905:    | -------------------------- similarly named struct `RoutingContext` defined here
+  cargo_check.txt:1906:    |
+  cargo_check.txt:1907:help: a struct with a similar name exists
+  cargo_check.txt:1908:    |
+  cargo_check.txt:1909:110 -     pub fn from_json_doc(doc: DocumentContext) -> Result<HttpTTS> {
+  cargo_check.txt:1910:110 +     pub fn from_json_doc(doc: RoutingContext) -> Result<HttpTTS> {
+  cargo_check.txt:1911:    |
+  cargo_check.txt:1912:
+  cargo_check.txt:1913:error[E0404]: expected trait, found enum `Any`
+> cargo_check.txt:1914:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:113:47
+  cargo_check.txt:1915:    |
+  cargo_check.txt:1916:113 |             let login_ui = doc.read::<Box<dyn Any>>("$.loginUi");
+  cargo_check.txt:1917:    |                                               ^^^ not a trait
+  cargo_check.txt:1918:    |
+  cargo_check.txt:1919:    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:1920:help: consider importing this trait instead
+  cargo_check.txt:1921:    |
+  cargo_check.txt:1922:  1 + use std::any::Any;
+  cargo_check.txt:1923:    |
+  cargo_check.txt:1924:
+  cargo_check.txt:1925:error[E0425]: cannot find value `Error` in this scope
+> cargo_check.txt:1926:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:133:64
+  cargo_check.txt:1927:    |
+  cargo_check.txt:1928:133 |             Self::from_json_doc(json_path::parse(json))?.ok_or(Error)
+  cargo_check.txt:1929:    |                                                                ^^^^^
+  cargo_check.txt:1930:    |
+  cargo_check.txt:1931:   ::: src\..\src\main\java\com\htmake\reader\utils\VertRoute.rs:24:1
+  cargo_check.txt:1932:    |
+  cargo_check.txt:1933: 24 | pub fn error(this: &mut RoutingContext, throwable: Throwable) {
+  cargo_check.txt:1934:    | ------------------------------------------------------------- similarly named function `er
+ror` defined here
+  cargo_check.txt:1943:  1 + use std::fmt::Error;
+  cargo_check.txt:1944:    |
+  cargo_check.txt:1945:  1 + use std::fs::TryLockError::Error;
+  cargo_check.txt:1946:    |
+  cargo_check.txt:1947:  1 + use core::fmt::Error;
+  cargo_check.txt:1948:    |
+  cargo_check.txt:1949:
+  cargo_check.txt:1950:error[E0404]: expected trait, found enum `Any`
+> cargo_check.txt:1951:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:146:68
+  cargo_check.txt:1952:    |
+  cargo_check.txt:1953:146 |             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<d
+yn Any>>;
+  cargo_check.txt:1954:    |                                                                    ^^^ not a trait
+  cargo_check.txt:1955:    |
+  cargo_check.txt:1956:    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:1957:help: consider importing this trait instead
+  cargo_check.txt:1958:    |
+  cargo_check.txt:1959:  1 + use std::any::Any;
+  cargo_check.txt:1960:    |
+  cargo_check.txt:1961:
+  cargo_check.txt:1962:error[E0404]: expected trait, found enum `Any`
+> cargo_check.txt:1963:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:146:94
+  cargo_check.txt:1964:    |
+  cargo_check.txt:1965:146 |             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<d
+yn Any>>;
+  cargo_check.txt:1966:    |                                                                                           
+   ^^^ not a trait
+  cargo_check.txt:1967:    |
+  cargo_check.txt:1968:    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:1969:help: consider importing this trait instead
+  cargo_check.txt:1970:    |
+  cargo_check.txt:1971:  1 + use std::any::Any;
+  cargo_check.txt:1972:    |
+  cargo_check.txt:1973:
+  cargo_check.txt:1974:error[E0425]: cannot find value `Error` in this scope
+> cargo_check.txt:1975:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:150:61
+  cargo_check.txt:1976:    |
+  cargo_check.txt:1977:150 |                 result.push(Self::from_json_doc(doc)?.ok_or(Error)?);
+  cargo_check.txt:1978:    |                                                             ^^^^^
+  cargo_check.txt:1979:    |
+  cargo_check.txt:1980:   ::: src\..\src\main\java\com\htmake\reader\utils\VertRoute.rs:24:1
+  cargo_check.txt:1981:    |
+  cargo_check.txt:1982: 24 | pub fn error(this: &mut RoutingContext, throwable: Throwable) {
+  cargo_check.txt:1983:    | ------------------------------------------------------------- similarly named function `er
+ror` defined here
+  cargo_check.txt:8316:    |
+  cargo_check.txt:8317:745 |     pub use crate::stubs::*;
+  cargo_check.txt:8318:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:8319:    = help: consider adding an explicit import of `Any` to disambiguate
+  cargo_check.txt:8320:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a future release!
+  cargo_check.txt:8321:    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/11
+4095>
+  cargo_check.txt:8322:
+  cargo_check.txt:8323:error: `Any` is ambiguous
+> cargo_check.txt:8324:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:113:47
+  cargo_check.txt:8325:    |
+  cargo_check.txt:8326:113 |             let login_ui = doc.read::<Box<dyn Any>>("$.loginUi");
+  cargo_check.txt:8327:    |                                               ^^^ ambiguous name
+  cargo_check.txt:8328:    |
+  cargo_check.txt:8329:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:8330:note: `Any` could refer to the enum imported here
+  cargo_check.txt:8331:   --> src\lib.rs:865:13
+  cargo_check.txt:8332:    |
+  cargo_check.txt:8338:    |
+  cargo_check.txt:8339:745 |     pub use crate::stubs::*;
+  cargo_check.txt:8340:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:8341:    = help: consider adding an explicit import of `Any` to disambiguate
+  cargo_check.txt:8342:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a future release!
+  cargo_check.txt:8343:    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/11
+4095>
+  cargo_check.txt:8344:
+  cargo_check.txt:8345:error: `Any` is ambiguous
+> cargo_check.txt:8346:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:146:68
+  cargo_check.txt:8347:    |
+  cargo_check.txt:8348:146 |             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<d
+yn Any>>;
+  cargo_check.txt:8349:    |                                                                    ^^^ ambiguous name
+  cargo_check.txt:8350:    |
+  cargo_check.txt:8351:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:8352:note: `Any` could refer to the enum imported here
+  cargo_check.txt:8353:   --> src\lib.rs:865:13
+  cargo_check.txt:8354:    |
+  cargo_check.txt:8360:    |
+  cargo_check.txt:8361:745 |     pub use crate::stubs::*;
+  cargo_check.txt:8362:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:8363:    = help: consider adding an explicit import of `Any` to disambiguate
+  cargo_check.txt:8364:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a future release!
+  cargo_check.txt:8365:    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/11
+4095>
+  cargo_check.txt:8366:
+  cargo_check.txt:8367:error: `Any` is ambiguous
+> cargo_check.txt:8368:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:146:94
+  cargo_check.txt:8369:    |
+  cargo_check.txt:8370:146 |             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<d
+yn Any>>;
+  cargo_check.txt:8371:    |                                                                                           
+   ^^^ ambiguous name
+  cargo_check.txt:8372:    |
+  cargo_check.txt:8373:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:8374:note: `Any` could refer to the enum imported here
+  cargo_check.txt:8375:   --> src\lib.rs:865:13
+  cargo_check.txt:8376:    |
+  cargo_check.txt:10399:    |
+  cargo_check.txt:10400:745 |     pub use crate::stubs::*;
+  cargo_check.txt:10401:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:10402:    = help: consider adding an explicit import of `GSON` to disambiguate
+  cargo_check.txt:10403:    = warning: this was previously accepted by the compiler but is being phased out; it will be
+come a hard error in a future release!
+  cargo_check.txt:10404:    = note: for more information, see issue #114095 <https://github.com/rust-lang/rust/issues/1
+14095>
+  cargo_check.txt:10405:
+  cargo_check.txt:10406:error: `GSON` is ambiguous
+> cargo_check.txt:10407:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:121:51
+  cargo_check.txt:10408:    |
+  cargo_check.txt:10409:121 |                 login_ui: if login_ui.is_list() { GSON::to_json(login_ui) } else { login_
+ui.to_string_opt() },
+  cargo_check.txt:10410:    |                                                   ^^^^ ambiguous name
+  cargo_check.txt:10411:    |
+  cargo_check.txt:10412:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:10413:note: `GSON` could refer to the struct imported here
+  cargo_check.txt:10414:   --> src\lib.rs:895:13
+  cargo_check.txt:10415:    |
+  cargo_check.txt:18142:   |                           ^^^^^^^^
+  cargo_check.txt:18143:   |
+  cargo_check.txt:18144:help: you can add the `dyn` keyword if you want a trait object
+  cargo_check.txt:18145:   |
+  cargo_check.txt:18146:64 |     pub debug_log: Option<dyn DebugLog>,
+  cargo_check.txt:18147:   |                           +++
+  cargo_check.txt:18148:
+  cargo_check.txt:18149:error[E0782]: expected a type, found a trait
+> cargo_check.txt:18150:  --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:33:27
+  cargo_check.txt:18151:   |
+  cargo_check.txt:18152:33 |     pub debug_log: Option<DebugLog>,
+  cargo_check.txt:18153:   |                           ^^^^^^^^
+  cargo_check.txt:18154:   |
+  cargo_check.txt:18155:help: you can add the `dyn` keyword if you want a trait object
+  cargo_check.txt:18156:   |
+  cargo_check.txt:18157:33 |     pub debug_log: Option<dyn DebugLog>,
+  cargo_check.txt:18158:   |                           +++
+  cargo_check.txt:18637:
+  cargo_check.txt:18638:error[E0433]: cannot find type `RegexOption` in this scope
+  cargo_check.txt:18639:  --> src\..\src\main\java\io\legado\app\constant\AppPattern.rs:46:43
+  cargo_check.txt:18640:   |
+  cargo_check.txt:18641:46 |         Regex::new(".*\\.(txt|epub|umd)", RegexOption::IGNORE_CASE)
+  cargo_check.txt:18642:   |                                           ^^^^^^^^^^^ use of undeclared type `RegexOption`
+  cargo_check.txt:18643:
+  cargo_check.txt:18644:error[E0433]: cannot find module or crate `json_path` in this scope
+> cargo_check.txt:18645:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:133:33
+  cargo_check.txt:18646:    |
+  cargo_check.txt:18647:133 |             Self::from_json_doc(json_path::parse(json))?.ok_or(Error)
+  cargo_check.txt:18648:    |                                 ^^^^^^^^^ use of unresolved module or unlinked crate `jso
+n_path`
+  cargo_check.txt:18649:    |
+  cargo_check.txt:18650:    = help: if you wanted to use a crate named `json_path`, use `cargo add json_path` to add it
+ to your `Cargo.toml`
+  cargo_check.txt:18651:help: a struct with a similar name exists
+  cargo_check.txt:18652:    |
+  cargo_check.txt:18653:133 -             Self::from_json_doc(json_path::parse(json))?.ok_or(Error)
+  cargo_check.txt:18654:133 +             Self::from_json_doc(JsonPath::parse(json))?.ok_or(Error)
+  cargo_check.txt:18655:    |
+  cargo_check.txt:18656:
+  cargo_check.txt:18657:error[E0433]: cannot find module or crate `json_path` in this scope
+> cargo_check.txt:18658:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:146:24
+  cargo_check.txt:18659:    |
+  cargo_check.txt:18660:146 |             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<
+dyn Any>>;
+  cargo_check.txt:18661:    |                        ^^^^^^^^^ use of unresolved module or unlinked crate `json_path`
+  cargo_check.txt:18662:    |
+  cargo_check.txt:18663:    = help: if you wanted to use a crate named `json_path`, use `cargo add json_path` to add it
+ to your `Cargo.toml`
+  cargo_check.txt:18664:help: a struct with a similar name exists
+  cargo_check.txt:18665:    |
+  cargo_check.txt:18666:146 -             let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<
+dyn Any>>;
+  cargo_check.txt:18667:146 +             let list = JsonPath::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<d
+yn Any>>;
+  cargo_check.txt:18668:    |
+  cargo_check.txt:18669:
+  cargo_check.txt:18670:error[E0433]: cannot find module or crate `json_path` in this scope
+> cargo_check.txt:18671:   --> src\..\src\main\java\io\legado\app\data\entities\HttpTTS.rs:149:27
+  cargo_check.txt:18672:    |
+  cargo_check.txt:18673:149 |                 let doc = json_path::parse(json_item);
+  cargo_check.txt:18674:    |                           ^^^^^^^^^ use of unresolved module or unlinked crate `json_path
+`
+  cargo_check.txt:18675:    |
+  cargo_check.txt:18676:    = help: if you wanted to use a crate named `json_path`, use `cargo add json_path` to add it
+ to your `Cargo.toml`
+  cargo_check.txt:18677:help: a struct with a similar name exists
+  cargo_check.txt:18678:    |
+  cargo_check.txt:18679:149 -                 let doc = json_path::parse(json_item);
+
+

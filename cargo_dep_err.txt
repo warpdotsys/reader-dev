@@ -1,0 +1,7 @@
+﻿cargo :     Blocking waiting for file lock on build directory
+At line:1 char:1
++ cargo check 2>&1 | Out-File cargo_dep_err.txt -Encoding utf8; Write-O ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

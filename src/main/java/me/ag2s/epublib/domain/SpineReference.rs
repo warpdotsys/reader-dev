@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -9,6 +10,8 @@
  *
  * @author paul
  */
+// fix: 补充 Clone（Spine.add_spine_reference 需要；Resource 已实现 Clone）
+#[derive(Clone)]
 pub struct SpineReference {
     resource: Option<Resource>,
     linear: bool,

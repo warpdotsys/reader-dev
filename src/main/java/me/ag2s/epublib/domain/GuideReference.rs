@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;
@@ -12,6 +13,7 @@
  * @author paul
  *
  */
+#[derive(Clone)]
 pub struct GuideReference {
   resource: Option<Resource>,
   title: Option<String>,
@@ -84,6 +86,11 @@ impl GuideReference {
     GuideReference::with_type_and_title(resource, None, title)
   }
 
+  pub fn with_type_and_title(resource: Option<Resource>, type_: Option<String>,
+      title: Option<String>) -> GuideReference {
+    GuideReference::with_fragment(resource, type_, title, None)
+  }
+
   pub fn with_type(resource: Option<Resource>, type_: String, title: String) -> GuideReference {
     GuideReference::with_fragment(resource, Some(type_), Some(title), None)
   }
@@ -132,7 +139,8 @@ impl GuideReference {
     if StringUtil::is_blank(self.get_fragment_id().as_ref().unwrap_or(&String::new())) {
       return self.get_resource().as_ref().unwrap().get_href().clone();
     } else {
-      return self.get_resource().as_ref().unwrap().get_href().clone() + &Constants::FRAGMENT_SEPARATOR_CHAR.to_string()
+      // fix: Constants 为 trait，无法直接引用关联常量；Java 中 FRAGMENT_SEPARATOR_CHAR == '#'
+      return self.get_resource().as_ref().unwrap().get_href().clone() + &'#'.to_string()
           + &self.fragment_id.as_ref().unwrap().clone();
     }
   }

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /*
@@ -121,7 +122,7 @@ impl NGramParser {
         }
 
         // return index;
-        index
+        index as i32
     }
 
     // private void lookup(int thisNgram) {
@@ -157,11 +158,11 @@ impl NGramParser {
     //     return det.fInputBytes[byteIndex++] & 0xFF;
     // }
     fn next_byte(&mut self, det: &CharsetDetector) -> i32 {
-        if self.byte_index >= det.f_input_len {
+        if self.byte_index >= det.f_input_len_access() {
             return -1;
         }
 
-        let result = det.f_input_bytes[self.byte_index as usize] & 0xFF;
+        let result = det.f_input_bytes_access()[self.byte_index as usize] & 0xFF;
         self.byte_index += 1;
         result as i32
     }
@@ -310,14 +311,14 @@ impl NGramParser_IBM420 {
         // if (byteIndex >= det.fInputLen || det.fInputBytes[byteIndex] == 0) {
         //     return -1;
         // }
-        if self.byte_index >= det.f_input_len || det.f_input_bytes[self.byte_index as usize] == 0 {
+        if self.byte_index >= det.f_input_len_access() || det.f_input_bytes_access()[self.byte_index as usize] == 0 {
             return -1;
         }
         // int next;
         let next: i32;
 
         // alef = isLamAlef(det.fInputBytes[byteIndex]);
-        self.alef = self.is_lam_alef(det.f_input_bytes[self.byte_index as usize]);
+        self.alef = self.is_lam_alef(det.f_input_bytes_access()[self.byte_index as usize]);
         // if (alef != (byte) 0x00)
         //     next = 0xB1 & 0xFF;
         // else
@@ -325,7 +326,7 @@ impl NGramParser_IBM420 {
         if self.alef != 0x00 {
             next = 0xB1 & 0xFF;
         } else {
-            next = Self::unshape_map()[det.f_input_bytes[self.byte_index as usize] as usize] & 0xFF;
+            next = (Self::unshape_map()[det.f_input_bytes_access()[self.byte_index as usize] as usize] & 0xFF) as i32;
         }
 
         self.byte_index += 1;
@@ -464,7 +465,7 @@ impl NGramParser_IBM420 {
 // int match(CharsetDetector det, int[] ngrams, byte[] byteMap) {
 //     return match(det, ngrams, byteMap, (byte) 0x20);
 // }
-fn match_sbcs(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8]) -> i32 {
+pub fn match_sbcs(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8]) -> i32 {
     match_sbcs_space(det, ngrams, byte_map, 0x20)
 }
 
@@ -472,7 +473,7 @@ fn match_sbcs(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static 
 //     NGramParser parser = new NGramParser(ngrams, byteMap);
 //     return parser.parse(det, spaceChar);
 // }
-fn match_sbcs_space(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8], space_char: u8) -> i32 {
+pub fn match_sbcs_space(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8], space_char: u8) -> i32 {
     let mut parser = NGramParser::new(ngrams, byte_map);
     parser.parse_space(det, space_char)
 }
@@ -482,7 +483,7 @@ fn match_sbcs_space(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'s
 //     NGramParser_IBM420 parser = new NGramParser_IBM420(ngrams, byteMap);
 //     return parser.parse(det, spaceChar);
 // }
-fn match_ibm420(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8], space_char: u8) -> i32 {
+pub fn match_ibm420(det: &CharsetDetector, ngrams: &'static [i32], byte_map: &'static [u8], space_char: u8) -> i32 {
     let mut parser = NGramParser_IBM420::new(ngrams, byte_map);
     parser.parse_space(det, space_char)
 }
@@ -502,7 +503,7 @@ pub struct NGramsPlusLang {
 }
 
 impl NGramsPlusLang {
-    pub fn new(f_lang: &'static str, f_ngrams: &'static [i32]) -> NGramsPlusLang {
+    pub const fn new(f_lang: &'static str, f_ngrams: &'static [i32]) -> NGramsPlusLang {
         NGramsPlusLang { f_lang, f_ngrams }
     }
 }
@@ -512,7 +513,7 @@ pub struct CharsetRecog_8859_1;
 
 impl CharsetRecog_sbcs for CharsetRecog_8859_1 {}
 
-impl CharsetRecognizer for CharsetRecog_8859_1 {
+impl CharsetRecog_8859_1 {
     // protected static byte[] byteMap = { ... };
     const BYTE_MAP: &'static [u8; 256] = &[
         0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
@@ -653,12 +654,16 @@ impl CharsetRecognizer for CharsetRecog_8859_1 {
             ],
         ),
     ];
+}
 
+// fix: match_det/get_name 是 CharsetRecognizer trait 方法，原误放入固有 impl 块（导致
+//      CharsetRecog_8859_1 未实现 CharsetRecognizer，E0277），移入独立 trait impl 块
+impl CharsetRecognizer for CharsetRecog_8859_1 {
     // @Override
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1252" : "ISO-8859-1";
-        let name = if det.f_c1_bytes { "windows-1252" } else { "ISO-8859-1" };
+        let name = if det.f_c1_bytes_access() { "windows-1252" } else { "ISO-8859-1" };
         let mut best_confidence_so_far = -1;
         let mut lang: Option<String> = None;
         // for (NGramsPlusLang ngl : ngrams_8859_1) {
@@ -675,7 +680,7 @@ impl CharsetRecognizer for CharsetRecog_8859_1 {
                 lang = Some(ngl.f_lang.to_string());
             }
         }
-        // return bestConfidenceSoFar <= 0 ? null : new CharsetMatch(det, this, bestConfidenceSoFar, name, lang);
+        // return bestConfidenceSoFar <= 0 ? None : new CharsetMatch(det, this, bestConfidenceSoFar, name, lang);
         if best_confidence_so_far <= 0 {
             None
         } else {
@@ -697,7 +702,7 @@ pub struct CharsetRecog_8859_2;
 
 impl CharsetRecog_sbcs for CharsetRecog_8859_2 {}
 
-impl CharsetRecognizer for CharsetRecog_8859_2 {
+impl CharsetRecog_8859_2 {
     // protected static byte[] byteMap = { ... };
     const BYTE_MAP: &'static [u8; 256] = &[
         0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
@@ -778,12 +783,15 @@ impl CharsetRecognizer for CharsetRecog_8859_2 {
             ],
         ),
     ];
+}
+
+impl CharsetRecognizer for CharsetRecog_8859_2 {
 
     // @Override
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1250" : "ISO-8859-2";
-        let name = if det.f_c1_bytes { "windows-1250" } else { "ISO-8859-2" };
+        let name = if det.f_c1_bytes_access() { "windows-1250" } else { "ISO-8859-2" };
         let mut best_confidence_so_far = -1;
         let mut lang: Option<String> = None;
         // for (NGramsPlusLang ngl : ngrams_8859_2) {
@@ -800,7 +808,7 @@ impl CharsetRecognizer for CharsetRecog_8859_2 {
                 lang = Some(ngl.f_lang.to_string());
             }
         }
-        // return bestConfidenceSoFar <= 0 ? null : new CharsetMatch(det, this, bestConfidenceSoFar, name, lang);
+        // return bestConfidenceSoFar <= 0 ? None : new CharsetMatch(det, this, bestConfidenceSoFar, name, lang);
         if best_confidence_so_far <= 0 {
             None
         } else {
@@ -871,7 +879,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_5_ru {}
 
 impl CharsetRecog_8859_5 for CharsetRecog_8859_5_ru {}
 
-impl CharsetRecognizer for CharsetRecog_8859_5_ru {
+impl CharsetRecog_8859_5_ru {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20D220, 0x20D2DE, 0x20D4DE, 0x20D7D0, 0x20D820, 0x20DAD0, 0x20DADE, 0x20DDD0, 0x20DDD5, 0x20DED1, 0x20DFDE, 0x20DFE0, 0x20E0D0, 0x20E1DE, 0x20E1E2, 0x20E2DE,
@@ -879,7 +887,9 @@ impl CharsetRecognizer for CharsetRecog_8859_5_ru {
         0xDDD020, 0xDDD520, 0xDDD8D5, 0xDDD8EF, 0xDDDE20, 0xDDDED2, 0xDE20D2, 0xDE20DF, 0xDE20E1, 0xDED220, 0xDED2D0, 0xDED3DE, 0xDED920, 0xDEDBEC, 0xDEDC20, 0xDEE1E2,
         0xDFDEDB, 0xDFE0D5, 0xDFE0D8, 0xDFE0DE, 0xE0D0D2, 0xE0D5D4, 0xE1E2D0, 0xE1E2D2, 0xE1E2D8, 0xE1EF20, 0xE2D5DB, 0xE2DE20, 0xE2DEE0, 0xE2EC20, 0xE7E2DE, 0xEBE520,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_5_ru {
     // @Override
     // public String getLanguage() {
     //     return "ru";
@@ -958,7 +968,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_6_ar {}
 
 impl CharsetRecog_8859_6 for CharsetRecog_8859_6_ar {}
 
-impl CharsetRecognizer for CharsetRecog_8859_6_ar {
+impl CharsetRecog_8859_6_ar {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20C7E4, 0x20C7E6, 0x20C8C7, 0x20D9E4, 0x20E1EA, 0x20E4E4, 0x20E5E6, 0x20E8C7, 0xC720C7, 0xC7C120, 0xC7CA20, 0xC7D120, 0xC7E420, 0xC7E4C3, 0xC7E4C7, 0xC7E4C8,
@@ -966,7 +976,9 @@ impl CharsetRecognizer for CharsetRecog_8859_6_ar {
         0xC920E4, 0xC920E5, 0xC920E8, 0xCA20C7, 0xCF20C7, 0xCFC920, 0xD120C7, 0xD1C920, 0xD320C7, 0xD920C7, 0xD9E4E9, 0xE1EA20, 0xE420C7, 0xE4C920, 0xE4E920, 0xE4EA20,
         0xE520C7, 0xE5C720, 0xE5C920, 0xE5E620, 0xE620C7, 0xE720C7, 0xE7C720, 0xE8C7E4, 0xE8E620, 0xE920C7, 0xEA20C7, 0xEA20E5, 0xEA20E8, 0xEAC920, 0xEAD120, 0xEAE620,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_6_ar {
     // @Override
     // public String getLanguage() {
     //     return "ar";
@@ -1045,7 +1057,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_7_el {}
 
 impl CharsetRecog_8859_7 for CharsetRecog_8859_7_el {}
 
-impl CharsetRecognizer for CharsetRecog_8859_7_el {
+impl CharsetRecog_8859_7_el {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20E1ED, 0x20E1F0, 0x20E3E9, 0x20E4E9, 0x20E5F0, 0x20E720, 0x20EAE1, 0x20ECE5, 0x20EDE1, 0x20EF20, 0x20F0E1, 0x20F0EF, 0x20F0F1, 0x20F3F4, 0x20F3F5, 0x20F4E7,
@@ -1053,7 +1065,9 @@ impl CharsetRecognizer for CharsetRecog_8859_7_el {
         0xE9EADE, 0xE9F220, 0xEAE1E9, 0xEAE1F4, 0xECE520, 0xED20E1, 0xED20E5, 0xED20F0, 0xEDE120, 0xEFF220, 0xEFF520, 0xF0EFF5, 0xF0F1EF, 0xF0FC20, 0xF220E1, 0xF220E5,
         0xF220EA, 0xF220F0, 0xF220F4, 0xF3E520, 0xF3E720, 0xF3F4EF, 0xF4E120, 0xF4E1E9, 0xF4E7ED, 0xF4E7F2, 0xF4E9EA, 0xF4EF20, 0xF4EFF5, 0xF4F9ED, 0xF9ED20, 0xFEED20,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_7_el {
     // @Override
     // public String getLanguage() {
     //     return "el";
@@ -1066,9 +1080,9 @@ impl CharsetRecognizer for CharsetRecog_8859_7_el {
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1253" : "ISO-8859-7";
-        let name = if det.f_c1_bytes { "windows-1253" } else { "ISO-8859-7" };
+        let name = if det.f_c1_bytes_access() { "windows-1253" } else { "ISO-8859-7" };
         let confidence = match_sbcs(det, Self::NGRAMS, Self::BYTE_MAP_8859_7);
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence, name, "el");
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence, name, "el");
         if confidence == 0 {
             None
         } else {
@@ -1135,7 +1149,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_8_I_he {}
 
 impl CharsetRecog_8859_8 for CharsetRecog_8859_8_I_he {}
 
-impl CharsetRecognizer for CharsetRecog_8859_8_I_he {
+impl CharsetRecog_8859_8_I_he {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20E0E5, 0x20E0E7, 0x20E0E9, 0x20E0FA, 0x20E1E9, 0x20E1EE, 0x20E4E0, 0x20E4E5, 0x20E4E9, 0x20E4EE, 0x20E4F2, 0x20E4F9, 0x20E4FA, 0x20ECE0, 0x20ECE4, 0x20EEE0,
@@ -1143,7 +1157,9 @@ impl CharsetRecognizer for CharsetRecog_8859_8_I_he {
         0xE9E420, 0xE9E5FA, 0xE9E9ED, 0xE9ED20, 0xE9EF20, 0xE9F820, 0xE9FA20, 0xEC20E0, 0xEC20E4, 0xECE020, 0xECE420, 0xED20E0, 0xED20E1, 0xED20E4, 0xED20EC, 0xED20EE,
         0xED20F9, 0xEEE420, 0xEF20E4, 0xF0E420, 0xF0E920, 0xF0E9ED, 0xF2EC20, 0xF820E4, 0xF8E9ED, 0xF9EC20, 0xFA20E0, 0xFA20E1, 0xFA20E4, 0xFA20EC, 0xFA20EE, 0xFA20F9,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_8_I_he {
     // @Override
     // public String getName() {
     //     return "ISO-8859-8-I";
@@ -1164,9 +1180,9 @@ impl CharsetRecognizer for CharsetRecog_8859_8_I_he {
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1255" : "ISO-8859-8-I";
-        let name = if det.f_c1_bytes { "windows-1255" } else { "ISO-8859-8-I" };
+        let name = if det.f_c1_bytes_access() { "windows-1255" } else { "ISO-8859-8-I" };
         let confidence = match_sbcs(det, Self::NGRAMS, Self::BYTE_MAP_8859_8);
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence, name, "he");
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence, name, "he");
         if confidence == 0 {
             None
         } else {
@@ -1182,7 +1198,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_8_he {}
 
 impl CharsetRecog_8859_8 for CharsetRecog_8859_8_he {}
 
-impl CharsetRecognizer for CharsetRecog_8859_8_he {
+impl CharsetRecog_8859_8_he {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20E0E5, 0x20E0EC, 0x20E4E9, 0x20E4EC, 0x20E4EE, 0x20E4F0, 0x20E9F0, 0x20ECF2, 0x20ECF9, 0x20EDE5, 0x20EDE9, 0x20EFE5, 0x20EFE9, 0x20F8E5, 0x20F8E9, 0x20FAE0,
@@ -1190,7 +1206,9 @@ impl CharsetRecognizer for CharsetRecog_8859_8_he {
         0xE420ED, 0xE420EF, 0xE420F8, 0xE420FA, 0xE4EC20, 0xE5E020, 0xE5E420, 0xE7E020, 0xE9E020, 0xE9E120, 0xE9E420, 0xEC20E4, 0xEC20ED, 0xEC20FA, 0xECF220, 0xECF920,
         0xEDE9E9, 0xEDE9F0, 0xEDE9F8, 0xEE20E4, 0xEE20ED, 0xEE20FA, 0xEEE120, 0xEEE420, 0xF2E420, 0xF920E4, 0xF920ED, 0xF920FA, 0xF9E420, 0xFAE020, 0xFAE420, 0xFAE5E9,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_8_he {
     // @Override
     // public String getLanguage() {
     //     return "he";
@@ -1203,9 +1221,9 @@ impl CharsetRecognizer for CharsetRecog_8859_8_he {
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1255" : "ISO-8859-8";
-        let name = if det.f_c1_bytes { "windows-1255" } else { "ISO-8859-8" };
+        let name = if det.f_c1_bytes_access() { "windows-1255" } else { "ISO-8859-8" };
         let confidence = match_sbcs(det, Self::NGRAMS, Self::BYTE_MAP_8859_8);
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence, name, "he");
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence, name, "he");
         if confidence == 0 {
             None
         } else {
@@ -1242,6 +1260,8 @@ pub trait CharsetRecog_8859_9: CharsetRecog_sbcs {
         0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
         0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
         0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        // fix: 原转录漏掉一行 0x20（对照 Java 源 CharsetRecog_8859_9.byteMap 应为 32 行 256 项）
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
         0x20, 0x20, 0xAA, 0x20, 0x20, 0x20, 0x20, 0x20,
         0x20, 0x20, 0x20, 0x20, 0x20, 0xB5, 0x20, 0x20,
         0x20, 0x20, 0xBA, 0x20, 0x20, 0x20, 0x20, 0x20,
@@ -1271,7 +1291,7 @@ impl CharsetRecog_sbcs for CharsetRecog_8859_9_tr {}
 
 impl CharsetRecog_8859_9 for CharsetRecog_8859_9_tr {}
 
-impl CharsetRecognizer for CharsetRecog_8859_9_tr {
+impl CharsetRecog_8859_9_tr {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x206261, 0x206269, 0x206275, 0x206461, 0x206465, 0x206765, 0x206861, 0x20696C, 0x206B61, 0x206B6F, 0x206D61, 0x206F6C, 0x207361, 0x207461, 0x207665, 0x207961,
@@ -1279,7 +1299,9 @@ impl CharsetRecognizer for CharsetRecog_8859_9_tr {
         0x65206B, 0x656469, 0x656E20, 0x657220, 0x657269, 0x657369, 0x696C65, 0x696E20, 0x696E69, 0x697220, 0x6C616E, 0x6C6172, 0x6C6520, 0x6C6572, 0x6E2061, 0x6E2062,
         0x6E206B, 0x6E6461, 0x6E6465, 0x6E6520, 0x6E6920, 0x6E696E, 0x6EFD20, 0x72696E, 0x72FD6E, 0x766520, 0x796120, 0x796F72, 0xFD6E20, 0xFD6E64, 0xFD6EFD, 0xFDF0FD,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_8859_9_tr {
     // @Override
     // public String getLanguage() {
     //     return "tr";
@@ -1292,9 +1314,9 @@ impl CharsetRecognizer for CharsetRecog_8859_9_tr {
     // public CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // String name = det.fC1Bytes ? "windows-1254" : "ISO-8859-9";
-        let name = if det.f_c1_bytes { "windows-1254" } else { "ISO-8859-9" };
+        let name = if det.f_c1_bytes_access() { "windows-1254" } else { "ISO-8859-9" };
         let confidence = match_sbcs(det, Self::NGRAMS, Self::BYTE_MAP_8859_9);
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence, name, "tr");
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence, name, "tr");
         if confidence == 0 {
             None
         } else {
@@ -1312,7 +1334,7 @@ pub struct CharsetRecog_windows_1251;
 
 impl CharsetRecog_sbcs for CharsetRecog_windows_1251 {}
 
-impl CharsetRecognizer for CharsetRecog_windows_1251 {
+impl CharsetRecog_windows_1251 {
     // private static final int[] ngrams = { ... };
     const NGRAMS: &'static [i32] = &[
         0x20E220, 0x20E2EE, 0x20E4EE, 0x20E7E0, 0x20E820, 0x20EAE0, 0x20EAEE, 0x20EDE0, 0x20EDE5, 0x20EEE1, 0x20EFEE, 0x20EFF0, 0x20F0E0, 0x20F1EE, 0x20F1F2, 0x20F2EE,
@@ -1356,7 +1378,9 @@ impl CharsetRecognizer for CharsetRecog_windows_1251 {
         0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
         0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_windows_1251 {
     // @Override
     // public String getName() {
     //     return "windows-1251";

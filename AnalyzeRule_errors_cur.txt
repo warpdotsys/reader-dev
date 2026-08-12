@@ -1,0 +1,581 @@
+﻿error[E0404]: expected trait, found enum `Any`
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:39:33
+   |
+39 |     pub content: Option<Box<dyn Any>>,
+   |                                 ^^^ not a trait
+   |
+   = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+   |
+ 1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:72:59
+   |
+72 |     pub fn set_content(&mut self, content: Option<Box<dyn Any>>, base_url: Option<String>) -> &mut Self {
+   |                                                           ^^^ not a trait
+   |
+   = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+   |
+ 1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:108:52
+    |
+108 |     fn get_analyze_by_x_path(&mut self, o: Box<dyn Any>) -> AnalyzeByXPath {
+    |                                                    ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:122:52
+    |
+122 |     fn get_analyze_by_j_soup(&mut self, o: Box<dyn Any>) -> AnalyzeByJSoup {
+    |                                                    ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:136:56
+    |
+136 |     fn get_analyze_by_j_son_path(&mut self, o: Box<dyn Any>) -> AnalyzeByJSonPath {
+    |                                                        ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:151:87
+    |
+151 |     pub fn get_string_list(&mut self, rule: Option<String>, m_content: Option<Box<dyn Any>>, is_url: bool) -> Option<Vec<String>> {
+    |                                                                                       ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:168:35
+    |
+168 |         m_content: Option<Box<dyn Any>>,
+    |                                   ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:171:40
+    |
+171 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:172:37
+    |
+172 |         let content: Option<Box<dyn Any>> = m_content.or_else(|| self.content.clone());
+    |                                     ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:229:86
+    |
+229 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<dyn Any>>, is_url: bool) -> String {
+    |                                                                                      ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:246:35
+    |
+246 |         m_content: Option<Box<dyn Any>>,
+    |                                   ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:249:40
+    |
+249 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:250:37
+    |
+250 |         let content: Option<Box<dyn Any>> = m_content.or_else(|| self.content.clone());
+    |                                     ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:302:71
+    |
+302 |     pub fn get_element(&mut self, rule_str: String) -> Option<Box<dyn Any>> {
+    |                                                                       ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:306:40
+    |
+306 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:337:69
+    |
+337 |     pub fn get_elements(&mut self, rule_str: String) -> Vec<Box<dyn Any>> {
+    |                                                                     ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:338:40
+    |
+338 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0425]: cannot find value `put_pattern` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:380:31
+    |
+380 |         let mut put_matcher = put_pattern.matcher(v_rule_str);
+    |                               ^^^^^^^^^^^ not found in this scope
+
+
+error[E0425]: cannot find value `JS_PATTERN` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:439:30
+    |
+439 |         let mut js_matcher = JS_PATTERN.matcher(rule_str.clone());
+    |                              ^^^^^^^^^^ not found in this scope
+
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:488:70
+    |
+488 |     pub fn eval_js(&mut self, js_str: String, result: Option<Box<dyn Any>>) -> Option<Box<dyn Any>> {
+    |                                                                      ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:488:95
+    |
+488 |     pub fn eval_js(&mut self, js_str: String, result: Option<Box<dyn Any>>) -> Option<Box<dyn Any>> {
+    |                                                                                               ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0425]: cannot find value `title_num_pattern` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:530:27
+    |
+530 |         let mut matcher = title_num_pattern.matcher(s);
+    |                           ^^^^^^^^^^^^^^^^^ not found in this scope
+
+
+error[E0425]: cannot find value `is_json_content` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:643:19
+    |
+643 |         } else if is_json_content || rule_str.starts_with("$.") || rule_str.starts_with("$[") {
+    |                   ^^^^^^^^^^^^^^^
+    |
+   ::: src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:355:1
+    |
+355 | pub fn as_json_object(value: Option<Any>) -> Option<JsonObject> {
+    | --------------------------------------------------------------- similarly named function `as_json_object` defined here
+
+error[E0425]: cannot find value `eval_pattern` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:658:32
+    |
+658 |         let mut eval_matcher = eval_pattern.matcher(s.rule.clone());
+    |                                ^^^^^^^^^^^^ not found in this scope
+
+
+error[E0425]: cannot find value `regex_pattern` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:699:33
+    |
+699 |         let mut regex_matcher = regex_pattern.matcher(rule_str_array[0].to_string());
+    |                                 ^^^^^^^^^^^^^ not found in this scope
+
+
+error[E0404]: expected trait, found enum `Any`
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:729:59
+    |
+729 |     pub fn make_up_rule(&mut self, result: Option<Box<dyn Any>>) {
+    |                                                           ^^^ not a trait
+    |
+    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+help: consider importing this trait instead
+    |
+  1 + use std::any::Any;
+
+error[E0425]: cannot find value `put_pattern` in this scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:796:31
+    |
+796 |         let mut put_matcher = put_pattern.matcher(v_rule_str);
+    |                               ^^^^^^^^^^^ not found in this scope
+
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:39:33
+    |
+ 39 |     pub content: Option<Box<dyn Any>>,
+    |                                 ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:72:59
+    |
+ 72 |     pub fn set_content(&mut self, content: Option<Box<dyn Any>>, base_url: Option<String>) -> &mut Self {
+    |                                                           ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:108:52
+    |
+108 |     fn get_analyze_by_x_path(&mut self, o: Box<dyn Any>) -> AnalyzeByXPath {
+    |                                                    ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:122:52
+    |
+122 |     fn get_analyze_by_j_soup(&mut self, o: Box<dyn Any>) -> AnalyzeByJSoup {
+    |                                                    ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:136:56
+    |
+136 |     fn get_analyze_by_j_son_path(&mut self, o: Box<dyn Any>) -> AnalyzeByJSonPath {
+    |                                                        ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:151:87
+    |
+151 |     pub fn get_string_list(&mut self, rule: Option<String>, m_content: Option<Box<dyn Any>>, is_url: bool) -> Option<Vec<String>> {
+    |                                                                                       ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:168:35
+    |
+168 |         m_content: Option<Box<dyn Any>>,
+    |                                   ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:171:40
+    |
+171 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:172:37
+    |
+172 |         let content: Option<Box<dyn Any>> = m_content.or_else(|| self.content.clone());
+    |                                     ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:229:86
+    |
+229 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<dyn Any>>, is_url: bool) -> String {
+    |                                                                                      ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:246:35
+    |
+246 |         m_content: Option<Box<dyn Any>>,
+    |                                   ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:249:40
+    |
+249 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:250:37
+    |
+250 |         let content: Option<Box<dyn Any>> = m_content.or_else(|| self.content.clone());
+    |                                     ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:302:71
+    |
+302 |     pub fn get_element(&mut self, rule_str: String) -> Option<Box<dyn Any>> {
+    |                                                                       ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:306:40
+    |
+306 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:337:69
+    |
+337 |     pub fn get_elements(&mut self, rule_str: String) -> Vec<Box<dyn Any>> {
+    |                                                                     ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:338:40
+    |
+338 |         let mut result: Option<Box<dyn Any>> = None;
+    |                                        ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:488:70
+    |
+488 |     pub fn eval_js(&mut self, js_str: String, result: Option<Box<dyn Any>>) -> Option<Box<dyn Any>> {
+    |                                                                      ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:488:95
+    |
+488 |     pub fn eval_js(&mut self, js_str: String, result: Option<Box<dyn Any>>) -> Option<Box<dyn Any>> {
+    |                                                                                               ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `Any` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:729:59
+    |
+729 |     pub fn make_up_rule(&mut self, result: Option<Box<dyn Any>>) {
+    |                                                           ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Any` could refer to the enum imported here
+   --> src\lib.rs:865:13
+    |
+
+error: `GSON` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:383:13
+    |
+383 |             GSON::from_json_object::<HashMap<String, String>>(put_matcher.group_idx(1))
+    |             ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `GSON` could refer to the struct imported here
+   --> src\lib.rs:895:13
+    |
+
+error: `GSON` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:799:31
+    |
+799 |             if let Some(it) = GSON::from_json_object::<HashMap<String, String>>(put_matcher.group_idx(1)).get_or_none() {
+    |                               ^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `GSON` could refer to the struct imported here
+   --> src\lib.rs:895:13
+    |
+
+error: `TextUtils` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:230:12
+    |
+230 |         if TextUtils::is_empty(rule_str.as_ref()) {
+    |            ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `TextUtils` could refer to the struct imported here
+   --> src\lib.rs:905:13
+    |
+
+error: `TextUtils` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:303:12
+    |
+303 |         if TextUtils::is_empty(Some(&rule_str)) {
+    |            ^^^^^^^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `TextUtils` could refer to the struct imported here
+   --> src\lib.rs:905:13
+    |
+
+error: `URL` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:41:30
+    |
+ 41 |     pub redirect_url: Option<URL>,
+    |                              ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `URL` could refer to the struct imported here
+   --> src\lib.rs:946:13
+    |
+
+error: `URL` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:94:63
+    |
+ 94 |     pub fn set_redirect_url(&mut self, url: String) -> Option<URL> {
+    |                                                               ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `URL` could refer to the struct imported here
+   --> src\lib.rs:946:13
+    |
+
+error: `URL` is ambiguous
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:95:15
+    |
+ 95 |         match URL::new(url) {
+    |               ^^^ ambiguous name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `URL` could refer to the struct imported here
+   --> src\lib.rs:946:13
+    |
+
+error[E0782]: expected a type, found a trait
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:35:31
+   |
+35 |     pub debug_log: Option<Box<DebugLog>>,
+   |                               ^^^^^^^^
+   |
+help: you can add the `dyn` keyword if you want a trait object
+   |
+35 |     pub debug_log: Option<Box<dyn DebugLog>>,
+   |                               +++
+

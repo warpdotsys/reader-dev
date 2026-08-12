@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: 显式导入消解 prelude 多 glob 歧义（ZipFile ← resourcesloader/stubs；FileInputStream ← resourceutil/stubs）
+use crate::stubs::{FileInputStream, ZipFile};
 // package me.ag2s.epublib.domain;
 
 // import java.io.FilterInputStream;
@@ -12,7 +15,7 @@
  * @author ttopalov
  */
 pub struct ResourceInputStream {
-  in_stream: InputStream,
+  in_stream: FileInputStream,
   zip_file: ZipFile,
 }
 
@@ -26,7 +29,7 @@ impl ResourceInputStream {
    * @param zipFile
    *            The ZipFile object.
    */
-  pub fn new(in_stream: InputStream, zip_file: ZipFile) -> ResourceInputStream {
+  pub fn new(in_stream: FileInputStream, zip_file: ZipFile) -> ResourceInputStream {
     ResourceInputStream {
       in_stream: in_stream,
       zip_file: zip_file,
@@ -35,8 +38,8 @@ impl ResourceInputStream {
 
   // @Override
   pub fn close(&mut self) -> Result<(), IOException> {
-    self.in_stream.close()?;
-    self.zip_file.close()?;
+    self.in_stream.close().map_err(|e| StubError::new(e.to_string()))?;
+    self.zip_file.close();
     Ok(())
   }
 }

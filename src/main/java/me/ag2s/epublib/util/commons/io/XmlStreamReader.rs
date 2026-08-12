@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,10 +16,13 @@
  * limitations under the License.
  */
 
+use std::cell::RefCell;
 use std::io;
+use std::rc::Rc;
 
-use crate::me::ag2s::epublib::util::commons::io::{BOMInputStream, ByteOrderMark, XmlStreamReaderException};
+use crate::me::ag2s::epublib::util::commons::io::{BOMInputStream, ByteOrderMark, InputStream, XmlStreamReaderException};
 use crate::me::ag2s::epublib::util::IOUtil;
+use crate::stubs::File;
 
 /**
  * Character stream that handles all the necessary Voodoo to figure out the
@@ -53,7 +57,7 @@ use crate::me::ag2s::epublib::util::IOUtil;
  * @since 2.0
  */
 pub struct XmlStreamReader {
-    reader: Reader,
+    reader: InputStreamReader,
     encoding: String,
     default_encoding: Option<String>,
 }
@@ -104,7 +108,7 @@ impl XmlStreamReader {
      * Returns the default encoding to use if none is set in HTTP content-type,
      * XML prolog and the rules based on content-type are not adequate.
      * <p>
-     * If it is NULL the content-type based rules are used.
+     * If it is None the content-type based rules are used.
      *
      * @return the default encoding to use.
      */
@@ -205,8 +209,9 @@ impl XmlStreamReader {
      */
     pub fn new_lenient_default(input_stream: Box<dyn InputStream>, lenient: bool, default_encoding: Option<String>) -> Result<Self, XmlStreamReaderException> {
         let mut bom = BOMInputStream::new_boms(Box::new(BufferedInputStream::new(input_stream, XmlStreamReader::BUFFER_SIZE)), false, XmlStreamReader::BOMS.to_vec());
-        let mut pis = BOMInputStream::new_boms(Box::new(&mut bom), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
-        let encoding = do_raw_stream(&mut bom, &mut pis, lenient)?;
+        let bom_shared = Rc::new(RefCell::new(bom));
+        let mut pis = BOMInputStream::new_boms(Box::new(BomDelegate(bom_shared.clone())), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
+        let encoding = Self::do_raw_stream(&default_encoding, &bom_shared, &mut pis, lenient)?;
         Ok(XmlStreamReader {
             reader: InputStreamReader::new(pis, encoding.clone()),
             encoding,
@@ -260,11 +265,12 @@ impl XmlStreamReader {
         let content_type = conn.get_content_type();
         let input_stream = conn.get_input_stream();
         let mut bom = BOMInputStream::new_boms(Box::new(BufferedInputStream::new(input_stream, XmlStreamReader::BUFFER_SIZE)), false, XmlStreamReader::BOMS.to_vec());
-        let mut pis = BOMInputStream::new_boms(Box::new(&mut bom), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
-        let encoding = if conn.is_http_url_connection() || content_type != null {
-            process_http_stream(&mut bom, &mut pis, content_type, lenient)?
+        let bom_shared = Rc::new(RefCell::new(bom));
+        let mut pis = BOMInputStream::new_boms(Box::new(BomDelegate(bom_shared.clone())), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
+        let encoding = if conn.is_http_url_connection() || content_type.is_some() {
+            Self::process_http_stream(&default_encoding, &bom_shared, &mut pis, content_type.unwrap_or_default(), lenient)?
         } else {
-            do_raw_stream(&mut bom, &mut pis, lenient)?
+            Self::do_raw_stream(&default_encoding, &bom_shared, &mut pis, lenient)?
         };
         Ok(XmlStreamReader {
             reader: InputStreamReader::new(pis, encoding.clone()),
@@ -331,8 +337,9 @@ impl XmlStreamReader {
     pub fn new_content_type_lenient_default(input_stream: Box<dyn InputStream>, http_content_type: String,
                                             lenient: bool, default_encoding: Option<String>) -> Result<Self, XmlStreamReaderException> {
         let mut bom = BOMInputStream::new_boms(Box::new(BufferedInputStream::new(input_stream, XmlStreamReader::BUFFER_SIZE)), false, XmlStreamReader::BOMS.to_vec());
-        let mut pis = BOMInputStream::new_boms(Box::new(&mut bom), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
-        let encoding = process_http_stream(&mut bom, &mut pis, http_content_type, lenient)?;
+        let bom_shared = Rc::new(RefCell::new(bom));
+        let mut pis = BOMInputStream::new_boms(Box::new(BomDelegate(bom_shared.clone())), true, XmlStreamReader::XML_GUESS_BYTES.to_vec());
+        let encoding = Self::process_http_stream(&default_encoding, &bom_shared, &mut pis, http_content_type, lenient)?;
         Ok(XmlStreamReader {
             reader: InputStreamReader::new(pis, encoding.clone()),
             encoding,
@@ -418,15 +425,15 @@ impl XmlStreamReader {
      * @return the encoding to be used
      * @throws IOException thrown if there is a problem reading the stream.
      */
-    fn do_raw_stream(bom: &mut BOMInputStream, pis: &mut BOMInputStream, lenient: bool) -> Result<String, XmlStreamReaderException> {
-        let bom_enc = bom.get_bom_charset_name()?;
-        let xml_guess_enc = pis.get_bom_charset_name()?;
-        let xml_enc = get_xml_prolog(pis, xml_guess_enc.as_deref())?;
-        match calculate_raw_encoding(bom_enc.as_deref(), xml_guess_enc.as_deref(), xml_enc.as_deref()) {
+    fn do_raw_stream(default_encoding: &Option<String>, bom: &Rc<RefCell<BOMInputStream>>, pis: &mut BOMInputStream, lenient: bool) -> Result<String, XmlStreamReaderException> {
+        let bom_enc = bom.borrow_mut().get_bom_charset_name().map_err(io_err)?;
+        let xml_guess_enc = pis.get_bom_charset_name().map_err(io_err)?;
+        let xml_enc = Self::get_xml_prolog(pis, xml_guess_enc.as_deref())?;
+        match Self::calculate_raw_encoding(default_encoding, bom_enc.as_deref(), xml_guess_enc.as_deref(), xml_enc.as_deref()) {
             Ok(enc) => Ok(enc),
             Err(ex) => {
                 if lenient {
-                    do_lenient_detection(None, ex, bom_enc, xml_guess_enc, xml_enc)
+                    Self::do_lenient_detection(default_encoding, None, ex, bom_enc, xml_guess_enc, xml_enc)
                 } else {
                     Err(ex)
                 }
@@ -445,16 +452,16 @@ impl XmlStreamReader {
      * @return the encoding to be used
      * @throws IOException thrown if there is a problem reading the stream.
      */
-    fn process_http_stream(bom: &mut BOMInputStream, pis: &mut BOMInputStream, http_content_type: String,
+    fn process_http_stream(default_encoding: &Option<String>, bom: &Rc<RefCell<BOMInputStream>>, pis: &mut BOMInputStream, http_content_type: String,
                            lenient: bool) -> Result<String, XmlStreamReaderException> {
-        let bom_enc = bom.get_bom_charset_name()?;
-        let xml_guess_enc = pis.get_bom_charset_name()?;
-        let xml_enc = get_xml_prolog(pis, xml_guess_enc.as_deref())?;
-        match calculate_http_encoding(http_content_type.as_str(), bom_enc.as_deref(), xml_guess_enc.as_deref(), xml_enc.as_deref(), lenient) {
+        let bom_enc = bom.borrow_mut().get_bom_charset_name().map_err(io_err)?;
+        let xml_guess_enc = pis.get_bom_charset_name().map_err(io_err)?;
+        let xml_enc = Self::get_xml_prolog(pis, xml_guess_enc.as_deref())?;
+        match Self::calculate_http_encoding(default_encoding, http_content_type.as_str(), bom_enc.as_deref(), xml_guess_enc.as_deref(), xml_enc.as_deref(), lenient) {
             Ok(enc) => Ok(enc),
             Err(ex) => {
                 if lenient {
-                    do_lenient_detection(Some(http_content_type), ex, bom_enc, xml_guess_enc, xml_enc)
+                    Self::do_lenient_detection(default_encoding, Some(http_content_type), ex, bom_enc, xml_guess_enc, xml_enc)
                 } else {
                     Err(ex)
                 }
@@ -471,14 +478,14 @@ impl XmlStreamReader {
      * @return the encoding
      * @throws IOException thrown if there is a problem reading the stream.
      */
-    fn do_lenient_detection(mut http_content_type: Option<String>, mut ex: XmlStreamReaderException,
+    fn do_lenient_detection(default_encoding: &Option<String>, mut http_content_type: Option<String>, mut ex: XmlStreamReaderException,
                             bom_enc: Option<String>, xml_guess_enc: Option<String>, xml_enc: Option<String>) -> Result<String, XmlStreamReaderException> {
         if http_content_type.is_some() && http_content_type.as_ref().unwrap().starts_with("text/html") {
             let mut hct = http_content_type.as_ref().unwrap().clone();
             hct = hct["text/html".len()..].to_string();
             hct = "text/xml".to_string() + &hct;
-            match calculate_http_encoding(&hct, ex.get_bom_encoding().as_deref(),
-                                          ex.get_xml_guess_encoding().as_deref(), ex.get_xml_encoding().as_deref(), true) {
+            match Self::calculate_http_encoding(default_encoding, &hct, ex.get_bom_encoding().as_deref(),
+                                                ex.get_xml_guess_encoding().as_deref(), ex.get_xml_encoding().as_deref(), true) {
                 Ok(enc) => return Ok(enc),
                 Err(ex2) => {
                     ex = ex2;
@@ -490,7 +497,7 @@ impl XmlStreamReader {
             encoding = ex.get_content_type_encoding().clone();
         }
         if encoding.is_none() {
-            encoding = if self.default_encoding.is_none() { Some(XmlStreamReader::UTF_8.to_string()) } else { self.default_encoding.clone() };
+            encoding = if default_encoding.is_none() { Some(XmlStreamReader::UTF_8.to_string()) } else { default_encoding.clone() };
         }
         Ok(encoding.unwrap())
     }
@@ -504,13 +511,13 @@ impl XmlStreamReader {
      * @return the raw encoding
      * @throws IOException thrown if there is a problem reading the stream.
      */
-    fn calculate_raw_encoding(bom_enc: Option<&str>, xml_guess_enc: Option<&str>,
+    fn calculate_raw_encoding(default_encoding: &Option<String>, bom_enc: Option<&str>, xml_guess_enc: Option<&str>,
                               xml_enc: Option<&str>) -> Result<String, XmlStreamReaderException> {
 
-        // BOM is Null
+        // BOM is None
         if bom_enc.is_none() {
             if xml_guess_enc.is_none() || xml_enc.is_none() {
-                return Ok(if self.default_encoding.is_none() { XmlStreamReader::UTF_8.to_string() } else { self.default_encoding.clone().unwrap() });
+                return Ok(if default_encoding.is_none() { XmlStreamReader::UTF_8.to_string() } else { default_encoding.clone().unwrap() });
             }
             if xml_enc.unwrap() == XmlStreamReader::UTF_16 &&
                 (xml_guess_enc.unwrap() == XmlStreamReader::UTF_16BE || xml_guess_enc.unwrap() == XmlStreamReader::UTF_16LE) {
@@ -575,7 +582,7 @@ impl XmlStreamReader {
      * @return the HTTP encoding
      * @throws IOException thrown if there is a problem reading the stream.
      */
-    fn calculate_http_encoding(http_content_type: &str,
+    fn calculate_http_encoding(default_encoding: &Option<String>, http_content_type: &str,
                                bom_enc: Option<&str>, xml_guess_enc: Option<&str>, xml_enc: Option<&str>,
                                lenient: bool) -> Result<String, XmlStreamReaderException> {
 
@@ -585,10 +592,10 @@ impl XmlStreamReader {
         }
 
         // Determine mime/encoding content types from HTTP Content Type
-        let c_t_mime = get_content_type_mime(http_content_type);
-        let c_t_enc = get_content_type_encoding(http_content_type);
-        let app_xml = is_app_xml(c_t_mime.as_deref());
-        let text_xml = is_text_xml(c_t_mime.as_deref());
+        let c_t_mime = Self::get_content_type_mime(http_content_type);
+        let c_t_enc = Self::get_content_type_encoding(http_content_type);
+        let app_xml = Self::is_app_xml(c_t_mime.as_deref());
+        let text_xml = Self::is_text_xml(c_t_mime.as_deref());
 
         // Mime type NOT "application/xml" or "text/xml"
         if !app_xml && !text_xml {
@@ -599,9 +606,9 @@ impl XmlStreamReader {
         // No content type encoding
         if c_t_enc.is_none() {
             if app_xml {
-                return calculate_raw_encoding(bom_enc, xml_guess_enc, xml_enc);
+                return Self::calculate_raw_encoding(default_encoding, bom_enc, xml_guess_enc, xml_enc);
             }
-            return Ok(if self.default_encoding.is_none() { XmlStreamReader::US_ASCII.to_string() } else { self.default_encoding.clone().unwrap() });
+            return Ok(if default_encoding.is_none() { XmlStreamReader::US_ASCII.to_string() } else { default_encoding.clone().unwrap() });
         }
 
         // UTF-16BE or UTF-16LE content type encoding
@@ -644,44 +651,38 @@ impl XmlStreamReader {
     }
 
     /**
-     * Returns MIME type or NULL if httpContentType is NULL.
+     * Returns MIME type or None if httpContentType is None.
      *
      * @param httpContentType the HTTP content type
      * @return The mime content type
      */
     fn get_content_type_mime(http_content_type: &str) -> Option<String> {
         let mut mime = None;
-        if http_content_type != null {
-            let i = http_content_type.find(";");
-            if i >= 0 {
-                mime = Some(http_content_type[0..i].to_string());
-            } else {
-                mime = Some(http_content_type.to_string());
-            }
-            mime = Some(mime.unwrap().trim().to_string());
+        if let Some(i) = http_content_type.find(";") {
+            mime = Some(http_content_type[0..i].to_string());
+        } else {
+            mime = Some(http_content_type.to_string());
         }
+        mime = Some(mime.unwrap().trim().to_string());
         mime
     }
 
     const CHARSET_PATTERN: &'static str = "charset=[\"']?([.[^; \"']]*)[\"']?";
 
     /**
-     * Returns charset parameter value, NULL if not present, NULL if
-     * httpContentType is NULL.
+     * Returns charset parameter value, None if not present, None if
+     * httpContentType is None.
      *
      * @param httpContentType the HTTP content type
      * @return The content type encoding (upcased)
      */
     fn get_content_type_encoding(http_content_type: &str) -> Option<String> {
         let mut encoding = None;
-        if http_content_type != null {
-            let i = http_content_type.find(";");
-            if i > -1 {
-                let post_mime = http_content_type[i + 1..].to_string();
-                let m = charset_pattern_find(&post_mime);
-                encoding = m;
-                encoding = encoding.map(|e| e.to_uppercase());
-            }
+        if let Some(i) = http_content_type.find(";") {
+            let post_mime = http_content_type[i + 1..].to_string();
+            let m = charset_pattern_find(&post_mime);
+            encoding = m;
+            encoding = encoding.map(|e| e.to_uppercase());
         }
         encoding
     }
@@ -693,7 +694,7 @@ impl XmlStreamReader {
         "<\\?xml.*encoding[\\s]*=[\\s]*((?:\".[^\"]*\")|(?:'.[^']*'))";
 
     /**
-     * Returns the encoding declared in the <?xml encoding=...?>, NULL if none.
+     * Returns the encoding declared in the <?xml encoding=...?>, None if none.
      *
      * @param inputStream InputStream to create the reader from.
      * @param guessedEnc guessed encoding
@@ -707,13 +708,13 @@ impl XmlStreamReader {
             input_stream.mark(XmlStreamReader::BUFFER_SIZE as i32);
             let mut offset = 0;
             let mut max = XmlStreamReader::BUFFER_SIZE;
-            let mut c = input_stream.read_off(&mut bytes, offset, max)?;
+            let mut c = input_stream.read_off(&mut bytes, offset, max).map_err(io_err)?;
             let mut first_gt = -1;
             let mut xml_prolog = "".to_string(); // avoid possible NPE warning (cannot happen; this just silences the warning)
             while c != -1 && first_gt == -1 && offset < XmlStreamReader::BUFFER_SIZE {
                 offset += c as usize;
                 max -= c as usize;
-                c = input_stream.read_off(&mut bytes, offset, max)?;
+                c = input_stream.read_off(&mut bytes, offset, max).map_err(io_err)?;
                 xml_prolog = String::from_utf8_lossy(&bytes[0..offset]).to_string();
                 first_gt = xml_prolog.find('>').map(|i| i as i32).unwrap_or(-1);
             }
@@ -722,20 +723,19 @@ impl XmlStreamReader {
                     return Err(XmlStreamReaderException::new_full("Unexpected end of XML stream", None, None, "".to_string(), guessed_enc.unwrap().to_string(), "".to_string()));
                 }
                 return Err(XmlStreamReaderException::new_full(
-                    "XML prolog or ROOT element not found on first "
-                        + &offset.to_string() + " bytes", None, None, "".to_string(), guessed_enc.unwrap().to_string(), "".to_string()));
+                    &("XML prolog or ROOT element not found on first ".to_string() + &offset.to_string() + " bytes"), None, None, "".to_string(), guessed_enc.unwrap().to_string(), "".to_string()));
             }
             let bytes_read = offset;
             if bytes_read > 0 {
-                input_stream.reset()?;
+                input_stream.reset().map_err(io_err)?;
                 let prolog_str = xml_prolog[0..first_gt as usize + 1].to_string();
                 let mut prolog = String::new();
                 for line in prolog_str.lines() {
                     prolog.push_str(line);
                 }
                 if let Some(matched) = encoding_pattern_find(&prolog) {
-                    encoding = Some(matched.to_uppercase());
-                    encoding = Some(encoding.unwrap()[1..encoding.unwrap().len() - 1].to_string());
+                    let uppercased = matched.to_uppercase();
+                    encoding = Some(uppercased[1..uppercased.len() - 1].to_string());
                 }
             }
         }
@@ -750,7 +750,7 @@ impl XmlStreamReader {
      * otherwise false
      */
     fn is_app_xml(mime: Option<&str>) -> bool {
-        mime != null &&
+        mime != None &&
             (mime.unwrap() == "application/xml" ||
                 mime.unwrap() == "application/xml-dtd" ||
                 mime.unwrap() == "application/xml-external-parsed-entity" ||
@@ -765,7 +765,7 @@ impl XmlStreamReader {
      * otherwise false
      */
     fn is_text_xml(mime: Option<&str>) -> bool {
-        mime != null &&
+        mime != None &&
             (mime.unwrap() == "text/xml" ||
                 mime.unwrap() == "text/xml-external-parsed-entity" ||
                 mime.unwrap().starts_with("text/") && mime.unwrap().ends_with("+xml"))
@@ -787,7 +787,7 @@ impl XmlStreamReader {
         "Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], Invalid MIME";
 }
 
-fn message_format(pattern: &str, args: Vec<String>) -> String {
+pub fn message_format(pattern: &str, args: Vec<String>) -> String {
     let mut result = pattern.to_string();
     for (i, arg) in args.iter().enumerate() {
         result = result.replace(&format!("{{{}}}", i), arg);
@@ -795,7 +795,7 @@ fn message_format(pattern: &str, args: Vec<String>) -> String {
     result
 }
 
-fn charset_pattern_find(post_mime: &str) -> Option<String> {
+pub fn charset_pattern_find(post_mime: &str) -> Option<String> {
     //charset=["']?([.[^; "']]*)[\"']?
     let lower = post_mime.to_lowercase();
     let idx = lower.find("charset=")?;
@@ -813,7 +813,7 @@ fn charset_pattern_find(post_mime: &str) -> Option<String> {
     if value.is_empty() { None } else { Some(value) }
 }
 
-fn encoding_pattern_find(prolog: &str) -> Option<String> {
+pub fn encoding_pattern_find(prolog: &str) -> Option<String> {
     //<\?xml.*encoding[\s]*=[\s]*((?:".[^"]*")|(?:'.[^']*'))
     let lower = prolog.to_lowercase();
     let xml_idx = lower.find("<?xml")?;
@@ -845,38 +845,155 @@ fn encoding_pattern_find(prolog: &str) -> Option<String> {
     }
 }
 
-pub struct Reader;
-pub struct File;
-pub struct FileInputStream;
-pub struct URL;
-pub struct URLConnection;
-pub struct InputStream;
-pub struct BufferedInputStream;
-pub struct InputStreamReader;
-
-impl Reader {
-    pub fn read(&mut self, _buf: &mut [char], _offset: usize, _len: usize) -> Result<i32, io::Error> { todo!() }
-    pub fn close(&mut self) -> Result<(), io::Error> { todo!() }
+// fix: 文件内私有最小 stub（避免与 stubs/prelude 的全局重导出产生 E0659 歧义）
+fn io_err(e: io::Error) -> XmlStreamReaderException {
+    XmlStreamReaderException::new(&e.to_string(), String::new(), String::new(), String::new())
 }
+
+struct FileInputStream;
 
 impl FileInputStream {
-    pub fn new(_file: File) -> Box<dyn InputStream> { todo!() }
+    pub fn new(_file: File) -> Box<dyn InputStream> {
+        Box::new(FileInputStream)
+    }
 }
 
-impl URL {
-    pub fn open_connection(&self) -> URLConnection { todo!() }
+impl InputStream for FileInputStream {
+    fn read_byte(&mut self) -> i32 {
+        IOUtil::EOF
+    }
+    fn read(&mut self, _bts: &mut [u8]) -> i32 {
+        IOUtil::EOF // fix: 占位，未接入真实文件读取
+    }
+    fn read_off(&mut self, _bts: &mut [u8], _off: usize, _len: usize) -> i32 {
+        IOUtil::EOF
+    }
+    fn skip(&mut self, _ln: i64) -> Result<i64, io::Error> {
+        Ok(0)
+    }
+    fn available(&mut self) -> Result<i32, io::Error> {
+        Ok(0)
+    }
+    fn close(&mut self) -> Result<(), io::Error> {
+        Ok(())
+    }
+    fn mark(&mut self, _readlimit: i32) {}
+    fn reset(&mut self) -> Result<(), io::Error> {
+        Ok(())
+    }
+    fn mark_supported(&self) -> bool {
+        false
+    }
 }
 
-impl URLConnection {
-    pub fn get_content_type(&self) -> String { todo!() }
-    pub fn get_input_stream(&self) -> Box<dyn InputStream> { todo!() }
-    pub fn is_http_url_connection(&self) -> bool { todo!() }
+struct BufferedInputStream {
+    inner: Box<dyn InputStream>,
 }
 
 impl BufferedInputStream {
-    pub fn new(_input: Box<dyn InputStream>, _size: usize) -> Self { todo!() }
+    pub fn new(input: Box<dyn InputStream>, _size: usize) -> Self {
+        BufferedInputStream { inner: input }
+    }
+}
+
+impl InputStream for BufferedInputStream {
+    fn read_byte(&mut self) -> i32 {
+        self.inner.read_byte()
+    }
+    fn read(&mut self, bts: &mut [u8]) -> i32 {
+        self.inner.read(bts)
+    }
+    fn read_off(&mut self, bts: &mut [u8], off: usize, len: usize) -> i32 {
+        self.inner.read_off(bts, off, len)
+    }
+    fn skip(&mut self, ln: i64) -> Result<i64, io::Error> {
+        self.inner.skip(ln)
+    }
+    fn available(&mut self) -> Result<i32, io::Error> {
+        self.inner.available()
+    }
+    fn close(&mut self) -> Result<(), io::Error> {
+        self.inner.close()
+    }
+    fn mark(&mut self, readlimit: i32) {
+        self.inner.mark(readlimit)
+    }
+    fn reset(&mut self) -> Result<(), io::Error> {
+        self.inner.reset()
+    }
+    fn mark_supported(&self) -> bool {
+        self.inner.mark_supported()
+    }
+}
+
+struct URL;
+
+impl URL {
+    pub fn open_connection(&self) -> URLConnection {
+        URLConnection
+    }
+}
+
+struct URLConnection;
+
+impl URLConnection {
+    pub fn get_content_type(&self) -> Option<String> {
+        None // fix: 占位，未从连接头解析
+    }
+    pub fn get_input_stream(&self) -> Box<dyn InputStream> {
+        Box::new(FileInputStream)
+    }
+    pub fn is_http_url_connection(&self) -> bool {
+        false
+    }
+}
+
+struct InputStreamReader {
+    _inner: Box<dyn InputStream>,
 }
 
 impl InputStreamReader {
-    pub fn new(_input: BOMInputStream, _encoding: String) -> Self { todo!() }
+    pub fn new(_input: BOMInputStream, _encoding: String) -> Self {
+        InputStreamReader {
+            _inner: Box::new(FileInputStream),
+        }
+    }
+    pub fn read(&mut self, _buf: &mut [char], _offset: usize, _len: usize) -> Result<i32, io::Error> {
+        Ok(-1) // fix: 占位，未接入真实字符解码
+    }
+    pub fn close(&mut self) -> Result<(), io::Error> {
+        Ok(())
+    }
+}
+
+struct BomDelegate(Rc<RefCell<BOMInputStream>>);
+
+impl InputStream for BomDelegate {
+    fn read_byte(&mut self) -> i32 {
+        self.0.borrow_mut().read().unwrap_or(IOUtil::EOF)
+    }
+    fn read(&mut self, bts: &mut [u8]) -> i32 {
+        self.0.borrow_mut().read_bytes(bts).unwrap_or(IOUtil::EOF)
+    }
+    fn read_off(&mut self, bts: &mut [u8], off: usize, len: usize) -> i32 {
+        self.0.borrow_mut().read_off(bts, off, len).unwrap_or(IOUtil::EOF)
+    }
+    fn skip(&mut self, n: i64) -> Result<i64, io::Error> {
+        self.0.borrow_mut().skip(n)
+    }
+    fn available(&mut self) -> Result<i32, io::Error> {
+        Ok(0) // fix: 占位
+    }
+    fn close(&mut self) -> Result<(), io::Error> {
+        Ok(()) // fix: 占位
+    }
+    fn mark(&mut self, readlimit: i32) {
+        self.0.borrow_mut().mark(readlimit)
+    }
+    fn reset(&mut self) -> Result<(), io::Error> {
+        self.0.borrow_mut().reset()
+    }
+    fn mark_supported(&self) -> bool {
+        true // fix: 占位
+    }
 }

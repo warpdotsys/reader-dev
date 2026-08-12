@@ -1,3 +1,8 @@
+use crate::prelude::*;
+// fix: 显式导入以覆盖 prelude 中多个 glob 重导出导致的同名歧义
+use crate::io_legado_app_data_entities_booklogger::LOGGER;
+use crate::stubs::{Charset, File, FileUtils, GSON};
+use std::cell::RefMut;
 // package io.legado.app.data.entities
 
 // import io.legado.app.constant.BookType
@@ -19,6 +24,7 @@
 // import com.fasterxml.jackson.annotation.JsonProperty
 
 // @JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "config", "rootDir", "localBook", "epub", "epubRootDir", "onLineTxt", "localTxt", "umd", "realAuthor", "unreadChapterNum", "folderName", "pdfImageWidth", "localFile", "kindList", "_userNameSpace", "bookDir", "userNameSpace")
+// fix: Clone 已在 stubs.rs 手工实现（Book/ReadConfig），此处不再 derive
 pub struct Book {
     pub book_url: String,                   // 详情页Url(本地书源存储完整文件路径)
     pub toc_url: String,                    // 目录页Url (toc=table of Contents)
@@ -55,9 +61,9 @@ pub struct Book {
     pub is_in_shelf: bool,
     pub last_check_error: Option<String>,
 
-    // override var infoHtml: String? = null
+    // override var infoHtml: String? = None
     pub info_html: Option<String>,
-    // override var tocHtml: String? = null
+    // override var tocHtml: String? = None
     pub toc_html: Option<String>,
 
     // @Transient
@@ -117,9 +123,11 @@ impl Book {
         if let Some(cached) = self.variable_map_cache.borrow().as_ref() {
             return cached.clone();
         }
-        let map = GSON::from_json_object::<HashMap<String, String>>(self.variable.as_ref())
-            .get_or_null()
-            .unwrap_or_else(HashMap::new);
+        let map = GSON::from_json_object::<HashMap<String, String>>(
+            self.variable.clone().unwrap_or_default(),
+        )
+        .get_or_null()
+        .unwrap_or_else(HashMap::new);
         *self.variable_map_cache.borrow_mut() = Some(map.clone());
         map
     }
@@ -136,7 +144,7 @@ impl Book {
     }
 
     pub fn get_real_author(&self) -> String {
-        self.author.replace(&AppPattern::author_regex, "")
+        AppPattern::authorRegex().replace_all(&self.author, "").to_string()
     }
 
     pub fn get_unread_chapter_num(&self) -> i32 {
@@ -183,14 +191,14 @@ impl Book {
 
     pub fn get_folder_name(&self) -> String {
         //防止书名过长,只取9位
-        let mut folder_name = self.name.replace(&AppPattern::file_name_regex, "");
+        let mut folder_name = AppPattern::fileNameRegex().replace_all(&self.name, "").to_string();
         folder_name = folder_name.chars().take(folder_name.len().min(9)).collect::<String>();
-        folder_name + &MD5Utils::md5_encode16(&self.book_url)
+        folder_name + &MD5Utils::md5Encode16(&self.book_url)
     }
 
     pub fn set_root_dir(&mut self, root: String) {
-        if !root.is_empty() && !root.ends_with(File::separator()) {
-            self.root_dir = root + File::separator();
+        if !root.is_empty() && !root.ends_with(&File::separator()) {
+            self.root_dir = root + &File::separator();
         } else {
             self.root_dir = root;
         }
@@ -200,19 +208,19 @@ impl Book {
         if self.origin_name.starts_with(&self.root_dir) {
             self.origin_name = self.origin_name.replacen(&self.root_dir, "", 1);
         }
-        LOGGER.info("getLocalFile rootDir: {} originName: {}", self.root_dir, self.origin_name);
+        LOGGER.info(format!("getLocalFile rootDir: {} originName: {}", self.root_dir, self.origin_name));
         if self.is_epub() && self.origin_name.find("localStore").is_none() && self.origin_name.find("webdav").is_none() {
             // 非本地/webdav书仓的 epub文件
-            return FileUtils::get_file(File::new(self.root_dir.clone() + &self.origin_name), "index.epub");
+            return FileUtils::get_file(File::new(&(self.root_dir.clone() + &self.origin_name)), "index.epub");
         }
         if self.is_cbz() && self.origin_name.find("localStore").is_none() && self.origin_name.find("webdav").is_none() {
             // 非本地/webdav书仓的 cbz文件
-            return FileUtils::get_file(File::new(self.root_dir.clone() + &self.origin_name), "index.cbz");
+            return FileUtils::get_file(File::new(&(self.root_dir.clone() + &self.origin_name)), "index.cbz");
         }
         if self.is_pdf() && self.origin_name.find("localStore").is_none() && self.origin_name.find("webdav").is_none() {
-            return FileUtils::get_file(File::new(self.root_dir.clone() + &self.origin_name), "index.pdf");
+            return FileUtils::get_file(File::new(&(self.root_dir.clone() + &self.origin_name)), "index.pdf");
         }
-        File::new(self.root_dir.clone() + &self.origin_name)
+        File::new(&(self.root_dir.clone() + &self.origin_name))
     }
 
     pub fn set_user_name_space(&mut self, name_space: String) {
@@ -262,7 +270,7 @@ impl Book {
         let default_path = "OEBPS".to_string();
 
         // 根据 META-INF/container.xml 来获取 contentOPF 位置
-        let container_res = File::new(self.book_url.clone() + &File::separator() + "index" + &File::separator() + "META-INF" + &File::separator() + "container.xml");
+        let container_res = File::new(&(self.book_url.clone() + &File::separator() + "index" + &File::separator() + "META-INF" + &File::separator() + "container.xml"));
         if container_res.exists() {
             let result = (|| -> Option<String> {
                 let document = Jsoup::parse(container_res.read_text());
@@ -310,9 +318,9 @@ impl Book {
 //     const val imgStyleText = "TEXT"
 // }
 impl Book {
-    pub const H_TAG: i64 = 2L;
-    pub const RUBY_TAG: i64 = 4L;
-    pub const IMG_TAG: i64 = 8L;
+    pub const H_TAG: i64 = 2_i64;
+    pub const RUBY_TAG: i64 = 4_i64;
+    pub const IMG_TAG: i64 = 8_i64;
     pub const IMG_STYLE_DEFAULT: &'static str = "DEFAULT";
     pub const IMG_STYLE_FULL: &'static str = "FULL";
     pub const IMG_STYLE_TEXT: &'static str = "TEXT";
@@ -320,7 +328,7 @@ impl Book {
     // root_dir: String = ""
     pub fn init_local_book(book_url: String, local_path: String, root_dir: String) -> Book {
         let file_name = File::new(&local_path).name();
-        let name_author = LocalBook::analyze_name_author(file_name);
+        let name_author = LocalBook::analyze_name_author(&file_name);
         let mut book = Book {
             book_url,
             toc_url: String::new(),
@@ -341,11 +349,13 @@ impl Book {
 //     var reverseToc: Boolean = false,
 //     var pageAnim: Int = -1,
 //     var reSegment: Boolean = false,
-//     var imageStyle: String? = null,
+//     var imageStyle: String? = None,
 //     var useReplaceRule: Boolean = false,   // 正文使用净化替换规则
 //     var delTag: Long = 0L,   //去除标签
 //     var pdfImageWidth: Float = 800f
 // )
+// fix: 补 serde derive——Converters 经 GSON::to_json/from_json_object 序列化 ReadConfig
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct ReadConfig {
     pub reverse_toc: bool,
     pub page_anim: i32,
@@ -450,6 +460,6 @@ impl Converters {
     }
 
     pub fn string_to_read_config(json: Option<String>) -> Option<ReadConfig> {
-        GSON::from_json_object::<ReadConfig>(json).get_or_null()
+        GSON::from_json_object::<ReadConfig>(json.unwrap_or_default()).get_or_null()
     }
 }

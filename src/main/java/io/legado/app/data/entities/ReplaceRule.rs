@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 // import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,10 +12,10 @@
 //    @PrimaryKey(autoGenerate = true)
 //    var id: Long = System.currentTimeMillis(),
 //    var name: String = "",
-//    var group: String? = null,
+//    var group: String? = None,
 //    var pattern: String = "",
 //    var replacement: String = "",
-//    var scope: String? = null,
+//    var scope: String? = None,
 //    var scopeTitle: Boolean = false,
 //    var scopeContent: Boolean = true,
 //    @get:JsonProperty("isEnabled") var isEnabled: Boolean = true,

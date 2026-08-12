@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -99,7 +100,7 @@ pub struct BOMInputStream {
 /**
  * Compares ByteOrderMark objects in descending length order.
  */
-fn byte_order_mark_length_comparator(bom1: &ByteOrderMark, bom2: &ByteOrderMark) -> std::cmp::Ordering {
+pub fn byte_order_mark_length_comparator(bom1: &ByteOrderMark, bom2: &ByteOrderMark) -> std::cmp::Ordering {
     let len1 = bom1.length();
     let len2 = bom2.length();
     len2.cmp(&len1)
@@ -115,7 +116,7 @@ impl BOMInputStream {
      */
     #[allow(dead_code)]
     pub fn new(delegate: Box<dyn InputStream>) -> Self {
-        BOMInputStream::new_include(delegate, false, vec![ByteOrderMark::UTF_8])
+        BOMInputStream::new_include(delegate, false)
     }
 
     /**
@@ -156,7 +157,7 @@ impl BOMInputStream {
      */
     pub fn new_boms(delegate: Box<dyn InputStream>, include: bool, boms: Vec<ByteOrderMark>) -> Self {
         let proxy = ProxyInputStream::new(delegate);
-        if IOUtil::length_obj(&boms) == 0 {
+        if boms.is_empty() {
             panic!("No BOMs specified");
         }
         // Sort the BOMs to match the longest BOM first because some BOMs have the same starting two bytes.
@@ -201,17 +202,17 @@ impl BOMInputStream {
      */
     #[allow(dead_code)]
     pub fn has_bom_of(&mut self, bom: &ByteOrderMark) -> Result<bool, io::Error> {
-        if !self.boms.contains(bom) {
+        if !self.boms.iter().any(|b| b.equals(bom)) {
             panic!("Stream not configure to detect {}", bom.to_string());
         }
         self.get_bom()?;
-        Ok(self.byte_order_mark != null && self.byte_order_mark.as_ref().unwrap().equals(bom))
+        Ok(self.byte_order_mark.is_some() && self.byte_order_mark.as_ref().unwrap().equals(bom))
     }
 
     /**
      * Return the BOM (Byte Order Mark).
      *
-     * @return The BOM or null if none
+     * @return The BOM or None if none
      * @throws IOException
      *             if an error reading the first bytes of the stream occurs
      */
@@ -223,7 +224,7 @@ impl BOMInputStream {
             let mut first_bytes = vec![0i32; max_bom_size];
             // Read first maxBomSize bytes
             for i in 0..first_bytes.len() {
-                first_bytes[i] = self.proxy.in_stream.read_byte();
+                first_bytes[i] = self.proxy.read()?;
                 self.fb_length += 1;
                 if first_bytes[i] < 0 {
                     break;
@@ -248,7 +249,7 @@ impl BOMInputStream {
     /**
      * Return the BOM charset Name - {@link ByteOrderMark#getCharsetName()}.
      *
-     * @return The BOM charset Name or null if no BOM found
+     * @return The BOM charset Name or None if no BOM found
      * @throws IOException
      *             if an error reading the first bytes of the stream occurs
      *
@@ -275,7 +276,7 @@ impl BOMInputStream {
     /**
      * Find a BOM with the specified bytes.
      *
-     * @return The matched BOM or null if none matched
+     * @return The matched BOM or None if none matched
      */
     fn find(&self) -> Option<ByteOrderMark> {
         for bom in &self.boms {
@@ -320,7 +321,7 @@ impl BOMInputStream {
      */
     pub fn read(&mut self) -> Result<i32, io::Error> {
         let b = self.read_first_bytes()?;
-        Ok(if b >= 0 { b } else { self.proxy.in_stream.read_byte() })
+        Ok(if b >= 0 { b } else { self.proxy.read()? })
     }
 
     /**
@@ -348,7 +349,7 @@ impl BOMInputStream {
                 first_count += 1;
             }
         }
-        let second_count = self.proxy.in_stream.read_off(buf, off, len);
+        let second_count = self.proxy.read_off(buf, off, len)?;
         Ok(if second_count < 0 { if first_count > 0 { first_count } else { IOUtil::EOF } } else { first_count + second_count })
     }
 
@@ -374,7 +375,7 @@ impl BOMInputStream {
     pub fn mark(&mut self, readlimit: i32) {
         self.mark_fb_index = self.fb_index;
         self.marked_at_start = self.first_bytes.is_none();
-        self.proxy.in_stream.mark(readlimit);
+        self.proxy.mark(readlimit);
     }
 
     /**
@@ -389,7 +390,7 @@ impl BOMInputStream {
             self.first_bytes = None;
         }
 
-        self.proxy.in_stream.reset()
+        self.proxy.reset()
     }
 
     /**
@@ -406,12 +407,13 @@ impl BOMInputStream {
         while (n > skipped) && (self.read_first_bytes()? >= 0) {
             skipped += 1;
         }
-        Ok(self.proxy.in_stream.skip(n - skipped)? + skipped)
+        Ok(self.proxy.skip(n - skipped)? + skipped)
     }
 }
 
 impl Clone for ByteOrderMark {
+    // fix: ByteOrderMark 字段私有且全为 &'static（Copy 形状、无 Drop），ptr::read 复制等价且安全
     fn clone(&self) -> Self {
-        ByteOrderMark::new(self.get_charset_name(), &self.bytes)
+        unsafe { std::ptr::read(self) }
     }
 }

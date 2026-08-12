@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use std::io::Read;
 // package me.ag2s.umdlib.tool;
 //
 // import java.io.FileInputStream;
@@ -102,8 +104,8 @@ impl<'a> StreamReader<'a> {
         let mut b = vec![0u8; 4];
         self.is.read(&mut b);
         self.inc_count(4);
-        let x = ((b[0] & 0xFF) << 24) | ((b[1] & 0xFF) << 16) |
-            ((b[2] & 0xFF) << 8) | ((b[3] & 0xFF) << 0);
+        let x = (((b[0] & 0xFF) as i32) << 24) | (((b[1] & 0xFF) as i32) << 16) |
+            (((b[2] & 0xFF) as i32) << 8) | (((b[3] & 0xFF) as i32) << 0);
         return x;
     }
 
@@ -111,8 +113,8 @@ impl<'a> StreamReader<'a> {
         let mut b = vec![0u8; 4];
         self.is.read(&mut b);
         self.inc_count(4);
-        let x = ((b[3] & 0xFF) << 24) | ((b[2] & 0xFF) << 16) |
-            ((b[1] & 0xFF) << 8) | ((b[0] & 0xFF) << 0);
+        let x = (((b[3] & 0xFF) as i32) << 24) | (((b[2] & 0xFF) as i32) << 16) |
+            (((b[1] & 0xFF) as i32) << 8) | (((b[0] & 0xFF) as i32) << 0);
         return x;
     }
 
@@ -120,14 +122,14 @@ impl<'a> StreamReader<'a> {
         self.read_bytes(len);
     }
 
-    pub fn read(&mut self, b: &mut [u8]) -> &[u8] {
+    pub fn read<'b>(&mut self, b: &'b mut [u8]) -> &'b [u8] {
         self.is.read(b);
         self.inc_count(b.len() as i32);
         return b;
     }
 
-    pub fn read_range(&mut self, b: &mut [u8], off: usize, len: usize) -> &[u8] {
-        self.is.read_range(b, off, len);
+    pub fn read_range<'b>(&mut self, b: &'b mut [u8], off: usize, len: usize) -> &'b [u8] {
+        self.is.read(&mut b[off..off + len]);
         self.inc_count(len as i32);
         return b;
     }

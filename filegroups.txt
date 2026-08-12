@@ -1,0 +1,16 @@
+﻿ 160  BookController.rs
+  15  VertExt.rs
+   3  UserMutex.rs
+   3  Tools.rs
+   3  ReaderUIApplication.rs
+   3  RestVerticle.rs
+   2  VertRoute.rs
+   2  BookHelp.rs
+   2  MongoManager.rs
+   2  TTSService.rs
+   2  Ext.rs
+   1  BaseController.rs
+   1  JsExtensions.rs
+   1  SpeechConfig.rs
+   1  SpringContextUtils.rs
+   1  SSML.rs

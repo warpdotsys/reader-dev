@@ -1,0 +1,672 @@
+﻿===== L1334: error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable =====
+error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeUrl.rs:538:77
+    |
+538 |             return StrResponse::new_url(&self.url, Some(byte_to_hex_string(&self.get_byte_array_await().await)));
+    |                    -------------------- ---------                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable b
+orrow occurs here
+    |                    |                    |
+    |                    |                    immutable borrow occurs here
+    |                    immutable borrow later used by call
+
+error[E0596]: cannot borrow `analyze_rule` as mutable, as it is not declared as mutable
+  --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:74:13
+   |
+74 |         let analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             ^^^^^^^^^^^^ not mutable
+75 |         analyze_rule.set_content(body.map(|s| Box::new(Any::Str(s))), None)
+   |         ------------ cannot borrow as mutable
+...
+78 |         return analyze_rule.get_string(Some(rule_content.to_string()), None, false);
+   |                ------------ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+74 |         let mut analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             +++
+
+error[E0592]: duplicate definitions with name `with_date`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:37:5
+   |
+29 |     pub fn with_date(date: java_util_Date) -> Date {
+   |     ---------------------------------------------- other definition for `with_date`
+...
+37 |     pub fn with_date(date: java_util_Date, event: Option<Event>) -> Date {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `with_date`
+
+error[E0592]: duplicate definitions with name `flush`
+    --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:375:5
+     |
+ 375 |     pub fn flush(&mut self) {}
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `flush`
+     |
+===== L1344: error[E0596]: cannot borrow `analyze_rule` as mutable, as it is not declared as mutable =====
+error[E0596]: cannot borrow `analyze_rule` as mutable, as it is not declared as mutable
+  --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:74:13
+   |
+74 |         let analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             ^^^^^^^^^^^^ not mutable
+75 |         analyze_rule.set_content(body.map(|s| Box::new(Any::Str(s))), None)
+   |         ------------ cannot borrow as mutable
+...
+78 |         return analyze_rule.get_string(Some(rule_content.to_string()), None, false);
+   |                ------------ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+74 |         let mut analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             +++
+
+error[E0592]: duplicate definitions with name `with_date`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:37:5
+   |
+29 |     pub fn with_date(date: java_util_Date) -> Date {
+   |     ---------------------------------------------- other definition for `with_date`
+...
+37 |     pub fn with_date(date: java_util_Date, event: Option<Event>) -> Date {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `with_date`
+
+error[E0592]: duplicate definitions with name `flush`
+    --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:375:5
+     |
+ 375 |     pub fn flush(&mut self) {}
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `flush`
+     |
+    ::: src\stubs.rs:5701:5
+     |
+5701 |     pub fn flush(&self) {}
+     |     ------------------- other definition for `flush`
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:221:17
+    |
+219 |             self.end_tag(
+    |                  ------- arguments to this method are incorrect
+===== L1360: error[E0592]: duplicate definitions with name `with_date` =====
+error[E0592]: duplicate definitions with name `with_date`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:37:5
+   |
+29 |     pub fn with_date(date: java_util_Date) -> Date {
+   |     ---------------------------------------------- other definition for `with_date`
+...
+37 |     pub fn with_date(date: java_util_Date, event: Option<Event>) -> Date {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `with_date`
+
+error[E0592]: duplicate definitions with name `flush`
+    --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:375:5
+     |
+ 375 |     pub fn flush(&mut self) {}
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `flush`
+     |
+    ::: src\stubs.rs:5701:5
+     |
+5701 |     pub fn flush(&self) {}
+     |     ------------------- other definition for `flush`
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:221:17
+    |
+219 |             self.end_tag(
+    |                  ------- arguments to this method are incorrect
+220 |                 self.element_stack[(self.depth * 3 - 3) as usize].clone(),
+221 |                 self.element_stack[(self.depth * 3 - 1) as usize].clone())?;
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `Option<String
+>`
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+note: method defined here
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:581:12
+    |
+581 |     pub fn end_tag(&mut self, namespace: Option<String>, name: String) -> Result<&KXmlSerializer, String> {
+    |            ^^^^^^^                                       ------------
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::string::String>` value, panicking if the 
+value is an `Option::None`
+    |
+221 |                 self.element_stack[(self.depth * 3 - 1) as usize].clone().expect("REASON"))?;
+===== L1369: error[E0592]: duplicate definitions with name `flush` =====
+error[E0592]: duplicate definitions with name `flush`
+    --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:375:5
+     |
+ 375 |     pub fn flush(&mut self) {}
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `flush`
+     |
+    ::: src\stubs.rs:5701:5
+     |
+5701 |     pub fn flush(&self) {}
+     |     ------------------- other definition for `flush`
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:221:17
+    |
+219 |             self.end_tag(
+    |                  ------- arguments to this method are incorrect
+220 |                 self.element_stack[(self.depth * 3 - 3) as usize].clone(),
+221 |                 self.element_stack[(self.depth * 3 - 1) as usize].clone())?;
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `Option<String
+>`
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+note: method defined here
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:581:12
+    |
+581 |     pub fn end_tag(&mut self, namespace: Option<String>, name: String) -> Result<&KXmlSerializer, String> {
+    |            ^^^^^^^                                       ------------
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::string::String>` value, panicking if the 
+value is an `Option::None`
+    |
+221 |                 self.element_stack[(self.depth * 3 - 1) as usize].clone().expect("REASON"))?;
+    |                                                                          +++++++++++++++++
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:325:9
+    |
+324 |     pub fn ignorable_whitespace(&mut self, s: String) -> Result<(), String> {
+    |                                                          ------------------ expected `Result<(), std::string::Str
+ing>` because of return type
+325 |         self.text(s)
+===== L2574: error[E0308]: mismatched types =====
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\EpubReader.rs:55:55
+    |
+ 55 |         self.read_epub_lazy_types(zip_file, encoding, MediaTypes::media_types())
+    |              --------------------                     ^^^^^^^^^^^^^^^^^^^^^^^^^ expected `MediaType`, found `stub
+s::MediaType`
+    |              |
+    |              arguments to this method are incorrect
+    |
+    = note: `stubs::MediaType` and `MediaType` have similar names, but are actually distinct types
+note: `stubs::MediaType` is defined in module `crate::stubs` of the current crate
+   --> src\stubs.rs:619:1
+    |
+619 | pub struct MediaType;
+    | ^^^^^^^^^^^^^^^^^^^^
+note: `MediaType` is defined in module `crate::me_ag2s_epublib_domain_mediatype` of the current crate
+   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaType.rs:20:1
+    |
+ 20 | pub struct MediaType {
+    | ^^^^^^^^^^^^^^^^^^^^
+note: method defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\EpubReader.rs:67:12
+    |
+ 67 |     pub fn read_epub_lazy_types(&self, zip_file: ZipFile, encoding: &str, lazy_loaded_types: Vec<MediaType>) -> R
+esult<EpubBook, io...
+    |            ^^^^^^^^^^^^^^^^^^^^                                           ---------------------------------
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:65:17
+    |
+ 64 |             let nav_map_element = DOMUtil::get_first_element_by_tag_name_ns(
+    |                                   ----------------------------------------- arguments to this function are incorr
+ect
+ 65 |                 ncx_document.get_document_element(), NCXDocumentV2::NAMESPACE_NCX, NCXDocumentV2::NCX_TAGS_NAV_MA
+P);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&Element`, found `Element`
+    |
+note: associated function defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\DOMUtil.rs:121:12
+    |
+121 |     pub fn get_first_element_by_tag_name_ns(parent_element: &Element, namespace: &str, tag_name: &str) -> Option<
+===== L2601: error[E0308]: mismatched types =====
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:65:17
+    |
+ 64 |             let nav_map_element = DOMUtil::get_first_element_by_tag_name_ns(
+    |                                   ----------------------------------------- arguments to this function are incorr
+ect
+ 65 |                 ncx_document.get_document_element(), NCXDocumentV2::NAMESPACE_NCX, NCXDocumentV2::NCX_TAGS_NAV_MA
+P);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&Element`, found `Element`
+    |
+note: associated function defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\DOMUtil.rs:121:12
+    |
+121 |     pub fn get_first_element_by_tag_name_ns(parent_element: &Element, namespace: &str, tag_name: &str) -> Option<
+Element> {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ------------------------
+help: consider borrowing here
+    |
+ 65 |                 &ncx_document.get_document_element(), NCXDocumentV2::NAMESPACE_NCX, NCXDocumentV2::NCX_TAGS_NAV_M
+AP);
+    |                 +
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:118:78
+    |
+118 |         let reference = StringUtil::collapse_path_dots(&(toc_resource_root + Self::read_nav_reference(navpoint_el
+ement)));
+    |                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^ expected `&str`, found `String`
+    |
+help: consider borrowing here
+    |
+118 |         let reference = StringUtil::collapse_path_dots(&(toc_resource_root + &Self::read_nav_reference(navpoint_e
+lement)));
+    |                                                                              +
+
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:142:42
+    |
+142 |         match decode_url(result.clone(), Constants::CHARACTER_ENCODING) {
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the associated constant of
+===== L2623: error[E0308]: mismatched types =====
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:118:78
+    |
+118 |         let reference = StringUtil::collapse_path_dots(&(toc_resource_root + Self::read_nav_reference(navpoint_el
+ement)));
+    |                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^ expected `&str`, found `String`
+    |
+help: consider borrowing here
+    |
+118 |         let reference = StringUtil::collapse_path_dots(&(toc_resource_root + &Self::read_nav_reference(navpoint_e
+lement)));
+    |                                                                              +
+
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:142:42
+    |
+142 |         match decode_url(result.clone(), Constants::CHARACTER_ENCODING) {
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the associated constant of
+ trait
+    |
+   ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:7:3
+    |
+  7 |   const CHARACTER_ENCODING: &'static str = "UTF-8";
+    |   -------------------------------------- `Constants::CHARACTER_ENCODING` defined here
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:209:13
+    |
+208 |         serializer.attribute(EpubWriter::EMPTY_NAMESPACE_PREFIX, NCXDocumentV2::NCX_ATTRIBUTES_VERSION,
+    |                    --------- arguments to this method are incorrect
+209 |             NCXDocumentV2::NCX_ATTRIBUTE_VALUES_VERSION);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `&str`
+    |
+note: method defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:371:12
+    |
+371 |     pub fn attribute(&mut self, _namespace: &str, _name: &str, _value: String) {}
+    |            ^^^^^^^^^                                           --------------
+help: try using a conversion method
+    |
+===== L2637: error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type =====
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:142:42
+    |
+142 |         match decode_url(result.clone(), Constants::CHARACTER_ENCODING) {
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the associated constant of
+ trait
+    |
+   ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:7:3
+    |
+  7 |   const CHARACTER_ENCODING: &'static str = "UTF-8";
+    |   -------------------------------------- `Constants::CHARACTER_ENCODING` defined here
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:209:13
+    |
+208 |         serializer.attribute(EpubWriter::EMPTY_NAMESPACE_PREFIX, NCXDocumentV2::NCX_ATTRIBUTES_VERSION,
+    |                    --------- arguments to this method are incorrect
+209 |             NCXDocumentV2::NCX_ATTRIBUTE_VALUES_VERSION);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `&str`
+    |
+note: method defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:371:12
+    |
+371 |     pub fn attribute(&mut self, _namespace: &str, _name: &str, _value: String) {}
+    |            ^^^^^^^^^                                           --------------
+help: try using a conversion method
+    |
+209 |             NCXDocumentV2::NCX_ATTRIBUTE_VALUES_VERSION.to_string());
+    |                                                        ++++++++++++
+
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:298:58
+    |
+298 |             Some(fragment_id) => format!("{}{}{}", href, Constants::FRAGMENT_SEPARATOR_CHAR, fragment_id),
+    |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the a
+ssociated constant of trait
+    |
+   ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:12:3
+    |
+ 12 |   const FRAGMENT_SEPARATOR_CHAR: char = '#';
+    |   ----------------------------------- `Constants::FRAGMENT_SEPARATOR_CHAR` defined here
+===== L2649: error[E0308]: mismatched types =====
+error[E0308]: mismatched types
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:209:13
+    |
+208 |         serializer.attribute(EpubWriter::EMPTY_NAMESPACE_PREFIX, NCXDocumentV2::NCX_ATTRIBUTES_VERSION,
+    |                    --------- arguments to this method are incorrect
+209 |             NCXDocumentV2::NCX_ATTRIBUTE_VALUES_VERSION);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `&str`
+    |
+note: method defined here
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:371:12
+    |
+371 |     pub fn attribute(&mut self, _namespace: &str, _name: &str, _value: String) {}
+    |            ^^^^^^^^^                                           --------------
+help: try using a conversion method
+    |
+209 |             NCXDocumentV2::NCX_ATTRIBUTE_VALUES_VERSION.to_string());
+    |                                                        ++++++++++++
+
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:298:58
+    |
+298 |             Some(fragment_id) => format!("{}{}{}", href, Constants::FRAGMENT_SEPARATOR_CHAR, fragment_id),
+    |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the a
+ssociated constant of trait
+    |
+   ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:12:3
+    |
+ 12 |   const FRAGMENT_SEPARATOR_CHAR: char = '#';
+    |   ----------------------------------- `Constants::FRAGMENT_SEPARATOR_CHAR` defined here
+
+error[E0277]: the trait bound `EpubResourceProvider: LazyResourceProvider` is not satisfied
+  --> src\..\src\main\java\me\ag2s\epublib\epub\ResourcesLoader.rs:51:52
+   |
+51 |                 resource = LazyResource::with_size(resource_provider, zip_entry.get_size() as i64, href);
+   |                            ----------------------- ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |                            |
+   |                            required by a bound introduced by this call
+   |
+help: the trait `me_ag2s_epublib_domain_lazyresourceprovider::LazyResourceProvider` is not implemented for `me_ag2s_epu
+blib_domain_epubresourceprovider::EpubResourceProvider`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\EpubResourceProvider.rs:13:1
+===== L2667: error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type =====
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+   --> src\..\src\main\java\me\ag2s\epublib\epub\NCXDocumentV2.rs:298:58
+    |
+298 |             Some(fragment_id) => format!("{}{}{}", href, Constants::FRAGMENT_SEPARATOR_CHAR, fragment_id),
+    |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot refer to the a
+ssociated constant of trait
+    |
+   ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:12:3
+    |
+ 12 |   const FRAGMENT_SEPARATOR_CHAR: char = '#';
+    |   ----------------------------------- `Constants::FRAGMENT_SEPARATOR_CHAR` defined here
+
+error[E0277]: the trait bound `EpubResourceProvider: LazyResourceProvider` is not satisfied
+  --> src\..\src\main\java\me\ag2s\epublib\epub\ResourcesLoader.rs:51:52
+   |
+51 |                 resource = LazyResource::with_size(resource_provider, zip_entry.get_size() as i64, href);
+   |                            ----------------------- ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |                            |
+   |                            required by a bound introduced by this call
+   |
+help: the trait `me_ag2s_epublib_domain_lazyresourceprovider::LazyResourceProvider` is not implemented for `me_ag2s_epu
+blib_domain_epubresourceprovider::EpubResourceProvider`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\EpubResourceProvider.rs:13:1
+   |
+13 | pub struct EpubResourceProvider {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: this trait has no implementations, consider adding one
+  --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResourceProvider.rs:10:1
+   |
+10 | pub trait LazyResourceProvider {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `me_ag2s_epublib_domain_lazyresource::LazyResource::with_size`
+  --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:48:35
+   |
+47 |   pub fn with_size(
+   |          --------- required by a bound in this associated function
+48 |           resource_provider: impl LazyResourceProvider + 'static, size: i64, href: String) -> LazyResource {
+   |                                   ^^^^^^^^^^^^^^^^^^^^ required by this bound in `LazyResource::with_size`
+   = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type-
+1017342360250159176.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+===== L3141: error[E0382]: borrow of moved value: `user.username` =====
+error[E0382]: borrow of moved value: `user.username`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BaseController.rs:470:61
+    |
+468 |         result.insert(String::from("username"), Box::new(user.username));
+    |                                                          ------------- value moved here
+469 |         result.insert(String::from("lastLoginAt"), Box::new(user.last_login_at));
+470 |         result.insert(String::from("accessToken"), Box::new(user.username.clone() + ":" + &user.token));
+    |                                                             ^^^^^^^^^^^^^ value borrowed here after move
+    |
+    = note: move occurs because `user.username` has type `std::string::String`, which does not implement the `Copy` tra
+it
+
+error[E0382]: borrow of moved value: `directory`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\FileController.rs:184:59
+    |
+128 |         let directory = if requested_home == "__WEBDAV__" {
+    |             --------- move occurs because `directory` has type `stubs::File`, which does not implement the `Copy`
+ trait
+...
+183 |         context.put("__FILE_HOME__", Some(directory));
+    |                                           --------- value moved here
+184 |         logger().info(format!("context.__FILE_HOME__ {}", directory.to_string()));
+    |                                                           ^^^^^^^^^ value borrowed here after move
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+183 |         context.put("__FILE_HOME__", Some(directory.clone()));
+    |                                                    ++++++++
+
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:557:27
+    |
+525 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+554 |         save_storage("data", vec![String::from("users")], user_map);
+    |                                                           -------- value moved here
+...
+557 |         for (_, value) in &user_map {
+===== L3153: error[E0382]: borrow of moved value: `directory` =====
+error[E0382]: borrow of moved value: `directory`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\FileController.rs:184:59
+    |
+128 |         let directory = if requested_home == "__WEBDAV__" {
+    |             --------- move occurs because `directory` has type `stubs::File`, which does not implement the `Copy`
+ trait
+...
+183 |         context.put("__FILE_HOME__", Some(directory));
+    |                                           --------- value moved here
+184 |         logger().info(format!("context.__FILE_HOME__ {}", directory.to_string()));
+    |                                                           ^^^^^^^^^ value borrowed here after move
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+183 |         context.put("__FILE_HOME__", Some(directory.clone()));
+    |                                                    ++++++++
+
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:557:27
+    |
+525 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+554 |         save_storage("data", vec![String::from("users")], user_map);
+    |                                                           -------- value moved here
+...
+557 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+ssary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:24:56
+    |
+ 24 | fn save_storage(base: &str, names: Vec<String>, value: std::collections::HashMap<String, std::collections::HashMa
+p<String, Box<dyn std::any::Any>>>) {
+    |    ------------ in this function                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-8874784290947257511.txt'
+===== L3170: error[E0382]: borrow of moved value: `user_map` =====
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:557:27
+    |
+525 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+554 |         save_storage("data", vec![String::from("users")], user_map);
+    |                                                           -------- value moved here
+...
+557 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+ssary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:24:56
+    |
+ 24 | fn save_storage(base: &str, names: Vec<String>, value: std::collections::HashMap<String, std::collections::HashMa
+p<String, Box<dyn std::any::Any>>>) {
+    |    ------------ in this function                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-8874784290947257511.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:730:27
+    |
+707 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+726 |             save_storage("data", vec![String::from("users")], user_map);
+    |                                                               -------- value moved here
+...
+730 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+===== L3196: error[E0382]: borrow of moved value: `user_map` =====
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:730:27
+    |
+707 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+726 |             save_storage("data", vec![String::from("users")], user_map);
+    |                                                               -------- value moved here
+...
+730 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+ssary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:24:56
+    |
+ 24 | fn save_storage(base: &str, names: Vec<String>, value: std::collections::HashMap<String, std::collections::HashMa
+p<String, Box<dyn std::any::Any>>>) {
+    |    ------------ in this function                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-18019280053636475277.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0499]: cannot borrow `user_map` as mutable more than once at a time
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:845:13
+    |
+822 |             let existed_user = user_map.get_mut(&username);
+    |                                -------- first mutable borrow occurs here
+...
+845 |             user_map.insert(username, std::mem::take(existed_user));
+    |             ^^^^^^^^                                 ------------ first borrow later used here
+    |             |
+    |             second mutable borrow occurs here
+
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:850:27
+    |
+817 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+===== L3222: error[E0499]: cannot borrow `user_map` as mutable more than once at a time =====
+error[E0499]: cannot borrow `user_map` as mutable more than once at a time
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:845:13
+    |
+822 |             let existed_user = user_map.get_mut(&username);
+    |                                -------- first mutable borrow occurs here
+...
+845 |             user_map.insert(username, std::mem::take(existed_user));
+    |             ^^^^^^^^                                 ------------ first borrow later used here
+    |             |
+    |             second mutable borrow occurs here
+
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:850:27
+    |
+817 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+846 |             save_storage("data", vec![String::from("users")], user_map);
+    |                                                               -------- value moved here
+...
+850 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+ssary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:24:56
+    |
+ 24 | fn save_storage(base: &str, names: Vec<String>, value: std::collections::HashMap<String, std::collections::HashMa
+p<String, Box<dyn std::any::Any>>>) {
+    |    ------------ in this function                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-3671043103025805256.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0382]: borrow of partially moved value: `file`
+    --> src\..\src\main\java\com\htmake\reader\utils\Ext.rs:176:9
+     |
+ 171 |     let parent_file = file.parent_file.unwrap();
+===== L3233: error[E0382]: borrow of moved value: `user_map` =====
+error[E0382]: borrow of moved value: `user_map`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:850:27
+    |
+817 |         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::A
+ny>>> = std::colle...
+    |             ------------ move occurs because `user_map` has type `HashMap<String, HashMap<String, Box<dyn Any>>>`
+, which does not implement the `Copy` trait
+...
+846 |             save_storage("data", vec![String::from("users")], user_map);
+    |                                                               -------- value moved here
+...
+850 |         for (_, value) in &user_map {
+    |                           ^^^^^^^^^ value borrowed here after move
+    |
+note: consider changing this parameter type in function `save_storage` to borrow instead if owning the value isn't nece
+ssary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\UserController.rs:24:56
+    |
+ 24 | fn save_storage(base: &str, names: Vec<String>, value: std::collections::HashMap<String, std::collections::HashMa
+p<String, Box<dyn std::any::Any>>>) {
+    |    ------------ in this function                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-3671043103025805256.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0382]: borrow of partially moved value: `file`
+    --> src\..\src\main\java\com\htmake\reader\utils\Ext.rs:176:9
+     |
+ 171 |     let parent_file = file.parent_file.unwrap();
+     |                                        -------- `file.parent_file` partially moved due to this method call
+...
+ 176 |     if !file.exists() {
+     |         ^^^^ value borrowed here after partial move
+     |
+note: `std::option::Option::<T>::unwrap` takes ownership of the receiver `self`, which moves `file.parent_file`
+    --> D:\rust\tools\rustup\toolchains\stable-x86_64-pc-windows-gnu\lib/rustlib/src/rust\library\core\src\option.rs:10
+10:25
+     |
+1010 |     pub const fn unwrap(self) -> T {
+     |                         ^^^^

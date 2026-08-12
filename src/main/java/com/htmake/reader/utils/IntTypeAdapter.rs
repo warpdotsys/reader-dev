@@ -1,10 +1,11 @@
+use crate::prelude::*;
 // package com.htmake.reader.utils
 
 // import com.google.gson.*
 // import java.lang.reflect.Type
 
 /**
- * Gson TypeAdapter for Int that safely handles null, empty string, and floating point values.
+ * Gson TypeAdapter for Int that safely handles None, empty string, and floating point values.
  */
 // class IntTypeAdapter : JsonSerializer<Int>, JsonDeserializer<Int> {
 pub struct IntTypeAdapter;
@@ -26,23 +27,23 @@ impl JsonSerializer<i32> for IntTypeAdapter {
     //     return JsonPrimitive(src.toString())
     // }
     fn serialize(&self, src: Option<i32>, type_of_src: Option<Type>, context: Option<JsonSerializationContext>) -> JsonElement {
-        return JsonPrimitive::new(src.unwrap_or_default().to_string());
+        return JsonPrimitive::new(src.unwrap_or_default().to_string()).into();
     }
 }
 
 impl JsonDeserializer<i32> for IntTypeAdapter {
     // override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): Int? {
     //     if (!json.isJsonPrimitive) {
-    //         return null
+    //         return None
     //     }
     //     val primitive = json.asJsonPrimitive
-    //     return if (primitive.isNumber) primitive.asNumber.toInt() else null
+    //     return if (primitive.isNumber) primitive.asNumber.toInt() else None
     // }
     fn deserialize(&self, json: JsonElement, type_of_t: Option<Type>, context: Option<JsonDeserializationContext>) -> Option<i32> {
-        if !json.is_json_primitive {
+        if !json.is_json_primitive() {
             return None;
         }
-        let primitive = json.as_json_primitive;
-        return if primitive.is_number { primitive.as_number.to_int() } else { None };
+        let primitive = json.as_json_primitive();
+        return if primitive.is_number() { Some(primitive.as_number().to_int()) } else { None };
     }
 }

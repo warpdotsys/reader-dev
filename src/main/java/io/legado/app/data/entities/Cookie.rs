@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 // @Entity(tableName = "cookies", indices = [(Index(value = ["url"], unique = true))])

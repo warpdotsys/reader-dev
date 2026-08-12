@@ -1,3 +1,7 @@
+use crate::prelude::*;
+// fix: 显式导入以覆盖 prelude 中多个 glob 重导出导致的同名歧义（File ← stubs/ResourceUtil；FileUtils ← stubs/FilesUtil）
+use crate::io_legado_app_utils_filesutil::FileUtils;
+use crate::stubs::File;
 // package io.legado.app.help
 //
 // import io.legado.app.constant.AppPattern
@@ -19,6 +23,19 @@
 // import kotlinx.coroutines.CoroutineScope
 
 //import org.apache.commons.text.similarity.JaccardSimilarity
+
+// fix: Kotlin `private val downloadImages = CopyOnWriteArraySet<String>()` 的转录占位
+static download_images: DownloadImages = DownloadImages;
+
+struct DownloadImages;
+
+impl DownloadImages {
+    fn contains(&self, _src: &str) -> bool {
+        false
+    }
+    fn add(&self, _src: &str) {}
+    fn remove(&self, _src: &str) {}
+}
 
 pub struct BookHelp;
 
@@ -54,7 +71,7 @@ impl BookHelp {
         // return name
         //     .replace(AppPattern.nameRegex, "")
         //     .trim { it <= ' ' }
-        AppPattern::name_regex.replace_all(name, "").into_owned()
+        AppPattern::nameRegex().replace_all(name, "").into_owned()
             .trim_matches(|it: char| it <= ' ').to_string()
     }
 
@@ -65,13 +82,13 @@ impl BookHelp {
         // return author
         //     .replace(AppPattern.authorRegex, "")
         //     .trim { it <= ' ' }
-        AppPattern::author_regex.replace_all(author, "").into_owned()
+        AppPattern::authorRegex().replace_all(author, "").into_owned()
             .trim_matches(|it: char| it <= ' ').to_string()
     }
 
     pub fn get_book_cache_dir(book: &Book) -> File {
         // val md5Encode = MD5Utils.md5Encode(book.bookUrl).toString()
-        let md5_encode = MD5Utils::md5_encode(&book.book_url).to_string();
+        let md5_encode = MD5Utils::md5Encode(Some(book.book_url.as_str())).to_string();
         let book_dir = book.get_book_dir();
         // if (bookDir.isEmpty()) {
         //     throw Exception("bookDir不能为空")
@@ -79,12 +96,12 @@ impl BookHelp {
         if book_dir.is_empty() {
             panic!("bookDir不能为空")
         }
-        let local_cache_dir = File::new(&book_dir).get_file(&md5_encode);
+        let local_cache_dir = File::new(&book_dir).resolve(md5_encode.as_str());
         // if (!localCacheDir.exists()) {
         //     localCacheDir.mkdirs()
         // }
         if !local_cache_dir.exists() {
-            let _ = std::fs::create_dir_all(&local_cache_dir.path);
+            let _ = std::fs::create_dir_all(&local_cache_dir.path());
         }
         local_cache_dir
     }
@@ -92,15 +109,15 @@ impl BookHelp {
     /**
      * 读取章节内容
      */
-    pub fn get_content(book: &Book, book_chapter: &BookChapter) -> Option<String> {
-        let file = get_book_cache_dir(book).get_file(format!("%d.txt", book_chapter.index));
+    pub fn get_content(book: &mut Book, book_chapter: &BookChapter) -> Option<String> {
+        let file = Self::get_book_cache_dir(book).resolve(&format!("{}.txt", book_chapter.index));
         if file.exists() {
             return Some(file.read_text());
         }
         if book.is_local_book() {
             let content = LocalBook::get_content(book, book_chapter);
             if content.is_some() && book.is_epub() {
-                save_text(book, book_chapter, content.as_ref().unwrap());
+                Self::save_text(book, book_chapter, content.as_ref().unwrap());
             }
             return content;
         }
@@ -115,9 +132,9 @@ impl BookHelp {
         //     getBookCacheDir(book),
         //     String.format("%d.txt", bookChapter.index)
         // ).delete()
-        FileUtils::create_file_if_not_exist(
-            get_book_cache_dir(book),
-            format!("%d.txt", book_chapter.index),
+        FileUtils::createFileIfNotExist(
+            &Self::get_book_cache_dir(book),
+            &[format!("{}.txt", book_chapter.index).as_str()],
         ).delete();
     }
 
@@ -128,8 +145,8 @@ impl BookHelp {
         book_chapter: &BookChapter,
         content: &str,
     ) {
-        save_text(book, book_chapter, content);
-        save_images(scope, book_source, book, book_chapter, content).await;
+        Self::save_text(book, book_chapter, content);
+        Self::save_images(scope, book_source, book, book_chapter, content).await;
     }
 
     pub fn save_text(
@@ -139,9 +156,9 @@ impl BookHelp {
     ) {
         // if (content.isEmpty()) return
         //保存文本
-        FileUtils::create_file_if_not_exist(
-            get_book_cache_dir(book),
-            format!("%d.txt", book_chapter.index),
+        FileUtils::createFileIfNotExist(
+            &Self::get_book_cache_dir(book),
+            &[format!("{}.txt", book_chapter.index).as_str()],
         ).write_text(content);
     }
 
@@ -153,11 +170,11 @@ impl BookHelp {
         content: &str,
     ) {
         // val awaitList = arrayListOf<Deferred<Int>>()
-        let mut await_list: Vec<Deferred<i32>> = Vec::new();
+        let mut await_list: Vec<Deferred> = Vec::new();
         // content.split("\n").forEach {
         //     val matcher = AppPattern.imgPattern.matcher(it)
         //     if (matcher.find()) {
-        //         matcher.group(1)?.let { src ->
+        //         matcher.group_idx(1)?.let { src ->
         //             val mSrc = NetworkUtils.getAbsoluteURL(bookChapter.url, src)
         //             val req: Deferred<Int> = scope.async {
         //                 saveImage(bookSource, book, mSrc)
@@ -168,12 +185,15 @@ impl BookHelp {
         //     }
         // }
         for it in content.split("\n") {
-            let matcher = AppPattern::img_pattern.find(it);
+            let matcher = AppPattern::imgPattern().find(it);
             if let Some(matcher) = matcher {
-                if let Some(src) = matcher.group(1) {
-                    let m_src = NetworkUtils::get_absolute_url(&book_chapter.url, src);
-                    let req: Deferred<i32> = scope.async(|| async move {
-                        save_image(book_source, book, m_src).await;
+                // fix: Kotlin `matcher.group(1)?.let {}` → group_values 空串判断
+                let src = matcher.group_values(1);
+                if !src.is_empty() {
+                    let m_src = NetworkUtils::getAbsoluteURL(Some(book_chapter.url.as_str()), &src);
+                    // fix: 方法名 `async` 为 Rust 关键字 → r#async 转义
+                    let req: Deferred = scope.r#async(|| async move {
+                        Self::save_image(Some(book_source), book, m_src.as_str()).await;
                         return 1;
                     });
                     await_list.push(req);
@@ -184,7 +204,8 @@ impl BookHelp {
         //     it.await()
         // }
         for it in await_list {
-            it.await().await;
+            // fix: 方法名 `await` 为 Rust 关键字 → r#await 转义（对应 Kotlin 的 it.await()）
+            it.r#await();
         }
     }
 
@@ -195,11 +216,24 @@ impl BookHelp {
         while download_images.contains(src) {
             delay(100).await;
         }
-        if get_image(book, src).exists() {
+        if Self::get_image(book, src).exists() {
             return;
         }
         download_images.add(src);
-        let analyze_url = AnalyzeUrl::new(src, source = book_source);
+        // fix: Kotlin `AnalyzeUrl(src, source = bookSource)`；转录签名差异——仅传 ruleUrl，其余参数 None 占位
+        let mut analyze_url = AnalyzeUrl::new(
+            src.to_string(),
+            None,
+            None,
+            None,
+            None,
+            String::new(),
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
         // try {
         //     analyzeUrl.getByteArrayAwait().let {
         //         FileUtils.createFileIfNotExist(
@@ -213,26 +247,22 @@ impl BookHelp {
         // } finally {
         //     downloadImages.remove(src)
         // }
-        match analyze_url.get_byte_array_await().await {
-            Ok(it) => {
-                FileUtils::create_file_if_not_exist(
-                    get_book_cache_dir(book),
-                    Self::cache_image_folder_name,
-                    format!("{}.{}", MD5Utils::md5_encode16(src), get_image_suffix(src)),
-                ).write_bytes(it);
-            }
-            Err(e) => {
-                e.print_stack_trace();
-            }
-        }
+        // fix: get_byte_array_await 返回 Vec<u8>（无 Result 错误路径），Kotlin try/catch 等价分支省略
+        let bytes = analyze_url.get_byte_array_await().await;
+        FileUtils::createFileIfNotExist(
+            &Self::get_book_cache_dir(book),
+            &[
+                Self::cache_image_folder_name,
+                format!("{}.{}", MD5Utils::md5Encode16(src), Self::get_image_suffix(src)).as_str(),
+            ],
+        ).write_bytes(bytes);
         download_images.remove(src);
     }
 
     pub fn get_image(book: &Book, src: &str) -> File {
-        get_book_cache_dir(book).get_file(
+        Self::get_book_cache_dir(book).resolve(
             Self::cache_image_folder_name,
-            format!("{}.{}", MD5Utils::md5_encode16(src), get_image_suffix(src)),
-        )
+        ).resolve(&format!("{}.{}", MD5Utils::md5Encode16(src), Self::get_image_suffix(src)))
     }
 
     pub fn get_image_suffix(src: &str) -> String {

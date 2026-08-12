@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // import org.apache.commons.text.StringEscapeUtils
 
 pub fn safeTrim(s: Option<&str>) -> Option<String> {
@@ -17,7 +18,7 @@ pub fn isAbsUrl(s: Option<&str>) -> bool {
 
 pub fn isDataUrl(s: Option<&str>) -> bool {
     match s {
-        Some(s) => AppPattern::dataUriRegex().matches(s),
+        Some(s) => AppPattern::dataUriRegex().is_match(s),
         None => false,
     }
 }
@@ -76,7 +77,7 @@ pub fn isTrue_default(s: Option<&str>, nullIsTrue: bool) -> bool {
     if s == None || s.unwrap().is_blank() || s.unwrap() == "null" {
         return nullIsTrue;
     }
-    !Regex::new("\\s*(?i)(false|no|not|0)\\s*").matches(s.unwrap())
+    !Regex::new("\\s*(?i)(false|no|not|0)\\s*").unwrap().is_match(s.unwrap())
 }
 
 pub fn htmlFormat(s: Option<&str>) -> String {
@@ -84,18 +85,18 @@ pub fn htmlFormat(s: Option<&str>) -> String {
         return "".to_string();
     }
     s.unwrap()
-        .replace(&Regex::new("(?i)<(br[\\s/]*|/*p\\b.*?|/*div\\b.*?)>"), "\n")// 替换特定标签为换行符
-        .replace(&Regex::new("<[script>]*.*?>|&nbsp;"), "")// 删除script标签对和空格转义符
-        .replace(&Regex::new("\\s*\\n+\\s*"), "\n　　")// 移除空行,并增加段前缩进2个汉字
-        .replace(&Regex::new("^[\\n\\s]+"), "　　")//移除开头空行,并增加段前缩进2个汉字
-        .replace(&Regex::new("[\\n\\s]+$"), "") //移除尾部空行
+        .replace_with_regex("(?i)<(br[\\s/]*|/*p\\b.*?|/*div\\b.*?)>", "\n")// 替换特定标签为换行符
+        .replace_with_regex("<[script>]*.*?>|&nbsp;", "")// 删除script标签对和空格转义符
+        .replace_with_regex("\\s*\\n+\\s*", "\n　　")// 移除空行,并增加段前缩进2个汉字
+        .replace_with_regex("^[\\n\\s]+", "　　")//移除开头空行,并增加段前缩进2个汉字
+        .replace_with_regex("[\\n\\s]+$", "") //移除尾部空行
 }
 
 pub fn splitNotBlank(s: &str, delimiter: &[&str]) -> Vec<String> {
     split_impl(s, delimiter)
 }
 
-fn split_impl(s: &str, delimiter: &[&str]) -> Vec<String> {
+pub fn split_impl(s: &str, delimiter: &[&str]) -> Vec<String> {
     let mut parts = vec![s.to_string()];
     for d in delimiter {
         let mut new_parts = Vec::new();
@@ -112,7 +113,12 @@ pub fn splitNotBlank_regex(s: &str, regex: &Regex) -> Vec<String> {
 }
 
 pub fn splitNotBlank_regex_limit(s: &str, regex: &Regex, limit: i32) -> Vec<String> {
-    s.split_limit(regex, limit).iter().map(|it| it.trim().to_string()).filter(|it| !it.is_blank()).collect()
+    let parts: Vec<String> = if limit > 0 {
+        regex.splitn(s, limit as usize).map(|x| x.to_string()).collect()
+    } else {
+        regex.split(s).map(|x| x.to_string()).collect()
+    };
+    parts.iter().map(|it| it.trim().to_string()).filter(|it| !it.is_blank()).collect()
 }
 
 pub fn startWithIgnoreCase(s: &str, start: &str) -> bool {
@@ -125,7 +131,7 @@ pub fn startWithIgnoreCase(s: &str, start: &str) -> bool {
 
 pub fn cnCompare(s: &str, other: &str) -> i32 {
     // return java.text.Collator.getInstance(Locale.CHINA).compare(this, other)
-    s.compare_to(other)
+    s.cmp_sensitive(other)
 }
 
 /**
@@ -145,6 +151,6 @@ pub fn toStringArray(s: &str) -> Vec<String> {
     })();
     match result {
         Ok(arr) => arr,
-        Err(_) => s.split("").filter(|x| !x.is_empty()).collect(),
+        Err(_) => s.split("").filter(|x| !x.is_empty()).map(|x| x.to_string()).collect(),
     }
 }

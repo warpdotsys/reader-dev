@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::{Collector, Element, Evaluator};
 // package io.legado.app.model.analyzeRule
 
 // import org.jsoup.Jsoup
@@ -14,25 +16,36 @@
 
 // Any 占位枚举: parse() 入参使用 Element / JXNode 变体,
 // ElementsSingle.indexes 使用 Int(对应 Int) 与 Triple(对应 Triple<Int?, Int?, Int>) 变体。
-enum Any {
+pub enum Any {
     Element(Element),
     JXNode(JXNode),
     Int(i32),
     Triple(Option<i32>, Option<i32>, i32),
 }
 
+impl std::fmt::Display for Any {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Any::Element(e) => write!(f, "{}", e),
+            Any::JXNode(n) => write!(f, "{}", n),
+            Any::Int(v) => write!(f, "{}", v),
+            Any::Triple(a, b, c) => write!(f, "({:?}, {:?}, {})", a, b, c),
+        }
+    }
+}
+
 // String.startsWith(prefix, ignoreCase = true)
-fn starts_with_ignore_case(s: &str, prefix: &str) -> bool {
+pub fn starts_with_ignore_case(s: &str, prefix: &str) -> bool {
     s.len() >= prefix.len() && s[..prefix.len()].eq_ignore_ascii_case(prefix)
 }
 
 // String.isBlank()
-fn is_blank(s: &str) -> bool {
+pub fn is_blank(s: &str) -> bool {
     s.trim().is_empty()
 }
 
 // 模拟 LinkedHashSet 去重且保持插入顺序 (mutableSetOf<Int>)
-fn add_index(index_set: &mut Vec<i32>, it: i32) {
+pub fn add_index(index_set: &mut Vec<i32>, it: i32) {
     if !index_set.contains(&it) {
         index_set.push(it);
     }
@@ -42,7 +55,7 @@ fn add_index(index_set: &mut Vec<i32>, it: i32) {
  * Created by GKF on 2018/1/25.
  * 书源规则解析
  */
-struct AnalyzeByJSoup {
+pub struct AnalyzeByJSoup {
     // private var element: Element = parse(doc)
     element: Element,
 }
@@ -67,9 +80,9 @@ impl AnalyzeByJSoup {
             Any::JXNode(doc) => if doc.is_element() {
                 doc.as_element()
             } else {
-                Jsoup::parse(doc.to_string())
+                Jsoup::parse(doc.to_string()).body()
             },
-            _ => Jsoup::parse(doc.to_string()),
+            _ => Jsoup::parse(doc.to_string()).body(),
         }
     }
     // }
@@ -93,7 +106,7 @@ impl AnalyzeByJSoup {
      * 合并内容列表,得到内容
      */
     // internal fun getString(ruleStr: String) =
-    //     if (ruleStr.isEmpty()) null
+    //     if (ruleStr.isEmpty()) None
     //     else getStringList(ruleStr).takeIf { it.isNotEmpty() }?.joinToString("\n")
     fn get_string(&self, rule_str: &str) -> Option<String> {
         if rule_str.is_empty() {
@@ -137,7 +150,7 @@ impl AnalyzeByJSoup {
         let source_rule = SourceRule::new(rule_str);
 
         if source_rule.elements_rule.is_empty() {
-            text_s.push(self.element.data().unwrap_or("").to_string());
+            text_s.push(self.element.data().unwrap_or_default());
         } else {
             let mut rule_analyzes = RuleAnalyzer::new(source_rule.elements_rule.clone(), false);
             let rule_str_s = rule_analyzes.split_rule(&["&&", "||", "%%"]);
@@ -201,14 +214,14 @@ impl AnalyzeByJSoup {
         if source_rule.is_css {
             for rule_str in rule_str_s {
                 let temp_s = temp.select(&rule_str);
-                elements_list.push(temp_s);
+                elements_list.push(temp_s.clone());
                 if temp_s.size() > 0 && rule_analyzes.elements_type == "||" {
                     break;
                 }
             }
         } else {
             for rule_str in rule_str_s {
-                let mut rs_rule = RuleAnalyzer::new(rule_str, false);
+                let mut rs_rule = RuleAnalyzer::new(rule_str.clone(), false);
 
                 rs_rule.trim(); // 修剪当前规则之前的"@"或者空白符
 
@@ -216,7 +229,7 @@ impl AnalyzeByJSoup {
 
                 let el = if rs.len() > 1 {
                     let mut el = Elements::new();
-                    el.add(temp);
+                    el.add(temp.clone());
                     for rl in rs {
                         let mut es = Elements::new();
                         for et in el.iter() {
@@ -230,7 +243,7 @@ impl AnalyzeByJSoup {
                     ElementsSingle::new().get_elements_single(temp, &rule_str)
                 };
 
-                elements_list.push(el);
+                elements_list.push(el.clone());
                 if el.size() > 0 && rule_analyzes.elements_type == "||" {
                     break;
                 }
@@ -241,7 +254,7 @@ impl AnalyzeByJSoup {
                 for i in 0..elements_list[0].size() {
                     for es in &elements_list {
                         if i < es.size() {
-                            elements.add(es[i].clone());
+                            elements.add(es.get(i));
                         }
                     }
                 }
@@ -265,7 +278,7 @@ impl AnalyzeByJSoup {
 
         let mut elements = Elements::new(); // Elements()
 
-        elements.add(&self.element);
+        elements.add(self.element.clone());
 
         let mut rule = RuleAnalyzer::new(rule_str.to_string(), false); //创建解析
         rule.trim(); //修建前置赘余符号
@@ -308,7 +321,7 @@ impl AnalyzeByJSoup {
                     let mut tn: Vec<String> = Vec::new(); // arrayListOf<String>()
                     let content_es = element.text_nodes();
                     for item in content_es.iter() {
-                        let text = item.text().trim_matches(|c| c <= ' ').to_string();
+                        let text = item.text.clone().trim_matches(|c| c <= ' ').to_string();
                         if !text.is_empty() {
                             tn.push(text);
                         }
@@ -368,7 +381,7 @@ impl AnalyzeByJSoup {
 //     val indexDefault: MutableList<Int> = mutableListOf(),
 //     val indexes: MutableList<Any> = mutableListOf()
 // ) {
-struct ElementsSingle {
+pub struct ElementsSingle {
     split: char, // var split: Char = '.'
     before_rule: String, // var beforeRule: String = ""
     index_default: Vec<i32>, // val indexDefault: MutableList<Int> = mutableListOf()
@@ -403,7 +416,7 @@ impl ElementsSingle {
                 "children" => temp.children(), //允许索引直接作为根元素，此时前置规则为空，效果与children相同
                 "class" => temp.get_elements_by_class(rules[1]),
                 "tag" => temp.get_elements_by_tag(rules[1]),
-                "id" => Collector::collect(Evaluator::Id(rules[1]), temp),
+                "id" => Collector::collect(Evaluator::Id(rules[1].to_string()), temp),
                 "text" => temp.get_elements_containing_own_text(rules[1]),
                 _ => temp.select(&self.before_rule),
             }
@@ -522,16 +535,23 @@ impl ElementsSingle {
          */
         if self.split == '!' {
             //排除
+            let mut excluded: Vec<usize> = Vec::new();
             for pc_int in &index_set {
-                elements[*pc_int as usize] = None; // 置空
+                excluded.push(*pc_int as usize); // 收集需要排除的索引（原 Kotlin 置空后 removeAll { it == null }）
             }
-            elements.remove_all(vec![None]); //测试过，这样就行
+            let mut new_list: Vec<Element> = Vec::new();
+            for (i, e) in elements.list.into_iter().enumerate() {
+                if !excluded.contains(&i) {
+                    new_list.push(e);
+                }
+            }
+            elements.list = new_list;
         } else if self.split == '.' {
             //选择
             let mut es = Elements::new();
 
             for pc_int in &index_set {
-                es.add(elements[*pc_int as usize].clone());
+                es.add(elements.get(*pc_int as usize));
             }
 
             elements = es;
@@ -675,7 +695,7 @@ impl ElementsSingle {
 //         ruleStr
 //     }
 // }
-struct SourceRule {
+pub struct SourceRule {
     is_css: bool, // var isCss = false
     elements_rule: String, // var elementsRule: String
 }

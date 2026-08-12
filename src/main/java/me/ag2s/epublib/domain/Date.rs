@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::java_util_Date;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -13,6 +15,7 @@
  *
  * @author paul
  */
+#[derive(Clone)]
 pub struct Date {
     event: Option<Event>,
     date_string: String,
@@ -21,19 +24,20 @@ pub struct Date {
 impl Date {
 
     pub fn new() -> Date {
-        Date::with_date(java_util_Date::new(), Some(Event::CREATION))
+        Date::with_date_and_event(java_util_Date::new(), Some(Event::CREATION))
     }
 
     pub fn with_date(date: java_util_Date) -> Date {
-        Date::with_date(date, None)
+        Date::with_date_and_event(date, None)
     }
 
     pub fn with_date_string(date_string: String) -> Date {
         Date::with_date_string_and_event(date_string, None)
     }
 
-    pub fn with_date(date: java_util_Date, event: Option<Event>) -> Date {
-        Date::with_date_string_and_event((SimpleDateFormat::new(PackageDocumentBase::date_format(), Locale::US)).format(date),
+    // fix: Rust 不支持重载，原 Kotlin withDate(Date, Event?) 重载更名为 with_date_and_event（与 with_date_string_and_event 命名一致）
+    pub fn with_date_and_event(date: java_util_Date, event: Option<Event>) -> Date {
+        Date::with_date_string_and_event((SimpleDateFormat::new_2args(PackageDocumentBase::DATE_FORMAT, Locale::US)).format(date.0),
                 event)
     }
 
@@ -45,7 +49,7 @@ impl Date {
     }
 
     pub fn with_date_and_event_string(date: java_util_Date, event: String) -> Date {
-        Date::with_date_string_and_event_string((SimpleDateFormat::new(PackageDocumentBase::date_format(), Locale::US)).format(date),
+        Date::with_date_string_and_event_string((SimpleDateFormat::new_2args(PackageDocumentBase::DATE_FORMAT, Locale::US)).format(date.0),
                 event)
     }
 
@@ -56,7 +60,7 @@ impl Date {
     }
 
     fn check_date(date_string: &String) -> String {
-        if date_string.is_none() {
+        if date_string.is_empty() {
             panic!(
                     "Cannot create a date from a blank string")
         }
@@ -85,6 +89,7 @@ impl Date {
     }
 }
 
+#[derive(Clone)]
 pub enum Event {
     PUBLICATION,
     MODIFICATION,
@@ -99,6 +104,10 @@ impl Event {
             Event::MODIFICATION => "modification",
             Event::CREATION => "creation",
         }
+    }
+
+    pub fn values() -> Vec<Event> {
+        vec![Event::PUBLICATION, Event::MODIFICATION, Event::CREATION]
     }
 
     pub fn from_value(v: &String) -> Option<Event> {

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.umdlib.tool;
 //
 // import java.io.IOException;
@@ -24,19 +25,20 @@ impl<'a> WrapOutputStream<'a> {
 
     // it is different from the writeInt of DataOutputStream
     pub fn write_int(&mut self, v: i32) {
-        self.os.write(&[(v >>> 0) & 0xFF]);
-        self.os.write(&[(v >>> 8) & 0xFF]);
-        self.os.write(&[(v >>> 16) & 0xFF]);
-        self.os.write(&[(v >>> 24) & 0xFF]);
+        // fix: Java `>>>`（无符号右移）→ Rust `(v as u32) >> n`，`& 0xFF` 取低 8 位（小端顺序，与 UMD 格式一致）
+        self.os.write(&[(((v as u32) >> 0) & 0xFF) as u8]);
+        self.os.write(&[(((v as u32) >> 8) & 0xFF) as u8]);
+        self.os.write(&[(((v as u32) >> 16) & 0xFF) as u8]);
+        self.os.write(&[(((v as u32) >> 24) & 0xFF) as u8]);
         self.inc_count(4);
     }
 
     pub fn write_byte(&mut self, b: u8) {
-        self.write(b);
+        self.write(&[b]);
     }
 
     pub fn write_byte_int(&mut self, n: i32) {
-        self.write(n);
+        self.write(&[n as u8]);
     }
 
     pub fn write_bytes(&mut self, bytes: &[u8]) {
@@ -45,7 +47,7 @@ impl<'a> WrapOutputStream<'a> {
 
     pub fn write_bytes_ints(&mut self, vals: &[i32]) {
         for v in vals {
-            self.write(*v);
+            self.write(&[*v as u8]);
         }
     }
 

@@ -1,3 +1,7 @@
+use crate::prelude::*;
+// fix: 显式导入以覆盖 prelude 中多个 glob 重导出导致的同名歧义
+// fix: (File ← stubs 与 me_ag2s_epublib_util_resourceutil; Closeable ← stubs 与 me_ag2s_epublib_util_ioutil; 等)
+use crate::stubs::{BufferedInputStream, ByteArrayOutputStream, Closeable, File, FileInputStream};
 pub struct FileUtils;
 
 impl FileUtils {
@@ -142,7 +146,8 @@ impl FileUtils {
     }
 
     pub fn closeSilently(c: Option<&mut dyn Closeable>) {
-        if c == None {
+        // fix: Option<&mut dyn Closeable> 不支持 PartialEq，Kotlin 的 `c == None` 改为 is_none()
+        if c.is_none() {
             return;
         }
         let _ = c.unwrap().close();
@@ -252,7 +257,8 @@ impl FileUtils {
                 return false;
             }
             match filterPattern {
-                Some(p) => p.matcher(&file.name()).find(),
+                // fix: Pattern::matcher 接收 String（按值），去掉多余的 &
+                Some(p) => p.matcher(file.name()).find(),
                 None => true,
             }
         }) {
@@ -361,7 +367,8 @@ impl FileUtils {
      */
     fn deleteResolveEBUSY(file: &File) -> bool {
         // Before you delete a Directory or File: rename it!
-        let to = File::new(file.absolutePath() + &System::currentTimeMillis().to_string());
+        // fix: File::new 接收 &str，Kotlin 中 String 参数需借用
+        let to = File::new(&(file.absolutePath() + &System::currentTimeMillis().to_string()));
 
         file.renameTo(&to);
         to.delete()
@@ -408,7 +415,8 @@ impl FileUtils {
                     if len == -1 {
                         break;
                     } else {
-                        bos.write(&bt, 0, len);
+                        // fix: Java 的重载 write(byte[], int, int) → write_range；len 为 i32 需转 usize
+                        bos.write_range(&bt, 0, len as usize);
                     }
                 }
                 bis.close();
@@ -440,7 +448,8 @@ impl FileUtils {
      * 移动文件或目录
      */
     pub fn move_file(src: &File, tar: &File) -> bool {
-        Self::rename(src, tar)
+        // fix: Kotlin 重载解析中 move(File, File) 调用的是 rename(File, File)，即 rename_file
+        Self::rename_file(src, tar)
     }
 
     /**
@@ -481,15 +490,19 @@ impl FileUtils {
     pub fn readBytes(filepath: &str) -> Option<Vec<u8>> {
         let mut fis: Option<FileInputStream> = None;
         let result: Result<Vec<u8>, std::io::Error> = (|| {
-            fis = Some(FileInputStream::new(filepath));
+            // fix: Java 的 FileInputStream(String) 构造 → new_path（new 仅接收 &File）
+            fis = Some(FileInputStream::new_path(filepath));
             let mut baos = ByteArrayOutputStream::new();
             let mut buffer = vec![0u8; 1024];
             loop {
-                let len = fis.as_mut().unwrap().read(&mut buffer, 0, buffer.len());
+                // fix: &mut buffer 与 buffer.len() 不能同时借用，先取长度再调用
+                let buf_len = buffer.len();
+                let len = fis.as_mut().unwrap().read(&mut buffer, 0, buf_len);
                 if len == -1 {
                     break;
                 } else {
-                    baos.write(&buffer, 0, len);
+                    // fix: Java 的重载 write(byte[], int, int) → write_range；len 为 i32 需转 usize
+                    baos.write_range(&buffer, 0, len as usize);
                 }
             }
             let data = baos.toByteArray();
@@ -525,7 +538,8 @@ impl FileUtils {
                 file.parentFile().map(|p| p.mkdirs());
                 file.createNewFile();
             }
-            fos = Some(FileOutputStream::new(filepath));
+            // fix: Java 的 FileOutputStream(String) 构造 → new_path（new 仅接收 &File）
+            fos = Some(FileOutputStream::new_path(filepath));
             fos.as_mut().unwrap().write(data);
             Ok(true)
         })();
@@ -557,11 +571,14 @@ impl FileUtils {
             let mut buffer = vec![0u8; 1024 * 4];
             fos = Some(FileOutputStream::new(file));
             loop {
-                let len = data.read(&mut buffer, 0, buffer.len());
+                // fix: &mut buffer 与 buffer.len() 不能同时借用，先取长度再调用
+                let buf_len = buffer.len();
+                let len = data.read(&mut buffer, 0, buf_len);
                 if len == -1 {
                     break;
                 } else {
-                    fos.as_mut().unwrap().write(&buffer, 0, len);
+                    // fix: Java 的重载 write(byte[], int, int) → write_range；len 为 i32 需转 usize
+                    fos.as_mut().unwrap().write_range(&buffer, 0, len as usize);
                 }
             }
             data.close();
@@ -704,9 +721,11 @@ impl FileUtils {
      * 获取格式化后的文件/目录创建或最后修改时间
      */
     pub fn getDateTime_file(file: &File, format: &str) -> String {
-        let cal = Calendar::getInstance();
+        // fix: Kotlin 中 val 对象的字段可修改，Rust 中需声明 mut
+        let mut cal = Calendar::getInstance();
         cal.timeInMillis = file.lastModified();
-        SimpleDateFormat::new(format, Locale::PRC).format(cal.time)
+        // fix: Java 的 SimpleDateFormat(String, Locale) 构造 → new_2args（new 仅接收 pattern）
+        SimpleDateFormat::new_2args(format, Locale::PRC).format(cal.time)
     }
 
     /**
@@ -738,207 +757,161 @@ impl FileUtils {
         file.mkdirs()
     }
 
-    fn sort<T, C: FnMut(&T, &T) -> std::cmp::Ordering>(list: &mut Vec<T>, comparator: &mut C) {
-        list.sort_by(comparator);
+    // fix: Kotlin 的 Collections.sort(list, comparator) 在 Rust 中经 FileComparator 适配 sort_by 实现。
+    // fix: stable Rust 不支持手动实现 FnMut/FnOnce，原 FnMut/FnOnce impl 用本地 trait FileComparator 替代。
+    fn sort(list: &mut Vec<File>, comparator: &mut dyn FileComparator) {
+        list.sort_by(|a, b| {
+            let c = comparator.compare(Some(a), Some(b));
+            if c < 0 {
+                std::cmp::Ordering::Less
+            } else if c > 0 {
+                std::cmp::Ordering::Greater
+            } else {
+                std::cmp::Ordering::Equal
+            }
+        });
+    }
+}
+
+// fix: Kotlin 中的嵌套类 SortByExtension/SortByName/SortBySize/SortByTime（Comparator<File>）
+// fix: 移到模块级——Rust 不允许在 impl 块内嵌套 struct / impl。
+// fix: 用本地 trait FileComparator 替代 Java 的 Comparator<File>（stable Rust 无法手动实现 Fn 系列 trait）。
+pub trait FileComparator {
+    fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32;
+}
+
+pub struct SortByExtension;
+
+impl SortByExtension {
+    pub fn new() -> SortByExtension {
+        SortByExtension {}
+    }
+}
+
+impl FileComparator for SortByExtension {
+    fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
+        if f1 == None || f2 == None {
+            if f1 == None {
+                -1
+            } else {
+                1
+            }
+        } else {
+            let f1 = f1.unwrap();
+            let f2 = f2.unwrap();
+            if f1.isDirectory() && f2.isFile() {
+                -1
+            } else if f1.isFile() && f2.isDirectory() {
+                1
+            } else {
+                f1.name().cmp_ignore_case(&f2.name())
+            }
+        }
+    }
+}
+
+pub struct SortByName {
+    caseSensitive: bool,
+}
+
+impl SortByName {
+    pub fn new() -> SortByName {
+        SortByName { caseSensitive: false }
     }
 
-    pub struct SortByExtension;
+    pub fn new_caseSensitive(caseSensitive: bool) -> SortByName {
+        SortByName { caseSensitive }
+    }
+}
 
-    impl SortByExtension {
-        pub fn new() -> SortByExtension {
-            SortByExtension {}
-        }
-
-        pub fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
-            if f1 == None || f2 == None {
-                if f1 == None {
-                    -1
-                } else {
-                    1
-                }
+impl FileComparator for SortByName {
+    fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
+        if f1 == None || f2 == None {
+            return if f1 == None { -1 } else { 1 };
+        } else {
+            let f1 = f1.unwrap();
+            let f2 = f2.unwrap();
+            return if f1.isDirectory() && f2.isFile() {
+                -1
+            } else if f1.isFile() && f2.isDirectory() {
+                1
             } else {
-                let f1 = f1.unwrap();
-                let f2 = f2.unwrap();
-                if f1.isDirectory() && f2.isFile() {
-                    -1
-                } else if f1.isFile() && f2.isDirectory() {
-                    1
+                let s1 = f1.name();
+                let s2 = f2.name();
+                if self.caseSensitive {
+                    s1.cmp_sensitive(&s2)
                 } else {
-                    f1.name().cmp_ignore_case(&f2.name())
+                    s1.cmp_ignore_case(&s2)
+                }
+            };
+        }
+    }
+}
+
+pub struct SortBySize;
+
+impl SortBySize {
+    pub fn new() -> SortBySize {
+        SortBySize {}
+    }
+}
+
+impl FileComparator for SortBySize {
+    fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
+        if f1 == None || f2 == None {
+            if f1 == None {
+                -1
+            } else {
+                1
+            }
+        } else {
+            let f1 = f1.unwrap();
+            let f2 = f2.unwrap();
+            if f1.isDirectory() && f2.isFile() {
+                -1
+            } else if f1.isFile() && f2.isDirectory() {
+                1
+            } else {
+                if f1.length() < f2.length() {
+                    -1
+                } else {
+                    1
                 }
             }
         }
     }
+}
 
-    impl FnMut for SortByExtension {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
+pub struct SortByTime;
 
-        extern "rust-call" fn call_mut(&mut self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
+impl SortByTime {
+    pub fn new() -> SortByTime {
+        SortByTime {}
     }
+}
 
-    impl FnOnce for SortByExtension {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_once(self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    pub struct SortByName {
-        caseSensitive: bool,
-    }
-
-    impl SortByName {
-        pub fn new() -> SortByName {
-            SortByName { caseSensitive: false }
-        }
-
-        pub fn new_caseSensitive(caseSensitive: bool) -> SortByName {
-            SortByName { caseSensitive }
-        }
-
-        pub fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
-            if f1 == None || f2 == None {
-                return if f1 == None { -1 } else { 1 };
+impl FileComparator for SortByTime {
+    fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
+        if f1 == None || f2 == None {
+            if f1 == None {
+                -1
             } else {
-                let f1 = f1.unwrap();
-                let f2 = f2.unwrap();
-                return if f1.isDirectory() && f2.isFile() {
-                    -1
-                } else if f1.isFile() && f2.isDirectory() {
-                    1
-                } else {
-                    let s1 = f1.name();
-                    let s2 = f2.name();
-                    if self.caseSensitive {
-                        s1.cmp_sensitive(&s2)
-                    } else {
-                        s1.cmp_ignore_case(&s2)
-                    }
-                };
+                1
             }
-        }
-    }
-
-    impl FnMut for SortByName {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_mut(&mut self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    impl FnOnce for SortByName {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_once(self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    pub struct SortBySize;
-
-    impl SortBySize {
-        pub fn new() -> SortBySize {
-            SortBySize {}
-        }
-
-        pub fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
-            if f1 == None || f2 == None {
-                if f1 == None {
-                    -1
-                } else {
-                    1
-                }
+        } else {
+            let f1 = f1.unwrap();
+            let f2 = f2.unwrap();
+            if f1.isDirectory() && f2.isFile() {
+                -1
+            } else if f1.isFile() && f2.isDirectory() {
+                1
             } else {
-                let f1 = f1.unwrap();
-                let f2 = f2.unwrap();
-                if f1.isDirectory() && f2.isFile() {
+                if f1.lastModified() > f2.lastModified() {
                     -1
-                } else if f1.isFile() && f2.isDirectory() {
-                    1
                 } else {
-                    if f1.length() < f2.length() {
-                        -1
-                    } else {
-                        1
-                    }
+                    1
                 }
             }
-        }
-    }
-
-    impl FnMut for SortBySize {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_mut(&mut self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    impl FnOnce for SortBySize {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_once(self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    pub struct SortByTime;
-
-    impl SortByTime {
-        pub fn new() -> SortByTime {
-            SortByTime {}
-        }
-
-        pub fn compare(&self, f1: Option<&File>, f2: Option<&File>) -> i32 {
-            if f1 == None || f2 == None {
-                if f1 == None {
-                    -1
-                } else {
-                    1
-                }
-            } else {
-                let f1 = f1.unwrap();
-                let f2 = f2.unwrap();
-                if f1.isDirectory() && f2.isFile() {
-                    -1
-                } else if f1.isFile() && f2.isDirectory() {
-                    1
-                } else {
-                    if f1.lastModified() > f2.lastModified() {
-                        -1
-                    } else {
-                        1
-                    }
-                }
-            }
-        }
-    }
-
-    impl FnMut for SortByTime {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_mut(&mut self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
-        }
-    }
-
-    impl FnOnce for SortByTime {
-        type Args = (Option<&File>, Option<&File>);
-        type Output = i32;
-
-        extern "rust-call" fn call_once(self, args: Self::Args) -> Self::Output {
-            self.compare(args.0, args.1)
         }
     }
 }

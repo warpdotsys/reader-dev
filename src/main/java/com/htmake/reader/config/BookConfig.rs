@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::File;
 // package com.htmake.reader.config
 
 // import java.io.File
@@ -184,9 +186,9 @@ impl BookConfig {
         let file = File::new(file_path);
         if file.exists() {
             let mut content = file.read_text();
-            if content.index_of(Self::JAVASCRIPT_VERSION) < 0 {
+            if content.index_of(Self::JAVASCRIPT_VERSION, 0) < 0 {
                 content = content.replace("<head>", format!("<head><script type=\"text/javascript\">{}</script>", Self::epub_inject_javascript()).as_str());
-                file.write_text(content);
+                file.write_text(&content);
             }
         }
     }

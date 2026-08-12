@@ -1,0 +1,82 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:26
++ Start-Sleep -Seconds 30; cargo check 2>&1 | Out-File cargo_check_xsr. ...
++                          ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: expected one of `!` or `::`, found `output`
+  --> src\..\src\main\java\io\legado\app\utils\Base64.rs:43:13
+   |
+42 |     /* package */ pub trait Coder {
+   |                                   - while parsing this item list starting here
+43 |         var output: Vec<u8>;
+   |             ^^^^^^ expected one of `!` or `::`
+...
+66 |     }
+   |     - the item list ends here
+
+error: trait is not supported in `trait`s or `impl`s
+  --> src\..\src\main\java\io\legado\app\utils\Base64.rs:42:19
+   |
+42 |     /* package */ pub trait Coder {
+   |                   ^^^^^^^^^^^^^^^
+   |
+   = help: consider moving the trait out to a nearby module scope
+
+error: expected identifier, found keyword `static`
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:145:9
+    |
+140 |     /* package */ pub struct Decoder {
+    |                              ------- while parsing this struct
+...
+145 |         static DECODE: [i32; 256] = [
+    |         ^^^^^^ expected identifier, found keyword
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:140:19
+    |
+140 |     /* package */ pub struct Decoder {
+    |                   ^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:207:5
+    |
+207 |     impl Decoder {
+    |     ^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: expected identifier, found keyword `const`
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:504:13
+    |
+498 |     /* package */ pub struct Encoder {
+    |                              ------- while parsing this struct
+...
+504 |         pub const LINE_GROUPS: usize = 19;
+    |             ^^^^^ expected identifier, found keyword
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:498:19
+    |
+498 |     /* package */ pub struct Encoder {
+    |                   ^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:537:5
+    |
+537 |     impl Encoder {
+    |     ^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: expected one of `.`, `;`, `?`, `}`, or an operator, found `,`
+   --> src\..\src\main\java\org\kxml2\wap\wv\WV.rs:468:27
+    |
+468 |         Some("AccessType"),                           // 0x00 /* Common value token */
+    |                           ^ expected one of `.`, `;`, `?`, `}`, or an operator
+

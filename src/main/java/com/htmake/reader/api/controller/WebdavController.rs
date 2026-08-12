@@ -1,4 +1,35 @@
+use crate::prelude::*;
 // package com.htmake.reader.api.controller
+
+// fix: 显式导入消除 stubs / CURD / XmlStreamReader 等 glob 重导出歧义（显式导入优先于 glob）
+// fix: RoutingContext 沿用项目统一约定——prelude glob 的 CURD 占位 RoutingContext（BaseController/各控制器同型），
+//      stubs::io::vertx::RoutingContext 仅被 Route::global_handler 占用，路由处理改走 global_handler_curd（见 stubs 追加）
+use crate::stubs::io::vertx::Router;
+use crate::stubs::{File, JsonObject, URL};
+
+// fix: VertExt 与 stubs 同名 get_storage 的 glob 歧义 → 本地包装，按 Kotlin vararg 参数转发
+fn get_storage(base: &str, names: Vec<String>) -> Option<String> {
+    let mut full = vec![String::from(base)];
+    full.extend(names);
+    crate::com_htmake_reader_utils_vertext::get_storage(&full, ".json")
+}
+
+// fix: catch_unwind 的 panic 载荷是 Box<dyn Any + Send>，无 to_string；按常见载荷类型提取消息
+fn panic_message(e: Box<dyn std::any::Any + Send>) -> String {
+    if let Some(s) = e.downcast_ref::<String>() {
+        s.clone()
+    } else if let Some(s) = e.downcast_ref::<&str>() {
+        s.to_string()
+    } else {
+        String::from("panic")
+    }
+}
+
+// fix: WebdavController 含 Box<dyn Fn> 字段（非 RefUnwindSafe），闭包捕获 &self 时 catch_unwind 不满足
+//      UnwindSafe 约束 → 用 AssertUnwindSafe 透明包装（Kotlin try/catch 语义等价转录）
+fn try_webdav<F: FnOnce() -> ()>(f: F) -> Result<(), Box<dyn std::any::Any + Send>> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(f))
+}
 
 // private val logger = KotlinLogging.logger {}
 
@@ -41,8 +72,8 @@ impl WebdavController {
     }
 
     // private fun destinationPath(context: RoutingContext): File? {
-    //     val destination = context.request().getHeader("Destination") ?: return null
-    //     val destinationPath = runCatching { URL(destination).path }.getOrNull() ?: return null
+    //     val destination = context.request().getHeader("Destination") ?: return None
+    //     val destinationPath = runCatching { URL(destination).path }.getOrNull() ?: return None
     //     return resolveWebdavPath(context, decodedPath(destinationPath))
     // }
     fn destination_path(&self, context: &RoutingContext) -> Option<File> {
@@ -50,7 +81,7 @@ impl WebdavController {
             Some(v) => v,
             None => return None,
         };
-        let destination_path = match std::panic::catch_unwind(|| URL::new(&destination).path()) {
+        let destination_path = match std::panic::catch_unwind(|| URL::new(destination.clone()).map(|u| u.path()).unwrap_or_default()) {
             Ok(p) => p,
             Err(_) => return None,
         };
@@ -169,17 +200,17 @@ impl WebdavController {
             base,
             on_handler_error,
         };
-        router.route("/reader3/webdav*").global_handler(|it| {
+        router.route_with_path("/reader3/webdav*").global_handler_curd(&|it| {
             it.add_headers_end_handler(|_| {
-                let res = it.response();
-                res.put_header("DAV", String::from("1,2"));
-                res.put_header("Access-Control-Allow-Origin", String::from("*"));
-                res.put_header("Access-Control-Allow-Credentials", String::from("true"));
-                res.put_header("Access-Control-Expose-Headers", String::from("DAV, content-length, Allow"));
-                res.put_header("MS-Author-Via", String::from("DAV"));
-                res.put_header("Allow", String::from("OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"));
-                if webdav_controller.base.app_config.secure {
-                    res.put_header("WWW-Authenticate", String::from("Basic realm=\"Default realm\""));
+                let mut res = it.response();
+                res.put_header("DAV", "1,2");
+                res.put_header("Access-Control-Allow-Origin", "*");
+                res.put_header("Access-Control-Allow-Credentials", "true");
+                res.put_header("Access-Control-Expose-Headers", "DAV, content-length, Allow");
+                res.put_header("MS-Author-Via", "DAV");
+                res.put_header("Allow", "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK");
+                if webdav_controller.base.get_app_config_secure() {
+                    res.put_header("WWW-Authenticate", "Basic realm=\"Default realm\"");
                 }
             });
             let raw_method = it.request().raw_method();
@@ -194,108 +225,108 @@ impl WebdavController {
                     || raw_method == "LOCK"
                     || raw_method == "UNLOCK"
                 {
-                    it.response().set_status_code(401).end();
+                    it.response().set_status_code(401).end(String::new());
                     return;
                 } else if raw_method == "OPTIONS" {
                     // CORS 预检请求不校验认证：浏览器/WebDAV 客户端预检会携带 Authorization 头，
                     // 此处返回 401 会导致客户端报"非法访问"、无法同步（JAR 继承 bug）
-                    it.response().set_status_code(200).end();
+                    it.response().set_status_code(200).end(String::new());
                     return;
                 }
             }
             match raw_method.as_str() {
                 "PROPFIND" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_list(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "MKCOL" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_mkdir(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "PUT" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_upload(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "GET" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_download(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "DELETE" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_delete(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "MOVE" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_move(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "COPY" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_copy(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "LOCK" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_lock(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
                 "UNLOCK" => {
                     // launch(Dispatchers.IO) {
-                    let result = std::panic::catch_unwind(|| {
+                    let result = try_webdav(|| {
                         webdav_controller.webdav_un_lock(it);
                     });
                     if let Err(e) = result {
-                        (webdav_controller.on_handler_error)(it, &Exception::new(e.to_string()));
+                        (webdav_controller.on_handler_error)(it, &Exception::new(panic_message(e)));
                     }
                     // }
                 }
-                "OPTIONS" => it.response().set_status_code(200).end(),
-                _ => it.response().set_status_code(405).end(),
+                "OPTIONS" => it.response().set_status_code(200).end(String::new()),
+                _ => it.response().set_status_code(405).end(String::new()),
             }
         });
         webdav_controller
@@ -306,7 +337,7 @@ impl WebdavController {
     //         return true
     //     }
     //     var authorization = context.request().getHeader("Authorization")
-    //     if (authorization == null || authorization.isEmpty()) {
+    //     if (authorization == None || authorization.isEmpty()) {
     //         return false
     //     }
     //
@@ -319,15 +350,15 @@ impl WebdavController {
     //     val password = auth[1]
     //     var userMap = mutableMapOf<String, Map<String, Any>>()
     //     var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
-    //     if (userMapJson != null) {
+    //     if (userMapJson != None) {
     //         userMap = userMapJson.map as MutableMap<String, Map<String, Any>>
     //     }
-    //     var existedUser = userMap.getOrDefault(username, null)
-    //     if (existedUser == null) {
+    //     var existedUser = userMap.getOrDefault(username, None)
+    //     if (existedUser == None) {
     //         return false
     //     }
     //     var userInfo: User? = existedUser.toDataClass()
-    //     if (userInfo == null) {
+    //     if (userInfo == None) {
     //         return false
     //     }
     //     var passwordEncrypted = genEncryptedPassword(password, userInfo.salt)
@@ -346,7 +377,7 @@ impl WebdavController {
     //     return true
     // }
     pub fn check_authorization(&self, context: &RoutingContext) -> bool {
-        if !self.base.app_config.secure {
+        if !self.base.get_app_config_secure() {
             return true;
         }
         let authorization = context.request().get_header("Authorization");
@@ -363,11 +394,13 @@ impl WebdavController {
         let username = auth[0].clone();
         let password = auth[1].clone();
         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::Any>>> = std::collections::HashMap::new();
-        let user_map_json: Option<JsonObject> = as_json_object(get_storage("data", vec![String::from("users")]));
+        let user_map_json: Option<JsonObject> = as_json_object(get_storage("data", vec![String::from("users")]).map(crate::stubs::Any::from_string));
         if let Some(json) = user_map_json {
-            user_map = json.map().clone();
+            // fix: JsonObject::map() 返回 HashMap<String, Any>（Kotlin map 为 Map<String, Any>），
+            //      嵌套用户 map 用 user_map_nested() 占位（值类型与 user_map 声明一致）
+            user_map = json.user_map_nested();
         }
-        let existed_user = user_map.get(&username).cloned();
+        let existed_user = user_map.get(&username);
         if existed_user.is_none() {
             return false;
         }
@@ -378,12 +411,12 @@ impl WebdavController {
         let user_info = user_info.unwrap();
         let password_encrypted = gen_encrypted_password(&password, &user_info.salt);
         if password_encrypted != user_info.password {
-            logger.info(format!("user: {} password error", user_info.username));
+            logger().info(format!("user: {} password error", user_info.username));
             return false;
         }
 
         if !user_info.enable_webdav {
-            logger.info(format!("user: {} enable_webdav: false", user_info.username));
+            logger().info(format!("user: {} enable_webdav: false", user_info.username));
             return false;
         }
 
@@ -394,7 +427,7 @@ impl WebdavController {
 
     // suspend fun webdavList(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(404).end()
     //         return
     //     }
@@ -481,12 +514,12 @@ impl WebdavController {
     pub fn webdav_list(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
         let file = file.unwrap();
         if !file.exists() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
 
@@ -541,15 +574,15 @@ impl WebdavController {
             let name = if show_name { f.name() } else { String::from("") };
             let modified_date = simple_date_format("yyyy-MM-dd HH:mm:ss", f.last_modified());
             if f.is_file() {
-                format!(file_response, url, modified_date, modified_date, name, f.length(), "")
+                string_format(file_response, &[url.clone(), modified_date.clone(), modified_date, name, f.length().to_string(), String::new()])
             } else {
-                format!(dir_response, url, modified_date, modified_date, name)
+                string_format(dir_response, &[url.clone(), modified_date.clone(), modified_date, name])
             }
         }
 
         let mut response = String::from("");
         if file.is_file() {
-            response = format!(xml, formatter(&file, &file_url, true, file_response, dir_response));
+            response = string_format(xml, &[formatter(&file, &file_url, true, file_response, dir_response)]);
             context.response().set_status_code(207).end(response);
             return;
         }
@@ -560,20 +593,20 @@ impl WebdavController {
             }
             response = formatter(&file, &file_url, false, file_response, dir_response);
             for it in file.list_files() {
-                let file_name = url_encode(&it.name(), "UTF-8");
+                let file_name = url_encode_charset(it.name(), "UTF-8");
                 response = response + &formatter(&it, &(file_url.clone() + &file_name), true, file_response, dir_response);
             }
-            response = format!(xml, response);
+            response = string_format(xml, &[response]);
             context.response().set_status_code(207).end(response);
             return;
         }
 
-        context.response().set_status_code(404).end();
+        context.response().set_status_code(404).end(String::new());
     }
 
     // suspend fun webdavMkdir(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
@@ -592,27 +625,27 @@ impl WebdavController {
     pub fn webdav_mkdir(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let file = file.unwrap();
         if file.exists() {
             // 文件夹存在时，返回成功
-            context.response().set_status_code(201).end();
+            context.response().set_status_code(201).end(String::new());
             return;
         }
-        let result = std::panic::catch_unwind(|| {
+        let result = try_webdav(|| {
             file.mkdirs();
-            context.response().set_status_code(201).end();
+            context.response().set_status_code(201).end(String::new());
         });
         if result.is_err() {
-            context.response().set_status_code(500).end();
+            context.response().set_status_code(500).end(String::new());
         }
     }
 
     // suspend fun webdavUpload(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
@@ -642,38 +675,38 @@ impl WebdavController {
     pub fn webdav_upload(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let file = file.unwrap();
-        if !file.parent_file().exists() {
-            context.response().set_status_code(409).end();
+        if !file.parent_file().map(|p| p.exists()).unwrap_or(false) {
+            context.response().set_status_code(409).end(String::new());
             return;
         }
         if file.is_directory() {
-            context.response().set_status_code(405).end();
+            context.response().set_status_code(405).end(String::new());
             return;
         }
         if file.exists() {
             file.delete();
         }
-        let result = std::panic::catch_unwind(|| {
+        let result = try_webdav(|| {
             file.write_bytes(context.get_body().get_bytes());
             // 同步用户进度
             if file.to_string().find("/bookProgress/").is_some() && file.to_string().find(".json").is_some() {
                 let user_name_space = self.base.get_user_name_space(context);
                 BookController::new().sync_book_progress_from_webdav(&file, user_name_space);
             }
-            context.response().set_status_code(201).end();
+            context.response().set_status_code(201).end(String::new());
         });
         if result.is_err() {
-            context.response().set_status_code(500).end();
+            context.response().set_status_code(500).end(String::new());
         }
     }
 
     // suspend fun webdavDownload(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(404).end()
     //         return
     //     }
@@ -692,26 +725,26 @@ impl WebdavController {
     pub fn webdav_download(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
         let file = file.unwrap();
         if !file.exists() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
         if file.is_directory() {
-            context.response().set_status_code(405).end();
+            context.response().set_status_code(405).end(String::new());
             return;
         }
-        context.response().put_header("Cache-Control", String::from("86400"))
-            .put_header("Content-Disposition", format!("attachment; filename={}", url_encode(&file.name(), "UTF-8")))
+        context.response().put_header("Cache-Control", "86400")
+            .put_header("Content-Disposition", &format!("attachment; filename={}", url_encode_charset(file.name(), "UTF-8")))
             .send_file(file.to_string());
     }
 
     // suspend fun webdavDelete(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(404).end()
     //         return
     //     }
@@ -725,21 +758,21 @@ impl WebdavController {
     pub fn webdav_delete(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
         let file = file.unwrap();
         if !file.exists() {
-            context.response().set_status_code(404).end();
+            context.response().set_status_code(404).end(String::new());
             return;
         }
         file.delete_recursively();
-        context.response().set_status_code(200).end();
+        context.response().set_status_code(200).end(String::new());
     }
 
     // suspend fun webdavMove(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(412).end()
     //         return
     //     }
@@ -748,19 +781,19 @@ impl WebdavController {
     //         return
     //     }
     //     var destination = context.request().getHeader("Destination")
-    //     if (destination == null) {
+    //     if (destination == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
     //     val destinationFile = destinationPath(context)
-    //     if (destinationFile == null) {
+    //     if (destinationFile == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
     //
     //     var overwrite = context.request().getHeader("Overwrite")
     //     if (destinationFile.exists()) {
-    //         if (overwrite == null || overwrite.isEmpty()) {
+    //         if (overwrite == None || overwrite.isEmpty()) {
     //             context.response().setStatusCode(412).end()
     //             return
     //         }
@@ -773,22 +806,22 @@ impl WebdavController {
     pub fn webdav_move(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(412).end();
+            context.response().set_status_code(412).end(String::new());
             return;
         }
         let file = file.unwrap();
         if !file.exists() {
-            context.response().set_status_code(412).end();
+            context.response().set_status_code(412).end(String::new());
             return;
         }
         let destination = context.request().get_header("Destination");
         if destination.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let destination_file = self.destination_path(context);
         if destination_file.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let destination_file = destination_file.unwrap();
@@ -796,19 +829,19 @@ impl WebdavController {
         let overwrite = context.request().get_header("Overwrite");
         if destination_file.exists() {
             if overwrite.is_none() || overwrite.unwrap().is_empty() {
-                context.response().set_status_code(412).end();
+                context.response().set_status_code(412).end(String::new());
                 return;
             }
             destination_file.delete_recursively();
         }
         file.rename_to(&destination_file);
 
-        context.response().set_status_code(201).end();
+        context.response().set_status_code(201).end(String::new());
     }
 
     // suspend fun webdavCopy(context: RoutingContext) {
     //     val file = resolveWebdavPath(context, requestPath(context))
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.response().setStatusCode(412).end()
     //         return
     //     }
@@ -817,19 +850,19 @@ impl WebdavController {
     //         return
     //     }
     //     var destination = context.request().getHeader("Destination")
-    //     if (destination == null) {
+    //     if (destination == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
     //     val destinationFile = destinationPath(context)
-    //     if (destinationFile == null) {
+    //     if (destinationFile == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
     //
     //     var overwrite = context.request().getHeader("Overwrite")
     //     if (destinationFile.exists()) {
-    //         if (overwrite == null || overwrite.isEmpty()) {
+    //         if (overwrite == None || overwrite.isEmpty()) {
     //             context.response().setStatusCode(412).end()
     //             return
     //         }
@@ -842,22 +875,22 @@ impl WebdavController {
     pub fn webdav_copy(&self, context: &RoutingContext) {
         let file = self.resolve_webdav_path(context, &Self::request_path(context));
         if file.is_none() {
-            context.response().set_status_code(412).end();
+            context.response().set_status_code(412).end(String::new());
             return;
         }
         let file = file.unwrap();
         if !file.exists() {
-            context.response().set_status_code(412).end();
+            context.response().set_status_code(412).end(String::new());
             return;
         }
         let destination = context.request().get_header("Destination");
         if destination.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let destination_file = self.destination_path(context);
         if destination_file.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let destination_file = destination_file.unwrap();
@@ -865,14 +898,14 @@ impl WebdavController {
         let overwrite = context.request().get_header("Overwrite");
         if destination_file.exists() {
             if overwrite.is_none() || overwrite.unwrap().is_empty() {
-                context.response().set_status_code(412).end();
+                context.response().set_status_code(412).end(String::new());
                 return;
             }
             destination_file.delete_recursively();
         }
         file.copy_recursively(&destination_file);
 
-        context.response().set_status_code(201).end();
+        context.response().set_status_code(201).end(String::new());
     }
 
     // suspend fun webdavLock(context: RoutingContext) {
@@ -905,7 +938,7 @@ impl WebdavController {
     //     var lockToken = "urn:uuid:" + UUID.randomUUID().toString()
     //
     //     var timeout = context.request().getHeader("Timeout")
-    //     if (timeout == null) {
+    //     if (timeout == None) {
     //         timeout = "Second-3600"
     //     }
     //
@@ -948,12 +981,12 @@ impl WebdavController {
 
         let file_url = context.request().absolute_uri();
 
-        context.response().put_header("Lock-Token", lock_token.clone()).set_status_code(200).end(format!(response, lock_token, file_url, timeout));
+        context.response().put_header("Lock-Token", &lock_token).set_status_code(200).end(string_format(&response, &[lock_token, file_url, timeout]));
     }
 
     // suspend fun webdavUnLock(context: RoutingContext) {
     //     var lockToken = context.request().getHeader("Lock-Token")
-    //     if (lockToken == null) {
+    //     if (lockToken == None) {
     //         context.response().setStatusCode(400).end()
     //         return
     //     }
@@ -962,11 +995,11 @@ impl WebdavController {
     pub fn webdav_un_lock(&self, context: &RoutingContext) {
         let lock_token = context.request().get_header("Lock-Token");
         if lock_token.is_none() {
-            context.response().set_status_code(400).end();
+            context.response().set_status_code(400).end(String::new());
             return;
         }
         let lock_token = lock_token.unwrap();
-        context.response().put_header("Lock-Token", lock_token).set_status_code(204).end();
+        context.response().put_header("Lock-Token", &lock_token).set_status_code(204).end(String::new());
     }
 
     // suspend fun backupToWebdav(context: RoutingContext): ReturnData {
@@ -976,7 +1009,7 @@ impl WebdavController {
     //     }
     //     if (appConfig.secure) {
     //         var userInfo = context.get("userInfo") as User?
-    //         if (userInfo == null) {
+    //         if (userInfo == None) {
     //             return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
     //         }
     //         if (!userInfo.enable_webdav) {
@@ -995,16 +1028,19 @@ impl WebdavController {
     pub fn backup_to_webdav(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
-        if self.base.app_config.secure {
+        if self.base.get_app_config_secure() {
             let user_info = context.get_user::<User>("userInfo");
             if user_info.is_none() {
-                return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+                return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+                return return_data;
             }
             let user_info = user_info.unwrap();
             if !user_info.enable_webdav {
-                return return_data.set_error_msg(String::from("未开启webdav功能"));
+                return_data.set_error_msg(String::from("未开启webdav功能"));
+                return return_data;
             }
         }
         let book_controller = BookController::new();
@@ -1012,8 +1048,10 @@ impl WebdavController {
         let user_name_space = self.base.get_user_name_space(context);
         let latest_zip_file_path = book_controller.get_last_back_file_from_webdav(&user_name_space);
         if !book_controller.save_to_webdav(&user_name_space, latest_zip_file_path) {
-            return return_data.set_error_msg(String::from("备份失败"));
+            return_data.set_error_msg(String::from("备份失败"));
+            return return_data;
         }
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 }

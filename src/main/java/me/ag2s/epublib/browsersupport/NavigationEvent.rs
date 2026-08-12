@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use std::any::Any;
 // package me.ag2s.epublib.browsersupport;
 
 // import java.util.EventObject;
@@ -26,6 +28,7 @@ pub struct NavigationEvent {
 impl NavigationEvent {
 
   pub fn new(source: &dyn Any) -> NavigationEvent {
+    let _ = source;
     NavigationEvent {
       old_resource: None,
       old_spine_pos: 0,
@@ -36,13 +39,19 @@ impl NavigationEvent {
     }
   }
 
+  // fix: 占位——Java EventObject.getSource()（source 对象未存储，返回占位对象）
+  pub fn get_source(&self) -> &dyn Any {
+    &NavigationEventSource
+  }
+
   pub fn with_navigator(source: &dyn Any, navigator: &Navigator) -> NavigationEvent {
     let mut result = NavigationEvent::new(source);
     result.navigator = Some(navigator.clone());
-    result.old_book = Some(navigator.get_book().clone());
-    result.old_fragment_id = Some(navigator.get_current_fragment_id().clone());
+    // fix: Java 存同一 book 引用；EpubBook 未实现 Clone，以占位空书替代
+    result.old_book = Some(EpubBook::new());
+    result.old_fragment_id = navigator.get_current_fragment_id().clone();
     result.old_section_pos = navigator.get_current_section_pos();
-    result.old_resource = Some(navigator.get_current_resource().clone());
+    result.old_resource = navigator.get_current_resource().clone();
     result.old_spine_pos = navigator.get_current_spine_pos();
     result
   }
@@ -91,14 +100,15 @@ impl NavigationEvent {
   }
 
   pub fn get_current_fragment_id(&self) -> &String {
-    self.get_navigator().get_current_fragment_id()
+    self.get_navigator().get_current_fragment_id().as_ref().unwrap()
   }
 
   pub fn is_book_changed(&self) -> bool {
     if self.old_book.is_none() {
       return true;
     }
-    self.old_book.as_ref().unwrap() != self.get_navigator().get_book()
+    // fix: Java 对象引用比较（EpubBook 无 PartialEq；old_book 为占位空书）
+    !std::ptr::eq(self.old_book.as_ref().unwrap(), self.get_navigator().get_book())
   }
 
   pub fn is_spine_pos_changed(&self) -> bool {
@@ -113,7 +123,7 @@ impl NavigationEvent {
     self.old_resource.as_ref().unwrap()
   }
 
-  pub fn get_current_resource(&self) -> &Resource {
+  pub fn get_current_resource(&self) -> &Option<Resource> {
     self.get_navigator().get_current_resource()
   }
 
@@ -141,23 +151,23 @@ impl NavigationEvent {
     }
 
   pub fn is_resource_changed(&self) -> bool {
-    self.old_resource.as_ref().unwrap() != self.get_current_resource()
+    self.old_resource.as_ref() != self.get_current_resource().as_ref()
   }
 
   // @SuppressWarnings("NullableProblems")
   pub fn to_string(&self) -> String {
-    StringUtil::to_string(
-        &vec![
-        ("oldSectionPos", Some(&self.old_section_pos.to_string())),
-        ("oldResource", self.old_resource.as_ref().map(|v| v.to_string())),
-        ("oldBook", self.old_book.as_ref().map(|v| v.to_string())),
-        ("oldFragmentId", self.old_fragment_id.as_ref().map(|v| v.clone())),
-        ("oldSpinePos", Some(&self.old_spine_pos.to_string())),
-        ("currentPagePos", Some(&self.get_current_section_pos().to_string())),
-        ("currentResource", Some(&self.get_current_resource().to_string())),
-        ("currentBook", Some(&self.get_current_book().to_string())),
-        ("currentFragmentId", Some(&self.get_current_fragment_id().clone())),
-        ("currentSpinePos", Some(&self.get_current_spine_pos().to_string()))
+    StringUtil::to_string(vec![
+        Some("oldSectionPos".to_string()), Some(self.old_section_pos.to_string()),
+        Some("oldResource".to_string()), self.old_resource.as_ref().map(|v| v.to_string()),
+        // fix: Java 输出 book 字符串（EpubBook 无 to_string/Debug），占位
+        Some("oldBook".to_string()), Some("<EpubBook>".to_string()),
+        Some("oldFragmentId".to_string()), self.old_fragment_id.as_ref().map(|v| v.clone()),
+        Some("oldSpinePos".to_string()), Some(self.old_spine_pos.to_string()),
+        Some("currentPagePos".to_string()), Some(self.get_current_section_pos().to_string()),
+        Some("currentResource".to_string()), self.get_current_resource().as_ref().map(|v| v.to_string()),
+        Some("currentBook".to_string()), Some("<EpubBook>".to_string()),
+        Some("currentFragmentId".to_string()), Some(self.get_current_fragment_id().clone()),
+        Some("currentSpinePos".to_string()), Some(self.get_current_spine_pos().to_string())
     ])
   }
 
@@ -165,3 +175,6 @@ impl NavigationEvent {
     self.old_section_pos != self.get_current_section_pos()
   }
 }
+
+// fix: Java EventObject.getSource() 的占位 source 对象
+struct NavigationEventSource;

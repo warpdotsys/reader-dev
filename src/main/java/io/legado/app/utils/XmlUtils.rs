@@ -1,9 +1,11 @@
+use crate::prelude::*;
+use crate::stubs::{Any, DocumentBuilderFactory, XmlDomNode as Node, XmlDomNodeList as NodeList};
 pub struct XmlUtils;
 
 impl XmlUtils {
-    pub fn xml2map(source: &dyn Any) -> LinkedHashMap<String, Any> {
+    pub fn xml2map(source: &Any) -> LinkedHashMap<String, Any> {
         let doc = LinkedHashMap::<String, Any>::new();
-        let result: Result<LinkedHashMap<String, Any>, ()> = (|| {
+        let result: Result<LinkedHashMap<String, Any>, StubError> = (|| {
             let builder = DocumentBuilderFactory::newInstance().newDocumentBuilder();
             if source.is_string() {
                 Ok(Self::parseNode(&builder.parse_str(source.as_str()).childNodes))
@@ -12,7 +14,7 @@ impl XmlUtils {
             } else if source.is_input_source() {
                 Ok(Self::parseNode(&builder.parse_input_source(source.as_input_source()).childNodes))
             } else {
-                Ok(doc)
+                Ok(doc.clone())
             }
         })();
         match result {
@@ -32,9 +34,9 @@ impl XmlUtils {
                 continue;
             }
 
-            let children = node.childNodes;
+            let children = node.childNodes.clone();
             if children.length == 1 && node.firstChild().nodeType == Node::TEXT_NODE {
-                doc.insert(node.nodeName, node.firstChild().nodeValue);
+                doc.insert(node.nodeName.clone(), node.firstChild().nodeValue);
             } else if children.length > 1 {
                 doc.insert(node.nodeName, Any::from_map(Self::parseNode(&children)));
             }

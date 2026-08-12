@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.IOException;
@@ -8,5 +9,5 @@
  */
 pub trait LazyResourceProvider {
 
-  fn get_resource_stream(&self, href: &String) -> Result<InputStream, IOException>;
+  fn get_resource_stream(&self, href: &String) -> Result<Box<dyn InputStream>, IOException>;
 }

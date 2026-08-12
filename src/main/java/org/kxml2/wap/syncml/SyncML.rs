@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package org.kxml2.wap.syncml;
 
 // import org.kxml2.wap.*;
@@ -11,15 +12,15 @@ impl SyncML {
 
     pub fn create_parser() -> WbxmlParser {
         let mut p = WbxmlParser::new();
-        p.set_tag_table(0, &TAG_TABLE_0);
-        p.set_tag_table(1, &TAG_TABLE_1);
+        p.set_tag_table(0, &TAG_TABLE_0.map(|s| Some(s)));
+        p.set_tag_table(1, &TAG_TABLE_1.map(|s| Some(s)));
         return p;
     }
 
     pub fn create_serializer() -> WbxmlSerializer {
-        let s = WbxmlSerializer::new();
-        s.set_tag_table(0, &TAG_TABLE_0);
-        s.set_tag_table(1, &TAG_TABLE_1);
+        let mut s = WbxmlSerializer::new();
+        s.set_tag_table(0, &TAG_TABLE_0.map(|s| Some(s)));
+        s.set_tag_table(1, &TAG_TABLE_1.map(|s| Some(s)));
         return s;
     }
 
@@ -28,13 +29,13 @@ impl SyncML {
 
     pub fn create_dm_parser() -> WbxmlParser {
         let mut p = SyncML::create_parser();
-        p.set_tag_table(2, &TAG_TABLE_2_DM);
+        p.set_tag_table(2, &TAG_TABLE_2_DM.map(|s| Some(s)));
         return p;
     }
 
     pub fn create_dm_serializer() -> WbxmlSerializer {
-        let s = SyncML::create_serializer();
-        s.set_tag_table(2, &TAG_TABLE_2_DM);
+        let mut s = SyncML::create_serializer();
+        s.set_tag_table(2, &TAG_TABLE_2_DM.map(|s| Some(s)));
         return s;
     }
 }
@@ -126,7 +127,7 @@ impl SyncML {
          "MaxObjSize",     // 0x15
          "FieldLevel"      // 0x16
 
-    };
+    ]; // fix: was `};` — an array closes with `]`, not `}`
 
     pub const TAG_TABLE_2_DM: [&'static str; 56] = [
 
@@ -187,6 +188,6 @@ impl SyncML {
         "xml",                // 0x39
         "ZeroOrMore",         // 0x3a
         "ZeroOrN",            // 0x3b
-        "ZeroOrOne"           // 0x3c
+         "ZeroOrOne"           // 0x3c
 
-   };
+   ]; // fix: was `};` — an array closes with `]`, not `}`

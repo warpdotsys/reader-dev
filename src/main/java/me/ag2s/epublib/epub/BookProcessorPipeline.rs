@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use std::collections::VecDeque;
 
 use crate::me::ag2s::epublib::domain::EpubBook;
@@ -34,12 +35,7 @@ impl BookProcessorPipeline {
         if let Some(ref book_processors) = self.book_processors {
             for book_processor in book_processors {
                 // Log.e(TAG, e.getMessage(), e);
-                match book_processor.process_book(book) {
-                    Ok(b) => book = b,
-                    Err(e) => {
-                        e.printStackTrace();
-                    }
-                }
+                book = book_processor.process_book(book);
             }
         }
         book

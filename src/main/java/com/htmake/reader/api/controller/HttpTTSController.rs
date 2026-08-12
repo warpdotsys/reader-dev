@@ -1,3 +1,7 @@
+use crate::prelude::*;
+// fix: 显式导入消解 prelude 多 glob 重导出歧义（JsonObject ← curd/stubs；DB ← curd/db）
+use crate::stubs::JsonObject;
+use crate::com_htmake_reader_db_db::DB;
 // package com.htmake.reader.api.controller
 
 // private val logger = KotlinLogging.logger {}
@@ -7,7 +11,7 @@ pub struct HttpTTSController {
     base: BaseController,
 }
 
-impl HttpTTSController {
+impl CURD<HttpTTS> for HttpTTSController {
     // override fun getTableName(): String {
     //     return "httpTTS"
     // }
@@ -33,15 +37,17 @@ impl HttpTTSController {
     //     val returnData = ReturnData()
     //     if (entity.name.isEmpty()) return returnData.setErrorMsg("名称不能为空")
     //     if (entity.url.isEmpty()) return returnData.setErrorMsg("链接不能为空")
-    //     return null
+    //     return None
     // }
     fn before_save(&self, entity: &HttpTTS, db: &DB<HttpTTS>) -> Option<ReturnData> {
-        let return_data = ReturnData::new();
+        let mut return_data = ReturnData::new();
         if entity.name.is_empty() {
-            return Some(return_data.set_error_msg(String::from("名称不能为空")).clone());
+            return_data.set_error_msg(String::from("名称不能为空"));
+            return Some(return_data);
         }
         if entity.url.is_empty() {
-            return Some(return_data.set_error_msg(String::from("链接不能为空")).clone());
+            return_data.set_error_msg(String::from("链接不能为空"));
+            return Some(return_data);
         }
         return None;
     }
@@ -57,7 +63,7 @@ impl HttpTTSController {
     //     return asJsonArray(json)!!.map { HttpTTS.fromJson(it.toString()).getOrNull()!! }.toTypedArray()
     // }
     fn convert_to_entity_list(&self, json: &String) -> Vec<HttpTTS> {
-        return as_json_array(json.clone()).unwrap().into_iter().map(|it| HttpTTS::from_json(it.to_string()).get_or_none().unwrap()).collect();
+        return as_json_array(Some(crate::stubs::Any::from_string(json.clone()))).unwrap().get_list().into_iter().map(|it| HttpTTS::from_json(it.to_string()).get_or_none().unwrap()).collect();
     }
 
     // override suspend fun checkUserAuth(context: RoutingContext): Boolean {
@@ -73,8 +79,9 @@ impl HttpTTSController {
     fn get_user_ns(&self, context: &RoutingContext) -> String {
         return self.base.get_user_name_space(context);
     }
+}
 
-    // suspend fun getHttpTTSList(context: RoutingContext): ReturnData {
+impl HttpTTSController {
     //     return list(context)
     // }
     pub fn get_http_tts_list(&self, context: &RoutingContext) -> ReturnData {

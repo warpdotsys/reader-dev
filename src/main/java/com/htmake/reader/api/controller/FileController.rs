@@ -1,4 +1,18 @@
+use crate::prelude::*;
 // package com.htmake.reader.api.controller
+
+// fix: 显式导入消除 stubs / 其他模块 glob 重导出的 File 歧义（显式导入优先于 glob）
+use crate::stubs::File;
+
+// fix: stubs / VertExt 同名 get_work_dir 的 glob 歧义 → 本地包装，
+//      按 Kotlin vararg 参数（getWorkDir(vararg subDirFiles)）转发
+fn get_work_dir(base: &str, sub_dir_files: Vec<String>) -> String {
+    crate::com_htmake_reader_utils_vertext::get_work_dir_multi(
+        &std::iter::once(base)
+            .chain(sub_dir_files.iter().map(|s| s.as_str()))
+            .collect::<Vec<&str>>(),
+    )
+}
 
 // private val logger = KotlinLogging.logger {}
 
@@ -35,7 +49,7 @@ impl FileController {
         if context.request().method() == HttpMethod::POST {
             return context.body_as_json().map(|j| j.get_string_default("home", "")).unwrap_or(String::from(""));
         }
-        return context.query_param("home").first().cloned().unwrap_or(String::from(""));
+        return context.query_param("home").unwrap_or(String::from(""));
     }
 
     // private fun requestPath(context: RoutingContext, key: String = "path"): String = if (context.request().method() == HttpMethod.POST) {
@@ -45,9 +59,9 @@ impl FileController {
     // }
     fn request_path(&self, context: &RoutingContext, key: String) -> String {
         if context.request().method() == HttpMethod::POST {
-            return context.body_as_json().map(|j| j.get_string(key)).unwrap_or(String::from(""));
+            return context.body_as_json().map(|j| j.get_string(&key)).unwrap_or(String::from(""));
         }
-        return context.query_param(&key).first().cloned().unwrap_or(String::from(""));
+        return context.query_param(&key).unwrap_or(String::from(""));
     }
 
     // private fun getFileHome(context: RoutingContext): File? = context.get<File>("__FILE_HOME__")
@@ -58,7 +72,7 @@ impl FileController {
     // suspend fun checkAccess(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): ReturnData? {
     //     val returnData = ReturnData()
     //     if (!checkAuth(context)) return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
-    //     context.put("__FILE_HOME__", null)
+    //     context.put("__FILE_HOME__", None)
     //     val directory = when (requestedHome(context)) {
     //         "__WEBDAV__" -> {
     //             if (appConfig.secure) {
@@ -97,47 +111,62 @@ impl FileController {
     //     directory.mkdirs()
     //     context.put("__FILE_HOME__", directory)
     //     logger.info { "context.__FILE_HOME__ $directory" }
-    //     return null
+    //     return None
     // }
     pub fn check_access(&self, context: &RoutingContext, is_save: bool, is_delete: bool) -> Option<ReturnData> {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return Some(return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用")).clone());
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return Some(return_data);
         }
-        context.put("__FILE_HOME__", None);
+        context.put("__FILE_HOME__", None::<File>);
         let requested_home = self.requested_home(context);
+        // fix: BaseController.app_config 为私有字段 → 经 Spring bean 读取
+        let secure = SpringContextUtils::get_bean_by_name_and_class::<AppConfig>("appConfig", AppConfig::class)
+            .map(|c| c.secure)
+            .unwrap_or(false);
         let directory = if requested_home == "__WEBDAV__" {
-            if self.base.app_config.secure {
+            if secure {
                 let user_info = context.get_user::<User>("userInfo");
                 let user_info = match user_info {
                     Some(u) => u,
-                    None => return Some(return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用")).clone()),
+                    None => {
+                        return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+                        return Some(return_data);
+                    }
                 };
                 if !user_info.enable_webdav {
-                    return Some(return_data.set_error_msg(String::from("未开启webdav功能")).clone());
+                    return_data.set_error_msg(String::from("未开启webdav功能"));
+                    return Some(return_data);
                 }
             }
             File::new(&self.base.get_user_webdav_home(context as &dyn std::any::Any))
         } else if requested_home == "__LOCAL_STORE__" {
-            if self.base.app_config.secure {
+            if secure {
                 let user_info = context.get_user::<User>("userInfo");
                 let user_info = match user_info {
                     Some(u) => u,
-                    None => return Some(return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用")).clone()),
+                    None => {
+                        return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+                        return Some(return_data);
+                    }
                 };
                 if !user_info.enable_local_store {
-                    return Some(return_data.set_error_msg(String::from("未开启本地书仓功能")).clone());
+                    return_data.set_error_msg(String::from("未开启本地书仓功能"));
+                    return Some(return_data);
                 }
             }
             if (is_save || is_delete) && !self.base.check_manager_auth(context) {
-                return Some(return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码")).clone());
+                return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+                return Some(return_data);
             }
             File::new(&get_work_dir("storage", vec![String::from("localStore")]))
         } else if requested_home == "__HOME__" {
             File::new(&get_work_dir("storage", vec![String::from("data"), self.base.get_user_name_space(context)]))
         } else if requested_home == "__STORAGE__" {
             if !self.base.check_manager_auth(context) {
-                return Some(return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码")).clone());
+                return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+                return Some(return_data);
             }
             File::new(&get_work_dir("storage", vec![]))
         } else {
@@ -146,12 +175,13 @@ impl FileController {
             if requested_home.is_empty() {
                 File::new(&get_work_dir("storage", vec![String::from("data"), self.base.get_user_name_space(context)]))
             } else {
-                return Some(return_data.set_error_msg(String::from("非法访问")).clone());
+                return_data.set_error_msg(String::from("非法访问"));
+                return Some(return_data);
             }
         };
         directory.mkdirs();
-        context.put("__FILE_HOME__", Some(directory));
-        logger.info(format!("context.__FILE_HOME__ {}", directory.to_string()));
+        context.put("__FILE_HOME__", Some(directory.clone()));
+        logger().info(format!("context.__FILE_HOME__ {}", directory.to_string()));
         return None;
     }
 
@@ -186,26 +216,34 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let base_dir = match self.get_file_home(context) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let path = if self.request_path(context, String::from("path")).is_empty() { String::from("/") } else { self.request_path(context, String::from("path")) };
         let file = match Self::resolve_secure_path(&base_dir, &path) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("路径不存在")),
+            None => {
+                return_data.set_error_msg(String::from("路径不存在"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, file.to_string()));
+        logger().info(format!("file: {} {}", path, file.to_string()));
         if !file.exists() {
             if path != "/" {
-                return return_data.set_error_msg(String::from("路径不存在"));
+                return_data.set_error_msg(String::from("路径不存在"));
+                return return_data;
             }
             file.mkdirs();
         }
         if !file.is_directory() {
-            return return_data.set_error_msg(String::from("路径不是目录"));
+            return_data.set_error_msg(String::from("路径不是目录"));
+            return return_data;
         }
         let files = file.list_files();
         let file_list: Vec<std::collections::HashMap<String, Box<dyn std::any::Any>>> = files.iter().filter(|item| !item.name().starts_with(".")).map(|item| {
-            let mut m = std::collections::HashMap::new();
+            let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
             m.insert(String::from("name"), Box::new(item.name()));
             m.insert(String::from("size"), Box::new(item.length()));
             m.insert(String::from("path"), Box::new(format!("/{}", item.relative_to(&base_dir).path().replace(std::path::MAIN_SEPARATOR, "/"))));
@@ -213,7 +251,8 @@ impl FileController {
             m.insert(String::from("isDirectory"), Box::new(item.is_directory()));
             m
         }).collect();
-        return return_data.set_data(Box::new(file_list), String::from(""));
+        return_data.set_data(Box::new(file_list), String::from(""));
+        return return_data;
     }
 
     // suspend fun upload(context: RoutingContext): ReturnData {
@@ -246,19 +285,26 @@ impl FileController {
     pub fn upload(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if context.file_uploads().unwrap_or_default().is_empty() {
-            return return_data.set_error_msg(String::from("请上传文件"));
+            return_data.set_error_msg(String::from("请上传文件"));
+            return return_data;
         }
         if let Some(result) = self.check_access(context, true, false) {
             return result;
         }
         let base_dir = match self.get_file_home(context) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let path = if context.request().get_param("path").unwrap_or(String::from("")).is_empty() { String::from("/") } else { context.request().get_param("path").unwrap() };
         let target_dir = match Self::resolve_secure_path(&base_dir, &path) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("路径不存在")),
+            None => {
+                return_data.set_error_msg(String::from("路径不存在"));
+                return return_data;
+            }
         };
         let mut file_list: Vec<std::collections::HashMap<String, Box<dyn std::any::Any>>> = Vec::new();
         for upload in context.file_uploads().unwrap_or_default() {
@@ -270,12 +316,14 @@ impl FileController {
                 Some(v) => v,
                 None => continue,
             };
-            destination.parent_file().mkdirs();
+            if let Some(parent) = destination.parent_file() {
+                parent.mkdirs();
+            }
             if destination.exists() {
                 destination.delete();
             }
             if source.copy_to(&destination, false).exists() {
-                let mut m = std::collections::HashMap::new();
+                let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
                 m.insert(String::from("name"), Box::new(destination.name()));
                 m.insert(String::from("size"), Box::new(destination.length()));
                 m.insert(String::from("path"), Box::new(format!("/{}", destination.relative_to(&base_dir).path().replace(std::path::MAIN_SEPARATOR, "/"))));
@@ -285,12 +333,13 @@ impl FileController {
             }
             source.delete_recursively();
         }
-        return return_data.set_data(Box::new(file_list), String::from(""));
+        return_data.set_data(Box::new(file_list), String::from(""));
+        return return_data;
     }
 
     // suspend fun download(context: RoutingContext) {
     //     val accessResult = checkAccess(context)
-    //     if (accessResult != null) {
+    //     if (accessResult != None) {
     //         context.success(accessResult)
     //         return
     //     }
@@ -307,7 +356,7 @@ impl FileController {
     //     }
     //     val baseDir = getFileHome(context)
     //     val file = baseDir?.let { resolveSecurePath(it, path) }
-    //     if (file == null) {
+    //     if (file == None) {
     //         context.success(returnData.setErrorMsg("参数错误"))
     //         return
     //     }
@@ -323,7 +372,7 @@ impl FileController {
     pub fn download(&self, context: &RoutingContext) {
         let access_result = self.check_access(context, false, false);
         if let Some(access_result) = access_result {
-            context.success(access_result);
+            context.success(&access_result);
             return;
         }
         let mut return_data = ReturnData::new();
@@ -331,27 +380,31 @@ impl FileController {
         let stream = if context.request().method() == HttpMethod::POST {
             context.body_as_json().map(|j| j.get_integer("stream", 0)).unwrap_or(0)
         } else {
-            context.query_param("stream").first().and_then(|s| s.parse::<i32>().ok()).unwrap_or(0)
+            context.query_param("stream").and_then(|s| s.parse::<i32>().ok()).unwrap_or(0)
         };
         if path.is_empty() {
-            context.success(return_data.set_error_msg(String::from("参数错误")));
+            return_data.set_error_msg(String::from("参数错误"));
+            context.success(&return_data);
             return;
         }
         let base_dir = self.get_file_home(context);
         let file = base_dir.as_ref().and_then(|it| Self::resolve_secure_path(it, &path));
         if file.is_none() {
-            context.success(return_data.set_error_msg(String::from("参数错误")));
+            return_data.set_error_msg(String::from("参数错误"));
+            context.success(&return_data);
             return;
         }
         let file = file.unwrap();
-        logger.info(format!("file: {} {}", path, file.to_string()));
+        logger().info(format!("file: {} {}", path, file.to_string()));
         if !file.exists() {
-            context.success(return_data.set_error_msg(String::from("路径不存在")));
+            return_data.set_error_msg(String::from("路径不存在"));
+            context.success(&return_data);
             return;
         }
-        let response = context.response().put_header("Cache-Control", String::from("86400"));
+        let mut response_ctx = context.response();
+        let response = response_ctx.put_header("Cache-Control", "86400");
         if stream <= 0 {
-            response.put_header("Content-Disposition", format!("attachment; filename={}", url_encode(&file.name(), "UTF-8")));
+            response.put_header("Content-Disposition", &format!("attachment; filename={}", url_encode_charset(file.name(), "UTF-8")));
         }
         response.send_file(file.to_string());
     }
@@ -373,17 +426,23 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let path = self.request_path(context, String::from("path"));
         if path.is_empty() {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         let file = match self.get_file_home(context).and_then(|it| Self::resolve_secure_path(&it, &path)) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, file.to_string()));
+        logger().info(format!("file: {} {}", path, file.to_string()));
         if !file.exists() {
-            return return_data.set_error_msg(String::from("路径不存在"));
+            return_data.set_error_msg(String::from("路径不存在"));
+            return return_data;
         }
-        return return_data.set_data(Box::new(file.read_text()), String::from(""));
+        return_data.set_data(Box::new(file.read_text()), String::from(""));
+        return return_data;
     }
 
     // suspend fun save(context: RoutingContext): ReturnData {
@@ -406,16 +465,23 @@ impl FileController {
         let path = context.body_as_json().map(|j| j.get_string_default("path", "")).unwrap_or(String::from(""));
         let content = context.body_as_json().map(|j| j.get_string_default("content", "")).unwrap_or(String::from(""));
         if path.is_empty() {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         let file = match self.get_file_home(context).and_then(|it| Self::resolve_secure_path(&it, &path)) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, file.to_string()));
-        file.parent_file().mkdirs();
-        file.write_text(content);
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        logger().info(format!("file: {} {}", path, file.to_string()));
+        if let Some(parent) = file.parent_file() {
+            parent.mkdirs();
+        }
+        file.write_text(&content);
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun mkdir(context: RoutingContext): ReturnData {
@@ -439,22 +505,31 @@ impl FileController {
         let path = context.body_as_json().map(|j| j.get_string_default("path", "")).unwrap_or(String::from(""));
         let name = context.body_as_json().map(|j| j.get_string_default("name", "")).unwrap_or(String::from(""));
         if path.is_empty() || name.is_empty() || name.starts_with(".") {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         let parent = match self.get_file_home(context).and_then(|it| Self::resolve_secure_path(&it, &path)) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let directory = match Self::resolve_secure_path(&parent, &name) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, directory.to_string()));
+        logger().info(format!("file: {} {}", path, directory.to_string()));
         if directory.exists() {
-            return return_data.set_error_msg(String::from("路径已存在"));
+            return_data.set_error_msg(String::from("路径已存在"));
+            return return_data;
         }
         directory.mkdirs();
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun delete(context: RoutingContext): ReturnData {
@@ -475,18 +550,24 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let path = self.request_path(context, String::from("path"));
         if path.is_empty() {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         let file = match self.get_file_home(context).and_then(|it| Self::resolve_secure_path(&it, &path)) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, file.to_string()));
+        logger().info(format!("file: {} {}", path, file.to_string()));
         if !file.exists() {
-            return return_data.set_error_msg(String::from("路径不存在"));
+            return_data.set_error_msg(String::from("路径不存在"));
+            return return_data;
         }
         file.delete_recursively();
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteMulti(context: RoutingContext): ReturnData {
@@ -507,24 +588,27 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let paths = match context.body_as_json().and_then(|j| j.get_json_array("path")) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let base_dir = match self.get_file_home(context) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        for value in paths {
-            let path = match value.downcast_ref::<String>() {
-                Some(v) => v.clone(),
-                None => continue,
-            };
+        for path in paths.0 {
             if !path.is_empty() {
                 if let Some(file) = Self::resolve_secure_path(&base_dir, &path) {
                     file.delete_recursively();
                 }
             }
         }
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun importPreview(context: RoutingContext): ReturnData {
@@ -566,21 +650,23 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let paths = match context.body_as_json().and_then(|j| j.get_json_array("path")) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let base_dir = match self.get_file_home(context) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let user_name_space = self.base.get_user_name_space(context);
         let work_dir = get_work_dir("storage", vec![]);
         let root_dir = if work_dir.ends_with(&std::path::MAIN_SEPARATOR.to_string()) { work_dir } else { work_dir + &std::path::MAIN_SEPARATOR.to_string() };
         let mut file_list: Vec<std::collections::HashMap<String, Box<dyn std::any::Any>>> = Vec::new();
-        for value in paths {
-            let path = match value.downcast_ref::<String>() {
-                Some(v) => v.clone(),
-                None => continue,
-            };
+        for path in paths.0 {
             if path.is_empty() {
                 continue;
             }
@@ -588,32 +674,34 @@ impl FileController {
                 Some(v) => v,
                 None => continue,
             };
-            logger.info(format!("localFile: {} {}", path, file.to_string()));
-            logger.debug("rootDir: {} path: {}", root_dir, file.path());
+            logger().info(format!("localFile: {} {}", path, file.to_string()));
+            logger().debug(format!("rootDir: {} path: {}", root_dir, file.path()));
             if !file.exists() || file.is_directory() {
                 continue;
             }
             let ext = self.base.get_file_ext(file.name(), String::from(""));
             if !vec!["txt", "epub", "umd", "cbz", "pdf"].contains(&ext.as_str()) {
-                return return_data.set_error_msg(format!("不支持导入{}格式的书籍文件", ext));
+                return_data.set_error_msg(format!("不支持导入{}格式的书籍文件", ext));
+                return return_data;
             }
             let mut relative_path = file.path();
             if relative_path.starts_with(&root_dir) {
                 relative_path = relative_path.trim_start_matches(&root_dir).to_string();
             }
-            logger.debug("relative path: {}", relative_path);
-            let book = Book::init_local_book(relative_path.replace("\\", "/"), relative_path, root_dir);
+            logger().debug(format!("relative path: {}", relative_path));
+            let mut book = Book::init_local_book(relative_path.replace("\\", "/"), relative_path, root_dir.clone());
             book.set_user_name_space(user_name_space.clone());
-            let chapters = match std::panic::catch_unwind(|| LocalBook::get_chapter_list(&book)) {
+            let chapters = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| LocalBook::get_chapter_list(&mut book))) {
                 Ok(chapters) => chapters,
                 Err(_) => Vec::new(),
             };
-            let mut m = std::collections::HashMap::new();
+            let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
             m.insert(String::from("book"), Box::new(book));
             m.insert(String::from("chapters"), Box::new(chapters));
             file_list.push(m);
         }
-        return return_data.set_data(Box::new(file_list), String::from(""));
+        return_data.set_data(Box::new(file_list), String::from(""));
+        return return_data;
     }
 
     // suspend fun restore(context: RoutingContext): ReturnData {
@@ -636,20 +724,27 @@ impl FileController {
         let mut return_data = ReturnData::new();
         let path = if self.request_path(context, String::from("path")).is_empty() { String::from("/") } else { self.request_path(context, String::from("path")) };
         if self.base.get_file_ext(path.clone(), String::from("")) != "zip" {
-            return return_data.set_error_msg(String::from("路径不是zip备份文件"));
+            return_data.set_error_msg(String::from("路径不是zip备份文件"));
+            return return_data;
         }
         let file = match self.get_file_home(context).and_then(|it| Self::resolve_secure_path(&it, &path)) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, file.to_string()));
+        logger().info(format!("file: {} {}", path, file.to_string()));
         if !file.exists() {
-            return return_data.set_error_msg(String::from("路径不存在"));
+            return_data.set_error_msg(String::from("路径不存在"));
+            return return_data;
         }
         if !BookController::new().sync_from_webdav(file.to_string(), self.base.get_user_name_space(context)) {
-            return return_data.set_error_msg(String::from("恢复失败"));
+            return_data.set_error_msg(String::from("恢复失败"));
+            return return_data;
         }
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun parse(context: RoutingContext): ReturnData {
@@ -681,7 +776,7 @@ impl FileController {
     //         logger.debug("book {}", book)
     //         if (import > 0) {
     //             val result = bookController.saveBookToShelf(book, userNameSpace, context)
-    //             if (result.second == null && result.first.isInShelf) fileList += mapOf("name" to file.name)
+    //             if (result.second == None && result.first.isInShelf) fileList += mapOf("name" to file.name)
     //         } else {
     //             fileList += mapOf(
     //                 "name" to file.name,
@@ -703,22 +798,30 @@ impl FileController {
         let import = if context.request().method() == HttpMethod::POST {
             context.body_as_json().map(|j| j.get_integer("import", 0)).unwrap_or(0)
         } else {
-            context.query_param("import").first().and_then(|s| s.parse::<i32>().ok()).unwrap_or(0)
+            context.query_param("import").and_then(|s| s.parse::<i32>().ok()).unwrap_or(0)
         };
         let base_dir = match self.get_file_home(context) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
         };
         let directory = match Self::resolve_secure_path(&base_dir, &path) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("路径不存在")),
+            None => {
+                return_data.set_error_msg(String::from("路径不存在"));
+                return return_data;
+            }
         };
-        logger.info(format!("file: {} {}", path, directory.to_string()));
+        logger().info(format!("file: {} {}", path, directory.to_string()));
         if !directory.exists() {
-            return return_data.set_error_msg(String::from("路径不存在"));
+            return_data.set_error_msg(String::from("路径不存在"));
+            return return_data;
         }
         if !directory.is_directory() {
-            return return_data.set_error_msg(String::from("路径不是目录"));
+            return_data.set_error_msg(String::from("路径不是目录"));
+            return return_data;
         }
         let user_name_space = self.base.get_user_name_space(context);
         let work_dir = get_work_dir("storage", vec![]);
@@ -729,24 +832,24 @@ impl FileController {
             if file.name().starts_with(".") || !file.is_file() || !vec!["txt", "epub", "umd", "cbz", "pdf"].contains(&self.base.get_file_ext(file.name(), String::from("")).as_str()) {
                 continue;
             }
-            logger.debug("rootDir: {} path: {}", root_dir, file.path());
+            logger().debug(format!("rootDir: {} path: {}", root_dir, file.path()));
             let mut relative_path = file.path();
             if relative_path.starts_with(&root_dir) {
                 relative_path = relative_path.trim_start_matches(&root_dir).to_string();
             }
-            logger.debug("relative path: {}", relative_path);
-            let book = Book::init_local_book(relative_path.replace("\\", "/"), relative_path, root_dir);
+            logger().debug(format!("relative path: {}", relative_path));
+            let mut book = Book::init_local_book(relative_path.replace("\\", "/"), relative_path, root_dir.clone());
             book.set_user_name_space(user_name_space.clone());
-            logger.debug("book {}", book.to_string());
+            logger().debug(format!("book {}", book.name));
             if import > 0 {
                 let result = book_controller.save_book_to_shelf(book, user_name_space.clone(), context);
                 if result.1.is_none() && result.0.is_in_shelf {
-                    let mut m = std::collections::HashMap::new();
+                    let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
                     m.insert(String::from("name"), Box::new(file.name()));
                     file_list.push(m);
                 }
             } else {
-                let mut m = std::collections::HashMap::new();
+                let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
                 m.insert(String::from("name"), Box::new(file.name()));
                 m.insert(String::from("size"), Box::new(file.length()));
                 m.insert(String::from("path"), Box::new(format!("/{}", file.relative_to(&base_dir).path().replace(std::path::MAIN_SEPARATOR, "/"))));
@@ -755,6 +858,7 @@ impl FileController {
                 file_list.push(m);
             }
         }
-        return return_data.set_data(Box::new(file_list), String::from(""));
+        return_data.set_data(Box::new(file_list), String::from(""));
+        return return_data;
     }
 }

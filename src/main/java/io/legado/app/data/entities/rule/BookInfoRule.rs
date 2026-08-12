@@ -1,17 +1,18 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities.rule
 
 // data class BookInfoRule(
-//     var init: String? = null,
-//     var name: String? = null,
-//     var author: String? = null,
-//     var intro: String? = null,
-//     var kind: String? = null,
-//     var lastChapter: String? = null,
-//     var updateTime: String? = null,
-//     var coverUrl: String? = null,
-//     var tocUrl: String? = null,
-//     var wordCount: String? = null,
-//     var canReName: String? = null
+//     var init: String? = None,
+//     var name: String? = None,
+//     var author: String? = None,
+//     var intro: String? = None,
+//     var kind: String? = None,
+//     var lastChapter: String? = None,
+//     var updateTime: String? = None,
+//     var coverUrl: String? = None,
+//     var tocUrl: String? = None,
+//     var wordCount: String? = None,
+//     var canReName: String? = None
 // )
 pub struct BookInfoRule {
     pub init: Option<String>,

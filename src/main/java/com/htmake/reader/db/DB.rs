@@ -1,3 +1,7 @@
+use crate::prelude::*;
+// 显式导入消解跨模块 glob 导入歧义（优先于 prelude 的 glob 导入）
+use crate::stubs::{JsonArray, JsonObject};
+use std::marker::PhantomData;
 // package com.htmake.reader.db
 
 // import io.vertx.core.json.JsonArray
@@ -11,14 +15,17 @@ pub struct DB<T> {
     pub user_name_space: String,
     pub name: String,
     pub cached_value: JsonArray,
+    // fix: T 仅出现在方法签名中（原 Kotlin 泛型表类型），Rust 需 PhantomData 占位
+    _phantom: PhantomData<T>,
 }
 
 impl<T> DB<T> {
     pub fn new(user_name_space: String, name: String) -> DB<T> {
-        DB {
+        DB::<T> {
             user_name_space,
             name,
             cached_value: JsonArray::new(),
+            _phantom: PhantomData::default(),
         }
     }
 
@@ -34,7 +41,7 @@ impl<T> DB<T> {
 
     // open fun save(
     //     entity: T,
-    //     onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = null,
+    //     onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = None,
     //     checker: (JsonObject, T) -> Boolean
     // ) {
     pub fn save(
@@ -47,7 +54,7 @@ impl<T> DB<T> {
 
     // open fun saveMulti(
     //     entities: Array<T>,
-    //     onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = null,
+    //     onCheckEnd: ((T, Boolean, JsonArray) -> Unit)? = None,
     //     checker: (JsonObject, T) -> Boolean
     // ) {
     pub fn save_multi(
@@ -77,9 +84,9 @@ impl<T> DB<T> {
     // }
     pub fn table<T2>(user_name_space: String, name: String, driver: String) -> DB<T2> {
         return if driver == "SQL" {
-            SQLTable::new(user_name_space, name)
+            DB::<T2>::new(user_name_space, name)
         } else {
-            JSONTable::new(user_name_space, name)
+            DB::<T2>::new(user_name_space, name)
         };
     }
 }

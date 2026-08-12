@@ -1,3 +1,8 @@
+use crate::prelude::*;
+use crate::io_legado_app_utils_textutils::TextUtils;
+use crate::stubs::URL as Url;
+// fix: BufReader::read 来自 std::io::Read trait（E0599）
+use std::io::Read;
 // ============================================================================
 // Rust translation of EncodingDetectHelp.java
 // Pure transcription: no implementation changes.
@@ -28,7 +33,7 @@
 //import static io.legado.app.utils.TextUtils.isEmpty;
 
 // helper: reinterpret &[i8] as &[u8] (same bytes, Java's new String(bytes, UTF_8))
-fn as_u8<'a>(bytes: &'a [i8]) -> &'a [u8] {
+pub fn as_u8<'a>(bytes: &'a [i8]) -> &'a [u8] {
     unsafe { std::slice::from_raw_parts(bytes.as_ptr() as *const u8, bytes.len()) }
 }
 
@@ -71,7 +76,7 @@ impl EncodingDetectHelp {
             //         charsetStr = metaTag.attr("charset");
             charset_str = meta_tag.attr("charset");
             //         if (!isEmpty(charsetStr)) {
-            if !TextUtils::is_empty(&charset_str) {
+                if !TextUtils::is_empty(Some(charset_str.as_str())) {
                 //             return charsetStr;
                 return charset_str;
             }
@@ -90,7 +95,7 @@ impl EncodingDetectHelp {
                     charset_str = content[content.to_lowercase().find(';').map_or(0, |x| x + 1)..].to_string();
                 }
                 //             if (!isEmpty(charsetStr)) {
-                if !TextUtils::is_empty(&charset_str) {
+            if !TextUtils::is_empty(Some(charset_str.as_str())) {
                     //                 return charsetStr;
                     return charset_str;
                 }
@@ -100,7 +105,7 @@ impl EncodingDetectHelp {
         // } catch (Exception ignored) {
         // }
         // return getJavaEncode(bytes);
-        get_java_encode(bytes)
+        Self::get_java_encode(bytes)
     }
 
     // public static String getJavaEncode(byte[] bytes) {
@@ -256,7 +261,9 @@ impl BytesEncodingDetect {
         //     while ((bytesread = chinesestream.read(rawtext, byteoffset,
         //             rawtext.length - byteoffset)) > 0) {
         loop {
-            bytesread = chinesestream.read(&mut rawtext, byteoffset, rawtext.len() as i32 - byteoffset);
+            // fix: E0502——先计算剩余长度，避免同一调用中 rawtext 的不可变与可变借用冲突
+            let remaining = rawtext.len() as i32 - byteoffset;
+            bytesread = chinesestream.read(&mut rawtext, byteoffset, remaining);
             if bytesread <= 0 {
                 break;
             }

@@ -1,6 +1,18 @@
+﻿use crate::prelude::*;
+// fix: 显式导入消解 prelude glob 歧义 / 缺省名称（stubs 占位 + vertext 真实实现）
+use crate::stubs::io::vertx::Router;
+use crate::stubs::{
+    BookController, BookGroupController, BookmarkController, File, FileController,
+    HttpTTSController, MDC, ReplaceRuleController, RouteHandlerExt, RouterPostExt,
+    RssSourceController, Runtime, StaticHandler, UserController, WebdavController,
+    uri_decode_component,
+};
+use crate::com_htmake_reader_utils_vertext::{get_work_dir, get_work_dir_multi};
 // package com.htmake.reader.api
 
 // private val logger = KotlinLogging.logger {}
+#[allow(non_upper_case_globals)]
+static logger: Log = Log;
 
 // @Component
 // class YueduApi : RestVerticle() {
@@ -121,7 +133,7 @@ impl YueduApi {
     //     router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }
     //     ...
     // }
-    pub fn init_router(&self, router: &mut Router) {
+    pub fn init_router(&mut self, router: &mut Router) {
         self.setup_port();
 
         if !self.app_config.mongo_uri.is_empty() {
@@ -131,71 +143,71 @@ impl YueduApi {
         if !self.app_config.remote_webview_api.is_empty() {
             RemoteWebview::set_remote_api(&self.app_config.remote_webview_api);
         }
-        ReaderAdapterHelper::set_adapter(ReaderAdapter);
+        ReaderAdapterHelper::set_adapter(Box::new(ReaderAdapter));
 
         // 旧版数据迁移
         self.migration();
 
         // web界面
-        router.route("/*").handler(StaticHandler::create("web").set_default_content_encoding("UTF-8"));
+        router.route_with_path("/*").handler_static(StaticHandler::create("web").set_default_content_encoding("UTF-8"));
 
         // assets
-        let assets_dir = get_work_dir("storage", vec![String::from("assets")]);
+        let assets_dir = get_work_dir_multi(&["storage", "assets"]);
         let assets_dir_file = File::new(&assets_dir);
         if !assets_dir_file.exists() {
             assets_dir_file.mkdirs();
         }
-        let assets_css = get_work_dir("storage", vec![String::from("assets"), String::from("reader.css")]);
+        let assets_css = get_work_dir_multi(&["storage", "assets", "reader.css"]);
         let assets_css_file = File::new(&assets_css);
         if !assets_css_file.exists() {
             assets_css_file.write_text("/* 在此处可以编写CSS样式来自定义页面 */");
         }
-        router.route("/assets/*").handler(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(assets_dir).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(assets_dir).set_default_content_encoding("UTF-8"));
 
         // 书籍资源
-        let data_dir = get_work_dir("storage", vec![String::from("data")]);
-        router.route("/book-assets/*").handler(|it| {
+        let data_dir = get_work_dir_multi(&["storage", "data"]);
+        router.route_with_path("/book-assets/*").handler(|it| {
             let mut path = it.request().path().replace("/book-assets/", "/");
             path = uri_decode_component(&path, false);
             if path.to_lowercase().ends_with("html") || path.to_lowercase().ends_with("htm") {
                 let file_path = File::new(&(data_dir.clone() + &path));
                 if file_path.exists() {
-                    BookConfig::inject_javascript_to_epub_chapter(file_path.to_string());
+                    BookConfig::inject_javascript_to_epub_chapter(file_path.to_string().as_str());
                 }
             }
             it.next();
         });
-        router.route("/book-assets/*").handler(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir.clone()).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/book-assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir.clone()).set_default_content_encoding("UTF-8"));
 
         // epub资源
-        router.route("/epub/*").handler(|it| {
+        router.route_with_path("/epub/*").handler(|it| {
             let mut path = it.request().path().replace("/epub/", "/");
             path = url_decode(&path, "UTF-8");
             if path.to_lowercase().ends_with("html") {
                 let file_path = File::new(&(data_dir.clone() + &path));
                 if file_path.exists() {
                     // 处理 js 注入脚本
-                    BookConfig::inject_javascript_to_epub_chapter(file_path.to_string());
+                    BookConfig::inject_javascript_to_epub_chapter(file_path.to_string().as_str());
                 }
             }
             it.next();
         });
-        router.route("/epub/*").handler(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/epub/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir).set_default_content_encoding("UTF-8"));
 
         // simple-web界面
-        router.route("/simple-web").handler(|it| {
+        router.route_with_path("/simple-web").handler(|it| {
             if it.request().path().ends_with("/simple-web") {
                 let location = url_decode(&it.request().absolute_uri(), "UTF-8")
                     .replace("/simple-web", "/simple-web/");
-                it.response().put_header("Location", location).set_status_code(302).end();
+                it.response().put_header("Location", location.as_str()).set_status_code(302).end(String::new());
             } else {
                 it.next();
             }
         });
-        router.route("/simple-web/*").handler(|it| {
+        router.route_with_path("/simple-web/*").handler(|it| {
             it.next();
         });
-        router.route("/simple-web/*").handler(StaticHandler::create("simple-web").set_default_content_encoding("UTF-8"));
+        router.route_with_path("/simple-web/*").handler_static(StaticHandler::create("simple-web").set_default_content_encoding("UTF-8"));
 
         // 获取系统信息
         router.get("/reader3/getSystemInfo").coroutine_handler(|it| self.get_system_info(it));
@@ -436,11 +448,11 @@ impl YueduApi {
     //     logger.info("port: {}", port)
     //     var serverPort = env.getProperty("reader.server.port", Int::class.java)
     //     logger.info("serverPort: {}", serverPort)
-    //     if (serverPort != null && serverPort > 0) {
+    //     if (serverPort != None && serverPort > 0) {
     //         port = serverPort;
     //     }
     // }
-    pub fn setup_port(&self) {
+    pub fn setup_port(&mut self) {
         logger.info(format!("port: {}", self.port));
         let server_port = self.env.get_property_int("reader.server.port");
         logger.info(format!("serverPort: {}", server_port.map(|v| v.to_string()).unwrap_or_else(|| String::from("null"))));
@@ -468,8 +480,8 @@ impl YueduApi {
     // }
     pub fn migration(&self) {
         let result = std::panic::catch_unwind(|| {
-            let storage_dir = File::new(&get_work_dir("storage", vec![]));
-            let data_dir = File::new(&get_work_dir("storage", vec![String::from("data"), String::from("default")]));
+            let storage_dir = File::new(&get_work_dir("storage"));
+            let data_dir = File::new(&get_work_dir_multi(&["storage", "data", "default"]));
             if !storage_dir.exists() {
                 // 直接使用新版本，则创建 default 目录，防止重启之后被迁移
                 data_dir.mkdirs();
@@ -487,7 +499,9 @@ impl YueduApi {
     //     SpringContextUtils.getApplicationContext().publishEvent(SpringEvent(this as java.lang.Object, "READY", ""));
     // }
     pub fn started(&self) {
-        SpringContextUtils::get_application_context().publish_event(SpringEvent::new(self, "READY", ""));
+        SpringContextUtils::get_application_context().map(|ctx| {
+            ctx.publish_event(SpringEvent::new(Object, String::from("READY"), String::from("")));
+        });
     }
 
     // override fun onStartError() {
@@ -496,7 +510,9 @@ impl YueduApi {
     // }
     pub fn on_start_error(&self) {
         logger.error(format!("应用启动失败，请检查{}端口是否被占用", self.port));
-        SpringContextUtils::get_application_context().publish_event(SpringEvent::new(self, "START_ERROR", format!("应用启动失败，请检查{}端口是否被占用", self.port)));
+        SpringContextUtils::get_application_context().map(|ctx| {
+            ctx.publish_event(SpringEvent::new(Object, String::from("START_ERROR"), format!("应用启动失败，请检查{}端口是否被占用", self.port)));
+        });
     }
 
     // override fun onHandlerError(ctx: RoutingContext, error: Exception) {
@@ -540,14 +556,14 @@ impl YueduApi {
     //         set(Calendar.MILLISECOND, 0)
     //     }
     //     userController.forEachUser { user ->
-    //         if (user.last_login_at >= System.currentTimeMillis() - 86400000L) dayLoginUser++
-    //         if (user.last_login_at >= System.currentTimeMillis() - 604800000L) sevenDayLoginUser++
+    //         if (user.last_login_at >= System.currentTimeMillis() - 86400000_i64) dayLoginUser++
+    //         if (user.last_login_at >= System.currentTimeMillis() - 604800000_i64) sevenDayLoginUser++
     //         if (user.last_login_at >= calendar.timeInMillis) monthLoginUser++
-    //         if (user.created_at >= System.currentTimeMillis() - 86400000L) dayRegisterUser++
-    //         if (user.created_at >= System.currentTimeMillis() - 604800000L) sevenDayRegisterUser++
+    //         if (user.created_at >= System.currentTimeMillis() - 86400000_i64) dayRegisterUser++
+    //         if (user.created_at >= System.currentTimeMillis() - 604800000_i64) sevenDayRegisterUser++
     //         if (user.created_at >= calendar.timeInMillis) monthRegisterUser++
-    //         if (user.last_login_at >= user.created_at + 604800000L &&
-    //             user.last_login_at >= System.currentTimeMillis() - 604800000L) keepUser++
+    //         if (user.last_login_at >= user.created_at + 604800000_i64 &&
+    //             user.last_login_at >= System.currentTimeMillis() - 604800000_i64) keepUser++
     //         false
     //     }
     //     return returnData.setData(mapOf(
@@ -585,31 +601,31 @@ impl YueduApi {
         calendar.set(Calendar::SECOND, 0);
         calendar.set(Calendar::MILLISECOND, 0);
         user_controller.for_each_user(&mut |user: &mut User| {
-            if user.last_login_at >= System::current_time_millis() - 86400000L {
+            if user.last_login_at >= System::current_time_millis() - 86400000_i64 {
                 day_login_user += 1;
             }
-            if user.last_login_at >= System::current_time_millis() - 604800000L {
+            if user.last_login_at >= System::current_time_millis() - 604800000_i64 {
                 seven_day_login_user += 1;
             }
             if user.last_login_at >= calendar.time_in_millis() {
                 month_login_user += 1;
             }
-            if user.created_at >= System::current_time_millis() - 86400000L {
+            if user.created_at >= System::current_time_millis() - 86400000_i64 {
                 day_register_user += 1;
             }
-            if user.created_at >= System::current_time_millis() - 604800000L {
+            if user.created_at >= System::current_time_millis() - 604800000_i64 {
                 seven_day_register_user += 1;
             }
             if user.created_at >= calendar.time_in_millis() {
                 month_register_user += 1;
             }
-            if user.last_login_at >= user.created_at + 604800000L
-                && user.last_login_at >= System::current_time_millis() - 604800000L {
+            if user.last_login_at >= user.created_at + 604800000_i64
+                && user.last_login_at >= System::current_time_millis() - 604800000_i64 {
                 keep_user += 1;
             }
             false
         });
-        let mut data = std::collections::HashMap::new();
+        let mut data: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
         data.insert(String::from("fonts"), Box::new(system_font));
         data.insert(String::from("freeMemory"), Box::new(free_memory));
         data.insert(String::from("totalMemory"), Box::new(total_memory));
@@ -621,7 +637,8 @@ impl YueduApi {
         data.insert(String::from("monthRegisterUser"), Box::new(month_register_user));
         data.insert(String::from("monthLoginUser"), Box::new(month_login_user));
         data.insert(String::from("keepUser"), Box::new(keep_user));
-        return return_data.set_data(Box::new(data), String::from(""));
+        return_data.set_data(Box::new(data), String::from(""));
+        return return_data;
     }
 
     /**
@@ -653,7 +670,7 @@ impl YueduApi {
             // 刷新用户书架
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
-                if user.last_login_at >= System::current_time_millis() - 259200000L {
+                if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
                     book_controller.get_book_shelf_books(true, user.username.clone());
                 }
                 false
@@ -677,7 +694,7 @@ impl YueduApi {
         MDC::put("traceId", get_trace_id());
         // launch(MDCContext() + Dispatchers.IO) {
         let result = std::panic::catch_unwind(|| {
-            logger.info("开始清理 {} 天未登录用户", self.app_config.auto_clear_inactive_user);
+            logger.info(format!("开始清理 {} 天未登录用户", self.app_config.auto_clear_inactive_user));
             UserController::new().clear_inactive_users(self.app_config.auto_clear_inactive_user);
             logger.info("不活跃用户自动清理结束");
         });
@@ -707,7 +724,7 @@ impl YueduApi {
             // 备份其他用户
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
-                if user.last_login_at >= System::current_time_millis() - 259200000L {
+                if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
                     book_controller.save_to_webdav(&user.username, None);
                 }
                 false
@@ -752,7 +769,7 @@ impl YueduApi {
             // Update for all users
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
-                if user.last_login_at >= System::current_time_millis() - 259200000L {
+                if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
                     book_source_controller.update_remote_source_sub(user.username.clone(), None);
                 }
                 false

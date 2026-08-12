@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -20,7 +21,7 @@ impl ResourceReference {
   }
 
   /**
-   * Besides setting the resource it also sets the fragmentId to null.
+   * Besides setting the resource it also sets the fragmentId to None.
    *
    * @param resource resource
    */
@@ -32,7 +33,7 @@ impl ResourceReference {
   /**
    * The id of the reference referred to.
    *
-   * null of the reference is null or has a null id itself.
+   * None of the reference is None or has a None id itself.
    *
    * @return The id of the reference referred to.
    */

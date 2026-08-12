@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.help.http
 //
 // import okhttp3.*
@@ -76,11 +77,11 @@ impl StrResponse {
         // raw.networkResponse?.let {
         //     return it.request.url.toString()
         // }
-        if let Some(it) = &self.raw.network_response {
-            return it.request.url.to_string();
+        if let Some(it) = self.raw.network_response() {
+            return it.request().url().to_string();
         }
         // return raw.request.url.toString()
-        self.raw.request.url.to_string()
+        self.raw.request().url().to_string()
     }
 
     // val url: String get() = url()
@@ -97,26 +98,26 @@ impl StrResponse {
     //     return raw.code
     // }
     pub fn code(&self) -> i32 {
-        self.raw.code
+        self.raw.code()
     }
 
     // fun message(): String {
     //     return raw.message
     // }
     pub fn message(&self) -> String {
-        self.raw.message.clone()
+        self.raw.message()
     }
 
     // fun headers(): Headers {
     //     return raw.headers
     // }
     pub fn headers(&self) -> &Headers {
-        &self.raw.headers
+        self.raw.headers_all()
     }
 
     // fun isSuccessful(): Boolean = raw.isSuccessful
     pub fn is_successful(&self) -> bool {
-        self.raw.is_successful
+        self.raw.is_successful()
     }
 
     // fun errorBody(): ResponseBody? {

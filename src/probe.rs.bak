@@ -1,0 +1,30 @@
+use crate::prelude::*;
+use crate::io_legado_app_data_entities_rule_searchrule::SearchRule;
+use crate::io_legado_app_data_entities_rule_explorerule::ExploreRule;
+use crate::io_legado_app_data_entities_booksource::BookSource;
+
+pub fn probe_clone(s: &SearchRule) -> SearchRule {
+    let probe_int: i32 = "probe_should_error"; // TEMP PROBE
+    s.clone()
+}
+
+pub fn probe_json(r: Option<ExploreRule>) -> String {
+    crate::stubs::GSON::to_json(r)
+}
+
+pub fn probe_source(bs: &BookSource) -> SearchRule {
+    bs.get_search_rule()
+}
+
+pub fn probe_logger(bs: &BookSource) {
+    if let Some(lg) = bs.get_logger() {
+        let _ = lg;
+    }
+}
+
+pub fn probe_router(router: &mut crate::stubs::io::vertx::Router) {
+    router.route_with_path("/x").global_handler(&|it| {
+        let _check: &RoutingContext = it;
+        let _same: &crate::stubs::io::vertx::RoutingContext = it;
+    });
+}

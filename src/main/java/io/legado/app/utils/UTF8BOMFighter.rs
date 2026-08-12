@@ -1,3 +1,4 @@
+use crate::prelude::*;
 pub struct UTF8BOMFighter;
 
 impl UTF8BOMFighter {

@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::Date;
 // package com.htmake.reader.lib.tts.util;
 
 // import okhttp3.OkHttpClient;
@@ -16,7 +18,7 @@
 
 // public class Tools {
 // private static OkHttpClient client = new OkHttpClient();
-static CLIENT: std::sync::OnceLock<OkHttpClient> = std::sync::OnceLock::new();
+pub static CLIENT: std::sync::OnceLock<OkHttpClient> = std::sync::OnceLock::new();
 
 pub struct Tools;
 
@@ -32,8 +34,8 @@ impl Tools {
 
     // public static Logger log = LoggerFactory.getLogger(Tools.class);
 
+    // fix: 原 impl 内 static 移到模块级（Rust 不允许关联 static），与文件顶部 CLIENT 合并去重
     // private static OkHttpClient client = new OkHttpClient();
-    static CLIENT: std::sync::OnceLock<OkHttpClient> = std::sync::OnceLock::new();
 
     fn client() -> &'static OkHttpClient {
         CLIENT.get_or_init(|| OkHttpClient::new())
@@ -47,38 +49,47 @@ impl Tools {
 
     // public static String httpGet(String url) {
     pub fn http_get(url: &str) -> String {
-        try {
+        // fix: try/catch → 闭包 + if-let（catch 仅重新抛出，等价 panic）
+        let try_result: Result<String, StubError> = (|| {
             let request = Request::builder().url(url).build();
             let response = Self::client().new_call(request).execute();
-            log::info("response.toString():{:?}", response.to_string());
-            log::info("response.isSuccessful():{:?}", response.is_successful());
+            // fix: log::info(format,...) → logger().info(format!)（项目惯例）
+            logger().info(format!("response.toString():{:?}", response.to_string()));
+            logger().info(format!("response.isSuccessful():{:?}", response.is_successful()));
             if response.is_successful() {
                 let body = response.body().string();
-                return body;
+                return Ok(body);
             }
-            panic!(format!("request：{} fail, message:{}", url, response.code()));
-        } catch (e) {
-            panic!(e);
+            Err(StubError::new(format!("request：{} fail, message:{}", url, response.code())))
+        })();
+        if let Err(e) = &try_result {
+            panic!("{}", e);
         }
+        return try_result.unwrap();
     }
 
     // public static boolean isNoVoice(CharSequence text) {
     pub fn is_no_voice(text: &str) -> bool {
-        return regex_replace_all(Self::NO_VOICE_PATTERN, text, "").is_empty();
+        // fix: regex_replace_all(...) → Pattern::compile(...).replace_all(...)
+        return Pattern::compile(Self::NO_VOICE_PATTERN).replace_all(text, "").is_empty();
     }
 
     // public static void sleep(int seconds) {
     pub fn sleep(seconds: i32) {
-        try {
-            thread::sleep(Duration::from_secs(seconds as u64));
-        } catch (e: InterruptedException) {
+        // fix: try/catch → 闭包 + if-let（InterruptedException 无对应，忽略）；thread::sleep → std::thread::sleep
+        let try_result: Result<(), StubError> = (|| {
+            std::thread::sleep(std::time::Duration::from_secs(seconds as u64));
+            Ok(())
+        })();
+        if let Err(_e) = try_result {
             // ignored
         }
     }
 
     // public static String date() {
     pub fn date() -> String {
-        return SimpleDateFormat(Self::SDF).format(Date::now());
+        // fix: SimpleDateFormat(...) 元组构造 → SimpleDateFormat::new(...)
+        return SimpleDateFormat::new(Self::SDF).format(Date::now());
     }
 
     // public static String localDateTime() {

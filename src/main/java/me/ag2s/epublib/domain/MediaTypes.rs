@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;
@@ -14,46 +15,48 @@ pub struct MediaTypes;
 
 impl MediaTypes {
 
-  pub const XHTML: MediaType = MediaType::new("application/xhtml+xml".to_string(),
-      ".xhtml".to_string(), vec![".htm".to_string(), ".html".to_string(), ".xhtml".to_string()]);
-  pub const EPUB: MediaType = MediaType::new("application/epub+zip".to_string(),
-      ".epub".to_string());
-  pub const NCX: MediaType = MediaType::new("application/x-dtbncx+xml".to_string(),
-      ".ncx".to_string());
+  // fix: MediaType 为 stubs::MediaType 单元占位（无数据），new/with_extensions 为 const fn 且忽略参数，
+  // 常量仅作类型占位；原 Java 值语义由调用方持有（见 stubs::MediaTypes::NCX_NAME / XHTML_NAME 等）
+  pub const XHTML: MediaType = MediaType::with_extensions("application/xhtml+xml",
+      ".xhtml", &[".htm", ".html", ".xhtml"]);
+  pub const EPUB: MediaType = MediaType::new("application/epub+zip",
+      ".epub");
+  pub const NCX: MediaType = MediaType::new("application/x-dtbncx+xml",
+      ".ncx");
 
-  pub const JAVASCRIPT: MediaType = MediaType::new("text/javascript".to_string(),
-      ".js".to_string());
-  pub const CSS: MediaType = MediaType::new("text/css".to_string(), ".css".to_string());
+  pub const JAVASCRIPT: MediaType = MediaType::new("text/javascript",
+      ".js");
+  pub const CSS: MediaType = MediaType::new("text/css", ".css");
 
   // images
-  pub const JPG: MediaType = MediaType::new("image/jpeg".to_string(), ".jpg".to_string(),
-      vec![".jpg".to_string(), ".jpeg".to_string()]);
-  pub const PNG: MediaType = MediaType::new("image/png".to_string(), ".png".to_string());
-  pub const GIF: MediaType = MediaType::new("image/gif".to_string(), ".gif".to_string());
+  pub const JPG: MediaType = MediaType::with_extensions("image/jpeg", ".jpg",
+      &[".jpg", ".jpeg"]);
+  pub const PNG: MediaType = MediaType::new("image/png", ".png");
+  pub const GIF: MediaType = MediaType::new("image/gif", ".gif");
 
-  pub const SVG: MediaType = MediaType::new("image/svg+xml".to_string(), ".svg".to_string());
+  pub const SVG: MediaType = MediaType::new("image/svg+xml", ".svg");
 
   // fonts
   pub const TTF: MediaType = MediaType::new(
-      "application/x-truetype-font".to_string(), ".ttf".to_string());
+      "application/x-truetype-font", ".ttf");
   pub const OPENTYPE: MediaType = MediaType::new(
-      "application/vnd.ms-opentype".to_string(), ".otf".to_string());
-  pub const WOFF: MediaType = MediaType::new("application/font-woff".to_string(),
-      ".woff".to_string());
+      "application/vnd.ms-opentype", ".otf");
+  pub const WOFF: MediaType = MediaType::new("application/font-woff",
+      ".woff");
 
   // audio
-  pub const MP3: MediaType = MediaType::new("audio/mpeg".to_string(), ".mp3".to_string());
-  pub const OGG: MediaType = MediaType::new("audio/ogg".to_string(), ".ogg".to_string());
+  pub const MP3: MediaType = MediaType::new("audio/mpeg", ".mp3");
+  pub const OGG: MediaType = MediaType::new("audio/ogg", ".ogg");
 
   // video
-  pub const MP4: MediaType = MediaType::new("video/mp4".to_string(), ".mp4".to_string());
+  pub const MP4: MediaType = MediaType::new("video/mp4", ".mp4");
 
-  pub const SMIL: MediaType = MediaType::new("application/smil+xml".to_string(),
-      ".smil".to_string());
+  pub const SMIL: MediaType = MediaType::new("application/smil+xml",
+      ".smil");
   pub const XPGT: MediaType = MediaType::new(
-      "application/adobe-page-template+xml".to_string(), ".xpgt".to_string());
-  pub const PLS: MediaType = MediaType::new("application/pls+xml".to_string(),
-      ".pls".to_string());
+      "application/adobe-page-template+xml", ".xpgt");
+  pub const PLS: MediaType = MediaType::new("application/pls+xml",
+      ".pls");
 
   pub fn media_types() -> Vec<MediaType> {
     vec![
@@ -71,18 +74,20 @@ impl MediaTypes {
     media_types_by_name
   }
 
+  // fix: stubs::MediaType 相等性占位恒真（单元类型无数据），is_bitmap_image 退化为恒返回 true
   pub fn is_bitmap_image(media_type: &MediaType) -> bool {
     return media_type == &MediaTypes::JPG || media_type == &MediaTypes::PNG || media_type == &MediaTypes::GIF;
   }
 
   /**
    * Gets the MediaType based on the file extension.
-   * Null of no matching extension found.
+   * None of no matching extension found.
    *
    * @param filename filename
    * @return the MediaType based on the file extension.
    */
   pub fn determine_media_type(filename: &String) -> Option<MediaType> {
+    // fix: stubs get_extensions 占位返回空表 → 循环不执行，恒返回 None（原逻辑需真实 MediaType）
     for media_type in MediaTypes::media_types_by_name().values() {
       for extension in media_type.get_extensions() {
         if StringUtil::ends_with_ignore_case(filename, extension) {

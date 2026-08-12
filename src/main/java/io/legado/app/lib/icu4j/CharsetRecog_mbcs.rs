@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /*
@@ -75,7 +76,7 @@ pub trait CharsetRecog_mbcs: CharsetRecognizer {
                 //         singleByteCharCount++;
                 //     } else {
                 //         doubleByteCharCount++;
-                //         if (commonChars != null) {
+                //         if (commonChars != None) {
                 //             // NOTE: This assumes that there are no 4-byte common chars.
                 //             if (Arrays.binarySearch(commonChars, (int) cv) >= 0) {
                 //                 commonCharCount++;
@@ -166,9 +167,9 @@ pub trait CharsetRecog_mbcs: CharsetRecognizer {
                     // double scaleFactor = 90.0 / maxVal;
                     let scale_factor = 90.0 / max_val;
                     // confidence = (int) (Math.log(commonCharCount + 1) * scaleFactor + 10);
-                    confidence = ((common_char_count + 1) as f64).ln() * scale_factor + 10.0;
+                    confidence = (((common_char_count + 1) as f64).ln() * scale_factor + 10.0) as i32;
                     // confidence = Math.min(confidence, 100);
-                    confidence = confidence.min(100.0) as i32;
+                    confidence = confidence.min(100);
                 }
             }
         } // end of detectBlock:
@@ -244,11 +245,11 @@ impl IteratedChar {
     //     return det.fRawInput[nextIndex++] & 0x00ff;
     // }
     fn next_byte(&mut self, det: &CharsetDetector) -> i32 {
-        if self.next_index >= det.f_raw_length {
+        if self.next_index >= det.f_raw_length_access() {
             self.done = true;
             return -1;
         }
-        let result = det.f_raw_input.clone().unwrap_or_default()[self.next_index as usize] & 0x00ff;
+        let result = det.f_raw_input_access().unwrap_or_default()[self.next_index as usize] & 0x00ff;
         self.next_index += 1;
         result as i32
     }
@@ -260,7 +261,7 @@ impl IteratedChar {
 // static class CharsetRecog_sjis extends CharsetRecog_mbcs {
 pub struct CharsetRecog_sjis;
 
-impl CharsetRecog_mbcs for CharsetRecog_sjis {
+impl CharsetRecog_sjis {
     // static int[] commonChars =
     //         // TODO:  This set of data comes from the character frequency-
     //         //        of-occurence analysis tool.  The data needs to be moved
@@ -279,7 +280,34 @@ impl CharsetRecog_mbcs for CharsetRecog_sjis {
         0x8343, 0x834e, 0x834f, 0x8358, 0x835e, 0x8362, 0x8367, 0x8375, 0x8376, 0x8389,
         0x838a, 0x838b, 0x838d, 0x8393, 0x8e96, 0x93fa, 0x95aa,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_sjis {
+    // @Override
+    // CharsetMatch match(CharsetDetector det) {
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        let confidence = self.match_mbcs(det, Some(Self::COMMON_CHARS));
+        if confidence == 0 {
+            None
+        } else {
+            Some(CharsetMatch::new(det, self, confidence))
+        }
+    }
+
+    // @Override
+    // String getName() {
+    fn get_name(&self) -> String {
+        "Shift_JIS".to_string()
+    }
+
+    // @Override
+    // public String getLanguage() {
+    fn get_language(&self) -> Option<String> {
+        Some("ja".to_string())
+    }
+}
+
+impl CharsetRecog_mbcs for CharsetRecog_sjis {
     // @Override
     // boolean nextChar(iteratedChar it, CharsetDetector det) {
     fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
@@ -322,33 +350,6 @@ impl CharsetRecog_mbcs for CharsetRecog_sjis {
         }
         true
     }
-
-    // @Override
-    // CharsetMatch match(CharsetDetector det) {
-    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
-        let confidence = self.match_mbcs(det, Some(Self::COMMON_CHARS));
-        if confidence == 0 {
-            None
-        } else {
-            Some(CharsetMatch::new(det, self, confidence))
-        }
-    }
-
-    // @Override
-    // String getName() {
-    //     return "Shift_JIS";
-    // }
-    fn get_name(&self) -> String {
-        "Shift_JIS".to_string()
-    }
-
-    // @Override
-    // public String getLanguage() {
-    //     return "ja";
-    // }
-    fn get_language(&self) -> Option<String> {
-        Some("ja".to_string())
-    }
 }
 
 /**
@@ -357,7 +358,7 @@ impl CharsetRecog_mbcs for CharsetRecog_sjis {
 // static class CharsetRecog_big5 extends CharsetRecog_mbcs {
 pub struct CharsetRecog_big5;
 
-impl CharsetRecog_mbcs for CharsetRecog_big5 {
+impl CharsetRecog_big5 {
     // static int[] commonChars =
     //         // TODO:  This set of data comes from the character frequency-
     //         //        of-occurence analysis tool.  The data needs to be moved
@@ -384,7 +385,34 @@ impl CharsetRecog_mbcs for CharsetRecog_big5 {
         0xb5a5, 0xb5bd, 0xb5d0, 0xb5d8, 0xb671, 0xb7ed, 0xb867, 0xb944, 0xbad8, 0xbb44,
         0xbba1, 0xbdd1, 0xc2c4, 0xc3b9, 0xc440, 0xc45f,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_big5 {
+    // @Override
+    // CharsetMatch match(CharsetDetector det) {
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        let confidence = self.match_mbcs(det, Some(Self::COMMON_CHARS));
+        if confidence == 0 {
+            None
+        } else {
+            Some(CharsetMatch::new(det, self, confidence))
+        }
+    }
+
+    // @Override
+    // String getName() {
+    fn get_name(&self) -> String {
+        "Big5".to_string()
+    }
+
+    // @Override
+    // public String getLanguage() {
+    fn get_language(&self) -> Option<String> {
+        Some("zh".to_string())
+    }
+}
+
+impl CharsetRecog_mbcs for CharsetRecog_big5 {
     // @Override
     // boolean nextChar(iteratedChar it, CharsetDetector det) {
     fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
@@ -432,33 +460,6 @@ impl CharsetRecog_mbcs for CharsetRecog_big5 {
             it.error = true;
         }
         true
-    }
-
-    // @Override
-    // CharsetMatch match(CharsetDetector det) {
-    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
-        let confidence = self.match_mbcs(det, Some(Self::COMMON_CHARS));
-        if confidence == 0 {
-            None
-        } else {
-            Some(CharsetMatch::new(det, self, confidence))
-        }
-    }
-
-    // @Override
-    // String getName() {
-    //     return "Big5";
-    // }
-    fn get_name(&self) -> String {
-        "Big5".to_string()
-    }
-
-    // @Override
-    // public String getLanguage() {
-    //     return "zh";
-    // }
-    fn get_language(&self) -> Option<String> {
-        Some("zh".to_string())
     }
 }
 
@@ -585,11 +586,7 @@ pub struct CharsetRecog_euc_jp;
 
 impl CharsetRecog_euc for CharsetRecog_euc_jp {}
 
-impl CharsetRecog_mbcs for CharsetRecog_euc_jp {
-    fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
-        self.next_char_euc(it, det)
-    }
-
+impl CharsetRecog_euc_jp {
     // static int[] commonChars =
     //         // TODO:  This set of data comes from the character frequency-
     //         //        of-occurence analysis tool.  The data needs to be moved
@@ -616,7 +613,9 @@ impl CharsetRecog_mbcs for CharsetRecog_euc_jp {
         0xa5e5, 0xa5e9, 0xa5ea, 0xa5eb, 0xa5ec, 0xa5ed, 0xa5f3, 0xb8a9, 0xb9d4, 0xbaee,
         0xbbc8, 0xbef0, 0xbfb7, 0xc4ea, 0xc6fc, 0xc7bd, 0xcab8, 0xcaf3, 0xcbdc, 0xcdd1,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_euc_jp {
     // @Override
     // CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
@@ -645,6 +644,12 @@ impl CharsetRecog_mbcs for CharsetRecog_euc_jp {
     }
 }
 
+impl CharsetRecog_mbcs for CharsetRecog_euc_jp {
+    fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
+        self.next_char_euc(it, det)
+    }
+}
+
 /**
  * The charset recognize for EUC-KR.  A singleton instance of this class
  * is created and kept by the public CharsetDetector class
@@ -654,11 +659,7 @@ pub struct CharsetRecog_euc_kr;
 
 impl CharsetRecog_euc for CharsetRecog_euc_kr {}
 
-impl CharsetRecog_mbcs for CharsetRecog_euc_kr {
-    fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
-        self.next_char_euc(it, det)
-    }
-
+impl CharsetRecog_euc_kr {
     // static int[] commonChars =
     //         // TODO:  This set of data comes from the character frequency-
     //         //        of-occurence analysis tool.  The data needs to be moved
@@ -685,7 +686,9 @@ impl CharsetRecog_mbcs for CharsetRecog_euc_kr {
         0xc0da, 0xc0e5, 0xc0fb, 0xc0fc, 0xc1a4, 0xc1a6, 0xc1b6, 0xc1d6, 0xc1df, 0xc1f6,
         0xc1f8, 0xc4a1, 0xc5cd, 0xc6ae, 0xc7cf, 0xc7d1, 0xc7d2, 0xc7d8, 0xc7e5, 0xc8ad,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_euc_kr {
     // @Override
     // CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
@@ -711,6 +714,12 @@ impl CharsetRecog_mbcs for CharsetRecog_euc_kr {
     // }
     fn get_name(&self) -> String {
         "EUC-KR".to_string()
+    }
+}
+
+impl CharsetRecog_mbcs for CharsetRecog_euc_kr {
+    fn next_char(&self, it: &mut IteratedChar, det: &CharsetDetector) -> bool {
+        self.next_char_euc(it, det)
     }
 }
 
@@ -823,7 +832,9 @@ impl CharsetRecog_mbcs for CharsetRecog_gb_18030 {
 
         !it.done
     }
+}
 
+impl CharsetRecog_gb_18030 {
     // static int[] commonChars =
     //         // TODO:  This set of data comes from the character frequency-
     //         //        of-occurence analysis tool.  The data needs to be moved
@@ -850,7 +861,9 @@ impl CharsetRecog_mbcs for CharsetRecog_gb_18030 {
         0xcfb5, 0xcfc2, 0xcfd6, 0xd0c2, 0xd0c5, 0xd0d0, 0xd0d4, 0xd1a7, 0xd2aa, 0xd2b2,
         0xd2b5, 0xd2bb, 0xd2d4, 0xd3c3, 0xd3d0, 0xd3fd, 0xd4c2, 0xd4da, 0xd5e2, 0xd6d0,
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_gb_18030 {
     // @Override
     // String getName() {
     //     return "GB18030";

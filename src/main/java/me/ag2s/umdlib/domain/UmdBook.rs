@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: WrapOutputStream::new 需要 `&mut dyn stubs::Write`，而非 std::io::Write
+use crate::stubs::Write;
 // package me.ag2s.umdlib.domain;
 //
 // import java.io.IOException;

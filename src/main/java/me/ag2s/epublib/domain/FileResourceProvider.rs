@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::stubs::File;
+use crate::stubs::FileInputStream;
 // package me.ag2s.epublib.domain;
 
 // import java.io.File;
@@ -45,6 +48,6 @@ impl FileResourceProvider {
      */
     // @Override
     pub fn get_resource_stream(&self, href: &String) -> Result<FileInputStream, IOException> {
-        return FileInputStream::new(File::new(&self.dir, href));
+        return Ok(FileInputStream::new(&File::new_path(&File::new(&self.dir), href)));
     }
 }

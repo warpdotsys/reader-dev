@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::me_ag2s_epublib_domain_date::Date;
+use crate::me_ag2s_epublib_domain_mediatypes::MediaTypes;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;

@@ -1,7 +1,20 @@
+use crate::prelude::*;
+use std::future::Future;
+use std::pin::Pin;
 // package io.legado.app.help.coroutine
 //
 // import kotlinx.coroutines.*
 // import kotlin.coroutines.CoroutineContext
+
+// fix: stubs::Block/VoidBlock 为无参单位结构体占位；此处局部定义可调用版（遮蔽 prelude glob 导入）
+pub type Block<T> = Box<dyn Fn(&CoroutineScope) -> Pin<Box<dyn Future<Output = T> + '_>>>;
+pub type VoidBlock = Box<dyn Fn(&CoroutineScope) -> Pin<Box<dyn Future<Output = ()> + '_>>>;
+pub type CallbackBlock<V> = Box<dyn for<'a> Fn(&'a CoroutineScope, &'a V) -> Pin<Box<dyn Future<Output = ()> + 'a>>>;
+
+// fix: 局部定义（遮蔽 stubs::with_context 同步占位）以支持 async 闭包 + .await
+async fn with_context<T: Future, F: FnOnce() -> T>(_ctx: CoroutineContext, f: F) -> T::Output {
+    f().await
+}
 
 /**
  * class Coroutine<T>(
@@ -37,7 +50,8 @@ impl<T> Coroutine<T> {
     //     }
     //
     // }
-    pub fn async(
+    // fix: `async` 为 Rust 关键字 → r#async 转义
+    pub fn r#async(
         scope: CoroutineScope,
         context: CoroutineContext,
         block: Block<T>,
@@ -62,6 +76,8 @@ impl<T> Coroutine<T> {
             time_millis: None,
             error_return: None,
         };
+        // fix: clone 上下文以拆分 self 借用（&mut self 方法调用 + &self.context 无法并存）
+        let context = coroutine.context.clone();
         coroutine.job = coroutine.execute_internal(&context, block);
         coroutine
     }
@@ -121,7 +137,7 @@ impl<T> Coroutine<T> {
     }
 
     // fun onStart(
-    //     context: CoroutineContext? = null,
+    //     context: CoroutineContext? = None,
     //     block: (suspend CoroutineScope.() -> Unit)
     // ): Coroutine<T> {
     //     this.start = VoidCallback(context, block)
@@ -133,7 +149,7 @@ impl<T> Coroutine<T> {
     }
 
     // fun onSuccess(
-    //     context: CoroutineContext? = null,
+    //     context: CoroutineContext? = None,
     //     block: suspend CoroutineScope.(T) -> Unit
     // ): Coroutine<T> {
     //     this.success = Callback(context, block)
@@ -145,7 +161,7 @@ impl<T> Coroutine<T> {
     }
 
     // fun onError(
-    //     context: CoroutineContext? = null,
+    //     context: CoroutineContext? = None,
     //     block: suspend CoroutineScope.(Throwable) -> Unit
     // ): Coroutine<T> {
     //     this.error = Callback(context, block)
@@ -157,7 +173,7 @@ impl<T> Coroutine<T> {
     }
 
     // fun onFinally(
-    //     context: CoroutineContext? = null,
+    //     context: CoroutineContext? = None,
     //     block: suspend CoroutineScope.() -> Unit
     // ): Coroutine<T> {
     //     this.finally = VoidCallback(context, block)
@@ -169,7 +185,7 @@ impl<T> Coroutine<T> {
     }
 
     // fun onCancel(
-    //     context: CoroutineContext? = null,
+    //     context: CoroutineContext? = None,
     //     block: suspend CoroutineScope.() -> Unit
     // ): Coroutine<T> {
     //     this.cancel = VoidCallback(context, block)
@@ -181,11 +197,11 @@ impl<T> Coroutine<T> {
     }
 
     //取消当前任务
-    // fun cancel(cause: CancellationException? = null) {
+    // fun cancel(cause: CancellationException? = None) {
     //     job.cancel(cause)
     //     cancel?.let {
     //         MainScope().launch {
-    //             if (null == it.context) {
+    //             if (None == it.context) {
     //                 it.block.invoke(scope)
     //             } else {
     //                 withContext(scope.coroutineContext.plus(it.context)) {
@@ -196,7 +212,8 @@ impl<T> Coroutine<T> {
     //     }
     // }
     pub fn cancel(&self, cause: Option<CancellationException>) {
-        self.job.cancel(cause);
+        // fix: stubs::Job::cancel 无参占位——Kotlin job.cancel(cause) 的 cause 丢弃
+        self.job.cancel();
         if let Some(it) = &self.cancel {
             MainScope::new().launch(|| async move {
                 if it.context.is_none() {
@@ -254,12 +271,12 @@ impl<T> Coroutine<T> {
             // try {
             let result = (async {
                 if let Some(start) = &self.start {
-                    dispatch_void_callback(&self.scope, start).await;
+                    Self::dispatch_void_callback(&self.scope, start).await;
                 }
-                let value = execute_block(&self.scope, context, self.time_millis.unwrap_or(0_i64), &block).await;
+                let value = Self::execute_block(&self.scope, context, self.time_millis.unwrap_or(0_i64), &block).await;
                 if self.is_active() {
                     if let Some(success) = &self.success {
-                        dispatch_callback(&self.scope, value, success).await;
+                        Self::dispatch_callback(&self.scope, &value, success).await;
                     }
                 }
                 Ok::<(), Throwable>(())
@@ -275,13 +292,18 @@ impl<T> Coroutine<T> {
                 // } ?: false
                 let consume: bool = match &self.error_return {
                     Some(error_return) => {
+                        // fix: Kotlin errorReturn?.value?.let { value -> ... true } ?: false
                         let value = error_return.value.as_ref();
-                        if self.is_active() {
-                            if let Some(success) = &self.success {
-                                dispatch_callback(&self.scope, value, success).await;
+                        if let Some(value) = value {
+                            if self.is_active() {
+                                if let Some(success) = &self.success {
+                                    Self::dispatch_callback(&self.scope, value, success).await;
+                                }
                             }
+                            true
+                        } else {
+                            false
                         }
-                        true
                     }
                     None => false,
                 };
@@ -290,7 +312,7 @@ impl<T> Coroutine<T> {
                 // }
                 if !consume && self.is_active() {
                     if let Some(error) = &self.error {
-                        dispatch_callback(&self.scope, &e, error).await;
+                        Self::dispatch_callback(&self.scope, &e, error).await;
                     }
                 }
             }
@@ -301,7 +323,7 @@ impl<T> Coroutine<T> {
             // }
             if self.is_active() {
                 if let Some(finally) = &self.finally {
-                    dispatch_void_callback(&self.scope, finally).await;
+                    Self::dispatch_void_callback(&self.scope, finally).await;
                 }
             }
         });
@@ -309,7 +331,7 @@ impl<T> Coroutine<T> {
     }
 
     // private suspend inline fun dispatchVoidCallback(scope: CoroutineScope, callback: VoidCallback) {
-    //     if (null == callback.context) {
+    //     if (None == callback.context) {
     //         callback.block.invoke(scope)
     //     } else {
     //         withContext(scope.coroutineContext.plus(callback.context)) {
@@ -333,7 +355,7 @@ impl<T> Coroutine<T> {
     //     callback: Callback<R>
     // ) {
     //     if (!scope.isActive) return
-    //     if (null == callback.context) {
+    //     if (None == callback.context) {
     //         callback.block.invoke(scope, value)
     //     } else {
     //         withContext(scope.coroutineContext.plus(callback.context)) {
@@ -389,7 +411,7 @@ impl<T> Coroutine<T> {
 }
 
 // private data class Result<out T>(val value: T?)
-struct Result_<T> {
+pub struct Result_<T> {
     value: Option<T>,
 }
 
@@ -397,7 +419,7 @@ struct Result_<T> {
 //     val context: CoroutineContext?,
 //     val block: suspend CoroutineScope.() -> Unit
 // )
-struct VoidCallback {
+pub struct VoidCallback {
     context: Option<CoroutineContext>,
     block: VoidBlock,
 }
@@ -406,7 +428,21 @@ struct VoidCallback {
 //     val context: CoroutineContext?,
 //     val block: suspend CoroutineScope.(VALUE) -> Unit
 // )
-struct Callback<VALUE> {
+pub struct Callback<VALUE> {
     context: Option<CoroutineContext>,
     block: CallbackBlock<VALUE>,
+}
+
+// fix: CompositeCoroutine 将 Rc<Coroutine<Box<dyn Any>>> 放入 HashSet，需 Eq+Hash；
+// 字段含函数指针无法 derive，按指针身份比较（与 Kotlin HashSet<Coroutine<*>> 按引用去重语义一致）
+impl<T> PartialEq for Coroutine<T> {
+    fn eq(&self, other: &Self) -> bool {
+        std::ptr::eq(self, other)
+    }
+}
+impl<T> Eq for Coroutine<T> {}
+impl<T> std::hash::Hash for Coroutine<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::ptr::hash(self, state)
+    }
 }

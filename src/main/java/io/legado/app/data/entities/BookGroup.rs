@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 //@Parcelize
@@ -6,7 +7,7 @@
 //        @PrimaryKey
 //        var groupId: Long = 0L,
 //        var groupName: String = "",
-//        var cover: String? = null,
+//        var cover: String? = None,
 //        var order: Int = 0,
 //        var show: Boolean = true
 // )

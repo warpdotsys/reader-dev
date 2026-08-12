@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package org.kxml2.wap.wv;
 
 // import java.io.IOException;
@@ -35,21 +36,21 @@ impl WV {
 
         let mut parser = WbxmlParser::new();
 
-        parser.set_tag_table(0, &WV::tag_table_page0);
-        parser.set_tag_table(1, &WV::tag_table_page1);
-        parser.set_tag_table(2, &WV::tag_table_page2);
-        parser.set_tag_table(3, &WV::tag_table_page3);
-        parser.set_tag_table(4, &WV::tag_table_page4);
-        parser.set_tag_table(5, &WV::tag_table_page5);
-        parser.set_tag_table(6, &WV::tag_table_page6);
-        parser.set_tag_table(7, &WV::tag_table_page7);
-        parser.set_tag_table(8, &WV::tag_table_page8);
-        parser.set_tag_table(9, &WV::tag_table_page9);
-        parser.set_tag_table(10, &WV::tag_table_pageA);
+        parser.set_tag_table(0, &tag_table_page0);
+        parser.set_tag_table(1, &tag_table_page1);
+        parser.set_tag_table(2, &tag_table_page2);
+        parser.set_tag_table(3, &tag_table_page3);
+        parser.set_tag_table(4, &tag_table_page4);
+        parser.set_tag_table(5, &tag_table_page5);
+        parser.set_tag_table(6, &tag_table_page6);
+        parser.set_tag_table(7, &tag_table_page7);
+        parser.set_tag_table(8, &tag_table_page8);
+        parser.set_tag_table(9, &tag_table_page9);
+        parser.set_tag_table(10, &tag_table_page_a);
 
-        parser.set_attr_start_table(0, &WV::attr_start_table);
+        parser.set_attr_start_table(0, &WV_ATTR_START_TABLE);
 
-        parser.set_attr_value_table(0, &WV::attr_value_table);
+        parser.set_attr_value_table(0, &WV_ATTR_VALUE_TABLE);
 
         return Ok(parser);
     }
@@ -453,7 +454,7 @@ impl WV {
         Some("VersionList")                  //0x0A, 0x07 /* WV 1.2 */
     ];
 
-    pub const attr_start_table: [Option<&'static str>; 6] = [
+    pub const WV_ATTR_START_TABLE: [Option<&'static str>; 6] = [
         Some("xmlns=http://www.wireless-village.org/CSP"),//  0x00, 0x05
         Some("xmlns=http://www.wireless-village.org/PA"), //  0x00, 0x06
         Some("xmlns=http://www.wireless-village.org/TRC"),//  0x00, 0x07
@@ -462,7 +463,7 @@ impl WV {
         Some("xmlns=http://www.openmobilealliance.org/DTD/WV-TRC"),   //  0x00, 0x0A
     ];
 
-    pub const attr_value_table: [Option<&'static str>; 120] = {
+    pub const WV_ATTR_VALUE_TABLE: [Option<&'static str>; 120] = [
 
         Some("AccessType"),                           // 0x00 /* Common value token */
         Some("ActiveUsers"),                          // 0x01 /* Common value token */
@@ -584,4 +585,4 @@ impl WV {
         Some("SMS"),                                  // 0x75 /* Presence value token */
         Some("VIDEO_CALL"),                           // 0x76 /* Presence value token */
         Some("VIDEO_STREAM"),                         // 0x77 /* Presence value token */
-    };
+    ];

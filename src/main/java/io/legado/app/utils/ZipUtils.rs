@@ -1,4 +1,11 @@
+﻿use crate::prelude::*;
 use std::sync::Arc;
+
+// 显式导入消解跨模块 glob 导入歧义（优先于 prelude 的 glob 导入）
+use crate::stubs::{
+    BufferedInputStream, BufferedOutputStream, File, FileInputStream, FileOutputStream, ZipEntry,
+    ZipFile, ZipOutputStream,
+};
 
 pub struct ZipUtils;
 
@@ -12,7 +19,7 @@ impl ZipUtils {
      * @throws IOException if an I/O error has occurred
      */
     pub fn zipFiles(srcFiles: &Vec<String>, zipFilePath: &str) -> bool {
-        Self::zipFiles_comment(srcFiles, zipFilePath, None)
+        Self::zipFiles_comment(Some(srcFiles), Some(zipFilePath), None)
     }
 
     /**
@@ -32,10 +39,10 @@ impl ZipUtils {
         if srcFilePaths == None || zipFilePath == None {
             return false;
         }
-        let mut zos = ZipOutputStream::new(FileOutputStream::new(zipFilePath.unwrap()));
+        let mut zos = ZipOutputStream::new(FileOutputStream::new_path(zipFilePath.unwrap()));
         let result = (|| {
             for srcFile in srcFilePaths.unwrap() {
-                if !Self::zipFile_inner(Self::getFileByPath(srcFile).unwrap(), "", &mut zos, comment) {
+                if !Self::zipFile_inner(&Self::getFileByPath(srcFile).unwrap(), "", &mut zos, comment) {
                     return false;
                 }
             }
@@ -54,7 +61,6 @@ impl ZipUtils {
      * @return `true`: success<br></br>`false`: fail
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn zipFiles_file(srcFiles: Option<&Vec<File>>, zipFile: Option<&File>) -> bool {
         Self::zipFiles_file_comment(srcFiles, zipFile, None)
     }
@@ -88,7 +94,6 @@ impl ZipUtils {
      * @return `true`: success<br></br>`false`: fail
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn zipFile(srcFilePath: &str, zipFilePath: &str) -> bool {
         Self::zipFile_comment(srcFilePath, zipFilePath, None)
     }
@@ -102,13 +107,16 @@ impl ZipUtils {
      * @return `true`: success<br></br>`false`: fail
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn zipFile_comment(
         srcFilePath: &str,
         zipFilePath: &str,
-        comment: &str
+        comment: Option<&str>
     ) -> bool {
-        Self::zipFile_file(Self::getFileByPath(srcFilePath), Self::getFileByPath(zipFilePath), Some(comment))
+        Self::zipFile_file(
+            Self::getFileByPath(srcFilePath).as_ref(),
+            Self::getFileByPath(zipFilePath).as_ref(),
+            comment
+        )
     }
 
     /**
@@ -120,7 +128,6 @@ impl ZipUtils {
      * @return `true`: success<br></br>`false`: fail
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn zipFile_file(srcFile: Option<&File>, zipFile: Option<&File>, comment: Option<&str>) -> bool {
         if srcFile == None || zipFile == None {
             return false;
@@ -129,7 +136,6 @@ impl ZipUtils {
         return Self::zipFile_inner(srcFile.unwrap(), "", &mut zos, comment);
     }
 
-    #[throws(IOException)]
     fn zipFile_inner(
         srcFile: &File,
         rootPath: &str,
@@ -140,12 +146,13 @@ impl ZipUtils {
         if !srcFile.exists() {
             return true;
         }
-        rootPath1 = rootPath1 + (if Self::isSpace(&rootPath1) { "" } else { File::separator() }.as_str()) + &srcFile.name();
+        let sep = if Self::isSpace(Some(&rootPath1)) { String::new() } else { File::separator() };
+        rootPath1 = rootPath1 + &sep + &srcFile.name();
         if srcFile.isDirectory() {
             let fileList = srcFile.listFiles();
-            if fileList == None || fileList.unwrap().is_empty() {
-                let entry = ZipEntry::new(format!("{rootPath1}/"));
-                entry.comment = comment;
+            if fileList == None || fileList.as_ref().unwrap().is_empty() {
+                let mut entry = ZipEntry::new(format!("{rootPath1}/"));
+                entry.comment = comment.map(|s| s.to_string());
                 zos.putNextEntry(&entry);
                 zos.closeEntry();
             } else {
@@ -157,8 +164,8 @@ impl ZipUtils {
             }
         } else {
             let mut is = BufferedInputStream::new(FileInputStream::new(srcFile));
-            let entry = ZipEntry::new(rootPath1);
-            entry.comment = comment;
+            let mut entry = ZipEntry::new(rootPath1);
+            entry.comment = comment.map(|s| s.to_string());
             zos.putNextEntry(&entry);
             zos.write(&is.readBytes());
             zos.closeEntry();
@@ -174,7 +181,6 @@ impl ZipUtils {
      * @return the unzipped files
      * @throws IOException if unzip unsuccessfully
      */
-    #[throws(IOException)]
     pub fn unzipFile(zipFilePath: &str, destDirPath: &str) -> Option<Vec<File>> {
         Self::unzipFileByKeyword(zipFilePath, destDirPath, None)
     }
@@ -187,9 +193,8 @@ impl ZipUtils {
      * @return the unzipped files
      * @throws IOException if unzip unsuccessfully
      */
-    #[throws(IOException)]
     pub fn unzipFile_file(zipFile: &File, destDir: &File) -> Option<Vec<File>> {
-        Self::unzipFileByKeyword_file(zipFile, destDir, None)
+        Self::unzipFileByKeyword_file(Some(zipFile), Some(destDir), None)
     }
 
     /**
@@ -201,15 +206,14 @@ impl ZipUtils {
      * @return the unzipped files
      * @throws IOException if unzip unsuccessfully
      */
-    #[throws(IOException)]
     pub fn unzipFileByKeyword(
         zipFilePath: &str,
         destDirPath: &str,
         keyword: Option<&str>
     ) -> Option<Vec<File>> {
         Self::unzipFileByKeyword_file(
-            Self::getFileByPath(zipFilePath),
-            Self::getFileByPath(destDirPath),
+            Self::getFileByPath(zipFilePath).as_ref(),
+            Self::getFileByPath(destDirPath).as_ref(),
             keyword
         )
     }
@@ -223,7 +227,6 @@ impl ZipUtils {
      * @return the unzipped files
      * @throws IOException if unzip unsuccessfully
      */
-    #[throws(IOException)]
     pub fn unzipFileByKeyword_file(
         zipFile: Option<&File>,
         destDir: Option<&File>,
@@ -234,17 +237,17 @@ impl ZipUtils {
         }
         let mut files = Vec::<File>::new();
         let zip = ZipFile::new(zipFile.unwrap());
-        let entries = zip.entries();
+        let mut entries = zip.entries();
         let result = (|| {
             if Self::isSpace(keyword) {
                 while entries.hasMoreElements() {
                     let entry = entries.nextElement();
                     let entryName = entry.name();
                     if entryName.contains("../") {
-                        logger.error(&format!("ZipUtils entryName: {entryName} is dangerous!"));
+                        logger().error(format!("ZipUtils entryName: {entryName} is dangerous!"));
                         continue;
                     }
-                    if !Self::unzipChildFile(destDir.unwrap(), &mut files, &zip, entry, &entryName) {
+                    if !Self::unzipChildFile(destDir.unwrap(), &mut files, &zip, &entry, &entryName) {
                         return files;
                     }
                 }
@@ -253,11 +256,11 @@ impl ZipUtils {
                     let entry = entries.nextElement();
                     let entryName = entry.name();
                     if entryName.contains("../") {
-                        logger.error(&format!("ZipUtils entryName: {entryName} is dangerous!"));
+                        logger().error(format!("ZipUtils entryName: {entryName} is dangerous!"));
                         continue;
                     }
                     if entryName.contains(keyword.unwrap()) {
-                        if !Self::unzipChildFile(destDir.unwrap(), &mut files, &zip, entry, &entryName) {
+                        if !Self::unzipChildFile(destDir.unwrap(), &mut files, &zip, &entry, &entryName) {
                             return files;
                         }
                     }
@@ -269,7 +272,6 @@ impl ZipUtils {
         Some(result)
     }
 
-    #[throws(IOException)]
     fn unzipChildFile(
         destDir: &File,
         files: &mut Vec<File>,
@@ -280,9 +282,9 @@ impl ZipUtils {
         let file = File::new_path(destDir, name);
         files.push(file.clone());
         if entry.isDirectory() {
-            return Self::createOrExistsDir(&file);
+            return Self::createOrExistsDir(Some(&file));
         } else {
-            if !Self::createOrExistsFile(&file) {
+            if !Self::createOrExistsFile(Some(&file)) {
                 return false;
             }
             let mut is = BufferedInputStream::new(zip.getInputStream(entry));
@@ -299,9 +301,8 @@ impl ZipUtils {
      * @return the files' path in ZIP file
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn getFilesPath(zipFilePath: &str) -> Option<Vec<String>> {
-        Self::getFilesPath_file(Self::getFileByPath(zipFilePath))
+        Self::getFilesPath_file(Self::getFileByPath(zipFilePath).as_ref())
     }
 
     /**
@@ -311,18 +312,17 @@ impl ZipUtils {
      * @return the files' path in ZIP file
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn getFilesPath_file(zipFile: Option<&File>) -> Option<Vec<String>> {
         if zipFile == None {
             return None;
         }
         let mut paths = Vec::<String>::new();
         let zip = ZipFile::new(zipFile.unwrap());
-        let entries = zip.entries();
+        let mut entries = zip.entries();
         while entries.hasMoreElements() {
             let entryName = entries.nextElement().name();
             if entryName.contains("../") {
-                logger.error(&format!("ZipUtils entryName: {entryName} is dangerous!"));
+                logger().error(format!("ZipUtils entryName: {entryName} is dangerous!"));
                 paths.push(entryName);
             } else {
                 paths.push(entryName);
@@ -339,9 +339,8 @@ impl ZipUtils {
      * @return the files' comment in ZIP file
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn getComments(zipFilePath: &str) -> Option<Vec<String>> {
-        Self::getComments_file(Self::getFileByPath(zipFilePath))
+        Self::getComments_file(Self::getFileByPath(zipFilePath).as_ref())
     }
 
     /**
@@ -351,14 +350,13 @@ impl ZipUtils {
      * @return the files' comment in ZIP file
      * @throws IOException if an I/O error has occurred
      */
-    #[throws(IOException)]
     pub fn getComments_file(zipFile: Option<&File>) -> Option<Vec<String>> {
         if zipFile == None {
             return None;
         }
         let mut comments = Vec::<String>::new();
         let zip = ZipFile::new(zipFile.unwrap());
-        let entries = zip.entries();
+        let mut entries = zip.entries();
         while entries.hasMoreElements() {
             let entry = entries.nextElement();
             comments.push(entry.comment());
@@ -382,7 +380,7 @@ impl ZipUtils {
         if file.exists() {
             return file.isFile();
         }
-        if !Self::createOrExistsDir(file.parentFile()) {
+        if !Self::createOrExistsDir(file.parentFile().as_ref()) {
             return false;
         }
         let result: Result<bool, std::io::Error> = (|| {
@@ -392,7 +390,7 @@ impl ZipUtils {
         match result {
             Ok(b) => b,
             Err(e) => {
-                e.printStackTrace();
+                e.print_stack_trace();
                 false
             }
         }

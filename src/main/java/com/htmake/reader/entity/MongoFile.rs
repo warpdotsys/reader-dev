@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.entity
 
 // data class MongoFile(

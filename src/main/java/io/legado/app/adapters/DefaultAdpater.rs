@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.adapters
 //
 // import io.legado.app.help.http.StrResponse
@@ -5,7 +6,7 @@
 // import com.htmake.reader.utils.getRelativePath
 // import java.nio.file.Paths
 
-fn get_relative_path(sub_dir_files: &[&str]) -> String {
+pub fn get_relative_path(sub_dir_files: &[&str]) -> String {
     let mut p = std::path::PathBuf::new();
     for f in sub_dir_files {
         p.push(f);
@@ -17,6 +18,12 @@ fn get_relative_path(sub_dir_files: &[&str]) -> String {
  * Default implementation of ReaderAdapterInterface using existing getWorkDir functions.
  */
 pub struct DefaultAdpater;
+
+impl DefaultAdpater {
+    fn get_relative_path(&self, sub_dir_files: &[&str]) -> String {
+        return get_relative_path(sub_dir_files);
+    }
+}
 
 impl ReaderAdapterInterface for DefaultAdpater {
 
@@ -36,15 +43,11 @@ impl ReaderAdapterInterface for DefaultAdpater {
     }
 
     fn get_work_dir_vararg(&self, sub_dir_files: &[&str]) -> String {
-        return self.get_work_dir(&get_relative_path(sub_dir_files));
-    }
-
-    fn get_relative_path(&self, sub_dir_files: &[&str]) -> String {
-        return get_relative_path(sub_dir_files);
+        return ReaderAdapterInterface::get_work_dir(self, &get_relative_path(sub_dir_files));
     }
 
     fn get_cache_dir(&self) -> String {
-        return self.get_work_dir_vararg(&["storage", "cache"]);
+        return ReaderAdapterInterface::get_work_dir_vararg(self, &["storage", "cache"]);
     }
 
     async fn get_str_response_by_remote_webview(
@@ -60,7 +63,7 @@ impl ReaderAdapterInterface for DefaultAdpater {
         post: bool,
         body: Option<&str>,
         user_name_space: &str,
-        debug_log: Option<&DebugLog>,
+        debug_log: Option<&dyn DebugLog>,
     ) -> Option<StrResponse> {
         panic!("不支持webview")
     }

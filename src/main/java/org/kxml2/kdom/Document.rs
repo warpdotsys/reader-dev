@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::org_kxml2_kdom_node::{Node, XmlPullError, XmlSerializer};
+use crate::org_kxml2_kdom_element::Element;
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -94,7 +97,7 @@ impl Document {
 
     pub fn parse(&mut self, parser: &mut dyn XmlPullParser) -> Result<(), XmlPullError> {
 
-        parser.require(XmlPullParser::START_DOCUMENT, None, None);
+        parser.require(crate::org_kxml2_kdom_node::START_DOCUMENT, None, None);
         parser.next_token();
 
         self.encoding = parser.get_input_encoding();
@@ -103,9 +106,9 @@ impl Document {
             None => None,
         };
 
-        Node::parse(&mut self.base, &ParentNode::Document(Box::new((*self).clone())), parser)?;
-
-        if parser.get_event_type() != XmlPullParser::END_DOCUMENT
+        let doc_clone = (*self).clone();
+        Node::parse(&mut self.base, &ParentNode::Document(Box::new(doc_clone)), parser)?;
+        if parser.get_event_type() != crate::org_kxml2_kdom_node::END_DOCUMENT
         // Java: throw new RuntimeException("Document end expected!");
         { return Err(XmlPullError::RuntimeException("Document end expected!".to_string())); }
 

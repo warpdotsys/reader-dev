@@ -1,7 +1,10 @@
+use crate::prelude::*;
+// 显式导入消解跨模块 glob 导入歧义（stubs GSON 提供 to_json）
+use crate::stubs::GSON;
 // package io.legado.app.model.analyzeRule
 // import io.legado.app.utils.GSON
 
-struct RuleData {
+pub struct RuleData {
     variable_map: HashMap<String, String>,
 }
 

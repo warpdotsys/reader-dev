@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use crate::me::ag2s::epublib::util::StringUtil;
 
 /**
@@ -39,7 +40,8 @@ impl DOMUtil {
         //ArrayList 初始化时指定长度提高性能
         let mut result = Vec::with_capacity(elements.get_length());
         for i in 0..elements.get_length() {
-            result.push(get_text_children_content(elements.item(i)));
+            // fix: item 返回所有权值需借用; Java 直接 add(null), Rust 以空串占位
+            result.push(Self::get_text_children_content(&elements.item(i)).unwrap_or_default());
         }
         result
     }
@@ -140,14 +142,14 @@ impl DOMUtil {
      * @return String value
      */
     pub fn get_text_children_content(parent_element: &Element) -> Option<String> {
-        if parent_element == null {
+        if parent_element.is_null() {
             return None;
         }
         let mut result = String::new();
         let child_nodes = parent_element.get_child_nodes();
         for i in 0..child_nodes.get_length() {
             let node = child_nodes.item(i);
-            if (node == null) || (node.get_node_type() != Node::TEXT_NODE) {
+            if node.is_null() || (node.get_node_type() != Node::TEXT_NODE) {
                 continue;
             }
             result.push_str(node.get_data());
@@ -157,7 +159,9 @@ impl DOMUtil {
 }
 
 pub struct Document;
+#[derive(PartialEq)]
 pub struct Element;
+#[derive(PartialEq)]
 pub struct NodeList;
 pub struct Node;
 pub struct Text;
@@ -168,6 +172,10 @@ impl Document {
 }
 
 impl Element {
+    // fix: DOM stub 补充方法（get_text_children_content 使用；&Element 不可能为 null，恒 false）
+    pub fn is_null(&self) -> bool { false }
+    // fix: 占位实现（真实 DOM 由实现方提供）
+    pub fn get_data(&self) -> &str { "" }
     pub fn get_attribute_ns(&self, _namespace: &str, _attribute: &str) -> String { todo!() }
     pub fn get_attribute(&self, _attribute: &str) -> String { todo!() }
     pub fn get_elements_by_tag_name_ns(&self, _namespace: &str, _tag_name: &str) -> NodeList { todo!() }

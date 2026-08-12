@@ -1,0 +1,130 @@
+﻿error[E0425]: cannot find function `copy` in this scope
+  --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:64:9
+error[E0425]: cannot find function `copy` in this scope
+  --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:90:9
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:646:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:681:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:720:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:765:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:769:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:786:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:790:43
+error[E0433]: cannot find `ErrorKind` in `io`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:817:43
+error[E0404]: expected trait, found struct `Closeable`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:873:38
+error[E0404]: expected trait, found struct `Closeable`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:887:47
+error[E0404]: expected trait, found struct `Closeable`
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:902:47
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:144:38
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:175:46
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:207:54
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:294:51
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:332:67
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:377:59
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:494:27
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:494:111
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:514:30
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:514:108
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:605:26
+error[E0424]: expected value, found module `self`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:605:107
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:864:40
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:873:47
+error[E0404]: expected trait, found struct `InputStream`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:878:32
+error[E0425]: cannot find function `copy_reader_app` in this scope
+  --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:50:9
+error[E0425]: cannot find function `copy_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:119:9
+error[E0425]: cannot find function `copy_large` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:138:9
+error[E0425]: cannot find function `copy_input_writer_charset` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:160:9
+error[E0425]: cannot find function `copy_reader_writer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:181:9
+error[E0425]: cannot find function `copy_input_writer_charset` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:208:9
+error[E0425]: cannot find function `copy_reader_app_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:230:9
+error[E0425]: cannot find function `copy_reader_output_charset` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:284:9
+error[E0425]: cannot find function `copy_reader_writer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:312:9
+error[E0425]: cannot find function `copy_reader_output_charset` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:346:9
+error[E0425]: cannot find function `copy_large_reader` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:368:21
+error[E0425]: cannot find function `copy_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:394:9
+error[E0425]: cannot find function `copy_large_offset_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:450:9
+error[E0425]: cannot find function `skip_fully` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:480:13
+error[E0425]: cannot find function `copy_large_reader_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:522:9
+error[E0425]: cannot find function `copy_large_reader_offset_buffer` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:573:9
+error[E0425]: cannot find function `skip_fully_reader` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:598:13
+error[E0425]: cannot find function `skip` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:767:23
+error[E0425]: cannot find function `skip_channel` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:788:23
+error[E0425]: cannot find function `skip_reader` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:815:23
+error[E0425]: cannot find function `close` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:889:13
+error[E0425]: cannot find function `do_raw_stream` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:210:24
+error[E0425]: cannot find function `process_http_stream` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:266:13
+error[E0425]: cannot find function `do_raw_stream` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:268:13
+error[E0425]: cannot find function `process_http_stream` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:336:24
+error[E0425]: cannot find function `get_xml_prolog` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:425:23
+error[E0425]: cannot find function `calculate_raw_encoding` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:426:15
+error[E0425]: cannot find function `do_lenient_detection` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:430:21
+error[E0425]: cannot find function `get_xml_prolog` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:453:23
+error[E0425]: cannot find function `calculate_http_encoding` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:454:15
+error[E0425]: cannot find function `do_lenient_detection` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:458:21
+error[E0425]: cannot find function `calculate_http_encoding` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:481:19
+error[E0425]: cannot find function `get_content_type_mime` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:589:24
+error[E0425]: cannot find function `get_content_type_encoding` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:590:23
+error[E0425]: cannot find function `is_app_xml` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:591:23
+error[E0425]: cannot find function `is_text_xml` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:592:24
+error[E0425]: cannot find function `calculate_raw_encoding` in this scope
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:603:24

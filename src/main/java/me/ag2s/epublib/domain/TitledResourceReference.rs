@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -65,7 +66,8 @@ impl TitledResourceReference {
         if StringUtil::is_blank(self.fragment_id.as_ref().unwrap_or(&String::new())) {
             return self.resource.as_ref().unwrap().get_href().clone();
         } else {
-            return self.resource.as_ref().unwrap().get_href().clone() + &Constants::FRAGMENT_SEPARATOR_CHAR.to_string()
+            // fix: Constants 为 trait，无法直接引用关联常量；Java 中 FRAGMENT_SEPARATOR_CHAR == '#'
+            return self.resource.as_ref().unwrap().get_href().clone() + &'#'.to_string()
                     + self.fragment_id.as_ref().unwrap();
         }
     }
@@ -86,7 +88,7 @@ impl TitledResourceReference {
     }
 
     /**
-     * Sets the resource to the given resource and sets the fragmentId to null.
+     * Sets the resource to the given resource and sets the fragmentId to None.
      */
     pub fn set_resource(&mut self, resource: Option<Resource>) {
         self.set_resource_with_fragment(resource, None);

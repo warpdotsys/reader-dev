@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /*
@@ -20,7 +21,7 @@ pub trait CharsetRecog_Unicode: CharsetRecognizer {}
 // static int codeUnit16FromBytes(byte hi, byte lo) {
 //     return ((hi & 0xff) << 8) | (lo & 0xff);
 // }
-fn code_unit16_from_bytes(hi: u8, lo: u8) -> i32 {
+pub fn code_unit16_from_bytes(hi: u8, lo: u8) -> i32 {
     ((hi as i32 & 0xff) << 8) | (lo as i32 & 0xff)
 }
 
@@ -42,7 +43,7 @@ fn code_unit16_from_bytes(hi: u8, lo: u8) -> i32 {
 //     }
 //     return confidence;
 // }
-fn adjust_confidence(code_unit: i32, mut confidence: i32) -> i32 {
+pub fn adjust_confidence(code_unit: i32, mut confidence: i32) -> i32 {
     if code_unit == 0 {
         confidence -= 10;
     } else if (code_unit >= 0x20 && code_unit <= 0xff) || code_unit == 0x0a {
@@ -74,7 +75,7 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_BE {
     // CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // byte[] input = det.fRawInput;
-        let input = det.f_raw_input.clone().unwrap_or_default();
+        let input = det.raw_input().clone().unwrap_or_default();
         let mut confidence = 10;
 
         // int bytesToCheck = Math.min(input.length, 30);
@@ -112,7 +113,7 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_BE {
         // if (confidence > 0) {
         //     return new CharsetMatch(det, this, confidence);
         // }
-        // return null;
+        // return None;
         if confidence > 0 {
             Some(CharsetMatch::new(det, self, confidence))
         } else {
@@ -139,7 +140,7 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_LE {
     // CharsetMatch match(CharsetDetector det) {
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         // byte[] input = det.fRawInput;
-        let input = det.f_raw_input.clone().unwrap_or_default();
+        let input = det.raw_input().clone().unwrap_or_default();
         let mut confidence = 10;
 
         // int bytesToCheck = Math.min(input.length, 30);
@@ -177,7 +178,7 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_LE {
         // if (confidence > 0) {
         //     return new CharsetMatch(det, this, confidence);
         // }
-        // return null;
+        // return None;
         if confidence > 0 {
             Some(CharsetMatch::new(det, self, confidence))
         } else {
@@ -202,7 +203,7 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_LE {
 //         int confidence = 0;
 //
 //         if (limit == 0) {
-//             return null;
+//             return None;
 //         }
 //         if (getChar(input, 0) == 0x0000FEFF) {
 //             hasBOM = true;
@@ -234,24 +235,27 @@ impl CharsetRecognizer for CharsetRecog_UTF_16_LE {
 //             confidence = 25;
 //         }
 //
-//         return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+//         return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
 //     }
 // }
 pub trait CharsetRecog_UTF_32: CharsetRecog_Unicode {
     fn get_char(&self, input: &[u8], index: usize) -> i32;
 
-    fn match_utf32(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+    fn match_utf32(&self, det: &CharsetDetector) -> Option<CharsetMatch>
+    where
+        Self: Sized,
+    {
         // byte[] input = det.fRawInput;
-        let input = det.f_raw_input.clone().unwrap_or_default();
+        let input = det.raw_input().clone().unwrap_or_default();
         // int limit = (det.fRawLength / 4) * 4;
-        let limit = (det.f_raw_length / 4) * 4;
+        let limit = (det.raw_length() / 4) * 4;
         let mut num_valid = 0;
         let mut num_invalid = 0;
         let mut has_bom = false;
         let mut confidence = 0;
 
         // if (limit == 0) {
-        //     return null;
+        //     return None;
         // }
         if limit == 0 {
             return None;
@@ -311,7 +315,7 @@ pub trait CharsetRecog_UTF_32: CharsetRecog_Unicode {
             confidence = 25;
         }
 
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
         if confidence == 0 {
             None
         } else {

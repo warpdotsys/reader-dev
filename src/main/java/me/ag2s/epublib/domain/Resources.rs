@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::me_ag2s_epublib_domain_mediatype::MediaType;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.Constants;
@@ -108,8 +110,7 @@ impl Resources {
         let mut counter = self.last_id;
         if counter == i32::MAX {
             if self.resources.len() == i32::MAX as usize {
-                panic!(
-                        format!("Resources contains {} elements: no new elements can be added", i32::MAX));
+                panic!("Resources contains {} elements: no new elements can be added", i32::MAX);
             } else {
                 counter = 1;
             }
@@ -146,7 +147,7 @@ impl Resources {
      * Gets the resource with the given id.
      *
      * @param id id
-     * @return null if not found
+     * @return None if not found
      */
     pub fn get_by_id(&self, id: &String) -> Option<Resource> {
         if StringUtil::is_blank(id) {
@@ -176,7 +177,7 @@ impl Resources {
      * Remove the resource with the given href.
      *
      * @param href href
-     * @return the removed resource, null if not found
+     * @return the removed resource, None if not found
      */
     pub fn remove(&mut self, href: &String) -> Option<Resource> {
         return self.resources.remove(href);
@@ -202,7 +203,7 @@ impl Resources {
         }
     }
 
-    fn create_href(&self, media_type: &MediaType, counter: i32) -> String {
+    fn create_href(&self, media_type: &crate::stubs::MediaType, counter: i32) -> String {
         if MediaTypes::is_bitmap_image(media_type) {
             return Resources::IMAGE_PREFIX.to_string() + &counter.to_string() + media_type.get_default_extension();
         } else {
@@ -251,7 +252,8 @@ impl Resources {
             return true;
         } else {
             return !self.resources.contains_key(
-                    &StringUtil::substring_before(href, Constants::FRAGMENT_SEPARATOR_CHAR));
+                    // fix: E0790——Constants 转录为 trait，关联常量无法以 `Constants::X` 访问，改用字面量（值即 '#'）
+                    &StringUtil::substring_before(href, '#'));
         }
     }
     /**
@@ -318,13 +320,14 @@ impl Resources {
      * If the given href contains a fragmentId then that fragment id will be ignored.
      *
      * @param href href
-     * @return null if not found.
+     * @return None if not found.
      */
     pub fn get_by_href(&self, href: &String) -> Option<Resource> {
         if StringUtil::is_blank(href) {
             return None;
         }
-        let href = StringUtil::substring_before(href, Constants::FRAGMENT_SEPARATOR_CHAR);
+        // fix: E0790——Constants 转录为 trait，关联常量无法以 `Constants::X` 访问，改用字面量（值即 '#'）
+        let href = StringUtil::substring_before(href, '#');
         return self.resources.get(&href).cloned();
     }
 
@@ -337,7 +340,7 @@ impl Resources {
      * @return the first resource (random order) with the give mediatype.
      */
     pub fn find_first_resource_by_media_type(&self, media_type: &MediaType) -> Option<Resource> {
-        return Resources::find_first_resource_by_media_type(&self.get_all(), media_type);
+        return Resources::find_first_resource_by_media_type_in(&self.get_all(), media_type);
     }
 
     /**
@@ -348,7 +351,8 @@ impl Resources {
      * @param mediaType mediaType
      * @return the first resource (random order) with the give mediatype.
      */
-    pub fn find_first_resource_by_media_type(
+    // fix: Java 重载 findFirstResourceByMediaType(List, MediaType) 转录改名，避免与 &self 版重名
+    pub fn find_first_resource_by_media_type_in(
             resources: &Vec<Resource>, media_type: &MediaType) -> Option<Resource> {
         for resource in resources {
             if resource.get_media_type().as_ref().unwrap() == media_type {
@@ -366,9 +370,6 @@ impl Resources {
      */
     pub fn get_resources_by_media_type(&self, media_type: &MediaType) -> Vec<Resource> {
         let mut result: Vec<Resource> = Vec::new();
-        if media_type.is_none() {
-            return result;
-        }
         for resource in self.get_all() {
             if resource.get_media_type().as_ref().unwrap() == media_type {
                 result.push(resource);
@@ -386,16 +387,17 @@ impl Resources {
     // @SuppressWarnings("unused")
     pub fn get_resources_by_media_types(&self, media_types: &Vec<MediaType>) -> Vec<Resource> {
         let mut result: Vec<Resource> = Vec::new();
-        if media_types.is_none() {
-            return result;
-        }
 
         // this is the fastest way of doing this according to
         // http://stackoverflow.com/questions/1128723/in-java-how-can-i-test-if-an-array-contains-a-certain-value
+        // fix: get_media_type() 为 stubs::MediaType（无数据占位），与真实 MediaType 比较走 stubs 的跨类型 PartialEq
         let media_types_list = media_types.clone();
         for resource in self.get_all() {
-            if media_types_list.contains(resource.get_media_type().as_ref().unwrap()) {
-                result.push(resource);
+            for media_type in &media_types_list {
+                if resource.get_media_type().as_ref().unwrap() == media_type {
+                    result.push(resource);
+                    break;
+                }
             }
         }
         return result;

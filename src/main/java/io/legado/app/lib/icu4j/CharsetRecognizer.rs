@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /**
@@ -34,10 +35,10 @@ pub trait CharsetRecognizer {
     /**
      * Get the ISO language code for this charset.
      *
-     * @return the language code, or <code>null</code> if the language cannot be determined.
+     * @return the language code, or <code>None</code> if the language cannot be determined.
      */
     // public String getLanguage() {
-    //     return null;
+    //     return None;
     // }
     fn get_language(&self) -> Option<String> {
         None
@@ -50,7 +51,7 @@ pub trait CharsetRecognizer {
      * @param det The CharsetDetector, which contains the input text
      *            to be checked for being in this charset.
      * @return A CharsetMatch object containing details of match
-     * with this charset, or null if there was no match.
+     * with this charset, or None if there was no match.
      */
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch>;
 }

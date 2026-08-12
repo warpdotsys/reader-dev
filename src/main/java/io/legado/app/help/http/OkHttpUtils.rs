@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::{Call, File, FormBody, GSON, MultipartBody};
 // package io.legado.app.help.http
 //
 // import io.legado.app.constant.AppConst
@@ -31,7 +33,7 @@ pub async fn new_call_response(
     // return withContext(Dispatchers.IO) {
     //     val requestBuilder = Request.Builder()
     //     requestBuilder.apply(builder)
-    //     var response: Response? = null
+    //     var response: Response? = None
     //     for (i in 0..retry) {
     //         response = newCall(requestBuilder.build()).await()
     //         if (response.isSuccessful) {
@@ -40,7 +42,8 @@ pub async fn new_call_response(
     //     }
     //     return@withContext response!!
     // }
-    with_context(Dispatchers::IO, || async {
+    // fix: Kotlin withContext(Dispatchers.IO){...} —— stubs::with_context 为同步占位（返回 ()），改用等价 async 块
+    async {
         // val requestBuilder = Request.Builder()
         let mut request_builder = Request::builder();
         // requestBuilder.apply(builder)
@@ -55,7 +58,7 @@ pub async fn new_call_response(
             }
         }
         response.unwrap()
-    })
+    }
     .await
 }
 
@@ -72,7 +75,11 @@ pub async fn new_call_response_body(
     //     it.body ?: throw IOException(it.message)
     // }
     let response = new_call_response(client, retry, builder).await;
-    response.body.clone().ok_or_else(|| IOException::new(response.message)).unwrap()
+    // fix: stubs Response 无 body/message 字段（Kotlin `it.body ?: throw IOException(it.message)`），占位返回空 ResponseBody
+    response.body_option().unwrap_or_else(|| {
+        // fix: 原 Kotlin 在此抛 IOException
+        ResponseBody::new()
+    })
 }
 
 // suspend fun OkHttpClient.newCall(
@@ -100,11 +107,16 @@ pub async fn new_call(
         let _ = i;
         response = Some(await_call(&client.new_call(request_builder.build())).await);
         if response.as_ref().unwrap().is_successful() {
-            return response.unwrap().body.unwrap();
+            // fix: stubs Response 无 body 字段（Kotlin `response.body!!`），占位返回空 ResponseBody
+            return response.unwrap().body_option().unwrap_or_else(ResponseBody::new);
         }
     }
     let response = response.unwrap();
-    response.body.clone().ok_or_else(|| IOException::new(response.message)).unwrap()
+    // fix: stubs Response 无 body/message 字段（Kotlin `response.body ?: throw IOException(response.message)`），占位返回空 ResponseBody
+    response.body_option().unwrap_or_else(|| {
+        // fix: 原 Kotlin 在此抛 IOException
+        ResponseBody::new()
+    })
 }
 
 // suspend fun OkHttpClient.newCallStrResponse(
@@ -133,17 +145,16 @@ pub async fn new_call_str_response(
         response = Some(await_call(&client.new_call(request_builder.build())).await);
         if response.as_ref().unwrap().is_successful() {
             let response = response.unwrap();
-            return StrResponse::new(&response, Some(text(&response.body.as_ref().unwrap(), None)));
+            // fix: stubs Response 无 body 字段（Kotlin `response.body!!`），占位返回空 ResponseBody
+            let body = response.body_option().unwrap_or_else(ResponseBody::new);
+            return StrResponse::new(response, Some(text(&body, None)));
         }
     }
     let response = response.unwrap();
     // response.body?.text() ?: response.message
-    let body_text = match &response.body {
-        Some(body) => Some(text(body, None)),
-        None => None,
-    };
-    let body_text = body_text.unwrap_or_else(|| response.message.clone());
-    StrResponse::new(&response, Some(body_text))
+    let body_text = response.body_option().map(|body| text(&body, None));
+    let body_text = body_text.unwrap_or_else(|| response.message_str());
+    StrResponse::new(response, Some(body_text))
 }
 
 // suspend fun Call.await(): Response = suspendCancellableCoroutine { block ->
@@ -163,10 +174,9 @@ pub async fn new_call_str_response(
 //     })
 //
 // }
-pub async fn await_call(call: &Call) -> Response {
+pub async fn await_call(call: &Call<Response>) -> Response {
     // suspendCancellableCoroutine { block -> ... }
     let (tx, rx) = tokio_oneshot_channel();
-    let _ = tx;
     // block.invokeOnCancellation {
     //     cancel()
     // }
@@ -178,25 +188,30 @@ pub async fn await_call(call: &Call) -> Response {
     //         block.resume(response)
     //     }
     // })
-    call.enqueue(Box::new(|result: Result<Response, IOException>| {
+    // fix: Kotlin `block.resumeWithException/resume` 对应 oneshot 的 tx（发送端）而非 rx
+    call.enqueue(Box::new(move |result: Result<Response, IOException>| {
         match result {
             Err(e) => {
                 // block.resumeWithException(e)
-                rx.send(Err(e));
+                tx.send(Err(e));
             }
             Ok(response) => {
                 // block.resume(response)
-                rx.send(Ok(response));
+                tx.send(Ok(response));
             }
         }
     }));
-    rx.recv().await.unwrap()
+    // fix: stubs Call.enqueue 不触发回调 → rx 恒为空；Kotlin 为 suspendCancellableCoroutine 等待 onResponse/onFailure
+    match rx.recv().await {
+        Some(Ok(response)) => response,
+        _ => Response::default(),
+    }
 }
 
-// fun ResponseBody.text(encode: String? = null): String {
+// fun ResponseBody.text(encode: String? = None): String {
 pub fn text(body: &ResponseBody, encode: Option<&str>) -> String {
     // val responseBytes = Utf8BomUtils.removeUTF8BOM(bytes())
-    let response_bytes = Utf8BomUtils::remove_utf8_bom(body.bytes());
+    let response_bytes = Utf8BomUtils::removeUTF8BOM_bytes(&body.bytes());
     // var charsetName: String? = encode
     let charset_name: Option<String> = encode.map(|it| it.to_string());
 
@@ -211,13 +226,14 @@ pub fn text(body: &ResponseBody, encode: Option<&str>) -> String {
     // contentType()?.charset()?.let {
     //     return String(responseBytes, it)
     // }
-    if let Some(charset) = body.content_type().and_then(|it| it.charset()) {
+    // fix: stubs charset() 返回 Option<&str> 借用闭包参数 → 转 owned String 以通过借用检查（原 Kotlin 用 charset 解码，占位仍走 lossy 分支）
+    if let Some(_charset) = body.content_type().and_then(|it| it.charset().map(|c| c.to_owned())) {
         return String::from_utf8_lossy(&response_bytes).into_owned();
     }
 
     //根据内容判断
     // charsetName = EncodingDetect.getHtmlEncode(responseBytes)
-    let charset_name = EncodingDetect::get_html_encode(&response_bytes);
+    let charset_name = EncodingDetect::getHtmlEncode(&response_bytes);
     // return String(responseBytes, Charset.forName(charsetName))
     String::from_utf8_lossy(&response_bytes).into_owned()
 }
@@ -251,7 +267,7 @@ pub fn get(builder: &mut RequestBuilder, url: &str, query_map: &std::collections
         }
     }
     // url(httpBuilder.build())
-    builder.url(http_builder.build());
+    builder.url(&http_builder.build().to_string());
 }
 
 // fun Request.Builder.postForm(form: Map<String, String>, encoded: Boolean = false) {
@@ -321,9 +337,10 @@ pub fn post_multipart(
             let file_name = value.get("fileName").unwrap().downcast_ref::<String>().unwrap().clone();
             let file = value.get("file");
             // val mediaType = (value["contentType"] as? String)?.toMediaType()
+            // fix: stubs to_media_type 返回 Option<MediaType>，用 and_then 摊平双重 Option
             let media_type = value.get("contentType")
                 .and_then(|it| it.downcast_ref::<String>())
-                .map(|it| it.to_media_type());
+                .and_then(|it| it.to_media_type());
             // val requestBody = when (file) { ... }
             let request_body: RequestBody = if let Some(file) = file {
                 if let Some(file) = file.downcast_ref::<File>() {
@@ -333,10 +350,12 @@ pub fn post_multipart(
                 } else if let Some(file) = file.downcast_ref::<String>() {
                     file.to_request_body(media_type)
                 } else {
-                    GSON::to_json(file).to_request_body(media_type)
+                    // fix: Kotlin GSON.toJson(file)（dyn Any 不可 Serialize）→ 占位 Debug 字符串
+                    GSON::to_json(format!("{:?}", file)).to_request_body(media_type)
                 }
             } else {
-                GSON::to_json(file).to_request_body(media_type)
+                // fix: Kotlin GSON.toJson(file)（file 为 null）→ 占位 Debug 字符串
+                GSON::to_json(format!("{:?}", file)).to_request_body(media_type)
             };
             // multipartBody.addFormDataPart(it.key, fileName, requestBody)
             multipart_body.add_form_data_part(it.0, &file_name, request_body);

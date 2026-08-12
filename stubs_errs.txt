@@ -1,0 +1,263 @@
+﻿method `response_body_converter` has 2 type parameters but its trait declaration has 0 type parameters	@6905
+expected a type, found a trait	@6575
+this function takes 0 arguments but 1 argument was supplied	@3863
+mismatched types	@4547
+no method named `send` found for struct `OneshotReceiver<T>` in the current scope	@6313
+no method named `send` found for struct `OneshotReceiver<T>` in the current scope	@6313
+arguments to this function are incorrect	@3701
+no method named `is_blank` found for enum `std::option::Option<T>` in the current scope	@754
+this function takes 3 arguments but 1 argument was supplied	@3707
+arguments to this function are incorrect	@3701
+duplicate definitions with name `flush`	@5701
+method takes 0 generic arguments but 1 generic argument was supplied	@3550
+this function takes 2 arguments but 1 argument was supplied	@3550
+the method `clone` exists for struct `Vec<stubs::Image>`, but its trait bounds were not satisfied	@3453
+the method `clone` exists for struct `Vec<stubs::Image>`, but its trait bounds were not satisfied	@3453
+expected a `FnMut(&mut com_htmake_reader_api_controller_curd::RoutingContext)` closure, found `StaticHand	@6447
+expected a `FnMut(&mut com_htmake_reader_api_controller_curd::RoutingContext)` closure, found `StaticHand	@6447
+expected a `FnMut(&mut com_htmake_reader_api_controller_curd::RoutingContext)` closure, found `StaticHand	@6447
+expected a `FnMut(&mut com_htmake_reader_api_controller_curd::RoutingContext)` closure, found `StaticHand	@6447
+mismatched types	@5328
+expected a `FnMut(&mut com_htmake_reader_api_controller_curd::RoutingContext)` closure, found `StaticHand	@6447
+no associated function or constant named `get_instance` found for struct `stubs::Calendar` in the current	@1299
+no associated function or constant named `get_instance` found for struct `stubs::Calendar` in the current	@1299
+this method takes 1 argument but 2 arguments were supplied	@474
+no associated function or constant named `get_instance` found for struct `stubs::Calendar` in the current	@1299
+no method named `with_lock` found for struct `stubs::Mutex` in the current scope	@580
+this method takes 2 arguments but 1 argument was supplied	@1458
+this method takes 2 arguments but 1 argument was supplied	@1458
+no method named `unwrap` found for type `i64` in the current scope	@1449
+this method takes 2 arguments but 1 argument was supplied	@1449
+this function takes 0 arguments but 1 argument was supplied	@1499
+no method named `get_string` found for enum `std::option::Option<T>` in the current scope	@1438
+no method named `get_integer` found for enum `std::option::Option<T>` in the current scope	@1449
+no method named `get_string` found for enum `std::option::Option<T>` in the current scope	@1438
+mismatched types	@2009
+mismatched types	@1531
+no method named `get_string` found for enum `std::option::Option<T>` in the current scope	@1438
+mismatched types	@1438
+no method named `mkdirs` found for enum `std::option::Option<T>` in the current scope	@2040
+no method named `copy_to` found for struct `stubs::File` in the current scope	@1999
+no method named `relative_to` found for struct `stubs::File` in the current scope	@1999
+mismatched types	@5321
+mismatched types	@5328
+this function takes 1 argument but 2 arguments were supplied	@3629
+no method named `mkdirs` found for enum `std::option::Option<T>` in the current scope	@2040
+mismatched types	@2079
+`stubs::JsonArray` is not an iterator	@1496
+`stubs::JsonArray` is not an iterator	@1496
+no method named `sync_from_webdav` found for struct `stubs::BookController` in the current scope	@6600
+no method named `save_book_to_shelf` found for struct `stubs::BookController` in the current scope	@6600
+no method named `relative_to` found for struct `stubs::File` in the current scope	@1999
+no method named `exists` found for enum `std::option::Option<T>` in the current scope	@2028
+no method named `mkdirs` found for enum `std::option::Option<T>` in the current scope	@2040
+no method named `get_last_back_file_from_webdav` found for struct `stubs::BookController` in the current 	@6600
+no method named `create_user_backup` found for struct `stubs::BookController` in the current scope	@6600
+mismatched types	@5328
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+mismatched types	@3093
+this method takes 1 argument but 0 arguments were supplied	@3119
+this method takes 1 argument but 0 arguments were supplied	@3119
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+mismatched types	@3093
+this method takes 1 argument but 0 arguments were supplied	@3119
+this method takes 1 argument but 0 arguments were supplied	@3119
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+no method named `put` found for reference `&com_htmake_reader_api_controller_curd::RoutingContext` in the	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `sync_book_progress_from_webdav` found for struct `stubs::BookController` in the current 	@6600
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+no method named `get_header` found for struct `com_htmake_reader_api_controller_curd::RoutingContext` in 	@5328
+this method takes 1 argument but 0 arguments were supplied	@6530
+this method takes 1 argument but 0 arguments were supplied	@6530
+field `app_config` of struct `com_htmake_reader_api_controller_basecontroller::BaseController` is private	@6600
+no method named `get_last_back_file_from_webdav` found for struct `stubs::BookController` in the current 	@6600
+no method named `execute` found for struct `stubs::Call<T>` in the current scope	@4923
+mismatched types	@4367
+no method named `to_list` found for struct `Vec<stubs::File>` in the current scope	@4385
+no method named `put_next_entry` found for enum `std::option::Option<T>` in the current scope	@4385
+no method named `write_range` found for enum `std::option::Option<T>` in the current scope	@4391
+no method named `close_entry` found for enum `std::option::Option<T>` in the current scope	@4388
+no method named `with_codec_registry` found for enum `std::option::Option<T>` in the current scope	@6030
+no method named `get_bean` found for struct `stubs::ApplicationContext` in the current scope	@3589
+no method named `get_bean` found for struct `stubs::ApplicationContext` in the current scope	@3589
+no method named `get_bean` found for struct `stubs::ApplicationContext` in the current scope	@3589
+this function takes 1 argument but 2 arguments were supplied	@156
+this method takes 1 argument but 2 arguments were supplied	@758
+mismatched types	@369
+mismatched types	@435
+mismatched types	@2009
+mismatched types	@2009
+mismatched types	@2009
+mismatched types	@2009
+mismatched types	@2009
+this function takes 0 arguments but 1 argument was supplied	@3863
+this function takes 0 arguments but 1 argument was supplied	@3863
+this function takes 0 arguments but 1 argument was supplied	@3863
+this function takes 0 arguments but 1 argument was supplied	@3863
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+mismatched types	@6258
+mismatched types	@6265
+mismatched types	@884
+mismatched types	@884
+mismatched types	@884
+no method named `data` found for struct `stubs::Element` in the current scope	@1073
+mismatched types	@6357
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+no method named `add_all` found for struct `stubs::Elements` in the current scope	@1126
+no method named `clear` found for struct `stubs::Elements` in the current scope	@1126
+no method named `add_all` found for struct `stubs::Elements` in the current scope	@1126
+cannot index into a value of type `&stubs::Elements`	@1126
+no method named `add_all` found for struct `stubs::Elements` in the current scope	@1126
+mismatched types	@6357
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+no method named `add_all` found for struct `stubs::Elements` in the current scope	@1126
+no method named `clear` found for struct `stubs::Elements` in the current scope	@1126
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+no method named `iter` found for struct `stubs::Elements` in the current scope	@1126
+mismatched types	@169
+this method takes 0 arguments but 1 argument was supplied	@302
+mismatched types	@169
+this method takes 0 arguments but 1 argument was supplied	@302
+mismatched types	@1547
+mismatched types	@1547
+mismatched types	@1547
+mismatched types	@369
+mismatched types	@435
+mismatched types	@369
+mismatched types	@435
+`stubs::FileInputStream` is not an iterator	@2293
+this method takes 3 arguments but 1 argument was supplied	@2308
+this method takes 3 arguments but 1 argument was supplied	@2308
+no method named `pattern` found for struct `stubs::Pattern` in the current scope	@148
+no associated function or constant named `MULTILINE` found for struct `stubs::Pattern` in the current sco	@148
+mismatched types	@3683
+no method named `pattern` found for reference `&stubs::Pattern` in the current scope	@2293
+no method named `read_range` found for struct `stubs::FileInputStream` in the current scope	@2293
+no method named `read_range` found for struct `stubs::FileInputStream` in the current scope	@2293
+mismatched types	@169
+no associated function or constant named `run_finalization` found for struct `stubs::System` in the curre	@2248
+no method named `read_range` found for struct `stubs::FileInputStream` in the current scope	@2293
+`stubs::FileInputStream` is not an iterator	@2293
+no method named `read_range` found for struct `stubs::FileInputStream` in the current scope	@2293
+no method named `to_pattern_with_flags` found for struct `std::string::String` in the current scope	@148
+no associated function or constant named `MULTILINE` found for struct `stubs::Pattern` in the current sco	@148
+mismatched types	@2009
+no method named `printStackTrace` found for struct `std::string::String` in the current scope	@1999
+the method `insert` exists for struct `std::sync::MutexGuard<'_, std::collections::HashMap<stubs::File, i	@1999
+the method `insert` exists for struct `std::sync::MutexGuard<'_, std::collections::HashMap<stubs::File, i	@1999
+the method `insert` exists for struct `std::sync::MutexGuard<'_, std::collections::HashMap<stubs::File, i	@1999
+arguments to this function are incorrect	@2243
+mismatched types	@2009
+mismatched types	@2243
+mismatched types	@2009
+the method `remove` exists for struct `std::sync::MutexGuard<'_, std::collections::HashMap<stubs::File, i	@1999
+associated function takes 0 generic arguments but 1 generic argument was supplied	@1401
+method takes 2 generic arguments but 1 generic argument was supplied	@4159
+method takes 2 generic arguments but 1 generic argument was supplied	@4177
+this function takes 1 argument but 2 arguments were supplied	@156
+mismatched types	@169
+no associated function or constant named `new` found for struct `stubs::StringBuffer` in the current scop	@5452
+binary operation `==` cannot be applied to type `std::option::Option<&stubs::URL>`	@327
+mismatched types	@169
+this function takes 1 argument but 2 arguments were supplied	@156
+this function takes 1 argument but 2 arguments were supplied	@156
+this function takes 1 argument but 2 arguments were supplied	@156
+this function takes 1 argument but 2 arguments were supplied	@156
+mismatched types	@619
+mismatched types	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `new` found for struct `stubs::MediaType` in the current scope	@619
+no method named `get_name` found for struct `stubs::MediaType` in the current scope	@619
+binary operation `==` cannot be applied to type `&stubs::MediaType`	@619
+binary operation `==` cannot be applied to type `&stubs::MediaType`	@619
+binary operation `==` cannot be applied to type `&stubs::MediaType`	@619
+no method named `get_extensions` found for reference `&stubs::MediaType` in the current scope	@619
+no method named `get_name` found for struct `stubs::MediaType` in the current scope	@619
+no associated function or constant named `is_java_identifier_start` found for struct `stubs::Character` i	@3890
+mismatched types	@619
+no method named `get_name` found for struct `stubs::MediaType` in the current scope	@619
+no method named `get_name` found for struct `stubs::MediaType` in the current scope	@619
+mismatched types	@619
+mismatched types	@619
+binary operation `!=` cannot be applied to type `std::option::Option<stubs::MediaType>`	@619
+no method named `get_name` found for struct `stubs::MediaType` in the current scope	@619
+no method named `hash_code` found for struct `stubs::MediaType` in the current scope	@619
+no method named `hash_code` found for struct `stubs::MediaType` in the current scope	@619
+no method named `hash_code` found for struct `stubs::MediaType` in the current scope	@619
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@3704
+mismatched types	@5976
+borrowed data escapes outside of function	@7167

@@ -1,3 +1,14 @@
+use crate::prelude::*;
+use std::sync::Mutex;
+use crate::io_legado_app_help_http_okhttputils::{
+    add_headers, get, new_call_response, new_call_response_body, new_call_str_response, post_form,
+    post_json, post_multipart,
+};
+use crate::io_legado_app_help_http_strresponse::StrResponse;
+use crate::stubs::{
+    Any, Base64, HashMap, JsValue, MatchData, MediaType, Pattern, RequestBody,
+    RequestBuilder, Response, ResponseBody, SCRIPT_ENGINE, SimpleBindings, System,
+};
 // package io.legado.app.model.analyzeRule
 //
 // import com.script.SimpleBindings
@@ -33,37 +44,84 @@ pub struct AnalyzeUrl {
     pub speak_text: Option<String>,
     pub speak_speed: Option<i32>,
     pub base_url: String,
-    pub source: Option<BaseSource>,
+    // fix: BaseSource 因 JsExtensions::get_source 返回裸 trait 对象而非 dyn-compatible，
+    //      用具体类型 BookSource 替代 Box<dyn BaseSource>（同文件可编译且不受 trait 影响）
+    pub source: Option<BookSource>,
     pub rule_data: Option<Box<dyn RuleDataInterface>>,
     pub chapter: Option<BookChapter>,
-    pub debug_log: Option<DebugLog>,
+    pub debug_log: Option<Box<dyn DebugLog>>,
     pub rule_url: String, // var ruleUrl = "" private set
     pub url: String, // var url: String = "" private set
-    pub body: Option<String>, // var body: String? = null private set
-    pub type_: Option<String>, // var type: String? = null private set
+    pub body: Option<String>, // var body: String? = None private set
+    pub type_: Option<String>, // var type: String? = None private set
     pub header_map: HashMap<String, String>, // val headerMap = HashMap<String, String>()
     url_no_query: String, // private var urlNoQuery: String = ""
-    query_str: Option<String>, // private var queryStr: String? = null
+    query_str: Option<String>, // private var queryStr: String? = None
     field_map: LinkedHashMap<String, String>, // private val fieldMap = LinkedHashMap<String, String>()
-    charset: Option<String>, // private var charset: String? = null
+    charset: Option<String>, // private var charset: String? = None
     method: RequestMethod, // private var method = RequestMethod.GET
-    proxy: Option<String>, // private var proxy: String? = null
+    proxy: Option<String>, // private var proxy: String? = None
     retry: i32, // private var retry: Int = 0
     use_web_view: bool, // private var useWebView: Boolean = false
-    web_js: Option<String>, // private var webJs: String? = null
+    web_js: Option<String>, // private var webJs: String? = None
     enabled_cookie_jar: bool, // private val enabledCookieJar = source?.enabledCookieJar ?: false
+}
+
+// fix: companion object 的 paramPattern / dataUriRegex（AppPattern.dataUriRegex）转为模块级函数
+fn PARAM_PATTERN() -> Pattern {
+    Pattern::compile(r"\s*,\s*(?=\{)")
+}
+
+fn DATA_URI_REGEX() -> Pattern {
+    Pattern::compile(r"data:image/[a-zA-Z0-9.+-]+;base64,([A-Za-z0-9+/=]+)")
+}
+
+// fix: companion object 中 concurrentRecordMap 的转录占位（静态可变容器；HashMap::new 非 const，用 LazyLock）
+static CONCURRENT_RECORD_MAP: std::sync::LazyLock<Mutex<HashMap<String, ConcurrentRecord>>> =
+    std::sync::LazyLock::new(|| Mutex::new(HashMap::new()));
+
+fn concurrent_record_map(key: String) -> Option<ConcurrentRecord> {
+    CONCURRENT_RECORD_MAP.lock().unwrap().get(&key).cloned()
+}
+
+fn concurrent_record_map_put(key: String, record: ConcurrentRecord) {
+    CONCURRENT_RECORD_MAP.lock().unwrap().insert(key, record);
+}
+
+fn concurrent_record_put(record: ConcurrentRecord) {
+    // fix: 转录简化, 按 time 匹配已存在的记录
+    let mut map = CONCURRENT_RECORD_MAP.lock().unwrap();
+    for (_k, v) in map.iter_mut() {
+        if v.time == record.time {
+            *v = record;
+            return;
+        }
+    }
+}
+
+fn concurrent_record_frequency_dec(record: ConcurrentRecord) {
+    // concurrentRecord.frequency = concurrentRecord.frequency - 1
+    let mut map = CONCURRENT_RECORD_MAP.lock().unwrap();
+    for (_k, v) in map.iter_mut() {
+        if v.time == record.time {
+            v.frequency -= 1;
+            return;
+        }
+    }
 }
 
 impl AnalyzeUrl {
     // companion object {
     //     val paramPattern: Pattern = Pattern.compile("\s*,\s*(?=\{)")
-    pub const PARAM_PATTERN: &'static str = r"\s*,\s*(?=\{)";
     //     private val pagePattern = Pattern.compile("<(.*?)>")
-    const PAGE_PATTERN: &'static str = "<(.*?)>";
     //     private val concurrentRecordMap = hashMapOf<String, ConcurrentRecord>()
     //     // (静态可变容器, 对应 Java 的 HashMap)
     //     static CONCURRENT_RECORD_MAP: Lazy<Mutex<HashMap<String, ConcurrentRecord>>> = ...;
     // }
+    // fix: 原 companion object 中的 Pattern 常量改为模块级函数（Pattern 非 const 构造）
+    fn PAGE_PATTERN() -> Pattern {
+        Pattern::compile("<(.*?)>")
+    }
     //
     // class 构造 (含 init 块)
     pub fn new(
@@ -73,13 +131,14 @@ impl AnalyzeUrl {
         speak_text: Option<String>,
         speak_speed: Option<i32>,
         base_url: String,
-        source: Option<BaseSource>,
+        source: Option<BookSource>,
         rule_data: Option<Box<dyn RuleDataInterface>>,
         chapter: Option<BookChapter>,
         header_map_f: Option<HashMap<String, String>>,
-        debug_log: Option<DebugLog>,
+        debug_log: Option<Box<dyn DebugLog>>,
     ) -> Self {
-        let enabled_cookie_jar = source.as_ref().map(|s| s.enabled_cookie_jar).unwrap_or(false);
+        // fix: BookSource 未实现 BaseSource，enabled_cookie_jar 为结构体字段而非方法
+        let enabled_cookie_jar = source.as_ref().and_then(|s| s.enabled_cookie_jar).unwrap_or(false);
         let mut s = Self {
             m_url,
             key,
@@ -110,11 +169,21 @@ impl AnalyzeUrl {
         // init {
         if !is_data_url(&s.m_url) {
             // val urlMatcher = paramPattern.matcher(baseUrl)
-            if let Some(url_matcher) = PARAM_PATTERN.find(&s.base_url) {
+            if let Some(url_matcher) = PARAM_PATTERN().find(&s.base_url) {
                 s.base_url = s.base_url[..url_matcher.start()].to_string(); // baseUrl = baseUrl.substring(0, urlMatcher.start())
             }
             // (headerMapF ?: source?.getHeaderMap(true))?.let {
-            let header_map_f = header_map_f.or_else(|| s.source.as_ref().map(|src| src.get_header_map(true)));
+            // fix: BookSource 未实现 BaseSource（无 get_header_map 方法），占位为 UA 头（同 BaseSource::get_header_map 基础逻辑）
+            let header_map_f = header_map_f.or_else(|| {
+                s.source.as_ref().map(|src| {
+                    let mut hm = HashMap::new();
+                    hm.insert(AppConst::UA_NAME.to_string(), AppConst::userAgent());
+                    if let Some(h) = src.header.clone() {
+                        hm.insert("header".to_string(), h);
+                    }
+                    hm
+                })
+            });
             if let Some(it) = header_map_f {
                 s.header_map.extend(it.clone()); // headerMap.putAll(it)
                 if it.contains_key("proxy") { // it.containsKey("proxy")
@@ -134,8 +203,8 @@ impl AnalyzeUrl {
     }
 
     // override fun getLogger(): DebugLog? = debugLog
-    pub fn get_logger(&self) -> Option<DebugLog> {
-        self.debug_log.clone()
+    pub fn get_logger(&self) -> Option<&dyn DebugLog> {
+        self.debug_log.as_deref()
     }
 
     /**
@@ -167,9 +236,11 @@ impl AnalyzeUrl {
                     self.rule_url = tmp.replace("@result", &self.rule_url);
                 }
             }
-            // ruleUrl = evalJS(jsMatcher.group(2) ?: jsMatcher.group(1), ruleUrl) as String
+            // ruleUrl = evalJS(jsMatcher.group_idx(2) ?: jsMatcher.group_idx(1), ruleUrl) as String
             let js = m.3.or(m.2);
-            self.rule_url = self.eval_js(js.unwrap_or_default().to_string(), Some(&self.rule_url)).to_string() as String;
+            self.rule_url = self.eval_js(js.unwrap_or_default().to_string(), Some(&self.rule_url))
+                .map(|v| v.to_string())
+                .unwrap_or_default();
             start = m.1;
         }
         if self.rule_url.len() > start {
@@ -189,13 +260,14 @@ impl AnalyzeUrl {
         if self.rule_url.contains("{{") && self.rule_url.contains("}}") {
             let mut analyze = RuleAnalyzer::new(self.rule_url.clone(), false); //创建解析
             //替换所有内嵌{{js}}
-            let url = analyze.inner_rule("{{".to_string(), "}}".to_string(), |it| {
+            let url = analyze.inner_rule_str("{{".to_string(), "}}".to_string(), |it| {
                 // val jsEval = evalJS(it) ?: ""
                 let js_eval = self.eval_js(it, None);
                 if let Some(js_eval) = js_eval {
                     if let Some(s) = js_eval.as_string() {
                         Some(s)
-                    } else if let Some(d) = js_eval.as_double() {
+                    } else if js_eval.is_double() {
+                        let d = js_eval.as_double();
                         if d % 1.0 == 0.0 {
                             Some(format!("{:.0}", d)) // String.format("%.0f", jsEval)
                         } else {
@@ -216,7 +288,7 @@ impl AnalyzeUrl {
         if let Some(page) = self.page {
             let matcher: Vec<(usize, usize, String)> = Vec::new(); // pagePattern.matcher(ruleUrl) 匹配结果: (start, end, group1)
             for m in matcher {
-                // val pages = matcher.group(1)!!.split(",")
+                // val pages = matcher.group_idx(1)!!.split(",")
                 let pages: Vec<&str> = m.2.split(",").collect();
                 let matched = &self.rule_url[m.0..m.1];
                 self.rule_url = if (page as usize) < pages.len() {
@@ -234,20 +306,20 @@ impl AnalyzeUrl {
      */
     fn analyze_url(&mut self) {
         //replaceKeyPageJs已经替换掉额外内容，此处url是基础形式，可以直接切首个‘,’之前字符串。
-        let url_matcher = PARAM_PATTERN.find(&self.rule_url);
+        let url_matcher = PARAM_PATTERN().find(&self.rule_url);
         let (url_no_option, end) = if let Some(url_matcher) = url_matcher {
             (self.rule_url[..url_matcher.start()].to_string(), url_matcher.end())
         } else {
             (self.rule_url.clone(), 0)
         };
-        self.url = get_absolute_url(&self.base_url, &url_no_option); // url = NetworkUtils.getAbsoluteURL(baseUrl, urlNoOption)
-        if let Some(b) = get_base_url(&self.url) { // NetworkUtils.getBaseUrl(url)?.let {
+        self.url = NetworkUtils::getAbsoluteURL(Some(&self.base_url), &url_no_option); // url = NetworkUtils.getAbsoluteURL(baseUrl, urlNoOption)
+        if let Some(b) = NetworkUtils::getBaseUrl(Some(&self.url)) { // NetworkUtils.getBaseUrl(url)?.let {
             self.base_url = b;
         }
         if url_no_option.len() != self.rule_url.len() {
             // GSON.fromJsonObject<UrlOption>(ruleUrl.substring(urlMatcher.end())).getOrNull()?.let { option ->
-            let option = gson_from_json_object::<UrlOption>(&self.rule_url[end..]);
-            if let Some(option) = option {
+            let option = gson_from_json_object::<UrlOption>(self.rule_url[end..].to_string());
+            if let Ok(option) = option {
                 if let Some(it) = option.get_method() {
                     if it.eq_ignore_ascii_case("POST") { // it.equals("POST", true)
                         self.method = RequestMethod::POST;
@@ -275,8 +347,8 @@ impl AnalyzeUrl {
             }
         }
         // headerMap[UA_NAME] ?: let { headerMap[UA_NAME] = AppConst.userAgent }
-        if !self.header_map.contains_key(UA_NAME) {
-            self.header_map.insert(UA_NAME.to_string(), user_agent());
+        if !self.header_map.contains_key(AppConst::UA_NAME) {
+            self.header_map.insert(AppConst::UA_NAME.to_string(), AppConst::userAgent());
         }
         self.url_no_query = self.url.clone();
         match self.method {
@@ -305,20 +377,20 @@ impl AnalyzeUrl {
      */
     fn analyze_fields(&mut self, fields_txt: String) {
         self.query_str = Some(fields_txt.clone());
-        let query_s = split_not_blank(&fields_txt, "&");
+        let query_s = fields_txt.split_not_blank("&");
         for query in query_s {
-            let query_m = split_not_blank(query, "=");
-            let value = if query_m.len() > 1 { query_m[1] } else { "" };
+            let query_m = query.split_not_blank("=");
+            let value = if query_m.len() > 1 { query_m[1].clone() } else { String::new() };
             if self.charset.as_deref().map_or(true, |c| c.is_empty()) {
-                if has_url_encoded(value) {
+                if NetworkUtils::hasUrlEncoded(&value) {
                     self.field_map.insert(query_m[0].to_string(), value.to_string());
                 } else {
-                    self.field_map.insert(query_m[0].to_string(), url_encode(value, "UTF-8")); // URLEncoder.encode(value, "UTF-8")
+                    self.field_map.insert(query_m[0].to_string(), url_encode_charset(value, "UTF-8")); // URLEncoder.encode(value, "UTF-8")
                 }
             } else if self.charset.as_deref() == Some("escape") {
-                self.field_map.insert(query_m[0].to_string(), encoder_utils_escape(value));
+                self.field_map.insert(query_m[0].to_string(), EncoderUtils::escape(&value));
             } else {
-                self.field_map.insert(query_m[0].to_string(), url_encode(value, self.charset.as_deref().unwrap_or("")));
+                self.field_map.insert(query_m[0].to_string(), url_encode_charset(value, self.charset.as_deref().unwrap_or("")));
             }
         }
     }
@@ -326,28 +398,29 @@ impl AnalyzeUrl {
     /**
      * 执行JS
      */
-    pub fn eval_js(&self, js_str: String, result: Option<&String>) -> Option<JValue> {
-        let bindings = SimpleBindings::new(); // val bindings = SimpleBindings()
-        bindings.set("java", self);
+    pub fn eval_js(&self, js_str: String, result: Option<&String>) -> Option<JsValue> {
+        let mut bindings = SimpleBindings::new(); // val bindings = SimpleBindings()
+        // fix: JS 引擎为占位, 绑定值以字符串形式存入
+        bindings.set("java", self.get_user_name_space()); // bindings["java"] = this
         bindings.set("baseUrl", self.base_url.clone());
-        bindings.set("cookie", CookieStore::new(self.get_user_name_space()));
-        bindings.set("cache", CacheManager::new(self.get_user_name_space()));
+        bindings.set("cookie", CookieStore::new(self.get_user_name_space()).get_cookie("")); // bindings["cookie"] = CookieStore(...)
+        bindings.set("cache", CacheManager::new(self.get_user_name_space()).get("")); // bindings["cache"] = CacheManager(...)
         bindings.set("page", self.page);
         bindings.set("key", self.key.clone());
         bindings.set("speakText", self.speak_text.clone());
         bindings.set("speakSpeed", self.speak_speed);
-        bindings.set("book", self.rule_data.as_ref().and_then(|r| r.as_any().downcast_ref::<Book>())); // bindings["book"] = ruleData as? Book
-        bindings.set("source", self.source.clone());
+        bindings.set("book", self.rule_data.as_ref().map(|r| r.get_user_name_space())); // bindings["book"] = ruleData as? Book
+        bindings.set("source", self.source.as_ref().map(|s| s.get_key())); // bindings["source"] = source
         bindings.set("result", result.cloned());
-        SCRIPT_ENGINE.eval(js_str, bindings)
+        SCRIPT_ENGINE.eval(js_str, &mut bindings).map(|v| JsValue { value: Some(format!("{:?}", v)) })
     }
 
     pub fn put(&mut self, key: String, value: String) -> String {
         // chapter?.putVariable(key, value) ?: ruleData?.putVariable(key, value)
         if let Some(chapter) = &mut self.chapter {
-            chapter.put_variable(key, value);
+            chapter.put_variable(key.clone(), Some(value.clone()));
         } else if let Some(rule_data) = &mut self.rule_data {
-            rule_data.put_variable(key, value);
+            rule_data.put_variable(&key, Some(&value));
         }
         return value;
     }
@@ -369,7 +442,7 @@ impl AnalyzeUrl {
             _ => {}
         }
         // chapter?.getVariable(key) ?: ruleData?.getVariable(key) ?: ""
-        return self.chapter.as_ref().and_then(|c| c.get_variable(&key))
+        return self.chapter.as_ref().and_then(|c| c.variable_map().get(&key).cloned())
             .or_else(|| self.rule_data.as_ref().and_then(|r| r.get_variable(&key)))
             .unwrap_or_default();
     }
@@ -379,17 +452,20 @@ impl AnalyzeUrl {
      */
     fn fetch_start(&self) -> Option<ConcurrentRecord> {
         let source = self.source.as_ref()?;
-        let concurrent_rate = source.concurrent_rate.clone();
-        if concurrent_rate.is_none_or(|r| r.is_empty()) {
+        // fix: BookSource 未实现 BaseSource，concurrent_rate 为结构体字段而非 trait 方法
+        let concurrent_rate = source.concurrent_rate.as_deref()?; // concurrentRate ?: return null
+        if concurrent_rate.is_empty() {
             return None;
         }
-        let rate_index = concurrent_rate.find("/"); // indexOf("/")
+        let rate_index = concurrent_rate.find("/").map(|i| i as i32).unwrap_or(-1); // indexOf("/")
         let mut fetch_record = concurrent_record_map(source.get_key()); // concurrentRecordMap[source.getKey()]
         if fetch_record.is_none() {
-            fetch_record = Some(ConcurrentRecord::new(rate_index.is_some(), System::now_millis(), 1));
+            fetch_record = Some(ConcurrentRecord::new(rate_index != -1, System::now_millis(), 1));
             concurrent_record_map_put(source.get_key(), fetch_record.clone().unwrap());
             return fetch_record;
         }
+        // Kotlin 智能转换: 上面的 null 检查后 fetchRecord 非空
+        let mut fetch_record = fetch_record.unwrap();
         // val waitTime: Int = synchronized(fetchRecord) {
         let wait_time: i64 = {
             // synchronized(fetchRecord) {
@@ -407,15 +483,15 @@ impl AnalyzeUrl {
                     }
                 }
             } else {
-                let sj = &concurrent_rate[rate_index + 1..]; // val sj = concurrentRate.substring(rateIndex + 1)
+                let sj = &concurrent_rate[(rate_index + 1) as usize..]; // val sj = concurrentRate.substring(rateIndex + 1)
                 let next_time = fetch_record.time + sj.parse::<i64>().unwrap();
                 if System::now_millis() >= next_time {
                     fetch_record.time = System::now_millis();
                     fetch_record.frequency = 1;
                     0
                 } else {
-                    let cs = &concurrent_rate[..rate_index]; // val cs = concurrentRate.substring(0, rateIndex)
-                    if fetch_record.frequency > cs.parse::<i64>().unwrap() {
+                    let cs = &concurrent_rate[..rate_index as usize]; // val cs = concurrentRate.substring(0, rateIndex)
+                    if fetch_record.frequency > cs.parse::<i32>().unwrap() {
                         next_time - System::now_millis()
                     } else {
                         fetch_record.frequency = fetch_record.frequency + 1;
@@ -432,7 +508,7 @@ impl AnalyzeUrl {
             // throw ConcurrentException("根据并发率还需等待${waitTime}毫秒才可以访问", waitTime = waitTime)
             panic!("根据并发率还需等待{}毫秒才可以访问", wait_time);
         }
-        return fetch_record;
+        return Some(fetch_record);
     }
 
     /**
@@ -459,59 +535,79 @@ impl AnalyzeUrl {
         use_web_view: bool,
     ) -> StrResponse {
         if self.type_.is_some() {
-            return StrResponse::new(self.url.clone(), byte_to_hex_string(self.get_byte_array_await().await));
+            // fix: E0502 &self.url 不可变借用与 &mut self 的 get_byte_array_await 冲突，先取 bytes 再构造
+            let bytes = self.get_byte_array_await().await;
+            return StrResponse::new_url(&self.url, Some(byte_to_hex_string(&bytes)));
         }
         let concurrent_record = self.fetch_start();
         self.set_cookie(self.source.as_ref().map(|s| s.get_key()));
         let str_response: StrResponse;
         if self.use_web_view && use_web_view {
-            str_response = if self.method == RequestMethod::POST {
+            let java_script = self.web_js.clone().or(js_str); // webJs ?: jsStr
+            str_response = if matches!(self.method, RequestMethod::POST) {
                 // io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(...)
-                reader_adapter_helper().get_str_response_by_remote_webview(
-                    url = self.url_no_query.clone(),
-                    tag = self.source.as_ref().map(|s| s.get_key()),
-                    header_map = self.header_map.clone(),
-                    source_regex = source_regex,
-                    java_script = self.web_js.clone().or(js_str), // webJs ?: jsStr
-                    post = true,
-                    body = self.body.clone(),
-                    user_name_space = self.get_user_name_space(),
-                    debug_log = self.debug_log.clone(),
+                ReaderAdapterHelper::get_adapter().get_str_response_by_remote_webview(
+                    Some(&self.url_no_query), // url
+                    None, // html
+                    None, // encode
+                    self.source.as_ref().map(|s| s.get_key()).as_deref(), // tag
+                    Some(&self.header_map), // header_map
+                    source_regex.as_deref(),
+                    java_script.as_deref(),
+                    None, // proxy
+                    true, // post
+                    self.body.as_deref(),
+                    &self.get_user_name_space(),
+                    self.debug_log.as_deref(),
                 )
+                .await
+                .unwrap_or_else(|| StrResponse::new_url(&self.url, None))
             } else {
-                reader_adapter_helper().get_str_response_by_remote_webview(
-                    url = self.url.clone(),
-                    tag = self.source.as_ref().map(|s| s.get_key()),
-                    header_map = self.header_map.clone(),
-                    source_regex = source_regex,
-                    java_script = self.web_js.clone().or(js_str),
-                    user_name_space = self.get_user_name_space(),
-                    debug_log = self.debug_log.clone(),
+                ReaderAdapterHelper::get_adapter().get_str_response_by_remote_webview(
+                    Some(&self.url), // url
+                    None, // html
+                    None, // encode
+                    self.source.as_ref().map(|s| s.get_key()).as_deref(), // tag
+                    Some(&self.header_map), // header_map
+                    source_regex.as_deref(),
+                    java_script.as_deref(),
+                    None, // proxy
+                    false, // post
+                    self.body.as_deref(),
+                    &self.get_user_name_space(),
+                    self.debug_log.as_deref(),
                 )
+                .await
+                .unwrap_or_else(|| StrResponse::new_url(&self.url, None))
             }
         } else {
-            str_response = get_proxy_client(self.proxy.clone(), self.debug_log.clone()).new_call_str_response(self.retry, || {
-                add_headers(self.header_map.clone());
-                match self.method {
-                    RequestMethod::POST => {
-                        url(self.url_no_query.clone());
-                        let content_type = self.header_map.get("Content-Type").cloned();
-                        let body = self.body.clone();
-                        if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) { // fieldMap.isNotEmpty() || body.isNullOrBlank()
-                            post_form(self.field_map.clone(), true);
-                        } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) { // !contentType.isNullOrBlank()
-                            // val requestBody = body.toRequestBody(contentType.toMediaType())
-                            let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
-                            post(request_body);
-                        } else {
-                            post_json(body);
+            str_response = new_call_str_response(
+                &get_proxy_client(self.proxy.as_deref(), self.debug_log.as_deref()),
+                self.retry,
+                |builder: &mut RequestBuilder| {
+                    add_headers(builder, &self.header_map);
+                    match self.method {
+                        RequestMethod::POST => {
+                            builder.url(&self.url_no_query);
+                            let content_type = self.header_map.get("Content-Type").cloned();
+                            let body = self.body.clone();
+                            if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) { // fieldMap.isNotEmpty() || body.isNullOrBlank()
+                                post_form(builder, &self.field_map, true);
+                            } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) { // !contentType.isNullOrBlank()
+                                // val requestBody = body.toRequestBody(contentType.toMediaType())
+                                let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
+                                builder.post(request_body);
+                            } else {
+                                post_json(builder, body.as_deref());
+                            }
                         }
+                        _ => get(builder, &self.url_no_query, &self.field_map, true),
                     }
-                    _ => get(self.url_no_query.clone(), self.field_map.clone(), true),
-                }
-            });
+                },
+            )
+            .await;
         }
-        self.save_cookie_jar(&str_response.raw); // saveCookieJar(strResponse!!.raw)
+        self.save_cookie_jar(str_response.raw()); // saveCookieJar(strResponse!!.raw)
         self.fetch_end(concurrent_record);
         return str_response;
     }
@@ -522,10 +618,10 @@ impl AnalyzeUrl {
             return;
         }
         let cookie_store = CookieStore::new(self.get_user_name_space());
-        let domain = get_sub_domain(&self.url); // NetworkUtils.getSubDomain(url)
+        let domain = NetworkUtils::getSubDomain(Some(&self.url)); // NetworkUtils.getSubDomain(url)
         for it in cookie_list {
             // cookieList.forEach { cookieStore.replaceCookie("${domain}_cookieJar", it) }
-            cookie_store.replace_cookie(format!("{}_cookieJar", domain), it);
+            cookie_store.replace_cookie(&format!("{}_cookieJar", domain), &it);
         }
     }
 
@@ -547,25 +643,30 @@ impl AnalyzeUrl {
         let concurrent_record = self.fetch_start();
         self.set_cookie(self.source.as_ref().map(|s| s.get_key()));
         // @Suppress("BlockingMethodInNonBlockingContext")
-        let response = get_proxy_client(self.proxy.clone()).new_call_response(self.retry, || {
-            add_headers(self.header_map.clone());
-            match self.method {
-                RequestMethod::POST => {
-                    url(self.url_no_query.clone());
-                    let content_type = self.header_map.get("Content-Type").cloned();
-                    let body = self.body.clone();
-                    if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) {
-                        post_form(self.field_map.clone(), true);
-                    } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) {
-                        let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
-                        post(request_body);
-                    } else {
-                        post_json(body);
+        let response = new_call_response(
+            &get_proxy_client(self.proxy.as_deref(), None),
+            self.retry,
+            |builder: &mut RequestBuilder| {
+                add_headers(builder, &self.header_map);
+                match self.method {
+                    RequestMethod::POST => {
+                        builder.url(&self.url_no_query);
+                        let content_type = self.header_map.get("Content-Type").cloned();
+                        let body = self.body.clone();
+                        if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) {
+                            post_form(builder, &self.field_map, true);
+                        } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) {
+                            let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
+                            builder.post(request_body);
+                        } else {
+                            post_json(builder, body.as_deref());
+                        }
                     }
+                    _ => get(builder, &self.url_no_query, &self.field_map, true),
                 }
-                _ => get(self.url_no_query.clone(), self.field_map.clone(), true),
-            }
-        });
+            },
+        )
+        .await;
         self.fetch_end(concurrent_record);
         return response;
     }
@@ -582,7 +683,7 @@ impl AnalyzeUrl {
         let concurrent_record = self.fetch_start();
         // @Suppress("RegExpRedundantEscape")
         // val dataUriFindResult = dataUriRegex.find(urlNoQuery)
-        let data_uri_find_result = DATA_URI_REGEX.find(&self.url_no_query);
+        let data_uri_find_result = DATA_URI_REGEX().find(&self.url_no_query);
         // @Suppress("BlockingMethodInNonBlockingContext")
         if let Some(data_uri_find_result) = data_uri_find_result {
             // val dataUriBase64 = dataUriFindResult.groupValues[1]
@@ -592,25 +693,31 @@ impl AnalyzeUrl {
             return byte_array;
         } else {
             self.set_cookie(self.source.as_ref().map(|s| s.get_key()));
-            let byte_array = get_proxy_client(self.proxy.clone()).new_call_response_body(self.retry, || {
-                add_headers(self.header_map.clone());
-                match self.method {
-                    RequestMethod::POST => {
-                        url(self.url_no_query.clone());
-                        let content_type = self.header_map.get("Content-Type").cloned();
-                        let body = self.body.clone();
-                        if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) {
-                            post_form(self.field_map.clone(), true);
-                        } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) {
-                            let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
-                            post(request_body);
-                        } else {
-                            post_json(body);
+            let byte_array = new_call_response_body(
+                &get_proxy_client(self.proxy.as_deref(), None),
+                self.retry,
+                |builder: &mut RequestBuilder| {
+                    add_headers(builder, &self.header_map);
+                    match self.method {
+                        RequestMethod::POST => {
+                            builder.url(&self.url_no_query);
+                            let content_type = self.header_map.get("Content-Type").cloned();
+                            let body = self.body.clone();
+                            if !self.field_map.is_empty() || body.as_deref().is_none_or(|b| b.trim().is_empty()) {
+                                post_form(builder, &self.field_map, true);
+                            } else if content_type.as_deref().is_some_and(|ct| !ct.trim().is_empty()) {
+                                let request_body = body.unwrap().to_request_body(content_type.unwrap().to_media_type());
+                                builder.post(request_body);
+                            } else {
+                                post_json(builder, body.as_deref());
+                            }
                         }
+                        _ => get(builder, &self.url_no_query, &self.field_map, true),
                     }
-                    _ => get(self.url_no_query.clone(), self.field_map.clone(), true),
-                }
-            }).bytes(); // }.bytes()
+                },
+            )
+            .await
+            .bytes(); // }.bytes()
             self.fetch_end(concurrent_record);
             return byte_array;
         }
@@ -625,21 +732,38 @@ impl AnalyzeUrl {
      * 上传文件
      */
     pub async fn upload(&mut self, file_name: String, file: Any, content_type: String) -> StrResponse {
-        return get_proxy_client(self.proxy.clone()).new_call_str_response(self.retry, || {
-            url(self.url_no_query.clone());
-            // GSON.fromJsonObject<HashMap<String, Any>>(body).getOrNull()!!
-            let mut body_map = gson_from_json_object::<HashMap<String, Any>>(self.body.clone()).get_or_null().unwrap();
-            for (key, value) in body_map.clone() {
-                if value.to_string() == "fileRequest" {
-                    body_map.insert(key, map_of(
-                        ("fileName", file_name.clone()),
-                        ("file", file.clone()),
-                        ("contentType", content_type.clone()),
-                    ));
+        return new_call_str_response(
+            &get_proxy_client(self.proxy.as_deref(), None),
+            self.retry,
+            |builder: &mut RequestBuilder| {
+                builder.url(&self.url_no_query);
+                // GSON.fromJsonObject<HashMap<String, Any>>(body).getOrNull()!!
+                let mut body_map: HashMap<String, Box<dyn std::any::Any>> =
+                    gson_from_json_object::<HashMap<String, Any>>(self.body.clone().unwrap_or_default())
+                        .get_or_null()
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map(|(k, v)| (k, Box::new(v) as Box<dyn std::any::Any>))
+                        .collect();
+                // fix: HashMap<String, Box<dyn Any>> 不可 Clone，先收集 key 再按 key 查询/插入
+                for key in body_map.keys().cloned().collect::<Vec<String>>() {
+                    // value == "fileRequest"
+                    if body_map
+                        .get(&key)
+                        .and_then(|v| v.downcast_ref::<String>())
+                        == Some(&"fileRequest".to_string())
+                    {
+                        let mut file_map: HashMap<String, Box<dyn std::any::Any>> = HashMap::new();
+                        file_map.insert("fileName".to_string(), Box::new(file_name.clone()));
+                        file_map.insert("file".to_string(), Box::new(file.clone()));
+                        file_map.insert("contentType".to_string(), Box::new(content_type.clone()));
+                        body_map.insert(key, Box::new(file_map));
+                    }
                 }
-            }
-            post_multipart(self.type_.clone(), body_map);
-        });
+                post_multipart(builder, self.type_.as_deref(), &body_map);
+            },
+        )
+        .await;
     }
 
     /**
@@ -647,62 +771,69 @@ impl AnalyzeUrl {
      * @param tag 书源url 缺省为传入的url
      */
     fn set_cookie(&mut self, tag: Option<String>) {
-        let domain = get_sub_domain(tag.as_deref().unwrap_or(&self.url)); // NetworkUtils.getSubDomain(tag ?: url)
+        let domain = NetworkUtils::getSubDomain(Some(tag.as_deref().unwrap_or(&self.url))); // NetworkUtils.getSubDomain(tag ?: url)
         if domain.is_empty() {
             return;
         }
         let cookie_store = CookieStore::new(self.get_user_name_space());
         if self.enabled_cookie_jar {
             // cookieStore.getCookie("${domain}_cookieJar")?.let { cookieStore.replaceCookie(domain, it) }
-            if let Some(it) = cookie_store.get_cookie(format!("{}_cookieJar", domain)) {
-                cookie_store.replace_cookie(domain.to_string(), it);
+            let it = cookie_store.get_cookie(&format!("{}_cookieJar", domain));
+            if !it.is_empty() {
+                cookie_store.replace_cookie(&domain, &it);
             }
         }
-        let cookie = cookie_store.get_cookie(domain); // val cookie = cookieStore.getCookie(domain)
+        let cookie = cookie_store.get_cookie(&domain); // val cookie = cookieStore.getCookie(domain)
         if !cookie.is_empty() {
-            let mut cookie_map = cookie_store.cookie_to_map(cookie); // val cookieMap = cookieStore.cookieToMap(cookie)
-            let custom_cookie_map = cookie_store.cookie_to_map(self.header_map.get("Cookie").cloned().unwrap_or_default()); // cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
+            let mut cookie_map = cookie_store.cookie_to_map(&cookie); // val cookieMap = cookieStore.cookieToMap(cookie)
+            let custom_cookie = self.header_map.get("Cookie").cloned().unwrap_or_default(); // headerMap["Cookie"] ?: ""
+            let custom_cookie_map = cookie_store.cookie_to_map(&custom_cookie); // cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
             cookie_map.extend(custom_cookie_map); // cookieMap.putAll(customCookieMap)
             // val newCookie = cookieStore.mapToCookie(cookieMap)
-            if let Some(new_cookie) = cookie_store.map_to_cookie(cookie_map) {
+            if let Some(new_cookie) = cookie_store.map_to_cookie(Some(&cookie_map)) {
                 self.header_map.insert("Cookie".to_string(), new_cookie);
             }
         }
     }
 
     pub fn get_user_agent(&self) -> String {
-        self.header_map.get(UA_NAME).cloned().unwrap_or_else(|| user_agent()) // headerMap[UA_NAME] ?: AppConst.userAgent
+        self.header_map.get(AppConst::UA_NAME).cloned().unwrap_or_else(AppConst::userAgent) // headerMap[UA_NAME] ?: AppConst.userAgent
     }
 
     pub fn is_post(&self) -> bool {
-        return self.method == RequestMethod::POST;
+        return matches!(self.method, RequestMethod::POST);
     }
 
     // override fun getSource(): BaseSource? { return source }
-    pub fn get_source(&self) -> Option<BaseSource> {
-        return self.source.clone();
+    pub fn get_source(&self) -> Option<&BookSource> {
+        return self.source.as_ref();
     }
 }
 
 // data class UrlOption(
-//     private var method: String? = null,
-//     private var charset: String? = null,
-//     private var headers: Any? = null,
-//     private var body: Any? = null,
-//     private var retry: Int? = null,
-//     private var type: String? = null,
-//     private var webView: Any? = null,
-//     private var webJs: String? = null,
-//     private var js: String? = null,
+//     private var method: String? = None,
+//     private var charset: String? = None,
+//     private var headers: Any? = None,
+//     private var body: Any? = None,
+//     private var retry: Int? = None,
+//     private var type: String? = None,
+//     private var webView: Any? = None,
+//     private var webJs: String? = None,
+//     private var js: String? = None,
 // )
+// fix: GSON.fromJsonObject<UrlOption> 需要 Deserialize; 字段名对应 Kotlin 属性名
+#[derive(serde::Deserialize)]
 pub struct UrlOption {
     method: Option<String>,
     charset: Option<String>,
     headers: Option<Any>,
     body: Option<Any>,
     retry: Option<i32>,
+    #[serde(rename = "type")]
     type_: Option<String>,
+    #[serde(rename = "webView")]
     web_view: Option<Any>,
+    #[serde(rename = "webJs")]
     web_js: Option<String>,
     js: Option<String>,
 }
@@ -733,7 +864,7 @@ impl UrlOption {
     }
 
     pub fn set_method(&mut self, value: Option<String>) {
-        // method = if (value.isNullOrBlank()) null else value
+        // method = if (value.isNullOrBlank()) None else value
         self.method = value.and_then(|v| if v.trim().is_empty() { None } else { Some(v) });
     }
 
@@ -742,7 +873,7 @@ impl UrlOption {
     }
 
     pub fn set_charset(&mut self, value: Option<String>) {
-        // charset = if (value.isNullOrBlank()) null else value
+        // charset = if (value.isNullOrBlank()) None else value
         self.charset = value.and_then(|v| if v.trim().is_empty() { None } else { Some(v) });
     }
 
@@ -751,7 +882,7 @@ impl UrlOption {
     }
 
     pub fn set_retry(&mut self, value: Option<String>) {
-        // retry = if (value.isNullOrEmpty()) null else value.toIntOrNull()
+        // retry = if (value.isNullOrEmpty()) None else value.toIntOrNull()
         self.retry = value.and_then(|v| if v.is_empty() { None } else { v.parse().ok() });
     }
 
@@ -760,7 +891,7 @@ impl UrlOption {
     }
 
     pub fn set_type(&mut self, value: Option<String>) {
-        // type = if (value.isNullOrBlank()) null else value
+        // type = if (value.isNullOrBlank()) None else value
         self.type_ = value.and_then(|v| if v.trim().is_empty() { None } else { Some(v) });
     }
 
@@ -769,7 +900,7 @@ impl UrlOption {
     }
 
     pub fn use_web_view(&self) -> bool {
-        // return when (webView) { null, "", false, "false" -> false; else -> true }
+        // return when (webView) { None, "", false, "false" -> false; else -> true }
         return match &self.web_view {
             None => false,
             Some(v) => {
@@ -784,34 +915,34 @@ impl UrlOption {
     }
 
     pub fn use_web_view_boolean(&mut self, boolean: bool) {
-        // webView = if (boolean) true else null
+        // webView = if (boolean) true else None
         self.web_view = if boolean { Some(Any::from(true)) } else { None };
     }
 
     pub fn set_headers(&mut self, value: Option<String>) {
-        // headers = if (value.isNullOrBlank()) { null } else { GSON.fromJsonObject<Map<String, Any>>(value).getOrNull() }
+        // headers = if (value.isNullOrBlank()) { None } else { GSON.fromJsonObject<Map<String, Any>>(value).getOrNull() }
         self.headers = match value {
             Some(v) if !v.trim().is_empty() => gson_from_json_object::<HashMap<String, Any>>(v).get_or_null().map(Any::from),
             _ => None,
         };
     }
 
-    pub fn get_header_map(&self) -> Option<&HashMap<String, Any>> {
+    pub fn get_header_map(&self) -> Option<HashMap<String, Any>> {
         // return when (val value = headers) {
         //     is Map<*, *> -> value
         //     is String -> GSON.fromJsonObject<Map<String, Any>>(value).getOrNull()
-        //     else -> null
+        //     else -> None
         // }
         return match &self.headers {
             Some(value) if value.is_map() => value.as_map(),
-            Some(value) if value.is_string() => gson_from_json_object::<HashMap<String, Any>>(value.to_string()).get_or_null().as_ref(),
+            Some(value) if value.is_string() => gson_from_json_object::<HashMap<String, Any>>(value.to_string()).get_or_null(),
             _ => None,
         };
     }
 
     pub fn set_body(&mut self, value: Option<String>) {
         // body = when {
-        //     value.isNullOrBlank() -> null
+        //     value.isNullOrBlank() -> None
         //     value.isJsonObject() -> GSON.fromJsonObject<Map<String, Any>>(value)
         //     value.isJsonArray() -> GSON.fromJsonArray<Map<String, Any>>(value)
         //     else -> value
@@ -819,8 +950,8 @@ impl UrlOption {
         self.body = match value {
             None => None,
             Some(v) if v.trim().is_empty() => None,
-            Some(v) if v.is_json_object() => gson_from_json_object::<HashMap<String, Any>>(v).map(Any::from),
-            Some(v) if v.is_json_array() => gson_from_json_array::<Vec<HashMap<String, Any>>>(v).map(Any::from),
+            Some(v) if v.is_json_object() => gson_from_json_object::<HashMap<String, Any>>(v).ok().map(Any::from),
+            Some(v) if v.is_json_array() => gson_from_json_array::<Vec<HashMap<String, Any>>>(v).ok().map(Any::from),
             Some(v) => Some(Any::from(v)),
         };
     }
@@ -837,7 +968,7 @@ impl UrlOption {
     }
 
     pub fn set_web_js(&mut self, value: Option<String>) {
-        // webJs = if (value.isNullOrBlank()) null else value
+        // webJs = if (value.isNullOrBlank()) None else value
         self.web_js = value.and_then(|v| if v.trim().is_empty() { None } else { Some(v) });
     }
 
@@ -846,7 +977,7 @@ impl UrlOption {
     }
 
     pub fn set_js(&mut self, value: Option<String>) {
-        // js = if (value.isNullOrBlank()) null else value
+        // js = if (value.isNullOrBlank()) None else value
         self.js = value.and_then(|v| if v.trim().is_empty() { None } else { Some(v) });
     }
 
@@ -860,6 +991,7 @@ impl UrlOption {
 //     var time: Long,
 //     var frequency: Int
 // )
+#[derive(Clone)]
 pub struct ConcurrentRecord {
     pub concurrent: bool,
     pub time: i64,

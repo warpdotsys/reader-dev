@@ -1,3 +1,5 @@
+﻿use crate::prelude::*;
+use std::any::Any;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;
@@ -53,7 +55,7 @@ impl Author {
     }
 
     pub fn hash_code(&self) -> i32 {
-        StringUtil::hash_code(&self.firstname, &self.lastname)
+        StringUtil::hash_code(vec![self.firstname.as_str(), self.lastname.as_str()])
     }
 
     pub fn equals(&self, author_object: &dyn Any) -> bool {
@@ -79,8 +81,8 @@ impl Author {
         self.relator = result.unwrap();
     }
 
-    pub fn get_relator(&self) -> Relator {
-        self.relator
+    pub fn get_relator(&self) -> &Relator {
+        &self.relator
     }
 
 

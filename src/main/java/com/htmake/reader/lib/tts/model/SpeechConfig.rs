@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.lib.tts.model;
 
 // import com.htmake.reader.lib.tts.constant.OutputFormat;
@@ -8,14 +9,15 @@
 
 // public class SpeechConfig implements Serializable {
 pub struct SpeechConfig {
-    // public static final String CONFIG_PATTERN = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"true\"},\"outputFormat\":\"%s\"}}}}";
-    pub const CONFIG_PATTERN: &'static str = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"true\"},\"outputFormat\":\"%s\"}}}}";
-
     // private OutputFormat outputFormat;
     pub output_format: Option<OutputFormat>,
 }
 
 impl SpeechConfig {
+    // public static final String CONFIG_PATTERN = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"true\"},\"outputFormat\":\"%s\"}}}}";
+    // fix: associated const moved from struct body into impl block (Rust 不允许结构体中定义关联常量)
+    pub const CONFIG_PATTERN: &'static str = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"true\"},\"outputFormat\":\"%s\"}}}}";
+
     // private SpeechConfig(OutputFormat outputFormat) {
     //     this.outputFormat = Optional.ofNullable(outputFormat).orElse(OutputFormat.audio_24khz_48kbitrate_mono_mp3);
     // }
@@ -51,10 +53,9 @@ impl SpeechConfig {
     //     return String.format(CONFIG_PATTERN, Tools.date(), outputFormat.getValue());
     // }
     pub fn to_string(&self) -> String {
-        return format!(
-            Self::CONFIG_PATTERN,
-            Tools::date(),
-            self.output_format.unwrap_or(OutputFormat::audio_24khz_48kbitrate_mono_mp3).get_value()
-        );
+        // fix: format! 首参必须是字符串字面量，改以 Java String.format 的 %s 占位符逐次替换
+        return Self::CONFIG_PATTERN
+            .replacen("%s", &Tools::date(), 1)
+            .replacen("%s", self.output_format.unwrap_or(OutputFormat::audio_24khz_48kbitrate_mono_mp3).get_value(), 1);
     }
 }

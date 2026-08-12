@@ -1,4 +1,24 @@
+use crate::prelude::*;
 // package com.htmake.reader.api.controller
+
+// fix: 显式导入消除 stubs / CURD / vertext 等 glob 重导出歧义（显式导入优先于 glob）
+use crate::stubs::{File, JsonArray, JsonObject, WebClient};
+
+// fix: VertExt 与 stubs 同名 get_storage_file/get_work_dir 的 glob 歧义 → 本地包装，
+//      按 Kotlin vararg 参数（getStorageFile(vararg name, ext=".json") / getWorkDir(vararg)）转发
+fn get_storage_file(base: &str, sub: String, name: &str) -> File {
+    crate::com_htmake_reader_utils_vertext::get_storage_file(
+        &vec![String::from(base), sub, String::from(name)],
+        ".json",
+    )
+}
+fn get_work_dir(base: &str, sub_dir_files: Vec<String>) -> String {
+    let mut parts = vec![String::from(base)];
+    parts.extend(sub_dir_files);
+    crate::com_htmake_reader_utils_vertext::get_work_dir_multi(
+        &parts.iter().map(|s| s.as_str()).collect::<Vec<&str>>(),
+    )
+}
 
 // private val logger = KotlinLogging.logger {}
 
@@ -16,11 +36,11 @@ impl BookSourceController {
     pub fn new() -> BookSourceController {
         BookSourceController {
             base: BaseController::new(),
-            web_client: SpringContextUtils::get_bean_web_client(),
+            web_client: WebClient::new(),
         }
     }
 
-    // fun getUserBookSourceJsonOpt(userNameSpace: String, fields: Set<String>? = null, checkNotEmpty: Set<String>? = null): JsonArray? {
+    // fun getUserBookSourceJsonOpt(userNameSpace: String, fields: Set<String>? = None, checkNotEmpty: Set<String>? = None): JsonArray? {
     //     var bookSourceFile = getStorageFile("data", userNameSpace, "bookSource")
     //     if (!bookSourceFile.exists()) {
     //         bookSourceFile = getStorageFile("data", "default", "bookSource")
@@ -32,25 +52,25 @@ impl BookSourceController {
         if !book_source_file.exists() {
             book_source_file = get_storage_file("data", String::from("default"), "bookSource");
         }
-        return parse_json_string_list(&book_source_file, fields, check_not_empty);
+        return parse_json_string_list(&book_source_file, fields, None, 0, i32::MAX, check_not_empty, None);
     }
 
     // fun getUserBookSourceJson(userNameSpace: String): JsonArray? {
     //     var bookSourceList: JsonArray? = asJsonArray(getUserStorage(userNameSpace, "bookSource"))
-    //     if (bookSourceList == null && !userNameSpace.equals("default")) {
+    //     if (bookSourceList == None && !userNameSpace.equals("default")) {
     //         // 用户书源文件不存在时使用默认书源，但不创建用户副本。
     //         var systemBookSourceList: JsonArray? = asJsonArray(getUserStorage("default", "bookSource"))
-    //         if (systemBookSourceList != null) {
+    //         if (systemBookSourceList != None) {
     //             bookSourceList = systemBookSourceList
     //         }
     //     }
     //     return bookSourceList
     // }
     pub fn get_user_book_source_json(&self, user_name_space: String) -> Option<JsonArray> {
-        let mut book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&user_name_space, vec![String::from("bookSource")]));
-        if book_source_list.is_none() && !user_name_space == String::from("default") {
+        let mut book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&user_name_space, vec![String::from("bookSource")]).map(crate::stubs::Any::from_string));
+        if book_source_list.is_none() && user_name_space != String::from("default") {
             // 用户书源文件不存在时使用默认书源，但不创建用户副本。
-            let system_book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&String::from("default"), vec![String::from("bookSource")]));
+            let system_book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&String::from("default"), vec![String::from("bookSource")]).map(crate::stubs::Any::from_string));
             if let Some(system_book_source_list) = system_book_source_list {
                 book_source_list = Some(system_book_source_list);
             }
@@ -66,7 +86,7 @@ impl BookSourceController {
     //     return userInfo.enable_book_source
     // }
     pub fn can_edit_book_source(&self, context: &RoutingContext) -> bool {
-        if !self.base.app_config.secure {
+        if !SpringContextUtils::get_bean_app_config().secure {
             return true;
         }
         let user_info = context.get_user::<User>("userInfo");
@@ -86,14 +106,14 @@ impl BookSourceController {
     //         return returnData.setErrorMsg("权限不足")
     //     }
     //     val bookSource = BookSource.fromJson(context.bodyAsString).getOrNull()
-    //     if (bookSource == null) {
+    //     if (bookSource == None) {
     //         return returnData.setErrorMsg("参数错误")
     //     }
     //     // val bookSource = context.bodyAsJson.mapTo(BookSource::class.java)
     //
     //     var userNameSpace = getUserNameSpace(context)
     //     var bookSourceList = getUserBookSourceJson(userNameSpace)
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         bookSourceList = JsonArray()
     //     }
     //     // 遍历判断书本是否存在
@@ -111,7 +131,7 @@ impl BookSourceController {
     //         bookSourceList = JsonArray(sourceList)
     //     } else {
     //         val user = context.get("userInfo") as User?
-    //         if (user != null && bookSourceList.size() >= user.book_source_limit) {
+    //         if (user != None && bookSourceList.size() >= user.book_source_limit) {
     //             return returnData.setErrorMsg("你已达到书源数上限，请联系管理员")
     //         }
     //         bookSourceList.add(JsonObject.mapFrom(bookSource))
@@ -125,14 +145,17 @@ impl BookSourceController {
     pub fn save_book_source(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.can_edit_book_source(context) {
-            return return_data.set_error_msg(String::from("权限不足"));
+            return_data.set_error_msg(String::from("权限不足"));
+            return return_data;
         }
         let book_source = BookSource::from_json(context.body_as_string()).get_or_none();
         if book_source.is_none() {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         let book_source = book_source.unwrap();
         // val bookSource = context.bodyAsJson.mapTo(BookSource::class.java)
@@ -146,7 +169,7 @@ impl BookSourceController {
         // 遍历判断书本是否存在
         let mut exist_index: i32 = -1;
         for i in 0..book_source_list.size() {
-            let _book_source = book_source_list.get_json_object(i).map_to::<BookSource>();
+            let _book_source = book_source_list.get_json_object(i).and_then(|o| o.map_to::<BookSource>()).unwrap_or_default();
             if _book_source.book_source_url == book_source.book_source_url {
                 exist_index = i;
                 break;
@@ -154,22 +177,24 @@ impl BookSourceController {
         }
         if exist_index >= 0 {
             let mut source_list = book_source_list.get_list();
-            source_list.set(exist_index as usize, JsonObject::map_from(book_source.clone()));
-            book_source_list = JsonArray::new(source_list);
+            source_list[exist_index as usize] = JsonObject::map_from(&book_source);
+            book_source_list = JsonArray::from_list(source_list);
         } else {
             let user = context.get_user::<User>("userInfo");
             if let Some(user) = user {
                 if book_source_list.size() >= user.book_source_limit {
-                    return return_data.set_error_msg(String::from("你已达到书源数上限，请联系管理员"));
+                    return_data.set_error_msg(String::from("你已达到书源数上限，请联系管理员"));
+                    return return_data;
                 }
             }
-            book_source_list.add(JsonObject::map_from(book_source.clone()));
+            book_source_list.add(JsonObject::map_from(&book_source));
         }
 
         // logger.info("bookSourceList: {}", bookSourceList)
         self.base.save_user_storage(&user_name_space, String::from("bookSource"), Box::new(book_source_list.clone()));
         self.generate_book_source_map(user_name_space, Some(book_source_list));
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun saveBookSources(context: RoutingContext): ReturnData {
@@ -181,7 +206,7 @@ impl BookSourceController {
     //         return returnData.setErrorMsg("权限不足")
     //     }
     //     val bookSourceJsonArray = context.bodyAsJsonArray
-    //     if (bookSourceJsonArray == null) {
+    //     if (bookSourceJsonArray == None) {
     //         return returnData.setErrorMsg("参数错误")
     //     }
     //     return saveBookSources(context, bookSourceJsonArray)
@@ -189,14 +214,17 @@ impl BookSourceController {
     pub fn save_book_sources_ctx(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.can_edit_book_source(context) {
-            return return_data.set_error_msg(String::from("权限不足"));
+            return_data.set_error_msg(String::from("权限不足"));
+            return return_data;
         }
         let book_source_json_array = context.body_as_json_array();
         if book_source_json_array.is_none() {
-            return return_data.set_error_msg(String::from("参数错误"));
+            return_data.set_error_msg(String::from("参数错误"));
+            return return_data;
         }
         return self.save_book_sources(context, book_source_json_array.unwrap());
     }
@@ -209,13 +237,13 @@ impl BookSourceController {
     pub fn save_book_sources(&self, context: &RoutingContext, book_source_json_array: JsonArray) -> ReturnData {
         let user_name_space = self.base.get_user_name_space(context);
         let user = context.get_user::<User>("userInfo");
-        return self.save_user_book_sources(user_name_space, user, book_source_json_array);
+        return self.save_user_book_sources(user_name_space, user.as_ref(), book_source_json_array);
     }
 
     // fun saveUserBookSources(userNameSpace: String, user: User?, bookSourceJsonArray: JsonArray): ReturnData {
     //     val returnData = ReturnData()
     //     var bookSourceList = getUserBookSourceJson(userNameSpace)
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         bookSourceList = JsonArray()
     //     }
     //     // Build a map of bookSourceUrl -> index for fast lookup
@@ -233,9 +261,9 @@ impl BookSourceController {
     //         val bookSource = try {
     //             BookSource.fromJson(bookSourceJsonArray.getJsonObject(k).toString()).getOrNull()
     //         } catch (e: Exception) {
-    //             null
+    //             None
     //         }
-    //         if (bookSource == null) continue
+    //         if (bookSource == None) continue
     //
     //         val existIndex = sourceMap.getOrDefault(bookSource.bookSourceUrl, -1)
     //         if (existIndex >= 0) {
@@ -244,7 +272,7 @@ impl BookSourceController {
     //                 updatedIndices.add(existIndex)
     //             }
     //         } else {
-    //             if (user != null && bookSourceList.size() >= user.book_source_limit) {
+    //             if (user != None && bookSourceList.size() >= user.book_source_limit) {
     //                 reachedLimit = true
     //                 break
     //             }
@@ -262,7 +290,7 @@ impl BookSourceController {
     //     }
     //     return returnData.setData("", msg)
     // }
-    pub fn save_user_book_sources(&self, user_name_space: String, user: Option<User>, book_source_json_array: JsonArray) -> ReturnData {
+    pub fn save_user_book_sources(&self, user_name_space: String, user: Option<&User>, book_source_json_array: JsonArray) -> ReturnData {
         let mut return_data = ReturnData::new();
         let mut book_source_list = self.get_user_book_source_json(user_name_space.clone());
         if book_source_list.is_none() {
@@ -270,19 +298,19 @@ impl BookSourceController {
         }
         let mut book_source_list = book_source_list.unwrap();
         // Build a map of bookSourceUrl -> index for fast lookup
-        let mut source_map = std::collections::LinkedHashMap::new();
+        let mut source_map = LinkedHashMap::new();
         for i in 0..book_source_list.size() {
-            let url = book_source_list.get_json_object(i).get_string("bookSourceUrl");
+            let url = book_source_list.get_json_object(i).map(|o| o.get_string("bookSourceUrl")).unwrap_or_default();
             source_map.insert(url, i);
         }
         let last_index = book_source_list.size() - 1;
-        let mut updated_indices = std::collections::LinkedHashSet::new();
+        let mut updated_indices = LinkedHashSet::new();
         let mut reached_limit = false;
         let mut added_count = 0;
 
         for k in 0..book_source_json_array.size() {
             let book_source = match std::panic::catch_unwind(|| {
-                BookSource::from_json(book_source_json_array.get_json_object(k).to_string()).get_or_none()
+                BookSource::from_json(book_source_json_array.get_json_object(k).map(|o| o.to_string()).unwrap_or_default()).get_or_none()
             }) {
                 Ok(v) => v,
                 Err(_) => None,
@@ -294,19 +322,19 @@ impl BookSourceController {
 
             let exist_index = source_map.get(&book_source.book_source_url).cloned().unwrap_or(-1);
             if exist_index >= 0 {
-                book_source_list.set(exist_index as usize, JsonObject::map_from(book_source.clone()));
+                book_source_list.set(exist_index as usize, JsonObject::map_from(&book_source));
                 if exist_index <= last_index {
                     updated_indices.insert(exist_index);
                 }
             } else {
-                if let Some(user) = &user {
+                if let Some(user) = user {
                     if book_source_list.size() >= user.book_source_limit {
                         reached_limit = true;
                         break;
                     }
                 }
                 added_count += 1;
-                book_source_list.add(JsonObject::map_from(book_source.clone()));
+                book_source_list.add(JsonObject::map_from(&book_source));
                 source_map.insert(book_source.book_source_url.clone(), book_source_list.size() - 1);
             }
         }
@@ -315,9 +343,11 @@ impl BookSourceController {
         self.generate_book_source_map(user_name_space, Some(book_source_list));
         let msg = format!("新增{}条书源，更新{}条书源", added_count, updated_indices.len());
         if reached_limit {
-            return return_data.set_error_msg(msg + "。你已达到书源数上限，请联系管理员");
+            return_data.set_error_msg(msg + "。你已达到书源数上限，请联系管理员");
+            return return_data;
         }
-        return return_data.set_data(Box::new(String::from("")), msg);
+        return_data.set_data(Box::new(String::from("")), msg);
+        return return_data;
     }
 
     // suspend fun getBookSource(context: RoutingContext): ReturnData {
@@ -353,28 +383,35 @@ impl BookSourceController {
         let book_source_url: String;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            book_source_url = context.body_as_json().get_string("bookSourceUrl");
+            book_source_url = context.body_as_json().unwrap().get_string("bookSourceUrl");
         } else {
             // get 请求
-            book_source_url = context.query_param("bookSourceUrl").first().cloned().unwrap_or(String::from(""));
+            book_source_url = context.query_param("bookSourceUrl").unwrap_or(String::from(""));
         }
         if book_source_url.is_empty() {
-            return return_data.set_error_msg(String::from("书源链接不能为空"));
+            return_data.set_error_msg(String::from("书源链接不能为空"));
+            return return_data;
         }
 
         let user_name_space = self.base.get_user_name_space(context);
         let exist_index = self.get_book_source_map(user_name_space.clone()).get(&book_source_url).cloned().unwrap_or(-1);
         if exist_index < 0 {
-            return return_data.set_error_msg(String::from("书源信息不存在"));
+            return_data.set_error_msg(String::from("书源信息不存在"));
+            return return_data;
         }
         let book_source_list = match self.get_user_book_source_json(user_name_space) {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("书源信息不存在")),
+            None => {
+                return_data.set_error_msg(String::from("书源信息不存在"));
+                return return_data;
+            },
         };
         if exist_index >= book_source_list.size() {
-            return return_data.set_error_msg(String::from("书源信息不存在"));
+            return_data.set_error_msg(String::from("书源信息不存在"));
+            return return_data;
         }
-        return return_data.set_data(Box::new(book_source_list.get_json_object(exist_index).map()), String::from(""));
+        return_data.set_data(Box::new(book_source_list.get_json_object(exist_index).map(|o| o.map()).unwrap_or_default()), String::from(""));
+        return return_data;
     }
 
     // suspend fun getBookSources(context: RoutingContext): ReturnData {
@@ -391,10 +428,10 @@ impl BookSourceController {
     //     val userNameSpace = getUserNameSpace(context)
     //     val bookSourceList = getUserBookSourceJsonOpt(
     //         userNameSpace,
-    //         fields = if (simple > 0) setOf("bookSourceGroup", "bookSourceName", "bookSourceUrl") else null,
-    //         checkNotEmpty = if (simple > 0) setOf("exploreUrl") else null
+    //         fields = if (simple > 0) setOf("bookSourceGroup", "bookSourceName", "bookSourceUrl") else None,
+    //         checkNotEmpty = if (simple > 0) setOf("exploreUrl") else None
     //     )
-    //     if (bookSourceList != null) {
+    //     if (bookSourceList != None) {
     //         return returnData.setData(bookSourceList.getList().map { JsonObject(it as String).map })
     //     }
     //     return returnData.setData(arrayListOf<Int>())
@@ -405,10 +442,10 @@ impl BookSourceController {
         let mut simple: i32 = 0;
         if context.request().method() == HttpMethod::POST {
             // post 请求
-            simple = context.body_as_json().get_integer("simple", 0);
+            simple = context.body_as_json().unwrap().get_integer("simple", 0);
         } else {
             // get 请求
-            simple = context.query_param("simple").first().and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
+            simple = context.query_param("simple").and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
         }
         let user_name_space = self.base.get_user_name_space(context);
         let fields = if simple > 0 {
@@ -423,9 +460,11 @@ impl BookSourceController {
         };
         let book_source_list = self.get_user_book_source_json_opt(user_name_space, fields, check_not_empty);
         if let Some(book_source_list) = book_source_list {
-            return return_data.set_data(Box::new(book_source_list.get_list().into_iter().map(|item| JsonObject::new(item).map()).collect::<Vec<_>>()), String::from(""));
+            return_data.set_data(Box::new(book_source_list.get_list().into_iter().map(|item| item.map()).collect::<Vec<_>>()), String::from(""));
+        return return_data;
         }
-        return return_data.set_data(Box::new(Vec::<i32>::new()), String::from(""));
+        return_data.set_data(Box::new(Vec::<i32>::new()), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteBookSource(context: RoutingContext): ReturnData {
@@ -441,7 +480,7 @@ impl BookSourceController {
     //
     //     val userNameSpace = getUserNameSpace(context)
     //     var bookSourceList = getUserBookSourceJson(userNameSpace)
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         bookSourceList = JsonArray()
     //     }
     //     val existIndex = getBookSourceMap(userNameSpace).getOrDefault(bookSource.bookSourceUrl, -1)
@@ -457,14 +496,19 @@ impl BookSourceController {
     pub fn delete_book_source(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.can_edit_book_source(context) {
-            return return_data.set_error_msg(String::from("权限不足"));
+            return_data.set_error_msg(String::from("权限不足"));
+            return return_data;
         }
         let book_source = match BookSource::from_json(context.body_as_string()).get_or_none() {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            },
         };
 
         let user_name_space = self.base.get_user_name_space(context);
@@ -481,7 +525,8 @@ impl BookSourceController {
         // logger.info("bookSourceList: {}", bookSourceList)
         self.base.save_user_storage(&user_name_space, String::from("bookSource"), Box::new(book_source_list.clone()));
         self.generate_book_source_map(user_name_space, Some(book_source_list));
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteBookSources(context: RoutingContext): ReturnData {
@@ -497,7 +542,7 @@ impl BookSourceController {
     //
     //     var userNameSpace = getUserNameSpace(context)
     //     var bookSourceList = getUserBookSourceJson(userNameSpace)
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         bookSourceList = JsonArray()
     //     }
     //     for (k in 0 until bookSourceJsonArray.size()) {
@@ -524,14 +569,19 @@ impl BookSourceController {
     pub fn delete_book_sources(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.can_edit_book_source(context) {
-            return return_data.set_error_msg(String::from("权限不足"));
+            return_data.set_error_msg(String::from("权限不足"));
+            return return_data;
         }
         let book_source_json_array = match context.body_as_json_array() {
             Some(v) => v,
-            None => return return_data.set_error_msg(String::from("参数错误")),
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            },
         };
 
         let user_name_space = self.base.get_user_name_space(context);
@@ -541,11 +591,11 @@ impl BookSourceController {
         }
         let mut book_source_list = book_source_list.unwrap();
         for k in 0..book_source_json_array.size() {
-            let book_source = book_source_json_array.get_json_object(k).map_to::<BookSource>();
+            let book_source = book_source_json_array.get_json_object(k).and_then(|o| o.map_to::<BookSource>()).unwrap_or_default();
             // 遍历判断书本是否存在
             let mut exist_index: i32 = -1;
             for i in 0..book_source_list.size() {
-                let _book_source = book_source_list.get_json_object(i).map_to::<BookSource>();
+                let _book_source = book_source_list.get_json_object(i).and_then(|o| o.map_to::<BookSource>()).unwrap_or_default();
                 if _book_source.book_source_url == book_source.book_source_url {
                     exist_index = i;
                     break;
@@ -559,7 +609,8 @@ impl BookSourceController {
         // logger.info("bookSourceList: {}", bookSourceList)
         self.base.save_user_storage(&user_name_space, String::from("bookSource"), Box::new(book_source_list.clone()));
         self.generate_book_source_map(user_name_space, Some(book_source_list));
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteAllBookSources(context: RoutingContext): ReturnData {
@@ -578,15 +629,18 @@ impl BookSourceController {
     pub fn delete_all_book_sources(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.can_edit_book_source(context) {
-            return return_data.set_error_msg(String::from("权限不足"));
+            return_data.set_error_msg(String::from("权限不足"));
+            return return_data;
         }
         let user_name_space = self.base.get_user_name_space(context);
         self.base.save_user_storage(&user_name_space, String::from("bookSource"), Box::new(JsonArray::new()));
         self.generate_book_source_map(user_name_space, Some(JsonArray::new()));
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
     // suspend fun setAsDefaultBookSources(context: RoutingContext): ReturnData {
@@ -599,7 +653,7 @@ impl BookSourceController {
     //     }
     //     var username = context.bodyAsJson.getString("username")
     //     var bookSourceList: JsonArray? = asJsonArray(getUserStorage(username, "bookSource"))
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         return returnData.setErrorMsg("用户书源不存在")
     //     }
     //
@@ -611,27 +665,31 @@ impl BookSourceController {
     pub fn set_as_default_book_sources(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.base.check_manager_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+            return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+            return return_data;
         }
-        let username = context.body_as_json().get_string("username");
-        let book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&username, vec![String::from("bookSource")]));
+        let username = context.body_as_json().unwrap().get_string("username");
+        let book_source_list: Option<JsonArray> = as_json_array(self.base.get_user_storage(&username, vec![String::from("bookSource")]).map(crate::stubs::Any::from_string));
         if book_source_list.is_none() {
-            return return_data.set_error_msg(String::from("用户书源不存在"));
+            return_data.set_error_msg(String::from("用户书源不存在"));
+            return return_data;
         }
         let book_source_list = book_source_list.unwrap();
 
         // 保存为默认书源
         self.base.save_user_storage(&String::from("default"), String::from("bookSource"), Box::new(book_source_list.get_list()));
         self.generate_book_source_map(String::from("default"), Some(book_source_list));
-        return return_data.set_data(Box::new(String::from("设置默认书源成功")), String::from(""));
+        return_data.set_data(Box::new(String::from("设置默认书源成功")), String::from(""));
+        return return_data;
     }
 
     // suspend fun readSourceFile(context: RoutingContext): ReturnData {
     //     val returnData = ReturnData()
-    //     if (context.fileUploads() == null || context.fileUploads().isEmpty()) {
+    //     if (context.fileUploads() == None || context.fileUploads().isEmpty()) {
     //         return returnData.setErrorMsg("请上传文件")
     //     }
     //     var sourceList = JsonArray()
@@ -647,11 +705,13 @@ impl BookSourceController {
     // }
     pub fn read_source_file(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
-        if context.file_uploads().is_none() || context.file_uploads().unwrap().is_empty() {
-            return return_data.set_error_msg(String::from("请上传文件"));
+        let uploads = context.file_uploads().unwrap_or_default();
+        if uploads.is_empty() {
+            return_data.set_error_msg(String::from("请上传文件"));
+            return return_data;
         }
         let mut source_list = JsonArray::new();
-        for upload in context.file_uploads().unwrap() {
+        for upload in uploads {
             // logger.info("readSourceFile: {}", it.uploadedFileName())
             let file = File::new(&upload.uploaded_file_name());
             if file.exists() {
@@ -659,7 +719,8 @@ impl BookSourceController {
                 file.delete();
             }
         }
-        return return_data.set_data(Box::new(source_list.get_list()), String::from(""));
+        return_data.set_data(Box::new(source_list.get_list()), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteUserBookSource(context: RoutingContext): ReturnData {
@@ -684,10 +745,12 @@ impl BookSourceController {
     pub fn delete_user_book_source(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         if !self.base.check_manager_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+            return_data.set_data(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
+            return return_data;
         }
         let user_json_array = context.body_as_json_array().unwrap();
         for i in 0..user_json_array.size() {
@@ -698,7 +761,8 @@ impl BookSourceController {
                 user_book_source_file.delete_recursively();
             }
         }
-        return return_data.set_data(Box::new(String::from("删除书源成功")), String::from(""));
+        return_data.set_data(Box::new(String::from("删除书源成功")), String::from(""));
+        return return_data;
     }
 
     // suspend fun deleteBookSourcesFile(context: RoutingContext): ReturnData {
@@ -717,7 +781,8 @@ impl BookSourceController {
     pub fn delete_book_sources_file(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
         }
         let user_name_space = self.base.get_user_name_space(context);
         let user_book_source_file = File::new(&get_work_dir("storage", vec![String::from("data"), user_name_space, String::from("bookSource.json")]));
@@ -725,10 +790,11 @@ impl BookSourceController {
         if user_book_source_file.exists() {
             user_book_source_file.delete_recursively();
         }
-        return return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return return_data;
     }
 
-    // suspend fun updateRemoteSourceSub(userNameSpace: String, user: User? = null) {
+    // suspend fun updateRemoteSourceSub(userNameSpace: String, user: User? = None) {
     //     val remoteBookSourceList = asJsonArray(getUserStorage(userNameSpace, "remoteBookSourceSub")) ?: return
     //     for (i in 0 until remoteBookSourceList.size()) {
     //         val remoteBookSource = remoteBookSourceList.getJsonObject(i) ?: continue
@@ -739,7 +805,7 @@ impl BookSourceController {
     //                 webClient.getAbs(url).timeout(3000).send(handler)
     //             }
     //             val sourceList = response.bodyAsJsonArray()
-    //             if (sourceList != null) {
+    //             if (sourceList != None) {
     //                 logger.info("updateRemoteSourceSub link={}, result={}", url, saveUserBookSources(userNameSpace, user, sourceList).errorMsg)
     //                 remoteBookSourceList.set(i, remoteBookSource.put("lastSyncTime", System.currentTimeMillis()))
     //                 saveUserStorage(userNameSpace, "remoteBookSourceSub", remoteBookSourceList)
@@ -752,7 +818,7 @@ impl BookSourceController {
     //     generateBookSourceMap(userNameSpace)
     // }
     pub fn update_remote_source_sub(&self, user_name_space: String, user: Option<User>) {
-        let remote_book_source_list = match as_json_array(self.base.get_user_storage(&user_name_space, vec![String::from("remoteBookSourceSub")])) {
+        let mut remote_book_source_list = match as_json_array(self.base.get_user_storage(&user_name_space, vec![String::from("remoteBookSourceSub")]).map(crate::stubs::Any::from_string)) {
             Some(v) => v,
             None => return,
         };
@@ -761,24 +827,26 @@ impl BookSourceController {
             if remote_book_source.is_none() {
                 continue;
             }
-            let remote_book_source = remote_book_source.unwrap();
+            let mut remote_book_source = remote_book_source.unwrap();
             let url = remote_book_source.get_string("link");
             if url.is_empty() {
                 continue;
             }
-            let result = std::panic::catch_unwind(|| {
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let response = await_result(|handler| {
                     self.web_client.get_abs(&url).timeout(3000).send(handler);
                 });
                 let source_list = response.body_as_json_array();
                 if let Some(source_list) = source_list {
-                    logger.info("updateRemoteSourceSub link={}, result={}", url, self.save_user_book_sources(user_name_space.clone(), user.clone(), source_list).error_msg());
-                    remote_book_source_list.set(i, remote_book_source.put("lastSyncTime", System::current_time_millis()));
+                    logger().info(format!("updateRemoteSourceSub link={}, result={}", url, self.save_user_book_sources(user_name_space.clone(), user.as_ref(), source_list).error_msg()));
+                    remote_book_source.put("lastSyncTime", System::current_time_millis());
+                    remote_book_source_list.set(i as usize, remote_book_source);
                     self.base.save_user_storage(&user_name_space, String::from("remoteBookSourceSub"), Box::new(remote_book_source_list.clone()));
                 }
-            });
-            if result.is_err() {
-                logger.error("更新远程书源失败", &result.unwrap_err());
+            }));
+            if let Err(e) = result {
+                let err_msg = e.downcast_ref::<&str>().copied().unwrap_or("未知异常");
+                logger().error(format!("更新远程书源失败: {}", err_msg));
                 panic!("更新远程书源失败");
             }
         }
@@ -805,7 +873,7 @@ impl BookSourceController {
     //     launch(MDCContext() + Dispatchers.IO) {
     //         webClient.getAbs(url).timeout(3000).send {
     //             var body = it.result()?.bodyAsString()
-    //             if (body != null) {
+    //             if (body != None) {
     //                 context.success(returnData.setData(arrayListOf(body)))
     //             } else {
     //                 context.success(returnData.setErrorMsg("远程书源链接错误"))
@@ -821,9 +889,9 @@ impl BookSourceController {
         }
         let url: String;
         if context.request().method() == HttpMethod::POST {
-            url = context.body_as_json().get_string("url");
+            url = context.body_as_json().unwrap().get_string("url");
         } else {
-            url = context.query_param("url").first().cloned().unwrap_or(String::from(""));
+            url = context.query_param("url").unwrap_or(String::from(""));
         }
         if url.is_empty() {
             context.success(return_data.set_error_msg(String::from("请输入远程书源链接")));
@@ -831,20 +899,22 @@ impl BookSourceController {
         }
 
         // launch(MDCContext() + Dispatchers.IO) {
-        self.web_client.get_abs(&url).timeout(3000).send(|it| {
+        // fix: stubs send 仅接受 &dyn Fn（闭包需为 Fn 而非 FnMut）→ RefCell 内可变借用保持 Fn
+        let return_data = std::cell::RefCell::new(return_data);
+        self.web_client.get_abs(&url).timeout(3000).send(&|it: SendResult| {
             let body = it.result().and_then(|r| r.body_as_string());
             if let Some(body) = body {
-                context.success(return_data.set_data(Box::new(vec![body]), String::from("")));
+                context.success(return_data.borrow_mut().set_data(Box::new(vec![body]), String::from("")));
             } else {
-                context.success(return_data.set_error_msg(String::from("远程书源链接错误")));
+                context.success(return_data.borrow_mut().set_error_msg(String::from("远程书源链接错误")));
             }
         });
         // }
     }
 
-    // fun generateBookSourceMap(userNameSpace: String, bookSourceJsonArray: JsonArray? = null): Map<String, Int> {
+    // fun generateBookSourceMap(userNameSpace: String, bookSourceJsonArray: JsonArray? = None): Map<String, Int> {
     //     var bookSourceList = bookSourceJsonArray ?: getUserBookSourceJson(userNameSpace)
-    //     if (bookSourceList == null) {
+    //     if (bookSourceList == None) {
     //         bookSourceList = JsonArray()
     //     }
     //     val sourceMap = linkedMapOf<String, Int>()
@@ -872,10 +942,10 @@ impl BookSourceController {
             book_source_list = Some(JsonArray::new());
         }
         let book_source_list = book_source_list.unwrap();
-        let mut source_map = std::collections::LinkedHashMap::new();
+        let mut source_map = LinkedHashMap::new();
         let mut explore_list: Vec<std::collections::HashMap<String, Option<String>>> = Vec::new();
         for i in 0..book_source_list.size() {
-            let source_obj = book_source_list.get_json_object(i);
+            let source_obj = book_source_list.get_json_object(i).unwrap_or_else(JsonObject::new);
             let url = source_obj.get_string("bookSourceUrl");
             source_map.insert(url.clone(), i);
             let explore_url = source_obj.get_string("exploreUrl");
@@ -898,7 +968,7 @@ impl BookSourceController {
     //     val mapStr = getUserStorage(storageKey, "bookSourceMap")
     //     if (!mapStr.isNullOrEmpty()) {
     //         val mapJson = asJsonObject(mapStr)
-    //         if (mapJson != null) {
+    //         if (mapJson != None) {
     //             val result = mutableMapOf<String, Int>()
     //             for (entry in mapJson.map) {
     //                 result[entry.key] = (entry.value as? Number)?.toInt() ?: 0
@@ -920,7 +990,7 @@ impl BookSourceController {
         let map_str = self.base.get_user_storage(&storage_key, vec![String::from("bookSourceMap")]);
         if let Some(map_str) = map_str {
             if !map_str.is_empty() {
-                let map_json = as_json_object(map_str);
+                let map_json = as_json_object(Some(crate::stubs::Any::from_string(map_str)));
                 if let Some(map_json) = map_json {
                     let mut result = std::collections::HashMap::new();
                     for (key, value) in map_json.map() {

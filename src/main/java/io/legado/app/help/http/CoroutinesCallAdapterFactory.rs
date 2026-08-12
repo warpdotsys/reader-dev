@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0659——`Any` 由多个 glob 导入（stubs + 其他模块），显式指定 stubs 版本
+use crate::stubs::Any;
 // package io.legado.app.help.http
 //
 // import kotlinx.coroutines.CompletableDeferred
@@ -29,7 +32,7 @@ impl CallAdapterFactory for CoroutinesCallAdapterFactory {
     //     retrofit: Retrofit
     // ): CallAdapter<*, *>? {
     //     if (Deferred::class.java != getRawType(returnType)) {
-    //         return null
+    //         return None
     //     }
     //     check(returnType is ParameterizedType) { "Deferred return type must be parameterized as Deferred<Foo> or Deferred<out Foo>" }
     //     val responseType = getParameterUpperBound(0, returnType)
@@ -54,14 +57,14 @@ impl CallAdapterFactory for CoroutinesCallAdapterFactory {
         retrofit: &Retrofit,
     ) -> Option<Box<dyn CallAdapter>> {
         // if (Deferred::class.java != getRawType(returnType)) {
-        //     return null
+        //     return None
         // }
         if Deferred::class != get_raw_type(&return_type) {
             return None;
         }
         // check(returnType is ParameterizedType) { "Deferred return type must be parameterized as Deferred<Foo> or Deferred<out Foo>" }
         assert!(
-            matches!(return_type, Type::Parameterized(_)),
+            is_parameterized_type(&return_type),
             "Deferred return type must be parameterized as Deferred<Foo> or Deferred<out Foo>"
         );
         // val responseType = getParameterUpperBound(0, returnType)
@@ -73,7 +76,7 @@ impl CallAdapterFactory for CoroutinesCallAdapterFactory {
         if raw_deferred_type == Response::class {
             // check(responseType is ParameterizedType) { "Response must be parameterized as Response<Foo> or Response<out Foo>" }
             assert!(
-                matches!(response_type, Type::Parameterized(_)),
+                is_parameterized_type(&response_type),
                 "Response must be parameterized as Response<Foo> or Response<out Foo>"
             );
             // ResponseCallAdapter<Any>(
@@ -97,11 +100,11 @@ impl CallAdapterFactory for CoroutinesCallAdapterFactory {
 // private class BodyCallAdapter<T>(
 //     private val responseType: Type
 // ) : CallAdapter<T, Deferred<T>> {
-struct BodyCallAdapter<T> {
+pub struct BodyCallAdapter {
     response_type: Type,
 }
 
-impl<T> CallAdapter for BodyCallAdapter<T> {
+impl CallAdapter for BodyCallAdapter {
     // override fun responseType() = responseType
     fn response_type(&self) -> Type {
         self.response_type.clone()
@@ -132,9 +135,9 @@ impl<T> CallAdapter for BodyCallAdapter<T> {
     //
     //     return deferred
     // }
-    fn adapt(&self, call: Call<T>) -> Deferred<T> {
+    fn adapt(&self, call: Call<Any>) -> Deferred {
         // val deferred = CompletableDeferred<T>()
-        let deferred = CompletableDeferred::<T>::new();
+        let deferred = CompletableDeferred::<Body>::new();
 
         // deferred.invokeOnCompletion {
         //     if (deferred.isCancelled) {
@@ -148,11 +151,13 @@ impl<T> CallAdapter for BodyCallAdapter<T> {
         });
 
         // call.enqueue(object : Callback<T> { ... })
-        call.enqueue(Box::new(move |result: Result<Response<T>, Throwable>| {
+        // fix: stub 模型下回调不实际触发；克隆句柄避免 move 闭包与返回 deferred 冲突
+        let callback_deferred = deferred.clone();
+        call.enqueue(move |result: Result<Response, Throwable>| {
             match result {
                 Err(t) => {
                     // deferred.completeExceptionally(t)
-                    deferred.complete_exceptionally(t);
+                    callback_deferred.complete_exceptionally(t);
                 }
                 Ok(response) => {
                     // if (response.isSuccessful) {
@@ -161,27 +166,29 @@ impl<T> CallAdapter for BodyCallAdapter<T> {
                     //     deferred.completeExceptionally(HttpException(response))
                     // }
                     if response.is_successful() {
-                        deferred.complete(response.body().unwrap());
+                        // fix: stub Body 非 Option，Kotlin `body()!!` 直接透传
+                        callback_deferred.complete(response.body());
                     } else {
-                        deferred.complete_exceptionally(HttpException::new(response));
+                        callback_deferred.complete_exceptionally(HttpException::new(response));
                     }
                 }
             }
-        }));
+        });
 
         // return deferred
-        deferred
+        // fix: E0308——Kotlin 返回 Deferred<T>，stub 模型下 CompletableDeferred<T> 转换为占位 Deferred
+        deferred.into()
     }
 }
 
 // private class ResponseCallAdapter<T>(
 //     private val responseType: Type
 // ) : CallAdapter<T, Deferred<Response<T>>> {
-struct ResponseCallAdapter<T> {
+pub struct ResponseCallAdapter {
     response_type: Type,
 }
 
-impl<T> CallAdapter for ResponseCallAdapter<T> {
+impl CallAdapter for ResponseCallAdapter {
     // override fun responseType() = responseType
     fn response_type(&self) -> Type {
         self.response_type.clone()
@@ -208,9 +215,9 @@ impl<T> CallAdapter for ResponseCallAdapter<T> {
     //
     //     return deferred
     // }
-    fn adapt(&self, call: Call<T>) -> Deferred<Response<T>> {
+    fn adapt(&self, call: Call<Any>) -> Deferred {
         // val deferred = CompletableDeferred<Response<T>>()
-        let deferred = CompletableDeferred::<Response<T>>::new();
+        let deferred = CompletableDeferred::<Response>::new();
 
         // deferred.invokeOnCompletion {
         //     if (deferred.isCancelled) {
@@ -232,18 +239,21 @@ impl<T> CallAdapter for ResponseCallAdapter<T> {
         //         deferred.complete(response)
         //     }
         // })
-        call.enqueue(Box::new(move |result: Result<Response<T>, Throwable>| {
+        // fix: stub 模型下回调不实际触发；克隆句柄避免 move 闭包与返回 deferred 冲突
+        let callback_deferred = deferred.clone();
+        call.enqueue(move |result: Result<Response, Throwable>| {
             match result {
                 Err(t) => {
-                    deferred.complete_exceptionally(t);
+                    callback_deferred.complete_exceptionally(t);
                 }
                 Ok(response) => {
-                    deferred.complete(response);
+                    callback_deferred.complete(response);
                 }
             }
-        }));
+        });
 
         // return deferred
-        deferred
+        // fix: E0308——Kotlin 返回 Deferred<Response<T>>，stub 模型下 CompletableDeferred<T> 转换为占位 Deferred
+        deferred.into()
     }
 }

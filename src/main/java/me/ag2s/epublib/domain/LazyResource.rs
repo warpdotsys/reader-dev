@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0659 歧义——prelude glob 同时导出 mediatype 模块与 stubs 的 MediaType；MediaTypes::determine_media_type 返回 stubs::MediaType（占位），故此处显式导入 stubs::MediaType 保持一致
+use crate::stubs::MediaType;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.IOUtil;
@@ -19,16 +22,16 @@ pub struct LazyResource {
   input_encoding: String,
   data: Option<Vec<u8>>,
   tag: String,
-  resource_provider: Option<LazyResourceProvider>,
+  resource_provider: Option<Box<dyn LazyResourceProvider>>,
   cached_size: i64,
 }
 
 impl LazyResource {
 
-  pub fn with_href(resource_provider: LazyResourceProvider, href: String) -> LazyResource {
+  pub fn with_href(resource_provider: impl LazyResourceProvider + 'static, href: String) -> LazyResource {
     LazyResource::with_size(resource_provider, -1, href)
   }
-  pub fn with_original_href(resource_provider: LazyResourceProvider, href: String, original_href: String) -> LazyResource {
+  pub fn with_original_href(resource_provider: impl LazyResourceProvider + 'static, href: String, original_href: String) -> LazyResource {
     LazyResource::with_size_and_original_href(resource_provider, -1, href, original_href)
   }
 
@@ -42,18 +45,23 @@ impl LazyResource {
    * @param href The resource's href within the epub.
    */
   pub fn with_size(
-          resource_provider: LazyResourceProvider, size: i64, href: String) -> LazyResource {
+          resource_provider: impl LazyResourceProvider + 'static, size: i64, href: String) -> LazyResource {
     let mut result = LazyResource::base(None, None, href.clone(), href.clone(), MediaTypes::determine_media_type(&href));
-    result.resource_provider = Some(resource_provider);
+    result.resource_provider = Some(Box::new(resource_provider));
     result.cached_size = size;
     result
   }
   pub fn with_size_and_original_href(
-      resource_provider: LazyResourceProvider, size: i64, href: String, original_href: String) -> LazyResource {
+      resource_provider: impl LazyResourceProvider + 'static, size: i64, href: String, original_href: String) -> LazyResource {
     let mut result = LazyResource::base(None, None, href.clone(), original_href.clone(), MediaTypes::determine_media_type(&href));
-    result.resource_provider = Some(resource_provider);
+    result.resource_provider = Some(Box::new(resource_provider));
     result.cached_size = size;
     result
+  }
+
+  // fix: ResourcesLoader 转录调用 `LazyResource::new(provider, size, href)`（Kotlin 构造函数），别名到 with_size
+  pub fn new(resource_provider: impl LazyResourceProvider + 'static, size: i64, href: String) -> LazyResource {
+    LazyResource::with_size(resource_provider, size, href)
   }
 
   fn base(id: Option<String>, data: Option<Vec<u8>>, href: String, original_href: String, media_type: Option<MediaType>) -> LazyResource {
@@ -64,7 +72,8 @@ impl LazyResource {
       properties: String::new(),
       original_href: original_href,
       media_type: media_type,
-      input_encoding: Constants::CHARACTER_ENCODING.to_string(),
+      // fix: E0790——Constants 转录为 trait，关联常量无法以 `Constants::CHARACTER_ENCODING` 访问，改用字面量（值即 "UTF-8"）
+      input_encoding: "UTF-8".to_string(),
       data: data,
       tag: String::from("LazyResource"),
       resource_provider: None,
@@ -79,11 +88,23 @@ impl LazyResource {
    *
    * @throws IOException IOException
    */
-  pub fn get_input_stream(&mut self) -> Result<InputStream, IOException> {
+  pub fn get_input_stream(&mut self) -> Result<ByteArrayInputStream, IOException> {
     if self.is_initialized() {
-      return Ok(ByteArrayInputStream::new(self.get_data()?));
+      return Ok(ByteArrayInputStream::new(self.get_data()?.clone()));
     } else {
-      return self.resource_provider.as_ref().unwrap().get_resource_stream(&self.original_href);
+      // fix: get_resource_stream 返回 Box<dyn InputStream>，读出全部字节包装为 ByteArrayInputStream
+      let mut stream = self.resource_provider.as_ref().unwrap().get_resource_stream(&self.original_href)?;
+      let mut buf: Vec<u8> = Vec::new();
+      let mut chunk = [0u8; 4096];
+      loop {
+        let chunk_len = chunk.len();
+        let n = stream.read(&mut chunk, 0, chunk_len);
+        if n <= 0 {
+          break;
+        }
+        buf.extend_from_slice(&chunk[..n as usize]);
+      }
+      return Ok(ByteArrayInputStream::new(buf));
     }
   }
 
@@ -113,7 +134,17 @@ impl LazyResource {
       // Log.d(TAG, "Initializing lazy resource: " + this.getHref());
 
       let mut in_stream = self.resource_provider.as_ref().unwrap().get_resource_stream(&self.original_href)?;
-      let read_data = IOUtil::to_byte_array(&mut in_stream, self.cached_size as i32);
+      // fix: IOUtil::to_byte_array_size 期望 IOUtil 的 InputStream 结构体，与 Box<dyn InputStream> 体系不匹配，直接循环读取
+      let mut read_data: Option<Vec<u8>> = Some(Vec::new());
+      let mut chunk = [0u8; 4096];
+      loop {
+        let chunk_len = chunk.len();
+        let n = in_stream.read(&mut chunk, 0, chunk_len);
+        if n <= 0 {
+          break;
+        }
+        read_data.as_mut().unwrap().extend_from_slice(&chunk[..n as usize]);
+      }
       if read_data.is_none() {
         return Err(IOException::new(
             format!("Could not load the contents of resource: {}", self.get_href())));

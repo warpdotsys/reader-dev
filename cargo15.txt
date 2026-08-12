@@ -1,0 +1,17 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo15.txt; $errs = Selec ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: this file contains an unclosed delimiter
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:320:3
+    |
+  3 | PROBE_BROKEN_SYNTAX(
+    |                    - unclosed delimiter
+...
+320 | }
+    |  ^
+
+error: could not compile `reader` (lib) due to 1 previous error

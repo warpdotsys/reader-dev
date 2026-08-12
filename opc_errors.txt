@@ -1,0 +1,196 @@
+﻿cargo :     Blocking waiting for file lock on build directory
+At line:1 char:1
++ cargo check --message-format=short 2>&1 | Out-File -FilePath opc_erro ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+src\lib.rs:746:13: warning: ambiguous glob re-exports: the name `main` in the value namespace is first re-exported here
+src\lib.rs:753:13: warning: ambiguous glob re-exports: the name `BookGroupController` in the type namespace is first re
+-exported here
+src\lib.rs:754:13: warning: ambiguous glob re-exports: the name `BookmarkController` in the type namespace is first re-
+exported here
+src\lib.rs:757:13: warning: ambiguous glob re-exports: the name `FileController` in the type namespace is first re-expo
+rted here
+src\lib.rs:758:13: warning: ambiguous glob re-exports: the name `HttpTTSController` in the type namespace is first re-e
+xported here
+src\lib.rs:759:13: warning: ambiguous glob re-exports: the name `ReplaceRuleController` in the type namespace is first 
+re-exported here
+src\lib.rs:760:13: warning: ambiguous glob re-exports: the name `RssSourceController` in the type namespace is first re
+-exported here
+src\lib.rs:761:13: warning: ambiguous glob re-exports: the name `UserController` in the type namespace is first re-expo
+rted here
+src\lib.rs:762:13: warning: ambiguous glob re-exports: the name `WebdavController` in the type namespace is first re-ex
+ported here
+src\lib.rs:784:13: warning: ambiguous glob re-exports: the name `IntTypeAdapter` in the type namespace is first re-expo
+rted here
+src\lib.rs:784:13: warning: ambiguous glob re-exports: the name `IntTypeAdapter` in the value namespace is first re-exp
+orted here
+src\lib.rs:785:13: warning: ambiguous glob re-exports: the name `LongTypeAdapter` in the type namespace is first re-exp
+orted here
+src\lib.rs:785:13: warning: ambiguous glob re-exports: the name `LongTypeAdapter` in the value namespace is first re-ex
+ported here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `get_work_dir` in the value namespace is first re-expor
+ted here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `get_relative_path` in the value namespace is first re-
+exported here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `save_storage` in the value namespace is first re-expor
+ted here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `get_storage` in the value namespace is first re-export
+ed here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `json_encode` in the value namespace is first re-export
+ed here
+src\lib.rs:791:13: warning: ambiguous glob re-exports: the name `get_storage_file` in the value namespace is first re-e
+xported here
+src\lib.rs:806:13: warning: ambiguous glob re-exports: the name `starts_with_ignore_case` in the value namespace is fir
+st re-exported here
+src\lib.rs:807:13: warning: ambiguous glob re-exports: the name `Converters` in the type namespace is first re-exported
+ here
+src\lib.rs:807:13: warning: ambiguous glob re-exports: the name `Converters` in the value namespace is first re-exporte
+d here
+src\lib.rs:840:13: warning: ambiguous glob re-exports: the name `Block` in the type namespace is first re-exported here
+src\lib.rs:840:13: warning: ambiguous glob re-exports: the name `VoidBlock` in the type namespace is first re-exported 
+here
+src\lib.rs:865:13: warning: ambiguous glob re-exports: the name `Any` in the type namespace is first re-exported here
+src\lib.rs:865:13: warning: ambiguous glob re-exports: the name `SourceRule` in the type namespace is first re-exported
+ here
+src\lib.rs:874:13: warning: ambiguous glob re-exports: the name `C_FILE` in the value namespace is first re-exported he
+re
+src\lib.rs:890:13: warning: ambiguous glob re-exports: the name `Base64` in the type namespace is first re-exported her
+e
+src\lib.rs:890:13: warning: ambiguous glob re-exports: the name `Base64` in the value namespace is first re-exported he
+re
+src\lib.rs:894:13: warning: ambiguous glob re-exports: the name `FileUtils` in the type namespace is first re-exported 
+here
+src\lib.rs:894:13: warning: ambiguous glob re-exports: the name `FileUtils` in the value namespace is first re-exported
+ here
+src\lib.rs:895:13: warning: ambiguous glob re-exports: the name `GSON` in the type namespace is first re-exported here
+src\lib.rs:895:13: warning: ambiguous glob re-exports: the name `GSON` in the value namespace is first re-exported here
+src\lib.rs:895:13: warning: ambiguous glob re-exports: the name `MapDeserializerDoubleAsIntFix` in the type namespace i
+s first re-exported here
+src\lib.rs:895:13: warning: ambiguous glob re-exports: the name `MapDeserializerDoubleAsIntFix` in the value namespace 
+is first re-exported here
+src\lib.rs:905:13: warning: ambiguous glob re-exports: the name `TextUtils` in the type namespace is first re-exported 
+here
+src\lib.rs:905:13: warning: ambiguous glob re-exports: the name `TextUtils` in the value namespace is first re-exported
+ here
+src\lib.rs:918:13: warning: ambiguous glob re-exports: the name `Date` in the type namespace is first re-exported here
+src\lib.rs:945:13: warning: ambiguous glob re-exports: the name `Document` in the type namespace is first re-exported h
+ere
+src\lib.rs:945:13: warning: ambiguous glob re-exports: the name `Document` in the value namespace is first re-exported 
+here
+src\lib.rs:945:13: warning: ambiguous glob re-exports: the name `Node` in the type namespace is first re-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `DocumentBuilderFactory` in the type namespace is first
+ re-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `DocumentBuilderFactory` in the value namespace is firs
+t re-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `DocumentBuilder` in the type namespace is first re-exp
+orted here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `DocumentBuilder` in the value namespace is first re-ex
+ported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `XmlSerializer` in the type namespace is first re-expor
+ted here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `XmlSerializer` in the value namespace is first re-expo
+rted here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `XmlPullParserFactory` in the type namespace is first r
+e-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `Writer` in the type namespace is first re-exported her
+e
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `Writer` in the value namespace is first re-exported he
+re
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `OutputStreamWriter` in the type namespace is first re-
+exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `OutputStreamWriter` in the value namespace is first re
+-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `InputSource` in the type namespace is first re-exporte
+d here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `InputSource` in the value namespace is first re-export
+ed here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `URL` in the type namespace is first re-exported here
+src\lib.rs:946:13: warning: ambiguous glob re-exports: the name `URL` in the value namespace is first re-exported here
+src\lib.rs:948:13: warning: ambiguous glob re-exports: the name `ZipOutputStream` in the type namespace is first re-exp
+orted here
+src\lib.rs:948:13: warning: ambiguous glob re-exports: the name `ZipEntry` in the type namespace is first re-exported h
+ere
+src\lib.rs:948:13: warning: ambiguous glob re-exports: the name `ZipEntry` in the value namespace is first re-exported 
+here
+src\lib.rs:957:13: warning: ambiguous glob re-exports: the name `ZipFile` in the type namespace is first re-exported he
+re
+src\lib.rs:957:13: warning: ambiguous glob re-exports: the name `ZipInputStream` in the type namespace is first re-expo
+rted here
+src\lib.rs:957:13: warning: ambiguous glob re-exports: the name `ZipInputStream` in the value namespace is first re-exp
+orted here
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `InputStream` in the value namespace is first re-export
+ed here
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `Reader` in the type namespace is first re-exported her
+e
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `Reader` in the value namespace is first re-exported he
+re
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `ByteArrayOutputStream` in the type namespace is first 
+re-exported here
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `InputStreamReader` in the type namespace is first re-e
+xported here
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `InputStreamReader` in the value namespace is first re-
+exported here
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `Charset` in the type namespace is first re-exported he
+re
+src\lib.rs:959:13: warning: ambiguous glob re-exports: the name `Charset` in the value namespace is first re-exported h
+ere
+src\lib.rs:962:13: warning: ambiguous glob re-exports: the name `File` in the type namespace is first re-exported here
+src\lib.rs:962:13: warning: ambiguous glob re-exports: the name `FileInputStream` in the type namespace is first re-exp
+orted here
+src\lib.rs:979:13: warning: ambiguous glob re-exports: the name `XmlPullError` in the type namespace is first re-export
+ed here
+src\lib.rs:979:13: warning: ambiguous glob re-exports: the name `XmlPullParserFeatures` in the type namespace is first 
+re-exported here
+src\lib.rs:979:13: warning: ambiguous glob re-exports: the name `XmlPullParserFeatures` in the value namespace is first
+ re-exported here
+src\lib.rs:982:13: warning: ambiguous glob re-exports: the name `Element` in the type namespace is first re-exported he
+re
+src\lib.rs:985:13: warning: ambiguous glob re-exports: the name `WapExtensionData` in the type namespace is first re-ex
+ported here
+src\lib.rs:1072:21: warning: ambiguous glob re-exports: the name `main` in the value namespace is first re-exported her
+e
+src\lib.rs:1107:29: warning: ambiguous glob re-exports: the name `starts_with_ignore_case` in the value namespace is fi
+rst re-exported here
+src\lib.rs:1108:29: warning: ambiguous glob re-exports: the name `Converters` in the type namespace is first re-exporte
+d here
+src\lib.rs:1108:29: warning: ambiguous glob re-exports: the name `Converters` in the value namespace is first re-export
+ed here
+src\lib.rs:1175:29: warning: ambiguous glob re-exports: the name `SourceRule` in the type namespace is first re-exporte
+d here
+src\lib.rs:1186:29: warning: ambiguous glob re-exports: the name `C_FILE` in the value namespace is first re-exported h
+ere
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `XmlSerializer` in the type namespace is first re-expo
+rted here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `XmlSerializer` in the value namespace is first re-exp
+orted here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `Writer` in the type namespace is first re-exported he
+re
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `Writer` in the value namespace is first re-exported h
+ere
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `OutputStream` in the type namespace is first re-expor
+ted here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `OutputStream` in the value namespace is first re-expo
+rted here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `OutputStreamWriter` in the type namespace is first re
+-exported here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `OutputStreamWriter` in the value namespace is first r
+e-exported here
+src\lib.rs:1279:25: warning: ambiguous glob re-exports: the name `InputStream` in the type namespace is first re-export
+ed here
+src\lib.rs:1281:25: warning: ambiguous glob re-exports: the name `ZipEntry` in the type namespace is first re-exported 
+here
+src\lib.rs:1281:25: warning: ambiguous glob re-exports: the name `ZipEntry` in the value namespace is first re-exported
+ here
+src\lib.rs:1304:25: warning: ambiguous glob re-exports: the name `Reader` in the type namespace is first re-exported he
+re
+src\lib.rs:1304:25: warning: ambiguous glob re-exports: the name `Reader` in the value namespace is first re-exported h
+ere
+src\lib.rs:1304:25: warning: ambiguous glob re-exports: the name `InputStream` in the type namespace is first re-export
+ed here
+src\lib.rs:1304:25: warning: ambiguous glob re-exports: the name `InputStream` in the value namespace is first re-expor
+ted here
+src\lib.rs:1353:21: warning: ambiguous glob re-exports: the name `WapExtensionData` in the type namespace is first re-e
+xported here

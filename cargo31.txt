@@ -1,0 +1,23 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo31.txt; (Select-Strin ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: this file contains an unclosed delimiter
+   --> src\..\src\main\java\org\kxml2\kdom\Element.rs:431:3
+    |
+ 49 | impl Element {
+    |              - unclosed delimiter
+...
+275 |             if self.base.get_child_count() == 0 {
+    |                                                 - this delimiter might not be properly closed...
+...
+278 |         }
+    |         - ...as it matches this but it has different indentation
+...
+431 | }
+    |  ^
+
+error: could not compile `reader` (lib) due to 1 previous error

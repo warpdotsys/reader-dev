@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /**
@@ -137,7 +138,7 @@ pub struct CharsetRecog_2022JP;
 
 impl CharsetRecog_2022 for CharsetRecog_2022JP {}
 
-impl CharsetRecognizer for CharsetRecog_2022JP {
+impl CharsetRecog_2022JP {
     // private final byte[][] escapeSequences = {
     //         {0x1b, 0x24, 0x28, 0x43},   // KS X 1001:1992
     //         {0x1b, 0x24, 0x28, 0x44},   // JIS X 212-1990
@@ -166,7 +167,9 @@ impl CharsetRecognizer for CharsetRecog_2022JP {
         &[0x1b, 0x2e, 0x41],         // ISO 8859-1
         &[0x1b, 0x2e, 0x46],         // ISO 8859-7
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_2022JP {
     // @Override
     // String getName() {
     //     return "ISO-2022-JP";
@@ -178,12 +181,12 @@ impl CharsetRecognizer for CharsetRecog_2022JP {
     // @Override
     // CharsetMatch match(CharsetDetector det) {
     //     int confidence = match(det.fInputBytes, det.fInputLen, escapeSequences);
-    //     return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+    //     return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
     // }
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         let confidence = self.match_escape_sequences(
-            &det.f_input_bytes,
-            det.f_input_len as usize,
+            &det.f_input_bytes_access(),
+            det.f_input_len_access() as usize,
             Self::ESCAPE_SEQUENCES,
         );
         if confidence == 0 {
@@ -199,12 +202,14 @@ pub struct CharsetRecog_2022KR;
 
 impl CharsetRecog_2022 for CharsetRecog_2022KR {}
 
-impl CharsetRecognizer for CharsetRecog_2022KR {
+impl CharsetRecog_2022KR {
     // private final byte[][] escapeSequences = {
     //         {0x1b, 0x24, 0x29, 0x43}
     // };
     const ESCAPE_SEQUENCES: &'static [&'static [u8]] = &[&[0x1b, 0x24, 0x29, 0x43]];
+}
 
+impl CharsetRecognizer for CharsetRecog_2022KR {
     // @Override
     // String getName() {
     //     return "ISO-2022-KR";
@@ -216,12 +221,12 @@ impl CharsetRecognizer for CharsetRecog_2022KR {
     // @Override
     // CharsetMatch match(CharsetDetector det) {
     //     int confidence = match(det.fInputBytes, det.fInputLen, escapeSequences);
-    //     return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+    //     return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
     // }
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         let confidence = self.match_escape_sequences(
-            &det.f_input_bytes,
-            det.f_input_len as usize,
+            &det.f_input_bytes_access(),
+            det.f_input_len_access() as usize,
             Self::ESCAPE_SEQUENCES,
         );
         if confidence == 0 {
@@ -237,7 +242,7 @@ pub struct CharsetRecog_2022CN;
 
 impl CharsetRecog_2022 for CharsetRecog_2022CN {}
 
-impl CharsetRecognizer for CharsetRecog_2022CN {
+impl CharsetRecog_2022CN {
     // private final byte[][] escapeSequences = {
     //         {0x1b, 0x24, 0x29, 0x41},   // GB 2312-80
     //         {0x1b, 0x24, 0x29, 0x47},   // CNS 11643-1992 Plane 1
@@ -264,7 +269,9 @@ impl CharsetRecognizer for CharsetRecog_2022CN {
         &[0x1b, 0x4e],               // SS2
         &[0x1b, 0x4f],               // SS3
     ];
+}
 
+impl CharsetRecognizer for CharsetRecog_2022CN {
     // @Override
     // String getName() {
     //     return "ISO-2022-CN";
@@ -276,12 +283,12 @@ impl CharsetRecognizer for CharsetRecog_2022CN {
     // @Override
     // CharsetMatch match(CharsetDetector det) {
     //     int confidence = match(det.fInputBytes, det.fInputLen, escapeSequences);
-    //     return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+    //     return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
     // }
     fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
         let confidence = self.match_escape_sequences(
-            &det.f_input_bytes,
-            det.f_input_len as usize,
+            &det.f_input_bytes_access(),
+            det.f_input_len_access() as usize,
             Self::ESCAPE_SEQUENCES,
         );
         if confidence == 0 {

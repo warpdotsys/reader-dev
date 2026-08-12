@@ -1,0 +1,1 @@
+std::ptr::Unique<(dyn io_legado_app_lib_icu4j_charsetrecognizer::CharsetRecognizer + 'static)>

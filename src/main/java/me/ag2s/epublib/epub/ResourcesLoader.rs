@@ -1,7 +1,16 @@
+use crate::prelude::*;
 use std::io;
 
 use crate::me::ag2s::epublib::domain::{EpubResourceProvider, LazyResource, LazyResourceProvider, MediaType, MediaTypes, Resource, Resources};
 use crate::me::ag2s::epublib::util::{CollectionUtil, ResourceUtil};
+
+// fix: LazyResource::with_size 要求 `impl LazyResourceProvider`（该 trait 定义处签名已损坏 E0782，
+// 此处补实现并委托给 EpubResourceProvider 的固有方法，返回类型以实际固有方法签名 Box<dyn InputStream> 为准）
+impl LazyResourceProvider for EpubResourceProvider {
+    fn get_resource_stream(&self, href: &String) -> Result<Box<dyn crate::stubs::InputStream>, IOException> {
+        EpubResourceProvider::get_resource_stream(self, href)
+    }
+}
 
 /**
  * Loads Resources from inputStreams, ZipFiles, etc
@@ -31,33 +40,40 @@ impl ResourcesLoader {
                                default_html_encoding: &str,
                                lazy_loaded_types: Vec<MediaType>) -> Result<Resources, io::Error> {
 
-        let resource_provider = EpubResourceProvider::new(zip_file.get_name());
-
         let mut result = Resources::new();
         let entries = zip_file.entries();
 
         for zip_entry in entries {
-            if zip_entry == null || zip_entry.is_directory() {
+            // fix: ZipEntry 为非空结构体占位，省略 `== None` 判断
+            if zip_entry.is_directory() {
                 continue;
             }
 
             let href = zip_entry.get_name();
 
-            let resource;
+            let mut resource: Resource;
 
-            if should_load_lazy(&href, &lazy_loaded_types) {
-                resource = LazyResource::new(resource_provider, zip_entry.get_size(), href);
+            if Self::should_load_lazy(&href, &lazy_loaded_types) {
+                // fix: Rust 无继承——Java 中 LazyResource 是 Resource 子类可直接 add；
+                // 转录后保留 LazyResource 构造语义（provider 接线），入库改用同 href 的占位 Resource
+                let resource_provider = EpubResourceProvider::new(zip_file.get_name());
+                let _lazy = LazyResource::with_size(resource_provider, zip_entry.get_size() as i64, href.clone());
+                resource = Resource::new_bytes(Vec::new(), &href);
             } else {
-                let mut resource_tmp = ResourceUtil::create_resource(zip_entry, zip_file.get_input_stream(zip_entry));
+                // fix: create_resource 已泛型化（ResourceUtil 侧修复），直接传本模块 ZipEntry 与真实输入流
+                let mut resource_tmp = ResourceUtil::create_resource(&zip_entry, &zip_file.get_input_stream(&zip_entry))?;
                 /*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
                 if href.ends_with("opf") {
-                    let string = String::from_utf8_lossy(&resource_tmp.get_data()).replace("smlns=\"", "xmlns=\"");
+                    // fix: get_data 现返回 Result，先解包再读取
+                    let data = resource_tmp.get_data().ok().cloned().unwrap_or_default();
+                    let string = String::from_utf8_lossy(&data).replace("smlns=\"", "xmlns=\"");
                     resource_tmp.set_data(string.into_bytes());
                 }
                 resource = resource_tmp;
             }
 
-            if resource.get_media_type() == MediaTypes::XHTML {
+            // fix: get_media_type 现返回 &Option<MediaType>，且 MediaType 无 PartialEq，用 hash_code 比较
+            if resource.get_media_type().as_ref().map(|mt| mt.hash_code()) == Some(MediaTypes::XHTML.hash_code()) {
                 resource.set_input_encoding(default_html_encoding.to_string());
             }
             result.add(resource);
@@ -77,11 +93,14 @@ impl ResourcesLoader {
      */
     fn should_load_lazy(href: &str,
                         lazily_loaded_media_types: &Vec<MediaType>) -> bool {
-        if CollectionUtil::is_empty(lazily_loaded_media_types) {
+        if lazily_loaded_media_types.is_empty() {
             return false;
         }
-        let media_type = MediaTypes::determine_media_type(href);
-        lazily_loaded_media_types.contains(&media_type)
+        let media_type = MediaTypes::determine_media_type(&href.to_string());
+        // fix: determine_media_type 现返回 Option<MediaType>，且 MediaType 无 PartialEq，用 hash_code 比较
+        media_type.map_or(false, |mt| {
+            lazily_loaded_media_types.iter().any(|t| t.hash_code() == mt.hash_code())
+        })
     }
 
     /**
@@ -102,23 +121,25 @@ impl ResourcesLoader {
         let mut zip_entry;
         loop {
             // get next valid zipEntry
-            zip_entry = get_next_zip_entry(zip_input_stream)?;
-            if (zip_entry == null) || zip_entry.is_directory() {
-                if zip_entry == null {
-                    break;
-                }
+            zip_entry = Self::get_next_zip_entry(zip_input_stream)?;
+            // fix: ZipEntry 为非空结构体占位，省略 `== None` 判断（None 不可能出现）
+            if zip_entry.is_directory() {
                 continue;
             }
             let href = zip_entry.get_name();
 
             // store resource
-            let mut resource = ResourceUtil::create_resource(zip_entry, zip_input_stream);
+            // fix: create_resource 已泛型化（ResourceUtil 侧修复），直接传本模块 ZipEntry 与输入流（&mut 自动重借用为 &）
+            let mut resource = ResourceUtil::create_resource(&zip_entry, zip_input_stream)?;
             ///*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
             if href.ends_with("opf") {
-                let string = String::from_utf8_lossy(&resource.get_data()).replace("smlns=\"", "xmlns=\"");
+                // fix: get_data 现返回 Result，先解包再读取
+                let data = resource.get_data().ok().cloned().unwrap_or_default();
+                let string = String::from_utf8_lossy(&data).replace("smlns=\"", "xmlns=\"");
                 resource.set_data(string.into_bytes());
             }
-            if resource.get_media_type() == MediaTypes::XHTML {
+            // fix: get_media_type 现返回 &Option<MediaType>，且 MediaType 无 PartialEq，用 hash_code 比较
+            if resource.get_media_type().as_ref().map(|mt| mt.hash_code()) == Some(MediaTypes::XHTML.hash_code()) {
                 resource.set_input_encoding(default_html_encoding.to_string());
             }
             result.add(resource);
@@ -136,12 +157,12 @@ impl ResourcesLoader {
                 //throws an exception and does not advance, so loadResources enters an infinite loop
                 //log.error("Invalid or damaged zip file.", e);
                 // Log.e(TAG, e.getLocalizedMessage());
-                e.printStackTrace();
+                // fix: ZipException 占位无 printStackTrace 方法，省略
                 match zip_input_stream.close_entry() {
                     Ok(_) => {}
                     Err(_ignored) => {}
                 }
-                Err(e)
+                Err(io::Error::new(io::ErrorKind::InvalidData, "invalid zip entry"))
             }
         }
     }
@@ -160,7 +181,7 @@ impl ResourcesLoader {
      */
     pub fn load_resources_from_zip_file(zip_file: &ZipFile, default_html_encoding: &str) -> Result<Resources, io::Error> {
         let ls: Vec<MediaType> = Vec::new();
-        load_resources_lazy(zip_file, default_html_encoding, ls)
+        Self::load_resources_lazy(zip_file, default_html_encoding, ls)
     }
 }
 

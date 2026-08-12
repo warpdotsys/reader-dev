@@ -1,0 +1,1788 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo29.txt; (Select-Strin ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: ambiguous glob re-exports
+   --> src\lib.rs:746:13
+    |
+746 |     pub use crate::com_htmake_reader_readerapplication::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `main` in the value namespace is first re-expo
+rted here
+747 |     pub use crate::com_htmake_reader_readeruiapplication::*;
+    |             ----------------------------------------------- but the name `main` in the value namespace is also re
+-exported here
+    |
+    = note: `#[warn(ambiguous_glob_reexports)]` on by default
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:753:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `BookGroupController` in the type namespace is also re-exported here
+...
+753 |     pub use crate::com_htmake_reader_api_controller_bookgroupcontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `BookGroupController` in the 
+type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:754:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `BookmarkController` in the type namespace is also re-exported here
+...
+754 |     pub use crate::com_htmake_reader_api_controller_bookmarkcontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `BookmarkController` in the ty
+pe namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:757:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `FileController` in the type namespace is also re-exported here
+...
+757 |     pub use crate::com_htmake_reader_api_controller_filecontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `FileController` in the type names
+pace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:758:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `HttpTTSController` in the type namespace is also re-exported here
+...
+758 |     pub use crate::com_htmake_reader_api_controller_httpttscontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `HttpTTSController` in the type
+ namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:759:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ReplaceRuleController` in the type namespace is also re-exported here
+...
+759 |     pub use crate::com_htmake_reader_api_controller_replacerulecontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ReplaceRuleController` in 
+the type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:760:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `RssSourceController` in the type namespace is also re-exported here
+...
+760 |     pub use crate::com_htmake_reader_api_controller_rsssourcecontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `RssSourceController` in the 
+type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:761:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `UserController` in the type namespace is also re-exported here
+...
+761 |     pub use crate::com_htmake_reader_api_controller_usercontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `UserController` in the type names
+pace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:762:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `WebdavController` in the type namespace is also re-exported here
+...
+762 |     pub use crate::com_htmake_reader_api_controller_webdavcontroller::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WebdavController` in the type n
+amespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:784:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `IntTypeAdapter` in the type namespace is also re-exported here
+...
+784 |     pub use crate::com_htmake_reader_utils_inttypeadapter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `IntTypeAdapter` in the type namespace is f
+irst re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:784:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `IntTypeAdapter` in the value namespace is also re-exported here
+...
+784 |     pub use crate::com_htmake_reader_utils_inttypeadapter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `IntTypeAdapter` in the value namespace is 
+first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:785:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `LongTypeAdapter` in the type namespace is also re-exported here
+...
+785 |     pub use crate::com_htmake_reader_utils_longtypeadapter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `LongTypeAdapter` in the type namespace is
+ first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:785:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `LongTypeAdapter` in the value namespace is also re-exported here
+...
+785 |     pub use crate::com_htmake_reader_utils_longtypeadapter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `LongTypeAdapter` in the value namespace i
+s first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `get_work_dir` in the value namespace is also re-exported here
+...
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `get_work_dir` in the value namespace is first re-
+exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `get_relative_path` in the value namespace is firs
+t re-exported here
+...
+794 |     pub use crate::io_legado_app_adapters_defaultadpater::*;
+    |             ----------------------------------------------- but the name `get_relative_path` in the value namespa
+ce is also re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `save_storage` in the value namespace is also re-exported here
+...
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `save_storage` in the value namespace is first re-
+exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `get_storage` in the value namespace is also re-exported here
+...
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `get_storage` in the value namespace is first re-e
+xported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `json_encode` in the value namespace is also re-exported here
+...
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `json_encode` in the value namespace is first re-e
+xported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:791:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `get_storage_file` in the value namespace is also re-exported here
+...
+791 |     pub use crate::com_htmake_reader_utils_vertext::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `get_storage_file` in the value namespace is first
+ re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:806:13
+    |
+806 |     pub use crate::io_legado_app_data_entities_basesource::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `starts_with_ignore_case` in the value name
+space is first re-exported here
+...
+865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+    |             -------------------------------------------------------- but the name `starts_with_ignore_case` in th
+e value namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:807:13
+    |
+807 |     pub use crate::io_legado_app_data_entities_book::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Converters` in the type namespace is first re-ex
+ported here
+...
+812 |     pub use crate::io_legado_app_data_entities_booksource::*;
+    |             ------------------------------------------------ but the name `Converters` in the type namespace is a
+lso re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:807:13
+    |
+807 |     pub use crate::io_legado_app_data_entities_book::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Converters` in the value namespace is first re-e
+xported here
+...
+812 |     pub use crate::io_legado_app_data_entities_booksource::*;
+    |             ------------------------------------------------ but the name `Converters` in the value namespace is 
+also re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:840:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Block` in the type namespace is also re-exported here
+...
+840 |     pub use crate::io_legado_app_help_coroutine_coroutine::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Block` in the type namespace is first re-e
+xported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:840:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `VoidBlock` in the type namespace is also re-exported here
+...
+840 |     pub use crate::io_legado_app_help_coroutine_coroutine::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `VoidBlock` in the type namespace is first 
+re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:865:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Any` in the type namespace is also re-exported here
+...
+865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Any` in the type namespace is firs
+t re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:865:13
+    |
+865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `SourceRule` in the type namespace 
+is first re-exported here
+...
+868 |     pub use crate::io_legado_app_model_analyzerule_analyzerule::*;
+    |             ----------------------------------------------------- but the name `SourceRule` in the type namespace
+ is also re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:874:13
+    |
+874 |     pub use crate::io_legado_app_model_localbook_cbzfile::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `C_FILE` in the value namespace is first re-
+exported here
+...
+877 |     pub use crate::io_legado_app_model_localbook_pdffile::*;
+    |             ----------------------------------------------- but the name `C_FILE` in the value namespace is also 
+re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:890:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Base64` in the type namespace is also re-exported here
+...
+890 |     pub use crate::io_legado_app_utils_base64::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Base64` in the type namespace is first re-exported her
+e
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:890:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Base64` in the value namespace is also re-exported here
+...
+890 |     pub use crate::io_legado_app_utils_base64::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Base64` in the value namespace is first re-exported he
+re
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:894:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `FileUtils` in the type namespace is also re-exported here
+...
+894 |     pub use crate::io_legado_app_utils_filesutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `FileUtils` in the type namespace is first re-export
+ed here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:894:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `FileUtils` in the value namespace is also re-exported here
+...
+894 |     pub use crate::io_legado_app_utils_filesutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `FileUtils` in the value namespace is first re-expor
+ted here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:895:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `GSON` in the type namespace is also re-exported here
+...
+895 |     pub use crate::io_legado_app_utils_gsonextensions::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `GSON` in the type namespace is first re-export
+ed here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:895:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `GSON` in the value namespace is also re-exported here
+...
+895 |     pub use crate::io_legado_app_utils_gsonextensions::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `GSON` in the value namespace is first re-expor
+ted here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:895:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `MapDeserializerDoubleAsIntFix` in the type namespace is also re-exporte
+d here
+...
+895 |     pub use crate::io_legado_app_utils_gsonextensions::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `MapDeserializerDoubleAsIntFix` in the type nam
+espace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:895:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `MapDeserializerDoubleAsIntFix` in the value namespace is also re-export
+ed here
+...
+895 |     pub use crate::io_legado_app_utils_gsonextensions::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `MapDeserializerDoubleAsIntFix` in the value na
+mespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:905:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `TextUtils` in the type namespace is also re-exported here
+...
+905 |     pub use crate::io_legado_app_utils_textutils::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `TextUtils` in the type namespace is first re-export
+ed here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:905:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `TextUtils` in the value namespace is also re-exported here
+...
+905 |     pub use crate::io_legado_app_utils_textutils::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `TextUtils` in the value namespace is first re-expor
+ted here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:918:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Date` in the type namespace is also re-exported here
+...
+918 |     pub use crate::me_ag2s_epublib_domain_date::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Date` in the type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:945:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Document` in the type namespace is also re-exported here
+...
+945 |     pub use crate::me_ag2s_epublib_epub_domutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Document` in the type namespace is first re-exported
+ here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:945:13
+    |
+945 |     pub use crate::me_ag2s_epublib_epub_domutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Document` in the value namespace is first re-exporte
+d here
+...
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ------------------------------------------- but the name `Document` in the value namespace is also re
+-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:945:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Node` in the type namespace is also re-exported here
+...
+945 |     pub use crate::me_ag2s_epublib_epub_domutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Node` in the type namespace is first re-exported her
+e
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `DocumentBuilder` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `DocumentBuilder` in the type namespace 
+is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `DocumentBuilder` in the value namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `DocumentBuilder` in the value namespace
+ is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlSerializer` in the type namespace is
+ first re-exported here
+...
+983 |     pub use crate::org_kxml2_kdom_node::*;
+    |             ----------------------------- but the name `XmlSerializer` in the type namespace is also re-exported 
+here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlSerializer` in the value namespace i
+s first re-exported here
+...
+954 |     pub use crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::*;
+    |             ------------------------------------------------------------ but the name `XmlSerializer` in the valu
+e namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `XmlPullParserFactory` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlPullParserFactory` in the type names
+pace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Writer` in the type namespace is first 
+re-exported here
+...
+980 |     pub use crate::org_kxml2_io_kxmlserializer::*;
+    |             ------------------------------------- but the name `Writer` in the type namespace is also re-exported
+ here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Writer` in the value namespace is first
+ re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ------------------------------------- but the name `Writer` in the value namespace is also re-exporte
+d here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `OutputStreamWriter` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStreamWriter` in the type namespa
+ce is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `OutputStreamWriter` in the value namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStreamWriter` in the value namesp
+ace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `InputSource` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `InputSource` in the type namespace is f
+irst re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `InputSource` in the value namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `InputSource` in the value namespace is 
+first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `URL` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `URL` in the type namespace is first re-
+exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `URL` in the value namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `URL` in the value namespace is first re
+-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `DocumentBuilderFactory` in the type namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `DocumentBuilderFactory` in the type nam
+espace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:946:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `DocumentBuilderFactory` in the value namespace is also re-exported here
+...
+946 |     pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `DocumentBuilderFactory` in the value na
+mespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:948:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ZipOutputStream` in the type namespace is also re-exported here
+...
+948 |     pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipOutputStream` in the type namespace is first r
+e-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:948:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ZipEntry` in the type namespace is also re-exported here
+...
+948 |     pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipEntry` in the type namespace is first re-expor
+ted here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:948:13
+    |
+948 |     pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipEntry` in the value namespace is first re-expo
+rted here
+...
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ------------------------------------------- but the name `ZipEntry` in the value namespace is also re
+-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:957:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ZipFile` in the type namespace is also re-exported here
+...
+957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipFile` in the type namespace is first re-e
+xported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:957:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ZipInputStream` in the type namespace is also re-exported here
+...
+957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipInputStream` in the type namespace is fir
+st re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:957:13
+    |
+957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipInputStream` in the value namespace is fi
+rst re-exported here
+...
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ------------------------------------------- but the name `ZipInputStream` in the value namespace is a
+lso re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Reader` in the type namespace is first re-exported he
+re
+...
+979 |     pub use crate::org_kxml2_io_kxmlparser::*;
+    |             --------------------------------- but the name `Reader` in the type namespace is also re-exported her
+e
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `ByteArrayOutputStream` in the type namespace is also re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ByteArrayOutputStream` in the type namespace is first
+ re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `InputStreamReader` in the type namespace is also re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `InputStreamReader` in the type namespace is first re-
+exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `InputStreamReader` in the value namespace is also re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `InputStreamReader` in the value namespace is first re
+-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Charset` in the type namespace is also re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Charset` in the type namespace is first re-exported h
+ere
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:959:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Charset` in the value namespace is also re-exported here
+...
+959 |     pub use crate::me_ag2s_epublib_util_ioutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Charset` in the value namespace is first re-exported 
+here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:962:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `File` in the type namespace is also re-exported here
+...
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `File` in the type namespace is first re-exporte
+d here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:962:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `FileInputStream` in the type namespace is also re-exported here
+...
+962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `FileInputStream` in the type namespace is first
+ re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:979:13
+    |
+979 |     pub use crate::org_kxml2_io_kxmlparser::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlPullParserFeatures` in the type namespace is first re-
+exported here
+...
+985 |     pub use crate::org_kxml2_wap_wbxmlparser::*;
+    |             ----------------------------------- but the name `XmlPullParserFeatures` in the type namespace is als
+o re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:979:13
+    |
+979 |     pub use crate::org_kxml2_io_kxmlparser::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlPullParserFeatures` in the value namespace is first re
+-exported here
+...
+985 |     pub use crate::org_kxml2_wap_wbxmlparser::*;
+    |             ----------------------------------- but the name `XmlPullParserFeatures` in the value namespace is al
+so re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:982:13
+    |
+745 |     pub use crate::stubs::*;
+    |             --------------- but the name `Element` in the type namespace is also re-exported here
+...
+982 |     pub use crate::org_kxml2_kdom_element::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Element` in the type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:983:13
+    |
+979 |     pub use crate::org_kxml2_io_kxmlparser::*;
+    |             --------------------------------- but the name `XmlPullError` in the type namespace is also re-export
+ed here
+...
+983 |     pub use crate::org_kxml2_kdom_node::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlPullError` in the type namespace is first re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:985:13
+    |
+985 |     pub use crate::org_kxml2_wap_wbxmlparser::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WapExtensionData` in the type namespace is first re-exp
+orted here
+986 |     pub use crate::org_kxml2_wap_wbxmlserializer::*;
+    |             --------------------------------------- but the name `WapExtensionData` in the type namespace is also
+ re-exported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:985:13
+    |
+985 |     pub use crate::org_kxml2_wap_wbxmlparser::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WbxmlConsts` in the type namespace is first re-exported
+ here
+986 |     pub use crate::org_kxml2_wap_wbxmlserializer::*;
+    |             --------------------------------------- but the name `WbxmlConsts` in the type namespace is also re-e
+xported here
+
+warning: ambiguous glob re-exports
+   --> src\lib.rs:985:13
+    |
+985 |     pub use crate::org_kxml2_wap_wbxmlparser::*;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WbxmlConsts` in the value namespace is first re-exporte
+d here
+986 |     pub use crate::org_kxml2_wap_wbxmlserializer::*;
+    |             --------------------------------------- but the name `WbxmlConsts` in the value namespace is also re-
+exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1072:21
+     |
+1072 |             pub use crate::com_htmake_reader_readerapplication::*;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `main` in the value namespace is firs
+t re-exported here
+1073 |             pub use crate::com_htmake_reader_readeruiapplication::*;
+     |                     ----------------------------------------------- but the name `main` in the value namespace i
+s also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1107:29
+     |
+1107 |                     pub use crate::io_legado_app_data_entities_basesource::*;
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `starts_with_ignore_case` 
+in the value namespace is first re-exported here
+...
+1119 |                     pub use crate::io_legado_app_data_entities_rsssource::*;
+     |                             ----------------------------------------------- but the name `starts_with_ignore_cas
+e` in the value namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1108:29
+     |
+1108 |                     pub use crate::io_legado_app_data_entities_book::*;
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Converters` in the type namespa
+ce is first re-exported here
+...
+1113 |                     pub use crate::io_legado_app_data_entities_booksource::*;
+     |                             ------------------------------------------------ but the name `Converters` in the ty
+pe namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1108:29
+     |
+1108 |                     pub use crate::io_legado_app_data_entities_book::*;
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Converters` in the value namesp
+ace is first re-exported here
+...
+1113 |                     pub use crate::io_legado_app_data_entities_booksource::*;
+     |                             ------------------------------------------------ but the name `Converters` in the va
+lue namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1175:29
+     |
+1175 |                     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `SourceRule` in th
+e type namespace is first re-exported here
+...
+1178 |                     pub use crate::io_legado_app_model_analyzerule_analyzerule::*;
+     |                             ----------------------------------------------------- but the name `SourceRule` in t
+he type namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1186:29
+     |
+1186 |                     pub use crate::io_legado_app_model_localbook_cbzfile::*;
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `C_FILE` in the value names
+pace is first re-exported here
+...
+1189 |                     pub use crate::io_legado_app_model_localbook_pdffile::*;
+     |                             ----------------------------------------------- but the name `C_FILE` in the value n
+amespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlSerializer` in the type
+ namespace is first re-exported here
+...
+1287 |                 pub use crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::*;
+     |                         ------------------------------------------------------------ but the name `XmlSerializer
+` in the type namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `XmlSerializer` in the valu
+e namespace is first re-exported here
+...
+1287 |                 pub use crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::*;
+     |                         ------------------------------------------------------------ but the name `XmlSerializer
+` in the value namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Writer` in the type namesp
+ace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `Writer` in the type namespace is
+ also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Writer` in the value names
+pace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `Writer` in the value namespace i
+s also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStream` in the type 
+namespace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `OutputStream` in the type namesp
+ace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStream` in the value
+ namespace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `OutputStream` in the value names
+pace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStreamWriter` in the
+ type namespace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `OutputStreamWriter` in the type 
+namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `OutputStreamWriter` in the
+ value namespace is first re-exported here
+1280 |                 pub use crate::me_ag2s_epublib_epub_epubreader::*;
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ----------------------------------------- but the name `OutputStreamWriter` in the value
+ namespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1279:25
+     |
+1279 |                 pub use crate::me_ag2s_epublib_epub_epubprocessorsupport::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `InputStream` in the type n
+amespace is first re-exported here
+...
+1290 |                 pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+     |                         ---------------------------------------------- but the name `InputStream` in the type na
+mespace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1281:25
+     |
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipEntry` in the type namespace is f
+irst re-exported here
+...
+1290 |                 pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+     |                         ---------------------------------------------- but the name `ZipEntry` in the type names
+pace is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1281:25
+     |
+1281 |                 pub use crate::me_ag2s_epublib_epub_epubwriter::*;
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `ZipEntry` in the value namespace is 
+first re-exported here
+...
+1290 |                 pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+     |                         ---------------------------------------------- but the name `ZipEntry` in the value name
+space is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1353:21
+     |
+1353 |             pub use crate::org_kxml2_wap_wbxmlparser::*;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WapExtensionData` in the type namespace is fir
+st re-exported here
+1354 |             pub use crate::org_kxml2_wap_wbxmlserializer::*;
+     |                     --------------------------------------- but the name `WapExtensionData` in the type namespac
+e is also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1353:21
+     |
+1353 |             pub use crate::org_kxml2_wap_wbxmlparser::*;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WbxmlConsts` in the type namespace is first re
+-exported here
+1354 |             pub use crate::org_kxml2_wap_wbxmlserializer::*;
+     |                     --------------------------------------- but the name `WbxmlConsts` in the type namespace is 
+also re-exported here
+
+warning: ambiguous glob re-exports
+    --> src\lib.rs:1353:21
+     |
+1353 |             pub use crate::org_kxml2_wap_wbxmlparser::*;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `WbxmlConsts` in the value namespace is first r
+e-exported here
+1354 |             pub use crate::org_kxml2_wap_wbxmlserializer::*;
+     |                     --------------------------------------- but the name `WbxmlConsts` in the value namespace is
+ also re-exported here
+
+error[E0782]: expected a type, found a trait
+  --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResourceProvider.rs:12:58
+   |
+12 |   fn get_resource_stream(&self, href: &String) -> Result<InputStream, IOException>;
+   |                                                          ^^^^^^^^^^^
+   |
+help: you can add the `dyn` keyword if you want a trait object
+   |
+12 |   fn get_resource_stream(&self, href: &String) -> Result<dyn InputStream, IOException>;
+   |                                                          +++
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\com\htmake\reader\utils\UserMutex.rs:26:45
+   |
+26 |             let mut locker = locker_map.get(username);
+   |                                         --- ^^^^^^^^ expected `&String`, found `&str`
+   |                                         |
+   |                                         arguments to this method are incorrect
+   |
+   = note: expected reference `&std::string::String`
+              found reference `&str`
+note: method defined here
+  --> src\..\src\main\java\com\htmake\reader\utils\LRUCache.rs:67:12
+   |
+67 |     pub fn get(&mut self, key: &K) -> Option<V> {
+   |            ^^^            -------
+
+error[E0596]: cannot borrow `res` as mutable, as it is not declared as mutable
+  --> src\..\src\main\java\com\htmake\reader\verticle\RestVerticle.rs:87:29
+   |
+87 | ...   let res = it.response();
+   |           ^^^ not mutable
+88 | ...   res.put_header("Access-Control-Allow-Origin", &origin);
+   |       --- cannot borrow as mutable
+89 | ...   res.put_header("Access-Control-Allow-Credentials", "true");
+   |       --- cannot borrow as mutable
+90 | ...   res.put_header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE");
+   |       --- cannot borrow as mutable
+91 | ...   res.put_header("Access-Control-Allow-Headers", "Authorization, Content-Type, If-Match, If-Modified-Since, If
+-None-Match, If-Un...
+   |       --- cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+87 |                         let mut res = it.response();
+   |                             +++
+
+error[E0596]: cannot borrow `it` as mutable, as it is not declared as mutable
+   --> src\..\src\main\java\com\htmake\reader\verticle\RestVerticle.rs:141:13
+    |
+141 |             it.mount_sub_router(to_dir(&context_path, true), self.router.clone().unwrap());
+    |             ^^ cannot borrow as mutable
+    |
+help: consider changing this to be mutable
+    |
+140 |             let mut it = Router::router(vertx);
+    |                 +++
+
+error[E0502]: cannot borrow `*web_book` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\Debugger.rs:121:21
+    |
+112 |         let result = run_catching(|| web_book.explore_book(url, Some(1)));
+    |                                   -- -------- first borrow occurs due to use of `*web_book` in closure
+    |                                   |
+    |                                   immutable borrow occurs here
+...
+121 |                     self.info_debug(web_book, explore_books[0].to_book()).await
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+...
+132 |     }
+    |     - immutable borrow might be used here, when `result` is dropped and runs the destructor for type `Result<impl
+ Future<Output = Vec<io_legado_app_data_entities_searchbook::SearchBook>>, stubs::StubError>`
+
+error[E0502]: cannot borrow `*web_book` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\Debugger.rs:146:21
+    |
+137 |         let result = run_catching(|| web_book.search_book(key, Some(1)));
+    |                                   -- -------- first borrow occurs due to use of `*web_book` in closure
+    |                                   |
+    |                                   immutable borrow occurs here
+...
+146 |                     self.info_debug(web_book, search_books[0].to_book()).await
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+...
+157 |     }
+    |     - immutable borrow might be used here, when `result` is dropped and runs the destructor for type `Result<impl
+ Future<Output = Vec<io_legado_app_data_entities_searchbook::SearchBook>>, stubs::StubError>`
+
+error[E0502]: cannot borrow `*web_book` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\Debugger.rs:171:17
+    |
+163 |         let result = run_catching(|| web_book.get_book_info(&mut book, false));
+    |                                   -- -------- first borrow occurs due to use of `*web_book` in closure
+    |                                   |
+    |                                   immutable borrow occurs here
+...
+171 |                 self.toc_debug(web_book, info).await
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+...
+178 |     }
+    |     - immutable borrow might be used here, when `result` is dropped and runs the destructor for type `Result<impl
+ Future<Output = io_legado_app_data_entities_book::Book>, stubs::StubError>`
+
+error[E0502]: cannot borrow `*web_book` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\Debugger.rs:194:21
+    |
+184 |         let result = run_catching(|| web_book.get_chapter_list(&mut book));
+    |                                   -- -------- first borrow occurs due to use of `*web_book` in closure
+    |                                   |
+    |                                   immutable borrow occurs here
+...
+194 |                     self.content_debug(web_book, book, &chapter_list[0], next_chapter_url).await;
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs 
+here
+...
+206 |     }
+    |     - immutable borrow might be used here, when `result` is dropped and runs the destructor for type `Result<impl
+ Future<Output = Vec<io_legado_app_data_entities_bookchapter::BookChapter>>, stubs::StubError>`
+
+error[E0505]: cannot move out of `book` because it is borrowed
+   --> src\..\src\main\java\io\legado\app\model\Debugger.rs:194:50
+    |
+184 |         let result = run_catching(|| web_book.get_chapter_list(&mut book));
+    |                                   -- borrow of `book` occurs here   ---- borrow occurs due to use in closure
+...
+194 |                     self.content_debug(web_book, book, &chapter_list[0], next_chapter_url).await;
+    |                                                  ^^^^ move out of `book` occurs here
+...
+206 |     }
+    |     - borrow might be used here, when `result` is dropped and runs the destructor for type `Result<impl Future<Ou
+tput = Vec<io_legado_app_data_entities_bookchapter::BookChapter>>, stubs::StubError>`
+
+error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeUrl.rs:538:77
+    |
+538 |             return StrResponse::new_url(&self.url, Some(byte_to_hex_string(&self.get_byte_array_await().await)));
+    |                    -------------------- ---------                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable b
+orrow occurs here
+    |                    |                    |
+    |                    |                    immutable borrow occurs here
+    |                    immutable borrow later used by call
+
+error[E0596]: cannot borrow `analyze_rule` as mutable, as it is not declared as mutable
+  --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:74:13
+   |
+74 |         let analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             ^^^^^^^^^^^^ not mutable
+75 |         analyze_rule.set_content(body.map(|s| Box::new(Any::Str(s))), None)
+   |         ------------ cannot borrow as mutable
+...
+78 |         return analyze_rule.get_string(Some(rule_content.to_string()), None, false);
+   |                ------------ cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+74 |         let mut analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+   |             +++
+
+error[E0119]: conflicting implementations of trait `io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterfac
+e` for type `io_legado_app_data_entities_searchbook::SearchBook`
+    --> src\stubs.rs:7637:1
+     |
+7615 | impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface for crate::io_legado_app_data_e
+ntities_searchbook::SearchBook {
+     | ----------------------------------------------------------------------------------------------------------------
+------------------------------ first implementation here
+...
+7637 | impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface for crate::io_legado_app_data_e
+ntities_searchbook::SearchBook {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ conflicting implementation for `io_legado_app_data_entities_searchbook::SearchBook`
+
+error[E0277]: the type `&mut JsonArray` may not be safely transferred across an unwind boundary
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BookSourceController.rs:835:51
+    |
+835 |               let result = std::panic::catch_unwind(|| {
+    |                            ------------------------ ^-
+    |                            |                        |
+    |  __________________________|________________________within this `{closure@BookSourceController.rs:835:51}`
+    | |                          |
+    | |                          required by a bound introduced by this call
+836 | |                 let response = await_result(|handler| {
+837 | |                     self.web_client.get_abs(&url).timeout(3000).send(handler);
+838 | |                 });
+...   |
+846 | |             });
+    | |_____________^ `&mut JsonArray` may not be safely transferred across an unwind boundary
+    |
+    = help: within `{closure@BookSourceController.rs:835:51}`, the trait `UnwindSafe` is not implemented for `&mut Json
+Array`
+    = note: `UnwindSafe` is implemented for `&JsonArray`, but not for `&mut JsonArray`
+note: required because it's used within this closure
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BookSourceController.rs:835:51
+    |
+835 |             let result = std::panic::catch_unwind(|| {
+    |                                                   ^^
+note: required by a bound in `std::panic::catch_unwind`
+   --> D:\rust\tools\rustup\toolchains\stable-x86_64-pc-windows-gnu\lib/rustlib/src/rust\library\std\src\panic.rs:358:4
+0
+    |
+358 | pub fn catch_unwind<F: FnOnce() -> R + UnwindSafe, R>(f: F) -> Result<R> {
+    |                                        ^^^^^^^^^^ required by this bound in `catch_unwind`
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-4010543291430958389.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no method named `clone` found for mutable reference `&mut com_htmake_reader_api_returndata::ReturnData` i
+n the current scope
+  --> src\..\src\main\java\com\htmake\reader\api\controller\HttpTTSController.rs:45:75
+   |
+45 |             return Some(return_data.set_error_msg(String::from("名称不能为空")).clone());
+   |                                                                                 ^^^^^ method not found in `&mut co
+m_htmake_reader_api_returndata::ReturnData`
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the trait `Clone` defines an item `clone`, but is explicitly unimplemented
+
+error[E0599]: no method named `clone` found for mutable reference `&mut com_htmake_reader_api_returndata::ReturnData` i
+n the current scope
+  --> src\..\src\main\java\com\htmake\reader\api\controller\HttpTTSController.rs:48:75
+   |
+48 |             return Some(return_data.set_error_msg(String::from("链接不能为空")).clone());
+   |                                                                                 ^^^^^ method not found in `&mut co
+m_htmake_reader_api_returndata::ReturnData`
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the trait `Clone` defines an item `clone`, but is explicitly unimplemented
+
+error[E0599]: no associated function or constant named `class_resource` found for struct `io_legado_app_help_defaultdat
+a::DefaultData` in the current scope
+  --> src\..\src\main\java\io\legado\app\help\DefaultData.rs:26:31
+   |
+12 | pub struct DefaultData;
+   | ---------------------- associated function or constant `class_resource` not found for this struct
+...
+26 |                 &DefaultData::class_resource(format!("/defaultData/{}", Self::txt_toc_rule_file_name))
+   |                               ^^^^^^^^^^^^^^ associated function or constant not found in `io_legado_app_help_defa
+ultdata::DefaultData`
+
+error[E0599]: no method named `read` found for struct `BufReader<R>` in the current scope
+   --> src\..\src\main\java\io\legado\app\help\EncodingDetectHelp.rs:312:29
+    |
+312 |         let n = chinesefile.read(&mut buf).unwrap_or(0);
+    |                             ^^^^
+    |
+   ::: D:\rust\tools\rustup\toolchains\stable-x86_64-pc-windows-gnu\lib/rustlib/src/rust\library\std\src\io\mod.rs:796:
+8
+    |
+796 |     fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
+    |        ---- the method is available for `BufReader<&std::fs::File>` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Read` which provides `read` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use std::io::Read;
+    |
+help: there is a method `read_buf` with a similar name
+    |
+312 |         let n = chinesefile.read_buf(&mut buf).unwrap_or(0);
+    |                                 ++++
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\help\http\CoroutinesCallAdapterFactory.rs:179:9
+    |
+138 |     fn adapt(&self, call: Call<Any>) -> Deferred {
+    |                                         -------- expected `stubs::Deferred` because of return type
+...
+179 |         deferred
+    |         ^^^^^^^^ expected `Deferred`, found `CompletableDeferred<Body>`
+    |
+    = note: expected struct `stubs::Deferred`
+               found struct `stubs::CompletableDeferred<stubs::Body>`
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\help\http\CoroutinesCallAdapterFactory.rs:255:9
+    |
+217 |     fn adapt(&self, call: Call<Any>) -> Deferred {
+    |                                         -------- expected `stubs::Deferred` because of return type
+...
+255 |         deferred
+    |         ^^^^^^^^ expected `Deferred`, found `CompletableDeferred<Response>`
+    |
+    = note: expected struct `stubs::Deferred`
+               found struct `stubs::CompletableDeferred<stubs::Response>`
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\io\legado\app\model\localBook\TextFile.rs:74:56
+   |
+74 |         let mut bis = LocalBook::get_book_input_stream(&tf.book);
+   |                       -------------------------------- ^^^^^^^^ types differ in mutability
+   |                       |
+   |                       arguments to this function are incorrect
+   |
+   = note: expected mutable reference `&mut io_legado_app_data_entities_book::Book`
+                      found reference `&io_legado_app_data_entities_book::Book`
+note: associated function defined here
+  --> src\..\src\main\java\io\legado\app\model\localBook\LocalBook.rs:44:12
+   |
+44 |     pub fn get_book_input_stream(book: &mut Book) -> FileInputStream {
+   |            ^^^^^^^^^^^^^^^^^^^^^ ---------------
+
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\utils\HtmlFormatter.rs:68:21
+    |
+ 66 |                   NetworkUtils::getAbsoluteURL_url(
+    |                   -------------------------------- arguments to this function are incorrect
+ 67 |                       redirectUrl,
+ 68 | /                     matcher.group_idx(1).map(|it| {
+ 69 | |                         let paramPattern = PARAM_PATTERN();
+ 70 | |                         let mut urlMatcher = paramPattern.matcher(it.clone());
+ 71 | |                         if urlMatcher.find() {
+...   |
+ 77 | |                     }).or_else(|| matcher.group_idx(2)).unwrap_or(matcher.group_idx(3).unwrap()),
+    | |________________________________________________________________________________________________^ expected `&str
+`, found `String`
+    |
+note: associated function defined here
+   --> src\..\src\main\java\io\legado\app\utils\NetworkUtils.rs:104:12
+    |
+104 |     pub fn getAbsoluteURL_url(baseURL: Option<&URL>, relativePath: &str) -> String {
+    |            ^^^^^^^^^^^^^^^^^^                        ------------------
+help: consider borrowing here
+    |
+ 68 |                     &matcher.group_idx(1).map(|it| {
+    |                     +
+
+error[E0790]: cannot refer to the associated constant on trait without specifying the corresponding `impl` type
+  --> src\..\src\main\java\me\ag2s\epublib\domain\TitledResourceReference.rs:69:74
+   |
+69 |             return self.resource.as_ref().unwrap().get_href().clone() + &Constants::FRAGMENT_SEPARATOR_CHAR.to_str
+ing()
+   |                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot
+ refer to the associated constant of trait
+   |
+  ::: src\..\src\main\java\me\ag2s\epublib\Constants.rs:12:3
+   |
+12 |   const FRAGMENT_SEPARATOR_CHAR: char = '#';
+   |   ----------------------------------- `Constants::FRAGMENT_SEPARATOR_CHAR` defined here
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\me\ag2s\epublib\epub\BookProcessorPipeline.rs:39:21
+   |
+38 |                 match book_processor.process_book(book) {
+   |                       --------------------------------- this expression has type `me_ag2s_epublib_domain_epubbook:
+:EpubBook`
+39 |                     Ok(b) => book = b,
+   |                     ^^^^^ expected `EpubBook`, found `Result<_, _>`
+   |
+   = note: expected struct `me_ag2s_epublib_domain_epubbook::EpubBook`
+                found enum `Result<_, _>`
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\me\ag2s\epublib\epub\BookProcessorPipeline.rs:40:21
+   |
+38 |                 match book_processor.process_book(book) {
+   |                       --------------------------------- this expression has type `me_ag2s_epublib_domain_epubbook:
+:EpubBook`
+39 |                     Ok(b) => book = b,
+40 |                     Err(e) => {
+   |                     ^^^^^^ expected `EpubBook`, found `Result<_, _>`
+   |
+   = note: expected struct `me_ag2s_epublib_domain_epubbook::EpubBook`
+                found enum `Result<_, _>`
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\me\ag2s\epublib\util\NoCloseOutputStream.rs:23:9
+   |
+22 |     pub fn write(&mut self, b: u8) -> Result<(), io::Error> {
+   |                                       --------------------- expected `Result<(), std::io::Error>` because of retur
+n type
+23 |         self.output_stream.write(&[b])
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Result<(), Error>`, found `Result<usize, Error>`
+   |
+   = note: expected enum `Result<(), _>`
+              found enum `Result<usize, _>`
+
+error[E0277]: `&&[i32]` is not an iterator
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:165:18
+    |
+165 |         for b in &self.bytes {
+    |                  ^^^^^^^^^^^ `&&[i32]` is not an iterator
+    |
+    = help: the trait `Iterator` is not implemented for `&&[i32]`
+    = note: required for `&&[i32]` to implement `IntoIterator`
+help: consider removing the leading `&`-reference
+    |
+165 -         for b in &self.bytes {
+165 +         for b in self.bytes {
+    |
+
+error[E0277]: `?` couldn't convert the error to `me_ag2s_epublib_util_commons_io_xmlstreamreaderexception::XmlStreamRea
+derException`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReader.rs:717:67
+    |
+717 |                 c = input_stream.read_off(&mut bytes, offset, max)?;
+    |                                  ---------------------------------^ the trait `From<std::io::Error>` is not imple
+mented for `me_ag2s_epublib_util_commons_io_xmlstreamreaderexception::XmlStreamReaderException`
+    |                                  |
+    |                                  this can't be annotated with `?` because it has type `Result<_, std::io::Error>`
+    |
+note: `me_ag2s_epublib_util_commons_io_xmlstreamreaderexception::XmlStreamReaderException` needs to implement `From<std
+::io::Error>`
+   --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\XmlStreamReaderException.rs:34:1
+    |
+ 34 | pub struct XmlStreamReaderException {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trai
+t
+    = note: the full name for the type has been written to 'D:\rust\target\debug\deps\reader-4f2fbd87cb9e62fa.long-type
+-4551865094830261082.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\me\ag2s\umdlib\domain\UmdBook.rs:54:45
+   |
+54 |         let mut wos = WrapOutputStream::new(os);
+   |                       --------------------- ^^ expected trait `stubs::Write`, found trait `std::io::Write`
+   |                       |
+   |                       arguments to this function are incorrect
+   |
+   = note: expected mutable reference `&mut dyn stubs::Write`
+              found mutable reference `&mut dyn std::io::Write`
+note: associated function defined here
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:14:12
+   |
+14 |     pub fn new(os: &'a mut dyn Write) -> Self {
+   |            ^^^ ---------------------
+
+error[E0308]: mismatched types
+  --> src\..\src\main\java\me\ag2s\umdlib\domain\UmdCover.rs:94:19
+   |
+94 |         wos.write(b'$');
+   |             ----- ^^^^ expected `&[u8]`, found `u8`
+   |             |
+   |             arguments to this method are incorrect
+   |
+note: method defined here
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:59:12
+   |
+59 |     pub fn write(&mut self, b: &[u8]) {
+   |            ^^^^^            --------
+
+error[E0015]: cannot call non-const associated function `Random::new` in statics
+   --> src\..\src\main\java\me\ag2s\umdlib\tool\UmdUtils.rs:170:69
+    |
+170 | pub static RANDOM: std::sync::Mutex<Random> = std::sync::Mutex::new(Random::new());
+    |                                                                     ^^^^^^^^^^^^^
+    |
+    = note: calls in statics are limited to constant functions, tuple structs and tuple variants
+    = note: consider wrapping this expression in `std::sync::LazyLock::new(|| ...)`
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:16:34
+   |
+16 |         let keys = EncoderUtils::INSTANCE.generate_keys();
+   |                                  ^^^^^^^^ associated function or constant not found in `io_legado_app_utils_encode
+rutils::EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:24:46
+   |
+24 |         assert_eq!(short_text, EncoderUtils::INSTANCE.decrypt_by_private_key(
+   |                                              ^^^^^^^^ associated function or constant not found in `io_legado_app_
+utils_encoderutils::EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:25:27
+   |
+25 |             EncoderUtils::INSTANCE.encrypt_by_public_key(short_text, keys.get_public()), keys.get_private()));
+   |                           ^^^^^^^^ associated function or constant not found in `io_legado_app_utils_encoderutils:
+:EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:26:46
+   |
+26 |         assert_eq!(short_text, EncoderUtils::INSTANCE.decrypt_by_public_key(
+   |                                              ^^^^^^^^ associated function or constant not found in `io_legado_app_
+utils_encoderutils::EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:27:27
+   |
+27 |             EncoderUtils::INSTANCE.encrypt_by_private_key(short_text, keys.get_private()), keys.get_public()));
+   |                           ^^^^^^^^ associated function or constant not found in `io_legado_app_utils_encoderutils:
+:EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:28:45
+   |
+28 |         assert_eq!(long_text, EncoderUtils::INSTANCE.decrypt_segment_by_private_key(
+   |                                             ^^^^^^^^ associated function or constant not found in `io_legado_app_u
+tils_encoderutils::EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:29:27
+   |
+29 |             EncoderUtils::INSTANCE.encrypt_segment_by_public_key(long_text, keys.get_public(), 2048), keys.get_pri
+vate(), 2048));
+   |                           ^^^^^^^^ associated function or constant not found in `io_legado_app_utils_encoderutils:
+:EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:30:45
+   |
+30 |         assert_eq!(long_text, EncoderUtils::INSTANCE.decrypt_segment_by_public_key(
+   |                                             ^^^^^^^^ associated function or constant not found in `io_legado_app_u
+tils_encoderutils::EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0599]: no associated function or constant named `INSTANCE` found for struct `io_legado_app_utils_encoderutils::E
+ncoderUtils` in the current scope
+  --> src\..\src\test\java\io\legado\app\utils\EncoderUtilsTest.rs:31:27
+   |
+31 |             EncoderUtils::INSTANCE.encrypt_segment_by_private_key(long_text, keys.get_private(), 2048), keys.get_p
+ublic(), 2048));
+   |                           ^^^^^^^^ associated function or constant not found in `io_legado_app_utils_encoderutils:
+:EncoderUtils`
+   |
+  ::: src\..\src\main\java\io\legado\app\utils\EncoderUtils.rs:6:1
+   |
+ 6 | pub struct EncoderUtils;
+   | ----------------------- associated function or constant `INSTANCE` not found for this struct
+
+error[E0502]: cannot borrow `*self` as immutable because it is also borrowed as mutable
+   --> src\..\src\main\java\org\kxml2\kdom\Document.rs:109:68
+    |
+109 |         Node::parse(&mut self.base, &ParentNode::Document(Box::new((*self).clone())), parser)?;
+    |         ----------- -------------- mutable borrow occurs here      ^^^^^^^ immutable borrow occurs here
+    |         |
+    |         mutable borrow later used by call
+
+error[E0502]: cannot borrow `*self` as immutable because it is also borrowed as mutable
+   --> src\..\src\main\java\org\kxml2\kdom\Element.rs:273:71
+    |
+273 |             Node::parse(&mut self.base, &ParentNode::Element(Box::new((*self).clone())), parser)?;
+    |             ----------- -------------- mutable borrow occurs here     ^^^^^^^ immutable borrow occurs here
+    |             |
+    |             mutable borrow later used by call
+
+error[E0596]: cannot borrow `s` as mutable, as it is not declared as mutable
+  --> src\..\src\main\java\org\kxml2\wap\wml\Wml.rs:27:13
+   |
+27 |         let s = WbxmlSerializer::new();
+   |             ^ not mutable
+28 |         s.set_tag_table(0, &TAG_TABLE);
+   |         - cannot borrow as mutable
+29 |         s.set_attr_start_table(0, &ATTR_START_TABLE);
+   |         - cannot borrow as mutable
+30 |         s.set_attr_value_table(0, &ATTR_VALUE_TABLE);
+   |         - cannot borrow as mutable
+   |
+help: consider changing this to be mutable
+   |
+27 |         let mut s = WbxmlSerializer::new();
+   |             +++
+
+error[E0382]: borrow of moved value: `directory`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\FileController.rs:184:59
+    |
+128 |         let directory = if requested_home == "__WEBDAV__" {
+    |             --------- move occurs because `directory` has type `stubs::File`, which does not implement the `Copy`
+ trait
+...
+183 |         context.put("__FILE_HOME__", Some(directory));
+    |                                           --------- value moved here
+184 |         logger().info(format!("context.__FILE_HOME__ {}", directory.to_string()));
+    |                                                           ^^^^^^^^^ value borrowed here after move
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+183 |         context.put("__FILE_HOME__", Some(directory.clone()));
+    |                                                    ++++++++
+
+error[E0716]: temporary value dropped while borrowed
+  --> src\..\src\main\java\io\legado\app\data\entities\BookChapter.rs:78:31
+   |
+78 |         let mut url_matcher = PARAM_PATTERN().matcher(self.url.clone());
+   |                               ^^^^^^^^^^^^^^^                          - temporary value is freed at the end of th
+is statement
+   |                               |
+   |                               creates a temporary value which is freed while still in use
+79 |         let url_before = if url_matcher.find() {
+   |                             ----------- borrow later used here
+   |
+help: consider using a `let` binding to create a longer lived value
+   |
+78 ~         let binding = PARAM_PATTERN();
+79 ~         let mut url_matcher = binding.matcher(self.url.clone());
+   |
+
+error[E0502]: cannot borrow `rawtext` as immutable because it is also borrowed as mutable
+   --> src\..\src\main\java\io\legado\app\help\EncodingDetectHelp.rs:262:70
+    |
+262 |             bytesread = chinesestream.read(&mut rawtext, byteoffset, rawtext.len() as i32 - byteoffset);
+    |                                       ---- ------------              ^^^^^^^ immutable borrow occurs here
+    |                                       |    |
+    |                                       |    mutable borrow occurs here
+    |                                       mutable borrow later used by call
+
+error[E0716]: temporary value dropped while borrowed
+  --> src\..\src\main\java\io\legado\app\help\http\HttpHelper.rs:73:23
+   |
+73 |     let mut builder = OkHttpClient::builder()
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^ creates a temporary value which is freed while still in use
+...
+82 |         .follow_ssl_redirects(true);
+   |                                    - temporary value is freed at the end of this statement
+83 |     builder.add_interceptor(Box::new(|chain| {
+   |     ------- borrow later used here
+   |
+help: consider using a `let` binding to create a longer lived value
+   |
+73 ~     let binding = OkHttpClient::builder();
+74 ~     let mut builder = binding
+   |
+
+error[E0382]: borrow of partially moved value: `zip_entry`
+  --> src\..\src\main\java\io\legado\app\model\localBook\CbzFile.rs:95:63
+   |
+86 |                 let name = zip_entry.name;
+   |                            -------------- value partially moved here
+...
+95 |                         self.cover = Some(zf.get_input_stream(&zip_entry));
+   |                                                               ^^^^^^^^^^ value borrowed here after partial move
+   |
+   = note: partial move occurs because `zip_entry.name` has type `std::string::String`, which does not implement the `C
+opy` trait
+
+error[E0594]: cannot assign to `factory.is_namespace_aware`, as `factory` is not declared as mutable
+  --> src\..\src\main\java\io\legado\app\model\rss\RssParserDefault.rs:38:9
+   |
+38 |         factory.is_namespace_aware = false;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot assign
+   |
+help: consider changing this to be mutable
+   |
+37 |         let mut factory = XmlPullParserFactory::new_instance();
+   |             +++
+
+error[E0382]: borrow of moved value: `cache_dir`
+  --> src\..\src\main\java\io\legado\app\utils\ACache.rs:53:20
+   |
+46 |     pub fn get_file(cache_dir: File, max_size: i64, max_count: i32) -> Arc<ACache> {
+   |                     --------- move occurs because `cache_dir` has type `stubs::File`, which does not implement the
+ `Copy` trait
+...
+52 |         let manager = Arc::new(ACache::new(cache_dir, max_size, max_count));
+   |                                            --------- value moved here
+53 |         map.insert(cache_dir.absolutePath(), manager.clone());
+   |                    ^^^^^^^^^ value borrowed here after move
+   |
+note: consider changing this parameter type in method `new` to borrow instead if owning the value isn't necessary
+  --> src\..\src\main\java\io\legado\app\utils\ACache.rs:57:23
+   |
+57 |     fn new(cache_dir: File, max_size: i64, max_count: i32) -> ACache {
+   |        ---            ^^^^ this parameter takes ownership of the value
+   |        |
+   |        in this method
+help: consider cloning the value if the performance cost is acceptable
+   |
+52 |         let manager = Arc::new(ACache::new(cache_dir.clone(), max_size, max_count));
+   |                                                     ++++++++
+
+error[E0521]: borrowed data escapes outside of function
+    --> src\..\src\main\java\io\legado\app\utils\ThrowableExtensions.rs:3:22
+     |
+   2 | pub fn msg(t: &dyn std::error::Error) -> String {
+     |            -  - let's call the lifetime of this reference `'1`
+     |            |
+     |            `t` is a reference that is only valid in the function body
+   3 |     let stackTrace = t.stack_trace_to_string();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+     |                      |
+     |                      `t` escapes the function body here
+     |                      argument requires that `'1` must outlive `'static`
+     |
+note: the used `impl` has a `'static` requirement
+    --> src\stubs.rs:7167:27
+     |
+7167 | impl ThrowableExt for dyn std::error::Error {
+     |                           ^^^^^^^^^^^^^^^^^ this has an implicit `'static` lifetime requirement
+...
+7171 |     fn stack_trace_to_string(&self) -> String {
+     |        --------------------- calling this method introduces the `impl`'s `'static` requirement
+help: consider relaxing the implicit `'static` requirement
+    -->  src\stubs.rs:7167:44
+     |
+7167 | impl ThrowableExt for dyn std::error::Error + '_ {
+     |                                             ++++
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> src\..\src\main\java\me\ag2s\epublib\domain\TableOfContents.rs:165:9
+    |
+157 |     let mut current_toc_references: &mut Vec<TOCReference> = &mut self.toc_references;
+    |                                                              ------------------------ first mutable borrow occurs
+ here
+...
+165 |         self.padd_toc_references(&mut current_toc_references, path_elements, i as i32,
+    |         ^^^^                     --------------------------- first borrow later used here
+    |         |
+    |         second mutable borrow occurs here
+
+error[E0382]: use of moved value: `id`
+   --> src\..\src\main\java\me\ag2s\epublib\epub\PackageDocumentReader.rs:143:31
+    |
+116 |             let id = DOMUtil::get_attribute(&item_element, PackageDocumentBase::NAMESPACE_OPF, Self::OPF_ATTRIBUT
+ES_ID);
+    |                 -- move occurs because `id` has type `std::string::String`, which does not implement the `Copy` t
+rait
+...
+134 |             resource.set_id(id);
+    |                             -- value moved here
+...
+143 |             id_mapping.insert(id, resource.get_id().clone());
+    |                               ^^ value used here after move
+    |
+note: consider changing this parameter type in method `set_id` to borrow instead if owning the value isn't necessary
+   --> src\..\src\main\java\me\ag2s\epublib\domain\Resource.rs:265:32
+    |
+265 |   pub fn set_id(&mut self, id: String) {
+    |          ------ in this method ^^^^^^ this parameter takes ownership of the value
+help: consider cloning the value if the performance cost is acceptable
+    |
+134 |             resource.set_id(id.clone());
+    |                               ++++++++
+
+Some errors have detailed explanations: E0015, E0119, E0277, E0308, E0382, E0499, E0502, E0505, E0521...
+For more information about an error, try `rustc --explain E0015`.
+warning: `reader` (lib) generated 97 warnings
+error: could not compile `reader` (lib) due to 52 previous errors; 97 warnings emitted

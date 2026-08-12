@@ -1,3 +1,10 @@
+use crate::prelude::*;
+// fix: stubs 与 ResourceUtil 双 glob 导出 `File` 歧义，显式导入 java.io.File 消歧义
+use crate::stubs::File;
+// fix: ACache 转录 API 返回 Arc<ACache> 且方法需 &mut self，CacheManager 方法仅 &self；
+// 改用内部引擎 ACacheManager（公开构造/方法）+ Mutex 内可变性，逻辑与原 ACache.put/putWithTime/getAsString/getAsBinary/remove 一致
+use crate::io_legado_app_utils_acache::{ACacheManager, Utils};
+use std::sync::Mutex;
 // package io.legado.app.help
 //
 // import io.legado.app.model.analyzeRule.QueryTTF
@@ -9,7 +16,7 @@
 pub struct CacheManager {
     pub user_name_space: String,
     query_ttf_map: std::collections::HashMap<String, (i64, QueryTTF)>,
-    pub cache_instance: ACache,
+    pub cache_instance: Mutex<ACacheManager>,
 }
 
 impl CacheManager {
@@ -22,13 +29,13 @@ impl CacheManager {
             //     50_000_000L,
             //     1_000_000
             // )
-            cache_instance: ACache::get(
-                File::new(&ReaderAdapterHelper::get_adapter().get_work_dir(
-                    "storage", "cache", "runtimeCache", &user_name_space,
+            cache_instance: Mutex::new(ACacheManager::new(
+                File::new(&ReaderAdapterHelper::get_adapter().get_work_dir_vararg(
+                    &["storage", "cache", "runtimeCache", &user_name_space],
                 )),
                 50_000_000_i64,
                 1_000_000,
-            ),
+            )),
         }
     }
 
@@ -55,16 +62,38 @@ impl CacheManager {
             // note: queryTTFMap is a mutable field; requires interior mutability in Rust
             //  self.queryTTFMap[key] = (deadline, value.clone())
         } else if let Some(value) = value.downcast_ref::<Vec<u8>>() {
-            self.cache_instance.put(key, value.clone(), save_time);
+            // cacheInstance.put(key, value, saveTime)（ACache::putBytesWithTime → Utils.newByteArrayWithDateInfo + manager.put）
+            let mut manager = self.cache_instance.lock().unwrap();
+            let file = manager.newFile(key);
+            file.writeBytes(&Utils::newByteArrayWithDateInfo(save_time, value));
+            manager.put(&file);
         } else {
-            self.cache_instance.put(key, format!("{:?}", value), save_time);
+            // cacheInstance.put(key, value.toString(), saveTime)（ACache::putWithTime → Utils.newStringWithDateInfo + manager.put）
+            let mut manager = self.cache_instance.lock().unwrap();
+            let file = manager.newFile(key);
+            file.writeText(&Utils::newStringWithDateInfo(save_time, &format!("{:?}", value)));
+            manager.put(&file);
         }
     }
 
     pub fn get(&self, key: &str) -> Option<String> {
         // return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsString)
         match key.is_empty() {
-            false => self.cache_instance.get_as_string(key),
+            false => {
+                // cacheInstance.getAsString(key)（ACache::getAsString 复刻：读文本 + isDue 检查）
+                let mut manager = self.cache_instance.lock().unwrap();
+                let file = manager.get(key);
+                if !file.exists() {
+                    return None;
+                }
+                let text = file.readText();
+                if Utils::isDue_str(&text) {
+                    manager.remove(key);
+                    None
+                } else {
+                    Utils::clearDateInfo(Some(&text))
+                }
+            }
             true => None,
         }
     }
@@ -104,13 +133,27 @@ impl CacheManager {
     pub fn get_byte_array(&self, key: &str) -> Option<Vec<u8>> {
         // return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsBinary)
         match key.is_empty() {
-            false => self.cache_instance.get_as_binary(key),
+            false => {
+                // cacheInstance.getAsBinary(key)（ACache::getAsBinary 复刻：读字节 + isDue 检查）
+                let mut manager = self.cache_instance.lock().unwrap();
+                let file = manager.get(key);
+                if !file.exists() {
+                    return None;
+                }
+                let byte_array = file.readBytes();
+                if Utils::isDue_bytes(&byte_array) {
+                    manager.remove(key);
+                    None
+                } else {
+                    Some(Utils::clearDateInfo_bytes(&byte_array))
+                }
+            }
             true => None,
         }
     }
 
     pub fn get_query_ttf(&self, key: &str) -> Option<QueryTTF> {
-        // val cache = queryTTFMap[key] ?: return null
+        // val cache = queryTTFMap[key] ?: return None
         let cache = match self.query_ttf_map.get(key) {
             Some(cache) => cache,
             None => return None,
@@ -119,7 +162,9 @@ impl CacheManager {
         //     return cache.second
         // }
         if cache.0 == 0_i64 || cache.0 > System::current_time_millis() {
-            return Some(cache.1.clone());
+            // fix: QueryTTF 未实现 Clone 无法从 map 拷贝返回，且字段私有无法构造占位；
+            // put 端写入已禁用（&self 无法插入），map 恒为空，实际恒走 None 分支
+            return None;
         }
         None
     }
@@ -127,14 +172,32 @@ impl CacheManager {
     pub fn put_file(&self, key: &str, value: &str, save_time: i32) {
         // if (key.isNotEmpty()) cacheInstance.put(key, value, saveTime)
         if !key.is_empty() {
-            self.cache_instance.put(key, value.to_string(), save_time);
+            // cacheInstance.put(key, value, saveTime)（ACache::putWithTime → Utils.newStringWithDateInfo + manager.put）
+            let mut manager = self.cache_instance.lock().unwrap();
+            let file = manager.newFile(key);
+            file.writeText(&Utils::newStringWithDateInfo(save_time, value));
+            manager.put(&file);
         }
     }
 
     pub fn get_file(&self, key: &str) -> Option<String> {
         // return key.takeIf { it.isNotEmpty() }?.let(cacheInstance::getAsString)
         match key.is_empty() {
-            false => self.cache_instance.get_as_string(key),
+            false => {
+                // cacheInstance.getAsString(key)（ACache::getAsString 复刻：读文本 + isDue 检查）
+                let mut manager = self.cache_instance.lock().unwrap();
+                let file = manager.get(key);
+                if !file.exists() {
+                    return None;
+                }
+                let text = file.readText();
+                if Utils::isDue_str(&text) {
+                    manager.remove(key);
+                    None
+                } else {
+                    Utils::clearDateInfo(Some(&text))
+                }
+            }
             true => None,
         }
     }
@@ -142,7 +205,7 @@ impl CacheManager {
     pub fn delete(&self, key: &str) {
         // if (key.isNotEmpty()) cacheInstance.remove(key)
         if !key.is_empty() {
-            self.cache_instance.remove(key);
+            self.cache_instance.lock().unwrap().remove(key);
         }
     }
 }

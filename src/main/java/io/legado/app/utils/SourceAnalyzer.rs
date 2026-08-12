@@ -1,90 +1,111 @@
+use crate::prelude::*;
+// fix: GSON 为 io_legado_app_utils_gsonextensions::GSON（显式导入遮蔽 prelude 中 stubs::GSON 的 glob 歧义）
+use crate::io_legado_app_utils_gsonextensions::GSON;
+// fix: `Any` 被 stubs 与 analyzebyjsoup 两个 glob 同时导出，显式导入消歧义
+use crate::stubs::Any;
 #[allow(dead_code)]
 pub struct SourceAnalyzer {
     headerPattern: Pattern,
     jsPattern: Pattern,
 }
 
+// fix: Kotlin `String.isJsonArray()/isJsonObject()` 扩展 → 本地辅助 trait
+trait JsonStrExt {
+    fn isJsonArray(&self) -> bool;
+    fn isJsonObject(&self) -> bool;
+}
+
+impl JsonStrExt for str {
+    fn isJsonArray(&self) -> bool {
+        let s = self.trim();
+        s.starts_with("[") && s.ends_with("]")
+    }
+
+    fn isJsonObject(&self) -> bool {
+        let s = self.trim();
+        s.starts_with("{") && s.ends_with("}")
+    }
+}
+
 impl SourceAnalyzer {
     pub fn new() -> SourceAnalyzer {
         SourceAnalyzer {
-            headerPattern: Pattern::compile("@Header:\\{.+?\\}", Pattern::CASE_INSENSITIVE),
-            jsPattern: Pattern::compile("\\{\\{.+?\\}\\}", Pattern::CASE_INSENSITIVE),
+            headerPattern: Pattern::compile_with("@Header:\\{.+?\\}", Pattern::CASE_INSENSITIVE),
+            jsPattern: Pattern::compile_with("\\{\\{.+?\\}\\}", Pattern::CASE_INSENSITIVE),
         }
     }
 
-    pub fn jsonToBookSources(&self, json: &str) -> Result<Vec<BookSource>> {
+    pub fn jsonToBookSources(&self, json: &str) -> Result<Vec<BookSource>, Box<dyn std::any::Any + Send>> {
         std::panic::catch_unwind(|| {
             let mut bookSources: Vec<BookSource> = Vec::new();
             if json.isJsonArray() {
-                let items: Vec<Map<String, Any>> = jsonPath().parse(json).read("$");
+                let items: Vec<Map<String, Any>> = JsonPath::parse(json).read("$").unwrap();
                 for item in items {
-                    let jsonItem = jsonPath().parse(&item);
-                    self.jsonToBookSource(&jsonItem.jsonString()).unwrap().map(|it| {
-                        bookSources.push(it);
-                    });
+                    let jsonItem = JsonPath::parse(serde_json::to_string(&item).unwrap_or_default());
+                    bookSources.push(self.jsonToBookSource(&jsonItem.jsonString()).unwrap());
                 }
             } else if json.isJsonObject() {
-                self.jsonToBookSource(json).unwrap().map(|it| {
-                    bookSources.push(it);
-                });
+                bookSources.push(self.jsonToBookSource(json).unwrap());
             } else {
-                panic!(NoStackTraceException::new("格式不对"));
+                panic!("格式不对");
             }
             bookSources
         })
     }
 
-    pub fn jsonToBookSources_stream(&self, inputStream: &mut dyn InputStream) -> Result<Vec<BookSource>> {
-        std::panic::catch_unwind(|| {
+    pub fn jsonToBookSources_stream(&self, inputStream: &mut dyn InputStream) -> Result<Vec<BookSource>, Box<dyn std::any::Any + Send>> {
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let mut bookSources: Vec<BookSource> = Vec::new();
-            let first: Result<(), ()> = (|| {
-                let items: Vec<Map<String, Any>> = jsonPath().parse_stream(inputStream).read("$");
+            // fix: Kotlin `runCatching{...}.onFailure{...}` → 内部闭包返回 Result 传播错误
+            let first: Result<(), StubError> = (|| {
+                let items: Vec<Map<String, Any>> = JsonPath::parse_stream(inputStream)
+                    .read("$")
+                    .map_err(|e| StubError::new(e.to_string()))?;
                 for item in items {
-                    let jsonItem = jsonPath().parse(&item);
-                    self.jsonToBookSource(&jsonItem.jsonString()).unwrap().map(|it| {
-                        bookSources.push(it);
-                    });
+                    let jsonItem = JsonPath::parse(serde_json::to_string(&item).unwrap_or_default());
+                    let it = self.jsonToBookSource(&jsonItem.jsonString())
+                        .map_err(|_| StubError::new("jsonToBookSource 失败"))?;
+                    bookSources.push(it);
                 }
                 Ok(())
             })();
             if first.is_err() {
-                let item: Map<String, Any> = jsonPath().parse_stream(inputStream).read("$");
-                let jsonItem = jsonPath().parse(&item);
-                self.jsonToBookSource(&jsonItem.jsonString()).unwrap().map(|it| {
-                    bookSources.push(it);
-                });
+                let item: Map<String, Any> = JsonPath::parse_stream(inputStream).read("$").unwrap();
+                let jsonItem = JsonPath::parse(serde_json::to_string(&item).unwrap_or_default());
+                bookSources.push(self.jsonToBookSource(&jsonItem.jsonString()).unwrap());
             }
             bookSources
-        })
+        }))
     }
 
-    pub fn jsonToBookSource(&self, json: &str) -> Result<BookSource> {
-        let mut source = BookSource::new();
+    pub fn jsonToBookSource(&self, json: &str) -> Result<BookSource, Box<dyn std::any::Any + Send>> {
+        let mut source: BookSource = BookSource::default();
         let sourceAny: Option<BookSourceAny> = fromJsonObject::<BookSourceAny>(&GSON::new(), Some(json.trim()))
             .unwrap_or_else(|e| {
-                Debug::log("转化书源出错", e.localizedMessage());
-                Ok(None)
-            })
-            .ok()
-            .flatten();
-        std::panic::catch_unwind(|| {
-            if sourceAny.ruleToc == None {
-                let jsonItem = jsonPath().parse(json.trim());
-                source.bookSourceUrl = jsonItem.readString("bookSourceUrl")
-                    .unwrap_or_else(|| panic!(NoStackTraceException::new("格式不对")));
-                source.bookSourceName = jsonItem.readString("bookSourceName").unwrap_or("".to_string());
-                source.bookSourceGroup = jsonItem.readString("bookSourceGroup");
+                // fix: Debug::log → logger().info（DebugLog 为转录损坏的 trait）
+                let msg = e.downcast_ref::<StubError>().map(|se| se.msg.clone()).unwrap_or_default();
+                logger().info(format!("转化书源出错: {}", msg));
+                None
+            });
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // fix: Kotlin `sourceAny?.ruleToc == null`（sourceAny 为 Option）→ 等价判空
+            if sourceAny.as_ref().map(|s| s.ruleToc.is_none()).unwrap_or(true) {
+                let jsonItem = JsonPath::parse(json.trim());
+                source.book_source_url = jsonItem.readString("bookSourceUrl")
+                    .unwrap_or_else(|| panic!("格式不对"));
+                source.book_source_name = jsonItem.readString("bookSourceName").unwrap_or("".to_string());
+                source.book_source_group = jsonItem.readString("bookSourceGroup");
                 // loginUrl = jsonItem.readString("loginUrl")
                 // loginUi = jsonItem.readString("loginUi")
                 // loginCheckJs = jsonItem.readString("loginCheckJs")
-                source.bookSourceComment = jsonItem.readString("bookSourceComment").unwrap_or("".to_string());
-                source.bookUrlPattern = jsonItem.readString("ruleBookUrlPattern");
-                source.customOrder = jsonItem.readInt("serialNumber").unwrap_or(0);
-                source.header = Self::uaToHeader(jsonItem.readString("httpUserAgent"));
-                source.searchUrl = Self::toNewUrl(jsonItem.readString("ruleSearchUrl"));
-                source.exploreUrl = Self::toNewUrls(jsonItem.readString("ruleFindUrl"));
+                source.book_source_comment = Some(jsonItem.readString("bookSourceComment").unwrap_or_default());
+                source.book_url_pattern = jsonItem.readString("ruleBookUrlPattern");
+                source.custom_order = jsonItem.readInt("serialNumber").unwrap_or(0);
+                source.header = Self::uaToHeader(jsonItem.readString("httpUserAgent").as_deref());
+                source.search_url = Self::toNewUrl(jsonItem.readString("ruleSearchUrl").as_deref());
+                source.explore_url = Self::toNewUrls(jsonItem.readString("ruleFindUrl").as_deref());
                 let sourceType = jsonItem.readString("bookSourceType");
-                source.bookSourceType = match sourceType.as_deref() {
+                source.book_source_type = match sourceType.as_deref() {
                     Some("AUDIO") => BookType::audio,
                     Some("audio") => BookType::audio,
                     Some("1") => BookType::audio,
@@ -97,69 +118,86 @@ impl SourceAnalyzer {
                     _ => BookType::default,
                 };
                 source.enabled = jsonItem.readBool("enable").unwrap_or(true);
-                if source.exploreUrl == None || source.exploreUrl.as_deref().unwrap().is_blank() {
-                    source.enabledExplore = false;
+                // fix: Kotlin `exploreUrl.isNullOrBlank()` → OptionStringExt::is_null_or_empty
+                if source.explore_url.is_null_or_empty() {
+                    source.enabled_explore = false;
                 }
-                source.ruleSearch = SearchRule::new(
-                    bookList = Self::toNewRule(jsonItem.readString("ruleSearchList")),
-                    name = Self::toNewRule(jsonItem.readString("ruleSearchName")),
-                    author = Self::toNewRule(jsonItem.readString("ruleSearchAuthor")),
-                    intro = Self::toNewRule(jsonItem.readString("ruleSearchIntroduce")),
-                    kind = Self::toNewRule(jsonItem.readString("ruleSearchKind")),
-                    bookUrl = Self::toNewRule(jsonItem.readString("ruleSearchNoteUrl")),
-                    coverUrl = Self::toNewRule(jsonItem.readString("ruleSearchCoverUrl")),
-                    lastChapter = Self::toNewRule(jsonItem.readString("ruleSearchLastChapter"))
-                );
-                source.ruleExplore = ExploreRule::new(
-                    bookList = Self::toNewRule(jsonItem.readString("ruleFindList")),
-                    name = Self::toNewRule(jsonItem.readString("ruleFindName")),
-                    author = Self::toNewRule(jsonItem.readString("ruleFindAuthor")),
-                    intro = Self::toNewRule(jsonItem.readString("ruleFindIntroduce")),
-                    kind = Self::toNewRule(jsonItem.readString("ruleFindKind")),
-                    bookUrl = Self::toNewRule(jsonItem.readString("ruleFindNoteUrl")),
-                    coverUrl = Self::toNewRule(jsonItem.readString("ruleFindCoverUrl")),
-                    lastChapter = Self::toNewRule(jsonItem.readString("ruleFindLastChapter"))
-                );
-                source.ruleBookInfo = BookInfoRule::new(
-                    init = Self::toNewRule(jsonItem.readString("ruleBookInfoInit")),
-                    name = Self::toNewRule(jsonItem.readString("ruleBookName")),
-                    author = Self::toNewRule(jsonItem.readString("ruleBookAuthor")),
-                    intro = Self::toNewRule(jsonItem.readString("ruleIntroduce")),
-                    kind = Self::toNewRule(jsonItem.readString("ruleBookKind")),
-                    coverUrl = Self::toNewRule(jsonItem.readString("ruleCoverUrl")),
-                    lastChapter = Self::toNewRule(jsonItem.readString("ruleBookLastChapter")),
-                    tocUrl = Self::toNewRule(jsonItem.readString("ruleChapterUrl"))
-                );
-                source.ruleToc = TocRule::new(
-                    chapterList = Self::toNewRule(jsonItem.readString("ruleChapterList")),
-                    chapterName = Self::toNewRule(jsonItem.readString("ruleChapterName")),
-                    chapterUrl = Self::toNewRule(jsonItem.readString("ruleContentUrl")),
-                    nextTocUrl = Self::toNewRule(jsonItem.readString("ruleChapterUrlNext"))
-                );
-                let mut content = Self::toNewRule(jsonItem.readString("ruleBookContent")).unwrap_or("".to_string());
+                source.rule_search = Some(SearchRule {
+                    book_list: Self::toNewRule(jsonItem.readString("ruleSearchList").as_deref()),
+                    name: Self::toNewRule(jsonItem.readString("ruleSearchName").as_deref()),
+                    author: Self::toNewRule(jsonItem.readString("ruleSearchAuthor").as_deref()),
+                    intro: Self::toNewRule(jsonItem.readString("ruleSearchIntroduce").as_deref()),
+                    kind: Self::toNewRule(jsonItem.readString("ruleSearchKind").as_deref()),
+                    book_url: Self::toNewRule(jsonItem.readString("ruleSearchNoteUrl").as_deref()),
+                    cover_url: Self::toNewRule(jsonItem.readString("ruleSearchCoverUrl").as_deref()),
+                    last_chapter: Self::toNewRule(jsonItem.readString("ruleSearchLastChapter").as_deref()),
+                    update_time: None,
+                    word_count: None,
+                });
+                source.rule_explore = Some(ExploreRule {
+                    book_list: Self::toNewRule(jsonItem.readString("ruleFindList").as_deref()),
+                    name: Self::toNewRule(jsonItem.readString("ruleFindName").as_deref()),
+                    author: Self::toNewRule(jsonItem.readString("ruleFindAuthor").as_deref()),
+                    intro: Self::toNewRule(jsonItem.readString("ruleFindIntroduce").as_deref()),
+                    kind: Self::toNewRule(jsonItem.readString("ruleFindKind").as_deref()),
+                    book_url: Self::toNewRule(jsonItem.readString("ruleFindNoteUrl").as_deref()),
+                    cover_url: Self::toNewRule(jsonItem.readString("ruleFindCoverUrl").as_deref()),
+                    last_chapter: Self::toNewRule(jsonItem.readString("ruleFindLastChapter").as_deref()),
+                    update_time: None,
+                    word_count: None,
+                });
+                source.rule_book_info = Some(BookInfoRule {
+                    init: Self::toNewRule(jsonItem.readString("ruleBookInfoInit").as_deref()),
+                    name: Self::toNewRule(jsonItem.readString("ruleBookName").as_deref()),
+                    author: Self::toNewRule(jsonItem.readString("ruleBookAuthor").as_deref()),
+                    intro: Self::toNewRule(jsonItem.readString("ruleIntroduce").as_deref()),
+                    kind: Self::toNewRule(jsonItem.readString("ruleBookKind").as_deref()),
+                    cover_url: Self::toNewRule(jsonItem.readString("ruleCoverUrl").as_deref()),
+                    last_chapter: Self::toNewRule(jsonItem.readString("ruleBookLastChapter").as_deref()),
+                    toc_url: Self::toNewRule(jsonItem.readString("ruleChapterUrl").as_deref()),
+                    update_time: None,
+                    word_count: None,
+                    can_re_name: None,
+                });
+                source.rule_toc = Some(TocRule {
+                    chapter_list: Self::toNewRule(jsonItem.readString("ruleChapterList").as_deref()),
+                    chapter_name: Self::toNewRule(jsonItem.readString("ruleChapterName").as_deref()),
+                    chapter_url: Self::toNewRule(jsonItem.readString("ruleContentUrl").as_deref()),
+                    next_toc_url: Self::toNewRule(jsonItem.readString("ruleChapterUrlNext").as_deref()),
+                    pre_update_js: None,
+                    is_volume: None,
+                    is_vip: None,
+                    update_time: None,
+                });
+                let mut content = Self::toNewRule(jsonItem.readString("ruleBookContent").as_deref()).unwrap_or("".to_string());
                 if content.starts_with("$") && !content.starts_with("$.") {
                     content = content[1..].to_string();
                 }
-                source.ruleContent = ContentRule::new(
-                    content = content,
-                    replaceRegex = Self::toNewRule(jsonItem.readString("ruleBookContentReplace")),
-                    nextContentUrl = Self::toNewRule(jsonItem.readString("ruleContentUrlNext"))
-                );
+                source.rule_content = Some(ContentRule {
+                    content: Some(content),
+                    replace_regex: Self::toNewRule(jsonItem.readString("ruleBookContentReplace").as_deref()),
+                    next_content_url: Self::toNewRule(jsonItem.readString("ruleContentUrlNext").as_deref()),
+                    web_js: None,
+                    source_regex: None,
+                    image_style: None,
+                });
             } else {
-                source.bookSourceUrl = sourceAny.bookSourceUrl;
-                source.bookSourceName = sourceAny.bookSourceName;
-                source.bookSourceGroup = sourceAny.bookSourceGroup;
-                source.bookSourceType = sourceAny.bookSourceType;
-                source.bookUrlPattern = sourceAny.bookUrlPattern;
-                source.customOrder = sourceAny.customOrder;
+                // fix: else 分支等价于 Kotlin smart cast（sourceAny 必非空）
+                let sourceAny = sourceAny.unwrap();
+                source.book_source_url = sourceAny.bookSourceUrl;
+                source.book_source_name = sourceAny.bookSourceName;
+                source.book_source_group = sourceAny.bookSourceGroup;
+                source.book_source_type = sourceAny.bookSourceType;
+                source.book_url_pattern = sourceAny.bookUrlPattern;
+                source.custom_order = sourceAny.customOrder;
                 source.enabled = sourceAny.enabled;
-                source.enabledExplore = sourceAny.enabledExplore;
-                source.enabledCookieJar = sourceAny.enabledCookieJar;
-                source.concurrentRate = sourceAny.concurrentRate;
+                source.enabled_explore = sourceAny.enabledExplore;
+                source.enabled_cookie_jar = Some(sourceAny.enabledCookieJar);
+                source.concurrent_rate = sourceAny.concurrentRate;
                 source.header = sourceAny.header;
-                source.loginUrl = match sourceAny.loginUrl {
+                source.login_url = match sourceAny.loginUrl {
                     None => None,
-                    Some(Any::String(s)) => Some(s),
+                    Some(Any::Str(s)) => Some(s),
                     Some(other) => JsonPath::parse(other).readString("url"),
                 };
                 // source.loginUi = if (sourceAny.loginUi is List<*>) {
@@ -167,101 +205,51 @@ impl SourceAnalyzer {
                 // } else {
                 //     sourceAny.loginUi?.toString()
                 // }
-                source.loginCheckJs = sourceAny.loginCheckJs;
-                source.bookSourceComment = sourceAny.bookSourceComment;
-                source.lastUpdateTime = sourceAny.lastUpdateTime;
-                source.respondTime = sourceAny.respondTime;
+                source.login_check_js = sourceAny.loginCheckJs;
+                source.book_source_comment = sourceAny.bookSourceComment;
+                source.last_update_time = sourceAny.lastUpdateTime;
+                source.respond_time = sourceAny.respondTime;
                 source.weight = sourceAny.weight;
-                source.exploreUrl = sourceAny.exploreUrl;
-                source.ruleExplore = if let Any::String(s) = sourceAny.ruleExplore {
-                    fromJsonObject::<ExploreRule>(&GSON::new(), Some(s)).ok().flatten()
-                } else {
-                    fromJsonObject::<ExploreRule>(&GSON::new(), Some(&GSON::new().toJson(sourceAny.ruleExplore))).ok().flatten()
+                source.explore_url = sourceAny.exploreUrl;
+                source.rule_explore = match sourceAny.ruleExplore {
+                    Some(Any::Str(s)) => fromJsonObject::<ExploreRule>(&GSON::new(), Some(s.as_str())).ok().flatten(),
+                    other => {
+                        let json = GSON::new().toJson(other);
+                        fromJsonObject::<ExploreRule>(&GSON::new(), Some(json.as_str())).ok().flatten()
+                    }
                 };
-                source.searchUrl = sourceAny.searchUrl;
-                source.ruleSearch = if let Any::String(s) = sourceAny.ruleSearch {
-                    fromJsonObject::<SearchRule>(&GSON::new(), Some(s)).ok().flatten()
-                } else {
-                    fromJsonObject::<SearchRule>(&GSON::new(), Some(&GSON::new().toJson(sourceAny.ruleSearch))).ok().flatten()
+                source.search_url = sourceAny.searchUrl;
+                source.rule_search = match sourceAny.ruleSearch {
+                    Some(Any::Str(s)) => fromJsonObject::<SearchRule>(&GSON::new(), Some(s.as_str())).ok().flatten(),
+                    other => {
+                        let json = GSON::new().toJson(other);
+                        fromJsonObject::<SearchRule>(&GSON::new(), Some(json.as_str())).ok().flatten()
+                    }
                 };
-                source.ruleBookInfo = if let Any::String(s) = sourceAny.ruleBookInfo {
-                    fromJsonObject::<BookInfoRule>(&GSON::new(), Some(s)).ok().flatten()
-                } else {
-                    fromJsonObject::<BookInfoRule>(&GSON::new(), Some(&GSON::new().toJson(sourceAny.ruleBookInfo))).ok().flatten()
+                source.rule_book_info = match sourceAny.ruleBookInfo {
+                    Some(Any::Str(s)) => fromJsonObject::<BookInfoRule>(&GSON::new(), Some(s.as_str())).ok().flatten(),
+                    other => {
+                        let json = GSON::new().toJson(other);
+                        fromJsonObject::<BookInfoRule>(&GSON::new(), Some(json.as_str())).ok().flatten()
+                    }
                 };
-                source.ruleToc = if let Any::String(s) = sourceAny.ruleToc {
-                    fromJsonObject::<TocRule>(&GSON::new(), Some(s)).ok().flatten()
-                } else {
-                    fromJsonObject::<TocRule>(&GSON::new(), Some(&GSON::new().toJson(sourceAny.ruleToc))).ok().flatten()
+                source.rule_toc = match sourceAny.ruleToc {
+                    Some(Any::Str(s)) => fromJsonObject::<TocRule>(&GSON::new(), Some(s.as_str())).ok().flatten(),
+                    other => {
+                        let json = GSON::new().toJson(other);
+                        fromJsonObject::<TocRule>(&GSON::new(), Some(json.as_str())).ok().flatten()
+                    }
                 };
-                source.ruleContent = if let Any::String(s) = sourceAny.ruleContent {
-                    fromJsonObject::<ContentRule>(&GSON::new(), Some(s)).ok().flatten()
-                } else {
-                    fromJsonObject::<ContentRule>(&GSON::new(), Some(&GSON::new().toJson(sourceAny.ruleContent))).ok().flatten()
+                source.rule_content = match sourceAny.ruleContent {
+                    Some(Any::Str(s)) => fromJsonObject::<ContentRule>(&GSON::new(), Some(s.as_str())).ok().flatten(),
+                    other => {
+                        let json = GSON::new().toJson(other);
+                        fromJsonObject::<ContentRule>(&GSON::new(), Some(json.as_str())).ok().flatten()
+                    }
                 };
             }
             source
-        })
-    }
-
-    pub struct BookSourceAny {
-        pub bookSourceName: String,                // 名称
-        pub bookSourceGroup: Option<String>,            // 分组
-        pub bookSourceUrl: String,                 // 地址，包括 http/https
-        pub bookSourceType: i32,     // 类型，0 文本，1 音频
-        pub bookUrlPattern: Option<String>,             // 详情页url正则
-        pub customOrder: i32,                       // 手动排序编号
-        pub enabled: bool,                    // 是否启用
-        pub enabledExplore: bool,             // 启用发现
-        pub enabledCookieJar: bool,          // 启用CookieJar
-        pub concurrentRate: Option<String>,             // 并发率
-        pub header: Option<String>,                     // 请求头
-        pub loginUrl: Option<Any>,                      // 登录规则
-        pub loginUi: Option<Any>,                       // 登录UI
-        pub loginCheckJs: Option<String>,               //登录检测js
-        pub bookSourceComment: Option<String>,            //书源注释
-        pub lastUpdateTime: i64,                   // 最后更新时间，用于排序
-        pub respondTime: i64,                // 响应时间，用于排序
-        pub weight: i32,                            // 智能排序的权重
-        pub exploreUrl: Option<String>,                 // 发现url
-        pub ruleExplore: Option<Any>,                   // 发现规则
-        pub searchUrl: Option<String>,                  // 搜索url
-        pub ruleSearch: Option<Any>,                    // 搜索规则
-        pub ruleBookInfo: Option<Any>,                  // 书籍信息页规则
-        pub ruleToc: Option<Any>,                       // 目录页规则
-        pub ruleContent: Option<Any>,                    // 正文页规则
-    }
-
-    impl BookSourceAny {
-        pub fn new() -> BookSourceAny {
-            BookSourceAny {
-                bookSourceName: "".to_string(),
-                bookSourceGroup: None,
-                bookSourceUrl: "".to_string(),
-                bookSourceType: BookType::default,
-                bookUrlPattern: None,
-                customOrder: 0,
-                enabled: true,
-                enabledExplore: true,
-                enabledCookieJar: false,
-                concurrentRate: None,
-                header: None,
-                loginUrl: None,
-                loginUi: None,
-                loginCheckJs: None,
-                bookSourceComment: Some("".to_string()),
-                lastUpdateTime: 0,
-                respondTime: 180000,
-                weight: 0,
-                exploreUrl: None,
-                ruleExplore: None,
-                searchUrl: None,
-                ruleSearch: None,
-                ruleBookInfo: None,
-                ruleToc: None,
-                ruleContent: None,
-            }
-        }
+        }))
     }
 
     // default规则适配
@@ -297,12 +285,13 @@ impl SourceAnalyzer {
             }
             if newRule.contains("|") && !newRule.contains("||") {
                 if newRule.contains("##") {
-                    let list = newRule.split("##");
+                    // fix: split 结果转为 owned Vec<String>（避免索引切片与可变赋值冲突）
+                    let list: Vec<String> = newRule.split("##").map(|s| s.to_string()).collect();
                     if list[0].contains("|") {
                         newRule = list[0].replace("|", "||");
                         for i in 1..list.len() {
                             newRule += "##";
-                            newRule += list[i];
+                            newRule += &list[i];
                         }
                     }
                 } else {
@@ -339,7 +328,7 @@ impl SourceAnalyzer {
         }
         let urls = oldUrls.split_with_regex("(&&|\r?\n)+");
         let mapped: Vec<String> = urls.iter().map(|it| {
-            Self::toNewUrl(Some(it)).map(|s| s.replace_with_regex("\n\\s*", "")).unwrap_or_default()
+            Self::toNewUrl(Some(it.as_str())).map(|s| s.replace_with_regex("\n\\s*", "")).unwrap_or_default()
         }).collect();
         Some(mapped.join("\n"))
     }
@@ -356,24 +345,25 @@ impl SourceAnalyzer {
             return Some(url);
         }
         let mut map = HashMap::<String, String>::new();
-        let header_pattern = Pattern::compile("@Header:\\{.+?\\}", Pattern::CASE_INSENSITIVE);
-        let mut mather = header_pattern.matcher(&url);
+        let header_pattern = Pattern::compile_with("@Header:\\{.+?\\}", Pattern::CASE_INSENSITIVE);
+        let mut mather = header_pattern.matcher(url.clone());
         if mather.find() {
-            let header = mather.group().unwrap();
-            url = url.replace(header, "");
+            let header = mather.group();
+            url = url.replace(&header, "");
             map.insert("headers".to_string(), header[8..].to_string());
         }
-        let mut urlList: Vec<&str> = url.split("|").collect();
+        // fix: split 结果转为 owned Vec<String>（原转录借用 url，与后续赋值冲突）
+        let mut urlList: Vec<String> = url.split("|").map(|s| s.to_string()).collect();
         url = urlList[0].to_string();
         if urlList.len() > 1 {
             map.insert("charset".to_string(), urlList[1].split("=").nth(1).unwrap().to_string());
         }
-        let js_pattern = Pattern::compile("\\{\\{.+?\\}\\}", Pattern::CASE_INSENSITIVE);
-        mather = js_pattern.matcher(&url);
+        let js_pattern = Pattern::compile_with("\\{\\{.+?\\}\\}", Pattern::CASE_INSENSITIVE);
+        mather = js_pattern.matcher(url.clone());
         let mut jsList: Vec<String> = Vec::new();
         while mather.find() {
-            let group = mather.group().unwrap();
-            jsList.push(group.to_string());
+            let group = mather.group();
+            jsList.push(group.clone());
             url = url.replace(jsList.last().unwrap(), &format!("$${}", jsList.len() - 1));
         }
         url = url.replace("{", "<").replace("}", ">");
@@ -387,7 +377,7 @@ impl SourceAnalyzer {
                 &item.replace("searchKey", "key").replace("searchPage", "page")
             );
         }
-        urlList = url.split("@").collect();
+        urlList = url.split("@").map(|s| s.to_string()).collect();
         url = urlList[0].to_string();
         if urlList.len() > 1 {
             map.insert("method".to_string(), "POST".to_string());
@@ -407,5 +397,90 @@ impl SourceAnalyzer {
         };
         let map = vec![(AppConst::UA_NAME.to_string(), ua.to_string())];
         Some(GSON::new().toJson(&map))
+    }
+}
+
+// fix: BookSourceAny 补充 serde 反序列化（Gson fromJsonObject 等价），缺省值对齐 Kotlin data class 默认参数
+fn default_true() -> bool {
+    true
+}
+
+fn default_empty_string() -> Option<String> {
+    Some(String::new())
+}
+
+fn default_respond_time() -> i64 {
+    180000
+}
+
+#[derive(serde::Deserialize)]
+pub struct BookSourceAny {
+    #[serde(default)]
+    pub bookSourceName: String,                // 名称
+    pub bookSourceGroup: Option<String>,            // 分组
+    #[serde(default)]
+    pub bookSourceUrl: String,                 // 地址，包括 http/https
+    #[serde(default)]
+    pub bookSourceType: i32,     // 类型，0 文本，1 音频
+    pub bookUrlPattern: Option<String>,             // 详情页url正则
+    #[serde(default)]
+    pub customOrder: i32,                       // 手动排序编号
+    #[serde(default = "default_true")]
+    pub enabled: bool,                    // 是否启用
+    #[serde(default = "default_true")]
+    pub enabledExplore: bool,             // 启用发现
+    #[serde(default)]
+    pub enabledCookieJar: bool,          // 启用CookieJar
+    pub concurrentRate: Option<String>,             // 并发率
+    pub header: Option<String>,                     // 请求头
+    pub loginUrl: Option<Any>,                      // 登录规则
+    pub loginUi: Option<Any>,                       // 登录UI
+    pub loginCheckJs: Option<String>,               //登录检测js
+    #[serde(default = "default_empty_string")]
+    pub bookSourceComment: Option<String>,            //书源注释
+    #[serde(default)]
+    pub lastUpdateTime: i64,                   // 最后更新时间，用于排序
+    #[serde(default = "default_respond_time")]
+    pub respondTime: i64,                // 响应时间，用于排序
+    #[serde(default)]
+    pub weight: i32,                            // 智能排序的权重
+    pub exploreUrl: Option<String>,                 // 发现url
+    pub ruleExplore: Option<Any>,                   // 发现规则
+    pub searchUrl: Option<String>,                  // 搜索url
+    pub ruleSearch: Option<Any>,                    // 搜索规则
+    pub ruleBookInfo: Option<Any>,                  // 书籍信息页规则
+    pub ruleToc: Option<Any>,                       // 目录页规则
+    pub ruleContent: Option<Any>,                    // 正文页规则
+}
+
+impl BookSourceAny {
+    pub fn new() -> BookSourceAny {
+        BookSourceAny {
+            bookSourceName: "".to_string(),
+            bookSourceGroup: None,
+            bookSourceUrl: "".to_string(),
+            bookSourceType: BookType::default,
+            bookUrlPattern: None,
+            customOrder: 0,
+            enabled: true,
+            enabledExplore: true,
+            enabledCookieJar: false,
+            concurrentRate: None,
+            header: None,
+            loginUrl: None,
+            loginUi: None,
+            loginCheckJs: None,
+            bookSourceComment: Some("".to_string()),
+            lastUpdateTime: 0,
+            respondTime: 180000,
+            weight: 0,
+            exploreUrl: None,
+            ruleExplore: None,
+            searchUrl: None,
+            ruleSearch: None,
+            ruleBookInfo: None,
+            ruleToc: None,
+            ruleContent: None,
+        }
     }
 }

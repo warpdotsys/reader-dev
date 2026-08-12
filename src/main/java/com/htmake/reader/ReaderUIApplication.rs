@@ -1,4 +1,12 @@
+use crate::prelude::*;
 // package com.htmake.reader
+
+// fix: 显式导入，消除 prelude glob 重名歧义（get_storage/save_storage 取 VertExt 真实实现，Any 取 stubs 枚举）
+use crate::stubs::Any;
+use crate::com_htmake_reader_utils_vertext::{get_storage, save_storage};
+
+#[allow(non_upper_case_globals)]
+static logger: Log = Log;
 
 // import com.fasterxml.jackson.databind.DeserializationFeature
 // import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -100,82 +108,93 @@ impl ReaderUIApplication {
     }
 
     pub fn boot(&mut self) {
-        launch(launch_args());
+        launch(CoroutineContext, launch_args());
     }
 
     // override fun init()
     pub fn init(&mut self) {
-        std::thread::spawn(move || {
-            let mut app = SpringApplication::new(ReaderApplication::class);
-            let env_listener = ApplicationListener::new(move |event: ApplicationEnvironmentPreparedEvent| {
-                self.env = event.get_environment();
-                // 加载 windowConfig
-                let window_config_source = self.load_property_source_from_window_config();
-                self.env.get_property_sources().add_first(window_config_source);
-                // 获取应用相关配置
-                self.show_ui = self.env.get_property("reader.app.showUI", Boolean::class)?.unwrap_or(false);
-                logger.info("showUI: {:?}", self.show_ui);
-                let debug = self.env.get_property::<Boolean>("reader.app.debug", Boolean::class);
-                logger.info("debug: {:?}", debug);
-                let server_port = self.env.get_property::<Int>("reader.server.port", Int::class);
-                logger.info("serverPort: {:?}", server_port);
-                let mut port = 8080;
-                if server_port != null && server_port > 0 {
-                    port = server_port;
-                }
-                self.web_url = self.env.get_property::<String>("reader.server.webUrl")?.unwrap_or_else(|| "http://localhost:".to_string() + &port.to_string());
-                let sep = if self.web_url.contains("?") { "&" } else { "?" };
-                if debug != null && debug {
-                    self.web_url = self.web_url + sep + "debug=1&nopwa=1";
-                } else {
-                    self.web_url = self.web_url + sep + "nopwa=1";
-                }
-                logger.info("webUrl: {:?}", self.web_url);
-                // System.setProperty("reader.system.fonts", Font.getFontNames().joinToString(separator = ","))
-                if self.show_ui && self.primary_stage.is_some() {
-                    Platform::run_later(Runnable::new(|| {
-                        self.show_splash_screen();
-                    }));
-                }
-            });
-            app.add_listeners(env_listener);
-            let spring_listener = ApplicationListener::new(move |event: SpringEvent| {
-                let event_type = event.get_event();
-                if event_type == "READY" {
-                    self.is_spring_boot_launched = true;
-                    if self.show_ui && self.primary_stage.is_some() && !self.web_url.is_empty() {
-                        Platform::run_later(Runnable::new(|| {
-                            self.splash_stage.hide();
-                            self.splash_stage.set_scene(None);
-                            self.show_web_screen(self.primary_stage.clone().unwrap(), self.web_url.clone());
-                        }));
+        // fix: std::thread::spawn 要求 'static 捕获，改用 thread::scope 借用 &mut self
+        std::thread::scope(|s| {
+            s.spawn(|| {
+                let mut app = SpringApplication::new(ReaderApplication::class);
+                let env_listener = ApplicationListener::new(|event: ApplicationEnvironmentPreparedEvent| {
+                    self.env = event.get_environment();
+                    // 加载 windowConfig
+                    let window_config_source = self.load_property_source_from_window_config();
+                    self.env.get_property_sources().add_first(window_config_source);
+                    // 获取应用相关配置
+                    self.show_ui = self.env.get_property("reader.app.showUI", Boolean::class).unwrap_or(false);
+                    logger.info(format!("showUI: {:?}", self.show_ui));
+                    let debug = self.env.get_property::<bool>("reader.app.debug", Boolean::class);
+                    logger.info(format!("debug: {:?}", debug));
+                    let server_port = self.env.get_property::<i32>("reader.server.port", i32::class);
+                    logger.info(format!("serverPort: {:?}", server_port));
+                    let mut port = 8080;
+                    if let Some(server_port) = server_port {
+                        if server_port > 0 {
+                            port = server_port;
+                        }
                     }
-                } else if event_type == "START_ERROR" {
-                    self.spring_boot_error = event.get_message();
-                    if self.show_ui {
-                        Platform::run_later(Runnable::new(|| {
-                            if self.splash_stage.is_some() {
-                                self.splash_stage.hide();
-                                self.splash_stage.set_scene(None);
-                            }
-                            self.show_alert(self.spring_boot_error.clone());
-                            self.stop();
-                        }));
+                    self.web_url = self.env.get_property::<String>("reader.server.webUrl", String::class)
+                        .unwrap_or_else(|| "http://localhost:".to_string() + &port.to_string());
+                    let sep = if self.web_url.contains("?") { "&" } else { "?" };
+                    if debug.unwrap_or(false) {
+                        self.web_url = self.web_url.clone() + &sep + "debug=1&nopwa=1";
                     } else {
-                        logger.error(&self.spring_boot_error);
-                        self.stop();
+                        self.web_url = self.web_url.clone() + &sep + "nopwa=1";
                     }
-                }
+                    logger.info(format!("webUrl: {:?}", self.web_url));
+                    // System.setProperty("reader.system.fonts", Font.getFontNames().joinToString(separator = ","))
+                    if self.show_ui && self.primary_stage.is_some() {
+                        Platform::run_later(Runnable::new(|| {
+                            self.show_splash_screen();
+                        }));
+                    }
+                });
+                app.add_listeners(env_listener);
+                let spring_listener = ApplicationListener::new(|event: SpringEvent| {
+                    let event_type = event.get_event();
+                    if event_type == "READY" {
+                        self.is_spring_boot_launched = true;
+                        if self.show_ui && self.primary_stage.is_some() && !self.web_url.is_empty() {
+                            Platform::run_later(Runnable::new(|| {
+                                // fix: Option<Stage> 需解引用后调用 Stage 方法
+                                if let Some(splash_stage) = &mut self.splash_stage {
+                                    splash_stage.hide();
+                                    splash_stage.set_scene(None);
+                                }
+                                let primary_stage = self.primary_stage.clone().unwrap();
+                                self.show_web_screen(primary_stage, self.web_url.clone());
+                            }));
+                        }
+                    } else if event_type == "START_ERROR" {
+                        self.spring_boot_error = event.get_message();
+                        if self.show_ui {
+                            Platform::run_later(Runnable::new(|| {
+                                if let Some(splash_stage) = &mut self.splash_stage {
+                                    splash_stage.hide();
+                                    splash_stage.set_scene(None);
+                                }
+                                self.show_alert(self.spring_boot_error.clone(), false);
+                                self.stop();
+                            }));
+                        } else {
+                            logger.error(self.spring_boot_error.clone());
+                            self.stop();
+                        }
+                    }
+                });
+                app.add_listeners(spring_listener);
+                app.run(launch_args());
             });
-            app.add_listeners(spring_listener);
-            app.run(launch_args());
         });
     }
 
     // override fun start(stage: Stage)
     pub fn start(&mut self, stage: Stage) {
-        try {
-            logger.info("javafx start: {:?}", stage);
+        // fix: try/catch → 闭包 + if-let
+        let try_result: Result<(), StubError> = (|| {
+            logger.info(format!("javafx start: {:?}", stage));
             self.primary_stage = Some(stage.clone());
             if self.show_ui {
                 self.default_icons = vec![
@@ -190,15 +209,17 @@ impl ReaderUIApplication {
                     self.show_web_screen(stage, self.web_url.clone());
                 } else {
                     if !self.spring_boot_error.is_empty() {
-                        self.show_alert(self.spring_boot_error.clone());
+                        self.show_alert(self.spring_boot_error.clone(), false);
                         self.stop();
                     } else {
                         self.show_splash_screen();
                     }
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace();
+            Ok(())
+        })();
+        if let Err(e) = try_result {
+            e.print_stack_trace();
         }
     }
 
@@ -220,11 +241,11 @@ impl ReaderUIApplication {
         //               "-fx-border-color: #999;");
 
         let splash_scene = Scene::new(vbox, Color::TRANSPARENT);
-        self.splash_stage.as_ref().unwrap().set_scene(Some(splash_scene));
+        self.splash_stage.as_mut().unwrap().set_scene(Some(splash_scene));
         self.splash_stage.as_ref().unwrap().get_icons().add_all(self.default_icons.clone());
-        self.splash_stage.as_ref().unwrap().init_style(StageStyle::TRANSPARENT);
-        logger.info("showSplashScreen: {:?}", self.splash_stage);
-        self.splash_stage.as_ref().unwrap().show();
+        self.splash_stage.as_mut().unwrap().init_style(StageStyle::TRANSPARENT);
+        logger.info(format!("showSplashScreen: {:?}", self.splash_stage));
+        self.splash_stage.as_mut().unwrap().show();
     }
 
     pub fn show_alert(&mut self, message: String, wait: bool) {
@@ -238,11 +259,12 @@ impl ReaderUIApplication {
         }
     }
 
-    pub fn show_confirm(&mut self, message: String) -> bool {
+    // fix: setConfirmHandler 要求 Fn 闭包（不可变捕获），show_confirm 不触碰 self 字段，收窄为 &self
+    pub fn show_confirm(&self, message: String) -> bool {
         let mut confirm = Dialog::new();
         confirm.get_dialog_pane().set_content_text(message);
         confirm.get_dialog_pane().get_button_types().add_all(vec![ButtonType::YES, ButtonType::NO]);
-        let result = confirm.show_and_wait().filter(|b| ButtonType::YES == b).is_present();
+        let result = confirm.show_and_wait().filter(|b| ButtonType::YES == *b).is_present();
 
         return result;
     }
@@ -251,7 +273,8 @@ impl ReaderUIApplication {
         self.load_window_config();
         let mut window_config_port = 0;
         let mut window_config_source: std::collections::HashMap<String, Any> = std::collections::HashMap::new();
-        try {
+        // fix: try/catch → 闭包 + if-let
+        let try_result: Result<(), StubError> = (|| {
             // 支持配置 接口服务
             let server_config = self.window_config_map.get("serverConfig").map(|v| v.downcast_ref::<std::collections::HashMap<String, Any>>()).flatten().cloned();
             if let Some(sc) = server_config {
@@ -262,36 +285,40 @@ impl ReaderUIApplication {
             if server_port.is_some() {
                 window_config_port = server_port.downcast_ref::<Int>().unwrap().clone();
                 if window_config_port > 0 {
-                    window_config_source.insert("reader.server.port".to_string(), window_config_port.clone());
+                    window_config_source.insert("reader.server.port".to_string(), Any::Long(window_config_port as i64));
                 }
             }
-            let show_ui = self.window_config_map.get("showUI").unwrap_or(&true).downcast_ref::<Boolean>().cloned().unwrap_or(true);
-            window_config_source.insert("reader.app.showUI".to_string(), show_ui);
+            let show_ui = self.window_config_map.get("showUI").unwrap_or(&Any::Bool(true)).downcast_ref::<Boolean>().cloned().unwrap_or(true);
+            window_config_source.insert("reader.app.showUI".to_string(), Any::Bool(show_ui));
             let debug = self.window_config_map.get("debug");
             if debug.is_some() {
-                window_config_source.insert("reader.app.debug".to_string(), debug.downcast_ref::<Boolean>().unwrap().clone());
+                window_config_source.insert("reader.app.debug".to_string(), Any::Bool(debug.downcast_ref::<Boolean>().unwrap().clone()));
             }
-        } catch (e: Exception) {
-            e.printStackTrace();
+            Ok(())
+        })();
+        if let Err(e) = try_result {
+            e.print_stack_trace();
         }
 
-        logger.info("windowConfigSource: {:?}", window_config_source);
+        logger.info(format!("windowConfigSource: {:?}", window_config_source));
         return MapPropertySource::new("windowConfig", window_config_source);
     }
 
     pub fn load_window_config(&mut self) {
-        let window_config_object = as_json_object(get_storage(vec!["windowConfig".to_string()]));
+        let window_config_object = as_json_object(get_storage(&vec!["windowConfig".to_string()], ".json").map(|s| Any::Str(s)));
         if window_config_object.is_some() {
-            self.window_config_map = window_config_object.unwrap().map;
+            self.window_config_map = window_config_object.unwrap().map();
         }
-        logger.info("windowConfigMap: {:?}", self.window_config_map);
+        logger.info(format!("windowConfigMap: {:?}", self.window_config_map));
     }
 
     pub fn get_window_config_double_property(&self, name: String, default_val: f64) -> f64 {
-        let value = self.window_config_map.get(&name).unwrap_or(&default_val);
+        // fix: 临时值取引用需先绑定局部变量，避免 E0716 悬垂引用
+        let default = Any::Double(default_val);
+        let value = self.window_config_map.get(&name).unwrap_or(&default);
         return match value {
-            Int => value.to_double(),
-            Double => value,
+            Any::Long(l) => *l as f64,
+            Any::Double(d) => *d,
             _ => default_val,
         };
     }
@@ -299,60 +326,63 @@ impl ReaderUIApplication {
     pub fn apply_window_config(&mut self, stage: &mut Stage) -> Size {
         let mut width = 1280.0;
         let mut height = 800.0;
-        try {
+        // fix: try/catch → 闭包 + if-let
+        let try_result: Result<(), StubError> = (|| {
             self.load_window_config();
-            let set_window_position = self.window_config_map.get("setWindowPosition").unwrap_or(&false).downcast_ref::<Boolean>().cloned().unwrap_or(false);
+            let set_window_position = self.window_config_map.get("setWindowPosition").unwrap_or(&Any::Bool(false)).downcast_ref::<Boolean>().cloned().unwrap_or(false);
             if set_window_position {
                 let position_x = self.get_window_config_double_property("positionX".to_string(), 0.0);
                 let position_y = self.get_window_config_double_property("positionY".to_string(), 0.0);
                 stage.set_x(position_x);
                 stage.set_y(position_y);
             }
-            let remember_size = self.window_config_map.get("rememberSize").unwrap_or(&true).downcast_ref::<Boolean>().cloned().unwrap_or(true);
-            let remember_position = self.window_config_map.get("rememberPosition").unwrap_or(&false).downcast_ref::<Boolean>().cloned().unwrap_or(false);
+            let remember_size = self.window_config_map.get("rememberSize").unwrap_or(&Any::Bool(true)).downcast_ref::<Boolean>().cloned().unwrap_or(true);
+            let remember_position = self.window_config_map.get("rememberPosition").unwrap_or(&Any::Bool(false)).downcast_ref::<Boolean>().cloned().unwrap_or(false);
             if remember_size {
                 stage.width_property().add_listener(|_, _, w| {
-                    self.window_config_map.insert("width".to_string(), w);
+                    self.window_config_map.insert("width".to_string(), Any::Double(w));
                 });
                 // stage.heightProperty().addListener{_, _, h ->
                 //     windowConfigMap.put("height", h)
                 // }
                 stage.scene_property().add_listener(|_, _, s| {
                     s.height_property().add_listener(|_, _, h| {
-                        self.window_config_map.insert("height".to_string(), h);
+                        self.window_config_map.insert("height".to_string(), Any::Double(h));
                     });
                 });
             }
             if remember_position {
                 stage.x_property().add_listener(|_, _, x| {
-                    self.window_config_map.insert("positionX".to_string(), x);
+                    self.window_config_map.insert("positionX".to_string(), Any::Double(x));
                 });
                 stage.y_property().add_listener(|_, _, y| {
-                    self.window_config_map.insert("positionY".to_string(), y);
+                    self.window_config_map.insert("positionY".to_string(), Any::Double(y));
                 });
             }
-            let set_window_size = self.window_config_map.get("setWindowSize").unwrap_or(&true).downcast_ref::<Boolean>().cloned().unwrap_or(true);
+            let set_window_size = self.window_config_map.get("setWindowSize").unwrap_or(&Any::Bool(true)).downcast_ref::<Boolean>().cloned().unwrap_or(true);
             if set_window_size {
                 width = self.get_window_config_double_property("width".to_string(), width);
                 height = self.get_window_config_double_property("height".to_string(), height);
             }
-        } catch (e: Exception) {
+            Ok(())
+        })();
+        if let Err(e) = try_result {
             self.show_alert("窗口配置加载失败，请检查窗口配置文件(windowConfig.json)".to_string(), false);
-            e.printStackTrace();
+            e.print_stack_trace();
         }
         return Size::new(width, height);
     }
 
-    pub fn show_web_screen(&mut self, stage: &mut Stage, url: String) {
+    pub fn show_web_screen(&mut self, mut stage: Stage, url: String) {
         // 配置主窗口
-        let window_size = self.apply_window_config(stage);
+        let window_size = self.apply_window_config(&mut stage);
         System::set_property("sun.net.http.allowRestrictedHeaders", "true");
         // logger.info("Font.getFontNames: {}", Font.getFontNames())
         // logger.info("showWebScreen: {}", url)
         let mut web_view = WebView::new();
         let mut web_engine = web_view.get_engine();
         web_engine.set_on_error(|event| {
-            logger.info("error: {:?}", event);
+            logger.info(format!("error: {:?}", event));
         });
         web_engine.set_on_alert(|event| {
             self.show_alert(event.data.to_string(), true);
@@ -361,25 +391,30 @@ impl ReaderUIApplication {
             self.show_confirm(message)
         });
         let mut reload_count = 0;
-        web_engine.get_load_worker().state_property().add_listener(|_, old_state, new_state| {
-            logger.info("State from {:?} to {:?} , exception: {:?}", old_state, new_state, web_engine.get_load_worker().get_exception());
-            if new_state == Worker::State::FAILED {
+        // fix: 先取出 Worker/状态属性，避免监听器闭包与接收者借用冲突
+        let load_worker = web_engine.get_load_worker();
+        let state_prop = load_worker.state_property();
+        state_prop.add_listener(|_, old_state, new_state| {
+            logger.info(format!("State from {:?} to {:?} , exception: {:?}", old_state, new_state, web_engine.get_load_worker().get_exception()));
+            if new_state == WorkerState::FAILED {
                 if reload_count < 5 {
                     reload_count += 1;
-                    logger.info("reload {:?}", url);
+                    logger.info(format!("reload {:?}", url));
                     web_engine.load(url.clone());
                 }
             }
         });
         web_engine.title_property().add_listener(|_, _, t| {
-            if t.is_some() && !t.unwrap().is_empty() {
-                stage.set_title(t.unwrap());
+            if let Some(title) = t {
+                if !title.is_empty() {
+                    stage.set_title(title);
+                }
             }
         });
         web_engine.load(url);
-        let scene = Scene::new(web_view, window_size.width, window_size.height);
-        stage.set_scene(scene);
-        stage.set_title("阅读");
+        let scene = Scene::new_with_size(web_view, window_size.width, window_size.height);
+        stage.set_scene(Some(scene));
+        stage.set_title("阅读".to_string());
         stage.get_icons().add_all(self.default_icons.clone());
         stage.init_style(StageStyle::UNIFIED);
         stage.show();
@@ -387,16 +422,16 @@ impl ReaderUIApplication {
 
     // override fun stop()
     pub fn stop(&mut self) {
-        save_storage(vec!["windowConfig".to_string()], self.window_config_map.clone(), true);
+        save_storage(&vec!["windowConfig".to_string()], Any::Map(self.window_config_map.clone()), true, ".json");
         super_stop();
         let context = SpringContextUtils::get_application_context();
-        logger.info("application stop: {:?}", context);
+        logger.info(format!("application stop: {:?}", context));
         System::exit(SpringApplication::exit(context));
     }
 }
 
 pub fn main(args: Vec<String>) {
-    logger.info("args: {:?}", args);
+    logger.info(format!("args: {:?}", args));
     set_launch_args(args);
     let mut app = ReaderUIApplication::new();
     app.boot();

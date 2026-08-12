@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.lib.tts.model;
 
 // import com.htmake.reader.lib.tts.constant.OutputFormat;
@@ -10,9 +11,6 @@
 
 // public class SSML implements Serializable {
 pub struct SSML {
-    // public static String SSML_PATTERN = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='%s'>\r\n<voice name='%s'>\r\n%s<prosody pitch='%s' rate='%s' volume='%s'>%s</prosody>%s</voice></speak>";
-    pub const SSML_PATTERN: &'static str = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='%s'>\r\n<voice name='%s'>\r\n%s<prosody pitch='%s' rate='%s' volume='%s'>%s</prosody>%s</voice></speak>";
-
     // private String synthesisText;
     // private VoiceEnum voice;
     // private String rate;
@@ -30,6 +28,10 @@ pub struct SSML {
 }
 
 impl SSML {
+    // public static String SSML_PATTERN = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='%s'>\r\n<voice name='%s'>\r\n%s<prosody pitch='%s' rate='%s' volume='%s'>%s</prosody>%s</voice></speak>";
+    // fix: associated const moved from struct body into impl block (Rust 不允许结构体中定义关联常量)
+    pub const SSML_PATTERN: &'static str = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='%s'>\r\n<voice name='%s'>\r\n%s<prosody pitch='%s' rate='%s' volume='%s'>%s</prosody>%s</voice></speak>";
+
     // private SSML(String synthesisText, VoiceEnum voice, String rate, String pitch, String volume, TtsStyleEnum style, OutputFormat outputFormat) {
     //     this.synthesisText = synthesisText;
     //     this.voice = voice;
@@ -177,20 +179,25 @@ impl SSML {
             .style
             .map(|s| format!("<mstts:express-as style='{}'>\r\n", s.get_value()))
             .unwrap_or_default();
-        let style_end = self.style.map(|_| "</mstts:express-as>").unwrap_or_default();
-        return format!(
-            Self::SSML_PATTERN,
+        let style_end = self.style.map(|_| "</mstts:express-as>".to_string()).unwrap_or_default();
+        // fix: format! 首参必须是字符串字面量，改以 Java String.format 的 %s 占位符逐次替换
+        let args = [
             Tools::get_random_id(),
             Tools::date(),
-            voice.get_locale(),
-            voice.get_short_name(),
+            voice.get_locale().to_string(),
+            voice.get_short_name().to_string(),
             style_str,
             self.pitch.clone().unwrap_or_else(|| "+0Hz".to_string()),
             self.rate.clone().unwrap_or_else(|| "+0%".to_string()),
             self.volume.clone().unwrap_or_else(|| "+0%".to_string()),
-            self.synthesis_text,
+            self.synthesis_text.clone(),
             style_end,
-        );
+        ];
+        let mut result = Self::SSML_PATTERN.to_string();
+        for arg in args {
+            result = result.replacen("%s", &arg, 1);
+        }
+        return result;
     }
 }
 

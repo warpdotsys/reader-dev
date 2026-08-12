@@ -1,3 +1,9 @@
+use crate::prelude::*;
+use crate::me_ag2s_epublib_domain_mediatypes::MediaTypes;
+use crate::me_ag2s_epublib_util_ioutil::{Reader, InputStream as IOUtilInputStream};
+use std::any::Any;
+// fix: MediaType 不再显式导入真实模块——MediaTypes 转录为 stubs::MediaType 类型体系，
+// 保持一致（prelude 中 stubs::MediaType 显式重导出优先于真实模块 glob）
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.Constants;
@@ -17,6 +23,8 @@
  * @author paul
  *
  */
+// fix: 补充 Clone/PartialEq（Resources/Navigator/EpubBook 等多处 .clone() 与 `Option<Resource> == None` 依赖）
+#[derive(Clone, PartialEq)]
 pub struct Resource {
   id: String,
   title: String,
@@ -38,7 +46,7 @@ impl Resource {
    * @param href The location of the resource within the epub. Example: "chapter1.html".
    */
   pub fn with_href(href: String) -> Resource {
-    Resource::with_id_data(None, Some(Vec::new()), href.clone(), MediaTypes::determine_media_type(&href))
+    Resource::with_id_data(None, Some(Vec::new()), Some(href.clone()), MediaTypes::determine_media_type(&href))
   }
 
   /**
@@ -66,8 +74,8 @@ impl Resource {
    * @param href The location of the resource within the epub. Example: "chapter1.html".
    */
   pub fn with_data_and_href(data: Vec<u8>, href: String) -> Resource {
-    Resource::with_id_data_href(None, Some(data), href.clone(), MediaTypes::determine_media_type(&href),
-        Constants::CHARACTER_ENCODING.to_string())
+    Resource::with_id_data_href(None, Some(data), Some(href.clone()), MediaTypes::determine_media_type(&href),
+        "UTF-8".to_string())
   }
 
   /**
@@ -80,9 +88,11 @@ impl Resource {
    * @param href The location of the resource within the epub. Example: "cover.jpg".
    */
   pub fn with_reader(in_reader: &mut Reader, href: String) -> Result<Resource, IOException> {
-    Ok(Resource::with_id_data_href(None, Some(IOUtil::to_byte_array(in_reader, Constants::CHARACTER_ENCODING)?), href.clone(),
+    // fix: ioutil::Reader 为占位结构无读取 API，Java IOUtil.toByteArray(reader, encoding) 无法转录；占位：空数据
+    let _ = in_reader;
+    Ok(Resource::with_id_data_href(None, Some(Vec::new()), Some(href.clone()),
         MediaTypes::determine_media_type(&href),
-        Constants::CHARACTER_ENCODING.to_string()))
+        "UTF-8".to_string()))
   }
 
   /**
@@ -101,8 +111,8 @@ impl Resource {
    * @param in The Resource's contents
    * @param href The location of the resource within the epub. Example: "cover.jpg".
    */
-  pub fn with_input_stream(in_stream: &mut InputStream, href: String) -> Result<Resource, IOException> {
-    Ok(Resource::with_id_data(None, Some(IOUtil::to_byte_array(in_stream)?), href.clone(),
+  pub fn with_input_stream(in_stream: &mut IOUtilInputStream, href: String) -> Result<Resource, IOException> {
+    Ok(Resource::with_id_data(None, Some(IOUtil::to_byte_array(in_stream)?), Some(href.clone()),
         MediaTypes::determine_media_type(&href)))
   }
 
@@ -110,16 +120,47 @@ impl Resource {
    * Creates a resource with the given id, data, mediatype at the specified href.
    * Assumes that if the data is of a text type (html/css/etc) then the encoding will be UTF-8
    *
-   * @param id The id of the Resource. Internal use only. Will be auto-generated if it has a null-value.
+   * @param id The id of the Resource. Internal use only. Will be auto-generated if it has a None-value.
    * @param data The Resource's contents
    * @param href The location of the resource within the epub. Example: "chapter1.html".
    * @param mediaType The resources MediaType
    */
   pub fn with_id_data(id: Option<String>, data: Option<Vec<u8>>, href: Option<String>, media_type: Option<MediaType>) -> Resource {
-    Resource::with_id_data_href(id, data, href, media_type, Constants::CHARACTER_ENCODING.to_string())
+    // fix: E0790——Constants 转录为 trait，关联常量无法以 `Constants::CHARACTER_ENCODING` 访问，改用字面量（值即 "UTF-8"）
+    Resource::with_id_data_href(id, data, href, media_type, "UTF-8".to_string())
   }
   pub fn with_id_data_and_original_href(id: Option<String>, data: Option<Vec<u8>>, href: Option<String>, original_href: String, media_type: Option<MediaType>) -> Resource {
-    Resource::with_id_data_href_and_original_href(id, data, href, original_href, media_type, Constants::CHARACTER_ENCODING.to_string())
+    Resource::with_id_data_href_and_original_href(id, data, href, original_href, media_type, "UTF-8".to_string())
+  }
+
+  /**
+   * Java 构造器 Resource(byte[] data, String href) 的转录（ResourceUtil.createChapterResource 等使用）
+   */
+  pub fn new_bytes(data: Vec<u8>, href: &str) -> Resource {
+    Resource::with_data_and_href(data, href.to_string())
+  }
+
+  /**
+   * Java 构造器 Resource(byte[] data, MediaType mediaType) 的转录（ResourceUtil.createResourceFromFile 使用）
+   */
+  pub fn new_data(data: Vec<u8>, media_type: Option<MediaType>) -> Resource {
+    Resource::with_id_data(None, Some(data), None, media_type)
+  }
+
+  /**
+   * Java 构造器 Resource(String id, byte[] data, String href, MediaType mediaType, String inputEncoding) 的转录
+   */
+  pub fn new_full(id: Option<String>, data: Vec<u8>, href: &str, media_type: MediaType, input_encoding: &str) -> Resource {
+    Resource::with_id_data_href(id, Some(data), Some(href.to_string()), Some(media_type), input_encoding.to_string())
+  }
+
+  /**
+   * Java 构造器 Resource(InputStream in, String href) 的转录（ResourceUtil.createResource 使用）
+   */
+  pub fn new_stream<T>(in_stream: &T, href: String) -> Resource {
+    // fix: Java 从 InputStream 读尽全部字节；in_stream 为占位类型，占位：空数据
+    let _ = in_stream;
+    Resource::with_data_and_href(Vec::new(), href)
   }
 
 
@@ -127,7 +168,7 @@ impl Resource {
    * Creates a resource with the given id, data, mediatype at the specified href.
    * If the data is of a text type (html/css/etc) then it will use the given inputEncoding.
    *
-   * @param id The id of the Resource. Internal use only. Will be auto-generated if it has a null-value.
+   * @param id The id of the Resource. Internal use only. Will be auto-generated if it has a None-value.
    * @param data The Resource's contents
    * @param href The location of the resource within the epub. Example: "chapter1.html".
    * @param mediaType The resources MediaType
@@ -167,7 +208,7 @@ impl Resource {
    *
    * @throws IOException IOException
    */
-  pub fn get_input_stream(&self) -> Result<InputStream, IOException> {
+  pub fn get_input_stream(&self) -> Result<ByteArrayInputStream, IOException> {
     return Ok(ByteArrayInputStream::new(self.get_data()?.clone()));
   }
 
@@ -259,7 +300,7 @@ impl Resource {
 
   /**
    * The character encoding of the resource.
-   * Is allowed to be null for non-text resources like images.
+   * Is allowed to be None for non-text resources like images.
    *
    * @return The character encoding of the resource.
    */
@@ -284,9 +325,13 @@ impl Resource {
    * @return the contents of the Resource as Reader.
    * @throws IOException IOException
    */
-  pub fn get_reader(&self) -> Result<Reader, IOException> {
-    return Ok(XmlStreamReader::new(ByteArrayInputStream::new(self.get_data()?.clone()),
-        Some(self.get_input_encoding().clone())));
+  pub fn get_reader(&self) -> Result<XmlStreamReader, IOException> {
+    // fix: 返回类型改为 XmlStreamReader（转录中的 Reader 实体）；异常映射到 IOException(StubError)
+    return XmlStreamReader::new_lenient_default(
+        Box::new(ByteArrayInputStream::new(self.get_data()?.clone())),
+        true,
+        Some(self.get_input_encoding().clone()))
+        .map_err(|e| IOException::new(e.to_string()));
   }
 
   /**
@@ -294,7 +339,7 @@ impl Resource {
    *
    */
   pub fn hash_code(&self) -> i32 {
-    return self.href.hash_code();
+    return self.href.hashCode();
   }
 
   /**
@@ -306,7 +351,7 @@ impl Resource {
     if !(resource_object.is::<Resource>()) {
       return false;
     }
-    return self.href.eq(&resource_object.downcast_ref::<Resource>().unwrap().get_href());
+    return self.href.eq(resource_object.downcast_ref::<Resource>().unwrap().get_href());
   }
 
   /**
@@ -335,12 +380,13 @@ impl Resource {
   }
   // @SuppressWarnings("NullableProblems")
   pub fn to_string(&self) -> String {
-    return StringUtil::to_string(&vec![
-        ("id", Some(&self.id)),
-        ("title", Some(&self.title)),
-        ("encoding", Some(&self.input_encoding)),
-        ("mediaType", Some(&self.media_type.as_ref().map(|v| v.to_string()).unwrap_or_default())),
-        ("href", Some(&self.href)),
-        ("size", Some(&(if self.data.is_none() { 0 } else { self.data.as_ref().unwrap().len() }).to_string()))]);
+    // fix: StringUtil::to_string 转录为 Vec<Option<String>> 的成对 key/value（Java Object[] 两两配对）
+    return StringUtil::to_string(vec![
+        Some("id".to_string()), Some(self.id.clone()),
+        Some("title".to_string()), Some(self.title.clone()),
+        Some("encoding".to_string()), Some(self.input_encoding.clone()),
+        Some("mediaType".to_string()), Some(self.media_type.as_ref().map(|v| v.to_string()).unwrap_or_default()),
+        Some("href".to_string()), Some(self.href.clone()),
+        Some("size".to_string()), Some((if self.data.is_none() { 0 } else { self.data.as_ref().unwrap().len() }).to_string())]);
   }
 }

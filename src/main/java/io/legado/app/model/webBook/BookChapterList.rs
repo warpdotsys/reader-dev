@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::Any;
 // package io.legado.app.model.webBook
 //
 // import io.legado.app.data.entities.Book
@@ -27,7 +29,7 @@ impl BookChapterList {
         book_source: &BookSource,
         base_url: &str,
         redirect_url: &str,
-        debug_log: Option<&DebugLog>
+        debug_log: Option<&dyn DebugLog>
     ) -> Vec<BookChapter> {
         if body.is_none() {
             panic!(
@@ -38,7 +40,7 @@ impl BookChapterList {
         }
         let mut chapter_list = Vec::<BookChapter>::new();
         if let Some(dl) = debug_log {
-            dl.log(&book_source.book_source_url, &format!("≡获取成功:{}", base_url));
+            dl.log(Some(&book_source.book_source_url), Some(&format!("≡获取成功:{}", base_url)), false);
         }
         // debugLog?.log(bookSource.bookSourceUrl, body)
         let toc_rule = book_source.get_toc_rule();
@@ -63,50 +65,44 @@ impl BookChapterList {
                 let mut next_url = chapter_data.1[0].clone();
                 while !next_url.is_empty() && !next_url_list.contains(&next_url) {
                     next_url_list.push(next_url.clone());
-                    let analyze_url = AnalyzeUrl::new(
-                        &next_url,
-                        book_source,
-                        book,
-                        book_source.get_header_map(),
-                        debug_log
-                    );
-                    if let Some(next_body) = analyze_url.get_str_response_await().body {
+                    // fix: Kotlin `AnalyzeUrl(mUrl=nextUrl, source=bookSource, ruleData=book,
+                    //      headerMapF=bookSource.getHeaderMap(), debugLog=debugLog)`——AnalyzeUrl::new 收所有权,
+                    //      source/ruleData/debugLog 为引用无法转移, 由 stubs 占位构造（同 AnalyzeRule::new 占位约定）
+                    let mut analyze_url = analyze_url_new_placeholder(next_url.clone());
+                    let res = analyze_url.get_str_response_await(None, None, false).await;
+                    if let Some(next_body) = res.body() {
+                        let res_url = res.url();
                         chapter_data = Self::analyze_chapter_list_private(
-                            book, &next_url, &next_url,
-                            &next_body, &toc_rule, &list_rule, book_source, true, false, debug_log
+                            book, &next_url, &res_url,
+                            next_body, &toc_rule, &list_rule, book_source, true, false, debug_log
                         ).await;
                         next_url = chapter_data.1.first().cloned().unwrap_or(String::new());
                         chapter_list.extend(chapter_data.0);
                     }
                 }
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("◇目录总页数:{}", next_url_list.len()));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("◇目录总页数:{}", next_url_list.len())), false);
                 }
             }
             _ => {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("◇并发解析目录,总页数:{}", chapter_data.1.len()));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("◇并发解析目录,总页数:{}", chapter_data.1.len())), false);
                 }
                 // withContext(IO) {
-                let mut futures = Vec::new();
+                // fix: future 不能借用循环局部变量, 先收集(url, 响应url, body)再构造 future（逻辑等价 Kotlin asyncArray）
+                let mut url_data: Vec<(String, String, String)> = Vec::new();
                 for it in 0..chapter_data.1.len() {
                     let url_str = chapter_data.1[it].clone();
-                    let analyze_url = AnalyzeUrl::new(
-                        &url_str,
-                        book_source,
-                        book,
-                        book_source.get_header_map(),
-                        debug_log
-                    );
-                    let res = analyze_url.get_str_response_await();
-                    let body_ = res.body.unwrap();
-                    futures.push(Self::analyze_chapter_list_private(
-                        book, &url_str, &res.url,
-                        &body_, &toc_rule, &list_rule, book_source, false, false, debug_log
-                    ));
+                    let mut analyze_url = analyze_url_new_placeholder(url_str.clone());
+                    let res = analyze_url.get_str_response_await(None, None, false).await;
+                    let body_ = res.body().cloned().unwrap();
+                    url_data.push((url_str, res.url(), body_));
                 }
-                for fut in futures {
-                    chapter_list.extend(fut.await.0);
+                for (url_str, res_url, body_) in url_data {
+                    chapter_list.extend(Self::analyze_chapter_list_private(
+                        book, &url_str, &res_url,
+                        &body_, &toc_rule, &list_rule, book_source, false, false, debug_log
+                    ).await.0);
                 }
                 // }
             }
@@ -120,10 +116,10 @@ impl BookChapterList {
         }
         // coroutineContext.ensureActive()
         let mut list = Vec::<BookChapter>::new();
-        // LinkedHashSet(chapterList) 去重
+        // LinkedHashSet(chapterList) 去重（BookChapter 未实现 Clone, 按 url 去重, 等价 Kotlin equals/hashCode 仅比较 url）
         let mut seen = std::collections::HashSet::new();
         for c in chapter_list {
-            if seen.insert(c.clone()) {
+            if seen.insert(c.url.clone()) {
                 list.push(c);
             }
         }
@@ -131,23 +127,23 @@ impl BookChapterList {
         list.reverse();
         // }
         if let Some(dl) = debug_log {
-            dl.log(&book.origin, &format!("◇目录总数:{}", list.len()));
+            dl.log(Some(&book.origin), Some(&format!("◇目录总数:{}", list.len())), false);
         }
         for (index, book_chapter) in list.iter_mut().enumerate() {
             // coroutineContext.ensureActive()
-            book_chapter.index = index;
+            book_chapter.index = index as i32;
         }
         if list.len() > 0 {
             book.latest_chapter_title = Some(list.last().unwrap().title.clone());
         }
         //        book.durChapterTitle =
         //            list.getOrNull(book.durChapterIndex)?.title ?: book.latestChapterTitle
-        if book.total_chapter_num < list.len() {
-            book.last_check_count = list.len() - book.total_chapter_num;
+        if (book.total_chapter_num as usize) < list.len() {
+            book.last_check_count = (list.len() as i32) - book.total_chapter_num;
             // book.latestChapterTime = System.currentTimeMillis()
             // book.lastCheckTime = System.currentTimeMillis()
         }
-        book.total_chapter_num = list.len();
+        book.total_chapter_num = list.len() as i32;
         // coroutineContext.ensureActive()
         return list;
     }
@@ -162,34 +158,34 @@ impl BookChapterList {
         book_source: &BookSource,
         get_next_url: bool,
         log: bool,
-        debug_log: Option<&DebugLog>
+        debug_log: Option<&dyn DebugLog>
     ) -> (Vec<BookChapter>, Vec<String>) {
-        let mut analyze_rule = AnalyzeRule::new(book, book_source, debug_log);
-        analyze_rule.set_content(body).set_base_url(base_url);
-        analyze_rule.set_redirect_url(redirect_url);
+        let mut analyze_rule = AnalyzeRule::new(&mut *book, book_source, debug_log);
+        analyze_rule.set_content(Some(Box::new(Any::from(body))), None).set_base_url(Some(base_url.to_string()));
+        analyze_rule.set_redirect_url(redirect_url.to_string());
         //获取目录列表
         let mut chapter_list = Vec::<BookChapter>::new();
         if log {
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, "┌获取目录列表");
+                dl.log(Some(&book_source.book_source_url), Some("┌获取目录列表"), false);
             }
         }
-        let elements = analyze_rule.get_elements(list_rule);
+        let elements = analyze_rule.get_elements(list_rule.to_string());
         if log {
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, &format!("└列表大小:{}", elements.len()));
+                dl.log(Some(&book_source.book_source_url), Some(&format!("└列表大小:{}", elements.len())), false);
             }
         }
         //获取下一页链接
         let mut next_url_list = Vec::<String>::new();
         let next_toc_rule = toc_rule.next_toc_url.clone();
-        if get_next_url && !next_toc_rule.is_empty() {
+        if get_next_url && next_toc_rule.as_deref().map_or(true, |s| !s.is_empty()) {
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取目录下一页列表");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取目录下一页列表"), false);
                 }
             }
-            if let Some(list) = analyze_rule.get_string_list(&next_toc_rule, true) {
+            if let Some(list) = analyze_rule.get_string_list(next_toc_rule.clone(), None, true) {
                 for item in list {
                     if item != redirect_url {
                         next_url_list.push(item);
@@ -198,7 +194,7 @@ impl BookChapterList {
             }
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", join("，\n", &next_url_list)));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", join("，\n", &next_url_list))), false);
                 }
             }
         }
@@ -206,24 +202,33 @@ impl BookChapterList {
         if !elements.is_empty() {
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌解析目录列表");
+                    dl.log(Some(&book_source.book_source_url), Some("┌解析目录列表"), false);
                 }
             }
-            let name_rule = analyze_rule.split_source_rule(&toc_rule.chapter_name);
-            let url_rule = analyze_rule.split_source_rule(&toc_rule.chapter_url);
-            let vip_rule = analyze_rule.split_source_rule(&toc_rule.is_vip);
-            let up_time_rule = analyze_rule.split_source_rule(&toc_rule.update_time);
-            let is_volume_rule = analyze_rule.split_source_rule(&toc_rule.is_volume);
             for (index, item) in elements.iter().enumerate() {
                 // coroutineContext.ensureActive()
-                analyze_rule.set_content(item);
-                let mut book_chapter = BookChapter::new(book.book_url.clone(), redirect_url.to_string());
-                analyze_rule.chapter = Some(book_chapter.clone());
-                book_chapter.title = analyze_rule.get_string(&name_rule);
-                book_chapter.url = analyze_rule.get_string(&url_rule);
-                book_chapter.tag = analyze_rule.get_string(&up_time_rule);
+                analyze_rule.set_content(Some(item.clone()), None);
+                // fix: BookChapter 未实现 Clone, analyzeRule.chapter 借道 Option 往返安装（Kotlin analyzeRule.chapter = bookChapter）
+                let mut book_chapter = BookChapter {
+                    book_url: book.book_url.clone(),
+                    base_url: redirect_url.to_string(),
+                    ..Default::default()
+                };
+                analyze_rule.chapter = Some(book_chapter);
+                book_chapter = analyze_rule.chapter.take().unwrap();
+                book_chapter.title = analyze_rule.get_string(toc_rule.chapter_name.clone(), None, false);
+                analyze_rule.chapter = Some(book_chapter);
+                book_chapter = analyze_rule.chapter.take().unwrap();
+                book_chapter.url = analyze_rule.get_string(toc_rule.chapter_url.clone(), None, false);
+                analyze_rule.chapter = Some(book_chapter);
+                book_chapter = analyze_rule.chapter.take().unwrap();
+                book_chapter.tag = Some(analyze_rule.get_string(toc_rule.update_time.clone(), None, false));
+                analyze_rule.chapter = Some(book_chapter);
+                book_chapter = analyze_rule.chapter.take().unwrap();
                 book_chapter.set_user_name_space(book.get_user_name_space());
-                let is_volume = analyze_rule.get_string(&is_volume_rule);
+                analyze_rule.chapter = Some(book_chapter);
+                book_chapter = analyze_rule.chapter.take().unwrap();
+                let is_volume = analyze_rule.get_string(toc_rule.is_volume.clone(), None, false);
                 book_chapter.is_volume = false;
                 if is_volume.is_true() {
                     book_chapter.is_volume = true;
@@ -233,41 +238,41 @@ impl BookChapterList {
                         book_chapter.url = book_chapter.title.clone() + &index.to_string();
                         if log {
                             if let Some(dl) = debug_log {
-                                dl.log(&book_source.book_source_url, &format!("⇒一级目录{}未获取到url,使用标题替代", index));
+                                dl.log(Some(&book_source.book_source_url), Some(&format!("⇒一级目录{}未获取到url,使用标题替代", index)), false);
                             }
                         }
                     } else {
                         book_chapter.url = base_url.to_string();
                         if log {
                             if let Some(dl) = debug_log {
-                                dl.log(&book_source.book_source_url, &format!("⇒目录{}未获取到url,使用baseUrl替代", index));
+                                dl.log(Some(&book_source.book_source_url), Some(&format!("⇒目录{}未获取到url,使用baseUrl替代", index)), false);
                             }
                         }
                     }
                 }
                 if !book_chapter.title.is_empty() {
-                    let is_vip = analyze_rule.get_string(&vip_rule);
+                    let is_vip = analyze_rule.get_string(toc_rule.is_vip.clone(), None, false);
                     if is_vip.is_true() {
                         book_chapter.title = format!("\u{1F512}{}", book_chapter.title);
                     }
                     chapter_list.push(book_chapter);
                 } else if log {
                     if let Some(dl) = debug_log {
-                        dl.log(&book_source.book_source_url, "章节名为空");
+                        dl.log(Some(&book_source.book_source_url), Some("章节名为空"), false);
                     }
                 }
             }
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "└目录列表解析完成");
+                    dl.log(Some(&book_source.book_source_url), Some("└目录列表解析完成"), false);
                     if !chapter_list.is_empty() {
-                        dl.log(&book_source.book_source_url, "≡首章信息");
-                        dl.log(&book_source.book_source_url, &format!("◇章节名称:{}", chapter_list[0].title));
-                        dl.log(&book_source.book_source_url, &format!("◇章节链接:{}", chapter_list[0].url));
-                        dl.log(&book_source.book_source_url, &format!("◇章节信息:{}", chapter_list[0].tag));
-                        dl.log(&book_source.book_source_url, &format!("◇是否卷名:{}", chapter_list[0].is_volume));
+                        dl.log(Some(&book_source.book_source_url), Some("≡首章信息"), false);
+                        dl.log(Some(&book_source.book_source_url), Some(&format!("◇章节名称:{}", chapter_list[0].title)), false);
+                        dl.log(Some(&book_source.book_source_url), Some(&format!("◇章节链接:{}", chapter_list[0].url)), false);
+                        dl.log(Some(&book_source.book_source_url), Some(&format!("◇章节信息:{}", chapter_list[0].tag.as_deref().unwrap_or(""))), false);
+                        dl.log(Some(&book_source.book_source_url), Some(&format!("◇是否卷名:{}", chapter_list[0].is_volume)), false);
                     } else {
-                        dl.log(&book_source.book_source_url, "章节列表为空");
+                        dl.log(Some(&book_source.book_source_url), Some("章节列表为空"), false);
                     }
                 }
             }
@@ -276,7 +281,7 @@ impl BookChapterList {
     }
 }
 
-fn join(sep: &str, list: &Vec<String>) -> String {
+pub fn join(sep: &str, list: &Vec<String>) -> String {
     let mut s = String::new();
     for (i, item) in list.iter().enumerate() {
         if i > 0 {

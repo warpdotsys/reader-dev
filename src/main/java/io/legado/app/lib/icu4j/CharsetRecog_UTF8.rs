@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /**
@@ -33,16 +34,16 @@ impl CharsetRecognizer for CharsetRecog_UTF8 {
         let mut num_valid = 0;
         let mut num_invalid = 0;
         // byte[] input = det.fRawInput;
-        let input = det.f_raw_input.clone().unwrap_or_default();
+        let input = det.raw_input().clone().unwrap_or_default();
         let mut i;
         let mut trail_bytes = 0;
-        let confidence: i32;
+        let mut confidence: i32;
 
         // if (det.fRawLength >= 3 &&
         //         (input[0] & 0xFF) == 0xef && (input[1] & 0xFF) == 0xbb && (input[2] & 0xFF) == 0xbf) {
         //     hasBOM = true;
         // }
-        if det.f_raw_length >= 3
+        if det.raw_length() >= 3
             && (input[0] & 0xFF) == 0xef && (input[1] & 0xFF) == 0xbb && (input[2] & 0xFF) == 0xbf
         {
             has_bom = true;
@@ -85,7 +86,7 @@ impl CharsetRecognizer for CharsetRecog_UTF8 {
         //     }
         // }
         i = 0;
-        while i < det.f_raw_length as usize {
+        while i < det.raw_length() as usize {
             let mut b = input[i];
             if (b & 0x80) == 0 {
                 i += 1;
@@ -108,7 +109,7 @@ impl CharsetRecognizer for CharsetRecog_UTF8 {
             // Verify that we've got the right number of trail bytes in the sequence
             loop {
                 i += 1;
-                if i >= det.f_raw_length as usize {
+                if i >= det.raw_length() as usize {
                     break;
                 }
                 b = input[i];
@@ -161,7 +162,7 @@ impl CharsetRecognizer for CharsetRecog_UTF8 {
             // Probably corruput utf-8 data.  Valid sequences aren't likely by chance.
             confidence = 25;
         }
-        // return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+        // return confidence == 0 ? None : new CharsetMatch(det, this, confidence);
         if confidence == 0 {
             None
         } else {

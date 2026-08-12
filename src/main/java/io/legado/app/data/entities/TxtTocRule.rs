@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 // import androidx.room.Entity
@@ -12,6 +13,7 @@
 //     var serialNumber: Int = -1,
 //     var enable: Boolean = true
 // )
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct TxtTocRule {
     pub id: i64,
     pub name: String,

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.help.http
 //
 // import io.legado.app.utils.UTF8BOMFighter
@@ -8,7 +9,7 @@
 // import java.lang.reflect.Type
 // import java.nio.charset.Charset
 
-// class EncodeConverter(private val encode: String? = null) : Converter.Factory() {
+// class EncodeConverter(private val encode: String? = None) : Converter.Factory() {
 pub struct EncodeConverter {
     encode: Option<String>,
 }
@@ -29,15 +30,15 @@ impl ConverterFactory for EncodeConverter {
     //         val responseBytes = UTF8BOMFighter.removeUTF8BOM(value.bytes())
     //         encode?.let { return@Converter String(responseBytes, Charset.forName(encode)) }
     //
-    //         var charsetName: String? = null
+    //         var charsetName: String? = None
     //         val mediaType = value.contentType()
     //         //根据http头判断
-    //         if (mediaType != null) {
+    //         if (mediaType != None) {
     //             val charset = mediaType.charset()
     //             charsetName = charset?.displayName()
     //         }
     //
-    //         if (charsetName == null) {
+    //         if (charsetName == None) {
     //             charsetName = EncodingDetect.getHtmlEncode(responseBytes)
     //         }
     //
@@ -51,15 +52,17 @@ impl ConverterFactory for EncodeConverter {
         _retrofit: Option<&Retrofit>,
     ) -> Option<Converter<ResponseBody, String>> {
         // return Converter { value -> ... }
-        Some(Converter::new(move |value: ResponseBody| {
+        // fix: Converter::new 要求闭包 'static，encode 先 clone 再 move 进闭包
+        let encode = self.encode.clone();
+        Some(Converter::new(move |value: ResponseBody| -> String {
             // val responseBytes = UTF8BOMFighter.removeUTF8BOM(value.bytes())
-            let response_bytes = UTF8BOMFighter::remove_utf8_bom(value.bytes());
+            let response_bytes = UTF8BOMFighter::removeUTF8BOM_bytes(&value.bytes());
             // encode?.let { return@Converter String(responseBytes, Charset.forName(encode)) }
-            if let Some(encode) = &self.encode {
+            if let Some(encode) = &encode {
                 return String::from_utf8_lossy(&response_bytes).into_owned();
             }
 
-            // var charsetName: String? = null
+            // var charsetName: String? = None
             let mut charset_name: Option<String> = None;
             // val mediaType = value.contentType()
             let media_type = value.content_type();
@@ -68,14 +71,14 @@ impl ConverterFactory for EncodeConverter {
                 // val charset = mediaType.charset()
                 let charset = media_type.as_ref().unwrap().charset();
                 // charsetName = charset?.displayName()
-                charset_name = charset.map(|it| it.display_name());
+                charset_name = charset.map(|it| it.to_string());
             }
 
-            // if (charsetName == null) {
+            // if (charsetName == None) {
             //     charsetName = EncodingDetect.getHtmlEncode(responseBytes)
             // }
             if charset_name.is_none() {
-                charset_name = Some(EncodingDetect::get_html_encode(&response_bytes));
+                charset_name = Some(EncodingDetect::getHtmlEncode(&response_bytes));
             }
 
             // String(responseBytes, Charset.forName(charsetName))

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.help.http
 //
 // import okhttp3.ResponseBody
@@ -23,9 +24,10 @@ impl ConverterFactory for ByteConverter {
         _type: Option<&Type>,
         _annotations: Option<&[Annotation]>,
         _retrofit: Option<&Retrofit>,
-    ) -> Option<Converter<ResponseBody, Vec<u8>>> {
-        Some(Converter::new(|value: ResponseBody| {
-            value.bytes()
+    ) -> Option<Converter<ResponseBody, String>> {
+        // fix: 与 stubs ConverterFactory 固定签名一致（同 EncodeConverter）；字节流按 UTF-8 转为 String
+        Some(Converter::new(|value: ResponseBody| -> String {
+            String::from_utf8_lossy(&value.bytes()).into_owned()
         }))
     }
 }

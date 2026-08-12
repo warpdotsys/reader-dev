@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::stubs::GSON;
+use std::cmp::Ordering;
 // package io.legado.app.data.entities
 
 //import android.os.Parcelable
@@ -55,7 +58,7 @@ pub struct SearchBook {
 
     //    @Ignore
     //    @IgnoredOnParcel
-    // var origins: LinkedHashSet<String>? = null
+    // var origins: LinkedHashSet<String>? = None
     //     private set
     pub origins: Option<LinkedHashSet<String>>,
 }
@@ -65,7 +68,7 @@ impl SearchBook {
         if let Some(cached) = self.variable_map_cache.borrow().as_ref() {
             return cached.clone();
         }
-        let map = GSON::from_json_object::<HashMap<String, String>>(self.variable.as_ref())
+        let map = GSON::from_json_object::<HashMap<String, String>>(self.variable.clone().unwrap_or_default())
             .get_or_null()
             .unwrap_or_else(HashMap::new);
         *self.variable_map_cache.borrow_mut() = Some(map.clone());

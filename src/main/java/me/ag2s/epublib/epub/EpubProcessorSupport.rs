@@ -1,6 +1,8 @@
+use crate::prelude::*;
 use std::collections::VecDeque;
 
-use crate::me::ag2s::epublib::Constants;
+// fix: Constants 转录为 trait，关联常量无法跨模块以 `Constants::CHARACTER_ENCODING` 访问；镜像常量值（与 Java 一致）
+const CHARACTER_ENCODING: &'static str = "UTF-8";
 
 /**
  * Various low-level support methods for reading/writing epubs.
@@ -9,38 +11,43 @@ use crate::me::ag2s::epublib::Constants;
  */
 pub struct EpubProcessorSupport;
 
+// fix: Java 的 `protected static DocumentBuilderFactory documentBuilderFactory` 字段
+// fix: → 模块级 `static mut`（Rust 不允许 impl 内出现 associated static item）
+pub static mut document_builder_factory: Option<DocumentBuilderFactory> = None;
+
 impl EpubProcessorSupport {
 
     pub const TAG: &'static str = "me.ag2s.epublib.epub.EpubProcessorSupport";
 
-    pub static mut document_builder_factory: Option<DocumentBuilderFactory> = None;
-
     pub fn init() {
-        EpubProcessorSupport::document_builder_factory = Some(DocumentBuilderFactory::new_instance());
-        if let Some(ref mut dbf) = EpubProcessorSupport::document_builder_factory {
+        // fix: 访问 static mut 需要 unsafe
+        unsafe {
+            document_builder_factory = Some(DocumentBuilderFactory::new_instance());
+        }
+        if let Some(ref mut dbf) = unsafe { document_builder_factory.as_mut() } {
             dbf.set_namespace_aware(true);
             dbf.set_validating(false);
         }
     }
 
     pub fn create_xml_serializer_stream(out: OutputStream) -> XmlSerializer {
-        create_xml_serializer_writer(OutputStreamWriter::new(out, Constants::CHARACTER_ENCODING))
+        Self::create_xml_serializer_writer(OutputStreamWriter::new(out, CHARACTER_ENCODING))
     }
 
     pub fn create_xml_serializer_writer(out: Writer) -> XmlSerializer {
-        let mut result = None;
         /*
          * Disable XmlPullParserFactory here before it doesn't work when
          * building native image using GraalVM
          */
-        let factory = XmlPullParserFactory::new_instance();
+        let mut factory = XmlPullParserFactory::new_instance();
         factory.set_validating(true);
-        result = Some(factory.new_serializer());
+        // fix: 原 Java `var result: XmlSerializer` 误转录为 Option，直接持有 serializer
+        let mut result = factory.new_serializer();
 
         //result = new KXmlSerializer();
         result.set_feature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
         result.set_output(out);
-        result.unwrap()
+        result
     }
 
     /**
@@ -57,7 +64,8 @@ impl EpubProcessorSupport {
 
     #[allow(dead_code)]
     pub fn get_document_builder_factory(&self) -> Option<DocumentBuilderFactory> {
-        EpubProcessorSupport::document_builder_factory
+        // fix: static mut 已移到模块级，读取需要 unsafe；不可 move，用 as_ref().cloned()
+        unsafe { document_builder_factory.as_ref().cloned() }
     }
 
     /**
@@ -67,9 +75,20 @@ impl EpubProcessorSupport {
      */
     pub fn create_document_builder() -> DocumentBuilder {
         let mut result = None;
-        result = Some(DocumentBuilderFactory::new_document_builder());
-        result.set_entity_resolver(get_entity_resolver());
+        // fix: 对应 Java `documentBuilderFactory.newDocumentBuilder()`（static mut 访问需 unsafe；不可 move，用 as_ref()）
+        result = Some(unsafe { document_builder_factory.as_ref() }.unwrap().new_document_builder());
+        result.as_mut().unwrap().set_entity_resolver(Self::get_entity_resolver());
         result.unwrap()
+    }
+
+    // fix: 占位实现（原 Java ClassLoader.getResource / getResourceAsStream 语义未转录）
+    pub fn get_resource(resource_path: &str) -> Option<()> {
+        let _ = resource_path;
+        None
+    }
+    pub fn get_resource_as_stream(resource_path: &str) -> Option<InputStream> {
+        let _ = resource_path;
+        None
     }
 }
 
@@ -81,7 +100,7 @@ impl EntityResolverImpl {
     pub fn resolve_entity(&mut self, public_id: String, system_id: String) -> InputSource {
         let resource_path: String;
         if system_id.starts_with("http:") {
-            let url = URL::new(system_id);
+            let url = URL::new(system_id.clone());
             resource_path = "dtd/".to_string() + &url.get_host() + &url.get_path();
             self.previous_location = Some(resource_path.clone()[0..resource_path.rfind('/').unwrap()].to_string());
         } else {
@@ -97,6 +116,7 @@ impl EntityResolverImpl {
     }
 }
 
+#[derive(Clone)]
 pub struct DocumentBuilderFactory;
 pub struct DocumentBuilder;
 pub struct XmlSerializer;

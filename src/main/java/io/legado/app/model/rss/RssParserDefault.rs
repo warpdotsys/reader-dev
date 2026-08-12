@@ -1,3 +1,8 @@
+use crate::prelude::*;
+// 显式导入消解跨模块 glob 导入歧义（XmlPullParserFactory 与 EpubProcessorSupport 同名；
+// XmlPullParser 为 kdom trait，事件常量改指 KXmlParser 关联常量）
+use crate::stubs::{StringReader, XmlPullParserFactory};
+use crate::org_kxml2_io_kxmlparser::KXmlParser;
 // package io.legado.app.model.rss
 //
 // import io.legado.app.data.entities.RssArticle
@@ -18,112 +23,108 @@ impl RssParserDefault {
         sort_name: &str,
         xml: &str,
         source_url: &str,
-        debug_log: Option<&DebugLog>
+        debug_log: Option<&dyn DebugLog>
     ) -> (Vec<RssArticle>, Option<String>) {
 
         let mut article_list = Vec::<RssArticle>::new();
-        let mut current_article = RssArticle::new();
+        let mut current_article = RssArticle::default();
 
         // val factory = XmlPullParserFactory.newInstance()
         // val factory = XmlPullParserFactory.newInstance("""
         // org.kxml2.io.KXmlParser
         // org.kxml2.io.KXmlSerializer
         //        """, Thread.currentThread().getContextClassLoader().javaClass)
-        let factory = XmlPullParserFactory::new_instance();
+        let mut factory = XmlPullParserFactory::new_instance();
         factory.is_namespace_aware = false;
 
         let mut xml_pull_parser = factory.new_pull_parser();
-        xml_pull_parser.set_input(StringReader::new(xml));
+        xml_pull_parser.set_input(Some(Box::new(StringReader::new(xml))));
 
         // A flag just to be sure of the correct parsing
         let mut inside_item = false;
 
-        let mut event_type = xml_pull_parser.event_type;
+        let mut event_type = xml_pull_parser.type_;
 
         // Start parsing the xml
-        'loop_label: while event_type != XmlPullParser::END_DOCUMENT {
+        'loop_label: while event_type != KXmlParser::END_DOCUMENT {
 
             // Start parsing the item
-            if event_type == XmlPullParser::START_TAG {
-                if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM) {
+            if event_type == KXmlParser::START_TAG {
+                if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM) {
                     inside_item = true;
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_TITLE) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_TITLE) {
                     if inside_item {
-                        current_article.title = xml_pull_parser.next_text().trim().to_string();
+                        current_article.title = xml_pull_parser.next_text().unwrap_or_default().trim().to_string();
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_LINK) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_LINK) {
                     if inside_item {
-                        current_article.link = xml_pull_parser.next_text().trim().to_string();
+                        current_article.link = xml_pull_parser.next_text().unwrap_or_default().trim().to_string();
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_THUMBNAIL) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_THUMBNAIL) {
                     if inside_item {
-                        current_article.image = Some(
-                            xml_pull_parser.get_attribute_value(None, Self::RSS_ITEM_URL).to_string()
-                        );
+                        current_article.image = xml_pull_parser.get_attribute_value_named(None, Self::RSS_ITEM_URL.to_string());
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_ENCLOSURE) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_ENCLOSURE) {
                     if inside_item {
-                        let type_attr = xml_pull_parser.get_attribute_value(None, Self::RSS_ITEM_TYPE);
+                        let type_attr = xml_pull_parser.get_attribute_value_named(None, Self::RSS_ITEM_TYPE.to_string());
                         if type_attr.is_some() && type_attr.unwrap().contains("image/") {
-                            current_article.image = Some(
-                                xml_pull_parser.get_attribute_value(None, Self::RSS_ITEM_URL).to_string()
-                            );
+                            current_article.image = xml_pull_parser.get_attribute_value_named(None, Self::RSS_ITEM_URL.to_string());
                         }
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_DESCRIPTION) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_DESCRIPTION) {
                     if inside_item {
-                        let description = xml_pull_parser.next_text();
+                        let description = xml_pull_parser.next_text().unwrap_or_default();
                         current_article.description = Some(description.trim().to_string());
                         if current_article.image.is_none() {
                             current_article.image = Self::get_image_url(&description);
                         }
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_CONTENT) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_CONTENT) {
                     if inside_item {
-                        let content = xml_pull_parser.next_text().trim().to_string();
+                        let content = xml_pull_parser.next_text().unwrap_or_default().trim().to_string();
                         current_article.content = Some(content.clone());
                         if current_article.image.is_none() {
                             current_article.image = Self::get_image_url(&content);
                         }
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_PUB_DATE) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_PUB_DATE) {
                     if inside_item {
-                        let next_token_type = xml_pull_parser.next();
-                        if next_token_type == XmlPullParser::TEXT {
-                            current_article.pub_date = Some(xml_pull_parser.text.trim().to_string());
+                        let next_token_type = xml_pull_parser.next().unwrap_or_default();
+                        if next_token_type == KXmlParser::TEXT {
+                            current_article.pub_date = Some(xml_pull_parser.get_text().unwrap_or_default().trim().to_string());
                         }
                         // Skip to be able to find date inside 'tag' tag
                         continue 'loop_label;
                     }
-                } else if xml_pull_parser.name.eq_ignore_ascii_case(Self::RSS_ITEM_TIME) {
+                } else if xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case(Self::RSS_ITEM_TIME) {
                     if inside_item {
-                        current_article.pub_date = Some(xml_pull_parser.next_text());
+                        current_article.pub_date = Some(xml_pull_parser.next_text().unwrap_or_default());
                     }
                 }
-            } else if event_type == XmlPullParser::END_TAG
-                && xml_pull_parser.name.eq_ignore_ascii_case("item")
+            } else if event_type == KXmlParser::END_TAG
+                && xml_pull_parser.name.as_deref().unwrap_or_default().eq_ignore_ascii_case("item")
             {
                 // The item is correctly parsed
                 inside_item = false;
                 current_article.origin = source_url.to_string();
                 current_article.sort = sort_name.to_string();
                 article_list.push(current_article);
-                current_article = RssArticle::new();
+                current_article = RssArticle::default();
             }
-            event_type = xml_pull_parser.next();
+            event_type = xml_pull_parser.next().unwrap_or_default();
         }
         if let Some(it) = article_list.first() {
             if let Some(dl) = debug_log {
-                dl.log(source_url, "┌获取标题");
-                dl.log(source_url, &format!("└{}", it.title));
-                dl.log(source_url, "┌获取时间");
-                dl.log(source_url, &format!("└{}", it.pub_date.clone().unwrap_or_default()));
-                dl.log(source_url, "┌获取描述");
-                dl.log(source_url, &format!("└{}", it.description.clone().unwrap_or_default()));
-                dl.log(source_url, "┌获取图片url");
-                dl.log(source_url, &format!("└{}", it.image.clone().unwrap_or_default()));
-                dl.log(source_url, "┌获取文章链接");
-                dl.log(source_url, &format!("└{}", it.link));
+                dl.log(Some(source_url), Some("┌获取标题"), false);
+                dl.log(Some(source_url), Some(&format!("└{}", it.title)), false);
+                dl.log(Some(source_url), Some("┌获取时间"), false);
+                dl.log(Some(source_url), Some(&format!("└{}", it.pub_date.clone().unwrap_or_default())), false);
+                dl.log(Some(source_url), Some("┌获取描述"), false);
+                dl.log(Some(source_url), Some(&format!("└{}", it.description.clone().unwrap_or_default())), false);
+                dl.log(Some(source_url), Some("┌获取图片url"), false);
+                dl.log(Some(source_url), Some(&format!("└{}", it.image.clone().unwrap_or_default())), false);
+                dl.log(Some(source_url), Some("┌获取文章链接"), false);
+                dl.log(Some(source_url), Some(&format!("└{}", it.link)), false);
             }
         }
         return (article_list, None);

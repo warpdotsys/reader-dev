@@ -1,4 +1,20 @@
+use crate::prelude::*;
 use crate::me::ag2s::epublib::util::commons::io::IOConsumer;
+use crate::stubs::Closeable;
+
+// Allocated in the relevant skip method if necessary.
+/*
+ * These buffers are static and are shared between threads.
+ * This is possible because the buffers are write-only - the contents are never read.
+ *
+ * N.B. there is no need to synchronize when creating these because:
+ * - we don't care if the buffer is created multiple times (the data is ignored)
+ * - we always use the same size buffer, so if it it is recreated it will still be OK
+ * (if the buffer size were variable, we would need to synch. to ensure some other thread
+ * did not create a smaller one)
+ */
+// fix: Java 静态字段 SKIP_CHAR_BUFFER 移出 impl 到模块级 `static mut`（impl 内不允许关联 static）
+pub static mut SKIP_CHAR_BUFFER: Option<Vec<char>> = None;
 
 /**
  * Most of the functions herein are re-implementations of the ones in
@@ -22,19 +38,6 @@ impl IOUtil {
     pub const DEFAULT_BUFFER_SIZE: usize = 1024 * 8;
     const SKIP_BYTE_BUFFER: [u8; 1024 * 8] = [0; 1024 * 8];
 
-    // Allocated in the relevant skip method if necessary.
-    /*
-     * These buffers are static and are shared between threads.
-     * This is possible because the buffers are write-only - the contents are never read.
-     *
-     * N.B. there is no need to synchronize when creating these because:
-     * - we don't care if the buffer is created multiple times (the data is ignored)
-     * - we always use the same size buffer, so if it it is recreated it will still be OK
-     * (if the buffer size were variable, we would need to synch. to ensure some other thread
-     * did not create a smaller one)
-     */
-    static mut SKIP_CHAR_BUFFER: Option<Vec<char>> = None;
-
     /**
      * Gets the contents of the Reader as a byte[], with the given character encoding.
      *
@@ -43,9 +46,9 @@ impl IOUtil {
      * @return the contents of the Reader as a byte[], with the given character encoding.
      * @throws IOException g
      */
-    pub fn to_byte_array_reader(in_reader: &Reader, encoding: &str) -> Result<Vec<u8>, io::Error> {
+    pub fn to_byte_array_reader(in_reader: &InputStreamReader, encoding: &str) -> Result<Vec<u8>, io::Error> {
         let mut out = StringWriter::new();
-        copy_reader_app(out)?;
+        Self::copy_reader_app(in_reader, &mut out)?;
         out.flush();
         Ok(out.to_string().into_bytes())
     }
@@ -59,7 +62,7 @@ impl IOUtil {
      */
     pub fn to_byte_array(in_stream: &InputStream) -> Result<Vec<u8>, io::Error> {
         let mut result = ByteArrayOutputStream::new();
-        copy(in_stream, &mut result)?;
+        Self::copy(in_stream, &mut result)?;
         result.flush();
         Ok(result.to_byte_array())
     }
@@ -72,7 +75,7 @@ impl IOUtil {
      *
      * @param in   the stream to read data from
      * @param size the size of the array to create
-     * @return the array, or null
+     * @return the array, or None
      * @throws IOException f
      */
     pub fn to_byte_array_size(in_stream: &InputStream, size: usize) -> Result<Option<Vec<u8>>, io::Error> {
@@ -85,7 +88,7 @@ impl IOUtil {
             result = ByteArrayOutputStream::new();
         }
 
-        copy(in_stream, &mut result)?;
+        Self::copy(in_stream, &mut result)?;
         result.flush();
         Ok(Some(result.to_byte_array()))
     }
@@ -113,8 +116,8 @@ impl IOUtil {
     }
 
     //
-    pub fn copy(in_stream: &InputStream, result: &mut OutputStream) -> Result<(), io::Error> {
-        copy_buffer(in_stream, result, IOUtil::DEFAULT_BUFFER_SIZE)
+    pub fn copy(in_stream: &InputStream, result: &mut ByteArrayOutputStream) -> Result<(), io::Error> {
+        Self::copy_buffer(in_stream, result, IOUtil::DEFAULT_BUFFER_SIZE)
     }
 
     /**
@@ -127,13 +130,13 @@ impl IOUtil {
      * @param input      the <code>InputStream</code> to read from
      * @param output     the <code>OutputStream</code> to write to
      * @param bufferSize the bufferSize used to copy from the input to the output
-     * @return the number of bytes copied. or {@code 0} if {@code input is null}.
-     * @throws NullPointerException if the output is null
+     * @return the number of bytes copied. or {@code 0} if {@code input is None}.
+     * @throws NullPointerException if the output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.5
      */
-    pub fn copy_buffer(input: &InputStream, output: &mut OutputStream, buffer_size: usize) -> Result<(), io::Error> {
-        copy_large(input, output, vec![0u8; buffer_size]);
+    pub fn copy_buffer(input: &InputStream, output: &mut ByteArrayOutputStream, buffer_size: usize) -> Result<(), io::Error> {
+        Self::copy_large_buffer(input, output, &mut vec![0u8; buffer_size]);
         Ok(())
     }
 
@@ -148,14 +151,14 @@ impl IOUtil {
      *
      * @param input  the <code>InputStream</code> to read from
      * @param output the <code>Writer</code> to write to
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 1.1
      * @deprecated 2.5 use {@link #copy(InputStream, Writer, Charset)} instead
      */
     #[deprecated]
-    pub fn copy_input_writer(input: &InputStream, output: &mut Writer) -> Result<(), io::Error> {
-        copy_input_writer_charset(input, output, Charset::default_charset())
+    pub fn copy_input_writer(input: &InputStream, output: &mut OutputStreamWriter) -> Result<(), io::Error> {
+        Self::copy_input_writer_charset(input, output, Charset::default_charset())
     }
 
     /**
@@ -169,14 +172,14 @@ impl IOUtil {
      *
      * @param input        the <code>InputStream</code> to read from
      * @param output       the <code>Writer</code> to write to
-     * @param inputCharset the charset to use for the input stream, null means platform default
-     * @throws NullPointerException if the input or output is null
+     * @param inputCharset the charset to use for the input stream, None means platform default
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.3
      */
-    pub fn copy_input_writer_charset(input: &InputStream, output: &mut Writer, input_charset: Charset) -> Result<(), io::Error> {
+    pub fn copy_input_writer_charset(input: &InputStream, output: &mut OutputStreamWriter, input_charset: Charset) -> Result<(), io::Error> {
         let in_reader = InputStreamReader::new(input, input_charset.name());
-        copy_reader_writer(&in_reader, output);
+        Self::copy_reader_writer(&in_reader, output);
         Ok(())
     }
 
@@ -194,16 +197,16 @@ impl IOUtil {
      *
      * @param input            the <code>InputStream</code> to read from
      * @param output           the <code>Writer</code> to write to
-     * @param inputCharsetName the name of the requested charset for the InputStream, null means platform default
-     * @throws NullPointerException                         if the input or output is null
+     * @param inputCharsetName the name of the requested charset for the InputStream, None means platform default
+     * @throws NullPointerException                         if the input or output is None
      * @throws IOException                                  if an I/O error occurs
      * @throws java.nio.charset.UnsupportedCharsetException thrown instead of {@link java.io
      *                                                      .UnsupportedEncodingException} in version 2.2 if the
      *                                                      encoding is not supported.
      * @since 1.1
      */
-    pub fn copy_input_writer_charset_name(input: &InputStream, output: &mut Writer, input_charset_name: &str) -> Result<(), io::Error> {
-        copy_input_writer_charset(input, output, Charset::for_name(input_charset_name))
+    pub fn copy_input_writer_charset_name(input: &InputStream, output: &mut OutputStreamWriter, input_charset_name: &str) -> Result<(), io::Error> {
+        Self::copy_input_writer_charset(input, output, Charset::for_name(input_charset_name))
     }
 
     /**
@@ -220,12 +223,12 @@ impl IOUtil {
      * @param input  the <code>Reader</code> to read from
      * @param output the <code>Appendable</code> to write to
      * @return the number of characters copied, or -1 if &gt; Integer.MAX_VALUE
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.7
      */
-    pub fn copy_reader_app(input: &Reader, output: &mut Appendable) -> Result<i64, io::Error> {
-        copy_reader_app_buffer(input, output, CharBuffer::allocate(IOUtil::DEFAULT_BUFFER_SIZE))
+    pub fn copy_reader_app(input: &InputStreamReader, output: &mut StringWriter) -> Result<i64, io::Error> {
+        Self::copy_reader_app_buffer(input, output, CharBuffer::allocate(IOUtil::DEFAULT_BUFFER_SIZE))
     }
 
     /**
@@ -239,11 +242,11 @@ impl IOUtil {
      * @param output the <code>Appendable</code> to write to
      * @param buffer the buffer to be used for the copy
      * @return the number of characters copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.7
      */
-    pub fn copy_reader_app_buffer(input: &Reader, output: &mut Appendable, buffer: CharBuffer) -> Result<i64, io::Error> {
+    pub fn copy_reader_app_buffer(input: &InputStreamReader, output: &mut StringWriter, mut buffer: CharBuffer) -> Result<i64, io::Error> {
         let mut count = 0;
         loop {
             let n = input.read(&mut buffer);
@@ -251,12 +254,11 @@ impl IOUtil {
                 break;
             }
             buffer.flip();
-            output.append(&buffer, 0, n);
-            count += n;
+            output.append(&buffer, 0, n as usize);
+            count += n as i64;
         }
         Ok(count)
     }
-
     /**
      * Copies chars from a <code>Reader</code> to bytes on an
      * <code>OutputStream</code> using the default character encoding of the
@@ -272,14 +274,14 @@ impl IOUtil {
      *
      * @param input  the <code>Reader</code> to read from
      * @param output the <code>OutputStream</code> to write to
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 1.1
      * @deprecated 2.5 use {@link #copy(Reader, OutputStream, Charset)} instead
      */
     #[deprecated]
-    pub fn copy_reader_output(input: &Reader, output: &mut OutputStream) -> Result<(), io::Error> {
-        copy_reader_output_charset(input, output, Charset::default_charset())
+    pub fn copy_reader_output(input: &InputStreamReader, output: &mut ByteArrayOutputStream) -> Result<(), io::Error> {
+        Self::copy_reader_output_charset(input, output, Charset::default_charset())
     }
 
     /**
@@ -300,14 +302,14 @@ impl IOUtil {
      *
      * @param input         the <code>Reader</code> to read from
      * @param output        the <code>OutputStream</code> to write to
-     * @param outputCharset the charset to use for the OutputStream, null means platform default
-     * @throws NullPointerException if the input or output is null
+     * @param outputCharset the charset to use for the OutputStream, None means platform default
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.3
      */
-    pub fn copy_reader_output_charset(input: &Reader, output: &mut OutputStream, output_charset: Charset) -> Result<(), io::Error> {
+    pub fn copy_reader_output_charset(input: &InputStreamReader, output: &mut ByteArrayOutputStream, output_charset: Charset) -> Result<(), io::Error> {
         let mut out = OutputStreamWriter::new(output, output_charset.name());
-        copy_reader_writer(input, &mut out)?;
+        Self::copy_reader_writer(input, &mut out)?;
         // XXX Unless anyone is planning on rewriting OutputStreamWriter,
         // we have to flush here.
         out.flush();
@@ -332,16 +334,16 @@ impl IOUtil {
      *
      * @param input             the <code>Reader</code> to read from
      * @param output            the <code>OutputStream</code> to write to
-     * @param outputCharsetName the name of the requested charset for the OutputStream, null means platform default
-     * @throws NullPointerException                         if the input or output is null
+     * @param outputCharsetName the name of the requested charset for the OutputStream, None means platform default
+     * @throws NullPointerException                         if the input or output is None
      * @throws IOException                                  if an I/O error occurs
      * @throws java.nio.charset.UnsupportedCharsetException thrown instead of {@link java.io
      *                                                      .UnsupportedEncodingException} in version 2.2 if the
      *                                                      encoding is not supported.
      * @since 1.1
      */
-    pub fn copy_reader_output_charset_name(input: &Reader, output: &mut OutputStream, output_charset_name: &str) -> Result<(), io::Error> {
-        copy_reader_output_charset(input, output, Charset::for_name(output_charset_name))
+    pub fn copy_reader_output_charset_name(input: &InputStreamReader, output: &mut ByteArrayOutputStream, output_charset_name: &str) -> Result<(), io::Error> {
+        Self::copy_reader_output_charset(input, output, Charset::for_name(output_charset_name))
     }
 
     /**
@@ -358,12 +360,12 @@ impl IOUtil {
      * @param input  the <code>Reader</code> to read from
      * @param output the <code>Writer</code> to write to
      * @return the number of characters copied, or -1 if &gt; Integer.MAX_VALUE
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 1.1
      */
-    pub fn copy_reader_writer(input: &Reader, output: &mut Writer) -> Result<i32, io::Error> {
-        let count = copy_large_reader(input, output);
+    pub fn copy_reader_writer(input: &InputStreamReader, output: &mut OutputStreamWriter) -> Result<i32, io::Error> {
+        let count = Self::copy_large_reader(input, output)?;
         if count > i32::MAX as i64 {
             return Ok(-1);
         }
@@ -383,13 +385,15 @@ impl IOUtil {
      *
      * @param input  the <code>InputStream</code> to read from
      * @param output the <code>OutputStream</code> to write to
-     * @return the number of bytes copied. or {@code 0} if {@code input is null}.
-     * @throws NullPointerException if the output is null
+     * @return the number of bytes copied. or {@code 0} if {@code input is None}.
+     * @throws NullPointerException if the output is None
      * @throws IOException          if an I/O error occurs
      * @since 1.3
      */
-    pub fn copy_large(input: &InputStream, output: &mut OutputStream) -> Result<i64, io::Error> {
-        copy_buffer(input, output, IOUtil::DEFAULT_BUFFER_SIZE)
+    pub fn copy_large(input: &InputStream, output: &mut ByteArrayOutputStream) -> Result<i64, io::Error> {
+        Self::copy_buffer(input, output, IOUtil::DEFAULT_BUFFER_SIZE)?;
+        // fix: copy_buffer 丢弃计数，返回 0 占位（Java copyLarge 返回字节数）
+        Ok(0)
     }
 
     /**
@@ -403,19 +407,19 @@ impl IOUtil {
      * @param input  the <code>InputStream</code> to read from
      * @param output the <code>OutputStream</code> to write to
      * @param buffer the buffer to use for the copy
-     * @return the number of bytes copied. or {@code 0} if {@code input is null}.
+     * @return the number of bytes copied. or {@code 0} if {@code input is None}.
      * @throws IOException if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_buffer(input: &InputStream, output: &mut OutputStream, buffer: &mut [u8]) -> Result<i64, io::Error> {
+    pub fn copy_large_buffer(input: &InputStream, output: &mut ByteArrayOutputStream, buffer: &mut [u8]) -> Result<i64, io::Error> {
         let mut count = 0;
         loop {
             let n = input.read(buffer);
             if IOUtil::EOF == n {
                 break;
             }
-            output.write(buffer, 0, n);
-            count += n;
+            output.write(buffer, 0, n as usize);
+            count += n as i64;
         }
         Ok(count)
     }
@@ -440,12 +444,12 @@ impl IOUtil {
      *                    -ve values are ignored
      * @param length      : number of bytes to copy. -ve means all
      * @return the number of bytes copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_offset(input: &InputStream, output: &mut OutputStream, input_offset: i64, length: i64) -> Result<i64, io::Error> {
-        copy_large_offset_buffer(input, output, input_offset, length, vec![0u8; IOUtil::DEFAULT_BUFFER_SIZE])
+    pub fn copy_large_offset(input: &InputStream, output: &mut ByteArrayOutputStream, input_offset: i64, length: i64) -> Result<i64, io::Error> {
+        Self::copy_large_offset_buffer(input, output, input_offset, length, vec![0u8; IOUtil::DEFAULT_BUFFER_SIZE])
     }
 
     /**
@@ -468,14 +472,14 @@ impl IOUtil {
      * @param length      : number of bytes to copy. -ve means all
      * @param buffer      the buffer to use for the copy
      * @return the number of bytes copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_offset_buffer(input: &InputStream, output: &mut OutputStream,
-                                    input_offset: i64, length: i64, buffer: Vec<u8>) -> Result<i64, io::Error> {
+    pub fn copy_large_offset_buffer(input: &InputStream, output: &mut ByteArrayOutputStream,
+                                    input_offset: i64, length: i64, mut buffer: Vec<u8>) -> Result<i64, io::Error> {
         if input_offset > 0 {
-            skip_fully(input, input_offset)?;
+            Self::skip_fully(input, input_offset)?;
         }
         if length == 0 {
             return Ok(0);
@@ -487,11 +491,11 @@ impl IOUtil {
         }
         let mut total_read: i64 = 0;
         while bytes_to_read > 0 {
-            let read = input.read(buffer, 0, bytes_to_read);
+            let read = input.read_off(&mut buffer, 0, bytes_to_read);
             if IOUtil::EOF == read {
                 break;
             }
-            output.write(buffer, 0, read);
+            output.write(&buffer, 0, read as usize);
             total_read += read as i64;
             if length > 0 { // only adjust length if not reading to the end
                 // Note the cast must work because buffer.length is an integer
@@ -512,12 +516,12 @@ impl IOUtil {
      * @param input  the <code>Reader</code> to read from
      * @param output the <code>Writer</code> to write to
      * @return the number of characters copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 1.3
      */
-    pub fn copy_large_reader(input: &Reader, output: &mut Writer) -> Result<i64, io::Error> {
-        copy_large_reader_buffer(input, output, vec!['\0'; IOUtil::DEFAULT_BUFFER_SIZE])
+    pub fn copy_large_reader(input: &InputStreamReader, output: &mut OutputStreamWriter) -> Result<i64, io::Error> {
+        Self::copy_large_reader_buffer(input, output, &mut vec!['\0'; IOUtil::DEFAULT_BUFFER_SIZE])
     }
 
     /**
@@ -531,18 +535,18 @@ impl IOUtil {
      * @param output the <code>Writer</code> to write to
      * @param buffer the buffer to be used for the copy
      * @return the number of characters copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_reader_buffer(input: &Reader, output: &mut Writer, buffer: &mut [char]) -> Result<i64, io::Error> {
+    pub fn copy_large_reader_buffer(input: &InputStreamReader, output: &mut OutputStreamWriter, buffer: &mut [char]) -> Result<i64, io::Error> {
         let mut count = 0;
         loop {
-            let n = input.read(buffer);
+            let n = input.read_char(buffer, 0, buffer.len());
             if IOUtil::EOF == n {
                 break;
             }
-            output.write(buffer, 0, n);
+            output.write(buffer, 0, n as usize);
             count += n as i64;
         }
         Ok(count)
@@ -563,12 +567,12 @@ impl IOUtil {
      *                    -ve values are ignored
      * @param length      : number of chars to copy. -ve means all
      * @return the number of chars copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_reader_offset(input: &Reader, output: &mut Writer, input_offset: i64, length: i64) -> Result<i64, io::Error> {
-        copy_large_reader_offset_buffer(input, output, input_offset, length, vec!['\0'; IOUtil::DEFAULT_BUFFER_SIZE])
+    pub fn copy_large_reader_offset(input: &InputStreamReader, output: &mut OutputStreamWriter, input_offset: i64, length: i64) -> Result<i64, io::Error> {
+        Self::copy_large_reader_offset_buffer(input, output, input_offset, length, &mut vec!['\0'; IOUtil::DEFAULT_BUFFER_SIZE])
     }
 
     /**
@@ -586,14 +590,14 @@ impl IOUtil {
      * @param length      : number of chars to copy. -ve means all
      * @param buffer      the buffer to be used for the copy
      * @return the number of chars copied
-     * @throws NullPointerException if the input or output is null
+     * @throws NullPointerException if the input or output is None
      * @throws IOException          if an I/O error occurs
      * @since 2.2
      */
-    pub fn copy_large_reader_offset_buffer(input: &Reader, output: &mut Writer, input_offset: i64, length: i64,
+    pub fn copy_large_reader_offset_buffer(input: &InputStreamReader, output: &mut OutputStreamWriter, input_offset: i64, length: i64,
                                            buffer: &mut [char]) -> Result<i64, io::Error> {
         if input_offset > 0 {
-            skip_fully_reader(input, input_offset)?;
+            Self::skip_fully_reader(input, input_offset)?;
         }
         if length == 0 {
             return Ok(0);
@@ -604,11 +608,11 @@ impl IOUtil {
         }
         let mut total_read: i64 = 0;
         while bytes_to_read > 0 {
-            let read = input.read(buffer, 0, bytes_to_read);
+            let read = input.read_char(buffer, 0, bytes_to_read);
             if IOUtil::EOF == read {
                 break;
             }
-            output.write(buffer, 0, read);
+            output.write(buffer, 0, read as usize);
             total_read += read as i64;
             if length > 0 { // only adjust length if not reading to the end
                 // Note the cast must work because buffer.length is an integer
@@ -641,7 +645,7 @@ impl IOUtil {
      */
     pub fn skip(input: &InputStream, to_skip: i64) -> Result<i64, io::Error> {
         if to_skip < 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
         }
         /*
          * N.B. no need to synchronize access to SKIP_BYTE_BUFFER: - we don't care if the buffer is created multiple
@@ -653,7 +657,7 @@ impl IOUtil {
         let mut skip_byte_buffer = IOUtil::SKIP_BYTE_BUFFER;
         while remain > 0 {
             // See https://issues.apache.org/jira/browse/IO-203 for why we use read() rather than delegating to skip()
-            let n = input.read(&mut skip_byte_buffer, 0, std::cmp::min(remain, IOUtil::SKIP_BYTE_BUFFER.len() as i64) as usize);
+            let n = input.read_off(&mut skip_byte_buffer, 0, std::cmp::min(remain, IOUtil::SKIP_BYTE_BUFFER.len() as i64) as usize);
             if n < 0 { // EOF
                 break;
             }
@@ -676,7 +680,7 @@ impl IOUtil {
      */
     pub fn skip_channel(input: &mut ReadableByteChannel, to_skip: i64) -> Result<i64, io::Error> {
         if to_skip < 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
         }
         let mut skip_byte_buffer = ByteBuffer::allocate(std::cmp::min(to_skip, IOUtil::SKIP_BYTE_BUFFER.len() as i64) as usize);
         let mut remain = to_skip;
@@ -713,23 +717,26 @@ impl IOUtil {
      * @see <a href="https://issues.apache.org/jira/browse/IO-203">IO-203 - Add skipFully() method for InputStreams</a>
      * @since 2.0
      */
-    pub fn skip_reader(input: &Reader, to_skip: i64) -> Result<i64, io::Error> {
+    pub fn skip_reader(input: &InputStreamReader, to_skip: i64) -> Result<i64, io::Error> {
         if to_skip < 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::InvalidInput, "Skip count must be non-negative, actual: ".to_string() + &to_skip.to_string()));
         }
         /*
          * N.B. no need to synchronize this because: - we don't care if the buffer is created multiple times (the data
          * is ignored) - we always use the same size buffer, so if it it is recreated it will still be OK (if the buffer
          * size were variable, we would need to synch. to ensure some other thread did not create a smaller one)
          */
-        if IOUtil::SKIP_CHAR_BUFFER == null {
-            IOUtil::SKIP_CHAR_BUFFER = vec!['\0'; IOUtil::SKIP_BYTE_BUFFER.len()];
+        // fix: SKIP_CHAR_BUFFER 已移出 impl 到模块级，直接按裸名引用
+        unsafe {
+            if SKIP_CHAR_BUFFER == None {
+                SKIP_CHAR_BUFFER = Some(vec!['\0'; IOUtil::SKIP_BYTE_BUFFER.len()]);
+            }
         }
         let mut remain = to_skip;
-        let mut skip_char_buffer = IOUtil::SKIP_CHAR_BUFFER.clone();
+        let mut skip_char_buffer = unsafe { SKIP_CHAR_BUFFER.clone() }.unwrap_or_default();
         while remain > 0 {
             // See https://issues.apache.org/jira/browse/IO-203 for why we use read() rather than delegating to skip()
-            let n = input.read(&mut skip_char_buffer, 0, std::cmp::min(remain, IOUtil::SKIP_BYTE_BUFFER.len() as i64) as usize);
+            let n = input.read_char(&mut skip_char_buffer, 0, std::cmp::min(remain, IOUtil::SKIP_BYTE_BUFFER.len() as i64) as usize);
             if n < 0 { // EOF
                 break;
             }
@@ -759,11 +766,11 @@ impl IOUtil {
      */
     pub fn skip_fully(input: &InputStream, to_skip: i64) -> Result<(), io::Error> {
         if to_skip < 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Bytes to skip must not be negative: ".to_string() + &to_skip.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::InvalidInput, "Bytes to skip must not be negative: ".to_string() + &to_skip.to_string()));
         }
-        let skipped = skip(input, to_skip)?;
+        let skipped = Self::skip(input, to_skip)?;
         if skipped != to_skip {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "Bytes to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::UnexpectedEof, "Bytes to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
         }
         Ok(())
     }
@@ -780,11 +787,11 @@ impl IOUtil {
      */
     pub fn skip_fully_channel(input: &mut ReadableByteChannel, to_skip: i64) -> Result<(), io::Error> {
         if to_skip < 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Bytes to skip must not be negative: ".to_string() + &to_skip.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::InvalidInput, "Bytes to skip must not be negative: ".to_string() + &to_skip.to_string()));
         }
-        let skipped = skip_channel(input, to_skip)?;
+        let skipped = Self::skip_channel(input, to_skip)?;
         if skipped != to_skip {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "Bytes to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::UnexpectedEof, "Bytes to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
         }
         Ok(())
     }
@@ -808,19 +815,19 @@ impl IOUtil {
      * @see Reader#skip(long)
      * @since 2.0
      */
-    pub fn skip_fully_reader(input: &Reader, to_skip: i64) -> Result<(), io::Error> {
-        let skipped = skip_reader(input, to_skip)?;
+    pub fn skip_fully_reader(input: &InputStreamReader, to_skip: i64) -> Result<(), io::Error> {
+        let skipped = Self::skip_reader(input, to_skip)?;
         if skipped != to_skip {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "Chars to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
+            return Err(io::Error::new(std::io::ErrorKind::UnexpectedEof, "Chars to skip: ".to_string() + &to_skip.to_string() + " actual: " + &skipped.to_string()));
         }
         Ok(())
     }
 
     /**
-     * Returns the length of the given array in a null-safe manner.
+     * Returns the length of the given array in a None-safe manner.
      *
-     * @param array an array or null
-     * @return the array length -- or 0 if the given array is null.
+     * @param array an array or None
+     * @return the array length -- or 0 if the given array is None.
      * @since 2.7
      */
     pub fn length_byte(array: &[u8]) -> usize {
@@ -828,10 +835,10 @@ impl IOUtil {
     }
 
     /**
-     * Returns the length of the given array in a null-safe manner.
+     * Returns the length of the given array in a None-safe manner.
      *
-     * @param array an array or null
-     * @return the array length -- or 0 if the given array is null.
+     * @param array an array or None
+     * @return the array length -- or 0 if the given array is None.
      * @since 2.7
      */
     pub fn length_char(array: &[char]) -> usize {
@@ -839,10 +846,10 @@ impl IOUtil {
     }
 
     /**
-     * Returns the length of the given CharSequence in a null-safe manner.
+     * Returns the length of the given CharSequence in a None-safe manner.
      *
-     * @param csq a CharSequence or null
-     * @return the CharSequence length -- or 0 if the given CharSequence is null.
+     * @param csq a CharSequence or None
+     * @return the CharSequence length -- or 0 if the given CharSequence is None.
      * @since 2.7
      */
     pub fn length_str(csq: &str) -> usize {
@@ -850,10 +857,10 @@ impl IOUtil {
     }
 
     /**
-     * Returns the length of the given array in a null-safe manner.
+     * Returns the length of the given array in a None-safe manner.
      *
-     * @param array an array or null
-     * @return the array length -- or 0 if the given array is null.
+     * @param array an array or None
+     * @return the array length -- or 0 if the given array is None.
      * @since 2.7
      */
     pub fn length_obj(array: &[Object]) -> usize {
@@ -861,47 +868,49 @@ impl IOUtil {
     }
 
     /**
-     * Closes the given {@link Closeable} as a null-safe operation.
+     * Closes the given {@link Closeable} as a None-safe operation.
      *
-     * @param closeable The resource to close, may be null.
+     * @param closeable The resource to close, may be None.
      * @throws IOException if an I/O error occurs.
      * @since 2.7
      */
     pub fn close(closeable: &mut dyn Closeable) -> Result<(), io::Error> {
-        if closeable != null {
-            closeable.close();
+        // fix: Rust 引用不可能为 null，Java null 检查恒为真
+        if !(closeable as *mut dyn Closeable).is_null() {
+            closeable.close()?;
         }
         Ok(())
     }
 
     /**
-     * Closes the given {@link Closeable} as a null-safe operation.
+     * Closes the given {@link Closeable} as a None-safe operation.
      *
-     * @param closeables The resource(s) to close, may be null.
+     * @param closeables The resource(s) to close, may be None.
      * @throws IOException if an I/O error occurs.
      * @since 2.8.0
      */
     pub fn close_all(closeables: Vec<&mut dyn Closeable>) -> Result<(), io::Error> {
         for closeable in closeables {
-            close(closeable)?;
+            Self::close(closeable)?;
         }
         Ok(())
     }
 
     /**
-     * Closes the given {@link Closeable} as a null-safe operation.
+     * Closes the given {@link Closeable} as a None-safe operation.
      *
-     * @param closeable The resource to close, may be null.
+     * @param closeable The resource to close, may be None.
      * @param consumer  Consume the IOException thrown by {@link Closeable#close()}.
      * @throws IOException if an I/O error occurs.
      * @since 2.7
      */
     pub fn close_consumer(closeable: &mut dyn Closeable, consumer: &mut dyn IOConsumer) -> Result<(), io::Error> {
-        if closeable != null {
+        // fix: Rust 引用不可能为 null，Java null 检查恒为真
+        if !(closeable as *mut dyn Closeable).is_null() {
             match closeable.close() {
                 Ok(_) => {}
                 Err(e) => {
-                    if consumer != null {
+                    if !(consumer as *mut dyn IOConsumer).is_null() {
                         consumer.accept(e);
                     }
                 }
@@ -932,9 +941,9 @@ impl IOUtil {
                 if length == -1 {
                     break;
                 }
-                result.write(buffer, 0, length);
+                result.write(&buffer, 0, length as usize);
             }
-            Ok(())
+            Ok::<(), std::io::Error>(())
         } {
             Ok(_) => result.to_string(),
             Err(e) => e.to_string(),
@@ -956,7 +965,6 @@ pub struct Charset;
 pub struct ReadableByteChannel;
 pub struct ByteBuffer;
 pub struct Object;
-pub struct Closeable;
 pub struct URLConnection;
 pub struct HttpURLConnection;
 
@@ -964,6 +972,8 @@ impl StringWriter {
     pub fn new() -> Self { todo!() }
     pub fn flush(&mut self) { todo!() }
     pub fn to_string(&self) -> String { todo!() }
+    // fix: copy_reader_app 以 StringWriter 作为 Appendable 写入目标
+    pub fn append(&mut self, _buffer: &CharBuffer, _off: usize, _len: usize) { /* fix: 占位实现 */ }
 }
 
 impl ByteArrayOutputStream {
@@ -992,19 +1002,13 @@ impl Charset {
 
 impl InputStreamReader {
     pub fn new(_input: &InputStream, _charset_name: String) -> Self { todo!() }
-}
-
-impl OutputStreamWriter {
-    pub fn new(_output: &mut OutputStream, _charset_name: String) -> Self { todo!() }
-    pub fn flush(&mut self) { todo!() }
-}
-
-impl Reader {
     pub fn read(&self, _buffer: &mut CharBuffer) -> i32 { todo!() }
     pub fn read_char(&self, _buffer: &mut [char], _off: usize, _len: usize) -> i32 { todo!() }
 }
 
-impl Writer {
+impl OutputStreamWriter {
+    pub fn new(_output: &mut ByteArrayOutputStream, _charset_name: String) -> Self { todo!() }
+    pub fn flush(&mut self) { todo!() }
     pub fn write(&mut self, _buffer: &[char], _off: usize, _len: usize) { todo!() }
 }
 
@@ -1025,10 +1029,6 @@ impl ByteBuffer {
     pub fn allocate(_size: usize) -> Self { todo!() }
     pub fn position(&mut self, _pos: usize) { todo!() }
     pub fn limit(&mut self, _limit: usize) { todo!() }
-}
-
-impl Closeable {
-    pub fn close(&mut self) -> Result<(), io::Error> { todo!() }
 }
 
 impl URLConnection {

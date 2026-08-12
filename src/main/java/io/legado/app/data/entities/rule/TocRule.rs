@@ -1,14 +1,15 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities.rule
 
 // data class TocRule(
-//     var preUpdateJs: String? = null,
-//     var chapterList: String? = null,
-//     var chapterName: String? = null,
-//     var chapterUrl: String? = null,
-//     var isVolume: String? = null,
-//     var isVip: String? = null,
-//     var updateTime: String? = null,
-//     var nextTocUrl: String? = null
+//     var preUpdateJs: String? = None,
+//     var chapterList: String? = None,
+//     var chapterName: String? = None,
+//     var chapterUrl: String? = None,
+//     var isVolume: String? = None,
+//     var isVip: String? = None,
+//     var updateTime: String? = None,
+//     var nextTocUrl: String? = None
 // )
 pub struct TocRule {
     pub pre_update_js: Option<String>,

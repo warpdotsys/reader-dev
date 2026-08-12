@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -26,34 +27,36 @@
  */
 pub struct ByteOrderMark {
     serial_version_uid: i64,
-    charset_name: String,
-    bytes: Vec<i32>,
+    // fix: E0015——`pub const` 字段需 const 构造，String/Vec 不可 const；改为 &'static 引用（仅字面量常量与克隆使用，见 XmlStreamReader::BOMS）
+    charset_name: &'static str,
+    bytes: &'static [i32],
 }
 
 impl ByteOrderMark {
 
     const SERIAL_VERSION_UID: i64 = 1;
 
+    // fix: Java `public static final` 字段 → Rust 关联 `const`（impl 内不允许关联 static）
     /** UTF-8 BOM */
-    pub static UTF_8: ByteOrderMark = ByteOrderMark::new("UTF-8", &[0xEF, 0xBB, 0xBF]);
+    pub const UTF_8: ByteOrderMark = ByteOrderMark::new("UTF-8", &[0xEF, 0xBB, 0xBF]);
 
     /** UTF-16BE BOM (Big-Endian) */
-    pub static UTF_16BE: ByteOrderMark = ByteOrderMark::new("UTF-16BE", &[0xFE, 0xFF]);
+    pub const UTF_16BE: ByteOrderMark = ByteOrderMark::new("UTF-16BE", &[0xFE, 0xFF]);
 
     /** UTF-16LE BOM (Little-Endian) */
-    pub static UTF_16LE: ByteOrderMark = ByteOrderMark::new("UTF-16LE", &[0xFF, 0xFE]);
+    pub const UTF_16LE: ByteOrderMark = ByteOrderMark::new("UTF-16LE", &[0xFF, 0xFE]);
 
     /**
      * UTF-32BE BOM (Big-Endian)
      * @since 2.2
      */
-    pub static UTF_32BE: ByteOrderMark = ByteOrderMark::new("UTF-32BE", &[0x00, 0x00, 0xFE, 0xFF]);
+    pub const UTF_32BE: ByteOrderMark = ByteOrderMark::new("UTF-32BE", &[0x00, 0x00, 0xFE, 0xFF]);
 
     /**
      * UTF-32LE BOM (Little-Endian)
      * @since 2.2
      */
-    pub static UTF_32LE: ByteOrderMark = ByteOrderMark::new("UTF-32LE", &[0xFF, 0xFE, 0x00, 0x00]);
+    pub const UTF_32LE: ByteOrderMark = ByteOrderMark::new("UTF-32LE", &[0xFF, 0xFE, 0x00, 0x00]);
 
     /**
      * Unicode BOM character; external form depends on the encoding.
@@ -68,12 +71,12 @@ impl ByteOrderMark {
      *
      * @param charsetName The name of the charset the BOM represents
      * @param bytes The BOM's bytes
-     * @throws IllegalArgumentException if the charsetName is null or
+     * @throws IllegalArgumentException if the charsetName is None or
      * zero length
-     * @throws IllegalArgumentException if the bytes are null or zero
+     * @throws IllegalArgumentException if the bytes are None or zero
      * length
      */
-    pub fn new(charset_name: &str, bytes: &[i32]) -> Self {
+    pub const fn new(charset_name: &'static str, bytes: &'static [i32]) -> Self {
         if charset_name.is_empty() {
             panic!("No charsetName specified");
         }
@@ -82,8 +85,8 @@ impl ByteOrderMark {
         }
         ByteOrderMark {
             serial_version_uid: 1,
-            charset_name: charset_name.to_string(),
-            bytes: bytes.to_vec(),
+            charset_name: charset_name,
+            bytes: bytes,
         }
     }
 
@@ -159,7 +162,7 @@ impl ByteOrderMark {
      */
     pub fn hash_code(&self) -> i32 {
         let mut hash_code = std::any::type_name::<ByteOrderMark>().hash_code();
-        for b in &self.bytes {
+        for b in self.bytes.iter() {
             hash_code += b;
         }
         hash_code
@@ -190,7 +193,7 @@ impl ByteOrderMark {
 
 use std::any::Any;
 
-trait HashCodeExt {
+pub trait HashCodeExt {
     fn hash_code(&self) -> i32;
 }
 
@@ -204,7 +207,7 @@ impl HashCodeExt for &str {
     }
 }
 
-trait SimpleNameExt {
+pub trait SimpleNameExt {
     fn simple_name(&self) -> &'static str;
 }
 

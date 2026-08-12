@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::stubs::Any;
+use crate::stubs::io::vertx::{Route, RoutingContext, URLDecoder};
 // @file:JvmName("VertExtKt")
 
 // package com.htmake.reader.utils
@@ -10,9 +13,17 @@
 // import java.net.URLDecoder
 // import org.slf4j.MDC
 
+static logger: Log = Log;
+
 // fun RoutingContext.success(any: Any?) {
 pub fn success(this: &mut RoutingContext, any: Option<Any>) {
-    let to_json = if any is JsonObject { any.to_string() } else { gson().to_json(any) };
+    // fix: Kotlin `any is JsonObject` 类型检查 → Rust 占位判断（JsonObject 为占位类型）
+    let to_json = if any.as_ref().is_some_and(|a| matches!(a, Any::JsonObject(_))) {
+        any.unwrap().to_string()
+    } else {
+        // fix: gson().to_json(any) 占位（Any 无 serde::Serialize），以 Display 输出近似 JSON
+        any.map_or_else(|| "null".to_string(), |a| a.to_string())
+    };
     this.response()
         .put_header("content-type", "application/json; charset=utf-8")
         .end(to_json);
@@ -23,13 +34,14 @@ pub fn error(this: &mut RoutingContext, throwable: Throwable) {
     let error = BasicError {
         error: "Internal Server Error".to_string(),
         exception: throwable.to_string(),
-        message: throwable.message.to_string(),
+        message: throwable.msg.to_string(),
         path: URLDecoder::decode(this.request().absolute_uri(), "UTF-8"),
         status: 500,
         timestamp: System::current_time_millis(),
     };
-    let error_json = gson().to_json(&error);
-    logger.error("Internal Server Error", throwable);
+    // fix: BasicError 未 derive serde，gson().to_json 不可用 → 占位序列化
+    let error_json = gson_to_json_placeholder(&error);
+    logger.error(format!("Internal Server Error: {}", throwable));
     logger.error(error_json.clone());
     this.response()
         .put_header("content-type", "application/json; charset=utf-8")
@@ -38,11 +50,12 @@ pub fn error(this: &mut RoutingContext, throwable: Throwable) {
 }
 
 // fun Route.globalHandler(handler: Handler<RoutingContext>) {
-pub fn global_handler(this: Route, handler: &dyn Fn(&mut RoutingContext)) {
-    handler(|context: &mut RoutingContext| {
-        let trace_id = context.get::<String>("traceId").take_if(|it| !it.is_empty()).unwrap_or_else(|| get_trace_id());
-        MDC::put("traceId", &trace_id);
+pub fn global_handler(mut this: Route, handler: &dyn Fn(&mut RoutingContext)) {
+    let wrapped = |context: &mut RoutingContext| {
+        let trace_id = context.get::<String>("traceId").filter(|it| !it.is_empty()).unwrap_or_else(|| get_trace_id());
+        MDC::put("traceId", trace_id.clone());
         context.put("traceId", trace_id);
         handler(context);
-    });
+    };
+    this.global_handler(&wrapped);
 }

@@ -1,16 +1,17 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities.rule
 
 // data class SearchRule(
-//         override var bookList: String? = null,
-//         override var name: String? = null,
-//         override var author: String? = null,
-//         override var intro: String? = null,
-//         override var kind: String? = null,
-//         override var lastChapter: String? = null,
-//         override var updateTime: String? = null,
-//         override var bookUrl: String? = null,
-//         override var coverUrl: String? = null,
-//         override var wordCount: String? = null
+//         override var bookList: String? = None,
+//         override var name: String? = None,
+//         override var author: String? = None,
+//         override var intro: String? = None,
+//         override var kind: String? = None,
+//         override var lastChapter: String? = None,
+//         override var updateTime: String? = None,
+//         override var bookUrl: String? = None,
+//         override var coverUrl: String? = None,
+//         override var wordCount: String? = None
 // ) : BookListRule
 pub struct SearchRule {
     pub book_list: Option<String>,

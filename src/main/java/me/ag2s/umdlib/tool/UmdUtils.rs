@@ -1,3 +1,8 @@
+use crate::prelude::*;
+use crate::stubs::{
+    ByteArrayInputStream, ByteArrayOutputStream, BufferedInputStream, BufferedOutputStream,
+    File, FileInputStream, FileOutputStream, InflaterInputStream, Random,
+};
 // package me.ag2s.umdlib.tool;
 //
 // import java.io.BufferedInputStream;
@@ -24,7 +29,7 @@ impl UmdUtils {
      * @return 编码好的byte[]
      */
     pub fn string_to_unicode_bytes(s: &str) -> Vec<u8> {
-        // if (s == null) {
+        // if (s == None) {
         //     throw new NullPointerException();
         // }
 
@@ -101,7 +106,7 @@ impl UmdUtils {
      * @throws Exception 解码时失败时
      */
     pub fn decompress(compress: &[u8]) -> Vec<u8> {
-        let bais = ByteArrayInputStream::new(compress);
+        let bais = ByteArrayInputStream::new(compress.to_vec());
         let mut iis = InflaterInputStream::new(bais);
         let mut baos = ByteArrayOutputStream::new();
         let mut c = 0;
@@ -119,9 +124,9 @@ impl UmdUtils {
     }
 
     pub fn save_file(f: &File, content: &[u8]) {
-        let mut fos = FileOutputStream::new(f);
+        let fos = FileOutputStream::new(f);
         // try {
-        let mut bos = BufferedOutputStream::new(&mut fos);
+        let mut bos = BufferedOutputStream::new(fos);
         bos.write(content);
         bos.flush();
         // } finally {
@@ -130,13 +135,13 @@ impl UmdUtils {
     }
 
     pub fn read_file(f: &File) -> Vec<u8> {
-        let mut fis = FileInputStream::new(f);
+        let fis = FileInputStream::new(f);
         // try {
         let mut baos = ByteArrayOutputStream::new();
-        let mut bis = BufferedInputStream::new(&mut fis);
+        let mut bis = BufferedInputStream::new(fis);
         let mut ch: i32;
         loop {
-            ch = bis.read();
+            ch = bis.read_byte();
             if !(ch >= 0) {
                 break;
             }
@@ -155,11 +160,14 @@ impl UmdUtils {
         }
         let mut ret = vec![0u8; len];
         for i in 0..ret.len() {
-            ret[i] = RANDOM.next_u32() as u8;
+            // fix: RANDOM 改为 OnceLock 惰性初始化（Random::new 非 const，无法用于静态初始化）
+            ret[i] = RANDOM.get_or_init(|| std::sync::Mutex::new(Random::new()))
+                .lock().unwrap().next_u32() as u8;
         }
         return ret;
     }
 }
 
 // private static Random random = new Random();
-static RANDOM: std::sync::Mutex<Random> = std::sync::Mutex::new(Random::new());
+// fix: E0015 Random::new 非 const → OnceLock 惰性初始化
+pub static RANDOM: std::sync::OnceLock<std::sync::Mutex<Random>> = std::sync::OnceLock::new();

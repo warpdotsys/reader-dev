@@ -1,4 +1,6 @@
-use crate::utils::Base64;
+use crate::prelude::*;
+use crate::io_legado_app_utils_base64::Base64;
+use crate::stubs::ByteArrayOutputStream;
 
 #[allow(unused)]
 pub struct EncoderUtils;
@@ -56,7 +58,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the Base64-encode bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptAES2Base64(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -64,7 +65,7 @@ impl EncoderUtils {
         iv: Option<&[u8]>
     ) -> Option<Vec<u8>> {
         let transformation = transformation.unwrap_or("DES/ECB/PKCS5Padding");
-        Some(Base64::encode(&Self::encryptAES(data, key, transformation, iv)?, Base64::NO_WRAP))
+        Some(Base64::encode(&Self::encryptAES(data, key, Some(transformation), iv)?, Base64::NO_WRAP))
     }
 
     /**
@@ -78,7 +79,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptAES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -100,7 +100,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption for Base64-encode bytes
      */
-    #[throws(Exception)]
     pub fn decryptBase64AES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -121,7 +120,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption
      */
-    #[throws(Exception)]
     pub fn decryptAES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -145,8 +143,7 @@ impl EncoderUtils {
      * @param isEncrypt      True to encrypt, false otherwise.
      * @return the bytes of symmetric encryption or decryption
      */
-    #[throws(Exception)]
-    fn symmetricTemplate(
+    pub fn symmetricTemplate(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
         algorithm: &str,
@@ -160,15 +157,15 @@ impl EncoderUtils {
             return None;
         }
         let keySpec = SecretKeySpec::new(key, algorithm);
-        let cipher = Cipher::getInstance(transformation);
+        let mut cipher = Cipher::getInstance(transformation);
         let mode = if isEncrypt { Cipher::ENCRYPT_MODE } else { Cipher::DECRYPT_MODE };
         if iv == None || iv.unwrap().is_empty() {
-            cipher.init(mode, keySpec);
+            cipher.init_spec(mode, &keySpec);
         } else {
-            let params: AlgorithmParameterSpec = IvParameterSpec::new(iv.unwrap());
-            cipher.init(mode, keySpec, params);
+            let params = IvParameterSpec::new(iv.unwrap());
+            cipher.init_spec_iv(mode, &keySpec, &params);
         }
-        Some(cipher.doFinal(data))
+        Some(cipher.do_final_data(data))
     }
 
     //////////DES Start
@@ -184,7 +181,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the Base64-encode bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptDES2Base64(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -192,7 +188,7 @@ impl EncoderUtils {
         iv: Option<&[u8]>
     ) -> Option<Vec<u8>> {
         let transformation = transformation.unwrap_or("DES/ECB/PKCS5Padding");
-        Some(Base64::encode(&Self::encryptDES(data, key, transformation, iv)?, Base64::NO_WRAP))
+        Some(Base64::encode(&Self::encryptDES(data, key, Some(transformation), iv)?, Base64::NO_WRAP))
     }
 
     /**
@@ -206,7 +202,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptDES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -228,7 +223,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption for Base64-encode bytes
      */
-    #[throws(Exception)]
     pub fn decryptBase64DES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -249,7 +243,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption
      */
-    #[throws(Exception)]
     pub fn decryptDES(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -272,7 +265,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the Base64-encode bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptDESede2Base64(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -280,7 +272,7 @@ impl EncoderUtils {
         iv: Option<&[u8]>
     ) -> Option<Vec<u8>> {
         let transformation = transformation.unwrap_or("DESede/ECB/PKCS5Padding");
-        Some(Base64::encode(&Self::encryptDESede(data, key, transformation, iv)?, Base64::NO_WRAP))
+        Some(Base64::encode(&Self::encryptDESede(data, key, Some(transformation), iv)?, Base64::NO_WRAP))
     }
 
     /**
@@ -294,7 +286,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES encryption
      */
-    #[throws(Exception)]
     pub fn encryptDESede(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -316,7 +307,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption for Base64-encode bytes
      */
-    #[throws(Exception)]
     pub fn decryptBase64DESede(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -337,7 +327,6 @@ impl EncoderUtils {
      * buffer are copied to protect against subsequent modification.
      * @return the bytes of AES decryption
      */
-    #[throws(Exception)]
     pub fn decryptDESede(
         data: Option<&[u8]>,
         key: Option<&[u8]>,
@@ -401,29 +390,29 @@ impl EncoderUtils {
     }
 
     fn rsaBase64(input: &str, key: &dyn java_security_Key, mode: i32) -> String {
-        let cipher = Cipher::getInstance("RSA");
-        cipher.init(mode, key);
-        Base64::encodeToString(&cipher.doFinal(input.as_bytes()), Base64::NO_WRAP)
+        let mut cipher = Cipher::getInstance("RSA");
+        cipher.init_key(mode, key);
+        Base64::encodeToString(&cipher.do_final_data(input.as_bytes()), Base64::NO_WRAP)
     }
 
     fn rsaString(input: &str, key: &dyn java_security_Key, mode: i32) -> String {
-        let cipher = Cipher::getInstance("RSA");
-        cipher.init(mode, key);
-        String::from_utf8(cipher.doFinal(&Base64::decode_str(input, Base64::NO_WRAP))).unwrap()
+        let mut cipher = Cipher::getInstance("RSA");
+        cipher.init_key(mode, key);
+        String::from_utf8(cipher.do_final_data(&Base64::decode_str(input, Base64::NO_WRAP))).unwrap()
     }
 
     fn rsaSegmentBase64(input: &[u8], key: &dyn java_security_Key, mode: i32, blockSize: i32) -> String {
         let mut output = ByteArrayOutputStream::new();
-        let cipher = Cipher::getInstance("RSA");
-        cipher.init(mode, key);
+        let mut cipher = Cipher::getInstance("RSA");
+        cipher.init_key(mode, key);
         let mut offset = 0usize;
         while input.len() - offset > 0 {
             let block: Vec<u8>;
             if input.len() - offset >= blockSize as usize {
-                block = cipher.doFinal_range(input, offset, blockSize as usize);
+                block = cipher.do_final_range(input, offset, blockSize as usize);
                 offset += blockSize as usize;
             } else {
-                block = cipher.doFinal_range(input, offset, input.len() - offset);
+                block = cipher.do_final_range(input, offset, input.len() - offset);
                 offset = input.len();
             }
             output.write(&block);
@@ -434,16 +423,16 @@ impl EncoderUtils {
 
     fn rsaSegmentBytes(input: &[u8], key: &dyn java_security_Key, mode: i32, blockSize: i32) -> Vec<u8> {
         let mut output = ByteArrayOutputStream::new();
-        let cipher = Cipher::getInstance("RSA");
-        cipher.init(mode, key);
+        let mut cipher = Cipher::getInstance("RSA");
+        cipher.init_key(mode, key);
         let mut offset = 0usize;
         while input.len() - offset > 0 {
             let block: Vec<u8>;
             if input.len() - offset >= blockSize as usize {
-                block = cipher.doFinal_range(input, offset, blockSize as usize);
+                block = cipher.do_final_range(input, offset, blockSize as usize);
                 offset += blockSize as usize;
             } else {
-                block = cipher.doFinal_range(input, offset, input.len() - offset);
+                block = cipher.do_final_range(input, offset, input.len() - offset);
                 offset = input.len();
             }
             output.write(&block);

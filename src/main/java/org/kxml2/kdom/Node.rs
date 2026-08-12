@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::org_kxml2_kdom_document::Document;
+use crate::org_kxml2_kdom_element::Element;
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +31,7 @@
 
 //pub struct Node { //implements XmlIO{
 
+#[derive(Clone)]
 pub struct Node {
     pub children: Option<Vec<NodeChild>>,
     pub types: Option<Vec<char>>,
@@ -35,6 +39,7 @@ pub struct Node {
 
 /** A child of a Node. In Java, children is a Vector of Object holding
  *  Element or String instances. */
+#[derive(Clone)]
 pub enum NodeChild {
     Element(Box<Element>),
     String(String),
@@ -46,21 +51,45 @@ pub enum ParentNode {
     Document(Box<Document>),
 }
 
+impl Clone for ParentNode {
+    fn clone(&self) -> ParentNode {
+        match self {
+            ParentNode::Element(e) => ParentNode::Element(Box::new((**e).clone())),
+            ParentNode::Document(d) => ParentNode::Document(Box::new((**d).clone())),
+        }
+    }
+}
+
+// fix: this impl belongs in Document.rs; kept here to unblock this crate
+impl Clone for Document {
+    fn clone(&self) -> Document {
+        Document {
+            base: self.base.clone(),
+            root_index: self.root_index,
+            encoding: self.encoding.clone(),
+            standalone: self.standalone,
+        }
+    }
+}
+
+/** XmlPullParser event type codes. (In Java these are constants on the
+ *  XmlPullParser interface; Rust associated consts would make the trait
+ *  non-dyn-compatible, so they live at module level here.) */
+pub const START_DOCUMENT: i32 = 0;
+pub const END_DOCUMENT: i32 = 1;
+pub const START_TAG: i32 = 2;
+pub const END_TAG: i32 = 3;
+pub const TEXT: i32 = 4;
+pub const CDSECT: i32 = 5;
+pub const ENTITY_REF: i32 = 6;
+pub const IGNORABLE_WHITESPACE: i32 = 7;
+pub const PROCESSING_INSTRUCTION: i32 = 8;
+pub const COMMENT: i32 = 9;
+pub const DOCDECL: i32 = 10;
+
 /** The XmlPullParser interface (org.xmlpull.v1.XmlPullParser), as far as
  *  needed by the kdom classes. */
 pub trait XmlPullParser {
-    const START_DOCUMENT: i32 = 0;
-    const END_DOCUMENT: i32 = 1;
-    const START_TAG: i32 = 2;
-    const END_TAG: i32 = 3;
-    const TEXT: i32 = 4;
-    const CDSECT: i32 = 5;
-    const ENTITY_REF: i32 = 6;
-    const IGNORABLE_WHITESPACE: i32 = 7;
-    const PROCESSING_INSTRUCTION: i32 = 8;
-    const COMMENT: i32 = 9;
-    const DOCDECL: i32 = 10;
-
     fn get_event_type(&self) -> i32;
     fn get_namespace(&self) -> Option<String>;
     fn get_name(&self) -> Option<String>;
@@ -185,8 +214,8 @@ impl Node {
     should always be created using this method instead of the
     constructor in order to enable construction of specialized
     subclasses by deriving custom Document classes. Please note:
-    For no namespace, please use Xml.NO_NAMESPACE, null is not a
-    legal value. Currently, null is converted to Xml.NO_NAMESPACE,
+    For no namespace, please use Xml.NO_NAMESPACE, None is not a
+    legal value. Currently, None is converted to Xml.NO_NAMESPACE,
     but future versions may throw an exception. */
 
     pub fn create_element(namespace: Option<String>, name: String) -> Element {
@@ -212,7 +241,7 @@ impl Node {
     }
 
     /** returns the element at the given index. If the node at the
-    given index is a text node, null is returned */
+    given index is a text node, None is returned */
 
     pub fn get_element(&self, index: usize) -> Option<&Element> {
         let child = self.get_child(index);
@@ -237,19 +266,21 @@ impl Node {
             //         + namespace
             //         + "}"
             //         + name
-            //         + (i == -1 ? " not found in " : " more than once in ")
-            //         + this);
+            //     + (i == -1 ? " not found in " : " more than once in ")
+            //     + this);   // Java: this.toString(), no Node::toString in Rust
             return Err(format!(
                 "Element {{{}}}{}{}{}",
                 namespace.as_deref().unwrap_or("null"),
                 name,
                 if i == -1 { " not found in " } else { " more than once in " },
-                this));
+                "")); // fix: Java `+ this` (toString) dropped
         }
 
         return Ok(self.get_element(i as usize).unwrap());
     }
 
+    // fix: Rust block comments nest (unlike Java), so the outer /* below contains
+    // fix: two nested javadoc /** ... */ pairs; the extra */ markers below balance them.
     /* returns "#document-fragment". For elements, the element name is returned
 
     pub fn get_name(&self) -> String {
@@ -287,8 +318,10 @@ impl Node {
         return buf;
     }
     */
+    */
+    */
 
-    /** Returns the text node with the given index or null if the node
+    /** Returns the text node with the given index or None if the node
         with the given index is not a text node. */
 
     pub fn get_text(&self, index: usize) -> Option<String> {
@@ -317,7 +350,7 @@ impl Node {
     */
 
     /** Performs search for an element with the given namespace and
-    name, starting at the given start index. A null namespace
+    name, starting at the given start index. A None namespace
     matches any namespace, please use Xml.NO_NAMESPACE for no
     namespace).  returns -1 if no matching element was found. */
 
@@ -330,9 +363,9 @@ impl Node {
 
             let child = self.get_element(i as usize);
 
-            // Java: child != null
+            // Java: child != None
             //     && name.equals(child.getName())
-            //     && (namespace == null || namespace.equals(child.getNamespace()))
+            //     && (namespace == None || namespace.equals(child.getNamespace()))
             if child.is_some()
                 && name == child.unwrap().get_name().unwrap()
                 && (namespace.is_none() || namespace.as_ref().unwrap() == child.unwrap().get_namespace().as_ref().unwrap()) {
@@ -363,7 +396,7 @@ impl Node {
 
             match type_ {
 
-                XmlPullParser::START_TAG => {
+                START_TAG => {
                     // Java: Element child =
                     //     createElement(
                     //         parser.getNamespace(),
@@ -379,7 +412,7 @@ impl Node {
                     Element::parse_last(node, parser)?;
                 }
 
-                XmlPullParser::END_DOCUMENT | XmlPullParser::END_TAG => {
+                END_DOCUMENT | END_TAG => {
                     leave = true;
                 }
 
@@ -387,18 +420,22 @@ impl Node {
                     if parser.get_text().is_some() {
                         node.add_child_simple(
                             this,
-                            if type_ == XmlPullParser::ENTITY_REF { Node::TEXT } else { type_ },
+                            if type_ == ENTITY_REF { Node::TEXT } else { type_ },
                             Some(NodeChild::String(parser.get_text().unwrap())));
                     }
-                    else if type_ == XmlPullParser::ENTITY_REF
+                    else if type_ == ENTITY_REF
                         && parser.get_name().is_some() {
                         node.add_child_simple(this, Node::ENTITY_REF, Some(NodeChild::String(parser.get_name().unwrap())));
                     }
                     parser.next_token();
                 }
             }
+
+            // fix: Java do { ... } while (!leave); -> Rust loop with a trailing break check
+            if !leave {
+                break;
+            }
         }
-        while !leave;
 
         Ok(())
     }

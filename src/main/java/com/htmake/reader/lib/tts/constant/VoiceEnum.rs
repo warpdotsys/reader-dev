@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.lib.tts.constant;
 
 // public enum VoiceEnum {
@@ -188,7 +189,7 @@ impl VoiceEnum {
     //             return voice;
     //         }
     //     }
-    //     return null;
+    //     return None;
     // }
     pub fn from_sort_name(short_name: &str) -> Option<VoiceEnum> {
         const ALL: &[VoiceEnum] = &[

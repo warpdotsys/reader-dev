@@ -1,3 +1,6 @@
+use crate::io_legado_app_model_analyzerule_analyzerule::SourceRule;
+use crate::prelude::*;
+use crate::stubs::Any;
 // package io.legado.app.model.webBook
 //
 // import io.legado.app.data.entities.BookSource
@@ -16,6 +19,77 @@
 
 pub struct BookList;
 
+// fix: Kotlin `SearchRule/ExploreRule : BookListRule`（接口 trait 未在实体文件实现；此处按原逻辑补充实现，
+//      使 `val bookListRule: BookListRule = when {...}` 得以转录）
+macro_rules! impl_book_list_rule {
+    ($t:ty) => {
+        impl BookListRule for $t {
+            fn book_list(&self) -> Option<&str> {
+                self.book_list.as_deref()
+            }
+            fn set_book_list(&mut self, value: Option<String>) {
+                self.book_list = value;
+            }
+            fn name(&self) -> Option<&str> {
+                self.name.as_deref()
+            }
+            fn set_name(&mut self, value: Option<String>) {
+                self.name = value;
+            }
+            fn author(&self) -> Option<&str> {
+                self.author.as_deref()
+            }
+            fn set_author(&mut self, value: Option<String>) {
+                self.author = value;
+            }
+            fn intro(&self) -> Option<&str> {
+                self.intro.as_deref()
+            }
+            fn set_intro(&mut self, value: Option<String>) {
+                self.intro = value;
+            }
+            fn kind(&self) -> Option<&str> {
+                self.kind.as_deref()
+            }
+            fn set_kind(&mut self, value: Option<String>) {
+                self.kind = value;
+            }
+            fn last_chapter(&self) -> Option<&str> {
+                self.last_chapter.as_deref()
+            }
+            fn set_last_chapter(&mut self, value: Option<String>) {
+                self.last_chapter = value;
+            }
+            fn update_time(&self) -> Option<&str> {
+                self.update_time.as_deref()
+            }
+            fn set_update_time(&mut self, value: Option<String>) {
+                self.update_time = value;
+            }
+            fn book_url(&self) -> Option<&str> {
+                self.book_url.as_deref()
+            }
+            fn set_book_url(&mut self, value: Option<String>) {
+                self.book_url = value;
+            }
+            fn cover_url(&self) -> Option<&str> {
+                self.cover_url.as_deref()
+            }
+            fn set_cover_url(&mut self, value: Option<String>) {
+                self.cover_url = value;
+            }
+            fn word_count(&self) -> Option<&str> {
+                self.word_count.as_deref()
+            }
+            fn set_word_count(&mut self, value: Option<String>) {
+                self.word_count = value;
+            }
+        }
+    };
+}
+impl_book_list_rule!(SearchRule);
+impl_book_list_rule!(ExploreRule);
+
 impl BookList {
 
     // @Throws(Exception::class)
@@ -26,7 +100,7 @@ impl BookList {
         base_url: &str,
         variable_book: &SearchBook,
         is_search: bool,
-        debug_log: Option<&DebugLog>
+        debug_log: Option<&dyn DebugLog>
     ) -> Vec<SearchBook> {
         let mut book_list = Vec::<SearchBook>::new();
         if body.is_none() {
@@ -40,19 +114,19 @@ impl BookList {
             );
         }
         if let Some(dl) = debug_log {
-            dl.log(&book_source.book_source_url, &format!("≡获取成功:{}", analyze_url.rule_url));
+            dl.log(Some(&book_source.book_source_url), Some(&format!("≡获取成功:{}", analyze_url.rule_url)), false);
         }
         let mut analyze_rule = AnalyzeRule::new(variable_book, book_source, debug_log);
-        analyze_rule.set_content(body.unwrap()).set_base_url(base_url);
-        analyze_rule.set_redirect_url(base_url);
+        analyze_rule.set_content(Some(Box::new(Any::from(body.unwrap()))), None).set_base_url(Some(base_url.to_string()));
+        analyze_rule.set_redirect_url(base_url.to_string());
         if let Some(book_url_pattern) = book_source.book_url_pattern.clone() {
             if Regex::new(&book_url_pattern).unwrap().is_match(base_url) {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "≡链接为详情页");
+                    dl.log(Some(&book_source.book_source_url), Some("≡链接为详情页"), false);
                 }
                 if let Some(mut search_book) = Self::get_info_item(
                     body.unwrap(), &mut analyze_rule, book_source, analyze_url, base_url,
-                    &variable_book.variable, debug_log
+                    variable_book.variable.as_deref(), debug_log
                 ).await {
                     search_book.info_html = Some(body.unwrap().to_string());
                     book_list.push(search_book);
@@ -60,16 +134,16 @@ impl BookList {
                 return book_list;
             }
         }
-        let collections: Vec<Box<dyn Any>>;
+        let collections: Vec<Box<Any>>;
         let mut reverse = false;
-        let book_list_rule = if is_search {
-            book_source.get_search_rule()
-        } else if book_source.get_explore_rule().book_list.is_blank() {
-            book_source.get_search_rule()
+        let book_list_rule: &dyn BookListRule = if is_search {
+            &book_source.get_search_rule()
+        } else if book_source.get_explore_rule().book_list.as_ref().map_or(true, |s| s.is_blank()) {
+            &book_source.get_search_rule()
         } else {
-            book_source.get_explore_rule()
+            &book_source.get_explore_rule()
         };
-        let mut rule_list: String = book_list_rule.book_list.clone().unwrap_or(String::new());
+        let mut rule_list: String = book_list_rule.book_list().unwrap_or("").to_string();
         if rule_list.starts_with("-") {
             reverse = true;
             rule_list = rule_list[1..].to_string();
@@ -78,37 +152,37 @@ impl BookList {
             rule_list = rule_list[1..].to_string();
         }
         if let Some(dl) = debug_log {
-            dl.log(&book_source.book_source_url, "┌获取书籍列表");
+            dl.log(Some(&book_source.book_source_url), Some("┌获取书籍列表"), false);
         }
-        collections = analyze_rule.get_elements(&rule_list);
+        collections = analyze_rule.get_elements(rule_list);
         // coroutineContext.ensureActive()
-        if collections.is_empty() && book_source.book_url_pattern.is_empty() {
+        if collections.is_empty() && book_source.book_url_pattern.is_null_or_empty() {
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, "└列表为空,按详情页解析");
+                dl.log(Some(&book_source.book_source_url), Some("└列表为空,按详情页解析"), false);
             }
             if let Some(mut search_book) = Self::get_info_item(
                 body.unwrap(), &mut analyze_rule, book_source, analyze_url, base_url,
-                &variable_book.variable, debug_log
+                variable_book.variable.as_deref(), debug_log
             ).await {
                 search_book.info_html = Some(body.unwrap().to_string());
                 book_list.push(search_book);
             }
         } else {
-            let rule_name = analyze_rule.split_source_rule(&book_list_rule.name);
-            let rule_book_url = analyze_rule.split_source_rule(&book_list_rule.book_url);
-            let rule_author = analyze_rule.split_source_rule(&book_list_rule.author);
-            let rule_cover_url = analyze_rule.split_source_rule(&book_list_rule.cover_url);
-            let rule_intro = analyze_rule.split_source_rule(&book_list_rule.intro);
-            let rule_kind = analyze_rule.split_source_rule(&book_list_rule.kind);
-            let rule_last_chapter = analyze_rule.split_source_rule(&book_list_rule.last_chapter);
-            let rule_word_count = analyze_rule.split_source_rule(&book_list_rule.word_count);
+            let rule_name = analyze_rule.split_source_rule(book_list_rule.name().map(|s| s.to_string()), false);
+            let rule_book_url = analyze_rule.split_source_rule(book_list_rule.book_url().map(|s| s.to_string()), false);
+            let rule_author = analyze_rule.split_source_rule(book_list_rule.author().map(|s| s.to_string()), false);
+            let rule_cover_url = analyze_rule.split_source_rule(book_list_rule.cover_url().map(|s| s.to_string()), false);
+            let rule_intro = analyze_rule.split_source_rule(book_list_rule.intro().map(|s| s.to_string()), false);
+            let rule_kind = analyze_rule.split_source_rule(book_list_rule.kind().map(|s| s.to_string()), false);
+            let rule_last_chapter = analyze_rule.split_source_rule(book_list_rule.last_chapter().map(|s| s.to_string()), false);
+            let rule_word_count = analyze_rule.split_source_rule(book_list_rule.word_count().map(|s| s.to_string()), false);
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, &format!("└列表大小:{}", collections.len()));
+                dl.log(Some(&book_source.book_source_url), Some(&format!("└列表大小:{}", collections.len())), false);
             }
             for (index, item) in collections.iter().enumerate() {
                 // coroutineContext.ensureActive()
                 if let Some(mut search_book) = Self::get_search_item(
-                    item, &mut analyze_rule, book_source, base_url, &variable_book.variable, index == 0,
+                    item, &mut analyze_rule, book_source, base_url, variable_book.variable.as_deref(), index == 0,
                     &rule_name, &rule_book_url, &rule_author,
                     &rule_cover_url, &rule_intro, &rule_kind,
                     &rule_last_chapter, &rule_word_count,
@@ -133,17 +207,23 @@ impl BookList {
         book_source: &BookSource,
         analyze_url: &AnalyzeUrl,
         base_url: &str,
-        variable: &str,
-        debug_log: Option<&DebugLog>
+        variable: Option<&str>,
+        debug_log: Option<&dyn DebugLog>
     ) -> Option<SearchBook> {
-        let mut book = Book::new(variable);
+        let mut book = Book::default();
+        book.variable = variable.map(|v| v.to_string());
         book.book_url = analyze_url.rule_url.clone();
         book.origin = book_source.book_source_url.clone();
         book.origin_name = book_source.book_source_name.clone();
         book.origin_order = book_source.custom_order;
-        book.book_type = book_source.book_source_type.clone();
+        book.r#type = book_source.book_source_type;
         book.set_user_name_space(analyze_rule.get_user_name_space());
-        analyze_rule.rule_data = book;
+        // fix: Kotlin `analyzeRule.ruleData = book`（同一对象别名）——Book 无 Clone，move 后 book 不可再用；
+        //      以 book 快照（variable/userNameSpace）充当规则数据
+        let mut rule_data_book = Book::default();
+        rule_data_book.variable = book.variable.clone();
+        rule_data_book.user_name_space = book.user_name_space.clone();
+        analyze_rule.rule_data = Box::new(rule_data_book);
         BookInfo::analyze_book_info_private(
             &mut book,
             Some(body),
@@ -161,68 +241,73 @@ impl BookList {
     }
 
     async fn get_search_item(
-        item: &Box<dyn Any>,
+        item: &Box<Any>,
         analyze_rule: &mut AnalyzeRule,
         book_source: &BookSource,
         base_url: &str,
-        variable: &str,
+        variable: Option<&str>,
         log: bool,
-        rule_name: &Vec<AnalyzeRule::SourceRule>,
-        rule_book_url: &Vec<AnalyzeRule::SourceRule>,
-        rule_author: &Vec<AnalyzeRule::SourceRule>,
-        rule_kind: &Vec<AnalyzeRule::SourceRule>,
-        rule_cover_url: &Vec<AnalyzeRule::SourceRule>,
-        rule_word_count: &Vec<AnalyzeRule::SourceRule>,
-        rule_intro: &Vec<AnalyzeRule::SourceRule>,
-        rule_last_chapter: &Vec<AnalyzeRule::SourceRule>,
-        debug_log: Option<&DebugLog>
+        rule_name: &Vec<SourceRule>,
+        rule_book_url: &Vec<SourceRule>,
+        rule_author: &Vec<SourceRule>,
+        rule_kind: &Vec<SourceRule>,
+        rule_cover_url: &Vec<SourceRule>,
+        rule_word_count: &Vec<SourceRule>,
+        rule_intro: &Vec<SourceRule>,
+        rule_last_chapter: &Vec<SourceRule>,
+        debug_log: Option<&dyn DebugLog>
     ) -> Option<SearchBook> {
-        let mut search_book = SearchBook::new(variable);
+        let mut search_book = SearchBook::default();
+        search_book.variable = variable.map(|v| v.to_string());
         search_book.origin = book_source.book_source_url.clone();
         search_book.origin_name = book_source.book_source_name.clone();
-        search_book.book_type = book_source.book_source_type.clone();
+        search_book.r#type = book_source.book_source_type;
         search_book.origin_order = book_source.custom_order;
         search_book.set_user_name_space(analyze_rule.get_user_name_space());
-        analyze_rule.rule_data = search_book;
-        analyze_rule.set_content(item);
+        // fix: 同 get_info_item——SearchBook 无 Clone，move 后不可再用；以快照充当规则数据
+        let mut rule_data_search_book = SearchBook::default();
+        rule_data_search_book.variable = search_book.variable.clone();
+        rule_data_search_book.user_name_space = search_book.user_name_space.clone();
+        analyze_rule.rule_data = Box::new(rule_data_search_book);
+        analyze_rule.set_content(Some(item.clone()), None);
         // coroutineContext.ensureActive()
         if log {
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, "┌获取书名");
+                dl.log(Some(&book_source.book_source_url), Some("┌获取书名"), false);
             }
         }
-        search_book.name = format_book_name(&analyze_rule.get_string(rule_name));
+        search_book.name = BookHelp::format_book_name(&analyze_rule.get_string_inner(rule_name.clone(), None, false));
         if log {
             if let Some(dl) = debug_log {
-                dl.log(&book_source.book_source_url, &format!("└{}", search_book.name));
+                dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.name)), false);
             }
         }
         if !search_book.name.is_empty() {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取作者");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取作者"), false);
                 }
             }
-            search_book.author = format_book_author(&analyze_rule.get_string(rule_author));
+            search_book.author = BookHelp::format_book_author(&analyze_rule.get_string_inner(rule_author.clone(), None, false));
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.author));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.author)), false);
                 }
             }
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取分类");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取分类"), false);
                 }
             }
             // try {
-            if let Some(kind_list) = analyze_rule.get_string_list(rule_kind) {
+            if let Some(kind_list) = analyze_rule.get_string_list_inner(rule_kind.clone(), None, false) {
                 search_book.kind = Some(kind_list.join(","));
             }
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.kind.clone().unwrap_or_default()));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.kind.clone().unwrap_or_default())), false);
                 }
             }
             // } catch (e: Exception) {
@@ -231,14 +316,14 @@ impl BookList {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取字数");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取字数"), false);
                 }
             }
             // try {
-            search_book.word_count = word_count_format(&analyze_rule.get_string(rule_word_count));
+            search_book.word_count = Some(StringUtils::wordCountFormat(Some(&analyze_rule.get_string_inner(rule_word_count.clone(), None, false))));
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.word_count));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.word_count.clone().unwrap_or_default())), false);
                 }
             }
             // } catch (e: java.lang.Exception) {
@@ -247,14 +332,14 @@ impl BookList {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取最新章节");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取最新章节"), false);
                 }
             }
             // try {
-            search_book.latest_chapter_title = analyze_rule.get_string(rule_last_chapter);
+            search_book.latest_chapter_title = Some(analyze_rule.get_string_inner(rule_last_chapter.clone(), None, false));
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.latest_chapter_title));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.latest_chapter_title.clone().unwrap_or_default())), false);
                 }
             }
             // } catch (e: java.lang.Exception) {
@@ -263,14 +348,14 @@ impl BookList {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取简介");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取简介"), false);
                 }
             }
             // try {
-            search_book.intro = analyze_rule.get_string(rule_intro).html_format();
+            search_book.intro = Some(HtmlFormatter::new().formatKeepImg(Some(&analyze_rule.get_string_inner(rule_intro.clone(), None, false))));
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.intro));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.intro.clone().unwrap_or_default())), false);
                 }
             }
             // } catch (e: java.lang.Exception) {
@@ -279,17 +364,17 @@ impl BookList {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取封面链接");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取封面链接"), false);
                 }
             }
             // try {
-            let cover = analyze_rule.get_string(rule_cover_url);
+            let cover = analyze_rule.get_string_inner(rule_cover_url.clone(), None, false);
             if !cover.is_empty() {
-                search_book.cover_url = get_absolute_url(base_url, &cover);
+                search_book.cover_url = Some(get_absolute_url(None, cover));
             }
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.cover_url));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.cover_url.clone().unwrap_or_default())), false);
                 }
             }
             // } catch (e: java.lang.Exception) {
@@ -298,16 +383,16 @@ impl BookList {
             // coroutineContext.ensureActive()
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, "┌获取详情页链接");
+                    dl.log(Some(&book_source.book_source_url), Some("┌获取详情页链接"), false);
                 }
             }
-            search_book.book_url = analyze_rule.get_string(rule_book_url, true);
+            search_book.book_url = analyze_rule.get_string_inner(rule_book_url.clone(), None, true);
             if search_book.book_url.is_empty() {
                 search_book.book_url = base_url.to_string();
             }
             if log {
                 if let Some(dl) = debug_log {
-                    dl.log(&book_source.book_source_url, &format!("└{}", search_book.book_url));
+                    dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.book_url)), false);
                 }
             }
             return Some(search_book);

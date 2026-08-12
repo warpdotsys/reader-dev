@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::Charset;
 // package io.legado.app.model.localBook
 //
 // import io.legado.app.data.entities.Book
@@ -55,23 +57,31 @@ impl TextFile {
     // companion object {
 
     // @Throws(FileNotFoundException::class)
+    // fix: Kotlin companion `TextFile(book).getChapterList()` —— Book 无 Clone，临时取走处理后写回
     pub fn get_chapter_list(book: &mut Book) -> Vec<BookChapter> {
-        return Self::new(book.clone()).get_chapter_list();
+        let mut taken = std::mem::take(book);
+        let mut tf = TextFile::new(taken);
+        let toc = tf.get_chapter_list_inner();
+        *book = tf.book;
+        return toc;
     }
 
     // @Throws(FileNotFoundException::class)
-    pub fn get_content(book: &mut Book, book_chapter: &BookChapter) -> String {
+    pub fn get_content(book: &mut Book, book_chapter: &BookChapter) -> Option<String> {
+        let mut tf = TextFile::new(std::mem::take(book));
         let count = (book_chapter.end.unwrap() - book_chapter.start.unwrap()) as usize;
         let mut buffer = vec![0u8; count];
-        let bis = LocalBook::get_book_input_stream(book);
+        let mut bis = LocalBook::get_book_input_stream(&mut tf.book);
         bis.skip(book_chapter.start.unwrap());
-        bis.read(&mut buffer);
-        if book.charset.is_none() {
-            book.charset = EncodingDetect::get_encode(book.get_local_file());
+        bis.read(&mut buffer, 0, count);
+        if tf.book.charset.is_none() {
+            tf.book.charset = Some(EncodingDetect::get_encode(tf.book.get_local_file()));
         }
-        return String::from_utf8_lossy(&buffer[..]).to_string()
+        let result = String::from_utf8_lossy(&buffer[..]).to_string()
             .substring_after(&book_chapter.title)
-            .replace(&Regex::new("^[\\n\\s]+").unwrap(), "　　");
+            .replace_with_regex("^[\\n\\s]+", "　　");
+        *book = tf.book;
+        return Some(result);
     }
 
     // }
@@ -80,50 +90,51 @@ impl TextFile {
      * 获取目录
      */
     // @Throws(FileNotFoundException::class)
-    pub fn get_chapter_list(&mut self) -> Vec<BookChapter> {
+    // fix: 与 companion 静态 get_chapter_list(book) 重名（E0592），实例方法改名
+    pub fn get_chapter_list_inner(&mut self) -> Vec<BookChapter> {
         if self.book.charset.is_none() || self.book.toc_url.is_blank() {
-            let bis = LocalBook::get_book_input_stream(&mut self.book);
+            let mut bis = LocalBook::get_book_input_stream(&mut self.book);
             let mut buffer = vec![0u8; self.buffer_size];
-            let length = bis.read(&mut buffer);
+            let length = bis.read(&mut buffer, 0, self.buffer_size);
             if self.book.charset.is_none() {
-                self.book.charset = EncodingDetect::get_encode_from_bytes(buffer[..length].to_vec());
+                self.book.charset = Some(EncodingDetect::get_encode_from_bytes(buffer[..length as usize].to_vec()));
             }
             self.charset = self.book.file_charset();
             if self.book.toc_url.is_blank() {
-                let block_content = String::from_utf8_lossy(&buffer[0..length]).to_string();
+                let block_content = String::from_utf8_lossy(&buffer[0..length as usize]).to_string();
                 self.book.toc_url = self.get_toc_rule(&block_content).map(|p| p.pattern()).unwrap_or(String::new());
             }
         }
-        let mut toc = self.analyze_with_pattern(self.book.toc_url.to_pattern_with_flags(Pattern::MULTILINE));
+        let mut toc = self.analyze_with_pattern(Some(self.book.toc_url.to_pattern_with_flags(Pattern::MULTILINE)));
         for (index, book_chapter) in toc.iter_mut().enumerate() {
-            book_chapter.index = index;
+            book_chapter.index = index as i32;
             book_chapter.book_url = self.book.book_url.clone();
-            book_chapter.url = md5_encode16(&(self.book.origin_name.clone() + &index.to_string() + &book_chapter.title));
+            book_chapter.url = md5_encode16(self.book.origin_name.clone() + &index.to_string() + &book_chapter.title);
         }
         self.book.latest_chapter_title = toc.last().map(|c| c.title.clone());
-        self.book.total_chapter_num = toc.len();
+        self.book.total_chapter_num = toc.len() as i32;
         return toc;
     }
 
     /**
      * 按规则解析目录
      */
-    fn analyze_with_pattern(&self, pattern: Option<Pattern>) -> Vec<BookChapter> {
+    fn analyze_with_pattern(&mut self, pattern: Option<Pattern>) -> Vec<BookChapter> {
         if pattern.is_none() || pattern.as_ref().unwrap().pattern().is_empty() {
             return self.analyze(0, i64::MAX);
         }
         let pattern = pattern.unwrap();
         let mut toc = Vec::new();
-        let bis = LocalBook::get_book_input_stream(&mut self.book);
+        let mut bis = LocalBook::get_book_input_stream(&mut self.book);
         let mut block_content: String;
         //加载章节
         let mut cur_offset: i64 = 0;
         //读取的长度
-        let mut length: i32;
+        let mut length: usize;
         let mut buffer = vec![0u8; self.buffer_size];
         let mut buffer_start = 3;
         bis.read_range(&mut buffer, 0, 3);
-        if Utf8BomUtils::has_bom(&buffer) {
+        if Utf8BomUtils::hasBom(&buffer) {
             buffer_start = 0;
             cur_offset = 3;
         }
@@ -155,7 +166,7 @@ impl TextFile {
             //当前Block下使过的String的指针
             let mut seek_pos: usize = 0;
             //进行正则匹配
-            let mut matcher = pattern.matcher(&block_content);
+            let mut matcher = pattern.matcher(block_content.clone());
             //如果存在相应章节
             while matcher.find() {
                 //获取匹配到的字符在字符串中的起始位置
@@ -163,9 +174,9 @@ impl TextFile {
                 //获取章节内容
                 let chapter_content = block_content[seek_pos..chapter_start].to_string();
                 let chapter_length = chapter_content.as_bytes().len();
-                let last_start = toc.last().map(|c| c.start).flatten().unwrap_or(cur_offset);
+                let last_start = toc.last().map(|c: &BookChapter| c.start).flatten().unwrap_or(cur_offset);
                 if self.book.get_split_long_chapter()
-                    && cur_offset + chapter_length as i64 - last_start > self.max_length_with_toc
+                    && cur_offset + chapter_length as i64 - last_start > self.max_length_with_toc as i64
                 {
                     if let Some(last) = toc.last_mut() {
                         last.end = last.start;
@@ -184,7 +195,7 @@ impl TextFile {
                     }
                     toc.extend(chapters);
                     //创建当前章节
-                    let mut cur_chapter = BookChapter::new();
+                    let mut cur_chapter = BookChapter::default();
                     cur_chapter.title = matcher.group();
                     cur_chapter.start = Some(cur_offset + chapter_length as i64);
                     toc.push(cur_chapter);
@@ -196,15 +207,15 @@ impl TextFile {
                     if toc.is_empty() {
                         //如果当前没有章节，那么就是序章
                         //加入简介
-                        if StringUtils::trim(&chapter_content).is_not_empty() {
-                            let mut qy_chapter = BookChapter::new();
+                        if StringUtils::trim(&chapter_content).is_not_blank() {
+                            let mut qy_chapter = BookChapter::default();
                             qy_chapter.title = "前言".to_string();
                             qy_chapter.start = Some(cur_offset);
                             qy_chapter.end = Some(chapter_length as i64);
                             toc.push(qy_chapter);
                         }
                         //创建当前章节
-                        let mut cur_chapter = BookChapter::new();
+                        let mut cur_chapter = BookChapter::default();
                         cur_chapter.title = matcher.group();
                         cur_chapter.start = Some(chapter_length as i64);
                         toc.push(cur_chapter);
@@ -217,7 +228,7 @@ impl TextFile {
                         //将当前段落添加上一章去
                         last_chapter.end = Some(last_chapter.end.unwrap() + chapter_length as i64);
                         //创建当前章节
-                        let mut cur_chapter = BookChapter::new();
+                        let mut cur_chapter = BookChapter::default();
                         cur_chapter.title = matcher.group();
                         cur_chapter.start = last_chapter.end;
                         toc.push(cur_chapter);
@@ -233,13 +244,13 @@ impl TextFile {
                             last_chapter.start.unwrap() + chapter_content.as_bytes().len() as i64
                         );
                         //创建当前章节
-                        let mut cur_chapter = BookChapter::new();
+                        let mut cur_chapter = BookChapter::default();
                         cur_chapter.title = matcher.group();
                         cur_chapter.start = last_chapter.end;
                         toc.push(cur_chapter);
                     } else {
                         //如果章节不存在则创建章节
-                        let mut cur_chapter = BookChapter::new();
+                        let mut cur_chapter = BookChapter::default();
                         cur_chapter.title = matcher.group();
                         cur_chapter.start = Some(cur_offset);
                         cur_chapter.end = Some(cur_offset);
@@ -265,12 +276,12 @@ impl TextFile {
      * 无规则拆分目录
      */
     fn analyze(
-        &self,
+        &mut self,
         file_start: i64,
         file_end: i64
     ) -> Vec<BookChapter> {
         let mut toc = Vec::new();
-        let bis = LocalBook::get_book_input_stream(&mut self.book);
+        let mut bis = LocalBook::get_book_input_stream(&mut self.book);
         //block的个数
         let mut block_pos = 0;
         //加载章节
@@ -280,9 +291,9 @@ impl TextFile {
         let mut length = 0;
         let mut buffer = vec![0u8; self.buffer_size];
         let mut buffer_start = 3;
-        if file_start == 0L {
+        if file_start == 0 {
             bis.read_range(&mut buffer, 0, 3);
-            if Utf8BomUtils::has_bom(&buffer) {
+            if Utf8BomUtils::hasBom(&buffer) {
                 buffer_start = 0;
                 cur_offset = 3;
             }
@@ -324,9 +335,9 @@ impl TextFile {
                             break;
                         }
                     }
-                    let mut chapter = BookChapter::new();
+                    let mut chapter = BookChapter::default();
                     chapter.title = format!("第{}章({})", block_pos, chapter_pos);
-                    chapter.start = toc.last().map(|c| c.end).flatten().unwrap_or(cur_offset);
+                    chapter.start = Some(toc.last().map(|c: &BookChapter| c.end).flatten().unwrap_or(cur_offset));
                     chapter.end = Some(chapter.start.unwrap() + (end - chapter_offset) as i64);
                     toc.push(chapter);
                     //减去已经被分配的长度
@@ -345,9 +356,9 @@ impl TextFile {
         }
         //设置结尾章节
         if buffer_start > 100 || toc.is_empty() {
-            let mut chapter = BookChapter::new();
+            let mut chapter = BookChapter::default();
             chapter.title = format!("第{}章({})", block_pos, chapter_pos);
-            chapter.start = toc.last().map(|c| c.end).flatten().unwrap_or(cur_offset);
+            chapter.start = Some(toc.last().map(|c| c.end).flatten().unwrap_or(cur_offset));
             chapter.end = Some(chapter.start.unwrap() + buffer_start as i64);
             toc.push(chapter);
         } else {
@@ -368,7 +379,7 @@ impl TextFile {
         let mut toc_pattern: Option<Pattern> = None;
         for toc_rule in rules {
             let pattern = toc_rule.rule.to_pattern_with_flags(Pattern::MULTILINE);
-            let mut matcher = pattern.matcher(content);
+            let mut matcher = pattern.matcher(content.to_string());
             let mut cs = 0;
             while matcher.find() {
                 cs += 1;
@@ -384,9 +395,9 @@ impl TextFile {
     /**
      * 获取启用的目录规则
      */
-    fn get_toc_rules(&self) -> Vec<TxtTocRule> {
+    fn get_toc_rules(&self) -> Vec<&'static TxtTocRule> {
         return DefaultData::txt_toc_rules()
-            .into_iter()
+            .iter()
             .filter(|it| it.enable)
             .collect();
     }

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,6 +44,7 @@ pub trait InputStream {
 }
 
 /** XmlPullParserException / IOException / RuntimeException stand-ins */
+#[derive(Debug)]
 pub enum XmlPullError {
     XmlPullParserException(String),
     IOException(String),
@@ -364,7 +366,7 @@ impl KXmlParser {
         // Java: throw new XmlPullParserException(
         //     desc.length() < 100 ? desc : desc.substring(0, 100) + "\n",
         //     this,
-        //     null);
+        //     None);
         let d = if desc.chars().count() < 100 {
             desc
         }
@@ -401,7 +403,8 @@ impl KXmlParser {
 
 
             if self.error.is_some() {
-                for c in self.error.as_ref().unwrap().chars() {
+                let err_msg = self.error.clone().unwrap();
+                for c in err_msg.chars() {
                     self.push(c as i32);
                 }
                 //            text = error;
@@ -428,7 +431,7 @@ impl KXmlParser {
             self.prefix = None;
             self.name = None;
             self.namespace = None;
-            //            text = null;
+            //            text = None;
 
             self.type_ = self.peek_type()?;
 
@@ -492,8 +495,10 @@ impl KXmlParser {
                 && (self.peek(1)? == 'm' as i32 || self.peek(1)? == 'M' as i32) {
 
                 if push {
-                    self.push(self.peek(0)?);
-                    self.push(self.peek(1)?);
+                    let p0 = self.peek(0)?;
+                    let p1 = self.peek(1)?;
+                    self.push(p0);
+                    self.push(p1);
                 }
                 self.read()?;
                 self.read()?;
@@ -625,6 +630,8 @@ impl KXmlParser {
 
         loop {
             let i = self.read()?;
+            // fix: Java switch case '<char>' converted to a match guard, since a
+            // fix: Rust match pattern cannot contain an `as` cast
             match i {
 
                 -1 => {
@@ -632,17 +639,17 @@ impl KXmlParser {
                     return Ok(());
                 }
 
-                '\'' as i32 => {
+                x if x == '\'' as i32 => {
                     quoted = !quoted;
                 }
 
-                '<' as i32 => {
+                x if x == '<' as i32 => {
                     if !quoted {
                         nesting += 1;
                     }
                 }
 
-                '>' as i32 => {
+                x if x == '>' as i32 => {
                     if !quoted {
                         nesting -= 1;
                         if nesting == 0 {
@@ -707,19 +714,20 @@ impl KXmlParser {
     }
 
     fn peek_type(&mut self) -> Result<i32, XmlPullError> {
+        // fix: Java switch cases converted to match guards (patterns cannot contain `as`)
         match self.peek(0)? {
             -1 => {
                 return Ok(KXmlParser::END_DOCUMENT);
             }
-            '&' as i32 => {
+            x if x == '&' as i32 => {
                 return Ok(KXmlParser::ENTITY_REF);
             }
-            '<' as i32 => {
+            x if x == '<' as i32 => {
                 match self.peek(1)? {
-                    '/' as i32 => {
+                    x if x == '/' as i32 => {
                         return Ok(KXmlParser::END_TAG);
                     }
-                    '?' as i32 | '!' as i32 => {
+                    x if x == '?' as i32 || x == '!' as i32 => {
                         return Ok(KXmlParser::LEGACY);
                     }
                     _ => {
@@ -919,7 +927,8 @@ impl KXmlParser {
     fn push_entity(&mut self)
         -> Result<(), XmlPullError> {
 
-        self.push(self.read()?); // &
+        let c = self.read()?;
+        self.push(c); // &
 
 
         let pos = self.txt_pos;
@@ -950,7 +959,8 @@ impl KXmlParser {
                 return Ok(());
             }
 
-            self.push(self.read()?);
+            let c = self.read()?;
+            self.push(c);
         }
 
         let code = self.get(pos);
@@ -1024,7 +1034,8 @@ impl KXmlParser {
                 self.push(' ' as i32);
             }
             else {
-                self.push(self.read()?);
+                let c = self.read()?;
+                self.push(c);
             }
 
             if next == '>' as i32 && cbr_count >= 2 && delimiter != ']' as i32
@@ -1048,7 +1059,9 @@ impl KXmlParser {
         -> Result<(), XmlPullError> {
         let a = self.read()?;
         if a != c
-        { self.error(format!("expected: '{}' actual: '{}'", c as u16 as char, a as u16 as char))?; }
+        { self.error(format!("expected: '{}' actual: '{}'",
+                             char::from_u32(c as u32).unwrap_or('\u{FFFD}'),
+                             char::from_u32(a as u32).unwrap_or('\u{FFFD}')))?; }
         Ok(())
     }
 
@@ -1096,7 +1109,8 @@ impl KXmlParser {
                 self.src_pos += 1;
             }
             else {
-                self.src_count = self.reader.as_mut().unwrap().read_buf(&mut self.src_buf, 0, self.src_buf.len());
+                let buf_len = self.src_buf.len();
+                self.src_count = self.reader.as_mut().unwrap().read_buf(&mut self.src_buf, 0, buf_len);
                 if self.src_count <= 0 {
                     nw = -1;
                 }
@@ -1150,7 +1164,8 @@ impl KXmlParser {
         // }
         // while (...);
         loop {
-            self.push(self.read()?);
+            let mut c = self.read()?;
+            self.push(c);
             c = self.peek(0)?;
             if !((c >= 'a' as i32 && c <= 'z' as i32)
                 || (c >= 'A' as i32 && c <= 'Z' as i32)
@@ -1217,7 +1232,7 @@ impl KXmlParser {
         Ok(())
     }
 
-    pub fn set_input_stream(&mut self, is: Option<Box<dyn InputStream>>, _enc: Option<String>)
+    pub fn set_input_stream(&mut self, mut is: Option<Box<dyn InputStream>>, _enc: Option<String>)
         -> Result<(), XmlPullError> {
 
         self.src_pos = 0;
@@ -1243,7 +1258,7 @@ impl KXmlParser {
                 //     srcBuf[srcCount++] = (char) i;
                 // }
                 while self.src_count < 4 {
-                    let i = is.as_ref().unwrap().read();
+                    let i = is.as_mut().unwrap().read();
                     if i == -1 { break; }
                     chk = (chk << 8) | i;
                     self.src_buf[self.src_count as usize] = i as u16;
@@ -1291,7 +1306,7 @@ impl KXmlParser {
                         UTF8_3C => {
                             // Java: while (true) { ... }
                             loop {
-                                let i = is.as_ref().unwrap().read();
+                                let i = is.as_mut().unwrap().read();
                                 if i == -1 { break; }
                                 self.src_buf[self.src_count as usize] = i as u16;
                                 self.src_count += 1;
@@ -1317,14 +1332,15 @@ impl KXmlParser {
                             }
 
                             // Java: falls through to default (switch fallthrough)
+                            // fix: parenthesize casts so `<<` is a shift, not generic arguments
                             if (chk & 0x0ffff0000u32 as i32) == 0x0FEFF0000u32 as i32 {
                                 enc = Some("UTF-16BE".to_string());
-                                self.src_buf[0] = ((self.src_buf[2] as i32 << 8) | self.src_buf[3] as i32) as u16;
+                                self.src_buf[0] = (((self.src_buf[2] as i32) << 8) | self.src_buf[3] as i32) as u16;
                                 self.src_count = 1;
                             }
                             else if (chk & 0x0ffff0000u32 as i32) == 0x0fffe0000u32 as i32 {
                                 enc = Some("UTF-16LE".to_string());
-                                self.src_buf[0] = ((self.src_buf[3] as i32 << 8) | self.src_buf[2] as i32) as u16;
+                                self.src_buf[0] = (((self.src_buf[3] as i32) << 8) | self.src_buf[2] as i32) as u16;
                                 self.src_count = 1;
                             }
                             else if (chk & 0x0ffffff00u32 as i32) == 0x0EFBBBF00u32 as i32 {
@@ -1338,12 +1354,12 @@ impl KXmlParser {
                             // Java: default: (of the switch above)
                             if (chk & 0x0ffff0000u32 as i32) == 0x0FEFF0000u32 as i32 {
                                 enc = Some("UTF-16BE".to_string());
-                                self.src_buf[0] = ((self.src_buf[2] as i32 << 8) | self.src_buf[3] as i32) as u16;
+                                self.src_buf[0] = (((self.src_buf[2] as i32) << 8) | self.src_buf[3] as i32) as u16;
                                 self.src_count = 1;
                             }
                             else if (chk & 0x0ffff0000u32 as i32) == 0x0fffe0000u32 as i32 {
                                 enc = Some("UTF-16LE".to_string());
-                                self.src_buf[0] = ((self.src_buf[3] as i32 << 8) | self.src_buf[2] as i32) as u16;
+                                self.src_buf[0] = (((self.src_buf[3] as i32) << 8) | self.src_buf[2] as i32) as u16;
                                 self.src_count = 1;
                             }
                             else if (chk & 0x0ffffff00u32 as i32) == 0x0EFBBBF00u32 as i32 {
@@ -1411,7 +1427,7 @@ impl KXmlParser {
         { return self.standalone.map(|v| Property::Bool(v)); }
         if self.is_prop(property, true, "location".to_string())
         {
-            // Java: return location != null ? location : reader.toString();
+            // Java: return location != None ? location : reader.toString();
             return Some(Property::Location(
                 if self.location.is_some() {
                     self.location.clone().unwrap()
@@ -1552,7 +1568,7 @@ impl KXmlParser {
 
     pub fn get_text(&self) -> Option<String> {
         // Java: return type < TEXT
-        //     || (type == ENTITY_REF && unresolved) ? null : get(0);
+        //     || (type == ENTITY_REF && unresolved) ? None : get(0);
         return if self.type_ < KXmlParser::TEXT
             || (self.type_ == KXmlParser::ENTITY_REF && self.unresolved) {
             None
@@ -1865,3 +1881,5 @@ impl Reader for InputStreamReader {
         return format!("InputStreamReader({})", self.encoding.as_deref().unwrap_or(""));
     }
 }
+
+pub fn probe_err() -> i32 { let _: i32 = 0; 0 }

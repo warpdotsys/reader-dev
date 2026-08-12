@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::org_kxml2_kdom_node::{Node, XmlPullError, XmlSerializer, END_TAG};
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,6 +34,7 @@
 
 // pub struct Element extends Node {
 
+#[derive(Clone)]
 pub struct Element {
     pub base: Node,
     pub namespace: Option<String>,
@@ -82,9 +85,9 @@ impl Element {
     pub fn create_element(
         &self,
         namespace: Option<String>,
-        name: String) {
+        name: String) -> Element {
 
-        // Java: return (this.parent == null)
+        // Java: return (this.parent == None)
         //     ? super.createElement(namespace, name)
         //     : this.parent.createElement(namespace, name);
         return match &self.parent {
@@ -138,7 +141,7 @@ impl Element {
 
         let mut current = self;
 
-        // Java: while (current.parent != null) {
+        // Java: while (current.parent != None) {
         //     if (!(current.parent instanceof Element)) return current.parent;
         //     current = (Element) current.parent;
         // }
@@ -180,10 +183,10 @@ impl Element {
         let mut i = 0;
         while i < cnt {
             // Java: prefix == getNamespacePrefix (i) ||
-            //     (prefix != null && prefix.equals (getNamespacePrefix (i)))
+            //     (prefix != None && prefix.equals (getNamespacePrefix (i)))
             if prefix == self.get_namespace_prefix(i)
                 || (prefix.is_some() && prefix.as_ref() == self.get_namespace_prefix(i).as_ref()) {
-                return self.get_namespace_uri(i);
+                return self.get_namespace_uri_index(i);
             }
             i += 1;
         }
@@ -207,7 +210,7 @@ impl Element {
         return self.prefixes.as_ref().unwrap()[i][0].clone();
     }
 
-    pub fn get_namespace_uri(&self, i: usize) -> Option<String> {
+    pub fn get_namespace_uri_index(&self, i: usize) -> Option<String> {
         return self.prefixes.as_ref().unwrap()[i][1].clone();
     }
 
@@ -220,7 +223,7 @@ impl Element {
     }
 
     /*
-     * Returns the parent element if available, null otherwise
+     * Returns the parent element if available, None otherwise
 
     pub fn get_parent_element(&self) -> Option<Element> {
         return match &self.parent {
@@ -257,7 +260,7 @@ impl Element {
         }
 
 
-        //        if (prefixMap == null) throw new RuntimeException ("!!");
+        //        if (prefixMap == None) throw new RuntimeException ("!!");
 
         self.init();
 
@@ -266,16 +269,17 @@ impl Element {
             parser.next_token();
         }
         else {
-            parser.next_token();
-            Node::parse(&mut self.base, &ParentNode::Element(Box::new((*self).clone())), parser)?;
+            let elem_clone = (*self).clone();
+            Node::parse(&mut self.base, &ParentNode::Element(Box::new(elem_clone)), parser)?;
 
             if self.base.get_child_count() == 0 {
-                self.base.add_child_simple(&ParentNode::Element(Box::new((*self).clone())), Node::IGNORABLE_WHITESPACE, Some(NodeChild::String(String::new())));
+                let elem_clone2 = (*self).clone();
+                self.base.add_child_simple(&ParentNode::Element(Box::new(elem_clone2)), Node::IGNORABLE_WHITESPACE, Some(NodeChild::String(String::new())));
             }
         }
 
         parser.require(
-            XmlPullParser::END_TAG,
+            END_TAG,
             self.get_namespace(),
             self.get_name());
 
@@ -294,25 +298,25 @@ impl Element {
         };
     }
 
-    /** Java: (this.parent == null) ? super.createElement(namespace, name)
+    /** Java: (this.parent == None) ? super.createElement(namespace, name)
      *        : this.parent.createElement(namespace, name);
      *  called from Node.parse for the createElement virtual dispatch */
     pub fn create_element_dispatch(this: &ParentNode, namespace: Option<String>, name: Option<String>) -> Element {
         return match this {
-            ParentNode::Element(e) => e.create_element(namespace, name),
-            ParentNode::Document(_) => Node::create_element(namespace, name),
+            ParentNode::Element(e) => e.create_element(namespace, name.unwrap_or_default()),
+            ParentNode::Document(_) => Node::create_element(namespace, name.unwrap_or_default()),
         };
     }
 
     /**
-     * Sets the given attribute; a value of null removes the attribute */
+     * Sets the given attribute; a value of None removes the attribute */
 
     pub fn set_attribute(&mut self, namespace: Option<String>, name: Option<String>, value: Option<String>) {
         if self.attributes.is_none() {
             self.attributes = Some(Vec::new());
         }
 
-        // Java: if (namespace == null) namespace = "";
+        // Java: if (namespace == None) namespace = "";
         let namespace = match namespace { Some(ns) => ns, None => String::new() };
 
         let mut i = (self.attributes.as_ref().unwrap().len() as i32) - 1;
@@ -339,7 +343,7 @@ impl Element {
 
 
     /**
-     * Sets the given prefix; a namespace value of null removess the
+     * Sets the given prefix; a namespace value of None removess the
      * prefix */
 
     pub fn set_prefix(&mut self, prefix: Option<String>, namespace: Option<String>) {
@@ -359,12 +363,12 @@ impl Element {
 
     /**
      * sets the namespace of the element. Please note: For no
-     * namespace, please use Xml.NO_NAMESPACE, null is not a legal
-     * value. Currently, null is converted to Xml.NO_NAMESPACE, but
+     * namespace, please use Xml.NO_NAMESPACE, None is not a legal
+     * value. Currently, None is converted to Xml.NO_NAMESPACE, but
      * future versions may throw an exception. */
 
     pub fn set_namespace(&mut self, namespace: String) {
-        // Java: if (namespace == null)
+        // Java: if (namespace == None)
         //     throw new NullPointerException ("Use \"\" for empty namespace");
         self.namespace = Some(namespace);
     }
@@ -389,7 +393,7 @@ impl Element {
         if self.prefixes.is_some() {
             let mut i = 0;
             while i < self.prefixes.as_ref().unwrap().len() {
-                writer.set_prefix(self.get_namespace_prefix(i), self.get_namespace_uri(i));
+                writer.set_prefix(self.get_namespace_prefix(i), self.get_namespace_uri_index(i));
                 i += 1;
             }
         }
@@ -419,7 +423,7 @@ impl Element {
 
 /** returns a copy of the parent reference to be stored in an element
  *  (Java: the parent is a reference to the enclosing Node) */
-pub fn create_element_from_parent(parent: Option<&ParentNode>, namespace: Option<String>, name: Option<String>) -> Element {
+pub fn create_element_from_parent(parent: Option<&ParentNode>, namespace: Option<String>, name: String) -> Element {
     return match parent {
         None => Node::create_element(namespace, name),
         Some(ParentNode::Element(e)) => e.create_element(namespace, name),

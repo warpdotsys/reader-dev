@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.help.coroutine
 
 use std::collections::HashSet;
@@ -36,7 +37,7 @@ impl CoroutineContainer for CompositeCoroutine {
     // override fun add(coroutine: Coroutine<*>): Boolean {
     //     synchronized(this) {
     //         var set: HashSet<Coroutine<*>>? = resources
-    //         if (resources == null) {
+    //         if (resources == None) {
     //             set = hashSetOf()
     //             resources = set
     //         }
@@ -57,7 +58,7 @@ impl CoroutineContainer for CompositeCoroutine {
     // override fun addAll(vararg coroutines: Coroutine<*>): Boolean {
     //     synchronized(this) {
     //         var set: HashSet<Coroutine<*>>? = resources
-    //         if (resources == null) {
+    //         if (resources == None) {
     //             set = hashSetOf()
     //             resources = set
     //         }
@@ -104,7 +105,7 @@ impl CoroutineContainer for CompositeCoroutine {
     // override fun delete(coroutine: Coroutine<*>): Boolean {
     //     synchronized(this) {
     //         val set = resources
-    //         if (set == null || !set.remove(coroutine)) {
+    //         if (set == None || !set.remove(coroutine)) {
     //             return false
     //         }
     //     }
@@ -125,7 +126,7 @@ impl CoroutineContainer for CompositeCoroutine {
     //     val set: HashSet<Coroutine<*>>?
     //     synchronized(this) {
     //         set = resources
-    //         resources = null
+    //         resources = None
     //     }
     //
     //     set?.forEachIndexed { _, coroutine ->
@@ -133,7 +134,7 @@ impl CoroutineContainer for CompositeCoroutine {
     //     }
     // }
     fn clear(&self) {
-        let set: Option<HashSet<Rc<Coroutine<Box<dyn std::any::Any>>>>;
+        let set: Option<HashSet<Rc<Coroutine<Box<dyn std::any::Any>>>>>;
         {
             let mut guard = self.resources.lock().unwrap();
             set = guard.take();

@@ -1,0 +1,1581 @@
+﻿=== ERR at line 2391 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+  --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:56:22
+   |
+56 |         analyze_rule.set_content(&body)
+   |                      ^^^^^^^^^^^------- argument #2 of type `std::option::Option<std::string::String>` is missing
+   |
+note: method defined here
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:82:12
+   |
+82 |     pub fn set_content(&mut self, content: Option<Box<Any>>, base_url: Option<String>) -> &mut Self {
+   |            ^^^^^^^^^^^                                       ------------------------
+help: provide the argument
+   |
+56 |         analyze_rule.set_content(&body, /* std::option::Option<std::string::String> */)
+   |                                       ++++++++++++++++++++++++++++++++++++++++++++++++
+
+=== ERR at line 2432 ===
+error[E0308]: mismatched types
+  --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:57:27
+   |
+57 |             .set_base_url(get_absolute_url(&rss_article.origin, &rss_article.link));
+   |              ------------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<String>`, foun
+d `String`
+   |              |
+   |              arguments to this method are incorrect
+   |
+   = note: expected enum `std::option::Option<std::string::String>`
+            found struct `std::string::String`
+note: method defined here
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:96:12
+   |
+96 |     pub fn set_base_url(&mut self, base_url: Option<String>) -> &mut Self {
+   |            ^^^^^^^^^^^^            ------------------------
+=== ERR at line 2453 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:58:29
+    |
+ 58 |         return analyze_rule.get_string(rule_content);
+    |                             ^^^^^^^^^^-------------- two arguments of type `std::option::Option<Box<stubs::Any>>`
+ and `bool` are missing
+    |
+note: expected `Option<String>`, found `&str`
+   --> src\..\src\main\java\io\legado\app\model\rss\Rss.rs:58:40
+    |
+ 58 |         return analyze_rule.get_string(rule_content);
+    |                                        ^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&str`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 2874 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:169:22
+    |
+169 |         analyze_rule.set_content(body).set_base_url(base_url);
+    |                      ^^^^^^^^^^^------ argument #2 of type `std::option::Option<std::string::String>` is missing
+    |
+note: expected `Option<Box<Any>>`, found `&str`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:169:34
+    |
+169 |         analyze_rule.set_content(body).set_base_url(base_url);
+    |                                  ^^^^
+    = note:   expected enum `std::option::Option<Box<stubs::Any>>`
+            found reference `&str`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:82:12
+    |
+=== ERR at line 2899 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:169:53
+    |
+169 |         analyze_rule.set_content(body).set_base_url(base_url);
+    |                                        ------------ ^^^^^^^^ expected `Option<String>`, found `&str`
+    |                                        |
+    |                                        arguments to this method are incorrect
+    |
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&str`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:96:12
+    |
+ 96 |     pub fn set_base_url(&mut self, base_url: Option<String>) -> &mut Self {
+    |            ^^^^^^^^^^^^            ------------------------
+
+=== ERR at line 2915 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:170:39
+    |
+170 |         analyze_rule.set_redirect_url(redirect_url);
+    |                      ---------------- ^^^^^^^^^^^^ expected `String`, found `&str`
+    |                      |
+    |                      arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:104:12
+    |
+104 |     pub fn set_redirect_url(&mut self, url: String) -> Option<URL> {
+    |            ^^^^^^^^^^^^^^^^            -----------
+help: try using a conversion method
+    |
+170 |         analyze_rule.set_redirect_url(redirect_url.to_string());
+=== ERR at line 2933 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:178:50
+    |
+178 |         let elements = analyze_rule.get_elements(list_rule);
+    |                                     ------------ ^^^^^^^^^ expected `String`, found `&str`
+    |                                     |
+    |                                     arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:382:12
+    |
+382 |     pub fn get_elements(&mut self, rule_str: String) -> Vec<Box<Any>> {
+    |            ^^^^^^^^^^^^            ----------------
+help: try using a conversion method
+    |
+178 |         let elements = analyze_rule.get_elements(list_rule.to_string());
+=== ERR at line 2973 ===
+error[E0061]: this method takes 3 arguments but 2 arguments were supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:193:46
+    |
+193 |             if let Some(list) = analyze_rule.get_string_list(&next_toc_rule, true) {
+    |                                              ^^^^^^^^^^^^^^^                 ---- argument #2 of type `std::optio
+n::Option<Box<stubs::Any>>` is missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:193:62
+    |
+193 |             if let Some(list) = analyze_rule.get_string_list(&next_toc_rule, true) {
+    |                                                              ^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:164:12
+=== ERR at line 3005 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:213:42
+    |
+213 |             let name_rule = analyze_rule.split_source_rule(&toc_rule.chapter_name);
+    |                                          ^^^^^^^^^^^^^^^^^------------------------ argument #2 of type `bool` is 
+missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:213:60
+    |
+213 |             let name_rule = analyze_rule.split_source_rule(&toc_rule.chapter_name);
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+=== ERR at line 3036 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:214:41
+    |
+214 |             let url_rule = analyze_rule.split_source_rule(&toc_rule.chapter_url);
+    |                                         ^^^^^^^^^^^^^^^^^----------------------- argument #2 of type `bool` is mi
+ssing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:214:59
+    |
+214 |             let url_rule = analyze_rule.split_source_rule(&toc_rule.chapter_url);
+    |                                                           ^^^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+=== ERR at line 3067 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:215:41
+    |
+215 |             let vip_rule = analyze_rule.split_source_rule(&toc_rule.is_vip);
+    |                                         ^^^^^^^^^^^^^^^^^------------------ argument #2 of type `bool` is missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:215:59
+    |
+215 |             let vip_rule = analyze_rule.split_source_rule(&toc_rule.is_vip);
+    |                                                           ^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+=== ERR at line 3097 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:216:45
+    |
+216 |             let up_time_rule = analyze_rule.split_source_rule(&toc_rule.update_time);
+    |                                             ^^^^^^^^^^^^^^^^^----------------------- argument #2 of type `bool` i
+s missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:216:63
+    |
+216 |             let up_time_rule = analyze_rule.split_source_rule(&toc_rule.update_time);
+    |                                                               ^^^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+=== ERR at line 3128 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:217:47
+    |
+217 |             let is_volume_rule = analyze_rule.split_source_rule(&toc_rule.is_volume);
+    |                                               ^^^^^^^^^^^^^^^^^--------------------- argument #2 of type `bool` i
+s missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:217:65
+    |
+217 |             let is_volume_rule = analyze_rule.split_source_rule(&toc_rule.is_volume);
+    |                                                                 ^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+=== ERR at line 3159 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:220:30
+    |
+220 |                 analyze_rule.set_content(item);
+    |                              ^^^^^^^^^^^------ argument #2 of type `std::option::Option<std::string::String>` is 
+missing
+    |
+note: expected `Option<Box<Any>>`, found `&Box<Any>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:220:42
+    |
+220 |                 analyze_rule.set_content(item);
+    |                                          ^^^^
+    = note:   expected enum `std::option::Option<Box<_>>`
+            found reference `&Box<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:82:12
+=== ERR at line 3204 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:223:51
+    |
+223 |                 book_chapter.title = analyze_rule.get_string(&name_rule);
+    |                                                   ^^^^^^^^^^------------ two arguments of type `std::option::Opti
+on<Box<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Vec<SourceRule>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:223:62
+    |
+223 |                 book_chapter.title = analyze_rule.get_string(&name_rule);
+    |                                                              ^^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&Vec<io_legado_app_model_analyzerule_analyzerule::SourceRule>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 3230 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:224:49
+    |
+224 |                 book_chapter.url = analyze_rule.get_string(&url_rule);
+    |                                                 ^^^^^^^^^^----------- two arguments of type `std::option::Option<
+Box<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Vec<SourceRule>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:224:60
+    |
+224 |                 book_chapter.url = analyze_rule.get_string(&url_rule);
+    |                                                            ^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&Vec<io_legado_app_model_analyzerule_analyzerule::SourceRule>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 3256 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:225:49
+    |
+225 |                 book_chapter.tag = analyze_rule.get_string(&up_time_rule);
+    |                                                 ^^^^^^^^^^--------------- two arguments of type `std::option::Opt
+ion<Box<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Vec<SourceRule>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:225:60
+    |
+225 |                 book_chapter.tag = analyze_rule.get_string(&up_time_rule);
+    |                                                            ^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&Vec<io_legado_app_model_analyzerule_analyzerule::SourceRule>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 3282 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:227:46
+    |
+227 |                 let is_volume = analyze_rule.get_string(&is_volume_rule);
+    |                                              ^^^^^^^^^^----------------- two arguments of type `std::option::Opti
+on<Box<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Vec<SourceRule>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:227:57
+    |
+227 |                 let is_volume = analyze_rule.get_string(&is_volume_rule);
+    |                                                         ^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&Vec<io_legado_app_model_analyzerule_analyzerule::SourceRule>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 3314 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:250:47
+    |
+250 |                     let is_vip = analyze_rule.get_string(&vip_rule);
+    |                                               ^^^^^^^^^^----------- two arguments of type `std::option::Option<Bo
+x<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Vec<SourceRule>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:250:58
+    |
+250 |                     let is_vip = analyze_rule.get_string(&vip_rule);
+    |                                                          ^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&Vec<io_legado_app_model_analyzerule_analyzerule::SourceRule>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 3396 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:51:39
+    |
+ 51 |         analyze_rule.set_redirect_url(redirect_url);
+    |                      ---------------- ^^^^^^^^^^^^ expected `String`, found `&str`
+    |                      |
+    |                      arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:104:12
+    |
+104 |     pub fn set_redirect_url(&mut self, url: String) -> Option<URL> {
+    |            ^^^^^^^^^^^^^^^^            -----------
+help: try using a conversion method
+    |
+ 51 |         analyze_rule.set_redirect_url(redirect_url.to_string());
+=== ERR at line 3886 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+  --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:48:22
+   |
+48 |         analyze_rule.set_content(body.unwrap()).set_base_url(base_url);
+   |                      ^^^^^^^^^^^--------------- argument #2 of type `std::option::Option<std::string::String>` is 
+missing
+   |
+note: expected `Option<Box<Any>>`, found `&str`
+  --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:48:34
+   |
+48 |         analyze_rule.set_content(body.unwrap()).set_base_url(base_url);
+   |                                  ^^^^^^^^^^^^^
+   = note:   expected enum `std::option::Option<Box<stubs::Any>>`
+           found reference `&str`
+note: method defined here
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:82:12
+=== ERR at line 3912 ===
+error[E0308]: mismatched types
+  --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:48:62
+   |
+48 |         analyze_rule.set_content(body.unwrap()).set_base_url(base_url);
+   |                                                 ------------ ^^^^^^^^ expected `Option<String>`, found `&str`
+   |                                                 |
+   |                                                 arguments to this method are incorrect
+   |
+   = note:   expected enum `std::option::Option<std::string::String>`
+           found reference `&str`
+note: method defined here
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:96:12
+   |
+96 |     pub fn set_base_url(&mut self, base_url: Option<String>) -> &mut Self {
+   |            ^^^^^^^^^^^^            ------------------------
+
+=== ERR at line 3928 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:49:39
+    |
+ 49 |         analyze_rule.set_redirect_url(base_url);
+    |                      ---------------- ^^^^^^^^ expected `String`, found `&str`
+    |                      |
+    |                      arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:104:12
+    |
+104 |     pub fn set_redirect_url(&mut self, url: String) -> Option<URL> {
+    |            ^^^^^^^^^^^^^^^^            -----------
+help: try using a conversion method
+    |
+ 49 |         analyze_rule.set_redirect_url(base_url.to_string());
+=== ERR at line 4056 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:99:42
+    |
+ 99 |             let rule_name = analyze_rule.split_source_rule(&book_list_rule.name);
+    |                                          ^^^^^^^^^^^^^^^^^---------------------- argument #2 of type `bool` is mi
+ssing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+ 99 |             let rule_name = analyze_rule.split_source_rule(&book_list_rule.name, /* bool */);
+    |                                                                                ++++++++++++
+=== ERR at line 4073 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:100:46
+    |
+100 |             let rule_book_url = analyze_rule.split_source_rule(&book_list_rule.book_url);
+    |                                              ^^^^^^^^^^^^^^^^^-------------------------- argument #2 of type `boo
+l` is missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+100 |             let rule_book_url = analyze_rule.split_source_rule(&book_list_rule.book_url, /* bool */);
+    |                                                                                        ++++++++++++
+=== ERR at line 4090 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:101:44
+    |
+101 |             let rule_author = analyze_rule.split_source_rule(&book_list_rule.author);
+    |                                            ^^^^^^^^^^^^^^^^^------------------------ argument #2 of type `bool` i
+s missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+101 |             let rule_author = analyze_rule.split_source_rule(&book_list_rule.author, /* bool */);
+    |                                                                                    ++++++++++++
+=== ERR at line 4107 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:102:47
+    |
+102 |             let rule_cover_url = analyze_rule.split_source_rule(&book_list_rule.cover_url);
+    |                                               ^^^^^^^^^^^^^^^^^--------------------------- argument #2 of type `b
+ool` is missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+102 |             let rule_cover_url = analyze_rule.split_source_rule(&book_list_rule.cover_url, /* bool */);
+    |                                                                                          ++++++++++++
+=== ERR at line 4124 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:103:43
+    |
+103 |             let rule_intro = analyze_rule.split_source_rule(&book_list_rule.intro);
+    |                                           ^^^^^^^^^^^^^^^^^----------------------- argument #2 of type `bool` is 
+missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+103 |             let rule_intro = analyze_rule.split_source_rule(&book_list_rule.intro, /* bool */);
+    |                                                                                  ++++++++++++
+=== ERR at line 4141 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:104:42
+    |
+104 |             let rule_kind = analyze_rule.split_source_rule(&book_list_rule.kind);
+    |                                          ^^^^^^^^^^^^^^^^^---------------------- argument #2 of type `bool` is mi
+ssing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+104 |             let rule_kind = analyze_rule.split_source_rule(&book_list_rule.kind, /* bool */);
+    |                                                                                ++++++++++++
+=== ERR at line 4158 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:105:50
+    |
+105 |             let rule_last_chapter = analyze_rule.split_source_rule(&book_list_rule.last_chapter);
+    |                                                  ^^^^^^^^^^^^^^^^^------------------------------ argument #2 of t
+ype `bool` is missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+105 |             let rule_last_chapter = analyze_rule.split_source_rule(&book_list_rule.last_chapter, /* bool */);
+    |                                                                                                ++++++++++++
+=== ERR at line 4175 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:106:48
+    |
+106 |             let rule_word_count = analyze_rule.split_source_rule(&book_list_rule.word_count);
+    |                                                ^^^^^^^^^^^^^^^^^---------------------------- argument #2 of type 
+`bool` is missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:478:12
+    |
+478 |     pub fn split_source_rule(&mut self, rule_str: Option<String>, all_in_one: bool) -> Vec<SourceRule> {
+    |            ^^^^^^^^^^^^^^^^^                                      ----------------
+help: provide the argument
+    |
+106 |             let rule_word_count = analyze_rule.split_source_rule(&book_list_rule.word_count, /* bool */);
+    |                                                                                            ++++++++++++
+=== ERR at line 4372 ===
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:189:22
+    |
+189 |         analyze_rule.set_content(item);
+    |                      ^^^^^^^^^^^------ argument #2 of type `std::option::Option<std::string::String>` is missing
+    |
+note: expected `Option<Box<Any>>`, found `&Box<Any>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:189:34
+    |
+189 |         analyze_rule.set_content(item);
+    |                                  ^^^^
+    = note:   expected enum `std::option::Option<Box<_>>`
+            found reference `&Box<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:82:12
+    |
+=== ERR at line 4397 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:209:67
+    |
+209 |             search_book.author = format_book_author(&analyze_rule.get_string(rule_author));
+    |                                                                   ^^^^^^^^^^------------- two arguments of type `
+std::option::Option<Box<stubs::Any>>` and `bool` are missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+    |
+263 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> String {
+    |            ^^^^^^^^^^                                      ---------------------------  ------------
+help: provide the arguments
+    |
+209 |             search_book.author = format_book_author(&analyze_rule.get_string(rule_author, /* std::option::Option<
+Box<stubs::Any>> */, /* bool */));
+=== ERR at line 4435 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:222:51
+    |
+222 |             if let Some(kind_list) = analyze_rule.get_string_list(rule_kind) {
+    |                                                   ^^^^^^^^^^^^^^^----------- two arguments of type `std::option::
+Option<Box<stubs::Any>>` and `bool` are missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:164:12
+    |
+164 |     pub fn get_string_list(&mut self, rule: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> Option<
+Vec<String>> {
+    |            ^^^^^^^^^^^^^^^                                  ---------------------------  ------------
+help: provide the arguments
+    |
+222 |             if let Some(kind_list) = analyze_rule.get_string_list(rule_kind, /* std::option::Option<Box<stubs::An
+=== ERR at line 4455 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:256:61
+    |
+256 |             search_book.latest_chapter_title = analyze_rule.get_string(rule_last_chapter);
+    |                                                             ^^^^^^^^^^------------------- two arguments of type `
+std::option::Option<Box<stubs::Any>>` and `bool` are missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+    |
+263 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> String {
+    |            ^^^^^^^^^^                                      ---------------------------  ------------
+help: provide the arguments
+    |
+256 |             search_book.latest_chapter_title = analyze_rule.get_string(rule_last_chapter, /* std::option::Option<
+Box<stubs::Any>> */, /* bool */);
+=== ERR at line 4474 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:272:46
+    |
+272 |             search_book.intro = analyze_rule.get_string(rule_intro).html_format();
+    |                                              ^^^^^^^^^^------------ two arguments of type `std::option::Option<Bo
+x<stubs::Any>>` and `bool` are missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+    |
+263 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> String {
+    |            ^^^^^^^^^^                                      ---------------------------  ------------
+help: provide the arguments
+    |
+272 |             search_book.intro = analyze_rule.get_string(rule_intro, /* std::option::Option<Box<stubs::Any>> */, /
+* bool */).html_format();
+=== ERR at line 4507 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:288:38
+    |
+288 |             let cover = analyze_rule.get_string(rule_cover_url);
+    |                                      ^^^^^^^^^^---------------- two arguments of type `std::option::Option<Box<st
+ubs::Any>>` and `bool` are missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+    |
+263 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> String {
+    |            ^^^^^^^^^^                                      ---------------------------  ------------
+help: provide the arguments
+    |
+288 |             let cover = analyze_rule.get_string(rule_cover_url, /* std::option::Option<Box<stubs::Any>> */, /* bo
+ol */);
+=== ERR at line 4550 ===
+error[E0061]: this method takes 3 arguments but 2 arguments were supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookList.rs:306:49
+    |
+306 |             search_book.book_url = analyze_rule.get_string(rule_book_url, true);
+    |                                                 ^^^^^^^^^^                ---- argument #2 of type `std::option::
+Option<Box<stubs::Any>>` is missing
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+    |
+263 |     pub fn get_string(&mut self, rule_str: Option<String>, m_content: Option<Box<Any>>, is_url: bool) -> String {
+    |            ^^^^^^^^^^                                      ---------------------------
+help: provide the argument
+    |
+306 |             search_book.book_url = analyze_rule.get_string(rule_book_url, /* std::option::Option<Box<stubs::Any>>
+ */, true);
+=== ERR at line 6053 ===
+error[E0782]: expected a type, found a trait
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:62:41
+   |
+62 |     pub fn get_logger(&self) -> Option<&DebugLog> {
+   |                                         ^^^^^^^^
+   |
+help: you can add the `dyn` keyword if you want a trait object
+   |
+62 |     pub fn get_logger(&self) -> Option<&dyn DebugLog> {
+   |                                         +++
+
+error[E0782]: expected a type, found a trait
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:567:41
+    |
+567 |     pub fn get_source(&self) -> Option<&BaseSource> {
+    |                                         ^^^^^^^^^^
+=== ERR at line 6064 ===
+error[E0782]: expected a type, found a trait
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:567:41
+    |
+567 |     pub fn get_source(&self) -> Option<&BaseSource> {
+    |                                         ^^^^^^^^^^
+    |
+help: you can add the `dyn` keyword if you want a trait object
+    |
+567 |     pub fn get_source(&self) -> Option<&dyn BaseSource> {
+    |                                         +++
+
+error[E0782]: expected a type, found a trait
+   --> src\..\src\main\java\io\legado\app\model\localBook\EpubFile.rs:138:58
+    |
+138 |     pub fn get_image(book: Book, href: String) -> Option<InputStream> {
+    |                                                          ^^^^^^^^^^^
+=== ERR at line 16834 ===
+error[E0599]: no method named `unwrap_or_default` found for struct `std::string::String` in the current scope
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByRegex.rs:49:55
+   |
+49 |                     info.add(res_m.group(group_index).unwrap_or_default());
+   |                                                       ^^^^^^^^^^^^^^^^^ method not found in `std::string::String`
+
+error[E0599]: no method named `unwrap` found for struct `std::string::String` in the current scope
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByRegex.rs:58:45
+   |
+58 |                 result.append(res_m.group().unwrap());
+   |                                             ^^^^^^ method not found in `std::string::String`
+
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:70:20
+   |
+70 |             logger.log(&msg);
+=== ERR at line 16840 ===
+error[E0599]: no method named `unwrap` found for struct `std::string::String` in the current scope
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByRegex.rs:58:45
+   |
+58 |                 result.append(res_m.group().unwrap());
+   |                                             ^^^^^^ method not found in `std::string::String`
+
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:70:20
+   |
+70 |             logger.log(&msg);
+   |                    ^^^------ two arguments of type `std::option::Option<&str>` and `bool` are missing
+   |
+note: expected `Option<&str>`, found `&String`
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:70:24
+   |
+70 |             logger.log(&msg);
+=== ERR at line 16846 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:70:20
+   |
+70 |             logger.log(&msg);
+   |                    ^^^------ two arguments of type `std::option::Option<&str>` and `bool` are missing
+   |
+note: expected `Option<&str>`, found `&String`
+  --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:70:24
+   |
+70 |             logger.log(&msg);
+   |                        ^^^^
+   = note:   expected enum `std::option::Option<&str>`
+           found reference `&std::string::String`
+note: method defined here
+  --> src\..\src\main\java\io\legado\app\model\DebugLog.rs:13:8
+   |
+=== ERR at line 16881 ===
+error[E0277]: the size for values of type `dyn io_legado_app_data_entities_basebook::BaseBook` cannot be known at compi
+lation time
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:77:48
+    |
+ 77 |         self.rule_data.as_any().downcast_ref::<dyn BaseBook>()
+    |                                 ------------   ^^^^^^^^^^^^ doesn't have a size known at compile-time
+    |                                 |
+    |                                 required by a bound introduced by this call
+    |
+    = help: the trait `Sized` is not implemented for `dyn io_legado_app_data_entities_basebook::BaseBook`
+note: required by an implicit `Sized` bound in `<(dyn std::any::Any + 'static)>::downcast_ref`
+   --> D:\rust\tools\rustup\toolchains\stable-x86_64-pc-windows-gnu\lib/rustlib/src/rust\library\core\src\any.rs:228:25
+    |
+228 |     pub fn downcast_ref<T: Any>(&self) -> Option<&T> {
+    |                         ^ required by the implicit `Sized` requirement on this type parameter in `<dyn Any>::down
+cast_ref`
+=== ERR at line 16898 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:120:29
+    |
+120 |             AnalyzeByXPath::new(o.as_ref())
+    |                             ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:20:5
+    |
+ 20 |     fn new(doc: &Any) -> AnalyzeByXPath {
+    |     ----------------------------------- private associated function defined here
+
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:123:63
+    |
+123 |                 self.analyze_by_x_path = Some(AnalyzeByXPath::new(self.content.as_ref().unwrap().as_ref()));
+    |                                                               ^^^ private associated function
+=== ERR at line 16909 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:123:63
+    |
+123 |                 self.analyze_by_x_path = Some(AnalyzeByXPath::new(self.content.as_ref().unwrap().as_ref()));
+    |                                                               ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:20:5
+    |
+ 20 |     fn new(doc: &Any) -> AnalyzeByXPath {
+    |     ----------------------------------- private associated function defined here
+
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:127:29
+    |
+127 |             AnalyzeByXPath::new(self.content.as_ref().unwrap().as_ref())
+    |                             ^^^ private associated function
+=== ERR at line 16920 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:127:29
+    |
+127 |             AnalyzeByXPath::new(self.content.as_ref().unwrap().as_ref())
+    |                             ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:20:5
+    |
+ 20 |     fn new(doc: &Any) -> AnalyzeByXPath {
+    |     ----------------------------------- private associated function defined here
+
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:135:29
+    |
+135 |             AnalyzeByJSoup::new(*o)
+    |                             ^^^ private associated function
+=== ERR at line 16931 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:135:29
+    |
+135 |             AnalyzeByJSoup::new(*o)
+    |                             ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:80:5
+    |
+ 80 |     fn new(doc: Any) -> AnalyzeByJSoup {
+    |     ---------------------------------- private associated function defined here
+
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:135:33
+     |
+ 135 |             AnalyzeByJSoup::new(*o)
+     |             ------------------- ^^ expected `Any`, found `stubs::Any`
+=== ERR at line 16942 ===
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:135:33
+     |
+ 135 |             AnalyzeByJSoup::new(*o)
+     |             ------------------- ^^ expected `Any`, found `stubs::Any`
+     |             |
+     |             arguments to this function are incorrect
+     |
+     = note: `stubs::Any` and `Any` have similar names, but are actually distinct types
+note: `stubs::Any` is defined in module `crate::stubs` of the current crate
+    --> src\stubs.rs:1547:1
+     |
+1547 | pub enum Any {
+     | ^^^^^^^^^^^^
+note: `Any` is defined in module `crate::io_legado_app_model_analyzerule_analyzebyjsoup` of the current crate
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:19:1
+=== ERR at line 16967 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:138:63
+    |
+138 |                 self.analyze_by_j_soup = Some(AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone()
+));
+    |                                                               ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:80:5
+    |
+ 80 |     fn new(doc: Any) -> AnalyzeByJSoup {
+    |     ---------------------------------- private associated function defined here
+
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:138:67
+     |
+ 138 |                 self.analyze_by_j_soup = Some(AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone(
+=== ERR at line 16979 ===
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:138:67
+     |
+ 138 |                 self.analyze_by_j_soup = Some(AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone(
+)));
+     |                                               ------------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^ expected `Any`, found `stubs::Any`
+     |                                               |
+     |                                               arguments to this function are incorrect
+     |
+     = note: `stubs::Any` and `Any` have similar names, but are actually distinct types
+note: `stubs::Any` is defined in module `crate::stubs` of the current crate
+    --> src\stubs.rs:1547:1
+     |
+1547 | pub enum Any {
+     | ^^^^^^^^^^^^
+=== ERR at line 17006 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:142:29
+    |
+142 |             AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone())
+    |                             ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:80:5
+    |
+ 80 |     fn new(doc: Any) -> AnalyzeByJSoup {
+    |     ---------------------------------- private associated function defined here
+
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:142:33
+     |
+ 142 |             AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone())
+     |             ------------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Any`, found `stubs::An
+=== ERR at line 17017 ===
+error[E0308]: mismatched types
+    --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:142:33
+     |
+ 142 |             AnalyzeByJSoup::new(self.content.as_ref().unwrap().as_ref().clone())
+     |             ------------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Any`, found `stubs::An
+y`
+     |             |
+     |             arguments to this function are incorrect
+     |
+     = note: `stubs::Any` and `Any` have similar names, but are actually distinct types
+note: `stubs::Any` is defined in module `crate::stubs` of the current crate
+    --> src\stubs.rs:1547:1
+     |
+1547 | pub enum Any {
+     | ^^^^^^^^^^^^
+note: `Any` is defined in module `crate::io_legado_app_model_analyzerule_analyzebyjsoup` of the current crate
+=== ERR at line 17043 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:150:32
+    |
+150 |             AnalyzeByJSonPath::new(o.as_ref())
+    |                                ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:24:5
+    |
+ 24 |     fn new(json: &Any) -> AnalyzeByJSonPath {
+    |     --------------------------------------- private associated function defined here
+
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:153:70
+    |
+153 |                 self.analyze_by_j_son_path = Some(AnalyzeByJSonPath::new(self.content.as_ref().unwrap().as_ref())
+);
+=== ERR at line 17054 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:153:70
+    |
+153 |                 self.analyze_by_j_son_path = Some(AnalyzeByJSonPath::new(self.content.as_ref().unwrap().as_ref())
+);
+    |                                                                      ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:24:5
+    |
+ 24 |     fn new(json: &Any) -> AnalyzeByJSonPath {
+    |     --------------------------------------- private associated function defined here
+
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:157:32
+    |
+157 |             AnalyzeByJSonPath::new(self.content.as_ref().unwrap().as_ref())
+=== ERR at line 17066 ===
+error[E0624]: associated function `new` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:157:32
+    |
+157 |             AnalyzeByJSonPath::new(self.content.as_ref().unwrap().as_ref())
+    |                                ^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:24:5
+    |
+ 24 |     fn new(json: &Any) -> AnalyzeByJSonPath {
+    |     --------------------------------------- private associated function defined here
+
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:201:42
+    |
+201 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+=== ERR at line 17077 ===
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:201:42
+    |
+201 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:79:5
+    |
+ 79 |     fn get_string_list(&self, rule: &str) -> List<String> {
+    |     ----------------------------------------------------- private method defined here
+
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:208:42
+    |
+208 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+=== ERR at line 17088 ===
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:208:42
+    |
+208 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:106:5
+    |
+106 |     fn get_string_list(&self, x_path: &str) -> List<String> {
+    |     ------------------------------------------------------- private method defined here
+
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:215:42
+    |
+215 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+=== ERR at line 17099 ===
+error[E0624]: method `get_string_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:215:42
+    |
+215 | ...                   .get_string_list(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:131:5
+    |
+131 |     fn get_string_list(&self, rule_str: &str) -> Vec<String> {
+    |     -------------------------------------------------------- private method defined here
+
+error[E0599]: no method named `as_list` found for reference `&Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:225:66
+    |
+225 | ...                   for item in result.as_ref().unwrap().as_list() {
+    |                                                            ^^^^^^^
+=== ERR at line 17110 ===
+error[E0599]: no method named `as_list` found for reference `&Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:225:66
+    |
+225 | ...                   for item in result.as_ref().unwrap().as_list() {
+    |                                                            ^^^^^^^
+    |
+help: there is a method `is_list` with a similar name
+    |
+225 -                             for item in result.as_ref().unwrap().as_list() {
+225 +                             for item in result.as_ref().unwrap().is_list() {
+    |
+
+error[E0599]: no method named `as_list` found for reference `&Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:247:53
+    |
+247 |                 for url in result.as_ref().unwrap().as_list() {
+=== ERR at line 17122 ===
+error[E0599]: no method named `as_list` found for reference `&Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:247:53
+    |
+247 |                 for url in result.as_ref().unwrap().as_list() {
+    |                                                     ^^^^^^^
+    |
+help: there is a method `is_list` with a similar name
+    |
+247 -                 for url in result.as_ref().unwrap().as_list() {
+247 +                 for url in result.as_ref().unwrap().is_list() {
+    |
+
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:299:38
+    |
+299 | ...                   .get_string(source_rule.rule.clone())
+=== ERR at line 17134 ===
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:299:38
+    |
+299 | ...                   .get_string(source_rule.rule.clone())
+    |                        ^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:36:5
+    |
+ 36 |     fn get_string(&self, rule: &str) -> Option<String> {
+    |     -------------------------------------------------- private method defined here
+
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:302:38
+    |
+302 | ...                   .get_string(source_rule.rule.clone())
+    |                        ^^^^^^^^^^ private method
+=== ERR at line 17145 ===
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:302:38
+    |
+302 | ...                   .get_string(source_rule.rule.clone())
+    |                        ^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:150:5
+    |
+150 |     fn get_string(&self, rule: &str) -> Option<String> {
+    |     -------------------------------------------------- private method defined here
+
+error[E0624]: method `get_string0` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:305:98
+    |
+305 | ...                   Some(Box::new(Any::Str(self.get_analyze_by_j_soup(r.clone()).get_string0(source_rule.rule.c
+lone()))))
+=== ERR at line 17156 ===
+error[E0624]: method `get_string0` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:305:98
+    |
+305 | ...                   Some(Box::new(Any::Str(self.get_analyze_by_j_soup(r.clone()).get_string0(source_rule.rule.c
+lone()))))
+    |                                                                                    ^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:118:5
+    |
+118 |     fn get_string0(&self, rule_str: &str) -> String {
+    |     ----------------------------------------------- private method defined here
+
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:308:42
+    |
+308 | ...                   .get_string(source_rule.rule.clone())
+=== ERR at line 17168 ===
+error[E0624]: method `get_string` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:308:42
+    |
+308 | ...                   .get_string(source_rule.rule.clone())
+    |                        ^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:100:5
+    |
+100 |     fn get_string(&self, rule_str: &str) -> Option<String> {
+    |     ------------------------------------------------------ private method defined here
+
+error[E0624]: associated function `get_element` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:357:56
+    |
+357 |                         Mode::Regex => AnalyzeByRegex::get_element(
+    |                                                        ^^^^^^^^^^^ private associated function
+=== ERR at line 17179 ===
+error[E0624]: associated function `get_element` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:357:56
+    |
+357 |                         Mode::Regex => AnalyzeByRegex::get_element(
+    |                                                        ^^^^^^^^^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByRegex.rs:10:5
+    |
+ 10 |     fn get_element(res: &str, regs: &[String], index: usize) -> Option<List<String>> {
+    |     -------------------------------------------------------------------------------- private associated function 
+defined here
+
+error[E0624]: method `get_object` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:364:95
+    |
+364 |                         Mode::Json => Some(Box::new(self.get_analyze_by_j_son_path(r.clone()).get_object(source_r
+=== ERR at line 17191 ===
+error[E0624]: method `get_object` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:364:95
+    |
+364 |                         Mode::Json => Some(Box::new(self.get_analyze_by_j_son_path(r.clone()).get_object(source_r
+ule.rule.clone()))),
+    |                                                                                               ^^^^^^^^^^ private 
+method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:145:5
+    |
+145 |     fn get_object(&self, rule: &str) -> Any {
+    |     --------------------------------------- private method defined here
+
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:366:30
+    |
+=== ERR at line 17204 ===
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:366:30
+    |
+366 | ...                   .get_elements(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:65:5
+    |
+ 65 |     fn get_elements(&self, x_path: &str) -> Option<List<JXNode>> {
+    |     ------------------------------------------------------------ private method defined here
+
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:368:96
+    |
+368 | ...   _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(source_rule.rule.clone(
+))))),
+=== ERR at line 17215 ===
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:368:96
+    |
+368 | ...   _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(source_rule.rule.clone(
+))))),
+    |                                                                              ^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:90:5
+    |
+ 90 |     fn get_elements(&self, rule: &str) -> Elements {
+    |     ---------------------------------------------- private method defined here
+
+error[E0624]: associated function `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:393:45
+    |
+393 | ...                   AnalyzeByRegex::get_elements(
+=== ERR at line 17227 ===
+error[E0624]: associated function `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:393:45
+    |
+393 | ...                   AnalyzeByRegex::get_elements(
+    |                                       ^^^^^^^^^^^^ private associated function
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByRegex.rs:34:5
+    |
+ 34 |     fn get_elements(res: &str, regs: &[String], index: usize) -> List<List<String>> {
+    |     ------------------------------------------------------------------------------- private associated function d
+efined here
+
+error[E0624]: method `get_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:404:30
+    |
+404 | ...                   .get_list(source_rule.rule.clone())
+=== ERR at line 17239 ===
+error[E0624]: method `get_list` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:404:30
+    |
+404 | ...                   .get_list(source_rule.rule.clone())
+    |                        ^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSonPath.rs:150:5
+    |
+150 |     fn get_list(&self, rule: &str) -> Option<ArrayList<Any>> {
+    |     -------------------------------------------------------- private method defined here
+
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:407:30
+    |
+407 | ...                   .get_elements(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^ private method
+=== ERR at line 17250 ===
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:407:30
+    |
+407 | ...                   .get_elements(source_rule.rule.clone())
+    |                        ^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByXPath.rs:65:5
+    |
+ 65 |     fn get_elements(&self, x_path: &str) -> Option<List<JXNode>> {
+    |     ------------------------------------------------------------ private method defined here
+
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:409:96
+    |
+409 | ...   _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(source_rule.rule.clone(
+))))),
+=== ERR at line 17261 ===
+error[E0624]: method `get_elements` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:409:96
+    |
+409 | ...   _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(source_rule.rule.clone(
+))))),
+    |                                                                              ^^^^^^^^^^^^ private method
+    |
+   ::: src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeByJSoup.rs:90:5
+    |
+ 90 |     fn get_elements(&self, rule: &str) -> Elements {
+    |     ---------------------------------------------- private method defined here
+
+error[E0599]: no method named `as_list` found for struct `Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:418:22
+    |
+418 |             return r.as_list().into_iter().map(Box::new).collect();
+=== ERR at line 17273 ===
+error[E0599]: no method named `as_list` found for struct `Box<stubs::Any>` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:418:22
+    |
+418 |             return r.as_list().into_iter().map(Box::new).collect();
+    |                      ^^^^^^^
+    |
+help: there is a method `is_list` with a similar name
+    |
+418 -             return r.as_list().into_iter().map(Box::new).collect();
+418 +             return r.is_list().into_iter().map(Box::new).collect();
+    |
+
+error[E0277]: the trait bound `std::string::String: std::str::pattern::Pattern` is not satisfied
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:437:45
+    |
+437 |             v_rule_str = v_rule_str.replace(put_matcher.group(), "");
+=== ERR at line 17285 ===
+error[E0277]: the trait bound `std::string::String: std::str::pattern::Pattern` is not satisfied
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:437:45
+    |
+437 |             v_rule_str = v_rule_str.replace(put_matcher.group(), "");
+    |                                     ------- ^^^^^^^^^^^^^^^^^^^ the trait `std::str::pattern::Pattern` is not imp
+lemented for `std::string::String`
+    |                                     |
+    |                                     required by a bound introduced by this call
+    |
+    = note: required for `std::string::String` to implement `std::str::pattern::Pattern`
+note: required by a bound in `str::<impl str>::replace`
+   --> D:\rust\tools\rustup\toolchains\stable-x86_64-pc-windows-gnu\lib/rustlib/src/rust\library\alloc\src\str.rs:308:2
+3
+    |
+308 |     pub fn replace<P: Pattern>(&self, from: P, to: &str) -> String {
+    |                       ^^^^^^^ required by this bound in `str::<impl str>::replace`
+=== ERR at line 17306 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:438:63
+    |
+438 |             GSON::from_json_object::<HashMap<String, String>>(put_matcher.group_idx(1))
+    |             ------------------------------------------------- ^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `
+Option<String>`
+    |             |
+    |             arguments to this function are incorrect
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+note: associated function defined here
+   --> src\stubs.rs:369:12
+    |
+369 |     pub fn from_json_object<T>(s: String) -> Result<T, StubError>
+    |            ^^^^^^^^^^^^^^^^    ---------
+=== ERR at line 17328 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:540:53
+    |
+540 |             .or_else(|| self.rule_data.get_variable(key))
+    |                                        ------------ ^^^ expected `&str`, found `String`
+    |                                        |
+    |                                        arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\RuleDataInterface.rs:11:8
+    |
+ 11 |     fn get_variable(&self, key: &str) -> Option<String> {
+    |        ^^^^^^^^^^^^        ---------
+help: consider borrowing here
+    |
+540 |             .or_else(|| self.rule_data.get_variable(&key))
+=== ERR at line 17346 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:563:36
+    |
+563 |         SCRIPT_ENGINE.eval(js_str, bindings).map(|v| Box::new(Any::Str(format!("{:?}", v))))
+    |                       ----         ^^^^^^^^ expected `&mut SimpleBindings`, found `SimpleBindings`
+    |                       |
+    |                       arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\stubs.rs:435:12
+    |
+435 |     pub fn eval(
+    |            ^^^^
+...
+438 |         _bindings: &mut SimpleBindings,
+    |         ------------------------------
+=== ERR at line 17367 ===
+error[E0616]: field `body` of struct `io_legado_app_help_http_strresponse::StrResponse` is private
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:591:79
+    |
+591 |         match block_on(analyze_url.get_str_response_await(None, None, false)).body {
+    |                                                                               ^^^^ private field
+    |
+help: a method `body` also exists, call it with parentheses
+    |
+591 |         match block_on(analyze_url.get_str_response_await(None, None, false)).body() {
+    |                                                                                   ++
+
+error[E0599]: no method named `get_string` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerul
+e::SourceRule` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:831:38
+    |
+831 |                         let v = self.get_string(Some(self.rule_param[index].clone()), None, false);
+=== ERR at line 17378 ===
+error[E0599]: no method named `get_string` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerul
+e::SourceRule` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:831:38
+    |
+831 |                         let v = self.get_string(Some(self.rule_param[index].clone()), None, false);
+    |                                      ^^^^^^^^^^ method not found in `&mut io_legado_app_model_analyzerule_analyze
+rule::SourceRule`
+
+error[E0599]: no method named `eval_js` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerule::
+SourceRule` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:834:44
+    |
+834 |                         let js_eval = self.eval_js(self.rule_param[index].clone(), result.clone());
+    |                                            ^^^^^^^ method not found in `&mut io_legado_app_model_analyzerule_anal
+yzerule::SourceRule`
+    |
+=== ERR at line 17386 ===
+error[E0599]: no method named `eval_js` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerule::
+SourceRule` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:834:44
+    |
+834 |                         let js_eval = self.eval_js(self.rule_param[index].clone(), result.clone());
+    |                                            ^^^^^^^ method not found in `&mut io_legado_app_model_analyzerule_anal
+yzerule::SourceRule`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `io_legado_app_data_entities_basesource::BaseSource` defines an item `eval_js`, perhaps you need to implement it
+   --> src\..\src\main\java\io\legado\app\data\entities\BaseSource.rs:18:1
+    |
+ 18 | pub trait BaseSource : JsExtensions {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `get` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerule::Sour
+=== ERR at line 17401 ===
+error[E0599]: no method named `get` found for mutable reference `&mut io_legado_app_model_analyzerule_analyzerule::Sour
+ceRule` in the current scope
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:846:50
+    |
+846 |                     info_val.insert_str(0, &self.get(&self.rule_param[index]));
+    |                                                  ^^^ method not found in `&mut io_legado_app_model_analyzerule_an
+alyzerule::SourceRule`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following traits define an item `get`, perhaps you need to implement one of them:
+            candidate #1: `io_legado_app_help_jsextensions::JsExtensions`
+            candidate #2: `stubs::CallAdapterFactory`
+            candidate #3: `SliceIndex`
+            candidate #4: `icu_collections::codepointtrie::cptrie::TypedCodePointTrie`
+            candidate #5: `icu_properties::names::PropertyEnumToValueNameLookup`
+            candidate #6: `icu_provider::baked::DataStore`
+=== ERR at line 17429 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:881:81
+    |
+881 |             if let Some(it) = GSON::from_json_object::<HashMap<String, String>>(put_matcher.group_idx(1)).get_or_
+none() {
+    |                               ------------------------------------------------- ^^^^^^^^^^^^^^^^^^^^^^^^ expected
+ `String`, found `Option<String>`
+    |                               |
+    |                               arguments to this function are incorrect
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+note: associated function defined here
+   --> src\stubs.rs:369:12
+    |
+369 |     pub fn from_json_object<T>(s: String) -> Result<T, StubError>
+=== ERR at line 18995 ===
+error[E0308]: mismatched types
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:163:51
+    |
+163 |         let r_url = analyze_rule.set_redirect_url(redirect_url);
+    |                                  ---------------- ^^^^^^^^^^^^ expected `String`, found `&str`
+    |                                  |
+    |                                  arguments to this method are incorrect
+    |
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:104:12
+    |
+104 |     pub fn set_redirect_url(&mut self, url: String) -> Option<URL> {
+    |            ^^^^^^^^^^^^^^^^            -----------
+help: try using a conversion method
+    |
+163 |         let r_url = analyze_rule.set_redirect_url(redirect_url.to_string());
+=== ERR at line 19024 ===
+error[E0061]: this method takes 3 arguments but 1 argument was supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:168:40
+    |
+168 |         let mut content = analyze_rule.get_string(&content_rule.content);
+    |                                        ^^^^^^^^^^----------------------- two arguments of type `std::option::Opti
+on<Box<stubs::Any>>` and `bool` are missing
+    |
+note: expected `Option<String>`, found `&Option<String>`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:168:51
+    |
+168 |         let mut content = analyze_rule.get_string(&content_rule.content);
+    |                                                   ^^^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<_>`
+            found reference `&std::option::Option<_>`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:263:12
+=== ERR at line 19055 ===
+error[E0061]: this method takes 3 arguments but 2 arguments were supplied
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:178:46
+    |
+178 |             if let Some(list) = analyze_rule.get_string_list(&next_url_rule.unwrap(), true) {
+    |                                              ^^^^^^^^^^^^^^^                          ---- argument #2 of type `s
+td::option::Option<Box<stubs::Any>>` is missing
+    |
+note: expected `Option<String>`, found `&String`
+   --> src\..\src\main\java\io\legado\app\model\webBook\BookContent.rs:178:62
+    |
+178 |             if let Some(list) = analyze_rule.get_string_list(&next_url_rule.unwrap(), true) {
+    |                                                              ^^^^^^^^^^^^^^^^^^^^^^^
+    = note:   expected enum `std::option::Option<std::string::String>`
+            found reference `&std::string::String`
+note: method defined here
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:164:12
+=== ERR at line 29621 ===
+error[E0507]: cannot move out of `self.redirect_url` which is behind a mutable reference
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:113:9
+    |
+113 |         self.redirect_url
+    |         ^^^^^^^^^^^^^^^^^ move occurs because `self.redirect_url` has type `std::option::Option<stubs::URL>`, whi
+ch does not implement the `Copy` trait
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+113 |         self.redirect_url.clone()
+    |                          ++++++++
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:427:27
+    |
+427 |             self.put(key, self.get_string(Some(value), None, false));
+=== ERR at line 29633 ===
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:427:27
+    |
+427 |             self.put(key, self.get_string(Some(value), None, false));
+    |             ---- ---      ^^^^ second mutable borrow occurs here
+    |             |    |
+    |             |    first borrow later used by call
+    |             first mutable borrow occurs here
+    |
+help: try adding a local storing this argument...
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:427:27
+    |
+427 |             self.put(key, self.get_string(Some(value), None, false));
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: ...and then using that local as the argument to this call
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:427:13
+=== ERR at line 29653 ===
+error[E0716]: temporary value dropped while borrowed
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:494:30
+    |
+494 |         let mut js_matcher = AppPattern::JS_PATTERN().matcher(rule_str.as_ref().unwrap().clone());
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^                                            - temporary valu
+e is freed at the end of this statement
+    |                              |
+    |                              creates a temporary value which is freed while still in use
+495 |         while js_matcher.find() {
+    |               ---------- borrow later used here
+    |
+help: consider using a `let` binding to create a longer lived value
+    |
+494 ~         let binding = AppPattern::JS_PATTERN();
+495 ~         let mut js_matcher = binding.matcher(rule_str.as_ref().unwrap().clone());
+    |
+=== ERR at line 29670 ===
+error[E0716]: temporary value dropped while borrowed
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:606:27
+    |
+606 |         let mut matcher = AnalyzeRule::TITLE_NUM_PATTERN().matcher(s.clone());
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                   - temporary value is freed at the en
+d of this statement
+    |                           |
+    |                           creates a temporary value which is freed while still in use
+607 |         if matcher.find() {
+    |            ------- borrow later used here
+    |
+help: consider using a `let` binding to create a longer lived value
+    |
+606 ~         let binding = AnalyzeRule::TITLE_NUM_PATTERN();
+607 ~         let mut matcher = binding.matcher(s.clone());
+    |
+=== ERR at line 29687 ===
+error[E0502]: cannot borrow `s.put_map` as mutable because it is also borrowed as immutable
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:736:51
+    |
+736 |         s.rule = s.split_put_rule(s.rule.clone(), &mut s.put_map);
+    |                  - --------------                 ^^^^^^^^^^^^^^ mutable borrow occurs here
+    |                  | |
+    |                  | immutable borrow later used by call
+    |                  immutable borrow occurs here
+
+error[E0716]: temporary value dropped while borrowed
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:740:32
+    |
+740 |         let mut eval_matcher = AnalyzeRule::EVAL_PATTERN().matcher(s.rule.clone());
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^                        - temporary value is freed at t
+he end of this statement
+    |                                |
+=== ERR at line 29696 ===
+error[E0716]: temporary value dropped while borrowed
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:740:32
+    |
+740 |         let mut eval_matcher = AnalyzeRule::EVAL_PATTERN().matcher(s.rule.clone());
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^                        - temporary value is freed at t
+he end of this statement
+    |                                |
+    |                                creates a temporary value which is freed while still in use
+741 |
+742 |         if eval_matcher.find() {
+    |            ------------ borrow later used here
+    |
+help: consider using a `let` binding to create a longer lived value
+    |
+740 ~         let binding = AnalyzeRule::EVAL_PATTERN();
+741 ~         let mut eval_matcher = binding.matcher(s.rule.clone());
+=== ERR at line 29714 ===
+error[E0716]: temporary value dropped while borrowed
+   --> src\..\src\main\java\io\legado\app\model\analyzeRule\AnalyzeRule.rs:781:33
+    |
+781 |         let mut regex_matcher = AnalyzeRule::REGEX_PATTERN().matcher(rule_str_array[0].to_string());
+    |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                       - temporary va
+lue is freed at the end of this statement
+    |                                 |
+    |                                 creates a temporary value which is freed while still in use
+782 |
+783 |         if regex_matcher.find() {
+    |            ------------- borrow later used here
+    |
+help: consider using a `let` binding to create a longer lived value
+    |
+781 ~         let binding = AnalyzeRule::REGEX_PATTERN();
+782 ~         let mut regex_matcher = binding.matcher(rule_str_array[0].to_string());

@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use std::any::Any;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -24,7 +26,7 @@ pub struct MediaType {
 impl MediaType {
 
   pub fn new(name: String, default_extension: String) -> MediaType {
-    MediaType::with_extensions(name, default_extension, vec![default_extension.clone()])
+    MediaType::with_extensions(name, default_extension.clone(), vec![default_extension])
   }
 
   pub fn with_extensions(name: String, default_extension: String,
@@ -36,7 +38,7 @@ impl MediaType {
     if self.name.is_empty() {
       return 0;
     }
-    return self.name.hash_code();
+    return StringUtil::hash_code(vec![self.name.as_str()]);
   }
 
   pub fn with_extension_collection(name: String, default_extension: String,
@@ -66,7 +68,7 @@ impl MediaType {
     if !(other_media_type.is::<MediaType>()) {
       return false;
     }
-    return self.name.eq(&other_media_type.downcast_ref::<MediaType>().unwrap().get_name());
+    return self.name.eq(other_media_type.downcast_ref::<MediaType>().unwrap().get_name());
   }
   // @SuppressWarnings("NullableProblems")
   pub fn to_string(&self) -> String {

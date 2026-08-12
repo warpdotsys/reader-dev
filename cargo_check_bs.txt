@@ -1,0 +1,363 @@
+﻿cargo :     Blocking waiting for file lock on build directory
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo_check_bs.txt; (Get-C ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+error: expected one of `.`, `;`, `?`, `}`, or an operator, found `,`
+   --> src\..\src\main\java\org\kxml2\wap\wv\WV.rs:468:27
+    |
+468 |         Some("AccessType"),                           // 0x00 /* Common value token */
+    |                           ^ expected one of `.`, `;`, `?`, `}`, or an operator
+
+error[E0428]: the name `log` is defined multiple times
+  --> src\..\src\main\java\io\legado\app\model\DebugLog.rs:22:5
+   |
+13 | /     fn log(
+14 | |         &self,
+15 | |         source_url: Option<&str>,
+16 | |         msg: Option<&str>,
+...  |
+20 | |     }
+   | |_____- previous definition of the value `log` here
+21 |
+22 |       fn log(&self, message: &str) {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `log` redefined here
+   |
+   = note: `log` must be defined only once in the value namespace of this trait
+
+error: format argument must be a string literal
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:747:24
+    |
+747 |                 panic!(e);
+    |                        ^
+    |
+help: you might be missing a string literal to format with
+    |
+747 |                 panic!("{}", e);
+    |                        +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1788:28
+     |
+1788 |                     panic!(Exception::new("Epub书籍解压失败"));
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: you might be missing a string literal to format with
+     |
+1788 |                     panic!("{}", Exception::new("Epub书籍解压失败"));
+     |                            +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1792:28
+     |
+1792 |                     panic!(Exception::new("CBZ书籍解压失败"));
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: you might be missing a string literal to format with
+     |
+1792 |                     panic!("{}", Exception::new("CBZ书籍解压失败"));
+     |                            +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1795:28
+     |
+1795 |                     panic!(Exception::new("PDF书籍转换失败"));
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: you might be missing a string literal to format with
+     |
+1795 |                     panic!("{}", Exception::new("PDF书籍转换失败"));
+     |                            +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1839:28
+     |
+1839 |                     panic!(e);
+     |                            ^
+     |
+help: you might be missing a string literal to format with
+     |
+1839 |                     panic!("{}", e);
+     |                            +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3117:24
+     |
+3117 |                 panic!(e);
+     |                        ^
+     |
+help: you might be missing a string literal to format with
+     |
+3117 |                 panic!("{}", e);
+     |                        +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3345:32
+     |
+3345 |                         panic!(NoStackTraceException::new(response.body.string()));
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: you might be missing a string literal to format with
+     |
+3345 |                         panic!("{}", NoStackTraceException::new(response.body.string()));
+     |                                +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3349:36
+     |
+3349 |   ...                   panic!(NoStackTraceException::new(
+     |  ______________________________^
+3350 | | ...                       "TTS服务器返回错误：" + response.body.string()
+3351 | | ...                   ));
+     | |_______________________^
+     |
+help: you might be missing a string literal to format with
+     |
+3349 |                             panic!("{}", NoStackTraceException::new(
+     |                                    +++++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3362:59
+     |
+3362 |                 if e.is_cancellation_exception() { panic!(e); }
+     |                                                           ^
+     |
+help: you might be missing a string literal to format with
+     |
+3362 |                 if e.is_cancellation_exception() { panic!("{}", e); }
+     |                                                           +++++
+
+error: argument never used
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3364:77
+     |
+3364 |                     logger().error(format!("js错误\n{}", e.localized_message, e));
+     |                                            ------------                       ^ argument never used
+     |                                            |
+     |                                            formatting specifier missing
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3365:28
+     |
+3365 |                     panic!(e);
+     |                            ^
+     |
+help: you might be missing a string literal to format with
+     |
+3365 |                     panic!("{}", e);
+     |                            +++++
+
+error: argument never used
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3370:87
+     |
+3370 |                     logger().error(format!("tts超时或连接错误超过5次\n{}", e.localized_message, e));
+     |                                            ------------------------------                       ^ argument never
+ used
+     |                                            |
+     |                                            formatting specifier missing
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3371:28
+     |
+3371 |                     panic!(e);
+     |                            ^
+     |
+help: you might be missing a string literal to format with
+     |
+3371 |                     panic!("{}", e);
+     |                            +++++
+
+error: argument never used
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3373:76
+     |
+3373 |                 logger().error(format!("tts下载错误\n{}", e.localized_message, e));
+     |                                        -----------------                       ^ argument never used
+     |                                        |
+     |                                        formatting specifier missing
+
+error: argument never used
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3375:67
+     |
+3375 |                     logger().error(format!("TTS服务器连续5次错误，已暂停阅读。", e));
+     |                                            ------------------------------------  ^ argument never used
+     |                                            |
+     |                                            formatting specifier missing
+     |
+help: format specifiers use curly braces, consider adding a format specifier
+     |
+3375 |                     logger().error(format!("TTS服务器连续5次错误，已暂停阅读。{}", e));
+     |                                                                               ++
+
+error: format argument must be a string literal
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3376:28
+     |
+3376 |                     panic!(e);
+     |                            ^
+     |
+help: you might be missing a string literal to format with
+     |
+3376 |                     panic!("{}", e);
+     |                            +++++
+
+error: format argument must be a string literal
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\model\SpeechConfig.rs:57:13
+   |
+57 |             Self::CONFIG_PATTERN,
+   |             ^^^^^^^^^^^^^^^^^^^^
+   |
+help: you might be missing a string literal to format with
+   |
+57 |             "{} {} {}", Self::CONFIG_PATTERN,
+   |             +++++++++++
+
+error: format argument must be a string literal
+   --> src\..\src\main\java\com\htmake\reader\lib\tts\model\SSML.rs:184:13
+    |
+184 |             Self::SSML_PATTERN,
+    |             ^^^^^^^^^^^^^^^^^^
+    |
+help: you might be missing a string literal to format with
+    |
+184 |             "{} {} {} {} {} {} {} {} {} {} {}", Self::SSML_PATTERN,
+    |             +++++++++++++++++++++++++++++++++++
+
+error: format argument must be a string literal
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\util\Tools.rs:65:20
+   |
+65 |             panic!(e);
+   |                    ^
+   |
+help: you might be missing a string literal to format with
+   |
+65 |             panic!("{}", e);
+   |                    +++++
+
+error: format argument must be a string literal
+  --> src\..\src\main\java\com\htmake\reader\utils\UserMutex.rs:35:20
+   |
+35 |             panic!(e);
+   |                    ^
+   |
+help: you might be missing a string literal to format with
+   |
+35 |             panic!("{}", e);
+   |                    +++++
+
+error: expected `,`, found `+`
+  --> src\..\src\main\java\io\legado\app\constant\DeepinkBookSource.rs:11:32
+   |
+11 |         println!("file path: " + file.absoluteFile);
+   |                                ^ expected `,`
+
+error: cannot find macro `list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3609:38
+     |
+3609 |         self.save_book_sources(book, list!(book.to_search_book()), user_name_space);
+     |                                      ^^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:3185:23
+     |
+3185 |         let options = map!(
+     |                       ^^^
+
+error: cannot find macro `array_list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2957:30
+     |
+2957 |         let mut namespaces = array_list!("default");
+     |                              ^^^^^^^^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2860:37
+     |
+2860 |         return return_data.set_data(map!("list" to result_list, "lastIndex" to current_index));
+     |                                     ^^^
+
+error: cannot find macro `mutable_set_of` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2409:42
+     |
+2409 |         let cached_chapter_content_set = mutable_set_of!();
+     |                                          ^^^^^^^^^^^^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2359:45
+     |
+2359 |         response.end("data: " + json_encode(map!(
+     |                                             ^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2348:30
+     |
+2348 |                 let result = map!(
+     |                              ^^^
+
+error: cannot find macro `mutable_set_of` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2294:46
+     |
+2294 |         let mut cached_chapter_content_set = mutable_set_of!();
+     |                                              ^^^^^^^^^^^^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2240:45
+     |
+2240 |         response.end("data: " + json_encode(map!("end" to true), false) + "\n\n");
+     |                                             ^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2227:51
+     |
+2227 |             response.write("data: " + json_encode(map!("msg" to msg), false) + "\n\n");
+     |                                                   ^^^
+
+error: cannot find macro `map` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2097:46
+     |
+2097 |         progress_file.write_text(json_encode(map!(
+     |                                              ^^^
+
+error: cannot find macro `array_list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1850:38
+     |
+1850 |         let mut local_chapter_list = array_list!();
+     |                                      ^^^^^^^^^^
+
+error: cannot find macro `mutable_map_of` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1823:40
+     |
+1823 | ...   let info = mutable_map_of!("sourceUrl" to book_source_object.book_source_url, "time" to System::current_ti
+me_millis(), "erro...
+     |                  ^^^^^^^^^^^^^^
+
+error: cannot find macro `array_list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1728:29
+     |
+1728 |         let mut book_list = array_list!();
+     |                             ^^^^^^^^^^
+
+error: cannot find macro `array_list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1726:20
+     |
+1726 |             return array_list!();
+     |                    ^^^^^^^^^^
+
+error: cannot find macro `array_list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1723:20
+     |
+1723 |             return array_list!();
+     |                    ^^^^^^^^^^
+
+error: cannot find macro `list` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1715:47
+     |
+1715 | ...   return book.fill_data(cache_info, list!("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTit
+le", "wordCount"));
+     |                                         ^^^^
+
+error: cannot find macro `hash_set` in this scope
+    --> src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:1680:31
+     |
+1680 |         let requested_names = hash_set!();
+     |                               ^^^^^^^^
+

@@ -1,0 +1,1242 @@
+﻿
+> cargo_check.txt:439: --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:8:21
+  cargo_check.txt:440:  |
+  cargo_check.txt:441:8 |     os: &'a mut dyn Write,
+  cargo_check.txt:442:  |                     ^^^^^ not found in this scope
+  cargo_check.txt:443:  |
+  cargo_check.txt:444:help: consider importing one of these traits
+  cargo_check.txt:445:  |
+  cargo_check.txt:446:1 + use std::fmt::Write;
+  cargo_check.txt:447:  |
+  cargo_check.txt:448:1 + use std::io::Write;
+  cargo_check.txt:449:  |
+> cargo_check.txt:454:  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:14:32
+  cargo_check.txt:455:   |
+  cargo_check.txt:456:14 |     pub fn new(os: &'a mut dyn Write) -> Self {
+  cargo_check.txt:457:   |                                ^^^^^ not found in this scope
+  cargo_check.txt:458:   |
+  cargo_check.txt:459:help: consider importing one of these traits
+  cargo_check.txt:460:   |
+  cargo_check.txt:461: 1 + use std::fmt::Write;
+  cargo_check.txt:462:   |
+  cargo_check.txt:463: 1 + use std::io::Write;
+  cargo_check.txt:464:   |
+
+
+
+> cargo_check.txt:348:  --> src\..\src\main\java\me\ag2s\epublib\domain\Author.rs:60:46
+  cargo_check.txt:349:   |
+  cargo_check.txt:350:60 |     pub fn equals(&self, author_object: &dyn Any) -> bool {
+  cargo_check.txt:351:   |                                              ^^^ not a trait
+  cargo_check.txt:352:   |
+  cargo_check.txt:353:   = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:354:help: consider importing this trait instead
+  cargo_check.txt:355:   |
+  cargo_check.txt:356: 1 + use std::any::Any;
+  cargo_check.txt:357:   |
+  cargo_check.txt:358:
+> cargo_check.txt:360:  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:28:28
+  cargo_check.txt:361:   |
+  cargo_check.txt:362:28 |     pub fn with_date(date: java_util_Date) -> Date {
+  cargo_check.txt:363:   |                            ^^^^^^^^^^^^^^ not found in this scope
+  cargo_check.txt:364:
+  cargo_check.txt:365:error[E0425]: cannot find type `java_util_Date` in this scope
+> cargo_check.txt:366:  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:36:28
+  cargo_check.txt:367:   |
+  cargo_check.txt:368:36 |     pub fn with_date(date: java_util_Date, event: Option<Event>) -> Date {
+  cargo_check.txt:369:   |                            ^^^^^^^^^^^^^^ not found in this scope
+  cargo_check.txt:370:
+  cargo_check.txt:371:error[E0425]: cannot find type `java_util_Date` in this scope
+> cargo_check.txt:372:  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:48:45
+  cargo_check.txt:373:   |
+  cargo_check.txt:374:48 |     pub fn with_date_and_event_string(date: java_util_Date, event: String) -> Date {
+  cargo_check.txt:375:   |                                             ^^^^^^^^^^^^^^ not found in this scope
+  cargo_check.txt:376:
+  cargo_check.txt:377:error[E0404]: expected trait, found enum `Any`
+> cargo_check.txt:378:   --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:120:47
+  cargo_check.txt:379:    |
+  cargo_check.txt:380:120 |   pub fn equals(&self, other_identifier: &dyn Any) -> bool {
+  cargo_check.txt:381:    |                                               ^^^ not a trait
+  cargo_check.txt:382:    |
+  cargo_check.txt:383:    = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:384:help: consider importing this trait instead
+  cargo_check.txt:385:    |
+  cargo_check.txt:386:  1 + use std::any::Any;
+  cargo_check.txt:387:    |
+  cargo_check.txt:388:
+> cargo_check.txt:390:  --> src\..\src\main\java\me\ag2s\epublib\domain\MediaType.rs:66:47
+  cargo_check.txt:391:   |
+  cargo_check.txt:392:66 |   pub fn equals(&self, other_media_type: &dyn Any) -> bool {
+  cargo_check.txt:393:   |                                               ^^^ not a trait
+  cargo_check.txt:394:   |
+  cargo_check.txt:395:   = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:396:help: consider importing this trait instead
+  cargo_check.txt:397:   |
+  cargo_check.txt:398: 1 + use std::any::Any;
+  cargo_check.txt:399:   |
+  cargo_check.txt:400:
+> cargo_check.txt:1125:   --> src\..\src\main\java\me\ag2s\epublib\domain\Author.rs:60:46
+  cargo_check.txt:1126:    |
+  cargo_check.txt:1127: 60 |     pub fn equals(&self, author_object: &dyn Any) -> bool {
+  cargo_check.txt:1128:    |                                              ^^^ ambiguous name
+  cargo_check.txt:1129:    |
+  cargo_check.txt:1130:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1131:note: `Any` could refer to the enum imported here
+  cargo_check.txt:1132:   --> src\lib.rs:865:13
+  cargo_check.txt:1133:    |
+  cargo_check.txt:1134:865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+  cargo_check.txt:1135:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:1148:   --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:120:47
+  cargo_check.txt:1149:    |
+  cargo_check.txt:1150:120 |   pub fn equals(&self, other_identifier: &dyn Any) -> bool {
+  cargo_check.txt:1151:    |                                               ^^^ ambiguous name
+  cargo_check.txt:1152:    |
+  cargo_check.txt:1153:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1154:note: `Any` could refer to the enum imported here
+  cargo_check.txt:1155:   --> src\lib.rs:865:13
+  cargo_check.txt:1156:    |
+  cargo_check.txt:1157:865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+  cargo_check.txt:1158:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:1171:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaType.rs:66:47
+  cargo_check.txt:1172:    |
+  cargo_check.txt:1173: 66 |   pub fn equals(&self, other_media_type: &dyn Any) -> bool {
+  cargo_check.txt:1174:    |                                               ^^^ ambiguous name
+  cargo_check.txt:1175:    |
+  cargo_check.txt:1176:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1177:note: `Any` could refer to the enum imported here
+  cargo_check.txt:1178:   --> src\lib.rs:865:13
+  cargo_check.txt:1179:    |
+  cargo_check.txt:1180:865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+  cargo_check.txt:1181:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:1588:918 |     pub use crate::me_ag2s_epublib_domain_date::*;
+  cargo_check.txt:1589:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `Date` in the type namespace is
+ first re-exported here
+  cargo_check.txt:1590:
+  cargo_check.txt:1591:error: `Date` is ambiguous
+  cargo_check.txt:1592:   --> src\..\src\main\java\com\htmake\reader\lib\tts\util\Tools.rs:91:56
+  cargo_check.txt:1593:    |
+  cargo_check.txt:1594: 91 |         return SimpleDateFormat::new(Self::SDF).format(Date::now());
+  cargo_check.txt:1595:    |                                                        ^^^^ ambiguous name
+  cargo_check.txt:1596:    |
+  cargo_check.txt:1597:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1598:note: `Date` could refer to the struct imported here
+> cargo_check.txt:1601:918 |     pub use crate::me_ag2s_epublib_domain_date::*;
+  cargo_check.txt:1602:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1603:    = help: consider adding an explicit import of `Date` to disambiguate
+  cargo_check.txt:1604:note: `Date` could also refer to the struct imported here
+  cargo_check.txt:1605:   --> src\lib.rs:745:13
+  cargo_check.txt:1606:    |
+  cargo_check.txt:1607:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1608:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1609:    = help: consider adding an explicit import of `Date` to disambiguate
+  cargo_check.txt:1610:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1611:uture release!
+> cargo_check.txt:1620:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1621:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the name `MediaType` in the type na
+mespace is first re-exp
+  cargo_check.txt:1622:orted here
+  cargo_check.txt:1623:
+  cargo_check.txt:1624:error: `MediaType` is ambiguous
+> cargo_check.txt:1625:   --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:19:22
+  cargo_check.txt:1626:    |
+  cargo_check.txt:1627: 19 |   media_type: Option<MediaType>,
+  cargo_check.txt:1628:    |                      ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1629:    |
+  cargo_check.txt:1630:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1631:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1632:   --> src\lib.rs:930:13
+  cargo_check.txt:1633:    |
+> cargo_check.txt:1634:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1635:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1636:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1637:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1638:   --> src\lib.rs:745:13
+  cargo_check.txt:1639:    |
+  cargo_check.txt:1640:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1641:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1642:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1643:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1644:uture release!
+> cargo_check.txt:1648:   --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:60:110
+  cargo_check.txt:1649:    |
+  cargo_check.txt:1650: 60 | ...: String, original_href: String, media_type: Option<MediaType>) -> LazyResource {
+  cargo_check.txt:1651:    |                                                        ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1652:    |
+  cargo_check.txt:1653:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1654:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1655:   --> src\lib.rs:930:13
+  cargo_check.txt:1656:    |
+> cargo_check.txt:1657:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1658:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1659:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1660:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1661:   --> src\lib.rs:745:13
+  cargo_check.txt:1662:    |
+  cargo_check.txt:1663:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1664:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1665:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1666:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1667:uture release!
+> cargo_check.txt:1671:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:18:20
+  cargo_check.txt:1672:    |
+  cargo_check.txt:1673: 18 |   pub const XHTML: MediaType = MediaType::new("application/xhtml+xml".to_string(),
+  cargo_check.txt:1674:    |                    ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1675:    |
+  cargo_check.txt:1676:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1677:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1678:   --> src\lib.rs:930:13
+  cargo_check.txt:1679:    |
+> cargo_check.txt:1680:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1681:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1682:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1683:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1684:   --> src\lib.rs:745:13
+  cargo_check.txt:1685:    |
+  cargo_check.txt:1686:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1687:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1688:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1689:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1690:uture release!
+> cargo_check.txt:1694:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:18:32
+  cargo_check.txt:1695:    |
+  cargo_check.txt:1696: 18 |   pub const XHTML: MediaType = MediaType::new("application/xhtml+xml".to_string(),
+  cargo_check.txt:1697:    |                                ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1698:    |
+  cargo_check.txt:1699:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1700:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1701:   --> src\lib.rs:930:13
+  cargo_check.txt:1702:    |
+> cargo_check.txt:1703:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1704:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1705:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1706:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1707:   --> src\lib.rs:745:13
+  cargo_check.txt:1708:    |
+  cargo_check.txt:1709:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1710:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1711:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1712:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1713:uture release!
+> cargo_check.txt:1717:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:20:19
+  cargo_check.txt:1718:    |
+  cargo_check.txt:1719: 20 |   pub const EPUB: MediaType = MediaType::new("application/epub+zip".to_string(),
+  cargo_check.txt:1720:    |                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1721:    |
+  cargo_check.txt:1722:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1723:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1724:   --> src\lib.rs:930:13
+  cargo_check.txt:1725:    |
+> cargo_check.txt:1726:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1727:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1728:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1729:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1730:   --> src\lib.rs:745:13
+  cargo_check.txt:1731:    |
+  cargo_check.txt:1732:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1733:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1734:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1735:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1736:uture release!
+> cargo_check.txt:1740:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:20:31
+  cargo_check.txt:1741:    |
+  cargo_check.txt:1742: 20 |   pub const EPUB: MediaType = MediaType::new("application/epub+zip".to_string(),
+  cargo_check.txt:1743:    |                               ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1744:    |
+  cargo_check.txt:1745:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1746:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1747:   --> src\lib.rs:930:13
+  cargo_check.txt:1748:    |
+> cargo_check.txt:1749:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1750:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1751:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1752:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1753:   --> src\lib.rs:745:13
+  cargo_check.txt:1754:    |
+  cargo_check.txt:1755:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1756:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1757:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1758:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1759:uture release!
+> cargo_check.txt:1763:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:22:18
+  cargo_check.txt:1764:    |
+  cargo_check.txt:1765: 22 |   pub const NCX: MediaType = MediaType::new("application/x-dtbncx+xml".to_string(),
+  cargo_check.txt:1766:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1767:    |
+  cargo_check.txt:1768:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1769:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1770:   --> src\lib.rs:930:13
+  cargo_check.txt:1771:    |
+> cargo_check.txt:1772:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1773:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1774:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1775:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1776:   --> src\lib.rs:745:13
+  cargo_check.txt:1777:    |
+  cargo_check.txt:1778:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1779:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1780:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1781:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1782:uture release!
+> cargo_check.txt:1786:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:22:30
+  cargo_check.txt:1787:    |
+  cargo_check.txt:1788: 22 |   pub const NCX: MediaType = MediaType::new("application/x-dtbncx+xml".to_string(),
+  cargo_check.txt:1789:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1790:    |
+  cargo_check.txt:1791:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1792:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1793:   --> src\lib.rs:930:13
+  cargo_check.txt:1794:    |
+> cargo_check.txt:1795:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1796:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1797:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1798:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1799:   --> src\lib.rs:745:13
+  cargo_check.txt:1800:    |
+  cargo_check.txt:1801:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1802:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1803:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1804:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1805:uture release!
+> cargo_check.txt:1809:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:25:25
+  cargo_check.txt:1810:    |
+  cargo_check.txt:1811: 25 |   pub const JAVASCRIPT: MediaType = MediaType::new("text/javascript".to_string(),
+  cargo_check.txt:1812:    |                         ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1813:    |
+  cargo_check.txt:1814:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1815:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1816:   --> src\lib.rs:930:13
+  cargo_check.txt:1817:    |
+> cargo_check.txt:1818:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1819:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1820:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1821:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1822:   --> src\lib.rs:745:13
+  cargo_check.txt:1823:    |
+  cargo_check.txt:1824:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1825:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1826:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1827:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1828:uture release!
+> cargo_check.txt:1832:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:25:37
+  cargo_check.txt:1833:    |
+  cargo_check.txt:1834: 25 |   pub const JAVASCRIPT: MediaType = MediaType::new("text/javascript".to_string(),
+  cargo_check.txt:1835:    |                                     ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1836:    |
+  cargo_check.txt:1837:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1838:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1839:   --> src\lib.rs:930:13
+  cargo_check.txt:1840:    |
+> cargo_check.txt:1841:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1842:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1843:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1844:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1845:   --> src\lib.rs:745:13
+  cargo_check.txt:1846:    |
+  cargo_check.txt:1847:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1848:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1849:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1850:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1851:uture release!
+> cargo_check.txt:1855:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:27:18
+  cargo_check.txt:1856:    |
+  cargo_check.txt:1857: 27 |   pub const CSS: MediaType = MediaType::new("text/css".to_string(), ".css".to_string());
+  cargo_check.txt:1858:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1859:    |
+  cargo_check.txt:1860:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1861:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1862:   --> src\lib.rs:930:13
+  cargo_check.txt:1863:    |
+> cargo_check.txt:1864:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1865:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1866:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1867:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1868:   --> src\lib.rs:745:13
+  cargo_check.txt:1869:    |
+  cargo_check.txt:1870:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1871:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1872:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1873:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1874:uture release!
+> cargo_check.txt:1878:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:27:30
+  cargo_check.txt:1879:    |
+  cargo_check.txt:1880: 27 |   pub const CSS: MediaType = MediaType::new("text/css".to_string(), ".css".to_string());
+  cargo_check.txt:1881:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1882:    |
+  cargo_check.txt:1883:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1884:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1885:   --> src\lib.rs:930:13
+  cargo_check.txt:1886:    |
+> cargo_check.txt:1887:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1888:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1889:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1890:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1891:   --> src\lib.rs:745:13
+  cargo_check.txt:1892:    |
+  cargo_check.txt:1893:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1894:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1895:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1896:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1897:uture release!
+> cargo_check.txt:1901:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:30:18
+  cargo_check.txt:1902:    |
+  cargo_check.txt:1903: 30 |   pub const JPG: MediaType = MediaType::new("image/jpeg".to_string(), ".jpg".to_string(),
+  cargo_check.txt:1904:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1905:    |
+  cargo_check.txt:1906:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1907:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1908:   --> src\lib.rs:930:13
+  cargo_check.txt:1909:    |
+> cargo_check.txt:1910:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1911:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1912:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1913:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1914:   --> src\lib.rs:745:13
+  cargo_check.txt:1915:    |
+  cargo_check.txt:1916:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1917:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1918:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1919:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1920:uture release!
+> cargo_check.txt:1924:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:30:30
+  cargo_check.txt:1925:    |
+  cargo_check.txt:1926: 30 |   pub const JPG: MediaType = MediaType::new("image/jpeg".to_string(), ".jpg".to_string(),
+  cargo_check.txt:1927:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1928:    |
+  cargo_check.txt:1929:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1930:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1931:   --> src\lib.rs:930:13
+  cargo_check.txt:1932:    |
+> cargo_check.txt:1933:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1934:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1935:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1936:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1937:   --> src\lib.rs:745:13
+  cargo_check.txt:1938:    |
+  cargo_check.txt:1939:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1940:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1941:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1942:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1943:uture release!
+> cargo_check.txt:1947:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:32:18
+  cargo_check.txt:1948:    |
+  cargo_check.txt:1949: 32 |   pub const PNG: MediaType = MediaType::new("image/png".to_string(), ".png".to_string());
+  cargo_check.txt:1950:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1951:    |
+  cargo_check.txt:1952:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1953:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1954:   --> src\lib.rs:930:13
+  cargo_check.txt:1955:    |
+> cargo_check.txt:1956:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1957:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1958:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1959:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1960:   --> src\lib.rs:745:13
+  cargo_check.txt:1961:    |
+  cargo_check.txt:1962:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1963:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1964:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1965:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1966:uture release!
+> cargo_check.txt:1970:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:32:30
+  cargo_check.txt:1971:    |
+  cargo_check.txt:1972: 32 |   pub const PNG: MediaType = MediaType::new("image/png".to_string(), ".png".to_string());
+  cargo_check.txt:1973:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1974:    |
+  cargo_check.txt:1975:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1976:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:1977:   --> src\lib.rs:930:13
+  cargo_check.txt:1978:    |
+> cargo_check.txt:1979:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:1980:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:1981:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1982:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:1983:   --> src\lib.rs:745:13
+  cargo_check.txt:1984:    |
+  cargo_check.txt:1985:745 |     pub use crate::stubs::*;
+  cargo_check.txt:1986:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:1987:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:1988:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:1989:uture release!
+> cargo_check.txt:1993:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:33:18
+  cargo_check.txt:1994:    |
+  cargo_check.txt:1995: 33 |   pub const GIF: MediaType = MediaType::new("image/gif".to_string(), ".gif".to_string());
+  cargo_check.txt:1996:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:1997:    |
+  cargo_check.txt:1998:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1999:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2000:   --> src\lib.rs:930:13
+  cargo_check.txt:2001:    |
+> cargo_check.txt:2002:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2003:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2004:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2005:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2006:   --> src\lib.rs:745:13
+  cargo_check.txt:2007:    |
+  cargo_check.txt:2008:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2009:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2010:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2011:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2012:uture release!
+> cargo_check.txt:2016:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:33:30
+  cargo_check.txt:2017:    |
+  cargo_check.txt:2018: 33 |   pub const GIF: MediaType = MediaType::new("image/gif".to_string(), ".gif".to_string());
+  cargo_check.txt:2019:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2020:    |
+  cargo_check.txt:2021:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2022:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2023:   --> src\lib.rs:930:13
+  cargo_check.txt:2024:    |
+> cargo_check.txt:2025:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2026:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2027:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2028:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2029:   --> src\lib.rs:745:13
+  cargo_check.txt:2030:    |
+  cargo_check.txt:2031:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2032:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2033:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2034:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2035:uture release!
+> cargo_check.txt:2039:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:35:18
+  cargo_check.txt:2040:    |
+  cargo_check.txt:2041: 35 |   pub const SVG: MediaType = MediaType::new("image/svg+xml".to_string(), ".svg".to_string(
+));
+  cargo_check.txt:2042:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2043:    |
+  cargo_check.txt:2044:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2045:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2046:   --> src\lib.rs:930:13
+  cargo_check.txt:2047:    |
+> cargo_check.txt:2048:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2049:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2050:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2051:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2052:   --> src\lib.rs:745:13
+  cargo_check.txt:2053:    |
+  cargo_check.txt:2054:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2055:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2056:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2057:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2058:uture release!
+> cargo_check.txt:2062:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:35:30
+  cargo_check.txt:2063:    |
+  cargo_check.txt:2064: 35 |   pub const SVG: MediaType = MediaType::new("image/svg+xml".to_string(), ".svg".to_string(
+));
+  cargo_check.txt:2065:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2066:    |
+  cargo_check.txt:2067:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2068:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2069:   --> src\lib.rs:930:13
+  cargo_check.txt:2070:    |
+> cargo_check.txt:2071:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2072:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2073:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2074:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2075:   --> src\lib.rs:745:13
+  cargo_check.txt:2076:    |
+  cargo_check.txt:2077:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2078:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2079:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2080:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2081:uture release!
+> cargo_check.txt:2085:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:38:18
+  cargo_check.txt:2086:    |
+  cargo_check.txt:2087: 38 |   pub const TTF: MediaType = MediaType::new(
+  cargo_check.txt:2088:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2089:    |
+  cargo_check.txt:2090:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2091:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2092:   --> src\lib.rs:930:13
+  cargo_check.txt:2093:    |
+> cargo_check.txt:2094:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2095:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2096:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2097:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2098:   --> src\lib.rs:745:13
+  cargo_check.txt:2099:    |
+  cargo_check.txt:2100:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2101:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2102:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2103:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2104:uture release!
+> cargo_check.txt:2108:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:38:30
+  cargo_check.txt:2109:    |
+  cargo_check.txt:2110: 38 |   pub const TTF: MediaType = MediaType::new(
+  cargo_check.txt:2111:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2112:    |
+  cargo_check.txt:2113:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2114:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2115:   --> src\lib.rs:930:13
+  cargo_check.txt:2116:    |
+> cargo_check.txt:2117:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2118:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2119:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2120:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2121:   --> src\lib.rs:745:13
+  cargo_check.txt:2122:    |
+  cargo_check.txt:2123:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2124:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2125:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2126:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2127:uture release!
+> cargo_check.txt:2131:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:40:23
+  cargo_check.txt:2132:    |
+  cargo_check.txt:2133: 40 |   pub const OPENTYPE: MediaType = MediaType::new(
+  cargo_check.txt:2134:    |                       ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2135:    |
+  cargo_check.txt:2136:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2137:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2138:   --> src\lib.rs:930:13
+  cargo_check.txt:2139:    |
+> cargo_check.txt:2140:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2141:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2142:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2143:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2144:   --> src\lib.rs:745:13
+  cargo_check.txt:2145:    |
+  cargo_check.txt:2146:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2147:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2148:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2149:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2150:uture release!
+> cargo_check.txt:2154:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:40:35
+  cargo_check.txt:2155:    |
+  cargo_check.txt:2156: 40 |   pub const OPENTYPE: MediaType = MediaType::new(
+  cargo_check.txt:2157:    |                                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2158:    |
+  cargo_check.txt:2159:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2160:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2161:   --> src\lib.rs:930:13
+  cargo_check.txt:2162:    |
+> cargo_check.txt:2163:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2164:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2165:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2166:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2167:   --> src\lib.rs:745:13
+  cargo_check.txt:2168:    |
+  cargo_check.txt:2169:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2170:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2171:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2172:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2173:uture release!
+> cargo_check.txt:2177:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:42:19
+  cargo_check.txt:2178:    |
+  cargo_check.txt:2179: 42 |   pub const WOFF: MediaType = MediaType::new("application/font-woff".to_string(),
+  cargo_check.txt:2180:    |                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2181:    |
+  cargo_check.txt:2182:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2183:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2184:   --> src\lib.rs:930:13
+  cargo_check.txt:2185:    |
+> cargo_check.txt:2186:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2187:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2188:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2189:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2190:   --> src\lib.rs:745:13
+  cargo_check.txt:2191:    |
+  cargo_check.txt:2192:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2193:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2194:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2195:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2196:uture release!
+> cargo_check.txt:2200:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:42:31
+  cargo_check.txt:2201:    |
+  cargo_check.txt:2202: 42 |   pub const WOFF: MediaType = MediaType::new("application/font-woff".to_string(),
+  cargo_check.txt:2203:    |                               ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2204:    |
+  cargo_check.txt:2205:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2206:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2207:   --> src\lib.rs:930:13
+  cargo_check.txt:2208:    |
+> cargo_check.txt:2209:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2210:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2211:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2212:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2213:   --> src\lib.rs:745:13
+  cargo_check.txt:2214:    |
+  cargo_check.txt:2215:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2216:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2217:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2218:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2219:uture release!
+> cargo_check.txt:2223:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:46:18
+  cargo_check.txt:2224:    |
+  cargo_check.txt:2225: 46 |   pub const MP3: MediaType = MediaType::new("audio/mpeg".to_string(), ".mp3".to_string());
+  cargo_check.txt:2226:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2227:    |
+  cargo_check.txt:2228:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2229:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2230:   --> src\lib.rs:930:13
+  cargo_check.txt:2231:    |
+> cargo_check.txt:2232:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2233:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2234:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2235:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2236:   --> src\lib.rs:745:13
+  cargo_check.txt:2237:    |
+  cargo_check.txt:2238:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2239:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2240:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2241:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2242:uture release!
+> cargo_check.txt:2246:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:46:30
+  cargo_check.txt:2247:    |
+  cargo_check.txt:2248: 46 |   pub const MP3: MediaType = MediaType::new("audio/mpeg".to_string(), ".mp3".to_string());
+  cargo_check.txt:2249:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2250:    |
+  cargo_check.txt:2251:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2252:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2253:   --> src\lib.rs:930:13
+  cargo_check.txt:2254:    |
+> cargo_check.txt:2255:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2256:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2257:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2258:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2259:   --> src\lib.rs:745:13
+  cargo_check.txt:2260:    |
+  cargo_check.txt:2261:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2262:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2263:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2264:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2265:uture release!
+> cargo_check.txt:2269:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:47:18
+  cargo_check.txt:2270:    |
+  cargo_check.txt:2271: 47 |   pub const OGG: MediaType = MediaType::new("audio/ogg".to_string(), ".ogg".to_string());
+  cargo_check.txt:2272:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2273:    |
+  cargo_check.txt:2274:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2275:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2276:   --> src\lib.rs:930:13
+  cargo_check.txt:2277:    |
+> cargo_check.txt:2278:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2279:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2280:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2281:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2282:   --> src\lib.rs:745:13
+  cargo_check.txt:2283:    |
+  cargo_check.txt:2284:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2285:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2286:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2287:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2288:uture release!
+> cargo_check.txt:2292:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:47:30
+  cargo_check.txt:2293:    |
+  cargo_check.txt:2294: 47 |   pub const OGG: MediaType = MediaType::new("audio/ogg".to_string(), ".ogg".to_string());
+  cargo_check.txt:2295:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2296:    |
+  cargo_check.txt:2297:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2298:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2299:   --> src\lib.rs:930:13
+  cargo_check.txt:2300:    |
+> cargo_check.txt:2301:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2302:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2303:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2304:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2305:   --> src\lib.rs:745:13
+  cargo_check.txt:2306:    |
+  cargo_check.txt:2307:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2308:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2309:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2310:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2311:uture release!
+> cargo_check.txt:2315:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:50:18
+  cargo_check.txt:2316:    |
+  cargo_check.txt:2317: 50 |   pub const MP4: MediaType = MediaType::new("video/mp4".to_string(), ".mp4".to_string());
+  cargo_check.txt:2318:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2319:    |
+  cargo_check.txt:2320:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2321:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2322:   --> src\lib.rs:930:13
+  cargo_check.txt:2323:    |
+> cargo_check.txt:2324:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2325:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2326:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2327:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2328:   --> src\lib.rs:745:13
+  cargo_check.txt:2329:    |
+  cargo_check.txt:2330:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2331:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2332:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2333:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2334:uture release!
+> cargo_check.txt:2338:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:50:30
+  cargo_check.txt:2339:    |
+  cargo_check.txt:2340: 50 |   pub const MP4: MediaType = MediaType::new("video/mp4".to_string(), ".mp4".to_string());
+  cargo_check.txt:2341:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2342:    |
+  cargo_check.txt:2343:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2344:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2345:   --> src\lib.rs:930:13
+  cargo_check.txt:2346:    |
+> cargo_check.txt:2347:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2348:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2349:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2350:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2351:   --> src\lib.rs:745:13
+  cargo_check.txt:2352:    |
+  cargo_check.txt:2353:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2354:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2355:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2356:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2357:uture release!
+> cargo_check.txt:2361:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:52:19
+  cargo_check.txt:2362:    |
+  cargo_check.txt:2363: 52 |   pub const SMIL: MediaType = MediaType::new("application/smil+xml".to_string(),
+  cargo_check.txt:2364:    |                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2365:    |
+  cargo_check.txt:2366:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2367:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2368:   --> src\lib.rs:930:13
+  cargo_check.txt:2369:    |
+> cargo_check.txt:2370:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2371:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2372:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2373:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2374:   --> src\lib.rs:745:13
+  cargo_check.txt:2375:    |
+  cargo_check.txt:2376:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2377:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2378:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2379:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2380:uture release!
+> cargo_check.txt:2384:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:52:31
+  cargo_check.txt:2385:    |
+  cargo_check.txt:2386: 52 |   pub const SMIL: MediaType = MediaType::new("application/smil+xml".to_string(),
+  cargo_check.txt:2387:    |                               ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2388:    |
+  cargo_check.txt:2389:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2390:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2391:   --> src\lib.rs:930:13
+  cargo_check.txt:2392:    |
+> cargo_check.txt:2393:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2394:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2395:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2396:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2397:   --> src\lib.rs:745:13
+  cargo_check.txt:2398:    |
+  cargo_check.txt:2399:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2400:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2401:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2402:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2403:uture release!
+> cargo_check.txt:2407:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:54:19
+  cargo_check.txt:2408:    |
+  cargo_check.txt:2409: 54 |   pub const XPGT: MediaType = MediaType::new(
+  cargo_check.txt:2410:    |                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2411:    |
+  cargo_check.txt:2412:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2413:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2414:   --> src\lib.rs:930:13
+  cargo_check.txt:2415:    |
+> cargo_check.txt:2416:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2417:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2418:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2419:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2420:   --> src\lib.rs:745:13
+  cargo_check.txt:2421:    |
+  cargo_check.txt:2422:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2423:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2424:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2425:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2426:uture release!
+> cargo_check.txt:2430:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:54:31
+  cargo_check.txt:2431:    |
+  cargo_check.txt:2432: 54 |   pub const XPGT: MediaType = MediaType::new(
+  cargo_check.txt:2433:    |                               ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2434:    |
+  cargo_check.txt:2435:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2436:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2437:   --> src\lib.rs:930:13
+  cargo_check.txt:2438:    |
+> cargo_check.txt:2439:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2440:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2441:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2442:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2443:   --> src\lib.rs:745:13
+  cargo_check.txt:2444:    |
+  cargo_check.txt:2445:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2446:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2447:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2448:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2449:uture release!
+> cargo_check.txt:2453:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:56:18
+  cargo_check.txt:2454:    |
+  cargo_check.txt:2455: 56 |   pub const PLS: MediaType = MediaType::new("application/pls+xml".to_string(),
+  cargo_check.txt:2456:    |                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2457:    |
+  cargo_check.txt:2458:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2459:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2460:   --> src\lib.rs:930:13
+  cargo_check.txt:2461:    |
+> cargo_check.txt:2462:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2463:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2464:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2465:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2466:   --> src\lib.rs:745:13
+  cargo_check.txt:2467:    |
+  cargo_check.txt:2468:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2469:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2470:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2471:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2472:uture release!
+> cargo_check.txt:2476:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:56:30
+  cargo_check.txt:2477:    |
+  cargo_check.txt:2478: 56 |   pub const PLS: MediaType = MediaType::new("application/pls+xml".to_string(),
+  cargo_check.txt:2479:    |                              ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2480:    |
+  cargo_check.txt:2481:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2482:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2483:   --> src\lib.rs:930:13
+  cargo_check.txt:2484:    |
+> cargo_check.txt:2485:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2486:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2487:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2488:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2489:   --> src\lib.rs:745:13
+  cargo_check.txt:2490:    |
+  cargo_check.txt:2491:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2492:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2493:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2494:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2495:uture release!
+> cargo_check.txt:2499:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:59:31
+  cargo_check.txt:2500:    |
+  cargo_check.txt:2501: 59 |   pub fn media_types() -> Vec<MediaType> {
+  cargo_check.txt:2502:    |                               ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2503:    |
+  cargo_check.txt:2504:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2505:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2506:   --> src\lib.rs:930:13
+  cargo_check.txt:2507:    |
+> cargo_check.txt:2508:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2509:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2510:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2511:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2512:   --> src\lib.rs:745:13
+  cargo_check.txt:2513:    |
+  cargo_check.txt:2514:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2515:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2516:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2517:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2518:uture release!
+> cargo_check.txt:2522:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:66:51
+  cargo_check.txt:2523:    |
+  cargo_check.txt:2524: 66 |   pub fn media_types_by_name() -> HashMap<String, MediaType> {
+  cargo_check.txt:2525:    |                                                   ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2526:    |
+  cargo_check.txt:2527:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2528:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2529:   --> src\lib.rs:930:13
+  cargo_check.txt:2530:    |
+> cargo_check.txt:2531:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2532:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2533:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2534:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2535:   --> src\lib.rs:745:13
+  cargo_check.txt:2536:    |
+  cargo_check.txt:2537:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2538:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2539:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2540:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2541:uture release!
+> cargo_check.txt:2545:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:67:50
+  cargo_check.txt:2546:    |
+  cargo_check.txt:2547: 67 |     let mut media_types_by_name: HashMap<String, MediaType> = HashMap::new();
+  cargo_check.txt:2548:    |                                                  ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2549:    |
+  cargo_check.txt:2550:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2551:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2552:   --> src\lib.rs:930:13
+  cargo_check.txt:2553:    |
+> cargo_check.txt:2554:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2555:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2556:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2557:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2558:   --> src\lib.rs:745:13
+  cargo_check.txt:2559:    |
+  cargo_check.txt:2560:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2561:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2562:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2563:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2564:uture release!
+> cargo_check.txt:2568:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:75:39
+  cargo_check.txt:2569:    |
+  cargo_check.txt:2570: 75 |   pub fn is_bitmap_image(media_type: &MediaType) -> bool {
+  cargo_check.txt:2571:    |                                       ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2572:    |
+  cargo_check.txt:2573:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2574:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2575:   --> src\lib.rs:930:13
+  cargo_check.txt:2576:    |
+> cargo_check.txt:2577:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2578:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2579:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2580:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2581:   --> src\lib.rs:745:13
+  cargo_check.txt:2582:    |
+  cargo_check.txt:2583:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2584:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2585:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2586:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2587:uture release!
+> cargo_check.txt:2591:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:86:60
+  cargo_check.txt:2592:    |
+  cargo_check.txt:2593: 86 |   pub fn determine_media_type(filename: &String) -> Option<MediaType> {
+  cargo_check.txt:2594:    |                                                            ^^^^^^^^^ ambiguous name
+  cargo_check.txt:2595:    |
+  cargo_check.txt:2596:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2597:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2598:   --> src\lib.rs:930:13
+  cargo_check.txt:2599:    |
+> cargo_check.txt:2600:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2601:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2602:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2603:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2604:   --> src\lib.rs:745:13
+  cargo_check.txt:2605:    |
+  cargo_check.txt:2606:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2607:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2608:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2609:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2610:uture release!
+> cargo_check.txt:2614:   --> src\..\src\main\java\me\ag2s\epublib\domain\MediaTypes.rs:97:69
+  cargo_check.txt:2615:    |
+  cargo_check.txt:2616: 97 |   pub fn get_media_type_by_name(media_type_name: &String) -> Option<MediaType> {
+  cargo_check.txt:2617:    |                                                                     ^^^^^^^^^ ambiguous na
+me
+  cargo_check.txt:2618:    |
+  cargo_check.txt:2619:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2620:note: `MediaType` could refer to the struct imported here
+  cargo_check.txt:2621:   --> src\lib.rs:930:13
+  cargo_check.txt:2622:    |
+> cargo_check.txt:2623:930 |     pub use crate::me_ag2s_epublib_domain_mediatype::*;
+  cargo_check.txt:2624:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:2625:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2626:note: `MediaType` could also refer to the struct imported here
+  cargo_check.txt:2627:   --> src\lib.rs:745:13
+  cargo_check.txt:2628:    |
+  cargo_check.txt:2629:745 |     pub use crate::stubs::*;
+  cargo_check.txt:2630:    |             ^^^^^^^^^^^^^^^
+  cargo_check.txt:2631:    = help: consider adding an explicit import of `MediaType` to disambiguate
+  cargo_check.txt:2632:    = warning: this was previously accepted by the compiler but is being phased out; it will bec
+ome a hard error in a f
+  cargo_check.txt:2633:uture release!
+> cargo_check.txt:2983:   --> src\..\src\main\java\me\ag2s\epublib\domain\EpubResourceProvider.rs:29:24
+  cargo_check.txt:2984:    |
+  cargo_check.txt:2985: 29 |     let mut zip_file = ZipFile::new(&self.epub_filename)?;
+  cargo_check.txt:2986:    |                        ^^^^^^^ ambiguous name
+  cargo_check.txt:2987:    |
+  cargo_check.txt:2988:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:2989:note: `ZipFile` could refer to the struct imported here
+  cargo_check.txt:2990:   --> src\lib.rs:957:13
+  cargo_check.txt:2991:    |
+  cargo_check.txt:2992:957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+  cargo_check.txt:2993:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3006:   --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:17:13
+  cargo_check.txt:3007:    |
+  cargo_check.txt:3008: 17 |   zip_file: ZipFile,
+  cargo_check.txt:3009:    |             ^^^^^^^ ambiguous name
+  cargo_check.txt:3010:    |
+  cargo_check.txt:3011:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3012:note: `ZipFile` could refer to the struct imported here
+  cargo_check.txt:3013:   --> src\lib.rs:957:13
+  cargo_check.txt:3014:    |
+  cargo_check.txt:3015:957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+  cargo_check.txt:3016:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3029:   --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:30:48
+  cargo_check.txt:3030:    |
+  cargo_check.txt:3031: 30 |   pub fn new(in_stream: InputStream, zip_file: ZipFile) -> ResourceInputStream {
+  cargo_check.txt:3032:    |                                                ^^^^^^^ ambiguous name
+  cargo_check.txt:3033:    |
+  cargo_check.txt:3034:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3035:note: `ZipFile` could refer to the struct imported here
+  cargo_check.txt:3036:   --> src\lib.rs:957:13
+  cargo_check.txt:3037:    |
+  cargo_check.txt:3038:957 |     pub use crate::me_ag2s_epublib_epub_resourcesloader::*;
+  cargo_check.txt:3039:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3468:   --> src\..\src\main\java\me\ag2s\epublib\domain\FileResourceProvider.rs:35:43
+  cargo_check.txt:3469:    |
+  cargo_check.txt:3470: 35 |     pub fn with_parent_file(parent_file: &File) -> FileResourceProvider {
+  cargo_check.txt:3471:    |                                           ^^^^ ambiguous name
+  cargo_check.txt:3472:    |
+  cargo_check.txt:3473:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3474:note: `File` could refer to the struct imported here
+  cargo_check.txt:3475:   --> src\lib.rs:962:13
+  cargo_check.txt:3476:    |
+  cargo_check.txt:3477:962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+  cargo_check.txt:3478:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3491:   --> src\..\src\main\java\me\ag2s\epublib\domain\FileResourceProvider.rs:48:64
+  cargo_check.txt:3492:    |
+  cargo_check.txt:3493: 48 |     pub fn get_resource_stream(&self, href: &String) -> Result<FileInputStream, IOExceptio
+n> {
+  cargo_check.txt:3494:    |                                                                ^^^^^^^^^^^^^^^ ambiguous n
+ame
+  cargo_check.txt:3495:    |
+  cargo_check.txt:3496:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3497:note: `FileInputStream` could refer to the struct imported here
+  cargo_check.txt:3498:   --> src\lib.rs:962:13
+  cargo_check.txt:3499:    |
+  cargo_check.txt:3500:962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+  cargo_check.txt:3501:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3514:   --> src\..\src\main\java\me\ag2s\epublib\domain\FileResourceProvider.rs:49:16
+  cargo_check.txt:3515:    |
+  cargo_check.txt:3516: 49 |         return FileInputStream::new(File::new(&self.dir, href));
+  cargo_check.txt:3517:    |                ^^^^^^^^^^^^^^^ ambiguous name
+  cargo_check.txt:3518:    |
+  cargo_check.txt:3519:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3520:note: `FileInputStream` could refer to the struct imported here
+  cargo_check.txt:3521:   --> src\lib.rs:962:13
+  cargo_check.txt:3522:    |
+  cargo_check.txt:3523:962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+  cargo_check.txt:3524:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:3537:   --> src\..\src\main\java\me\ag2s\epublib\domain\FileResourceProvider.rs:49:37
+  cargo_check.txt:3538:    |
+  cargo_check.txt:3539: 49 |         return FileInputStream::new(File::new(&self.dir, href));
+  cargo_check.txt:3540:    |                                     ^^^^ ambiguous name
+  cargo_check.txt:3541:    |
+  cargo_check.txt:3542:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:3543:note: `File` could refer to the struct imported here
+  cargo_check.txt:3544:   --> src\lib.rs:962:13
+  cargo_check.txt:3545:    |
+  cargo_check.txt:3546:962 |     pub use crate::me_ag2s_epublib_util_resourceutil::*;
+  cargo_check.txt:3547:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> cargo_check.txt:4073:  --> src\..\src\main\java\me\ag2s\epublib\domain\LazyResource.rs:23:29
+  cargo_check.txt:4074:   |
+  cargo_check.txt:4075:23 |   resource_provider: Option<LazyResourceProvider>,
+  cargo_check.txt:4076:   |                             ^^^^^^^^^^^^^^^^^^^^
+  cargo_check.txt:4077:   |
+  cargo_check.txt:4078:help: you can add the `dyn` keyword if you want a trait object
+  cargo_check.txt:4079:   |
+  cargo_check.txt:4080:23 |   resource_provider: Option<dyn LazyResourceProvider>,
+  cargo_check.txt:4081:   |                             +++
+  cargo_check.txt:4082:
+  cargo_check.txt:4083:error[E0782]: expected a type, found a trait
+> cargo_check.txt:4084:  --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:16:14
+  cargo_check.txt:4085:   |
+  cargo_check.txt:4086:16 |   in_stream: InputStream,
+  cargo_check.txt:4087:   |              ^^^^^^^^^^^
+  cargo_check.txt:4088:   |
+  cargo_check.txt:4089:help: you might be missing a type parameter
+  cargo_check.txt:4090:   |
+  cargo_check.txt:4091:15 ~ pub struct ResourceInputStream<T: InputStream> {
+  cargo_check.txt:4092:16 ~   in_stream: T,
+  cargo_check.txt:4093:   |
+  cargo_check.txt:4094:
+> cargo_check.txt:4254:  --> src\..\src\main\java\me\ag2s\epublib\domain\Date.rs:25:25
+  cargo_check.txt:4255:   |
+  cargo_check.txt:4256:25 |         Date::with_date(java_util_Date::new(), Some(Event::CREATION))
+  cargo_check.txt:4257:   |                         ^^^^^^^^^^^^^^ use of unresolved module or unlinked crate `java_uti
+l_Date`
+  cargo_check.txt:4258:   |
+  cargo_check.txt:4259:   = help: if you wanted to use a crate named `java_util_Date`, use `cargo add java_util_Date` t
+o add it to your `Cargo
+  cargo_check.txt:4260:.toml`
+  cargo_check.txt:4261:
+  cargo_check.txt:4262:error[E0433]: cannot find type `UUID` in this scope
+> cargo_check.txt:4263:  --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:37:54
+  cargo_check.txt:4264:   |
+  cargo_check.txt:4265:37 |     Identifier::with_value(Scheme::UUID.to_string(), UUID::random_uuid().to_string())
+  cargo_check.txt:4266:   |                                                      ^^^^ use of undeclared type `UUID`
+  cargo_check.txt:4267:   |
+  cargo_check.txt:4268:help: a struct with a similar name exists
+  cargo_check.txt:4269:   |
+  cargo_check.txt:4270:37 -     Identifier::with_value(Scheme::UUID.to_string(), UUID::random_uuid().to_string())
+  cargo_check.txt:4271:37 +     Identifier::with_value(Scheme::UUID.to_string(), Uuid::random_uuid().to_string())
+  cargo_check.txt:4272:   |
+  cargo_check.txt:4273:
+
+
+
+> cargo_check.txt:318: --> src\..\src\main\java\io\legado\app\utils\JsonExtensions.rs:2:22
+  cargo_check.txt:319:  |
+  cargo_check.txt:320:2 | pub fn jsonPath() -> ParseContext {
+  cargo_check.txt:321:  |                      ^^^^^^^^^^^^ not found in this scope
+  cargo_check.txt:322:
+  cargo_check.txt:323:error[E0404]: expected trait, found enum `Any`
+  cargo_check.txt:324:  --> src\..\src\main\java\me\ag2s\epublib\browsersupport\NavigationEvent.rs:29:27
+  cargo_check.txt:325:   |
+  cargo_check.txt:326:29 |   pub fn new(source: &dyn Any) -> NavigationEvent {
+  cargo_check.txt:327:   |                           ^^^ not a trait
+  cargo_check.txt:328:   |
+> cargo_check.txt:4242: --> src\..\src\main\java\io\legado\app\utils\JsonExtensions.rs:4:9
+  cargo_check.txt:4243:  |
+  cargo_check.txt:4244:4 |         Configuration::builder()
+  cargo_check.txt:4245:  |         ^^^^^^^^^^^^^ use of undeclared type `Configuration`
+  cargo_check.txt:4246:
+  cargo_check.txt:4247:error[E0433]: cannot find type `MessageDigest` in this scope
+  cargo_check.txt:4248:  --> src\..\src\main\java\io\legado\app\utils\MD5Utils.rs:14:23
+  cargo_check.txt:4249:   |
+  cargo_check.txt:4250:14 |             let md5 = MessageDigest::getInstance("MD5");
+  cargo_check.txt:4251:   |                       ^^^^^^^^^^^^^ use of undeclared type `MessageDigest`
+  cargo_check.txt:4252:
+
+
+
+> cargo_check.txt:306:  --> src\..\src\main\java\io\legado\app\model\rss\RssParserByRule.rs:97:24
+  cargo_check.txt:307:   |
+  cargo_check.txt:308:97 |         item: &Box<dyn Any>,
+  cargo_check.txt:309:   |                        ^^^ not a trait
+  cargo_check.txt:310:   |
+  cargo_check.txt:311:   = note: trait `crate::io::legado::app::utils::Utils::Any` exists but is inaccessible
+  cargo_check.txt:312:help: consider importing this trait instead
+  cargo_check.txt:313:   |
+  cargo_check.txt:314: 1 + use std::any::Any;
+  cargo_check.txt:315:   |
+  cargo_check.txt:316:
+> cargo_check.txt:1056:   --> src\..\src\main\java\io\legado\app\model\rss\RssParserByRule.rs:97:24
+  cargo_check.txt:1057:    |
+  cargo_check.txt:1058: 97 |         item: &Box<dyn Any>,
+  cargo_check.txt:1059:    |                        ^^^ ambiguous name
+  cargo_check.txt:1060:    |
+  cargo_check.txt:1061:    = note: ambiguous because of multiple glob imports of a name in the same module
+  cargo_check.txt:1062:note: `Any` could refer to the enum imported here
+  cargo_check.txt:1063:   --> src\lib.rs:865:13
+  cargo_check.txt:1064:    |
+  cargo_check.txt:1065:865 |     pub use crate::io_legado_app_model_analyzerule_analyzebyjsoup::*;
+  cargo_check.txt:1066:    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+

@@ -1,3 +1,10 @@
+use crate::prelude::*;
+// fix: 显式导入消解 prelude glob 歧义（E0659）与补齐占位（E0425/E0782）
+use crate::stubs::{
+    ByteArrayInputStream, CharsetMatchReader as Reader, InputStreamResetExt,
+    InputStreamResetShared, decode_string,
+};
+use std::rc::Rc;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /*
@@ -35,7 +42,7 @@ pub struct CharsetMatch {
     pub(crate) f_raw_input: Option<Vec<u8>>, // Original, untouched input bytes.
     //  If user gave us a byte array, this is it.
     pub(crate) f_raw_length: i32,           // Length of data in fRawInput array.
-    pub(crate) f_input_stream: Option<InputStream>, // User's input stream, or null if the user
+    pub(crate) f_input_stream: Option<Rc<dyn InputStream>>, // User's input stream, or None if the user
     //   gave us a byte array.
     pub(crate) f_charset_name: String,      // The name of the charset this CharsetMatch
     //   represents.  Filled in by the recognizer.
@@ -53,7 +60,7 @@ impl CharsetMatch {
     //     // The references to the original application input data must be copied out
     //     //   of the charset recognizer to here, in case the application resets the
     //     //   recognizer before using this CharsetMatch.
-    //     if (det.fInputStream == null) {
+    //     if (det.fInputStream == None) {
     //         // We only want the existing input byte data if it came straight from the user,
     //         //   not if is just the head of a stream.
     //         fRawInput = det.fRawInput;
@@ -66,21 +73,26 @@ impl CharsetMatch {
     pub fn new(det: &CharsetDetector, rec: &dyn CharsetRecognizer, conf: i32) -> CharsetMatch {
         let mut raw_input: Option<Vec<u8>> = None;
         let mut raw_length: i32 = 0;
-        // if (det.fInputStream == null) {
+        // if (det.fInputStream == None) {
         //     // We only want the existing input byte data if it came straight from the user,
         //     //   not if is just the head of a stream.
         //     fRawInput = det.fRawInput;
         //     fRawLength = det.fRawLength;
         // }
-        if det.f_input_stream.is_none() {
-            raw_input = det.f_raw_input.clone();
-            raw_length = det.f_raw_length;
+        if !det.has_input_stream() {
+            raw_input = det.raw_input().clone();
+            raw_length = det.raw_length();
         }
         CharsetMatch {
             f_confidence: conf,
             f_raw_input: raw_input,
             f_raw_length: raw_length,
-            f_input_stream: det.f_input_stream.clone(),
+            // fix: det 持有 Box<dyn InputStream> 无法克隆；Reader 实际基于 f_raw_input 构建，此处以空流占位保留"有流"语义
+            f_input_stream: if det.has_input_stream() {
+                Some(Rc::new(ByteArrayInputStream::new(Vec::new())))
+            } else {
+                None
+            },
             f_charset_name: rec.get_name(),
             f_lang: rec.get_language(),
         }
@@ -95,7 +107,7 @@ impl CharsetMatch {
     //     // The references to the original application input data must be copied out
     //     //   of the charset recognizer to here, in case the application resets the
     //     //   recognizer before using this CharsetMatch.
-    //     if (det.fInputStream == null) {
+    //     if (det.fInputStream == None) {
     //         // We only want the existing input byte data if it came straight from the user,
     //         //   not if is just the head of a stream.
     //         fRawInput = det.fRawInput;
@@ -114,21 +126,26 @@ impl CharsetMatch {
     ) -> CharsetMatch {
         let mut raw_input: Option<Vec<u8>> = None;
         let mut raw_length: i32 = 0;
-        // if (det.fInputStream == null) {
+        // if (det.fInputStream == None) {
         //     // We only want the existing input byte data if it came straight from the user,
         //     //   not if is just the head of a stream.
         //     fRawInput = det.fRawInput;
         //     fRawLength = det.fRawLength;
         // }
-        if det.f_input_stream.is_none() {
-            raw_input = det.f_raw_input.clone();
-            raw_length = det.f_raw_length;
+        if !det.has_input_stream() {
+            raw_input = det.raw_input().clone();
+            raw_length = det.raw_length();
         }
         CharsetMatch {
             f_confidence: conf,
             f_raw_input: raw_input,
             f_raw_length: raw_length,
-            f_input_stream: det.f_input_stream.clone(),
+            // fix: 同上，det 的 Box 流无法克隆，以空流占位
+            f_input_stream: if det.has_input_stream() {
+                Some(Rc::new(ByteArrayInputStream::new(Vec::new())))
+            } else {
+                None
+            },
             f_charset_name: cs_name,
             f_lang: lang,
         }
@@ -149,7 +166,7 @@ impl CharsetMatch {
     // public Reader getReader() {
     //     InputStream inputStream = fInputStream;
     //
-    //     if (inputStream == null) {
+    //     if (inputStream == None) {
     //         inputStream = new ByteArrayInputStream(fRawInput, 0, fRawLength);
     //     }
     //
@@ -157,30 +174,34 @@ impl CharsetMatch {
     //         inputStream.reset();
     //         return new InputStreamReader(inputStream, getName());
     //     } catch (IOException e) {
-    //         return null;
+    //         return None;
     //     }
     // }
     pub fn get_reader(&self) -> Option<Reader> {
-        let mut input_stream: Option<InputStream> = self.f_input_stream.clone();
+        let mut input_stream: Option<Rc<dyn InputStream>> = self.f_input_stream.clone();
 
-        // if (inputStream == null) {
+        // if (inputStream == None) {
         //     inputStream = new ByteArrayInputStream(fRawInput, 0, fRawLength);
         // }
         if input_stream.is_none() {
-            input_stream = Some(ByteArrayInputStream::new(
-                &self.f_raw_input.clone().unwrap_or_default()[..self.f_raw_length as usize],
-            ));
+            input_stream = Some(Rc::new(ByteArrayInputStream::new(
+                self.f_raw_input.clone().unwrap_or_default()[..self.f_raw_length as usize].to_vec(),
+            )));
         }
 
         // try {
         //     inputStream.reset();
         //     return new InputStreamReader(inputStream, getName());
         // } catch (IOException e) {
-        //     return null;
+        //     return None;
         // }
+        // fix: stubs InputStream 无 reset()，由 InputStreamResetExt 提供空实现。
+        // fix: stubs InputStreamReader 占位不保留数据，Reader 基于 f_raw_input 构建。
         match (|| -> Result<Reader, IOException> {
-            input_stream.as_ref().unwrap().reset()?;
-            Ok(InputStreamReader::new(input_stream.unwrap(), self.get_name()))
+            input_stream.as_ref().unwrap().reset_shared()?;
+            Ok(Reader::new(
+                self.f_raw_input.clone().unwrap_or_default()[..self.f_raw_length as usize].to_vec(),
+            ))
         })() {
             Ok(reader) => Some(reader),
             Err(_e) => None,
@@ -218,13 +239,13 @@ impl CharsetMatch {
     // public String getString(int maxLength) throws java.io.IOException {
     pub fn get_string_max(&self, max_length: i32) -> Result<String, IOException> {
         let result: String;
-        // if (fInputStream != null) {
+        // if (fInputStream != None) {
         if self.f_input_stream.is_some() {
             // StringBuilder sb = new StringBuilder();
             let mut sb = String::new();
             // char[] buffer = new char[1024];
             // Reader reader = getReader();
-            let reader = self.get_reader().unwrap();
+            let mut reader = self.get_reader().unwrap();
             // int max = maxLength < 0 ? Integer.MAX_VALUE : maxLength;
             let mut max: i32 = if max_length < 0 { i32::MAX } else { max_length };
             // int bytesRead;
@@ -316,7 +337,7 @@ impl CharsetMatch {
     /**
      * Get the ISO code for the language of the detected charset.
      *
-     * @return The ISO code for the language or <code>null</code> if the language cannot be determined.
+     * @return The ISO code for the language or <code>None</code> if the language cannot be determined.
      * @stable ICU 3.4
      */
     // public String getLanguage() {

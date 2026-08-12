@@ -1,0 +1,11 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:2 char:53
++ ... oding UTF8 -Value $c; cargo check --message-format=short 2>&1 | Out-F ...
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+src\..\src\probe.rs:3:18: error: expected expression, found `;`: expected expression
+src\..\src\main\java\io\legado\app\utils\ACache.rs:567:1: error: unexpected closing delimiter: `}`: unexpected closing 
+delimiter
+error: could not compile `reader` (lib) due to 2 previous errors

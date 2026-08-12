@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -96,17 +97,17 @@ impl Guide {
     if guide_reference.is_none() {
       return None;
     }
-    return Some(guide_reference.unwrap().get_resource().clone());
+    return guide_reference.unwrap().get_resource().clone();
   }
 
   pub fn set_cover_page(&mut self, cover_page: Option<Resource>) {
-    let coverpage_guide_reference = GuideReference::with_type(cover_page.unwrap().clone(),
+    let coverpage_guide_reference = GuideReference::with_type(Some(cover_page.unwrap().clone()),
         GuideReference::COVER.to_string(), Guide::DEFAULT_COVER_TITLE.to_string());
     self.set_cover_reference(coverpage_guide_reference);
   }
 
   // @SuppressWarnings("UnusedReturnValue")
-  pub fn add_reference(&mut self, reference: GuideReference) -> ResourceReference {
+  pub fn add_reference(&mut self, reference: GuideReference) -> GuideReference {
     self.references.push(reference.clone());
     self.uncheck_cover_page();
     return reference;

@@ -1,3 +1,9 @@
+use crate::prelude::*;
+// 显式导入消解跨模块 glob 导入歧义（优先于 prelude 的 glob 导入）
+use crate::com_htmake_reader_db_db::DB;
+use crate::com_htmake_reader_utils_vertext::{as_json_array, get_storage, save_storage};
+use crate::stubs::{Any, JsonArray, JsonObject};
+use std::marker::PhantomData;
 // package com.htmake.reader.db
 
 // import io.vertx.core.json.JsonArray
@@ -13,29 +19,31 @@
 // class SQLTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, name) {
 pub struct SQLTable<T> {
     pub db: DB<T>,
+    pub marker: PhantomData<T>,
 }
 
-impl<T> SQLTable<T> {
+impl<T: Clone> SQLTable<T> {
     pub fn new(user_name_space: String, name: String) -> SQLTable<T> {
         SQLTable {
-            db: DB::new(user_name_space, name),
+            db: DB::<T>::new(user_name_space, name),
+            marker: PhantomData,
         }
     }
 
     // override fun readAll(): JsonArray {
     pub fn read_all(&mut self) -> JsonArray {
-        let data_list = as_json_array(get_storage(vec!["data".to_string(), self.db.user_name_space.clone(), self.db.name.clone()])).unwrap_or_else(|| JsonArray::new());
+        let data_list = as_json_array(get_storage(&vec!["data".to_string(), self.db.user_name_space.clone(), self.db.name.clone()], ".json").map(Any::from_string)).unwrap_or_else(|| JsonArray::new());
         self.db.cached_value = data_list.clone();
         return data_list;
     }
 
     // override fun <P> findBy(field: String, value: P, clazz: Class<T>): T? {
-    pub fn find_by<P>(&mut self, field: &str, value: P, clazz: Class<T>) -> Option<T> {
+    pub fn find_by<P: PartialEq<String>>(&mut self, field: &str, value: P, clazz: Class<T>) -> Option<T> {
         let data_list = self.read_all();
         for i in 0..data_list.size() {
-            let obj = data_list.get_json_object(i);
-            if value == obj.get_value(field) {
-                return obj.map_to(clazz);
+            let obj = data_list.get_json_object(i).unwrap_or_default();
+            if value == obj.get_string(field) {
+                return obj.map_to_with_class(clazz);
             }
         }
         return None;
@@ -55,7 +63,7 @@ impl<T> SQLTable<T> {
         let mut data_list = self.read_all();
         let mut existing_index = -1;
         for i in 0..data_list.size() {
-            if checker(data_list.get_json_object(i).clone(), entity.clone()) {
+            if checker(data_list.get_json_object(i).unwrap_or_default(), entity.clone()) {
                 existing_index = i as i32;
                 break;
             }
@@ -64,8 +72,8 @@ impl<T> SQLTable<T> {
             cb(entity.clone(), existing_index >= 0, data_list.clone());
         }
         if existing_index >= 0 {
-            data_list.list[existing_index as usize] = JsonObject::map_from(entity.clone());
-            data_list = JsonArray::new(data_list.list.clone());
+            data_list.0[existing_index as usize] = JsonObject::map_from(entity.clone()).to_string();
+            data_list = JsonArray(data_list.0.clone());
         } else {
             data_list.add(JsonObject::map_from(entity.clone()));
         }
@@ -88,7 +96,7 @@ impl<T> SQLTable<T> {
         let mut existing_index = -1;
         for entity in entities {
             for i in 0..data_list.size() {
-                if checker(data_list.get_json_object(i).clone(), entity.clone()) {
+                if checker(data_list.get_json_object(i).unwrap_or_default(), entity.clone()) {
                     existing_index = i as i32;
                     break;
                 }
@@ -97,8 +105,8 @@ impl<T> SQLTable<T> {
                 cb(entity.clone(), existing_index >= 0, data_list.clone());
             }
             if existing_index >= 0 {
-                data_list.list[existing_index as usize] = JsonObject::map_from(entity.clone());
-                data_list = JsonArray::new(data_list.list.clone());
+                data_list.0[existing_index as usize] = JsonObject::map_from(entity.clone()).to_string();
+                data_list = JsonArray(data_list.0.clone());
             } else {
                 data_list.add(JsonObject::map_from(entity.clone()));
             }
@@ -112,12 +120,12 @@ impl<T> SQLTable<T> {
         let mut data_list = self.read_all();
         let mut remove_indexes: Vec<i32> = Vec::new();
         for i in 0..data_list.size() {
-            if predicate(data_list.get_json_object(i).clone()) {
+            if predicate(data_list.get_json_object(i).unwrap_or_default()) {
                 remove_indexes.push(i as i32);
             }
         }
         for index in remove_indexes {
-            data_list.remove(index);
+            data_list.remove(index as usize);
         }
         self.db.cached_value = data_list.clone();
         self.save_only();
@@ -125,6 +133,6 @@ impl<T> SQLTable<T> {
 
     // override fun save() {
     pub fn save_only(&mut self) {
-        save_storage(vec!["data".to_string(), self.db.user_name_space.clone(), self.db.name.clone()], self.db.cached_value.clone());
+        save_storage(&vec!["data".to_string(), self.db.user_name_space.clone(), self.db.name.clone()], Any::JsonArray(self.db.cached_value.clone()), false, ".json");
     }
 }

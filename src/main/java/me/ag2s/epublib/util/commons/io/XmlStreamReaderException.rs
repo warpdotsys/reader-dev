@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -90,7 +91,7 @@ impl XmlStreamReaderException {
     /**
      * Returns the BOM encoding found in the InputStream.
      *
-     * @return the BOM encoding, null if none.
+     * @return the BOM encoding, None if none.
      */
     pub fn get_bom_encoding(&self) -> &Option<String> {
         &self.bom_encoding
@@ -99,7 +100,7 @@ impl XmlStreamReaderException {
     /**
      * Returns the encoding guess based on the first bytes of the InputStream.
      *
-     * @return the encoding guess, null if it couldn't be guessed.
+     * @return the encoding guess, None if it couldn't be guessed.
      */
     pub fn get_xml_guess_encoding(&self) -> &Option<String> {
         &self.xml_guess_encoding
@@ -108,7 +109,7 @@ impl XmlStreamReaderException {
     /**
      * Returns the encoding found in the XML prolog of the InputStream.
      *
-     * @return the encoding of the XML prolog, null if none.
+     * @return the encoding of the XML prolog, None if none.
      */
     pub fn get_xml_encoding(&self) -> &Option<String> {
         &self.xml_encoding
@@ -118,7 +119,7 @@ impl XmlStreamReaderException {
      * Returns the MIME type in the content-type used to attempt determining the
      * encoding.
      *
-     * @return the MIME type in the content-type, null if there was not
+     * @return the MIME type in the content-type, None if there was not
      *         content-type or the encoding detection did not involve HTTP.
      */
     pub fn get_content_type_mime(&self) -> &Option<String> {
@@ -129,7 +130,7 @@ impl XmlStreamReaderException {
      * Returns the encoding in the content-type used to attempt determining the
      * encoding.
      *
-     * @return the encoding in the content-type, null if there was not
+     * @return the encoding in the content-type, None if there was not
      *         content-type, no encoding in it or the encoding detection did not
      *         involve HTTP.
      */

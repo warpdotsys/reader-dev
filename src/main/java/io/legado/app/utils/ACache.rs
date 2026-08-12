@@ -1,9 +1,18 @@
+use crate::prelude::*;
+// fix: 显式导入以覆盖 prelude 中多个 glob 重导出导致的同名歧义
+use crate::stubs::{
+    ByteArrayInputStream, ByteArrayOutputStream, File, ObjectInputStream, ObjectOutputStream,
+    Path, Serializable,
+};
+// fix: `Any` 需为 trait（stubs 枚举 Any 与其它 glob 冲突，显式 std::any::Any 消歧义）
+use std::any::Any;
+use std::cmp::min;
 //Copyright (c) 2017. 章钦豪. All rights reserved.
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicI32, AtomicI64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
-fn current_time_millis() -> i64 {
+pub fn current_time_millis() -> i64 {
     System::currentTimeMillis()
 }
 
@@ -24,13 +33,13 @@ impl ACache {
     const MAX_SIZE: i64 = 1000 * 1000 * 50; // 50 mb
     const MAX_COUNT: i32 = i32::MAX; // 不限制存放数据的数量
     fn mInstanceMap() -> &'static Mutex<HashMap<String, Arc<ACache>>> {
-        static INSTANCE: Mutex<HashMap<String, Arc<ACache>>> = Mutex::new(HashMap::new());
-        &INSTANCE
+        static INSTANCE: OnceLock<Mutex<HashMap<String, Arc<ACache>>>> = OnceLock::new();
+        INSTANCE.get_or_init(|| Mutex::new(HashMap::new()))
     }
 
     pub fn get() -> Arc<ACache> {
         let cache_name = "ACache";
-        let f = File::new(Path::join(appCtx.cacheDir(), cache_name));
+        let f = File::new(&Path::join(AppCtx::cache_dir(), cache_name));
         Self::get_file(f, Self::MAX_SIZE as i64, Self::MAX_COUNT)
     }
 
@@ -40,7 +49,7 @@ impl ACache {
         if let Some(manager) = map.get(&key) {
             return manager.clone();
         }
-        let manager = Arc::new(ACache::new(cache_dir, max_size, max_count));
+        let manager = Arc::new(ACache::new(cache_dir.clone(), max_size, max_count));
         map.insert(cache_dir.absolutePath(), manager.clone());
         manager
     }
@@ -48,9 +57,9 @@ impl ACache {
     fn new(cache_dir: File, max_size: i64, max_count: i32) -> ACache {
         let mut m_cache: Option<ACacheManager> = None;
         if !cache_dir.exists() && !cache_dir.mkdirs() {
-            logger.info(format!("ACache can't make dirs in %s{}", cache_dir.absolutePath()));
+            logger().info(format!("ACache can't make dirs in %s{}", cache_dir.absolutePath()));
         }
-        m_cache = Some(ACacheManager::new(cache_dir, max_size, max_count));
+        m_cache = Some(ACacheManager::new(cache_dir.clone(), max_size, max_count));
         ACache { cacheDir: cache_dir, max_size, max_count, mCache: m_cache }
     }
 
@@ -98,7 +107,7 @@ impl ACache {
             let result: Result<Option<String>, std::io::Error> = (|| {
                 let text = file.readText();
                 if !Utils::isDue_str(&text) {
-                    Ok(Some(Utils::clearDateInfo(Some(&text))))
+                    Ok(Utils::clearDateInfo(Some(&text)))
                 } else {
                     removeFile = true;
                     Ok(None)
@@ -112,7 +121,7 @@ impl ACache {
                     }
                     return None;
                 }
-                Err(e) => e.printStackTrace(),
+                Err(e) => e.print_stack_trace(),
             }
         }
         None
@@ -128,7 +137,7 @@ impl ACache {
             let result: Result<Option<String>, std::io::Error> = (|| {
                 let text = file.readText();
                 if !Utils::isDue_str(&text) {
-                    Ok(Some(Utils::clearDateInfo(Some(&text))))
+                    Ok(Utils::clearDateInfo(Some(&text)))
                 } else {
                     removeFile = true;
                     Ok(None)
@@ -142,7 +151,7 @@ impl ACache {
                     }
                     return None;
                 }
-                Err(e) => e.printStackTrace(),
+                Err(e) => e.print_stack_trace(),
             }
         }
         None
@@ -179,11 +188,11 @@ impl ACache {
     //  * @return JSONObject数据
     //  */
     // fun getAsJSONObject(key: String): JSONObject? {
-    //     val json = getAsString(key) ?: return null
+    //     val json = getAsString(key) ?: return None
     //     return try {
     //         JSONObject(json)
     //     } catch (e: Exception) {
-    //         null
+    //         None
     //     }
     // }
 
@@ -222,7 +231,7 @@ impl ACache {
     //     return try {
     //         JSONArray(json)
     //     } catch (e: Exception) {
-    //         null
+    //         None
     //     }
 
     // }
@@ -285,7 +294,7 @@ impl ACache {
                     }
                     return None;
                 }
-                Err(e) => e.printStackTrace(),
+                Err(e) => e.print_stack_trace(),
             }
         }
         None
@@ -358,8 +367,8 @@ impl ACache {
      * @return bitmap 数据
      */
     // fun getAsBitmap(key: String): Bitmap? {
-    //     return if (getAsBinary(key) == null) {
-    //         null
+    //     return if (getAsBinary(key) == None) {
+    //         None
     //     } else Utils.bytes2Bitmap(getAsBinary(key)!!)
     // }
 
@@ -394,8 +403,8 @@ impl ACache {
      * @return Drawable 数据
      */
     // fun getAsDrawable(key: String): Drawable? {
-    //     return if (getAsBinary(key) == null) {
-    //         null
+    //     return if (getAsBinary(key) == None) {
+    //         None
     //     } else Utils.bitmap2Drawable(
     //         Utils.bytes2Bitmap(
     //             getAsBinary(key)!!
@@ -438,6 +447,7 @@ impl ACache {
             m_cache.clear();
         }
     }
+}   // fix: 提前关闭 impl ACache —— Rust 不允许在 impl 内嵌套 mod，`mod Utils` 移到模块级
 
     /**
      * @author 杨福海（michael） www.yangfuhai.com
@@ -455,6 +465,11 @@ impl ACache {
          * @return true：到期了 false：还没有到期
          */
         pub fn isDue(str: &str) -> bool {
+            isDue_bytes(str.as_bytes())
+        }
+
+        // fix: 转录调用使用的别名（Kotlin `Utils.isDue(str)`）
+        pub fn isDue_str(str: &str) -> bool {
             isDue_bytes(str.as_bytes())
         }
 
@@ -484,7 +499,8 @@ impl ACache {
             match result {
                 Ok(b) => b,
                 Err(e) => {
-                    e.printStackTrace();
+                    // fix: String 无 printStackTrace，eprintln 等价占位
+                    eprintln!("{e}");
                     false
                 }
             }
@@ -505,7 +521,7 @@ impl ACache {
         pub fn clearDateInfo(strInfo: Option<&str>) -> Option<String> {
             if let Some(s) = strInfo {
                 if hasDateInfo(s.as_bytes()) {
-                    return Some(s[s.indexOf(mSeparator) + 1..].to_string());
+                    return Some(s[s.index_of(&mSeparator.to_string(), 0) as usize + 1..].to_string());
                 }
                 return Some(s.to_string());
             }
@@ -562,7 +578,6 @@ impl ACache {
             format!("{currentTime}-{second}{mSeparator}")
         }
     }
-}
 
 /**
  * @author 杨福海（michael） www.yangfuhai.com
@@ -599,11 +614,12 @@ impl ACacheManager {
         let mut size = 0i64;
         let mut count = 0i32;
         let cachedFiles = self.cacheDir.listFiles();
-        if cachedFiles != null {
-            for cachedFile in cachedFiles {
+        if cachedFiles != None {
+            for cachedFile in cachedFiles.unwrap() {
+                let last_modified = cachedFile.lastModified();
                 size += self.calculateSize(&cachedFile);
                 count += 1;
-                self.lastUsageDates.lock().unwrap().insert(cachedFile, cachedFile.lastModified());
+                self.lastUsageDates.lock().unwrap().insert(cachedFile, last_modified);
             }
             self.cacheSize.store(size, Ordering::Relaxed);
             self.cacheCount.store(count, Ordering::Relaxed);
@@ -641,11 +657,11 @@ impl ACacheManager {
     }
 
     pub fn newFile(&self, key: &str) -> File {
-        File::new(Path::join(self.cacheDir.clone(), key.hashCode().to_string() + ""))
+        File::new(&Path::join(self.cacheDir.absolutePath(), &key.hashCode().to_string()))
     }
 
     pub fn newFileFromHashCode(&self, hashCode: &str) -> File {
-        File::new(Path::join(self.cacheDir.clone(), hashCode))
+        File::new(&Path::join(self.cacheDir.absolutePath(), hashCode))
     }
 
     pub fn remove(&mut self, key: &str) -> bool {
@@ -657,8 +673,8 @@ impl ACacheManager {
         self.lastUsageDates.lock().unwrap().clear();
         self.cacheSize.store(0, Ordering::Relaxed);
         let files = self.cacheDir.listFiles();
-        if files != null {
-            for f in files {
+        if files != None {
+            for f in files.unwrap() {
                 f.delete();
             }
         }

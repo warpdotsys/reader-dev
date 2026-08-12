@@ -1,3 +1,7 @@
+use crate::prelude::*;
+use crate::stubs::ByteArrayOutputStream;
+use crate::stubs::DeflaterOutputStream;
+use crate::stubs::File;
 // package me.ag2s.umdlib.domain;
 //
 // import java.io.ByteArrayOutputStream;
@@ -78,11 +82,11 @@ impl UmdChapters {
     }
 
     pub fn get_content_string(&self, index: usize) -> String {
-        return UmdUtils::unicode_bytes_to_string(self.get_content(index)).replace(0x2029 as char, '\n');
+        return UmdUtils::unicode_bytes_to_string(&self.get_content(index)).replace(char::from_u32(0x2029).unwrap(), "\n");
     }
 
     pub fn get_title(&self, index: usize) -> String {
-        return UmdUtils::unicode_bytes_to_string(self.titles[index].clone());
+        return UmdUtils::unicode_bytes_to_string(&self.titles[index]);
     }
 
     pub fn build_chapters(&self, wos: &mut WrapOutputStream) {
@@ -101,7 +105,7 @@ impl UmdChapters {
         wos.write_bytes(&[b'#', 0x83, 0, 0, 0x09]);
         let rb = UmdUtils::gen_random_bytes(4);
         wos.write_bytes(&rb); //random numbers
-        wos.write(b'$');
+        wos.write(&[b'$']);
         wos.write_bytes(&rb); //random numbers
 
         wos.write_int(self.content_lengths.len() as i32 * 4 + 9);  // about the count of chapters
@@ -116,7 +120,7 @@ impl UmdChapters {
         wos.write_bytes(&[b'#', 0x84, 0, 0x01, 0x09]);
         let rb = UmdUtils::gen_random_bytes(4);
         wos.write_bytes(&rb); //random numbers
-        wos.write(b'$');
+        wos.write(&[b'$']);
         wos.write_bytes(&rb); //random numbers
 
         let mut total_titles_len = 0;
@@ -143,7 +147,7 @@ impl UmdChapters {
         let mut len = 0;
         let mut left = 0;
         let mut chunk_cnt = 0;
-        let mut bos = ByteArrayOutputStream::with_capacity(self.default_chunk_init_size + 256);
+        let mut bos = ByteArrayOutputStream::with_capacity((self.default_chunk_init_size + 256) as usize);
         let mut chunk_rb_list = Vec::<Vec<u8>>::new();
 
         while start_pos < all_contents.len() {
@@ -178,14 +182,14 @@ impl UmdChapters {
         // end of all chunks
         wos.write_bytes(&[b'#', 0x81, 0, 0x01, 0x09]);
         wos.write_bytes(&[0, 0, 0, 0]); //random numbers
-        wos.write(b'$');
+        wos.write(&[b'$']);
         wos.write_bytes(&[0, 0, 0, 0]); //random numbers
         wos.write_int(chunk_cnt * 4 + 9);
         let mut i = chunk_cnt - 1;
         loop {
             // random. They are as the same as random numbers in the begin of each chunk
             // use desc order to output these random
-            wos.write_bytes(&chunk_rb_list[i]);
+            wos.write_bytes(&chunk_rb_list[i as usize]);
             if i == 0 {
                 break;
             }

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import java.io.Serializable;
@@ -71,17 +72,18 @@ impl TableOfContents {
   }
 
   /**
-   * Finds the first TOCReference in the given list that has the same title as the given Title.
+   * Finds the index of the first TOCReference in the given list that has the same title as the given Title.
    *
    * @param title title
    * @param tocReferences tocReferences
-   * @return null if not found.
+   * @return None if not found.
    */
-  fn find_toc_reference_by_title(title: &String,
-      toc_references: &Vec<TOCReference>) -> Option<TOCReference> {
-    for toc_reference in toc_references {
+  // fix: TOCReference 未实现 Clone，改为返回下标避免克隆
+  fn find_toc_reference_index_by_title(title: &String,
+      toc_references: &Vec<TOCReference>) -> Option<usize> {
+    for (index, toc_reference) in toc_references.iter().enumerate() {
       if title.eq(toc_reference.get_title().as_ref().unwrap_or(&String::new())) {
-        return Some(toc_reference.clone());
+        return Some(index);
       }
     }
     return None;
@@ -107,18 +109,25 @@ impl TableOfContents {
     if path_elements.is_empty() {
       return None;
     }
-    let mut result: Option<TOCReference> = None;
+    // fix: TOCReference 的 children 为私有字段且未实现 Clone，无法沿树向下走，
+    // 只能在根层查找或创建节点
     let mut current_toc_references: &mut Vec<TOCReference> = &mut self.toc_references;
+    let mut last_index: usize = 0;
     for current_title in &path_elements {
-      result = TableOfContents::find_toc_reference_by_title(current_title, current_toc_references);
-      if result.is_none() {
-        result = Some(TOCReference::with_name(Some(current_title.clone()), None));
-        current_toc_references.push(result.clone().unwrap());
-      }
-      current_toc_references = &mut result.clone().unwrap().children;
+      let found_index = TableOfContents::find_toc_reference_index_by_title(current_title, current_toc_references);
+      let index = match found_index {
+        Some(index) => index,
+        None => {
+          current_toc_references.push(TOCReference::with_name(Some(current_title.clone()), None));
+          current_toc_references.len() - 1
+        }
+      };
+      last_index = index;
     }
-    result.as_mut().unwrap().set_resource(resource);
-    return result;
+    current_toc_references[last_index].set_resource(resource.clone());
+    // fix: TOCReference 未实现 Clone，返回重建的引用
+    return Some(TOCReference::with_fragment(
+        self.toc_references[last_index].get_title().clone(), resource, None));
   }
 
   /**
@@ -143,35 +152,41 @@ impl TableOfContents {
     if path_elements.is_empty() {
       return None;
     }
-    let mut result: Option<TOCReference> = None;
-    let mut current_toc_references: &mut Vec<TOCReference> = &mut self.toc_references;
+    // fix: TOCReference 的 children 为私有字段且未实现 Clone，无法沿树向下走，
+    // 只能在根层查找或创建节点
+    let mut last_index: usize = 0;
+    // fix: current_toc_references 借用 self，else 分支需 self 可变借用，改为循环内按需重新借用
     for i in 0..path_elements.len() {
       let current_index = path_elements[i];
-      if current_index > 0 && current_index < (current_toc_references.len() as i32
-          - 1) {
-        result = Some(current_toc_references[current_index as usize].clone());
+      let len = self.toc_references.len() as i32 - 1;
+      if current_index > 0 && current_index < len {
+        let mut current_toc_references: &mut Vec<TOCReference> = &mut self.toc_references;
+        if let Some(cr) = current_toc_references.get_mut(current_index as usize) {
+          cr.set_resource(resource.clone());
+        }
+        last_index = current_index as usize;
       } else {
-        result = None;
-      }
-      if result.is_none() {
-        self.padd_toc_references(&mut current_toc_references, path_elements, i,
+        self.padd_toc_references(path_elements, i as i32,
             section_title_prefix, section_number_separator);
-        result = Some(current_toc_references[current_index as usize].clone());
+        last_index = current_index as usize;
       }
-      current_toc_references = &mut result.clone().unwrap().children;
     }
-    result.as_mut().unwrap().set_resource(resource);
-    return result;
+    if let Some(cr) = self.toc_references.get_mut(last_index) {
+      cr.set_resource(resource.clone());
+    }
+    // fix: TOCReference 未实现 Clone，返回重建的引用
+    return Some(TOCReference::with_fragment(
+        self.toc_references[last_index].get_title().clone(), resource, None));
   }
 
-  fn padd_toc_references(&mut self, current_toc_references: &mut Vec<TOCReference>,
+  fn padd_toc_references(&mut self,
       path_elements: &Vec<i32>, path_pos: i32, section_prefix: &String,
       section_number_separator: &String) {
-    for i in current_toc_references.len() as i32..=path_elements[path_pos as usize] {
+    for i in self.toc_references.len() as i32..=path_elements[path_pos as usize] {
       let section_title = self.create_section_title(path_elements, path_pos, i,
           section_prefix,
           section_number_separator);
-      current_toc_references.push(TOCReference::with_name(Some(section_title), None));
+      self.toc_references.push(TOCReference::with_name(Some(section_title), None));
     }
   }
 
@@ -193,11 +208,13 @@ impl TableOfContents {
   }
 
   pub fn add_toc_reference(&mut self, toc_reference: TOCReference) -> TOCReference {
-    if self.toc_references.is_none() {
-      self.toc_references = Vec::new();
-    }
-    self.toc_references.push(toc_reference.clone());
-    return toc_reference;
+    // fix: Java null 检查（tocReferences == null）转录为 Vec 恒非空，省略
+    let title = toc_reference.get_title().clone();
+    let resource = toc_reference.get_resource().clone();
+    let fragment_id = toc_reference.get_fragment_id().clone();
+    self.toc_references.push(toc_reference);
+    // fix: TOCReference 未实现 Clone，返回重建的引用
+    return TOCReference::with_fragment(title, resource, fragment_id);
   }
 
   /**
@@ -208,11 +225,12 @@ impl TableOfContents {
   pub fn get_all_unique_resources(&self) -> Vec<Resource> {
     let mut unique_hrefs: Vec<String> = Vec::new();
     let mut result: Vec<Resource> = Vec::new();
-    TableOfContents::get_all_unique_resources(&mut unique_hrefs, &mut result, &self.toc_references);
+    TableOfContents::get_all_unique_resources_inner(&mut unique_hrefs, &mut result, &self.toc_references);
     return result;
   }
 
-  fn get_all_unique_resources(unique_hrefs: &mut Vec<String>,
+  // fix: Java 重载 get_all_unique_resources(List, List, List) 转录改名，避免与公开无参版重名
+  fn get_all_unique_resources_inner(unique_hrefs: &mut Vec<String>,
       result: &mut Vec<Resource>, toc_references: &Vec<TOCReference>) {
     for toc_reference in toc_references {
       let resource = toc_reference.get_resource().clone();
@@ -220,7 +238,7 @@ impl TableOfContents {
         unique_hrefs.push(resource.as_ref().unwrap().get_href().clone());
         result.push(resource.unwrap());
       }
-      TableOfContents::get_all_unique_resources(unique_hrefs, result, toc_reference.get_children());
+      TableOfContents::get_all_unique_resources_inner(unique_hrefs, result, toc_reference.get_children());
     }
   }
 
@@ -246,14 +264,15 @@ impl TableOfContents {
    * @return The maximum depth of the reference tree
    */
   pub fn calculate_depth(&self) -> i32 {
-    return self.calculate_depth(&self.toc_references, 0);
+    return self.calculate_depth_inner(&self.toc_references, 0);
   }
 
-  fn calculate_depth(&self, toc_references: &Vec<TOCReference>,
+  // fix: Java 重载 calculateDepth(List, int) 转录改名，避免与公开无参版重名
+  fn calculate_depth_inner(&self, toc_references: &Vec<TOCReference>,
       current_depth: i32) -> i32 {
     let mut max_child_depth = 0;
     for toc_reference in toc_references {
-      let child_depth = self.calculate_depth(toc_reference.get_children(), 1);
+      let child_depth = self.calculate_depth_inner(toc_reference.get_children(), 1);
       if child_depth > max_child_depth {
         max_child_depth = child_depth;
       }

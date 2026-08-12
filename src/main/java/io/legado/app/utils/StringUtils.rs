@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::TextUtils;
 pub struct StringUtils {
     TAG: &'static str,
 }
@@ -35,21 +37,20 @@ impl StringUtils {
 
     //将时间转换成日期
     pub fn dateConvert(time: i64, pattern: &str) -> String {
-        let date = Date::new(time);
         let format = SimpleDateFormat::new(pattern);
-        format.format(&date)
+        format.format(time)
     }
 
     //将日期转换成昨天、今天、明天
     pub fn dateConvert_source(source: &str, pattern: &str) -> String {
         let format = SimpleDateFormat::new(pattern);
-        let calendar = Calendar::getInstance();
+        let mut calendar = Calendar::getInstance();
         let result: Result<String, ParseException> = (|| {
             let date = format.parse(source)?;
             let curTime = calendar.timeInMillis;
             calendar.time = date;
             //将MISC 转换成 sec
-            let difSec = (curTime - date.time).abs() / 1000;
+            let difSec = (curTime - date).abs() / 1000;
             let difMin = difSec / 60;
             let difHour = difMin / 60;
             let difDate = difHour / 60;
@@ -63,7 +64,7 @@ impl StringUtils {
                     return Ok("昨天".to_string());
                 } else {
                     let convertFormat = SimpleDateFormat::new("yyyy-MM-dd");
-                    return Ok(convertFormat.format(&date));
+                    return Ok(convertFormat.format(date));
                 }
             }
 
@@ -77,13 +78,13 @@ impl StringUtils {
                 Ok("昨天".to_string())
             } else {
                 let convertFormat = SimpleDateFormat::new("yyyy-MM-dd");
-                Ok(convertFormat.format(&date))
+                Ok(convertFormat.format(date))
             }
         })();
         match result {
             Ok(s) => s,
             Err(e) => {
-                e.printStackTrace();
+                e.print_stack_trace();
                 "".to_string()
             }
         }
@@ -98,7 +99,7 @@ impl StringUtils {
         }
         let units = ["b", "kb", "M", "G", "T"];
         //计算单位的，原理是利用lg,公式是 lg(1024^n) = nlg(1024)，最后 nlg(1024)/lg(1024) = n。
-        let digitGroups = (log10(length as f64) / log10(1024.0)) as i32;
+        let digitGroups = (f64::log10(length as f64) / f64::log10(1024.0)) as i32;
         //计算原理是，size/单位值。单位值指的是:比如说b = 1024,KB = 1024^2
         DecimalFormat::new("#,##0.##")
             .format(length as f64 / 1024.0f64.powf(digitGroups as f64)) + " " + units[digitGroups as usize]
@@ -164,7 +165,7 @@ impl StringUtils {
         let mut cn: Vec<char> = chNum.chars().collect();
 
         // "一零二五" 形式
-        if cn.len() > 1 && Regex::new("^[〇零一二三四五六七八九壹贰叁肆伍陆柒捌玖]$").matches(chNum) {
+        if cn.len() > 1 && Pattern::compile("^[〇零一二三四五六七八九壹贰叁肆伍陆柒捌玖]$").matches(chNum) {
             for i in 0..cn.len() {
                 cn[i] = char::from_u32(48 + map[&cn[i]] as u32).unwrap();
             }
@@ -209,7 +210,7 @@ impl StringUtils {
      */
     pub fn stringToInt(str: Option<&str>) -> i32 {
         if let Some(str) = str {
-            let num = Self::fullToHalf(str).replace(&Regex::new("\\s+"), "");
+            let num = Pattern::compile("\\s+").replace_all(&Self::fullToHalf(str), "");
             let parsed: Result<i32, ()> = (|| Ok(Integer::parseInt(&num)))();
             parsed.unwrap_or_else(|_| Self::chineseNumToInt(&num))
         } else {
@@ -222,7 +223,7 @@ impl StringUtils {
      */
     pub fn isContainNumber(company: &str) -> bool {
         let p = Pattern::compile("[0-9]+");
-        let m = p.matcher(company);
+        let mut m = p.matcher(company.to_string());
         m.find()
     }
 
@@ -231,7 +232,7 @@ impl StringUtils {
      */
     pub fn isNumeric(str: &str) -> bool {
         let pattern = Pattern::compile("-?[0-9]+");
-        let isNum = pattern.matcher(str);
+        let isNum = pattern.matcher(str.to_string());
         isNum.matches()
     }
 
@@ -298,11 +299,12 @@ impl StringUtils {
      */
     pub fn removeUTFCharacters(data: Option<&str>) -> Option<String> {
         let data = data?;
-        let p = Pattern::compile("\\\\u(\\p{XDigit}{4})");
-        let m = p.matcher(data);
+        // fix: Java 正则 `\\p{XDigit}` 转 Rust 等价 `[0-9A-Fa-f]`
+        let p = Pattern::compile("\\\\u([0-9A-Fa-f]{4})");
+        let mut m = p.matcher(data.to_string());
         let mut buf = StringBuffer::with_capacity(data.len());
         while m.find() {
-            let ch = char::from_u32(Integer::parseInt(m.group(1).unwrap(), 16) as u32).unwrap();
+            let ch = char::from_u32(Integer::parseInt_radix(m.group_idx(1).unwrap(), 16) as u32).unwrap();
             m.appendReplacement(&mut buf, Matcher::quoteReplacement(&ch.to_string()));
         }
         m.appendTail(&mut buf);
@@ -310,14 +312,14 @@ impl StringUtils {
     }
 
     pub fn formatHtml(html: &str) -> String {
-        if TextUtils::isEmpty(html) {
+        if TextUtils::is_empty(Some(html)) {
             "".to_string()
         } else {
-            html.replace(&Regex::new("(?i)<(br[\\s/]*|/*p.*?|/*div.*?)>"), "\n")// 替换特定标签为换行符
-                .replace(&Regex::new("<[script>]*.*?>|&nbsp;"), "")// 删除script标签对和空格转义符
-                .replace(&Regex::new("\\s*\\n+\\s*"), "\n　　")// 移除空行,并增加段前缩进2个汉字
-                .replace(&Regex::new("^[\\n\\s]+"), "　　")//移除开头空行,并增加段前缩进2个汉字
-                .replace(&Regex::new("[\\n\\s]+$"), "") //移除尾部空行
+            let s1 = Pattern::compile("(?i)<(br[\\s/]*|/*p.*?|/*div.*?)>").replace_all(html, "\n");// 替换特定标签为换行符
+            let s2 = Pattern::compile("<[script>]*.*?>|&nbsp;").replace_all(&s1, "");// 删除script标签对和空格转义符
+            let s3 = Pattern::compile("\\s*\\n+\\s*").replace_all(&s2, "\n　　");// 移除空行,并增加段前缩进2个汉字
+            let s4 = Pattern::compile("^[\\n\\s]+").replace_all(&s3, "　　");//移除开头空行,并增加段前缩进2个汉字
+            Pattern::compile("[\\n\\s]+$").replace_all(&s4, "") //移除尾部空行
         }
     }
 

@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use std::any::Any;
 // package me.ag2s.epublib.browsersupport;
 
 // import java.io.Serializable;
@@ -33,23 +35,23 @@ impl Navigator {
   }
 
   pub fn with_book(book: Option<EpubBook>) -> Navigator {
+    // fix: EpubBook 未实现 Clone，Java 引用语义转录为所有权转移，先取封面再 move
+    let cover_page = book.as_ref().and_then(|b| b.get_cover_page());
     let mut result = Navigator {
-      book: book.clone(),
+      book: book,
       current_spine_pos: 0,
       current_resource: None,
       current_page_pos: 0,
       current_fragment_id: None,
       event_listeners: Vec::new(),
     };
-    if book.is_some() {
-      result.current_resource = book.as_ref().unwrap().get_cover_page().clone();
-    }
+    result.current_resource = cover_page;
     result
   }
 
-  fn handle_event_listeners(&self, navigation_event: &NavigationEvent) {
+  fn handle_event_listeners(&mut self, navigation_event: &NavigationEvent) {
     for i in 0..self.event_listeners.len() {
-      let navigation_event_listener = &self.event_listeners[i];
+      let navigation_event_listener = &mut self.event_listeners[i];
       navigation_event_listener.navigation_performed(navigation_event);
     }
   }
@@ -225,5 +227,20 @@ impl Navigator {
 
   pub fn get_current_section_pos(&self) -> i32 {
     self.current_page_pos
+  }
+}
+
+// fix: 浅拷贝——Java 引用语义转录；dyn 监听器与书（EpubBook 无 Clone）无法拷贝，
+// 克隆体不携带监听器，书以占位空书替代（get_book 等不会 panic）
+impl Clone for Navigator {
+  fn clone(&self) -> Self {
+    Navigator {
+      book: Some(EpubBook::new()),
+      current_spine_pos: self.current_spine_pos,
+      current_resource: self.current_resource.clone(),
+      current_page_pos: self.current_page_pos,
+      current_fragment_id: self.current_fragment_id.clone(),
+      event_listeners: Vec::new(),
+    }
   }
 }

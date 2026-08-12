@@ -1,0 +1,349 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo2.txt; (Select-String ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:201:11
+    |
+201 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:275:11
+    |
+275 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:340:11
+    |
+340 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: incorrect use of `await`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BaseController.rs:637:64
+    |
+637 |                         result_list.push(deferred_list[i].await());
+    |                                                                ^^
+    |
+help: `await` is not a method call, remove the parentheses
+    |
+637 -                         result_list.push(deferred_list[i].await());
+637 +                         result_list.push(deferred_list[i].await);
+    |
+
+error: expected identifier, found keyword `const`
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\model\SpeechConfig.rs:13:9
+   |
+11 | pub struct SpeechConfig {
+   |            ------------ while parsing this struct
+12 |     // public static final String CONFIG_PATTERN = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8
+\r\nPath:speech.co...
+13 |     pub const CONFIG_PATTERN: &'static str = "X-Timestamp:%s\r\nContent-Type:application/json; charset=utf-8\r\nPa
+th:speech.config\r...
+   |         ^^^^^ expected identifier, found keyword
+
+error: expected identifier, found keyword `const`
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\model\SSML.rs:15:9
+   |
+13 | pub struct SSML {
+   |            ---- while parsing this struct
+14 |     // public static String SSML_PATTERN = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ
+\r\nPath:ssml\r\n\...
+15 |     pub const SSML_PATTERN: &'static str = "X-RequestId:%s\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:%sZ
+\r\nPath:ssml\r\n\...
+   |         ^^^^^ expected identifier, found keyword
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\lib\tts\service\TTSService.rs:133:27
+    |
+133 |                         } catch (e) {
+    |                           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\lib\tts\service\TTSService.rs:187:11
+    |
+187 |         } catch (e: InterruptedException) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\util\Tools.rs:37:5
+   |
+37 |     static CLIENT: std::sync::OnceLock<OkHttpClient> = std::sync::OnceLock::new();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: keyword `catch` cannot follow a `try` block
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\util\Tools.rs:61:11
+   |
+61 |         } catch (e) {
+   |           ^^^^^
+   |
+   = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+  --> src\..\src\main\java\com\htmake\reader\lib\tts\util\Tools.rs:75:11
+   |
+75 |         } catch (e: InterruptedException) {
+   |           ^^^^^
+   |
+   = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+  --> src\..\src\main\java\com\htmake\reader\utils\Ext.rs:78:7
+   |
+78 |     } catch (e: Exception) {
+   |       ^^^^^
+   |
+   = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\utils\Ext.rs:124:7
+    |
+124 |     } catch (e: Exception) {
+    |       ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\com\htmake\reader\utils\MongoManager.rs:20:5
+   |
+20 |     static MONGO_CLIENT: std::sync::OnceLock<Option<MongoClient>> = std::sync::OnceLock::new();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: keyword `catch` cannot follow a `try` block
+  --> src\..\src\main\java\com\htmake\reader\utils\MongoManager.rs:33:11
+   |
+33 |         } catch (e: MongoException) {
+   |           ^^^^^
+   |
+   = help: try using `match` on the result of the `try` block instead
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\com\htmake\reader\utils\SpringContextUtils.rs:18:5
+   |
+18 |     static APPLICATION_CONTEXT: std::sync::OnceLock<Option<ApplicationContext>> = std::sync::OnceLock::new();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\com\htmake\reader\utils\UserMutex.rs:15:5
+   |
+15 |     static MUTEX: std::sync::OnceLock<Mutex> = std::sync::OnceLock::new();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\com\htmake\reader\utils\UserMutex.rs:16:5
+   |
+16 |     static LOCKER_MAP: std::sync::OnceLock<LRUCache<String, Mutex>> = std::sync::OnceLock::new();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: expected one of `,`, `:`, or `}`, found `.`
+  --> src\..\src\main\java\com\htmake\reader\utils\UserMutex.rs:31:18
+   |
+30 |         } finally {
+   |           ------- while parsing this struct
+31 |             mutex.unlock();
+   |             -----^ expected one of `,`, `:`, or `}`
+   |             |
+   |             while parsing this struct field
+   |
+help: try naming a field
+   |
+31 |             mutex: mutex.unlock();
+   |             ++++++
+
+error: expected identifier, found keyword `let`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:141:29
+    |
+141 |     return path.to_string().let(|it| {
+    |                             ^^^ expected identifier, found keyword
+    |
+help: escape `let` to use it as an identifier
+    |
+141 |     return path.to_string().r#let(|it| {
+    |                             ++
+
+error: expected `{`, found `is`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:169:36
+    |
+169 |     let to_json: String = if value is String {
+    |                                    ^^ expected `{`
+    |
+note: the `if` expression is missing a block after this condition
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:169:30
+    |
+169 |     let to_json: String = if value is String {
+    |                              ^^^^^
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:281:7
+    |
+281 |     } catch (e: Exception) {
+    |       ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: expected `{`, found `is`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:293:14
+    |
+293 |     if value is JsonArray {
+    |              ^^ expected `{`
+    |
+note: the `if` expression is missing a block after this condition
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:293:8
+    |
+293 |     if value is JsonArray {
+    |        ^^^^^
+
+error: expected `{`, found `is`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:308:14
+    |
+308 |     if value is JsonObject {
+    |              ^^ expected `{`
+    |
+note: the `if` expression is missing a block after this condition
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:308:8
+    |
+308 |     if value is JsonObject {
+    |        ^^^^^
+
+error: expected `{`, found `is`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:342:24
+    |
+342 |     let json = if this is String {
+    |                        ^^ expected `{`
+    |
+note: the `if` expression is missing a block after this condition
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:342:19
+    |
+342 |     let json = if this is String {
+    |                   ^^^^
+
+error: expected `{`, found `is`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:365:17
+    |
+365 |     if property is KMutableProperty {
+    |                 ^^ expected `{`
+    |
+note: the `if` expression is missing a block after this condition
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:365:8
+    |
+365 |     if property is KMutableProperty {
+    |        ^^^^^^^^
+
+error: expected identifier, found keyword `let`
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:372:10
+    |
+372 |     keys.let(|it| {
+    |          ^^^ expected identifier, found keyword
+    |
+help: escape `let` to use it as an identifier
+    |
+372 |     keys.r#let(|it| {
+    |          ++
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:553:7
+    |
+553 |     } catch (e: Exception) {
+    |       ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\utils\VertExt.rs:659:7
+    |
+659 |     } catch (e: Exception) {
+    |       ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: expected `{`, found `is`
+  --> src\..\src\main\java\com\htmake\reader\utils\VertRoute.rs:16:26
+   |
+16 |     let to_json = if any is JsonObject { any.to_string() } else { gson().to_json(any) };
+   |                          ^^ expected `{`
+   |
+note: the `if` expression is missing a block after this condition
+  --> src\..\src\main\java\com\htmake\reader\utils\VertRoute.rs:16:22
+   |
+16 |     let to_json = if any is JsonObject { any.to_string() } else { gson().to_json(any) };
+   |                      ^^^
+
+error: expected identifier, found keyword `let`
+   --> src\..\src\main\java\com\htmake\reader\verticle\RestVerticle.rs:120:35
+    |
+120 |             Router::router(vertx).let(|it| { it.mount_sub_router(to_dir(&context_path, true), self.router.clone()
+.unwrap()); it })
+    |                                   ^^^ expected identifier, found keyword
+    |
+help: escape `let` to use it as an identifier
+    |
+120 |             Router::router(vertx).r#let(|it| { it.mount_sub_router(to_dir(&context_path, true), self.router.clone
+().unwrap()); it })
+    |                                   ++
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\verticle\RestVerticle.rs:184:19
+    |
+184 |                 } catch (e: Exception) {
+    |                   ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\verticle\RestVerticle.rs:204:19
+    |
+204 |                 } catch (e: Exception) {
+    |                   ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: expected identifier, found keyword `async`
+   --> src\..\src\main\java\io\legado\app\help\BookHelp.rs:176:52
+    |
+176 |                     let req: Deferred<i32> = scope.async(|| async move {
+    |                                                    ^^^^^ expected identifier, found keyword
+    |
+help: escape `async` to use it as an identifier
+    |
+176 |                     let req: Deferred<i32> = scope.r#async(|| async move {
+    |                                                    ++
+
+error: incorrect use of `await`
+   --> src\..\src\main\java\io\legado\app\help\BookHelp.rs:188:21
+    |
+188 |             it.await().await;
+    |                     ^^
+    |
+help: `await` is not a method call, remove the parentheses
+    |
+188 -             it.await().await;
+188 +             it.await.await;
+    |
+
+error: unexpected closing delimiter: `}`
+    --> src\..\src\main\java\io\legado\app\help\JsExtensions.rs:1359:1
+     |
+1354 |     ) -> Option<String> {
+     |                         - this opening brace...
+...
+1357 |     }
+     |     - ...matches this closing brace
+1358 |
+1359 | }
+     | ^ unexpected closing delimiter
+
+error: could not compile `reader` (lib) due to 36 previous errors

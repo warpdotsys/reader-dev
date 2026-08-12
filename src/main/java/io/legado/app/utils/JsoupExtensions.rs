@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::stubs::{Element, Node, NodeTraversor, NodeVisitor, TextNode};
+
 pub fn textArray(element: &Element) -> Vec<String> {
     let mut sb = StringUtil::borrowBuilder();
     NodeTraversor::traverse(
@@ -7,20 +10,20 @@ pub fn textArray(element: &Element) -> Vec<String> {
         element
     );
     let text = StringUtil::releaseBuilder(&mut sb).trim().trim_matches(|c| c <= ' ').to_string();
-    text.splitNotBlank("\n")
+    text.split_not_blank("\n")
 }
 
-struct NodeVisitorImpl<'a> {
+pub struct NodeVisitorImpl<'a> {
     sb: &'a mut StringBuilder,
 }
 
 impl NodeVisitor for NodeVisitorImpl<'_> {
-    fn head(&mut self, node: &Node, depth: i32) {
+    fn head(&mut self, node: &Node, _depth: i32) {
         if node.is_TextNode() {
-            appendNormalisedText(self.sb, node.as_text_node());
+            appendNormalisedText(self.sb, &node.as_text_node());
         } else if node.is_Element() {
             let node = node.as_element();
-            if self.sb.len() > 0
+            if self.sb.length() > 0
                 && (node.isBlock() || node.tag().name() == "br")
                 && !lastCharIsWhitespace(self.sb)
             {
@@ -29,10 +32,10 @@ impl NodeVisitor for NodeVisitorImpl<'_> {
         }
     }
 
-    fn tail(&mut self, node: &Node, depth: i32) {
+    fn tail(&mut self, node: &Node, _depth: i32) {
         if node.is_Element() {
             let node = node.as_element();
-            if node.isBlock() && node.nextSibling().is_TextNode()
+            if node.isBlock() && node.nextSibling().map_or(false, |n| n.is_TextNode())
                 && !lastCharIsWhitespace(self.sb)
             {
                 self.sb.append("\n");
@@ -41,27 +44,27 @@ impl NodeVisitor for NodeVisitorImpl<'_> {
     }
 }
 
-fn appendNormalisedText(sb: &mut StringBuilder, textNode: &TextNode) {
+pub fn appendNormalisedText(sb: &mut StringBuilder, textNode: &TextNode) {
     let text = textNode.wholeText();
-    if preserveWhitespace(textNode.parentNode()) || textNode.is_CDataNode() {
+    if preserveWhitespace(textNode.parentNode().as_ref()) || textNode.is_CDataNode() {
         sb.append(&text);
     } else {
         StringUtil::appendNormalisedWhitespace(sb, &text, lastCharIsWhitespace(sb));
     }
 }
 
-fn preserveWhitespace(node: Option<&Node>) -> bool {
+pub fn preserveWhitespace(node: Option<&Node>) -> bool {
     if let Some(node) = node {
         if node.is_Element() {
-            let mut el: Option<&Element> = Some(node.as_element());
+            let mut el: Option<Element> = Some(node.as_element());
             let mut i = 0;
             loop {
-                if el.unwrap().tag().preserveWhitespace() {
+                if el.as_ref().unwrap().tag().preserveWhitespace() {
                     return true;
                 }
                 el = el.unwrap().parent();
                 i += 1;
-                if !(i < 6 && el != None) {
+                if !(i < 6 && el.is_some()) {
                     break;
                 }
             }
@@ -70,6 +73,6 @@ fn preserveWhitespace(node: Option<&Node>) -> bool {
     false
 }
 
-fn lastCharIsWhitespace(sb: &StringBuilder) -> bool {
-    sb.len() > 0 && sb[sb.len() - 1] == ' '
+pub fn lastCharIsWhitespace(sb: &StringBuilder) -> bool {
+    sb.length() > 0 && sb.to_string().ends_with(' ')
 }

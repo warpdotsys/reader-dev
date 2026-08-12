@@ -1,3 +1,8 @@
+use crate::prelude::*;
+
+// fix: 显式导入消除 stubs / CURD / DB glob 重导出歧义（显式导入优先于 glob）
+use crate::com_htmake_reader_db_db::DB;
+use crate::stubs::JsonObject;
 // package com.htmake.reader.api.controller
 
 // private val logger = KotlinLogging.logger {}
@@ -7,7 +12,7 @@ pub struct ReplaceRuleController {
     base: BaseController,
 }
 
-impl ReplaceRuleController {
+impl CURD<ReplaceRule> for ReplaceRuleController {
     // override fun getTableName(): String {
     //     return "replaceRule"
     // }
@@ -36,14 +41,20 @@ impl ReplaceRuleController {
     //     if (entity.pattern.isEmpty()) {
     //         return ReturnData().setErrorMsg("规则不能为空")
     //     }
-    //     return null
+    //     return None
     // }
     fn before_save(&self, entity: &ReplaceRule, db: &DB<ReplaceRule>) -> Option<ReturnData> {
         if entity.name.is_empty() {
-            return Some(ReturnData::new().set_error_msg(String::from("名称不能为空")).clone());
+            // fix: ReturnData 未实现 Clone，set_error_msg 返回 &mut，先构造再返回
+            let mut data = ReturnData::new();
+            data.set_error_msg(String::from("名称不能为空"));
+            return Some(data);
         }
         if entity.pattern.is_empty() {
-            return Some(ReturnData::new().set_error_msg(String::from("规则不能为空")).clone());
+            // fix: ReturnData 未实现 Clone，set_error_msg 返回 &mut，先构造再返回
+            let mut data = ReturnData::new();
+            data.set_error_msg(String::from("规则不能为空"));
+            return Some(data);
         }
         return None;
     }
@@ -61,7 +72,9 @@ impl ReplaceRuleController {
     fn get_user_ns(&self, context: &RoutingContext) -> String {
         return self.base.get_user_name_space(context);
     }
+}
 
+impl ReplaceRuleController {
     // suspend fun getReplaceRules(context: RoutingContext): ReturnData {
     //     return list(context)
     // }

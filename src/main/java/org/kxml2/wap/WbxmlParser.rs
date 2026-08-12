@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /* Copyright (c) 2002,2003,2004 Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,7 +42,7 @@ pub enum WapExtensionData {
     Bytes(Vec<u8>),
     Int(i32),
     Str(String),
-    Null,
+    None,
 }
 
 /** XmlPullParserException / IOException / RuntimeException stand-ins */
@@ -50,6 +51,11 @@ pub enum WbxmlError {
     IOException(String),
     RuntimeException(String),
 }
+
+/** Marker type implementing the Wbxml trait so its constants are addressable (WbxmlConsts::X). */
+pub struct WbxmlConsts;
+
+impl crate::org_kxml2_wap_wbxml::Wbxml for WbxmlConsts {}
 
 // public class WbxmlParser implements XmlPullParser {
 
@@ -171,7 +177,7 @@ impl WbxmlParser {
             namespace: None,
             name: None,
             text: None,
-            wap_extension_data: WapExtensionData::Null,
+            wap_extension_data: WapExtensionData::None,
             wap_code: 0,
             type_: 0,
             degenerated: false,
@@ -450,13 +456,13 @@ impl WbxmlParser {
                 if save.is_some() { self.text = Some(if self.text.is_none() { save.unwrap() } else { save.unwrap() + self.text.as_ref().unwrap() }); }
 
                 match self.peek_id()? {
-                    Wbxml::ENTITY |
-                    Wbxml::STR_I |
-                    Wbxml::STR_T |
-                    Wbxml::LITERAL |
-                    Wbxml::LITERAL_C |
-                    Wbxml::LITERAL_A |
-                    Wbxml::LITERAL_AC => continue,
+                    WbxmlConsts::ENTITY |
+                    WbxmlConsts::STR_I |
+                    WbxmlConsts::STR_T |
+                    WbxmlConsts::LITERAL |
+                    WbxmlConsts::LITERAL_C |
+                    WbxmlConsts::LITERAL_A |
+                    WbxmlConsts::LITERAL_AC => continue,
                     _ => {}
                 }
             }
@@ -650,7 +656,7 @@ impl WbxmlParser {
                 let j = (self.nsp_counts[self.depth as usize] << 1) as usize;
                 self.nsp_counts[self.depth as usize] += 1;
 
-                self.nsp_stack = self.ensure_capacity(self.nsp_stack.clone(), j + 2);
+                self.nsp_stack = Self::ensure_capacity(self.nsp_stack.clone(), j + 2);
                 self.nsp_stack[j] = if attr_name.is_empty() { None } else { Some(attr_name.clone()) };
                 self.nsp_stack[j + 1] = self.attributes[(i + 3) as usize].clone();
 
@@ -697,7 +703,7 @@ impl WbxmlParser {
                     // Java: throw new RuntimeException("Undefined Prefix: " + attrPrefix + " in " + this);
                     { return Err(WbxmlError::RuntimeException(format!("Undefined Prefix: {} in {}", attr_prefix, ""))); }
 
-                    self.attributes[i as usize] = attr_ns;
+                    self.attributes[i as usize] = attr_ns.clone();
                     self.attributes[(i + 1) as usize] = Some(attr_prefix);
                     self.attributes[(i + 2) as usize] = Some(attr_name.clone());
 
@@ -751,7 +757,7 @@ impl WbxmlParser {
 
 
     fn exception(&self, desc: String) -> WbxmlError {
-        // Java: throw new XmlPullParserException(desc, this, null);
+        // Java: throw new XmlPullParserException(desc, this, None);
         return WbxmlError::XmlPullParserException(desc);
     }
 
@@ -791,9 +797,10 @@ impl WbxmlParser {
         self.name = None;
 
         let mut id = self.peek_id()?;
-        while id == Wbxml::SWITCH_PAGE {
+        while id == WbxmlConsts::SWITCH_PAGE {
             self.next_id = -2;
-            self.select_page(self.read_byte()?, true)?;
+            let page = self.read_byte()?;
+            self.select_page(page, true)?;
             id = self.peek_id()?;
         }
         self.next_id = -2;
@@ -803,7 +810,7 @@ impl WbxmlParser {
                 self.type_ = WbxmlParser::END_DOCUMENT;
             }
 
-            Wbxml::END => {
+            WbxmlConsts::END => {
                 let sp = ((self.depth - 1) << 2) as usize;
 
                 self.type_ = WbxmlParser::END_TAG;
@@ -812,42 +819,42 @@ impl WbxmlParser {
                 self.name = self.element_stack[sp + 2].clone();
             }
 
-            Wbxml::ENTITY => {
+            WbxmlConsts::ENTITY => {
                 self.type_ = WbxmlParser::ENTITY_REF;
-                let c = self.read_int()? as u16 as char;
+                let c = char::from_u32(self.read_int()? as u16 as u32).unwrap();
                 self.text = Some(format!("{}", c));
                 self.name = Some(format!("#{}", c as i32));
             }
 
-            Wbxml::STR_I => {
+            WbxmlConsts::STR_I => {
                 self.type_ = WbxmlParser::TEXT;
                 self.text = Some(self.read_str_i()?);
             }
 
-            Wbxml::EXT_I_0 |
-            Wbxml::EXT_I_1 |
-            Wbxml::EXT_I_2 |
-            Wbxml::EXT_T_0 |
-            Wbxml::EXT_T_1 |
-            Wbxml::EXT_T_2 |
-            Wbxml::EXT_0 |
-            Wbxml::EXT_1 |
-            Wbxml::EXT_2 |
-            Wbxml::OPAQUE => {
+            WbxmlConsts::EXT_I_0 |
+            WbxmlConsts::EXT_I_1 |
+            WbxmlConsts::EXT_I_2 |
+            WbxmlConsts::EXT_T_0 |
+            WbxmlConsts::EXT_T_1 |
+            WbxmlConsts::EXT_T_2 |
+            WbxmlConsts::EXT_0 |
+            WbxmlConsts::EXT_1 |
+            WbxmlConsts::EXT_2 |
+            WbxmlConsts::OPAQUE => {
 
                 self.type_ = WbxmlParser::WAP_EXTENSION;
                 self.wap_code = id;
                 self.wap_extension_data = self.parse_wap_extension(id)?;
             }
 
-            Wbxml::PI => {
+            WbxmlConsts::PI => {
                 // Java: throw new RuntimeException("PI curr. not supp.");
                 return Err(WbxmlError::RuntimeException("PI curr. not supp.".to_string()));
                 // readPI;
                 // break;
             }
 
-            Wbxml::STR_T => {
+            WbxmlConsts::STR_T => {
                 self.type_ = WbxmlParser::TEXT;
                 self.text = Some(self.read_str_t()?);
             }
@@ -857,7 +864,7 @@ impl WbxmlParser {
             }
         }
         //        }
-        //      while (next == null);
+        //      while (next == None);
 
         //        return next;
 
@@ -869,31 +876,32 @@ impl WbxmlParser {
     pub fn parse_wap_extension(&mut self, id: i32) -> Result<WapExtensionData, WbxmlError> {
 
         match id {
-            Wbxml::EXT_I_0 |
-            Wbxml::EXT_I_1 |
-            Wbxml::EXT_I_2 => {
+            WbxmlConsts::EXT_I_0 |
+            WbxmlConsts::EXT_I_1 |
+            WbxmlConsts::EXT_I_2 => {
                 return Ok(WapExtensionData::Str(self.read_str_i()?));
             }
 
-            Wbxml::EXT_T_0 |
-            Wbxml::EXT_T_1 |
-            Wbxml::EXT_T_2 => {
+            WbxmlConsts::EXT_T_0 |
+            WbxmlConsts::EXT_T_1 |
+            WbxmlConsts::EXT_T_2 => {
                 // Java: return new Integer(readInt());
                 return Ok(WapExtensionData::Int(self.read_int()?));
             }
 
-            Wbxml::EXT_0 |
-            Wbxml::EXT_1 |
-            Wbxml::EXT_2 => {
-                return Ok(WapExtensionData::Null);
+            WbxmlConsts::EXT_0 |
+            WbxmlConsts::EXT_1 |
+            WbxmlConsts::EXT_2 => {
+                return Ok(WapExtensionData::None);
             }
 
-            Wbxml::OPAQUE => {
+            WbxmlConsts::OPAQUE => {
                 let mut count = self.read_int()?;
                 let mut buf = vec![0u8; count as usize];
 
                 while count > 0 {
-                    count -= self.in_stream.as_mut().unwrap().read_buf(&mut buf, (buf.len() as i32 - count) as usize, count as usize);
+                    let blen = buf.len() as i32;
+                    count -= self.in_stream.as_mut().unwrap().read_buf(&mut buf, (blen - count) as usize, count as usize);
                 }
 
                 return Ok(WapExtensionData::Bytes(buf));
@@ -902,7 +910,7 @@ impl WbxmlParser {
 
             _ => {
                 // Java: exception("illegal id: "+id);
-                // Java: return null; // dead code
+                // Java: return None; // dead code
                 return Err(self.exception(format!("illegal id: {}", id)));
             }
         } // SWITCH
@@ -915,8 +923,9 @@ impl WbxmlParser {
 
         while id != 1 {
 
-            while id == Wbxml::SWITCH_PAGE {
-                self.select_page(self.read_byte()?, false)?;
+            while id == WbxmlConsts::SWITCH_PAGE {
+                let page = self.read_byte()?;
+                self.select_page(page, false)?;
                 id = self.read_byte()?;
             }
 
@@ -935,40 +944,42 @@ impl WbxmlParser {
 
             id = self.read_byte()?;
             while id > 128
-                || id == Wbxml::SWITCH_PAGE
-                || id == Wbxml::ENTITY
-                || id == Wbxml::STR_I
-                || id == Wbxml::STR_T
-                || (id >= Wbxml::EXT_I_0 && id <= Wbxml::EXT_I_2)
-                || (id >= Wbxml::EXT_T_0 && id <= Wbxml::EXT_T_2) {
+                || id == WbxmlConsts::SWITCH_PAGE
+                || id == WbxmlConsts::ENTITY
+                || id == WbxmlConsts::STR_I
+                || id == WbxmlConsts::STR_T
+                || (id >= WbxmlConsts::EXT_I_0 && id <= WbxmlConsts::EXT_I_2)
+                || (id >= WbxmlConsts::EXT_T_0 && id <= WbxmlConsts::EXT_T_2) {
 
                 match id {
-                    Wbxml::SWITCH_PAGE => {
-                        self.select_page(self.read_byte()?, false)?;
+                    WbxmlConsts::SWITCH_PAGE => {
+                        let page = self.read_byte()?;
+                        self.select_page(page, false)?;
                     }
 
-                    Wbxml::ENTITY => {
-                        value.push((self.read_int()? as u16 as char));
+                    WbxmlConsts::ENTITY => {
+                        value.push(char::from_u32(self.read_int()? as u16 as u32).unwrap());
                     }
 
-                    Wbxml::STR_I => {
+                    WbxmlConsts::STR_I => {
                         value.push_str(&self.read_str_i()?);
                     }
 
-                    Wbxml::EXT_I_0 |
-                    Wbxml::EXT_I_1 |
-                    Wbxml::EXT_I_2 |
-                    Wbxml::EXT_T_0 |
-                    Wbxml::EXT_T_1 |
-                    Wbxml::EXT_T_2 |
-                    Wbxml::EXT_0 |
-                    Wbxml::EXT_1 |
-                    Wbxml::EXT_2 |
-                    Wbxml::OPAQUE => {
-                        value.push_str(&self.resolve_wap_extension(id, self.parse_wap_extension(id)?));
+                    WbxmlConsts::EXT_I_0 |
+                    WbxmlConsts::EXT_I_1 |
+                    WbxmlConsts::EXT_I_2 |
+                    WbxmlConsts::EXT_T_0 |
+                    WbxmlConsts::EXT_T_1 |
+                    WbxmlConsts::EXT_T_2 |
+                    WbxmlConsts::EXT_0 |
+                    WbxmlConsts::EXT_1 |
+                    WbxmlConsts::EXT_2 |
+                    WbxmlConsts::OPAQUE => {
+                        let data = self.parse_wap_extension(id)?;
+                        value.push_str(&self.resolve_wap_extension(id, data));
                     }
 
-                    Wbxml::STR_T => {
+                    WbxmlConsts::STR_T => {
                         value.push_str(&self.read_str_t()?);
                     }
 
@@ -980,7 +991,7 @@ impl WbxmlParser {
                 id = self.read_byte()?;
             }
 
-            self.attributes = self.ensure_capacity(self.attributes.clone(), (i + 4) as usize);
+            self.attributes = Self::ensure_capacity(self.attributes.clone(), (i + 4) as usize);
 
             self.attributes[i as usize] = Some(String::new());
             self.attributes[(i + 1) as usize] = None;
@@ -1056,7 +1067,7 @@ impl WbxmlParser {
 
         // transfer to element stack
 
-        self.element_stack = self.ensure_capacity(self.element_stack.clone(), sp + 4);
+        self.element_stack = Self::ensure_capacity(self.element_stack.clone(), sp + 4);
         self.element_stack[sp + 3] = self.name.clone();
 
         if self.depth as usize >= self.nsp_counts.len() {
@@ -1249,6 +1260,6 @@ pub fn wap_extension_data_to_string(data: &WapExtensionData) -> String {
         WapExtensionData::Bytes(b) => format!("[B@{}", b.len()),
         WapExtensionData::Int(i) => format!("{}", i),
         WapExtensionData::Str(s) => s.clone(),
-        WapExtensionData::Null => "null".to_string(),
+        WapExtensionData::None => "null".to_string(),
     };
 }

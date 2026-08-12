@@ -1,0 +1,31 @@
+﻿cargo :     Blocking waiting for file lock on build directory
+At line:1 char:1
++ cargo check 2>&1 | Out-File -FilePath cargo_check_now3.txt -Encoding  ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+error: mismatched closing delimiter: `}`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BaseController.rs:642:58
+    |
+641 |                 for i in 0..deferred_list.len() {
+    |                                                 - closing delimiter possibly meant for this
+642 |                     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    |                                                          ^ unclosed delimiter
+...
+654 |                 }
+    |                 ^ mismatched closing delimiter
+
+error: mismatched closing delimiter: `}`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BaseController.rs:668:58
+    |
+667 |                 for i in 0..deferred_list.len() {
+    |                                                 - closing delimiter possibly meant for this
+668 |                     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    |                                                          ^ unclosed delimiter
+...
+673 |                 }
+    |                 ^ mismatched closing delimiter
+
+error: could not compile `reader` (lib) due to 2 previous errors

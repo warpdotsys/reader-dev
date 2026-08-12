@@ -1,7 +1,9 @@
+use crate::prelude::*;
 pub fn attempt<T>(f: impl FnOnce() -> T) -> AttemptResult<T> {
     let mut value: Option<T> = None;
     let mut error: Option<Box<dyn std::any::Any + Send>> = None;
-    match std::panic::catch_unwind(f) {
+    // fix: 闭包参数跨 unwind 边界 → AssertUnwindSafe 包裹（同 SourceAnalyzer 惯例）
+    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)) {
         Ok(v) => value = Some(v),
         Err(t) => error = Some(t),
     }

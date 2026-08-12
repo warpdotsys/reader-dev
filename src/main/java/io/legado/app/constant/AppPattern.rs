@@ -1,8 +1,9 @@
+use crate::prelude::*;
 pub struct AppPattern;
 
 impl AppPattern {
     pub fn JS_PATTERN() -> Pattern {
-        Pattern::compile("<js>([\\w\\W]*?)</js>|@js:([\\w\\W]*)", Pattern::CASE_INSENSITIVE)
+        Pattern::compile_with("<js>([\\w\\W]*?)</js>|@js:([\\w\\W]*)", Pattern::CASE_INSENSITIVE)
     }
 
     pub fn EXP_PATTERN() -> Pattern {
@@ -16,53 +17,53 @@ impl AppPattern {
 
     //dataURL图片类型
     pub fn dataUriRegex() -> Regex {
-        Regex::new("data:.*?;base64,(.*)")
+        regex_new_with_option("data:.*?;base64,(.*)", 0)
     }
 
     pub fn nameRegex() -> Regex {
-        Regex::new("\\s+作\\s*者.*|\\s+\\S+\\s+著")
+        regex_new_with_option("\\s+作\\s*者.*|\\s+\\S+\\s+著", 0)
     }
 
     pub fn authorRegex() -> Regex {
-        Regex::new("^\\s*作\\s*者[:：\\s]+|\\s+著")
+        regex_new_with_option("^\\s*作\\s*者[:：\\s]+|\\s+著", 0)
     }
 
     pub fn fileNameRegex() -> Regex {
-        Regex::new("[\\\\/:*?\"<>|.]")
+        regex_new_with_option("[\\\\/:*?\"<>|.]", 0)
     }
 
     pub fn splitGroupRegex() -> Regex {
-        Regex::new("[,;，；]")
+        regex_new_with_option("[,;，；]", 0)
     }
 
     //书源调试信息中的各种符号
     pub fn debugMessageSymbolRegex() -> Regex {
-        Regex::new("[⇒◇┌└≡]")
+        regex_new_with_option("[⇒◇┌└≡]", 0)
     }
 
     //本地书籍支持类型
     pub fn bookFileRegex() -> Regex {
-        Regex::new(".*\\.(txt|epub|umd)", RegexOption::IGNORE_CASE)
+        regex_new_with_option(".*\\.(txt|epub|umd)", RegexOption::IGNORE_CASE)
     }
 
     /**
      * 所有标点
      */
     pub fn bdRegex() -> Regex {
-        Regex::new("(\\p{P})+")
+        regex_new_with_option("(\\p{P})+", 0)
     }
 
     /**
      * 换行
      */
     pub fn rnRegex() -> Regex {
-        Regex::new("[\\r\\n]")
+        regex_new_with_option("[\\r\\n]", 0)
     }
 
     /**
      * 不发音段落判断
      */
     pub fn notReadAloudRegex() -> Regex {
-        Regex::new("^(\\s|\\p{C}|\\p{P}|\\p{Z}|\\p{S})+$")
+        regex_new_with_option("^(\\s|\\p{C}|\\p{P}|\\p{Z}|\\p{S})+$", 0)
     }
 }

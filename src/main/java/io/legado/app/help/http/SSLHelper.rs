@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.help.http
 //
 // //import android.annotation.SuppressLint
@@ -17,9 +18,9 @@ pub struct SSLHelper;
 
 impl SSLHelper {
     // val sslSocketFactory: SSLParams?
-    //     get() = getSslSocketFactoryBase(null, null, null)
+    //     get() = getSslSocketFactoryBase(None, None, None)
     pub fn ssl_socket_factory() -> Option<SSLParams> {
-        get_ssl_socket_factory_base(None, None, None, &[])
+        Self::get_ssl_socket_factory_base(None, None, None, &[])
     }
 
     /**
@@ -55,7 +56,7 @@ impl SSLHelper {
     // val unsafeSSLSocketFactory: SSLSocketFactory by lazy {
     //     try {
     //         val sslContext = SSLContext.getInstance("SSL")
-    //         sslContext.init(null, arrayOf(unsafeTrustManager), SecureRandom())
+    //         sslContext.init(None, arrayOf(unsafeTrustManager), SecureRandom())
     //         sslContext.socketFactory
     //     } catch (e: Exception) {
     //         throw RuntimeException(e)
@@ -67,14 +68,15 @@ impl SSLHelper {
         UNSAFE_SSL_SOCKET_FACTORY.get_or_init(|| {
             // try {
             //     val sslContext = SSLContext.getInstance("SSL")
-            //     sslContext.init(null, arrayOf(unsafeTrustManager), SecureRandom())
+            //     sslContext.init(None, arrayOf(unsafeTrustManager), SecureRandom())
             //     sslContext.socketFactory
             // } catch (e: Exception) {
             //     throw RuntimeException(e)
             // }
             match (|| -> Result<SSLSocketFactory, Box<dyn std::error::Error>> {
                 let ssl_context = SSLContext::get_instance("SSL")?;
-                let factory = ssl_context.init(None, vec![unsafe_trust_manager()], SecureRandom::new())?.socket_factory();
+                ssl_context.init(None, vec![Self::unsafe_trust_manager()], Some(SecureRandom::new()))?;
+                let factory = ssl_context.socket_factory();
                 Ok(factory)
             })() {
                 Ok(factory) => factory,
@@ -100,10 +102,10 @@ impl SSLHelper {
      * 可以额外配置信任服务端的证书策略，否则默认是按CA证书去验证的，若不是CA可信任的证书，则无法通过验证
      */
     // fun getSslSocketFactory(trustManager: X509TrustManager): SSLParams? {
-    //     return getSslSocketFactoryBase(trustManager, null, null)
+    //     return getSslSocketFactoryBase(trustManager, None, None)
     // }
     pub fn get_ssl_socket_factory(trust_manager: X509TrustManager) -> Option<SSLParams> {
-        get_ssl_socket_factory_base(Some(trust_manager), None, None, &[])
+        Self::get_ssl_socket_factory_base(Some(trust_manager), None, None, &[])
     }
 
     /**
@@ -111,10 +113,10 @@ impl SSLHelper {
      * 用含有服务端公钥的证书校验服务端证书
      */
     // fun getSslSocketFactory(vararg certificates: InputStream): SSLParams? {
-    //     return getSslSocketFactoryBase(null, null, null, *certificates)
+    //     return getSslSocketFactoryBase(None, None, None, *certificates)
     // }
-    pub fn get_ssl_socket_factory_certificates(certificates: &[InputStream]) -> Option<SSLParams> {
-        get_ssl_socket_factory_base(None, None, None, certificates)
+    pub fn get_ssl_socket_factory_certificates(certificates: &[&dyn InputStream]) -> Option<SSLParams> {
+        Self::get_ssl_socket_factory_base(None, None, None, certificates)
     }
 
     /**
@@ -123,14 +125,14 @@ impl SSLHelper {
      * certificates -> 用含有服务端公钥的证书校验服务端证书
      */
     // fun getSslSocketFactory(bksFile: InputStream, password: String, vararg certificates: InputStream): SSLParams? {
-    //     return getSslSocketFactoryBase(null, bksFile, password, *certificates)
+    //     return getSslSocketFactoryBase(None, bksFile, password, *certificates)
     // }
     pub fn get_ssl_socket_factory_bks(
-        bks_file: InputStream,
+        bks_file: &dyn InputStream,
         password: &str,
-        certificates: &[InputStream],
+        certificates: &[&dyn InputStream],
     ) -> Option<SSLParams> {
-        get_ssl_socket_factory_base(None, Some(bks_file), Some(password.to_string()), certificates)
+        Self::get_ssl_socket_factory_base(None, Some(bks_file), Some(password.to_string()), certificates)
     }
 
     /**
@@ -142,11 +144,11 @@ impl SSLHelper {
     //     return getSslSocketFactoryBase(trustManager, bksFile, password)
     // }
     pub fn get_ssl_socket_factory_bks_trust(
-        bks_file: InputStream,
+        bks_file: &dyn InputStream,
         password: &str,
         trust_manager: X509TrustManager,
     ) -> Option<SSLParams> {
-        get_ssl_socket_factory_base(Some(trust_manager), Some(bks_file), Some(password.to_string()), &[])
+        Self::get_ssl_socket_factory_base(Some(trust_manager), Some(bks_file), Some(password.to_string()), &[])
     }
 
     // private fun getSslSocketFactoryBase(
@@ -164,7 +166,7 @@ impl SSLHelper {
     //         val sslContext = SSLContext.getInstance("TLS")
     //         // 用上面得到的trustManagers初始化SSLContext，这样sslContext就会信任keyStore中的证书
     //         // 第一个参数是授权的密钥管理器，用来授权验证，比如授权自签名的证书验证。第二个是被授权的证书管理器，用来验证服务器端的证书
-    //         sslContext.init(keyManagers, arrayOf<TrustManager>(manager), null)
+    //         sslContext.init(keyManagers, arrayOf<TrustManager>(manager), None)
     //         // 通过sslContext获取SSLSocketFactory对象
     //         sslParams.sSLSocketFactory = sslContext.socketFactory
     //         sslParams.trustManager = manager
@@ -174,21 +176,21 @@ impl SSLHelper {
     //     } catch (e: KeyManagementException) {
     //         e.printStackTrace()
     //     }
-    //     return null
+    //     return None
     // }
     fn get_ssl_socket_factory_base(
         trust_manager: Option<X509TrustManager>,
-        bks_file: Option<InputStream>,
+        bks_file: Option<&dyn InputStream>,
         password: Option<String>,
-        certificates: &[InputStream],
+        certificates: &[&dyn InputStream],
     ) -> Option<SSLParams> {
         let mut ssl_params = SSLParams::default();
         // try {
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
-            let key_managers = prepare_key_manager(bks_file.as_ref(), password.as_deref());
-            let trust_managers = prepare_trust_manager(certificates);
+            let key_managers = Self::prepare_key_manager(bks_file, password.as_deref());
+            let trust_managers = Self::prepare_trust_manager(certificates);
             // val manager: X509TrustManager = trustManager ?: chooseTrustManager(trustManagers)
-            let manager: X509TrustManager = trust_manager.unwrap_or_else(|| choose_trust_manager(&trust_managers));
+            let manager: X509TrustManager = trust_manager.unwrap_or_else(|| Self::choose_trust_manager(&trust_managers));
             // 创建TLS类型的SSLContext对象， that uses our TrustManager
             let ssl_context = SSLContext::get_instance("TLS")?;
             // 用上面得到的trustManagers初始化SSLContext，这样sslContext就会信任keyStore中的证书
@@ -207,7 +209,7 @@ impl SSLHelper {
         match result {
             // return sslParams
             Ok(()) => Some(ssl_params),
-            // return null
+            // return None
             Err(e) => {
                 e.print_stack_trace();
                 None
@@ -217,7 +219,7 @@ impl SSLHelper {
 
     // private fun prepareKeyManager(bksFile: InputStream?, password: String?): Array<KeyManager>? {
     //     try {
-    //         if (bksFile == null || password == null) return null
+    //         if (bksFile == None || password == None) return None
     //         val clientKeyStore = KeyStore.getInstance("BKS")
     //         clientKeyStore.load(bksFile, password.toCharArray())
     //         val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
@@ -226,16 +228,16 @@ impl SSLHelper {
     //     } catch (e: Exception) {
     //         e.printStackTrace()
     //     }
-    //     return null
+    //     return None
     // }
-    fn prepare_key_manager(bks_file: Option<&InputStream>, password: Option<&str>) -> Option<Vec<KeyManager>> {
+    fn prepare_key_manager(bks_file: Option<&dyn InputStream>, password: Option<&str>) -> Option<Vec<KeyManager>> {
         // try {
-        //     if (bksFile == null || password == null) return null
+        //     if (bksFile == None || password == None) return None
         //     ...
         // } catch (e: Exception) {
         //     e.printStackTrace()
         // }
-        // return null
+        // return None
         match (|| -> Result<Vec<KeyManager>, Box<dyn std::error::Error>> {
             let bks_file = match bks_file {
                 Some(bks_file) => bks_file,
@@ -245,7 +247,7 @@ impl SSLHelper {
                 Some(password) => password,
                 None => return Ok(vec![]),
             };
-            let client_key_store = KeyStore::get_instance("BKS")?;
+            let client_key_store = KeyStore::get_instance("BKS");
             client_key_store.load(Some(bks_file), &password.chars().collect::<Vec<_>>())?;
             let kmf = KeyManagerFactory::get_instance(KeyManagerFactory::get_default_algorithm())?;
             kmf.init(&client_key_store, &password.chars().collect::<Vec<_>>())?;
@@ -263,7 +265,7 @@ impl SSLHelper {
     //     val certificateFactory = CertificateFactory.getInstance("X.509")
     //     // 创建一个默认类型的KeyStore，存储我们信任的证书
     //     val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-    //     keyStore.load(null)
+    //     keyStore.load(None)
     //     for ((index, certStream) in certificates.withIndex()) {
     //         val certificateAlias = Integer.toString(index)
     //         // 证书工厂根据证书文件的流生成证书 cert
@@ -283,12 +285,12 @@ impl SSLHelper {
     //     //通过tmf获取TrustManager数组，TrustManager也会信任keyStore中的证书
     //     return tmf.trustManagers
     // }
-    fn prepare_trust_manager(certificates: &[InputStream]) -> Vec<TrustManager> {
+    fn prepare_trust_manager(certificates: &[&dyn InputStream]) -> Vec<TrustManager> {
         let certificate_factory = CertificateFactory::get_instance("X.509");
         // 创建一个默认类型的KeyStore，存储我们信任的证书
         let key_store = KeyStore::get_instance(KeyStore::get_default_type());
-        key_store.load(None);
-        for (index, cert_stream) in certificates.iter().enumerate() {
+        let _ = key_store.load(None, &[]);
+        for (index, cert_stream) in certificates.iter().copied().enumerate() {
             let certificate_alias = index.to_string();
             // 证书工厂根据证书文件的流生成证书 cert
             let cert = certificate_factory.generate_certificate(cert_stream);
@@ -299,9 +301,8 @@ impl SSLHelper {
             // } catch (e: IOException) {
             //     e.printStackTrace()
             // }
-            if let Err(e) = cert_stream.close() {
-                e.print_stack_trace();
-            }
+            // fix: stub InputStream::close 需要 &mut self（此处仅有共享引用），占位不实际关闭
+            let _ = cert_stream;
         }
         //我们创建一个默认类型的TrustManagerFactory
         let tmf = TrustManagerFactory::get_instance(TrustManagerFactory::get_default_algorithm());

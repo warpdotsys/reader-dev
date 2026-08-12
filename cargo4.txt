@@ -1,0 +1,716 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:1
++ cargo check 2>&1 | Out-File -Encoding utf8 cargo4.txt; $e = (Select-S ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: module is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\ACache.rs:448:5
+    |
+448 |     pub mod Utils {
+    |     ^^^^^^^^^^^^^
+    |
+    = help: consider moving the module out to a nearby module scope
+
+error: expected one of `!` or `::`, found `output`
+  --> src\..\src\main\java\io\legado\app\utils\Base64.rs:43:13
+   |
+42 |     /* package */ pub trait Coder {
+   |                                   - while parsing this item list starting here
+43 |         var output: Vec<u8>;
+   |             ^^^^^^ expected one of `!` or `::`
+...
+66 |     }
+   |     - the item list ends here
+
+error: trait is not supported in `trait`s or `impl`s
+  --> src\..\src\main\java\io\legado\app\utils\Base64.rs:42:19
+   |
+42 |     /* package */ pub trait Coder {
+   |                   ^^^^^^^^^^^^^^^
+   |
+   = help: consider moving the trait out to a nearby module scope
+
+error: expected identifier, found keyword `static`
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:145:9
+    |
+140 |     /* package */ pub struct Decoder {
+    |                              ------- while parsing this struct
+...
+145 |         static DECODE: [i32; 256] = [
+    |         ^^^^^^ expected identifier, found keyword
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:140:19
+    |
+140 |     /* package */ pub struct Decoder {
+    |                   ^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:207:5
+    |
+207 |     impl Decoder {
+    |     ^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: expected identifier, found keyword `const`
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:504:13
+    |
+498 |     /* package */ pub struct Encoder {
+    |                              ------- while parsing this struct
+...
+504 |         pub const LINE_GROUPS: usize = 19;
+    |             ^^^^^ expected identifier, found keyword
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:498:19
+    |
+498 |     /* package */ pub struct Encoder {
+    |                   ^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\Base64.rs:537:5
+    |
+537 |     impl Encoder {
+    |     ^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:746:5
+    |
+746 |     pub struct SortByExtension;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:748:5
+    |
+748 |     impl SortByExtension {
+    |     ^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:774:5
+    |
+774 |     impl FnMut for SortByExtension {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:783:5
+    |
+783 |     impl FnOnce for SortByExtension {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:792:5
+    |
+792 |     pub struct SortByName {
+    |     ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:796:5
+    |
+796 |     impl SortByName {
+    |     ^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:828:5
+    |
+828 |     impl FnMut for SortByName {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:837:5
+    |
+837 |     impl FnOnce for SortByName {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:846:5
+    |
+846 |     pub struct SortBySize;
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:848:5
+    |
+848 |     impl SortBySize {
+    |     ^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:878:5
+    |
+878 |     impl FnMut for SortBySize {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:887:5
+    |
+887 |     impl FnOnce for SortBySize {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:896:5
+    |
+896 |     pub struct SortByTime;
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:898:5
+    |
+898 |     impl SortByTime {
+    |     ^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:928:5
+    |
+928 |     impl FnMut for SortByTime {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:937:5
+    |
+937 |     impl FnOnce for SortByTime {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:11:39
+   |
+11 |             .registerTypeAdapter(i32::type(), IntJsonDeserializer::new())
+   |                                       ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+11 |             .registerTypeAdapter(i32::r#type(), IntJsonDeserializer::new())
+   |                                       ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:19:27
+   |
+19 |     TypeToken::new::<T>().type()
+   |                           ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+19 |     TypeToken::new::<T>().r#type()
+   |                           ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:30:70
+   |
+30 |         gson.fromJson_list::<T>(json, &ParameterizedTypeImpl::new(T::type())).ok().flatten()
+   |                                                                      ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+30 |         gson.fromJson_list::<T>(json, &ParameterizedTypeImpl::new(T::r#type())).ok().flatten()
+   |                                                                      ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:44:80
+   |
+44 |         gson.fromJson_list_reader::<T>(&reader, &ParameterizedTypeImpl::new(T::type())).ok().flatten()
+   |                                                                                ^^^^ expected identifier, found key
+word
+   |
+help: escape `type` to use it as an identifier
+   |
+44 |         gson.fromJson_list_reader::<T>(&reader, &ParameterizedTypeImpl::new(T::r#type())).ok().flatten()
+   |                                                                                ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:55:40
+   |
+55 |                 gson.toJson_dyn(it, it.type(), &mut writer);
+   |                                        ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+55 |                 gson.toJson_dyn(it, it.r#type(), &mut writer);
+   |                                        ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:60:34
+   |
+60 |         gson.toJson_dyn(any, any.type(), &mut writer);
+   |                                  ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+60 |         gson.toJson_dyn(any, any.r#type(), &mut writer);
+   |                                  ++
+
+error: expected identifier, found keyword `type`
+  --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:75:15
+   |
+75 |         List::type()
+   |               ^^^^ expected identifier, found keyword
+   |
+help: escape `type` to use it as an identifier
+   |
+75 |         List::r#type()
+   |               ++
+
+error: expected identifier, found keyword `type`
+   --> src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:125:9
+    |
+125 |         type: &Type,
+    |         ^^^^ expected identifier, found keyword
+    |
+help: escape `type` to use it as an identifier
+    |
+125 |         r#type: &Type,
+    |         ++
+
+error: struct is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:208:5
+    |
+208 |     pub struct BookSourceAny {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+   --> src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:236:5
+    |
+236 |     impl BookSourceAny {
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving the implementation out to a nearby module scope
+
+error: expected item after doc comment
+ --> src\..\src\main\java\me\ag2s\epublib\browsersupport\package_info.rs:2:1
+  |
+2 | / /**
+3 | |  * Provides classes that help make an epub reader application.
+4 | |  *
+5 | |  * These classes have no dependencies on graphic toolkits, they're purely
+6 | |  * to help with the browsing/navigation logic.
+7 | |  */
+  | |___^ this doc comment doesn't document anything
+
+error: trait is not supported in `trait`s or `impl`s
+  --> src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:26:3
+   |
+26 |   pub trait Scheme {
+   |   ^^^^^^^^^^^^^^^^
+   |
+   = help: consider moving the trait out to a nearby module scope
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\epub\EpubProcessorSupport.rs:17:5
+   |
+17 |     pub static mut document_builder_factory: Option<DocumentBuilderFactory> = None;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: struct is not supported in `trait`s or `impl`s
+  --> src\..\src\main\java\me\ag2s\epublib\util\CollectionUtil.rs:14:5
+   |
+14 |     pub struct IteratorEnumerationAdapter<T> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: consider moving the struct out to a nearby module scope
+
+error: implementation is not supported in `trait`s or `impl`s
+  --> src\..\src\main\java\me\ag2s\epublib\util\CollectionUtil.rs:18:5
+   |
+18 |     impl<T> IteratorEnumerationAdapter<T> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: consider moving the implementation out to a nearby module scope
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:37:5
+   |
+37 |     static mut SKIP_CHAR_BUFFER: Option<Vec<char>> = None;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:39:5
+   |
+39 |     pub static UTF_8: ByteOrderMark = ByteOrderMark::new("UTF-8", &[0xEF, 0xBB, 0xBF]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:42:5
+   |
+42 |     pub static UTF_16BE: ByteOrderMark = ByteOrderMark::new("UTF-16BE", &[0xFE, 0xFF]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:45:5
+   |
+45 |     pub static UTF_16LE: ByteOrderMark = ByteOrderMark::new("UTF-16LE", &[0xFF, 0xFE]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:51:5
+   |
+51 |     pub static UTF_32BE: ByteOrderMark = ByteOrderMark::new("UTF-32BE", &[0x00, 0x00, 0xFE, 0xFF]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: associated `static` items are not allowed
+  --> src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:57:5
+   |
+57 |     pub static UTF_32LE: ByteOrderMark = ByteOrderMark::new("UTF-32LE", &[0xFF, 0xFE, 0x00, 0x00]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: expected expression, found `>`
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:28:30
+   |
+28 |         self.os.write(&[(v >>> 0) & 0xFF]);
+   |                              ^ expected expression
+
+error: expected expression, found `>`
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:29:30
+   |
+29 |         self.os.write(&[(v >>> 8) & 0xFF]);
+   |                              ^ expected expression
+
+error: expected expression, found `>`
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:30:30
+   |
+30 |         self.os.write(&[(v >>> 16) & 0xFF]);
+   |                              ^ expected expression
+
+error: expected expression, found `>`
+  --> src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:31:30
+   |
+31 |         self.os.write(&[(v >>> 24) & 0xFF]);
+   |                              ^ expected expression
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:636:17
+    |
+636 |                 '\'' as i32 => {
+    |                 ^^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+636 -                 '\'' as i32 => {
+636 +                 val if val == '\'' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+629 +             const VAL: /* Type */ = '\'' as i32;
+630 |             match i {
+631 |
+...
+636 |
+637 ~                 VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:640:17
+    |
+640 |                 '<' as i32 => {
+    |                 ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+640 -                 '<' as i32 => {
+640 +                 val if val == '<' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+629 +             const VAL: /* Type */ = '<' as i32;
+630 |             match i {
+631 |
+...
+640 |
+641 ~                 VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:646:17
+    |
+646 |                 '>' as i32 => {
+    |                 ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+646 -                 '>' as i32 => {
+646 +                 val if val == '>' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+629 +             const VAL: /* Type */ = '>' as i32;
+630 |             match i {
+631 |
+...
+646 |
+647 ~                 VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:720:21
+    |
+720 |                     '/' as i32 => {
+    |                     ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+720 -                     '/' as i32 => {
+720 +                     val if val == '/' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+719 +                 const VAL: /* Type */ = '/' as i32;
+720 |                 match self.peek(1)? {
+721 ~                     VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:723:21
+    |
+723 |                     '?' as i32 | '!' as i32 => {
+    |                     ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+723 -                     '?' as i32 | '!' as i32 => {
+723 +                     val | '!' as i32 if val == '?' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+719 +                 const VAL: /* Type */ = '?' as i32;
+720 |                 match self.peek(1)? {
+721 |                     '/' as i32 => {
+722 |                         return Ok(KXmlParser::END_TAG);
+723 |                     }
+724 ~                     VAL | '!' as i32 => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:723:34
+    |
+723 |                     '?' as i32 | '!' as i32 => {
+    |                                  ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+723 -                     '?' as i32 | '!' as i32 => {
+723 +                     '?' as i32 | val if val == '!' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+719 +                 const VAL: /* Type */ = '!' as i32;
+720 |                 match self.peek(1)? {
+721 |                     '/' as i32 => {
+722 |                         return Ok(KXmlParser::END_TAG);
+723 |                     }
+724 ~                     '?' as i32 | VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:715:13
+    |
+715 |             '&' as i32 => {
+    |             ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+715 -             '&' as i32 => {
+715 +             val if val == '&' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+711 +         const VAL: /* Type */ = '&' as i32;
+712 |         match self.peek(0)? {
+713 |             -1 => {
+714 |                 return Ok(KXmlParser::END_DOCUMENT);
+715 |             }
+716 ~             VAL => {
+    |
+
+error: expected a pattern, found an expression
+   --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:718:13
+    |
+718 |             '<' as i32 => {
+    |             ^^^^^^^^^^ not a pattern
+    |
+    = note: arbitrary expressions are not allowed in patterns: <https://doc.rust-lang.org/book/ch19-00-patterns.html>
+help: consider moving the expression to a match arm guard
+    |
+718 -             '<' as i32 => {
+718 +             val if val == '<' as i32 => {
+    |
+help: consider extracting the expression into a `const`
+    |
+711 +         const VAL: /* Type */ = '<' as i32;
+712 |         match self.peek(0)? {
+713 |             -1 => {
+...
+718 |             }
+719 ~             VAL => {
+    |
+
+error: `<<` is interpreted as a start of generic arguments for `i32`, not a shift
+    --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:1323:76
+     |
+1323 | ...                   self.src_buf[0] = ((self.src_buf[2] as i32 << 8) | self.src_buf[3] as i32) as u16;
+     |                                                                  ^^ - interpreted as generic arguments
+     |                                                                  |
+     |                                                                  not interpreted as shift
+     |
+help: try shifting the cast value
+     |
+1323 |                                 self.src_buf[0] = (((self.src_buf[2] as i32) << 8) | self.src_buf[3] as i32) as 
+u16;
+     |                                                     +                      +
+
+error: `<<` is interpreted as a start of generic arguments for `i32`, not a shift
+    --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:1328:76
+     |
+1328 | ...                   self.src_buf[0] = ((self.src_buf[3] as i32 << 8) | self.src_buf[2] as i32) as u16;
+     |                                                                  ^^ - interpreted as generic arguments
+     |                                                                  |
+     |                                                                  not interpreted as shift
+     |
+help: try shifting the cast value
+     |
+1328 |                                 self.src_buf[0] = (((self.src_buf[3] as i32) << 8) | self.src_buf[2] as i32) as 
+u16;
+     |                                                     +                      +
+
+error: `<<` is interpreted as a start of generic arguments for `i32`, not a shift
+    --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:1342:76
+     |
+1342 | ...                   self.src_buf[0] = ((self.src_buf[2] as i32 << 8) | self.src_buf[3] as i32) as u16;
+     |                                                                  ^^ - interpreted as generic arguments
+     |                                                                  |
+     |                                                                  not interpreted as shift
+     |
+help: try shifting the cast value
+     |
+1342 |                                 self.src_buf[0] = (((self.src_buf[2] as i32) << 8) | self.src_buf[3] as i32) as 
+u16;
+     |                                                     +                      +
+
+error: `<<` is interpreted as a start of generic arguments for `i32`, not a shift
+    --> src\..\src\main\java\org\kxml2\io\KXmlParser.rs:1347:76
+     |
+1347 | ...                   self.src_buf[0] = ((self.src_buf[3] as i32 << 8) | self.src_buf[2] as i32) as u16;
+     |                                                                  ^^ - interpreted as generic arguments
+     |                                                                  |
+     |                                                                  not interpreted as shift
+     |
+help: try shifting the cast value
+     |
+1347 |                                 self.src_buf[0] = (((self.src_buf[3] as i32) << 8) | self.src_buf[2] as i32) as 
+u16;
+     |                                                     +                      +
+
+error: expressions must be enclosed in braces to be used as const generic arguments
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:192:62
+    |
+192 |         if c as i32 >= ' ' as i32 && c != '@' && (c as i32 < 127 || self.unicode) {
+    |                                                              ^^^^^^^^^^^^^^^^^^^
+    |
+help: enclose the `const` expression in braces
+    |
+192 |         if c as i32 >= ' ' as i32 && c != '@' && (c as i32 < { 127 || self.unicode }) {
+    |                                                              +                     +
+
+error: `<` is interpreted as a start of generic arguments for `i32`, not a comparison
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:192:60
+    |
+192 |         if c as i32 >= ' ' as i32 && c != '@' && (c as i32 < 127 || self.unicode) {
+    |                                                            ^ -------------------- interpreted as generic argument
+s
+    |                                                            |
+    |                                                            not interpreted as comparison
+    |
+help: try comparing the cast value
+    |
+192 |         if c as i32 >= ' ' as i32 && c != '@' && ((c as i32) < 127 || self.unicode) {
+    |                                                   +        +
+
+error: Rust has no ternary operator
+   --> src\..\src\main\java\org\kxml2\io\KXmlSerializer.rs:235:9
+    |
+235 | /         return (
+236 | |             "http://xmlpull.org/v1/doc/features.html#indent-output"
+237 | |                 .eq(
+238 | |                     &name))
+239 | |             ? self.indent[self.depth as usize]
+240 | |             : false;
+    | |___________________^
+    |
+help: use an `if-else` expression instead
+    |
+235 ~         if return (
+236 |             "http://xmlpull.org/v1/doc/features.html#indent-output"
+237 |                 .eq(
+238 |                     &name))
+239 ~             { self.indent[self.depth as usize]
+240 ~             } else { false };
+    |
+
+error[E0758]: unterminated block comment
+   --> src\..\src\main\java\org\kxml2\kdom\Node.rs:254:5
+    |
+254 |       /* returns "#document-fragment". For elements, the element name is returned
+    |       ^-
+    |       |
+    |  _____unterminated block comment
+    | |
+255 | |
+256 | |     pub fn get_name(&self) -> String {
+257 | |         return "#document-fragment".to_string();
+...   |
+526 | | /** returns a copy of the parent reference to be stored in an element
+    | | -- ...as last nested comment starts here, maybe you want to close this instead?
+527 | |  *  (Java: the parent is a reference to the enclosing Node) */
+    | |                                                             -- ...and last nested comment terminates here.
+...   |
+532 | |     };
+533 | | }
+    | |__^
+
+For more information about this error, try `rustc --explain E0758`.
+error: could not compile `reader` (lib) due to 66 previous errors

@@ -1,3 +1,7 @@
+use crate::prelude::*;
+// fix: 显式导入消解 prelude 多 glob 歧义（FileInputStream ← resourceutil/stubs；FileUtils ← stubs/FilesUtil）
+use crate::stubs::FileInputStream;
+use crate::io_legado_app_utils_filesutil::FileUtils;
 // package io.legado.app.model.localBook
 //
 // import io.legado.app.constant.AppConst
@@ -25,17 +29,19 @@ impl LocalBook {
     //     Pattern.compile("(^)(.+) 作者：(.+)$"),
     //     Pattern.compile("(^)(.+) by (.+)$")
     // )
-    fn name_author_patterns() -> Vec<Regex> {
+    // fix: E0599 `regex::Regex` 无 matcher()——改用 stubs::Pattern（与 TextFile 转录一致）
+    fn name_author_patterns() -> Vec<Pattern> {
         vec![
-            Regex::new("(.*?)《([^《》]+)》.*?作者：(.*)").unwrap(),
-            Regex::new("(.*?)《([^《》]+)》(.*)").unwrap(),
-            Regex::new("(^)(.+) 作者：(.+)$").unwrap(),
-            Regex::new("(^)(.+) by (.+)$").unwrap(),
+            Pattern::compile("(.*?)《([^《》]+)》.*?作者：(.*)"),
+            Pattern::compile("(.*?)《([^《》]+)》(.*)"),
+            Pattern::compile("(^)(.+) 作者：(.+)$"),
+            Pattern::compile("(^)(.+) by (.+)$"),
         ]
     }
 
     // @Throws(FileNotFoundException::class, SecurityException::class)
-    pub fn get_book_input_stream(book: &Book) -> InputStream {
+    // fix: InputStream 为 trait，返回类型改用具体 FileInputStream；get_local_file(&mut self) 故需 &mut Book
+    pub fn get_book_input_stream(book: &mut Book) -> FileInputStream {
         let file = book.get_local_file();
         if file.exists() {
             return FileInputStream::new(&file);
@@ -77,23 +83,24 @@ impl LocalBook {
     }
 
     pub fn analyze_name_author(file_name: &str) -> (String, String) {
-        let temp_file_name = file_name.substring_before_last(".");
+        // fix: E0599 String 无 substring_before_last()——用 StringUtil 关联函数（与 EpubFile 转录一致）
+        let temp_file_name = StringUtil::substring_before_last(file_name, '.');
         let mut name: String;
         let mut author: String;
 
         for pattern in Self::name_author_patterns() {
-            let matcher = pattern.matcher(temp_file_name);
+            let mut matcher = pattern.matcher(temp_file_name.clone());
             if matcher.find() {
-                name = matcher.group(2);
-                let group1 = matcher.group(1).unwrap_or("");
-                let group3 = matcher.group(3).unwrap_or("");
-                author = format_book_author(group1 + group3);
+                name = matcher.group_idx(2).unwrap_or_default();
+                let group1 = matcher.group_idx(1).unwrap_or_default();
+                let group3 = matcher.group_idx(3).unwrap_or_default();
+                author = BookHelp::format_book_author(&format!("{}{}", group1, group3));
                 return (name, author);
             }
         }
 
-        name = format_book_name(temp_file_name);
-        let candidate = format_book_author(temp_file_name.replace(&name, ""));
+        name = BookHelp::format_book_name(&temp_file_name);
+        let candidate = BookHelp::format_book_author(&temp_file_name.replace(&name, ""));
         author = if candidate.len() != temp_file_name.len() {
             candidate
         } else {
@@ -112,9 +119,12 @@ impl LocalBook {
             }
         }
         if book.is_epub() {
-            book_file = book_file.parent_file();
-            if book_file.exists() {
-                delete_file(&book_file, true);
+            // fix: E0308 parent_file() 返回 Option<File>——if-let 解包（Kotlin `?: return` 语义）
+            if let Some(parent) = book_file.parent_file() {
+                book_file = parent;
+                if book_file.exists() {
+                    FileUtils::delete_deleteRootDir(&book_file, true);
+                }
             }
         }
         // }

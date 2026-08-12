@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::File;
 // package me.ag2s.umdlib.domain;
 //
 //
@@ -89,7 +91,7 @@ impl UmdCover {
         wos.write_bytes(&[b'#', 0x82, 0, 0x01, 0x0A, 0x01]);
         let rb = UmdUtils::gen_random_bytes(4);
         wos.write_bytes(&rb); //random numbers
-        wos.write(b'$');
+        wos.write(&[b'$']);
         wos.write_bytes(&rb); //random numbers
         wos.write_int(self.cover_data.len() as i32 + 9);
         wos.write(&self.cover_data);

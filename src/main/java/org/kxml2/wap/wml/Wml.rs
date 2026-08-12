@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package org.kxml2.wap.wml;
 
 // import org.kxml2.wap.*;
@@ -23,7 +24,7 @@ impl Wml {
     }
 
     pub fn create_serializer() -> WbxmlSerializer {
-        let s = WbxmlSerializer::new();
+        let mut s = WbxmlSerializer::new();
         s.set_tag_table(0, &TAG_TABLE);
         s.set_attr_start_table(0, &ATTR_START_TABLE);
         s.set_attr_value_table(0, &ATTR_VALUE_TABLE);
@@ -95,10 +96,10 @@ impl Wml {
     Some("u"), // 3D
     Some("setvar"), // 3E
     Some("wml"), // 3F
-    };
+    ]; // fix: was `};` — an array closes with `]`, not `}`
 
 
-    pub const ATTR_START_TABLE: [Option<&'static str>; 91] = {
+    pub const ATTR_START_TABLE: [Option<&'static str>; 91] = [ // fix: was `= {` — Java array-initializer braces
     Some("accept-charset"), // 05
     Some("align=bottom"), // 06
     Some("align=center"), // 07
@@ -195,10 +196,10 @@ impl Wml {
     Some("http-equiv=Expires"), // 5D
     None, // 5E
     None, // 5F
-    };
+    ]; // fix: was `};` — an array closes with `]`, not `}`
 
 
-    pub const ATTR_VALUE_TABLE: [Option<&'static str>; 29] = {
+    pub const ATTR_VALUE_TABLE: [Option<&'static str>; 29] = [ // fix: was `= {` — Java array-initializer braces
     Some(".com/"), // 85
     Some(".edu/"), // 86
     Some(".net/"), // 87
@@ -230,4 +231,4 @@ impl Wml {
 
     Some("wrap"), // A0
     Some("www."), // A1
-    };
+    ]; // fix: was `};` — an array closes with `]`, not `}`

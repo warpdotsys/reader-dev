@@ -1,3 +1,4 @@
+﻿use crate::prelude::*;
 /* Copyright (c) 2002,2003, Stefan Haustein, Oberhausen, Rhld., Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,6 +46,11 @@ pub enum WapExtensionData {
     Bytes(Vec<u8>),
     Str(String),
 }
+
+/** Marker type implementing the Wbxml trait so its constants are addressable (WbxmlConsts::X). */
+pub struct WbxmlConsts;
+
+impl crate::org_kxml2_wap_wbxml::Wbxml for WbxmlConsts {}
 
 pub struct WbxmlSerializer {
 
@@ -114,7 +120,8 @@ impl WbxmlSerializer {
 
 
     pub fn cdsect(&mut self, cdsect: String) -> Result<(), String> {
-        self.text(cdsect)
+        self.text(cdsect)?;
+        Ok(())
     }
 
     /**
@@ -159,13 +166,13 @@ impl WbxmlSerializer {
      * Namespaces is not yet implemented.
      */
     pub fn get_namespace(&self) -> Option<String> {
-        // Namespaces is not yet implemented. So only null can be setted
+        // Namespaces is not yet implemented. So only None can be setted
         return None;
     }
 
     /**
      * Returns the name of the current element as set by startTag().
-     * It can only be null before first call to startTag() or when last endTag()
+     * It can only be None before first call to startTag() or when last endTag()
      * is called to close first startTag().
      */
     pub fn get_name(&self) -> Option<String> {
@@ -235,10 +242,10 @@ impl WbxmlSerializer {
         if idx.is_none() {
             self.buf.push(
                 if len == 0 {
-                    if degenerated { Wbxml::LITERAL as u8 } else { Wbxml::LITERAL_C as u8 }
+                    if degenerated { WbxmlConsts::LITERAL as u8 } else { WbxmlConsts::LITERAL_C as u8 }
                 }
                 else {
-                    if degenerated { Wbxml::LITERAL_A as u8 } else { Wbxml::LITERAL_AC as u8 }
+                    if degenerated { WbxmlConsts::LITERAL_A as u8 } else { WbxmlConsts::LITERAL_AC as u8 }
                 });
 
             self.write_str_t(self.pending.clone().unwrap(), false)?;
@@ -247,7 +254,7 @@ impl WbxmlSerializer {
             let idx = idx.unwrap();
             if idx[0] != self.tag_page {
                 self.tag_page = idx[0];
-                self.buf.push(Wbxml::SWITCH_PAGE as u8);
+                self.buf.push(WbxmlConsts::SWITCH_PAGE as u8);
                 self.buf.push(self.tag_page as u8);
             }
             self.buf.push(
@@ -264,7 +271,7 @@ impl WbxmlSerializer {
             let mut idx = self.attr_start_table.get(&self.attributes[i]).map(|v| *v);
 
             if idx.is_none() {
-                self.buf.push(Wbxml::LITERAL as u8);
+                self.buf.push(WbxmlConsts::LITERAL as u8);
                 self.write_str_t(self.attributes[i].clone(), false)?;
             }
             else {
@@ -293,7 +300,7 @@ impl WbxmlSerializer {
         }
 
         if len > 0 {
-            self.buf.push(Wbxml::END as u8);
+            self.buf.push(WbxmlConsts::END as u8);
         }
 
         self.pending = None;
@@ -445,7 +452,7 @@ impl WbxmlSerializer {
             if p1 - p0 > 10 {
                 if p0 > last_cut && chars[p0 - 1] == ' '
                     && !self.string_table.contains_key(&chars[p0..p1].iter().collect::<String>()) {
-                    self.buf.push(Wbxml::STR_T as u8);
+                    self.buf.push(WbxmlConsts::STR_T as u8);
                     self.write_str_t(chars[last_cut..p1].iter().collect(), false)?;
                 }
                 else {
@@ -455,10 +462,10 @@ impl WbxmlSerializer {
                     }
 
                     if p0 > last_cut {
-                        self.buf.push(Wbxml::STR_T as u8);
+                        self.buf.push(WbxmlConsts::STR_T as u8);
                         self.write_str_t(chars[last_cut..p0].iter().collect(), false)?;
                     }
-                    self.buf.push(Wbxml::STR_T as u8);
+                    self.buf.push(WbxmlConsts::STR_T as u8);
                     self.write_str_t(chars[p0..p1].iter().collect(), true)?;
                 }
                 last_cut = p1;
@@ -467,7 +474,7 @@ impl WbxmlSerializer {
         }
 
         if last_cut < len {
-            self.buf.push(Wbxml::STR_T as u8);
+            self.buf.push(WbxmlConsts::STR_T as u8);
             self.write_str_t(chars[last_cut..len].iter().collect(), false)?;
         }
 
@@ -482,7 +489,7 @@ impl WbxmlSerializer {
             self.check_pending(true)?;
         }
         else {
-            self.buf.push(Wbxml::END as u8);
+            self.buf.push(WbxmlConsts::END as u8);
         }
         self.depth -= 1;
         return Ok(self);
@@ -495,30 +502,30 @@ impl WbxmlSerializer {
         self.check_pending(false)?;
         self.buf.push(type_ as u8);
         match type_ {
-        Wbxml::EXT_0 |
-        Wbxml::EXT_1 |
-        Wbxml::EXT_2 => {
+        WbxmlConsts::EXT_0 |
+        WbxmlConsts::EXT_1 |
+        WbxmlConsts::EXT_2 => {
         }
 
-        Wbxml::OPAQUE => {
+        WbxmlConsts::OPAQUE => {
             if let WapExtensionData::Bytes(bytes) = data {
                 WbxmlSerializer::write_int_bytes(&mut self.buf, bytes.len() as i32);
                 self.buf.extend(bytes);
             }
         }
 
-        Wbxml::EXT_I_0 |
-        Wbxml::EXT_I_1 |
-        Wbxml::EXT_I_2 => {
+        WbxmlConsts::EXT_I_0 |
+        WbxmlConsts::EXT_I_1 |
+        WbxmlConsts::EXT_I_2 => {
             if let WapExtensionData::Str(s) = data {
                 // Java: writeStrI(buf, (String) data);
                 WbxmlSerializer::write_str_i_buf(&mut self.buf, &s);
             }
         }
 
-        Wbxml::EXT_T_0 |
-        Wbxml::EXT_T_1 |
-        Wbxml::EXT_T_2 => {
+        WbxmlConsts::EXT_T_0 |
+        WbxmlConsts::EXT_T_1 |
+        WbxmlConsts::EXT_T_2 => {
             if let WapExtensionData::Str(s) = data {
                 self.write_str_t(s, false)?;
             }
@@ -598,7 +605,7 @@ impl WbxmlSerializer {
             None => self.add_to_string_table(s, may_prepend_space)?,
             Some(i) => i,
         };
-        self.write_int_bytes(&mut self.buf, val);
+        WbxmlSerializer::write_int_bytes(&mut self.buf, val);
 
         Ok(())
     }

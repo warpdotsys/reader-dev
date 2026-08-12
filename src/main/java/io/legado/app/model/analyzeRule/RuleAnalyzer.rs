@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.model.analyzeRule
 
 // //通用的规则切分处理
@@ -232,7 +233,8 @@ impl RuleAnalyzer {
     pub fn split_rule(&mut self, split: &[&str]) -> Vec<String> {
         if split.len() == 1 {
             self.elements_type = split[0].to_string(); // 设置分割字串
-            return if !self.consume_to(&self.elements_type) {
+            let elements_type = self.elements_type.clone();
+            return if !self.consume_to(&elements_type) {
                 self.rule.push(self.queue[self.start_x as usize..].to_string()); // rule += queue.substring(startX)
                 self.rule.clone()
             } else {
@@ -256,7 +258,8 @@ impl RuleAnalyzer {
                 self.elements_type = self.queue[end as usize..(end + self.step) as usize].to_string(); // 设置组合类型
                 self.pos = end + self.step; // 跳过分隔符
 
-                while self.consume_to(&self.elements_type) {
+                let elements_type = self.elements_type.clone();
+                while self.consume_to(&elements_type) {
                     //循环切分规则压入数组
                     self.rule.push(self.queue[self.start as usize..self.pos as usize].to_string()); // rule += queue.substring(start, pos)
                     self.pos += self.step; // 跳过分隔符
@@ -273,7 +276,8 @@ impl RuleAnalyzer {
                 self.elements_type = self.queue[end as usize..(end + self.step) as usize].to_string(); // 设置组合类型
                 self.pos = end + self.step; // 跳过分隔符
 
-                while self.consume_to(&self.elements_type) && self.pos < st {
+                let elements_type = self.elements_type.clone();
+                while self.consume_to(&elements_type) && self.pos < st {
                     //循环切分规则压入数组
                     self.rule.push(self.queue[self.start as usize..self.pos as usize].to_string()); // rule += queue.substring(start, pos)
                     self.pos += self.step; // 跳过分隔符
@@ -324,7 +328,8 @@ impl RuleAnalyzer {
                 self.rule.push(self.queue[self.start_x as usize..end as usize].to_string()); // rule += arrayOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
                 self.pos = end + self.step; // 跳过分隔符
 
-                while self.consume_to(&self.elements_type) {
+                let elements_type = self.elements_type.clone();
+                while self.consume_to(&elements_type) {
                     //循环切分规则压入数组
                     self.rule.push(self.queue[self.start as usize..self.pos as usize].to_string()); // rule += queue.substring(start, pos)
                     self.pos += self.step; // 跳过分隔符
@@ -340,7 +345,8 @@ impl RuleAnalyzer {
                 self.rule.push(self.queue[self.start_x as usize..end as usize].to_string()); // rule += arrayListOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
                 self.pos = end + self.step; // 跳过分隔符
 
-                while self.consume_to(&self.elements_type) && self.pos < st {
+                let elements_type = self.elements_type.clone();
+                while self.consume_to(&elements_type) && self.pos < st {
                     //循环切分规则压入数组
                     self.rule.push(self.queue[self.start as usize..self.pos as usize].to_string()); // rule += queue.substring(start, pos)
                     self.pos += self.step; // 跳过分隔符
@@ -376,7 +382,8 @@ impl RuleAnalyzer {
         self.start = self.pos; // 设置开始查找筛选器位置的起始位置
 
         // return if (!consumeTo(elementsType)) { rule += queue.substring(startX); rule } else splitRule() // 递归匹配
-        return if !self.consume_to(&self.elements_type) {
+        let elements_type = self.elements_type.clone();
+        return if !self.consume_to(&elements_type) {
             self.rule.push(self.queue[self.start_x as usize..].to_string()); // rule += queue.substring(startX)
             self.rule.clone()
         } else {
@@ -418,7 +425,7 @@ impl RuleAnalyzer {
             if self.chomp_code_balanced('{', '}') {
                 // val frv = fr(queue.substring(posPre + startStep, pos - endStep))
                 let frv = fr(self.queue[(pos_pre + start_step) as usize..(self.pos - end_step) as usize].to_string());
-                if !frv.is_none_or(|s| s.is_empty()) {
+                if !frv.clone().is_none_or(|s| s.is_empty()) {
                     // if (!frv.isNullOrEmpty())
                     st.push_str(&(self.queue[self.start_x as usize..pos_pre as usize].to_string() + &frv.unwrap())); // 压入内嵌规则前的内容，及内嵌规则解析得到的字符串
                     self.start_x = self.pos; // 记录下次规则起点
@@ -442,7 +449,8 @@ impl RuleAnalyzer {
      *
      * */
     // (Kotlin 重载2: innerRule(startStr, endStr, fr), 与重载1同名不同参)
-    pub fn inner_rule(
+    // fix: Rust 不支持函数重载，重载2更名为 inner_rule_str（AnalyzeUrl 调用处同步修改）
+    pub fn inner_rule_str(
         &mut self,
         start_str: String,
         end_str: String,
@@ -456,7 +464,7 @@ impl RuleAnalyzer {
             if self.consume_to(&end_str) {
                 // val frv = fr(queue.substring(posPre, pos))
                 let frv = fr(self.queue[pos_pre as usize..self.pos as usize].to_string());
-                // Kotlin: st.append(queue.substring(startX, posPre - startStr.length) + frv) //"str" + null == "strnull"
+                // Kotlin: st.append(queue.substring(startX, posPre - startStr.length) + frv) //"str" + None == "strnull"
                 st.push_str(&(self.queue[self.start_x as usize..(pos_pre - start_str.len() as i32) as usize].to_string() + &frv.unwrap_or_default()));
                 self.pos += end_str.len() as i32; // 跳过结束字符串
                 self.start_x = self.pos; // 记录下次规则起点

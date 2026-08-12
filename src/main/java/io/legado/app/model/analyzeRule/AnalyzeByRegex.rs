@@ -1,14 +1,17 @@
+use crate::prelude::*;
 // package io.legado.app.model.analyzeRule
 // import java.util.*
 // import java.util.regex.Pattern
 
 // object AnalyzeByRegex
-struct AnalyzeByRegex;
+pub struct AnalyzeByRegex;
 
 impl AnalyzeByRegex {
     fn get_element(res: &str, regs: &[String], index: usize) -> Option<List<String>> {
         let mut v_index = index;
-        let mut res_m = Pattern::compile(&regs[v_index]).matcher(res);
+        let haystack = res.to_string();
+        let pattern = Pattern::compile(&regs[v_index]);
+        let mut res_m = pattern.matcher(haystack);
         if !res_m.find() {
             return None;
         }
@@ -17,13 +20,13 @@ impl AnalyzeByRegex {
             // 新建容器
             let mut info = array_list_of::<String>();
             for group_index in 0..=res_m.group_count() {
-                info.add(res_m.group(group_index).unwrap());
+                info.add(res_m.group_idx(group_index).unwrap());
             }
             Some(info)
         } else {
             let mut result = StringBuilder::new();
             loop {
-                result.append(res_m.group().unwrap());
+                result.append(res_m.group());
                 if !res_m.find() { break; }
             }
             Self::get_element(&result.to_string(), regs, { v_index += 1; v_index })
@@ -32,7 +35,9 @@ impl AnalyzeByRegex {
 
     fn get_elements(res: &str, regs: &[String], index: usize) -> List<List<String>> {
         let mut v_index = index;
-        let mut res_m = Pattern::compile(&regs[v_index]).matcher(res);
+        let haystack = res.to_string();
+        let pattern = Pattern::compile(&regs[v_index]);
+        let mut res_m = pattern.matcher(haystack);
         if !res_m.find() {
             return array_list_of();
         }
@@ -45,7 +50,7 @@ impl AnalyzeByRegex {
                 // 新建容器
                 let mut info = array_list_of::<String>();
                 for group_index in 0..=res_m.group_count() {
-                    info.add(res_m.group(group_index).unwrap_or_default());
+                    info.add(res_m.group_idx(group_index).unwrap_or_default());
                 }
                 books.add(info);
                 if !res_m.find() { break; }
@@ -54,7 +59,7 @@ impl AnalyzeByRegex {
         } else {
             let mut result = StringBuilder::new();
             loop {
-                result.append(res_m.group().unwrap());
+                result.append(res_m.group());
                 if !res_m.find() { break; }
             }
             return Self::get_elements(&result.to_string(), regs, { v_index += 1; v_index });

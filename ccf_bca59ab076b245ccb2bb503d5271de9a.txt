@@ -1,0 +1,7 @@
+﻿cargo :     Blocking waiting for file lock on build directory
+At line:1 char:86
++ ...  + [guid]::NewGuid().ToString('N') + ".txt"; cargo check 2>&1 | Out-F ...
++                                                  ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Blocking wa...build directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

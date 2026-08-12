@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0659 `Reader` 歧义（glob 导入冲突）；与 CharsetMatch::get_reader() 返回的占位 Reader 保持同一类型
+use crate::stubs::CharsetMatchReader as Reader;
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 /*
@@ -63,7 +66,7 @@ pub struct CharsetDetector {
     //  buffer here.
     f_raw_length: i32,          // Length of data in fRawInput array.
 
-    f_input_stream: Option<InputStream>, // User's input stream, or null if the user
+    f_input_stream: Option<Box<dyn InputStream>>, // User's input stream, or None if the user
     //   gave us a byte array.
 
     //
@@ -71,13 +74,13 @@ pub struct CharsetDetector {
     //
     f_strip_tags: bool,        // If true, setText() will strip tags from input text.
 
-    f_enabled_recognizers: Option<Vec<bool>>, // If not null, active set of charset recognizers had
+    f_enabled_recognizers: Option<Vec<bool>>, // If not None, active set of charset recognizers had
     // been changed from the default. The array index is
     // corresponding to ALL_RECOGNIZER. See setDetectableCharset().
 }
 
 // private static final int kBufSize = 8000;
-const K_BUF_SIZE: usize = 8000;
+pub const K_BUF_SIZE: usize = 8000;
 
 /*
  * List of recognizers for all charsets known to the implementation.
@@ -190,6 +193,17 @@ impl CharsetDetector {
         }
     }
 
+    // fix: 私有字段访问器（CharsetMatch 等跨模块转录文件使用）
+    pub(crate) fn has_input_stream(&self) -> bool {
+        self.f_input_stream.is_some()
+    }
+    pub(crate) fn raw_input(&self) -> &Option<Vec<u8>> {
+        &self.f_raw_input
+    }
+    pub(crate) fn raw_length(&self) -> i32 {
+        self.f_raw_length
+    }
+
     /**
      * Set the declared encoding for charset detection.
      * The declared encoding of an input text is an encoding obtained
@@ -249,9 +263,9 @@ impl CharsetDetector {
      */
 
     // public CharsetDetector setText(InputStream in) throws IOException {
-    pub fn set_text_stream(&mut self, input: InputStream) -> Result<&mut CharsetDetector, IOException> {
-        self.f_input_stream = Some(input.clone());
-        self.f_input_stream.as_ref().unwrap().mark(K_BUF_SIZE);
+    pub fn set_text_stream(&mut self, input: Box<dyn InputStream>) -> Result<&mut CharsetDetector, IOException> {
+        self.f_input_stream = Some(input);
+        self.f_input_stream.as_mut().unwrap().mark(K_BUF_SIZE);
         // fRawInput = new byte[kBufSize];   // Always make a new buffer because the
         //                                    // previous one may have come from the caller,
         //                                    // in which case we can't touch it.
@@ -261,8 +275,10 @@ impl CharsetDetector {
         while remaining_length > 0 {
             // read() may give data in smallish chunks, esp. for remote sources.  Hence, this loop.
             // int bytesRead = fInputStream.read(fRawInput, fRawLength, remainingLength);
-            let bytes_read = self.f_input_stream.as_ref().unwrap().read(
-                &mut self.f_raw_input.as_mut().unwrap()[self.f_raw_length as usize..(self.f_raw_length as usize + remaining_length)],
+            let bytes_read = self.f_input_stream.as_mut().unwrap().read(
+                self.f_raw_input.as_mut().unwrap(),
+                self.f_raw_length as usize,
+                remaining_length,
             );
             // if (bytesRead <= 0) {
             //     break;
@@ -273,7 +289,7 @@ impl CharsetDetector {
             self.f_raw_length += bytes_read as i32;
             remaining_length -= bytes_read as usize;
         }
-        self.f_input_stream.as_ref().unwrap().reset()?;
+        self.f_input_stream.as_mut().unwrap().reset()?;
 
         Ok(self)
     }
@@ -293,7 +309,7 @@ impl CharsetDetector {
      * </ul>
      *
      * @return a CharsetMatch object representing the best matching charset, or
-     * <code>null</code> if there are no matches.
+     * <code>None</code> if there are no matches.
      * @stable ICU 3.4
      */
     // public CharsetMatch detect() {
@@ -303,8 +319,8 @@ impl CharsetDetector {
     // //          working.
     //     CharsetMatch[] matches = detectAll();
     //
-    //     if (matches == null || matches.length == 0) {
-    //         return null;
+    //     if (matches == None || matches.length == 0) {
+    //         return None;
     //     }
     //
     //     return matches[0];
@@ -316,8 +332,8 @@ impl CharsetDetector {
         //          working.
         let matches = self.detect_all();
 
-        // if (matches == null || matches.length == 0) {
-        //     return null;
+        // if (matches == None || matches.length == 0) {
+        //     return None;
         // }
         if matches.is_empty() {
             return None;
@@ -352,17 +368,17 @@ impl CharsetDetector {
         //    give a match quality > 0.
         // for (int i = 0; i < ALL_CS_RECOGNIZERS.size(); i++) {
         //     CSRecognizerInfo rcinfo = ALL_CS_RECOGNIZERS.get(i);
-        //     boolean active = (fEnabledRecognizers != null) ? fEnabledRecognizers[i] : rcinfo.isDefaultEnabled;
+        //     boolean active = (fEnabledRecognizers != None) ? fEnabledRecognizers[i] : rcinfo.isDefaultEnabled;
         //     if (active) {
         //         CharsetMatch m = rcinfo.recognizer.match(this);
-        //         if (m != null) {
+        //         if (m != None) {
         //             matches.add(m);
         //         }
         //     }
         // }
         let recognizers = all_cs_recognizers();
         for (i, rcinfo) in recognizers.iter().enumerate() {
-            // boolean active = (fEnabledRecognizers != null) ? fEnabledRecognizers[i] : rcinfo.isDefaultEnabled;
+            // boolean active = (fEnabledRecognizers != None) ? fEnabledRecognizers[i] : rcinfo.isDefaultEnabled;
             let active = match &self.f_enabled_recognizers {
                 Some(enabled) => enabled[i],
                 None => rcinfo.is_default_enabled,
@@ -377,7 +393,7 @@ impl CharsetDetector {
         }
         // Collections.sort(matches);      // CharsetMatch compares on confidence
         // Collections.reverse(matches);   //  Put best match first.
-        matches.sort_by(|a, b| a.compare_to(b));
+        matches.sort_by(|a, b| a.compare_to(b).cmp(&0));
         matches.reverse();
         // CharsetMatch[] resultArray = new CharsetMatch[matches.size()];
         // resultArray = matches.toArray(resultArray);
@@ -402,22 +418,22 @@ impl CharsetDetector {
      *
      * @param in               The source of the byte data in the unknown charset.
      * @param declaredEncoding A declared encoding for the data, if available,
-     *                         or null or an empty string if none is available.
+     *                         or None or an empty string if none is available.
      * @stable ICU 3.4
      */
     // public Reader getReader(InputStream in, String declaredEncoding) {
-    pub fn get_reader(&mut self, input: InputStream, declared_encoding: &str) -> Option<Reader> {
+    pub fn get_reader(&mut self, input: Box<dyn InputStream>, declared_encoding: &str) -> Option<Reader> {
         self.f_declared_encoding = Some(declared_encoding.to_string());
 
         // try {
         //     setText(in);
         //     CharsetMatch match = detect();
-        //     if (match == null) {
-        //         return null;
+        //     if (match == None) {
+        //         return None;
         //     }
         //     return match.getReader();
         // } catch (IOException e) {
-        //     return null;
+        //     return None;
         // }
         match (|| -> Result<Option<Reader>, IOException> {
             self.set_text_stream(input)?;
@@ -445,7 +461,7 @@ impl CharsetDetector {
      *
      * @param in               The source of the byte data in the unknown charset.
      * @param declaredEncoding A declared encoding for the data, if available,
-     *                         or null or an empty string if none is available.
+     *                         or None or an empty string if none is available.
      * @stable ICU 3.4
      */
     // public String getString(byte[] in, String declaredEncoding) {
@@ -455,12 +471,12 @@ impl CharsetDetector {
         // try {
         //     setText(in);
         //     CharsetMatch match = detect();
-        //     if (match == null) {
-        //         return null;
+        //     if (match == None) {
+        //         return None;
         //     }
         //     return match.getString(-1);
         // } catch (IOException e) {
-        //     return null;
+        //     return None;
         // }
         match (|| -> Result<Option<String>, IOException> {
             self.set_text(input);
@@ -604,7 +620,7 @@ impl CharsetDetector {
             }
 
             // fInputLen = dsti;
-            self.f_input_len = dsti;
+            self.f_input_len = dsti as i32;
         }
 
         //
@@ -685,13 +701,13 @@ impl CharsetDetector {
         let recognizers = all_cs_recognizers();
         // for (int i = 0; i < ALL_CS_RECOGNIZERS.size(); i++) {
         //     CSRecognizerInfo rcinfo = ALL_CS_RECOGNIZERS.get(i);
-        //     boolean active = (fEnabledRecognizers == null) ? rcinfo.isDefaultEnabled : fEnabledRecognizers[i];
+        //     boolean active = (fEnabledRecognizers == None) ? rcinfo.isDefaultEnabled : fEnabledRecognizers[i];
         //     if (active) {
         //         csnames.add(rcinfo.recognizer.getName());
         //     }
         // }
         for (i, rcinfo) in recognizers.iter().enumerate() {
-            // boolean active = (fEnabledRecognizers == null) ? rcinfo.isDefaultEnabled : fEnabledRecognizers[i];
+            // boolean active = (fEnabledRecognizers == None) ? rcinfo.isDefaultEnabled : fEnabledRecognizers[i];
             let active = match &self.f_enabled_recognizers {
                 None => rcinfo.is_default_enabled,
                 Some(enabled) => enabled[i],
@@ -749,7 +765,7 @@ impl CharsetDetector {
             return Err(format!("Invalid encoding: {}{}{}", "\"", encoding, "\""));
         }
 
-        // if (fEnabledRecognizers == null && !isDefaultVal) {
+        // if (fEnabledRecognizers == None && !isDefaultVal) {
         //     // Create an array storing the non default setting
         //     fEnabledRecognizers = new boolean[ALL_CS_RECOGNIZERS.size()];
         //
@@ -769,7 +785,7 @@ impl CharsetDetector {
             self.f_enabled_recognizers = Some(enabled_recognizers);
         }
 
-        // if (fEnabledRecognizers != null) {
+        // if (fEnabledRecognizers != None) {
         //     fEnabledRecognizers[modIdx] = enabled;
         // }
         if let Some(enabled_recognizers) = self.f_enabled_recognizers.as_mut() {
@@ -790,15 +806,77 @@ impl CharsetDetector {
 //     }
 // }
 pub(crate) struct CSRecognizerInfo {
-    pub(crate) recognizer: Box<dyn CharsetRecognizer>,
+    // fix: 显式 +Send +Sync，满足 OnceLock<Vec<CSRecognizerInfo>> 的 Sync 约束（E0277）
+    pub(crate) recognizer: Box<dyn CharsetRecognizer + Send + Sync>,
     pub(crate) is_default_enabled: bool,
 }
 
 impl CSRecognizerInfo {
-    pub(crate) fn new(recognizer: Box<dyn CharsetRecognizer>, is_default_enabled: bool) -> CSRecognizerInfo {
+    pub(crate) fn new(recognizer: Box<dyn CharsetRecognizer + Send + Sync>, is_default_enabled: bool) -> CSRecognizerInfo {
         CSRecognizerInfo {
             recognizer,
             is_default_enabled,
         }
+    }
+}
+
+// fix: 原 CharsetRecog_sbcs 转录未包含的 6 个识别器（最小占位实现；仅提供名称，匹配恒为 None）
+pub(crate) struct CharsetRecog_windows_1256;
+impl CharsetRecognizer for CharsetRecog_windows_1256 {
+    fn get_name(&self) -> String {
+        "windows-1256".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
+    }
+}
+
+pub(crate) struct CharsetRecog_KOI8_R;
+impl CharsetRecognizer for CharsetRecog_KOI8_R {
+    fn get_name(&self) -> String {
+        "KOI8-R".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
+    }
+}
+
+pub(crate) struct CharsetRecog_IBM424_he_rtl;
+impl CharsetRecognizer for CharsetRecog_IBM424_he_rtl {
+    fn get_name(&self) -> String {
+        "IBM424_rtl".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
+    }
+}
+
+pub(crate) struct CharsetRecog_IBM424_he_ltr;
+impl CharsetRecognizer for CharsetRecog_IBM424_he_ltr {
+    fn get_name(&self) -> String {
+        "IBM424_ltr".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
+    }
+}
+
+pub(crate) struct CharsetRecog_IBM420_ar_rtl;
+impl CharsetRecognizer for CharsetRecog_IBM420_ar_rtl {
+    fn get_name(&self) -> String {
+        "IBM420_rtl".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
+    }
+}
+
+pub(crate) struct CharsetRecog_IBM420_ar_ltr;
+impl CharsetRecognizer for CharsetRecog_IBM420_ar_ltr {
+    fn get_name(&self) -> String {
+        "IBM420_ltr".to_string()
+    }
+    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
+        None // fix: 占位，恒无匹配
     }
 }

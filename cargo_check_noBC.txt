@@ -1,0 +1,51 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:101
++ ... ler/BookController.rs BookController.rs.bak; cargo check 2>&1 | Out-F ...
++                                                  ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:201:11
+    |
+201 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:275:11
+    |
+275 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: keyword `catch` cannot follow a `try` block
+   --> src\..\src\main\java\com\htmake\reader\ReaderUIApplication.rs:340:11
+    |
+340 |         } catch (e: Exception) {
+    |           ^^^^^
+    |
+    = help: try using `match` on the result of the `try` block instead
+
+error: incorrect use of `await`
+   --> src\..\src\main\java\com\htmake\reader\api\controller\BaseController.rs:637:64
+    |
+637 |                         result_list.push(deferred_list[i].await());
+    |                                                                ^^
+    |
+help: `await` is not a method call, remove the parentheses
+    |
+637 -                         result_list.push(deferred_list[i].await());
+637 +                         result_list.push(deferred_list[i].await);
+    |
+
+error: couldn't read `src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs`: 系统找不到指定的文件。 (os error 2
+)
+  --> src\lib.rs:23:1
+   |
+23 | pub mod com_htmake_reader_api_controller_bookcontroller;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `reader` (lib) due to 5 previous errors

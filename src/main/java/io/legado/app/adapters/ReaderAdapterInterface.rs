@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.adapters
 //
 // import io.legado.app.help.http.StrResponse
@@ -27,6 +28,6 @@ pub trait ReaderAdapterInterface {
         post: bool,
         body: Option<&str>,
         user_name_space: &str,
-        debug_log: Option<&DebugLog>,
+        debug_log: Option<&dyn DebugLog>,
     ) -> Option<StrResponse>;
 }

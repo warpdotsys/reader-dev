@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package me.ag2s.epublib.domain;
 
 // import me.ag2s.epublib.util.StringUtil;
@@ -65,7 +66,7 @@ impl Spine {
 
   /**
    * Gets the resource at the given index.
-   * Null if not found.
+   * None if not found.
    *
    * @param index index
    * @return the resource at the given index.
@@ -80,7 +81,7 @@ impl Spine {
   /**
    * Finds the first resource that has the given resourceId.
    *
-   * Null if not found.
+   * None if not found.
    *
    * @param resourceId resourceId
    * @return the first resource that has the given resourceId.
@@ -106,9 +107,7 @@ impl Spine {
    * @return the given spineReference
    */
   pub fn add_spine_reference(&mut self, spine_reference: SpineReference) -> SpineReference {
-    if self.spine_references.is_none() {
-      self.spine_references = Vec::new();
-    }
+    // fix: Java null 检查（spineReferences == null）转录为 Vec 恒非空，省略
     self.spine_references.push(spine_reference.clone());
     return spine_reference;
   }
@@ -164,7 +163,7 @@ impl Spine {
     if current_resource.is_none() {
       return -1;
     }
-    return self.get_resource_index(&current_resource.as_ref().unwrap().get_href());
+    return self.get_resource_index_by_href(current_resource.as_ref().unwrap().get_href());
   }
 
   /**
@@ -173,13 +172,14 @@ impl Spine {
    * @return something &lt; 0 if not found.
    *
    */
-  pub fn get_resource_index(&self, resource_href: &String) -> i32 {
+  // fix: Java 重载 getResourceIndex(String) 转录改名，避免与 Option<Resource> 版重名
+  pub fn get_resource_index_by_href(&self, resource_href: &String) -> i32 {
     let mut result = -1;
     if StringUtil::is_blank(resource_href) {
       return result;
     }
     for i in 0..self.spine_references.len() {
-      if resource_href.eq(&self.spine_references[i].get_resource().as_ref().unwrap().get_href()) {
+      if resource_href.eq(self.spine_references[i].get_resource().as_ref().unwrap().get_href()) {
         result = i as i32;
         break;
       }

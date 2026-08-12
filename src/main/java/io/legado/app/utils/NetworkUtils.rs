@@ -1,11 +1,18 @@
+use crate::prelude::*;
+use crate::stubs::BitSet;
+use crate::stubs::Enumeration;
+use crate::stubs::InetAddress;
+use crate::stubs::NetworkInterface;
+use crate::stubs::URL;
 pub struct NetworkUtils;
 
 impl NetworkUtils {
     pub fn getUrl(response: &Response) -> String {
-        let networkResponse = response.raw().networkResponse;
+        // fix: stubs 无 okhttp `raw().networkResponse/request.url` 字段，改用现有方法占位
+        let networkResponse = response.network_response();
         match networkResponse {
-            Some(nr) => nr.request.url.to_string(),
-            None => response.raw().request.url.to_string(),
+            Some(nr) => nr.request().url().to_string(),
+            None => response.request().url().to_string(),
         }
     }
 
@@ -79,9 +86,9 @@ impl NetworkUtils {
             return baseURL.unwrap().to_string();
         }
         let mut relativeUrl = relativePath.to_string();
-        let result: Result<(), ()> = (|| {
-            let absoluteUrl = URL::new(baseURL.unwrap().splitn(2, ",").next().unwrap());
-            let parseUrl = URL::new_relative(&absoluteUrl, relativePath);
+        let result: Result<(), StubError> = (|| {
+            let absoluteUrl = URL::new(baseURL.unwrap().splitn(2, ",").next().unwrap().to_string())?;
+            let parseUrl = URL::new_relative(&absoluteUrl, relativePath)?;
             relativeUrl = parseUrl.to_string();
             Ok(())
         })();
@@ -95,12 +102,12 @@ impl NetworkUtils {
      * 获取绝对地址
      */
     pub fn getAbsoluteURL_url(baseURL: Option<&URL>, relativePath: &str) -> String {
-        if baseURL == None {
+        if baseURL.is_none() {
             return relativePath.to_string();
         }
         let mut relativeUrl = relativePath.to_string();
-        let result: Result<(), ()> = (|| {
-            let parseUrl = URL::new_relative(baseURL.unwrap(), relativePath);
+        let result: Result<(), StubError> = (|| {
+            let parseUrl = URL::new_relative(baseURL.unwrap(), relativePath)?;
             relativeUrl = parseUrl.to_string();
             Ok(())
         })();
@@ -114,11 +121,11 @@ impl NetworkUtils {
         if url == None || !url.unwrap().starts_with("http") {
             return None;
         }
-        let index = url.unwrap().find_index_of("/", 9);
+        let index = url.unwrap().index_of("/", 9);
         if index == -1 {
             Some(url.unwrap().to_string())
         } else {
-            Some(url.unwrap()[0..index].to_string())
+            Some(url.unwrap()[0..index as usize].to_string())
         }
     }
 
@@ -138,7 +145,7 @@ impl NetworkUtils {
      * Get local Ip address.
      */
     pub fn getLocalIPAddress() -> Option<InetAddress> {
-        let enumeration: Option<Enumeration<NetworkInterface>> = (|| {
+        let enumeration: Option<Enumeration<NetworkInterface>> = (|| -> Result<Enumeration<NetworkInterface>, StubError> {
             Ok(NetworkInterface::getNetworkInterfaces())
         })()
         .ok();
@@ -164,7 +171,7 @@ impl NetworkUtils {
      * @return True if the input parameter is a valid IPv4 address.
      */
     pub fn isIPv4Address(input: &str) -> bool {
-        Self::IPV4_PATTERN().matcher(input).matches()
+        Self::IPV4_PATTERN().matcher(input.to_string()).matches()
     }
 
     /**
@@ -172,8 +179,7 @@ impl NetworkUtils {
      */
     pub fn IPV4_PATTERN() -> Pattern {
         Pattern::compile(
-            "^(" + "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}"
-                + "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+            "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
         )
     }
 }

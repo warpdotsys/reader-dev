@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::{Any, JsonPath, ReadContext};
 // package io.legado.app.data.entities
 
 // import com.jayway.jsonpath.DocumentContext
@@ -47,8 +49,8 @@ pub struct RssSource {
     pub user_name_space: String,
 
     // @Transient
-    // private var debugLog: io.legado.app.model.DebugLog? = null
-    pub debug_log: Option<DebugLog>,
+    // private var debugLog: io.legado.app.model.DebugLog? = None
+    pub debug_log: Option<Box<dyn DebugLog>>,
 }
 
 impl RssSource {
@@ -60,12 +62,12 @@ impl RssSource {
         self.user_name_space.clone()
     }
 
-    pub fn set_logger(&mut self, value: Option<DebugLog>) {
+    pub fn set_logger(&mut self, value: Option<Box<dyn DebugLog>>) {
         self.debug_log = value;
     }
 
-    pub fn get_logger(&self) -> Option<DebugLog> {
-        self.debug_log.clone()
+    pub fn get_logger(&self) -> Option<&dyn DebugLog> {
+        self.debug_log.as_deref()
     }
 
     pub fn get_tag(&self) -> String {
@@ -77,17 +79,17 @@ impl RssSource {
     }
 
     pub fn equal(&self, source: &RssSource) -> bool {
-        self.equal_str(&self.source_url, &source.source_url)
-            && self.equal_str(&self.source_icon, &source.source_icon)
+        self.equal_str(Some(self.source_url.as_str()), Some(source.source_url.as_str()))
+            && self.equal_str(Some(self.source_icon.as_str()), Some(source.source_icon.as_str()))
             && self.enabled == source.enabled
-            && self.equal_str(&self.source_group, &source.source_group)
-            && self.equal_str(&self.rule_articles, &source.rule_articles)
-            && self.equal_str(&self.rule_next_page, &source.rule_next_page)
-            && self.equal_str(&self.rule_title, &source.rule_title)
-            && self.equal_str(&self.rule_pub_date, &source.rule_pub_date)
-            && self.equal_str(&self.rule_description, &source.rule_description)
-            && self.equal_str(&self.rule_link, &source.rule_link)
-            && self.equal_str(&self.rule_content, &source.rule_content)
+            && self.equal_str(self.source_group.as_deref(), source.source_group.as_deref())
+            && self.equal_str(self.rule_articles.as_deref(), source.rule_articles.as_deref())
+            && self.equal_str(self.rule_next_page.as_deref(), source.rule_next_page.as_deref())
+            && self.equal_str(self.rule_title.as_deref(), source.rule_title.as_deref())
+            && self.equal_str(self.rule_pub_date.as_deref(), source.rule_pub_date.as_deref())
+            && self.equal_str(self.rule_description.as_deref(), source.rule_description.as_deref())
+            && self.equal_str(self.rule_link.as_deref(), source.rule_link.as_deref())
+            && self.equal_str(self.rule_content.as_deref(), source.rule_content.as_deref())
             && self.enable_js == source.enable_js
             && self.load_with_base_url == source.load_with_base_url
     }
@@ -95,8 +97,8 @@ impl RssSource {
     // private fun equal(a: String?, b: String?): Boolean {
     //     return a == b || (a.isNullOrEmpty() && b.isNullOrEmpty())
     // }
-    fn equal_str(&self, a: &Option<String>, b: &Option<String>) -> bool {
-        a == b || (a.is_null_or_empty() && b.is_null_or_empty())
+    fn equal_str(&self, a: Option<&str>, b: Option<&str>) -> bool {
+        a == b || (a.map_or(true, |s| s.is_empty()) && b.map_or(true, |s| s.is_empty()))
     }
 
     // fun sortUrls(): List<Pair<String, String>> = arrayListOf<Pair<String, String>>().apply {
@@ -125,7 +127,7 @@ impl RssSource {
     pub fn sort_urls(&self) -> Vec<(String, String)> {
         let mut result: Vec<(String, String)> = Vec::new();
         // kotlin.runCatching { ... }
-        let caught = (|| -> Result<()> {
+        let caught = (|| -> Result<(), String> {
             let mut a = self.sort_url.clone();
             if self.sort_url.as_deref().map_or(false, |s| starts_with_ignore_case(s, "<js>"))
                 || self.sort_url.as_deref().map_or(false, |s| starts_with_ignore_case(s, "@js:")) {
@@ -213,7 +215,7 @@ impl std::hash::Hash for RssSource {
 }
 
 // it.startsWith(prefix, ignoreCase = true) 的等价实现
-fn starts_with_ignore_case(s: &str, prefix: &str) -> bool {
+pub fn starts_with_ignore_case(s: &str, prefix: &str) -> bool {
     s.to_lowercase().starts_with(&prefix.to_lowercase())
 }
 
@@ -243,9 +245,9 @@ fn starts_with_ignore_case(s: &str, prefix: &str) -> bool {
 //     }
 // }
 impl RssSource {
-    pub fn from_json_doc(doc: DocumentContext) -> Result<RssSource> {
+    pub fn from_json_doc(doc: ReadContext) -> Result<RssSource, String> {
         // kotlin.runCatching { ... }
-        (|| -> Result<RssSource> {
+        (|| -> Result<RssSource, String> {
             // val loginUi = doc.read<Any>("$.loginUi")
             let mut source = RssSource {
                 source_url: doc.read_string("$.sourceUrl").expect("sourceUrl"),
@@ -254,7 +256,7 @@ impl RssSource {
                 source_group: doc.read_string("$.sourceGroup"),
                 source_comment: doc.read_string("$.sourceComment"),
                 enabled: doc.read_bool("$.enabled").unwrap_or(true),
-                enabled_cookie_jar: doc.read_bool("$.enabledCookieJar").unwrap_or(false),
+                enabled_cookie_jar: doc.read_bool("$.enabledCookieJar"),
                 concurrent_rate: doc.read_string("$.concurrentRate"),
                 header: doc.read_string("$.header"),
                 login_url: doc.read_string("$.loginUrl"),
@@ -281,18 +283,18 @@ impl RssSource {
         })()
     }
 
-    pub fn from_json(json: String) -> Result<RssSource> {
-        Self::from_json_doc(json_path::parse(json))
+    pub fn from_json(json: String) -> Result<RssSource, String> {
+        Self::from_json_doc(JsonPath::parse(json))
     }
 
-    pub fn from_json_array(json_array: String) -> Result<Vec<RssSource>> {
+    pub fn from_json_array(json_array: String) -> Result<Vec<RssSource>, String> {
         // kotlin.runCatching { ... }
-        (|| -> Result<Vec<RssSource>> {
+        (|| -> Result<Vec<RssSource>, String> {
             let mut sources: Vec<RssSource> = Vec::new();
-            let doc = json_path::parse(json_array).read::<Vec<Box<dyn Any>>>("$");
+            let doc = JsonPath::parse(json_array).read::<Vec<Any>>("$").unwrap_or_default();
             for it in doc {
-                let json_item = json_path::parse(it);
-                let source = Self::from_json_doc(json_item)?.ok_or(Error)?;
+                let json_item = JsonPath::parse(it);
+                let source = Self::from_json_doc(json_item)?;
                 sources.push(source);
             }
             Ok(sources)

@@ -1,3 +1,11 @@
+use crate::prelude::*;
+// fix: E0659 歧义——prelude glob 同时导出 stubs 与 ResourceUtil 模块的 File、textutils 与 stubs 双份 TextUtils，显式导入覆盖
+use crate::io_legado_app_utils_textutils::TextUtils;
+use crate::stubs::File;
+// fix: ACache 转录 API 返回 Arc<ACache> 且方法需 &mut self，CookieStore 方法仅 &self；
+// 改用内部引擎 ACacheManager（公开构造/方法）+ Mutex 内可变性，逻辑与原 ACache.put/putWithTime/getAsString/remove/clear 一致
+use crate::io_legado_app_utils_acache::{ACacheManager, Utils};
+use std::sync::Mutex;
 // @file:Suppress("unused")
 //
 // package io.legado.app.help.http
@@ -13,7 +21,7 @@
 // class CookieStore(val userNameSpace: String) : CookieManager {
 pub struct CookieStore {
     pub user_name_space: String,
-    pub cache_instance: ACache,
+    pub cache_instance: Mutex<ACacheManager>,
 }
 
 impl CookieStore {
@@ -25,13 +33,13 @@ impl CookieStore {
             //     50_000_000L,
             //     1_000_000
             // )
-            cache_instance: ACache::get(
-                File::new(&ReaderAdapterHelper::get_adapter().get_work_dir(
-                    "storage", "cache", "cookie", &user_name_space,
+            cache_instance: Mutex::new(ACacheManager::new(
+                File::new(&ReaderAdapterHelper::get_adapter().get_work_dir_vararg(
+                    &["storage", "cache", "cookie", &user_name_space],
                 )),
                 50_000_000_i64,
                 1_000_000,
-            ),
+            )),
         }
     }
 }
@@ -46,7 +54,7 @@ impl CookieStore {
     //     cacheInstance.clear()
     // }
     fn clear(&self) {
-        self.cache_instance.clear();
+        self.cache_instance.lock().unwrap().clear();
     }
 }
 
@@ -56,9 +64,13 @@ impl CookieManager for CookieStore {
     //     if (domain.isNotEmpty()) cacheInstance.put(domain, cookie ?: "")
     // }
     fn set_cookie(&self, url: &str, cookie: Option<&str>) {
-        let domain = NetworkUtils::get_sub_domain(url);
+        let domain = NetworkUtils::getSubDomain(Some(url));
         if !domain.is_empty() {
-            self.cache_instance.put(&domain, cookie.unwrap_or("").to_string(), 0);
+            // cacheInstance.put(domain, cookie ?: "", 0)（putWithTime → Utils.newStringWithDateInfo + manager.put）
+            let mut manager = self.cache_instance.lock().unwrap();
+            let file = manager.newFile(&domain);
+            file.writeText(&Utils::newStringWithDateInfo(0, cookie.unwrap_or("")));
+            manager.put(&file);
         }
     }
 
@@ -77,16 +89,16 @@ impl CookieManager for CookieStore {
     //     }
     // }
     fn replace_cookie(&self, url: &str, cookie: &str) {
-        if TextUtils::is_empty(url) || TextUtils::is_empty(cookie) {
+        if TextUtils::is_empty(Some(url)) || TextUtils::is_empty(Some(cookie)) {
             return;
         }
         let old_cookie = self.get_cookie(url);
-        if TextUtils::is_empty(&old_cookie) {
+        if TextUtils::is_empty(Some(old_cookie.as_str())) {
             self.set_cookie(url, Some(cookie));
         } else {
             let mut cookie_map = self.cookie_to_map(&old_cookie);
             cookie_map.extend(self.cookie_to_map(cookie));
-            let new_cookie = self.map_to_cookie(&cookie_map);
+            let new_cookie = self.map_to_cookie(Some(&cookie_map));
             match new_cookie {
                 Some(new_cookie) => self.set_cookie(url, Some(&new_cookie)),
                 None => self.set_cookie(url, None),
@@ -99,11 +111,23 @@ impl CookieManager for CookieStore {
     //     return if (domain.isEmpty()) "" else cacheInstance.getAsString(domain) ?: ""
     // }
     fn get_cookie(&self, url: &str) -> String {
-        let domain = NetworkUtils::get_sub_domain(url);
+        let domain = NetworkUtils::getSubDomain(Some(url));
         if domain.is_empty() {
             "".to_string()
         } else {
-            self.cache_instance.get_as_string(&domain).unwrap_or("".to_string())
+            // cacheInstance.getAsString(domain) ?: ""
+            let mut manager = self.cache_instance.lock().unwrap();
+            let file = manager.get(&domain);
+            if !file.exists() {
+                return "".to_string();
+            }
+            let text = file.readText();
+            if Utils::isDue_str(&text) {
+                manager.remove(&domain);
+                "".to_string()
+            } else {
+                Utils::clearDateInfo(Some(&text)).unwrap_or_default()
+            }
         }
     }
 
@@ -111,9 +135,9 @@ impl CookieManager for CookieStore {
     //     NetworkUtils.getSubDomain(url).takeIf { it.isNotEmpty() }?.let(cacheInstance::remove)
     // }
     fn remove_cookie(&self, url: &str) {
-        let domain = NetworkUtils::get_sub_domain(url);
+        let domain = NetworkUtils::getSubDomain(Some(url));
         if !domain.is_empty() {
-            self.cache_instance.remove(&domain);
+            self.cache_instance.lock().unwrap().remove(&domain);
         }
     }
 
@@ -173,8 +197,8 @@ impl CookieManager for CookieStore {
     }
 
     // override fun mapToCookie(cookieMap: Map<String, String>?): String? {
-    //     if (cookieMap == null || cookieMap.isEmpty()) {
-    //         return null
+    //     if (cookieMap == None || cookieMap.isEmpty()) {
+    //         return None
     //     }
     //     val builder = StringBuilder()
     //     for (key in cookieMap.keys) {

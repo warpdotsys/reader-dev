@@ -1,3 +1,4 @@
+﻿use crate::prelude::*;
 /**
  * Various String utility functions.
  * <p>
@@ -51,23 +52,23 @@ impl StringUtil {
     }
 
     /**
-     * Whether the String is not null, not zero-length and does not contain of
+     * Whether the String is not None, not zero-length and does not contain of
      * only whitespace.
      *
      * @param text text
-     * @return Whether the String is not null, not zero-length and does not contain of
+     * @return Whether the String is not None, not zero-length and does not contain of
      */
     pub fn is_not_blank(text: &str) -> bool {
         !is_blank(text)
     }
 
     /**
-     * Whether the String is null, zero-length and does contain only whitespace.
+     * Whether the String is None, zero-length and does contain only whitespace.
      *
-     * @return Whether the String is null, zero-length and does contain only whitespace.
+     * @return Whether the String is None, zero-length and does contain only whitespace.
      */
     pub fn is_blank(text: &str) -> bool {
-        if is_empty(text) {
+        if Self::is_empty(text) {
             return true;
         }
         for c in text.chars() {
@@ -79,10 +80,10 @@ impl StringUtil {
     }
 
     /**
-     * Whether the given string is null or zero-length.
+     * Whether the given string is None or zero-length.
      *
      * @param text the input for this method
-     * @return Whether the given string is null or zero-length.
+     * @return Whether the given string is None or zero-length.
      */
     pub fn is_empty(text: &str) -> bool {
         text.is_empty()
@@ -97,10 +98,10 @@ impl StringUtil {
      * @return Whether the given source string ends with the given suffix, ignoring case.
      */
     pub fn ends_with_ignore_case(source: &str, suffix: &str) -> bool {
-        if is_empty(suffix) {
+        if Self::is_empty(suffix) {
             return true;
         }
-        if is_empty(source) {
+        if Self::is_empty(source) {
             return false;
         }
         if suffix.len() > source.len() {
@@ -110,31 +111,32 @@ impl StringUtil {
     }
 
     /**
-     * If the given text is null return "", the original text otherwise.
+     * If the given text is None return "", the original text otherwise.
      *
      * @param text text
-     * @return If the given text is null "", the original text otherwise.
+     * @return If the given text is None "", the original text otherwise.
      */
     pub fn default_if_null(text: &str) -> String {
-        default_if_null_default(text, "")
+        Self::default_if_null_default(text, "")
     }
 
     /**
-     * If the given text is null return "", the given defaultValue otherwise.
+     * If the given text is None return "", the given defaultValue otherwise.
      *
      * @param text         d
      * @param defaultValue d
-     * @return If the given text is null "", the given defaultValue otherwise.
+     * @return If the given text is None "", the given defaultValue otherwise.
      */
     pub fn default_if_null_default(text: &str, default_value: &str) -> String {
-        if text == null {
+        // fix: Rust &str 不可为 None，原 Java `text == null` 分支恒不成立
+        if false {
             return default_value.to_string();
         }
         text.to_string()
     }
 
     /**
-     * Null-safe string comparator
+     * None-safe string comparator
      *
      * @param text1 d
      * @param text2 d
@@ -164,8 +166,8 @@ impl StringUtil {
             if (i + 1) < key_values.len() {
                 value = key_values[i + 1].clone();
             }
-            if value == null {
-                result.push_str("<null>");
+            if value == None {
+                result.push_str("<None>");
             } else {
                 result.push('\'');
                 result.push_str(value.as_deref().unwrap_or(""));
@@ -200,14 +202,14 @@ impl StringUtil {
      * @return the substring of the given text before the given separator.
      */
     pub fn substring_before(text: &str, separator: char) -> String {
-        if is_empty(text) {
+        if Self::is_empty(text) {
             return text.to_string();
         }
         let sep_pos = text.find(separator);
-        if sep_pos < 0 {
+        if sep_pos.is_none() {
             return text.to_string();
         }
-        text[0..sep_pos].to_string()
+        text[0..sep_pos.unwrap()].to_string()
     }
 
     /**
@@ -222,14 +224,14 @@ impl StringUtil {
      * @return the substring of the given text before the last occurrence of the given separator.
      */
     pub fn substring_before_last(text: &str, separator: char) -> String {
-        if is_empty(text) {
+        if Self::is_empty(text) {
             return text.to_string();
         }
         let c_pos = text.rfind(separator);
-        if c_pos < 0 {
+        if c_pos.is_none() {
             return text.to_string();
         }
-        text[0..c_pos].to_string()
+        text[0..c_pos.unwrap()].to_string()
     }
 
     /**
@@ -243,14 +245,14 @@ impl StringUtil {
      * @return the substring of the given text after the last occurrence of the given separator.
      */
     pub fn substring_after_last(text: &str, separator: char) -> String {
-        if is_empty(text) {
+        if Self::is_empty(text) {
             return text.to_string();
         }
         let c_pos = text.rfind(separator);
-        if c_pos < 0 {
+        if c_pos.is_none() {
             return "".to_string();
         }
-        text[c_pos + 1..].to_string()
+        text[c_pos.unwrap() + 1..].to_string()
     }
 
     /**
@@ -263,14 +265,14 @@ impl StringUtil {
      * @return the substring of the given text after the given separator.
      */
     pub fn substring_after(text: &str, c: char) -> String {
-        if is_empty(text) {
+        if Self::is_empty(text) {
             return text.to_string();
         }
         let c_pos = text.find(c);
-        if c_pos < 0 {
+        if c_pos.is_none() {
             return "".to_string();
         }
-        text[c_pos + 1..].to_string()
+        text[c_pos.unwrap() + 1..].to_string()
     }
 
     pub fn format_html(text: &str) -> String {
@@ -292,7 +294,7 @@ impl StringUtil {
     }
 }
 
-fn match_img_tag(s: &str) -> Option<String> {
+pub fn match_img_tag(s: &str) -> Option<String> {
     //(?i)^<img\s([^>]+)/?>$
     let lower = s.to_lowercase();
     let lower = lower.trim();

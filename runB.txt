@@ -1,0 +1,99 @@
+﻿cargo :     Checking reader v0.1.0 (C:\Users\chong\reader-dev-legacy)
+At line:1 char:77
++ ... A.txt -Encoding UTF8; cargo check --message-format=short 2>&1 | Out-F ...
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+src\..\src\main\java\io\legado\app\utils\ACache.rs:448:5: error: module is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\Base64.rs:43:13: error: expected one of `!` or `::`, found `output`: expected 
+one of `!` or `::`
+src\..\src\main\java\io\legado\app\utils\Base64.rs:42:19: error: trait is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\Base64.rs:145:9: error: expected identifier, found keyword `static`: expected 
+identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\Base64.rs:140:19: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\Base64.rs:207:5: error: implementation is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\Base64.rs:504:13: error: expected identifier, found keyword `const`: expected 
+identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\Base64.rs:498:19: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\Base64.rs:537:5: error: implementation is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:746:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:748:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:774:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:783:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:792:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:796:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:828:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:837:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:846:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:848:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:878:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:887:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:896:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:898:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:928:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\FilesUtil.rs:937:5: error: implementation is not supported in `trait`s or `imp
+l`s
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:11:39: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:19:27: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:30:70: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:44:80: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:55:40: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:60:34: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:75:15: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\GsonExtensions.rs:125:9: error: expected identifier, found keyword `type`: exp
+ected identifier, found keyword
+src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:208:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:236:5: error: implementation is not supported in `trait`s or
+ `impl`s
+src\..\src\main\java\me\ag2s\epublib\browsersupport\package_info.rs:2:1: error: expected item after doc comment: this d
+oc comment doesn't document anything
+src\..\src\main\java\me\ag2s\epublib\domain\Identifier.rs:26:3: error: trait is not supported in `trait`s or `impl`s
+src\..\src\main\java\me\ag2s\epublib\epub\EpubProcessorSupport.rs:17:5: error: associated `static` items are not allowe
+d
+src\..\src\main\java\me\ag2s\epublib\util\CollectionUtil.rs:14:5: error: struct is not supported in `trait`s or `impl`s
+src\..\src\main\java\me\ag2s\epublib\util\CollectionUtil.rs:18:5: error: implementation is not supported in `trait`s or
+ `impl`s
+src\..\src\main\java\me\ag2s\epublib\util\IOUtil.rs:37:5: error: associated `static` items are not allowed
+src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:39:5: error: associated `static` items are not al
+lowed
+src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:42:5: error: associated `static` items are not al
+lowed
+src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:45:5: error: associated `static` items are not al
+lowed
+src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:51:5: error: associated `static` items are not al
+lowed
+src\..\src\main\java\me\ag2s\epublib\util\commons\io\ByteOrderMark.rs:57:5: error: associated `static` items are not al
+lowed
+src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:28:30: error: expected expression, found `>`: expected exp
+ression
+src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:29:30: error: expected expression, found `>`: expected exp
+ression
+src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:30:30: error: expected expression, found `>`: expected exp
+ression
+src\..\src\main\java\me\ag2s\umdlib\tool\WrapOutputStream.rs:31:30: error: expected expression, found `>`: expected exp
+ression
+src\..\src\main\java\org\kxml2\kdom\Node.rs:406:21: error: expected `{`, found `;`: expected `{`
+src\..\src\main\java\org\kxml2\wap\syncml\SyncML.rs:107:49: error: mismatched closing delimiter: `}`: unclosed delimite
+r, mismatched closing delimiter
+src\..\src\main\java\org\kxml2\wap\syncml\SyncML.rs:132:52: error: mismatched closing delimiter: `}`: unclosed delimite
+r, mismatched closing delimiter
+error: could not compile `reader` (lib) due to 53 previous errors

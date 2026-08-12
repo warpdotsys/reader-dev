@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -41,10 +42,13 @@ pub trait IOConsumer {
      * @param after the operation to perform after this operation
      * @return a composed {@code Consumer} that performs in sequence this operation followed by the {@code after}
      *         operation
-     * @throws NullPointerException if {@code after} is null
+     * @throws NullPointerException if {@code after} is None
      */
     #[allow(dead_code)]
-    fn and_then(&mut self, after: &mut dyn IOConsumer) -> Box<dyn IOConsumer + '_> {
+    fn and_then<'a>(&'a mut self, after: &'a mut dyn IOConsumer) -> Box<dyn IOConsumer + 'a>
+    where
+        Self: Sized,
+    {
         let t: io::Error = io::Error::new(io::ErrorKind::Other, "t");
         {
             let _ = self.accept(t);
@@ -53,14 +57,17 @@ pub trait IOConsumer {
     }
 }
 
-struct AndThenConsumer<'a> {
+pub struct AndThenConsumer<'a> {
     first: &'a mut dyn IOConsumer,
     after: &'a mut dyn IOConsumer,
 }
 
 impl<'a> IOConsumer for AndThenConsumer<'a> {
     fn accept(&mut self, t: io::Error) -> Result<(), io::Error> {
+        // fix: rustc 1.97 起 io::Error 不再实现 Clone，改用 kind + message 重建等价错误
+        let kind = t.kind();
+        let msg = t.to_string();
         self.first.accept(t)?;
-        self.after.accept(t)
+        self.after.accept(io::Error::new(kind, msg))
     }
 }

@@ -1,3 +1,6 @@
+use crate::prelude::*;
+use crate::stubs::Any;
+use crate::stubs::TextUtils;
 // package io.legado.app.model.analyzeRule
 // import io.legado.app.utils.splitNotBlank
 // import io.legado.app.utils.TextUtils
@@ -8,7 +11,7 @@
 // import org.seimicrawler.xpath.JXNode
 // import java.util.*
 
-struct AnalyzeByXPath {
+pub struct AnalyzeByXPath {
     // private var jxNode: Any = parse(doc)
     jx_node: Any,
 }
@@ -21,17 +24,26 @@ impl AnalyzeByXPath {
     }
 
     fn parse(doc: &Any) -> Any {
+        // fix: Kotlin when(is X -> ...) 智能转换 → 占位 Any 枚举匹配；非元素 JXNode 及文本输入转为 JXDocument 变体
         return match doc {
-            Any::JXNode(n) => if n.is_element { n.clone() } else { Self::str_to_jx_document(n.to_string()) },
-            Any::Document(d) => JXDocument::create(d.clone()),
-            Any::Element(e) => JXDocument::create(Elements::new(e.clone())),
-            Any::Elements(es) => JXDocument::create(es.clone()),
-            _ => Self::str_to_jx_document(doc.to_string()),
+            Any::JXNode(n) => {
+                if n.is_element() {
+                    Any::JXNode(n.clone())
+                } else {
+                    Any::JXDocument(Self::str_to_jx_document(n.to_string()))
+                }
+            }
+            Any::Document(d) => Any::JXDocument(JXDocument::create(d.clone())),
+            // fix: Kotlin Elements(doc) 单元素构造 → Elements::new_single
+            Any::Element(e) => Any::JXDocument(JXDocument::create(Elements::new_single(e.clone()))),
+            Any::Elements(es) => Any::JXDocument(JXDocument::create(es.clone())),
+            _ => Any::JXDocument(Self::str_to_jx_document(doc.to_string())),
         }
     }
 
-    fn str_to_jx_document(html: &str) -> JXDocument {
-        let mut html1 = html.to_string();
+    // fix: Kotlin `strToJXDocument(html: String)` 原参数即为 String
+    fn str_to_jx_document(html: String) -> JXDocument {
+        let mut html1 = html;
         if html1.ends_with("</td>") {
             html1 = format!("<tr>{}</tr>", html1);
         }
@@ -43,10 +55,10 @@ impl AnalyzeByXPath {
 
     fn get_result(&self, x_path: &str) -> Option<List<JXNode>> {
         let node = &self.jx_node;
-        return if node is Any::JXNode(_) {
-            node.as_jx_node().sel(x_path)
-        } else {
-            node.as_jx_document().sel_n(x_path)
+        // fix: Kotlin `node is JXNode` 智能转换 → match 占位 Any 枚举
+        return match node {
+            Any::JXNode(_) => node.as_jx_node().sel(x_path),
+            _ => node.as_jx_document().sel_n(x_path),
         }
     }
 
@@ -54,18 +66,20 @@ impl AnalyzeByXPath {
         if x_path.is_empty() { return None; }
 
         let mut jx_nodes = ArrayList::<JXNode>::new();
-        let rule_analyzes = RuleAnalyzer::new(x_path);
-        let rules = rule_analyzes.split_rule("&&", "||", "%%");
+        // fix: Kotlin `RuleAnalyzer(xPath)` 默认参数 code = false
+        let mut rule_analyzes = RuleAnalyzer::new(x_path.to_string(), false);
+        let rules = rule_analyzes.split_rule(&["&&", "||", "%%"]);
 
         if rules.len() == 1 {
             return self.get_result(&rules[0]);
         } else {
             let mut results = ArrayList::<List<JXNode>>::new();
             for rl in rules {
-                let temp = self.get_elements(rl);
+                let temp = self.get_elements(&rl);
                 if temp.is_some() && !temp.as_ref().unwrap().is_empty() {
                     results.add(temp.unwrap());
-                    if !temp.as_ref().unwrap().is_empty() && rule_analyzes.elements_type == "||" {
+                    // fix: 原 `!temp.as_ref().unwrap().is_empty() && ...` 与 if 条件重复，且 temp 已 move，直接判断 ||
+                    if rule_analyzes.elements_type == "||" {
                         break;
                     }
                 }
@@ -91,8 +105,9 @@ impl AnalyzeByXPath {
 
     fn get_string_list(&self, x_path: &str) -> List<String> {
         let mut result = ArrayList::<String>::new();
-        let rule_analyzes = RuleAnalyzer::new(x_path);
-        let rules = rule_analyzes.split_rule("&&", "||", "%%");
+        // fix: Kotlin `RuleAnalyzer(xPath)` 默认参数 code = false
+        let mut rule_analyzes = RuleAnalyzer::new(x_path.to_string(), false);
+        let rules = rule_analyzes.split_rule(&["&&", "||", "%%"]);
 
         if rules.len() == 1 {
             let nodes = self.get_result(x_path);
@@ -105,7 +120,7 @@ impl AnalyzeByXPath {
         } else {
             let mut results = ArrayList::<List<String>>::new();
             for rl in rules {
-                let temp = self.get_string_list(rl);
+                let temp = self.get_string_list(&rl);
                 if !temp.is_empty() {
                     results.add(temp.clone());
                     if !temp.is_empty() && rule_analyzes.elements_type == "||" {
@@ -133,8 +148,9 @@ impl AnalyzeByXPath {
     }
 
     fn get_string(&self, rule: &str) -> Option<String> {
-        let rule_analyzes = RuleAnalyzer::new(rule);
-        let rules = rule_analyzes.split_rule("&&", "||");
+        // fix: Kotlin `RuleAnalyzer(rule)` 默认参数 code = false
+        let mut rule_analyzes = RuleAnalyzer::new(rule.to_string(), false);
+        let rules = rule_analyzes.split_rule(&["&&", "||"]);
         if rules.len() == 1 {
             let nodes = self.get_result(rule);
             if nodes.is_some() {
@@ -144,7 +160,7 @@ impl AnalyzeByXPath {
         } else {
             let mut text_list = array_list_of::<String>();
             for rl in rules {
-                let temp = self.get_string(rl);
+                let temp = self.get_string(&rl);
                 if !temp.is_null_or_empty() {
                     text_list.add(temp.unwrap());
                     if rule_analyzes.elements_type == "||" {

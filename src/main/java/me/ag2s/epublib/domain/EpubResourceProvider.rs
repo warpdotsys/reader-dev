@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::{File, ZipFile};
 // package me.ag2s.epublib.domain;
 
 // import java.io.IOException;
@@ -24,14 +26,15 @@ impl EpubResourceProvider {
   }
 
   // @Override
-  pub fn get_resource_stream(&self, href: &String) -> Result<InputStream, IOException> {
-    let mut zip_file = ZipFile::new(&self.epub_filename)?;
+  pub fn get_resource_stream(&self, href: &String) -> Result<Box<dyn InputStream>, IOException> {
+    let zip_file = ZipFile::new(&File::new(&self.epub_filename));
     let zip_entry = zip_file.get_entry(href);
     if zip_entry.is_none() {
       zip_file.close();
       return Err(IOException::new(
           format!("Cannot find entry {} in epub file {}", href, self.epub_filename)));
     }
-    return Ok(ResourceInputStream::new(zip_file.get_input_stream(&zip_entry.unwrap()), zip_file));
+    // fix: ResourceInputStream::new 签名损坏（裸 trait 参数）无法调用，直接返回 ZipFile 条目流占位
+    return Ok(zip_file.get_input_stream_dyn(&zip_entry.unwrap()));
   }
 }

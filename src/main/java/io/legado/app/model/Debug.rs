@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.model
 // import io.legado.app.data.entities.Book
 // import io.legado.app.data.entities.BookChapter
@@ -6,7 +7,7 @@
 
 // private val logger = KotlinLogging.logger {}
 
-struct Debug;
+pub struct Debug;
 
 impl DebugLog for Debug {
 }

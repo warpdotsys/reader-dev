@@ -1,3 +1,9 @@
+use crate::prelude::*;
+use crate::stubs::io::vertx::Route;
+use crate::stubs::{
+    Authenticator, ConnectionSpec, Credentials, HttpLoggingInterceptor, InetSocketAddress, Level,
+    Proxy, ProxyType,
+};
 // package io.legado.app.help.http
 //
 // // import io.legado.app.help.http.cronet.CronetInterceptor
@@ -23,8 +29,8 @@
 // private val proxyClientCache: ConcurrentHashMap<String, OkHttpClient> by lazy {
 //     ConcurrentHashMap()
 // }
-pub static proxy_client_cache: std::sync::Mutex<std::collections::HashMap<String, OkHttpClient>> =
-    std::sync::Mutex::new(std::collections::HashMap::new());
+pub static proxy_client_cache: std::sync::LazyLock<std::sync::Mutex<std::collections::HashMap<String, OkHttpClient>>> =
+    std::sync::LazyLock::new(|| std::sync::Mutex::new(std::collections::HashMap::new()));
 
 // val okHttpClient: OkHttpClient by lazy {
 pub fn ok_http_client() -> OkHttpClient {
@@ -52,7 +58,7 @@ pub fn ok_http_client() -> OkHttpClient {
     //     .addInterceptor(Interceptor { chain ->
     //         val request = chain.request()
     //         val builder = request.newBuilder()
-    //         if (request.header("User-Agent") == null) {
+    //         if (request.header("User-Agent") == None) {
     //             builder.addHeader("User-Agent", AppConst.userAgent)
     //         } else if (request.header("User-Agent") == "null") {
     //             builder.removeHeader("User-Agent")
@@ -64,7 +70,9 @@ pub fn ok_http_client() -> OkHttpClient {
     //             .build()
     //         chain.proceed(builder.build())
     //     })
-    let mut builder = OkHttpClient::builder()
+    // fix: E0716——stub 链式方法返回 &Self，先绑定 builder 本体再链式调用，避免临时值悬垂
+    let builder = OkHttpClient::builder();
+    let builder = builder
         .connect_timeout(15, TimeUnit::SECONDS)
         .write_timeout(15, TimeUnit::SECONDS)
         .read_timeout(15, TimeUnit::SECONDS)
@@ -78,7 +86,7 @@ pub fn ok_http_client() -> OkHttpClient {
         let request = chain.request();
         let builder = request.new_builder();
         if request.header("User-Agent").is_none() {
-            builder.add_header("User-Agent", AppConst::user_agent());
+            builder.add_header("User-Agent", AppConst::userAgent());
         } else if request.header("User-Agent") == Some("null") {
             builder.remove_header("User-Agent");
         }
@@ -99,10 +107,10 @@ pub fn ok_http_client() -> OkHttpClient {
 /**
  * 缓存代理okHttp
  */
-// fun getProxyClient(proxy: String? = null, debugLog: DebugLog? = null): OkHttpClient {
-pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&DebugLog>) -> OkHttpClient {
+// fun getProxyClient(proxy: String? = None, debugLog: DebugLog? = None): OkHttpClient {
+pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&dyn DebugLog>) -> OkHttpClient {
     // if (proxy.isNullOrBlank()) {
-    //     if (debugLog == null) {
+    //     if (debugLog == None) {
     //         return okHttpClient
     //     }
     //     val builder = okHttpClient.newBuilder()
@@ -121,13 +129,13 @@ pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&DebugLog>) -> Ok
             let builder = ok_http_client().new_builder();
             // val logInterceptor = HttpLoggingInterceptor(debugLog);//创建拦截对象
             let log_interceptor = HttpLoggingInterceptor::new(debug_log); //创建拦截对象
-            log_interceptor.set_level(HttpLoggingInterceptor::Level::BODY); //这一句一定要记得写，否则没有数据输出
+            log_interceptor.set_level(Level::BODY); //这一句一定要记得写，否则没有数据输出
 
             builder.add_network_interceptor(log_interceptor); //设置打印拦截日志
             return builder.build();
         }
     };
-    // if (debugLog == null) {
+    // if (debugLog == None) {
     //     proxyClientCache[proxy]?.let {
     //         return it
     //     }
@@ -210,7 +218,7 @@ pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&DebugLog>) -> Ok
             //         .build()
             // }
         }
-        // if (debugLog != null) {
+        // if (debugLog != None) {
         //     val logInterceptor = HttpLoggingInterceptor(debugLog);//创建拦截对象
         //     logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);//这一句一定要记得写，否则没有数据输出
         //
@@ -219,7 +227,7 @@ pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&DebugLog>) -> Ok
         // }
         if debug_log.is_some() {
             let log_interceptor = HttpLoggingInterceptor::new(debug_log); //创建拦截对象
-            log_interceptor.set_level(HttpLoggingInterceptor::Level::BODY); //这一句一定要记得写，否则没有数据输出
+            log_interceptor.set_level(Level::BODY); //这一句一定要记得写，否则没有数据输出
 
             builder.add_network_interceptor(log_interceptor); //设置打印拦截日志
             return builder.build();

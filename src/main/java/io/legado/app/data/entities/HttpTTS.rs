@@ -1,3 +1,5 @@
+use crate::prelude::*;
+use crate::stubs::{Any, GSON, JsonPath, ReadContext};
 // package io.legado.app.data.entities
 
 // import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -28,8 +30,8 @@ pub struct HttpTTS {
     pub user_name_space: String,
 
     // @Transient
-    // private var debugLog: DebugLog? = null
-    pub debug_log: Option<DebugLog>,
+    // private var debugLog: DebugLog? = None
+    pub debug_log: Option<Box<dyn DebugLog>>,
 }
 
 impl HttpTTS {
@@ -49,12 +51,12 @@ impl HttpTTS {
         self.user_name_space.clone()
     }
 
-    pub fn set_logger(&mut self, value: Option<DebugLog>) {
+    pub fn set_logger(&mut self, value: Option<Box<dyn DebugLog>>) {
         self.debug_log = value;
     }
 
-    pub fn get_logger(&self) -> Option<DebugLog> {
-        self.debug_log.clone()
+    pub fn get_logger(&self) -> Option<&dyn DebugLog> {
+        self.debug_log.as_deref()
     }
 }
 
@@ -106,10 +108,10 @@ impl Default for HttpTTS {
 //     }
 // }
 impl HttpTTS {
-    pub fn from_json_doc(doc: DocumentContext) -> Result<HttpTTS> {
+    pub fn from_json_doc(doc: ReadContext) -> Result<HttpTTS, StubError> {
         // runCatching { ... }
-        (|| -> Result<HttpTTS> {
-            let login_ui = doc.read::<Box<dyn Any>>("$.loginUi");
+        (|| -> Result<HttpTTS, StubError> {
+            let login_ui = doc.read::<Any>("$.loginUi").unwrap_or(Any::Null);
             let mut tts = HttpTTS {
                 id: doc.read_long("$.id").unwrap_or_else(System::current_time_millis),
                 name: doc.read_string("$.name").expect("name"),
@@ -117,7 +119,7 @@ impl HttpTTS {
                 content_type: doc.read_string("$.contentType"),
                 concurrent_rate: doc.read_string("$.concurrentRate"),
                 login_url: doc.read_string("$.loginUrl"),
-                login_ui: if login_ui.is_list() { GSON::to_json(login_ui) } else { login_ui.to_string_opt() },
+                login_ui: if login_ui.is_list() { Some(GSON::to_json(&login_ui)) } else { login_ui.to_string_opt() },
                 header: doc.read_string("$.header"),
                 login_check_js: doc.read_string("$.loginCheckJs"),
                 ..HttpTTS::default()
@@ -126,14 +128,14 @@ impl HttpTTS {
         })()
     }
 
-    pub fn from_json(json: String) -> Result<HttpTTS> {
+    pub fn from_json(json: String) -> Result<HttpTTS, StubError> {
         // runCatching { fromJsonDoc(jsonPath.parse(json)).getOrThrow() }
-        (|| -> Result<HttpTTS> {
-            Self::from_json_doc(json_path::parse(json))?.ok_or(Error)
+        (|| -> Result<HttpTTS, StubError> {
+            Self::from_json_doc(JsonPath::parse(json))
         })()
     }
 
-    pub fn from_json_array(json_array: String) -> Result<Vec<HttpTTS>> {
+    pub fn from_json_array(json_array: String) -> Result<Vec<HttpTTS>, StubError> {
         // runCatching {
         //     val list = jsonPath.parse(jsonArray).read<Any>("$") as List<*>
         //     list.map { jsonItem ->
@@ -141,12 +143,12 @@ impl HttpTTS {
         //         fromJsonDoc(doc).getOrThrow()
         //     }
         // }
-        (|| -> Result<Vec<HttpTTS>> {
-            let list = json_path::parse(json_array).read::<Box<dyn Any>>("$") as Vec<Box<dyn Any>>;
+        (|| -> Result<Vec<HttpTTS>, StubError> {
+            let list = JsonPath::parse(json_array).read::<Vec<Any>>("$").unwrap_or_default();
             let mut result = Vec::new();
             for json_item in list {
-                let doc = json_path::parse(json_item);
-                result.push(Self::from_json_doc(doc)?.ok_or(Error)?);
+                let doc = JsonPath::parse(json_item);
+                result.push(Self::from_json_doc(doc)?);
             }
             Ok(result)
         })()

@@ -1,0 +1,14 @@
+﻿
+  cargo_check.txt:5:    + CategoryInfo          : NotSpecified: (    Checking re...der-dev-legacy):String) [], RemoteEx
+ception
+  cargo_check.txt:6:    + FullyQualifiedErrorId : NativeCommandError
+  cargo_check.txt:7: 
+> cargo_check.txt:8:error[E0765]: unterminated double quote string
+  cargo_check.txt:9:  --> src\..\src\probe.rs:9:13
+  cargo_check.txt:10:   |
+  cargo_check.txt:11: 9 |       let y = "unclosed string;
+  cargo_check.txt:12:   |  _____________^
+  cargo_check.txt:13:10 | |     y.to_string()
+  cargo_check.txt:14:11 | | }
+
+

@@ -1,3 +1,8 @@
+use crate::prelude::*;
+
+// fix: 显式导入消除 stubs / CURD / DB glob 重导出歧义（显式导入优先于 glob）
+use crate::com_htmake_reader_db_db::DB;
+use crate::stubs::JsonObject;
 // package com.htmake.reader.api.controller
 
 // private val logger = KotlinLogging.logger {}
@@ -7,7 +12,7 @@ pub struct BookmarkController {
     base: BaseController,
 }
 
-impl BookmarkController {
+impl CURD<Bookmark> for BookmarkController {
     // override fun getTableName(): String {
     //     return "bookmark"
     // }
@@ -26,18 +31,21 @@ impl BookmarkController {
     //     return entity.time == json.getLong("time")
     // }
     fn checker(&self, json: &JsonObject, entity: &Bookmark) -> bool {
-        return entity.time == json.get_long("time");
+        return entity.time == json.get_long("time", 0);
     }
 
     // override fun beforeSave(entity: Bookmark, db: DB<Bookmark>): ReturnData? {
     //     if (entity.bookName.isEmpty() && entity.bookAuthor.isEmpty()) {
     //         return ReturnData().setErrorMsg("书签信息错误")
     //     }
-    //     return null
+    //     return None
     // }
     fn before_save(&self, entity: &Bookmark, db: &DB<Bookmark>) -> Option<ReturnData> {
         if entity.book_name.is_empty() && entity.book_author.is_empty() {
-            return Some(ReturnData::new().set_error_msg(String::from("书签信息错误")).clone());
+            // fix: ReturnData 未实现 Clone，set_error_msg 返回 &mut，先构造再返回
+            let mut data = ReturnData::new();
+            data.set_error_msg(String::from("书签信息错误"));
+            return Some(data);
         }
         return None;
     }
@@ -55,7 +63,9 @@ impl BookmarkController {
     fn get_user_ns(&self, context: &RoutingContext) -> String {
         return self.base.get_user_name_space(context);
     }
+}
 
+impl BookmarkController {
     // suspend fun getBookmarks(context: RoutingContext): ReturnData {
     //     return list(context)
     // }

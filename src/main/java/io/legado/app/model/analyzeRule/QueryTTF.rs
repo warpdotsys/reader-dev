@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0659 歧义——prelude glob 同时导出 stubs::Charset 与 ioutil 模块 Charset，显式导入覆盖
+use crate::stubs::Charset;
 // package io.legado.app.model.analyzeRule;
 //
 // import org.apache.commons.lang3.tuple.Pair;
@@ -39,7 +42,7 @@ pub struct QueryTTF {
 }
 
 // private static class Header {
-struct Header {
+pub struct Header {
     pub major_version: i32,
     pub minor_version: i32,
     pub num_of_tables: i32,
@@ -49,7 +52,7 @@ struct Header {
 }
 
 // private static class Directory {
-struct Directory {
+pub struct Directory {
     pub tag: String, // public String tag;          // table name
     pub check_sum: i32, // public int checkSum;       // Check sum
     pub offset: i32, // public int offset;         // Offset from beginning of file
@@ -57,7 +60,7 @@ struct Directory {
 }
 
 // private static class NameLayout {
-struct NameLayout {
+pub struct NameLayout {
     pub format: i32,
     pub count: i32,
     pub string_offset: i32,
@@ -65,7 +68,7 @@ struct NameLayout {
 }
 
 // private static class NameRecord {
-struct NameRecord {
+pub struct NameRecord {
     pub platform_id: i32, // public int platformID;           // 平台标识符<0:Unicode, 1:Mac, 2:ISO, 3:Windows, 4:Custom>
     pub encoding_id: i32, // public int encodingID;           // 编码标识符
     pub language_id: i32, // public int languageID;           // 语言标识符
@@ -75,7 +78,7 @@ struct NameRecord {
 }
 
 // private static class HeadLayout {
-struct HeadLayout {
+pub struct HeadLayout {
     pub major_version: i32,
     pub minor_version: i32,
     pub font_revision: i32,
@@ -97,7 +100,7 @@ struct HeadLayout {
 }
 
 // private static class MaxpLayout {
-struct MaxpLayout {
+pub struct MaxpLayout {
     pub major_version: i32,
     pub minor_version: i32,
     pub num_glyphs: i32, // public int numGlyphs;                // 字体中的字形数量
@@ -117,7 +120,7 @@ struct MaxpLayout {
 }
 
 // private static class CmapLayout {
-struct CmapLayout {
+pub struct CmapLayout {
     pub version: i32,
     pub num_tables: i32,
     pub records: Vec<CmapRecord>, // public List<CmapRecord> records = new LinkedList<>()
@@ -125,14 +128,15 @@ struct CmapLayout {
 }
 
 // private static class CmapRecord {
-struct CmapRecord {
+pub struct CmapRecord {
     pub platform_id: i32,
     pub encoding_id: i32,
     pub offset: i32,
 }
 
 // private static class CmapFormat {
-struct CmapFormat {
+// fix: 与文件末尾的 enum CmapFormat 重名（E0428），基础类改名为 CmapFormatBase
+pub struct CmapFormatBase {
     pub format: i32,
     pub length: i32,
     pub language: i32,
@@ -140,7 +144,7 @@ struct CmapFormat {
 }
 
 // private static class CmapFormat4 extends CmapFormat {
-struct CmapFormat4 {
+pub struct CmapFormat4 {
     pub format: i32, // (extends CmapFormat)
     pub length: i32,
     pub language: i32,
@@ -157,7 +161,7 @@ struct CmapFormat4 {
 }
 
 // private static class CmapFormat6 extends CmapFormat {
-struct CmapFormat6 {
+pub struct CmapFormat6 {
     pub format: i32, // (extends CmapFormat)
     pub length: i32,
     pub language: i32,
@@ -167,7 +171,7 @@ struct CmapFormat6 {
 }
 
 // private static class CmapFormat12 extends CmapFormat {
-struct CmapFormat12 {
+pub struct CmapFormat12 {
     pub format: i32, // (extends CmapFormat)
     pub reserved: i32,
     pub length: i32,
@@ -177,7 +181,7 @@ struct CmapFormat12 {
 }
 
 // private static class GlyfLayout {
-struct GlyfLayout {
+pub struct GlyfLayout {
     pub number_of_contours: i16, // public short numberOfContours;      // 非负值为简单字型,负值为符合字型
     pub x_min: i16,
     pub y_min: i16,
@@ -192,7 +196,7 @@ struct GlyfLayout {
 }
 
 // private static class ByteArrayReader {
-struct ByteArrayReader {
+pub struct ByteArrayReader {
     pub index: i32, // public int index
     pub buffer: Vec<u8>, // public byte[] buffer
 }
@@ -243,7 +247,7 @@ impl ByteArrayReader {
 
     // public String ReadStrings(int len, Charset charset) {
     pub fn read_strings(&mut self, len: i32, charset: &Charset) -> String {
-        let mut result: Vec<u8> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // byte[] result = len > 0 ? new byte[len] : null
+        let mut result: Vec<u8> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // byte[] result = len > 0 ? new byte[len] : None
         let mut i: i32 = 0;
         while i < len {
             result.push(self.buffer[self.index as usize]); // result[i] = buffer[index++]
@@ -262,7 +266,7 @@ impl ByteArrayReader {
 
     // public byte[] GetBytes(int len) {
     pub fn get_bytes(&mut self, len: i32) -> Vec<u8> {
-        let mut result: Vec<u8> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // byte[] result = len > 0 ? new byte[len] : null
+        let mut result: Vec<u8> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // byte[] result = len > 0 ? new byte[len] : None
         let mut i: i32 = 0;
         while i < len {
             result.push(self.buffer[self.index as usize]); // result[i] = buffer[index++]
@@ -274,7 +278,7 @@ impl ByteArrayReader {
 
     // public int[] GetUInt16Array(int len) {
     pub fn get_uint16_array(&mut self, len: i32) -> Vec<i32> {
-        let mut result: Vec<i32> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // int[] result = len > 0 ? new int[len] : null
+        let mut result: Vec<i32> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // int[] result = len > 0 ? new int[len] : None
         let mut i: i32 = 0;
         while i < len {
             result.push(self.read_uint16()); // result[i] = ReadUInt16()
@@ -285,7 +289,7 @@ impl ByteArrayReader {
 
     // public short[] GetInt16Array(int len) {
     pub fn get_int16_array(&mut self, len: i32) -> Vec<i16> {
-        let mut result: Vec<i16> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // short[] result = len > 0 ? new short[len] : null
+        let mut result: Vec<i16> = Vec::with_capacity(if len > 0 { len as usize } else { 0 }); // short[] result = len > 0 ? new short[len] : None
         let mut i: i32 = 0;
         while i < len {
             result.push(self.read_int16()); // result[i] = ReadInt16()
@@ -505,7 +509,7 @@ impl QueryTTF {
                         // CmapFormat f = new CmapFormat()
                         // f.format = format; f.length = fontReader.ReadUInt16();
                         let length = font_reader.read_uint16();
-                        let f = CmapFormat {
+                        let f = CmapFormatBase {
                             format,
                             length,
                             language: font_reader.read_uint16(),
@@ -680,7 +684,7 @@ impl QueryTTF {
             if key == 0xFF {
                 key = 0x3400;
             }
-            let gid = get_glyf_index(&cmap, &pps, key); // int gid = getGlyfIndex(key)
+            let gid = get_glyf_index(&cmap, &pps(), key); // int gid = getGlyfIndex(key)  (fix: 调用 pps() 函数取数组)
             if gid != 0 {
                 // StringBuilder sb = new StringBuilder()
                 let mut sb = String::new();
@@ -762,7 +766,7 @@ impl QueryTTF {
 }
 
 // 构造函数中使用的静态版 getGlyfIndex
-fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
+pub fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
         if code == 0 {
             return 0;
         }
@@ -785,7 +789,7 @@ fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
 
         let mut glyf_id: i32 = 0;
         // CmapFormat table = Cmap.tables.get(fmtKey)
-        let table = cmap.tables.get(&fmt_key).expect("assert table != null"); // assert table != null
+        let table = cmap.tables.get(&fmt_key).expect("assert table != null"); // assert table != None
         let fmt = table.format();
         if fmt == 0 {
             // if (code < table.glyphIdArray.length) glyfID = table.glyphIdArray[code] & 0xFF
@@ -822,7 +826,7 @@ fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
                 // glyfID = tab.glyphIdArray[code - tab.startCode[start] + (tab.idRangeOffset[start] >> 1) - (tab.idRangeOffset.length - start)]
                 glyf_id = tab.glyph_id_array[(code - tab.start_code[start as usize] + (tab.id_range_offset[start as usize] >> 1) - (tab.id_range_offset.len() as i32 - start)) as usize];
             } else {
-                glyf_id = code + tab.id_delta[start as usize]; // glyfID = code + tab.idDelta[start]
+                glyf_id = code + tab.id_delta[start as usize] as i32; // glyfID = code + tab.idDelta[start]  (fix: Java short 自动提升为 int)
             }
             glyf_id &= 0xFFFF;
         } else if fmt == 6 {
@@ -873,6 +877,9 @@ fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
      * @return 返回bool查询结果
      */
     // public boolean inLimit(char code) {
+    // fix: 补回 impl QueryTTF 块（inLimit/getGlyfByCode/getCodeByGlyf 原为类成员方法；转录时自由函数 getGlyfIndex
+    // 提前闭合了 impl 块，导致这三个方法悬挂在模块顶层，且文件末尾多出一个 `}`）
+    impl QueryTTF {
     pub fn in_limit(&self, code: u16) -> bool {
         return (self.limit_mix as u16 <= code) && (code < self.limit_max as u16); // (limitMix <= code) && (code < limitMax)
     }
@@ -902,7 +909,7 @@ fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
 }
 
 // private final Pair<Integer, Integer>[] pps = new Pair[]{ Pair.of(3, 10), Pair.of(0, 4), Pair.of(3, 1), Pair.of(1, 0), Pair.of(0, 3), Pair.of(0, 1) }
-fn pps() -> [(i32, i32); 6] {
+pub fn pps() -> [(i32, i32); 6] {
     return [
         (3, 10),
         (0, 4),
@@ -914,8 +921,8 @@ fn pps() -> [(i32, i32); 6] {
 }
 
 // CmapFormat 子类统一存储(CmapFormat4/6/12 extends CmapFormat)
-enum CmapFormat {
-    Base(CmapFormat),
+pub enum CmapFormat {
+    Base(CmapFormatBase),
     Format4(CmapFormat4),
     Format6(CmapFormat6),
     Format12(CmapFormat12),

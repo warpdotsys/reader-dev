@@ -1,9 +1,10 @@
+use crate::prelude::*;
 use std::io;
 
-use crate::me::ag2s::epublib::Constants;
-use crate::me::ag2s::epublib::domain::{MediaType, MediaTypes, Resource};
-use crate::me::ag2s::epublib::epub::EpubProcessorSupport;
+use crate::me::ag2s::epublib::domain::{MediaTypes, Resource};
 use crate::me::ag2s::epublib::util::{IOUtil, StringUtil};
+// fix: 显式导入 IOUtil 的 InputStream（本文件原占位 struct 与 IOUtil::to_byte_array 参数类型不一致）
+use crate::me_ag2s_epublib_util_ioutil::InputStream;
 
 /**
  * Various resource utility methods
@@ -36,11 +37,12 @@ impl ResourceUtil {
     }
 
     pub fn create_public_resource(name: &str, author: &str, intro: &str, kind: &str, word_count: &str, model: &str, href: &str) -> Resource {
+        // fix: Java `kind == null` 在 Rust `&str` 下恒不成立，改为空串判断（&str 不可为 None）
         let html = model.replace("{name}", name)
             .replace("{author}", author)
-            .replace("{kind}", if kind == null { "" } else { kind })
-            .replace("{wordCount}", if word_count == null { "" } else { word_count })
-            .replace("{intro}", &StringUtil::format_html(if intro == null { "" } else { intro }));
+            .replace("{kind}", if kind.is_empty() { "" } else { kind })
+            .replace("{wordCount}", if word_count.is_empty() { "" } else { word_count })
+            .replace("{intro}", &StringUtil::format_html(if intro.is_empty() { "" } else { intro }));
         Resource::new_bytes(html.into_bytes(), href)
     }
 
@@ -53,13 +55,12 @@ impl ResourceUtil {
      */
 
     #[allow(dead_code)]
-    pub fn create_resource_from_file(file: File) -> Result<Resource, io::Error> {
-        if file == null {
-            return Ok(None);
-        }
+    // fix: Java `createResourceFromFile(File)` 的 `file == null` 分支在 Rust `File` 占位结构按值传入下恒不成立，已省略；
+    // 返回类型改为 Option<Resource> 以承载原 Java 的 null 返回语义
+    pub fn create_resource_from_file(file: File) -> Result<Option<Resource>, io::Error> {
         let media_type = MediaTypes::determine_media_type(&file.get_name());
-        let data = IOUtil::to_byte_array(FileInputStream::new(file))?;
-        Ok(Resource::new_data(data, media_type))
+        let data = IOUtil::to_byte_array(&FileInputStream::new(file))?;
+        Ok(Some(Resource::new_data(data, media_type)))
     }
 
     /**
@@ -70,12 +71,15 @@ impl ResourceUtil {
      * @return a resource with as contents a html page with the given title.
      */
     #[allow(dead_code)]
-    pub fn create_resource(title: &str, href: &str) -> Resource {
+    // fix: Java 同名重载 createResource(String,String) 与 createResource(ZipEntry,InputStream) 无法在 Rust 共存，
+    // 此版本（仅标题+href）改名 create_resource_html；ZipEntry 版本保留原名（ResourcesLoader 依赖）
+    pub fn create_resource_html(title: &str, href: &str) -> Resource {
         let content =
             "<html><head><title>".to_string() + title + "</title></head><body><h1>" + title
                 + "</h1></body></html>";
         Resource::new_full(None, content.into_bytes(), href, MediaTypes::XHTML,
-            Constants::CHARACTER_ENCODING)
+            // fix: E0790 Constants 转录为 trait，关联常量不能直接访问；字面量值即 "UTF-8"
+            "UTF-8")
     }
 
     /**
@@ -92,8 +96,11 @@ impl ResourceUtil {
 
     }
 
-    pub fn create_resource(zip_entry: &ZipEntry,
-                           zip_input_stream: &InputStream) -> Result<Resource, io::Error> {
+    // fix: E0308 调用方（ResourcesLoader）传入其本模块的 ZipEntry 与两种不同的流类型
+    //（&Vec<u8> 与 &mut ZipInputStream，&mut 会自动重借用为 &）；流参数泛型化（Resource::new_stream 本身即泛型），
+    // ZipEntry 改用调用方模块的类型（其 get_name 已实现）
+    pub fn create_resource<S>(zip_entry: &crate::me_ag2s_epublib_epub_resourcesloader::ZipEntry,
+                              zip_input_stream: &S) -> Result<Resource, io::Error> {
         Ok(Resource::new_stream(zip_input_stream, zip_entry.get_name()))
 
     }
@@ -114,25 +121,26 @@ impl ResourceUtil {
     }
 
     /**
-     * Gets the contents of the Resource as an InputSource in a null-safe manner.
+     * Gets the contents of the Resource as an InputSource in a None-safe manner.
      */
     #[allow(dead_code)]
     pub fn get_input_source(resource: &Resource) -> Result<Option<InputSource>, io::Error> {
-        if resource == null {
+        // fix: Java `resource == null` 检查在 Rust `&Resource` 下恒不成立，已省略
+        let reader = resource.get_reader().ok();
+        if reader.is_none() {
+            // fix: Java `reader == null` 返回 null InputSource
             return Ok(None);
         }
-        let reader = resource.get_reader();
-        if reader == null {
-            return Ok(None);
-        }
-        Ok(Some(InputSource::new(reader)))
+        Ok(Some(InputSource::new(reader.unwrap())))
     }
 
     /**
      * Reads parses the xml therein and returns the result as a Document
      */
     pub fn get_as_document(resource: &Resource) -> Result<Document, ParseError> {
-        get_as_document_builder(resource, EpubProcessorSupport::create_document_builder())
+        // fix: EpubProcessorSupport::create_document_builder() 返回另一模块的占位 DocumentBuilder（无 parse 方法），
+        // 改用本文件 DocumentBuilder 占位（其 parse 由本文件实现）
+        Self::get_as_document_builder(resource, &DocumentBuilder)
     }
 
     /**
@@ -147,11 +155,12 @@ impl ResourceUtil {
      */
     pub fn get_as_document_builder(resource: &Resource,
                                    document_builder: &DocumentBuilder) -> Result<Document, ParseError> {
-        let input_source = get_input_source(resource)?;
-        if input_source == null {
-            return Ok(None);
+        let input_source = Self::get_input_source(resource).map_err(|_| ParseError)?;
+        if input_source.is_none() {
+            // fix: Java 返回 null Document，Rust 占位返回空 Document
+            return Ok(Document);
         }
-        document_builder.parse(input_source)
+        document_builder.parse(input_source.unwrap())
     }
 }
 
@@ -159,29 +168,32 @@ pub struct File;
 pub struct FileInputStream;
 pub struct ZipEntry;
 pub struct ZipInputStream;
-pub struct InputStream;
-pub struct Reader;
 pub struct InputSource;
 pub struct DocumentBuilder;
 pub struct Document;
 pub struct ParseError;
 
 impl File {
-    pub fn get_name(&self) -> String { todo!() }
+    // fix: 占位（Java `file.getName()`）；File 为单元结构体，返回空串
+    pub fn get_name(&self) -> String { String::new() }
 }
 
 impl FileInputStream {
-    pub fn new(_file: File) -> Self { todo!() }
+    // fix: 返回 IOUtil::InputStream 以便与 IOUtil::to_byte_array(&InputStream) 衔接（原占位返回 FileInputStream）
+    pub fn new(_file: File) -> InputStream { InputStream }
 }
 
 impl ZipEntry {
-    pub fn get_name(&self) -> String { todo!() }
+    // fix: 占位（Java `zipEntry.getName()`）；ZipEntry 为单元结构体，返回空串
+    pub fn get_name(&self) -> String { String::new() }
 }
 
 impl InputSource {
-    pub fn new(_reader: Reader) -> Self { todo!() }
+    // fix: Java `Reader` 参数转录为 XmlStreamReader（Resource::get_reader 的返回类型）
+    pub fn new(_reader: XmlStreamReader) -> Self { InputSource }
 }
 
 impl DocumentBuilder {
-    pub fn parse(&self, _input_source: InputSource) -> Result<Document, ParseError> { todo!() }
+    // fix: 占位（Java `documentBuilder.parse(InputSource)`）；返回空 Document
+    pub fn parse(&self, _input_source: InputSource) -> Result<Document, ParseError> { Ok(Document) }
 }

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use std::io;
 
 /**
@@ -19,7 +20,7 @@ impl NoCloseOutputStream {
     }
 
     pub fn write(&mut self, b: u8) -> Result<(), io::Error> {
-        self.output_stream.write(&[b])
+        self.output_stream.write_all(&[b])
     }
 
     /**

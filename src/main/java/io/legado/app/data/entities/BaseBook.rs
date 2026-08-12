@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 // import io.legado.app.model.analyzeRule.RuleDataInterface
@@ -26,7 +27,11 @@ pub trait BaseBook : RuleDataInterface {
             if !it.trim().is_empty() { kind_list.push(it.to_string()) }
         }
         if let Some(it) = self.kind() {
-            let kinds = it.split_not_blank(",", "\n");
+            // fix: splitNotBlank(",", "\n") → 按两个分隔符拆分并过滤空白（stubs split_not_blank 仅单分隔符）
+            let kinds: Vec<String> = it.split(&[',', '\n'][..])
+                .filter(|s| !s.trim().is_empty())
+                .map(|s| s.to_string())
+                .collect();
             kind_list.extend(kinds);
         }
         kind_list

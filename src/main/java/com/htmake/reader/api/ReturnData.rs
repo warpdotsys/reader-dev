@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.api
 
 // class ReturnData {
@@ -20,7 +21,7 @@ impl ReturnData {
         &self.error_msg
     }
 
-    // var data: Any? = null
+    // var data: Any? = None
     //     private set
     pub fn data(&self) -> &Option<Box<dyn std::any::Any>> {
         &self.data

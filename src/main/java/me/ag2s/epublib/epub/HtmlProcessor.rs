@@ -1,5 +1,6 @@
+use crate::prelude::*;
 use crate::me::ag2s::epublib::domain::Resource;
-use crate::me::ag2s::epublib::epub::OutputStream;
+use crate::stubs::OutputStream;
 
 #[allow(dead_code)]
 pub trait HtmlProcessor {

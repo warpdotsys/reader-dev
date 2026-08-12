@@ -1,0 +1,18 @@
+﻿
+cargo_check.txt:83:   --> src\..\src\main\java\io\legado\app\lib\icu4j\CharsetRecog_2022.rs:156:5
+cargo_check.txt:95:   --> src\..\src\main\java\io\legado\app\lib\icu4j\CharsetRecog_2022.rs:207:5
+cargo_check.txt:102:   --> src\..\src\main\java\io\legado\app\lib\icu4j\CharsetRecog_2022.rs:255:5
+cargo_check.txt:690:   --> src\..\src\main\java\com\htmake\reader\api\controller\HttpTTSController.rs:29:30
+cargo_check.txt:713:   --> src\..\src\main\java\com\htmake\reader\api\controller\HttpTTSController.rs:39:50
+cargo_check.txt:736:   --> src\..\src\main\java\com\htmake\reader\api\controller\HttpTTSController.rs:53:40
+cargo_check.txt:3059:   --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:17:13
+cargo_check.txt:3082:   --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:30:48
+cargo_check.txt:3406:   --> src\..\src\main\java\io\legado\app\model\localBook\LocalBook.rs:42:20
+cargo_check.txt:4160:  --> src\..\src\main\java\me\ag2s\epublib\domain\ResourceInputStream.rs:16:14
+cargo_check.txt:4374:   --> src\..\src\main\java\com\htmake\reader\init\ReaderAdapter.rs:21:16
+cargo_check.txt:4391:   --> src\..\src\main\java\com\htmake\reader\init\ReaderAdapter.rs:26:16
+cargo_check.txt:4408:   --> src\..\src\main\java\com\htmake\reader\init\ReaderAdapter.rs:31:16
+cargo_check.txt:4437:  --> src\..\src\main\java\io\legado\app\model\localBook\LocalBook.rs:96:16
+cargo_check.txt:4443:   --> src\..\src\main\java\io\legado\app\model\localBook\LocalBook.rs:118:17
+
+

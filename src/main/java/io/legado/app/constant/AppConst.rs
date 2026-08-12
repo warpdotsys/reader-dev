@@ -1,3 +1,4 @@
+use crate::prelude::*;
 pub struct AppConst;
 
 impl AppConst {
@@ -7,8 +8,8 @@ impl AppConst {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36".to_string()
     }
 
-    pub fn SCRIPT_ENGINE() -> RhinoScriptEngine {
-        RhinoScriptEngine::new()
+    pub fn SCRIPT_ENGINE() -> ScriptEngine {
+        ScriptEngine::new()
     }
 
     pub fn TIME_FORMAT() -> SimpleDateFormat {

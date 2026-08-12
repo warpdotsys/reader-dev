@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: Vertx 位于 stubs 嵌套模块 io::vertx 内，prelude glob 不导出，需显式导入
+use crate::stubs::io::vertx::Vertx;
 // package com.htmake.reader
 
 // import com.fasterxml.jackson.databind.DeserializationFeature
@@ -41,11 +44,11 @@ impl ReaderApplication {
 
     // @PostConstruct
     pub fn deploy_verticle(&mut self) {
-        Json::mapper().apply(&mut |mapper| {
+        Json::mapper().apply(&mut |mapper: &mut ObjectMapper| {
             mapper.register_kotlin_module();
         });
 
-        Json::pretty_mapper().apply(&mut |mapper| {
+        Json::pretty_mapper().apply(&mut |mapper: &mut ObjectMapper| {
             mapper.register_kotlin_module();
         });
 
@@ -56,7 +59,7 @@ impl ReaderApplication {
 
     // @Bean
     pub fn web_client(&mut self) -> WebClient {
-        let web_client_options = WebClientOptions::new();
+        let mut web_client_options = WebClientOptions::new();
         web_client_options.is_try_use_compression = true;
         web_client_options.log_activity = true;
         web_client_options.is_follow_redirects = true;
@@ -72,7 +75,8 @@ impl ReaderApplication {
 }
 
 pub fn main(args: Vec<String>) {
-    logger.info("Starting application with args: {:?}", args);
-    SpringApplication::run::<ReaderApplication>(args);
+    logger().info(format!("Starting application with args: {:?}", args));
+    let mut app = SpringApplication::new(ReaderApplication::class);
+    app.run(args);
 }
 

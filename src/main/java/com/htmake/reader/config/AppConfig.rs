@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader.config
 
 // import org.springframework.boot.context.properties.ConfigurationProperties

@@ -1,12 +1,13 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities.rule
 
 // data class ContentRule(
-//     var content: String? = null,
-//     var nextContentUrl: String? = null,
-//     var webJs: String? = null,
-//     var sourceRegex: String? = null,
-//     var replaceRegex: String? = null, //替换规则
-//     var imageStyle: String? = null,  //默认大小居中,FULL最大宽度
+//     var content: String? = None,
+//     var nextContentUrl: String? = None,
+//     var webJs: String? = None,
+//     var sourceRegex: String? = None,
+//     var replaceRegex: String? = None, //替换规则
+//     var imageStyle: String? = None,  //默认大小居中,FULL最大宽度
 // )
 pub struct ContentRule {
     pub content: Option<String>,

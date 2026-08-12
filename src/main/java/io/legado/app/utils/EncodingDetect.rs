@@ -1,3 +1,6 @@
+use crate::prelude::*;
+// fix: E0659 歧义——prelude glob 同时导出 stubs 与 ResourceUtil 模块的 File/FileInputStream，显式导入覆盖
+use crate::stubs::{File, FileInputStream};
 /**
  * 自动获取文件的编码
  * */
@@ -8,10 +11,10 @@ impl EncodingDetect {
     pub fn getHtmlEncode(bytes: &[u8]) -> String {
         let result: Option<String> = (|| {
             let htmlStr = String::from_utf8_lossy(bytes).to_string();
-            let doc = Jsoup::parse(&htmlStr);
+            let doc = Jsoup::parse(htmlStr);
             let metaTags = doc.getElementsByTag("meta");
             let mut charsetStr: String;
-            for metaTag in metaTags {
+            for metaTag in &metaTags.list {
                 charsetStr = metaTag.attr("charset");
                 if !charsetStr.is_empty() {
                     return Some(charsetStr);
@@ -40,9 +43,9 @@ impl EncodingDetect {
     }
 
     pub fn getEncode(bytes: &[u8]) -> String {
-        let detect = CharsetDetector::new().setText(bytes).detect();
+        let detect = CharsetDetector::new().set_text(bytes.to_vec()).detect();
         match detect {
-            Some(m) => m.name,
+            Some(m) => m.get_name(),
             None => "UTF-8".to_string(),
         }
     }
@@ -51,7 +54,7 @@ impl EncodingDetect {
      * 得到文件的编码
      */
     pub fn getEncode_filePath(filePath: &str) -> String {
-        Self::getEncode_file(File::new(filePath))
+        Self::getEncode_file(&File::new(filePath))
     }
 
     /**
@@ -67,13 +70,24 @@ impl EncodingDetect {
         if let Some(file) = file {
             let read_result: Result<(), std::io::Error> = (|| {
                 let mut input = FileInputStream::new(file);
-                input.read(&mut byteArray);
+                let read_len = byteArray.len();
+                input.read(&mut byteArray, 0, read_len);
                 Ok(())
             })();
             if let Err(e) = read_result {
-                System.err.println(format!("Error: {e}"));
+                System::err.println(format!("Error: {e}"));
             }
         }
         byteArray
+    }
+
+    // fix: LocalBook 转录调用别名（Kotlin EncodingDetect.getEncode(File)）
+    pub fn get_encode(file: File) -> String {
+        Self::getEncode_file(&file)
+    }
+
+    // fix: TextFile 转录调用别名（Kotlin EncodingDetect.getEncodeFromBytes(ByteArray)）
+    pub fn get_encode_from_bytes(bytes: Vec<u8>) -> String {
+        Self::getEncode(&bytes)
     }
 }

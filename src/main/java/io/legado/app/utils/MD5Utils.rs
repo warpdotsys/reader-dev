@@ -1,3 +1,4 @@
+use crate::prelude::*;
 /**
  * 将字符串转化为MD5
  */
@@ -9,7 +10,7 @@ impl MD5Utils {
             return "".to_string();
         }
         let mut reStr = "".to_string();
-        let result: Result<(), String> = (|| {
+        let result: Result<(), StubError> = (|| {
             let md5 = MessageDigest::getInstance("MD5");
             let bytes = md5.digest(str.unwrap().as_bytes());
             let mut stringBuffer = String::new();
@@ -35,3 +36,4 @@ impl MD5Utils {
         reStr
     }
 }
+

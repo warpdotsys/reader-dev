@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package io.legado.app.data.entities
 
 //import io.legado.app.App
@@ -59,8 +60,9 @@ pub struct BookSource {
     pub user_name_space: String,
 
     // @Transient
-    // private var debugLog: io.legado.app.model.DebugLog? = null
-    pub debug_log: Option<DebugLog>,
+    // private var debugLog: io.legado.app.model.DebugLog? = None
+    // fix: DebugLog 为 trait，Option<DebugLog> 需 Box<dyn DebugLog>（同 HttpTTS.rs）
+    pub debug_log: Option<Box<dyn DebugLog>>,
 
     //    @Ignore
     //    @IgnoredOnParcel
@@ -92,12 +94,12 @@ impl BookSource {
         self.user_name_space.clone()
     }
 
-    pub fn set_logger(&mut self, value: Option<DebugLog>) {
+    pub fn set_logger(&mut self, value: Option<Box<dyn DebugLog>>) {
         self.debug_log = value;
     }
 
-    pub fn get_logger(&self) -> Option<DebugLog> {
-        self.debug_log.clone()
+    pub fn get_logger(&self) -> Option<&dyn DebugLog> {
+        self.debug_log.as_deref()
     }
 
     pub fn get_tag(&self) -> String {
@@ -178,8 +180,9 @@ impl BookSource {
 //    }
 
     pub fn equal(&self, source: &BookSource) -> bool {
-        self.equal_str(&self.book_source_name, &source.book_source_name)
-            && self.equal_str(&self.book_source_url, &source.book_source_url)
+        // fix: Kotlin String? 参数传非空 String 自动装箱 → 包 Some（语义等价，代价为 clone）
+        self.equal_str(&Some(self.book_source_name.clone()), &Some(source.book_source_name.clone()))
+            && self.equal_str(&Some(self.book_source_url.clone()), &Some(source.book_source_url.clone()))
             && self.equal_str(&self.book_source_group, &source.book_source_group)
             && self.book_source_type == source.book_source_type
             && self.equal_str(&self.book_url_pattern, &source.book_url_pattern)
@@ -266,7 +269,7 @@ impl std::hash::Hash for BookSource {
 
 // data class ExploreKind(
 //     var title: String,
-//     var url: String? = null
+//     var url: String? = None
 // )
 pub struct ExploreKind {
     pub title: String,
@@ -285,16 +288,17 @@ pub struct ExploreKind {
 //     }
 // }
 impl BookSource {
-    pub fn from_json(json: String) -> Result<BookSource> {
-        SourceAnalyzer::json_to_book_source(json)
+    // fix: Kotlin Result<T>（错误类型擦除）→ 显式 Box<dyn Any + Send>，与 SourceAnalyzer 返回类型一致
+    pub fn from_json(json: String) -> Result<BookSource, Box<dyn std::any::Any + Send>> {
+        SourceAnalyzer::new().jsonToBookSource(&json)
     }
 
-    pub fn from_json_array(json: String) -> Result<Vec<BookSource>> {
-        SourceAnalyzer::json_to_book_sources(json)
+    pub fn from_json_array(json: String) -> Result<Vec<BookSource>, Box<dyn std::any::Any + Send>> {
+        SourceAnalyzer::new().jsonToBookSources(&json)
     }
 
-    pub fn from_json_array_input_stream(input_stream: InputStream) -> Result<Vec<BookSource>> {
-        SourceAnalyzer::json_to_book_sources(input_stream)
+    pub fn from_json_array_input_stream(input_stream: &mut dyn InputStream) -> Result<Vec<BookSource>, Box<dyn std::any::Any + Send>> {
+        SourceAnalyzer::new().jsonToBookSources_stream(input_stream)
     }
 }
 
@@ -314,42 +318,42 @@ pub struct Converters;
 
 impl Converters {
     pub fn explore_rule_to_string(explore_rule: Option<ExploreRule>) -> String {
-        GSON::to_json(explore_rule)
+        crate::stubs::GSON::to_json(explore_rule)
     }
 
     pub fn string_to_explore_rule(json: Option<String>) -> Option<ExploreRule> {
-        GSON::from_json_object::<ExploreRule>(json).get_or_null()
+        crate::stubs::GSON::from_json_object::<ExploreRule>(json.unwrap_or_default()).get_or_null()
     }
 
     pub fn search_rule_to_string(search_rule: Option<SearchRule>) -> String {
-        GSON::to_json(search_rule)
+        crate::stubs::GSON::to_json(search_rule)
     }
 
     pub fn string_to_search_rule(json: Option<String>) -> Option<SearchRule> {
-        GSON::from_json_object::<SearchRule>(json).get_or_null()
+        crate::stubs::GSON::from_json_object::<SearchRule>(json.unwrap_or_default()).get_or_null()
     }
 
     pub fn book_info_rule_to_string(book_info_rule: Option<BookInfoRule>) -> String {
-        GSON::to_json(book_info_rule)
+        crate::stubs::GSON::to_json(book_info_rule)
     }
 
     pub fn string_to_book_info_rule(json: Option<String>) -> Option<BookInfoRule> {
-        GSON::from_json_object::<BookInfoRule>(json).get_or_null()
+        crate::stubs::GSON::from_json_object::<BookInfoRule>(json.unwrap_or_default()).get_or_null()
     }
 
     pub fn toc_rule_to_string(toc_rule: Option<TocRule>) -> String {
-        GSON::to_json(toc_rule)
+        crate::stubs::GSON::to_json(toc_rule)
     }
 
     pub fn string_to_toc_rule(json: Option<String>) -> Option<TocRule> {
-        GSON::from_json_object::<TocRule>(json).get_or_null()
+        crate::stubs::GSON::from_json_object::<TocRule>(json.unwrap_or_default()).get_or_null()
     }
 
     pub fn content_rule_to_string(content_rule: Option<ContentRule>) -> String {
-        GSON::to_json(content_rule)
+        crate::stubs::GSON::to_json(content_rule)
     }
 
     pub fn string_to_content_rule(json: Option<String>) -> Option<ContentRule> {
-        GSON::from_json_object::<ContentRule>(json).get_or_null()
+        crate::stubs::GSON::from_json_object::<ContentRule>(json.unwrap_or_default()).get_or_null()
     }
 }

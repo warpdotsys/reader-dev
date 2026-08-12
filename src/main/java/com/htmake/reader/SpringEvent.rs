@@ -1,3 +1,4 @@
+use crate::prelude::*;
 // package com.htmake.reader;
 
 // import org.springframework.context.ApplicationEvent;
@@ -21,7 +22,7 @@ impl SpringEvent {
             event: String::new(),
             message: String::new(),
         };
-        super(source);
+        // super(source); // fix: Java 基类 ApplicationEvent 构造调用，Rust 无对应父类
         s.event = event;
         s.message = message;
         s
