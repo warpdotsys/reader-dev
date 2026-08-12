@@ -1042,6 +1042,7 @@ impl JsValue {
 
 #[derive(Debug, Clone, Default)]
 pub struct Document {
+    pub html: String,
     pub text: String,
 }
 
@@ -1050,33 +1051,35 @@ impl Document {
         Document::default()
     }
     pub fn parse(s: String) -> Document {
-        Document { text: s }
+        let text = crate::runtime::html::text_of(&s);
+        Document { text, html: s }
     }
     pub fn text(&self) -> String {
         self.text.clone()
     }
-    pub fn select(&self, _css: &str) -> Elements {
-        Elements::default()
+    pub fn select(&self, css: &str) -> Elements {
+        crate::runtime::html::select_elements(&self.html, css)
     }
-    pub fn get_elements_by_tag(&self, _tag: &str) -> Elements {
-        Elements::default()
+    pub fn get_elements_by_tag(&self, tag: &str) -> Elements {
+        crate::runtime::html::select_elements(&self.html, tag)
     }
-    pub fn get_element_by_id(&self, _id: &str) -> Option<Element> {
-        None
+    pub fn get_element_by_id(&self, id: &str) -> Option<Element> {
+        let els = crate::runtime::html::select_elements(&self.html, &format!("#{}", id)); els.first()
     }
     pub fn outer_html(&self) -> String {
-        self.text.clone()
+        self.html.clone()
     }
     pub fn to_string(&self) -> String {
         self.text.clone()
     }
     pub fn title(&self) -> String {
-        String::new()
+        crate::runtime::html::title_of(&self.html)
     }
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Element {
+    pub html: String,
     pub text: String,
 }
 
@@ -1087,44 +1090,44 @@ impl Element {
     pub fn text(&self) -> String {
         self.text.clone()
     }
-    pub fn attr(&self, _name: &str) -> String {
-        String::new()
+    pub fn attr(&self, name: &str) -> String {
+        crate::runtime::html::attr_of(&self.html, name)
     }
-    pub fn has_attr(&self, _name: &str) -> bool {
-        false
+    pub fn has_attr(&self, name: &str) -> bool {
+        crate::runtime::html::has_attr(&self.html, name)
     }
-    pub fn select(&self, _css: &str) -> Elements {
-        Elements::default()
+    pub fn select(&self, css: &str) -> Elements {
+        crate::runtime::html::select_elements(&self.html, css)
     }
-    pub fn get_elements_by_tag(&self, _tag: &str) -> Elements {
-        Elements::default()
+    pub fn get_elements_by_tag(&self, tag: &str) -> Elements {
+        crate::runtime::html::select_elements(&self.html, tag)
     }
-    pub fn get_element_by_id(&self, _id: &str) -> Option<Element> {
-        None
+    pub fn get_element_by_id(&self, id: &str) -> Option<Element> {
+        let els = crate::runtime::html::select_elements(&self.html, &format!("#{}", id)); els.first()
     }
     pub fn parent(&self) -> Option<Element> {
         None
     }
     pub fn children(&self) -> Elements {
-        Elements::default()
+        crate::runtime::html::children_of(&self.html)
     }
     pub fn first(&self) -> Option<Element> {
-        None
+        let (h, t) = crate::runtime::html::first_element(&self.html); if h.is_empty() { None } else { Some(Element { text: t, html: h }) }
     }
     pub fn outer_html(&self) -> String {
-        self.text.clone()
+        self.html.clone()
     }
     pub fn inner_html(&self) -> String {
-        self.text.clone()
+        crate::runtime::html::inner_html_of(&self.html)
     }
     pub fn to_string(&self) -> String {
         self.text.clone()
     }
     pub fn tag_name(&self) -> String {
-        String::new()
+        crate::runtime::html::tag_name_of(&self.html)
     }
     pub fn own_text(&self) -> String {
-        self.text.clone()
+        crate::runtime::html::text_of(&self.html)
     }
 }
 
@@ -2950,6 +2953,7 @@ impl JXNode {
     pub fn as_element(&self) -> Element {
         Element {
             text: self.text.clone(),
+            html: self.text.clone(),
         }
     }
     // Kotlin JXNode.asString()
@@ -3137,7 +3141,8 @@ impl Jsoup {
         Document::parse(s)
     }
     pub fn parse_body_fragment(s: String) -> Document {
-        Document::parse(s)
+        let (h, t) = crate::runtime::html::body_of(&s);
+        Document { text: t, html: h }
     }
     pub fn connect(_url: &str) -> OkHttpClient {
         OkHttpClient
@@ -5386,6 +5391,7 @@ impl Node {
     pub fn as_element(&self) -> Element {
         Element {
             text: self.text.clone(),
+            html: self.text.clone(),
         }
     }
 }
@@ -6078,12 +6084,10 @@ impl Default for Charset {
 impl Document {
     // fix: jsoup Document.body()（EpubFile 转录使用）
     pub fn body(&self) -> Element {
-        Element {
-            text: self.text.clone(),
-        }
+        let (h, t) = crate::runtime::html::body_of(&self.html);
+        Element { text: t, html: h }
     }
 }
-
 impl Element {
     // fix: jsoup Element.previousElementSiblings()/nextElementSiblings()/remove()（EpubFile 转录使用）
     pub fn previous_element_siblings(&self) -> Elements {
@@ -8603,5 +8607,11 @@ impl WebRequest {
             })
             .and_then(|r| r.text().ok())
             .unwrap_or_default()
+    }
+}
+
+impl Element {
+    pub fn html(&self) -> String {
+        self.html.clone()
     }
 }

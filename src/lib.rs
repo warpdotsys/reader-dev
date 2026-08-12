@@ -1381,6 +1381,9 @@ pub mod runtime {
     pub mod js {
         include!("runtime/js.rs");
     }
+    pub mod html {
+        include!("runtime/html.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }
