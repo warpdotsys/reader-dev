@@ -1,117 +1,58 @@
-# reader-dev
+# reader-dev (Rust 重写版)
 
-阅读3服务器版，不需要手机。
+warpdotsys/reader-dev 的 legacy 分支全量转录：后端 Rust、前端 TypeScript（Vue 2）。
 
-本项目是 [hectorqin/reader](https://github.com/hectorqin/reader) 与 [changshengyu/reader](https://github.com/changshengyu/reader) 的持续维护分支，并集成了 reader-pro 的部分增强能力。
-
-## 致谢
-
-本仓库基于以下原始作者的贡献：
-
-- **hectorqin** — [hectorqin/reader](https://github.com/hectorqin/reader)，阅读3服务器版原始作者
-- **changshengyu** — [changshengyu/reader](https://github.com/changshengyu/reader)，社区维护者，合并大量社区 PR（#648 #653 #667 #668 #701 等）并持续增强
-
-感谢两位作者的开源贡献。
-
-## 功能
-
-书源管理、书架管理、搜索（含并发多源搜索/SSE）、书海、看书（翻页/滚动/滑动/自动阅读）、换源（含书源搜索）、WebDAV 同步、文字替换过滤、听书（本地/Edge TTS/HttpTTS）、视频书、漫画、音频、本地书导入（TXT/EPUB/UMD/PDF/CBZ）、书籍分组、RSS 订阅、定时更新书架、本地书仓、Kindle 阅读、简繁转换、多用户管理。
-
-## Docker 部署
+## 构建
 
 ```bash
-docker pull ghcr.io/warpdotsys/reader-dev:v4.0.5
-```
-
-```bash
-docker run -d \
-  --name reader \
-  --restart always \
-  -p 4396:8080 \
-  -v /home/reader/logs:/logs \
-  -v /home/reader/storage:/storage \
-  -v reader-data:/data \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e READER_APP_SECURE=true \
-  -e READER_APP_SECUREKEY=adminpwd \
-  -e READER_APP_INVITECODE=registercode \
-  -e READER_APP_USERLIMIT=500000 \
-  -e READER_APP_DEFAULTUSERENABLEWEBDAV=true \
-  -e READER_APP_DEFAULTUSERENABLEBOOKSOURCE=true \
-  -e READER_APP_DEFAULTUSERENABLELOCALSTORE=true \
-  ghcr.io/warpdotsys/reader-dev:v4.0.5
-```
-
-或使用 docker-compose：
-
-```yaml
-services:
-  reader:
-    image: ghcr.io/warpdotsys/reader-dev:v4.0.5
-    ports:
-      - "4396:8080"
-    volumes:
-      - ./logs:/logs
-      - ./storage:/storage
-      - reader-data:/data
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      READER_APP_SECURE: "true"
-      READER_APP_SECUREKEY: adminpwd
-      READER_APP_INVITECODE: registercode
-    restart: always
-
-volumes:
-  reader-data:
-```
-
-### 主要环境变量
-
-| 变量 | 说明 | 默认 |
-|---|---|---|
-| `SPRING_PROFILES_ACTIVE` | 运行 profile | `prod` |
-| `READER_APP_SECURE` | 是否开启安全模式 | `true` |
-| `READER_APP_SECUREKEY` | 管理模式密码 | - |
-| `READER_APP_INVITECODE` | 注册邀请码 | - |
-| `READER_APP_USERLIMIT` | 最大用户数 | `500000` |
-| `READER_APP_USERBOOKLIMIT` | 每用户书籍上限 | `20000` |
-| `READER_APP_DEFAULTUSERBOOKSOURCELIMIT` | 每用户书源上限 | `80000` |
-| `READER_APP_DEFAULTUSERENABLEBOOKSOURCE` | 默认启用书源 | `true` |
-| `READER_APP_DEFAULTUSERENABLERSSSOURCE` | 默认启用 RSS 源 | `true` |
-| `READER_APP_DEFAULTUSERENABLEWEBDAV` | 默认启用 WebDAV | `true` |
-| `READER_APP_DEFAULTUSERENABLELOCALSTORE` | 默认启用本地书仓 | `true` |
-| `READER_APP_CACHECHAPTERCONTENT` | 缓存章节内容 | `true` |
-| `READER_APP_REMOTEWEBVIEWAPI` | 远程 WebView 渲染 API | - |
-| `JAVA_OPTS` | JVM 参数 | `-Xms256m -Xmx512m` |
-
-## 自行构建
-
-```bash
-docker build -f Dockerfile.source -t reader:latest .
-```
-
-或通过 GitHub Actions（打 tag 自动构建并发布到 ghcr.io）：
-
-```bash
-git tag vX.Y.Z && git push origin vX.Y.Z
-```
-
-发布流程会自动构建镜像并打 `vX.Y.Z`、`latest`、`master` 标签，同时发布 GitHub Release（jar）。
-
-## 开发
-
-```bash
-# 前端（web/）
-cd web && npm ci && npm run serve
-
 # 后端
-./gradlew -b cli.gradle run
+cargo build --release
+
+# 前端（可选：已内置构建产物到 src/main/resources/web）
+cd web && npm run build
 ```
 
-## 版本
+## 运行
 
-- v4.0.5 — 全代码库对齐 reader-pro 审计修复、CI 优化、前端功能补齐
+```bash
+# debug
+cargo run -- --port=8090 --workdir=<仓库路径>
 
-## License
+# release
+target/release/reader.exe --port=8090 --workdir=C:\path\to\repo
+```
 
-本项目基于原始项目的开源协议衍生，具体请参考各上游仓库的 License。
+启动后浏览器访问 `http://localhost:8090`。
+
+## 测试
+
+```bash
+# 单元测试（JS 引擎 / HTML 解析 / JSONPath / 书源解析 / okhttp）
+cargo test
+
+# API 冒烟测试（19 项：登录/书源/书架/分组 CURD/书签/RSS/替换规则/TTS/文件）
+powershell -File tests/api_smoke.ps1
+
+# 搜索链路端到端（mock 书源：保存书源 → 搜索 → 详情 → 目录 → 正文）
+powershell -File tests/search_chain.ps1
+```
+
+## 功能状态
+
+已打通：
+- 登录/用户系统、书源增删改查（真实 JSON 持久化到 `storage/data/<ns>/`）
+- 书架/分组/书签/替换规则/TTS 配置 CRUD
+- **书源抓取链路**：搜索 → 书籍详情 → 目录 → 正文（JS 规则引擎 + CSS 选择器 + JSONPath + 网络请求全真实）
+- WebDAV / 文件管理 / 定时任务（部分）
+
+## 架构
+
+- `src/stubs.rs`：占位类型库（由编译迭代驱动逐步真实化）
+- `src/runtime/`：真实运行时（boa JS 引擎、scraper HTML 解析、serde_json JSONPath、reqwest/okhttp 网络）
+- `src/main/java/`：Kotlin/Java 转录的 Rust 代码（包结构保留）
+
+## 已知限制
+
+- XPath 规则（AnalyzeByXPath）仍为占位
+- WebDAV 上传/下载未真实化
+- 部分边缘功能（EPUB/PDF 本地解析、TTS 边缘）为占位实现
