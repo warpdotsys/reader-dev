@@ -21,11 +21,28 @@ fn get_storage(base: &str, names: Vec<String>) -> Option<String> {
 }
 
 // fix: stubs / VertExt 同名 save_storage 的 glob 歧义 → 本地包装；value 改为借用，避免调用后仍需使用 map 时发生 move（E0382）
-fn save_storage<T: std::fmt::Debug>(base: &str, names: Vec<String>, value: &T) {
+fn save_storage(
+    base: &str,
+    names: Vec<String>,
+    value: &std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::Any>>>,
+) {
     let mut full = vec![String::from(base)];
     full.extend(names);
-    // fix: 占位——用户 map 无 Serialize 实现，暂按 Debug 文本写入存储
-    crate::com_htmake_reader_utils_vertext::save_storage(&full, crate::stubs::Any::Str(format!("{:?}", value)), false, ".json");
+    // fix: 嵌套用户 map 真实 JSON 序列化
+    let mut outer = serde_json::Map::new();
+    for (k, inner) in value {
+        let mut obj = serde_json::Map::new();
+        for (k2, v2) in inner {
+            obj.insert(k2.clone(), crate::stubs::any_to_json_value(v2.as_ref()));
+        }
+        outer.insert(k.clone(), serde_json::Value::Object(obj));
+    }
+    crate::com_htmake_reader_utils_vertext::save_storage(
+        &full,
+        crate::stubs::Any::Str(serde_json::Value::Object(outer).to_string()),
+        false,
+        ".json",
+    );
 }
 
 // fix: ReturnData.set_data/set_error_msg 返回 &mut Self 而函数按值返回 → 消费式包装（保持原 Kotlin 链式 return 结构）

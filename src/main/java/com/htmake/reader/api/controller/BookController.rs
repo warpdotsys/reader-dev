@@ -813,6 +813,30 @@ impl BookController {
                     }
                 }
             }
+            // 按 chapterUrl 匹配章节（前端先取目录再读正文）
+            if chapter_info.is_none() && !chapter_url.is_empty() {
+                if book_info.is_none() {
+                    book_info = Some(
+                        self.merge_book_cache_info(
+                            self.web_book(book_source.clone().unwrap_or_default(), app_config_debug_log(), user_name_space.clone())
+                                .get_book_info_by_url(&book_url, true)
+                                .await,
+                        )
+                        .await,
+                    );
+                }
+                if let Some(bi) = &book_info {
+                    let chapter_list = self
+                        .get_local_chapter_list(bi.clone(), book_source.clone(), false, user_name_space.clone(), false, None)
+                        .await;
+                    for i in 0..chapter_list.len() {
+                        if chapter_url == chapter_list[i].url {
+                            chapter_info = Some(chapter_list[i].clone());
+                            break;
+                        }
+                    }
+                }
+            }
         }
         if book_info.is_none() {
             return_data.set_error_msg("获取书籍信息失败".to_string());
@@ -3736,7 +3760,7 @@ impl BookController {
                     if parser.current_token() != JsonToken::START_OBJECT {
                         continue;
                     }
-                    let node: crate::stubs::JsonNode = parser.read_value_as_tree();
+                    let node: crate::stubs::JsonNode = parser.read_value_as_json_node();
                     if source_url == node.get("bookSourceUrl").map(|n| n.to_string()).unwrap_or_default() {
                         result = Some(node.to_string());
                         break;

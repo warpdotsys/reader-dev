@@ -69,7 +69,8 @@ impl BookInfo {
         if let Some(dl) = debug_log {
             dl.log(Some(&book_source.book_source_url), Some("┌获取书名"), false);
         }
-        let name = BookHelp::format_book_name(&analyze_rule.get_string(info_rule.name.clone(), None, false));
+        let name_raw = analyze_rule.get_string(info_rule.name.clone(), None, false);
+        let name = BookHelp::format_book_name(&name_raw);
         if !name.is_empty() && (m_can_re_name || book.name.is_empty()) {
             book.name = name.clone();
         }

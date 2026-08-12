@@ -82,6 +82,7 @@ impl SourceAnalyzer {
         let mut source: BookSource = BookSource::default();
         let sourceAny: Option<BookSourceAny> = fromJsonObject::<BookSourceAny>(&GSON::new(), Some(json.trim()))
             .unwrap_or_else(|e| {
+
                 // fix: Debug::log → logger().info（DebugLog 为转录损坏的 trait）
                 let msg = e.downcast_ref::<StubError>().map(|se| se.msg.clone()).unwrap_or_default();
                 logger().info(format!("转化书源出错: {}", msg));

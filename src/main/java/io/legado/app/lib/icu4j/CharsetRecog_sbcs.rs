@@ -111,7 +111,7 @@ impl NGramParser {
         //     index -= 1;
         // }
         if table[index] > value {
-            index -= 1;
+            index = index.saturating_sub(1);
         }
 
         // if (index < 0 || table[index] != value) {

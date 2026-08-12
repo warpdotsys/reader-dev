@@ -58,6 +58,12 @@ fn bind_value(bindings: &SimpleBindings, key: &str, ctx: &mut Context) -> JsValu
     if let Some(i) = any_ref.downcast_ref::<i32>() {
         return JsValue::from_json(&Value::Number((*i).into()), ctx).unwrap_or(JsValue::null());
     }
+    if let Some(s) = any_ref.downcast_ref::<Option<i32>>() {
+        return match s {
+            Some(v) => JsValue::from_json(&Value::Number((*v).into()), ctx).unwrap_or(JsValue::null()),
+            None => JsValue::null(),
+        };
+    }
     if let Some(i) = any_ref.downcast_ref::<i64>() {
         return JsValue::from_json(&Value::Number((*i).into()), ctx).unwrap_or(JsValue::null());
     }

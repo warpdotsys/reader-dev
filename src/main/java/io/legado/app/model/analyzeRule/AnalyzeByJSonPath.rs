@@ -12,7 +12,7 @@ pub struct AnalyzeByJSonPath {
 
 impl AnalyzeByJSonPath {
     // companion object
-    fn parse(json: &Any) -> ReadContext {
+    pub fn parse(json: &Any) -> ReadContext {
         // fix: `is ReadContext -> json` 分支 → 占位 Any::ReadContext 变体
         return match json {
             Any::ReadContext(ctx) => ctx.clone(),
@@ -21,7 +21,7 @@ impl AnalyzeByJSonPath {
         }
     }
 
-    fn new(json: &Any) -> AnalyzeByJSonPath {
+    pub fn new(json: &Any) -> AnalyzeByJSonPath {
         // private var ctx: ReadContext = parse(json)
         AnalyzeByJSonPath {
             ctx: Self::parse(json),
@@ -33,7 +33,7 @@ impl AnalyzeByJSonPath {
      * 解决阅读"&&"、"||"与jsonPath支持的"&&"、"||"之间的冲突
      * 解决{$.rule}形式规则可能匹配错误的问题，旧规则用正则解析内容含'}'的json文本时，用规则中的字段去匹配这种内容会匹配错误.现改用平衡嵌套方法解决这个问题
      * */
-    fn get_string(&self, rule: &str) -> Option<String> {
+    pub fn get_string(&self, rule: &str) -> Option<String> {
         if rule.is_empty() { return None; }
         let mut result: String;
         let mut rule_analyzes = RuleAnalyzer::new(rule.to_string(), true); //设置平衡组为代码平衡
@@ -76,7 +76,7 @@ impl AnalyzeByJSonPath {
         }
     }
 
-    fn get_string_list(&self, rule: &str) -> List<String> {
+    pub fn get_string_list(&self, rule: &str) -> List<String> {
         let mut result = ArrayList::<String>::new();
         if rule.is_empty() { return result; }
         let mut rule_analyzes = RuleAnalyzer::new(rule.to_string(), true); //设置平衡组为代码平衡
@@ -142,12 +142,12 @@ impl AnalyzeByJSonPath {
         }
     }
 
-    fn get_object(&self, rule: &str) -> Any {
+    pub fn get_object(&self, rule: &str) -> Any {
         // fix: Kotlin ctx.read<Any>(rule) 抛异常，占位 Result 降级为 Any::Null
         return self.ctx.read::<Any>(rule).get_or_default(Any::Null);
     }
 
-    fn get_list(&self, rule: &str) -> Option<ArrayList<Any>> {
+    pub fn get_list(&self, rule: &str) -> Option<ArrayList<Any>> {
         let mut result = ArrayList::<Any>::new();
         if rule.is_empty() { return Some(result); }
         let mut rule_analyzes = RuleAnalyzer::new(rule.to_string(), true); //设置平衡组为代码平衡

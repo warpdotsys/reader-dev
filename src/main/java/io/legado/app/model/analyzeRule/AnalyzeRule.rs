@@ -133,31 +133,13 @@ impl AnalyzeRule {
     /// 获取JSOUP解析类
     // private fun getAnalyzeByJSoup(o: Any): AnalyzeByJSoup {
     fn get_analyze_by_j_soup(&mut self, o: Box<Any>) -> AnalyzeByJSoup {
-        if self.content.as_ref().map_or(true, |c| !std::ptr::eq(&*o, c.as_ref())) {
-            analyze_rule_stub_analyze_by_j_soup_new(*o)
-        } else {
-            if self.analyze_by_j_soup.is_none() || self.object_changed_js {
-                self.analyze_by_j_soup = Some(analyze_rule_stub_analyze_by_j_soup_new(self.content.as_ref().unwrap().as_ref().clone()));
-                self.object_changed_js = false;
-            }
-            // fix: AnalyzeByJSoup 未实现 Clone，缓存无法复用，重建占位等价实例
-            analyze_rule_stub_analyze_by_j_soup_new(self.content.as_ref().unwrap().as_ref().clone())
-        }
+        analyze_rule_stub_analyze_by_j_soup_new(*o)
     }
 
     /// 获取JSON解析类
     // private fun getAnalyzeByJSonPath(o: Any): AnalyzeByJSonPath {
     fn get_analyze_by_j_son_path(&mut self, o: Box<Any>) -> AnalyzeByJSonPath {
-        if self.content.as_ref().map_or(true, |c| !std::ptr::eq(&*o, c.as_ref())) {
-            analyze_rule_stub_analyze_by_j_son_path_new(o.as_ref())
-        } else {
-            if self.analyze_by_j_son_path.is_none() || self.object_changed_jp {
-                self.analyze_by_j_son_path = Some(analyze_rule_stub_analyze_by_j_son_path_new(self.content.as_ref().unwrap().as_ref()));
-                self.object_changed_jp = false;
-            }
-            // fix: AnalyzeByJSonPath 未实现 Clone，缓存无法复用，重建占位等价实例
-            analyze_rule_stub_analyze_by_j_son_path_new(self.content.as_ref().unwrap().as_ref())
-        }
+        crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath::new(&o)
     }
 
     /// 获取文本列表
@@ -211,7 +193,7 @@ impl AnalyzeRule {
                                         .collect(),
                                 ))),
                                 Mode::Default => Some(Box::new(Any::List(
-                                    analyze_rule_stub_analyze_by_j_soup_get_string_list(&self.get_analyze_by_j_soup(r.clone()), &source_rule.rule)
+                                    self.get_analyze_by_j_soup(r.clone()).get_string_list(&source_rule.rule)
                                         .into_iter()
                                         .map(Any::Str)
                                         .collect(),
@@ -294,15 +276,15 @@ impl AnalyzeRule {
                         if !source_rule.rule.is_blank() || source_rule.replace_regex.is_empty() {
                             result = match source_rule.mode {
                                 Mode::Js => self.eval_js(source_rule.rule.clone(), Some(r.clone())),
-                                Mode::Json => analyze_rule_stub_analyze_by_j_son_path_get_string(&self.get_analyze_by_j_son_path(r.clone()), &source_rule.rule)
-                                    .map(|s| Box::new(Any::Str(s))),
+                                Mode::Json => self.get_analyze_by_j_son_path(r.clone()).get_string(&source_rule.rule).map(|s| Box::new(Any::Str(s))),
                                 Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_string(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
                                     .map(|s| Box::new(Any::Str(s))),
                                 Mode::Default => if is_url {
-                                    Some(Box::new(Any::Str(analyze_rule_stub_analyze_by_j_soup_get_string0(&self.get_analyze_by_j_soup(r.clone()), &source_rule.rule))))
+                                    Some(Box::new(Any::Str(self.get_analyze_by_j_soup(r.clone()).get_string0(&source_rule.rule))))
                                 } else {
-                                    analyze_rule_stub_analyze_by_j_soup_get_string(&self.get_analyze_by_j_soup(r.clone()), &source_rule.rule)
-                                        .map(|s| Box::new(Any::Str(s)))
+                                    let jsoup = self.get_analyze_by_j_soup(r.clone());
+                                    let css_res = jsoup.get_string(&source_rule.rule);
+                                    css_res.map(|s| Box::new(Any::Str(s)))
                                 },
                                 _ => Some(Box::new(Any::Str(source_rule.rule.clone()))),
                             };
@@ -360,7 +342,7 @@ impl AnalyzeRule {
                         Mode::Json => Some(Box::new(analyze_rule_stub_analyze_by_j_son_path_get_object(&self.get_analyze_by_j_son_path(r.clone()), &source_rule.rule))),
                         Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_elements(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
                             .map(|list| Box::new(Any::List(list.into_iter().map(Any::JXNode).collect()))),
-                        _ => Some(Box::new(Any::Elements(analyze_rule_stub_analyze_by_j_soup_get_elements(&self.get_analyze_by_j_soup(r.clone()), &source_rule.rule)))),
+                        _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(&source_rule.rule)))),
                     };
                     if !source_rule.replace_regex.is_empty() {
                         result = Some(Box::new(Any::Str(self.replace_regex(result.as_ref().unwrap().to_string(), &source_rule))));
@@ -395,11 +377,10 @@ impl AnalyzeRule {
                             .collect(),
                         ))),
                         Mode::Js => self.eval_js(source_rule.rule.clone(), Some(r.clone())),
-                        Mode::Json => analyze_rule_stub_analyze_by_j_son_path_get_list(&self.get_analyze_by_j_son_path(r.clone()), &source_rule.rule)
-                            .map(|l| Box::new(Any::List(l))),
+                        Mode::Json => self.get_analyze_by_j_son_path(r.clone()).get_list(&source_rule.rule).map(|l| Box::new(Any::List(l.into_iter().collect()))),
                         Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_elements(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
                             .map(|list| Box::new(Any::List(list.into_iter().map(Any::JXNode).collect()))),
-                        _ => Some(Box::new(Any::Elements(analyze_rule_stub_analyze_by_j_soup_get_elements(&self.get_analyze_by_j_soup(r.clone()), &source_rule.rule)))),
+                        _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(&source_rule.rule)))),
                     };
                     if !source_rule.replace_regex.is_empty() {
                         result = Some(Box::new(Any::Str(self.replace_regex(result.as_ref().unwrap().to_string(), &source_rule))));
@@ -556,7 +537,7 @@ impl AnalyzeRule {
         bindings.put("src", self.content.clone());
         bindings.put("nextChapterUrl", self.next_chapter_url.clone());
         // fix: 引擎占位恒返回 None；若有值包装为 Any::Str 标记
-        SCRIPT_ENGINE.eval(js_str, &mut bindings).and_then(|v| v.as_any().downcast_ref::<Any>().map(|a| Box::new(a.clone())))
+        SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(Box::new)
     }
 
     // override fun getSource(): BaseSource? {

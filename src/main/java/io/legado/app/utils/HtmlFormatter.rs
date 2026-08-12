@@ -5,20 +5,20 @@ fn PARAM_PATTERN() -> Pattern {
     Pattern::compile(r"\s*,\s*(?=\{)")
 }
 pub struct HtmlFormatter {
-    wrapHtmlRegex: Regex,
-    commentRegex: Regex, //注释
-    notImgHtmlRegex: Regex,
-    otherHtmlRegex: Regex,
+    wrapHtmlRegex: Pattern,
+    commentRegex: Pattern, //注释
+    notImgHtmlRegex: Pattern,
+    otherHtmlRegex: Pattern,
     formatImagePattern: Pattern,
 }
 
 impl HtmlFormatter {
     pub fn new() -> HtmlFormatter {
         HtmlFormatter {
-            wrapHtmlRegex: Regex::new("</?(?:div|p|br|hr|h\\d|article|dd|dl)[^>]*>").unwrap(),
-            commentRegex: Regex::new("<!--[^>]*-->").unwrap(), //注释
-            notImgHtmlRegex: Regex::new("</?(?!img)[a-zA-Z]+(?=[ >])[^<>]*>").unwrap(),
-            otherHtmlRegex: Regex::new("</?[a-zA-Z]+(?=[ >])[^<>]*>").unwrap(),
+            wrapHtmlRegex: Pattern::compile("</?(?:div|p|br|hr|h\\d|article|dd|dl)[^>]*>"),
+            commentRegex: Pattern::compile("<!--[^>]*-->"), //注释
+            notImgHtmlRegex: Pattern::compile("</?(?!img)[a-zA-Z]+(?=[ >])[^<>]*>"),
+            otherHtmlRegex: Pattern::compile("</?[a-zA-Z]+(?=[ >])[^<>]*>"),
             formatImagePattern: Pattern::compile_with(
                 "<img[^>]*src *= *\"([^\"{]*\\{(?:[^{}]|\\{[^}]+\\})+\\})\"[^>]*>|<img[^>]*data-[^=]*= *\"([^\"]*)\"[^>]*>|<img[^>]*src *= *\"([^\"]*)\"[^>]*>",
                 Pattern::CASE_INSENSITIVE
@@ -30,14 +30,14 @@ impl HtmlFormatter {
         self.format_other(html, &self.otherHtmlRegex)
     }
 
-    pub fn format_other(&self, html: Option<&str>, otherRegex: &Regex) -> String {
+    pub fn format_other(&self, html: Option<&str>, otherRegex: &Pattern) -> String {
         let html = match html {
             Some(h) => h,
             None => return "".to_string(),
         };
-        html.replace_with_regex(self.wrapHtmlRegex.as_str(), "\n")
-            .replace_with_regex(self.commentRegex.as_str(), "")
-            .replace_with_regex(otherRegex.as_str(), "")
+        html.replace_with_regex(&self.wrapHtmlRegex.to_string(), "\n")
+            .replace_with_regex(&self.commentRegex.to_string(), "")
+            .replace_with_regex(&otherRegex.to_string(), "")
             .replace_with_regex("\\s*\\n+\\s*", "\n　　")
             .replace_with_regex("^[\\n\\s]+", "　　")
             .replace_with_regex("[\\n\\s]+$", "")

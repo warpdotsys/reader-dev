@@ -1,0 +1,34 @@
+dispatch: POST /reader3/saveBookSource
+  match: path=/reader3/saveBookSource method=POST rules=1
+    rule /reader3/saveBookSource Some(POST) score=25
+[jsonToBookSource] ruleToc in json: true
+[jsonToBookSource] sourceAny=true fallback=false
+dispatch: GET /reader3/searchBook?key=%E6%B5%8B%E8%AF%95&bookSourceUrl=http%3A%2F%2Flocalhost%3A18999
+  match: path=/reader3/searchBook method=GET rules=2
+    rule /reader3/searchBook Some(GET) score=25
+[web_book.from_json_string] input={"bookSourceComment":"","bookSourceGroup":null,"bookSourceName":"????","bookSourceType":0,"bookSourceUrl":"http://localhost:18999","bookUrlPattern":null,"concurrentRate":null,"customOrder":0,"enabled":true,"enabledCookieJar":false,"enabledExplore":true,"exploreUrl":null,"header":null,"lastUpdateTime":0,"loginCheckJs":null,"loginUi":null,"loginUrl":null,"respondTime":180000,"ruleBookInfo":{"author":"$.author","canReName":null,"coverUrl":null,"init":null,"intro":"$.intro","kind":null,"lastChapter":null,"name":"$.name","tocUrl":"$.tocUrl","updateTime":null,"wordCount":null},"ruleContent":{"content":"div.content","imageStyle":null,"nextContentUrl":null,"replaceRegex":null,"sourceRegex":null,"web
+[jsonToBookSource] ruleToc in json: true
+[jsonToBookSource] sourceAny=true fallback=false
+[web_book.from_json_string] parsed=true
+[web_book.search_book] key=测试 search_url=Some("http://localhost:18999/search?key={{key}}&page={{page}}")
+[replace_key_page_js] inner it=<key>
+[replace_key_page_js] eval result=Some("测试")
+[replace_key_page_js] inner it=<page>
+[replace_key_page_js] eval result=Some("1")
+[analyze_url] rule_url=http://localhost:18999/search?key=测试&page=1
+[analyze_url] rule_url=<http://localhost:18999/search?key=测试&page=1> param match=false
+[getAbsoluteURL] base=Some("http://localhost:18999") rel=<http://localhost:18999/search?key=测试&page=1>
+[getAbsoluteURL] result=<http://localhost:18999/search?key=%E6%B5%8B%E8%AF%95&page=1>
+[analyze_url] url set to <http://localhost:18999/search?key=%E6%B5%8B%E8%AF%95&page=1>
+[get_str_response_await] url=http://localhost:18999/search?key=%E6%B5%8B%E8%AF%95&page=1 type=false use_web_view=false
+[okhttp.get] url=<http://localhost:18999/search>
+[new_call_str_response] url=<http://localhost:18999/search?key=%E6%B5%8B%E8%AF%95&page=1> method=
+[okhttp] enqueue executing:  http://localhost:18999/search?key=%E6%B5%8B%E8%AF%95&page=1
+[await_call] recv=true
+[new_call_str_response] status=Some(200)
+[analyze_book_list] body_len=298 rule_list=<$.books>
+[get_elements] content head=<{"books":[{"name":"测试之书","author":"作者甲","bookUrl":"http://lo>
+[get_elements] is_json=true rules=1
+[get_list] ctx.json head=<>
+[get_list] read error rule=$.books msg=json path not found: $.books
+[analyze_book_list] collections=0

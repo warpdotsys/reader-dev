@@ -53,7 +53,8 @@ impl WebBook {
         debug_logger: Option<Box<dyn DebugLog>>,
         user_name_space: Option<String>
     ) -> Self {
-        let book_source = BookSource::from_json(book_source_string.to_string()).get_or_null().unwrap_or(BookSource::default());
+        let parsed = BookSource::from_json(book_source_string.to_string());
+        let book_source = parsed.get_or_null().unwrap_or(BookSource::default());
         Self::new(book_source, debug_log, debug_logger, user_name_space)
     }
 

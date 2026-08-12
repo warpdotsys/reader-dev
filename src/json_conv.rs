@@ -69,6 +69,21 @@ pub fn book_source_to_json(v: &crate::io_legado_app_data_entities_booksource::Bo
     m.insert(String::from("exploreUrl"), map_opt(v.explore_url.clone()));
     m.insert(String::from("searchUrl"), map_opt(v.search_url.clone()));
     m.insert(String::from("userNameSpace"), json!(v.user_name_space));
+    if let Some(r) = &v.rule_search {
+        m.insert(String::from("ruleSearch"), search_rule_to_json(r));
+    }
+    if let Some(r) = &v.rule_book_info {
+        m.insert(String::from("ruleBookInfo"), book_info_rule_to_json(r));
+    }
+    if let Some(r) = &v.rule_toc {
+        m.insert(String::from("ruleToc"), toc_rule_to_json(r));
+    }
+    if let Some(r) = &v.rule_content {
+        m.insert(String::from("ruleContent"), content_rule_to_json(r));
+    }
+    if let Some(r) = &v.rule_explore {
+        m.insert(String::from("ruleExplore"), explore_rule_to_json(r));
+    }
     Value::Object(m)
 }
 
@@ -273,6 +288,106 @@ pub fn users_to_json(v: &[crate::com_htmake_reader_entity_user::User]) -> Value 
 
 pub fn vec_string_to_value(v: &[String]) -> Value { Value::Array(v.iter().map(|s| json!(s)).collect()) }
 pub fn map_opt<T: ToString>(v: Option<T>) -> Value {
-    match v { Some(x) => Value::String(x.to_string()), None => Value::Null }
+    match v {
+        Some(x) => {
+            let s = x.to_string();
+            if s == "true" {
+                Value::Bool(true)
+            } else if s == "false" {
+                Value::Bool(false)
+            } else if let Ok(i) = s.parse::<i64>() {
+                Value::Number(i.into())
+            } else if let Ok(f) = s.parse::<f64>() {
+                Value::Number(serde_json::Number::from_f64(f).unwrap_or(0.into()))
+            } else {
+                Value::String(s)
+            }
+        }
+        None => Value::Null,
+    }
 }
 
+
+// ================= 规则实体 → JSON（书源持久化） =================
+use crate::io_legado_app_data_entities_rule_searchrule::SearchRule;
+use crate::io_legado_app_data_entities_rule_bookinforule::BookInfoRule;
+use crate::io_legado_app_data_entities_rule_tocrule::TocRule;
+use crate::io_legado_app_data_entities_rule_contentrule::ContentRule;
+use crate::io_legado_app_data_entities_rule_explorerule::ExploreRule;
+
+fn opt_str_to_value(v: &Option<String>) -> Value {
+    match v {
+        Some(s) => Value::String(s.clone()),
+        None => Value::Null,
+    }
+}
+
+pub fn search_rule_to_json(v: &SearchRule) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert("bookList".into(), opt_str_to_value(&v.book_list));
+    m.insert("name".into(), opt_str_to_value(&v.name));
+    m.insert("author".into(), opt_str_to_value(&v.author));
+    m.insert("intro".into(), opt_str_to_value(&v.intro));
+    m.insert("kind".into(), opt_str_to_value(&v.kind));
+    m.insert("lastChapter".into(), opt_str_to_value(&v.last_chapter));
+    m.insert("updateTime".into(), opt_str_to_value(&v.update_time));
+    m.insert("bookUrl".into(), opt_str_to_value(&v.book_url));
+    m.insert("coverUrl".into(), opt_str_to_value(&v.cover_url));
+    m.insert("wordCount".into(), opt_str_to_value(&v.word_count));
+    Value::Object(m)
+}
+
+pub fn book_info_rule_to_json(v: &BookInfoRule) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert("init".into(), opt_str_to_value(&v.init));
+    m.insert("name".into(), opt_str_to_value(&v.name));
+    m.insert("author".into(), opt_str_to_value(&v.author));
+    m.insert("intro".into(), opt_str_to_value(&v.intro));
+    m.insert("kind".into(), opt_str_to_value(&v.kind));
+    m.insert("lastChapter".into(), opt_str_to_value(&v.last_chapter));
+    m.insert("updateTime".into(), opt_str_to_value(&v.update_time));
+    m.insert("coverUrl".into(), opt_str_to_value(&v.cover_url));
+    m.insert("tocUrl".into(), opt_str_to_value(&v.toc_url));
+    m.insert("wordCount".into(), opt_str_to_value(&v.word_count));
+    m.insert("canReName".into(), opt_str_to_value(&v.can_re_name));
+    Value::Object(m)
+}
+
+pub fn toc_rule_to_json(v: &TocRule) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert("preUpdateJs".into(), opt_str_to_value(&v.pre_update_js));
+    m.insert("chapterList".into(), opt_str_to_value(&v.chapter_list));
+    m.insert("chapterName".into(), opt_str_to_value(&v.chapter_name));
+    m.insert("chapterUrl".into(), opt_str_to_value(&v.chapter_url));
+    m.insert("isVolume".into(), opt_str_to_value(&v.is_volume));
+    m.insert("isVip".into(), opt_str_to_value(&v.is_vip));
+    m.insert("updateTime".into(), opt_str_to_value(&v.update_time));
+    m.insert("nextTocUrl".into(), opt_str_to_value(&v.next_toc_url));
+    Value::Object(m)
+}
+
+pub fn content_rule_to_json(v: &ContentRule) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert("content".into(), opt_str_to_value(&v.content));
+    m.insert("nextContentUrl".into(), opt_str_to_value(&v.next_content_url));
+    m.insert("webJs".into(), opt_str_to_value(&v.web_js));
+    m.insert("sourceRegex".into(), opt_str_to_value(&v.source_regex));
+    m.insert("replaceRegex".into(), opt_str_to_value(&v.replace_regex));
+    m.insert("imageStyle".into(), opt_str_to_value(&v.image_style));
+    Value::Object(m)
+}
+
+pub fn explore_rule_to_json(v: &ExploreRule) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert("bookList".into(), opt_str_to_value(&v.book_list));
+    m.insert("name".into(), opt_str_to_value(&v.name));
+    m.insert("author".into(), opt_str_to_value(&v.author));
+    m.insert("intro".into(), opt_str_to_value(&v.intro));
+    m.insert("kind".into(), opt_str_to_value(&v.kind));
+    m.insert("lastChapter".into(), opt_str_to_value(&v.last_chapter));
+    m.insert("updateTime".into(), opt_str_to_value(&v.update_time));
+    m.insert("bookUrl".into(), opt_str_to_value(&v.book_url));
+    m.insert("coverUrl".into(), opt_str_to_value(&v.cover_url));
+    m.insert("wordCount".into(), opt_str_to_value(&v.word_count));
+    Value::Object(m)
+}

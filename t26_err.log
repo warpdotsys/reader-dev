@@ -1,0 +1,8 @@
+dispatch: POST /reader3/saveBookSource
+  match: path=/reader3/saveBookSource method=POST rules=1
+    rule /reader3/saveBookSource Some(POST) score=25
+[jsonToBookSource] ruleToc in json: true
+[jsonToBookSource] sourceAny=true fallback=false
+dispatch: GET /reader3/getBookContent?url=http%3A%2F%2Flocalhost%3A18999%2Fcontent%2F1&bookSourceUrl=http%3A%2F%2Flocalhost%3A18999
+  match: path=/reader3/getBookContent method=GET rules=2
+    rule /reader3/getBookContent Some(GET) score=25

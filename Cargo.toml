@@ -20,6 +20,7 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 percent-encoding = "2"
 mime_guess = "2"
 pollster = "1.0.1"
+fancy-regex = "0.19.0"
 
 [profile.dev]
 debug = false

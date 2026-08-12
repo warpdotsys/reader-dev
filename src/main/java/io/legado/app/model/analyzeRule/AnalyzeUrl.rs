@@ -400,7 +400,6 @@ impl AnalyzeUrl {
      */
     pub fn eval_js(&self, js_str: String, result: Option<&String>) -> Option<JsValue> {
         let mut bindings = SimpleBindings::new(); // val bindings = SimpleBindings()
-        // fix: JS 引擎为占位, 绑定值以字符串形式存入
         bindings.set("java", self.get_user_name_space()); // bindings["java"] = this
         bindings.set("baseUrl", self.base_url.clone());
         bindings.set("cookie", CookieStore::new(self.get_user_name_space()).get_cookie("")); // bindings["cookie"] = CookieStore(...)
@@ -412,7 +411,13 @@ impl AnalyzeUrl {
         bindings.set("book", self.rule_data.as_ref().map(|r| r.get_user_name_space())); // bindings["book"] = ruleData as? Book
         bindings.set("source", self.source.as_ref().map(|s| s.get_key())); // bindings["source"] = source
         bindings.set("result", result.cloned());
-        SCRIPT_ENGINE.eval(js_str, &mut bindings).map(|v| { let a = v.as_any().downcast_ref::<crate::stubs::Any>().map(|a| crate::stubs::any_to_value(a).to_string()).unwrap_or_default(); JsValue { value: Some(a) } })
+        SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(|a| {
+            let text = match &a {
+                crate::stubs::Any::Str(s) => s.clone(),
+                _ => crate::stubs::any_to_value(&a).to_string(),
+            };
+            JsValue { value: Some(text) }
+        })
     }
 
     pub fn put(&mut self, key: String, value: String) -> String {

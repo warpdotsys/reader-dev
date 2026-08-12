@@ -74,7 +74,7 @@ impl AnalyzeByJSoup {
     //         else -> Jsoup.parse(doc.toString())
     //     }
     // }
-    fn parse(doc: Any) -> Element {
+    pub fn parse(doc: Any) -> Element {
         return match doc {
             Any::Element(doc) => doc,
             Any::JXNode(doc) => if doc.is_element() {
@@ -88,7 +88,7 @@ impl AnalyzeByJSoup {
     // }
 
     // 构造函数: element = parse(doc)
-    fn new(doc: Any) -> AnalyzeByJSoup {
+    pub fn new(doc: Any) -> AnalyzeByJSoup {
         AnalyzeByJSoup {
             element: Self::parse(doc),
         }
@@ -98,7 +98,7 @@ impl AnalyzeByJSoup {
      * 获取列表
      */
     // internal fun getElements(rule: String) = getElements(element, rule)
-    fn get_elements(&self, rule: &str) -> Elements {
+    pub fn get_elements(&self, rule: &str) -> Elements {
         Self::get_elements_impl(Some(&self.element), rule)
     }
 
@@ -108,7 +108,7 @@ impl AnalyzeByJSoup {
     // internal fun getString(ruleStr: String) =
     //     if (ruleStr.isEmpty()) None
     //     else getStringList(ruleStr).takeIf { it.isNotEmpty() }?.joinToString("\n")
-    fn get_string(&self, rule_str: &str) -> Option<String> {
+    pub fn get_string(&self, rule_str: &str) -> Option<String> {
         if rule_str.is_empty() {
             None
         } else {
@@ -126,7 +126,7 @@ impl AnalyzeByJSoup {
      */
     // internal fun getString0(ruleStr: String) =
     //     getStringList(ruleStr).let { if (it.isEmpty()) "" else it[0] }
-    fn get_string0(&self, rule_str: &str) -> String {
+    pub fn get_string0(&self, rule_str: &str) -> String {
         let list = self.get_string_list(rule_str);
         if list.is_empty() {
             String::new()
@@ -139,7 +139,7 @@ impl AnalyzeByJSoup {
      * 获取所有内容列表
      */
     // internal fun getStringList(ruleStr: String): List<String> {
-    fn get_string_list(&self, rule_str: &str) -> Vec<String> {
+    pub fn get_string_list(&self, rule_str: &str) -> Vec<String> {
         let mut text_s: Vec<String> = Vec::new(); // ArrayList<String>()
 
         if rule_str.is_empty() {
@@ -350,13 +350,22 @@ impl AnalyzeByJSoup {
             "all" => text_s.push(elements.outer_html()),
             _ => {
                 for element in elements.iter() {
-                    let url = element.attr(last_rule);
-
-                    if is_blank(&url) || text_s.contains(&url) {
-                        continue;
+                    // CSS 选择器优先（div.content 等），否则按属性读取
+                    let sel = element.select(last_rule);
+                    if sel.size() > 0 {
+                        for e in sel.iter() {
+                            let t = e.text();
+                            if !t.is_empty() && !text_s.contains(&t) {
+                                text_s.push(t);
+                            }
+                        }
+                    } else {
+                        let url = element.attr(last_rule);
+                        if is_blank(&url) || text_s.contains(&url) {
+                            continue;
+                        }
+                        text_s.push(url);
                     }
-
-                    text_s.push(url);
                 }
             }
         }

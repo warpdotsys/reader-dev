@@ -14,6 +14,12 @@ pub trait EntityToJson {
     fn to_json_value(&self) -> serde_json::Value;
 }
 
+impl<T: EntityToJson> EntityToJson for &T {
+    fn to_json_value(&self) -> serde_json::Value {
+        (**self).to_json_value()
+    }
+}
+
 impl EntityToJson for crate::io_legado_app_data_entities_bookgroup::BookGroup {
     fn to_json_value(&self) -> serde_json::Value {
         crate::stubs::book_group_to_json(self)

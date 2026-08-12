@@ -1,0 +1,23 @@
+reader rust server starting... workdir=C:\Users\chong\reader-dev-legacy
+registered routes: 130
+  route: /* None
+  route: /* None
+  route: /assets/* None
+  route: /book-assets/* None
+  route: /book-assets/* None
+  route: /epub/* None
+  route: /epub/* None
+  route: /simple-web None
+  route: /simple-web/* None
+  route: /simple-web/* None
+  route: /reader3/getSystemInfo Some(GET)
+  route: /reader3/webdav* None
+  route: /reader3/saveBookSource Some(POST)
+  route: /reader3/saveBookSources Some(POST)
+  route: /reader3/getBookSource Some(GET)
+  route: /reader3/getBookSource Some(POST)
+  route: /reader3/getBookSources Some(GET)
+  route: /reader3/getBookSources Some(POST)
+  route: /reader3/deleteAllBookSources Some(POST)
+  route: /reader3/deleteBookSource Some(POST)
+reader server started on port 18093

@@ -3,6 +3,14 @@
 use crate::stubs::{Request, Response};
 
 pub fn execute(req: &Request) -> Result<Response, crate::stubs::Throwable> {
+    // reqwest::blocking 在 async 上下文创建/丢弃 runtime 会 panic → 独立线程执行
+    let req = req.clone();
+    std::thread::spawn(move || execute_inner(&req))
+        .join()
+        .map_err(|_| crate::stubs::StubError::new("request thread panicked"))?
+}
+
+fn execute_inner(req: &Request) -> Result<Response, crate::stubs::Throwable> {
     let client = reqwest::blocking::Client::builder()
         .redirect(reqwest::redirect::Policy::limited(10))
         .build()

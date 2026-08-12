@@ -707,7 +707,7 @@ pub fn parse_json_string_list(
                         if current_index > end_index {
                             break;
                         }
-                        let mut object_node = parser.read_value_as_tree::<ObjectNode>();
+                        let mut object_node = parser.read_value_as_object_node();
                         // fix: Kotlin `exclude?.forEach {}` → if let + for
                         if let Some(exclude_list) = &exclude {
                             for it in exclude_list {
@@ -717,7 +717,7 @@ pub fn parse_json_string_list(
                         result_list.add(object_node.to_string());
                         continue;
                     }
-                    let object_node = parser.read_value_as_tree::<ObjectNode>();
+                    let object_node = parser.read_value_as_object_node();
                     if filter.unwrap()(object_node.clone()) {
                         current_index += 1;
                     }

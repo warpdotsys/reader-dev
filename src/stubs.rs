@@ -146,7 +146,7 @@ impl<T> OptionExt<T> for Option<T> {
 
 #[derive(Clone)]
 pub struct Pattern {
-    re: regex::Regex,
+    re: fancy_regex::Regex,
     src: String,
 }
 
@@ -154,7 +154,7 @@ impl Pattern {
     pub const CASE_INSENSITIVE: u32 = 1;
 
     pub fn compile(src: &str) -> Pattern {
-        let re = regex::Regex::new(src).unwrap_or_else(|_| regex::Regex::new("").unwrap());
+        let re = fancy_regex::Regex::new(src).unwrap_or_else(|_| fancy_regex::Regex::new("").unwrap());
         Pattern { re, src: src.to_string() }
     }
 
@@ -177,11 +177,11 @@ impl Pattern {
     }
 
     pub fn matches(&self, s: &str) -> bool {
-        self.re.is_match(s)
+        self.re.is_match(s).unwrap_or(false)
     }
 
     pub fn is_match(&self, s: &str) -> bool {
-        self.re.is_match(s)
+        self.re.is_match(s).unwrap_or(false)
     }
 
     pub fn replace_all(&self, hay: &str, rep: &str) -> String {
@@ -193,18 +193,23 @@ impl Pattern {
     }
 
     pub fn split(&self, hay: &str) -> Vec<String> {
-        self.re.split(hay).map(|s| s.to_string()).collect()
+        let mut out = Vec::new();
+        let mut last = 0;
+        for m in self.re.find_iter(hay).filter_map(|m| m.ok()) {
+            out.push(hay[last..m.start()].to_string());
+            last = m.end();
+        }
+        out.push(hay[last..].to_string());
+        out
     }
-
+    pub fn src(&self) -> &str {
+        &self.src
+    }
     pub fn find_iter<'a>(&'a self, hay: &'a str) -> MatcherIter<'a> {
         MatcherIter {
             it: self.re.find_iter(hay),
             hay,
         }
-    }
-
-    pub fn src(&self) -> &str {
-        &self.src
     }
 
     pub fn to_string(&self) -> String {
@@ -213,7 +218,7 @@ impl Pattern {
 
     // Kotlin Regex.find(haystack) 一次匹配（返回带 start/end/groupValues 的 MatchData）
     pub fn find(&self, hay: &str) -> Option<MatchData> {
-        let caps = self.re.captures(hay)?;
+        let caps = self.re.captures(hay).ok()??;
         let m = caps.get(0)?;
         let groups: Vec<String> = (0..caps.len())
             .map(|i| caps.get(i).map(|g| g.as_str().to_string()).unwrap_or_default())
@@ -246,8 +251,7 @@ impl MatchData {
 }
 
 pub struct MatcherIter<'a> {
-    // fix: regex 1.13 中 MatchIter 已更名为 Matches<'r, 'h>
-    it: regex::Matches<'a, 'a>,
+    it: fancy_regex::Matches<'a, 'a, str>,
     hay: &'a str,
 }
 
@@ -256,12 +260,12 @@ impl<'a> Iterator for MatcherIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.it
             .next()
+            .and_then(|m| m.ok())
             .map(|m| (m.start(), m.end(), m.as_str().to_string()))
     }
 }
-
 pub struct Matcher<'a> {
-    re: &'a regex::Regex,
+    re: &'a fancy_regex::Regex,
     hay: String,
     pos: usize,
     last: Option<(usize, usize)>,
@@ -273,8 +277,8 @@ impl<'a> Matcher<'a> {
         if self.in_range && self.pos >= self.hay.len() {
             return false;
         }
-        match self.re.find_at(&self.hay, self.pos) {
-            Some(m) => {
+        match self.re.find_from_pos(&self.hay, self.pos) {
+            Ok(Some(m)) => {
                 self.last = Some((m.start(), m.end()));
                 self.pos = m.end();
                 if !self.in_range {
@@ -282,7 +286,7 @@ impl<'a> Matcher<'a> {
                 }
                 true
             }
-            None => false,
+            _ => false,
         }
     }
 
@@ -307,12 +311,13 @@ impl<'a> Matcher<'a> {
 
     pub fn group_idx(&self, i: usize) -> Option<String> {
         let (s, e) = self.last?;
-        self.re.captures(&self.hay[s..e]).and_then(|c| c.get(i)).map(|m| m.as_str().to_string())
+        let caps = self.re.captures(&self.hay[s..e]).ok()??;
+        caps.get(i).map(|m| m.as_str().to_string())
     }
 
     pub fn group_count(&self) -> usize {
         self.last
-            .map(|(s, e)| self.re.captures_len() - 1)
+            .map(|_| self.re.captures_len().saturating_sub(1))
             .unwrap_or(0)
     }
 
@@ -408,8 +413,10 @@ impl SimpleBindings {
         self.map.insert(key.to_string(), Box::new(value));
     }
 
-    // Kotlin `bindings[key] = value`（AnalyzeUrl.evalJS 使用；引擎为占位, 绑定值不存储）
-    pub fn set(&mut self, _key: &str, _value: impl std::fmt::Debug) {}
+    // Kotlin `bindings[key] = value`（AnalyzeUrl.evalJS 使用；真实存储供 JS 引擎绑定）
+    pub fn set(&mut self, key: &str, value: impl std::fmt::Debug + 'static) {
+        self.map.insert(key.to_string(), Box::new(value));
+    }
 
     pub fn get(&self, key: &str) -> Option<&Box<dyn AnyDebug>> {
         self.map.get(key)
@@ -444,6 +451,14 @@ impl ScriptEngine {
         bindings: &mut SimpleBindings,
     ) -> Option<Box<dyn AnyDebug>> {
         crate::runtime::js::eval_js_script(&js, bindings).map(|any| Box::new(any) as Box<dyn AnyDebug>)
+    }
+    // 直接返回 Any（绕过 Box<dyn AnyDebug> upcast 的 downcast 问题）
+    pub fn eval_downcast_any(
+        &self,
+        js: String,
+        bindings: &mut SimpleBindings,
+    ) -> Option<Any> {
+        crate::runtime::js::eval_js_script(&js, bindings)
     }
 }
 
@@ -1531,7 +1546,15 @@ impl JsonObject {
     }
     // Kotlin JsonObject.getMap()（ReaderUIApplication windowConfigMap 使用）
     pub fn map(&self) -> HashMap<String, Any> {
-        HashMap::new()
+        let mut out = HashMap::new();
+        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&self.0) {
+            if let Some(obj) = v.as_object() {
+                for (k, val) in obj {
+                    out.insert(k.clone(), crate::runtime::js::value_to_any(val));
+                }
+            }
+        }
+        out
     }
     // Kotlin JsonObject.getString(key)（控制器读取书源字段使用）
     pub fn get_string(&self, key: &str) -> String {
@@ -1579,9 +1602,11 @@ impl JsonObject {
         None
     }
     // Kotlin JsonObject.mapFrom(obj)（GSON 序列化占位）
-    pub fn map_from<T>(value: T) -> JsonObject {
-        let _ = &value;
-        JsonObject(String::new())
+    pub fn map_from<T>(value: T) -> JsonObject
+    where
+        T: crate::com_htmake_reader_db_db::EntityToJson,
+    {
+        JsonObject(value.to_json_value().to_string())
     }
 }
 
@@ -1764,8 +1789,8 @@ impl std::fmt::Display for Any {
             Any::Str(s) => write!(f, "{}", s),
             Any::JsonObject(o) => write!(f, "{}", o.0),
             Any::JsonArray(a) => write!(f, "{}", a.to_string()),
-            Any::List(l) => write!(f, "{:?}", l),
-            Any::Map(m) => write!(f, "{:?}", m),
+            Any::List(l) => write!(f, "{}", crate::stubs::any_list_to_value(l)),
+            Any::Map(m) => write!(f, "{}", crate::stubs::any_map_to_value(m)),
             Any::ReadContext(r) => write!(f, "{}", r.json),
             Any::JXNode(n) => write!(f, "{}", n.text),
             Any::JXDocument(d) => write!(f, "{}", d.text),
@@ -2859,8 +2884,15 @@ impl ObjectMapper {
 pub struct JsonFactory;
 
 impl JsonFactory {
-    pub fn create_parser(&self, _file: &File) -> JsonParser {
-        JsonParser::default()
+    pub fn create_parser(&self, file: &File) -> JsonParser {
+        let mut parser = JsonParser::default();
+        if file.exists() {
+            let text = file.read_text();
+            if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&text) {
+                *parser.items.borrow_mut() = arr.into_iter().map(|v| v.to_string()).collect();
+            }
+        }
+        parser
     }
 }
 
@@ -2875,17 +2907,45 @@ pub enum JsonToken {
     VALUE_STRING,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct JsonParser {
-    // 占位：不做真实 JSON 流解析（next_token 恒返回 END_ARRAY，跳过解析）
+    // 真实 JSON 数组流式解析：items 为数组元素（对象 JSON 文本）
+    pub items: std::cell::RefCell<Vec<String>>,
+    pub pos: std::cell::RefCell<usize>,
+    pub started: std::cell::RefCell<bool>,
+    pub last_token: std::cell::RefCell<JsonToken>,
+}
+
+impl Default for JsonParser {
+    fn default() -> JsonParser {
+        JsonParser {
+            items: std::cell::RefCell::new(Vec::new()),
+            pos: std::cell::RefCell::new(0),
+            started: std::cell::RefCell::new(false),
+            last_token: std::cell::RefCell::new(JsonToken::START_ARRAY),
+        }
+    }
 }
 
 impl JsonParser {
     pub fn next_token(&self) -> JsonToken {
-        JsonToken::END_ARRAY
+        if !*self.started.borrow() {
+            *self.started.borrow_mut() = true;
+            *self.last_token.borrow_mut() = JsonToken::START_ARRAY;
+            return JsonToken::START_ARRAY;
+        }
+        let pos = *self.pos.borrow();
+        let len = self.items.borrow().len();
+        if pos < len {
+            *self.pos.borrow_mut() = pos + 1;
+            *self.last_token.borrow_mut() = JsonToken::START_OBJECT;
+            return JsonToken::START_OBJECT;
+        }
+        *self.last_token.borrow_mut() = JsonToken::END_ARRAY;
+        return JsonToken::END_ARRAY;
     }
     pub fn current_token(&self) -> JsonToken {
-        JsonToken::END_ARRAY
+        self.last_token.borrow().clone()
     }
     pub fn current_name(&self) -> String {
         String::new()
@@ -2894,8 +2954,34 @@ impl JsonParser {
         String::new()
     }
     pub fn skip_children(&self) {}
+    // Kotlin JsonParser.readValueAsTree<T>（泛型占位：经特化方法读取）
     pub fn read_value_as_tree<T: Default>(&self) -> T {
         T::default()
+    }
+    // 特化：当前元素 → JsonNode
+    pub fn read_value_as_json_node(&self) -> JsonNode {
+        let pos = (*self.pos.borrow()).saturating_sub(1);
+        match self.items.borrow().get(pos) {
+            Some(s) => serde_json::from_str::<serde_json::Value>(s)
+                .map(JsonNode)
+                .unwrap_or_else(|_| JsonNode(serde_json::Value::Null)),
+            None => JsonNode(serde_json::Value::Null),
+        }
+    }
+    // 特化：当前元素 → ObjectNode（扁平字符串值）
+    pub fn read_value_as_object_node(&self) -> ObjectNode {
+        let pos = (*self.pos.borrow()).saturating_sub(1);
+        let mut map = std::collections::HashMap::new();
+        if let Some(s) = self.items.borrow().get(pos) {
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(s) {
+                if let Some(obj) = v.as_object() {
+                    for (k, val) in obj {
+                        map.insert(k.clone(), val.to_string());
+                    }
+                }
+            }
+        }
+        ObjectNode(map)
     }
 }
 
@@ -4837,7 +4923,10 @@ impl<T> Call<T> {
         F: FnOnce(Result<Response, Throwable>) + Send + 'static,
     {
         let result = match &self.request {
-            Some(req) => crate::runtime::okhttp::execute(req),
+            Some(req) => {
+                eprintln!("[okhttp] enqueue executing: {} {}", req.method, req.url);
+                crate::runtime::okhttp::execute(req)
+            }
             None => Err(Throwable::new("call has no request".to_string())),
         };
         callback(result);
@@ -6057,22 +6146,37 @@ impl MultipartBodyBuilder {
 pub struct HttpUrl(pub String);
 impl HttpUrl {
     pub fn new_builder(&self) -> HttpUrlBuilder {
-        HttpUrlBuilder
+        HttpUrlBuilder {
+            url: self.0.clone(),
+            query: std::cell::RefCell::new(Vec::new()),
+        }
     }
     pub fn to_string(&self) -> String {
         self.0.clone()
     }
 }
-pub struct HttpUrlBuilder;
+pub struct HttpUrlBuilder {
+    pub url: String,
+    pub query: std::cell::RefCell<Vec<(String, String)>>,
+}
 impl HttpUrlBuilder {
-    pub fn add_query_parameter(&self, _name: &str, _value: &str) -> &Self {
+    pub fn add_query_parameter(&self, name: &str, value: &str) -> &Self {
+        self.query.borrow_mut().push((name.to_string(), value.to_string()));
         self
     }
-    pub fn add_encoded_query_parameter(&self, _name: &str, _value: &str) -> &Self {
+    pub fn add_encoded_query_parameter(&self, name: &str, value: &str) -> &Self {
+        self.query.borrow_mut().push((name.to_string(), value.to_string()));
         self
     }
     pub fn build(&self) -> HttpUrl {
-        HttpUrl(String::new())
+        let mut u = self.url.clone();
+        let q = self.query.borrow();
+        if !q.is_empty() {
+            let sep = if u.contains('?') { '&' } else { '?' };
+            u.push(sep);
+            u.push_str(&q.iter().map(|(k, v)| format!("{}={}", k, v)).collect::<Vec<_>>().join("&"));
+        }
+        HttpUrl(u)
     }
 }
 pub trait HttpUrlExt {
@@ -6127,22 +6231,22 @@ impl OkHttpClient {
     }
 }
 
-// OkHttpUtils.await_call 所需 oneshot 通道占位（stubs Call.enqueue 不触发回调 → recv 恒为 None）
-pub struct OneshotSender<T>(std::marker::PhantomData<T>);
-pub struct OneshotReceiver<T>(std::marker::PhantomData<T>);
+// OkHttpUtils.await_call 所需 oneshot 通道（真实共享槽；enqueue 同步回调 → recv 立即取到）
+pub struct OneshotSender<T>(std::sync::Arc<std::sync::Mutex<Option<T>>>);
+pub struct OneshotReceiver<T>(std::sync::Arc<std::sync::Mutex<Option<T>>>);
 impl<T> OneshotSender<T> {
-    pub fn send(&self, _value: T) {}
+    pub fn send(&self, value: T) {
+        *self.0.lock().unwrap() = Some(value);
+    }
 }
 impl<T> OneshotReceiver<T> {
     pub async fn recv(&self) -> Option<T> {
-        None
+        self.0.lock().unwrap().take()
     }
 }
 pub fn tokio_oneshot_channel<T>() -> (OneshotSender<T>, OneshotReceiver<T>) {
-    (
-        OneshotSender(std::marker::PhantomData),
-        OneshotReceiver(std::marker::PhantomData),
-    )
+    let shared = std::sync::Arc::new(std::sync::Mutex::new(None));
+    (OneshotSender(shared.clone()), OneshotReceiver(shared))
 }// ---------------- EpubFile.rs 转录追加（仅追加，不改已有内容） ----------------
 
 impl Default for Charset {
@@ -7629,10 +7733,22 @@ pub fn analyze_rule_stub_analyze_by_x_path_get_elements(
 }
 
 pub fn analyze_rule_stub_analyze_by_j_soup_new(
-    _doc: crate::stubs::Any,
+    doc: crate::stubs::Any,
 ) -> crate::io_legado_app_model_analyzerule_analyzebyjsoup::AnalyzeByJSoup {
-    // fix: element 占位全零（Element 仅含 String，容量 0 时析构为无操作）；实例不参与读取
-    unsafe { std::mem::MaybeUninit::zeroed().assume_init() }
+    use crate::io_legado_app_model_analyzerule_analyzebyjsoup::Any as LocalAny;
+    let local = match &doc {
+        crate::stubs::Any::Element(e) => LocalAny::Element(e.clone()),
+        crate::stubs::Any::JXNode(n) => LocalAny::JXNode(n.clone()),
+        _ => {
+            let html = match &doc {
+                crate::stubs::Any::Str(s) => s.clone(),
+                other => crate::stubs::any_to_value(other).to_string(),
+            };
+            let body = Jsoup::parse(html).body();
+            return crate::io_legado_app_model_analyzerule_analyzebyjsoup::AnalyzeByJSoup::new(LocalAny::Element(body));
+        }
+    };
+    crate::io_legado_app_model_analyzerule_analyzebyjsoup::AnalyzeByJSoup::new(local)
 }
 
 pub fn analyze_rule_stub_analyze_by_j_soup_get_string(
@@ -8335,8 +8451,15 @@ impl<A, B, C> Triple<A, B, C> {
 pub struct JsonNode(pub serde_json::Value);
 impl JsonNode {
     pub fn new() -> JsonNode { JsonNode(serde_json::Value::Null) }
-    pub fn get(&self, key: &str) -> Option<&JsonNode> { None }
-    pub fn to_string(&self) -> String { self.0.to_string() }
+    pub fn get(&self, key: &str) -> Option<JsonNode> {
+        self.0.get(key).cloned().map(JsonNode)
+    }
+    pub fn to_string(&self) -> String {
+        match &self.0 {
+            serde_json::Value::String(s) => s.clone(),
+            other => other.to_string(),
+        }
+    }
     pub fn is_not_blank(&self) -> bool { !self.0.is_null() }
     pub fn contains(&self, _other: &str) -> bool { false }
 }
@@ -8608,8 +8731,12 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<Vec<i32>>() { return Value::Array(v.iter().map(|x| json!(*x)).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<serde_json::Value>>() { return Value::Array(v.clone()); }
     if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Box<dyn std::any::Any>>>>() { return Value::Array(v.iter().map(any_map_boxed_to_value).collect()); }
+    if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Any>>>() { return Value::Array(v.iter().map(any_map_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<JsonObject>>() { return Value::Array(v.iter().map(json_object_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_book::Book>() { return book_to_json(v); }
+    if let Some(v) = d.downcast_ref::<Option<crate::io_legado_app_data_entities_book::Book>>() {
+        return match v { Some(b) => book_to_json(b), None => Value::Null };
+    }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_booksource::BookSource>() { return book_source_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_rsssource::RssSource>() { return rss_source_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_replacerule::ReplaceRule>() { return replace_rule_to_json(v); }

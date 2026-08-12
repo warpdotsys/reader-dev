@@ -184,8 +184,8 @@ impl BookList {
                 if let Some(mut search_book) = Self::get_search_item(
                     item, &mut analyze_rule, book_source, base_url, variable_book.variable.as_deref(), index == 0,
                     &rule_name, &rule_book_url, &rule_author,
-                    &rule_cover_url, &rule_intro, &rule_kind,
-                    &rule_last_chapter, &rule_word_count,
+                    &rule_kind, &rule_cover_url, &rule_word_count,
+                    &rule_intro, &rule_last_chapter,
                     debug_log
                 ).await {
                     if base_url == search_book.book_url {

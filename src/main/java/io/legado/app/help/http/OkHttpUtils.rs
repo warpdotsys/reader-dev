@@ -202,7 +202,8 @@ pub async fn await_call(call: &Call<Response>) -> Response {
         }
     }));
     // fix: stubs Call.enqueue 不触发回调 → rx 恒为空；Kotlin 为 suspendCancellableCoroutine 等待 onResponse/onFailure
-    match rx.recv().await {
+    let recv = rx.recv().await;
+    match recv {
         Some(Ok(response)) => response,
         _ => Response::default(),
     }

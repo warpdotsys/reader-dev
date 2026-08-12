@@ -190,7 +190,7 @@ pub trait BaseSource : JsExtensions {
         bindings.set("baseUrl", self.get_key());
         bindings.set("cookie", self.get_user_name_space());
         bindings.set("cache", self.get_user_name_space());
-        SCRIPT_ENGINE.eval(js_str, &mut bindings).and_then(|v| v.as_any().downcast_ref::<Any>().map(|a| Box::new(a.clone())))
+        SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(Box::new)
     }
 
     fn cache_manager(&self) -> CacheManager {
