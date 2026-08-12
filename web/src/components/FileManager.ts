@@ -1,3 +1,4 @@
+declare const require: any;
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 import eventBus from "../plugins/eventBus";

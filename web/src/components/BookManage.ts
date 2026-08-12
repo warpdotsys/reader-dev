@@ -2,6 +2,7 @@ import Long from "long";
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 import eventBus from "../plugins/eventBus";
+declare const require: any;
 const buildURL = require("axios/lib/helpers/buildURL");
 import { LimitResquest } from "../plugins/helper";
 
@@ -415,7 +416,7 @@ export const BookManage: any = {
           formData,
           formItems,
           value => {
-            formData.groupId = 0 | value.groupId;
+            (formData as any).groupId = 0 | value.groupId;
           }
         ),
         showCancelButton: true,

@@ -569,7 +569,7 @@ export default new Vuex.Store<any>({
         const config = {
           ...settings.themes[state.config.theme]
         };
-        config.popupPure = config.popup;
+        (config as any).popupPure = config.popup;
         if (state.miniInterface && state.config.isNormalPage) {
           config.body =
             "linear-gradient(to bottom,rgba(0,0,0,.2) 0,transparent 36px), " +

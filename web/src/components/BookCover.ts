@@ -1,5 +1,6 @@
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
+declare const require: any;
 const buildURL = require("axios/lib/helpers/buildURL");
 
 export const BookCover = {

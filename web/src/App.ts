@@ -42,7 +42,7 @@ declare global {
 }
 
 Date.prototype.format = function(fmt) {
-  var o: { [key: string]: number } = {
+  var o: { [key: string]: any } = {
     "M+": this.getMonth() + 1, //月份
     "d+": this.getDate(), //日
     "h+": this.getHours(), //小时
@@ -345,10 +345,10 @@ export const App: any = {
     try {
       const docStyle = getComputedStyle(document.documentElement);
       this.$store.commit("setSafeArea", {
-        top: docStyle.getPropertyValue("--sat") | 0,
-        bottom: docStyle.getPropertyValue("--sab") | 0,
-        left: docStyle.getPropertyValue("--sal") | 0,
-        right: docStyle.getPropertyValue("--sar") | 0
+        top: (docStyle.getPropertyValue("--sat") as any) | 0,
+        bottom: (docStyle.getPropertyValue("--sab") as any) | 0,
+        left: (docStyle.getPropertyValue("--sal") as any) | 0,
+        right: (docStyle.getPropertyValue("--sar") as any) | 0
       });
     } catch (error) {
       //
@@ -844,7 +844,7 @@ export const App: any = {
         author: this.$store.getters.readingBook.author,
         bookUrl: this.$store.getters.readingBook.bookUrl
       };
-      const params = {
+      const params: any = {
         url: book.bookUrl,
         index: chapterIndex
       };

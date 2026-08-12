@@ -68,6 +68,7 @@ export const Content: any = {
           v-lazy-container={{
             selector: "img"
           }}
+          {...({} as any)}
         >
           {this.isCbz || this.isPdf ? null : <h3 data-pos={0}>{this.title}</h3>}
           {this.content.split(/\n+/).map(a => {
@@ -88,12 +89,13 @@ export const Content: any = {
                   style={this.containerStyle}
                   domPropsInnerHTML={a}
                   data-pos={pos}
+                  {...({} as any)}
                 ></div>
               );
             }
             // 文本内容
             return (
-              <p style={this.pStyle} domPropsInnerHTML={a} data-pos={pos} />
+              <p style={this.pStyle} domPropsInnerHTML={a} data-pos={pos} {...({} as any)} />
             );
           })}
         </div>
@@ -293,6 +295,7 @@ export const Content: any = {
                         style={this.containerStyle}
                         domPropsInnerHTML={a}
                         data-pos={pos}
+                        {...({} as any)}
                       ></div>
                     );
                   }
@@ -302,6 +305,7 @@ export const Content: any = {
                       style={this.pStyle}
                       domPropsInnerHTML={a}
                       data-pos={pos}
+                      {...({} as any)}
                     />
                   );
                 })}
@@ -336,6 +340,7 @@ export const Content: any = {
             vOn:canplay={this.onCanPlay}
             vOn:canplaythrough={this.audioEvent}
             vOn:waiting={this.onWaiting}
+            {...({} as any)}
           ></audio>
           <div class="book-cover">
             <img v-lazy={this.getCover(this.readingBook.coverUrl)} />
@@ -363,10 +368,12 @@ export const Content: any = {
               vOn:click_stop_prevent={() => {
                 this.seekTime(this.$refs.audio.currentTime - 15);
               }}
+              {...({} as any)}
             ></i>
             <i
               class="reader-iconfont reader-icon-player-backward-step"
               vOn:click_stop_prevent={this.prevChapter}
+              {...({} as any)}
             ></i>
             <i
               class={[
@@ -376,16 +383,19 @@ export const Content: any = {
                   : "reader-icon-player-pause"
               ]}
               vOn:click_stop_prevent={this.toggle}
+              {...({} as any)}
             ></i>
             <i
               class="reader-iconfont reader-icon-player-forward-step"
               vOn:click_stop_prevent={this.nextChapter}
+              {...({} as any)}
             ></i>
             <i
               class="reader-iconfont reader-icon-15s"
               vOn:click_stop_prevent={() => {
                 this.seekTime(this.$refs.audio.currentTime + 15);
               }}
+              {...({} as any)}
             ></i>
           </div>
           <div class="book-operation">
@@ -407,6 +417,7 @@ export const Content: any = {
                   this.setAudioVolume(this.audioVolume > 0 ? 0 : 100);
                 }}
                 style={{ marginRight: this.audioVolume > 0 ? "15px" : "25px" }}
+                {...({} as any)}
               ></i>
               <el-slider
                 vModel={this.audioVolume}

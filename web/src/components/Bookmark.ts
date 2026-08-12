@@ -245,7 +245,7 @@ export const Bookmark = {
       reader.onload = e => {
         const data = e.target.result;
         try {
-          const bookmarkList = JSON.parse(data);
+          const bookmarkList = JSON.parse(data as string);
           if (Array.isArray(bookmarkList) && bookmarkList.length) {
             this.comfirmImport(bookmarkList);
           }

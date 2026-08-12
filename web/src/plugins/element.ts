@@ -40,13 +40,7 @@ import {
 
 declare module "vue/types/vue" {
   interface Vue {
-    $msgbox: any;
-    $message: any;
     $ELEMENT: any;
-    $alert: any;
-    $confirm: any;
-    $prompt: any;
-    $loading: any;
   }
 }
 

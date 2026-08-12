@@ -200,7 +200,7 @@ export const ReplaceRule = {
       reader.onload = e => {
         const data = e.target.result;
         try {
-          const ruleList = JSON.parse(data);
+          const ruleList = JSON.parse(data as string);
           if (Array.isArray(ruleList) && ruleList.length) {
             this.comfirmImport(ruleList);
           }

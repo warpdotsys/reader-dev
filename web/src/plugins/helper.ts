@@ -14,11 +14,9 @@ export const formatSize = function(value: any, scale?: number) {
     "PB",
     "EB",
     "ZB",
-    "YB"
   );
   var index = 0;
-  index = Math.floor(Math.log(value) / Math.log(1024));
-  var size = value / Math.pow(1024, index);
+  var size: any = value / Math.pow(1024, index);
   size = size.toFixed(scale || 2);
   return size + " " + unitArr[index];
 };

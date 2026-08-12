@@ -1,3 +1,4 @@
+declare const require: any;
 import jump from "../plugins/jump";
 import Axios from "../plugins/axios";
 const buildURL = require("axios/lib/helpers/buildURL");

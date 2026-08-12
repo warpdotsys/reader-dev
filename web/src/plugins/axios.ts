@@ -79,7 +79,7 @@ export const request: RequestFunction = async ({
     data,
     ...options
   };
-  const response = await service(query).catch(e => {
+  const response = await (service as any)(query).catch((e: any) => {
     if (params.bookSourceUrl && store.state.failureIncludeTimeout) {
       // 判断是否失效书源
       const errorMsg = e.toString();

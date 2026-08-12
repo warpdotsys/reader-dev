@@ -27,7 +27,8 @@ export const template = `
 `;
 
 // <script>
-import { Converter, HTMLConverter } from "pinyin-pro";
+import * as pinyinPro from "pinyin-pro";
+const { Converter, HTMLConverter } = (pinyinPro as any);
 import Axios from "../plugins/axios";
 
 /**
@@ -134,7 +135,7 @@ export const ShadowIframe = {
           const href = tag.match(/href=('|")?([^>'"\s]+)/);
           if (href) {
             const abs = new URL(href[2], baseUrl);
-            return tag.replace(href[2], abs);
+            return tag.replace(href[2], (abs as any));
           }
           return tag;
         })

@@ -1005,7 +1005,7 @@ export const Reader = {
     readingProgress() {
       if (this.catalog && this.catalog.length) {
         return (
-          parseInt(((this.chapterIndex + 1) * 100) / this.catalog.length) + "%"
+          parseInt((((this.chapterIndex + 1) * 100) / this.catalog.length) as any) + "%"
         );
       } else {
         return "";
@@ -1428,7 +1428,7 @@ export const Reader = {
       };
       if (this.$route.query.search) {
         // 来自搜索结果，请求需要带上 书源链接
-        params.bookSourceUrl = this.$store.getters.readingBook.origin;
+        (params as any).bookSourceUrl = this.$store.getters.readingBook.origin;
       }
       return cacheFirstRequest(
         () => Axios.post(this.api + "/getChapterList", params),
@@ -2697,8 +2697,8 @@ export const Reader = {
       } else {
         if (window.getSelection) {
           text = window.getSelection().toString();
-        } else if (document.selection && document.selection.type != "Control") {
-          text = document.selection.createRange().text;
+        } else if ((document as any).selection && (document as any).selection.type != "Control") {
+          text = (document as any).selection.createRange().text;
         }
       }
       if (text && show) {
@@ -2937,10 +2937,10 @@ export const Reader = {
       let pitch = this.speechPitch;
       let rate = this.speechRate;
       if (this.ttsType === "textToSpeechCn") {
-        pitch = parseInt(50 * (pitch - 1));
-        rate = parseInt(200 * (rate - 1));
+        pitch = parseInt((50 * (pitch - 1)) as any);
+        rate = parseInt((200 * (rate - 1)) as any);
       } else if (this.ttsType === "edge") {
-        pitch = parseInt(50 * (pitch - 1));
+        pitch = parseInt((50 * (pitch - 1)) as any);
       }
       const config = {
         text,
@@ -3665,7 +3665,7 @@ export const Reader = {
         const requestWakeLock = () => {
           const controller = new AbortController();
           const signal = controller.signal;
-          window.WakeLock.request("screen", { signal }).catch(e => {
+          (window.WakeLock as any).request("screen", { signal }).catch(e => {
             if (e.name === "AbortError") {
               //
             }

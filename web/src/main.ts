@@ -12,21 +12,6 @@ import { jsonEncode } from "./plugins/safe-json-stringify";
 import localforage from "localforage";
 import "./styles/v5-theme.css";
 
-declare module "*.vue" {
-  import Vue from "vue";
-  export default Vue;
-}
-
-declare module "*.png" {
-  const src: string;
-  export default src;
-}
-
-declare module "*.jpeg" {
-  const src: string;
-  export default src;
-}
-
 declare module "vue-lazyload";
 
 declare global {
@@ -59,7 +44,7 @@ try {
   window.onerror = function(event, source, lineno, colno, error) {
     if (window.errorAlert) {
       window.alert(
-        jsonEncode({
+        (jsonEncode as any)({
           event: event,
           source,
           lineno,
@@ -71,13 +56,13 @@ try {
   };
   window.addEventListener("unhandledrejection", e => {
     if (window.errorAlert) {
-      window.alert(jsonEncode(e));
+      window.alert((jsonEncode as any)(e));
     }
   });
 
   Vue.config.errorHandler = e => {
     if (window.errorAlert) {
-      window.alert(jsonEncode(e));
+      window.alert((jsonEncode as any)(e));
     }
   };
 
@@ -125,14 +110,14 @@ try {
           if (useSW && window.serviceWorkerReady) {
             return url;
           }
-          return this.api + "/cover?path=" + url;
+          return (this as any).api + "/cover?path=" + url;
         }
         if (!url) return false;
         // 默认是接口服务器上的资源
-        return this.$store.getters.apiRoot + url;
+        return (this as any).$store.getters.apiRoot + url;
       },
       getCover(coverUrl: any, normal?: boolean, useSW?: boolean): any {
-        coverUrl = this.getImagePath(coverUrl, useSW);
+        coverUrl = (this as any).getImagePath(coverUrl, useSW);
         if (coverUrl) {
           return normal
             ? coverUrl
@@ -144,7 +129,7 @@ try {
         return noCover;
       },
       getImage(imageUrl: any, normal?: boolean, useSW?: boolean): any {
-        imageUrl = this.getImagePath(imageUrl, useSW);
+        imageUrl = (this as any).getImagePath(imageUrl, useSW);
         if (imageUrl) {
           return normal
             ? imageUrl
@@ -245,7 +230,7 @@ try {
     router,
     store,
     render: h => h(App)
-  }).$mount("#app");
+  } as any).$mount("#app");
 } catch (error) {
   alert(error.stack);
 }

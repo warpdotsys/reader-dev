@@ -1,7 +1,7 @@
 import { mapGetters } from "vuex";
 import Axios from "../plugins/axios";
 
-const getFile = (path, home) =>
+const getFile = (path, home?) =>
   Axios.get("/file/get", {
     params: { path, home: home || "__HOME__" },
     silent: true
@@ -13,7 +13,7 @@ const getFile = (path, home) =>
       return null;
     });
 
-const saveFile = (path, content, home) =>
+const saveFile = (path, content, home?) =>
   Axios.post(
     "/file/save",
     {

@@ -200,7 +200,7 @@ export const HttpTTS = {
       reader.onload = e => {
         const data = e.target.result;
         try {
-          const list = JSON.parse(data);
+          const list = JSON.parse(data as string);
           if (Array.isArray(list) && list.length) {
             this.comfirmImport(list);
           }

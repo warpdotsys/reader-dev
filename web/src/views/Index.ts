@@ -15,6 +15,7 @@ import { errorTypeList } from "../plugins/config";
 import { setCache } from "../plugins/cache";
 import eventBus from "../plugins/eventBus";
 import { formatSize, LimitResquest } from "../plugins/helper";
+declare const require: any;
 const buildURL = require("axios/lib/helpers/buildURL");
 import { isInContainer } from "element-ui/src/utils/dom";
 import jump from "../plugins/jump";
@@ -627,22 +628,22 @@ const BookList = {
     },
     dateFormat(t) {
       let time = new Date().getTime();
-      let int = parseInt((time - t) / 1000);
+      let int = parseInt((time - t) / 1000 as any);
       let str = "";
       if (int <= 30) {
         str = "刚刚";
       } else if (int < 60) {
         str = int + "秒前";
       } else if (int < 3600) {
-        str = parseInt(int / 60) + "分钟前";
+        str = parseInt(int / 60 as any) + "分钟前";
       } else if (int < 86400) {
-        str = parseInt(int / 3600) + "小时前";
+        str = parseInt(int / 3600 as any) + "小时前";
       } else if (int < 2592000) {
-        str = parseInt(int / 86400) + "天前";
+        str = parseInt(int / 86400 as any) + "天前";
       } else if (int < 31536000) {
-        str = parseInt(int / 2592000) + "月前";
+        str = parseInt(int / 2592000 as any) + "月前";
       } else {
-        str = parseInt(int / 31536000) + "年前";
+        str = parseInt(int / 31536000 as any) + "年前";
       }
       return str;
     }
@@ -704,22 +705,22 @@ const BookVirtualList = {
     },
     dateFormat(t) {
       let time = new Date().getTime();
-      let int = parseInt((time - t) / 1000);
+      let int = parseInt((time - t) / 1000 as any);
       let str = "";
       if (int <= 30) {
         str = "刚刚";
       } else if (int < 60) {
         str = int + "秒前";
       } else if (int < 3600) {
-        str = parseInt(int / 60) + "分钟前";
+        str = parseInt(int / 60 as any) + "分钟前";
       } else if (int < 86400) {
-        str = parseInt(int / 3600) + "小时前";
+        str = parseInt(int / 3600 as any) + "小时前";
       } else if (int < 2592000) {
-        str = parseInt(int / 86400) + "天前";
+        str = parseInt(int / 86400 as any) + "天前";
       } else if (int < 31536000) {
-        str = parseInt(int / 2592000) + "月前";
+        str = parseInt(int / 2592000 as any) + "月前";
       } else {
-        str = parseInt(int / 31536000) + "年前";
+        str = parseInt(int / 31536000 as any) + "年前";
       }
       return str;
     }
@@ -2288,7 +2289,7 @@ export const Index = {
       reader.onload = e => {
         const data = e.target.result;
         try {
-          const sourceList = JSON.parse(data);
+          const sourceList = JSON.parse(data as any);
           if (Array.isArray(sourceList) && sourceList.length) {
             this.importSourceList = sourceList.map(v => {
               if (v.headerMap) {
@@ -2883,7 +2884,7 @@ export const Index = {
     async customImportBookInfo(options, book) {
       const info = book || {};
       info.groupId = [];
-      const items = [
+      const items: any[] = [
         {
           name: "groupId",
           label: "分组",
@@ -3223,7 +3224,7 @@ export const Index = {
             setTimeout(() => {
               /* eslint-disable-next-line no-console */
               console.log("Try to reload force");
-              window.location.reload(true);
+              (window.location as any).reload(true);
             }, 50);
           });
       }
@@ -3297,7 +3298,7 @@ export const Index = {
         res => {
           if (res.data.isSuccess) {
             this.$store.commit("setToken", "");
-            window.location.reload(true);
+            (window.location as any).reload(true);
           }
         },
         error => {
@@ -3589,8 +3590,8 @@ export const Index = {
         ];
       }
     },
-  }
-  template
+  },
+  template: ""
 };
 
 export const style = `
