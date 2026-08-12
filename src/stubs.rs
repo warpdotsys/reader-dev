@@ -6330,124 +6330,14 @@ macro_rules! void_ctx_routes {
     };
 }
 
-pub struct BookController;
-impl BookController {
-    pub fn new() -> Self {
-        BookController
-    }
-    returndata_ctx_routes!(
-        get_bookshelf, get_shelf_book, save_book, delete_book, delete_books,
-        get_invalid_book_sources, explore_book, search_book, search_book_multi,
-        get_book_info, get_chapter_list, get_book_content, save_book_progress,
-        search_book_source, get_available_book_source, set_book_source,
-        save_book_group_id, add_book_group_multi, remove_book_group_multi,
-        import_book_preview, refresh_local_book, get_txt_toc_rules, get_chapter_list_by_rule,
-        get_shelf_book_with_cache_info, delete_book_cache, search_book_content,
-        save_book_config, save_book_content, backup_to_mongodb, restore_from_mongodb,
-        cache_book_on_server,
-    );
-    void_ctx_routes!(
-        search_book_multi_sse, get_book_cover, search_book_source_sse,
-        book_source_debug_sse, cache_book_sse, export_book, text_to_speech,
-    );
-    pub fn get_book_shelf_books(&self, _refresh: bool, _user_name_space: impl AsRef<str>) {}
-    pub fn save_to_webdav(&self, _user_name_space: impl AsRef<str>, _latest_zip_file_path: Option<String>) -> bool {
-        false
-    }
-}
 
-pub struct UserController;
-impl UserController {
-    pub fn new() -> Self {
-        UserController
-    }
-    returndata_ctx_routes!(
-        upload_file, delete_file, login, logout, get_user_info,
-        save_user_config, get_user_config, get_user_list, delete_users,
-        add_user, reset_password, update_user, clear_inactive_users_ctx,
-    );
-    void_ctx_routes!(download_backup_file);
-    pub fn for_each_user(&self, _handler: &mut dyn FnMut(&mut crate::com_htmake_reader_entity_user::User) -> bool) {}
-    pub fn clear_inactive_users(&self, _day: i32) {}
-}
 
-pub struct WebdavController;
-impl WebdavController {
-    pub fn new<'a>(
-        _base: crate::com_htmake_reader_api_controller_basecontroller::BaseController,
-        _router: &mut crate::stubs::io::vertx::Router,
-        _on_handler_error: Box<dyn Fn(&crate::com_htmake_reader_api_controller_curd::RoutingContext, &Exception) + 'a>,
-    ) -> WebdavController {
-        WebdavController
-    }
-    pub fn backup_to_webdav(&self, _context: &crate::com_htmake_reader_api_controller_curd::RoutingContext) -> crate::com_htmake_reader_api_returndata::ReturnData {
-        crate::com_htmake_reader_api_returndata::ReturnData::new()
-    }
-}
 
-pub struct RssSourceController;
-impl RssSourceController {
-    pub fn new() -> Self {
-        RssSourceController
-    }
-    returndata_ctx_routes!(
-        get_rss_sources, save_rss_source, save_rss_sources, delete_rss_source,
-        get_rss_articles, get_rss_content,
-    );
-}
 
-pub struct ReplaceRuleController;
-impl ReplaceRuleController {
-    pub fn new() -> Self {
-        ReplaceRuleController
-    }
-    returndata_ctx_routes!(
-        get_replace_rules, save_replace_rule, save_replace_rules,
-        delete_replace_rule, delete_replace_rules,
-    );
-}
 
-pub struct BookmarkController;
-impl BookmarkController {
-    pub fn new() -> Self {
-        BookmarkController
-    }
-    returndata_ctx_routes!(
-        get_bookmarks, save_bookmark, save_bookmarks, delete_bookmark, delete_bookmarks,
-    );
-}
 
-pub struct BookGroupController;
-impl BookGroupController {
-    pub fn new() -> Self {
-        BookGroupController
-    }
-    returndata_ctx_routes!(
-        get_book_groups, save_book_group, delete_book_group, save_book_group_order,
-    );
-}
 
-pub struct FileController;
-impl FileController {
-    pub fn new() -> Self {
-        FileController
-    }
-    returndata_ctx_routes!(
-        list, get, save, mkdir, upload, delete, delete_multi,
-        import_preview, restore, parse,
-    );
-    void_ctx_routes!(download);
-}
 
-pub struct HttpTTSController;
-impl HttpTTSController {
-    pub fn new() -> Self {
-        HttpTTSController
-    }
-    returndata_ctx_routes!(
-        get_http_tts_list, save_http_tts, save_http_tts_list, delete_http_tts,
-    );
-}
 
 // fix: javax.xml.namespace.QName（PackageDocumentMetadataReader 转录使用, 作为 other_properties 的键）
 #[derive(PartialEq, Eq, Hash)]
@@ -7317,7 +7207,7 @@ impl crate::stubs::File {
 }
 
 // fix: FileController.restore/parse 使用（Kotlin BookController.syncFromWebdav / saveBookToShelf）
-impl BookController {
+impl crate::com_htmake_reader_api_controller_bookcontroller::BookController {
     pub fn sync_from_webdav(&self, _path: String, _user_ns: String) -> bool {
         false
     }
@@ -7395,7 +7285,7 @@ impl Mutex {
 }
 
 // fix: BookController.getLastBackFileFromWebdav/createUserBackup 占位（UserController/WebdavController 使用）
-impl BookController {
+impl crate::com_htmake_reader_api_controller_bookcontroller::BookController {
     pub fn get_last_back_file_from_webdav(&self, _user_name_space: &str) -> Option<String> {
         None
     }
@@ -7824,7 +7714,7 @@ impl crate::io_legado_app_data_entities_basebook::BaseBook for crate::io_legado_
 // fix: stubs::io::vertx::RoutingContext 缺 path()（Kotlin HttpServerRequest.path()；WebdavController.requestPath 使用）
 
 // fix: stubs::BookController 缺 syncBookProgressFromWebdav（WebdavController.webdavUpload 使用）
-impl BookController {
+impl crate::com_htmake_reader_api_controller_bookcontroller::BookController {
     pub fn sync_book_progress_from_webdav(&self, _file: &crate::stubs::File, _user_name_space: impl AsRef<str>) {}
 }
 

@@ -1,11 +1,19 @@
 use crate::prelude::*;
 // fix: 显式导入消解 prelude glob 歧义 / 缺省名称（stubs 占位 + vertext 真实实现）
 use crate::stubs::io::vertx::Router;
+// fix: 真实控制器模块（BookController 等已实现真实逻辑）
+use crate::com_htmake_reader_api_controller_bookcontroller::BookController;
+use crate::com_htmake_reader_api_controller_bookgroupcontroller::BookGroupController;
+use crate::com_htmake_reader_api_controller_bookmarkcontroller::BookmarkController;
+use crate::com_htmake_reader_api_controller_booksourcecontroller::BookSourceController;
+use crate::com_htmake_reader_api_controller_filecontroller::FileController;
+use crate::com_htmake_reader_api_controller_httpttscontroller::HttpTTSController;
+use crate::com_htmake_reader_api_controller_replacerulecontroller::ReplaceRuleController;
+use crate::com_htmake_reader_api_controller_rsssourcecontroller::RssSourceController;
+use crate::com_htmake_reader_api_controller_usercontroller::UserController;
+use crate::com_htmake_reader_api_controller_webdavcontroller::WebdavController;
 use crate::stubs::{
-    BookController, BookGroupController, BookmarkController, File, FileController,
-    HttpTTSController, MDC, ReplaceRuleController, RouteHandlerExt, RouterPostExt,
-    RssSourceController, Runtime, StaticHandler, UserController, WebdavController,
-    uri_decode_component,
+    File, MDC, RouteHandlerExt, RouterPostExt, Runtime, StaticHandler, uri_decode_component,
 };
 use crate::com_htmake_reader_utils_vertext::{get_work_dir, get_work_dir_multi};
 // package com.htmake.reader.api

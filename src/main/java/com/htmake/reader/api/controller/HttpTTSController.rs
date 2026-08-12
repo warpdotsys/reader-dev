@@ -82,6 +82,12 @@ impl CURD<HttpTTS> for HttpTTSController {
 }
 
 impl HttpTTSController {
+    pub fn new() -> HttpTTSController {
+        HttpTTSController {
+            base: BaseController::new(),
+        }
+    }
+
     //     return list(context)
     // }
     pub fn get_http_tts_list(&self, context: &RoutingContext) -> ReturnData {

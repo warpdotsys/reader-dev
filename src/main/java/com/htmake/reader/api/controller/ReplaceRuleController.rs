@@ -75,6 +75,12 @@ impl CURD<ReplaceRule> for ReplaceRuleController {
 }
 
 impl ReplaceRuleController {
+    pub fn new() -> ReplaceRuleController {
+        ReplaceRuleController {
+            base: BaseController::new(),
+        }
+    }
+
     // suspend fun getReplaceRules(context: RoutingContext): ReturnData {
     //     return list(context)
     // }

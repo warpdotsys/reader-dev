@@ -30,8 +30,8 @@ fn save_storage<T: std::fmt::Debug>(base: &str, names: Vec<String>, value: &T) {
 
 // fix: ReturnData.set_data/set_error_msg 返回 &mut Self 而函数按值返回 → 消费式包装（保持原 Kotlin 链式 return 结构）
 trait ReturnDataOwnedExt {
-    fn set_error_msg_owned(self, error_msg: String) -> ReturnData;
-    fn set_data_owned(self, data: Box<dyn std::any::Any>, msg: String) -> ReturnData;
+    pub fn set_error_msg_owned(self, error_msg: String) -> ReturnData;
+    pub fn set_data_owned(self, data: Box<dyn std::any::Any>, msg: String) -> ReturnData;
 }
 
 impl ReturnDataOwnedExt for ReturnData {
@@ -96,7 +96,7 @@ impl UserController {
     //     val userHome = assetsRoot.resolve(userNameSpace).normalize()
     //     return userHome.takeIf { it.startsWith(assetsRoot) }?.toFile()
     // }
-    fn asset_user_home(&self, user_name_space: &String) -> Option<File> {
+    pub fn asset_user_home(&self, user_name_space: &String) -> Option<File> {
         let assets_root = File::new(&get_work_dir("storage", vec![String::from("assets")])).to_path().to_absolute_path().normalize();
         let user_home = assets_root.resolve(user_name_space).normalize();
         if user_home.starts_with(&assets_root) {
@@ -108,7 +108,7 @@ impl UserController {
     // private fun getUserLimit(context: RoutingContext): Int {
     //     return Math.max(appConfig.userLimit, 1)
     // }
-    fn get_user_limit(&self, context: &RoutingContext) -> i32 {
+    pub fn get_user_limit(&self, context: &RoutingContext) -> i32 {
         return app_config().user_limit.max(1);
     }
 

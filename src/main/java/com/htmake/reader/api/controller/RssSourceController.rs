@@ -12,6 +12,12 @@ pub struct RssSourceController {
 }
 
 impl RssSourceController {
+    pub fn new() -> RssSourceController {
+        RssSourceController {
+            base: BaseController::new(),
+        }
+    }
+
     // suspend fun canEditRssSource(context: RoutingContext): Boolean {
     //     if (!appConfig.secure) {
     //         return true

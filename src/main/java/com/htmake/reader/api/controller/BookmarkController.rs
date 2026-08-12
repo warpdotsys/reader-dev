@@ -66,6 +66,12 @@ impl CURD<Bookmark> for BookmarkController {
 }
 
 impl BookmarkController {
+    pub fn new() -> BookmarkController {
+        BookmarkController {
+            base: BaseController::new(),
+        }
+    }
+
     // suspend fun getBookmarks(context: RoutingContext): ReturnData {
     //     return list(context)
     // }

@@ -22,12 +22,18 @@ pub struct FileController {
 }
 
 impl FileController {
+    pub fn new() -> FileController {
+        FileController {
+            base: BaseController::new(),
+        }
+    }
+
     // private fun resolveSecurePath(baseDir: File, relativePath: String): File? {
     //     val basePath = baseDir.toPath().toAbsolutePath().normalize()
     //     val resolved = basePath.resolve(relativePath.removePrefix("/").removePrefix("\\")).normalize()
     //     return resolved.takeIf { it.startsWith(basePath) }?.toFile()
     // }
-    fn resolve_secure_path(base_dir: &File, relative_path: &String) -> Option<File> {
+    pub fn resolve_secure_path(base_dir: &File, relative_path: &String) -> Option<File> {
         let base_path = base_dir.to_path().to_absolute_path().normalize();
         let resolved = base_path.resolve(relative_path.trim_start_matches("/").trim_start_matches("\\")).normalize();
         if resolved.starts_with(&base_path) {
@@ -42,7 +48,7 @@ impl FileController {
     //     context.request().method() == HttpMethod.POST -> context.bodyAsJson?.getString("home", "") ?: ""
     //     else -> context.queryParam("home").firstOrNull() ?: ""
     // }
-    fn requested_home(&self, context: &RoutingContext) -> String {
+    pub fn requested_home(&self, context: &RoutingContext) -> String {
         if context.request().method() == HttpMethod::POST && !context.file_uploads_opt().unwrap_or_default().is_empty() {
             return context.request().get_param("home").unwrap_or(String::from(""));
         }
@@ -57,7 +63,7 @@ impl FileController {
     // } else {
     //     context.queryParam(key).firstOrNull() ?: ""
     // }
-    fn request_path(&self, context: &RoutingContext, key: String) -> String {
+    pub fn request_path(&self, context: &RoutingContext, key: String) -> String {
         if context.request().method() == HttpMethod::POST {
             return context.body_as_json().map(|j| j.get_string(&key)).unwrap_or(String::from(""));
         }
@@ -65,7 +71,7 @@ impl FileController {
     }
 
     // private fun getFileHome(context: RoutingContext): File? = context.get<File>("__FILE_HOME__")
-    fn get_file_home(&self, context: &RoutingContext) -> Option<File> {
+    pub fn get_file_home(&self, context: &RoutingContext) -> Option<File> {
         return context.get_file("__FILE_HOME__");
     }
 

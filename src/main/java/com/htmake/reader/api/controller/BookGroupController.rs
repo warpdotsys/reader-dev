@@ -11,8 +11,14 @@ pub struct BookGroupController {
 }
 
 impl BookGroupController {
+    pub fn new() -> BookGroupController {
+        BookGroupController {
+            base: BaseController::new(),
+        }
+    }
+
     // Kotlin 按引用修改实体（trait 以 &T 传递 onCheckEnd，此处保留可变实体版本供其委托）
-    fn on_check_end_mut(&self, entity: &mut BookGroup, exists: bool, all_data: &JsonArray) {
+    pub fn on_check_end_mut(&self, entity: &mut BookGroup, exists: bool, all_data: &JsonArray) {
         if exists {
             return;
         }
