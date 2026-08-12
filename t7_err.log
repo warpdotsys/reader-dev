@@ -1,3 +1,0 @@
-dispatch: POST /reader3/getBookSources
-  match: path=/reader3/getBookSources method=POST rules=2
-    rule /reader3/getBookSources Some(POST) score=25
