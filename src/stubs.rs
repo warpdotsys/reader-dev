@@ -2920,12 +2920,14 @@ pub struct ReadContext {
 }
 
 impl ReadContext {
-    // Kotlin ReadContext.read(path: String): T，失败抛 JsonPathException → 占位返回 Result
-    pub fn read<T>(&self, _path: &str) -> Result<T, StubError>
+    // 真实 JSONPath 解析（支持 $ .field [n] [*] 与简单 [?(@.k=="v")] 过滤）
+    pub fn read<T>(&self, path: &str) -> Result<T, StubError>
     where
         T: serde::de::DeserializeOwned,
     {
-        serde_json::from_str::<T>(&self.json).map_err(|e| StubError::new(e.to_string()))
+        let value = crate::runtime::json_path::query(&self.json, path)
+            .ok_or_else(|| StubError::new(format!("json path not found: {}", path)))?;
+        serde_json::from_value::<T>(value).map_err(|e| StubError::new(e.to_string()))
     }
 }
 

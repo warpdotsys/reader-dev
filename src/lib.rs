@@ -1384,6 +1384,9 @@ pub mod runtime {
     pub mod html {
         include!("runtime/html.rs");
     }
+    pub mod json_path {
+        include!("runtime/json_path.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }
