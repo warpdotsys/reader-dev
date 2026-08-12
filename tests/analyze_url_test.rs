@@ -39,7 +39,8 @@ fn test_param_pattern() {
 
 #[test]
 fn test_regex_direct() {
-    let re = regex::Regex::new(r"\s*,\s*(?=\{)").unwrap();
-    println!("direct1: {}", re.is_match("http://localhost:18999/search?key=测试&page=1"));
-    println!("direct2: {}", re.is_match("http://x.com,{body}"));
+    // fancy-regex 支持 lookahead（regex crate 不支持，Pattern 已改用 fancy-regex）
+    let re = fancy_regex::Regex::new(r"\s*,\s*(?=\{)").unwrap();
+    println!("direct1: {}", re.is_match("http://localhost:18999/search?key=测试&page=1").unwrap_or(false));
+    println!("direct2: {}", re.is_match("http://x.com,{body}").unwrap_or(false));
 }

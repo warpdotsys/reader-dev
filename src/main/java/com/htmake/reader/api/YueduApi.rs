@@ -221,10 +221,8 @@ impl YueduApi {
                 it.next();
             }
         });
-        router.route_with_path("/simple-web/*").handler(move |it| {
-            it.next();
-        });
         router.route_with_path("/simple-web/*").handler_static(StaticHandler::create("simple-web").set_default_content_encoding("UTF-8"));
+        router.route_with_path("/simple-web/").handler_static(StaticHandler::create("simple-web").set_default_content_encoding("UTF-8"));
 
         // fix: handler 闭包需 'static，self 为 &mut 借用——init_router 中 self 的可变使用（setup_port/migration）均在闭包定义前，之后仅只读，转 &'static 引用
         let self_ref: &'static YueduApi = unsafe { &*(self as *const YueduApi) };

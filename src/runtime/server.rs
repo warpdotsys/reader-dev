@@ -73,6 +73,15 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
     if rel.is_empty() {
         rel = "index.html".to_string();
     }
+    // 非默认根（simple-web 等）：剥离与挂载目录同名的路径前缀
+    if let Some(c) = &handler.classpath_root {
+        let root_name = c.trim_matches('/').rsplit(['/', '\\']).next().unwrap_or("");
+        if !root_name.is_empty() && root_name != "web" {
+            if let Some(stripped) = rel.strip_prefix(root_name) {
+                rel = stripped.trim_start_matches('/').to_string();
+            }
+        }
+    }
     // 防目录穿越
     let clean: Vec<&str> = rel.split('/').filter(|s| *s != ".." && !s.is_empty()).collect();
     let clean = clean.join("/");
