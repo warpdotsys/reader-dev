@@ -22,7 +22,7 @@ pub struct SQLTable<T> {
     pub marker: PhantomData<T>,
 }
 
-impl<T: Clone> SQLTable<T> {
+impl<T: Clone + crate::com_htmake_reader_db_db::EntityToJson + serde::de::DeserializeOwned> SQLTable<T> {
     pub fn new(user_name_space: String, name: String) -> SQLTable<T> {
         SQLTable {
             db: DB::<T>::new(user_name_space, name),

@@ -11,6 +11,9 @@ use crate::stubs::{Any, GSON, JsonPath, ReadContext};
 // import io.legado.app.utils.readString
 
 // @JsonIgnoreProperties("headerMap", "source", "userNameSpace")
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct HttpTTS {
     pub id: i64,
     pub name: String,
@@ -31,6 +34,7 @@ pub struct HttpTTS {
 
     // @Transient
     // private var debugLog: DebugLog? = None
+    #[serde(skip)]
     pub debug_log: Option<Box<dyn DebugLog>>,
 }
 

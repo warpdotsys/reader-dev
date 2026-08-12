@@ -186,7 +186,7 @@ impl FileController {
             }
         };
         directory.mkdirs();
-        context.put("__FILE_HOME__", Some(directory.clone()));
+        context.put("__FILE_HOME__", directory.clone());
         logger().info(format!("context.__FILE_HOME__ {}", directory.to_string()));
         return None;
     }
@@ -745,7 +745,7 @@ impl FileController {
             return_data.set_error_msg(String::from("路径不存在"));
             return return_data;
         }
-        if !BookController::new().sync_from_webdav(file.to_string(), self.base.get_user_name_space(context)) {
+        if !pollster::block_on(BookController::new().sync_from_webdav(file.to_string(), self.base.get_user_name_space(context))) {
             return_data.set_error_msg(String::from("恢复失败"));
             return return_data;
         }
@@ -848,7 +848,7 @@ impl FileController {
             book.set_user_name_space(user_name_space.clone());
             logger().debug(format!("book {}", book.name));
             if import > 0 {
-                let result = book_controller.save_book_to_shelf(book, user_name_space.clone(), context);
+                let result = book_controller.save_book_to_shelf(book, user_name_space.clone(), context.clone());
                 if result.1.is_none() && result.0.is_in_shelf {
                     let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
                     m.insert(String::from("name"), Box::new(file.name()));

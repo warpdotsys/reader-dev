@@ -14,6 +14,9 @@ use crate::prelude::*;
 //     var enable: Boolean = true
 // )
 #[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct TxtTocRule {
     pub id: i64,
     pub name: String,

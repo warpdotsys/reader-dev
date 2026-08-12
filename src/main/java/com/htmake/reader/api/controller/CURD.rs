@@ -16,7 +16,10 @@ use crate::com_htmake_reader_db_db::DB;
 
 /// Generic CURD interface providing default implementations for list/save/delete operations.
 /// Uses DB<T> abstraction for persistence.
-pub trait CURD<T> {
+pub trait CURD<T>
+where
+    T: Default + serde::de::DeserializeOwned + crate::com_htmake_reader_db_db::EntityToJson,
+{
     // fun getTableName(): String
     fn get_table_name(&self) -> String;
 
@@ -26,9 +29,12 @@ pub trait CURD<T> {
     // fun convertToEntity(json: JsonObject): T {
     //     return json.mapTo(getEntityClass())
     // }
-    fn convert_to_entity(&self, json: &JsonObject) -> T {
-        // fix: stubs JsonObject::map_to 恒返回 None（GSON 反序列化占位），无法构造 T
-        json.map_to::<T>().expect("fix: JsonObject::map_to stub 恒返回 None")
+    fn convert_to_entity(&self, json: &JsonObject) -> T
+    where
+        T: Default,
+    {
+        // fix: stubs JsonObject::map_to 恒返回 None（GSON 反序列化占位），回退 Default 构造
+        crate::stubs::JsonObject::map_to_deser(json).unwrap_or_default()
     }
 
     // fun convertToEntityList(json: String): Array<T> {
@@ -139,7 +145,7 @@ pub trait CURD<T> {
         }
 
         let on_check_end = |e: T, exists: bool, data: JsonArray| self.on_check_end(&e, exists, &data);
-        let checker = |obj: JsonObject, e: T| self.checker(&obj, &e);
+        let checker = |obj: JsonObject, e: &T| self.checker(&obj, e);
         db.save(entity, Some(&on_check_end), &checker);
         return_data.set_data(Box::new(String::from("")), String::from(""));
         return_data
@@ -187,7 +193,7 @@ pub trait CURD<T> {
         }
 
         let on_check_end = |e: T, exists: bool, data: JsonArray| self.on_check_end(&e, exists, &data);
-        let checker = |obj: JsonObject, e: T| self.checker(&obj, &e);
+        let checker = |obj: JsonObject, e: &T| self.checker(&obj, e);
         db.save_multi(entities, Some(&on_check_end), &checker);
         return_data.set_data(Box::new(String::from("")), String::from(""));
         return_data

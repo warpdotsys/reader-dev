@@ -11,6 +11,9 @@ use crate::prelude::*;
 //        var order: Int = 0,
 //        var show: Boolean = true
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct BookGroup {
     pub group_id: i64,
     pub group_name: String,

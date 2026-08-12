@@ -21,7 +21,7 @@ pub struct JSONTable<T> {
     pub _marker: std::marker::PhantomData<T>,
 }
 
-impl<T: Clone> JSONTable<T> {
+impl<T: Clone + crate::com_htmake_reader_db_db::EntityToJson + serde::de::DeserializeOwned> JSONTable<T> {
     pub fn new(user_name_space: String, name: String) -> JSONTable<T> {
         JSONTable {
             db: DB::<T>::new(user_name_space, name),

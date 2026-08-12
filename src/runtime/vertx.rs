@@ -335,7 +335,7 @@ impl RoutingContext {
             data.error_msg(),
             data.data()
                 .as_ref()
-                .map(|d| format!("{:?}", d))
+                .map(|d| crate::stubs::any_to_json_value(d.as_ref()).to_string())
                 .unwrap_or_else(|| "null".to_string())
         );
         self.response
@@ -355,6 +355,11 @@ impl RoutingContext {
     }
 
     pub fn get_file(&self, key: &str) -> Option<crate::stubs::File> {
+        if let Some(v) = self.store.borrow().get(key) {
+            if let Some(f) = v.downcast_ref::<crate::stubs::File>() {
+                return Some(f.clone());
+            }
+        }
         self.request.borrow().path_params.get(key).map(|p| crate::stubs::File::new(p.as_str()))
     }
 

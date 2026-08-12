@@ -14,6 +14,9 @@ use crate::prelude::*;
 //    var bookText: String = "",
 //    var content: String = ""
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct Bookmark {
     pub time: i64,
     pub book_name: String,

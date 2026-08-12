@@ -336,8 +336,10 @@ impl BookController {
             }
         }
 
+        let context = context.clone();
+        let context2 = context.clone();
         launch(
-            MDCContext::new() + Dispatchers::IO + CoroutineExceptionHandler::new(|_, exception| {
+            MDCContext::new() + Dispatchers::IO + CoroutineExceptionHandler::new(move |_, exception| {
                 LOGGER.info(format!("get cover error: {}", exception));
                 context.response().set_status_code(404).end(String::new());
             }),
@@ -347,12 +349,12 @@ impl BookController {
                     if let Some(resp) = it.result() {
                         let body_bytes = resp.body.into_bytes();
                         if !body_bytes.is_empty() {
-                            let mut res = context.response();
+                            let mut res = context2.response();
                             res.put_header("Cache-Control", "86400");
                             cache_file.write_bytes(body_bytes);
                             res.send_file(cache_file.to_string());
                         } else {
-                            context.response().set_status_code(404).end(String::new());
+                            context2.response().set_status_code(404).end(String::new());
                         }
                     }
                 });
@@ -3201,15 +3203,15 @@ impl BookController {
 
     pub fn set_assets(&self, book: Book, epub_book: &mut EpubBook) -> String {
         epub_book.add_resource(Resource::new_bytes(
-            BookController::class.get_resource("/epub/fonts.css").read_bytes(),
+            BookController::class.get_resource("/epub/fonts.css").read_bytes().unwrap_or_default(),
             "Styles/fonts.css",
         ));
         epub_book.add_resource(Resource::new_bytes(
-            BookController::class.get_resource("/epub/main.css").read_bytes(),
+            BookController::class.get_resource("/epub/main.css").read_bytes().unwrap_or_default(),
             "Styles/main.css",
         ));
         epub_book.add_resource(Resource::new_bytes(
-            BookController::class.get_resource("/epub/logo.png").read_bytes(),
+            BookController::class.get_resource("/epub/logo.png").read_bytes().unwrap_or_default(),
             "Images/logo.png",
         ));
         epub_book.add_section_at_root(
@@ -3220,7 +3222,7 @@ impl BookController {
                 &book.get_display_intro().unwrap_or_default(),
                 &book.kind.clone().unwrap_or_default(),
                 &book.word_count.clone().unwrap_or_default(),
-                &String::from_utf8_lossy(&BookController::class.get_resource("/epub/cover.html").read_bytes()).to_string(),
+                &String::from_utf8_lossy(&BookController::class.get_resource("/epub/cover.html").read_bytes().unwrap_or_default()).to_string(),
                 "Text/cover.html",
             ),
         );
@@ -3232,12 +3234,12 @@ impl BookController {
                 &book.get_display_intro().unwrap_or_default(),
                 &book.kind.clone().unwrap_or_default(),
                 &book.word_count.clone().unwrap_or_default(),
-                &String::from_utf8_lossy(&BookController::class.get_resource("/epub/intro.html").read_bytes()).to_string(),
+                &String::from_utf8_lossy(&BookController::class.get_resource("/epub/intro.html").read_bytes().unwrap_or_default()).to_string(),
                 "Text/intro.html",
             ),
         );
 
-        return String::from_utf8_lossy(&BookController::class.get_resource("/epub/chapter.html").read_bytes()).to_string();
+        return String::from_utf8_lossy(&BookController::class.get_resource("/epub/chapter.html").read_bytes().unwrap_or_default()).to_string();
     }
 
     pub async fn set_cover(&self, book: Book, epub_book: &mut EpubBook, book_source_string: String) {
@@ -3735,7 +3737,7 @@ impl BookController {
                         continue;
                     }
                     let node: crate::stubs::JsonNode = parser.read_value_as_tree();
-                    if source_url == node.get("bookSourceUrl").unwrap_or_default() {
+                    if source_url == node.get("bookSourceUrl").map(|n| n.to_string()).unwrap_or_default() {
                         result = Some(node.to_string());
                         break;
                     }
@@ -3865,10 +3867,10 @@ impl BookController {
         options.insert("rate".to_string(), value("rate"));
         options.insert("base64".to_string(), value("base64"));
         let response = context.response();
-        let exception_handler = CoroutineExceptionHandler::new(|_, exception| {
+        let response2 = response.clone();
+        let exception_handler = CoroutineExceptionHandler::new(move |_, exception| {
             LOGGER.info(format!("tts error: {}", exception));
-            let mut r = response.clone();
-            r.set_status_code(404).end(String::new());
+            let mut r = response2.clone();
         });
         let _job = launch(
             MDCContext::new() + Dispatchers::IO + exception_handler,

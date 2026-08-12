@@ -262,7 +262,7 @@ impl YueduApi {
         // 上传书源文件
         router.post("/reader3/readSourceFile").coroutine_handler(move |it| book_source_controller.read_source_file(it));
 
-        router.post("/reader3/saveFromRemoteSource").coroutine_handler_without_res(move |it| book_source_controller.save_from_remote_source(it));
+        router.post("/reader3/saveFromRemoteSource").coroutine_handler_without_res(move |it| { let c = (*it).clone(); async move { book_source_controller.save_from_remote_source(&c); } });
 
         // 设置默认书源
         router.post("/reader3/setAsDefaultBookSources").coroutine_handler(move |it| book_source_controller.set_as_default_book_sources(it));
@@ -271,67 +271,67 @@ impl YueduApi {
 
         /** 书籍模块 */
         // 书架
-        router.get("/reader3/getBookshelf").coroutine_handler(move |it| book_controller.get_bookshelf(it));
-        router.get("/reader3/getShelfBook").coroutine_handler(move |it| book_controller.get_shelf_book(it));
-        router.post("/reader3/saveBook").coroutine_handler(move |it| book_controller.save_book(it));
-        router.post("/reader3/deleteBook").coroutine_handler(move |it| book_controller.delete_book(it));
-        router.post("/reader3/deleteBooks").coroutine_handler(move |it| book_controller.delete_books(it));
+        router.get("/reader3/getBookshelf").coroutine_handler(move |it| book_controller.get_bookshelf(it.clone()));
+        router.get("/reader3/getShelfBook").coroutine_handler(move |it| book_controller.get_shelf_book(it.clone()));
+        router.post("/reader3/saveBook").coroutine_handler(move |it| book_controller.save_book(it.clone()));
+        router.post("/reader3/deleteBook").coroutine_handler(move |it| book_controller.delete_book(it.clone()));
+        router.post("/reader3/deleteBooks").coroutine_handler(move |it| book_controller.delete_books(it.clone()));
 
         // 失效书源
-        router.post("/reader3/getInvalidBookSources").coroutine_handler(move |it| book_controller.get_invalid_book_sources(it));
+        router.post("/reader3/getInvalidBookSources").coroutine_handler(move |it| book_controller.get_invalid_book_sources(it.clone()));
 
         // 探索
-        router.post("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it));
-        router.get("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it));
+        router.post("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it.clone()));
+        router.get("/reader3/exploreBook").coroutine_handler(move |it| book_controller.explore_book(it.clone()));
 
         // 搜索
-        router.get("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it));
-        router.post("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it));
-        router.get("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it));
-        router.post("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it));
-        router.get("/reader3/searchBookMultiSSE").coroutine_handler_without_res(move |it| book_controller.search_book_multi_sse(it));
+        router.get("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it.clone()));
+        router.post("/reader3/searchBook").coroutine_handler(move |it| book_controller.search_book(it.clone()));
+        router.get("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it.clone()));
+        router.post("/reader3/searchBookMulti").coroutine_handler(move |it| book_controller.search_book_multi(it.clone()));
+        router.get("/reader3/searchBookMultiSSE").coroutine_handler_without_res(move |it| book_controller.search_book_multi_sse(it.clone()));
 
         // 书籍详情
-        router.get("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it));
-        router.post("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it));
+        router.get("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it.clone()));
+        router.post("/reader3/getBookInfo").coroutine_handler(move |it| book_controller.get_book_info(it.clone()));
 
         // 章节列表
-        router.get("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it));
-        router.post("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it));
+        router.get("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it.clone()));
+        router.post("/reader3/getChapterList").coroutine_handler(move |it| book_controller.get_chapter_list(it.clone()));
 
         // 内容
-        router.get("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it));
-        router.post("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it));
+        router.get("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it.clone()));
+        router.post("/reader3/getBookContent").coroutine_handler(move |it| book_controller.get_book_content(it.clone()));
 
         // 保存阅读进度
-        router.post("/reader3/saveBookProgress").coroutine_handler(move |it| book_controller.save_book_progress(it));
+        router.post("/reader3/saveBookProgress").coroutine_handler(move |it| book_controller.save_book_progress(it.clone()));
 
         // 封面
-        router.get("/reader3/cover").coroutine_handler_without_res(move |it| book_controller.get_book_cover(it));
+        router.get("/reader3/cover").coroutine_handler_without_res(move |it| book_controller.get_book_cover(it.clone()));
 
         // 搜索其它来源
-        router.get("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it));
-        router.post("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it));
-        router.get("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it));
-        router.post("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it));
-        router.get("/reader3/searchBookSourceSSE").coroutine_handler_without_res(move |it| book_controller.search_book_source_sse(it));
+        router.get("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it.clone()));
+        router.post("/reader3/searchBookSource").coroutine_handler(move |it| book_controller.search_book_source(it.clone()));
+        router.get("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it.clone()));
+        router.post("/reader3/getAvailableBookSource").coroutine_handler(move |it| book_controller.get_available_book_source(it.clone()));
+        router.get("/reader3/searchBookSourceSSE").coroutine_handler_without_res(move |it| book_controller.search_book_source_sse(it.clone()));
 
         // 换源
-        router.get("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it));
-        router.post("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it));
+        router.get("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it.clone()));
+        router.post("/reader3/setBookSource").coroutine_handler(move |it| book_controller.set_book_source(it.clone()));
 
         // 修改分组
-        router.post("/reader3/saveBookGroupId").coroutine_handler(move |it| book_controller.save_book_group_id(it));
-        router.post("/reader3/addBookGroupMulti").coroutine_handler(move |it| book_controller.add_book_group_multi(it));
-        router.post("/reader3/removeBookGroupMulti").coroutine_handler(move |it| book_controller.remove_book_group_multi(it));
+        router.post("/reader3/saveBookGroupId").coroutine_handler(move |it| book_controller.save_book_group_id(it.clone()));
+        router.post("/reader3/addBookGroupMulti").coroutine_handler(move |it| book_controller.add_book_group_multi(it.clone()));
+        router.post("/reader3/removeBookGroupMulti").coroutine_handler(move |it| book_controller.remove_book_group_multi(it.clone()));
 
         // 导入本地文件
-        router.post("/reader3/importBookPreview").coroutine_handler(move |it| book_controller.import_book_preview(it));
-        router.post("/reader3/refreshLocalBook").coroutine_handler(move |it| book_controller.refresh_local_book(it));
+        router.post("/reader3/importBookPreview").coroutine_handler(move |it| book_controller.import_book_preview(it.clone()));
+        router.post("/reader3/refreshLocalBook").coroutine_handler(move |it| book_controller.refresh_local_book(it.clone()));
 
         // 获取txt章节规则
-        router.get("/reader3/getTxtTocRules").coroutine_handler(move |it| book_controller.get_txt_toc_rules(it));
-        router.post("/reader3/getChapterListByRule").coroutine_handler(move |it| book_controller.get_chapter_list_by_rule(it));
+        router.get("/reader3/getTxtTocRules").coroutine_handler(move |it| book_controller.get_txt_toc_rules(it.clone()));
+        router.post("/reader3/getChapterListByRule").coroutine_handler(move |it| book_controller.get_chapter_list_by_rule(it.clone()));
 
         // 书籍分组
         router.get("/reader3/getBookGroups").coroutine_handler(move |it| book_group_controller.get_book_groups(it));
@@ -340,22 +340,22 @@ impl YueduApi {
         router.post("/reader3/saveBookGroupOrder").coroutine_handler(move |it| book_group_controller.save_book_group_order(it));
 
         // 调试书源
-        router.get("/reader3/bookSourceDebugSSE").coroutine_handler_without_res(move |it| book_controller.book_source_debug_sse(it));
+        router.get("/reader3/bookSourceDebugSSE").coroutine_handler_without_res(move |it| book_controller.book_source_debug_sse(it.clone()));
 
         // 缓存书籍章节
-        router.get("/reader3/cacheBookSSE").coroutine_handler_without_res(move |it| book_controller.cache_book_sse(it));
+        router.get("/reader3/cacheBookSSE").coroutine_handler_without_res(move |it| book_controller.cache_book_sse(it.clone()));
         // 获取书籍缓存信息
-        router.get("/reader3/getShelfBookWithCacheInfo").coroutine_handler(move |it| book_controller.get_shelf_book_with_cache_info(it));
+        router.get("/reader3/getShelfBookWithCacheInfo").coroutine_handler(move |it| book_controller.get_shelf_book_with_cache_info(it.clone()));
         // 删除书籍章节缓存
-        router.post("/reader3/deleteBookCache").coroutine_handler(move |it| book_controller.delete_book_cache(it));
+        router.post("/reader3/deleteBookCache").coroutine_handler(move |it| book_controller.delete_book_cache(it.clone()));
 
         // 导出书籍
-        router.post("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it));
-        router.get("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it));
+        router.post("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it.clone()));
+        router.get("/reader3/exportBook").coroutine_handler_without_res(move |it| book_controller.export_book(it.clone()));
 
         // 全文搜索
-        router.get("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it));
-        router.post("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it));
+        router.get("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it.clone()));
+        router.post("/reader3/searchBookContent").coroutine_handler(move |it| book_controller.search_book_content(it.clone()));
 
         /** 用户模块 */
         // 上传文件
@@ -421,20 +421,20 @@ impl YueduApi {
         router.post("/reader3/deleteBookmark").coroutine_handler(move |it| bookmark_controller.delete_bookmark(it));
         router.post("/reader3/deleteBookmarks").coroutine_handler(move |it| bookmark_controller.delete_bookmarks(it));
 
-        router.post("/reader3/book/saveBookConfig").coroutine_handler(move |it| book_controller.save_book_config(it));
-        router.get("/reader3/user/downloadBackupFile").coroutine_handler_without_res(move |it| user_controller.download_backup_file(it));
+        router.post("/reader3/book/saveBookConfig").coroutine_handler(move |it| book_controller.save_book_config(it.clone()));
+        router.get("/reader3/user/downloadBackupFile").coroutine_handler_without_res(move |it| { let c = (*it).clone(); async move { user_controller.download_backup_file(&c); } });
 
-        router.get("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it));
-        router.post("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it));
+        router.get("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
+        router.post("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
         // 保存书籍章节内容到缓存
-        router.post("/reader3/saveBookContent").coroutine_handler(move |it| book_controller.save_book_content(it));
+        router.post("/reader3/saveBookContent").coroutine_handler(move |it| book_controller.save_book_content(it.clone()));
 
         /** MongoDB备份恢复 */
-        router.post("/reader3/backupToMongodb").coroutine_handler(move |it| book_controller.backup_to_mongodb(it));
-        router.post("/reader3/restoreFromMongodb").coroutine_handler(move |it| book_controller.restore_from_mongodb(it));
+        router.post("/reader3/backupToMongodb").coroutine_handler(move |it| book_controller.backup_to_mongodb(it.clone()));
+        router.post("/reader3/restoreFromMongodb").coroutine_handler(move |it| book_controller.restore_from_mongodb(it.clone()));
 
         /** 缓存书籍到服务器 */
-        router.post("/reader3/cacheBookOnServer").coroutine_handler(move |it| book_controller.cache_book_on_server(it));
+        router.post("/reader3/cacheBookOnServer").coroutine_handler(move |it| book_controller.cache_book_on_server(it.clone()));
 
         /** 清理不活跃用户 */
         router.post("/reader3/clearInactiveUsers").coroutine_handler(move |it| user_controller.clear_inactive_users_ctx(it));
@@ -447,7 +447,7 @@ impl YueduApi {
         router.get("/reader3/file/get").coroutine_handler(move |it| file_controller.get(it));
         router.post("/reader3/file/save").coroutine_handler(move |it| file_controller.save(it));
         router.post("/reader3/file/mkdir").coroutine_handler(move |it| file_controller.mkdir(it));
-        router.get("/reader3/file/download").coroutine_handler_without_res(move |it| file_controller.download(it));
+        router.get("/reader3/file/download").coroutine_handler_without_res(move |it| { let c = (*it).clone(); async move { file_controller.download(&c); } });
         router.post("/reader3/file/upload").coroutine_handler(move |it| file_controller.upload(it));
         router.post("/reader3/file/delete").coroutine_handler(move |it| file_controller.delete(it));
         router.post("/reader3/file/deleteMulti").coroutine_handler(move |it| file_controller.delete_multi(it));
@@ -685,7 +685,7 @@ impl YueduApi {
 
             logger.info("开始检查书架书籍更新");
             // 刷新系统默认书架
-            book_controller.get_book_shelf_books(true, "default");
+            book_controller.get_book_shelf_books(true, "default".to_string());
 
             // 刷新用户书架
             let user_controller = UserController::new();
@@ -739,13 +739,13 @@ impl YueduApi {
             let book_controller = BookController::new();
 
             // 备份默认用户
-            book_controller.save_to_webdav(&String::from("default"), None);
+            book_controller.save_to_webdav("default".to_string(), None);
 
             // 备份其他用户
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
                 if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
-                    book_controller.save_to_webdav(&user.username, None);
+                    book_controller.save_to_webdav(user.username.clone(), None);
                 }
                 false
             });

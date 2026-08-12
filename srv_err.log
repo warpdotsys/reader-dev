@@ -1,0 +1,285 @@
+dispatch: POST /reader3/login
+  match: path=/reader3/login method=POST rules=1
+    rule /reader3/login Some(POST) score=25
+dispatch: GET /reader3/getBookshelf
+  match: path=/reader3/getBookshelf method=GET rules=1
+    rule /reader3/getBookshelf Some(GET) score=25
+dispatch: GET /reader3/getSystemInfo
+  match: path=/reader3/getSystemInfo method=GET rules=1
+    rule /reader3/getSystemInfo Some(GET) score=25
+dispatch: GET /reader3/getUserInfo?v=1786528353718
+  match: path=/reader3/getUserInfo method=GET rules=1
+    rule /reader3/getUserInfo Some(GET) score=25
+dispatch: GET /reader3/getBookshelf?refresh=0&v=1786528353916
+  match: path=/reader3/getBookshelf method=GET rules=1
+    rule /reader3/getBookshelf Some(GET) score=25
+dispatch: GET /reader3/getUserConfig?v=1786528353998
+  match: path=/reader3/getUserConfig method=GET rules=1
+    rule /reader3/getUserConfig Some(GET) score=25
+dispatch: GET /reader3/getBookshelf?refresh=0&v=1786528353999
+  match: path=/reader3/getBookshelf method=GET rules=1
+    rule /reader3/getBookshelf Some(GET) score=25
+dispatch: GET /reader3/getTxtTocRules?v=1786528354072
+  match: path=/reader3/getTxtTocRules method=GET rules=1
+    rule /reader3/getTxtTocRules Some(GET) score=25
+dispatch: GET /reader3/getBookSources?simple=1&v=1786528354084
+  match: path=/reader3/getBookSources method=GET rules=2
+    rule /reader3/getBookSources Some(GET) score=25
+dispatch: GET /reader3/getBookGroups?v=1786528354086
+  match: path=/reader3/getBookGroups method=GET rules=1
+    rule /reader3/getBookGroups Some(GET) score=25
+dispatch: GET /reader3/getRssSources?simple=1&v=1786528354086
+  match: path=/reader3/getRssSources method=GET rules=1
+    rule /reader3/getRssSources Some(GET) score=25
+dispatch: GET /reader3/getReplaceRules?v=1786528354087
+  match: path=/reader3/getReplaceRules method=GET rules=1
+    rule /reader3/getReplaceRules Some(GET) score=25
+dispatch: GET /reader3/getBookmarks?v=1786528354087
+  match: path=/reader3/getBookmarks method=GET rules=1
+    rule /reader3/getBookmarks Some(GET) score=25
+dispatch: GET /reader3/httpTTS/list?v=1786528354087
+  match: path=/reader3/httpTTS/list method=GET rules=1
+    rule /reader3/httpTTS/list Some(GET) score=35
+dispatch: GET /img/icons/android-chrome-192x192.png
+  match: path=/img/icons/android-chrome-192x192.png method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=img/icons/android-chrome-192x192.png full=src/main/resources/web/img/icons/android-chrome-192x192.png
+dispatch: GET /service-worker.js
+  match: path=/service-worker.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=service-worker.js full=src/main/resources/web/service-worker.js
+dispatch: GET /sw.js
+  match: path=/sw.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=sw.js full=src/main/resources/web/sw.js
+dispatch: GET /precache-manifest.0d903434eaa73f94acefeef5d39c6628.js
+  match: path=/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=precache-manifest.0d903434eaa73f94acefeef5d39c6628.js full=src/main/resources/web/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js
+dispatch: GET /reader3/getLicense?v=1786528356243
+  match: path=/reader3/getLicense method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=reader3/getLicense full=src/main/resources/web/reader3/getLicense
+  static read err: 系统找不到指定的路径。 (os error 3) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg?__WB_REVISION__=0092d2edcce59d898890d67d70782a42
+  match: path=/bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg full=src/main/resources/web/bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg?__WB_REVISION__=3358e92098b1750ffb4cb139697fc40d
+  match: path=/bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg full=src/main/resources/web/bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg?__WB_REVISION__=87e353a5aeb7db7ca04a50dd46c3b200
+  match: path=/bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg full=src/main/resources/web/bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /reader3/file/list?path=%2F&home=__HOME__&v=1786528361215
+  match: path=/reader3/file/list method=GET rules=1
+    rule /reader3/file/list Some(GET) score=35
+dispatch: GET /
+  match: path=/ method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=index.html full=src/main/resources/web/index.html
+dispatch: GET /css/app.512ff41b.css
+  match: path=/css/app.512ff41b.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/app.512ff41b.css full=src/main/resources/web/css/app.512ff41b.css
+dispatch: GET /css/chunk-vendors.e2dbefc2.css
+  match: path=/css/chunk-vendors.e2dbefc2.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/chunk-vendors.e2dbefc2.css full=src/main/resources/web/css/chunk-vendors.e2dbefc2.css
+dispatch: GET /js/chunk-vendors.4589d111.js
+  match: path=/js/chunk-vendors.4589d111.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/chunk-vendors.4589d111.js full=src/main/resources/web/js/chunk-vendors.4589d111.js
+dispatch: GET /js/flv.min.js
+  match: path=/js/flv.min.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/flv.min.js full=src/main/resources/web/js/flv.min.js
+dispatch: GET /js/hls.min.js
+  match: path=/js/hls.min.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/hls.min.js full=src/main/resources/web/js/hls.min.js
+dispatch: GET /js/app.54619a3e.js
+  match: path=/js/app.54619a3e.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/app.54619a3e.js full=src/main/resources/web/js/app.54619a3e.js
+dispatch: GET /js/dash.all.min.js
+  match: path=/js/dash.all.min.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/dash.all.min.js full=src/main/resources/web/js/dash.all.min.js
+dispatch: GET /js/webtorrent.min.js
+  match: path=/js/webtorrent.min.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/webtorrent.min.js full=src/main/resources/web/js/webtorrent.min.js
+dispatch: GET /js/pear-player.min.js
+  match: path=/js/pear-player.min.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/pear-player.min.js full=src/main/resources/web/js/pear-player.min.js
+dispatch: GET /css/index.9347d249.css
+  match: path=/css/index.9347d249.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/index.9347d249.css full=src/main/resources/web/css/index.9347d249.css
+dispatch: GET /css/reader.1ebd7f35.css
+  match: path=/css/reader.1ebd7f35.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/reader.1ebd7f35.css full=src/main/resources/web/css/reader.1ebd7f35.css
+dispatch: GET /css/setting.d9b851e0.css
+  match: path=/css/setting.d9b851e0.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/setting.d9b851e0.css full=src/main/resources/web/css/setting.d9b851e0.css
+dispatch: GET /js/index.459d9e84.js
+  match: path=/js/index.459d9e84.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/index.459d9e84.js full=src/main/resources/web/js/index.459d9e84.js
+dispatch: GET /js/index~reader.c43437ec.js
+  match: path=/js/index~reader.c43437ec.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/index~reader.c43437ec.js full=src/main/resources/web/js/index~reader.c43437ec.js
+dispatch: GET /js/reader.6e871769.js
+  match: path=/js/reader.6e871769.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/reader.6e871769.js full=src/main/resources/web/js/reader.6e871769.js
+dispatch: GET /js/setting.6919980b.js
+  match: path=/js/setting.6919980b.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/setting.6919980b.js full=src/main/resources/web/js/setting.6919980b.js
+dispatch: GET /css/index.9347d249.css
+  match: path=/css/index.9347d249.css method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=css/index.9347d249.css full=src/main/resources/web/css/index.9347d249.css
+dispatch: GET /js/index.459d9e84.js
+  match: path=/js/index.459d9e84.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/index.459d9e84.js full=src/main/resources/web/js/index.459d9e84.js
+dispatch: GET /manifest.json
+  match: path=/manifest.json method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=manifest.json full=src/main/resources/web/manifest.json
+dispatch: GET /js/index~reader.c43437ec.js
+  match: path=/js/index~reader.c43437ec.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=js/index~reader.c43437ec.js full=src/main/resources/web/js/index~reader.c43437ec.js
+dispatch: GET /reader3/getUserInfo?v=1786528363646
+  match: path=/reader3/getUserInfo method=GET rules=1
+    rule /reader3/getUserInfo Some(GET) score=25
+dispatch: GET /reader3/getTxtTocRules?v=1786528363671
+  match: path=/reader3/getTxtTocRules method=GET rules=1
+    rule /reader3/getTxtTocRules Some(GET) score=25
+dispatch: GET /assets/reader.css
+  match: path=/assets/reader.css method=GET rules=1
+    rule /assets/* None score=12
+  static: root=/storage/assets rel=assets/reader.css full=/storage/assets/assets/reader.css
+  static read err: 系统找不到指定的路径。 (os error 3) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /reader3/getUserConfig?v=1786528365668
+  match: path=/reader3/getUserConfig method=GET rules=1
+    rule /reader3/getUserConfig Some(GET) score=25
+dispatch: GET /reader3/getBookshelf?refresh=0&v=1786528365668
+  match: path=/reader3/getBookshelf method=GET rules=1
+    rule /reader3/getBookshelf Some(GET) score=25
+dispatch: GET /reader3/getBookshelf?refresh=0&v=1786528365699
+  match: path=/reader3/getBookshelf method=GET rules=1
+    rule /reader3/getBookshelf Some(GET) score=25
+dispatch: GET /fonts/element-icons.535877f5.woff
+  match: path=/fonts/element-icons.535877f5.woff method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=fonts/element-icons.535877f5.woff full=src/main/resources/web/fonts/element-icons.535877f5.woff
+dispatch: GET /reader3/getBookGroups?v=1786528365720
+  match: path=/reader3/getBookGroups method=GET rules=1
+    rule /reader3/getBookGroups Some(GET) score=25
+dispatch: GET /reader3/getRssSources?simple=1&v=1786528365720
+  match: path=/reader3/getRssSources method=GET rules=1
+    rule /reader3/getRssSources Some(GET) score=25
+dispatch: GET /reader3/getReplaceRules?v=1786528365721
+  match: path=/reader3/getReplaceRules method=GET rules=1
+    rule /reader3/getReplaceRules Some(GET) score=25
+dispatch: GET /reader3/getBookmarks?v=1786528365721
+  match: path=/reader3/getBookmarks method=GET rules=1
+    rule /reader3/getBookmarks Some(GET) score=25
+dispatch: GET /reader3/getBookSources?simple=1&v=1786528365720
+  match: path=/reader3/getBookSources method=GET rules=2
+    rule /reader3/getBookSources Some(GET) score=25
+dispatch: GET /service-worker.js
+  match: path=/service-worker.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=service-worker.js full=src/main/resources/web/service-worker.js
+dispatch: GET /img/icons/favicon-32x32.png
+  match: path=/img/icons/favicon-32x32.png method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=img/icons/favicon-32x32.png full=src/main/resources/web/img/icons/favicon-32x32.png
+dispatch: GET /img/icons/android-chrome-192x192.png
+  match: path=/img/icons/android-chrome-192x192.png method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=img/icons/android-chrome-192x192.png full=src/main/resources/web/img/icons/android-chrome-192x192.png
+dispatch: GET /reader3/httpTTS/list?v=1786528365721
+  match: path=/reader3/httpTTS/list method=GET rules=1
+    rule /reader3/httpTTS/list Some(GET) score=35
+dispatch: GET /service-worker.js
+  match: path=/service-worker.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=service-worker.js full=src/main/resources/web/service-worker.js
+dispatch: GET /sw.js
+  match: path=/sw.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=sw.js full=src/main/resources/web/sw.js
+dispatch: GET /precache-manifest.0d903434eaa73f94acefeef5d39c6628.js
+  match: path=/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=precache-manifest.0d903434eaa73f94acefeef5d39c6628.js full=src/main/resources/web/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js
+dispatch: GET /bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg?__WB_REVISION__=87e353a5aeb7db7ca04a50dd46c3b200
+  match: path=/bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg full=src/main/resources/web/bg/%E5%B1%B1%E6%B0%B4%E5%A2%A8%E5%BD%B1.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg?__WB_REVISION__=3358e92098b1750ffb4cb139697fc40d
+  match: path=/bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg full=src/main/resources/web/bg/%E5%AE%81%E9%9D%99%E5%A4%9C%E8%89%B2.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy
+dispatch: GET /bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg?__WB_REVISION__=0092d2edcce59d898890d67d70782a42
+  match: path=/bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg full=src/main/resources/web/bg/%E5%8D%88%E5%90%8E%E6%B2%99%E6%BB%A9.jpg
+  static read err: 系统找不到指定的文件。 (os error 2) cwd=C:\Users\chong\reader-dev-legacy

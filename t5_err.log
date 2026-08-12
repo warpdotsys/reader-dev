@@ -1,0 +1,3 @@
+dispatch: POST /reader3/saveBookGroup
+  match: path=/reader3/saveBookGroup method=POST rules=1
+    rule /reader3/saveBookGroup Some(POST) score=25

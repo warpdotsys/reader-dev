@@ -30,8 +30,8 @@ fn save_storage<T: std::fmt::Debug>(base: &str, names: Vec<String>, value: &T) {
 
 // fix: ReturnData.set_data/set_error_msg 返回 &mut Self 而函数按值返回 → 消费式包装（保持原 Kotlin 链式 return 结构）
 trait ReturnDataOwnedExt {
-    pub fn set_error_msg_owned(self, error_msg: String) -> ReturnData;
-    pub fn set_data_owned(self, data: Box<dyn std::any::Any>, msg: String) -> ReturnData;
+    fn set_error_msg_owned(self, error_msg: String) -> ReturnData;
+    fn set_data_owned(self, data: Box<dyn std::any::Any>, msg: String) -> ReturnData;
 }
 
 impl ReturnDataOwnedExt for ReturnData {
@@ -1184,9 +1184,9 @@ impl UserController {
         }
         let book_controller = BookController::new();
         let user_name_space = self.base.get_user_name_space(context);
-        let latest_zip_file_path = book_controller.get_last_back_file_from_webdav(&user_name_space);
+        let latest_zip_file_path = pollster::block_on(book_controller.get_last_back_file_from_webdav(user_name_space.clone()));
         let backup_dir = get_work_dir("storage", vec![String::from("data"), user_name_space.clone(), String::from("backup")]);
-        let backup_file = book_controller.create_user_backup(&user_name_space, backup_dir, latest_zip_file_path);
+        let backup_file = pollster::block_on(book_controller.create_user_backup(user_name_space.clone(), backup_dir, latest_zip_file_path));
         if backup_file.is_none() {
             context.success(return_data.set_error_msg(String::from("备份失败")));
             return;

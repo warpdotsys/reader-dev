@@ -698,7 +698,7 @@ impl WebdavController {
             // 同步用户进度
             if file.to_string().find("/bookProgress/").is_some() && file.to_string().find(".json").is_some() {
                 let user_name_space = self.base.get_user_name_space(context);
-                BookController::new().sync_book_progress_from_webdav(&file, user_name_space);
+                pollster::block_on(BookController::new().sync_book_progress_from_webdav(file.clone(), user_name_space));
             }
             context.response().set_status_code(201).end(String::new());
         });
@@ -1049,8 +1049,8 @@ impl WebdavController {
         let book_controller = BookController::new();
 
         let user_name_space = self.base.get_user_name_space(context);
-        let latest_zip_file_path = book_controller.get_last_back_file_from_webdav(&user_name_space);
-        if !book_controller.save_to_webdav(&user_name_space, latest_zip_file_path) {
+        let latest_zip_file_path = pollster::block_on(book_controller.get_last_back_file_from_webdav(user_name_space.clone()));
+        if !pollster::block_on(book_controller.save_to_webdav(user_name_space.clone(), latest_zip_file_path)) {
             return_data.set_error_msg(String::from("备份失败"));
             return return_data;
         }

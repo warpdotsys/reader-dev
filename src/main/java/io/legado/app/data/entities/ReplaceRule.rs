@@ -24,6 +24,9 @@ use crate::prelude::*;
 //    @ColumnInfo(name = "sortOrder")
 //    var order: Int = 0
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct ReplaceRule {
     pub id: i64,
     pub name: String,

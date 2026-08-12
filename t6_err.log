@@ -1,0 +1,5 @@
+dispatch: GET /
+  match: path=/ method=GET rules=2
+    rule /* None score=1
+    rule /* None score=1
+  static: root=src/main/resources/web rel=index.html full=src/main/resources/web/index.html
