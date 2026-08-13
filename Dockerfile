@@ -1,6 +1,6 @@
 # reader-dev rust 分支（6.x）多阶段构建
-# 第一阶段：web 前端构建（bookworm 支持 linux/386；alpine 无 386 平台镜像）
-FROM node:18-bookworm-slim AS web-builder
+# 第一阶段：web 前端构建（node 官方镜像无 linux/386 → 固定构建机平台 amd64 构建产物）
+FROM --platform=$BUILDPLATFORM node:18-bookworm-slim AS web-builder
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci || npm install
