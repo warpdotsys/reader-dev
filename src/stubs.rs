@@ -5058,16 +5058,19 @@ impl JsonObject {
     }
 }
 
-// ---------------- PDFBox 占位（PdfFile.rs 转录所需） ----------------
-pub struct PDPage;
+// ---------------- PDFBox 占位（PdfFile.rs 转录所需；基于 lopdf 真实解析） ----------------
+pub struct PDPage {
+    pub page_index: i32,
+    pub text: String,
+}
 
 pub struct PDPages {
     pub pages: Vec<PDPage>,
 }
 
 impl PDPages {
-    pub fn index_of(&self, _page: &PDPage) -> i32 {
-        -1
+    pub fn index_of(&self, page: &PDPage) -> i32 {
+        page.page_index
     }
 }
 
@@ -5079,16 +5082,35 @@ pub struct PDDocumentCatalog {
 pub struct PDDocument {
     pub number_of_pages: i32,
     pub document_catalog: PDDocumentCatalog,
+    inner: Option<lopdf::Document>,
 }
 
 impl PDDocument {
-    pub fn load(_file: &str) -> PDDocument {
+    pub fn load(file: &str) -> PDDocument {
+        let doc = lopdf::Document::load(file).ok();
+        let (number_of_pages, pages) = match &doc {
+            Some(d) => {
+                let page_map = d.get_pages();
+                let mut pages = Vec::new();
+                for (num, _id) in &page_map {
+                    let text = d.extract_text(&[*num]).unwrap_or_default();
+                    pages.push(PDPage {
+                        page_index: *num as i32,
+                        text,
+                    });
+                }
+                (page_map.len() as i32, pages)
+            }
+            None => (0, Vec::new()),
+        };
+        let document_outline = doc.as_ref().and_then(pdf_build_outline);
         PDDocument {
-            number_of_pages: 0,
+            number_of_pages,
             document_catalog: PDDocumentCatalog {
-                pages: PDPages { pages: Vec::new() },
-                document_outline: None,
+                pages: PDPages { pages },
+                document_outline,
             },
+            inner: doc,
         }
     }
 
@@ -5105,6 +5127,7 @@ pub struct PDOutlineItem {
     pub title: String,
     pub next_sibling: Option<Box<PDOutlineItem>>,
     pub node: PDOutlineNode,
+    pub page_index: i32,
 }
 
 impl std::ops::Deref for PDOutlineItem {
@@ -5117,12 +5140,81 @@ impl std::ops::Deref for PDOutlineItem {
 
 impl PDOutlineItem {
     pub fn find_destination_page(&self, _document: &PDDocument) -> PDPage {
-        PDPage
+        PDPage {
+            page_index: self.page_index,
+            text: String::new(),
+        }
     }
 
     pub fn has_children(&self) -> bool {
         self.first_child.is_some()
     }
+}
+
+/// 从 PDF 目录（Outlines）构建 PDOutlineNode 树（lopdf 低层遍历）
+fn pdf_build_outline(doc: &lopdf::Document) -> Option<PDOutlineNode> {
+    use lopdf::Object;
+    let root_ref = doc.trailer.get(b"Root").ok()?.as_reference().ok()?;
+    let root = doc.get_dictionary(root_ref).ok()?;
+    let outlines_ref = root.get(b"Outlines").ok()?.as_reference().ok()?;
+    let outlines = doc.get_dictionary(outlines_ref).ok()?;
+    let first = outlines.get(b"First").ok()?.as_reference().ok()?;
+    let first_child = pdf_build_item(doc, first);
+    Some(PDOutlineNode { first_child })
+}
+
+fn pdf_build_item(doc: &lopdf::Document, id: lopdf::ObjectId) -> Option<Box<PDOutlineItem>> {
+    use lopdf::Object;
+    let dict = doc.get_dictionary(id).ok()?;
+    let title = dict
+        .get(b"Title")
+        .ok()
+        .and_then(|o| o.as_str().ok())
+        .map(|s| String::from_utf8_lossy(s).to_string())
+        .unwrap_or_default();
+    let page_index = pdf_dest_page(doc, dict).unwrap_or(-1);
+    let next_sibling = dict
+        .get(b"Next")
+        .ok()
+        .and_then(|o| o.as_reference().ok())
+        .and_then(|n| pdf_build_item(doc, n));
+    let first_child = dict
+        .get(b"First")
+        .ok()
+        .and_then(|o| o.as_reference().ok())
+        .and_then(|c| pdf_build_item(doc, c));
+    Some(Box::new(PDOutlineItem {
+        title,
+        next_sibling,
+        node: PDOutlineNode { first_child },
+        page_index,
+    }))
+}
+
+fn pdf_dest_page(doc: &lopdf::Document, dict: &lopdf::Dictionary) -> Option<i32> {
+    use lopdf::Object;
+    let page_ref = dict
+        .get(b"Dest")
+        .ok()
+        .and_then(|o| match o {
+            Object::Array(arr) => arr.first()?.as_reference().ok(),
+            Object::Reference(r) => {
+                let d = doc.get_object(*r).ok()?;
+                if let Object::Array(arr) = d {
+                    arr.first()?.as_reference().ok()
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        })?;
+    // get_pages() 反查 ObjectId → 页码
+    for (num, id) in doc.get_pages() {
+        if id == page_ref {
+            return Some(num as i32);
+        }
+    }
+    None
 }
 
 // ---- NCXDocumentV2 转录补充 ----
@@ -5488,13 +5580,91 @@ impl Buffer {
 
 // okhttp3.WebSocket 占位（send 恒 true，等价 Java 发送成功）
 #[derive(Debug, Clone, Default)]
-pub struct WebSocket;
+pub struct WebSocket {
+    sender: Option<std::sync::mpsc::Sender<String>>,
+    events: std::sync::Arc<std::sync::Mutex<Vec<WebSocketEvent>>>,
+}
 
 impl WebSocket {
-    // okhttp3 WebSocket.send(String) -> boolean
-    pub fn send(&self, _text: String) -> bool {
-        true
+    // okhttp3 WebSocket.send(String) -> boolean（真实发送到连接线程）
+    pub fn send(&self, text: String) -> bool {
+        match &self.sender {
+            Some(tx) => tx.send(text).is_ok(),
+            None => false,
+        }
     }
+    /// 取出累积的 WebSocket 事件（TTSService 轮询调用）
+    pub fn poll_events(&self) -> Vec<WebSocketEvent> {
+        if let Ok(mut guard) = self.events.lock() {
+            std::mem::take(&mut *guard)
+        } else {
+            Vec::new()
+        }
+    }
+}
+
+/// WebSocket 连接线程：tungstenite 连接 + 双向收发
+fn ws_loop(
+    req: tokio_tungstenite::tungstenite::http::Request<()>,
+    rx: std::sync::mpsc::Receiver<String>,
+    events: std::sync::Arc<std::sync::Mutex<Vec<WebSocketEvent>>>,
+) {
+    use futures_util::{SinkExt, StreamExt};
+    use tokio_tungstenite::tungstenite::Message;
+    let rt = match tokio::runtime::Builder::new_current_thread().enable_all().build() {
+        Ok(rt) => rt,
+        Err(_) => return,
+    };
+    rt.block_on(async move {
+        let (mut ws, _) = match tokio_tungstenite::connect_async(req).await {
+            Ok(conn) => conn,
+            Err(_) => {
+                if let Ok(mut guard) = events.lock() {
+                    guard.push(WebSocketEvent::onFailure("connect failed".to_string()));
+                }
+                return;
+            }
+        };
+        loop {
+            tokio::select! {
+                msg = ws.next() => {
+                    match msg {
+                        Some(Ok(Message::Text(t))) => {
+                            if let Ok(mut guard) = events.lock() {
+                                guard.push(WebSocketEvent::onMessageText(t.to_string()));
+                            }
+                        }
+                        Some(Ok(Message::Binary(b))) => {
+                            if let Ok(mut guard) = events.lock() {
+                                guard.push(WebSocketEvent::onMessageBytes(crate::stubs::ByteString(b.to_vec())));
+                            }
+                        }
+                        Some(Ok(Message::Close(_))) => {
+                            if let Ok(mut guard) = events.lock() {
+                                guard.push(WebSocketEvent::onClosed(String::new()));
+                            }
+                            break;
+                        }
+                        Some(Err(e)) => {
+                            if let Ok(mut guard) = events.lock() {
+                                guard.push(WebSocketEvent::onFailure(e.to_string()));
+                            }
+                            break;
+                        }
+                        _ => break,
+                    }
+                }
+                text = async { rx.try_recv().ok() } => {
+                    if let Some(t) = text {
+                        if ws.send(Message::Text(t.into())).await.is_err() {
+                            break;
+                        }
+                    }
+                    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+                }
+            }
+        }
+    });
 }
 
 // okhttp3.WebSocketListener 回调事件转录（TTSService 内部监听器使用）
@@ -5508,19 +5678,27 @@ pub enum WebSocketEvent {
     onMessageBytes(ByteString),
 }
 
-// java.util.concurrent.CountDownLatch 占位
+// java.util.concurrent.CountDownLatch 占位（TTSService 轮询驱动）
 #[derive(Debug, Clone, Default)]
 pub struct CountDownLatch {
-    pub count: i32,
+    pub count: std::cell::Cell<i32>,
 }
 
 impl CountDownLatch {
     // CountDownLatch(int count)
     pub fn new(count: i32) -> CountDownLatch {
-        CountDownLatch { count }
+        CountDownLatch {
+            count: std::cell::Cell::new(count),
+        }
     }
     // CountDownLatch.countDown()
-    pub fn count_down(&self) {}
+    pub fn count_down(&self) {
+        self.count.set(self.count.get().saturating_sub(1));
+    }
+    // 当前剩余计数（TTSService 轮询完成判断）
+    pub fn count(&self) -> i32 {
+        self.count.get()
+    }
     // CountDownLatch.await(long, TimeUnit) -> boolean（await 为关键字 → r#await 转义）
     pub fn r#await(&self, _timeout: i32, _unit: TimeUnit) -> bool {
         true
@@ -5529,8 +5707,34 @@ impl CountDownLatch {
 
 impl OkHttpClient {
     // okhttp3 OkHttpClient.newWebSocket(Request, WebSocketListener)
-    pub fn new_web_socket(&self, _request: Request, _listener: impl std::any::Any) -> WebSocket {
-        WebSocket
+    pub fn new_web_socket(&self, request: Request, _listener: impl std::any::Any) -> WebSocket {
+        let (tx, rx) = std::sync::mpsc::channel::<String>();
+        let events = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+        let events2 = events.clone();
+        let mut req = match tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(request.url.as_str()) {
+            Ok(r) => r,
+            Err(_) => {
+                return WebSocket {
+                    sender: None,
+                    events,
+                }
+            }
+        };
+        for (k, v) in &request.headers {
+            if let Ok(val) = v.parse() {
+                let name = tokio_tungstenite::tungstenite::http::HeaderName::from_bytes(k.as_bytes());
+                if let Ok(name) = name {
+                    req.headers_mut().append(name, val);
+                }
+            }
+        }
+        std::thread::spawn(move || {
+            ws_loop(req, rx, events2);
+        });
+        WebSocket {
+            sender: Some(tx),
+            events,
+        }
     }
 }
 

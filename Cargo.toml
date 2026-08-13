@@ -29,6 +29,9 @@ block-padding = "0.3"
 des = "0.8"
 cipher = "0.4"
 rsa = "0.9"
+tokio-tungstenite = "0.24"
+futures-util = "0.3"
+lopdf = "0.34"
 
 [profile.dev]
 debug = false

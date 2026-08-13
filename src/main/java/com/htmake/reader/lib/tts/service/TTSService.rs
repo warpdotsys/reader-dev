@@ -192,8 +192,24 @@ impl TTSService {
         }
         self.current_text = Some(ssml.get_synthesis_text());
         // fix: try/catch → 闭包 + match（catch 仅 panic，等价 panic!(e)）；await 为关键字 → r#await
+        //      原 latch.r#await 依赖 WebSocketListener 回调（stub 无事件源）→ 轮询 poll_events 驱动
         let try_result: Result<Vec<u8>, StubError> = (|| {
-            self.latch.as_ref().unwrap().r#await(30, TimeUnit::SECONDS);
+            let deadline = System::current_time_millis() + 30_000;
+            loop {
+                if let Some(ws) = &self.ws {
+                    let events = ws.poll_events();
+                    for ev in events {
+                        self.handle_ws_event(ev);
+                    }
+                }
+                if self.latch.as_ref().map(|l| l.count() <= 0).unwrap_or(true) {
+                    break;
+                }
+                if System::current_time_millis() > deadline {
+                    return Err(StubError::new("语音合成超时".to_string()));
+                }
+                Tools::sleep(20);
+            }
             Ok(self.audio_buffer.read_byte_array())
         })();
         match try_result {

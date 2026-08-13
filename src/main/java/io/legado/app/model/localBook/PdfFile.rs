@@ -98,8 +98,24 @@ impl PdfFile {
     fn update_cover(&self) {
     }
 
-    fn get_content_inner(&self, chapter: &BookChapter) -> Option<String> {
-        return Some(String::new());
+    fn get_content_inner(&mut self, chapter: &BookChapter) -> Option<String> {
+        // PDF 页文本提取（lopdf 解析；图片化渲染依赖系统级 PDF 渲染器，见已知限制）
+        let local_file = self.book.get_local_file().path();
+        let document = PDDocument::load(&local_file);
+        let idx = chapter.start.unwrap_or(0).max(0) as usize;
+        let text = document
+            .document_catalog
+            .pages
+            .pages
+            .get(idx)
+            .map(|p| p.text.clone())
+            .unwrap_or_default();
+        close_quietly(&document);
+        if text.is_empty() {
+            None
+        } else {
+            Some(text)
+        }
     }
 
     fn get_chapter_list_inner(&mut self) -> Vec<BookChapter> {
