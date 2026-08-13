@@ -69,8 +69,7 @@ git tag v6.0.0 && git push origin v6.0.0
 
 ## 已知限制
 
-- AES/RSA 加密（EncoderUtils）为占位实现（secure 多用户模式的 WebDAV Basic 认证依赖）
-- TTS 边缘合成依赖外部服务
-- EPUB/PDF 本地解析为占位实现（epublib 域模型未完整转录）
-- XPath 规则部分降级为 CSS 选择器（AnalyzeByXPath→AnalyzeByJSoup 子集转换）
-- `cache_chapter_content` 默认关闭（与原版 Kotlin 一致，可在 AppConfig 开启）
+- PDF 图片化渲染依赖系统级 PDF 渲染器（PDFBox java.awt），文本提取已真实（lopdf）；PDF 页文本可提取与搜索
+- TTS 合成依赖微软 Edge/Azure 在线服务（WebSocket 连接已真实，需外网可达）
+- EPUB 解析真实（zip + DOM + OPF/NCX）；复杂排版/内置字体渲染受限于 HTML 引擎
+- `cache_chapter_content` 默认关闭（与原版 Kotlin 一致，可用 READER_APP_CACHECHAPTERCONTENT=true 开启）
