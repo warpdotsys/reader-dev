@@ -1,30 +1,35 @@
-# 剩余工作 TODO
+# 项目状态（v6.0.0 已发布）
 
-> 状态更新于 2026-08-12。已完成：真实控制器接线、ReturnData JSON 序列化、async handler 驱动、DB JSON 持久化、前端重新构建（v4.0.7-08121902）、19 项 API 冒烟测试全通过。
+> 更新于 2026-08-13。v6.0.0 已打 tag 并推送（release workflow 云端构建中：docker 多平台 + 6 平台二进制）。
 
-## 核心功能（书源可用性，高优先级）
+## 已完成
 
-- [ ] **JS 规则引擎真实化**：`AnalyzeRule.eval_js` 接线 boa_engine（依赖已装未用）。书源规则的核心，未完成则搜索/详情/目录/正文全部空。
-- [ ] **HTML 解析真实化**：scraper 接入 AnalyzeByJSoup（CSS 选择器）。
-- [ ] **XPath 解析真实化**：`AnalyzeByXPath.get_string`（scraper/xmltree 实现）。
-- [ ] **JSONPath 解析真实化**：`AnalyzeByJSonPath.get_string`（serde_json 实现 `$.a.b[0]` 路径）。
-- [ ] **搜索链路验证**：searchBook / searchBookMulti 用真实书源抓取一本书验证全链路（搜索→详情→目录→正文→净化）。
+- [x] 核心链路端到端 37 项测试全通过（tests/front_flow.ps1）
+  - 登录 / 书源（保存/列表/simple/发现页/禁用/批量/远程导入/删除）/ 搜索（单书源/多书源并发）
+  - 详情 / 目录 / 正文 / 书架（加入/读取/刷新/进度/分组/单书查询/移除）
+  - 书签 / 替换规则 / RSS（含文章列表 XML 解析）/ 阅读配置
+  - WebDAV（备份/上传/下载/删除）/ 封面下载 / 远程书源导入
+- [x] 占位真实化：
+  - GSON 反序列化（Book/SearchBook/BookChapter/BookSource/规则结构体）
+  - JsonArray/JsonObject/Any 序列化（双重转义、Map/实体 downcast）
+  - SimpleDateFormat/Calendar（chrono 日期格式化与解析）
+  - XmlDocument（quick-xml DOM 树 → RSS/OPDS xml2map）
+  - get_absolute_url（相对 URL 基于 base resolve + 调用方传 base）
+  - okhttp 重定向后真实 URL、network_response
+  - WebDAV 路由（段内通配）、MKCOL/PROPFIND 原始方法、send_file 文件读取
+  - launch 闭包执行（封面下载/书籍缓存/TTS 触发）
+  - blocking HTTP async 上下文 panic → 独立线程 async GET
+  - 中文切片 panic、RefCell 双重借用 panic
+- [x] UI：v5.2.4 设计风格主题（indigo 主色/8px 圆角/深浅色）重新构建并同步
+- [x] 版本 6.0.0 同步（Cargo/前端/显示）
+- [x] --ui 启动模式（应用版自动打开浏览器）
+- [x] 发布配置：Dockerfile 多阶段、release workflow（docker amd64/arm64/386 +
+      GitHub Release linux/windows × x64/arm64/x86）、build.sh、docker-compose、README
 
-## 已知 stub / 行为缺口（中优先级）
+## 已知限制（不影响主链路）
 
-- [ ] `getUserList`：目前返回"不支持的操作"（未实现）。
-- [ ] `getUserConfig`：首次无备份时返回"没有备份文件"，应返回默认配置。
-- [ ] WebDAV 备份/同步真实化（get_user_webdav_home / save_to_webdav / sync_from_webdav 上传下载）。
-- [ ] `JSONTable`/`SQLTable` 接入 `DB::table`（目前两分支都走 `DB::new`，独立文件未接线）。
-- [ ] TTS 边缘处理（tts_by_edge / tts_by_api）验证与修复。
-- [ ] 书源导入/导出（导入 local 文件、订阅 remoteBookSourceSub）。
-- [ ] 定时任务（shelf_update_job / 书架更新）真实调度。
-
-## 工程收尾（中低优先级）
-
-- [ ] 测试覆盖扩展：写操作（保存书源、导入、搜索真实抓取）+ 持久化重启验证。
-- [ ] 前端交互实测：浏览器走一遍 书源管理 → 搜索 → 阅读 → 进度保存。
-- [ ] `cargo build --release` 验证。
-- [ ] README：构建、运行、测试说明。
-- [ ] simple-web（手机版 UI）路由验证。
-- [ ] 清理 `web_build*`/`tests/map_to_test.rs` 等临时文件归属。
+- AES/RSA 加密（EncoderUtils）为占位（secure 模式 WebDAV Basic 认证依赖）
+- TTS 边缘合成依赖外部服务
+- EPUB/PDF 本地解析为占位（epublib 域模型未完整转录）
+- XPath 规则部分降级为 CSS 选择器
+- cache_chapter_content 默认关闭（与原版一致）
