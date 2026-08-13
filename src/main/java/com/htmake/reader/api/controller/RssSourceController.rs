@@ -479,7 +479,8 @@ impl RssSourceController {
 
         let rss_articles = block_on(Rss::get_articles(&sort_name, &sort_url, &rss_source, page, Some(&Debug)));
 
-        return_data.set_data(Box::new(rss_articles), String::from(""));
+        // fix: get_articles 返回 (Vec<RssArticle>, Option<String>) 元组，取文章列表
+        return_data.set_data(Box::new(rss_articles.0), String::from(""));
         return return_data;
     }
 

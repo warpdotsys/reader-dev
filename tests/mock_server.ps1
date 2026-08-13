@@ -21,6 +21,8 @@ while ($true) {
             $body = '{"name":"测试之书","author":"作者甲","intro":"一本用于测试的书","tocUrl":"http://localhost:18999/toc/1"}'
         } elseif ($path -eq '/book/2') {
             $body = '{"name":"测试第二本","author":"作者乙","intro":"第二本测试书","tocUrl":"http://localhost:18999/toc/2"}'
+        } elseif ($path -eq '/rss.xml') {
+            $body = '<?xml version="1.0"?><rss version="2.0"><channel><title>本地RSS</title><item><title>文章一</title><link>http://localhost:18999/article/1</link><description>第一篇文章内容</description></item><item><title>文章二</title><link>http://localhost:18999/article/2</link><description>第二篇文章内容</description></item></channel></rss>'
         } elseif ($path -eq '/cover.jpg') {
             $body = 'COVERBINARYDATA123'
         } elseif ($path -eq '/toc/1') {

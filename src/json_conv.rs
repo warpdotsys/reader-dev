@@ -1,6 +1,27 @@
 // 自动生成：实体 -> serde_json::Value（ReturnData JSON 序列化）
 use serde_json::{Value, json};
 
+pub fn rss_article_to_json(v: &crate::io_legado_app_data_entities_rssarticle::RssArticle) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert(String::from("origin"), json!(v.origin));
+    m.insert(String::from("sort"), json!(v.sort));
+    m.insert(String::from("title"), json!(v.title));
+    m.insert(String::from("order"), json!(v.order));
+    m.insert(String::from("link"), json!(v.link));
+    m.insert(String::from("pubDate"), map_opt(v.pub_date.clone()));
+    m.insert(String::from("description"), map_opt(v.description.clone()));
+    m.insert(String::from("content"), map_opt(v.content.clone()));
+    m.insert(String::from("image"), map_opt(v.image.clone()));
+    m.insert(String::from("read"), json!(v.read));
+    m.insert(String::from("variable"), map_opt(v.variable.clone()));
+    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
+    Value::Object(m)
+}
+
+pub fn rss_articles_to_json(v: &[crate::io_legado_app_data_entities_rssarticle::RssArticle]) -> Value {
+    Value::Array(v.iter().map(|x| rss_article_to_json(x)).collect())
+}
+
 pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value {
     let mut m = serde_json::Map::new();
     m.insert(String::from("bookUrl"), json!(v.book_url));

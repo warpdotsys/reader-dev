@@ -54,11 +54,12 @@ fn execute_inner(req: &Request) -> Result<Response, crate::stubs::Throwable> {
             headers.insert(k.as_str().to_string(), v.to_string());
         }
     }
+    let final_url = resp.url().to_string();
     let body_text = resp.text().unwrap_or_default();
     Ok(Response {
         status,
         headers,
         body_text,
-        url: req.url.clone(),
+        url: final_url,
     })
 }

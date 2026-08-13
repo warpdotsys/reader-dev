@@ -4707,9 +4707,12 @@ impl ResponseBody {
 // ---------------- SQLTable/JSONTable findBy 补充（mapTo(clazz) 带 Class 参数版） ----------------
 
 impl JsonObject {
-    // Kotlin JsonObject.mapTo(clazz)（GSON 反序列化占位，恒返回 None）
-    pub fn map_to_with_class<T>(&self, _clazz: Class<T>) -> Option<T> {
-        None
+    // Kotlin JsonObject.mapTo(clazz)（GSON 反序列化）
+    pub fn map_to_with_class<T>(&self, _clazz: Class<T>) -> Option<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        serde_json::from_str::<T>(&self.0).ok()
     }
 }
 
@@ -6879,9 +6882,9 @@ impl ResponseBuilder {
 }
 
 impl Response {
-    // okhttp3 Response.networkResponse（StrResponse.url 使用；占位恒 None）
+    // okhttp3 Response.networkResponse（StrResponse.url 使用；最终响应 = 自身，url 为重定向后真实地址）
     pub fn network_response(&self) -> Option<Response> {
-        None
+        Some(self.clone())
     }
     // okhttp3 Response.message（StrResponse.message 使用）
     pub fn message(&self) -> String {
@@ -8964,6 +8967,8 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_bookgroup::BookGroup>() { return book_group_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_bookmark::Bookmark>() { return bookmark_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_txttocrule::TxtTocRule>() { return txt_toc_rule_to_json(v); }
+    if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_rssarticle::RssArticle>() { return rss_article_to_json(v); }
+    if let Some(v) = d.downcast_ref::<Vec<crate::io_legado_app_data_entities_rssarticle::RssArticle>>() { return rss_articles_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>() { return search_book_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_bookchapter::BookChapter>() { return book_chapter_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_httptts::HttpTTS>() { return http_tts_to_json(v); }

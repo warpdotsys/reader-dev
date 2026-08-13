@@ -219,6 +219,14 @@ try {
     if ($null -ne $j.data) { $rss = @($j.data | ForEach-Object { $_ }) }
     Report '保存RSS源' ($j.isSuccess -eq $true -and $rss.Count -ge 1 -and $rss[0].sourceName -eq '本地RSS') "RSS=$($rss.Count)"
 
+    # 17. RSS 文章列表（getRssArticles → XML 解析链路）
+    $r = Invoke-WebRequest -Uri "$base/reader3/getRssArticles?sourceUrl=http%3A%2F%2Flocalhost%3A18999%2Frss.xml" -UseBasicParsing -TimeoutSec 30
+    $j = $r.Content | ConvertFrom-Json
+    $arts = @()
+    if ($null -ne $j.data) { $arts = @($j.data | ForEach-Object { $_ }) }
+    $artOk = ($j.isSuccess -eq $true) -and ($arts.Count -ge 2) -and ($arts[0].title -match '文章一')
+    Report 'RSS文章列表' $artOk "文章=$($arts.Count) raw=$($r.Content.Substring(0, [Math]::Min(250, $r.Content.Length)))"
+
     # 17. 删除 RSS 源
     $r = Invoke-WebRequest -Uri "$base/reader3/deleteRssSource" -Method POST -Body ([System.Text.Encoding]::UTF8.GetBytes($rs)) -ContentType 'application/json' -UseBasicParsing -TimeoutSec 20
     $j = $r.Content | ConvertFrom-Json
