@@ -53,7 +53,7 @@ jobs:
           - target: x86_64-pc-windows-gnu
             name: windows-x64
             ext: zip
-          - target: aarch64-pc-windows-gnu
+          - target: aarch64-pc-windows-gnullvm
             name: windows-arm64
             ext: zip
           - target: i686-pc-windows-gnu

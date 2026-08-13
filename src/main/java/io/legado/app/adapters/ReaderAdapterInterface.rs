@@ -7,6 +7,7 @@ use crate::prelude::*;
 /**
  * Interface for the reader adapter, abstracting work directory and remote webview operations.
  */
+#[allow(async_fn_in_trait)]
 pub trait ReaderAdapterInterface {
 
     fn get_work_dir(&self, sub_path: &str) -> String;

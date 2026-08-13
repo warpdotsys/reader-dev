@@ -163,8 +163,9 @@ impl Book {
         charset(self.charset.as_deref().unwrap_or("UTF-8"))
     }
 
+    #[allow(elided_lifetimes_in_paths)]
     // private fun config(): ReadConfig
-    fn config(&self) -> RefMut<ReadConfig> {
+    fn config(&self) -> RefMut<'_, ReadConfig> {
         if self.read_config.borrow().is_none() {
             *self.read_config.borrow_mut() = Some(ReadConfig::default());
         }

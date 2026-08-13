@@ -166,7 +166,8 @@ impl Pattern {
         Pattern::compile(&s)
     }
 
-    pub fn matcher(&self, haystack: String) -> Matcher {
+    #[allow(elided_lifetimes_in_paths)]
+    pub fn matcher(&self, haystack: String) -> Matcher<'_> {
         Matcher {
             re: &self.re,
             hay: haystack,
@@ -1780,6 +1781,7 @@ pub enum Any {
 }
 
 impl Any {
+    #[allow(elided_lifetimes_in_paths)]
     pub fn from_string(s: String) -> Any {
         Any::Str(s)
     }
@@ -8569,6 +8571,7 @@ pub fn analyze_rule_stub_analyze_by_j_soup_get_elements(
     crate::stubs::Elements::new()
 }
 
+#[allow(invalid_value)]
 pub fn analyze_rule_stub_analyze_by_j_son_path_new(
     _doc: &crate::stubs::Any,
 ) -> crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath {

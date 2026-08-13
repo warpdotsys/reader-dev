@@ -876,6 +876,7 @@ impl IOUtil {
      */
     pub fn close(closeable: &mut dyn Closeable) -> Result<(), io::Error> {
         // fix: Rust 引用不可能为 null，Java null 检查恒为真
+        #[allow(useless_ptr_null_checks)]
         if !(closeable as *mut dyn Closeable).is_null() {
             closeable.close()?;
         }
@@ -906,10 +907,12 @@ impl IOUtil {
      */
     pub fn close_consumer(closeable: &mut dyn Closeable, consumer: &mut dyn IOConsumer) -> Result<(), io::Error> {
         // fix: Rust 引用不可能为 null，Java null 检查恒为真
+        #[allow(useless_ptr_null_checks)]
         if !(closeable as *mut dyn Closeable).is_null() {
             match closeable.close() {
                 Ok(_) => {}
                 Err(e) => {
+                    #[allow(useless_ptr_null_checks)]
                     if !(consumer as *mut dyn IOConsumer).is_null() {
                         consumer.accept(e);
                     }
