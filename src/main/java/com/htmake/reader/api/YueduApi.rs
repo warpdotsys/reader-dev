@@ -39,7 +39,7 @@ pub struct YueduApi {
 impl YueduApi {
     pub fn new() -> YueduApi {
         YueduApi {
-            app_config: crate::com_htmake_reader_config_appconfig::AppConfig::default(),
+            app_config: crate::com_htmake_reader_utils_springcontextutils::SpringContextUtils::get_bean_app_config(),
             env: Environment,
             port: 8080,
         }

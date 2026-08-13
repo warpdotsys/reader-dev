@@ -386,6 +386,40 @@ pub fn start_server(router: Router, port: i32, on_listen: impl FnMut(bool) + Sen
 
 // ---------------- 应用启动（main 入口） ----------------
 
+/// 定时任务调度（对应 Kotlin @Scheduled 注解）
+fn spawn_scheduled_jobs() {
+    std::thread::spawn(|| {
+        use chrono::Timelike;
+        let mut last_run_min: Option<i64> = None;
+        loop {
+            std::thread::sleep(std::time::Duration::from_secs(30));
+            let now = chrono::Local::now();
+            let total_min = now.hour() as i64 * 60 + now.minute() as i64;
+            let api = crate::com_htmake_reader_api_yueduapi::YueduApi::new();
+            // 每 10 分钟：书架刷新 + 远程书源订阅（方法内部按配置间隔自判）
+            if total_min % 10 == 0 && last_run_min != Some(total_min) {
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    api.shelf_update_job();
+                    api.remote_book_source_sub_update_job();
+                }));
+                last_run_min = Some(total_min);
+            }
+            // 23:50 每日自动 WebDAV 备份
+            if now.hour() == 23 && now.minute() == 50 {
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_backup()));
+            }
+            // 23:59 每日清理不活跃用户
+            if now.hour() == 23 && now.minute() == 59 {
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.clear_user()));
+            }
+            // 2:00 每日自动 GC
+            if now.hour() == 2 && now.minute() == 0 {
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_gc()));
+            }
+        }
+    });
+}
+
 pub fn run_application(port: i32, context_path: &str) {
     let mut yuedu_api = crate::com_htmake_reader_api_yueduapi::YueduApi::new();
     let mut router = Router::router(crate::stubs::io::vertx::Vertx::vertx());
@@ -398,6 +432,10 @@ pub fn run_application(port: i32, context_path: &str) {
 
     // API 路由
     yuedu_api.init_router(&mut router);
+
+    // 定时任务调度（对应 Kotlin @Scheduled：书架刷新/远程书源订阅每 10 分钟，
+    // 23:50 自动备份、23:59 清理不活跃用户、2:00 自动 GC）
+    spawn_scheduled_jobs();
 
     let full_router = if !context_path.is_empty() {
         let mut main = Router::router(crate::stubs::io::vertx::Vertx::vertx());

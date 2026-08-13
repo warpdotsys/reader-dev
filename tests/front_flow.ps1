@@ -24,7 +24,8 @@ try {
     if (-not $ready) { Report 'server' $false 'not up'; exit 1 }
     Report '页面加载' $true 'index.html 200'
 
-    # 1. 登录（前端自动登录 admin/admin123）
+    # 1. 登录（前端自动登录 admin/admin123；首次为注册语义，需干净用户文件）
+    Remove-Item storage\data\users.json, storage\data\default\users.json, storage\data\.users.key -Force -ErrorAction SilentlyContinue
     $r = Invoke-WebRequest -Uri "$base/reader3/login" -Method POST -Body '{"username":"admin","password":"admin123"}' -ContentType 'application/json' -UseBasicParsing -TimeoutSec 10
     $j = $r.Content | ConvertFrom-Json
     Report '登录' ($j.isSuccess -eq $true -and $null -ne $j.data.accessToken) "token=$($j.data.accessToken.Substring(0,8))..."
@@ -223,9 +224,9 @@ try {
     $r = Invoke-WebRequest -Uri "$base/reader3/getRssArticles?sourceUrl=http%3A%2F%2Flocalhost%3A18999%2Frss.xml" -UseBasicParsing -TimeoutSec 30
     $j = $r.Content | ConvertFrom-Json
     $arts = @()
-    if ($null -ne $j.data) { $arts = @($j.data | ForEach-Object { $_ }) }
+    if ($null -ne $j.data -and $null -ne $j.data.first) { $arts = @($j.data.first | ForEach-Object { $_ }) }
     $artOk = ($j.isSuccess -eq $true) -and ($arts.Count -ge 2) -and ($arts[0].title -match '文章一')
-    Report 'RSS文章列表' $artOk "文章=$($arts.Count) raw=$($r.Content.Substring(0, [Math]::Min(250, $r.Content.Length)))"
+    Report 'RSS文章列表' $artOk "文章=$($arts.Count)"
 
     # 17. 删除 RSS 源
     $r = Invoke-WebRequest -Uri "$base/reader3/deleteRssSource" -Method POST -Body ([System.Text.Encoding]::UTF8.GetBytes($rs)) -ContentType 'application/json' -UseBasicParsing -TimeoutSec 20
@@ -254,27 +255,20 @@ try {
 
     # 20. WebDAV 文件操作（MKCOL/PUT/PROPFIND/GET/DELETE）
     function Invoke-WebDav($uri, $method, $body) {
-        $req = [System.Net.HttpWebRequest]::Create($uri)
-        $req.Method = $method
-        $req.Timeout = 15000
-        if ($null -ne $body) {
-            $bytes = [System.Text.Encoding]::UTF8.GetBytes($body)
-            $req.ContentType = 'text/plain'
-            $req.ContentLength = $bytes.Length
-            $stream = $req.GetRequestStream()
-            $stream.Write($bytes, 0, $bytes.Length)
-            $stream.Close()
-        }
         try {
-            $resp = $req.GetResponse()
-            $reader = New-Object System.IO.StreamReader($resp.GetResponseStream(), [System.Text.Encoding]::UTF8)
-            $content = $reader.ReadToEnd()
-            $reader.Close(); $resp.Close()
-            return @{ Status = [int]$resp.StatusCode; Content = $content }
-        } catch [System.Net.WebException] {
-            $errResp = $_.Exception.Response
-            if ($null -eq $errResp) { return @{ Status = 0; Content = $_.Exception.Message } }
-            return @{ Status = [int]$errResp.StatusCode; Content = '' }
+            $client = New-Object System.Net.Http.HttpClient
+            $client.Timeout = [TimeSpan]::FromSeconds(15)
+            $req = New-Object System.Net.Http.HttpRequestMessage([System.Net.Http.HttpMethod]::new($method), $uri)
+            if ($null -ne $body) {
+                $req.Content = New-Object System.Net.Http.StringContent($body, [System.Text.Encoding]::UTF8, 'text/plain')
+            }
+            $resp = $client.SendAsync($req).Result
+            $content = $resp.Content.ReadAsStringAsync().Result
+            $status = [int]$resp.StatusCode
+            $client.Dispose()
+            return @{ Status = $status; Content = $content }
+        } catch {
+            return @{ Status = 0; Content = $_.Exception.Message }
         }
     }
     $null = Invoke-WebDav "$base/reader3/webdav/legado" 'MKCOL' $null

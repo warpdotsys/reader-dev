@@ -26,8 +26,8 @@ impl RssSourceController {
     //     return userInfo.enable_book_source
     // }
     pub fn can_edit_rss_source(&self, context: &RoutingContext) -> bool {
-        // fix: 原 Kotlin `if (!appConfig.secure) return true`；BaseController::app_config 为私有字段（E0616）跨模块不可访问，secure 占位为 false（放行）
-        let secure = false;
+        // fix: 原 Kotlin `if (!appConfig.secure) return true`（真实读取配置）
+        let secure = crate::com_htmake_reader_utils_springcontextutils::SpringContextUtils::get_bean_app_config().secure;
         if !secure {
             return true;
         }
@@ -478,9 +478,12 @@ impl RssSourceController {
         let rss_source = rss_source.unwrap();
 
         let rss_articles = block_on(Rss::get_articles(&sort_name, &sort_url, &rss_source, page, Some(&Debug)));
-
-        // fix: get_articles 返回 (Vec<RssArticle>, Option<String>) 元组，取文章列表
-        return_data.set_data(Box::new(rss_articles.0), String::from(""));
+        // fix: Kotlin 返回 Pair(文章列表, 下一页URL)——Gson 序列化为 {"first":[...],"second":...}，前端读 data.first
+        let next_page = rss_articles.1.unwrap_or_default();
+        let mut pair_map: std::collections::HashMap<String, crate::stubs::Any> = std::collections::HashMap::new();
+        pair_map.insert(String::from("first"), crate::stubs::Any::from(rss_articles.0));
+        pair_map.insert(String::from("second"), crate::stubs::Any::from(next_page));
+        return_data.set_data(Box::new(pair_map), String::from(""));
         return return_data;
     }
 

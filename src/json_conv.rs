@@ -49,6 +49,8 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("durChapterTime"), json!(v.dur_chapter_time));
     m.insert(String::from("wordCount"), map_opt(v.word_count.clone()));
     m.insert(String::from("canUpdate"), json!(v.can_update));
+    m.insert(String::from("type"), json!(v.r#type));
+    m.insert(String::from("readConfig"), json!(v.read_config.borrow().as_ref().map(|c| c.pdf_image_width)));
     m.insert(String::from("order"), json!(v.order as i64));
     m.insert(String::from("originOrder"), json!(v.origin_order as i64));
     m.insert(String::from("useReplaceRule"), json!(v.use_replace_rule));

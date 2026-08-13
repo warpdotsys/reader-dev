@@ -1806,6 +1806,20 @@ impl Any {
             _ => None,
         }
     }
+    pub fn as_long(&self) -> Option<i64> {
+        match self {
+            Any::Long(i) => Some(*i),
+            Any::Double(d) => Some(*d as i64),
+            _ => None,
+        }
+    }
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Any::Bool(b) => Some(*b),
+            Any::Str(s) => Some(s == "true" || s == "1"),
+            _ => None,
+        }
+    }
     pub fn is_map(&self) -> bool {
         matches!(self, Any::Map(_))
     }
@@ -5955,14 +5969,26 @@ impl Environment {
 
 // fix: UserController 转录所需 RoutingContext 方法（追加到 CURD 占位 RoutingContext）
 
-// fix: io.vertx.ext.web.Session 占位（UserController/BaseController 使用）
+// fix: io.vertx.ext.web.Session 占位（UserController/BaseController 使用；内存会话存储）
 pub struct Session;
+fn session_map() -> &'static std::sync::Mutex<std::collections::HashMap<String, String>> {
+    static SESSION_MAP: std::sync::OnceLock<std::sync::Mutex<std::collections::HashMap<String, String>>> = std::sync::OnceLock::new();
+    SESSION_MAP.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()))
+}
 impl Session {
-    pub fn get(&self, _key: &str) -> Option<String> {
-        None
+    pub fn get(&self, key: &str) -> Option<String> {
+        session_map().lock().ok().and_then(|m| m.get(key).cloned())
     }
-    pub fn put(&self, _key: &str, _value: String) {}
-    pub fn destroy(&self) {}
+    pub fn put(&self, key: &str, value: String) {
+        if let Ok(mut m) = session_map().lock() {
+            m.insert(key.to_string(), value);
+        }
+    }
+    pub fn destroy(&self) {
+        if let Ok(mut m) = session_map().lock() {
+            m.clear();
+        }
+    }
 }
 
 // fix: io.vertx.ext.web.FileUpload 占位（UserController/FileController 上传处理）
@@ -8228,21 +8254,130 @@ fn env_bool(key: &str, default: bool) -> bool {
     }
 }
 
-// fix: UserController 转录所需嵌套用户 map 占位（对应 Kotlin `userMapJson.map as MutableMap<String, Map<String, Any>>`）
+// fix: UserController 转录所需嵌套用户 map（对应 Kotlin `userMapJson.map as MutableMap<String, Map<String, Any>>`；真实解析）
 impl JsonObject {
     pub fn user_map_nested(&self) -> std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::Any>>> {
-        std::collections::HashMap::new()
+        let mut out = std::collections::HashMap::new();
+        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&self.0) {
+            if let Some(obj) = v.as_object() {
+                for (k, inner) in obj {
+                    if let Some(inner_obj) = inner.as_object() {
+                        let mut m = std::collections::HashMap::new();
+                        for (ik, iv) in inner_obj {
+                            m.insert(ik.clone(), user_json_value_to_any(iv));
+                        }
+                        out.insert(k.clone(), m);
+                    }
+                }
+            }
+        }
+        out
     }
 }
 
-// fix: UserController/BaseController 转录所需 `Map<String, Any>.toDataClass()` 占位（GSON 反序列化恒返回 None）
+fn user_json_value_to_any(v: &serde_json::Value) -> Box<dyn std::any::Any> {
+    match v {
+        serde_json::Value::String(s) => Box::new(s.clone()),
+        serde_json::Value::Bool(b) => Box::new(*b),
+        serde_json::Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                Box::new(i)
+            } else {
+                Box::new(n.as_f64().unwrap_or(0.0))
+            }
+        }
+        serde_json::Value::Object(o) => {
+            let mut m = std::collections::HashMap::new();
+            for (k, val) in o {
+                m.insert(k.clone(), user_json_value_to_any(val));
+            }
+            Box::new(m)
+        }
+        _ => Box::new(String::new()),
+    }
+}
+
+// fix: UserController/BaseController 转录所需 `Map<String, Any>.toDataClass()`（真实反序列化）
 pub trait ToDataClass {
     fn to_data_class(&self) -> Option<crate::com_htmake_reader_entity_user::User>;
 }
 impl ToDataClass for std::collections::HashMap<String, Box<dyn std::any::Any>> {
     fn to_data_class(&self) -> Option<crate::com_htmake_reader_entity_user::User> {
-        None
+        let gs = |k: &str| {
+            self.get(k)
+                .and_then(|v| v.downcast_ref::<String>().cloned())
+                .unwrap_or_default()
+        };
+        let gl = |k: &str| {
+            self.get(k)
+                .and_then(|v| v.downcast_ref::<i64>().copied())
+                .or_else(|| self.get(k).and_then(|v| v.downcast_ref::<f64>().copied().map(|f| f as i64)))
+                .unwrap_or(0)
+        };
+        let gb = |k: &str| {
+            self.get(k)
+                .and_then(|v| v.downcast_ref::<bool>().copied())
+                .unwrap_or(false)
+        };
+        let gi = |k: &str| {
+            self.get(k)
+                .and_then(|v| v.downcast_ref::<i32>().copied())
+                .or_else(|| self.get(k).and_then(|v| v.downcast_ref::<i64>().copied().map(|i| i as i32)))
+                .unwrap_or(0)
+        };
+        let token_map = self.get("token_map").and_then(|v| {
+            v.downcast_ref::<std::collections::HashMap<String, Box<dyn std::any::Any>>>().map(|m| {
+                m.iter()
+                    .map(|(k, val)| {
+                        (
+                            k.clone(),
+                            val.downcast_ref::<i64>().copied().unwrap_or(0),
+                        )
+                    })
+                    .collect()
+            })
+        });
+        Some(crate::com_htmake_reader_entity_user::User {
+            username: gs("username"),
+            password: gs("password"),
+            salt: gs("salt"),
+            token: gs("token"),
+            last_login_at: gl("last_login_at"),
+            created_at: gl("created_at"),
+            enable_webdav: gb("enable_webdav"),
+            token_map,
+            enable_local_store: gb("enable_local_store"),
+            enable_book_source: gb("enable_book_source"),
+            enable_rss_source: gb("enable_rss_source"),
+            book_source_limit: gi("book_source_limit"),
+            book_limit: gi("book_limit"),
+        })
     }
+}
+
+/// User → snake_case 存储 map（users.json 格式，与 Kotlin data class toMap() 一致）
+pub fn user_to_storage_map(u: &crate::com_htmake_reader_entity_user::User) -> std::collections::HashMap<String, Any> {
+    let mut m = std::collections::HashMap::new();
+    m.insert(String::from("username"), Any::from(u.username.clone()));
+    m.insert(String::from("password"), Any::from(u.password.clone()));
+    m.insert(String::from("salt"), Any::from(u.salt.clone()));
+    m.insert(String::from("token"), Any::from(u.token.clone()));
+    m.insert(String::from("last_login_at"), Any::Long(u.last_login_at));
+    m.insert(String::from("created_at"), Any::Long(u.created_at));
+    m.insert(String::from("enable_webdav"), Any::Bool(u.enable_webdav));
+    m.insert(String::from("enable_local_store"), Any::Bool(u.enable_local_store));
+    m.insert(String::from("enable_book_source"), Any::Bool(u.enable_book_source));
+    m.insert(String::from("enable_rss_source"), Any::Bool(u.enable_rss_source));
+    m.insert(String::from("book_source_limit"), Any::Long(u.book_source_limit as i64));
+    m.insert(String::from("book_limit"), Any::Long(u.book_limit as i64));
+    if let Some(t) = &u.token_map {
+        let mut tm = std::collections::HashMap::new();
+        for (k, v) in t {
+            tm.insert(k.clone(), Any::Long(*v));
+        }
+        m.insert(String::from("token_map"), Any::Map(tm));
+    }
+    m
 }
 
 // fix: kotlinx.coroutines.sync.Mutex.withLock 占位（UserController.logout 使用）
@@ -9009,7 +9144,34 @@ impl Clone for crate::com_htmake_reader_entity_user::User {
 // fix: BaseController.checkAuth/getUserInfoClass 使用（stubs Any 版用户 map 的 toDataClass 占位，恒返回 None）
 impl ToDataClass for std::collections::HashMap<String, crate::stubs::Any> {
     fn to_data_class(&self) -> Option<crate::com_htmake_reader_entity_user::User> {
-        None
+        let gs = |k: &str| {
+            self.get(k)
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+        };
+        let gl = |k: &str| self.get(k).and_then(|v| v.as_long()).unwrap_or(0);
+        let gb = |k: &str| self.get(k).and_then(|v| v.as_bool()).unwrap_or(false);
+        let gi = |k: &str| self.get(k).and_then(|v| v.as_long().map(|l| l as i32)).unwrap_or(0);
+        let token_map = self.get("token_map").and_then(|v| v.as_map()).map(|m| {
+            m.iter()
+                .map(|(k, val)| (k.clone(), val.as_long().unwrap_or(0)))
+                .collect()
+        });
+        Some(crate::com_htmake_reader_entity_user::User {
+            username: gs("username"),
+            password: gs("password"),
+            salt: gs("salt"),
+            token: gs("token"),
+            last_login_at: gl("last_login_at"),
+            created_at: gl("created_at"),
+            enable_webdav: gb("enable_webdav"),
+            token_map,
+            enable_local_store: gb("enable_local_store"),
+            enable_book_source: gb("enable_book_source"),
+            enable_rss_source: gb("enable_rss_source"),
+            book_source_limit: gi("book_source_limit"),
+            book_limit: gi("book_limit"),
+        })
     }
 }
 // ================= MediaTypes.rs 转录修复追加（仅追加不重写） =================
@@ -9397,7 +9559,9 @@ impl From<f64> for Any { fn from(v: f64) -> Any { Any::Double(v) } }
 impl From<usize> for Any { fn from(v: usize) -> Any { Any::Long(v as i64) } }
 impl From<JsonObject> for Any { fn from(v: JsonObject) -> Any { Any::JsonObject(v) } }
 impl From<crate::io_legado_app_data_entities_book::Book> for Any {
-    fn from(v: crate::io_legado_app_data_entities_book::Book) -> Any { Any::Str(v.name.clone()) }
+    fn from(v: crate::io_legado_app_data_entities_book::Book) -> Any {
+        Any::Str(crate::stubs::book_to_json(&v).to_string())
+    }
 }
 impl From<crate::io_legado_app_data_entities_bookchapter::BookChapter> for Any {
     fn from(v: crate::io_legado_app_data_entities_bookchapter::BookChapter) -> Any {
@@ -9430,7 +9594,16 @@ impl From<Vec<crate::io_legado_app_data_entities_searchbook::SearchBook>> for An
 }
 impl From<Vec<crate::io_legado_app_data_entities_searchresult::SearchResult>> for Any {
     fn from(v: Vec<crate::io_legado_app_data_entities_searchresult::SearchResult>) -> Any {
-        Any::List(v.into_iter().map(|b| Any::Str(b.result_text.clone())).collect())
+        Any::List(v.into_iter().map(|r| Any::Str(r.result_text.clone())).collect())
+    }
+}
+impl From<Vec<crate::io_legado_app_data_entities_rssarticle::RssArticle>> for Any {
+    fn from(v: Vec<crate::io_legado_app_data_entities_rssarticle::RssArticle>) -> Any {
+        let items: Vec<String> = v
+            .iter()
+            .map(|a| crate::stubs::rss_article_to_json(a).to_string())
+            .collect();
+        Any::JsonArray(crate::stubs::JsonArray(items))
     }
 }
 impl From<Vec<String>> for Any {

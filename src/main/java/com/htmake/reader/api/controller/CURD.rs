@@ -42,7 +42,8 @@ where
     //     return gson.fromJson(json, java.lang.reflect.Array.newInstance(getEntityClass(), 0).javaClass) as Array<T>
     // }
     fn convert_to_entity_list(&self, json: &String) -> Vec<T> {
-        gson::from_json(json, self.get_entity_class())
+        // fix: gson::from_json 占位恒空 Vec → serde_json 真实反序列化（批量保存/删除）
+        serde_json::from_str::<Vec<T>>(json).unwrap_or_default()
     }
 
     // fun onList(list: JsonArray, userNameSpace: String): JsonArray {

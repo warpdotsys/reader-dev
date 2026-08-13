@@ -132,9 +132,25 @@ impl BaseController {
             }
             user.token_map = token_map;
         }
-        // fix: Kotlin user.toMap()（data class 序列化占位——User 无 Serialize 实现，暂存空 map）
-        user_map.insert(user.username.clone(), std::collections::HashMap::new());
-        save_storage("data", vec![String::from("users")], Box::new(format!("{:?}", user_map)));
+        // fix: Kotlin user.toMap()（真实 snake_case 存储，与 users.json 格式一致）
+        let user_storage = crate::stubs::user_to_storage_map(&*user);
+        user_map.insert(user.username.clone(), user_storage);
+        let mut users_value = serde_json::Map::new();
+        for (k, inner) in &user_map {
+            let mut inner_value = serde_json::Map::new();
+            for (ik, iv) in inner {
+                inner_value.insert(ik.clone(), crate::stubs::any_to_value(iv));
+            }
+            users_value.insert(k.clone(), serde_json::Value::Object(inner_value));
+        }
+        let users_json = serde_json::Value::Object(users_value).to_string();
+        // fix: 直接写原始 JSON（save_storage 包装会对 String 二次序列化为字符串字面量）
+        crate::com_htmake_reader_utils_vertext::save_storage(
+            &vec![String::from("data"), String::from("users")],
+            crate::stubs::Any::Str(users_json),
+            false,
+            ".json",
+        );
 
         let login_data = self.format_user(&*user);
 
