@@ -9,6 +9,8 @@ use crate::prelude::*;
 //     var replaceRegex: String? = None, //替换规则
 //     var imageStyle: String? = None,  //默认大小居中,FULL最大宽度
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ContentRule {
     pub content: Option<String>,
     pub next_content_url: Option<String>,

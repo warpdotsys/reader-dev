@@ -1,126 +1,32 @@
 #!/bin/bash
+# reader-dev rust 分支（6.x）本地构建脚本
+# 用法：./build.sh [web|release]
+set -e
 
-oldJAVAHome=$JAVA_HOME
+VERSION=$(grep -E '^version = ' Cargo.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+echo "reader v$VERSION"
 
-task=$1
-
-version=""
-
-checkJava()
-{
-    if [ -d /Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home ]; then
-        export JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home
-    fi
-
-    javaVersion=$(java -version 2>&1 | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*".*/\1\2/p;')
-
-    if [[ "$javaVersion" -lt "110" ]]; then
-        echo "Java version must not lower than 11.0"
-        exit 1
+buildWeb() {
+    if [ -d web ]; then
+        echo "building web..."
+        (cd web && (npm ci || npm install) && npm run build)
+        rm -rf src/main/resources/web
+        cp -r web/dist src/main/resources/web
+        echo "web dist synced"
     fi
 }
 
-getVersion()
-{
-    version=$(grep -Eo "^version = .*" $1 | grep -Eo "['\"].*['\"]" | tr -d "'\"")
-}
-
-getVersion ./build.gradle.kts
-
-case $task in
-    build)
-        checkJava
-        # 调试打包
-        ./gradlew buildReader
-    ;;
-    run)
-        checkJava
-        # 运行 javafx UI
-        port=$2
-        if [[ -z "$port" ]]; then
-            port=8080
-        fi
-        ./gradlew assemble --info
-        if test $? -eq 0; then
-            shift
-            shift
-            java -jar build/libs/reader-$version.jar --reader.app.showUI=true --reader.server.port=$port $@
-        fi
-    ;;
-    win)
-        checkJava
-        # 打包 windows 安装包
-        JAVAFX_PLATFORM=win ./gradlew packageReaderWin
-    ;;
-    linux)
-        checkJava
-        # 打包 linux 安装包
-        JAVAFX_PLATFORM=linux ./gradlew packageReaderLinux
-    ;;
-    mac)
-        checkJava
-        # 打包 mac 安装包
-        JAVAFX_PLATFORM=mac ./gradlew packageReaderMac
-    ;;
-    serve)
-        # 服务端一键运行
-        port=$2
-        if [[ -z "$port" ]]; then
-            port=8080
-        fi
-        mv src/main/java/com/htmake/reader/ReaderUIApplication.kt src/main/java/com/htmake/reader/ReaderUIApplication.kt.back
-        getVersion ./cli.gradle
-        ./gradlew -b cli.gradle assemble --info
-        if test $? -eq 0; then
-            shift
-            shift
-            mv src/main/java/com/htmake/reader/ReaderUIApplication.kt.back src/main/java/com/htmake/reader/ReaderUIApplication.kt
-            java -jar build/libs/reader-$version.jar --reader.server.port=$port $@
-        else
-            mv src/main/java/com/htmake/reader/ReaderUIApplication.kt.back src/main/java/com/htmake/reader/ReaderUIApplication.kt
-        fi
-    ;;
-    cli)
-        # 服务端打包命令
-        shift
-        export JAVA_HOME=$oldJAVAHome
-        mv src/main/java/com/htmake/reader/ReaderUIApplication.kt src/main/java/com/htmake/reader/ReaderUIApplication.kt.back
-        getVersion ./cli.gradle
-        ./gradlew -b cli.gradle $@
-        mv src/main/java/com/htmake/reader/ReaderUIApplication.kt.back src/main/java/com/htmake/reader/ReaderUIApplication.kt
-    ;;
-    yarn)
-        # yarn 快捷命令，默认 install
-        shift
-        cd web
-        yarn $@
-    ;;
+case $1 in
     web)
-        # 开发web页面
-        cd web
-        yarn serve
-    ;;
-    sync)
-        # 编译同步web资源
-        cd web
-        yarn sync
-    ;;
+        buildWeb
+        ;;
+    release)
+        buildWeb
+        cargo build --release
+        echo "done: target/release/reader"
+        ;;
     *)
-        echo "
-USAGE: ./build.sh build|run|win|linux|mac|serve|cli|yarn|web|sync
-
-build   调试打包
-run     桌面端编译运行，需要先执行 sync 命令编译同步web资源
-win     打包 windows 安装包
-linux   打包 linux 安装包
-mac     打包 mac 安装包
-serve   服务端编译运行
-cli     服务端打包命令
-yarn    web页面 yarn 快捷命令，默认 install
-web     开发web页面
-sync    编译同步web资源
-"
-    ;;
+        cargo build
+        echo "done: target/debug/reader"
+        ;;
 esac
-
-export JAVA_HOME=$oldJAVAHome

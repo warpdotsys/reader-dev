@@ -137,3 +137,29 @@ impl std::hash::Hash for BookChapter {
         self.url.hash(state);
     }
 }
+
+impl<'de> serde::Deserialize<'de> for BookChapter {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let v = serde_json::Value::deserialize(deserializer)?;
+        let gs = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|s| s.to_string());
+        let gi = |k: &str| v.get(k).and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(0);
+        let go = |k: &str| v.get(k).and_then(|x| x.as_i64());
+        Ok(BookChapter {
+            url: gs("url").unwrap_or_default(),
+            title: gs("title").unwrap_or_default(),
+            is_volume: v.get("isVolume").and_then(|x| x.as_bool()).unwrap_or(false),
+            base_url: gs("baseUrl").unwrap_or_default(),
+            book_url: gs("bookUrl").unwrap_or_default(),
+            index: gi("index"),
+            resource_url: gs("resourceUrl"),
+            tag: gs("tag"),
+            start: go("start"),
+            end: go("end"),
+            start_fragment_id: gs("startFragmentId"),
+            end_fragment_id: gs("endFragmentId"),
+            variable: gs("variable"),
+            user_name_space: gs("userNameSpace").unwrap_or_default(),
+            variable_map_cache: std::cell::RefCell::new(None),
+        })
+    }
+}

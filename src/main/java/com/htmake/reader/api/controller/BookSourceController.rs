@@ -833,9 +833,11 @@ impl BookSourceController {
                 continue;
             }
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                let response = await_result(|handler| {
-                    self.web_client.get_abs(&url).timeout(3000).send(handler);
-                });
+                // fix: blocking send 在 tokio 上下文会 panic → 独立线程 async GET
+                let response = match self.web_client.get_abs(&url).timeout(3000).async_get_text_in_thread() {
+                    Some(body) => crate::stubs::HttpResponse::new_ok(body),
+                    None => return,
+                };
                 let source_list = response.body_as_json_array();
                 if let Some(source_list) = source_list {
                     logger().info(format!("updateRemoteSourceSub link={}, result={}", url, self.save_user_book_sources(user_name_space.clone(), user.as_ref(), source_list).error_msg()));
@@ -899,16 +901,14 @@ impl BookSourceController {
         }
 
         // launch(MDCContext() + Dispatchers.IO) {
-        // fix: stubs send 仅接受 &dyn Fn（闭包需为 Fn 而非 FnMut）→ RefCell 内可变借用保持 Fn
+        // fix: 原 web_client blocking 在 tokio runtime 内会 panic → 独立线程 + 独立 tokio runtime 执行 async GET
+        let body = self.web_client.get_abs(&url).timeout(3000).async_get_text_in_thread();
         let return_data = std::cell::RefCell::new(return_data);
-        self.web_client.get_abs(&url).timeout(3000).send(&|it: SendResult| {
-            let body = it.result().and_then(|r| r.body_as_string());
-            if let Some(body) = body {
-                context.success(return_data.borrow_mut().set_data(Box::new(vec![body]), String::from("")));
-            } else {
-                context.success(return_data.borrow_mut().set_error_msg(String::from("远程书源链接错误")));
-            }
-        });
+        if let Some(body) = body {
+            context.success(return_data.borrow_mut().set_data(Box::new(vec![body]), String::from("")));
+        } else {
+            context.success(return_data.borrow_mut().set_error_msg(String::from("远程书源链接错误")));
+        }
         // }
     }
 

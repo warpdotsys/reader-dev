@@ -463,3 +463,54 @@ impl Converters {
         GSON::from_json_object::<ReadConfig>(json.unwrap_or_default()).get_or_null()
     }
 }
+
+// 手写 Deserialize（GSON 语义：缺失字段用默认值；RefCell 内部字段忽略）
+impl<'de> serde::Deserialize<'de> for Book {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let v = serde_json::Value::deserialize(deserializer)?;
+        let gs = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|s| s.to_string());
+        let gi = |k: &str| v.get(k).and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(0);
+        let gl = |k: &str| v.get(k).and_then(|x| x.as_i64()).unwrap_or(0);
+        let gb = |k: &str| v.get(k).and_then(|x| x.as_bool()).unwrap_or(false);
+        Ok(Book {
+            book_url: gs("bookUrl").unwrap_or_default(),
+            toc_url: gs("tocUrl").unwrap_or_default(),
+            origin: gs("origin").unwrap_or_else(|| BookType::local.to_string()),
+            origin_name: gs("originName").unwrap_or_default(),
+            name: gs("name").unwrap_or_default(),
+            author: gs("author").unwrap_or_default(),
+            r#type: gi("bookSourceType"),
+            kind: gs("kind"),
+            custom_tag: gs("customTag"),
+            cover_url: gs("coverUrl"),
+            custom_cover_url: gs("customCoverUrl"),
+            intro: gs("intro"),
+            custom_intro: gs("customIntro"),
+            charset: gs("charset"),
+            group: gl("group"),
+            latest_chapter_title: gs("latestChapterTitle"),
+            latest_chapter_time: gl("latestChapterTime"),
+            last_check_time: gl("lastCheckTime"),
+            last_check_count: gi("lastCheckCount"),
+            total_chapter_num: gi("totalChapterNum"),
+            dur_chapter_title: gs("durChapterTitle"),
+            dur_chapter_index: gi("durChapterIndex"),
+            dur_chapter_pos: gi("durChapterPos"),
+            dur_chapter_time: gl("durChapterTime"),
+            word_count: gs("wordCount"),
+            can_update: v.get("canUpdate").and_then(|x| x.as_bool()).unwrap_or(true),
+            order: gi("order"),
+            origin_order: gi("originOrder"),
+            use_replace_rule: gb("useReplaceRule"),
+            variable: gs("variable"),
+            read_config: std::cell::RefCell::new(None),
+            is_in_shelf: gb("isInShelf"),
+            last_check_error: gs("lastCheckError"),
+            info_html: gs("infoHtml"),
+            toc_html: gs("tocHtml"),
+            root_dir: gs("rootDir").unwrap_or_default(),
+            user_name_space: gs("userNameSpace").unwrap_or_default(),
+            variable_map_cache: std::cell::RefCell::new(None),
+        })
+    }
+}

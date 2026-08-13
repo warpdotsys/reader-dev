@@ -1,5 +1,24 @@
 # Update Log
 
+## v6.0.0
+
+### Features
+
+- 全量 Rust 转录（reader-dev legacy 分支）发布
+- 端到端验证 36 项：登录 / 书源（保存/列表/simple/发现页/禁用/删除/批量/远程导入）/ 搜索（单书源/多书源并发）/ 详情 / 目录 / 正文 / 书架（加入/读取/刷新/进度/分组/单书查询/移除）/ 书签 / 替换规则 / RSS / 阅读配置 / WebDAV（备份/文件操作）/ 封面下载
+- UI 主题适配 v5.2.4 设计风格（indigo 主色 #4f46e5、8px 圆角、浅色/深色两档，仅配色不改交互）
+- 新增 `--ui` 启动模式：启动后自动打开浏览器（应用版）；默认纯命令行服务模式（CLI 版）
+- 构建/发布：Docker 多平台镜像（amd64 / arm64 / 386）+ GitHub Release 多平台二进制（Linux / Windows × x64 / arm64 / x86）
+
+### Fixes
+
+- GSON 语义反序列化真实化（Book / SearchBook / BookChapter / BookSource / 规则结构体）
+- JsonArray 双重转义修复（DB 持久化 / 列表读取）
+- WebDAV 路由（段内通配）、MKCOL/PROPFIND 原始方法透传、send_file 文件读取
+- 封面下载 / 书籍缓存 / TTS 的 launch 闭包真实执行
+- 多字节字符串切片 panic（中文书源 key）、RefCell 双重借用 panic
+- blocking HTTP 在 async 上下文 panic → 独立线程 async GET
+
 ## v3.2.6
 
 ### Features

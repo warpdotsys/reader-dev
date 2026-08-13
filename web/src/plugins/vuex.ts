@@ -1,4 +1,4 @@
-import Vue from "vue";
+﻿import Vue from "vue";
 import Vuex from "vuex";
 import settings, { customFonts, syncConfigFiled } from "./config";
 import { setCache, getCache, removeCache } from "../plugins/cache";
@@ -48,7 +48,7 @@ export default new Vuex.Store<any>({
     userList: [].concat(defaultNS),
     userNS: "default",
     showManagerMode: false,
-    version: "v4.0.7",
+    version: "v6.0.0",
     filterRules: [],
     speechVoiceConfig: { ...settings.speechVoiceConfig },
     safeArea: {

@@ -443,17 +443,49 @@ pub fn set_instance_property(instance: &dyn std::any::Any, property_name: &str, 
 
 // fun Book.fillData(newBook: Book, keys: List<String>): Book {
 pub fn fill_data(this: Book, new_book: Book, keys: Vec<String>) -> Book {
-    // fix: Kotlin `keys.let { }` → for 循环
+    // fix: Kotlin `keys.let { }` → for 循环；字段级合并（原反射占位 property.unwrap() 会 panic）
+    let mut book = this;
     for key in keys {
-        let mut current = read_instance_property::<String>(&this, &key);
-        if current.is_empty() {
-            let cache_value = read_instance_property::<String>(&new_book, &key);
-            if !cache_value.is_empty() {
-                set_instance_property(&this, &key, Any::Str(cache_value));
+        match key.as_str() {
+            "name" => {
+                if book.name.is_empty() {
+                    book.name = new_book.name.clone();
+                }
             }
+            "author" => {
+                if book.author.is_empty() {
+                    book.author = new_book.author.clone();
+                }
+            }
+            "coverUrl" => {
+                if book.cover_url.as_ref().map_or(true, |s| s.is_empty()) {
+                    book.cover_url = new_book.cover_url.clone();
+                }
+            }
+            "tocUrl" => {
+                if book.toc_url.is_empty() {
+                    book.toc_url = new_book.toc_url.clone();
+                }
+            }
+            "intro" => {
+                if book.intro.as_ref().map_or(true, |s| s.is_empty()) {
+                    book.intro = new_book.intro.clone();
+                }
+            }
+            "latestChapterTitle" => {
+                if book.latest_chapter_title.as_ref().map_or(true, |s| s.is_empty()) {
+                    book.latest_chapter_title = new_book.latest_chapter_title.clone();
+                }
+            }
+            "wordCount" => {
+                if book.word_count.as_ref().map_or(true, |s| s.is_empty()) {
+                    book.word_count = new_book.word_count.clone();
+                }
+            }
+            _ => {}
         }
     }
-    return this;
+    return book;
 }
 
 // fun getRandomString(length: Int) : String {
@@ -739,19 +771,22 @@ pub fn parse_json_string_list(
                 if current_index > end_index {
                     break;
                 }
-                let mut item = JsonObject::new();
-                while parser.next_token() != JsonToken::END_OBJECT {
-                    let field_name = parser.current_name();
-                    parser.next_token();
-                    if fields.as_ref().unwrap().contains(&field_name) {
-                        item.put(&field_name, parser.value_as_string());
-                    } else if check_not_empty.as_ref().map(|s| s.contains(&field_name)).unwrap_or(false) {
-                        item.put(&field_name, !parser.value_as_string().is_empty());
-                    } else {
-                        parser.skip_children();
+            let mut item = crate::stubs::JsonObject::new();
+            let object_node = parser.read_value_as_object_node();
+            if let Some(f) = fields.as_ref() {
+                for (k, v) in &object_node.0 {
+                    if f.contains(k) {
+                        item.put(k, v);
                     }
                 }
-                result_list.add(item.to_string());
+            }
+            if let Some(ce) = check_not_empty.as_ref() {
+                for k in ce {
+                    let v = object_node.0.get(k).cloned().unwrap_or_default();
+                    item.put(k, !v.is_empty());
+                }
+            }
+            result_list.add(item.to_string());
             }
         }
         Ok(Some(result_list))

@@ -108,7 +108,8 @@ impl ReaderUIApplication {
     }
 
     pub fn boot(&mut self) {
-        launch(CoroutineContext, launch_args());
+        // fix: JavaFX LauncherImpl.launch 占位（Rust 版无 JavaFX，无需启动参数）
+        let _ = launch_args();
     }
 
     // override fun init()

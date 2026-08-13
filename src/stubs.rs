@@ -1022,7 +1022,8 @@ impl StringExt for String {
             .collect()
     }
     fn starts_with_ignore_case(&self, prefix: &str) -> bool {
-        self.len() >= prefix.len() && self[..prefix.len()].eq_ignore_ascii_case(prefix)
+        self.len() >= prefix.len()
+            && self.get(..prefix.len()).map_or(false, |s| s.eq_ignore_ascii_case(prefix))
     }
     fn contains_ignore_case(&self, needle: &str) -> bool {
         self.to_lowercase().contains(&needle.to_lowercase())
@@ -1540,7 +1541,24 @@ impl JsonObject {
     pub fn new_parsed(s: &str) -> JsonObject {
         JsonObject(s.to_string())
     }
-    pub fn put(&mut self, _key: &str, _value: impl std::fmt::Display) {}
+    pub fn put(&mut self, key: &str, value: impl std::fmt::Display) {
+        let s = value.to_string();
+        let val: serde_json::Value = if s == "true" {
+            serde_json::Value::Bool(true)
+        } else if s == "false" {
+            serde_json::Value::Bool(false)
+        } else if let Ok(i) = s.parse::<i64>() {
+            serde_json::Value::Number(i.into())
+        } else {
+            serde_json::Value::String(s)
+        };
+        let mut obj = serde_json::from_str::<serde_json::Value>(&self.0)
+            .unwrap_or_else(|_| serde_json::Value::Object(serde_json::Map::new()));
+        if let Some(m) = obj.as_object_mut() {
+            m.insert(key.to_string(), val);
+            self.0 = obj.to_string();
+        }
+    }
     pub fn to_string(&self) -> String {
         self.0.clone()
     }
@@ -1597,9 +1615,12 @@ impl JsonObject {
                     .collect())
             })
     }
-    // Kotlin JsonObject.mapTo(Class<T>)（GSON 反序列化占位，恒返回 None）
-    pub fn map_to<T>(&self) -> Option<T> {
-        None
+    // Kotlin JsonObject.mapTo(Class<T>)（GSON 反序列化）
+    pub fn map_to<T>(&self) -> Option<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        serde_json::from_str::<T>(&self.0).ok()
     }
     // Kotlin JsonObject.mapFrom(obj)（GSON 序列化占位）
     pub fn map_from<T>(value: T) -> JsonObject
@@ -1625,13 +1646,18 @@ impl JsonArray {
     }
     // Kotlin `JsonArray(String)` 解析构造
     pub fn new_parsed(s: &str) -> JsonArray {
-        JsonArray(vec![s.to_string()])
+        Self::from_json(s.to_string()).unwrap_or_else(|| JsonArray(vec![s.to_string()]))
     }
     pub fn add(&mut self, value: impl std::fmt::Display) {
         self.0.push(value.to_string());
     }
     pub fn to_string(&self) -> String {
-        serde_json::to_string(&self.0).unwrap_or_default()
+        let vals: Vec<serde_json::Value> = self
+            .0
+            .iter()
+            .map(|s| serde_json::from_str::<serde_json::Value>(s).unwrap_or_else(|_| serde_json::Value::String(s.clone())))
+            .collect();
+        serde_json::to_string(&vals).unwrap_or_default()
     }
     // Kotlin JsonArray(Collection<JsonObject>)（bookSourceList 重建）
     pub fn from_list(list: Vec<JsonObject>) -> JsonArray {
@@ -2979,7 +3005,11 @@ impl JsonParser {
             if let Ok(v) = serde_json::from_str::<serde_json::Value>(s) {
                 if let Some(obj) = v.as_object() {
                     for (k, val) in obj {
-                        map.insert(k.clone(), val.to_string());
+                        let raw = match val {
+                            serde_json::Value::String(s) => s.clone(),
+                            other => other.to_string(),
+                        };
+                        map.insert(k.clone(), raw);
                     }
                 }
             }
@@ -2996,7 +3026,11 @@ impl ObjectNode {
         self.0.remove(key);
     }
     pub fn to_string(&self) -> String {
-        serde_json::to_string(&self.0).unwrap_or_default()
+        let mut obj = serde_json::Map::new();
+        for (k, v) in &self.0 {
+            obj.insert(k.clone(), serde_json::from_str::<serde_json::Value>(v).unwrap_or_else(|_| serde_json::Value::String(v.clone())));
+        }
+        serde_json::Value::Object(obj).to_string()
     }
 }
 
@@ -3602,7 +3636,12 @@ pub fn run_catching<T, F: FnOnce() -> T>(block: F) -> Result<T, StubError> {
     Ok(block())
 }
 // fix: Kotlin `launch(context) { }` → (CoroutineContext, 闭包/Future)，返回 Job（RestVerticle job 赋值使用）
-pub fn launch<T>(_ctx: CoroutineContext, _f: T) -> Job {
+//      原占位不执行闭包（封面下载/书籍缓存/TTS 全失效）→ 同步执行 + catch_unwind
+pub fn launch<T>(_ctx: CoroutineContext, f: T) -> Job
+where
+    T: FnOnce(),
+{
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
     Job
 }
 pub fn with_context<F: FnOnce()>(_ctx: CoroutineContext, f: F) {
@@ -3751,6 +3790,9 @@ impl HttpResponse {
     pub fn new() -> HttpResponse {
         HttpResponse { status: 0, body: String::new() }
     }
+    pub fn new_ok(body: String) -> HttpResponse {
+        HttpResponse { status: 200, body }
+    }
     pub fn body_as_json_array(&self) -> Option<JsonArray> {
         JsonArray::from_json(self.body.clone())
     }
@@ -3777,14 +3819,79 @@ impl WebRequest {
         self.timeout_ms = Some(millis);
         self
     }
+    /// 纯 async GET（tokio 环境安全；blocking 版在 async 上下文会 panic）
+    pub async fn async_get_text(&self) -> Option<String> {
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_millis(self.timeout_ms.unwrap_or(3000)))
+            .build()
+            .ok()?;
+        let resp = client.get(&self.url).send().await.ok()?;
+        resp.text().await.ok()
+    }
+    /// 独立线程 + 独立 tokio runtime 执行 async GET 二进制（pollster/同步上下文均安全）
+    pub fn async_get_bytes_in_thread(&self) -> Option<Vec<u8>> {
+        let url = self.url.clone();
+        let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .ok()?;
+            rt.block_on(async {
+                let client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .build()
+                    .ok()?;
+                let resp = client.get(&url).send().await.ok()?;
+                resp.bytes().await.ok().map(|b| b.to_vec())
+            })
+        })
+        .join()
+        .ok()
+        .flatten()
+    }
+    /// 独立线程 + 独立 tokio runtime 执行 async GET（pollster/同步上下文均安全）
+    pub fn async_get_text_in_thread(&self) -> Option<String> {
+        let url = self.url.clone();
+        let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .ok()?;
+            rt.block_on(async {
+                let client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .build()
+                    .ok()?;
+                let resp = client.get(&url).send().await.ok()?;
+                resp.text().await.ok()
+            })
+        })
+        .join()
+        .ok()
+        .flatten()
+    }
     pub fn send(&self, handler: &dyn Fn(SendResult)) {
-        let result = self.client.as_ref().and_then(|c| {
-            let mut req = c.get(&self.url);
-            if let Some(t) = self.timeout_ms {
-                req = req.timeout(std::time::Duration::from_millis(t));
-            }
-            req.send().ok()
+        // fix: reqwest::blocking 在 tokio current_thread runtime 内会 panic，
+        //      请求移到独立线程执行，结果经 channel 回传主线程再调 handler
+        let (tx, rx) = std::sync::mpsc::channel::<Option<reqwest::blocking::Response>>();
+        let client = self.client.clone();
+        let url = self.url.clone();
+        let timeout_ms = self.timeout_ms;
+        std::thread::spawn(move || {
+            let result = client.and_then(|c| {
+                let mut req = c.get(&url);
+                if let Some(t) = timeout_ms {
+                    req = req.timeout(std::time::Duration::from_millis(t));
+                }
+                req.send().ok()
+            });
+            let _ = tx.send(result);
         });
+        let result = rx
+            .recv_timeout(std::time::Duration::from_secs(30))
+            .unwrap_or(None);
         let resp = result.map(|r| HttpResponse {
             status: r.status().as_u16(),
             body: r.text().unwrap_or_default(),
@@ -4067,93 +4174,6 @@ fn get_json_str(v: &serde_json::Value, key: &str) -> Option<String> {
         serde_json::Value::Bool(b) => Some(b.to_string()),
         _ => None,
     })
-}
-
-// ---- 规则实体 serde 反序列化（原 Kotlin 使用 Gson；规则结构体未 derive serde，故在 stubs 补充 impl） ----
-
-impl<'de> serde::Deserialize<'de> for crate::io_legado_app_data_entities_rule_explorerule::ExploreRule {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let v = serde_json::Value::deserialize(deserializer)?;
-        Ok(crate::io_legado_app_data_entities_rule_explorerule::ExploreRule {
-            book_list: get_json_str(&v, "bookList"),
-            name: get_json_str(&v, "name"),
-            author: get_json_str(&v, "author"),
-            intro: get_json_str(&v, "intro"),
-            kind: get_json_str(&v, "kind"),
-            last_chapter: get_json_str(&v, "lastChapter"),
-            update_time: get_json_str(&v, "updateTime"),
-            book_url: get_json_str(&v, "bookUrl"),
-            cover_url: get_json_str(&v, "coverUrl"),
-            word_count: get_json_str(&v, "wordCount"),
-        })
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for crate::io_legado_app_data_entities_rule_searchrule::SearchRule {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let v = serde_json::Value::deserialize(deserializer)?;
-        Ok(crate::io_legado_app_data_entities_rule_searchrule::SearchRule {
-            book_list: get_json_str(&v, "bookList"),
-            name: get_json_str(&v, "name"),
-            author: get_json_str(&v, "author"),
-            intro: get_json_str(&v, "intro"),
-            kind: get_json_str(&v, "kind"),
-            last_chapter: get_json_str(&v, "lastChapter"),
-            update_time: get_json_str(&v, "updateTime"),
-            book_url: get_json_str(&v, "bookUrl"),
-            cover_url: get_json_str(&v, "coverUrl"),
-            word_count: get_json_str(&v, "wordCount"),
-        })
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for crate::io_legado_app_data_entities_rule_bookinforule::BookInfoRule {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let v = serde_json::Value::deserialize(deserializer)?;
-        Ok(crate::io_legado_app_data_entities_rule_bookinforule::BookInfoRule {
-            init: get_json_str(&v, "init"),
-            name: get_json_str(&v, "name"),
-            author: get_json_str(&v, "author"),
-            intro: get_json_str(&v, "intro"),
-            kind: get_json_str(&v, "kind"),
-            last_chapter: get_json_str(&v, "lastChapter"),
-            update_time: get_json_str(&v, "updateTime"),
-            cover_url: get_json_str(&v, "coverUrl"),
-            toc_url: get_json_str(&v, "tocUrl"),
-            word_count: get_json_str(&v, "wordCount"),
-            can_re_name: get_json_str(&v, "canReName"),
-        })
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for crate::io_legado_app_data_entities_rule_tocrule::TocRule {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let v = serde_json::Value::deserialize(deserializer)?;
-        Ok(crate::io_legado_app_data_entities_rule_tocrule::TocRule {
-            pre_update_js: get_json_str(&v, "preUpdateJs"),
-            chapter_list: get_json_str(&v, "chapterList"),
-            chapter_name: get_json_str(&v, "chapterName"),
-            chapter_url: get_json_str(&v, "chapterUrl"),
-            is_volume: get_json_str(&v, "isVolume"),
-            is_vip: get_json_str(&v, "isVip"),
-            update_time: get_json_str(&v, "updateTime"),
-            next_toc_url: get_json_str(&v, "nextTocUrl"),
-        })
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for crate::io_legado_app_data_entities_rule_contentrule::ContentRule {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let v = serde_json::Value::deserialize(deserializer)?;
-        Ok(crate::io_legado_app_data_entities_rule_contentrule::ContentRule {
-            content: get_json_str(&v, "content"),
-            next_content_url: get_json_str(&v, "nextContentUrl"),
-            web_js: get_json_str(&v, "webJs"),
-            source_regex: get_json_str(&v, "sourceRegex"),
-            replace_regex: get_json_str(&v, "replaceRegex"),
-            image_style: get_json_str(&v, "imageStyle"),
-        })
-    }
 }
 
 // ---- GSON 便捷构造（SourceAnalyzer 调用 GSON::new() 取得 Gson 实例） ----
@@ -8488,7 +8508,9 @@ impl MultiMap {
     pub fn new() -> MultiMap { MultiMap(std::collections::HashMap::new()) }
     pub fn add(&mut self, k: &str, v: &str) { self.0.insert(k.to_string(), v.to_string()); }
     pub fn get(&self, k: &str) -> Option<String> { self.0.get(k).cloned() }
-    pub fn to_string(&self) -> String { serde_json::to_string(&self.0).unwrap_or_default() }
+    pub fn to_string(&self) -> String {
+        serde_json::to_string(&self.0).unwrap_or_default()
+    }
 }
 
 pub struct CoroutineExceptionHandler;
@@ -8609,7 +8631,9 @@ impl From<crate::io_legado_app_data_entities_book::Book> for Any {
     fn from(v: crate::io_legado_app_data_entities_book::Book) -> Any { Any::Str(v.name.clone()) }
 }
 impl From<crate::io_legado_app_data_entities_bookchapter::BookChapter> for Any {
-    fn from(v: crate::io_legado_app_data_entities_bookchapter::BookChapter) -> Any { Any::Str(v.url.clone()) }
+    fn from(v: crate::io_legado_app_data_entities_bookchapter::BookChapter) -> Any {
+        Any::Str(crate::stubs::book_chapter_to_json(&v).to_string())
+    }
 }
 impl From<crate::io_legado_app_data_entities_searchbook::SearchBook> for Any {
     fn from(v: crate::io_legado_app_data_entities_searchbook::SearchBook) -> Any { Any::Str(v.book_url.clone()) }
@@ -8619,12 +8643,20 @@ impl From<crate::io_legado_app_data_entities_searchresult::SearchResult> for Any
 }
 impl From<Vec<crate::io_legado_app_data_entities_bookchapter::BookChapter>> for Any {
     fn from(v: Vec<crate::io_legado_app_data_entities_bookchapter::BookChapter>) -> Any {
-        Any::List(v.into_iter().map(|c| Any::Str(c.url.clone())).collect())
+        let items: Vec<String> = v
+            .iter()
+            .map(|c| crate::stubs::book_chapter_to_json(c).to_string())
+            .collect();
+        Any::JsonArray(crate::stubs::JsonArray(items))
     }
 }
 impl From<Vec<crate::io_legado_app_data_entities_searchbook::SearchBook>> for Any {
     fn from(v: Vec<crate::io_legado_app_data_entities_searchbook::SearchBook>) -> Any {
-        Any::List(v.into_iter().map(|b| Any::Str(b.book_url.clone())).collect())
+        let items: Vec<String> = v
+            .iter()
+            .map(|b| crate::stubs::search_book_to_json(b).to_string())
+            .collect();
+        Any::JsonArray(crate::stubs::JsonArray(items))
     }
 }
 impl From<Vec<crate::io_legado_app_data_entities_searchresult::SearchResult>> for Any {
@@ -8653,14 +8685,25 @@ impl CoroutineContext {
     pub fn cancel(&self) {}
 }
 impl ObjectNode {
-    pub fn get(&self, _key: &str) -> Option<JsonNode> { None }
+    pub fn get(&self, key: &str) -> Option<JsonNode> {
+        self.0.get(key).map(|s| {
+            serde_json::from_str::<serde_json::Value>(s)
+                .map(JsonNode)
+                .unwrap_or_else(|_| JsonNode(serde_json::Value::String(s.clone())))
+        })
+    }
 }
 
 pub trait JsonObjectMapTo {
-    fn map_to<T>(self) -> Option<T>;
+    fn map_to<T>(self) -> Option<T>
+    where
+        T: serde::de::DeserializeOwned;
 }
 impl JsonObjectMapTo for Option<JsonObject> {
-    fn map_to<T>(self) -> Option<T> {
+    fn map_to<T>(self) -> Option<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
         self.and_then(|o| crate::stubs::JsonObject::map_to(&o))
     }
 }
@@ -8731,11 +8774,18 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<JsonObject>() { return json_object_to_value(v); }
     if let Some(v) = d.downcast_ref::<JsonArray>() { return json_array_to_value(v); }
     if let Some(v) = d.downcast_ref::<HashMap<String, Box<dyn std::any::Any>>>() { return any_map_boxed_to_value(v); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, i32>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, i64>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, u32>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, usize>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, f64>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, String>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(x))).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<Box<dyn std::any::Any>>>() { return any_boxed_list_to_value(v); }
     if let Some(v) = d.downcast_ref::<Vec<Any>>() { return any_list_to_value(v); }
     if let Some(v) = d.downcast_ref::<Vec<String>>() { return vec_string_to_value(v); }
     if let Some(v) = d.downcast_ref::<Vec<i32>>() { return Value::Array(v.iter().map(|x| json!(*x)).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<serde_json::Value>>() { return Value::Array(v.clone()); }
+    if let Some(v) = d.downcast_ref::<HashMap<String, crate::stubs::Any>>() { return any_map_to_value(v); }
     if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Box<dyn std::any::Any>>>>() { return Value::Array(v.iter().map(any_map_boxed_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Any>>>() { return Value::Array(v.iter().map(any_map_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<JsonObject>>() { return Value::Array(v.iter().map(json_object_to_value).collect()); }

@@ -196,3 +196,34 @@ impl PartialOrd for SearchBook {
         Some(self.cmp(other))
     }
 }
+
+impl<'de> serde::Deserialize<'de> for SearchBook {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let v = serde_json::Value::deserialize(deserializer)?;
+        let gs = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|s| s.to_string());
+        let gi = |k: &str| v.get(k).and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(0);
+        let gl = |k: &str| v.get(k).and_then(|x| x.as_i64()).unwrap_or(0);
+        Ok(SearchBook {
+            book_url: gs("bookUrl").unwrap_or_default(),
+            origin: gs("origin").unwrap_or_default(),
+            origin_name: gs("originName").unwrap_or_default(),
+            r#type: gi("type"),
+            name: gs("name").unwrap_or_default(),
+            author: gs("author").unwrap_or_default(),
+            kind: gs("kind"),
+            cover_url: gs("coverUrl"),
+            intro: gs("intro"),
+            word_count: gs("wordCount"),
+            latest_chapter_title: gs("latestChapterTitle"),
+            toc_url: gs("tocUrl").unwrap_or_default(),
+            time: gl("time"),
+            variable: gs("variable"),
+            origin_order: gi("originOrder"),
+            user_name_space: gs("userNameSpace").unwrap_or_default(),
+            info_html: gs("infoHtml"),
+            toc_html: gs("tocHtml"),
+            origins: None,
+            variable_map_cache: std::cell::RefCell::new(None),
+        })
+    }
+}

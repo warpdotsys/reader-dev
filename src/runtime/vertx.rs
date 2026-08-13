@@ -15,6 +15,7 @@ pub type RouteStepFn = Box<dyn FnMut(&mut RoutingContext)>;
 #[derive(Clone, Default)]
 pub struct HttpRequest {
     pub method: HttpMethod,
+    pub raw_method_str: String,
     pub path: String,
     pub absolute_uri: String,
     pub query: HashMap<String, String>,
@@ -47,7 +48,11 @@ impl HttpRequest {
         self.query.get(name).cloned().or_else(|| self.path_params.get(name).cloned())
     }
     pub fn raw_method(&self) -> String {
-        format!("{:?}", self.method)
+        if self.raw_method_str.is_empty() {
+            format!("{:?}", self.method)
+        } else {
+            self.raw_method_str.clone()
+        }
     }
     pub fn query_param(&self, name: &str) -> Option<String> {
         self.query.get(name).cloned()

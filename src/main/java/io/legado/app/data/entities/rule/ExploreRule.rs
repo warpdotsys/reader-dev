@@ -13,6 +13,8 @@ use crate::prelude::*;
 //     override var coverUrl: String? = None,
 //     override var wordCount: String? = None
 // ) : BookListRule
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExploreRule {
     pub book_list: Option<String>,
     pub name: Option<String>,

@@ -1,19 +1,19 @@
-name: Build Docker Image
+name: CI Build
+
 on:
   push:
-    branches:
-      - master
+    branches: [master, rust, legacy]
+  pull_request:
+    branches: [master, rust, legacy]
+
 jobs:
-  build:
-    if: github.repository == 'hectorqin/reader'
+  check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: hectorqin/reader-basic
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        snapshot: true
-        tags: "test"
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Check
+        run: cargo check

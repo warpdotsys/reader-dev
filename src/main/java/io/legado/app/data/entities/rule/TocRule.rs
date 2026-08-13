@@ -11,6 +11,8 @@ use crate::prelude::*;
 //     var updateTime: String? = None,
 //     var nextTocUrl: String? = None
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TocRule {
     pub pre_update_js: Option<String>,
     pub chapter_list: Option<String>,

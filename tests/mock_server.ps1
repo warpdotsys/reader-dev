@@ -13,10 +13,16 @@ while ($true) {
     try {
         if ($path -eq '/search') {
             $body = '{"books":[{"name":"测试之书","author":"作者甲","bookUrl":"http://localhost:18999/book/1","intro":"一本用于测试的书","coverUrl":"http://localhost:18999/cover.jpg"},{"name":"测试第二本","author":"作者乙","bookUrl":"http://localhost:18999/book/2","intro":"第二本测试书"}]}'
+        } elseif ($path -eq '/remote-source.json') {
+            $body = '[{"bookSourceUrl":"http://localhost:18999","bookSourceName":"远程导入源","bookSourceType":0,"searchUrl":"http://localhost:18999/search?key={{key}}","ruleSearch":{"bookList":"$.books","name":"$.name","author":"$.author","bookUrl":"$.bookUrl"}}]'
+        } elseif ($path -eq '/explore') {
+            $body = '{"books":[{"name":"发现之书","author":"作者丙","bookUrl":"http://localhost:18999/book/3","intro":"发现页书籍"}]}'
         } elseif ($path -eq '/book/1') {
             $body = '{"name":"测试之书","author":"作者甲","intro":"一本用于测试的书","tocUrl":"http://localhost:18999/toc/1"}'
         } elseif ($path -eq '/book/2') {
             $body = '{"name":"测试第二本","author":"作者乙","intro":"第二本测试书","tocUrl":"http://localhost:18999/toc/2"}'
+        } elseif ($path -eq '/cover.jpg') {
+            $body = 'COVERBINARYDATA123'
         } elseif ($path -eq '/toc/1') {
             $body = '{"chapters":[{"title":"第一章 开始","url":"http://localhost:18999/content/1"},{"title":"第二章 继续","url":"http://localhost:18999/content/2"}]}'
         } elseif ($path -eq '/content/1' -or $path -eq '/content/2') {

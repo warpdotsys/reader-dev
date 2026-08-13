@@ -14,6 +14,8 @@ use crate::prelude::*;
 //     var wordCount: String? = None,
 //     var canReName: String? = None
 // )
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BookInfoRule {
     pub init: Option<String>,
     pub name: Option<String>,

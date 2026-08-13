@@ -25,13 +25,12 @@ fn get_storage(base: &str, names: Vec<String>) -> Option<String> {
 fn save_storage(base: &str, names: Vec<String>, value: Box<dyn std::any::Any>) {
     let mut full = vec![String::from(base)];
     full.extend(names);
-    // fix: 真实 JSON 序列化（Any/实体 downcast → serde_json）
-    crate::com_htmake_reader_utils_vertext::save_storage(
-        &full,
-        crate::stubs::Any::Str(crate::stubs::any_to_json_value(value.as_ref()).to_string()),
-        false,
-        ".json",
-    );
+    // fix: 真实 JSON 序列化（Any/实体 downcast → serde_json）；Any 本身直接透传避免二次序列化
+    let any_value = match value.downcast::<crate::stubs::Any>() {
+        Ok(v) => *v,
+        Err(v) => crate::stubs::Any::Str(crate::stubs::any_to_json_value(v.as_ref()).to_string()),
+    };
+    crate::com_htmake_reader_utils_vertext::save_storage(&full, any_value, false, ".json");
 }
 
 // private val logger = KotlinLogging.logger {}

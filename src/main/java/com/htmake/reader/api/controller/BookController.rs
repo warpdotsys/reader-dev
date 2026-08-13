@@ -62,9 +62,9 @@ fn rd_json(return_data: &ReturnData) -> String {
             .unwrap_or_else(|| "null".to_string())
     )
 }
-// fix: `cacheInfo?.toMap()?.toDataClass()` 占位（Book 无 Deserialize 实现，恒返回 None）
-fn cache_to_book(_s: Option<String>) -> Option<Book> {
-    None
+// fix: `cacheInfo?.toMap()?.toDataClass()`（Book 已实现 Deserialize，直接解析）
+fn cache_to_book(s: Option<String>) -> Option<Book> {
+    s.and_then(|json| serde_json::from_str::<Book>(&json).ok())
 }
 
 // fix: BaseController.limit_concurrent 的 handler 为 fn 指针（无法捕获闭包），本地顺序执行版
@@ -344,20 +344,23 @@ impl BookController {
                 context.response().set_status_code(404).end(String::new());
             }),
             || {
-                let request = self.web_client.get_abs(&cover_url).timeout(10000);
-                request.send(&|it: crate::stubs::SendResult| {
-                    if let Some(resp) = it.result() {
-                        let body_bytes = resp.body.into_bytes();
-                        if !body_bytes.is_empty() {
-                            let mut res = context2.response();
-                            res.put_header("Cache-Control", "86400");
-                            cache_file.write_bytes(body_bytes);
-                            res.send_file(cache_file.to_string());
-                        } else {
-                            context2.response().set_status_code(404).end(String::new());
-                        }
+                let body_bytes = self
+                    .web_client
+                    .get_abs(&cover_url)
+                    .timeout(10000)
+                    .async_get_bytes_in_thread();
+                if let Some(body_bytes) = body_bytes {
+                    if !body_bytes.is_empty() {
+                        let mut res = context2.response();
+                        res.put_header("Cache-Control", "86400");
+                        cache_file.write_bytes(body_bytes);
+                        res.send_file(cache_file.to_string());
+                    } else {
+                        context2.response().set_status_code(404).end(String::new());
                     }
-                });
+                } else {
+                    context2.response().set_status_code(404).end(String::new());
+                }
             },
         );
     }
@@ -2379,13 +2382,21 @@ impl BookController {
                 }
             }
             if book.is_in_shelf {
+                let chapter_json = crate::stubs::JsonArray::from_list(
+                    new_chapter_list.iter().map(crate::stubs::JsonObject::map_from).collect(),
+                )
+                .to_string();
                 self.base.save_user_storage(
                     &user_name_space,
                     get_relative_path(&[book.name.clone() + "_" + &book.author, md5_encode.clone()]),
-                    Box::new(crate::stubs::Any::Str(String::new())), // fix: 原保存 newChapterList 序列化占位
+                    Box::new(crate::stubs::Any::Str(chapter_json)),
                 );
             } else {
-                book_chapters_cache.put(&cache_key, "", 3600); // fix: 原 jsonEncode(newChapterList) 占位
+                let chapter_json = crate::stubs::JsonArray::from_list(
+                    new_chapter_list.iter().map(crate::stubs::JsonObject::map_from).collect(),
+                )
+                .to_string();
+                book_chapters_cache.put(&cache_key, &chapter_json, 3600);
             }
             self.save_shelf_book_latest_chapter(book.clone(), new_chapter_list.clone(), user_name_space, mutex).await;
             return new_chapter_list;
@@ -2469,7 +2480,9 @@ impl BookController {
             if let Some(m) = &mutex {
                 m.lock_sync();
             }
-            crate::stubs::block_on(self.edit_shelf_book(book_cell.borrow().clone(), user_name_space.clone(), |mut exist_book: Book| {
+            // fix: borrow guard 存活到 edit_shelf_book 调用结束（含闭包内 borrow_mut），先取副本释放借用
+            let book_clone = book_cell.borrow().clone();
+            crate::stubs::block_on(self.edit_shelf_book(book_clone, user_name_space.clone(), |mut exist_book: Book| {
                 if book_chapter_list.len() > 0 {
                     let book_chapter = book_chapter_list.last().cloned().unwrap_or_default();
                     exist_book.latest_chapter_title = Some(book_chapter.title);

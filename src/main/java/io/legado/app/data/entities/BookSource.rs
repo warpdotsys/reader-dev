@@ -357,3 +357,57 @@ impl Converters {
         crate::stubs::GSON::from_json_object::<ContentRule>(json.unwrap_or_default()).get_or_null()
     }
 }
+
+impl<'de> serde::Deserialize<'de> for BookSource {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let v = serde_json::Value::deserialize(deserializer)?;
+        let gs = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|s| s.to_string());
+        let gi = |k: &str| v.get(k).and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(0);
+        let gl = |k: &str| v.get(k).and_then(|x| x.as_i64()).unwrap_or(0);
+        let gb = |k: &str| v.get(k).and_then(|x| x.as_bool()).unwrap_or(false);
+        let gob = |k: &str| v.get(k).and_then(|x| x.as_bool());
+        let go = |k: &str, t: std::marker::PhantomData<fn()>| -> Option<Option<String>> { None };
+        let _ = go("", std::marker::PhantomData::<fn()>);
+        let orule = |k: &str, g: fn(serde_json::Value) -> serde_json::Result<Option<String>>| -> Option<String> { None };
+        let _ = orule("", |_| Ok(None));
+        let rule_opt = |k: &str, ty: u8| -> Option<serde_json::Value> {
+            v.get(k).cloned().filter(|x| match ty { 0 => serde_json::from_value::<SearchRule>(x.clone()).is_ok(), 1 => serde_json::from_value::<BookInfoRule>(x.clone()).is_ok(), 2 => serde_json::from_value::<TocRule>(x.clone()).is_ok(), 3 => serde_json::from_value::<ContentRule>(x.clone()).is_ok(), _ => serde_json::from_value::<ExploreRule>(x.clone()).is_ok() })
+        };
+        let _ = rule_opt("", 0);
+        Ok(BookSource {
+            book_source_url: gs("bookSourceUrl").unwrap_or_default(),
+            book_source_name: gs("bookSourceName").unwrap_or_default(),
+            book_source_group: gs("bookSourceGroup"),
+            book_source_type: gi("bookSourceType"),
+            book_url_pattern: gs("bookUrlPattern"),
+            custom_order: gi("customOrder"),
+            enabled: gb("enabled"),
+            enabled_explore: gb("enabledExplore"),
+            enabled_cookie_jar: gob("enabledCookieJar"),
+            concurrent_rate: gs("concurrentRate"),
+            header: gs("header"),
+            login_url: gs("loginUrl"),
+            login_ui: gs("loginUi"),
+            login_check_js: gs("loginCheckJs"),
+            book_source_comment: gs("bookSourceComment"),
+            variable_comment: gs("variableComment"),
+            last_update_time: gl("lastUpdateTime"),
+            respond_time: gl("respondTime"),
+            weight: gi("weight"),
+            explore_url: gs("exploreUrl"),
+            rule_explore: v.get("ruleExplore").and_then(|x| serde_json::from_value::<ExploreRule>(x.clone()).ok()),
+            search_url: gs("searchUrl"),
+            rule_search: v.get("ruleSearch").and_then(|x| serde_json::from_value::<SearchRule>(x.clone()).ok()),
+            rule_book_info: v.get("ruleBookInfo").and_then(|x| serde_json::from_value::<BookInfoRule>(x.clone()).ok()),
+            rule_toc: v.get("ruleToc").and_then(|x| serde_json::from_value::<TocRule>(x.clone()).ok()),
+            rule_content: v.get("ruleContent").and_then(|x| serde_json::from_value::<ContentRule>(x.clone()).ok()),
+            user_name_space: gs("userNameSpace").unwrap_or_default(),
+            debug_log: None,
+            search_rule_v: None,
+            explore_rule_v: None,
+            book_info_rule_v: None,
+            toc_rule_v: None,
+            content_rule_v: None,
+        })
+    }
+}

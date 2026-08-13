@@ -42,3 +42,4 @@ impl Default for Bookmark {
         }
     }
 }
+

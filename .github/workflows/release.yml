@@ -1,76 +1,168 @@
-name: Publish Docker Multi-Platform Images
+name: Publish Release
 
 on:
-  # push:
-  #   tags:
-  #     - 'v**'
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  docker:
-    if: github.repository == 'hectorqin/reader'
+  build-web:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Setup node
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '14'
-      -
-        name: Build web
-        run: cd web && npm install && npm run build
-      -
-        name: Setup Java
-        uses: actions/setup-java@v2
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      - name: Build web
+        working-directory: web
+        run: |
+          npm ci || npm install
+          npm run build
+      - uses: actions/upload-artifact@v4
         with:
-          distribution: 'temurin'
-          java-version: '8'
-          cache: 'gradle'
-      -
-        name: Build Java
-        run:
-          mv ./web/dist ./src/main/resources/web && rm src/main/java/com/htmake/reader/ReaderUIApplication.kt && gradle -b cli.gradle assemble --info && mv ./build/libs/*.jar ./reader.jar
-      -
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v3
+          name: web-dist
+          path: web/dist
+
+  build-binaries:
+    needs: build-web
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            name: linux-x64
+            ext: tar.gz
+          - target: aarch64-unknown-linux-gnu
+            name: linux-arm64
+            ext: tar.gz
+          - target: i686-unknown-linux-gnu
+            name: linux-x86
+            ext: tar.gz
+          - target: x86_64-pc-windows-gnu
+            name: windows-x64
+            ext: zip
+          - target: aarch64-pc-windows-gnu
+            name: windows-arm64
+            ext: zip
+          - target: i686-pc-windows-gnu
+            name: windows-x86
+            ext: zip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v1
         with:
-          # list of Docker images to use as base name for tags
-          images: |
-            hectorqin/reader-basic
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ !contains(github.ref, 'beta') }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
+          version: 0.13.0
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      - name: Install cargo-zigbuild
+        run: |
+          pip install cargo-zigbuild || cargo install cargo-zigbuild
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: src/main/resources/web
+      - name: Build release (${{ matrix.target }})
+        run: cargo zigbuild --release --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_DIR: target
+      - name: Package
+        shell: bash
+        run: |
+          VERSION=$(grep -E '^version = ' Cargo.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          mkdir -p package/reader-$VERSION
+          BIN=target/${{ matrix.target }}/release/reader
+          if [ "${{ matrix.ext }}" = "zip" ]; then BIN="$BIN.exe"; fi
+          cp "$BIN" package/reader-$VERSION/
+          cp README.md package/reader-$VERSION/
+          cd package
+          if [ "${{ matrix.ext }}" = "zip" ]; then
+            (cd reader-$VERSION && zip -r ../reader-$VERSION-${{ matrix.name }}.zip .)
+          else
+            tar -czf reader-$VERSION-${{ matrix.name }}.tar.gz reader-$VERSION
+          fi
+          ls -la
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.name }}
+          path: package/reader-*.tar.gz
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.name }}
+          path: package/reader-*.zip
+          if-no-files-found: error
+
+  docker:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v2
+        continue-on-error: true
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ vars.DOCKER_IMAGE || 'warpdotsys/reader' }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern=v{{major}}
+            type=raw,value=latest,enable=${{ !contains(github.ref, 'beta') }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./.github/workflows/Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/386
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: |
-            linux/amd64
-            linux/arm64
-            linux/arm/v6
-            linux/arm/v7
-            linux/386
-            linux/ppc64le
-            linux/s390x
+
+  release:
+    needs: [build-binaries, docker]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: List artifacts
+        run: ls -la artifacts
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          generate_release_notes: true

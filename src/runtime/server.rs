@@ -25,6 +25,18 @@ fn convert_path(path: &str) -> String {
     path.to_string()
 }
 
+/// 段内通配（如 /reader3/webdav*）拆成 axum 可表达的多个路径：
+/// 子路径 /reader3/webdav/{*rest} + 前缀自身 /reader3/webdav
+fn convert_paths(path: &str) -> Vec<String> {
+    let base = convert_path(path);
+    if base == path && path.contains('*') {
+        let idx = path.find('*').unwrap();
+        let prefix = &path[..idx];
+        return vec![format!("{}/{{*rest}}", prefix), prefix.to_string()];
+    }
+    vec![base]
+}
+
 fn url_decode(s: &str) -> String {
     percent_encoding::percent_decode_str(s).decode_utf8_lossy().to_string()
 }
@@ -177,6 +189,7 @@ fn execute_rules(
     let mut ctx = crate::stubs::io::vertx::RoutingContext::new();
     {
         let mut req = ctx.request.borrow_mut();
+        req.raw_method_str = method.to_uppercase();
         req.method = match method.to_uppercase().as_str() {
             "POST" => HttpMethod::POST,
             "PUT" => HttpMethod::PUT,
@@ -213,6 +226,11 @@ fn execute_rules(
     if ctx.response.borrow().ended {
         let r = ctx.response.borrow();
         let status = if r.status == 0 { 200 } else { r.status };
+        if let Some(path) = &r.send_file {
+            if let Ok(content) = std::fs::read(path) {
+                return (status, r.headers.clone(), Some(content));
+            }
+        }
         return (status, r.headers.clone(), r.body.clone());
     }
     (404, HashMap::new(), Some(b"Not Found".to_vec()))
@@ -294,8 +312,9 @@ pub fn build_axum_app(router: Router) -> axum::Router {
     // 按 axum 路径分组（axum 不允许重复注册同一路径）
     let mut grouped: HashMap<String, Vec<RouteRule>> = HashMap::new();
     for rule in rules {
-        let axpath = convert_path(&rule.path);
-        grouped.entry(axpath).or_default().push(rule);
+        for axpath in convert_paths(&rule.path) {
+            grouped.entry(axpath).or_default().push(rule.clone());
+        }
     }
 
     let mut app = axum::Router::new();
