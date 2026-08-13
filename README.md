@@ -69,6 +69,8 @@ git tag v6.0.0 && git push origin v6.0.0
 
 ## 已知限制
 
-- XPath 规则（AnalyzeByXPath）部分为占位（CSS 选择器/JSONPath 已真实）
+- AES/RSA 加密（EncoderUtils）为占位实现（secure 多用户模式的 WebDAV Basic 认证依赖）
 - TTS 边缘合成依赖外部服务
-- EPUB/PDF 本地解析为占位实现
+- EPUB/PDF 本地解析为占位实现（epublib 域模型未完整转录）
+- XPath 规则部分降级为 CSS 选择器（AnalyzeByXPath→AnalyzeByJSoup 子集转换）
+- `cache_chapter_content` 默认关闭（与原版 Kotlin 一致，可在 AppConfig 开启）
