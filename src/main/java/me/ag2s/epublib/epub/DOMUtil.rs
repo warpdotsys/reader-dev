@@ -158,38 +158,226 @@ impl DOMUtil {
     }
 }
 
-pub struct Document;
-#[derive(PartialEq)]
-pub struct Element;
-#[derive(PartialEq)]
-pub struct NodeList;
-pub struct Node;
-pub struct Text;
+pub struct Document {
+    pub root: Option<Element>,
+}
+
+#[derive(Clone, PartialEq)]
+pub struct Element {
+    pub tag_name: String,
+    pub attributes: std::collections::HashMap<String, String>,
+    pub children: Vec<Node>,
+    pub is_text: bool,
+    pub text_data: String,
+    pub null: bool,
+}
+
+#[derive(Clone, PartialEq)]
+pub struct Node {
+    pub element: Option<Element>,
+    pub text: Option<String>,
+}
+
+#[derive(Clone, PartialEq)]
+pub struct NodeList {
+    pub items: Vec<Element>,
+}
+
+pub struct Text {
+    pub data: String,
+}
 
 impl Document {
-    pub fn get_elements_by_tag_name_ns(&self, _namespace: &str, _tag_name: &str) -> NodeList { todo!() }
-    pub fn get_elements_by_tag_name(&self, _tag_name: &str) -> NodeList { todo!() }
+    pub fn new() -> Document {
+        Document { root: None }
+    }
+    /// quick-xml 解析 XML 构建 DOM 树
+    pub fn parse(xml: &str) -> Document {
+        let mut reader = quick_xml::Reader::from_str(xml);
+        reader.config_mut().trim_text(true);
+        let mut buf = Vec::new();
+        let children = parse_dom_children(&mut reader, &mut buf);
+        Document {
+            root: children.into_iter().find(|e| !e.is_text),
+        }
+    }
+    pub fn get_elements_by_tag_name_ns(&self, _namespace: &str, tag_name: &str) -> NodeList {
+        collect_by_tag(self.root.as_ref(), tag_name)
+    }
+    pub fn get_elements_by_tag_name(&self, tag_name: &str) -> NodeList {
+        collect_by_tag(self.root.as_ref(), tag_name)
+    }
 }
 
 impl Element {
-    // fix: DOM stub 补充方法（get_text_children_content 使用；&Element 不可能为 null，恒 false）
-    pub fn is_null(&self) -> bool { false }
-    // fix: 占位实现（真实 DOM 由实现方提供）
-    pub fn get_data(&self) -> &str { "" }
-    pub fn get_attribute_ns(&self, _namespace: &str, _attribute: &str) -> String { todo!() }
-    pub fn get_attribute(&self, _attribute: &str) -> String { todo!() }
-    pub fn get_elements_by_tag_name_ns(&self, _namespace: &str, _tag_name: &str) -> NodeList { todo!() }
-    pub fn get_elements_by_tag_name(&self, _tag_name: &str) -> NodeList { todo!() }
-    pub fn get_child_nodes(&self) -> NodeList { todo!() }
-}
-
-impl NodeList {
-    pub fn get_length(&self) -> usize { todo!() }
-    pub fn item(&self, _index: usize) -> Element { todo!() }
+    pub fn null() -> Element {
+        Element {
+            tag_name: String::new(),
+            attributes: std::collections::HashMap::new(),
+            children: Vec::new(),
+            is_text: false,
+            text_data: String::new(),
+            null: true,
+        }
+    }
+    pub fn is_null(&self) -> bool {
+        self.null
+    }
+    pub fn get_data(&self) -> &str {
+        &self.text_data
+    }
+    pub fn get_node_type(&self) -> u16 {
+        if self.is_text {
+            3
+        } else {
+            1
+        }
+    }
+    pub fn get_local_name(&self) -> String {
+        // 本地名 = 冒号分隔的最后一段（OPF 命名空间前缀省略）
+        self.tag_name.rsplit(':').next().unwrap_or(&self.tag_name).to_string()
+    }
+    pub fn get_attribute_ns(&self, _namespace: &str, attribute: &str) -> String {
+        self.attributes
+            .get(attribute)
+            .cloned()
+            .unwrap_or_default()
+    }
+    pub fn get_attribute(&self, attribute: &str) -> String {
+        self.attributes
+            .get(attribute)
+            .cloned()
+            .unwrap_or_default()
+    }
+    pub fn get_elements_by_tag_name_ns(&self, _namespace: &str, tag_name: &str) -> NodeList {
+        collect_by_tag(Some(self), tag_name)
+    }
+    pub fn get_elements_by_tag_name(&self, tag_name: &str) -> NodeList {
+        collect_by_tag(Some(self), tag_name)
+    }
+    pub fn get_child_nodes(&self) -> NodeList {
+        let items = self
+            .children
+            .iter()
+            .filter_map(|n| n.as_element())
+            .collect();
+        NodeList { items }
+    }
 }
 
 impl Node {
     pub const TEXT_NODE: u16 = 3;
-    pub fn get_node_type(&self) -> u16 { todo!() }
-    pub fn get_data(&self) -> &str { todo!() }
+    pub const ELEMENT_NODE: u16 = 1;
+    pub fn get_node_type(&self) -> u16 {
+        match &self.element {
+            Some(e) => {
+                if e.is_text {
+                    Node::TEXT_NODE
+                } else {
+                    Node::ELEMENT_NODE
+                }
+            }
+            None => Node::TEXT_NODE,
+        }
+    }
+    pub fn get_data(&self) -> &str {
+        match (&self.element, &self.text) {
+            (Some(e), _) => &e.text_data,
+            (None, Some(t)) => t,
+            _ => "",
+        }
+    }
+    pub fn is_null(&self) -> bool {
+        self.element.is_none() && self.text.is_none()
+    }
+    pub fn as_element(&self) -> Option<Element> {
+        self.element.clone()
+    }
+}
+
+impl NodeList {
+    pub fn get_length(&self) -> usize {
+        self.items.len()
+    }
+    pub fn item(&self, index: usize) -> Element {
+        self.items.get(index).cloned().unwrap_or_else(Element::null)
+    }
+    pub fn first(&self) -> Option<Element> {
+        self.items.first().cloned()
+    }
+}
+
+fn parse_dom_children(reader: &mut quick_xml::Reader<&[u8]>, buf: &mut Vec<u8>) -> Vec<Element> {
+    let mut children: Vec<Element> = Vec::new();
+    loop {
+        buf.clear();
+        match reader.read_event_into(buf) {
+            Ok(quick_xml::events::Event::Start(e)) => {
+                let mut element = Element {
+                    tag_name: String::from_utf8_lossy(e.name().as_ref()).to_string(),
+                    attributes: e
+                        .attributes()
+                        .filter_map(|a| a.ok())
+                        .map(|a| {
+                            (
+                                String::from_utf8_lossy(a.key.as_ref()).to_string(),
+                                String::from_utf8_lossy(&a.value).to_string(),
+                            )
+                        })
+                        .collect(),
+                    children: Vec::new(),
+                    is_text: false,
+                    text_data: String::new(),
+                    null: false,
+                };
+                element.children = parse_dom_children(reader, buf)
+                    .into_iter()
+                    .map(|e| Node {
+                        element: Some(e),
+                        text: None,
+                    })
+                    .collect();
+                children.push(element);
+            }
+            Ok(quick_xml::events::Event::Text(t)) => {
+                if let Ok(text) = t.unescape() {
+                    let text = text.trim().to_string();
+                    if !text.is_empty() {
+                        children.push(Element {
+                            tag_name: String::from("#text"),
+                            attributes: std::collections::HashMap::new(),
+                            children: Vec::new(),
+                            is_text: true,
+                            text_data: text,
+                            null: false,
+                        });
+                    }
+                }
+            }
+            Ok(quick_xml::events::Event::End(_))
+            | Ok(quick_xml::events::Event::Eof)
+            | Err(_) => break,
+            _ => {}
+        }
+    }
+    children
+}
+
+fn collect_by_tag(root: Option<&Element>, tag_name: &str) -> NodeList {
+    let mut items = Vec::new();
+    if let Some(root) = root {
+        collect_by_tag_inner(root, tag_name, &mut items);
+    }
+    NodeList { items }
+}
+
+fn collect_by_tag_inner(element: &Element, tag_name: &str, out: &mut Vec<Element>) {
+    if !element.is_text && element.tag_name.eq_ignore_ascii_case(tag_name) {
+        out.push(element.clone());
+    }
+    for node in &element.children {
+        if let Some(child) = node.as_element() {
+            collect_by_tag_inner(&child, tag_name, out);
+        }
+    }
 }

@@ -352,21 +352,10 @@ impl Document {
     pub const ELEMENT_NODE: u16 = 1;
 }
 
-impl Element {
-    // fix: DOMUtil::Element 无 DOM 节点方法, 按 Java 语义 getNodeType/getLocalName 补齐
-    pub fn get_node_type(&self) -> u16 {
-        Document::ELEMENT_NODE
-    }
-
-    pub fn get_local_name(&self) -> String {
-        String::new()
-    }
-}
-
 impl crate::me_ag2s_epublib_util_resourceutil::Document {
     // fix: RU::Document 为空 stub, 返回占位根元素
     pub fn get_document_element(&self) -> Element {
-        Element
+        Element::null()
     }
 }
 

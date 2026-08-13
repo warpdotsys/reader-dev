@@ -1,4 +1,4 @@
-﻿use crate::prelude::*;
+use crate::prelude::*;
 use crate::me::ag2s::epublib::domain::{Author, EpubBook, Identifier, Resource, TableOfContents, TOCReference};
 use crate::me::ag2s::epublib::epub::{DOMUtil, EpubProcessorSupport, EpubReader, EpubWriter, NCXDocumentV2};
 use crate::me::ag2s::epublib::util::{ResourceUtil, StringUtil};
@@ -470,7 +470,7 @@ impl crate::me_ag2s_epublib_util_resourceutil::Document {
     }
 
     pub fn get_elements_by_tag_name(&self, _name: &str) -> NodeList {
-        NodeList
+        NodeList { items: Vec::new() }
     }
 }
 

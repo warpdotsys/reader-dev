@@ -1,4 +1,4 @@
-﻿use crate::prelude::*;
+use crate::prelude::*;
 use std::collections::HashMap;
 
 use crate::me::ag2s::epublib::domain::{Author, Date, Event, Identifier, Metadata};
@@ -218,15 +218,15 @@ impl PackageDocumentMetadataReader {
 impl Document {
     // fix: 占位实现, Java getDocumentElement 返回根 Element
     pub fn get_document_element(&self) -> Element {
-        Element
+        Element::null()
     }
 }
 
 impl Element {
-    // fix: 占位实现, Java getOwnerDocument 返回所属 Document
+    // fix: Java getOwnerDocument 返回所属 Document（无引用持有，返回空文档）
     pub fn get_owner_document(&self) -> &Document {
-        static PLACEHOLDER: Document = Document;
-        &PLACEHOLDER
+        static PLACEHOLDER: std::sync::OnceLock<Document> = std::sync::OnceLock::new();
+        PLACEHOLDER.get_or_init(|| Document::new())
     }
 
     // fix: 占位实现, Java getAttributes 返回属性集合 NamedNodeMap

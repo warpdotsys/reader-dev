@@ -52,7 +52,7 @@ impl PackageDocumentReader {
 
     pub fn read(package_resource: &Resource, epub_reader: &EpubReader, book: &mut EpubBook,
         resources: &mut Resources) -> Result<(), ReaderError> {
-        let package_document = ResourceUtil::get_as_document(package_resource).unwrap_or_else(|_| Document);
+        let package_document = ResourceUtil::get_as_document(package_resource).unwrap_or_else(|_| Document::new(String::new()));
         let package_href = package_resource.get_href();
         let mut resources = Self::fix_hrefs(package_href, resources);
         Self::read_guide(&package_document, epub_reader, book, &resources);

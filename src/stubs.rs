@@ -4937,19 +4937,51 @@ impl Digester {
 // ---- java.util.zip.ZipInputStream 占位（未解析真实 zip 结构） ----
 pub struct ZipInputStream {
     inner: ByteArrayInputStream,
+    archive: Option<zip::ZipArchive<std::io::Cursor<Vec<u8>>>>,
+    index: usize,
+    entry_content: Option<Vec<u8>>,
 }
 
 impl ZipInputStream {
     pub fn new(input: ByteArrayInputStream) -> ZipInputStream {
-        ZipInputStream { inner: input }
+        let data = input.0.clone();
+        let archive = zip::ZipArchive::new(std::io::Cursor::new(data)).ok();
+        ZipInputStream {
+            inner: input,
+            archive,
+            index: 0,
+            entry_content: None,
+        }
     }
-    // fix: 占位实现，恒返回 None
+    // 真实 zip 条目遍历（跳过目录项），内容缓存供 copy_to 使用
     pub fn next_entry(&mut self) -> Option<ZipEntry> {
-        None
+        let archive = self.archive.as_mut()?;
+        loop {
+            let entry = archive.by_index(self.index).ok()?;
+            self.index += 1;
+            if entry.is_dir() {
+                continue;
+            }
+            let name = entry.name().to_string();
+            drop(entry);
+            let mut content = Vec::new();
+            let mut file = archive.by_index(self.index - 1).ok()?;
+            std::io::Read::read_to_end(&mut file, &mut content).ok()?;
+            self.entry_content = Some(content);
+            return Some(ZipEntry {
+                is_directory: false,
+                name,
+                comment: None,
+            });
+        }
     }
     pub fn copy_to(&mut self, out: &mut ByteArrayOutputStream) {
-        let data = self.inner.0.clone();
-        out.write(&data);
+        if let Some(content) = &self.entry_content {
+            out.write(content);
+        } else {
+            let data = self.inner.0.clone();
+            out.write(&data);
+        }
     }
 }
 
@@ -8028,7 +8060,13 @@ impl ThrowableExt for () {
 impl crate::me_ag2s_epublib_util_resourceutil::Document {
     // fix: PackageDocumentReader 需将 resourceutil::Document 传给 DOMUtil（签名要求 domutil::Document）
     pub fn to_dom_document(&self) -> crate::me_ag2s_epublib_epub_domutil::Document {
-        crate::me_ag2s_epublib_epub_domutil::Document
+        // 若本 Document 携带 XML 文本则解析为真实 DOM，否则空文档
+        let xml = self.html.clone();
+        if xml.is_empty() {
+            crate::me_ag2s_epublib_epub_domutil::Document::new()
+        } else {
+            crate::me_ag2s_epublib_epub_domutil::Document::parse(&xml)
+        }
     }
 }
 

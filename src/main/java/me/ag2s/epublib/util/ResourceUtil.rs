@@ -158,7 +158,7 @@ impl ResourceUtil {
         let input_source = Self::get_input_source(resource).map_err(|_| ParseError)?;
         if input_source.is_none() {
             // fix: Java 返回 null Document，Rust 占位返回空 Document
-            return Ok(Document);
+            return Ok(Document::new(String::new()));
         }
         document_builder.parse(input_source.unwrap())
     }
@@ -168,10 +168,20 @@ pub struct File;
 pub struct FileInputStream;
 pub struct ZipEntry;
 pub struct ZipInputStream;
-pub struct InputSource;
+pub struct InputSource {
+    pub data: String,
+}
 pub struct DocumentBuilder;
-pub struct Document;
+pub struct Document {
+    pub html: String,
+}
 pub struct ParseError;
+
+impl Document {
+    pub fn new(html: String) -> Document {
+        Document { html }
+    }
+}
 
 impl File {
     // fix: 占位（Java `file.getName()`）；File 为单元结构体，返回空串
@@ -190,10 +200,33 @@ impl ZipEntry {
 
 impl InputSource {
     // fix: Java `Reader` 参数转录为 XmlStreamReader（Resource::get_reader 的返回类型）
-    pub fn new(_reader: XmlStreamReader) -> Self { InputSource }
+    //      读取 reader 中全部文本作为 XML 数据
+    pub fn new(mut reader: XmlStreamReader) -> Self {
+        InputSource {
+            data: read_reader_all(&mut reader),
+        }
+    }
+}
+
+fn read_reader_all(reader: &mut XmlStreamReader) -> String {
+    // XmlStreamReader.read(&mut [char]) 读取字符
+    let mut text = String::new();
+    loop {
+        let mut buf = ['\0'; 2048];
+        let len = buf.len();
+        match reader.read(&mut buf, 0, len) {
+            Ok(n) if n > 0 => {
+                text.push_str(&buf[..n as usize].iter().collect::<String>());
+            }
+            _ => break,
+        }
+    }
+    text
 }
 
 impl DocumentBuilder {
-    // fix: 占位（Java `documentBuilder.parse(InputSource)`）；返回空 Document
-    pub fn parse(&self, _input_source: InputSource) -> Result<Document, ParseError> { Ok(Document) }
+    // 真实解析：InputSource 数据 → Document（XML 文本载体，DOM 树由 to_dom_document 构建）
+    pub fn parse(&self, input_source: InputSource) -> Result<Document, ParseError> {
+        Ok(Document::new(input_source.data))
+    }
 }
