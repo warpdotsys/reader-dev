@@ -17,7 +17,7 @@ pub struct AnalyzeByXPath {
 }
 
 impl AnalyzeByXPath {
-    fn new(doc: &Any) -> AnalyzeByXPath {
+    pub fn new(doc: &Any) -> AnalyzeByXPath {
         AnalyzeByXPath {
             jx_node: Self::parse(doc),
         }
@@ -53,7 +53,7 @@ impl AnalyzeByXPath {
         return JXDocument::create(html1);
     }
 
-    fn get_result(&self, x_path: &str) -> Option<List<JXNode>> {
+    pub fn get_result(&self, x_path: &str) -> Option<List<JXNode>> {
         let node = &self.jx_node;
         // fix: Kotlin `node is JXNode` 智能转换 → match 占位 Any 枚举
         return match node {
@@ -62,7 +62,7 @@ impl AnalyzeByXPath {
         }
     }
 
-    fn get_elements(&self, x_path: &str) -> Option<List<JXNode>> {
+    pub fn get_elements(&self, x_path: &str) -> Option<List<JXNode>> {
         if x_path.is_empty() { return None; }
 
         let mut jx_nodes = ArrayList::<JXNode>::new();
@@ -103,7 +103,7 @@ impl AnalyzeByXPath {
         return Some(jx_nodes);
     }
 
-    fn get_string_list(&self, x_path: &str) -> List<String> {
+    pub fn get_string_list(&self, x_path: &str) -> List<String> {
         let mut result = ArrayList::<String>::new();
         // fix: Kotlin `RuleAnalyzer(xPath)` 默认参数 code = false
         let mut rule_analyzes = RuleAnalyzer::new(x_path.to_string(), false);
@@ -147,7 +147,7 @@ impl AnalyzeByXPath {
         return result;
     }
 
-    fn get_string(&self, rule: &str) -> Option<String> {
+    pub fn get_string(&self, rule: &str) -> Option<String> {
         // fix: Kotlin `RuleAnalyzer(rule)` 默认参数 code = false
         let mut rule_analyzes = RuleAnalyzer::new(rule.to_string(), false);
         let rules = rule_analyzes.split_rule(&["&&", "||"]);

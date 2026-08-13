@@ -3119,6 +3119,7 @@ impl JsonPath {
 
 #[derive(Debug, Clone, Default)]
 pub struct JXNode {
+    pub html: String,
     pub text: String,
 }
 
@@ -3139,8 +3140,8 @@ impl JXNode {
         self.text.clone()
     }
     // Kotlin JXNode.sel(xPath)
-    pub fn sel(&self, _x_path: &str) -> Option<Vec<JXNode>> {
-        None
+    pub fn sel(&self, x_path: &str) -> Option<Vec<JXNode>> {
+        crate::runtime::xpath::select_nodes(&self.html, x_path)
     }
 }
 
@@ -3163,8 +3164,8 @@ impl JXDocument {
         }
     }
     // Kotlin JXDocument.selN(xPath)
-    pub fn sel_n(&self, _x_path: &str) -> Option<Vec<JXNode>> {
-        None
+    pub fn sel_n(&self, x_path: &str) -> Option<Vec<JXNode>> {
+        crate::runtime::xpath::select_nodes(&self.text, x_path)
     }
 }
 

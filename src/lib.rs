@@ -1390,6 +1390,9 @@ pub mod runtime {
     pub mod okhttp {
         include!("runtime/okhttp.rs");
     }
+    pub mod xpath {
+        include!("runtime/xpath.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }

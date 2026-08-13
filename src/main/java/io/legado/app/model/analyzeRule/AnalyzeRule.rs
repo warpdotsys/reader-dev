@@ -118,16 +118,7 @@ impl AnalyzeRule {
     /// 获取XPath解析类
     // private fun getAnalyzeByXPath(o: Any): AnalyzeByXPath {
     fn get_analyze_by_x_path(&mut self, o: Box<Any>) -> AnalyzeByXPath {
-        if self.content.as_ref().map_or(true, |c| !std::ptr::eq(&*o, c.as_ref())) {
-            analyze_rule_stub_analyze_by_x_path_new(o.as_ref())
-        } else {
-            if self.analyze_by_x_path.is_none() || self.object_changed_xp {
-                self.analyze_by_x_path = Some(analyze_rule_stub_analyze_by_x_path_new(self.content.as_ref().unwrap().as_ref()));
-                self.object_changed_xp = false;
-            }
-            // fix: AnalyzeByXPath 未实现 Clone 且 jx_node 私有、new 私有，缓存无法复用，重建占位等价实例
-            analyze_rule_stub_analyze_by_x_path_new(self.content.as_ref().unwrap().as_ref())
-        }
+        crate::io_legado_app_model_analyzerule_analyzebyxpath::AnalyzeByXPath::new(&o)
     }
 
     /// 获取JSOUP解析类
@@ -277,7 +268,7 @@ impl AnalyzeRule {
                             result = match source_rule.mode {
                                 Mode::Js => self.eval_js(source_rule.rule.clone(), Some(r.clone())),
                                 Mode::Json => self.get_analyze_by_j_son_path(r.clone()).get_string(&source_rule.rule).map(|s| Box::new(Any::Str(s))),
-                                Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_string(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
+                                Mode::XPath => self.get_analyze_by_x_path(r.clone()).get_string(&source_rule.rule)
                                     .map(|s| Box::new(Any::Str(s))),
                                 Mode::Default => if is_url {
                                     Some(Box::new(Any::Str(self.get_analyze_by_j_soup(r.clone()).get_string0(&source_rule.rule))))
@@ -340,7 +331,7 @@ impl AnalyzeRule {
                         .map(|list| Box::new(Any::List(list.into_iter().map(Any::Str).collect()))),
                         Mode::Js => self.eval_js(source_rule.rule.clone(), Some(r.clone())),
                         Mode::Json => Some(Box::new(analyze_rule_stub_analyze_by_j_son_path_get_object(&self.get_analyze_by_j_son_path(r.clone()), &source_rule.rule))),
-                        Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_elements(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
+                        Mode::XPath => self.get_analyze_by_x_path(r.clone()).get_elements(&source_rule.rule)
                             .map(|list| Box::new(Any::List(list.into_iter().map(Any::JXNode).collect()))),
                         _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(&source_rule.rule)))),
                     };
@@ -378,7 +369,7 @@ impl AnalyzeRule {
                         ))),
                         Mode::Js => self.eval_js(source_rule.rule.clone(), Some(r.clone())),
                         Mode::Json => self.get_analyze_by_j_son_path(r.clone()).get_list(&source_rule.rule).map(|l| Box::new(Any::List(l.into_iter().collect()))),
-                        Mode::XPath => analyze_rule_stub_analyze_by_x_path_get_elements(&self.get_analyze_by_x_path(r.clone()), &source_rule.rule)
+                        Mode::XPath => self.get_analyze_by_x_path(r.clone()).get_elements(&source_rule.rule)
                             .map(|list| Box::new(Any::List(list.into_iter().map(Any::JXNode).collect()))),
                         _ => Some(Box::new(Any::Elements(self.get_analyze_by_j_soup(r.clone()).get_elements(&source_rule.rule)))),
                     };
