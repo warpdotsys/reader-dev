@@ -1,4 +1,4 @@
-﻿use crate::prelude::*;
+use crate::prelude::*;
 use std::sync::Arc;
 
 // 显式导入消解跨模块 glob 导入歧义（优先于 prelude 的 glob 导入）
@@ -288,8 +288,9 @@ impl ZipUtils {
                 return false;
             }
             let mut is = BufferedInputStream::new(zip.getInputStream(entry));
+            let bytes = is.readBytes();
             let mut out = BufferedOutputStream::new(FileOutputStream::new(&file));
-            out.write(&is.readBytes());
+            out.write(&bytes);
         }
         true
     }

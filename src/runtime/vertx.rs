@@ -827,17 +827,31 @@ impl Clone for WebClient {
 impl WebClient {
     pub fn wrap(_client: HttpClient, _options: WebClientOptions) -> WebClient {
         WebClient {
-            client: reqwest::blocking::Client::builder()
-                .redirect(reqwest::redirect::Policy::limited(10))
-                .build()
-                .unwrap_or_default(),
+            client: Self::shared_client(),
         }
     }
 
     pub fn new() -> WebClient {
         WebClient {
-            client: reqwest::blocking::Client::new(),
+            client: Self::shared_client(),
         }
+    }
+
+    // reqwest blocking Client 在 async 上下文 build/drop 会 panic → 全局单例（独立线程构建，永不 drop）
+    fn shared_client() -> reqwest::blocking::Client {
+        static CLIENT: std::sync::OnceLock<reqwest::blocking::Client> = std::sync::OnceLock::new();
+        CLIENT
+            .get_or_init(|| {
+                std::thread::spawn(|| {
+                    reqwest::blocking::Client::builder()
+                        .redirect(reqwest::redirect::Policy::limited(10))
+                        .build()
+                        .unwrap_or_else(|_| reqwest::blocking::Client::new())
+                })
+                .join()
+                .unwrap_or_else(|_| reqwest::blocking::Client::new())
+            })
+            .clone()
     }
 
     pub fn get_str(&self, url: &str, headers: &HashMap<String, String>) -> Result<String, StubError> {

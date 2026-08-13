@@ -2383,6 +2383,9 @@ impl System {
         String::new()
     }
     pub fn get_property(key: &str) -> String {
+        if key == "user.dir" {
+            return std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default();
+        }
         std::env::var(key).unwrap_or_default()
     }
     pub fn current_time_millis() -> i64 {
@@ -3933,22 +3936,50 @@ impl ZipEntry {
 }
 
 pub struct ZipOutputStream {
-    inner: Option<FileOutputStream>,
+    writer: Option<zip::ZipWriter<std::fs::File>>,
+    in_entry: bool,
 }
 
 impl ZipOutputStream {
     pub fn new(out: FileOutputStream) -> ZipOutputStream {
-        ZipOutputStream { inner: Some(out) }
+        let writer = out.inner.map(zip::ZipWriter::new);
+        ZipOutputStream {
+            writer,
+            in_entry: false,
+        }
     }
-    pub fn putNextEntry(&mut self, _entry: &ZipEntry) {}
-    pub fn closeEntry(&mut self) {}
+    pub fn putNextEntry(&mut self, entry: &ZipEntry) {
+        if let Some(w) = &mut self.writer {
+            let opts = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated);
+            if entry.is_directory {
+                let _ = w.add_directory(&entry.name, opts);
+            } else {
+                let _ = w.start_file(&entry.name, opts);
+            }
+            self.in_entry = true;
+        }
+    }
+    pub fn closeEntry(&mut self) {
+        self.in_entry = false;
+    }
     pub fn write(&mut self, b: &[u8]) {
-        if let Some(inner) = self.inner.as_mut() {
-            inner.write(b);
+        if let Some(w) = &mut self.writer {
+            if self.in_entry {
+                let _ = std::io::Write::write_all(w, b);
+            }
         }
     }
     pub fn close(&mut self) {
-        self.inner = None;
+        if let Some(w) = self.writer.take() {
+            let _ = w.finish();
+        }
+    }
+}
+
+impl Drop for ZipOutputStream {
+    fn drop(&mut self) {
+        self.close();
     }
 }
 
@@ -3987,76 +4018,45 @@ impl ZipFile {
             pos: 0,
         }
     }
-    // fix: 占位实现——直接按文件路径重开输入流（不解压单条目）
-    pub fn getInputStream(&self, _entry: &ZipEntry) -> FileInputStream {
-        FileInputStream::new_path(&self.path)
+    // 真实解压单条目到临时文件
+    pub fn getInputStream(&self, entry: &ZipEntry) -> FileInputStream {
+        use std::io::Read;
+        let tmp = std::env::temp_dir().join(format!("reader_zip_{}_{}", self.path.replace(['/', '\\', ':'], "_"), entry.name.replace(['/', '\\', ':'], "_")));
+        if let Ok(file) = std::fs::File::open(&self.path) {
+            if let Ok(mut archive) = zip::ZipArchive::new(file) {
+                if let Ok(mut e) = archive.by_name(&entry.name) {
+                    let mut buf = Vec::new();
+                    if e.read_to_end(&mut buf).is_ok() {
+                        let _ = std::fs::write(&tmp, &buf);
+                    }
+                }
+            }
+        }
+        FileInputStream::new_path(&tmp.to_string_lossy())
     }
     pub fn close(&self) {}
 }
 
 // 读取 ZIP 中央目录（EOCD + Central Directory）中的条目名与注释
 fn read_zip_entries(path: &str) -> Vec<ZipEntry> {
-    let Ok(data) = std::fs::read(path) else {
-        return Vec::new();
-    };
     let mut entries = Vec::new();
-    let start = data.len().saturating_sub(65557);
-    let mut p = data.len();
-    let mut eocd_pos = None;
-    while p >= start {
-        if p >= 4 && data[p - 4..p] == [0x50, 0x4b, 0x05, 0x06] {
-            eocd_pos = Some(p - 4);
-            break;
+    if let Ok(file) = std::fs::File::open(path) {
+        if let Ok(mut archive) = zip::ZipArchive::new(file) {
+            for i in 0..archive.len() {
+                if let Ok(entry) = archive.by_index(i) {
+                    let is_dir = entry.is_dir();
+                    let name = entry.name().to_string();
+                    entries.push(ZipEntry {
+                        is_directory: is_dir,
+                        name: if is_dir { name.trim_end_matches(char::from(47)).to_string() + "/" } else { name },
+                        comment: None,
+                    });
+                }
+            }
         }
-        p -= 1;
-    }
-    let Some(eocd_pos) = eocd_pos else {
-        return entries;
-    };
-    if eocd_pos + 22 > data.len() {
-        return entries;
-    }
-    let cd_size = u32::from_le_bytes([
-        data[eocd_pos + 12],
-        data[eocd_pos + 13],
-        data[eocd_pos + 14],
-        data[eocd_pos + 15],
-    ]) as usize;
-    let cd_offset = u32::from_le_bytes([
-        data[eocd_pos + 16],
-        data[eocd_pos + 17],
-        data[eocd_pos + 18],
-        data[eocd_pos + 19],
-    ]) as usize;
-    let end = (cd_offset + cd_size).min(data.len());
-    let mut i = cd_offset;
-    while i + 46 <= end {
-        if data[i..i + 4] != [0x50, 0x4b, 0x01, 0x02] {
-            break;
-        }
-        let name_len = u16::from_le_bytes([data[i + 42], data[i + 43]]) as usize;
-        let extra_len = u16::from_le_bytes([data[i + 44], data[i + 45]]) as usize;
-        let comment_len = u16::from_le_bytes([data[i + 46], data[i + 47]]) as usize;
-        if i + 46 + name_len > data.len() {
-            break;
-        }
-        let name = String::from_utf8_lossy(&data[i + 46..i + 46 + name_len]).to_string();
-        let comment_start = i + 46 + name_len + extra_len;
-        let comment = if comment_len > 0 && comment_start + comment_len <= data.len() {
-            Some(String::from_utf8_lossy(&data[comment_start..comment_start + comment_len]).to_string())
-        } else {
-            None
-        };
-        entries.push(ZipEntry {
-            is_directory: name.ends_with('/'),
-            name,
-            comment,
-        });
-        i = comment_start + comment_len;
     }
     entries
 }
-
 // ================= GsonExtensions / SourceAnalyzer 编译迭代补充（新增占位，均 additive） =================
 
 // ---- 序列化辅助：把 JSON 值按 key 取字符串（rule 类型 Deserialize 使用） ----
@@ -4595,6 +4595,9 @@ impl File {
             }
             ok
         } else {
+            if let Some(p) = std::path::Path::new(&dest.file_path).parent() {
+                let _ = std::fs::create_dir_all(p);
+            }
             std::fs::copy(&self.file_path, &dest.file_path).is_ok()
         }
     }
@@ -8635,7 +8638,9 @@ impl From<Vec<String>> for Any {
 
 // File / URL / Mutex / CoroutineContext / ObjectNode 补充
 impl File {
-    pub fn unzip(&self, _dest: &str) -> bool { false }
+    pub fn unzip(&self, dest: &str) -> bool {
+        crate::runtime::zip::unzip_to(&self.file_path, dest)
+    }
 }
 impl URL {
     pub fn read_bytes(&self) -> Option<Vec<u8>> { None }

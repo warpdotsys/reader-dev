@@ -3795,6 +3795,7 @@ impl BookController {
         ]));
         staging_dir.delete_recursively();
         let try_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| -> Option<File> {
+        staging_dir.mkdirs();
             if let Some(latest_zip_file_path) = &latest_zip_file_path {
                 if !File::new(latest_zip_file_path).unzip(&staging_dir.absolute_path) {
                     return None;

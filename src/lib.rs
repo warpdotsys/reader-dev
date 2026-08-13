@@ -1393,6 +1393,9 @@ pub mod runtime {
     pub mod xpath {
         include!("runtime/xpath.rs");
     }
+    pub mod zip {
+        include!("runtime/zip.rs");
+    }
     pub mod server {
         include!("runtime/server.rs");
     }
