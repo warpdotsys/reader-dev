@@ -98,13 +98,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.name }}
-          path: package/reader-*.tar.gz
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v4
-        with:
-          name: binary-${{ matrix.name }}
-          path: package/reader-*.zip
-          if-no-files-found: error
+          path: |
+            package/reader-*.tar.gz
+            package/reader-*.zip
+          if-no-files-found: warn
 
   docker:
     needs: build-web
@@ -134,8 +131,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          # GHCR 主镜像；配置 DOCKER_USERNAME/DOCKER_PASSWORD 后自动同时推送 Docker Hub
           images: |
-            ${{ vars.DOCKER_IMAGE || 'warpdotsys/reader' }}
             ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
