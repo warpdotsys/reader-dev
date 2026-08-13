@@ -63,8 +63,8 @@ impl BookContent {
             let mut next_url = content_data.1[0].clone();
             while !next_url.is_empty() && !next_url_list.contains(&next_url) {
                 if !m_next_chapter_url.is_none()
-                    && get_absolute_url(None, next_url.clone())
-                    == get_absolute_url(None, m_next_chapter_url.as_ref().unwrap().clone())
+                    && get_absolute_url(crate::stubs::URL::parse(base_url).ok().as_ref(), next_url.clone())
+                    == get_absolute_url(crate::stubs::URL::parse(base_url).ok().as_ref(), m_next_chapter_url.as_ref().unwrap().clone())
                 {
                     break;
                 }

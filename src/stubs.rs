@@ -1395,17 +1395,76 @@ impl CommonExt for String {
 
 // ---------------- 时区 / 日期占位 ----------------
 
-pub struct SimpleDateFormat;
+pub struct SimpleDateFormat {
+    pub pattern: String,
+}
+
+/// Java SimpleDateFormat pattern → chrono format（常用子集）
+fn java_pattern_to_chrono(p: &str) -> String {
+    let mut out = String::new();
+    let chars: Vec<char> = p.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        let c = chars[i];
+        let mut run = 1;
+        while i + run < chars.len() && chars[i + run] == c {
+            run += 1;
+        }
+        match c {
+            'y' => out.push_str("%Y"),
+            'M' => {
+                if run >= 3 {
+                    out.push_str("%B");
+                } else {
+                    out.push_str("%m");
+                }
+            }
+            'd' => {
+                if run >= 2 {
+                    out.push_str("%d");
+                } else {
+                    out.push_str("%e");
+                }
+            }
+            'H' => {
+                if run >= 2 {
+                    out.push_str("%H");
+                } else {
+                    out.push_str("%k");
+                }
+            }
+            'm' => out.push_str("%M"),
+            's' => out.push_str("%S"),
+            'E' => out.push_str("%a"),
+            'z' | 'Z' => out.push_str("%z"),
+            other => {
+                for _ in 0..run {
+                    out.push(other);
+                }
+            }
+        }
+        i += run;
+    }
+    out
+}
 
 impl SimpleDateFormat {
-    pub fn new(_pattern: &str) -> Self {
-        SimpleDateFormat
+    pub fn new(pattern: &str) -> Self {
+        SimpleDateFormat {
+            pattern: pattern.to_string(),
+        }
     }
-    pub fn new_2args(_pattern: &str, _locale: Locale) -> SimpleDateFormat {
-        SimpleDateFormat
+    pub fn new_2args(pattern: &str, _locale: Locale) -> SimpleDateFormat {
+        SimpleDateFormat {
+            pattern: pattern.to_string(),
+        }
     }
-    pub fn format(&self, _ms: i64) -> String {
-        String::new()
+    pub fn format(&self, ms: i64) -> String {
+        use chrono::TimeZone;
+        match chrono::Local.timestamp_millis_opt(ms).single() {
+            Some(dt) => dt.format(&java_pattern_to_chrono(&self.pattern)).to_string(),
+            None => String::new(),
+        }
     }
 }
 
@@ -3725,7 +3784,23 @@ where
 {
     gson_from_json_object(s)
 }
-pub fn get_absolute_url(_base: Option<&URL>, s: String) -> String {
+pub fn get_absolute_url(base: Option<&URL>, s: String) -> String {
+    // OkHttp HttpUrl.resolve 语义：相对路径基于 base 拼接；绝对 URL 原样返回
+    if s.starts_with("http://") || s.starts_with("https://") {
+        return s;
+    }
+    if let Some(base) = base {
+        if let Ok(joined) = base.0.join(&s) {
+            return joined.to_string();
+        }
+        // 无 scheme 的协议相对 URL（//host/path）或 base 无 host
+        if s.starts_with("//") {
+            let scheme = base.0.scheme();
+            if !scheme.is_empty() {
+                return format!("{}:{}", scheme, s);
+            }
+        }
+    }
     s
 }
 pub fn is_empty<T>(list: &[T]) -> bool {
@@ -5448,17 +5523,33 @@ impl StringBuffer {
 }
 
 impl SimpleDateFormat {
-    // fix: Kotlin SimpleDateFormat.parse(String): Date（StringUtils.dateConvert_source 使用；占位：恒返回 epoch 毫秒）
-    pub fn parse(&self, _s: &str) -> Result<i64, StubError> {
-        Ok(0)
+    // Kotlin SimpleDateFormat.parse(String): Date（StringUtils.dateConvert_source 使用；真实解析）
+    pub fn parse(&self, s: &str) -> Result<i64, StubError> {
+        let fmt = java_pattern_to_chrono(&self.pattern);
+        let naive = chrono::NaiveDateTime::parse_from_str(s, &fmt)
+            .or_else(|_| {
+                chrono::NaiveDate::parse_from_str(s, &fmt).map(|d| {
+                    d.and_hms_opt(0, 0, 0)
+                        .unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap().and_hms_opt(0, 0, 0).unwrap())
+                })
+            })
+            .map_err(|e| StubError::new(e.to_string()))?;
+        Ok(naive.and_utc().timestamp_millis())
     }
 }
 
 impl Calendar {
-    // fix: Kotlin Calendar.HOUR / Calendar.get(field)（StringUtils.dateConvert_source 使用；占位：恒返回 0）
+    // Kotlin Calendar.HOUR / Calendar.get(field)（StringUtils.dateConvert_source 使用；真实取时）
     pub const HOUR: i32 = 11;
-    pub fn get(&self, _field: i32) -> i32 {
-        0
+    pub fn get(&self, field: i32) -> i32 {
+        use chrono::{TimeZone, Timelike};
+        match chrono::Local.timestamp_millis_opt(self.time).single() {
+            Some(dt) => match field {
+                Calendar::HOUR => dt.hour() as i32,
+                _ => 0,
+            },
+            None => 0,
+        }
     }
 }
 
@@ -5734,11 +5825,12 @@ pub struct XmlDocument {
 #[derive(Debug, Clone, Default)]
 pub struct XmlDomNodeList {
     pub length: usize,
+    pub nodes: Vec<XmlDomNode>,
 }
 
 impl XmlDomNodeList {
-    pub fn item(&self, _index: usize) -> XmlDomNode {
-        XmlDomNode::default()
+    pub fn item(&self, index: usize) -> XmlDomNode {
+        self.nodes.get(index).cloned().unwrap_or_default()
     }
 }
 
@@ -5754,7 +5846,7 @@ impl XmlDomNode {
     pub const ELEMENT_NODE: i32 = 1;
     pub const TEXT_NODE: i32 = 3;
     pub fn firstChild(&self) -> XmlDomNode {
-        XmlDomNode::default()
+        self.childNodes.nodes.first().cloned().unwrap_or_default()
     }
 }
 
@@ -5771,16 +5863,89 @@ impl DocumentBuilderFactory {
 }
 
 impl DocumentBuilder {
-    // Kotlin `builder.parse(source)` 各重载（XmlUtils.xml2map 使用；占位返回空文档）
-    pub fn parse_str(&self, _s: Option<String>) -> XmlDocument {
-        XmlDocument::default()
+    // Kotlin `builder.parse(source)` 各重载（XmlUtils.xml2map 使用；真实 quick-xml 解析）
+    pub fn parse_str(&self, s: Option<String>) -> XmlDocument {
+        let mut doc = XmlDocument::default();
+        if let Some(s) = s {
+            doc.childNodes = parse_xml_tree(&s);
+        }
+        doc
     }
-    pub fn parse_stream(&self, _s: Option<&mut dyn InputStream>) -> XmlDocument {
-        XmlDocument::default()
+    pub fn parse_stream(&self, s: Option<&mut dyn InputStream>) -> XmlDocument {
+        let mut doc = XmlDocument::default();
+        if let Some(s) = s {
+            let mut buf = Vec::new();
+            loop {
+                let mut chunk = [0u8; 4096];
+                let len = chunk.len();
+                let n = s.read(&mut chunk, 0, len);
+                if n <= 0 {
+                    break;
+                }
+                buf.extend_from_slice(&chunk[..n as usize]);
+            }
+            if let Ok(text) = String::from_utf8(buf) {
+                if !text.is_empty() {
+                    doc.childNodes = parse_xml_tree(&text);
+                }
+            }
+        }
+        doc
     }
     pub fn parse_input_source(&self, _s: Option<InputSource>) -> XmlDocument {
+        // InputSource 为占位类型（无数据载体），返回空文档；真实数据走 parse_str/parse_stream
         XmlDocument::default()
     }
+}
+
+/// quick-xml 解析 XML 文本为 XmlDomNode 树（元素 + 非空文本节点）
+fn parse_xml_tree(xml: &str) -> XmlDomNodeList {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(true);
+    let mut buf = Vec::new();
+    let children = parse_xml_children(&mut reader, &mut buf);
+    XmlDomNodeList {
+        length: children.len(),
+        nodes: children,
+    }
+}
+
+fn parse_xml_children(reader: &mut quick_xml::Reader<&[u8]>, buf: &mut Vec<u8>) -> Vec<XmlDomNode> {
+    let mut children: Vec<XmlDomNode> = Vec::new();
+    loop {
+        buf.clear();
+        match reader.read_event_into(buf) {
+            Ok(quick_xml::events::Event::Start(e)) => {
+                let mut node = XmlDomNode::default();
+                node.nodeType = XmlDomNode::ELEMENT_NODE;
+                node.nodeName = String::from_utf8_lossy(e.name().as_ref()).to_string();
+                let subs = parse_xml_children(reader, buf);
+                node.childNodes = XmlDomNodeList {
+                    length: subs.len(),
+                    nodes: subs,
+                };
+                children.push(node);
+            }
+            Ok(quick_xml::events::Event::Text(t)) => {
+                if let Ok(text) = t.unescape() {
+                    let text = text.trim().to_string();
+                    if !text.is_empty() {
+                        let mut node = XmlDomNode::default();
+                        node.nodeType = XmlDomNode::TEXT_NODE;
+                        node.nodeName = String::from("#text");
+                        node.nodeValue = Any::Str(text);
+                        children.push(node);
+                    }
+                }
+            }
+            Ok(quick_xml::events::Event::End(_))
+            | Ok(quick_xml::events::Event::Eof)
+            | Err(_) => break,
+            _ => {}
+        }
+        buf.clear();
+    }
+    children
 }
 
 // Kotlin `source is InputStream / is InputSource`（XmlUtils.xml2map when 分支使用；占位恒 false）

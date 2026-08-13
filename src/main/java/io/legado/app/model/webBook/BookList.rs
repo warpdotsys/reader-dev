@@ -370,7 +370,7 @@ impl BookList {
             // try {
             let cover = analyze_rule.get_string_inner(rule_cover_url.clone(), None, false);
             if !cover.is_empty() {
-                search_book.cover_url = Some(get_absolute_url(None, cover));
+                search_book.cover_url = Some(get_absolute_url(crate::stubs::URL::parse(&book_source.book_source_url).ok().as_ref(), cover));
             }
             if log {
                 if let Some(dl) = debug_log {

@@ -65,7 +65,7 @@ impl RssParserByRule {
                     next_url = Some(analyze_rule.get_string(rss_source.rule_next_page.clone(), None, false));
                     if !next_url.clone().unwrap().is_empty() {
                         // fix: get_absolute_url 占位签名 (Option<&URL>, String)——原 Kotlin 传 baseUrl(sortUrl)
-                        next_url = Some(get_absolute_url(None, next_url.unwrap()));
+                        next_url = Some(get_absolute_url(crate::stubs::URL::parse(sort_url).ok().as_ref(), next_url.unwrap()));
                     }
                 }
                 if let Some(dl) = debug_log {
@@ -151,7 +151,7 @@ impl RssParserByRule {
             dl.log(Some(source_url), Some("┌获取文章链接"), log);
         }
         // fix: get_absolute_url 占位签名 (Option<&URL>, String)——原 Kotlin 传 baseUrl(sourceUrl)
-        rss_article.link = get_absolute_url(None, analyze_rule.get_string_inner(rule_link.clone(), None, false));
+        rss_article.link = get_absolute_url(crate::stubs::URL::parse(source_url).ok().as_ref(), analyze_rule.get_string_inner(rule_link.clone(), None, false));
         if let Some(dl) = debug_log {
             dl.log(Some(source_url), Some(format!("└{}", rss_article.link).as_str()), log);
         }

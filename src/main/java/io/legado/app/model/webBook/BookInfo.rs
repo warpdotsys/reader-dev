@@ -157,7 +157,7 @@ impl BookInfo {
         // try {
         let cover_url = analyze_rule.get_string(info_rule.cover_url.clone(), None, false);
         if !cover_url.is_empty() {
-            book.cover_url = Some(get_absolute_url(None, cover_url.clone()));
+            book.cover_url = Some(get_absolute_url(crate::stubs::URL::parse(&book_source.book_source_url).ok().as_ref(), cover_url.clone()));
         }
         if let Some(dl) = debug_log {
             dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", book.cover_url.clone().unwrap_or_default())), false);
