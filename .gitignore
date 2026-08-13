@@ -50,3 +50,5 @@ out
 target/
 target_*/
 *.txt
+
+front_*.log
