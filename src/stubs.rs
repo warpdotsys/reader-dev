@@ -3344,14 +3344,27 @@ impl<A, B> Pair<A, B> {
     }
 }
 
-// ---- 加密占位 ----
-pub struct Cipher;
+// ---- 加密真实实现（AES/DES 对称 + RSA 非对称） ----
+pub struct Cipher {
+    pub transformation: String,
+    pub mode: i32,
+    pub key: Vec<u8>,
+    pub iv: Option<Vec<u8>>,
+    pub algorithm: String,
+}
+
 impl Cipher {
     pub const ENCRYPT_MODE: i32 = 1;
     pub const DECRYPT_MODE: i32 = 2;
 
     pub fn new() -> Self {
-        Cipher
+        Cipher {
+            transformation: String::new(),
+            mode: Cipher::ENCRYPT_MODE,
+            key: Vec::new(),
+            iv: None,
+            algorithm: String::new(),
+        }
     }
     pub fn init(&mut self, _mode: i32, _key: &str) {}
     pub fn update(&mut self, _data: Vec<u8>) -> Vec<u8> {
@@ -3360,40 +3373,321 @@ impl Cipher {
     pub fn do_final(&mut self) -> Vec<u8> {
         Vec::new()
     }
-    // fix: EncoderUtils 使用的 Java Cipher API（对称/非对称占位）
-    pub fn getInstance(_transformation: &str) -> Cipher {
-        Cipher
+    pub fn getInstance(transformation: &str) -> Cipher {
+        let algorithm = transformation
+            .split('/')
+            .next()
+            .unwrap_or(transformation)
+            .to_uppercase();
+        Cipher {
+            transformation: transformation.to_string(),
+            mode: Cipher::ENCRYPT_MODE,
+            key: Vec::new(),
+            iv: None,
+            algorithm,
+        }
     }
-    pub fn init_spec(&mut self, _mode: i32, _key: &SecretKeySpec) {}
-    pub fn init_spec_iv(&mut self, _mode: i32, _key: &SecretKeySpec, _iv: &IvParameterSpec) {}
-    pub fn init_key(&mut self, _mode: i32, _key: &dyn java_security_Key) {}
-    pub fn do_final_data(&mut self, _data: &[u8]) -> Vec<u8> {
-        Vec::new()
+    pub fn init_spec(&mut self, mode: i32, key: &SecretKeySpec) {
+        self.mode = mode;
+        self.key = key.key.clone();
     }
-    pub fn do_final_range(&mut self, _data: &[u8], _offset: usize, _len: usize) -> Vec<u8> {
-        Vec::new()
+    pub fn init_spec_iv(&mut self, mode: i32, key: &SecretKeySpec, iv: &IvParameterSpec) {
+        self.mode = mode;
+        self.key = key.key.clone();
+        self.iv = Some(iv.iv.clone());
+    }
+    pub fn init_key(&mut self, mode: i32, key: &dyn java_security_Key) {
+        self.mode = mode;
+        self.algorithm = String::from("RSA");
+        if let Some(k) = key.as_private() {
+            self.key = k.der.clone();
+        } else if let Some(k) = key.as_public() {
+            self.key = k.der.clone();
+        }
+    }
+    pub fn do_final_data(&mut self, data: &[u8]) -> Vec<u8> {
+        if self.algorithm == "RSA" {
+            return self.rsa_do_final(data);
+        }
+        self.symmetric_do_final(data)
+    }
+    pub fn do_final_range(&mut self, data: &[u8], offset: usize, len: usize) -> Vec<u8> {
+        self.do_final_data(&data[offset..offset + len])
+    }
+
+    fn symmetric_do_final(&self, data: &[u8]) -> Vec<u8> {
+        let mode_name = self
+            .transformation
+            .split('/')
+            .nth(1)
+            .unwrap_or("ECB")
+            .to_uppercase();
+        let is_cbc = mode_name.contains("CBC");
+        let encrypt = self.mode == Cipher::ENCRYPT_MODE;
+        match self.algorithm.as_str() {
+            "AES" => {
+                let key_len = self.key.len();
+                let block = if key_len == 32 { 32 } else { 16 };
+                if is_cbc {
+                    let iv_len = self.iv.as_ref().map(|v| v.len()).unwrap_or(0);
+                    if iv_len >= block {
+                        Self::cbc_crypt::<aes::Aes128>(self, data, encrypt, 16)
+                            .or_else(|| Self::cbc_crypt::<aes::Aes256>(self, data, encrypt, 32))
+                            .unwrap_or_default()
+                    } else {
+                        Self::cbc_crypt_iv16::<aes::Aes128>(self, data, encrypt, 16)
+                            .or_else(|| Self::cbc_crypt_iv16::<aes::Aes256>(self, data, encrypt, 32))
+                            .unwrap_or_default()
+                    }
+                } else {
+                    if key_len == 32 {
+                        Self::ecb_crypt::<aes::Aes256>(self, data, encrypt, 32).unwrap_or_default()
+                    } else {
+                        Self::ecb_crypt::<aes::Aes128>(self, data, encrypt, 16).unwrap_or_default()
+                    }
+                }
+            }
+            "DES" => {
+                if is_cbc {
+                    Self::cbc_crypt_iv16::<des::Des>(self, data, encrypt, 8).unwrap_or_default()
+                } else {
+                    Self::ecb_crypt::<des::Des>(self, data, encrypt, 8).unwrap_or_default()
+                }
+            }
+            _ => Vec::new(),
+        }
+    }
+
+    /// ECB 手动分块 + PKCS7（兼容任意块大小）
+    fn ecb_crypt<C>(&self, data: &[u8], encrypt: bool, block_size: usize) -> Option<Vec<u8>>
+    where
+        C: cipher::BlockEncrypt + cipher::BlockDecrypt + cipher::KeyInit,
+    {
+        use cipher::generic_array::GenericArray;
+        let cipher = C::new_from_slice(&self.key).ok()?;
+        if encrypt {
+            let pad = block_size - (data.len() % block_size);
+            let mut out = Vec::with_capacity(data.len() + pad);
+            let mut chunks = data.chunks_exact(block_size);
+            for chunk in &mut chunks {
+                let mut block = GenericArray::clone_from_slice(chunk);
+                cipher.encrypt_block(&mut block);
+                out.extend_from_slice(&block);
+            }
+            let rem = chunks.remainder();
+            if !rem.is_empty() {
+                let mut block = GenericArray::default();
+                block[..rem.len()].copy_from_slice(rem);
+                block[rem.len()..].iter_mut().for_each(|b| *b = pad as u8);
+                cipher.encrypt_block(&mut block);
+                out.extend_from_slice(&block);
+            }
+            // 完整块需追加一个整填充块
+            if rem.is_empty() {
+                let mut block = GenericArray::default();
+                block.iter_mut().for_each(|b| *b = pad as u8);
+                cipher.encrypt_block(&mut block);
+                out.extend_from_slice(&block);
+            }
+            Some(out)
+        } else {
+            if data.is_empty() || data.len() % block_size != 0 {
+                return None;
+            }
+            let mut out = Vec::with_capacity(data.len());
+            for chunk in data.chunks_exact(block_size) {
+                let mut block = GenericArray::clone_from_slice(chunk);
+                cipher.decrypt_block(&mut block);
+                out.extend_from_slice(&block);
+            }
+            // 去 PKCS7 填充
+            let pad = *out.last()? as usize;
+            if pad > 0 && pad <= block_size {
+                out.truncate(out.len() - pad);
+            }
+            Some(out)
+        }
+    }
+
+    /// CBC（IV 取前 block 字节）——通用实现
+    fn cbc_crypt_iv16<C>(&self, data: &[u8], encrypt: bool, block_size: usize) -> Option<Vec<u8>>
+    where
+        C: cipher::BlockEncrypt + cipher::BlockDecrypt + cipher::KeyInit,
+    {
+        use cipher::generic_array::GenericArray;
+        let cipher = C::new_from_slice(&self.key).ok()?;
+        let iv = self.iv.as_deref().unwrap_or(&[0u8; 16]);
+        let mut iv_block = GenericArray::default();
+        for (d, s) in iv_block.iter_mut().zip(iv.iter()) {
+            *d = *s;
+        }
+        if encrypt {
+            let mut padded = data.to_vec();
+            let pad = block_size - (padded.len() % block_size);
+            padded.extend(std::iter::repeat(pad as u8).take(pad));
+            let mut out = Vec::with_capacity(padded.len());
+            let mut prev = iv_block.clone();
+            for chunk in padded.chunks_exact(block_size) {
+                let mut block = GenericArray::clone_from_slice(chunk);
+                for (b, p) in block.iter_mut().zip(prev.iter()) {
+                    *b ^= *p;
+                }
+                cipher.encrypt_block(&mut block);
+                prev = block.clone();
+                out.extend_from_slice(&block);
+            }
+            Some(out)
+        } else {
+            if data.is_empty() || data.len() % block_size != 0 {
+                return None;
+            }
+            let mut out = Vec::with_capacity(data.len());
+            let mut prev = iv_block.clone();
+            for chunk in data.chunks_exact(block_size) {
+                let mut block = GenericArray::clone_from_slice(chunk);
+                let orig = block.clone();
+                cipher.decrypt_block(&mut block);
+                for (b, p) in block.iter_mut().zip(prev.iter()) {
+                    *b ^= *p;
+                }
+                prev = orig;
+                out.extend_from_slice(&block);
+            }
+            let pad = *out.last()? as usize;
+            if pad > 0 && pad <= block_size {
+                out.truncate(out.len() - pad);
+            }
+            Some(out)
+        }
+    }
+
+    /// CBC（IV 为完整块）——预留接口，与 cbc_crypt_iv16 同实现
+    fn cbc_crypt<C>(&self, data: &[u8], encrypt: bool, block_size: usize) -> Option<Vec<u8>>
+    where
+        C: cipher::BlockEncrypt + cipher::BlockDecrypt + cipher::KeyInit,
+    {
+        Self::cbc_crypt_iv16::<C>(self, data, encrypt, block_size)
+    }
+
+    fn rsa_do_final(&self, data: &[u8]) -> Vec<u8> {
+        use rsa::BigUint;
+        use rsa::pkcs1::DecodeRsaPrivateKey;
+        use rsa::pkcs1::DecodeRsaPublicKey;
+        use rsa::traits::{PrivateKeyParts, PublicKeyParts};
+        let encrypt = self.mode == Cipher::ENCRYPT_MODE;
+        let sk = rsa::RsaPrivateKey::from_pkcs1_der(&self.key).ok();
+        let pk = rsa::RsaPublicKey::from_pkcs1_der(&self.key).ok();
+        if encrypt {
+            // RSAES-PKCS1-v1_5 加密（块类型 2）
+            let (n, e, d, k): (BigUint, BigUint, Option<BigUint>, usize) = if let Some(sk) = &sk {
+                (sk.n().clone(), sk.e().clone(), Some(sk.d().clone()), sk.size())
+            } else if let Some(pk) = &pk {
+                (pk.n().clone(), pk.e().clone(), None, pk.size())
+            } else {
+                return Vec::new();
+            };
+            if data.len() > k - 11 {
+                return Vec::new();
+            }
+            let mut em = vec![0u8; k];
+            em[1] = 2;
+            let ps_len = k - data.len() - 3;
+            em[2..2 + ps_len].fill(0xff);
+            em[2 + ps_len] = 0;
+            em[k - data.len()..].copy_from_slice(data);
+            let m = BigUint::from_bytes_be(&em);
+            let c = match &d {
+                Some(d) => m.modpow(d, &n),
+                None => m.modpow(&e, &n),
+            };
+            let out = c.to_bytes_be();
+            let mut result = vec![0u8; k - out.len()];
+            result.extend(out);
+            result
+        } else {
+            // 解密
+            let (n, d, k) = if let Some(sk) = &sk {
+                (sk.n().clone(), sk.d().clone(), sk.size())
+            } else if let Some(pk) = &pk {
+                // 公钥"解密"= 用指数反算（Java 公钥解密私钥加密的场景）
+                (pk.n().clone(), pk.e().clone(), pk.size())
+            } else {
+                return Vec::new();
+            };
+            if data.len() > k {
+                return Vec::new();
+            }
+            let mut padded = vec![0u8; k - data.len()];
+            padded.extend_from_slice(data);
+            let c = BigUint::from_bytes_be(&padded);
+            let m = c.modpow(&d, &n);
+            let em = m.to_bytes_be();
+            // 去填充：0x00 || 0x02 || PS(非0) || 0x00 || M（块类型 2）
+            let mut start = 0usize;
+            if em.len() >= 2 && em[0] == 0 && em[1] == 2 {
+                let mut i = 2;
+                while i < em.len() && em[i] != 0 {
+                    i += 1;
+                }
+                if i < em.len() {
+                    start = i + 1;
+                }
+            }
+            if start < em.len() {
+                em[start..].to_vec()
+            } else {
+                em
+            }
+        }
     }
 }
-pub struct PrivateKey;
-pub struct PublicKey;
+pub struct PrivateKey {
+    pub der: Vec<u8>,
+}
+pub struct PublicKey {
+    pub der: Vec<u8>,
+}
 
 // Java java.security.Key 抽象（EncoderUtils RSA 走 &dyn java_security_Key）
-pub trait java_security_Key {}
-impl java_security_Key for PrivateKey {}
-impl java_security_Key for PublicKey {}
-
-// Java javax.crypto.spec.SecretKeySpec / IvParameterSpec 占位
-pub struct SecretKeySpec;
-impl SecretKeySpec {
-    pub fn new(_key: &[u8], _algorithm: &str) -> SecretKeySpec {
-        SecretKeySpec
+pub trait java_security_Key {
+    fn as_private(&self) -> Option<&PrivateKey> {
+        None
+    }
+    fn as_public(&self) -> Option<&PublicKey> {
+        None
+    }
+}
+impl java_security_Key for PrivateKey {
+    fn as_private(&self) -> Option<&PrivateKey> {
+        Some(self)
+    }
+}
+impl java_security_Key for PublicKey {
+    fn as_public(&self) -> Option<&PublicKey> {
+        Some(self)
     }
 }
 
-pub struct IvParameterSpec;
+// Java javax.crypto.spec.SecretKeySpec / IvParameterSpec
+pub struct SecretKeySpec {
+    pub key: Vec<u8>,
+    pub algorithm: String,
+}
+impl SecretKeySpec {
+    pub fn new(key: &[u8], algorithm: &str) -> SecretKeySpec {
+        SecretKeySpec {
+            key: key.to_vec(),
+            algorithm: algorithm.to_string(),
+        }
+    }
+}
+
+pub struct IvParameterSpec {
+    pub iv: Vec<u8>,
+}
 impl IvParameterSpec {
-    pub fn new(_iv: &[u8]) -> IvParameterSpec {
-        IvParameterSpec
+    pub fn new(iv: &[u8]) -> IvParameterSpec {
+        IvParameterSpec { iv: iv.to_vec() }
     }
 }
 
@@ -3653,8 +3947,24 @@ impl ConfigurableEnvironment {
     pub fn get_property_sources(&self) -> PropertySources {
         PropertySources
     }
-    pub fn get_property<T: 'static>(&self, _key: &str, _clazz: Class<T>) -> Option<T> {
-        None
+    // Spring property → 环境变量 relaxed binding（reader.server.port → READER_SERVER_PORT）
+    pub fn get_property<T: 'static>(&self, key: &str, _clazz: Class<T>) -> Option<T> {
+        let v = env_var_for(key)?;
+        let tid = std::any::TypeId::of::<T>();
+        let any: Box<dyn std::any::Any> = if tid == std::any::TypeId::of::<String>() {
+            Box::new(v)
+        } else if tid == std::any::TypeId::of::<bool>() {
+            Box::new(v.eq_ignore_ascii_case("true") || v == "1")
+        } else if tid == std::any::TypeId::of::<i32>() {
+            Box::new(v.parse::<i32>().ok()?)
+        } else if tid == std::any::TypeId::of::<i64>() {
+            Box::new(v.parse::<i64>().ok()?)
+        } else if tid == std::any::TypeId::of::<u32>() {
+            Box::new(v.parse::<u32>().ok()?)
+        } else {
+            return None;
+        };
+        any.downcast::<T>().ok().map(|b| *b)
     }
 }
 pub struct PropertySources;
@@ -5381,12 +5691,27 @@ impl ThrowableExt for Box<dyn std::error::Error> {
 
 // fix: UserController 使用 Spring Environment（BaseController.env 字段）
 pub struct Environment;
+
+/// Spring property → 环境变量 relaxed binding（reader.server.port → READER_SERVER_PORT）
+fn env_var_for(key: &str) -> Option<String> {
+    let env_key = key.replace('.', "_").to_uppercase();
+    std::env::var(&env_key).ok().filter(|s| !s.is_empty())
+}
+
 impl Environment {
-    pub fn get_property(&self, _key: &str) -> Option<String> {
-        None
+    pub fn get_property(&self, key: &str) -> Option<String> {
+        env_var_for(key)
     }
-    pub fn get_property_boolean(&self, _key: &str) -> bool {
-        false
+    pub fn get_property_boolean(&self, key: &str) -> bool {
+        env_var_for(key)
+            .map(|s| s.eq_ignore_ascii_case("true") || s == "1")
+            .unwrap_or(false)
+    }
+    pub fn get_property_int(&self, key: &str) -> Option<i32> {
+        env_var_for(key).and_then(|s| s.parse().ok())
+    }
+    pub fn get_property_default(&self, key: &str, default: String) -> String {
+        env_var_for(key).unwrap_or(default)
     }
 }
 
@@ -6578,15 +6903,7 @@ pub fn uri_decode_component(s: &str, _flag: bool) -> String {
     s.to_string()
 }
 
-// ---- Environment 补充（YueduApi.getContextPath / setupPort） ----
-impl Environment {
-    pub fn get_property_default(&self, _key: &str, default: String) -> String {
-        default
-    }
-    pub fn get_property_int(&self, _key: &str) -> Option<i32> {
-        None
-    }
-}
+// ---- Environment 补充（YueduApi.getContextPath / setupPort；真实实现见 5400 行 Environment） ----
 
 // ---- System.gc 占位（YueduApi.autoGc） ----
 impl System {
@@ -7627,10 +7944,49 @@ impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface
 // fix: BaseController::new() 依赖的 Spring Bean 工厂方法缺失 -> 占位实现（get_bean_app_config/get_bean_environment）
 impl crate::com_htmake_reader_utils_springcontextutils::SpringContextUtils {
     pub fn get_bean_app_config() -> crate::com_htmake_reader_config_appconfig::AppConfig {
-        crate::com_htmake_reader_config_appconfig::AppConfig::default()
+        let mut cfg = crate::com_htmake_reader_config_appconfig::AppConfig::default();
+        // READER_APP_* 环境变量（Spring relaxed binding，与原版 docker-compose 说明一致）
+        cfg.secure = env_bool("READER_APP_SECURE", cfg.secure);
+        cfg.invite_code = env_str("READER_APP_INVITECODE", cfg.invite_code);
+        cfg.secure_key = env_str("READER_APP_SECUREKEY", cfg.secure_key);
+        cfg.cache_chapter_content = env_bool("READER_APP_CACHECHAPTERCONTENT", cfg.cache_chapter_content);
+        cfg.user_limit = env_int("READER_APP_USERLIMIT", cfg.user_limit);
+        cfg.user_book_limit = env_int("READER_APP_USERBOOKLIMIT", cfg.user_book_limit);
+        cfg.debug_log = env_bool("READER_APP_DEBUGLOG", cfg.debug_log);
+        cfg.auto_clear_inactive_user = env_int("READER_APP_AUTOCLEARINACTIVEUSER", cfg.auto_clear_inactive_user);
+        cfg.default_user_enable_webdav = env_bool("READER_APP_DEFAULTUSERENABLEWEBDAV", cfg.default_user_enable_webdav);
+        cfg.default_user_enable_local_store = env_bool("READER_APP_DEFAULTUSERENABLELOCALSTORE", cfg.default_user_enable_local_store);
+        cfg.default_user_enable_book_source = env_bool("READER_APP_DEFAULTUSERENABLEBOOKSOURCE", cfg.default_user_enable_book_source);
+        cfg.default_user_enable_rss_source = env_bool("READER_APP_DEFAULTUSERENABLERSSSOURCE", cfg.default_user_enable_rss_source);
+        cfg.default_user_book_source_limit = env_int("READER_APP_DEFAULTUSERBOOKSOURCELIMIT", cfg.default_user_book_source_limit);
+        cfg.default_user_book_limit = env_int("READER_APP_DEFAULTUSERBOOKLIMIT", cfg.default_user_book_limit);
+        cfg.min_user_password_length = env_int("READER_APP_MINUSERPASSWORDLENGTH", cfg.min_user_password_length);
+        cfg.work_dir = env_str("READER_APP_WORKDIR", cfg.work_dir);
+        cfg.mongo_uri = env_str("READER_APP_MONGOURI", cfg.mongo_uri);
+        cfg.mongo_db_name = env_str("READER_APP_MONGODBNAME", cfg.mongo_db_name);
+        cfg.shelf_update_inteval = env_int("READER_APP_SHELDUPDATEINTEVAL", cfg.shelf_update_inteval);
+        cfg.remote_webview_api = env_str("READER_APP_REMOTEWEBVIEWAPI", cfg.remote_webview_api);
+        cfg.auto_backup_user_data = env_bool("READER_APP_AUTOBACKUPUSERDATA", cfg.auto_backup_user_data);
+        cfg.remote_book_source_update_interval = env_int("READER_APP_REMOTEBOOKSOURCEUPDATEINTERVAL", cfg.remote_book_source_update_interval);
+        cfg
     }
     pub fn get_bean_environment() -> Environment {
         Environment
+    }
+}
+
+fn env_str(key: &str, default: String) -> String {
+    std::env::var(key).ok().filter(|s| !s.is_empty()).unwrap_or(default)
+}
+
+fn env_int(key: &str, default: i32) -> i32 {
+    std::env::var(key).ok().and_then(|s| s.parse().ok()).unwrap_or(default)
+}
+
+fn env_bool(key: &str, default: bool) -> bool {
+    match std::env::var(key) {
+        Ok(s) => s.eq_ignore_ascii_case("true") || s == "1",
+        Err(_) => default,
     }
 }
 
@@ -8607,9 +8963,9 @@ impl<T> From<CompletableDeferred<T>> for Deferred {
         Deferred
     }
 }
-// fix: EncoderUtilsTest 使用（Kotlin `KeyPair.public` / `KeyPair.private` → getPublic()/getPrivate()；占位返回静态空键）
-pub static DUMMY_PUBLIC_KEY: PublicKey = PublicKey;
-pub static DUMMY_PRIVATE_KEY: PrivateKey = PrivateKey;
+// fix: EncoderUtilsTest 使用（Kotlin `KeyPair.public` / `KeyPair.private` → getPublic()/getPrivate()；静态空键）
+pub static DUMMY_PUBLIC_KEY: PublicKey = PublicKey { der: Vec::new() };
+pub static DUMMY_PRIVATE_KEY: PrivateKey = PrivateKey { der: Vec::new() };
 
 impl KeyPair {
     pub fn get_public(&self) -> &'static PublicKey {

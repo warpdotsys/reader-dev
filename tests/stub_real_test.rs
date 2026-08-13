@@ -68,6 +68,34 @@ fn test_parse_xml_tree_direct() {
     dump(&doc.childNodes.nodes, 0);
 }
 #[test]
+fn test_aes_encrypt_decrypt_roundtrip() {
+    use reader::stubs::{Cipher, SecretKeySpec, IvParameterSpec};
+    let key = b"0123456789abcdef";
+    let iv = b"1234567890abcdef";
+    let data = b"hello reader aes test";
+
+    // ECB
+    let mut c = Cipher::getInstance("AES/ECB/PKCS5Padding");
+    c.init_spec(Cipher::ENCRYPT_MODE, &SecretKeySpec::new(key, "AES"));
+    let ct = c.do_final_data(data);
+    assert!(!ct.is_empty(), "ECB 加密不应为空");
+    let mut d = Cipher::getInstance("AES/ECB/PKCS5Padding");
+    d.init_spec(Cipher::DECRYPT_MODE, &SecretKeySpec::new(key, "AES"));
+    let pt = d.do_final_data(&ct);
+    assert_eq!(pt, data.to_vec(), "ECB 解密应还原");
+
+    // CBC
+    let mut c2 = Cipher::getInstance("AES/CBC/PKCS5Padding");
+    c2.init_spec_iv(Cipher::ENCRYPT_MODE, &SecretKeySpec::new(key, "AES"), &IvParameterSpec::new(iv));
+    let ct2 = c2.do_final_data(data);
+    assert!(!ct2.is_empty(), "CBC 加密不应为空");
+    let mut d2 = Cipher::getInstance("AES/CBC/PKCS5Padding");
+    d2.init_spec_iv(Cipher::DECRYPT_MODE, &SecretKeySpec::new(key, "AES"), &IvParameterSpec::new(iv));
+    let pt2 = d2.do_final_data(&ct2);
+    assert_eq!(pt2, data.to_vec(), "CBC 解密应还原");
+}
+
+#[test]
 fn test_quick_xml_events() {
     let xml = "<rss><channel><title>测试</title></channel></rss>";
     let mut reader = quick_xml::Reader::from_str(xml);
