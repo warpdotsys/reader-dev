@@ -320,6 +320,24 @@ try {
     $expOk = ($r.StatusCode -eq 200) -and ($r.Headers.'Content-Disposition' -match 'attachment')
     Report 'TXT导出' $expOk "status=$($r.StatusCode) cd=$($r.Headers.'Content-Disposition')"
 
+    # 24. 文件管理（FileController list/mkdir/save/download）
+    $r = Invoke-WebRequest -Uri "$base/reader3/file/list?path=/" -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
+    $j = $r.Content | ConvertFrom-Json
+    $fl = @()
+    if ($null -ne $j.data) { $fl = @($j.data | ForEach-Object { $_ }) }
+    Report '文件列表' ($j.isSuccess -eq $true) "files=$($fl.Count)"
+    $mkdirBody = @{ path = '/__HOME__'; name = '子目录' } | ConvertTo-Json
+    $r = Invoke-WebRequest -Uri "$base/reader3/file/mkdir" -Method POST -Body ([System.Text.Encoding]::UTF8.GetBytes($mkdirBody)) -ContentType 'application/json' -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
+    $j = $r.Content | ConvertFrom-Json
+    Report '文件建目录' ($j.isSuccess -eq $true) "isSuccess=$($j.isSuccess)"
+    $saveBody = @{ path = '/__HOME__/测试.txt'; content = '测试文件内容' } | ConvertTo-Json
+    $r = Invoke-WebRequest -Uri "$base/reader3/file/save" -Method POST -Body ([System.Text.Encoding]::UTF8.GetBytes($saveBody)) -ContentType 'application/json' -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
+    $j = $r.Content | ConvertFrom-Json
+    $r = Invoke-WebRequest -Uri "$base/reader3/file/get?path=/__HOME__/测试.txt" -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
+    $j2 = $r.Content | ConvertFrom-Json
+    $fileOk = ($j.isSuccess -eq $true) -and ($j2.isSuccess -eq $true) -and ("$($j2.data)" -match '测试文件内容')
+    Report '文件读写' $fileOk "isSuccess=$($j.isSuccess) content=$($j2.data)"
+
     # 15. 书源启禁用（保存 enabled=false 模拟禁用，读回验证）
     $srcObj = $src | ConvertFrom-Json
     $srcObj | Add-Member -NotePropertyName enabled -NotePropertyValue $false -Force
