@@ -88,6 +88,8 @@ jobs:
           if [ "${{ matrix.ext }}" = "zip" ]; then BIN="$BIN.exe"; fi
           cp "$BIN" package/reader-$VERSION/
           cp README.md package/reader-$VERSION/
+          # 自包含 web 前端（二进制运行时按 workdir 相对路径加载）
+          cp -r src/main/resources/web package/reader-$VERSION/web
           cd package
           if [ "${{ matrix.ext }}" = "zip" ]; then
             (cd reader-$VERSION && zip -r ../reader-$VERSION-${{ matrix.name }}.zip .)
@@ -169,8 +171,10 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
+          pattern: binary-*
           path: artifacts
           merge-multiple: true
       - name: List artifacts
