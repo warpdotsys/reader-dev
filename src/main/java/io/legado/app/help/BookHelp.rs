@@ -24,17 +24,25 @@ use crate::stubs::File;
 
 //import org.apache.commons.text.similarity.JaccardSimilarity
 
-// fix: Kotlin `private val downloadImages = CopyOnWriteArraySet<String>()` 的转录占位
-static download_images: DownloadImages = DownloadImages;
+// fix: Kotlin `private val downloadImages = CopyOnWriteArraySet<String>()` 的转录占位（并发去重；原 no-op 导致重复下载/写坏）
+static download_images: std::sync::LazyLock<DownloadImages> = std::sync::LazyLock::new(|| DownloadImages {
+    set: std::sync::Mutex::new(std::collections::HashSet::new()),
+});
 
-struct DownloadImages;
+struct DownloadImages {
+    set: std::sync::Mutex<std::collections::HashSet<String>>,
+}
 
 impl DownloadImages {
-    fn contains(&self, _src: &str) -> bool {
-        false
+    fn contains(&self, src: &str) -> bool {
+        self.set.lock().unwrap().contains(src)
     }
-    fn add(&self, _src: &str) {}
-    fn remove(&self, _src: &str) {}
+    fn add(&self, src: &str) {
+        self.set.lock().unwrap().insert(src.to_string());
+    }
+    fn remove(&self, src: &str) {
+        self.set.lock().unwrap().remove(src);
+    }
 }
 
 pub struct BookHelp;
@@ -220,7 +228,7 @@ impl BookHelp {
             return;
         }
         download_images.add(src);
-        // fix: Kotlin `AnalyzeUrl(src, source = bookSource)`；转录签名差异——仅传 ruleUrl，其余参数 None 占位
+        // fix: Kotlin `AnalyzeUrl(src, source = bookSource)`；传书源 + 请求头（防盗链 Referer 等）
         let mut analyze_url = AnalyzeUrl::new(
             src.to_string(),
             None,
@@ -228,10 +236,10 @@ impl BookHelp {
             None,
             None,
             String::new(),
+            book_source.cloned(),
             None,
             None,
-            None,
-            None,
+            book_source.and_then(|bs| bs.get_header_map()),
             None,
         );
         // try {

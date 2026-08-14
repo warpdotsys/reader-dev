@@ -8056,10 +8056,12 @@ impl QName {
         self.name.clone()
     }
 }// ---------------- BookChapterList 专用：AnalyzeUrl 构造占位（Kotlin 传引用, 转录 new 收所有权；仅追加） ----------------
-// fix: Kotlin `AnalyzeUrl(mUrl, source=bookSource, ruleData=book, headerMapF=bookSource.getHeaderMap(), debugLog=debugLog)`
-//      source/ruleData/debugLog 均为引用无法转移所有权，置空占位（同 AnalyzeRule::new 构造占位约定；headerMapF 缺省时 new 内填 UA）
+// fix: Kotlin `AnalyzeUrl(mUrl, source=bookSource, ruleData=book, headerMapF=bookSource.getHeaderMap(), debugLog=debugLog)`——
+//      source 传具体 BookSource、header_map 传书源请求头（原全 None 导致分页目录丢头/Cookie）
 pub fn analyze_url_new_placeholder(
     m_url: String,
+    source: Option<crate::io_legado_app_data_entities_booksource::BookSource>,
+    header_map_f: Option<std::collections::HashMap<String, String>>,
 ) -> crate::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl {
     crate::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl::new(
         m_url,
@@ -8068,10 +8070,10 @@ pub fn analyze_url_new_placeholder(
         None,
         None,
         String::new(),
+        source,
         None,
         None,
-        None,
-        None,
+        header_map_f,
         None,
     )
 }
