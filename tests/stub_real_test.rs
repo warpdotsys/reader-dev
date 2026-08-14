@@ -156,3 +156,32 @@ fn test_charset_detect_koi8r() {
         assert!(m.get_name() == "KOI8-R" || m.get_name() == "windows-1256", "cyrillic text should detect single-byte charset, got {}", m.get_name());
     }
 }
+#[test]
+fn test_book_read_config_roundtrip() {
+    use reader::io_legado_app_data_entities_book::{Book, ReadConfig};
+    let mut book = Book::default();
+    book.name = "配置书".into();
+    {
+        let mut rc = book.read_config.borrow_mut();
+        *rc = Some(ReadConfig {
+            reverse_toc: true,
+            page_anim: 2,
+            re_segment: true,
+            image_style: Some("FULL".into()),
+            use_replace_rule: true,
+            del_tag: 14,
+            pdf_image_width: 640.0,
+        });
+    }
+    let json = reader::stubs::book_to_json(&book).to_string();
+    assert!(json.contains("\"reverseToc\":true"), "write reverseToc: {json}");
+    assert!(json.contains("\"delTag\":14"), "write delTag: {json}");
+    let parsed: Book = serde_json::from_str(&json).expect("parse book");
+    let rc = parsed.read_config.borrow();
+    let rc = rc.as_ref().expect("readConfig parsed");
+    assert!(rc.reverse_toc, "reverseToc roundtrip");
+    assert_eq!(rc.page_anim, 2, "pageAnim roundtrip");
+    assert_eq!(rc.image_style.as_deref(), Some("FULL"), "imageStyle roundtrip");
+    assert_eq!(rc.del_tag, 14, "delTag roundtrip");
+    assert_eq!(rc.pdf_image_width, 640.0, "pdfImageWidth roundtrip");
+}

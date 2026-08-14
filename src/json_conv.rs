@@ -70,7 +70,15 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("canUpdate"), json!(v.can_update));
     m.insert(String::from("type"), json!(v.r#type));
     m.insert(String::from("readConfig"), match v.read_config.borrow().as_ref() {
-        Some(c) => json!({ "pdfImageWidth": c.pdf_image_width }),
+        Some(c) => json!({
+            "reverseToc": c.reverse_toc,
+            "pageAnim": c.page_anim,
+            "reSegment": c.re_segment,
+            "imageStyle": c.image_style,
+            "useReplaceRule": c.use_replace_rule,
+            "delTag": c.del_tag,
+            "pdfImageWidth": c.pdf_image_width,
+        }),
         None => Value::Null,
     });
     m.insert(String::from("order"), json!(v.order as i64));

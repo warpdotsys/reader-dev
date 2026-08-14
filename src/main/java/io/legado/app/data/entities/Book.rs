@@ -504,7 +504,18 @@ impl<'de> serde::Deserialize<'de> for Book {
             origin_order: gi("originOrder"),
             use_replace_rule: v.get("useReplaceRule").and_then(|x| x.as_bool()).unwrap_or(true),
             variable: gs("variable"),
-            read_config: std::cell::RefCell::new(None),
+            // fix: 真实解析 readConfig（原恒 None，翻页动画/去标签等 5/7 项配置重启丢失）
+            read_config: std::cell::RefCell::new(v.get("readConfig").and_then(|c| {
+                Some(ReadConfig {
+                    reverse_toc: c.get("reverseToc").and_then(|x| x.as_bool()).unwrap_or(false),
+                    page_anim: c.get("pageAnim").and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(-1),
+                    re_segment: c.get("reSegment").and_then(|x| x.as_bool()).unwrap_or(false),
+                    image_style: c.get("imageStyle").and_then(|x| x.as_str()).map(|s| s.to_string()),
+                    use_replace_rule: c.get("useReplaceRule").and_then(|x| x.as_bool()).unwrap_or(false),
+                    del_tag: c.get("delTag").and_then(|x| x.as_i64()).unwrap_or(0),
+                    pdf_image_width: c.get("pdfImageWidth").and_then(|x| x.as_f64()).map(|f| f as f32).unwrap_or(800.0),
+                })
+            })),
             is_in_shelf: gb("isInShelf"),
             last_check_error: gs("lastCheckError"),
             info_html: gs("infoHtml"),
