@@ -179,7 +179,18 @@ impl AnalyzeUrl {
                     let mut hm = HashMap::new();
                     hm.insert(AppConst::UA_NAME.to_string(), AppConst::userAgent());
                     if let Some(h) = src.header.clone() {
-                        hm.insert("header".to_string(), h);
+                        // fix: 解析书源 header JSON（{"key":"value"}）为多个头（Kotlin getHeaderMap 语义）
+                        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&h) {
+                            if let Some(obj) = v.as_object() {
+                                for (k, val) in obj {
+                                    if let Some(s) = val.as_str() {
+                                        hm.insert(k.clone(), s.to_string());
+                                    }
+                                }
+                            }
+                        } else {
+                            hm.insert("header".to_string(), h);
+                        }
                     }
                     hm
                 })

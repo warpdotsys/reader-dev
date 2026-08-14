@@ -7,7 +7,7 @@ use crate::stubs::Any;
 
 // @Suppress("RegExpRedundantEscape")
 pub struct AnalyzeByJSonPath {
-    ctx: ReadContext,
+    pub ctx: ReadContext,
 }
 
 impl AnalyzeByJSonPath {

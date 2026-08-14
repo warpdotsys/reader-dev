@@ -213,30 +213,59 @@ pub async fn await_call(call: &Call<Response>) -> Response {
 pub fn text(body: &ResponseBody, encode: Option<&str>) -> String {
     // val responseBytes = Utf8BomUtils.removeUTF8BOM(bytes())
     let response_bytes = Utf8BomUtils::removeUTF8BOM_bytes(&body.bytes());
-    // var charsetName: String? = encode
-    let charset_name: Option<String> = encode.map(|it| it.to_string());
-
-    // charsetName?.let {
-    //     return String(responseBytes, Charset.forName(charsetName))
-    // }
-    if let Some(charset_name) = &charset_name {
-        return String::from_utf8_lossy(&response_bytes).into_owned();
+    // charsetName?.let { return String(responseBytes, Charset.forName(charsetName)) }
+    if let Some(charset_name) = encode {
+        return decode_bytes_with_charset(&response_bytes, charset_name);
     }
 
-    //根据http头判断
-    // contentType()?.charset()?.let {
-    //     return String(responseBytes, it)
-    // }
-    // fix: stubs charset() 返回 Option<&str> 借用闭包参数 → 转 owned String 以通过借用检查（原 Kotlin 用 charset 解码，占位仍走 lossy 分支）
+    // 根据 http 头判断
     if let Some(_charset) = body.content_type().and_then(|it| it.charset().map(|c| c.to_owned())) {
-        return String::from_utf8_lossy(&response_bytes).into_owned();
+        return decode_bytes_with_charset(&response_bytes, &_charset);
     }
 
-    //根据内容判断
-    // charsetName = EncodingDetect.getHtmlEncode(responseBytes)
+    // 根据内容判断（meta charset）
     let charset_name = EncodingDetect::getHtmlEncode(&response_bytes);
-    // return String(responseBytes, Charset.forName(charsetName))
-    String::from_utf8_lossy(&response_bytes).into_owned()
+    if charset_name.is_empty() || charset_name.eq_ignore_ascii_case("utf-8") || charset_name.eq_ignore_ascii_case("utf8") {
+        return String::from_utf8_lossy(&response_bytes).into_owned();
+    }
+    decode_bytes_with_charset(&response_bytes, &charset_name)
+}
+
+/// 按字符集解码（GBK/GB2312/Big5/Shift_JIS 等，非 UTF-8 站点防乱码）
+pub fn decode_bytes_with_charset(bytes: &[u8], charset: &str) -> String {
+    let lower = charset.to_lowercase().replace(['-', '_'], "");
+    match lower.as_str() {
+        "utf8" | "utf8bom" | "" => String::from_utf8_lossy(bytes).into_owned(),
+        "gbk" | "gb2312" | "gb18030" | "gbk2312" => {
+            let (text, _, _) = encoding_rs::GBK.decode(bytes);
+            text.into_owned()
+        }
+        "big5" | "big5hkscs" => {
+            let (text, _, _) = encoding_rs::BIG5.decode(bytes);
+            text.into_owned()
+        }
+        "shiftjis" | "sjis" | "ms932" | "windows31j" => {
+            let (text, _, _) = encoding_rs::SHIFT_JIS.decode(bytes);
+            text.into_owned()
+        }
+        "euckr" | "korean" => {
+            let (text, _, _) = encoding_rs::EUC_KR.decode(bytes);
+            text.into_owned()
+        }
+        "latin1" | "iso88591" | "windows1252" | "cp1252" => {
+            let (text, _, _) = encoding_rs::WINDOWS_1252.decode(bytes);
+            text.into_owned()
+        }
+        _ => {
+            // 未知编码：尝试 encoding_rs 按名称
+            if let Some(enc) = encoding_rs::Encoding::for_label(lower.as_bytes()) {
+                let (text, _, _) = enc.decode(bytes);
+                text.into_owned()
+            } else {
+                String::from_utf8_lossy(bytes).into_owned()
+            }
+        }
+    }
 }
 
 // fun Request.Builder.addHeaders(headers: Map<String, String>) {

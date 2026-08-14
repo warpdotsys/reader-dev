@@ -33,6 +33,7 @@ tokio-tungstenite = "0.24"
 futures-util = "0.3"
 lopdf = "0.34"
 crc32fast = "1"
+encoding_rs = "0.8"
 
 [profile.dev]
 debug = false

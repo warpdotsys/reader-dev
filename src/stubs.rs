@@ -8810,47 +8810,62 @@ pub fn analyze_rule_stub_analyze_by_j_son_path_new(
 }
 
 pub fn analyze_rule_stub_analyze_by_j_son_path_get_string(
-    _inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
-    _rule: &str,
+    inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
+    rule: &str,
 ) -> Option<String> {
-    None
+    crate::runtime::json_path::query(&inst.ctx.json, rule)
+        .map(|v| v.as_str().map(|s| s.to_string()).unwrap_or_else(|| v.to_string()))
 }
 
 pub fn analyze_rule_stub_analyze_by_j_son_path_get_string_list(
-    _inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
-    _rule: &str,
+    inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
+    rule: &str,
 ) -> Vec<String> {
-    Vec::new()
+    match crate::runtime::json_path::query(&inst.ctx.json, rule) {
+        Some(serde_json::Value::Array(arr)) => arr
+            .iter()
+            .map(|x| x.as_str().map(|s| s.to_string()).unwrap_or_else(|| x.to_string()))
+            .collect(),
+        Some(other) => vec![other.to_string()],
+        None => Vec::new(),
+    }
 }
 
 pub fn analyze_rule_stub_analyze_by_j_son_path_get_object(
-    _inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
-    _rule: &str,
+    inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
+    rule: &str,
 ) -> crate::stubs::Any {
-    crate::stubs::Any::Null
+    match crate::runtime::json_path::query(&inst.ctx.json, rule) {
+        Some(v) => crate::runtime::js::value_to_any(&v),
+        None => crate::stubs::Any::Null,
+    }
 }
 
 pub fn analyze_rule_stub_analyze_by_j_son_path_get_list(
-    _inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
-    _rule: &str,
+    inst: &crate::io_legado_app_model_analyzerule_analyzebyjsonpath::AnalyzeByJSonPath,
+    rule: &str,
 ) -> Option<Vec<crate::stubs::Any>> {
-    Some(Vec::new())
+    match crate::runtime::json_path::query(&inst.ctx.json, rule) {
+        Some(serde_json::Value::Array(arr)) => Some(arr.iter().map(crate::runtime::js::value_to_any).collect()),
+        Some(v) => Some(vec![crate::runtime::js::value_to_any(&v)]),
+        None => Some(Vec::new()),
+    }
 }
 
 pub fn analyze_rule_stub_regex_get_element(
-    _res: &str,
-    _regs: &[String],
-    _index: usize,
+    res: &str,
+    regs: &[String],
+    index: usize,
 ) -> Option<crate::stubs::List<String>> {
-    None
+    crate::io_legado_app_model_analyzerule_analyzebyregex::AnalyzeByRegex::get_element(res, regs, index)
 }
 
 pub fn analyze_rule_stub_regex_get_elements(
-    _res: &str,
-    _regs: &[String],
-    _index: usize,
+    res: &str,
+    regs: &[String],
+    index: usize,
 ) -> crate::stubs::List<crate::stubs::List<String>> {
-    Vec::new()
+    crate::io_legado_app_model_analyzerule_analyzebyregex::AnalyzeByRegex::get_elements(res, regs, index)
 }
 
 // ---------------- AnalyzeRule.rs 转录修复：Book 实现 RuleDataInterface/BaseBook（book() 下转型；仅追加） ----------------
@@ -8963,11 +8978,32 @@ impl Element {
     pub fn data(&self) -> Option<String> {
         None
     }
-    pub fn get_elements_by_class(&self, _class: &str) -> Elements {
-        Elements::default()
+    pub fn get_elements_by_class(&self, class: &str) -> Elements {
+        // fix: 基于 html 片段按 class 选择（AnalyzeByJSoup class.xxx 前置规则）
+        crate::runtime::html::select_elements(&self.html, &format!(".{}", class))
     }
-    pub fn get_elements_containing_own_text(&self, _text: &str) -> Elements {
-        Elements::default()
+    pub fn get_elements_containing_own_text(&self, text: &str) -> Elements {
+        // fix: 按直接文本子节点包含匹配（scraper 遍历所有元素）
+        let doc = scraper::Html::parse_fragment(&self.html);
+        let mut result = Vec::new();
+        if let Ok(sel) = scraper::Selector::parse("*") {
+            for el in doc.select(&sel) {
+                let direct: String = el
+                    .children()
+                    .filter_map(|c| match c.value() {
+                        scraper::node::Node::Text(t) => Some(t.to_string()),
+                        _ => None,
+                    })
+                    .collect();
+                if direct.contains(text) {
+                    result.push(Element {
+                        text: direct,
+                        html: el.html().to_string(),
+                    });
+                }
+            }
+        }
+        Elements { list: result }
     }
 }
 

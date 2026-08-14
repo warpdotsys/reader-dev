@@ -7,7 +7,7 @@ use crate::prelude::*;
 pub struct AnalyzeByRegex;
 
 impl AnalyzeByRegex {
-    fn get_element(res: &str, regs: &[String], index: usize) -> Option<List<String>> {
+    pub fn get_element(res: &str, regs: &[String], index: usize) -> Option<List<String>> {
         let mut v_index = index;
         let haystack = res.to_string();
         let pattern = Pattern::compile(&regs[v_index]);
@@ -33,7 +33,7 @@ impl AnalyzeByRegex {
         }
     }
 
-    fn get_elements(res: &str, regs: &[String], index: usize) -> List<List<String>> {
+    pub fn get_elements(res: &str, regs: &[String], index: usize) -> List<List<String>> {
         let mut v_index = index;
         let haystack = res.to_string();
         let pattern = Pattern::compile(&regs[v_index]);

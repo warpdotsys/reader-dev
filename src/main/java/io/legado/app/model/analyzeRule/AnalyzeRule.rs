@@ -535,8 +535,7 @@ impl AnalyzeRule {
         bindings.set("cache", self.get_user_name_space());
         bindings.put("result", result);
         bindings.put("baseUrl", self.base_url.clone());
-        // fix: BookChapter 未实现 Debug，绑定以标题占位
-        bindings.set("chapter", self.chapter.as_ref().map(|c| c.title.clone()));
+        // fix: chapter 已绑定完整 JSON 对象（book_chapter_to_json），不再用标题字符串覆盖
         bindings.put("title", self.chapter.as_ref().map(|c| c.title.clone()));
         bindings.put("src", self.content.clone());
         bindings.put("nextChapterUrl", self.next_chapter_url.clone());
