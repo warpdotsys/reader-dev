@@ -4426,9 +4426,20 @@ impl BookController {
             book.cover_url = Some(cached_cover_url);
             return;
         }
-        // fix: 原 Kotlin webClient.getAbs(coverUrl).timeout(3000).send 下载封面占位（不实际请求）
-        let body_bytes: Vec<u8> = Vec::new();
+        // fix: 原 Kotlin webClient.getAbs(coverUrl).timeout(3000).send 下载封面 → 真实下载
+        let body_bytes = self
+            .web_client
+            .get_abs(&cover_url_str)
+            .timeout(30000)
+            .async_get_bytes_in_thread()
+            .unwrap_or_default();
         if !body_bytes.is_empty() {
+            let parent = cache_file.parent_file.clone();
+            if let Some(parent) = parent {
+                if !parent.exists() {
+                    parent.mkdirs();
+                }
+            }
             cache_file.write_bytes(body_bytes);
             book.cover_url = Some(cached_cover_url);
         }

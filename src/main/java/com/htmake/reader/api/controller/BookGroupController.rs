@@ -145,6 +145,36 @@ impl CURD<BookGroup> for BookGroupController {
         return String::from("bookGroup");
     }
 
+    // fix: 覆写 save——DB::save 的 on_check_end 在实体序列化后调用（实体修改无效），
+    //      此处先调用 on_check_end_mut 回写 groupId/order 再持久化
+    fn save(&self, context: &RoutingContext) -> ReturnData {
+        let mut return_data = ReturnData::new();
+        if !self.check_user_auth(context) {
+            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return return_data;
+        }
+        let mut entity = self.convert_to_entity(&context.body_as_json().unwrap());
+        let user_ns = self.get_user_ns(context);
+        let mut db: DB<BookGroup> = DB::<BookGroup>::table::<BookGroup>(user_ns, self.get_table_name(), String::from("JSON"));
+        let before_result = self.before_save(&entity, &db);
+        if let Some(result) = before_result {
+            return result;
+        }
+        // groupId/order 回写（新分组生成唯一 bitwise groupId）
+        let all_data = db.read_all();
+        let exists = all_data
+            .get_list()
+            .iter()
+            .any(|obj| self.checker(&obj.clone(), &entity));
+        if !exists {
+            self.on_check_end_mut(&mut entity, false, &all_data);
+        }
+        let checker = |obj: JsonObject, e: &BookGroup| self.checker(&obj, e);
+        db.save(entity, None, &checker);
+        return_data.set_data(Box::new(String::from("")), String::from(""));
+        return_data
+    }
+
     // override fun getEntityClass(): Class<BookGroup> {
     //     return BookGroup::class.java
     // }
