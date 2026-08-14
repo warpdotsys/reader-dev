@@ -513,13 +513,26 @@ impl AnalyzeRule {
     // fun evalJS(jsStr: String, result: Any? = None): Any? {
     pub fn eval_js(&mut self, js_str: String, result: Option<Box<Any>>) -> Option<Box<Any>> {
         let mut bindings = SimpleBindings::new();
-        // fix: AnalyzeRule 无法 Clone（含 trait 对象字段），java 绑定以标记字符串占位（引擎占位不读取绑定）
-        bindings.set("java", format!("AnalyzeRule@{:p}", self as *const Self));
+        // fix: java 由全局对象提供（eval_js_script 注册扩展方法），此处不覆盖
+        // fix: source 为 Box<dyn BaseSource>（BaseSource 无实现者，恒 None）；book 绑定真实字段 JSON
+        match self.book() {
+            Some(b) => {
+                if let Some(book) = b.as_any().downcast_ref::<Book>() {
+                    bindings.put("book", crate::stubs::Any::Str(crate::stubs::book_to_json(book).to_string()));
+                } else {
+                    bindings.set("book", false);
+                }
+            }
+            None => {
+                bindings.set("book", false);
+            }
+        }
+        if let Some(c) = &self.chapter {
+            bindings.put("chapter", crate::stubs::Any::Str(crate::stubs::book_chapter_to_json(c).to_string()));
+        }
         // fix: CookieStore/CacheManager 未实现 Debug，绑定以命名空间字符串占位
         bindings.set("cookie", self.get_user_name_space());
         bindings.set("cache", self.get_user_name_space());
-        bindings.set("source", self.source.is_some());
-        bindings.set("book", self.book().is_some());
         bindings.put("result", result);
         bindings.put("baseUrl", self.base_url.clone());
         // fix: BookChapter 未实现 Debug，绑定以标题占位

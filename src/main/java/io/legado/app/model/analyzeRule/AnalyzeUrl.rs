@@ -400,16 +400,33 @@ impl AnalyzeUrl {
      */
     pub fn eval_js(&self, js_str: String, result: Option<&String>) -> Option<JsValue> {
         let mut bindings = SimpleBindings::new(); // val bindings = SimpleBindings()
-        bindings.set("java", self.get_user_name_space()); // bindings["java"] = this
+        // fix: java 由全局对象提供（eval_js_script 注册扩展方法），此处不覆盖
         bindings.set("baseUrl", self.base_url.clone());
+        // fix: CookieStore/CacheManager 占位——绑定命名空间字符串
         bindings.set("cookie", CookieStore::new(self.get_user_name_space()).get_cookie("")); // bindings["cookie"] = CookieStore(...)
         bindings.set("cache", CacheManager::new(self.get_user_name_space()).get("")); // bindings["cache"] = CacheManager(...)
         bindings.set("page", self.page);
         bindings.set("key", self.key.clone());
         bindings.set("speakText", self.speak_text.clone());
         bindings.set("speakSpeed", self.speak_speed);
-        bindings.set("book", self.rule_data.as_ref().map(|r| r.get_user_name_space())); // bindings["book"] = ruleData as? Book
-        bindings.set("source", self.source.as_ref().map(|s| s.get_key())); // bindings["source"] = source
+        // fix: book/source 绑定真实字段 JSON（JS 可访问 book.name / source.bookSourceUrl）
+        if let Some(r) = &self.rule_data {
+            if let Some(book) = r.as_any().downcast_ref::<Book>() {
+                bindings.put("book", crate::stubs::Any::Str(crate::stubs::book_to_json(book).to_string()));
+            } else {
+                bindings.set("book", r.get_user_name_space());
+            }
+        } else {
+            bindings.set("book", false);
+        }
+        match &self.source {
+            Some(s) => {
+                bindings.put("source", crate::stubs::Any::Str(crate::stubs::book_source_to_json(s).to_string()));
+            }
+            None => {
+                bindings.set("source", false);
+            }
+        }
         bindings.set("result", result.cloned());
         SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(|a| {
             let text = match &a {

@@ -79,6 +79,17 @@ fn bind_value(bindings: &SimpleBindings, key: &str, ctx: &mut Context) -> JsValu
 
 /// Any → JsValue
 pub fn any_to_js_value(a: &Any, ctx: &mut Context) -> JsValue {
+    // JSON 字符串（对象/数组形态）解析为 JS 对象（source/book/chapter 绑定）
+    if let Any::Str(s) = a {
+        let trimmed = s.trim_start();
+        if trimmed.starts_with('{') || trimmed.starts_with('[') {
+            if let Ok(v) = serde_json::from_str::<Value>(s) {
+                if let Ok(jv) = JsValue::from_json(&v, ctx) {
+                    return jv;
+                }
+            }
+        }
+    }
     let json = crate::stubs::any_to_value(a);
     JsValue::from_json(&json, ctx).unwrap_or(JsValue::null())
 }
@@ -265,6 +276,9 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         "result", "src", "baseUrl", "title", "nextChapterUrl", "chapter", "source", "book",
         "cookie", "cache", "key", "page", "speakText", "speakSpeed",
     ] {
+        if key == "java" {
+            continue;
+        }
         let val = bind_value(bindings, key, &mut context);
         let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!(key)), val, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
     }
