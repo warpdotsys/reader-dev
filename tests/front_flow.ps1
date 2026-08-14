@@ -326,7 +326,8 @@ try {
     $fl = @()
     if ($null -ne $j.data) { $fl = @($j.data | ForEach-Object { $_ }) }
     Report '文件列表' ($j.isSuccess -eq $true) "files=$($fl.Count)"
-    $mkdirBody = @{ path = '/__HOME__'; name = '子目录' } | ConvertTo-Json
+    $mkdirName = "子目录_$(Get-Random -Maximum 99999)"
+    $mkdirBody = @{ path = '/__HOME__'; name = $mkdirName } | ConvertTo-Json
     $r = Invoke-WebRequest -Uri "$base/reader3/file/mkdir" -Method POST -Body ([System.Text.Encoding]::UTF8.GetBytes($mkdirBody)) -ContentType 'application/json' -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
     $j = $r.Content | ConvertFrom-Json
     Report '文件建目录' ($j.isSuccess -eq $true) "isSuccess=$($j.isSuccess)"
