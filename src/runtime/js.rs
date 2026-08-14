@@ -246,6 +246,41 @@ fn java_log_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_
     Ok(JsValue::from_json(&Value::String(s), ctx).unwrap_or(JsValue::null()))
 }
 
+fn java_get_cookie_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let tag = arg_string(args, 0, ctx);
+    let key = arg_string(args, 1, ctx);
+    let store = crate::io_legado_app_help_http_cookiestore::CookieStore::new(tag.clone());
+    let cookie = {
+        let mut manager = store.cache_instance.lock().unwrap();
+        let file = manager.get(&tag);
+        if !file.exists() {
+            String::new()
+        } else {
+            let text = file.readText();
+            if crate::io_legado_app_utils_acache::Utils::isDue_str(&text) {
+                manager.remove(&tag);
+                String::new()
+            } else {
+                crate::io_legado_app_utils_acache::Utils::clearDateInfo(Some(&text)).unwrap_or_default()
+            }
+        }
+    };
+    let out = if key.is_empty() {
+        cookie
+    } else {
+        // cookieToMap 内联（"k=v; k2=v2" → map）
+        let mut map = std::collections::HashMap::new();
+        for pair in cookie.split(';') {
+            let pair = pair.trim();
+            if let Some(eq) = pair.find('=') {
+                map.insert(pair[..eq].trim().to_string(), pair[eq + 1..].to_string());
+            }
+        }
+        map.get(&key).cloned().unwrap_or_default()
+    };
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
 /// 执行 JS：bindings → 全局绑定 + java 对象（ajax 等），结果 JsValue → Any
 pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
     let mut context = Context::default();
@@ -269,6 +304,7 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_time_format_native), boa_engine::js_string!("timeFormat"), 3)
         .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), boa_engine::js_string!("timeFormatUTC"), 3)
         .function(NativeFunction::from_fn_ptr(java_log_native), boa_engine::js_string!("log"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_cookie_native), boa_engine::js_string!("getCookie"), 2)
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 
