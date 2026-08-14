@@ -104,10 +104,14 @@ fn ajax_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engi
     let text = if url.is_empty() {
         String::new()
     } else {
-        crate::stubs::WebClient::new()
-            .get_abs(&url.to_std_string().unwrap_or_default())
-            .timeout(30000)
-            .send_blocking()
+        // fix: 真实请求 + 默认 UA（原裸 GET 无任何请求头，防盗链站点被拒）
+        let mut headers = std::collections::HashMap::new();
+        headers.insert(
+            String::from("User-Agent"),
+            crate::io_legado_app_constant_appconst::AppConst::userAgent(),
+        );
+        let (_, _, body) = js_http_request("GET", &url.to_std_string().unwrap_or_default(), &headers, None);
+        body
     };
     Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
 }
@@ -430,7 +434,7 @@ fn java_import_script_native(_this: &JsValue, args: &[JsValue], ctx: &mut Contex
     Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
 }
 
-/// java.getString(rule, content) → 简化规则解析（@js: 执行 / @css: 选择器 / @json: 路径 / 原样）
+/// java.getString(rule, content) → 简化规则解析（@js:/@get:/@css:/@json:/@xpath:/@replace:/@regex:/| 多规则）
 fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let rule = arg_string(args, 0, ctx);
     let content = arg_string(args, 1, ctx);
@@ -465,8 +469,20 @@ fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) 
         }
     } else if content.is_empty() {
         rule
-    } else if let Some(css) = rule.strip_prefix("@css:") {
-        let doc = scraper::Html::parse_document(&content);
+    } else {
+        // fix: | 多规则链 + @xpath:/@replace:/@regex:（原仅 @css:/@json: 单规则）
+        let mut cur = content;
+        for r in rule.split('|') {
+            cur = apply_get_string_rule(r.trim(), &cur, ctx);
+        }
+        cur
+    };
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn apply_get_string_rule(rule: &str, content: &str, ctx: &mut Context) -> String {
+    if let Some(css) = rule.strip_prefix("@css:") {
+        let doc = scraper::Html::parse_document(content);
         match scraper::Selector::parse(css) {
             Ok(sel) => doc
                 .select(&sel)
@@ -476,13 +492,125 @@ fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) 
             Err(_) => String::new(),
         }
     } else if let Some(path) = rule.strip_prefix("@json:") {
-        crate::runtime::json_path::query(&content, path)
+        crate::runtime::json_path::query(content, path)
             .map(|v| v.to_string())
             .unwrap_or_default()
+    } else if let Some(xp) = rule.strip_prefix("@xpath:") {
+        crate::runtime::xpath::select_strings(content, xp)
+            .unwrap_or_default()
+            .join("")
+    } else if let Some(repl) = rule.strip_prefix("@replace:") {
+        // @replace:{pattern},{replacement}
+        let (pattern, replacement) = match repl.find(',') {
+            Some(idx) => (&repl[..idx], &repl[idx + 1..]),
+            None => (repl, ""),
+        };
+        match regex::Regex::new(pattern) {
+            Ok(re) => re.replace_all(content, replacement).to_string(),
+            Err(_) => content.to_string(),
+        }
+    } else if let Some(pat) = rule.strip_prefix("@regex:") {
+        match regex::Regex::new(pat) {
+            Ok(re) => re
+                .captures(content)
+                .map(|c| c.get(1).map(|m| m.as_str().to_string()).unwrap_or_else(|| c.get(0).map(|m| m.as_str().to_string()).unwrap_or_default()))
+                .unwrap_or_default(),
+            Err(_) => String::new(),
+        }
+    } else if let Some(pat) = rule.strip_prefix('@') {
+        // 其他 @ 前缀未知规则 → 原样
+        let _ = pat;
+        rule.to_string()
+    } else if !rule.is_empty() {
+        // 普通文本规则：作为 CSS 选择器尝试（Kotlin 默认规则）
+        let doc = scraper::Html::parse_document(content);
+        match scraper::Selector::parse(rule) {
+            Ok(sel) => doc
+                .select(&sel)
+                .map(|e| e.text().collect::<String>())
+                .next()
+                .unwrap_or_default(),
+            Err(_) => rule.to_string(),
+        }
     } else {
-        rule
-    };
+        String::new()
+    }
+}
+
+/// java.randomUuid() → UUID 字符串
+fn java_random_uuid_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let _ = args;
+    let out = crate::stubs::Uuid::new_v4().to_string();
     Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.htmlFormat(html) → 正文净化格式
+fn java_html_format_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let out = crate::io_legado_app_utils_htmlformatter::HtmlFormatter::new().formatKeepImg(Some(&s));
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.encodeURI(str) → percent 编码
+fn java_encode_uri_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let out = crate::stubs::URLEncoder::encode(&s, "UTF-8").unwrap_or_default();
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.toast(msg) → 日志输出
+fn java_toast_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    eprintln!("[java.toast] {}", s);
+    Ok(JsValue::undefined())
+}
+
+/// java.digestHex(text, algorithm) → MD5 hex（纯 std 实现；非 md5 算法降级为 md5）
+fn java_digest_hex_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let _alg = arg_string(args, 1, ctx);
+    let bytes = crate::stubs::md5_bytes(s.as_bytes());
+    let out: String = bytes.iter().map(|b| format!("{:02x}", b)).collect();
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.getZipStringContent(url, path) → zip 内条目文本（url 支持 http/本地路径）
+fn java_get_zip_string_content_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let url = arg_string(args, 0, ctx);
+    let path = arg_string(args, 1, ctx);
+    let out = read_zip_entry(&url, &path);
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+/// 读取 zip 内条目（url 为 http 时先下载到临时文件）
+fn read_zip_entry(url: &str, path: &str) -> String {
+    let mut zip_bytes: Vec<u8> = Vec::new();
+    if url.starts_with("http") {
+        let mut headers = std::collections::HashMap::new();
+        headers.insert(
+            String::from("User-Agent"),
+            crate::io_legado_app_constant_appconst::AppConst::userAgent(),
+        );
+        let (_, _, body) = js_http_request("GET", url, &headers, None);
+        zip_bytes = body.into_bytes();
+    } else {
+        zip_bytes = std::fs::read(url).unwrap_or_default();
+    }
+    if zip_bytes.is_empty() {
+        return String::new();
+    }
+    use std::io::Read;
+    let mut archive = match zip::ZipArchive::new(std::io::Cursor::new(zip_bytes)) {
+        Ok(a) => a,
+        Err(_) => return String::new(),
+    };
+    let mut entry = match archive.by_name(path) {
+        Ok(e) => e,
+        Err(_) => return String::new(),
+    };
+    let mut buf = Vec::new();
+    let _ = entry.read_to_end(&mut buf);
+    String::from_utf8_lossy(&buf).into_owned()
 }
 
 fn java_get_cookie_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
@@ -552,6 +680,12 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_get_file_native), js_string!("getFile"), 1)
         .function(NativeFunction::from_fn_ptr(java_import_script_native), js_string!("importScript"), 1)
         .function(NativeFunction::from_fn_ptr(java_get_string_native), js_string!("getString"), 2)
+        .function(NativeFunction::from_fn_ptr(java_random_uuid_native), js_string!("randomUuid"), 0)
+        .function(NativeFunction::from_fn_ptr(java_html_format_native), js_string!("htmlFormat"), 1)
+        .function(NativeFunction::from_fn_ptr(java_encode_uri_native), js_string!("encodeURI"), 1)
+        .function(NativeFunction::from_fn_ptr(java_toast_native), js_string!("toast"), 1)
+        .function(NativeFunction::from_fn_ptr(java_digest_hex_native), js_string!("digestHex"), 2)
+        .function(NativeFunction::from_fn_ptr(java_get_zip_string_content_native), js_string!("getZipStringContent"), 2)
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 

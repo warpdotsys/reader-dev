@@ -181,3 +181,24 @@ fn test_java_get_real_status_code() {
         other => panic!("expected map, got {:?}", other),
     }
 }
+#[test]
+fn test_java_extended_methods() {
+    let mut b = SimpleBindings::new();
+    let r = SCRIPT_ENGINE.eval_downcast_any("java.randomUuid().length + '|' + java.digestHex('abc', 'MD5') + '|' + (java.htmlFormat('<div><p>段</p></div>').length > 0)".to_string(), &mut b);
+    let s = format!("{}", r.unwrap());
+    assert!(s.starts_with("36|900150983cd24fb0d6963f7d28e17f72|true"), "uuid/digest/htmlFormat: {s}");
+}
+
+#[test]
+fn test_get_string_multi_rule() {
+    let mut b = SimpleBindings::new();
+    let r = reader::runtime::js::eval_js_script("java.getString('@regex:(\\\\d+)', 'abc123def');", &b);
+    let out = format!("{}", r.unwrap());
+    assert_eq!(out, "123", "regex rule: {out}");
+    let r = reader::runtime::js::eval_js_script("java.getString('@css:title', '<html><head><title>标题甲</title></head></html>');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("标题甲"), "css rule: {out}");
+    let r = reader::runtime::js::eval_js_script("java.getString('@xpath://title/text()', '<html><head><title>XP</title></head></html>');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("XP"), "xpath rule: {out}");
+}

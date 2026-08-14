@@ -119,8 +119,8 @@ impl FileUtils {
     }
 
     pub fn getCachePath() -> String {
-        // TODO
-        panic!("Not implemented")
+        // fix: 真实实现（原 panic!("Not implemented")，JS zip/unzip 流程中断）
+        format!("{}/storage/cache", crate::stubs::get_work_dir())
     }
 
     pub const BY_NAME_ASC: i32 = 0;

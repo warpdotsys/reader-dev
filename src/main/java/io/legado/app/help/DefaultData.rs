@@ -29,11 +29,9 @@ impl DefaultData {
         use std::sync::OnceLock;
         static TXT_TOC_RULES: OnceLock<Vec<TxtTocRule>> = OnceLock::new();
         TXT_TOC_RULES.get_or_init(|| {
-            let json = String::from_utf8_lossy(
-                &DefaultData::class_resource(format!("/defaultData/{}", Self::txt_toc_rule_file_name))
-                    .read_bytes(),
-            ).into_owned();
-            GSON::from_json_array::<TxtTocRule>(&json).get_or_none().unwrap_or_else(Vec::new)
+            // fix: 内嵌资源（原绝对路径 /defaultData/... 部署时不存在 → 恒空列表，txt 目录正则规则全丢）
+            let json = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/main/resources/defaultData/txtTocRule.json"));
+            GSON::from_json_array::<TxtTocRule>(json).get_or_none().unwrap_or_else(Vec::new)
         })
     }
 

@@ -596,17 +596,28 @@ pub use crate::com_htmake_reader_utils_lrucache::LRUCache;
 // AnalyzeByJSonPath / AnalyzeByXPath 等模块直接使用 RuleAnalyzer（同名真实转录模块）
 pub use crate::io_legado_app_model_analyzerule_ruleanalyzer::RuleAnalyzer;
 
-// ---------------- kotlinx.coroutines.sync.Mutex 占位 ----------------
+// ---------------- kotlinx.coroutines.sync.Mutex（真实互斥；原 no-op 导致并发写坏） ----------------
 
 #[derive(Debug, Clone, Default)]
-pub struct Mutex;
+pub struct Mutex {
+    locked: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
 
 impl Mutex {
     pub fn new() -> Self {
-        Mutex
+        Mutex {
+            locked: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        }
     }
-    pub async fn lock(&self) {}
-    pub fn unlock(&self) {}
+    pub async fn lock(&self) {
+        // 自旋等待（用户级互斥临界区短；无 tokio 依赖）
+        while self.locked.swap(true, std::sync::atomic::Ordering::Acquire) {
+            std::thread::yield_now();
+        }
+    }
+    pub fn unlock(&self) {
+        self.locked.store(false, std::sync::atomic::Ordering::Release);
+    }
 }
 
 // ---------------- okhttp3 Request / Response（真实请求数据载体） ----------------
@@ -808,17 +819,38 @@ impl LocalDateTime {
 }
 
 #[derive(Debug, Clone)]
-pub struct Uuid;
+pub struct Uuid {
+    bytes: [u8; 16],
+}
 
 impl Uuid {
+    // fix: 真实 v4 UUID（原恒 00000000-...，JS randomUuid 全零）
     pub fn new_v4() -> Self {
-        Uuid
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let c = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let mut b = [0u8; 16];
+        b[0..8].copy_from_slice(&(now as u64).to_le_bytes());
+        b[8..12].copy_from_slice(&c.to_le_bytes()[..4]);
+        let pid = (std::process::id() as u64).to_le_bytes();
+        b[12..16].copy_from_slice(&pid[..4]);
+        b[6] = (b[6] & 0x0f) | 0x40; // version 4
+        b[8] = (b[8] & 0x3f) | 0x80; // RFC 4122 variant
+        Uuid { bytes: b }
     }
 }
 
 impl std::fmt::Display for Uuid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "00000000-0000-0000-0000-000000000000")
+        let b = self.bytes;
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
+        )
     }
 }
 
@@ -9286,19 +9318,19 @@ impl Element {
 //      追加跨模块访问器。占位实现未打通真实数据（后续若 CharsetDetector.rs 公开字段/提供 getter，可直接改为直读）
 impl crate::io_legado_app_lib_icu4j_charsetdetector::CharsetDetector {
     pub fn f_input_bytes_access(&self) -> Vec<u8> {
-        Vec::new()
+        self.f_input_bytes.clone()
     }
     pub fn f_input_len_access(&self) -> i32 {
-        0
+        self.f_input_len
     }
     pub fn f_c1_bytes_access(&self) -> bool {
-        false
+        self.f_c1_bytes
     }
     pub fn f_raw_input_access(&self) -> Option<Vec<u8>> {
-        None
+        self.f_raw_input.clone()
     }
     pub fn f_raw_length_access(&self) -> i32 {
-        0
+        self.f_raw_length
     }
 }
 // ---------------- BaseController/BookGroupController 类型检查修复补充（追加，勿删） ----------------

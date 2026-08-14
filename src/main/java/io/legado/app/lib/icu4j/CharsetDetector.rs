@@ -56,15 +56,15 @@ pub struct CharsetDetector {
     //   Value is percent, not absolute.
     //   Value is rounded up, so zero really means zero occurences.
 
-    f_c1_bytes: bool,          // True if any bytes in the range 0x80 - 0x9F are in the input;
+    pub(crate) f_c1_bytes: bool,          // True if any bytes in the range 0x80 - 0x9F are in the input;
 
     f_declared_encoding: Option<String>,
 
-    f_raw_input: Option<Vec<u8>>, // Original, untouched input bytes.
+    pub(crate) f_raw_input: Option<Vec<u8>>, // Original, untouched input bytes.
     //  If user gave us a byte array, this is it.
     //  If user gave us a stream, it's read to a
     //  buffer here.
-    f_raw_length: i32,          // Length of data in fRawInput array.
+    pub(crate) f_raw_length: i32,          // Length of data in fRawInput array.
 
     f_input_stream: Option<Box<dyn InputStream>>, // User's input stream, or None if the user
     //   gave us a byte array.
