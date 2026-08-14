@@ -353,9 +353,16 @@ impl Document {
 }
 
 impl crate::me_ag2s_epublib_util_resourceutil::Document {
-    // fix: RU::Document 为空 stub, 返回占位根元素
+    // fix: 真实解析（原占位恒 null 根 → NCX 目录解析失败）
     pub fn get_document_element(&self) -> Element {
-        Element::null()
+        if self.html.is_empty() {
+            Element::null()
+        } else {
+            crate::me_ag2s_epublib_epub_domutil::Document::parse(&self.html)
+                .root
+                .clone()
+                .unwrap_or_else(Element::null)
+        }
     }
 }
 

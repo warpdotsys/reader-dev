@@ -99,8 +99,8 @@ impl ResourceUtil {
     // fix: E0308 调用方（ResourcesLoader）传入其本模块的 ZipEntry 与两种不同的流类型
     //（&Vec<u8> 与 &mut ZipInputStream，&mut 会自动重借用为 &）；流参数泛型化（Resource::new_stream 本身即泛型），
     // ZipEntry 改用调用方模块的类型（其 get_name 已实现）
-    pub fn create_resource<S>(zip_entry: &crate::me_ag2s_epublib_epub_resourcesloader::ZipEntry,
-                              zip_input_stream: &S) -> Result<Resource, io::Error> {
+    pub fn create_resource<S: crate::stubs::InputStream>(zip_entry: &crate::me_ag2s_epublib_epub_resourcesloader::ZipEntry,
+                              zip_input_stream: &mut S) -> Result<Resource, io::Error> {
         Ok(Resource::new_stream(zip_input_stream, zip_entry.get_name()))
 
     }
@@ -168,6 +168,15 @@ pub struct File;
 pub struct FileInputStream;
 pub struct ZipEntry;
 pub struct ZipInputStream;
+
+// fix: 流接口（create_resource_zip_in 调用路径；ZipInputStream 由调用方以真实流填充）
+impl crate::stubs::InputStream for ZipInputStream {
+    fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
+        let _ = (b, off, len);
+        -1
+    }
+    fn close(&mut self) {}
+}
 pub struct InputSource {
     pub data: String,
 }

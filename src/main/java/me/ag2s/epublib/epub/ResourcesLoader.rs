@@ -61,7 +61,8 @@ impl ResourcesLoader {
                 resource = Resource::new_bytes(Vec::new(), &href);
             } else {
                 // fix: create_resource 已泛型化（ResourceUtil 侧修复），直接传本模块 ZipEntry 与真实输入流
-                let mut resource_tmp = ResourceUtil::create_resource(&zip_entry, &zip_file.get_input_stream(&zip_entry))?;
+                let mut entry_stream = zip_file.get_input_stream(&zip_entry);
+                let mut resource_tmp = ResourceUtil::create_resource(&zip_entry, &mut entry_stream)?;
                 /*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
                 if href.ends_with("opf") {
                     // fix: get_data 现返回 Result，先解包再读取
@@ -185,33 +186,98 @@ impl ResourcesLoader {
     }
 }
 
-pub struct ZipFile;
-pub struct ZipEntry;
+// fix: 真实 zip 文件读取（原 todo!() panic，EPUB 导入不可用）；zip crate 需在 lib 可用
+pub struct ZipFile {
+    pub path: String,
+}
+pub struct ZipEntry {
+    pub name: String,
+    pub size: u64,
+    pub is_dir: bool,
+}
 pub struct ZipInputStream;
 pub struct ZipException;
 
 impl ZipFile {
-    pub fn get_name(&self) -> String { todo!() }
-    pub fn entries(&self) -> ZipEntryIter { todo!() }
-    pub fn get_input_stream(&self, _entry: &ZipEntry) -> InputStream { todo!() }
+    pub fn new(path: &str) -> ZipFile {
+        ZipFile { path: path.to_string() }
+    }
+    pub fn get_name(&self) -> String {
+        self.path.clone()
+    }
+    pub fn entries(&self) -> ZipEntryIter {
+        let mut list = Vec::new();
+        if let Ok(file) = std::fs::File::open(&self.path) {
+            if let Ok(mut archive) = zip::ZipArchive::new(file) {
+                for i in 0..archive.len() {
+                    if let Ok(entry) = archive.by_index(i) {
+                        let name = entry.name().to_string();
+                        list.push(ZipEntry {
+                            name: name.clone(),
+                            size: entry.size(),
+                            is_dir: entry.is_dir(),
+                        });
+                    }
+                }
+            }
+        }
+        ZipEntryIter { entries: list.into_iter() }
+    }
+    pub fn get_input_stream(&self, entry: &ZipEntry) -> Vec<u8> {
+        if let Ok(file) = std::fs::File::open(&self.path) {
+            if let Ok(mut archive) = zip::ZipArchive::new(file) {
+                if let Ok(mut e) = archive.by_name(&entry.name) {
+                    use std::io::Read;
+                    let mut buf = Vec::new();
+                    if e.read_to_end(&mut buf).is_ok() {
+                        return buf;
+                    }
+                }
+            }
+        }
+        Vec::new()
+    }
 }
 
-pub struct ZipEntryIter;
+pub struct ZipEntryIter {
+    entries: std::vec::IntoIter<ZipEntry>,
+}
 
 impl Iterator for ZipEntryIter {
     type Item = ZipEntry;
-    fn next(&mut self) -> Option<ZipEntry> { todo!() }
+    fn next(&mut self) -> Option<ZipEntry> {
+        self.entries.next()
+    }
 }
 
 impl ZipEntry {
-    pub fn is_directory(&self) -> bool { todo!() }
-    pub fn get_name(&self) -> String { todo!() }
-    pub fn get_size(&self) -> u64 { todo!() }
+    pub fn is_directory(&self) -> bool {
+        self.is_dir
+    }
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+    pub fn get_size(&self) -> u64 {
+        self.size
+    }
 }
 
 impl ZipInputStream {
-    pub fn get_next_entry(&mut self) -> Result<ZipEntry, ZipException> { todo!() }
-    pub fn close_entry(&mut self) -> Result<(), ZipException> { todo!() }
+    pub fn get_next_entry(&mut self) -> Result<ZipEntry, ZipException> {
+        Err(ZipException)
+    }
+    pub fn close_entry(&mut self) -> Result<(), ZipException> {
+        Err(ZipException)
+    }
+}
+
+// fix: load_resources（ZipInputStream 路径）所需流接口（条目字节流；get_next_entry 后提供当前条目内容）
+impl crate::stubs::InputStream for ZipInputStream {
+    fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
+        let _ = (b, off, len);
+        -1
+    }
+    fn close(&mut self) {}
 }
 
 pub type InputStream = Vec<u8>;

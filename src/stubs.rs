@@ -2524,6 +2524,20 @@ pub trait InputStream {
     fn close(&mut self);
 }
 
+// fix: Vec<u8> 作为字节流（epublib Resource::new_stream 读取 zip 条目内容）
+impl InputStream for Vec<u8> {
+    fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
+        if self.is_empty() || off >= b.len() {
+            return -1;
+        }
+        let n = len.min(self.len()).min(b.len() - off);
+        b[off..off + n].copy_from_slice(&self[..n]);
+        self.drain(..n);
+        n as i32
+    }
+    fn close(&mut self) {}
+}
+
 // ---------------- java.io.FileInputStream / FileOutputStream 占位（基于 std::fs 降级实现） ----------------
 
 pub struct FileInputStream {
@@ -2702,11 +2716,17 @@ impl Closeable for ByteArrayOutputStream {
 
 pub trait Serializable {}
 
-pub struct ByteArrayInputStream(pub Vec<u8>);
+pub struct ByteArrayInputStream {
+    pub data: Vec<u8>,
+    pub mark_snapshot: Option<Vec<u8>>,
+}
 
 impl ByteArrayInputStream {
     pub fn new(data: Vec<u8>) -> ByteArrayInputStream {
-        ByteArrayInputStream(data)
+        ByteArrayInputStream {
+            data,
+            mark_snapshot: None,
+        }
     }
     pub fn close(&mut self) {}
 }
@@ -5026,7 +5046,7 @@ pub struct ZipInputStream {
 
 impl ZipInputStream {
     pub fn new(input: ByteArrayInputStream) -> ZipInputStream {
-        let data = input.0.clone();
+        let data = input.data.clone();
         let archive = zip::ZipArchive::new(std::io::Cursor::new(data)).ok();
         ZipInputStream {
             inner: input,
@@ -5061,7 +5081,7 @@ impl ZipInputStream {
         if let Some(content) = &self.entry_content {
             out.write(content);
         } else {
-            let data = self.inner.0.clone();
+            let data = self.inner.data.clone();
             out.write(&data);
         }
     }
@@ -6702,7 +6722,7 @@ impl InflaterInputStream {
         InflaterInputStream { inner: input, pos: 0 }
     }
     pub fn read(&mut self, b: &mut [u8]) -> i32 {
-        let _ = (b, self.inner.0.len(), self.pos);
+        let _ = (b, self.inner.data.len(), self.pos);
         -1
     }
 }
@@ -7248,11 +7268,12 @@ impl InputStream for ByteArrayInputStream {
         if off > b.len() {
             return -1;
         }
-        let n = len.min(b.len() - off).min(self.0.len());
+        let n = len.min(b.len() - off).min(self.data.len());
         if n == 0 {
             return -1;
         }
-        b[off..off + n].copy_from_slice(&self.0[..n]);
+        b[off..off + n].copy_from_slice(&self.data[..n]);
+        self.data.drain(..n);
         n as i32
     }
     fn close(&mut self) {}
@@ -7884,7 +7905,7 @@ impl ZipFile {
     // EpubResourceProvider.get_resource_stream 使用（Kotlin ZipFile.getInputStream）
     // fix: 占位实现——不解压单条目，返回空流（名称带 _dyn 避免与既有 get_input_stream 重名）
     pub fn get_input_stream_dyn(&self, _entry: &ZipEntry) -> Box<dyn InputStream> {
-        Box::new(ByteArrayInputStream(Vec::new()))
+        Box::new(ByteArrayInputStream::new(Vec::new()))
     }
 }
 
@@ -8725,45 +8746,51 @@ impl MediaType {
 // fix: Resource::get_reader 需把 stubs::ByteArrayInputStream 装箱为 proxy InputStream trait 对象（drain 式简化读取）
 impl crate::me_ag2s_epublib_util_commons_io_proxyinputstream::InputStream for ByteArrayInputStream {
     fn read_byte(&mut self) -> i32 {
-        if self.0.is_empty() {
+        if self.data.is_empty() {
             -1
         } else {
-            self.0.remove(0) as i32
+            self.data.remove(0) as i32
         }
     }
     fn read(&mut self, bts: &mut [u8]) -> i32 {
         self.read_off(bts, 0, bts.len())
     }
     fn read_off(&mut self, bts: &mut [u8], off: usize, len: usize) -> i32 {
-        if self.0.is_empty() || off >= bts.len() {
+        if self.data.is_empty() || off >= bts.len() {
             return -1;
         }
         let end = (off + len).min(bts.len());
-        let take = (end - off).min(self.0.len());
-        bts[off..off + take].copy_from_slice(&self.0[..take]);
-        self.0.drain(..take);
+        let take = (end - off).min(self.data.len());
+        bts[off..off + take].copy_from_slice(&self.data[..take]);
+        self.data.drain(..take);
         take as i32
     }
     fn skip(&mut self, ln: i64) -> Result<i64, std::io::Error> {
         if ln <= 0 {
             return Ok(0);
         }
-        let n = (ln as usize).min(self.0.len());
-        self.0.drain(..n);
+        let n = (ln as usize).min(self.data.len());
+        self.data.drain(..n);
         Ok(n as i64)
     }
     fn available(&mut self) -> Result<i32, std::io::Error> {
-        Ok(self.0.len() as i32)
+        Ok(self.data.len() as i32)
     }
     fn close(&mut self) -> Result<(), std::io::Error> {
         Ok(())
     }
-    fn mark(&mut self, _readlimit: i32) {}
+    // fix: 真实 mark/reset（原空实现——get_xml_prolog 读取后无法回退，XML 内容丢失）
+    fn mark(&mut self, _readlimit: i32) {
+        self.mark_snapshot = Some(self.data.clone());
+    }
     fn reset(&mut self) -> Result<(), std::io::Error> {
+        if let Some(snapshot) = self.mark_snapshot.take() {
+            self.data = snapshot;
+        }
         Ok(())
     }
     fn mark_supported(&self) -> bool {
-        false
+        true
     }
 }
 

@@ -216,9 +216,9 @@ impl PackageDocumentMetadataReader {
 // ---- DOM 类型复用 DOMUtil 的本地 stub（与 NCXDocumentV2 相同约定），此处仅补齐本文件所需方法 ----
 
 impl Document {
-    // fix: 占位实现, Java getDocumentElement 返回根 Element
+    // fix: 真实返回根 Element（原占位恒 null → read_metadata 全空，书名/作者丢失）
     pub fn get_document_element(&self) -> Element {
-        Element::null()
+        self.root.clone().unwrap_or_else(Element::null)
     }
 }
 

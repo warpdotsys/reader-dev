@@ -307,29 +307,34 @@ impl NodeList {
     }
 }
 
+fn element_from_start(e: &quick_xml::events::BytesStart) -> Element {
+    Element {
+        tag_name: String::from_utf8_lossy(e.name().as_ref()).to_string(),
+        attributes: e
+            .attributes()
+            .filter_map(|a| a.ok())
+            .map(|a| {
+                (
+                    String::from_utf8_lossy(a.key.as_ref()).to_string(),
+                    String::from_utf8_lossy(&a.value).to_string(),
+                )
+            })
+            .collect(),
+        children: Vec::new(),
+        is_text: false,
+        text_data: String::new(),
+        null: false,
+    }
+}
+
 fn parse_dom_children(reader: &mut quick_xml::Reader<&[u8]>, buf: &mut Vec<u8>) -> Vec<Element> {
     let mut children: Vec<Element> = Vec::new();
     loop {
         buf.clear();
         match reader.read_event_into(buf) {
             Ok(quick_xml::events::Event::Start(e)) => {
-                let mut element = Element {
-                    tag_name: String::from_utf8_lossy(e.name().as_ref()).to_string(),
-                    attributes: e
-                        .attributes()
-                        .filter_map(|a| a.ok())
-                        .map(|a| {
-                            (
-                                String::from_utf8_lossy(a.key.as_ref()).to_string(),
-                                String::from_utf8_lossy(&a.value).to_string(),
-                            )
-                        })
-                        .collect(),
-                    children: Vec::new(),
-                    is_text: false,
-                    text_data: String::new(),
-                    null: false,
-                };
+                // fix: 自闭合标签（manifest item / spine itemref 等）——Empty 事件单独处理
+                let mut element = element_from_start(&e);
                 element.children = parse_dom_children(reader, buf)
                     .into_iter()
                     .map(|e| Node {
@@ -338,6 +343,9 @@ fn parse_dom_children(reader: &mut quick_xml::Reader<&[u8]>, buf: &mut Vec<u8>) 
                     })
                     .collect();
                 children.push(element);
+            }
+            Ok(quick_xml::events::Event::Empty(e)) => {
+                children.push(element_from_start(&e));
             }
             Ok(quick_xml::events::Event::Text(t)) => {
                 if let Ok(text) = t.unescape() {
@@ -372,7 +380,9 @@ fn collect_by_tag(root: Option<&Element>, tag_name: &str) -> NodeList {
 }
 
 fn collect_by_tag_inner(element: &Element, tag_name: &str, out: &mut Vec<Element>) {
-    if !element.is_text && element.tag_name.eq_ignore_ascii_case(tag_name) {
+    // fix: XML 命名空间前缀（dc:title 等）——按本地名匹配（原精确匹配导致带前缀标签永不命中）
+    let want = tag_name.rsplit(':').next().unwrap_or(tag_name);
+    if !element.is_text && element.get_local_name().eq_ignore_ascii_case(want) {
         out.push(element.clone());
     }
     for node in &element.children {

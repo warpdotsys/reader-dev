@@ -157,10 +157,19 @@ impl Resource {
   /**
    * Java 构造器 Resource(InputStream in, String href) 的转录（ResourceUtil.createResource 使用）
    */
-  pub fn new_stream<T>(in_stream: &T, href: String) -> Resource {
-    // fix: Java 从 InputStream 读尽全部字节；in_stream 为占位类型，占位：空数据
-    let _ = in_stream;
-    Resource::with_data_and_href(Vec::new(), href)
+  pub fn new_stream<T: crate::stubs::InputStream>(in_stream: &mut T, href: String) -> Resource {
+    // fix: 真实读尽流（原占位空数据，EPUB 内容全部为空）
+    let mut buf = Vec::new();
+    let mut tmp = [0u8; 8192];
+    loop {
+        let tmp_len = tmp.len();
+        let n = in_stream.read(&mut tmp, 0, tmp_len);
+        if n <= 0 {
+            break;
+        }
+        buf.extend_from_slice(&tmp[..n as usize]);
+    }
+    Resource::with_data_and_href(buf, href)
   }
 
 

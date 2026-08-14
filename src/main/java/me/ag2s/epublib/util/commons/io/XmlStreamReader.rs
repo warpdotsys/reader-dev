@@ -949,20 +949,103 @@ impl URLConnection {
 }
 
 struct InputStreamReader {
-    _inner: Box<dyn InputStream>,
+    inner: Option<Box<dyn crate::stubs::InputStream>>,
+    encoding: String,
+    buf: Vec<u8>,
+    pending: Vec<char>,
 }
 
 impl InputStreamReader {
-    pub fn new(_input: BOMInputStream, _encoding: String) -> Self {
+    pub fn new(input: BOMInputStream, encoding: String) -> Self {
+        // fix: 包装 BOMInputStream 为 stubs 字节流（原 read 恒 -1，XML 内容读不出）
+        struct BomStream(BOMInputStream);
+        impl crate::stubs::InputStream for BomStream {
+            fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
+                if off > b.len() {
+                    return -1;
+                }
+                match self.0.read_off(&mut b[off..], 0, len) {
+                    Ok(n) if n > 0 => n as i32,
+                    _ => -1,
+                }
+            }
+            fn close(&mut self) {}
+        }
         InputStreamReader {
-            _inner: Box::new(FileInputStream),
+            inner: Some(Box::new(BomStream(input))),
+            encoding,
+            buf: Vec::new(),
+            pending: Vec::new(),
         }
     }
-    pub fn read(&mut self, _buf: &mut [char], _offset: usize, _len: usize) -> Result<i32, io::Error> {
-        Ok(-1) // fix: 占位，未接入真实字符解码
+    pub fn read(&mut self, buf: &mut [char], offset: usize, len: usize) -> Result<i32, io::Error> {
+        while self.pending.is_empty() {
+            if self.buf.is_empty() {
+                let mut tmp = [0u8; 2048];
+                let tmp_len = tmp.len();
+                let n = self.inner.as_mut().unwrap().read(&mut tmp, 0, tmp_len);
+                if n > 0 {
+                    self.buf.extend_from_slice(&tmp[..n as usize]);
+                }
+            }
+            if self.buf.is_empty() {
+                return Ok(-1);
+            }
+            let (decoded, consumed) = decode_prefix(&self.encoding, &self.buf);
+            if consumed == 0 {
+                return Ok(0);
+            }
+            self.buf.drain(..consumed);
+            self.pending.extend(decoded.chars());
+        }
+        let n = len.min(self.pending.len());
+        for i in 0..n {
+            buf[offset + i] = self.pending[i];
+        }
+        self.pending.drain(..n);
+        Ok(n as i32)
     }
     pub fn close(&mut self) -> Result<(), io::Error> {
         Ok(())
+    }
+}
+
+fn decode_prefix(encoding: &str, bytes: &[u8]) -> (String, usize) {
+    if bytes.is_empty() {
+        return (String::new(), 0);
+    }
+    if encoding.is_empty()
+        || encoding.eq_ignore_ascii_case("UTF-8")
+        || encoding.eq_ignore_ascii_case("utf8")
+        || encoding.eq_ignore_ascii_case("UTF8")
+    {
+        let mut out = String::new();
+        let mut consumed = 0usize;
+        for (i, &b) in bytes.iter().enumerate() {
+            let char_len = if b < 0x80 {
+                1
+            } else if b < 0xE0 {
+                2
+            } else if b < 0xF0 {
+                3
+            } else {
+                4
+            };
+            if i + char_len > bytes.len() {
+                break;
+            }
+            match std::str::from_utf8(&bytes[i..i + char_len]) {
+                Ok(s) => {
+                    out.push_str(s);
+                    consumed = i + char_len;
+                }
+                Err(_) => break,
+            }
+        }
+        (out, consumed)
+    } else {
+        let s = crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(bytes, encoding);
+        (s, bytes.len())
     }
 }
 

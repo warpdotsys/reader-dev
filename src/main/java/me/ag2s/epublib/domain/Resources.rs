@@ -92,7 +92,8 @@ impl Resources {
 
     fn get_resource_item_prefix(&self, resource: &Resource) -> String {
         let result: String;
-        if MediaTypes::is_bitmap_image(resource.get_media_type().as_ref().unwrap()) {
+        // fix: 转录占位 media_type 恒 None（determine_media_type 扩展名表空）——防护 unwrap（Kotlin 此处非空）
+        if resource.get_media_type().as_ref().map(|mt| MediaTypes::is_bitmap_image(mt)).unwrap_or(false) {
             result = Resources::IMAGE_PREFIX.to_string();
         } else {
             result = Resources::ITEM_PREFIX.to_string();
@@ -355,7 +356,8 @@ impl Resources {
     pub fn find_first_resource_by_media_type_in(
             resources: &Vec<Resource>, media_type: &MediaType) -> Option<Resource> {
         for resource in resources {
-            if resource.get_media_type().as_ref().unwrap() == media_type {
+            // fix: 转录占位 media_type 恒 None 防护 unwrap（原 panic 于空 media_type）
+            if resource.get_media_type().as_ref().map(|mt| mt == media_type).unwrap_or(false) {
                 return Some(resource.clone());
             }
         }

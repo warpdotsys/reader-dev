@@ -174,10 +174,10 @@ impl EpubFile {
     /*重写epub文件解析代码，直接读出压缩包文件生成Resources给epublib，这样的好处是可以逐一修改某些文件的格式错误*/
     fn read_epub(&mut self) -> Option<EpubBook> {
         // try {
-        let _file = self.book.get_local_file();
+        let file = self.book.get_local_file();
         //通过懒加载读取epub
-        // fix: EpubReader::read_epub_lazy 当前接收 EpubReader::ZipFile 占位类型，真实 zip 文件暂未接线
-        return EpubReader::new().read_epub_lazy(ZipFile, "utf-8").ok();
+        // fix: ZipFile 真实 zip 读取（原占位 todo!() panic）
+        return EpubReader::new().read_epub_lazy(ZipFile::new(&file.file_path), "utf-8").ok();
         // } catch (e: Exception) {
         //     e.printStackTrace()
         // }
@@ -234,10 +234,15 @@ impl EpubFile {
     }
 
     fn get_body(&self, res: &Resource, start_fragment_id: Option<String>, end_fragment_id: Option<String>) -> Element {
-        // fix: 占位 Jsoup 仅支持 UTF-8 lossy 解码，忽略 mCharset
-        // fix: unwrap_or(&Vec::new()) 借用临时值（E0716），改用静态空切片
+        // fix: 按资源声明的编码解码（原仅 UTF-8 lossy；GBK 等 epub 乱码）
         let data = res.get_data().map(|d| d.as_slice()).unwrap_or(&[]);
-        let body = Jsoup::parse(String::from_utf8_lossy(data).to_string()).body();
+        let encoding = res.get_input_encoding().clone();
+        let text = if encoding.is_empty() || encoding.eq_ignore_ascii_case("utf-8") {
+            String::from_utf8_lossy(data).to_string()
+        } else {
+            crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(data, &encoding)
+        };
+        let body = Jsoup::parse(text).body();
         if let Some(sid) = start_fragment_id.as_ref() {
             if !sid.is_empty() {
                 body.get_element_by_id(&sid)
