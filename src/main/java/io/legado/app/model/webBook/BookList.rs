@@ -116,7 +116,7 @@ impl BookList {
         if let Some(dl) = debug_log {
             dl.log(Some(&book_source.book_source_url), Some(&format!("≡获取成功:{}", analyze_url.rule_url)), false);
         }
-        let mut analyze_rule = AnalyzeRule::new(variable_book, book_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*variable_book, Some(book_source), debug_log);
         analyze_rule.set_content(Some(Box::new(Any::from(body.unwrap()))), None).set_base_url(Some(base_url.to_string()));
         analyze_rule.set_redirect_url(base_url.to_string());
         if let Some(book_url_pattern) = book_source.book_url_pattern.clone() {

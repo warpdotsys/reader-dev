@@ -7612,18 +7612,31 @@ impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface
     fn put_variable(&mut self, _key: &str, _value: Option<&str>) {}
 }
 
-// fix: Kotlin `AnalyzeRule(ruleData, source, debugLog)`（AnalyzeRule.rs 转录未提供构造器；
-//      泛型接收任意实参，字段以空占位构造，仅保证编译与调用形态）
+// fix: Kotlin `AnalyzeRule(ruleData, source, debugLog)`（真实构造：提取书籍变量 + 书源）
 impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
-    pub fn new<R, S, D>(
-        _rule_data: R,
-        _source: S,
-        _debug_log: D,
+    pub fn new(
+        rule_data: &dyn crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface,
+        source: Option<&crate::io_legado_app_data_entities_booksource::BookSource>,
+        _debug_log: Option<&dyn crate::io_legado_app_model_debuglog::DebugLog>,
     ) -> crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
+        // 提取书籍变量（{{bookName}}/@get:{bookName} 等）
+        let mut book_variables = std::collections::HashMap::new();
+        if let Some(b) = rule_data.as_any().downcast_ref::<crate::io_legado_app_data_entities_book::Book>() {
+            book_variables.insert(String::from("bookName"), b.name.clone());
+            book_variables.insert(String::from("bookAuthor"), b.author.clone());
+            book_variables.insert(String::from("bookUrl"), b.book_url.clone());
+            book_variables.insert(String::from("tocUrl"), b.toc_url.clone());
+            book_variables.insert(String::from("bookKind"), b.kind.clone().unwrap_or_default());
+            book_variables.insert(String::from("bookWordCount"), b.word_count.clone().unwrap_or_default());
+            book_variables.insert(String::from("bookIntro"), b.intro.clone().unwrap_or_default());
+        }
+        let source_book_source = source.cloned();
         crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
             rule_data: Box::new(AnalyzeRulePlaceholderData),
             source: None,
             debug_log: None,
+            source_book_source,
+            book_variables,
             chapter: None,
             next_chapter_url: None,
             content: None,

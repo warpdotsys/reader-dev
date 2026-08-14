@@ -40,7 +40,7 @@ impl RssParserByRule {
             return RssParserDefault::parse_xml(sort_name, body.unwrap(), &source_url, debug_log);
         } else {
             let mut article_list = Vec::<RssArticle>::new();
-            let mut analyze_rule = AnalyzeRule::new(rule_data, rss_source, debug_log);
+            let mut analyze_rule = AnalyzeRule::new(rule_data, None, debug_log);
             analyze_rule.set_content(Some(Box::new(Any::Str(body.unwrap().to_string()))), None).set_base_url(Some(sort_url.to_string()));
             analyze_rule.set_redirect_url(sort_url.to_string());
             let mut reverse = false;

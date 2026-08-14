@@ -360,7 +360,25 @@ fn java_import_script_native(_this: &JsValue, args: &[JsValue], ctx: &mut Contex
 fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let rule = arg_string(args, 0, ctx);
     let content = arg_string(args, 1, ctx);
-    let out = if content.is_empty() || rule.is_empty() {
+    let out = if rule.is_empty() {
+        rule
+    } else if let Some(key) = rule.strip_prefix("@get:") {
+        // fix: @get:{key}——从全局 book 绑定提取（书源规则常用变量）；不依赖 content
+        let key = key.trim_start_matches('{').trim_end_matches('}');
+        let js = format!(
+            "(() => {{ try {{ const o = (typeof book === 'object' && book !== null) ? book : null; \
+             const v = o && o.{0} !== undefined ? o.{0} : (typeof source === 'object' && source !== null ? source.{0} : null); \
+             return v !== null && v !== undefined ? String(v) : ''; }} catch(e) {{ return ''; }} }})()",
+            key
+        );
+        match ctx.eval(boa_engine::Source::from_bytes(js.as_bytes())) {
+            Ok(v) => v
+                .to_string(&mut *ctx)
+                .map(|s| s.to_std_string().unwrap_or_default())
+                .unwrap_or_default(),
+            Err(_) => String::new(),
+        }
+    } else if content.is_empty() {
         rule
     } else if let Some(css) = rule.strip_prefix("@css:") {
         let doc = scraper::Html::parse_document(&content);
@@ -452,14 +470,21 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 
-    for key in [
+    // fix: Kotlin 的 ScriptEngine.put 支持任意键绑定；原固定列表导致自定义绑定（如 bookName）undefined
+    let mut keys: Vec<String> = bindings.map.keys().cloned().collect();
+    for fixed in [
         "result", "src", "baseUrl", "title", "nextChapterUrl", "chapter", "source", "book",
         "cookie", "cache", "key", "page", "speakText", "speakSpeed",
     ] {
+        if !keys.iter().any(|k| k == fixed) {
+            keys.push(fixed.to_string());
+        }
+    }
+    for key in keys {
         if key == "java" {
             continue;
         }
-        let val = bind_value(bindings, key, &mut context);
+        let val = bind_value(bindings, &key, &mut context);
         let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!(key)), val, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
     }
 

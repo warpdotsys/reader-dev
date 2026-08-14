@@ -33,7 +33,7 @@ impl BookInfo {
         if let Some(dl) = debug_log {
             dl.log(Some(&book_source.book_source_url), Some(&format!("≡获取成功:{}", base_url)), false);
         }
-        let mut analyze_rule = AnalyzeRule::new(&mut *book, book_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*book, Some(book_source), debug_log);
         analyze_rule.set_content(Some(Box::new(Any::from(body.unwrap()))), None).set_base_url(Some(base_url.to_string()));
         analyze_rule.set_redirect_url(redirect_url.to_string());
         Self::analyze_book_info_private(book, body, &mut analyze_rule, book_source, base_url, redirect_url, can_re_name, debug_log).await;

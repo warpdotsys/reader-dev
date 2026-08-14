@@ -48,7 +48,7 @@ impl BookContent {
         let mut content = String::new();
         let mut next_url_list = vec![redirect_url.to_string()];
         let content_rule = book_source.get_content_rule();
-        let mut analyze_rule = AnalyzeRule::new(book, book_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*book, Some(book_source), debug_log);
         analyze_rule.set_content(Some(Box::new(Any::from(body.unwrap()))), Some(base_url.to_string()));
         analyze_rule.set_redirect_url(redirect_url.to_string());
         analyze_rule.chapter = Some(book_chapter.clone());
@@ -175,7 +175,7 @@ impl BookContent {
         print_log: bool,
         debug_log: Option<&dyn DebugLog>
     ) -> (String, Vec<String>) {
-        let mut analyze_rule = AnalyzeRule::new(book, book_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*book, Some(book_source), debug_log);
         analyze_rule.set_content(Some(Box::new(Any::from(body))), Some(base_url.to_string()));
         analyze_rule.chapter = Some(chapter.clone());
         let r_url = analyze_rule.set_redirect_url(redirect_url.to_string());

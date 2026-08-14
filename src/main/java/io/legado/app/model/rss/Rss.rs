@@ -72,7 +72,7 @@ impl Rss {
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${rssArticle.link}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")
         // fix: E0596 set_content/get_string 需要 &mut self
-        let mut analyze_rule = AnalyzeRule::new(rss_article, rss_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*rss_article, None, debug_log);
         analyze_rule.set_content(body.map(|s| Box::new(Any::Str(s))), None)
             // fix: get_absolute_url 占位签名 (Option<&URL>, String)——原 Kotlin 传 baseUrl(rssArticle.origin)
             .set_base_url(Some(get_absolute_url(None, rss_article.link.clone())));

@@ -34,6 +34,9 @@ pub struct AnalyzeRule {
     pub rule_data: Box<dyn RuleDataInterface>,
     pub source: Option<Box<dyn BaseSource>>,
     pub debug_log: Option<Box<dyn DebugLog>>,
+    // fix: 真实构造补充——书源具体类型与书籍变量（{{bookName}} 等）
+    pub source_book_source: Option<BookSource>,
+    pub book_variables: std::collections::HashMap<String, String>,
 
     pub chapter: Option<BookChapter>,
     pub next_chapter_url: Option<String>,
@@ -505,6 +508,8 @@ impl AnalyzeRule {
         }
         self.chapter.as_ref().and_then(|c| c.get_variable(key.as_str()))
             .or_else(|| self.book().and_then(|b| b.get_variable(key.as_str())))
+            // fix: 真实构造提取的书籍变量（{{bookName}}/@get:{bookName} 等）
+            .or_else(|| self.book_variables.get(&key).cloned())
             .or_else(|| self.rule_data.get_variable(&key))
             .unwrap_or_else(|| String::new())
     }
@@ -524,8 +529,31 @@ impl AnalyzeRule {
                 }
             }
             None => {
-                bindings.set("book", false);
+                // fix: rule_data 占位（book() 恒 None）——用真实构造提取的 book_variables 重建 book JSON
+                if let Some(name) = self.book_variables.get("bookName") {
+                    let mut book_json = serde_json::json!({
+                        "bookName": name,
+                        "bookAuthor": self.book_variables.get("bookAuthor").cloned().unwrap_or_default(),
+                        "bookUrl": self.book_variables.get("bookUrl").cloned().unwrap_or_default(),
+                        "tocUrl": self.book_variables.get("tocUrl").cloned().unwrap_or_default(),
+                        "kind": self.book_variables.get("bookKind").cloned().unwrap_or_default(),
+                        "wordCount": self.book_variables.get("bookWordCount").cloned().unwrap_or_default(),
+                        "intro": self.book_variables.get("bookIntro").cloned().unwrap_or_default(),
+                    });
+                    if book_json["wordCount"].as_str().map(|s| s.trim().is_empty()).unwrap_or(true) {
+                        book_json["wordCount"] = serde_json::Value::Number(0.into());
+                    }
+                    bindings.put("book", crate::stubs::Any::Str(book_json.to_string()));
+                } else {
+                    bindings.set("book", false);
+                }
             }
+        }
+        // fix: source 绑定真实书源（source_book_source；原 Box<dyn BaseSource> 恒 None）
+        if let Some(s) = &self.source_book_source {
+            bindings.put("source", crate::stubs::Any::Str(crate::stubs::book_source_to_json(s).to_string()));
+        } else {
+            bindings.set("source", false);
         }
         if let Some(c) = &self.chapter {
             bindings.put("chapter", crate::stubs::Any::Str(crate::stubs::book_chapter_to_json(c).to_string()));
@@ -596,18 +624,33 @@ impl AnalyzeRule {
     pub fn refresh_book_url(&mut self) {
         // runBlocking {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
-        if book.is_none() {
-            return;
-        }
-        let book = book.unwrap();
-        // fix: BaseSource trait 对象无 as_any 无法下转为 &BookSource，且 BookSource 未实现 Clone；WebBook 用默认书源占位
-        let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
-        let books = block_on(web_book.search_book(book.name.as_str(), None));
-        for it in books {
-            if it.name == book.name && it.author == book.author {
-                // fix: book 为只读 &Book（经 &dyn Any 下转），无法写回 bookUrl/tocUrl；占位保留匹配判断
-                let _ = (it.book_url, it.toc_url);
+        if let Some(book) = book {
+            // fix: BaseSource trait 对象无 as_any 无法下转为 &BookSource，且 BookSource 未实现 Clone；WebBook 用默认书源占位
+            let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
+            let books = block_on(web_book.search_book(book.name.as_str(), None));
+            for it in books {
+                if it.name == book.name && it.author == book.author {
+                    // fix: book 为只读 &Book（经 &dyn Any 下转），无法写回 bookUrl/tocUrl；占位保留匹配判断
+                    let _ = (it.book_url, it.toc_url);
+                    return;
+                }
+            }
+        } else {
+            // fix: rule_data 占位（book() 恒 None）——用真实构造提取的 book_variables 重建搜索并写回
+            let name = self.book_variables.get("bookName").cloned().unwrap_or_default();
+            if name.is_empty() {
                 return;
+            }
+            let author = self.book_variables.get("bookAuthor").cloned().unwrap_or_default();
+            let source = self.source_book_source.clone().unwrap_or_default();
+            let web_book = WebBook::new(source, false, None, Some(self.get_user_name_space()));
+            let books = block_on(web_book.search_book(name.as_str(), None));
+            for it in books {
+                if it.name == name && it.author == author {
+                    self.book_variables.insert(String::from("bookUrl"), it.book_url);
+                    self.book_variables.insert(String::from("tocUrl"), it.toc_url);
+                    return;
+                }
             }
         }
         // }
@@ -618,15 +661,26 @@ impl AnalyzeRule {
     pub fn refresh_toc_url(&mut self) {
         // runBlocking {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
-        if book.is_none() {
-            return;
+        if let Some(book) = book {
+            // fix: get_book_info 需要 &mut Book，book 为只读引用；占位：在本地副本上执行并丢弃结果
+            let mut book_mut = Book::default();
+            book_mut.name = book.name.clone();
+            let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
+            block_on(web_book.get_book_info(&mut book_mut, false));
+        } else {
+            // fix: rule_data 占位——用真实构造提取的 book_variables + 真实书源刷新 tocUrl 并写回
+            let name = self.book_variables.get("bookName").cloned().unwrap_or_default();
+            if name.is_empty() {
+                return;
+            }
+            let source = self.source_book_source.clone().unwrap_or_default();
+            let web_book = WebBook::new(source, false, None, Some(self.get_user_name_space()));
+            let mut book_mut = Book::default();
+            book_mut.name = name;
+            book_mut.book_url = self.book_variables.get("bookUrl").cloned().unwrap_or_default();
+            block_on(web_book.get_book_info(&mut book_mut, false));
+            self.book_variables.insert(String::from("tocUrl"), book_mut.toc_url);
         }
-        let book = book.unwrap();
-        // fix: get_book_info 需要 &mut Book，book 为只读引用；占位：在本地副本上执行并丢弃结果
-        let mut book_mut = Book::default();
-        book_mut.name = book.name.clone();
-        let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
-        block_on(web_book.get_book_info(&mut book_mut, false));
         // }
     }
 

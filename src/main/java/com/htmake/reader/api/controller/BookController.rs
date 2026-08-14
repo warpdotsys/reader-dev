@@ -2334,7 +2334,7 @@ impl BookController {
                     let book_source_object = book_source.clone().and_then(|it| BookSource::from_json(it).get_or_null());
                     if let Some(bs) = &book_source_object {
                         if let Some(pre_update_js) = bs.rule_toc.as_ref().and_then(|t| t.pre_update_js.clone()) {
-                            let mut analyze_rule = AnalyzeRule::new(book.clone(), bs.clone(), None::<()>);
+                            let mut analyze_rule = AnalyzeRule::new(&book.clone(), Some(bs), None::<&dyn DebugLog>);
                             analyze_rule.eval_js(pre_update_js, None);
                         }
                     }

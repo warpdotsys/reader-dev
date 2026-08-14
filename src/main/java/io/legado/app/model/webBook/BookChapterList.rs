@@ -160,7 +160,7 @@ impl BookChapterList {
         log: bool,
         debug_log: Option<&dyn DebugLog>
     ) -> (Vec<BookChapter>, Vec<String>) {
-        let mut analyze_rule = AnalyzeRule::new(&mut *book, book_source, debug_log);
+        let mut analyze_rule = AnalyzeRule::new(&*book, Some(book_source), debug_log);
         analyze_rule.set_content(Some(Box::new(Any::from(body))), None).set_base_url(Some(base_url.to_string()));
         analyze_rule.set_redirect_url(redirect_url.to_string());
         //获取目录列表
