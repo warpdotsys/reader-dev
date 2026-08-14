@@ -43,6 +43,11 @@ impl EncodingDetect {
     }
 
     pub fn getEncode(bytes: &[u8]) -> String {
+        // fix: 先验证 UTF-8 有效性（原直走 CharsetDetector——单字节识别器会把 UTF-8 中文文本误判为
+        //      KOI8-R/windows-1256 → 乱码；UTF-8 合法时无需检测）
+        if std::str::from_utf8(bytes).is_ok() {
+            return "UTF-8".to_string();
+        }
         let detect = CharsetDetector::new().set_text(bytes.to_vec()).detect();
         match detect {
             Some(m) => m.get_name(),
