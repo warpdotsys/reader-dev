@@ -356,12 +356,21 @@ fn java_import_script_native(_this: &JsValue, args: &[JsValue], ctx: &mut Contex
     Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
 }
 
-/// java.getString(rule, content) → 简化规则解析（@css: 选择器 / @json: 路径 / 原样）
+/// java.getString(rule, content) → 简化规则解析（@js: 执行 / @css: 选择器 / @json: 路径 / 原样）
 fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let rule = arg_string(args, 0, ctx);
     let content = arg_string(args, 1, ctx);
     let out = if rule.is_empty() {
         rule
+    } else if let Some(js_code) = rule.strip_prefix("@js:") {
+        // fix: @js: 脚本执行（Kotlin 完整 getString 链的简化）
+        match ctx.eval(boa_engine::Source::from_bytes(js_code.as_bytes())) {
+            Ok(v) => v
+                .to_string(&mut *ctx)
+                .map(|s| s.to_std_string().unwrap_or_default())
+                .unwrap_or_default(),
+            Err(_) => String::new(),
+        }
     } else if let Some(key) = rule.strip_prefix("@get:") {
         // fix: @get:{key}——从全局 book 绑定提取（书源规则常用变量）；不依赖 content
         let key = key.trim_start_matches('{').trim_end_matches('}');

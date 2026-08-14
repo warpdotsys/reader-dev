@@ -687,23 +687,43 @@ impl AnalyzeRule {
     // fun reGetBook() {
     pub fn re_get_book(&mut self) {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
-        if book.is_none() {
-            return;
+        if let Some(book) = book {
+            // fix: 同上，book 只读且 BookSource 无 Clone；搜索与写回均占位（Kotlin 会重新搜索并写回 bookUrl/变量）
+            let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
+            let refreshed_book = block_on(web_book.search_book(book.name.as_str(), Some(1)))
+                .into_iter()
+                .find(|it| it.name == book.name && it.author == book.author)
+                .map(|mut it| it.to_book())
+                .get_or_throw()
+                .unwrap_or_else(|_| Book::default());
+            let _ = refreshed_book;
+            let mut book_mut = Book::default();
+            book_mut.name = book.name.clone();
+            book_mut.author = book.author.clone();
+            block_on(web_book.get_book_info(&mut book_mut, false));
+        } else {
+            // fix: rule_data 占位——用真实构造提取的 book_variables + 真实书源重新获取书籍信息并写回
+            let name = self.book_variables.get("bookName").cloned().unwrap_or_default();
+            if name.is_empty() {
+                return;
+            }
+            let author = self.book_variables.get("bookAuthor").cloned().unwrap_or_default();
+            let source = self.source_book_source.clone().unwrap_or_default();
+            let web_book = WebBook::new(source, false, None, Some(self.get_user_name_space()));
+            let refreshed_book = block_on(web_book.search_book(name.as_str(), Some(1)))
+                .into_iter()
+                .find(|it| it.name == name && it.author == author)
+                .map(|mut it| it.to_book())
+                .get_or_throw()
+                .unwrap_or_else(|_| Book::default());
+            self.book_variables.insert(String::from("bookUrl"), refreshed_book.book_url);
+            self.book_variables.insert(String::from("tocUrl"), refreshed_book.toc_url);
+            let mut book_mut = Book::default();
+            book_mut.name = name;
+            book_mut.book_url = self.book_variables.get("bookUrl").cloned().unwrap_or_default();
+            block_on(web_book.get_book_info(&mut book_mut, false));
+            self.book_variables.insert(String::from("tocUrl"), book_mut.toc_url);
         }
-        let book = book.unwrap();
-        // fix: 同上，book 只读且 BookSource 无 Clone；搜索与写回均占位（Kotlin 会重新搜索并写回 bookUrl/变量）
-        let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
-        let refreshed_book = block_on(web_book.search_book(book.name.as_str(), Some(1)))
-            .into_iter()
-            .find(|it| it.name == book.name && it.author == book.author)
-            .map(|mut it| it.to_book())
-            .get_or_throw()
-            .unwrap_or_else(|_| Book::default());
-        let _ = refreshed_book;
-        let mut book_mut = Book::default();
-        book_mut.name = book.name.clone();
-        book_mut.author = book.author.clone();
-        block_on(web_book.get_book_info(&mut book_mut, false));
     }
 }
 
