@@ -122,3 +122,17 @@ fn test_java_get_obj() {
     }
     println!("OK java get/cacheFile");
 }
+#[test]
+fn test_java_get_string() {
+    use reader::stubs::SimpleBindings;
+    let b = SimpleBindings::new();
+    // @css: 选择器
+    let r = reader::runtime::js::eval_js_script("java.getString('@css:.title', '<div class=\"title\">标题内容</div>');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("标题内容"), "css getString: {}", out);
+    // @json: 路径
+    let r = reader::runtime::js::eval_js_script("java.getString('@json:$.name', '{\"name\":\"测试\"}');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("测试"), "json getString: {}", out);
+    println!("OK java getString");
+}

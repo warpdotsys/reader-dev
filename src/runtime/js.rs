@@ -356,6 +356,32 @@ fn java_import_script_native(_this: &JsValue, args: &[JsValue], ctx: &mut Contex
     Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
 }
 
+/// java.getString(rule, content) → 简化规则解析（@css: 选择器 / @json: 路径 / 原样）
+fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let rule = arg_string(args, 0, ctx);
+    let content = arg_string(args, 1, ctx);
+    let out = if content.is_empty() || rule.is_empty() {
+        rule
+    } else if let Some(css) = rule.strip_prefix("@css:") {
+        let doc = scraper::Html::parse_document(&content);
+        match scraper::Selector::parse(css) {
+            Ok(sel) => doc
+                .select(&sel)
+                .map(|e| e.text().collect::<String>())
+                .next()
+                .unwrap_or_default(),
+            Err(_) => String::new(),
+        }
+    } else if let Some(path) = rule.strip_prefix("@json:") {
+        crate::runtime::json_path::query(&content, path)
+            .map(|v| v.to_string())
+            .unwrap_or_default()
+    } else {
+        rule
+    };
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
 fn java_get_cookie_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let tag = arg_string(args, 0, ctx);
     let key = arg_string(args, 1, ctx);
@@ -422,6 +448,7 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_read_file_native), boa_engine::js_string!("readFile"), 1)
         .function(NativeFunction::from_fn_ptr(java_get_file_native), boa_engine::js_string!("getFile"), 1)
         .function(NativeFunction::from_fn_ptr(java_import_script_native), boa_engine::js_string!("importScript"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_string_native), boa_engine::js_string!("getString"), 2)
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 
