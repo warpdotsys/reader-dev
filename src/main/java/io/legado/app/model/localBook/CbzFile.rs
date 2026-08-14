@@ -145,8 +145,40 @@ impl CbzFile {
     }
 
     fn get_content_inner(&self, chapter: &BookChapter) -> Option<String> {
-        // fix: 章节正文解析未转录，占位返回空串
-        return Some(String::new());
+        // fix: 真实实现——从 zip 提取章节图片，base64 data URI 内嵌（原占位空串，漫画无法阅读）
+        let mut book = self.book.clone();
+        let zf = ZipFile::new(&book.get_local_file());
+        let mut entries = zf.entries();
+        while entries.has_more_elements() {
+            let zip_entry: ZipEntry = entries.next_element();
+            if zip_entry.is_directory {
+                continue;
+            }
+            if zip_entry.name == chapter.url {
+                let mut stream = zf.get_input_stream(&zip_entry);
+                let mut data = Vec::new();
+                loop {
+                    let mut tmp = [0u8; 8192];
+                    let tmp_len = tmp.len();
+                    let n = stream.read(&mut tmp, 0, tmp_len);
+                    if n <= 0 {
+                        break;
+                    }
+                    data.extend_from_slice(&tmp[..n as usize]);
+                }
+                if data.is_empty() {
+                    return Some(String::new());
+                }
+                let ext = FileUtils::getFileExtetion(&chapter.url).to_lowercase();
+                let b64 = crate::stubs::JavaBase64::get_encoder().encode_to_string(&data);
+                return Some(format!(
+                    "<img src=\"data:image/{};base64,{}\" style=\"width:100%\" />",
+                    if ext.is_empty() { "png".to_string() } else { ext },
+                    b64
+                ));
+            }
+        }
+        Some(String::new())
     }
 
     fn get_chapter_list_inner(&mut self) -> Vec<BookChapter> {

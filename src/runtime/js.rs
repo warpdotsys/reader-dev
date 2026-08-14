@@ -295,7 +295,19 @@ fn js_http_request(
         if let Some(b) = body {
             builder = builder.body(b);
         }
-        let resp = builder.send().ok()?;
+        let resp = match builder.send() {
+            Ok(r) => r,
+            Err(e) => {
+                let mut detail = String::new();
+                let mut src: Option<&dyn std::error::Error> = Some(&e);
+                while let Some(s) = src {
+                    detail.push_str(&format!(" | {}", s));
+                    src = s.source();
+                }
+                eprintln!("[js.http] {} {} error: {}", method, url, detail);
+                return None;
+            }
+        };
         let status = resp.status().as_u16() as i32;
         let mut out_headers = std::collections::HashMap::new();
         for (k, v) in resp.headers() {
