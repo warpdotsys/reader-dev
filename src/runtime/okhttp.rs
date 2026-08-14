@@ -15,6 +15,8 @@ fn execute_inner(req: &Request) -> Result<Response, crate::stubs::Throwable> {
         .redirect(reqwest::redirect::Policy::limited(10))
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(45))
+        // fix: 与原版 OkHttp unsafeTrustManager 一致——全信任证书（自签/过期站点可用）
+        .danger_accept_invalid_certs(true)
         .build()
         .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
 
