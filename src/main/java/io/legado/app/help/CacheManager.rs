@@ -15,7 +15,7 @@ use std::sync::Mutex;
 // @Suppress("unused")
 pub struct CacheManager {
     pub user_name_space: String,
-    query_ttf_map: std::collections::HashMap<String, (i64, QueryTTF)>,
+    query_ttf_map: Mutex<std::collections::HashMap<String, (i64, QueryTTF)>>,
     pub cache_instance: Mutex<ACacheManager>,
 }
 
@@ -23,7 +23,7 @@ impl CacheManager {
     pub fn new(user_name_space: String) -> CacheManager {
         CacheManager {
             user_name_space: user_name_space.clone(),
-            query_ttf_map: std::collections::HashMap::new(),
+            query_ttf_map: Mutex::new(std::collections::HashMap::new()),
             // val cacheInstance = ACache.get(
             //     File(ReaderAdapterHelper.getAdapter().getWorkDir("storage", "cache", "runtimeCache", userNameSpace)),
             //     50_000_000L,
@@ -58,9 +58,11 @@ impl CacheManager {
         //     else -> cacheInstance.put(key, value.toString(), saveTime)
         // }
         if let Some(value) = value.downcast_ref::<QueryTTF>() {
-            // queryTTFMap[key] = Pair(deadline, value)
-            // note: queryTTFMap is a mutable field; requires interior mutability in Rust
-            //  self.queryTTFMap[key] = (deadline, value.clone())
+            // fix: 真实写入（原 &self 无法插入被禁用，map 恒空 → 字体每次重复解析）
+            self.query_ttf_map
+                .lock()
+                .unwrap()
+                .insert(key.to_string(), (deadline, value.clone()));
         } else if let Some(value) = value.downcast_ref::<Vec<u8>>() {
             // cacheInstance.put(key, value, saveTime)（ACache::putBytesWithTime → Utils.newByteArrayWithDateInfo + manager.put）
             let mut manager = self.cache_instance.lock().unwrap();
@@ -154,17 +156,13 @@ impl CacheManager {
 
     pub fn get_query_ttf(&self, key: &str) -> Option<QueryTTF> {
         // val cache = queryTTFMap[key] ?: return None
-        let cache = match self.query_ttf_map.get(key) {
-            Some(cache) => cache,
-            None => return None,
-        };
+        let cache = self.query_ttf_map.lock().unwrap().get(key).cloned()?;
         // if (cache.first == 0L || cache.first > System.currentTimeMillis()) {
         //     return cache.second
         // }
         if cache.0 == 0_i64 || cache.0 > System::current_time_millis() {
-            // fix: QueryTTF 未实现 Clone 无法从 map 拷贝返回，且字段私有无法构造占位；
-            // put 端写入已禁用（&self 无法插入），map 恒为空，实际恒走 None 分支
-            return None;
+            // fix: 真实缓存命中（原注释误置恒 None）
+            return Some(cache.1);
         }
         None
     }

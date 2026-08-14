@@ -630,8 +630,9 @@ impl AnalyzeRule {
             let books = block_on(web_book.search_book(book.name.as_str(), None));
             for it in books {
                 if it.name == book.name && it.author == book.author {
-                    // fix: book 为只读 &Book（经 &dyn Any 下转），无法写回 bookUrl/tocUrl；占位保留匹配判断
-                    let _ = (it.book_url, it.toc_url);
+                    // fix: book 为只读 &Book——写回 book_variables（JS 内后续读取 + 后续章节请求）
+                    self.book_variables.insert(String::from("bookUrl"), it.book_url);
+                    self.book_variables.insert(String::from("tocUrl"), it.toc_url);
                     return;
                 }
             }
@@ -662,11 +663,13 @@ impl AnalyzeRule {
         // runBlocking {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
         if let Some(book) = book {
-            // fix: get_book_info 需要 &mut Book，book 为只读引用；占位：在本地副本上执行并丢弃结果
+            // fix: get_book_info 需要 &mut Book，book 为只读引用——副本执行后写回 book_variables
             let mut book_mut = Book::default();
             book_mut.name = book.name.clone();
+            book_mut.book_url = book.book_url.clone();
             let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
             block_on(web_book.get_book_info(&mut book_mut, false));
+            self.book_variables.insert(String::from("tocUrl"), book_mut.toc_url);
         } else {
             // fix: rule_data 占位——用真实构造提取的 book_variables + 真实书源刷新 tocUrl 并写回
             let name = self.book_variables.get("bookName").cloned().unwrap_or_default();
@@ -688,19 +691,23 @@ impl AnalyzeRule {
     pub fn re_get_book(&mut self) {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
         if let Some(book) = book {
-            // fix: 同上，book 只读且 BookSource 无 Clone；搜索与写回均占位（Kotlin 会重新搜索并写回 bookUrl/变量）
+            // fix: book 只读——克隆字段避免借用冲突，搜索后写回 book_variables
+            let (name, author) = (book.name.clone(), book.author.clone());
             let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
-            let refreshed_book = block_on(web_book.search_book(book.name.as_str(), Some(1)))
+            let refreshed_book = block_on(web_book.search_book(name.as_str(), Some(1)))
                 .into_iter()
-                .find(|it| it.name == book.name && it.author == book.author)
+                .find(|it| it.name == name && it.author == author)
                 .map(|mut it| it.to_book())
                 .get_or_throw()
                 .unwrap_or_else(|_| Book::default());
-            let _ = refreshed_book;
+            self.book_variables.insert(String::from("bookUrl"), refreshed_book.book_url);
+            self.book_variables.insert(String::from("tocUrl"), refreshed_book.toc_url);
             let mut book_mut = Book::default();
-            book_mut.name = book.name.clone();
-            book_mut.author = book.author.clone();
+            book_mut.name = name;
+            let current_book_url = self.book_variables.get("bookUrl").cloned().unwrap_or_default();
+            book_mut.book_url = current_book_url;
             block_on(web_book.get_book_info(&mut book_mut, false));
+            self.book_variables.insert(String::from("tocUrl"), book_mut.toc_url);
         } else {
             // fix: rule_data 占位——用真实构造提取的 book_variables + 真实书源重新获取书籍信息并写回
             let name = self.book_variables.get("bookName").cloned().unwrap_or_default();

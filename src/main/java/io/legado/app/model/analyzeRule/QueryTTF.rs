@@ -15,6 +15,7 @@ use crate::stubs::Charset;
 // import java.util.Map;
 
 // @SuppressWarnings({"FieldCanBeLocal", "StatementWithEmptyBody", "unused"})
+#[derive(Clone)]
 pub struct QueryTTF {
     font_reader: ByteArrayReader,
     file_header: Header, // private final Header fileHeader = new Header()
@@ -42,6 +43,7 @@ pub struct QueryTTF {
 }
 
 // private static class Header {
+#[derive(Clone)]
 pub struct Header {
     pub major_version: i32,
     pub minor_version: i32,
@@ -52,6 +54,7 @@ pub struct Header {
 }
 
 // private static class Directory {
+#[derive(Clone)]
 pub struct Directory {
     pub tag: String, // public String tag;          // table name
     pub check_sum: i32, // public int checkSum;       // Check sum
@@ -60,6 +63,7 @@ pub struct Directory {
 }
 
 // private static class NameLayout {
+#[derive(Clone)]
 pub struct NameLayout {
     pub format: i32,
     pub count: i32,
@@ -68,6 +72,7 @@ pub struct NameLayout {
 }
 
 // private static class NameRecord {
+#[derive(Clone)]
 pub struct NameRecord {
     pub platform_id: i32, // public int platformID;           // 平台标识符<0:Unicode, 1:Mac, 2:ISO, 3:Windows, 4:Custom>
     pub encoding_id: i32, // public int encodingID;           // 编码标识符
@@ -78,6 +83,7 @@ pub struct NameRecord {
 }
 
 // private static class HeadLayout {
+#[derive(Clone)]
 pub struct HeadLayout {
     pub major_version: i32,
     pub minor_version: i32,
@@ -100,6 +106,7 @@ pub struct HeadLayout {
 }
 
 // private static class MaxpLayout {
+#[derive(Clone)]
 pub struct MaxpLayout {
     pub major_version: i32,
     pub minor_version: i32,
@@ -120,6 +127,7 @@ pub struct MaxpLayout {
 }
 
 // private static class CmapLayout {
+#[derive(Clone)]
 pub struct CmapLayout {
     pub version: i32,
     pub num_tables: i32,
@@ -128,6 +136,7 @@ pub struct CmapLayout {
 }
 
 // private static class CmapRecord {
+#[derive(Clone)]
 pub struct CmapRecord {
     pub platform_id: i32,
     pub encoding_id: i32,
@@ -136,6 +145,7 @@ pub struct CmapRecord {
 
 // private static class CmapFormat {
 // fix: 与文件末尾的 enum CmapFormat 重名（E0428），基础类改名为 CmapFormatBase
+#[derive(Clone)]
 pub struct CmapFormatBase {
     pub format: i32,
     pub length: i32,
@@ -144,6 +154,7 @@ pub struct CmapFormatBase {
 }
 
 // private static class CmapFormat4 extends CmapFormat {
+#[derive(Clone)]
 pub struct CmapFormat4 {
     pub format: i32, // (extends CmapFormat)
     pub length: i32,
@@ -161,6 +172,7 @@ pub struct CmapFormat4 {
 }
 
 // private static class CmapFormat6 extends CmapFormat {
+#[derive(Clone)]
 pub struct CmapFormat6 {
     pub format: i32, // (extends CmapFormat)
     pub length: i32,
@@ -171,6 +183,7 @@ pub struct CmapFormat6 {
 }
 
 // private static class CmapFormat12 extends CmapFormat {
+#[derive(Clone)]
 pub struct CmapFormat12 {
     pub format: i32, // (extends CmapFormat)
     pub reserved: i32,
@@ -181,6 +194,7 @@ pub struct CmapFormat12 {
 }
 
 // private static class GlyfLayout {
+#[derive(Clone)]
 pub struct GlyfLayout {
     pub number_of_contours: i16, // public short numberOfContours;      // 非负值为简单字型,负值为符合字型
     pub x_min: i16,
@@ -196,6 +210,7 @@ pub struct GlyfLayout {
 }
 
 // private static class ByteArrayReader {
+#[derive(Clone)]
 pub struct ByteArrayReader {
     pub index: i32, // public int index
     pub buffer: Vec<u8>, // public byte[] buffer
@@ -921,6 +936,7 @@ pub fn pps() -> [(i32, i32); 6] {
 }
 
 // CmapFormat 子类统一存储(CmapFormat4/6/12 extends CmapFormat)
+#[derive(Clone)]
 pub enum CmapFormat {
     Base(CmapFormatBase),
     Format4(CmapFormat4),

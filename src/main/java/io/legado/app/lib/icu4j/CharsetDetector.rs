@@ -48,9 +48,9 @@ pub struct CharsetDetector {
      *     the recognition process
      *
      */
-    f_input_bytes: Vec<u8>,   // The text to be checked.  Markup will have been
+    pub(crate) f_input_bytes: Vec<u8>,   // The text to be checked.  Markup will have been
     //   removed if appropriate.
-    f_input_len: i32,          // Length of the byte data in fInputBytes.
+    pub(crate) f_input_len: i32,          // Length of the byte data in fInputBytes.
 
     f_byte_stats: Vec<u16>,    // byte frequency statistics for the input text.
     //   Value is percent, not absolute.
@@ -820,14 +820,57 @@ impl CSRecognizerInfo {
     }
 }
 
-// fix: 原 CharsetRecog_sbcs 转录未包含的 6 个识别器（最小占位实现；仅提供名称，匹配恒为 None）
+// fix: 原 CharsetRecog_sbcs 转录未包含的 6 个识别器（启发式：字节分布 + 解码质量）
+//      单字节字符集识别——统计非 ASCII 字节中落在该语言高频字节区的占比，扣减解码质量罚分
+fn sbcs_match(
+    name: &str,
+    enc_label: Option<&str>,
+    common_bytes: &[u8],
+    det: &CharsetDetector,
+    self_ref: &dyn CharsetRecognizer,
+) -> Option<CharsetMatch> {
+    let stats = &det.f_byte_stats;
+    let mut non_ascii: u32 = 0;
+    let mut common: u32 = 0;
+    for b in 0x80u16..256 {
+        let cnt = stats[b as usize] as u32;
+        if cnt > 0 {
+            non_ascii += cnt;
+            if common_bytes.contains(&(b as u8)) {
+                common += cnt;
+            }
+        }
+    }
+    if non_ascii == 0 {
+        return None;
+    }
+    let mut quality_penalty: i32 = 0;
+    if let Some(label) = enc_label {
+        if let Some(enc) = encoding_rs::Encoding::for_label(label.as_bytes()) {
+            let input = &det.f_input_bytes[..det.f_input_len.max(0) as usize];
+            let (_, _, had_errors) = enc.decode(input);
+            if had_errors {
+                quality_penalty = 35;
+            }
+        }
+    }
+    let ratio = (common * 100 / non_ascii) as i32;
+    let confidence = ratio - quality_penalty;
+    if confidence <= 0 {
+        return None;
+    }
+    Some(CharsetMatch::new(det, self_ref, confidence))
+}
+
 pub(crate) struct CharsetRecog_windows_1256;
 impl CharsetRecognizer for CharsetRecog_windows_1256 {
     fn get_name(&self) -> String {
         "windows-1256".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        // 阿拉伯字母位于 1256 的 0xC8-0xFF 区（0xC0-0xC7 是拉丁，阿拉伯文本不出现）
+        let common: Vec<u8> = (0xC8u8..=0xFF).collect();
+        sbcs_match("windows-1256", Some("windows-1256"), &common, det, self)
     }
 }
 
@@ -836,8 +879,11 @@ impl CharsetRecognizer for CharsetRecog_KOI8_R {
     fn get_name(&self) -> String {
         "KOI8-R".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        // KOI8-R 西里尔：小写 0xC0-0xDF、大写 0xE0-0xFF
+        let mut common: Vec<u8> = (0xC0u8..=0xDF).collect();
+        common.extend(0xE0u8..=0xFF);
+        sbcs_match("KOI8-R", Some("KOI8-R"), &common, det, self)
     }
 }
 
@@ -846,8 +892,11 @@ impl CharsetRecognizer for CharsetRecog_IBM424_he_rtl {
     fn get_name(&self) -> String {
         "IBM424_rtl".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        // EBCDIC 希伯来字母区 0xE0-0xFA（无 encoding_rs 支持，纯分布且置信度压低）
+        let common: Vec<u8> = (0xE0u8..=0xFA).collect();
+        sbcs_match("IBM424_rtl", None, &common, det, self)
+            .filter(|m| m.get_confidence() >= 45)
     }
 }
 
@@ -856,8 +905,10 @@ impl CharsetRecognizer for CharsetRecog_IBM424_he_ltr {
     fn get_name(&self) -> String {
         "IBM424_ltr".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        let common: Vec<u8> = (0xE0u8..=0xFA).collect();
+        sbcs_match("IBM424_ltr", None, &common, det, self)
+            .filter(|m| m.get_confidence() >= 45)
     }
 }
 
@@ -866,8 +917,11 @@ impl CharsetRecognizer for CharsetRecog_IBM420_ar_rtl {
     fn get_name(&self) -> String {
         "IBM420_rtl".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        // EBCDIC 阿拉伯 0x80-0xFA（无 encoding_rs 支持，纯分布且置信度压低）
+        let common: Vec<u8> = (0x80u8..=0xFA).collect();
+        sbcs_match("IBM420_rtl", None, &common, det, self)
+            .filter(|m| m.get_confidence() >= 45)
     }
 }
 
@@ -876,7 +930,9 @@ impl CharsetRecognizer for CharsetRecog_IBM420_ar_ltr {
     fn get_name(&self) -> String {
         "IBM420_ltr".to_string()
     }
-    fn match_det(&self, _det: &CharsetDetector) -> Option<CharsetMatch> {
-        None // fix: 占位，恒无匹配
+    fn match_det(&self, det: &CharsetDetector) -> Option<CharsetMatch> {
+        let common: Vec<u8> = (0x80u8..=0xFA).collect();
+        sbcs_match("IBM420_ltr", None, &common, det, self)
+            .filter(|m| m.get_confidence() >= 45)
     }
 }

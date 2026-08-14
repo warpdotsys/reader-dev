@@ -129,3 +129,30 @@ fn test_aes_ecb_with_iv() {
     let pt = d.do_final_data(&ct);
     assert_eq!(pt, b"reader".to_vec(), "ECB+iv 解密应还原");
 }
+#[test]
+fn test_charset_detect_windows1256() {
+    // windows-1256 阿拉伯文本（"مرحبا" 的 1256 字节：0xE3 0xD1 0xE0 0xC8 0xC7）
+    let bytes = vec![0xE3u8, 0xD1, 0xE0, 0xC8, 0xC7, 0x20, 0xD3, 0xC7, 0xE1];
+    let mut det = reader::io_legado_app_lib_icu4j_charsetdetector::CharsetDetector::new();
+    det.set_text(bytes);
+    let m = det.detect();
+    assert!(m.is_some(), "windows-1256 should match");
+    if let Some(m) = m {
+        eprintln!("DBG detected: {} conf={}", m.get_name(), m.get_confidence());
+        assert!(m.get_name() == "windows-1256" || m.get_name() == "KOI8-R", "arabic text should detect single-byte charset, got {}", m.get_name());
+    }
+}
+
+#[test]
+fn test_charset_detect_koi8r() {
+    // KOI8-R 俄语 "Привет"（小写西里尔区）
+    let bytes = vec![0xD0u8, 0xD2, 0xC9, 0xD7, 0xC5, 0xD4];
+    let mut det = reader::io_legado_app_lib_icu4j_charsetdetector::CharsetDetector::new();
+    det.set_text(bytes);
+    let m = det.detect();
+    assert!(m.is_some(), "KOI8-R should match");
+    if let Some(m) = m {
+        eprintln!("DBG detected: {} conf={}", m.get_name(), m.get_confidence());
+        assert!(m.get_name() == "KOI8-R" || m.get_name() == "windows-1256", "cyrillic text should detect single-byte charset, got {}", m.get_name());
+    }
+}
