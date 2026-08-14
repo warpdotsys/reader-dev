@@ -2,16 +2,25 @@
 
 use crate::stubs::{Request, Response};
 
-pub fn execute(req: &Request, proxy: Option<&str>) -> Result<Response, crate::stubs::Throwable> {
+pub fn execute(
+    req: &Request,
+    proxy: Option<&str>,
+    proxy_auth: Option<(&str, &str)>,
+) -> Result<Response, crate::stubs::Throwable> {
     // reqwest::blocking 在 async 上下文创建/丢弃 runtime 会 panic → 独立线程执行
     let req = req.clone();
     let proxy = proxy.map(|s| s.to_string());
-    std::thread::spawn(move || execute_inner(&req, proxy.as_deref()))
+    let proxy_auth = proxy_auth.map(|(u, p)| (u.to_string(), p.to_string()));
+    std::thread::spawn(move || execute_inner(&req, proxy.as_deref(), proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str()))))
         .join()
         .map_err(|_| crate::stubs::StubError::new("request thread panicked"))?
 }
 
-fn execute_inner(req: &Request, proxy: Option<&str>) -> Result<Response, crate::stubs::Throwable> {
+fn execute_inner(
+    req: &Request,
+    proxy: Option<&str>,
+    proxy_auth: Option<(&str, &str)>,
+) -> Result<Response, crate::stubs::Throwable> {
     let mut client_builder = reqwest::blocking::Client::builder()
         .redirect(reqwest::redirect::Policy::limited(10))
         .connect_timeout(std::time::Duration::from_secs(15))
@@ -20,7 +29,11 @@ fn execute_inner(req: &Request, proxy: Option<&str>) -> Result<Response, crate::
         .danger_accept_invalid_certs(true);
     if let Some(p) = proxy {
         if !p.trim().is_empty() {
-            if let Ok(rp) = reqwest::Proxy::all(p) {
+            if let Ok(mut rp) = reqwest::Proxy::all(p) {
+                // fix: 代理账号密码（Proxy-Authorization Basic）
+                if let Some((u, pw)) = proxy_auth {
+                    rp = rp.basic_auth(u, pw);
+                }
                 client_builder = client_builder.proxy(rp);
             }
         }

@@ -185,3 +185,41 @@ fn test_book_read_config_roundtrip() {
     assert_eq!(rc.del_tag, 14, "delTag roundtrip");
     assert_eq!(rc.pdf_image_width, 640.0, "pdfImageWidth roundtrip");
 }
+#[test]
+fn test_session_isolation() {
+    use reader::stubs::io::vertx::RoutingContext;
+    let set_cookie = |ctx: &RoutingContext, value: &str| {
+        ctx.request.borrow_mut().headers.insert("Cookie".to_string(), format!("reader.session={}", value));
+    };
+    // 客户端 A：带 cookie 值 aaa
+    let ctx1 = RoutingContext::new();
+    set_cookie(&ctx1, "aaa");
+    let s1 = ctx1.session();
+    s1.put("username", "userA".to_string());
+    assert_eq!(s1.get("username").as_deref(), Some("userA"), "A 写入会话");
+    // 客户端 B：无 cookie → 独立会话
+    let ctx2 = RoutingContext::new();
+    let s2 = ctx2.session();
+    assert!(s2.get("username").is_none(), "B 会话应与 A 隔离");
+    s2.put("username", "userB".to_string());
+    // A 再次访问（同 cookie）→ 恢复原会话
+    let ctx1b = RoutingContext::new();
+    set_cookie(&ctx1b, &s1.id);
+    let s1b = ctx1b.session();
+    assert_eq!(s1b.get("username").as_deref(), Some("userA"), "A 会话应按 cookie 恢复");
+    assert_ne!(s1b.id, s2.id, "A/B 会话 id 不同");
+    // 登出 destroy 只清自己
+    s1b.destroy();
+    let ctx1c = RoutingContext::new();
+    set_cookie(&ctx1c, &s1.id);
+    let s1c = ctx1c.session();
+    assert!(s1c.get("username").is_none(), "destroy 后 A 会话清空");
+    let ctx2b = RoutingContext::new();
+    let s2b = ctx2b.session();
+    let _ = s2b;
+    // B 会话数据仍应保留（destroy 只影响 A）
+    let ctx2c = RoutingContext::new();
+    ctx2c.request.borrow_mut().headers.insert("Cookie".to_string(), format!("reader.session={}", s2.id));
+    let s2c = ctx2c.session();
+    assert_eq!(s2c.get("username").as_deref(), Some("userB"), "B 会话不受 A 登出影响");
+}

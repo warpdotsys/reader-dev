@@ -203,20 +203,9 @@ pub fn get_proxy_client(proxy: Option<&str>, debug_log: Option<&dyn DebugLog>) -
         //     // }
         // }
         if username != "" && password != "" {
-            let proxy_authenticator = Authenticator::new(move |_route: Option<&Route>, response: &Response| {
-                //设置代理服务器账号密码
-                let credential = Credentials::basic(username, password);
-                response.request().new_builder()
-                    .header("Proxy-Authorization", &credential)
-                    .build()
-            });
+            // fix: 代理认证真实传递（原 Authenticator 闭包被 proxy_authenticator 丢弃）
+            let proxy_authenticator = Authenticator::with_credentials(username, password);
             builder.proxy_authenticator(proxy_authenticator);
-            // builder.proxyAuthenticator { _, response -> //设置代理服务器账号密码
-            //     val credential: String = Credentials.basic(username, password)
-            //     response.request.newBuilder()
-            //         .header("Proxy-Authorization", credential)
-            //         .build()
-            // }
         }
         // if (debugLog != None) {
         //     val logInterceptor = HttpLoggingInterceptor(debugLog);//创建拦截对象

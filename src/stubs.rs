@@ -1408,11 +1408,12 @@ impl DocumentBuilder {
 
 pub struct OkHttpClient {
     pub proxy: Option<String>,
+    pub proxy_auth: Option<(String, String)>,
 }
 
 impl OkHttpClient {
     pub fn new() -> Self {
-        OkHttpClient { proxy: None }
+        OkHttpClient { proxy: None, proxy_auth: None }
     }
 }
 
@@ -1545,15 +1546,42 @@ pub use regex::Regex;
 
 // ---------------- Gson / GsonBuilder / TypeToken 占位（serde_json 包装） ----------------
 
-pub struct Gson;
+pub struct Gson {
+    pretty: bool,
+    html_escaping: bool,
+}
 
 impl Gson {
+    pub fn new() -> Gson {
+        Gson { pretty: false, html_escaping: true }
+    }
+
+    // fix: 配置生效（原忽略 pretty/html escaping——内容提取时 \u003c 等转义残留）
+    fn render(&self, s: &str) -> String {
+        if self.html_escaping {
+            s.to_string()
+        } else {
+            s.replace("\\u003c", "<")
+                .replace("\\u003e", ">")
+                .replace("\\u0026", "&")
+                .replace("\\u0027", "'")
+                .replace("\\u0022", "\"")
+                .replace("\\u005c", "\\")
+        }
+    }
+
     pub fn to_json<T: serde::Serialize>(&self, v: T) -> String {
-        serde_json::to_string(&v).unwrap_or_default()
+        let s = if self.pretty {
+            serde_json::to_string_pretty(&v)
+        } else {
+            serde_json::to_string(&v)
+        }
+        .unwrap_or_default();
+        self.render(&s)
     }
 
     pub fn toJson<T: serde::Serialize>(&self, v: T) -> String {
-        serde_json::to_string(&v).unwrap_or_default()
+        self.to_json(v)
     }
 
     pub fn from_json<T: serde::de::DeserializeOwned>(&self, json: &str, _ty: Type) -> T {
@@ -1568,11 +1596,14 @@ impl Gson {
     }
 }
 
-pub struct GsonBuilder;
+pub struct GsonBuilder {
+    pretty: bool,
+    html_escaping: bool,
+}
 
 impl GsonBuilder {
     pub fn new() -> GsonBuilder {
-        GsonBuilder
+        GsonBuilder { pretty: false, html_escaping: true }
     }
     // Kotlin `registerTypeAdapter(Type, Object)`：Type 占位，接受任意类型参数
     pub fn register_type_adapter<T, A>(self, _ty: T, _adapter: A) -> GsonBuilder {
@@ -1581,20 +1612,26 @@ impl GsonBuilder {
     pub fn registerTypeAdapter<T, A>(self, _ty: T, _adapter: A) -> GsonBuilder {
         self
     }
-    pub fn disable_html_escaping(self) -> GsonBuilder {
+    // fix: 真实配置（原丢弃——HTML 转义导致正文提取 \u003c 残留）
+    pub fn disable_html_escaping(mut self) -> GsonBuilder {
+        self.html_escaping = false;
         self
     }
-    pub fn disableHtmlEscaping(self) -> GsonBuilder {
+    pub fn disableHtmlEscaping(mut self) -> GsonBuilder {
+        self.html_escaping = false;
         self
     }
-    pub fn set_pretty_printing(self) -> GsonBuilder {
+    // fix: 真实配置（原丢弃）
+    pub fn set_pretty_printing(mut self) -> GsonBuilder {
+        self.pretty = true;
         self
     }
-    pub fn setPrettyPrinting(self) -> GsonBuilder {
+    pub fn setPrettyPrinting(mut self) -> GsonBuilder {
+        self.pretty = true;
         self
     }
     pub fn create(self) -> Gson {
-        Gson
+        Gson { pretty: self.pretty, html_escaping: self.html_escaping }
     }
 }
 
@@ -3784,7 +3821,7 @@ impl Jsoup {
         Document { text: t, html: h }
     }
     pub fn connect(_url: &str) -> OkHttpClient {
-        OkHttpClient { proxy: None }
+        OkHttpClient { proxy: None, proxy_auth: None }
     }
 }
 
@@ -4698,7 +4735,7 @@ fn get_json_str(v: &serde_json::Value, key: &str) -> Option<String> {
 // ---- GSON 便捷构造（SourceAnalyzer 调用 GSON::new() 取得 Gson 实例） ----
 impl GSON {
     pub fn new() -> Gson {
-        Gson
+        Gson::new()
     }
 }
 
@@ -5470,14 +5507,21 @@ impl Credentials {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Authenticator;
+// fix: 携带代理凭据（Authenticator 闭包无法提取，HttpHelper 直接以字段构造）
+pub struct Authenticator {
+    pub username: String,
+    pub password: String,
+}
 
 impl Authenticator {
     pub fn new<F>(_f: F) -> Authenticator
     where
         F: FnOnce(Option<&crate::stubs::io::vertx::Route>, &Response) -> Request,
     {
-        Authenticator
+        Authenticator::default()
+    }
+    pub fn with_credentials(username: &str, password: &str) -> Authenticator {
+        Authenticator { username: username.to_string(), password: password.to_string() }
     }
 }
 
@@ -5489,7 +5533,7 @@ impl Chain {
         Request::default()
     }
     pub fn proceed(&self, request: Request) -> Response {
-        match crate::runtime::okhttp::execute(&request, None) {
+        match crate::runtime::okhttp::execute(&request, None, None) {
             Ok(r) => r,
             Err(_) => Response::default(),
         }
@@ -5499,6 +5543,7 @@ impl Chain {
 #[derive(Debug, Clone, Default)]
 pub struct OkHttpClientBuilder {
     pub proxy: Option<String>,
+    pub proxy_auth: Option<(String, String)>,
 }
 
 impl OkHttpClientBuilder {
@@ -5545,23 +5590,29 @@ impl OkHttpClientBuilder {
         self.proxy = Some(format!("{}{}:{}", scheme, proxy.addr.host, proxy.addr.port));
         self
     }
-    pub fn proxy_authenticator(&self, _authenticator: Authenticator) -> &Self {
+    // fix: 代理认证真实存储（reqwest Proxy::basic_auth）
+    pub fn proxy_authenticator(&mut self, authenticator: Authenticator) -> &mut Self {
+        if !authenticator.username.is_empty() {
+            self.proxy_auth = Some((authenticator.username.clone(), authenticator.password.clone()));
+        }
         self
     }
     pub fn build(&self) -> OkHttpClient {
         OkHttpClient {
             proxy: self.proxy.clone(),
+            proxy_auth: self.proxy_auth.clone(),
         }
     }
 }
 
 impl OkHttpClient {
     pub fn builder() -> OkHttpClientBuilder {
-        OkHttpClientBuilder { proxy: None }
+        OkHttpClientBuilder { proxy: None, proxy_auth: None }
     }
     pub fn new_builder(&self) -> OkHttpClientBuilder {
         OkHttpClientBuilder {
             proxy: self.proxy.clone(),
+            proxy_auth: self.proxy_auth.clone(),
         }
     }
 }
@@ -5570,6 +5621,7 @@ impl Clone for OkHttpClient {
     fn clone(&self) -> Self {
         OkHttpClient {
             proxy: self.proxy.clone(),
+            proxy_auth: self.proxy_auth.clone(),
         }
     }
 }
@@ -5623,6 +5675,7 @@ pub trait CallAdapter {
 pub struct Call<T> {
     pub request: Option<Request>,
     pub proxy: Option<String>,
+    pub proxy_auth: Option<(String, String)>,
     pub phantom: std::marker::PhantomData<T>,
 }
 
@@ -5631,6 +5684,7 @@ impl<T> Call<T> {
         Call {
             request: None,
             proxy: None,
+            proxy_auth: None,
             phantom: std::marker::PhantomData,
         }
     }
@@ -5643,7 +5697,7 @@ impl<T> Call<T> {
         let result = match &self.request {
             Some(req) => {
                 eprintln!("[okhttp] enqueue executing: {} {}", req.method, req.url);
-                crate::runtime::okhttp::execute(req, self.proxy.as_deref())
+                crate::runtime::okhttp::execute(req, self.proxy.as_deref(), self.proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str())))
             }
             None => Err(Throwable::new("call has no request".to_string())),
         };
@@ -6723,6 +6777,123 @@ impl Any {
 }
 // ================= BaseSource / UmdUtils 转录补充 =================
 
+// fix: BookSource/RssSource 实现 JsExtensions + BaseSource（原无实现者——get_source 恒 None，
+//      依赖 source 对象的 JS 规则拿不到真实对象；必需方法真实，默认方法沿用 trait 实现）
+impl crate::io_legado_app_help_jsextensions::JsExtensions for crate::io_legado_app_data_entities_booksource::BookSource {
+    fn get_source(&self) -> Option<Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>> {
+        Some(Box::new(self.clone()))
+    }
+    fn get_user_name_space(&self) -> String {
+        self.user_name_space.clone()
+    }
+    fn get_logger(&self) -> Option<Box<dyn crate::io_legado_app_model_debuglog::DebugLog>> {
+        None
+    }
+}
+
+impl crate::io_legado_app_data_entities_basesource::BaseSource for crate::io_legado_app_data_entities_booksource::BookSource {
+    fn concurrent_rate(&self) -> Option<&str> {
+        self.concurrent_rate.as_deref()
+    }
+    fn set_concurrent_rate(&mut self, value: Option<String>) {
+        self.concurrent_rate = value;
+    }
+    fn enabled_cookie_jar(&self) -> Option<bool> {
+        self.enabled_cookie_jar
+    }
+    fn set_enabled_cookie_jar(&mut self, value: Option<bool>) {
+        self.enabled_cookie_jar = value;
+    }
+    fn login_url(&self) -> Option<&str> {
+        self.login_url.as_deref()
+    }
+    fn set_login_url(&mut self, value: Option<String>) {
+        self.login_url = value;
+    }
+    fn login_ui(&self) -> Option<&str> {
+        self.login_ui.as_deref()
+    }
+    fn set_login_ui(&mut self, value: Option<String>) {
+        self.login_ui = value;
+    }
+    fn header(&self) -> Option<&str> {
+        self.header.as_deref()
+    }
+    fn set_header(&mut self, value: Option<String>) {
+        self.header = value;
+    }
+    fn get_tag(&self) -> String {
+        self.book_source_url.clone()
+    }
+    fn get_key(&self) -> String {
+        self.book_source_url.clone()
+    }
+    fn get_source(&self) -> Option<Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>>
+    where
+        Self: Sized,
+    {
+        Some(Box::new(self.clone()))
+    }
+}
+
+impl crate::io_legado_app_help_jsextensions::JsExtensions for crate::io_legado_app_data_entities_rsssource::RssSource {
+    fn get_source(&self) -> Option<Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>> {
+        Some(Box::new(self.clone()))
+    }
+    fn get_user_name_space(&self) -> String {
+        self.user_name_space.clone()
+    }
+    fn get_logger(&self) -> Option<Box<dyn crate::io_legado_app_model_debuglog::DebugLog>> {
+        None
+    }
+}
+
+impl crate::io_legado_app_data_entities_basesource::BaseSource for crate::io_legado_app_data_entities_rsssource::RssSource {
+    fn concurrent_rate(&self) -> Option<&str> {
+        self.concurrent_rate.as_deref()
+    }
+    fn set_concurrent_rate(&mut self, value: Option<String>) {
+        self.concurrent_rate = value;
+    }
+    fn enabled_cookie_jar(&self) -> Option<bool> {
+        self.enabled_cookie_jar
+    }
+    fn set_enabled_cookie_jar(&mut self, value: Option<bool>) {
+        self.enabled_cookie_jar = value;
+    }
+    fn login_url(&self) -> Option<&str> {
+        self.login_url.as_deref()
+    }
+    fn set_login_url(&mut self, value: Option<String>) {
+        self.login_url = value;
+    }
+    fn login_ui(&self) -> Option<&str> {
+        self.login_ui.as_deref()
+    }
+    fn set_login_ui(&mut self, value: Option<String>) {
+        self.login_ui = value;
+    }
+    fn header(&self) -> Option<&str> {
+        self.header.as_deref()
+    }
+    fn set_header(&mut self, value: Option<String>) {
+        self.header = value;
+    }
+    fn get_tag(&self) -> String {
+        self.source_url.clone()
+    }
+    fn get_key(&self) -> String {
+        self.source_url.clone()
+    }
+    fn get_source(&self) -> Option<Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>>
+    where
+        Self: Sized,
+    {
+        Some(Box::new(self.clone()))
+    }
+}
+
+
 // ---- java.util.Random 占位（UmdUtils.gen_random_bytes 使用；xorshift64 伪随机） ----
 pub struct Random {
     state: u64,
@@ -7192,6 +7363,7 @@ impl OkHttpClient {
         Call {
             request: Some(request),
             proxy: self.proxy.clone(),
+            proxy_auth: self.proxy_auth.clone(),
             phantom: std::marker::PhantomData,
         }
     }
@@ -7724,7 +7896,8 @@ impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
         let source_book_source = source.cloned();
         crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
             rule_data: Box::new(AnalyzeRulePlaceholderData),
-            source: None,
+            // fix: 真实书源（BaseSource 已实现；原恒 None——依赖 source 的 JS 规则拿不到对象）
+            source: source.map(|s| Box::new(s.clone()) as Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>),
             debug_log: None,
             source_book_source,
             book_variables,

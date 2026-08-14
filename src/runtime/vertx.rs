@@ -258,11 +258,32 @@ impl RoutingContext {
         self.request.borrow().body.clone().unwrap_or_default()
     }
 
-    pub fn get_cookie(&self, _name: &str) -> Option<Cookie> {
+    pub fn get_cookie(&self, name: &str) -> Option<Cookie> {
+        // fix: 真实解析请求 Cookie 头（原恒 None → 会话无法恢复，每次新建）
+        let header = self.request.borrow().get_header("Cookie")?;
+        for pair in header.split(';') {
+            let pair = pair.trim();
+            if let Some(eq) = pair.find('=') {
+                if pair[..eq].trim() == name {
+                    return Some(Cookie::new_with_value(name.to_string(), pair[eq + 1..].to_string()));
+                }
+            }
+        }
         None
     }
 
-    pub fn remove_cookie(&self, _name: &str) {}
+    pub fn remove_cookie(&self, name: &str) {
+        // fix: 真实移除（原空实现）——清除会话存储 + 下发过期 Set-Cookie
+        if name == "reader.session" {
+            if let Some(c) = self.get_cookie(name) {
+                session_store().lock().unwrap().remove(&c.value.to_string());
+            }
+        }
+        self.response
+            .borrow_mut()
+            .headers
+            .insert("Set-Cookie".to_string(), format!("{}=; Path=/; Max-Age=0", name));
+    }
 
     pub fn connection(&self) -> RoutingContext {
         self.clone()
@@ -329,7 +350,25 @@ impl RoutingContext {
     }
 
     pub fn session(&self) -> Session {
-        Session
+        // fix: 按 cookie 隔离的会话（原全局单会话——任意客户端共享登录态）
+        let existing = self
+            .get_cookie("reader.session")
+            .map(|c| c.value().to_string())
+            .filter(|v| !v.is_empty());
+        let mut map = session_store().lock().unwrap();
+        if let Some(id) = &existing {
+            if let Some(data) = map.get(id) {
+                return Session { id: id.clone(), data: data.clone() };
+            }
+        }
+        let id = crate::stubs::Uuid::new_v4().to_string();
+        let data: SessionData = std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new()));
+        map.insert(id.clone(), data.clone());
+        self.response.borrow_mut().headers.insert(
+            "Set-Cookie".to_string(),
+            format!("reader.session={}; Path=/; Max-Age=604800; SameSite=Lax", id),
+        );
+        Session { id, data }
     }
 
     pub fn success(&self, data: &crate::com_htmake_reader_api_returndata::ReturnData) {
@@ -380,21 +419,25 @@ impl RoutingContext {
     }
 }
 
-pub struct Session;
+pub struct Session {
+    pub id: String,
+    pub data: SessionData,
+}
 
 impl Session {
-    // fix: 委托 stubs 全局会话存储（真实内存会话）
+    // fix: 实例化会话（原委托全局单会话，多客户端共享登录态）
     pub fn put(&self, key: &str, value: String) {
-        crate::stubs::Session::put(&crate::stubs::Session, key, value);
+        self.data.lock().unwrap().insert(key.to_string(), value);
     }
     pub fn get(&self, key: &str) -> Option<String> {
-        crate::stubs::Session::get(&crate::stubs::Session, key)
+        self.data.lock().unwrap().get(key).cloned()
     }
     pub fn remove(&self, key: &str) {
-        crate::stubs::Session::put(&crate::stubs::Session, key, String::new());
+        self.data.lock().unwrap().insert(key.to_string(), String::new());
     }
     pub fn destroy(&self) {
-        crate::stubs::Session::destroy(&crate::stubs::Session);
+        session_store().lock().unwrap().remove(&self.id);
+        self.data.lock().unwrap().clear();
     }
 }
 
@@ -418,13 +461,17 @@ impl FileUpload {
 
 pub struct Cookie {
     name: String,
+    value: String,
     max_age: i64,
     path: String,
 }
 
 impl Cookie {
     pub fn new(name: String) -> Cookie {
-        Cookie { name, max_age: -1, path: "/".to_string() }
+        Cookie { name, value: String::new(), max_age: -1, path: "/".to_string() }
+    }
+    pub fn new_with_value(name: String, value: String) -> Cookie {
+        Cookie { name, value, max_age: -1, path: "/".to_string() }
     }
     pub fn set_max_age(&mut self, age: i64) {
         self.max_age = age;
@@ -435,6 +482,16 @@ impl Cookie {
     pub fn name(&self) -> &str {
         &self.name
     }
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+}
+
+// fix: 真实会话存储（id → 数据；原全局单会话，所有客户端共享登录态）
+type SessionData = std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, String>>>;
+fn session_store() -> &'static std::sync::Mutex<std::collections::HashMap<String, SessionData>> {
+    static STORE: std::sync::OnceLock<std::sync::Mutex<std::collections::HashMap<String, SessionData>>> = std::sync::OnceLock::new();
+    STORE.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()))
 }
 
 pub struct SessionHandler;
