@@ -13,6 +13,8 @@ pub fn execute(req: &Request) -> Result<Response, crate::stubs::Throwable> {
 fn execute_inner(req: &Request) -> Result<Response, crate::stubs::Throwable> {
     let client = reqwest::blocking::Client::builder()
         .redirect(reqwest::redirect::Policy::limited(10))
+        .connect_timeout(std::time::Duration::from_secs(15))
+        .timeout(std::time::Duration::from_secs(45))
         .build()
         .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
 

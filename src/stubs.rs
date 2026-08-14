@@ -9181,9 +9181,23 @@ impl crate::io_legado_app_model_analyzerule_ruledata::RuleData {
     }
 }
 impl Element {
-    // fix: jsoup Element.textNodes()（AnalyzeByJSoup "textNodes" 规则使用）
+    // fix: jsoup Element.textNodes()（AnalyzeByJSoup "textNodes" 规则使用；基于片段重解析）
     pub fn text_nodes(&self) -> Vec<TextNode> {
-        Vec::new()
+        let doc = scraper::Html::parse_fragment(&self.html);
+        let mut result: Vec<TextNode> = Vec::new();
+        if let Ok(sel) = scraper::Selector::parse("*") {
+            for el in doc.select(&sel) {
+                for c in el.children() {
+                    if let scraper::node::Node::Text(t) = c.value() {
+                        let s = t.to_string();
+                        if !s.trim().is_empty() {
+                            result.push(TextNode { text: s });
+                        }
+                    }
+                }
+            }
+        }
+        result
     }
 }
 
