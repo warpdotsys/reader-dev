@@ -9628,17 +9628,17 @@ impl From<usize> for Any { fn from(v: usize) -> Any { Any::Long(v as i64) } }
 impl From<JsonObject> for Any { fn from(v: JsonObject) -> Any { Any::JsonObject(v) } }
 impl From<crate::io_legado_app_data_entities_book::Book> for Any {
     fn from(v: crate::io_legado_app_data_entities_book::Book) -> Any {
-        Any::Str(crate::stubs::book_to_json(&v).to_string())
+        Any::JsonObject(crate::stubs::JsonObject(crate::stubs::book_to_json(&v).to_string()))
     }
 }
 impl From<crate::io_legado_app_data_entities_bookchapter::BookChapter> for Any {
     fn from(v: crate::io_legado_app_data_entities_bookchapter::BookChapter) -> Any {
-        Any::Str(crate::stubs::book_chapter_to_json(&v).to_string())
+        Any::JsonObject(crate::stubs::JsonObject(crate::stubs::book_chapter_to_json(&v).to_string()))
     }
 }
 impl From<crate::io_legado_app_data_entities_searchbook::SearchBook> for Any {
     fn from(v: crate::io_legado_app_data_entities_searchbook::SearchBook) -> Any {
-        Any::Str(crate::stubs::search_book_to_json(&v).to_string())
+        Any::JsonObject(crate::stubs::JsonObject(crate::stubs::search_book_to_json(&v).to_string()))
     }
 }
 impl From<crate::io_legado_app_data_entities_searchresult::SearchResult> for Any {
