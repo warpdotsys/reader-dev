@@ -104,7 +104,7 @@ jobs:
           if-no-files-found: warn
 
   docker:
-    needs: build-web
+    needs: [build-web, build-binaries]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -113,6 +113,22 @@ jobs:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
+      - name: Download linux binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-linux-*
+          path: artifacts
+          merge-multiple: true
+      - name: Stage per-arch binaries
+        shell: bash
+        run: |
+          set -e
+          # artifact 合并后文件：reader-<ver>-linux-<name>.tar.gz
+          stage() { local glob=$1 arch=$2; mkdir -p bin/linux-$arch; tar -xzf $glob -C "bin/linux-$arch" --strip-components=1; chmod +x bin/linux-$arch/reader; }
+          stage artifacts/reader-*-linux-x64.tar.gz amd64
+          stage artifacts/reader-*-linux-arm64.tar.gz arm64
+          stage artifacts/reader-*-linux-x86.tar.gz 386
+          ls -la bin/linux-amd64 bin/linux-arm64 bin/linux-386
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
