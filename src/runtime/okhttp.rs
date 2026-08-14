@@ -2,21 +2,30 @@
 
 use crate::stubs::{Request, Response};
 
-pub fn execute(req: &Request) -> Result<Response, crate::stubs::Throwable> {
+pub fn execute(req: &Request, proxy: Option<&str>) -> Result<Response, crate::stubs::Throwable> {
     // reqwest::blocking 在 async 上下文创建/丢弃 runtime 会 panic → 独立线程执行
     let req = req.clone();
-    std::thread::spawn(move || execute_inner(&req))
+    let proxy = proxy.map(|s| s.to_string());
+    std::thread::spawn(move || execute_inner(&req, proxy.as_deref()))
         .join()
         .map_err(|_| crate::stubs::StubError::new("request thread panicked"))?
 }
 
-fn execute_inner(req: &Request) -> Result<Response, crate::stubs::Throwable> {
-    let client = reqwest::blocking::Client::builder()
+fn execute_inner(req: &Request, proxy: Option<&str>) -> Result<Response, crate::stubs::Throwable> {
+    let mut client_builder = reqwest::blocking::Client::builder()
         .redirect(reqwest::redirect::Policy::limited(10))
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(45))
         // fix: 与原版 OkHttp unsafeTrustManager 一致——全信任证书（自签/过期站点可用）
-        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_certs(true);
+    if let Some(p) = proxy {
+        if !p.trim().is_empty() {
+            if let Ok(rp) = reqwest::Proxy::all(p) {
+                client_builder = client_builder.proxy(rp);
+            }
+        }
+    }
+    let client = client_builder
         .build()
         .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
 

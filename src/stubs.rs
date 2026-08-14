@@ -1374,11 +1374,13 @@ impl DocumentBuilder {
 
 // ---------------- 网络占位 ----------------
 
-pub struct OkHttpClient;
+pub struct OkHttpClient {
+    pub proxy: Option<String>,
+}
 
 impl OkHttpClient {
     pub fn new() -> Self {
-        OkHttpClient
+        OkHttpClient { proxy: None }
     }
 }
 
@@ -3730,7 +3732,7 @@ impl Jsoup {
         Document { text: t, html: h }
     }
     pub fn connect(_url: &str) -> OkHttpClient {
-        OkHttpClient
+        OkHttpClient { proxy: None }
     }
 }
 
@@ -5435,7 +5437,7 @@ impl Chain {
         Request::default()
     }
     pub fn proceed(&self, request: Request) -> Response {
-        match crate::runtime::okhttp::execute(&request) {
+        match crate::runtime::okhttp::execute(&request, None) {
             Ok(r) => r,
             Err(_) => Response::default(),
         }
@@ -5443,7 +5445,9 @@ impl Chain {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct OkHttpClientBuilder;
+pub struct OkHttpClientBuilder {
+    pub proxy: Option<String>,
+}
 
 impl OkHttpClientBuilder {
     pub fn connect_timeout(&self, _timeout: u64, _unit: TimeUnit) -> &Self {
@@ -5479,29 +5483,42 @@ impl OkHttpClientBuilder {
     pub fn add_network_interceptor(&self, _interceptor: HttpLoggingInterceptor) -> &Self {
         self
     }
-    pub fn proxy(&self, _proxy: Proxy) -> &Self {
+    // fix: 代理真实生效（reqwest Proxy::all）
+    pub fn proxy(&mut self, proxy: Proxy) -> &mut Self {
+        let scheme = match proxy.type_ {
+            ProxyType::HTTP => "http://",
+            ProxyType::SOCKS => "socks5://",
+            ProxyType::DIRECT => "",
+        };
+        self.proxy = Some(format!("{}{}:{}", scheme, proxy.addr.host, proxy.addr.port));
         self
     }
     pub fn proxy_authenticator(&self, _authenticator: Authenticator) -> &Self {
         self
     }
     pub fn build(&self) -> OkHttpClient {
-        OkHttpClient
+        OkHttpClient {
+            proxy: self.proxy.clone(),
+        }
     }
 }
 
 impl OkHttpClient {
     pub fn builder() -> OkHttpClientBuilder {
-        OkHttpClientBuilder
+        OkHttpClientBuilder { proxy: None }
     }
     pub fn new_builder(&self) -> OkHttpClientBuilder {
-        OkHttpClientBuilder
+        OkHttpClientBuilder {
+            proxy: self.proxy.clone(),
+        }
     }
 }
 
 impl Clone for OkHttpClient {
     fn clone(&self) -> Self {
-        OkHttpClient
+        OkHttpClient {
+            proxy: self.proxy.clone(),
+        }
     }
 }
 
@@ -5553,6 +5570,7 @@ pub trait CallAdapter {
 // retrofit2.Call<T> 占位
 pub struct Call<T> {
     pub request: Option<Request>,
+    pub proxy: Option<String>,
     pub phantom: std::marker::PhantomData<T>,
 }
 
@@ -5560,6 +5578,7 @@ impl<T> Call<T> {
     pub fn new() -> Self {
         Call {
             request: None,
+            proxy: None,
             phantom: std::marker::PhantomData,
         }
     }
@@ -5572,7 +5591,7 @@ impl<T> Call<T> {
         let result = match &self.request {
             Some(req) => {
                 eprintln!("[okhttp] enqueue executing: {} {}", req.method, req.url);
-                crate::runtime::okhttp::execute(req)
+                crate::runtime::okhttp::execute(req, self.proxy.as_deref())
             }
             None => Err(Throwable::new("call has no request".to_string())),
         };
@@ -7102,6 +7121,7 @@ impl OkHttpClient {
     pub fn new_call(&self, request: Request) -> Call<Response> {
         Call {
             request: Some(request),
+            proxy: self.proxy.clone(),
             phantom: std::marker::PhantomData,
         }
     }
