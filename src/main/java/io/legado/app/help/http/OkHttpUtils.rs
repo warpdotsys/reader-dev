@@ -336,6 +336,8 @@ pub fn post_multipart(
     if let Some(type_) = type_ {
         multipart_body.set_type(type_.to_media_type());
     }
+    // fix: multipart 请求头（原仅 UA 等，无 boundary）
+    builder.header("Content-Type", &format!("multipart/form-data; boundary={}", crate::stubs::MULTIPART_BOUNDARY));
     // form.forEach {
     //     when (val value = it.value) {
     //         is Map<*, *> -> {
@@ -379,19 +381,37 @@ pub fn post_multipart(
                     file.to_request_body(media_type)
                 } else if let Some(file) = file.downcast_ref::<String>() {
                     file.to_request_body(media_type)
+                } else if let Some(file) = file.downcast_ref::<crate::stubs::Any>() {
+                    file.to_string().to_request_body(media_type)
                 } else {
-                    // fix: Kotlin GSON.toJson(file)（dyn Any 不可 Serialize）→ 占位 Debug 字符串
+                    // fix: Kotlin GSON.toJson(file)（dyn Any 不可 Serialize）→ Debug 字符串
                     GSON::to_json(format!("{:?}", file)).to_request_body(media_type)
                 }
             } else {
-                // fix: Kotlin GSON.toJson(file)（file 为 null）→ 占位 Debug 字符串
-                GSON::to_json(format!("{:?}", file)).to_request_body(media_type)
+                // fix: Kotlin GSON.toJson(null) → "null"
+                String::from("null").to_request_body(media_type)
             };
             // multipartBody.addFormDataPart(it.key, fileName, requestBody)
             multipart_body.add_form_data_part(it.0, &file_name, request_body);
         } else {
             // else -> multipartBody.addFormDataPart(it.key, it.value.toString())
-            multipart_body.add_form_data_part(it.0, &format!("{:?}", it.1), RequestBody::default());
+            // fix: Kotlin `it.value.toString()`——dyn Any 下转具体类型（原恒 "Any(...)" 字面量）
+            let value_str = if let Some(s) = it.1.downcast_ref::<String>() {
+                s.clone()
+            } else if let Some(s) = it.1.downcast_ref::<i32>() {
+                s.to_string()
+            } else if let Some(s) = it.1.downcast_ref::<i64>() {
+                s.to_string()
+            } else if let Some(s) = it.1.downcast_ref::<f64>() {
+                s.to_string()
+            } else if let Some(s) = it.1.downcast_ref::<bool>() {
+                s.to_string()
+            } else if let Some(s) = it.1.downcast_ref::<crate::stubs::Any>() {
+                s.to_string()
+            } else {
+                format!("{:?}", it.1)
+            };
+            multipart_body.add_form_data_part(it.0, "", RequestBody::from_text(value_str));
         }
     }
     // post(multipartBody.build())

@@ -992,9 +992,9 @@ pub trait StringExt: AsRef<str> + ToString {
     fn to_media_type(&self) -> Option<MediaType> {
         None
     }
-    // okhttp3 String.toRequestBody()（AnalyzeUrl 使用）
+    // okhttp3 String.toRequestBody()（AnalyzeUrl 使用）——fix: 真实文本（原恒空 body）
     fn to_request_body(&self, _media_type: Option<MediaType>) -> RequestBody {
-        RequestBody::default()
+        RequestBody::from_text(self.to_string())
     }
     // Kotlin String.equals(Object)（RestVerticle rawMethod().equals("PUT") 使用）
     fn equals(&self, other: &str) -> bool {
@@ -7016,23 +7016,40 @@ impl FormBodyBuilder {
     }
 }
 
-// okhttp3 MultipartBody / MultipartBody.Builder 占位（build() 返回 RequestBody 以复用 RequestBuilder.post）
+// okhttp3 MultipartBody / MultipartBody.Builder（postMultipart 真实构造 RFC2046 文本）
+pub const MULTIPART_BOUNDARY: &str = "----ReaderFormBoundary7MA4YWxkTrZu0gW";
 pub struct MultipartBody;
-pub struct MultipartBodyBuilder;
+#[derive(Debug, Default)]
+pub struct MultipartBodyBuilder {
+    pub parts: std::cell::RefCell<Vec<(String, String, RequestBody)>>,
+}
 impl MultipartBody {
     pub fn builder() -> MultipartBodyBuilder {
-        MultipartBodyBuilder
+        MultipartBodyBuilder::default()
     }
 }
 impl MultipartBodyBuilder {
     pub fn set_type(&self, _type: Option<MediaType>) -> &Self {
         self
     }
-    pub fn add_form_data_part(&self, _name: &str, _file_name: &str, _body: RequestBody) -> &Self {
+    pub fn add_form_data_part(&self, name: &str, file_name: &str, body: RequestBody) -> &Self {
+        self.parts.borrow_mut().push((name.to_string(), file_name.to_string(), body));
         self
     }
     pub fn build(&self) -> RequestBody {
-        RequestBody::default()
+        let mut out = String::new();
+        for (name, file_name, body) in self.parts.borrow().iter() {
+            out.push_str(&format!("--{}\r\n", MULTIPART_BOUNDARY));
+            out.push_str(&format!("Content-Disposition: form-data; name=\"{}\"", name));
+            if !file_name.is_empty() {
+                out.push_str(&format!("; filename=\"{}\"", file_name));
+            }
+            out.push_str("\r\n\r\n");
+            out.push_str(&body.text);
+            out.push_str("\r\n");
+        }
+        out.push_str(&format!("--{}--\r\n", MULTIPART_BOUNDARY));
+        RequestBody::from_text(out)
     }
 }
 
@@ -7083,10 +7100,11 @@ impl HttpUrlExt for str {
     }
 }
 
-// okhttp3 File.asRequestBody(MediaType?)（OkHttpUtils.postMultipart 使用）
+// okhttp3 File.asRequestBody(MediaType?)（OkHttpUtils.postMultipart 使用）——fix: 读文件内容（原空 body）
 impl File {
     pub fn as_request_body(&self, _media_type: Option<MediaType>) -> RequestBody {
-        RequestBody::default()
+        let text = std::fs::read_to_string(&self.file_path).unwrap_or_default();
+        RequestBody::from_text(text)
     }
 }
 
@@ -7096,7 +7114,7 @@ pub trait ByteArrayExt {
 }
 impl ByteArrayExt for Vec<u8> {
     fn to_request_body(&self, _media_type: Option<MediaType>) -> RequestBody {
-        RequestBody::default()
+        RequestBody::from_text(String::from_utf8_lossy(self).to_string())
     }
 }
 

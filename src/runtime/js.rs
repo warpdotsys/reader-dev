@@ -425,8 +425,10 @@ fn java_get_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) 
     let out = if rule.is_empty() {
         rule
     } else if let Some(js_code) = rule.strip_prefix("@js:") {
-        // fix: @js: 脚本执行（Kotlin 完整 getString 链的简化）
-        match ctx.eval(boa_engine::Source::from_bytes(js_code.as_bytes())) {
+        // fix: @js: 脚本执行——Kotlin 完整 getString 链先把 content 绑定为 result（简化链的补充）
+        let content_lit = serde_json::to_string(&content).unwrap_or_else(|_| String::from("\"\""));
+        let wrapper = format!("(() => {{ const result = {}; {} }})()", content_lit, js_code);
+        match ctx.eval(boa_engine::Source::from_bytes(wrapper.as_bytes())) {
             Ok(v) => v
                 .to_string(&mut *ctx)
                 .map(|s| s.to_std_string().unwrap_or_default())
