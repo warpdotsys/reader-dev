@@ -290,6 +290,25 @@ try {
     $impOk = ($j.isSuccess -eq $true) -and ($impData.Count -ge 1) -and ($impData[0] -match '远程导入源')
     Report '远程书源导入' $impOk "raw=$($r.Content)"
 
+    # 22. 书源文件上传导入（multipart → readSourceFile → 字符串数组）
+    $importJson = '[{"bookSourceUrl":"http://localhost:18999","bookSourceName":"上传导入源","bookSourceType":0,"searchUrl":"http://localhost:18999/search?key={{key}}","ruleSearch":{"bookList":"$.books","name":"$.name","author":"$.author","bookUrl":"$.bookUrl"}}]'
+    $client = New-Object System.Net.Http.HttpClient
+    $mp = New-Object System.Net.Http.MultipartFormDataContent
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($importJson)
+    $fileContent = [System.Net.Http.ByteArrayContent]::new($bytes)
+    $cd = New-Object System.Net.Http.Headers.ContentDispositionHeaderValue('form-data')
+    $cd.Name = 'file'
+    $cd.FileName = 'sources.json'
+    $fileContent.Headers.ContentDisposition = $cd
+    $fileContent.Headers.ContentType = New-Object System.Net.Http.Headers.MediaTypeHeaderValue('application/json')
+    $mp.Add($fileContent)
+    $resp = $client.PostAsync("$base/reader3/readSourceFile", $mp).Result
+    $content = $resp.Content.ReadAsStringAsync().Result
+    $client.Dispose()
+    $uf = $content | ConvertFrom-Json
+    $upOk = ($uf.isSuccess -eq $true) -and ($null -ne $uf.data) -and ($uf.data.Count -ge 1) -and ($uf.data[0] -match '上传导入源')
+    Report '书源文件导入' $upOk "isSuccess=$($uf.isSuccess) items=$($uf.data.Count)"
+
     # 22. 封面下载（get_book_cover → launch 封面缓存链路）
     $cv = [uri]::EscapeDataString('http://localhost:18999/cover.jpg')
     $r = Invoke-WebRequest -Uri "$base/reader3/cover?path=$cv" -UseBasicParsing -TimeoutSec 20 -ErrorAction SilentlyContinue

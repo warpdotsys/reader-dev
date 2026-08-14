@@ -134,8 +134,135 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
 
 // 路径匹配：返回特异性分数（越高越优先），None 表示不匹配
 // 精确路径 > 带通配前缀 > 全通配（/*）> 空路径（route()）
-fn rule_match_score(rule: &RouteRule, method: &str, path: &str) -> Option<i32> {
-    if !match_method(rule.method, method) {
+/// 解析请求体：multipart/form-data 提取文件并保存到 storage/file-uploads；否则按 UTF-8 文本
+fn parse_http_body(bytes: &[u8], content_type: &str) -> (String, Vec<String>) {
+    let ct_lower = content_type.to_lowercase();
+    if ct_lower.contains("multipart/form-data") {
+        let boundary = extract_boundary(content_type);
+        if let Some(boundary) = boundary {
+            let files = parse_multipart(bytes, &boundary);
+            let mut uploads = Vec::new();
+            let dir = std::path::Path::new("storage").join("file-uploads");
+            let _ = std::fs::create_dir_all(&dir);
+            for (name, data, filename) in files {
+                if data.is_empty() {
+                    continue;
+                }
+                let safe_name: String = filename
+                    .chars()
+                    .map(|c| if c.is_alphanumeric() || c == '.' || c == '_' || c == '-' { c } else { '_' })
+                    .collect();
+                let path = dir.join(format!("{}_{}", name, safe_name));
+                let _ = std::fs::write(&path, &data);
+                uploads.push(path.to_string_lossy().to_string());
+            }
+            return (String::new(), uploads);
+        }
+        (String::new(), Vec::new())
+    } else {
+        (String::from_utf8_lossy(bytes).to_string(), Vec::new())
+    }
+}
+
+fn extract_boundary(content_type: &str) -> Option<String> {
+    for part in content_type.split(';') {
+        let part = part.trim();
+        if let Some(v) = part.strip_prefix("boundary=") {
+            return Some(v.trim_matches('"').to_string());
+        }
+    }
+    None
+}
+
+/// 解析 multipart body：返回 (字段名, 数据, 文件名)
+fn parse_multipart(bytes: &[u8], boundary: &str) -> Vec<(String, Vec<u8>, String)> {
+    let mut result = Vec::new();
+    let boundary_bytes = format!("--{}", boundary).into_bytes();
+    let body = bytes;
+    let mut pos = 0usize;
+    // 跳过开头的 --boundary
+    while pos + boundary_bytes.len() <= body.len() {
+        if &body[pos..pos + boundary_bytes.len()] == boundary_bytes.as_slice() {
+            break;
+        }
+        pos += 1;
+    }
+    pos += boundary_bytes.len();
+    while pos + 2 <= body.len() && body[pos] == b'\r' && body[pos + 1] == b'\n' {
+        pos += 2;
+    }
+    loop {
+        // 找下一个 --boundary
+        let next = find_bytes(body, &boundary_bytes, pos);
+        if next.is_none() {
+            break;
+        }
+        let part_end = next.unwrap();
+        let part = &body[pos..part_end];
+        // 解析 part：headers\r\n\r\n data
+        if let Some(sep) = find_bytes(part, b"\r\n\r\n", 0) {
+            let head = String::from_utf8_lossy(&part[..sep]).to_string();
+            let data = part[sep + 4..].to_vec();
+            let mut name = String::new();
+            let mut filename = String::new();
+            for line in head.split("\r\n") {
+                if line.to_lowercase().contains("content-disposition") {
+                    if let Some(n) = extract_attr(&line, "name") {
+                        name = n;
+                    }
+                    if let Some(f) = extract_attr(&line, "filename") {
+                        filename = f;
+                    }
+                }
+            }
+            if !name.is_empty() {
+                result.push((name, data, filename));
+            }
+        }
+        // 跳过 --boundary（可能是结尾 --boundary--）
+        pos = part_end + boundary_bytes.len();
+        // 结尾判断：--boundary-- 后面是 -- 
+        if pos + 2 <= body.len() && body[pos] == b'-' && body[pos + 1] == b'-' {
+            break;
+        }
+        while pos + 2 <= body.len() && body[pos] == b'\r' && body[pos + 1] == b'\n' {
+            pos += 2;
+        }
+    }
+    result
+}
+
+fn find_bytes(haystack: &[u8], needle: &[u8], start: usize) -> Option<usize> {
+    if needle.is_empty() || haystack.len() < start + needle.len() {
+        return None;
+    }
+    let mut i = start;
+    while i + needle.len() <= haystack.len() {
+        if &haystack[i..i + needle.len()] == needle {
+            return Some(i);
+        }
+        i += 1;
+    }
+    None
+}
+
+fn extract_attr(line: &str, attr: &str) -> Option<String> {
+    let pattern = format!("{}=\"", attr);
+    if let Some(start) = line.find(&pattern) {
+        let rest = &line[start + pattern.len()..];
+        let end = rest.find('"').unwrap_or(rest.len());
+        return Some(rest[..end].to_string());
+    }
+    let pattern = format!("{}=", attr);
+    if let Some(start) = line.find(&pattern) {
+        let rest = &line[start + pattern.len()..];
+        let end = rest.find(';').unwrap_or(rest.len());
+        return Some(rest[..end].trim_matches('"').to_string());
+    }
+    None
+}
+
+fn rule_match_score(rule: &RouteRule, method: &str, path: &str) -> Option<i32> {    if !match_method(rule.method, method) {
         return None;
     }
     let pattern = &rule.path;
@@ -169,6 +296,7 @@ fn execute_rules(
     query_map: &HashMap<String, String>,
     headers: &HashMap<String, String>,
     body: String,
+    file_uploads: Vec<String>,
     path_params: &HashMap<String, String>,
 ) -> (i32, HashMap<String, String>, Option<Vec<u8>>) {
     let path = uri.split('?').next().unwrap_or(uri).to_string();
@@ -187,6 +315,7 @@ fn execute_rules(
         return (404, HashMap::new(), Some(b"Not Found".to_vec()));
     };
     let mut ctx = crate::stubs::io::vertx::RoutingContext::new();
+    ctx.file_uploads = file_uploads;
     {
         let mut req = ctx.request.borrow_mut();
         req.raw_method_str = method.to_uppercase();
@@ -263,6 +392,7 @@ async fn dispatch(
     query: axum::extract::Query<HashMap<String, String>>,
     headers: axum::http::HeaderMap,
     body: String,
+    file_uploads: Vec<String>,
 ) -> axum::response::Response {
     eprintln!("dispatch: {} {}", method, uri);
     let mut header_map = HashMap::new();
@@ -290,6 +420,7 @@ async fn dispatch(
         &query.0,
         &header_map,
         body,
+        file_uploads,
         &params,
     );
 
@@ -326,9 +457,15 @@ pub fn build_axum_app(router: Router) -> axum::Router {
                              params: axum::extract::Path<HashMap<String, String>>,
                              query: axum::extract::Query<HashMap<String, String>>,
                              headers: axum::http::HeaderMap,
-                             body: String| {
+                             body: axum::body::Bytes| {
             async move {
-                dispatch(rules_static, method, uri, params.0, query, headers, body).await
+                // multipart/form-data 解析（上传接口依赖）
+                let content_type = headers
+                    .get("content-type")
+                    .map(|v| v.to_str().unwrap_or("").to_string())
+                    .unwrap_or_default();
+                let (body_str, file_uploads) = parse_http_body(&body, &content_type);
+                dispatch(rules_static, method, uri, params.0, query, headers, body_str, file_uploads).await
             }
         };
         app = app.route(&axpath, axum::routing::any(handler));
