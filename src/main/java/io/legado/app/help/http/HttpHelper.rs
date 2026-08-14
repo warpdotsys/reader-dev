@@ -71,8 +71,8 @@ pub fn ok_http_client() -> OkHttpClient {
     //         chain.proceed(builder.build())
     //     })
     // fix: E0716——stub 链式方法返回 &Self，先绑定 builder 本体再链式调用，避免临时值悬垂
-    let builder = OkHttpClient::builder();
-    let builder = builder
+    let mut builder = OkHttpClient::builder();
+    let _ = builder
         .connect_timeout(15, TimeUnit::SECONDS)
         .write_timeout(15, TimeUnit::SECONDS)
         .read_timeout(15, TimeUnit::SECONDS)

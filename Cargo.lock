@@ -2076,6 +2076,7 @@ dependencies = [
  "ecb",
  "encoding_rs",
  "fancy-regex",
+ "flate2",
  "futures-util",
  "lopdf",
  "mime_guess",

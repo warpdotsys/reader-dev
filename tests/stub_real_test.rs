@@ -223,3 +223,27 @@ fn test_session_isolation() {
     let s2c = ctx2c.session();
     assert_eq!(s2c.get("username").as_deref(), Some("userB"), "B 会话不受 A 登出影响");
 }
+#[test]
+fn test_zlib_roundtrip() {
+    use reader::stubs::{ByteArrayInputStream, ByteArrayOutputStream, DeflaterOutputStream, InflaterInputStream};
+    // 压缩
+    let mut bos = ByteArrayOutputStream::new();
+    {
+        let mut zos = DeflaterOutputStream::new(&mut bos);
+        zos.write(b"UMD chapter content");
+        zos.close();
+    }
+    let compressed = bos.to_byte_array();
+    assert!(!compressed.is_empty(), "compressed output");
+    // 解压
+    let bais = ByteArrayInputStream::new(compressed);
+    let mut iis = InflaterInputStream::new(bais);
+    let mut out = Vec::new();
+    loop {
+        let mut buf = [0u8; 64];
+        let n = iis.read(&mut buf);
+        if n <= 0 { break; }
+        out.extend_from_slice(&buf[..n as usize]);
+    }
+    assert_eq!(String::from_utf8_lossy(&out), "UMD chapter content", "zlib roundtrip");
+}

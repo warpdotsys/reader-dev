@@ -17,6 +17,7 @@ boa_engine = "0.21"
 scraper = "0.23"
 quick-xml = "0.37"
 zip = { version = "2", default-features = false, features = ["deflate"] }
+flate2 = "1"
 percent-encoding = "2"
 mime_guess = "2"
 pollster = "1.0.1"

@@ -639,7 +639,10 @@ impl Request {
         self.headers.get(name).map(|s| s.as_str())
     }
     pub fn new_builder(&self) -> RequestBuilder {
-        RequestBuilder::default()
+        // fix: 复制当前请求（原返回空 builder——拦截器重建请求丢失 url/method/body，请求全失败）
+        RequestBuilder {
+            inner: std::cell::RefCell::new(self.clone()),
+        }
     }
     pub fn url(&self) -> HttpUrl {
         HttpUrl(self.url.clone())
@@ -699,7 +702,11 @@ impl RequestBuilder {
 
 // okhttp3 MediaType / RequestBody（RequestBody 携带文本）
 #[derive(Debug, Clone, Default)]
-pub struct MediaType;
+pub struct MediaType {
+    pub name: &'static str,
+    pub default_extension: &'static str,
+    pub extensions: &'static [&'static str],
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct RequestBody {
@@ -1409,11 +1416,15 @@ impl DocumentBuilder {
 pub struct OkHttpClient {
     pub proxy: Option<String>,
     pub proxy_auth: Option<(String, String)>,
+    pub interceptors: Vec<Interceptor>,
 }
 
 impl OkHttpClient {
     pub fn new() -> Self {
-        OkHttpClient { proxy: None, proxy_auth: None }
+        OkHttpClient { proxy: None, proxy_auth: None, interceptors: Vec::new() }
+    }
+    pub fn new_with_interceptors(interceptors: Vec<Interceptor>) -> Self {
+        OkHttpClient { proxy: None, proxy_auth: None, interceptors }
     }
 }
 
@@ -3821,7 +3832,7 @@ impl Jsoup {
         Document { text: t, html: h }
     }
     pub fn connect(_url: &str) -> OkHttpClient {
-        OkHttpClient { proxy: None, proxy_auth: None }
+        OkHttpClient { proxy: None, proxy_auth: None, interceptors: Vec::new() }
     }
 }
 
@@ -4238,17 +4249,25 @@ pub fn synthesising() {}
 
 // ---- WebdavController / BookSourceController 转录所需顶层函数 ----
 
-// Kotlin java.net.URLDecoder.decode(value, charset)
+// fix: 真实 percent 解码（原原样返回——WebDAV 中文/空格路径找不到文件）
 pub fn url_decode(s: &str, _charset: &str) -> String {
-    s.to_string()
+    match percent_encoding::percent_decode_str(s).decode_utf8() {
+        Ok(decoded) => decoded.into_owned(),
+        Err(_) => s.to_string(),
+    }
 }
-// Kotlin EncoderUtils.base64Decode(value)（占位：不实际解码）
+// fix: 真实 base64 解码（原原样返回——WebDAV Basic 认证 user:pass 解析失败恒 401）
 pub fn base64_decode(s: &str) -> String {
-    s.to_string()
+    let bytes = crate::io_legado_app_utils_base64::Base64::decode_str(s, crate::io_legado_app_utils_base64::Base64::NO_WRAP);
+    String::from_utf8_lossy(&bytes).into_owned()
 }
-// Kotlin SimpleDateFormat(format).format(millis)（占位：仅返回模板）
-pub fn simple_date_format(format: &str, _millis: i64) -> String {
-    format.to_string()
+// fix: 真实时间格式化（原返回模板字面量——WebDAV PROPFIND lastModified 全错）
+pub fn simple_date_format(format: &str, millis: i64) -> String {
+    use chrono::TimeZone;
+    match chrono::Local.timestamp_millis_opt(millis).single() {
+        Some(dt) => dt.format(&java_pattern_to_chrono(format)).to_string(),
+        None => String::new(),
+    }
 }
 // Kotlin UUID.randomUUID().toString()
 pub fn uuid_random() -> String {
@@ -5525,25 +5544,50 @@ impl Authenticator {
     }
 }
 
-// okhttp3 Interceptor.Chain
-pub struct Chain;
+// okhttp3 Interceptor.Chain（fix: 真实拦截器链——原单元占位，add_interceptor 丢弃导致 UA 注入失效）
+pub type Interceptor = std::sync::Arc<dyn Fn(&Chain) -> Response + Send + Sync + 'static>;
+
+#[derive(Clone, Default)]
+pub struct Chain {
+    pub request: Request,
+    pub interceptors: Vec<Interceptor>,
+    pub index: usize,
+    pub proxy: Option<String>,
+    pub proxy_auth: Option<(String, String)>,
+}
 
 impl Chain {
     pub fn request(&self) -> Request {
-        Request::default()
+        self.request.clone()
     }
     pub fn proceed(&self, request: Request) -> Response {
-        match crate::runtime::okhttp::execute(&request, None, None) {
-            Ok(r) => r,
-            Err(_) => Response::default(),
+        if self.index < self.interceptors.len() {
+            let chain = Chain {
+                request,
+                interceptors: self.interceptors.clone(),
+                index: self.index + 1,
+                proxy: self.proxy.clone(),
+                proxy_auth: self.proxy_auth.clone(),
+            };
+            (self.interceptors[self.index])(&chain)
+        } else {
+            match crate::runtime::okhttp::execute(
+                &request,
+                self.proxy.as_deref(),
+                self.proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str())),
+            ) {
+                Ok(r) => r,
+                Err(_) => Response::default(),
+            }
         }
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct OkHttpClientBuilder {
     pub proxy: Option<String>,
     pub proxy_auth: Option<(String, String)>,
+    pub interceptors: Vec<Interceptor>,
 }
 
 impl OkHttpClientBuilder {
@@ -5574,7 +5618,9 @@ impl OkHttpClientBuilder {
     pub fn follow_ssl_redirects(&self, _b: bool) -> &Self {
         self
     }
-    pub fn add_interceptor(&self, _interceptor: Box<dyn Fn(&Chain) -> Response>) -> &Self {
+    // fix: 真实存储拦截器（原丢弃——UA/Keep-Alive 头注入失效）
+    pub fn add_interceptor(&mut self, interceptor: Box<dyn Fn(&Chain) -> Response + Send + Sync + 'static>) -> &mut Self {
+        self.interceptors.push(std::sync::Arc::from(interceptor));
         self
     }
     pub fn add_network_interceptor(&self, _interceptor: HttpLoggingInterceptor) -> &Self {
@@ -5601,18 +5647,20 @@ impl OkHttpClientBuilder {
         OkHttpClient {
             proxy: self.proxy.clone(),
             proxy_auth: self.proxy_auth.clone(),
+            interceptors: self.interceptors.clone(),
         }
     }
 }
 
 impl OkHttpClient {
     pub fn builder() -> OkHttpClientBuilder {
-        OkHttpClientBuilder { proxy: None, proxy_auth: None }
+        OkHttpClientBuilder { proxy: None, proxy_auth: None, interceptors: Vec::new() }
     }
     pub fn new_builder(&self) -> OkHttpClientBuilder {
         OkHttpClientBuilder {
             proxy: self.proxy.clone(),
             proxy_auth: self.proxy_auth.clone(),
+            interceptors: Vec::new(),
         }
     }
 }
@@ -5622,6 +5670,7 @@ impl Clone for OkHttpClient {
         OkHttpClient {
             proxy: self.proxy.clone(),
             proxy_auth: self.proxy_auth.clone(),
+            interceptors: self.interceptors.clone(),
         }
     }
 }
@@ -5629,7 +5678,12 @@ impl Clone for OkHttpClient {
 // ---- BookHelp / BaseController 转录所需 kotlinx.coroutines 占位 ----
 
 // fix: Kotlin kotlinx.coroutines.delay(ms) 占位（不实际休眠）
-pub async fn delay(_millis: i64) {}
+// fix: 真实休眠（原不实际休眠——保存图片重试/退避无间隔）
+pub async fn delay(millis: i64) {
+    if millis > 0 {
+        std::thread::sleep(std::time::Duration::from_millis(millis as u64));
+    }
+}
 
 impl CoroutineScope {
     // fix: Kotlin CoroutineScope.async {} 占位（BookHelp.saveImages 使用）
@@ -5676,6 +5730,7 @@ pub struct Call<T> {
     pub request: Option<Request>,
     pub proxy: Option<String>,
     pub proxy_auth: Option<(String, String)>,
+    pub interceptors: Vec<Interceptor>,
     pub phantom: std::marker::PhantomData<T>,
 }
 
@@ -5685,11 +5740,12 @@ impl<T> Call<T> {
             request: None,
             proxy: None,
             proxy_auth: None,
+            interceptors: Vec::new(),
             phantom: std::marker::PhantomData,
         }
     }
     pub fn cancel(&self) {}
-    // 真实执行：blocking 请求后回调
+    // 真实执行：blocking 请求后回调（拦截器链在 proceed 末端执行请求）
     pub fn enqueue<F>(&self, callback: F)
     where
         F: FnOnce(Result<Response, Throwable>) + Send + 'static,
@@ -5697,7 +5753,18 @@ impl<T> Call<T> {
         let result = match &self.request {
             Some(req) => {
                 eprintln!("[okhttp] enqueue executing: {} {}", req.method, req.url);
-                crate::runtime::okhttp::execute(req, self.proxy.as_deref(), self.proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str())))
+                if self.interceptors.is_empty() {
+                    crate::runtime::okhttp::execute(req, self.proxy.as_deref(), self.proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str())))
+                } else {
+                    let chain = Chain {
+                        request: req.clone(),
+                        interceptors: self.interceptors.clone(),
+                        index: 0,
+                        proxy: self.proxy.clone(),
+                        proxy_auth: self.proxy_auth.clone(),
+                    };
+                    Ok(chain.proceed(req.clone()))
+                }
             }
             None => Err(Throwable::new("call has no request".to_string())),
         };
@@ -6410,9 +6477,71 @@ pub use crate::stubs::io::vertx::{HttpClient, HttpClientOptions, WebClient, WebC
 
 // ================= CbzFile 转录补充（io.legado.app.model.localBook.CbzFile 使用，additive） =================
 
-// fix: Kotlin `XmlUtils.xml2map(ComicInfo.xml 输入流)` 占位——ComicInfo.xml 解析未转录，返回空 map
-pub fn xml2map(_source: &FileInputStream) -> std::collections::HashMap<String, Any> {
-    std::collections::HashMap::new()
+// fix: Kotlin `XmlUtils.xml2map(ComicInfo.xml 输入流)`（原恒空 map——CBZ 标题/作者/简介全丢）
+fn read_xml_element_text(reader: &mut quick_xml::Reader<&[u8]>, buf: &mut Vec<u8>) -> String {
+    let mut text = String::new();
+    loop {
+        buf.clear();
+        match reader.read_event_into(buf) {
+            Ok(quick_xml::events::Event::Text(t)) => {
+                if let Ok(s) = t.unescape() {
+                    text.push_str(&s);
+                }
+            }
+            Ok(quick_xml::events::Event::CData(t)) => {
+                text.push_str(&String::from_utf8_lossy(&t));
+            }
+            Ok(quick_xml::events::Event::Start(_)) => {
+                text.push_str(&read_xml_element_text(reader, buf));
+            }
+            Ok(quick_xml::events::Event::End(_)) | Ok(quick_xml::events::Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+    text.trim().to_string()
+}
+
+pub fn xml2map(source: &mut FileInputStream) -> std::collections::HashMap<String, Any> {
+    let mut data = Vec::new();
+    let mut chunk = [0u8; 8192];
+    loop {
+        let chunk_len = chunk.len();
+        let n = source.read(&mut chunk, 0, chunk_len);
+        if n <= 0 {
+            break;
+        }
+        data.extend_from_slice(&chunk[..n as usize]);
+    }
+    let xml = String::from_utf8_lossy(&data).into_owned();
+    let mut result: std::collections::HashMap<String, Any> = std::collections::HashMap::new();
+    let mut root_map: std::collections::HashMap<String, Any> = std::collections::HashMap::new();
+    let mut reader = quick_xml::Reader::from_str(&xml);
+    reader.config_mut().trim_text(true);
+    let mut buf = Vec::new();
+    let mut in_root = false;
+    loop {
+        buf.clear();
+        match reader.read_event_into(&mut buf) {
+            Ok(quick_xml::events::Event::Start(e)) => {
+                let name = String::from_utf8_lossy(e.name().as_ref()).to_string();
+                if name == "ComicInfo" {
+                    in_root = true;
+                } else if in_root {
+                    let text = read_xml_element_text(&mut reader, &mut buf);
+                    root_map.insert(name, Any::from_string(text));
+                }
+            }
+            Ok(quick_xml::events::Event::End(e)) => {
+                if String::from_utf8_lossy(e.name().as_ref()) == "ComicInfo" {
+                    break;
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+    result.insert(String::from("ComicInfo"), Any::from_map(root_map));
+    result
 }
 
 // fix: Kotlin `FileUtils.writeInputStream(path, inputStream)`——按输入流拷贝写入文件
@@ -6914,19 +7043,33 @@ impl Random {
 }
 
 // ---- java.util.zip.InflaterInputStream 占位（UmdUtils.decompress 使用） ----
-// fix: 无 flate2 依赖，无法真正解压 zlib 流；占位恒返回 EOF，decompress 结果为空
+// ---- java.util.zip.InflaterInputStream（UmdUtils.decompress 使用）——fix: 真实 zlib 解压（原恒 EOF，UMD 解压为空）
 pub struct InflaterInputStream {
     inner: ByteArrayInputStream,
+    decompressed: Option<Vec<u8>>,
     pos: usize,
 }
 
 impl InflaterInputStream {
     pub fn new(input: ByteArrayInputStream) -> InflaterInputStream {
-        InflaterInputStream { inner: input, pos: 0 }
+        InflaterInputStream { inner: input, decompressed: None, pos: 0 }
     }
     pub fn read(&mut self, b: &mut [u8]) -> i32 {
-        let _ = (b, self.inner.data.len(), self.pos);
-        -1
+        if self.decompressed.is_none() {
+            use std::io::Read;
+            let mut out = Vec::new();
+            let mut decoder = flate2::read::ZlibDecoder::new(std::io::Cursor::new(self.inner.data.clone()));
+            let _ = decoder.read_to_end(&mut out);
+            self.decompressed = Some(out);
+        }
+        let data = self.decompressed.as_ref().unwrap();
+        if self.pos >= data.len() || b.is_empty() {
+            return -1;
+        }
+        let n = b.len().min(data.len() - self.pos);
+        b[..n].copy_from_slice(&data[self.pos..self.pos + n]);
+        self.pos += n;
+        n as i32
     }
 }
 
@@ -6997,8 +7140,34 @@ pub trait StringUtilExt: AsRef<str> + ToString {
 }
 impl<T: AsRef<str> + ToString> StringUtilExt for T {}
 
-// fix: Debugger 调试输出占位——Book/SearchBook/BookChapter 未 derive serde，GSON::to_json 不可用
-pub fn gson_to_json_placeholder<T>(_value: &T) -> String {
+// fix: Debugger 调试输出真实 JSON（原恒 "{}"——书源调试结果不可见；按具体实体类型序列化）
+pub fn gson_to_json_placeholder<T: 'static>(value: &T) -> String {
+    let any = value as &dyn std::any::Any;
+    if let Some(b) = any.downcast_ref::<crate::io_legado_app_data_entities_book::Book>() {
+        return crate::stubs::book_to_json(b).to_string();
+    }
+    if let Some(b) = any.downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>() {
+        return crate::stubs::search_book_to_json(b).to_string();
+    }
+    if let Some(v) = any.downcast_ref::<Vec<crate::io_legado_app_data_entities_searchbook::SearchBook>>() {
+        return crate::stubs::search_books_to_json(v).to_string();
+    }
+    if let Some(v) = any.downcast_ref::<Vec<crate::io_legado_app_data_entities_bookchapter::BookChapter>>() {
+        let arr: Vec<serde_json::Value> = v.iter().map(|c| crate::stubs::book_chapter_to_json(c)).collect();
+        return serde_json::Value::Array(arr).to_string();
+    }
+    if let Some(v) = any.downcast_ref::<Vec<crate::io_legado_app_data_entities_book::Book>>() {
+        return crate::stubs::books_to_json(v).to_string();
+    }
+    if let Some(v) = any.downcast_ref::<Any>() {
+        return crate::stubs::any_to_json_value(v).to_string();
+    }
+    if let Some(v) = any.downcast_ref::<Option<Box<Any>>>() {
+        return match v {
+            Some(a) => crate::stubs::any_to_json_value(a.as_ref()).to_string(),
+            None => "null".to_string(),
+        };
+    }
     "{}".to_string()
 }
 
@@ -7024,18 +7193,27 @@ impl ByteArrayOutputStream {
 
 // ---- java.util.zip.DeflaterOutputStream 占位（UmdChapters.write_chapters_chunks 使用） ----
 // fix: 无 flate2 依赖，无法真正 zlib 压缩；占位直写原文（与 InflaterInputStream 占位对称）
+// ---- java.util.zip.DeflaterOutputStream（UmdChapters 使用）——fix: 真实 zlib 压缩（原直写原文，UMD 导出损坏）
 pub struct DeflaterOutputStream<'a> {
     out: &'a mut ByteArrayOutputStream,
+    buffer: Vec<u8>,
 }
 
 impl<'a> DeflaterOutputStream<'a> {
     pub fn new(out: &'a mut ByteArrayOutputStream) -> DeflaterOutputStream<'a> {
-        DeflaterOutputStream { out }
+        DeflaterOutputStream { out, buffer: Vec::new() }
     }
     pub fn write(&mut self, b: &[u8]) {
-        self.out.write(b);
+        self.buffer.extend_from_slice(b);
     }
-    pub fn close(&mut self) {}
+    pub fn close(&mut self) {
+        use std::io::Write;
+        let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+        let _ = encoder.write_all(&self.buffer);
+        let compressed = encoder.finish().unwrap_or_default();
+        self.out.write(&compressed);
+        self.buffer.clear();
+    }
 }
 // ---------------- MongoClient / MongoDatabase / Codec 占位（MongoManager 使用） ----------------
 
@@ -7364,6 +7542,7 @@ impl OkHttpClient {
             request: Some(request),
             proxy: self.proxy.clone(),
             proxy_auth: self.proxy_auth.clone(),
+            interceptors: self.interceptors.clone(),
             phantom: std::marker::PhantomData,
         }
     }
@@ -8108,9 +8287,18 @@ impl ZipFile {
         self.entries.iter().find(|e| e.name == name).cloned()
     }
     // EpubResourceProvider.get_resource_stream 使用（Kotlin ZipFile.getInputStream）
-    // fix: 占位实现——不解压单条目，返回空流（名称带 _dyn 避免与既有 get_input_stream 重名）
-    pub fn get_input_stream_dyn(&self, _entry: &ZipEntry) -> Box<dyn InputStream> {
-        Box::new(ByteArrayInputStream::new(Vec::new()))
+    // fix: 真实解压单条目（原空流——EPUB 阅读时图片/CSS/字体全空）
+    pub fn get_input_stream_dyn(&self, entry: &ZipEntry) -> Box<dyn InputStream> {
+        use std::io::Read;
+        let mut data = Vec::new();
+        if let Ok(file) = std::fs::File::open(&self.path) {
+            if let Ok(mut archive) = zip::ZipArchive::new(file) {
+                if let Ok(mut e) = archive.by_name(&entry.name) {
+                    let _ = e.read_to_end(&mut data);
+                }
+            }
+        }
+        Box::new(ByteArrayInputStream::new(data))
     }
 }
 
@@ -8934,13 +9122,17 @@ impl PartialEq for MediaType {
 }
 
 impl MediaType {
-    // fix: 真实 MediaType.get_name()（PackageDocumentWriter / Resource 使用；占位：空串）
+    // fix: 真实 MediaType.get_name()（PackageDocumentWriter / Resource 使用；原恒空串 → OPF media-type 空）
     pub fn get_name(&self) -> String {
-        String::new()
+        self.name.to_string()
     }
-    // fix: 真实 MediaType.hash_code()（ResourcesLoader 使用；占位：0）
+    // fix: 真实 MediaType.hash_code()（ResourcesLoader 使用；原恒 0 → 资源类型判定失效）
     pub fn hash_code(&self) -> i32 {
-        0
+        let mut h: i32 = 0;
+        for b in self.name.bytes() {
+            h = h.wrapping_mul(31).wrapping_add(b as i32);
+        }
+        h
     }
     // fix: 真实 MediaType.toString()（Resource::to_string 使用；占位）
     pub fn to_string(&self) -> String {
@@ -9310,21 +9502,15 @@ impl Character {
 }
 
 // fix: Resources.create_href 需要 MediaType.getDefaultExtension()（stubs::MediaType 占位：空串，追加）
-impl MediaType {
-    pub fn get_default_extension(&self) -> &'static str {
-        ""
-    }
-}
-
-// fix: Resources 中 resource.get_media_type()（stubs::MediaType）与真实 MediaType 的 == 比较（追加）
+// fix: Resources 中 resource.get_media_type()（stubs::MediaType）与真实 MediaType 的 == 比较（原恒 true——按名字比较）
 impl PartialEq<crate::me_ag2s_epublib_domain_mediatype::MediaType> for MediaType {
-    fn eq(&self, _other: &crate::me_ag2s_epublib_domain_mediatype::MediaType) -> bool {
-        true
+    fn eq(&self, other: &crate::me_ag2s_epublib_domain_mediatype::MediaType) -> bool {
+        self.name == other.get_name()
     }
 }
 impl PartialEq<MediaType> for crate::me_ag2s_epublib_domain_mediatype::MediaType {
-    fn eq(&self, _other: &MediaType) -> bool {
-        true
+    fn eq(&self, other: &MediaType) -> bool {
+        self.get_name() == other.name
     }
 }
 // ================= 规则实体 serde 序列化补充（追加；只追加不改写） =================
@@ -9605,17 +9791,20 @@ impl ToDataClass for std::collections::HashMap<String, crate::stubs::Any> {
     }
 }
 // ================= MediaTypes.rs 转录修复追加（仅追加不重写） =================
-// fix: stubs::MediaType 为单元占位，const fn 忽略参数（MediaTypes 常量仅作类型占位；原值语义由调用方持有）
+// fix: MediaType 带真实数据（原单元占位——EPUB 导出 mimetype/OPF media-type 空、资源类型判定全失效）
 impl MediaType {
-    pub const fn new(_name: &'static str, _default_extension: &'static str) -> MediaType {
-        MediaType
+    pub const fn new(name: &'static str, default_extension: &'static str) -> MediaType {
+        MediaType { name, default_extension, extensions: &[] }
     }
-    pub const fn with_extensions(_name: &'static str, _default_extension: &'static str, _extensions: &'static [&'static str]) -> MediaType {
-        MediaType
+    pub const fn with_extensions(name: &'static str, default_extension: &'static str, extensions: &'static [&'static str]) -> MediaType {
+        MediaType { name, default_extension, extensions }
     }
-    // fix: 真实 MediaType.getExtensions()（MediaTypes.determine_media_type 使用；占位：空表 → 永不匹配）
+    // fix: 真实扩展名表（原空表 → determine_media_type 恒 None）
     pub fn get_extensions(&self) -> &'static [&'static str] {
-        &[]
+        self.extensions
+    }
+    pub fn get_default_extension(&self) -> &'static str {
+        self.default_extension
     }
 }
 // fix: RssSourceController 调用 rss_source.clone()（RssSource 转录缺 Clone；字段全 pub 逐字段克隆，

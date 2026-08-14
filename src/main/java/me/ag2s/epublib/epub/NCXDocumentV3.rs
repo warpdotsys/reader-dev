@@ -24,9 +24,8 @@ impl NCXDocumentV3 {
     pub const NCX_ITEM_ID: &'static str = "htmltoc";
     pub const DEFAULT_NCX_HREF: &'static str = "toc.xhtml";
     pub const V3_NCX_PROPERTIES: &'static str = "nav";
-    // fix: 本 crate 的 MediaType 统一为 stubs::MediaType(prelude 显式重导出), 单元类型可直接作 const;
-    // MediaTypes::XHTML 因 stubs 歧义无法使用, 原 Java 值语义由调用方持有
-    pub const V3_NCX_MEDIATYPE: MediaType = MediaType;
+    // fix: MediaType 带数据（application/xhtml+xml / xhtml）
+    pub const V3_NCX_MEDIATYPE: MediaType = MediaType::with_extensions("application/xhtml+xml", "xhtml", &["xhtml", "html"]);
 
     const TAG: &'static str = "me.ag2s.epublib.epub.NCXDocumentV3";
 

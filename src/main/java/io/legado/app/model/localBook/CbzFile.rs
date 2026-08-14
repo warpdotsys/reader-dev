@@ -86,8 +86,8 @@ impl CbzFile {
                 let name = zip_entry.name.clone();
                 if name == "ComicInfo.xml" {
                     // 解析书籍信息
-                    let input_stream = zf.get_input_stream(&zip_entry);
-                    self.info = Some(xml2map(&input_stream));
+                    let mut input_stream = zf.get_input_stream(&zip_entry);
+                    self.info = Some(xml2map(&mut input_stream));
                 } else if self.cover.is_none() {
                     // 解析第一张图片
                     let ext = FileUtils::getFileExtetion(&name).to_lowercase();

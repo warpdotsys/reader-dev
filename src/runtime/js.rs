@@ -271,7 +271,7 @@ fn parse_js_map(args: &[JsValue], idx: usize, ctx: &mut Context) -> std::collect
 
 /// 真实 HTTP 请求（java.get/post/head 共用；独立线程避免 async 上下文 blocking panic）
 /// 返回 (status_code, headers, body)
-fn js_http_request(
+pub fn js_http_request(
     method: &str,
     url: &str,
     headers: &std::collections::HashMap<String, String>,

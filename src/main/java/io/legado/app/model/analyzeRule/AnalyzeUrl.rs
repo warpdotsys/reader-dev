@@ -598,44 +598,39 @@ impl AnalyzeUrl {
         let concurrent_record = self.fetch_start();
         self.set_cookie(self.source.as_ref().map(|s| s.get_key()));
         let str_response: StrResponse;
+        // fix: useWebView 需无头浏览器（服务端无）——回退普通请求（原 webview 占位返回空 body，整类书源失效）
         if self.use_web_view && use_web_view {
-            let java_script = self.web_js.clone().or(js_str); // webJs ?: jsStr
-            str_response = if matches!(self.method, RequestMethod::POST) {
-                // io.legado.app.adapters.ReaderAdapterHelper.getAdapter().getStrResponseByRemoteWebview(...)
-                ReaderAdapterHelper::get_adapter().get_str_response_by_remote_webview(
-                    Some(&self.url_no_query), // url
-                    None, // html
-                    None, // encode
-                    self.source.as_ref().map(|s| s.get_key()).as_deref(), // tag
-                    Some(&self.header_map), // header_map
-                    source_regex.as_deref(),
-                    java_script.as_deref(),
-                    None, // proxy
-                    true, // post
-                    self.body.as_deref(),
-                    &self.get_user_name_space(),
-                    self.debug_log.as_deref(),
-                )
-                .await
-                .unwrap_or_else(|| StrResponse::new_url(&self.url, None))
+            let web_view_body = ReaderAdapterHelper::get_adapter().get_str_response_by_remote_webview(
+                Some(&self.url),
+                None,
+                None,
+                self.source.as_ref().map(|s| s.get_key()).as_deref(),
+                Some(&self.header_map),
+                source_regex.as_deref(),
+                self.web_js.clone().or(js_str).as_deref(),
+                None,
+                matches!(self.method, RequestMethod::POST),
+                self.body.as_deref(),
+                &self.get_user_name_space(),
+                self.debug_log.as_deref(),
+            )
+            .await
+            .and_then(|r| r.body().cloned())
+            .filter(|b| !b.is_empty());
+            str_response = if let Some(body) = web_view_body {
+                StrResponse::new_url(&self.url, Some(body))
             } else {
-                ReaderAdapterHelper::get_adapter().get_str_response_by_remote_webview(
-                    Some(&self.url), // url
-                    None, // html
-                    None, // encode
-                    self.source.as_ref().map(|s| s.get_key()).as_deref(), // tag
-                    Some(&self.header_map), // header_map
-                    source_regex.as_deref(),
-                    java_script.as_deref(),
-                    None, // proxy
-                    false, // post
+                // 回退普通 HTTP 请求（无头渲染不可用时至少能取到服务端 HTML）
+                let mut headers = self.header_map.clone();
+                headers.insert(crate::io_legado_app_constant_appconst::AppConst::UA_NAME.to_string(), crate::io_legado_app_constant_appconst::AppConst::userAgent());
+                let (_status, _resp_headers, text) = crate::runtime::js::js_http_request(
+                    if matches!(self.method, RequestMethod::POST) { "POST" } else { "GET" },
+                    &self.url,
+                    &headers,
                     self.body.as_deref(),
-                    &self.get_user_name_space(),
-                    self.debug_log.as_deref(),
-                )
-                .await
-                .unwrap_or_else(|| StrResponse::new_url(&self.url, None))
-            }
+                );
+                StrResponse::new_url(&self.url, Some(text))
+            };
         } else {
             str_response = new_call_str_response(
                 &get_proxy_client(self.proxy.as_deref(), self.debug_log.as_deref()),

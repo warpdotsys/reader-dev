@@ -558,9 +558,9 @@ impl AnalyzeRule {
         if let Some(c) = &self.chapter {
             bindings.put("chapter", crate::stubs::Any::Str(crate::stubs::book_chapter_to_json(c).to_string()));
         }
-        // fix: CookieStore/CacheManager 未实现 Debug，绑定以命名空间字符串占位
-        bindings.set("cookie", self.get_user_name_space());
-        bindings.set("cache", self.get_user_name_space());
+        // fix: 绑定真实 cookie/cache 数据（原命名空间字符串——依赖这两者的 JS 规则拿到错误值；与 AnalyzeUrl 一致）
+        bindings.set("cookie", crate::io_legado_app_help_http_cookiestore::CookieStore::new(self.get_user_name_space()).get_cookie(""));
+        bindings.set("cache", crate::io_legado_app_help_cachemanager::CacheManager::new(self.get_user_name_space()).get(""));
         bindings.put("result", result);
         bindings.put("baseUrl", self.base_url.clone());
         // fix: chapter 已绑定完整 JSON 对象（book_chapter_to_json），不再用标题字符串覆盖
@@ -625,8 +625,8 @@ impl AnalyzeRule {
         // runBlocking {
         let book = self.book().and_then(|b| b.as_any().downcast_ref::<Book>());
         if let Some(book) = book {
-            // fix: BaseSource trait 对象无 as_any 无法下转为 &BookSource，且 BookSource 未实现 Clone；WebBook 用默认书源占位
-            let web_book = WebBook::new(BookSource::default(), false, None, Some(self.get_user_name_space()));
+            // fix: 真实书源（原 BookSource::default() 无 searchUrl → 刷新必空结果）
+            let web_book = WebBook::new(self.source_book_source.clone().unwrap_or_default(), false, None, Some(self.get_user_name_space()));
             let books = block_on(web_book.search_book(book.name.as_str(), None));
             for it in books {
                 if it.name == book.name && it.author == book.author {
