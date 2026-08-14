@@ -561,8 +561,12 @@ impl AnalyzeUrl {
         };
         // }
         if wait_time > 0 {
-            // throw ConcurrentException("根据并发率还需等待${waitTime}毫秒才可以访问", waitTime = waitTime)
-            panic!("根据并发率还需等待{}毫秒才可以访问", wait_time);
+            // fix: 原 panic 无捕获导致请求直接失败（Kotlin 抛 ConcurrentException 由上层等待重试）——
+            //      等待并发窗口后重置记录并继续
+            std::thread::sleep(std::time::Duration::from_millis(wait_time.max(0) as u64));
+            fetch_record.time = System::now_millis();
+            fetch_record.frequency = 0;
+            concurrent_record_map_put(source.get_key(), fetch_record.clone());
         }
         return Some(fetch_record);
     }

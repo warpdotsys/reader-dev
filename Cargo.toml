@@ -34,6 +34,8 @@ tokio-tungstenite = "0.24"
 futures-util = "0.3"
 lopdf = "0.34"
 crc32fast = "1"
+sha1 = "0.10"
+sha2 = "0.10"
 encoding_rs = "0.8"
 
 [profile.dev]

@@ -1,5 +1,5 @@
 // 真实 JSONPath 解析（serde_json 实现，供 ReadContext.read 使用）
-// 支持：$ .field ['field'] [n] [*] 以及简单 [?(@.k=="v")] 过滤
+// 支持：$ .field ['field'] [n] [*] $.. 递归下降 以及 [?(@.k=="v")] / [?(@.n==1)] 数值过滤
 
 use serde_json::Value;
 
@@ -9,6 +9,7 @@ enum Token {
     Field(String),
     Index(i64),
     Wildcard,
+    Recursive,
     Filter(String, String),
 }
 
@@ -26,7 +27,11 @@ fn tokenize(path: &str) -> Vec<Token> {
         tokens.push(Token::Root);
     }
     while !rest.is_empty() {
-        if let Some(r) = rest.strip_prefix('.') {
+        // fix: $.. 递归下降（原不支持——$..items 等规则返回空）
+        if let Some(r) = rest.strip_prefix("..") {
+            rest = r;
+            tokens.push(Token::Recursive);
+        } else if let Some(r) = rest.strip_prefix('.') {
             rest = r;
             // 字段名
             let (name, rem) = take_field(rest);
@@ -53,7 +58,7 @@ fn tokenize(path: &str) -> Vec<Token> {
                 let inner = rest[..end].trim();
                 rest = &rest[end + 1..];
                 if inner.starts_with("?(") {
-                    // 简单过滤 [?(@.k=="v")] 或 [?(@.k='v')]
+                    // 简单过滤 [?(@.k=="v")] 或 [?(@.k='v')] 或 [?(@.n==1)]
                     let inner = inner[2..inner.len() - 1].trim();
                     if let Some(eq) = find_operator(inner) {
                         let op = &inner[..eq];
@@ -138,17 +143,33 @@ fn resolve(node: &Value, tokens: &[Token]) -> Option<Value> {
             }
             Some(Value::Array(out))
         }
+        Token::Recursive => {
+            // fix: $.. 递归下降——遍历所有后代（对象字段值 + 数组元素）匹配剩余 token
+            let mut out = Vec::new();
+            collect_descendants(node, &tokens[1..], &mut out);
+            if out.is_empty() {
+                None
+            } else {
+                Some(Value::Array(out))
+            }
+        }
         Token::Filter(key, expected) => {
             let arr = node.as_array()?;
             let mut out = Vec::new();
             for v in arr {
-                let ok = v
-                    .as_object()
-                    .and_then(|o| o.get(key))
-                    .and_then(|x| x.as_str())
-                    .map(|s| s == expected)
-                    .unwrap_or(false);
-                if ok {
+                // fix: 数值过滤（原仅字符串比较——[?(@.n==1)] 不匹配）
+                let ok = v.as_object().and_then(|o| o.get(key)).map(|x| {
+                    let exp_num: Option<f64> = expected.parse::<f64>().ok();
+                    match x {
+                        Value::String(s) => s == expected,
+                        Value::Number(n) => match exp_num {
+                            Some(e) => n.as_f64().map(|f| (f - e).abs() < 1e-9).unwrap_or(false),
+                            None => false,
+                        },
+                        _ => false,
+                    }
+                });
+                if ok.unwrap_or(false) {
                     out.push(v.clone());
                 }
             }
@@ -158,5 +179,41 @@ fn resolve(node: &Value, tokens: &[Token]) -> Option<Value> {
             let result = Value::Array(out);
             resolve(&result, &tokens[1..])
         }
+    }
+}
+
+fn collect_descendants(node: &Value, tokens: &[Token], out: &mut Vec<Value>) {
+    // 当前节点先匹配（若 tokens 为空或匹配则加入）
+    if tokens.is_empty() {
+        out.push(node.clone());
+        return;
+    }
+    match tokens[0] {
+        Token::Field(ref name) => {
+            if let Some(v) = node.get(name) {
+                if let Some(r) = resolve(v, &tokens[1..]) {
+                    out.push(r);
+                }
+            }
+        }
+        _ => {
+            if let Some(r) = resolve(node, tokens) {
+                out.push(r);
+            }
+        }
+    }
+    // 递归遍历后代
+    match node {
+        Value::Object(map) => {
+            for v in map.values() {
+                collect_descendants(v, tokens, out);
+            }
+        }
+        Value::Array(arr) => {
+            for v in arr {
+                collect_descendants(v, tokens, out);
+            }
+        }
+        _ => {}
     }
 }

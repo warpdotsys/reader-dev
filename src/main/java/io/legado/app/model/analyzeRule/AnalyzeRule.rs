@@ -489,7 +489,8 @@ impl AnalyzeRule {
         if let Some(chapter) = self.chapter.as_mut() {
             chapter.put_variable(key.clone(), Some(value.clone()));
         } else {
-            // fix: book() 返回只读 &dyn BaseBook，无法调用 &mut put_variable；回落到 ruleData
+            // fix: ruleData 占位 put_variable 为空实现——写入 book_variables（同链后续 @get: 可读，原写入即丢弃）
+            self.book_variables.insert(key.clone(), value.clone());
             self.rule_data.put_variable(key.as_str(), Some(value.as_str()));
         }
         value
@@ -530,15 +531,23 @@ impl AnalyzeRule {
             }
             None => {
                 // fix: rule_data 占位（book() 恒 None）——用真实构造提取的 book_variables 重建 book JSON
+                //      （键名对齐 Kotlin Book 序列化：name/author/bookUrl/...；原 bookName/bookAuthor 与 Kotlin 不一致）
                 if let Some(name) = self.book_variables.get("bookName") {
                     let mut book_json = serde_json::json!({
-                        "bookName": name,
-                        "bookAuthor": self.book_variables.get("bookAuthor").cloned().unwrap_or_default(),
+                        "name": name,
+                        "author": self.book_variables.get("bookAuthor").cloned().unwrap_or_default(),
                         "bookUrl": self.book_variables.get("bookUrl").cloned().unwrap_or_default(),
                         "tocUrl": self.book_variables.get("tocUrl").cloned().unwrap_or_default(),
                         "kind": self.book_variables.get("bookKind").cloned().unwrap_or_default(),
                         "wordCount": self.book_variables.get("bookWordCount").cloned().unwrap_or_default(),
                         "intro": self.book_variables.get("bookIntro").cloned().unwrap_or_default(),
+                        "origin": "",
+                        "coverUrl": "",
+                        "customOrder": 0,
+                        "durChapterTitle": "",
+                        "durChapterPos": 0,
+                        "lastChapterTitle": "",
+                        "totalChapterNum": 0,
                     });
                     if book_json["wordCount"].as_str().map(|s| s.trim().is_empty()).unwrap_or(true) {
                         book_json["wordCount"] = serde_json::Value::Number(0.into());

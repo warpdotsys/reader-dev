@@ -133,10 +133,11 @@ macro_rules! mutable_set_of {
     () => { std::collections::HashSet::new() };
 }
 
-// fix: ACache 真实实现需要 &mut self 且 Arc 包装，本地降级缓存（HashMap + 互斥锁）
+// fix: ACache 本地降级缓存（HashMap + 互斥锁；fix: 真实过期——原忽略 save_time 永不过期，
+//      书籍信息缓存不刷新、失败书源被永久跳过）
 #[derive(Clone, Default)]
 pub struct LocalCache {
-    map: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, String>>>,
+    map: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, (String, i64)>>>,
 }
 
 impl LocalCache {
@@ -146,13 +147,29 @@ impl LocalCache {
         }
     }
     pub fn get_as_string(&self, key: &str) -> Option<String> {
-        self.map.lock().unwrap().get(key).cloned()
+        let mut m = self.map.lock().unwrap();
+        match m.get(key) {
+            Some((v, deadline)) => {
+                if *deadline == 0 || *deadline > crate::stubs::System::now_millis() {
+                    Some(v.clone())
+                } else {
+                    m.remove(key);
+                    None
+                }
+            }
+            None => None,
+        }
     }
     pub fn get_by_hash_code(&self, hash_code: &str) -> Option<String> {
         self.get_as_string(hash_code)
     }
-    pub fn put(&self, key: &str, value: &str, _save_time: i32) {
-        self.map.lock().unwrap().insert(key.to_string(), value.to_string());
+    pub fn put(&self, key: &str, value: &str, save_time: i32) {
+        let deadline = if save_time == 0 {
+            0
+        } else {
+            crate::stubs::System::now_millis() + save_time as i64 * 1000
+        };
+        self.map.lock().unwrap().insert(key.to_string(), (value.to_string(), deadline));
     }
 }
 
@@ -3290,7 +3307,15 @@ impl BookController {
     pub async fn set_cover(&self, book: Book, epub_book: &mut EpubBook, book_source_string: String) {
         let cover_url = book.get_display_cover();
         if cover_url.is_none() {
-            // TODO 默认封面
+            // fix: 默认封面（1x1 深色 PNG 常量；原 TODO 无封面书籍导出无封面）
+            const DEFAULT_COVER_PNG: &[u8] = &[
+                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+                0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
+                0x00, 0x00, 0x03, 0x00, 0x01, 0x25, 0x45, 0x40, 0x5C, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
+                0x44, 0xAE, 0x42, 0x60, 0x82,
+            ];
+            epub_book.set_cover_image(Some(Resource::new_bytes(DEFAULT_COVER_PNG.to_vec(), "Images/cover.jpg")));
         } else if cover_url.as_ref().unwrap().starts_with("/") {
             // 本地 /assets 封面
             let cover_path = cover_url.unwrap().replace("/", File::SEPARATOR).substring(1);
@@ -3980,7 +4005,7 @@ impl BookController {
             r.set_status_code(404).end(String::new());
             return;
         }
-        let http_tts = self.get_http_tts_by_name(voice, user_name_space);
+        let http_tts = self.get_http_tts_by_name(voice, user_name_space.clone());
         if http_tts.is_none() {
             let mut r = response;
             r.set_status_code(404).end(String::new());
@@ -3990,7 +4015,7 @@ impl BookController {
         // fix: HttpTTS 无 Clone；先取出 content_type 再整体移入 get_speak_stream
         let content_type = http_tts.content_type.clone();
         // fix: 原 Kotlin getSpeakStream 依赖 okhttp 响应链与 JS 检测（未转录），占位返回 None
-        let mut stream = self.get_speak_stream(http_tts, text.clone(), 0).await;
+        let mut stream = self.get_speak_stream(http_tts, text.clone(), 0, user_name_space.clone()).await;
         if stream.is_none() {
             let mut r = response;
             r.set_status_code(404).end(String::new());
@@ -4097,7 +4122,7 @@ impl BookController {
     }
 
     // 原实现为外部 TTS 下载链路（AnalyzeUrl 模板替换 + header + JS 检测）——真实实现
-    pub async fn get_speak_stream(&self, http_tts: HttpTTS, speak_text: String, speech_rate: i32) -> Option<Box<dyn crate::stubs::InputStream>> {
+    pub async fn get_speak_stream(&self, http_tts: HttpTTS, speak_text: String, speech_rate: i32, user_name_space: String) -> Option<Box<dyn crate::stubs::InputStream>> {
         // URL 模板替换（{{speakText}}/{{speakSpeed}}）
         let url = http_tts
             .url
@@ -4115,6 +4140,14 @@ impl BookController {
                         }
                     }
                 }
+            }
+        }
+        // fix: 携带用户命名空间的 cookie（需登录的 TTS 源；原无 cookie 直接 404）
+        let domain = crate::io_legado_app_utils_networkutils::NetworkUtils::getSubDomain(Some(&url));
+        if !domain.is_empty() {
+            let cookie = crate::io_legado_app_help_http_cookiestore::CookieStore::new(user_name_space).get_cookie(&domain);
+            if !cookie.is_empty() {
+                req = req.header("Cookie", &cookie);
             }
         }
         let bytes = req.async_get_bytes_in_thread()?;

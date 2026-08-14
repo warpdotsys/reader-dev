@@ -148,6 +148,21 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 continue;
             }
         }
+        // fix: 通用剥离括号类伪类（:has/:matches/:containsWholeText/:matchesOwn——scraper 不支持，
+        //      条件忽略仅保留基础选择器；原选择器解析失败返回空）
+        let mut strip_pos: Option<usize> = None;
+        for pseudo_name in [":has(", ":matches(", ":containsWholeText(", ":matchesOwn("] {
+            if let Some(idx) = trimmed.rfind(pseudo_name) {
+                if trimmed[idx..].find(')').is_some() {
+                    strip_pos = Some(idx);
+                    break;
+                }
+            }
+        }
+        if let Some(idx) = strip_pos {
+            base = trimmed[..idx].to_string();
+            continue;
+        }
         if let Some(idx) = trimmed.rfind(":eq(") {
             let close = trimmed[idx..].find(')').map(|c| idx + c + 1);
             if let Some(close) = close {

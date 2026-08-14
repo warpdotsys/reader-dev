@@ -517,10 +517,29 @@ fn apply_get_string_rule(rule: &str, content: &str, ctx: &mut Context) -> String
                 .unwrap_or_default(),
             Err(_) => String::new(),
         }
+    } else if let Some(key) = rule.strip_prefix("@cookie:") {
+        // fix: @cookie:{key}——从全局 cookie 绑定解析（原落入未知 @ 分支返回规则串）
+        let key = key.trim();
+        let cookie_js = "(() => { try { return String(cookie); } catch(e) { return ''; } })()";
+        let cookie_str = match ctx.eval(boa_engine::Source::from_bytes(cookie_js.as_bytes())) {
+            Ok(v) => v.to_string(&mut *ctx).map(|s| s.to_std_string().unwrap_or_default()).unwrap_or_default(),
+            Err(_) => String::new(),
+        };
+        let mut value = String::new();
+        for pair in cookie_str.split(';') {
+            let pair = pair.trim();
+            if let Some(eq) = pair.find('=') {
+                if pair[..eq].trim() == key {
+                    value = pair[eq + 1..].trim().to_string();
+                    break;
+                }
+            }
+        }
+        value
     } else if let Some(pat) = rule.strip_prefix('@') {
-        // 其他 @ 前缀未知规则 → 原样
+        // 其他 @ 前缀未知规则（@put:/@header: 无独立存储上下文）→ 空
         let _ = pat;
-        rule.to_string()
+        String::new()
     } else if !rule.is_empty() {
         // 普通文本规则：作为 CSS 选择器尝试（Kotlin 默认规则）
         let doc = scraper::Html::parse_document(content);
@@ -565,12 +584,24 @@ fn java_toast_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> bo
     Ok(JsValue::undefined())
 }
 
-/// java.digestHex(text, algorithm) → MD5 hex（纯 std 实现；非 md5 算法降级为 md5）
+/// java.digestHex(text, algorithm) → MD5/SHA-1/SHA-256 hex（小写）
 fn java_digest_hex_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let s = arg_string(args, 0, ctx);
-    let _alg = arg_string(args, 1, ctx);
-    let bytes = crate::stubs::md5_bytes(s.as_bytes());
-    let out: String = bytes.iter().map(|b| format!("{:02x}", b)).collect();
+    let alg = arg_string(args, 1, ctx).to_uppercase();
+    let out = if alg.contains("SHA") && alg.contains("256") {
+        use sha2::Digest;
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(s.as_bytes());
+        hasher.finalize().iter().map(|b| format!("{:02x}", b)).collect()
+    } else if alg.contains("SHA") {
+        use sha1::Digest;
+        let mut hasher = sha1::Sha1::new();
+        hasher.update(s.as_bytes());
+        hasher.finalize().iter().map(|b| format!("{:02x}", b)).collect()
+    } else {
+        let bytes = crate::stubs::md5_bytes(s.as_bytes());
+        bytes.iter().map(|b| format!("{:02x}", b)).collect()
+    };
     Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
 }
 
