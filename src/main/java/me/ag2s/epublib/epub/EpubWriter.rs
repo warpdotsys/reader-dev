@@ -185,42 +185,128 @@ impl EpubWriter {
     }
 }
 
-pub struct OutputStream;
-pub struct ZipOutputStream;
-pub struct ZipEntry;
-pub struct CRC32;
+pub struct OutputStream {
+    pub data: std::rc::Rc<std::cell::RefCell<Vec<u8>>>,
+    pub file_path: Option<String>,
+}
+
+impl OutputStream {
+    pub fn new_for_file(path: String) -> OutputStream {
+        OutputStream {
+            data: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
+            file_path: Some(path),
+        }
+    }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.data.borrow().clone()
+    }
+}
+
+pub struct ZipOutputStream {
+    out: OutputStream,
+    zip: Option<zip::ZipWriter<std::io::Cursor<Vec<u8>>>>,
+}
+
+pub struct ZipEntry {
+    pub name: String,
+    pub method: u16,
+    pub size: u64,
+    pub crc: u64,
+}
+
+pub struct CRC32 {
+    crc: u32,
+}
+
 pub struct Writer;
-pub struct OutputStreamWriter;
+
+pub struct OutputStreamWriter {
+    out: ZipOutputStream,
+}
 
 impl ZipOutputStream {
-    pub fn new(_out: OutputStream) -> Self { todo!() }
-    pub fn put_next_entry(&mut self, _entry: ZipEntry) { todo!() }
-    pub fn write(&mut self, _bytes: Vec<u8>) { todo!() }
-    pub fn close(&mut self) { todo!() }
+    pub fn new(out: OutputStream) -> Self {
+        ZipOutputStream {
+            out,
+            zip: Some(zip::ZipWriter::new(std::io::Cursor::new(Vec::new()))),
+        }
+    }
+    pub fn put_next_entry(&mut self, entry: ZipEntry) {
+        if let Some(zip) = self.zip.as_mut() {
+            let options = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated);
+            let _ = zip.start_file(entry.name, options);
+        }
+    }
+    pub fn write(&mut self, bytes: Vec<u8>) {
+        if let Some(zip) = self.zip.as_mut() {
+            let _ = std::io::Write::write_all(zip, &bytes);
+        }
+    }
+    pub fn close(&mut self) {
+        if let Some(zip) = self.zip.take() {
+            let data = zip.finish().map(|c| c.into_inner()).unwrap_or_default();
+            *self.out.data.borrow_mut() = data;
+            if let Some(path) = &self.out.file_path {
+                let _ = std::fs::write(path, self.out.data.borrow().as_slice());
+            }
+        }
+    }
 }
 
 impl Clone for ZipOutputStream {
-    fn clone(&self) -> Self { todo!() }
+    fn clone(&self) -> Self {
+        ZipOutputStream {
+            out: OutputStream {
+                data: self.out.data.clone(),
+                file_path: self.out.file_path.clone(),
+            },
+            zip: None,
+        }
+    }
 }
 
 impl ZipEntry {
     pub const STORED: u16 = 0;
-    pub fn new(_name: String) -> Self { todo!() }
-    pub fn set_method(&mut self, _method: u16) { todo!() }
-    pub fn set_size(&mut self, _size: u64) { todo!() }
-    pub fn set_crc(&mut self, _crc: u64) { todo!() }
+    pub fn new(name: String) -> Self {
+        ZipEntry {
+            name,
+            method: 0,
+            size: 0,
+            crc: 0,
+        }
+    }
+    pub fn set_method(&mut self, method: u16) {
+        self.method = method;
+    }
+    pub fn set_size(&mut self, size: u64) {
+        self.size = size;
+    }
+    pub fn set_crc(&mut self, crc: u64) {
+        self.crc = crc;
+    }
 }
 
 impl CRC32 {
-    pub fn new() -> Self { todo!() }
-    pub fn update(&mut self, _data: &[u8]) { todo!() }
-    pub fn get_value(&self) -> u64 { todo!() }
+    pub fn new() -> Self {
+        CRC32 { crc: 0 }
+    }
+    pub fn update(&mut self, data: &[u8]) {
+        self.crc = crc32fast::hash(data);
+    }
+    pub fn get_value(&self) -> u64 {
+        self.crc as u64
+    }
 }
 
 impl OutputStreamWriter {
-    pub fn new(_out: ZipOutputStream) -> Self { todo!() }
-    pub fn write(&mut self, _s: &str) { todo!() }
-    pub fn flush(&mut self) { todo!() }
+    pub fn new(out: ZipOutputStream) -> Self {
+        OutputStreamWriter { out }
+    }
+    pub fn write(&mut self, s: &str) {
+        self.out.write(s.as_bytes().to_vec());
+    }
+    pub fn flush(&mut self) {}
 }
 
 impl From<ZipOutputStream> for ProcOutputStream {

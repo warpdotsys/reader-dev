@@ -3241,7 +3241,7 @@ impl BookController {
 
         //设置正文
         self.set_epub_content(content_model, book, &mut epub_book, book_source, user_name_space).await;
-        EpubWriter::new().write(epub_book, crate::me_ag2s_epublib_epub_epubwriter::OutputStream);
+        EpubWriter::new().write(epub_book, crate::me_ag2s_epublib_epub_epubwriter::OutputStream::new_for_file(book_file.to_string()));
 
         return book_file;
     }

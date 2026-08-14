@@ -32,6 +32,7 @@ rsa = "0.9"
 tokio-tungstenite = "0.24"
 futures-util = "0.3"
 lopdf = "0.34"
+crc32fast = "1"
 
 [profile.dev]
 debug = false

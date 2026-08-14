@@ -2071,6 +2071,7 @@ dependencies = [
  "cbc",
  "chrono",
  "cipher",
+ "crc32fast",
  "des",
  "ecb",
  "fancy-regex",

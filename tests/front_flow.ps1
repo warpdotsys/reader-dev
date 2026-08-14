@@ -315,6 +315,11 @@ try {
     $coverOk = ($r.StatusCode -eq 200) -and ($r.RawContentLength -gt 0)
     Report '封面下载' $coverOk "status=$($r.StatusCode) len=$($r.RawContentLength)"
 
+    # 23. TXT 导出（exportBook）
+    $r = Invoke-WebRequest -Uri "$base/reader3/exportBook?url=$bu" -UseBasicParsing -TimeoutSec 60 -ErrorAction SilentlyContinue
+    $expOk = ($r.StatusCode -eq 200) -and ($r.Headers.'Content-Disposition' -match 'attachment')
+    Report 'TXT导出' $expOk "status=$($r.StatusCode) cd=$($r.Headers.'Content-Disposition')"
+
     # 15. 书源启禁用（保存 enabled=false 模拟禁用，读回验证）
     $srcObj = $src | ConvertFrom-Json
     $srcObj | Add-Member -NotePropertyName enabled -NotePropertyValue $false -Force
