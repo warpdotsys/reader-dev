@@ -235,31 +235,43 @@ impl AnalyzeUrl {
      * 执行@js,<js></js>
      */
     fn analyze_js(&mut self) {
-        let mut start = 0;
-        let mut tmp: String;
-        // val jsMatcher = JS_PATTERN.matcher(ruleUrl)
-        let js_matcher: Vec<(usize, usize, Option<usize>, Option<usize>)> = Vec::new(); // JS_PATTERN 匹配结果: (start, end, group1, group2)
-        for m in js_matcher {
-            if m.0 > start {
-                tmp = self.rule_url[m.0 - (m.0 - m.0)..m.0].trim().to_string();
-                // 实际: ruleUrl.substring(start, jsMatcher.start()).trim { it <= ' ' }
-                if !tmp.is_empty() {
-                    self.rule_url = tmp.replace("@result", &self.rule_url);
+        // fix: 原 JS_PATTERN 匹配恒空 → 真实扫描 <js>...</js> 与 @js:...@ 段并执行
+        let mut result = String::new();
+        let mut rest = self.rule_url.clone();
+        loop {
+            if let Some(start) = rest.find("<js>") {
+                result.push_str(&rest[..start]);
+                if let Some(end_rel) = rest[start..].find("</js>") {
+                    let js = &rest[start + 4..start + end_rel];
+                    let val = self
+                        .eval_js(js.to_string(), Some(&rest))
+                        .map(|v| v.to_string())
+                        .unwrap_or_default();
+                    result.push_str(&val);
+                    rest = rest[start + end_rel + 5..].to_string();
+                    continue;
                 }
             }
-            // ruleUrl = evalJS(jsMatcher.group_idx(2) ?: jsMatcher.group_idx(1), ruleUrl) as String
-            let js = m.3.or(m.2);
-            self.rule_url = self.eval_js(js.unwrap_or_default().to_string(), Some(&self.rule_url))
-                .map(|v| v.to_string())
-                .unwrap_or_default();
-            start = m.1;
-        }
-        if self.rule_url.len() > start {
-            tmp = self.rule_url[start..].trim().to_string();
-            if !tmp.is_empty() {
-                self.rule_url = tmp.replace("@result", &self.rule_url);
+            if let Some(start) = rest.find("@js:") {
+                result.push_str(&rest[..start]);
+                // 从 @js: 之后找结束 @
+                if let Some(end_rel) = rest[start + 4..].find('@') {
+                    if end_rel > 0 {
+                        let js = &rest[start + 4..start + 4 + end_rel];
+                        let val = self
+                            .eval_js(js.to_string(), Some(&rest))
+                            .map(|v| v.to_string())
+                            .unwrap_or_default();
+                        result.push_str(&val);
+                        rest = rest[start + 4 + end_rel + 1..].to_string();
+                        continue;
+                    }
+                }
             }
+            result.push_str(&rest);
+            break;
         }
+        self.rule_url = result;
     }
 
     /**
@@ -297,18 +309,29 @@ impl AnalyzeUrl {
         }
         //page
         if let Some(page) = self.page {
-            let matcher: Vec<(usize, usize, String)> = Vec::new(); // pagePattern.matcher(ruleUrl) 匹配结果: (start, end, group1)
-            for m in matcher {
-                // val pages = matcher.group_idx(1)!!.split(",")
-                let pages: Vec<&str> = m.2.split(",").collect();
-                let matched = &self.rule_url[m.0..m.1];
-                self.rule_url = if (page as usize) < pages.len() {
-                    // pages[pages.size - 1]等同于pages.last()
-                    self.rule_url.replace(matched, pages[page as usize - 1].trim())
-                } else {
-                    self.rule_url.replace(matched, pages.last().unwrap().trim())
-                };
+            // fix: 原 pagePattern 匹配恒空 → 真实扫描 <页列表>（如 <1,2,3>）替换
+            let mut rest = self.rule_url.clone();
+            let mut result = String::new();
+            loop {
+                if let Some(start) = rest.find('<') {
+                    result.push_str(&rest[..start]);
+                    if let Some(end_rel) = rest[start..].find('>') {
+                        let inner = rest[start + 1..start + end_rel].to_string();
+                        let pages: Vec<&str> = inner.split(',').collect();
+                        let matched = if (page as usize) < pages.len() {
+                            pages[page as usize - 1].trim()
+                        } else {
+                            pages.last().unwrap_or(&"").trim()
+                        };
+                        result.push_str(matched);
+                        rest = rest[start + end_rel + 1..].to_string();
+                        continue;
+                    }
+                }
+                result.push_str(&rest);
+                break;
             }
+            self.rule_url = result;
         }
     }
 

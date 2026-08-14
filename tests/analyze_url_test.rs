@@ -44,3 +44,28 @@ fn test_regex_direct() {
     println!("direct1: {}", re.is_match("http://localhost:18999/search?key=测试&page=1").unwrap_or(false));
     println!("direct2: {}", re.is_match("http://x.com,{body}").unwrap_or(false));
 }
+
+#[test]
+fn test_analyze_url_js_and_page() {
+    use reader::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl;
+    // @js: 段执行（URL 构造）
+    let mut au = AnalyzeUrl::new(
+        "http://x.com/@js:1+2@.html".to_string(),
+        None,
+        None,
+        None,
+        None,
+        "http://x.com".to_string(),
+        None,
+        None,
+        None,
+        None,
+        None,
+    );
+    let r = au.eval_js("1+2".to_string(), None);
+    println!("DBG eval_js 1+2 = {:?}", r.as_ref().map(|v| v.to_string()));
+    au.init_url();
+    let url = au.rule_url.clone();
+    println!("DBG js url: {}", url);
+    assert!(url.contains("3.html"), "@js 应执行: {}", url);
+}
