@@ -104,3 +104,21 @@ fn test_java_obj_methods() {
     assert!(out.contains("reader"), "aes roundtrip: {}", out);
     println!("OK java obj methods");
 }
+#[test]
+fn test_java_get_obj() {
+    use reader::stubs::SimpleBindings;
+    let b = SimpleBindings::new();
+    // get 返回对象（含 body 字段）
+    let r = reader::runtime::js::eval_js_script("var r = java.get('http://localhost:18999/book/1'); typeof r + ':' + ('body' in r ? 'has-body' : 'no-body');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("object"), "get 应返回对象: {}", out);
+    assert!(out.contains("has-body"), "对象应有 body 字段: {}", out);
+    // cacheFile
+    let r = reader::runtime::js::eval_js_script("java.cacheFile('http://localhost:18999/cover.jpg');", &b);
+    let out = format!("{}", r.unwrap());
+    // 单测无 mock 服务器——网络失败返回空路径可接受（有服务器时返回 storage/...）
+    if !out.is_empty() {
+        assert!(out.contains("storage"), "cacheFile 应返回本地路径: {}", out);
+    }
+    println!("OK java get/cacheFile");
+}

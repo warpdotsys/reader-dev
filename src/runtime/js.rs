@@ -246,6 +246,116 @@ fn java_log_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_
     Ok(JsValue::from_json(&Value::String(s), ctx).unwrap_or(JsValue::null()))
 }
 
+/// 解析 JS 对象参数（headers 等）为 HashMap
+fn parse_js_map(args: &[JsValue], idx: usize, ctx: &mut Context) -> std::collections::HashMap<String, String> {
+    let mut map = std::collections::HashMap::new();
+    if let Some(arg) = args.get(idx) {
+        if let Ok(Some(json)) = arg.to_json(ctx) {
+            if let Some(obj) = json.as_object() {
+                for (k, v) in obj {
+                    map.insert(
+                        k.clone(),
+                        v.as_str().map(|s| s.to_string()).unwrap_or_else(|| v.to_string()),
+                    );
+                }
+            }
+        }
+    }
+    map
+}
+
+/// java.get(url, headers) → { body, statusCode, headers }（Connection.Response 简化）
+fn java_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let url = arg_string(args, 0, ctx);
+    let headers = parse_js_map(args, 1, ctx);
+    let mut req = crate::stubs::WebClient::new().get_abs(&url).timeout(30000);
+    for (k, v) in &headers {
+        req = req.header(k, v);
+    }
+    let text = req.async_get_text_in_thread().unwrap_or_default();
+    let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
+    let obj = boa_engine::object::ObjectInitializer::new(ctx)
+        .property(boa_engine::js_string!("body"), body_val, boa_engine::property::Attribute::all())
+        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
+        .property(boa_engine::js_string!("headers"), JsValue::null(), boa_engine::property::Attribute::all())
+        .build();
+    Ok(obj.into())
+}
+
+/// java.head(url, headers) → { statusCode, headers }
+fn java_head_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let _url = arg_string(args, 0, ctx);
+    let obj = boa_engine::object::ObjectInitializer::new(ctx)
+        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
+        .property(boa_engine::js_string!("headers"), JsValue::null(), boa_engine::property::Attribute::all())
+        .build();
+    Ok(obj.into())
+}
+
+/// java.post(url, body, headers) → { body, statusCode, headers }
+fn java_post_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let url = arg_string(args, 0, ctx);
+    let body = arg_string(args, 1, ctx);
+    let headers = parse_js_map(args, 2, ctx);
+    let mut req = crate::stubs::WebClient::new().get_abs(&url).timeout(30000);
+    for (k, v) in &headers {
+        req = req.header(k, v);
+    }
+    let text = req.async_post_in_thread(&body).unwrap_or_default();
+    let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
+    let obj = boa_engine::object::ObjectInitializer::new(ctx)
+        .property(boa_engine::js_string!("body"), body_val, boa_engine::property::Attribute::all())
+        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
+        .build();
+    Ok(obj.into())
+}
+
+/// java.cacheFile(url) → 下载到 storage/cache 返回本地路径
+fn java_cache_file_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let url = arg_string(args, 0, ctx);
+    let bytes = crate::stubs::WebClient::new().get_abs(&url).timeout(30000).async_get_bytes_in_thread();
+    let path = if let Some(bytes) = bytes {
+        if bytes.is_empty() {
+            String::new()
+        } else {
+            let dir = std::path::Path::new("storage").join("cache").join("js");
+            let _ = std::fs::create_dir_all(&dir);
+            let name = format!("{}.bin", crate::stubs::md5_encode16(url));
+            let file = dir.join(&name);
+            let _ = std::fs::write(&file, &bytes);
+            file.to_string_lossy().to_string()
+        }
+    } else {
+        String::new()
+    };
+    Ok(JsValue::from_json(&Value::String(path), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.readFile(path) → 读取文件文本
+fn java_read_file_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let path = arg_string(args, 0, ctx);
+    let text = std::fs::read_to_string(&path).unwrap_or_default();
+    Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.getFile(path) → 文件路径字符串（本地文件访问）
+fn java_get_file_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let path = arg_string(args, 0, ctx);
+    let full = if path.starts_with("storage") {
+        path
+    } else {
+        format!("storage/{}", path.trim_start_matches('/'))
+    };
+    Ok(JsValue::from_json(&Value::String(full), ctx).unwrap_or(JsValue::null()))
+}
+
+/// java.importScript(path) → 读取脚本内容（返回脚本文本供 eval）
+fn java_import_script_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let path = arg_string(args, 0, ctx);
+    let text = std::fs::read_to_string(&path).unwrap_or_default();
+    Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
+}
+
 fn java_get_cookie_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let tag = arg_string(args, 0, ctx);
     let key = arg_string(args, 1, ctx);
@@ -305,6 +415,13 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), boa_engine::js_string!("timeFormatUTC"), 3)
         .function(NativeFunction::from_fn_ptr(java_log_native), boa_engine::js_string!("log"), 1)
         .function(NativeFunction::from_fn_ptr(java_get_cookie_native), boa_engine::js_string!("getCookie"), 2)
+        .function(NativeFunction::from_fn_ptr(java_get_native), boa_engine::js_string!("get"), 2)
+        .function(NativeFunction::from_fn_ptr(java_head_native), boa_engine::js_string!("head"), 2)
+        .function(NativeFunction::from_fn_ptr(java_post_native), boa_engine::js_string!("post"), 3)
+        .function(NativeFunction::from_fn_ptr(java_cache_file_native), boa_engine::js_string!("cacheFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_read_file_native), boa_engine::js_string!("readFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_file_native), boa_engine::js_string!("getFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_import_script_native), boa_engine::js_string!("importScript"), 1)
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 

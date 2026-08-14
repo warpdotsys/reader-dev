@@ -4234,9 +4234,36 @@ impl WebRequest {
         let resp = client.get(&self.url).send().await.ok()?;
         resp.text().await.ok()
     }
+    /// 独立线程 + 独立 tokio runtime 执行 async POST raw body
+    pub fn async_post_in_thread(&self, body: &str) -> Option<String> {
+        let url = self.url.clone();
+        let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        let body = body.to_string();
+        let headers = self.headers.clone();
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .ok()?;
+            rt.block_on(async {
+                let client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .build()
+                    .ok()?;
+                let mut req = client.post(&url).body(body);
+                for (k, v) in &headers {
+                    req = req.header(k, v);
+                }
+                let resp = req.send().await.ok()?;
+                resp.text().await.ok()
+            })
+        })
+        .join()
+        .ok()
+        .flatten()
+    }
     /// 独立线程 + 独立 tokio runtime 执行 async POST form（pollster/同步上下文均安全）
-    pub fn async_post_form_in_thread(
-        &self,
+    pub fn async_post_form_in_thread(        &self,
         form: &[(String, String)],
         headers: &std::collections::HashMap<String, String>,
     ) -> Option<String> {
