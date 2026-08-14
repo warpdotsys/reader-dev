@@ -3,6 +3,7 @@
 
 use boa_engine::native_function::NativeFunction;
 use boa_engine::property::Attribute;
+use boa_engine::js_string;
 use boa_engine::{Context, JsValue, Source};
 use serde_json::Value;
 
@@ -264,30 +265,92 @@ fn parse_js_map(args: &[JsValue], idx: usize, ctx: &mut Context) -> std::collect
     map
 }
 
+/// 真实 HTTP 请求（java.get/post/head 共用；独立线程避免 async 上下文 blocking panic）
+/// 返回 (status_code, headers, body)
+fn js_http_request(
+    method: &str,
+    url: &str,
+    headers: &std::collections::HashMap<String, String>,
+    body: Option<&str>,
+) -> (i32, std::collections::HashMap<String, String>, String) {
+    let method = method.to_string();
+    let url = url.to_string();
+    let headers = headers.clone();
+    let body = body.map(|s| s.to_string());
+    std::thread::spawn(move || {
+        let client = reqwest::blocking::Client::builder()
+            .connect_timeout(std::time::Duration::from_secs(15))
+            .timeout(std::time::Duration::from_secs(30))
+            .danger_accept_invalid_certs(true)
+            .build()
+            .ok()?;
+        let mut builder = match method.as_str() {
+            "POST" => client.post(&url),
+            "HEAD" => client.head(&url),
+            _ => client.get(&url),
+        };
+        for (k, v) in &headers {
+            builder = builder.header(k, v);
+        }
+        if let Some(b) = body {
+            builder = builder.body(b);
+        }
+        let resp = builder.send().ok()?;
+        let status = resp.status().as_u16() as i32;
+        let mut out_headers = std::collections::HashMap::new();
+        for (k, v) in resp.headers() {
+            if let Ok(v) = v.to_str() {
+                out_headers.insert(k.as_str().to_string(), v.to_string());
+            }
+        }
+        let text = resp.text().unwrap_or_default();
+        Some((status, out_headers, text))
+    })
+    .join()
+    .ok()
+    .flatten()
+    .unwrap_or((0, std::collections::HashMap::new(), String::new()))
+}
+
+fn headers_to_js(headers: &std::collections::HashMap<String, String>, ctx: &mut Context) -> JsValue {
+    let mut props: Vec<(boa_engine::property::PropertyKey, JsValue)> = Vec::new();
+    for (k, v) in headers {
+        let val = JsValue::from_json(&Value::String(v.clone()), ctx).unwrap_or(JsValue::null());
+        props.push((boa_engine::property::PropertyKey::from(boa_engine::JsString::from(k.as_str())), val));
+    }
+    let mut init = boa_engine::object::ObjectInitializer::new(ctx);
+    for (k, v) in props {
+        init.property(k, v, boa_engine::property::Attribute::all());
+    }
+    init.build().into()
+}
+
 /// java.get(url, headers) → { body, statusCode, headers }（Connection.Response 简化）
 fn java_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let url = arg_string(args, 0, ctx);
     let headers = parse_js_map(args, 1, ctx);
-    let mut req = crate::stubs::WebClient::new().get_abs(&url).timeout(30000);
-    for (k, v) in &headers {
-        req = req.header(k, v);
-    }
-    let text = req.async_get_text_in_thread().unwrap_or_default();
+    // fix: 真实请求（原 statusCode 恒 200 / headers 恒 null）
+    let (status, resp_headers, text) = js_http_request("GET", &url, &headers, None);
+    let headers_js = headers_to_js(&resp_headers, ctx);
     let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
     let obj = boa_engine::object::ObjectInitializer::new(ctx)
-        .property(boa_engine::js_string!("body"), body_val, boa_engine::property::Attribute::all())
-        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
-        .property(boa_engine::js_string!("headers"), JsValue::null(), boa_engine::property::Attribute::all())
+        .property(js_string!("body"), body_val, boa_engine::property::Attribute::all())
+        .property(js_string!("statusCode"), status, boa_engine::property::Attribute::all())
+        .property(js_string!("headers"), headers_js, boa_engine::property::Attribute::all())
         .build();
     Ok(obj.into())
 }
 
 /// java.head(url, headers) → { statusCode, headers }
 fn java_head_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
-    let _url = arg_string(args, 0, ctx);
+    let url = arg_string(args, 0, ctx);
+    let headers = parse_js_map(args, 1, ctx);
+    // fix: 真实 HEAD 请求（原恒返回 statusCode 200，探测类规则全部失效）
+    let (status, resp_headers, _) = js_http_request("HEAD", &url, &headers, None);
+    let headers_js = headers_to_js(&resp_headers, ctx);
     let obj = boa_engine::object::ObjectInitializer::new(ctx)
-        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
-        .property(boa_engine::js_string!("headers"), JsValue::null(), boa_engine::property::Attribute::all())
+        .property(js_string!("statusCode"), status, boa_engine::property::Attribute::all())
+        .property(js_string!("headers"), headers_js, boa_engine::property::Attribute::all())
         .build();
     Ok(obj.into())
 }
@@ -297,15 +360,14 @@ fn java_post_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa
     let url = arg_string(args, 0, ctx);
     let body = arg_string(args, 1, ctx);
     let headers = parse_js_map(args, 2, ctx);
-    let mut req = crate::stubs::WebClient::new().get_abs(&url).timeout(30000);
-    for (k, v) in &headers {
-        req = req.header(k, v);
-    }
-    let text = req.async_post_in_thread(&body).unwrap_or_default();
+    // fix: 真实请求（原 statusCode 恒 200）
+    let (status, resp_headers, text) = js_http_request("POST", &url, &headers, Some(&body));
+    let headers_js = headers_to_js(&resp_headers, ctx);
     let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
     let obj = boa_engine::object::ObjectInitializer::new(ctx)
-        .property(boa_engine::js_string!("body"), body_val, boa_engine::property::Attribute::all())
-        .property(boa_engine::js_string!("statusCode"), 200, boa_engine::property::Attribute::all())
+        .property(js_string!("body"), body_val, boa_engine::property::Attribute::all())
+        .property(js_string!("statusCode"), status, boa_engine::property::Attribute::all())
+        .property(js_string!("headers"), headers_js, boa_engine::property::Attribute::all())
         .build();
     Ok(obj.into())
 }
@@ -450,34 +512,34 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
 
     let ajax = NativeFunction::from_fn_ptr(ajax_native);
     let get_url = NativeFunction::from_fn_ptr(get_url_native);
-    let _ = context.register_global_callable(boa_engine::js_string!("ajax"), 1, ajax.clone());
-    let _ = context.register_global_callable(boa_engine::js_string!("getUrl"), 1, get_url.clone());
+    let _ = context.register_global_callable(js_string!("ajax"), 1, ajax.clone());
+    let _ = context.register_global_callable(js_string!("getUrl"), 1, get_url.clone());
 
     let java_obj = boa_engine::object::ObjectInitializer::new(&mut context)
-        .function(ajax.clone(), boa_engine::js_string!("ajax"), 1)
-        .function(get_url.clone(), boa_engine::js_string!("getUrl"), 1)
-        .function(NativeFunction::from_fn_ptr(java_base64_encode_native), boa_engine::js_string!("base64Encode"), 1)
-        .function(NativeFunction::from_fn_ptr(java_base64_decode_native), boa_engine::js_string!("base64Decode"), 1)
-        .function(NativeFunction::from_fn_ptr(java_md5_native), boa_engine::js_string!("md5Encode16"), 1)
-        .function(NativeFunction::from_fn_ptr(java_md5_full_native), boa_engine::js_string!("md5Encode"), 1)
-        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_string_native), boa_engine::js_string!("aesEncodeToString"), 4)
-        .function(NativeFunction::from_fn_ptr(java_aes_decode_to_string_native), boa_engine::js_string!("aesDecodeToString"), 4)
-        .function(NativeFunction::from_fn_ptr(java_aes_base64_decode_to_string_native), boa_engine::js_string!("aesBase64DecodeToString"), 4)
-        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_base64_string_native), boa_engine::js_string!("aesEncodeToBase64String"), 4)
-        .function(NativeFunction::from_fn_ptr(java_time_format_native), boa_engine::js_string!("timeFormat"), 3)
-        .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), boa_engine::js_string!("timeFormatUTC"), 3)
-        .function(NativeFunction::from_fn_ptr(java_log_native), boa_engine::js_string!("log"), 1)
-        .function(NativeFunction::from_fn_ptr(java_get_cookie_native), boa_engine::js_string!("getCookie"), 2)
-        .function(NativeFunction::from_fn_ptr(java_get_native), boa_engine::js_string!("get"), 2)
-        .function(NativeFunction::from_fn_ptr(java_head_native), boa_engine::js_string!("head"), 2)
-        .function(NativeFunction::from_fn_ptr(java_post_native), boa_engine::js_string!("post"), 3)
-        .function(NativeFunction::from_fn_ptr(java_cache_file_native), boa_engine::js_string!("cacheFile"), 1)
-        .function(NativeFunction::from_fn_ptr(java_read_file_native), boa_engine::js_string!("readFile"), 1)
-        .function(NativeFunction::from_fn_ptr(java_get_file_native), boa_engine::js_string!("getFile"), 1)
-        .function(NativeFunction::from_fn_ptr(java_import_script_native), boa_engine::js_string!("importScript"), 1)
-        .function(NativeFunction::from_fn_ptr(java_get_string_native), boa_engine::js_string!("getString"), 2)
+        .function(ajax.clone(), js_string!("ajax"), 1)
+        .function(get_url.clone(), js_string!("getUrl"), 1)
+        .function(NativeFunction::from_fn_ptr(java_base64_encode_native), js_string!("base64Encode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_base64_decode_native), js_string!("base64Decode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_md5_native), js_string!("md5Encode16"), 1)
+        .function(NativeFunction::from_fn_ptr(java_md5_full_native), js_string!("md5Encode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_string_native), js_string!("aesEncodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_decode_to_string_native), js_string!("aesDecodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_base64_decode_to_string_native), js_string!("aesBase64DecodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_base64_string_native), js_string!("aesEncodeToBase64String"), 4)
+        .function(NativeFunction::from_fn_ptr(java_time_format_native), js_string!("timeFormat"), 3)
+        .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), js_string!("timeFormatUTC"), 3)
+        .function(NativeFunction::from_fn_ptr(java_log_native), js_string!("log"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_cookie_native), js_string!("getCookie"), 2)
+        .function(NativeFunction::from_fn_ptr(java_get_native), js_string!("get"), 2)
+        .function(NativeFunction::from_fn_ptr(java_head_native), js_string!("head"), 2)
+        .function(NativeFunction::from_fn_ptr(java_post_native), js_string!("post"), 3)
+        .function(NativeFunction::from_fn_ptr(java_cache_file_native), js_string!("cacheFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_read_file_native), js_string!("readFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_file_native), js_string!("getFile"), 1)
+        .function(NativeFunction::from_fn_ptr(java_import_script_native), js_string!("importScript"), 1)
+        .function(NativeFunction::from_fn_ptr(java_get_string_native), js_string!("getString"), 2)
         .build();
-    let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
+    let _ = context.register_global_property(boa_engine::property::PropertyKey::from(js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 
     // fix: Kotlin 的 ScriptEngine.put 支持任意键绑定；原固定列表导致自定义绑定（如 bookName）undefined
     let mut keys: Vec<String> = bindings.map.keys().cloned().collect();
@@ -494,7 +556,7 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
             continue;
         }
         let val = bind_value(bindings, &key, &mut context);
-        let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!(key)), val, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
+        let _ = context.register_global_property(boa_engine::property::PropertyKey::from(js_string!(key)), val, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
     }
 
     match context.eval(Source::from_bytes(js.as_bytes())) {

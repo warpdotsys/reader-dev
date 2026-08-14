@@ -136,3 +136,29 @@ fn test_java_get_string() {
     assert!(out.contains("测试"), "json getString: {}", out);
     println!("OK java getString");
 }
+#[test]
+fn test_java_get_real_status_code() {
+    use std::io::Write;
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let addr = listener.local_addr().unwrap();
+    std::thread::spawn(move || {
+        for stream in listener.incoming().take(1) {
+            if let Ok(mut s) = stream {
+                let resp = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+                let _ = s.write_all(resp.as_bytes());
+            }
+        }
+    });
+    let js = format!("java.get('http://{}/x', {{}})", addr);
+    let mut b = SimpleBindings::new();
+    let r = SCRIPT_ENGINE.eval_downcast_any(js, &mut b);
+    let r = r.expect("java.get should return object");
+    match r {
+        reader::stubs::Any::Map(m) => {
+            let sc = m.iter().find(|(k, _)| k.as_str() == "statusCode").map(|(_, v)| v.to_string()).unwrap_or_default();
+            assert_eq!(sc, "404", "java.get statusCode should be 404, got {sc}");
+            assert!(m.iter().any(|(k, _)| k.as_str() == "headers"), "headers should present");
+        }
+        other => panic!("expected map, got {:?}", other),
+    }
+}
