@@ -105,6 +105,136 @@ fn get_url_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_e
     ajax_native(_this, args, ctx)
 }
 
+fn arg_string(args: &[JsValue], idx: usize, ctx: &mut Context) -> String {
+    args.get(idx)
+        .map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default())
+        .unwrap_or_default()
+}
+
+fn java_base64_encode_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let out = crate::io_legado_app_utils_base64::Base64::encodeToString(s.as_bytes(), crate::io_legado_app_utils_base64::Base64::NO_WRAP);
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_base64_decode_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let bytes = crate::io_legado_app_utils_base64::Base64::decode_str(&s, crate::io_legado_app_utils_base64::Base64::NO_WRAP);
+    let out = String::from_utf8_lossy(&bytes).to_string();
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_md5_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let digest = crate::stubs::md5_bytes(s.as_bytes());
+    let hex: String = digest.iter().map(|b| format!("{:02x}", b)).collect();
+    let out = hex[8..24].to_string();
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_md5_full_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    let digest = crate::stubs::md5_bytes(s.as_bytes());
+    let out: String = digest.iter().map(|b| format!("{:02x}", b)).collect();
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_aes_helper(args: &[JsValue], ctx: &mut Context, encrypt: bool) -> String {
+    let data = arg_string(args, 0, ctx);
+    let key = arg_string(args, 1, ctx);
+    let transformation = arg_string(args, 2, ctx);
+    let iv = arg_string(args, 3, ctx);
+    let mut cipher = crate::stubs::Cipher::getInstance(&transformation);
+    let key_spec = crate::stubs::SecretKeySpec::new(key.as_bytes(), "AES");
+    let iv_spec = crate::stubs::IvParameterSpec::new(iv.as_bytes());
+    cipher.init_spec_iv(
+        if encrypt { crate::stubs::Cipher::ENCRYPT_MODE } else { crate::stubs::Cipher::DECRYPT_MODE },
+        &key_spec,
+        &iv_spec,
+    );
+    let out = cipher.do_final_data(data.as_bytes());
+    String::from_utf8_lossy(&out).to_string()
+}
+
+fn java_aes_encode_to_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let out = java_aes_helper(args, ctx, true);
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_aes_decode_to_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let out = java_aes_helper(args, ctx, false);
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_aes_base64_decode_to_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    // 直接对 base64 解码字节解密（避免 lossy 字符串破坏密文）
+    let b64 = arg_string(args, 0, ctx);
+    let key = arg_string(args, 1, ctx);
+    let transformation = arg_string(args, 2, ctx);
+    let iv = arg_string(args, 3, ctx);
+    let bytes = crate::io_legado_app_utils_base64::Base64::decode_str(&b64, crate::io_legado_app_utils_base64::Base64::NO_WRAP);
+    let mut cipher = crate::stubs::Cipher::getInstance(&transformation);
+    let key_spec = crate::stubs::SecretKeySpec::new(key.as_bytes(), "AES");
+    let iv_spec = crate::stubs::IvParameterSpec::new(iv.as_bytes());
+    cipher.init_spec_iv(crate::stubs::Cipher::DECRYPT_MODE, &key_spec, &iv_spec);
+    let out = cipher.do_final_data(&bytes);
+    let text = String::from_utf8_lossy(&out).to_string();
+    Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_aes_encode_to_base64_string_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    // 直接字节加密后 base64（避免 lossy 字符串破坏密文）
+    let data = arg_string(args, 0, ctx).into_bytes();
+    let key = arg_string(args, 1, ctx).into_bytes();
+    let transformation = arg_string(args, 2, ctx);
+    let iv = arg_string(args, 3, ctx).into_bytes();
+    let mut cipher = crate::stubs::Cipher::getInstance(&transformation);
+    let key_spec = crate::stubs::SecretKeySpec::new(&key, "AES");
+    let iv_spec = crate::stubs::IvParameterSpec::new(&iv);
+    cipher.init_spec_iv(crate::stubs::Cipher::ENCRYPT_MODE, &key_spec, &iv_spec);
+    let ct = cipher.do_final_data(&data);
+    let out = crate::io_legado_app_utils_base64::Base64::encodeToString(&ct, crate::io_legado_app_utils_base64::Base64::NO_WRAP);
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_time_format_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let time_ms: i64 = args
+        .first()
+        .map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(0))
+        .unwrap_or(0);
+    let format = arg_string(args, 1, ctx);
+    let sh: i32 = args.get(2).map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(0)).unwrap_or(0);
+    use chrono::TimeZone;
+    let out = match chrono::FixedOffset::east_opt(sh * 3600) {
+        Some(tz) => match tz.timestamp_millis_opt(time_ms).single() {
+            Some(dt) => dt.format(&crate::stubs::java_pattern_to_chrono(&format)).to_string(),
+            None => String::new(),
+        },
+        None => String::new(),
+    };
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_time_format_utc_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let time_ms: i64 = args
+        .first()
+        .map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(0))
+        .unwrap_or(0);
+    let format = arg_string(args, 1, ctx);
+    use chrono::TimeZone;
+    let out = match chrono::Utc.timestamp_millis_opt(time_ms).single() {
+        Some(dt) => dt.format(&crate::stubs::java_pattern_to_chrono(&format)).to_string(),
+        None => String::new(),
+    };
+    Ok(JsValue::from_json(&Value::String(out), ctx).unwrap_or(JsValue::null()))
+}
+
+fn java_log_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let s = arg_string(args, 0, ctx);
+    eprintln!("[java.log] {}", s);
+    Ok(JsValue::from_json(&Value::String(s), ctx).unwrap_or(JsValue::null()))
+}
+
 /// 执行 JS：bindings → 全局绑定 + java 对象（ajax 等），结果 JsValue → Any
 pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
     let mut context = Context::default();
@@ -117,6 +247,17 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
     let java_obj = boa_engine::object::ObjectInitializer::new(&mut context)
         .function(ajax.clone(), boa_engine::js_string!("ajax"), 1)
         .function(get_url.clone(), boa_engine::js_string!("getUrl"), 1)
+        .function(NativeFunction::from_fn_ptr(java_base64_encode_native), boa_engine::js_string!("base64Encode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_base64_decode_native), boa_engine::js_string!("base64Decode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_md5_native), boa_engine::js_string!("md5Encode16"), 1)
+        .function(NativeFunction::from_fn_ptr(java_md5_full_native), boa_engine::js_string!("md5Encode"), 1)
+        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_string_native), boa_engine::js_string!("aesEncodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_decode_to_string_native), boa_engine::js_string!("aesDecodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_base64_decode_to_string_native), boa_engine::js_string!("aesBase64DecodeToString"), 4)
+        .function(NativeFunction::from_fn_ptr(java_aes_encode_to_base64_string_native), boa_engine::js_string!("aesEncodeToBase64String"), 4)
+        .function(NativeFunction::from_fn_ptr(java_time_format_native), boa_engine::js_string!("timeFormat"), 3)
+        .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), boa_engine::js_string!("timeFormatUTC"), 3)
+        .function(NativeFunction::from_fn_ptr(java_log_native), boa_engine::js_string!("log"), 1)
         .build();
     let _ = context.register_global_property(boa_engine::property::PropertyKey::from(boa_engine::js_string!("java")), java_obj, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
 

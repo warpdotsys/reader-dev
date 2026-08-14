@@ -333,11 +333,11 @@ impl RoutingContext {
     }
 
     pub fn success(&self, data: &crate::com_htmake_reader_api_returndata::ReturnData) {
-        // fix: ReturnData 未 derive Serialize，以 Debug/字段拼接近似 JSON
+        // fix: errorMsg 经 serde 转义（原裸拼接会破坏含引号的错误信息 JSON）
         let body = format!(
-            "{{\"isSuccess\":{},\"errorMsg\":\"{}\",\"data\":{}}}",
+            "{{\"isSuccess\":{},\"errorMsg\":{},\"data\":{}}}",
             data.is_success(),
-            data.error_msg(),
+            serde_json::to_string(data.error_msg()).unwrap_or_else(|_| "\"\"".to_string()),
             data.data()
                 .as_ref()
                 .map(|d| crate::stubs::any_to_json_value(d.as_ref()).to_string())
@@ -383,12 +383,19 @@ impl RoutingContext {
 pub struct Session;
 
 impl Session {
-    pub fn put(&self, _key: &str, _value: String) {}
-    pub fn get(&self, _key: &str) -> Option<String> {
-        None
+    // fix: 委托 stubs 全局会话存储（真实内存会话）
+    pub fn put(&self, key: &str, value: String) {
+        crate::stubs::Session::put(&crate::stubs::Session, key, value);
     }
-    pub fn remove(&self, _key: &str) {}
-    pub fn destroy(&self) {}
+    pub fn get(&self, key: &str) -> Option<String> {
+        crate::stubs::Session::get(&crate::stubs::Session, key)
+    }
+    pub fn remove(&self, key: &str) {
+        crate::stubs::Session::put(&crate::stubs::Session, key, String::new());
+    }
+    pub fn destroy(&self) {
+        crate::stubs::Session::destroy(&crate::stubs::Session);
+    }
 }
 
 pub struct FileUpload {

@@ -52,13 +52,13 @@ fn mutable_list_of<T>() -> Vec<T> {
 // fix: ReturnData 未 derive Serialize，SSE 响应手动拼 JSON（同 RoutingContext.success 的拼装方式）
 fn rd_json(return_data: &ReturnData) -> String {
     format!(
-        "{{\"isSuccess\":{},\"errorMsg\":\"{}\",\"data\":{}}}",
+        "{{\"isSuccess\":{},\"errorMsg\":{},\"data\":{}}}",
         return_data.is_success(),
-        return_data.error_msg(),
+        serde_json::to_string(return_data.error_msg()).unwrap_or_else(|_| "\"\"".to_string()),
         return_data
             .data()
             .as_ref()
-            .map(|d| format!("{:?}", d))
+            .map(|d| crate::stubs::any_to_json_value(d.as_ref()).to_string())
             .unwrap_or_else(|| "null".to_string())
     )
 }

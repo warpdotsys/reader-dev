@@ -1401,7 +1401,7 @@ pub struct SimpleDateFormat {
 }
 
 /// Java SimpleDateFormat pattern → chrono format（常用子集）
-fn java_pattern_to_chrono(p: &str) -> String {
+pub fn java_pattern_to_chrono(p: &str) -> String {
     let mut out = String::new();
     let chars: Vec<char> = p.chars().collect();
     let mut i = 0;
@@ -9637,10 +9637,14 @@ impl From<crate::io_legado_app_data_entities_bookchapter::BookChapter> for Any {
     }
 }
 impl From<crate::io_legado_app_data_entities_searchbook::SearchBook> for Any {
-    fn from(v: crate::io_legado_app_data_entities_searchbook::SearchBook) -> Any { Any::Str(v.book_url.clone()) }
+    fn from(v: crate::io_legado_app_data_entities_searchbook::SearchBook) -> Any {
+        Any::Str(crate::stubs::search_book_to_json(&v).to_string())
+    }
 }
 impl From<crate::io_legado_app_data_entities_searchresult::SearchResult> for Any {
-    fn from(v: crate::io_legado_app_data_entities_searchresult::SearchResult) -> Any { Any::Str(v.result_text.clone()) }
+    fn from(v: crate::io_legado_app_data_entities_searchresult::SearchResult) -> Any {
+        Any::Str(crate::stubs::search_result_to_json(&v).to_string())
+    }
 }
 impl From<Vec<crate::io_legado_app_data_entities_bookchapter::BookChapter>> for Any {
     fn from(v: Vec<crate::io_legado_app_data_entities_bookchapter::BookChapter>) -> Any {
@@ -9662,7 +9666,11 @@ impl From<Vec<crate::io_legado_app_data_entities_searchbook::SearchBook>> for An
 }
 impl From<Vec<crate::io_legado_app_data_entities_searchresult::SearchResult>> for Any {
     fn from(v: Vec<crate::io_legado_app_data_entities_searchresult::SearchResult>) -> Any {
-        Any::List(v.into_iter().map(|r| Any::Str(r.result_text.clone())).collect())
+        let items: Vec<String> = v
+            .iter()
+            .map(|r| crate::stubs::search_result_to_json(r).to_string())
+            .collect();
+        Any::JsonArray(crate::stubs::JsonArray(items))
     }
 }
 impl From<Vec<crate::io_legado_app_data_entities_rssarticle::RssArticle>> for Any {
@@ -9810,6 +9818,11 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_bookmark::Bookmark>() { return bookmark_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_txttocrule::TxtTocRule>() { return txt_toc_rule_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_rssarticle::RssArticle>() { return rss_article_to_json(v); }
+    if let Some(v) = d.downcast_ref::<Option<crate::com_htmake_reader_entity_user::User>>() { return match v { Some(u) => user_to_json(u), None => Value::Null }; }
+    if let Some(v) = d.downcast_ref::<Option<bool>>() { return match v { Some(b) => Value::Bool(*b), None => Value::Null }; }
+    if let Some(v) = d.downcast_ref::<Option<String>>() { return match v { Some(s) => Value::String(s.clone()), None => Value::Null }; }
+    if let Some(v) = d.downcast_ref::<Option<i32>>() { return match v { Some(i) => json!(*i), None => Value::Null }; }
+    if let Some(v) = d.downcast_ref::<Option<i64>>() { return match v { Some(i) => json!(*i), None => Value::Null }; }
     if let Some(v) = d.downcast_ref::<Vec<crate::io_legado_app_data_entities_rssarticle::RssArticle>>() { return rss_articles_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>() { return search_book_to_json(v); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_bookchapter::BookChapter>() { return book_chapter_to_json(v); }

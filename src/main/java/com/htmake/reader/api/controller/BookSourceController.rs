@@ -719,7 +719,8 @@ impl BookSourceController {
                 file.delete();
             }
         }
-        return_data.set_data(Box::new(source_list.get_list()), String::from(""));
+        // fix: 前端对每项 JSON.parse——返回原始 JSON 字符串数组（非解析对象）
+        return_data.set_data(Box::new(source_list.0.clone()), String::from(""));
         return return_data;
     }
 

@@ -1,6 +1,25 @@
 // 自动生成：实体 -> serde_json::Value（ReturnData JSON 序列化）
 use serde_json::{Value, json};
 
+pub fn search_result_to_json(v: &crate::io_legado_app_data_entities_searchresult::SearchResult) -> Value {
+    let mut m = serde_json::Map::new();
+    m.insert(String::from("resultCount"), json!(v.result_count));
+    m.insert(String::from("resultCountWithinChapter"), json!(v.result_count_within_chapter));
+    m.insert(String::from("resultText"), json!(v.result_text));
+    m.insert(String::from("chapterTitle"), json!(v.chapter_title));
+    m.insert(String::from("query"), json!(v.query));
+    m.insert(String::from("pageSize"), json!(v.page_size));
+    m.insert(String::from("chapterIndex"), json!(v.chapter_index));
+    m.insert(String::from("pageIndex"), json!(v.page_index));
+    m.insert(String::from("queryIndexInResult"), json!(v.query_index_in_result));
+    m.insert(String::from("queryIndexInChapter"), json!(v.query_index_in_chapter));
+    Value::Object(m)
+}
+
+pub fn search_results_to_json(v: &[crate::io_legado_app_data_entities_searchresult::SearchResult]) -> Value {
+    Value::Array(v.iter().map(|x| search_result_to_json(x)).collect())
+}
+
 pub fn rss_article_to_json(v: &crate::io_legado_app_data_entities_rssarticle::RssArticle) -> Value {
     let mut m = serde_json::Map::new();
     m.insert(String::from("origin"), json!(v.origin));
@@ -50,7 +69,10 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("wordCount"), map_opt(v.word_count.clone()));
     m.insert(String::from("canUpdate"), json!(v.can_update));
     m.insert(String::from("type"), json!(v.r#type));
-    m.insert(String::from("readConfig"), json!(v.read_config.borrow().as_ref().map(|c| c.pdf_image_width)));
+    m.insert(String::from("readConfig"), match v.read_config.borrow().as_ref() {
+        Some(c) => json!({ "pdfImageWidth": c.pdf_image_width }),
+        None => Value::Null,
+    });
     m.insert(String::from("order"), json!(v.order as i64));
     m.insert(String::from("originOrder"), json!(v.origin_order as i64));
     m.insert(String::from("useReplaceRule"), json!(v.use_replace_rule));

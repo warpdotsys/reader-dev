@@ -82,3 +82,25 @@ fn test_js_syntax_error() {
     assert!(r.is_none());
     println!("OK syntax error -> None");
 }
+
+#[test]
+fn test_java_obj_methods() {
+    use reader::stubs::SimpleBindings;
+    let b = SimpleBindings::new();
+    // base64 + md5 + aes
+    let r = reader::runtime::js::eval_js_script("java.base64Encode('hello');", &b);
+    assert!(r.is_some());
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("aGVsbG8="), "base64Encode: {}", out);
+    let r = reader::runtime::js::eval_js_script("java.md5Encode('abc');", &b);
+    let out = format!("{}", r.unwrap());
+    assert_eq!(out, "900150983cd24fb0d6963f7d28e17f72", "md5Encode: {}", out);
+    let r = reader::runtime::js::eval_js_script("java.md5Encode16('abc');", &b);
+    let out = format!("{}", r.unwrap());
+    assert_eq!(out, "3cd24fb0d6963f7d", "md5Encode16: {}", out);
+    // aes 回环
+    let r = reader::runtime::js::eval_js_script("var e = java.aesEncodeToBase64String('reader', '0123456789abcdef', 'AES/ECB/PKCS5Padding', '1234567890abcdef'); e + '|' + java.aesBase64DecodeToString(e, '0123456789abcdef', 'AES/ECB/PKCS5Padding', '1234567890abcdef');", &b);
+    let out = format!("{}", r.unwrap());
+    assert!(out.contains("reader"), "aes roundtrip: {}", out);
+    println!("OK java obj methods");
+}

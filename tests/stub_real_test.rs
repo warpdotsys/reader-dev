@@ -113,3 +113,19 @@ fn test_quick_xml_events() {
         buf.clear();
     }
 }
+#[test]
+fn test_aes_ecb_with_iv() {
+    use reader::stubs::{Cipher, SecretKeySpec, IvParameterSpec};
+    let key = b"0123456789abcdef";
+    let iv = b"1234567890abcdef";
+    let mut c = Cipher::getInstance("AES/ECB/PKCS5Padding");
+    c.init_spec_iv(Cipher::ENCRYPT_MODE, &SecretKeySpec::new(key, "AES"), &IvParameterSpec::new(iv));
+    let ct = c.do_final_data(b"reader");
+    assert_eq!(ct.len(), 16, "ECB 密文应为 16 字节");
+    let b64 = reader::io_legado_app_utils_base64::Base64::encodeToString(&ct, 2);
+    println!("DBG ct_b64={}", b64);
+    let mut d = Cipher::getInstance("AES/ECB/PKCS5Padding");
+    d.init_spec_iv(Cipher::DECRYPT_MODE, &SecretKeySpec::new(key, "AES"), &IvParameterSpec::new(iv));
+    let pt = d.do_final_data(&ct);
+    assert_eq!(pt, b"reader".to_vec(), "ECB+iv 解密应还原");
+}
