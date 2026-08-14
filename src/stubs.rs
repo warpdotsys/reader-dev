@@ -4214,10 +4214,15 @@ pub struct WebRequest {
     pub url: String,
     pub client: Option<reqwest::blocking::Client>,
     pub timeout_ms: Option<u64>,
+    pub headers: std::collections::HashMap<String, String>,
 }
 impl WebRequest {
     pub fn timeout(mut self, millis: u64) -> WebRequest {
         self.timeout_ms = Some(millis);
+        self
+    }
+    pub fn header(mut self, key: &str, value: &str) -> WebRequest {
+        self.headers.insert(key.to_string(), value.to_string());
         self
     }
     /// 纯 async GET（tokio 环境安全；blocking 版在 async 上下文会 panic）
@@ -4228,6 +4233,38 @@ impl WebRequest {
             .ok()?;
         let resp = client.get(&self.url).send().await.ok()?;
         resp.text().await.ok()
+    }
+    /// 独立线程 + 独立 tokio runtime 执行 async POST form（pollster/同步上下文均安全）
+    pub fn async_post_form_in_thread(
+        &self,
+        form: &[(String, String)],
+        headers: &std::collections::HashMap<String, String>,
+    ) -> Option<String> {
+        let url = self.url.clone();
+        let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        let form = form.to_vec();
+        let headers = headers.clone();
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .ok()?;
+            rt.block_on(async {
+                let client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .build()
+                    .ok()?;
+                let mut req = client.post(&url).form(&form);
+                for (k, v) in &headers {
+                    req = req.header(k, v);
+                }
+                let resp = req.send().await.ok()?;
+                resp.text().await.ok()
+            })
+        })
+        .join()
+        .ok()
+        .flatten()
     }
     /// 独立线程 + 独立 tokio runtime 执行 async GET 二进制（pollster/同步上下文均安全）
     pub fn async_get_bytes_in_thread(&self) -> Option<Vec<u8>> {
@@ -4999,6 +5036,37 @@ impl ZipInputStream {
             out.write(&data);
         }
     }
+}
+
+/// 内存字节流（InputStream 实现，TTS 音频流等使用）
+#[derive(Clone, Default)]
+pub struct BytesInputStream {
+    data: std::rc::Rc<std::cell::RefCell<Vec<u8>>>,
+    pos: std::rc::Rc<std::cell::RefCell<usize>>,
+}
+
+impl BytesInputStream {
+    pub fn new(data: Vec<u8>) -> BytesInputStream {
+        BytesInputStream {
+            data: std::rc::Rc::new(std::cell::RefCell::new(data)),
+            pos: std::rc::Rc::new(std::cell::RefCell::new(0)),
+        }
+    }
+}
+
+impl InputStream for BytesInputStream {
+    fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
+        let data = self.data.borrow();
+        let pos = *self.pos.borrow();
+        if pos >= data.len() {
+            return -1;
+        }
+        let n = (data.len() - pos).min(len);
+        b[off..off + n].copy_from_slice(&data[pos..pos + n]);
+        self.pos.replace(pos + n);
+        n as i32
+    }
+    fn close(&mut self) {}
 }
 
 // ---- java.io.File 补充读写字节方法（JsExtensions 使用） ----

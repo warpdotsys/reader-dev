@@ -872,6 +872,7 @@ impl WebClient {
         crate::stubs::WebRequest {
             url: url.to_string(),
             client: Some(self.client.clone()),
+            headers: std::collections::HashMap::new(),
             timeout_ms: None,
         }
     }

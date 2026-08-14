@@ -199,8 +199,9 @@ impl BookController {
     }
 
     pub fn get_invalid_book_source_cache(&self, _user_name_space: String) -> LocalCache {
-        // 缓存 5M 的失效书源信息
-        return LocalCache::new();
+        // 缓存 5M 的失效书源信息（静态共享，跨 BookController 实例）
+        static CACHE: std::sync::OnceLock<LocalCache> = std::sync::OnceLock::new();
+        CACHE.get_or_init(LocalCache::new).clone()
     }
 
     pub fn is_invalid_book_source(&self, book_source: BookSource, user_name_space: String) -> bool {
@@ -3066,12 +3067,19 @@ impl BookController {
         let mut result: Vec<Any> = Vec::new();
         for i in 0..book_list.len() {
             let book_info = &book_list[i];
-            if !book_info.is_local_book() {
-                let cached_set = self.get_cached_chapter_content_set(book_info, user_name_space.clone());
-                let mut book_info_map: std::collections::HashMap<String, Any> = std::collections::HashMap::new();
-                book_info_map.insert(String::from("cachedChapterCount"), Any::from(cached_set.len()));
-                result.push(Any::from(book_info_map));
-            } else {
+        if !book_info.is_local_book() {
+            let cached_set = self.get_cached_chapter_content_set(book_info, user_name_space.clone());
+            let mut book_info_map: std::collections::HashMap<String, crate::stubs::Any> = std::collections::HashMap::new();
+            // fix: Kotlin 返回完整书籍字段 + cachedChapterCount（前端缓存管理列表依赖 bookUrl/name/author）
+            let book_json = crate::stubs::book_to_json(book_info);
+            if let serde_json::Value::Object(m) = book_json {
+                for (k, v) in m {
+                    book_info_map.insert(k, crate::runtime::js::value_to_any(&v));
+                }
+            }
+            book_info_map.insert(String::from("cachedChapterCount"), crate::stubs::Any::Long(cached_set.len() as i64));
+            result.push(crate::stubs::Any::from(book_info_map));
+        } else {
                 result.push(Any::from(book_info.clone()));
             }
         }
@@ -3982,13 +3990,25 @@ impl BookController {
         // fix: HttpTTS 无 Clone；先取出 content_type 再整体移入 get_speak_stream
         let content_type = http_tts.content_type.clone();
         // fix: 原 Kotlin getSpeakStream 依赖 okhttp 响应链与 JS 检测（未转录），占位返回 None
-        let stream = self.get_speak_stream(http_tts, text.clone(), 0).await;
+        let mut stream = self.get_speak_stream(http_tts, text.clone(), 0).await;
         if stream.is_none() {
             let mut r = response;
             r.set_status_code(404).end(String::new());
             return;
         }
-        let bytes: Vec<u8> = Vec::new(); // fix: 原 stream.readBytes() 占位
+        // fix: 原 stream.readBytes() 占位 → 真实读取 InputStream
+        let mut bytes: Vec<u8> = Vec::new();
+        if let Some(s) = stream.as_mut() {
+            loop {
+                let mut buf = [0u8; 8192];
+                let len = buf.len();
+                let n = s.read(&mut buf, 0, len);
+                if n <= 0 {
+                    break;
+                }
+                bytes.extend_from_slice(&buf[..n as usize]);
+            }
+        }
         if params.as_ref().and_then(|m| m.get("base64")).map(|s| s.as_str()) == Some("1") {
             let mut r = response;
             r.put_header("content-type", "application/json; charset=utf-8");
@@ -4003,9 +4023,49 @@ impl BookController {
     }
 
     pub async fn tts_by_text_to_speech_cn(&self, response: crate::stubs::io::vertx::ResponseHandle, text: String, params: Option<Map<String, String>>) {
-        // fix: 原实现调用 text-to-speech.cn 外部接口（webClient.postAbs + sendForm + 302 重定向下载音频），
-        //      占位直接返回失败
-        let _ = (text, params);
+        // 原实现调用 text-to-speech.cn 外部接口（form POST → JSON → download → 302）——真实实现
+        let mut form: Vec<(String, String)> = vec![
+            (String::from("language"), String::from("中文（普通话，简体）")),
+            (String::from("voice"), String::from("zh-CN-XiaoxiaoNeural")),
+            (String::from("text"), text),
+            (String::from("role"), String::from("0")),
+            (String::from("style"), String::from("0")),
+            (String::from("rate"), String::from("0")),
+            (String::from("pitch"), String::from("0")),
+            (String::from("kbitrate"), String::from("audio-16khz-32kbitrate-mono-mp3")),
+            (String::from("silence"), String::new()),
+            (String::from("styledegree"), String::from("1")),
+            (String::from("user_id"), String::new()),
+            (String::from("yzm"), String::new()),
+        ];
+        if let Some(p) = &params {
+            for (k, v) in p {
+                if let Some(idx) = form.iter().position(|(fk, _)| fk == k) {
+                    form[idx].1 = v.clone();
+                }
+            }
+        }
+        let mut headers = std::collections::HashMap::new();
+        headers.insert(String::from("Origin"), String::from("https://www.text-to-speech.cn"));
+        headers.insert(String::from("Referer"), String::from("https://www.text-to-speech.cn/"));
+        headers.insert(
+            String::from("User-Agent"),
+            String::from("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"),
+        );
+        let body = self.web_client.get_abs("https://www.text-to-speech.cn/getSpeek.php").timeout(5000).async_post_form_in_thread(&form, &headers);
+        if let Some(body) = body {
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(&body) {
+                if let Some(download) = v.get("download").and_then(|d| d.as_str()) {
+                    if !download.is_empty() {
+                        let mut r = response;
+                        r.set_status_code(302);
+                        r.put_header("Location", download);
+                        r.end(String::new());
+                        return;
+                    }
+                }
+            }
+        }
         let mut r = response;
         r.set_status_code(404).end(String::new());
     }
@@ -4036,10 +4096,32 @@ impl BookController {
         return None;
     }
 
-    // fix: 原实现为外部 TTS 下载链路（okhttp 响应 / JS 登录检测 / 超时重试），占位恒返回 None
+    // 原实现为外部 TTS 下载链路（AnalyzeUrl 模板替换 + header + JS 检测）——真实实现
     pub async fn get_speak_stream(&self, http_tts: HttpTTS, speak_text: String, speech_rate: i32) -> Option<Box<dyn crate::stubs::InputStream>> {
-        let _ = (http_tts, speak_text, speech_rate);
-        return None;
+        // URL 模板替换（{{speakText}}/{{speakSpeed}}）
+        let url = http_tts
+            .url
+            .replace("{{speakText}}", &speak_text)
+            .replace("{{speakSpeed}}", &speech_rate.to_string())
+            .replace("{{speakRate}}", &speech_rate.to_string());
+        let mut req = self.web_client.get_abs(&url).timeout(30000);
+        // header JSON（{"key":"value"}）
+        if let Some(h) = &http_tts.header {
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(h) {
+                if let Some(obj) = v.as_object() {
+                    for (k, val) in obj {
+                        if let Some(s) = val.as_str() {
+                            req = req.header(k, s);
+                        }
+                    }
+                }
+            }
+        }
+        let bytes = req.async_get_bytes_in_thread()?;
+        if bytes.is_empty() {
+            return None;
+        }
+        Some(Box::new(crate::stubs::BytesInputStream::new(bytes)))
     }
 
     pub async fn save_book_content(&self, context: RoutingContext) -> ReturnData {
