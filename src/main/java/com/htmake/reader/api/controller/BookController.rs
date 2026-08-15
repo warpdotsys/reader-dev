@@ -222,20 +222,33 @@ impl BookController {
     }
 
     pub fn is_invalid_book_source(&self, book_source: BookSource, user_name_space: String) -> bool {
+        // fix: 键一致（md5——与落盘文件名/get_invalid_book_sources 读取匹配；原 source_url 键不匹配恒 miss）
+        let key = MD5Utils::md5Encode16(&book_source.book_source_url);
         return self
             .get_invalid_book_source_cache(user_name_space)
-            .get_as_string(&book_source.book_source_url)
+            .get_as_string(&key)
             .is_some();
     }
 
     pub fn add_invalid_book_source(&self, source_url: String, invalid_info: Map<String, Any>, user_name_space: String) {
         // 保存600秒时间
+        // fix: 落盘（原仅内存——服务重启失效标记全丢，坏书源被反复请求）+ 键与读取一致
+        let key = MD5Utils::md5Encode16(&source_url);
+        let info_json = json_encode(Any::from(invalid_info), false);
         self.get_invalid_book_source_cache(user_name_space)
-            .put(&source_url, &json_encode(Any::from(invalid_info), false), 600);
+            .put(&key, &info_json, 600);
+        let cache_dir = File::new(&work_dir_multi(&["storage", "cache", "invalidBookSourceCache"]));
+        if !cache_dir.exists() {
+            cache_dir.mkdirs();
+        }
+        let file = File::new(&(cache_dir.path() + File::SEPARATOR + &key));
+        file.write_text(&info_json);
     }
 
     pub fn get_book_chapters_cache(&self, _user_name_space: String) -> LocalCache {
-        return LocalCache::new();
+        // fix: 进程级静态缓存（原每次 new()——跨请求缓存永不命中，未入书架书籍每次重复抓取目录）
+        static CACHE: std::sync::OnceLock<LocalCache> = std::sync::OnceLock::new();
+        CACHE.get_or_init(LocalCache::new).clone()
     }
 
     pub fn web_book(&self, book_source: String, debug_log: bool, user_name_space: String) -> WebBook {
@@ -4203,8 +4216,14 @@ impl BookController {
 
     /// Convert all PDF pages to images for a book.
     /// JAR signature: public final boolean convertPdfToImage(io.legado.app.data.entities.Book, boolean)
-    pub fn convert_pdf_to_image(&self, _book: Book, _force: bool) -> bool {
-        return true;
+    pub fn convert_pdf_to_image(&self, book: Book, _force: bool) -> bool {
+        // fix: 真实校验（原恒 true——损坏 PDF 也导入成功；lopdf 可加载且有页才算有效）
+        let mut book_mut = book;
+        let local_path = book_mut.get_local_file().path();
+        let document = crate::stubs::PDDocument::load(&local_path);
+        let ok = document.number_of_pages > 0;
+        close_quietly(&document);
+        ok
     }
 
     /// Convert a single PDF page to image for a book.
