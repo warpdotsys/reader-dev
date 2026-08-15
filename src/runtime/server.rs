@@ -85,6 +85,12 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
     if rel.is_empty() {
         rel = "index.html".to_string();
     }
+    // fix: 剥离挂载前缀（/assets/、/book-assets/、/epub/——web_root 下不应重复该前缀）
+    if let Some(prefix) = &handler.mount_prefix {
+        if let Some(stripped) = rel.strip_prefix(prefix.trim_start_matches('/')) {
+            rel = stripped.trim_start_matches('/').to_string();
+        }
+    }
     // 非默认根（simple-web 等）：剥离与挂载目录同名的路径前缀
     if let Some(c) = &handler.classpath_root {
         let root_name = c.trim_matches('/').rsplit(['/', '\\']).next().unwrap_or("");

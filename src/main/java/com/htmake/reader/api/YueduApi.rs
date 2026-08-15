@@ -179,7 +179,7 @@ impl YueduApi {
         if !assets_css_file.exists() {
             assets_css_file.write_text("/* 在此处可以编写CSS样式来自定义页面 */");
         }
-        router.route_with_path("/assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(assets_dir).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(assets_dir).set_mount_prefix("/assets/").set_default_content_encoding("UTF-8"));
 
         // 书籍资源
         let data_dir: &'static String = Box::leak(Box::new(get_work_dir_multi(&["storage", "data"])));
@@ -194,7 +194,7 @@ impl YueduApi {
             }
             it.next();
         });
-        router.route_with_path("/book-assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir.clone()).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/book-assets/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir.clone()).set_mount_prefix("/book-assets/").set_default_content_encoding("UTF-8"));
 
         // epub资源
         router.route_with_path("/epub/*").handler(move |it| {
@@ -209,7 +209,7 @@ impl YueduApi {
             }
             it.next();
         });
-        router.route_with_path("/epub/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir).set_default_content_encoding("UTF-8"));
+        router.route_with_path("/epub/*").handler_static(StaticHandler::create("").set_allow_root_file_system_access(true).set_web_root(data_dir).set_mount_prefix("/epub/").set_default_content_encoding("UTF-8"));
 
         // simple-web界面
         router.route_with_path("/simple-web").handler(move |it| {

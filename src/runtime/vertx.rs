@@ -565,6 +565,7 @@ pub struct StaticHandler {
     pub allow_root: bool,
     pub default_encoding: Option<String>,
     pub directory_listing: bool,
+    pub mount_prefix: Option<String>,
 }
 
 impl StaticHandler {
@@ -575,6 +576,7 @@ impl StaticHandler {
             allow_root: false,
             default_encoding: None,
             directory_listing: false,
+            mount_prefix: None,
         }
     }
     pub fn create_root(root: &str) -> StaticHandler {
@@ -584,6 +586,7 @@ impl StaticHandler {
             allow_root: false,
             default_encoding: None,
             directory_listing: false,
+            mount_prefix: None,
         }
     }
     pub fn set_allow_root_file_system_access(mut self, v: bool) -> StaticHandler {
@@ -600,6 +603,11 @@ impl StaticHandler {
     }
     pub fn set_directory_listing(mut self, v: bool) -> StaticHandler {
         self.directory_listing = v;
+        self
+    }
+    // fix: 挂载前缀（/assets/ 等）——serve_static 剥离，避免 web_root 下多一层前缀导致 404
+    pub fn set_mount_prefix(mut self, prefix: &str) -> StaticHandler {
+        self.mount_prefix = Some(prefix.to_string());
         self
     }
 }
