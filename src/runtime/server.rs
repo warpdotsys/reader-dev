@@ -32,7 +32,9 @@ fn convert_paths(path: &str) -> Vec<String> {
     if base == path && path.contains('*') {
         let idx = path.find('*').unwrap();
         let prefix = &path[..idx];
-        return vec![format!("{}/{{*rest}}", prefix), prefix.to_string()];
+        // fix: 段内通配（/reader3/webdav*）——补尾斜杠路径（axum {*rest} 不匹配尾斜杠根路径，
+        //      /reader3/webdav/ 请求会落到 /* → 404）
+        return vec![format!("{}/{{*rest}}", prefix), prefix.to_string(), format!("{}/", prefix)];
     }
     vec![base]
 }
