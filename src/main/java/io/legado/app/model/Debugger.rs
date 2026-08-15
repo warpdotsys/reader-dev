@@ -22,6 +22,9 @@ pub struct Debugger {
 }
 
 impl DebugLog for Debugger {
+    fn clone_box(&self) -> Box<dyn DebugLog> {
+        Box::new(self.clone())
+    }
     // Kotlin override fun log(sourceUrl: String?, msg: String?, isHtml: Boolean)
     fn log(
         &self,

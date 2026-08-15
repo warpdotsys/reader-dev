@@ -10,4 +10,7 @@ use crate::prelude::*;
 pub struct Debug;
 
 impl DebugLog for Debug {
+    fn clone_box(&self) -> Box<dyn DebugLog> {
+        Box::new(Debug)
+    }
 }

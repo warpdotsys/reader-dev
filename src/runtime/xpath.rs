@@ -21,7 +21,9 @@ enum Predicate {
     AttrNe(String, String),
     AttrContains(String, String),
     AttrExists(String),
+    AttrStartsWith(String, String),
     TextContains(String),
+    TextStartsWith(String),
     Index(usize),
     PositionEq(usize),
     PositionGt(usize),
@@ -119,6 +121,23 @@ fn parse_single_predicate(expr: &str) -> Option<Predicate> {
     if e.contains("contains(text()") {
         let rhs = extract_quoted(e);
         return Some(Predicate::TextContains(rhs));
+    }
+    // fix: starts-with(@attr,'x') / starts-with(text(),'x')（原不支持——规则解析失败）
+    if e.contains("starts-with(@") {
+        let attr = e
+            .split('@')
+            .nth(1)
+            .unwrap_or("")
+            .split([')', ','])
+            .next()
+            .unwrap_or("")
+            .to_string();
+        let rhs = extract_quoted(e);
+        return Some(Predicate::AttrStartsWith(attr, rhs));
+    }
+    if e.contains("starts-with(text()") {
+        let rhs = extract_quoted(e);
+        return Some(Predicate::TextStartsWith(rhs));
     }
     None
 }
@@ -415,6 +434,7 @@ fn predicate_match(el: &ElementRef, p: &Predicate) -> bool {
         Predicate::AttrEq(k, v) => attr_of(el, k) == *v,
         Predicate::AttrNe(k, v) => attr_of(el, k) != *v,
         Predicate::AttrContains(k, v) => attr_of(el, k).contains(v.as_str()),
+        Predicate::AttrStartsWith(k, v) => attr_of(el, k).starts_with(v.as_str()),
         Predicate::AttrExists(k) => !attr_of(el, k).is_empty(),
         Predicate::TextContains(v) => {
             // XPath text() 语义：直接文本子节点（不含后代元素文本）
@@ -426,6 +446,16 @@ fn predicate_match(el: &ElementRef, p: &Predicate) -> bool {
                 })
                 .collect();
             direct_text.contains(v.as_str())
+        }
+        Predicate::TextStartsWith(v) => {
+            let direct_text: String = el
+                .children()
+                .filter_map(|c| match c.value() {
+                    scraper::node::Node::Text(t) => Some(t.to_string()),
+                    _ => None,
+                })
+                .collect();
+            direct_text.trim_start().starts_with(v.as_str())
         }
         Predicate::Cmp(k, op, num) => {
             let val: f64 = attr_of(el, k).parse().unwrap_or(f64::NAN);

@@ -24,4 +24,7 @@ pub trait DebugLog {
     fn log_message(&self, message: &str) {
         // logger.debug(message)
     }
+
+    // fix: trait object 克隆（AnalyzeRule::new 接收 &dyn DebugLog 但需 owned 存储；实现者覆写）
+    fn clone_box(&self) -> Box<dyn DebugLog>;
 }

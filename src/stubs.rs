@@ -8059,7 +8059,7 @@ impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
     pub fn new(
         rule_data: &dyn crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface,
         source: Option<&crate::io_legado_app_data_entities_booksource::BookSource>,
-        _debug_log: Option<&dyn crate::io_legado_app_model_debuglog::DebugLog>,
+        debug_log: Option<&dyn crate::io_legado_app_model_debuglog::DebugLog>,
     ) -> crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
         // 提取书籍变量（{{bookName}}/@get:{bookName} 等）
         let mut book_variables = std::collections::HashMap::new();
@@ -8077,7 +8077,8 @@ impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
             rule_data: Box::new(AnalyzeRulePlaceholderData),
             // fix: 真实书源（BaseSource 已实现；原恒 None——依赖 source 的 JS 规则拿不到对象）
             source: source.map(|s| Box::new(s.clone()) as Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>),
-            debug_log: None,
+            // fix: 真实调试对象（原恒 None——书源规则调试日志完全失效）
+            debug_log: debug_log.map(|dl| dl.clone_box()),
             source_book_source,
             book_variables,
             chapter: None,

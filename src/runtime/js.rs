@@ -104,12 +104,31 @@ fn ajax_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engi
     let text = if url.is_empty() {
         String::new()
     } else {
-        // fix: 真实请求 + 默认 UA（原裸 GET 无任何请求头，防盗链站点被拒）
+        // fix: 真实请求 + 默认 UA + 书源自定义 header（原仅默认 UA——防盗链/签名站点被拒）
         let mut headers = std::collections::HashMap::new();
         headers.insert(
             String::from("User-Agent"),
             crate::io_legado_app_constant_appconst::AppConst::userAgent(),
         );
+        // 从全局 source 绑定读取书源 header JSON（{"key":"value"}）
+        let source_js = "(() => { try { return typeof source === 'object' && source !== null ? source : null; } catch(e) { return null; } })()";
+        if let Ok(v) = ctx.eval(boa_engine::Source::from_bytes(source_js.as_bytes())) {
+            if let Ok(Some(json)) = v.to_json(ctx) {
+                if let Some(obj) = json.as_object() {
+                    if let Some(h) = obj.get("header").and_then(|x| x.as_str()) {
+                        if let Ok(hv) = serde_json::from_str::<serde_json::Value>(h) {
+                            if let Some(ho) = hv.as_object() {
+                                for (k, val) in ho {
+                                    if let Some(s) = val.as_str() {
+                                        headers.insert(k.clone(), s.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         let (_, _, body) = js_http_request("GET", &url.to_std_string().unwrap_or_default(), &headers, None);
         body
     };
@@ -119,6 +138,39 @@ fn ajax_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engi
 /// 全局 getUrl / get(url)：同 ajax
 fn get_url_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     ajax_native(_this, args, ctx)
+}
+
+/// java.ajaxAll(urls) → 并发请求全部（返回字符串数组；原 Kotlin 为并发，缺失时书源只能串行）
+fn ajax_all_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let mut urls: Vec<String> = Vec::new();
+    if let Some(arg) = args.first() {
+        if let Ok(Some(json)) = arg.to_json(ctx) {
+            if let Some(arr) = json.as_array() {
+                for v in arr {
+                    urls.push(v.as_str().map(|s| s.to_string()).unwrap_or_default());
+                }
+            }
+        }
+    }
+    // 并发（每 URL 一个线程；限制最大并发避免资源耗尽）
+    let mut handles = Vec::new();
+    for url in urls.iter().take(32) {
+        let url = url.clone();
+        handles.push(std::thread::spawn(move || {
+            let mut headers = std::collections::HashMap::new();
+            headers.insert(
+                String::from("User-Agent"),
+                crate::io_legado_app_constant_appconst::AppConst::userAgent(),
+            );
+            let (_, _, body) = js_http_request("GET", &url, &headers, None);
+            body
+        }));
+    }
+    let mut results: Vec<serde_json::Value> = Vec::new();
+    for h in handles {
+        results.push(serde_json::Value::String(h.join().unwrap_or_default()));
+    }
+    Ok(JsValue::from_json(&Value::Array(results), ctx).unwrap_or(JsValue::null()))
 }
 
 fn arg_string(args: &[JsValue], idx: usize, ctx: &mut Context) -> String {
@@ -685,12 +737,15 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
 
     let ajax = NativeFunction::from_fn_ptr(ajax_native);
     let get_url = NativeFunction::from_fn_ptr(get_url_native);
+    let ajax_all = NativeFunction::from_fn_ptr(ajax_all_native);
     let _ = context.register_global_callable(js_string!("ajax"), 1, ajax.clone());
     let _ = context.register_global_callable(js_string!("getUrl"), 1, get_url.clone());
+    let _ = context.register_global_callable(js_string!("ajaxAll"), 1, ajax_all.clone());
 
     let java_obj = boa_engine::object::ObjectInitializer::new(&mut context)
         .function(ajax.clone(), js_string!("ajax"), 1)
         .function(get_url.clone(), js_string!("getUrl"), 1)
+        .function(ajax_all.clone(), js_string!("ajaxAll"), 1)
         .function(NativeFunction::from_fn_ptr(java_base64_encode_native), js_string!("base64Encode"), 1)
         .function(NativeFunction::from_fn_ptr(java_base64_decode_native), js_string!("base64Decode"), 1)
         .function(NativeFunction::from_fn_ptr(java_md5_native), js_string!("md5Encode16"), 1)
