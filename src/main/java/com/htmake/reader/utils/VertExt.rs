@@ -107,6 +107,22 @@ thread_local! {
 // fun getWorkDir(subPath: String = ""): String {
 pub fn get_work_dir(sub_path: &str) -> String {
     if !*WORK_DIR_INIT.get_or_init(|| false) && WORK_DIR_PATH.get().map(|p| p.is_empty()).unwrap_or(true) {
+        // fix: 直接读 READER_APP_WORKDIR 环境变量（原依赖 SpringContextUtils——APPLICATION_CONTEXT 未初始化
+        //      恒 None，容器内回落 cwd 相对路径 → 读不到 /storage 挂载，登录/数据读取全失败）
+        if let Ok(wd) = std::env::var("READER_APP_WORKDIR") {
+            if !wd.is_empty() && wd != "." {
+                let work_dir_file = File::new(&wd);
+                if work_dir_file.exists() && !work_dir_file.is_directory() {
+                    logger().error(format!("reader.app.workDir={} is not a directory", wd));
+                } else {
+                    if !work_dir_file.exists() {
+                        logger().info(format!("reader.app.workDir={} not exists, creating", wd));
+                        work_dir_file.mkdirs();
+                    }
+                    let _ = WORK_DIR_PATH.set(work_dir_file.absolute_path);
+                }
+            }
+        }
         let app_config = SpringContextUtils::get_bean_by_name_and_class("appConfig", AppConfig::class);
         if let Some(cfg) = app_config {
             if !cfg.work_dir.is_empty() && cfg.work_dir != "." {
@@ -172,13 +188,23 @@ pub fn get_storage_path() -> String {
         return STORAGE_FINAL_PATH.get().unwrap().clone();
     }
     let mut storage_path = String::new();
-    let app_config = SpringContextUtils::get_bean_by_name_and_class("appConfig", AppConfig::class);
-    if app_config.is_some() {
-        storage_path = get_work_dir("storage");
-        // fix: 旧工具链 OnceLock::get_or_init 返回 &T，初始化赋值改用 set
-        let _ = STORAGE_FINAL_PATH.set(storage_path.clone());
+    // fix: 直接读 READER_APP_WORKDIR（原依赖 app_config——未初始化时回落 cwd 相对路径，容器内读不到 /storage）
+    if let Ok(wd) = std::env::var("READER_APP_WORKDIR") {
+        if !wd.is_empty() && wd != "." {
+            storage_path = format!("{}/storage", wd.trim_end_matches('/'));
+        }
+    }
+    if storage_path.is_empty() {
+        let app_config = SpringContextUtils::get_bean_by_name_and_class("appConfig", AppConfig::class);
+        if app_config.is_some() {
+            storage_path = get_work_dir("storage");
+            // fix: 旧工具链 OnceLock::get_or_init 返回 &T，初始化赋值改用 set
+            let _ = STORAGE_FINAL_PATH.set(storage_path.clone());
+        } else {
+            storage_path = File::new("storage").path();
+        }
     } else {
-        storage_path = File::new("storage").path();
+        let _ = STORAGE_FINAL_PATH.set(storage_path.clone());
     }
     logger().info(format!("Using storagePath: {}", storage_path));
     return storage_path;
