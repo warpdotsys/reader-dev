@@ -67,25 +67,31 @@ fn cache_to_book(s: Option<String>) -> Option<Book> {
     s.and_then(|json| serde_json::from_str::<Book>(&json).ok())
 }
 
-// fix: BaseController.limit_concurrent 的 handler 为 fn 指针（无法捕获闭包），本地顺序执行版
-//      （保持逐轮 need_continue 语义；原 Kotlin 为并发调度，此处占位串行执行）
-fn limit_concurrent_with<H, C>(concurrent_count: i32, start_index: i32, end_index: i32, mut handler: H, mut need_continue: C)
+// fix: 真实并发调度（原串行占位——多书源搜索/缓存逐源 HTTP 请求线性放大；scoped 线程每批并行）
+fn limit_concurrent_with<H, C>(concurrent_count: i32, start_index: i32, end_index: i32, handler: H, mut need_continue: C)
 where
-    H: FnMut(i32) -> Box<dyn std::any::Any>,
-    C: FnMut(Vec<Box<dyn std::any::Any>>, i32) -> bool,
+    H: Fn(i32) -> Box<dyn std::any::Any + Send> + Sync,
+    C: FnMut(Vec<Box<dyn std::any::Any + Send>>, i32) -> bool,
 {
     let mut last_index = start_index;
     let mut loop_count = 0;
     while last_index < end_index {
-        let mut result_list: Vec<Box<dyn std::any::Any>> = Vec::new();
-        let mut i = last_index;
-        let mut dispatched = 0;
-        while i < end_index && dispatched < concurrent_count.max(1) {
-            result_list.push(handler(i));
-            dispatched += 1;
-            i += 1;
-        }
-        last_index = i - 1;
+        let batch_end = (last_index + concurrent_count.max(1)).min(end_index);
+        let indices: Vec<i32> = (last_index..batch_end).collect();
+        // scoped 线程并发执行本批任务（共享 &handler——只需 H: Sync，不要求 Send）
+        let result_list: Vec<Box<dyn std::any::Any + Send>> = std::thread::scope(|s| {
+            let mut handles = Vec::new();
+            for &i in &indices {
+                let handler_ref = &handler;
+                handles.push(s.spawn(move || handler_ref(i)));
+            }
+            let mut out = Vec::new();
+            for h in handles {
+                out.push(h.join().unwrap_or_else(|_| Box::new(crate::stubs::Any::Null) as Box<dyn std::any::Any + Send>));
+            }
+            out
+        });
+        last_index = batch_end - 1;
         if last_index >= end_index - 1 {
             need_continue(result_list, loop_count);
             break;
@@ -1230,32 +1236,38 @@ impl BookController {
         };
         let mut max_size = url_map.len() as i32;
         let start_index = last_index + 1;
+        // fix: 并发安全状态（原 &mut 捕获——Fn 闭包不允许；Arc<Mutex> 线程共享）
+        let last_index_cell = std::sync::Arc::new(std::sync::Mutex::new(last_index));
+        let max_size_cell = std::sync::Arc::new(std::sync::Mutex::new(max_size));
         limit_concurrent_with(concurrent_count, start_index, url_map.len() as i32, |it| {
-            let result: Vec<SearchBook> = if it <= max_size {
-                last_index = last_index.max(it);
-                let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
-                    None
+            let result: Vec<SearchBook> = {
+                let max_size = *max_size_cell.lock().unwrap();
+                if it <= max_size {
+                    { let mut li = last_index_cell.lock().unwrap(); *li = (*li).max(it); }
+                    let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
+                        None
+                    } else {
+                        Some(Box::new(|node: crate::stubs::ObjectNode| {
+                            let source_group = node.get("bookSourceGroup").unwrap_or_default();
+                            source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
+                        }))
+                    };
+                    let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
+                    let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
+                    if book_source_list.is_none() || empty {
+                        { let mut ms = max_size_cell.lock().unwrap(); *ms = it; }
+                        Vec::new()
+                    } else {
+                        crate::stubs::block_on(self.search_book_with_source(
+                            book_source_list.unwrap().get_string(0),
+                            book.clone(),
+                            accurate,
+                            user_name_space.clone(),
+                        ))
+                    }
                 } else {
-                    Some(Box::new(|node: crate::stubs::ObjectNode| {
-                        let source_group = node.get("bookSourceGroup").unwrap_or_default();
-                        source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
-                    }))
-                };
-                let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
-                let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
-                if book_source_list.is_none() || empty {
-                    max_size = it;
                     Vec::new()
-                } else {
-                    crate::stubs::block_on(self.search_book_with_source(
-                        book_source_list.unwrap().get_string(0),
-                        book.clone(),
-                        accurate,
-                        user_name_space.clone(),
-                    ))
                 }
-            } else {
-                Vec::new()
             };
             Box::new(result)
         }, |list, loop_count| {
@@ -1378,34 +1390,38 @@ impl BookController {
         };
         let mut max_size = url_map.len() as i32;
         let start_index = last_index + 1;
-        // fix: handler/need_continue 同时借用 last_index → Rc<RefCell> 共享
-        let last_index_cell = std::rc::Rc::new(std::cell::RefCell::new(last_index));
+        // fix: 并发安全状态（原 Rc<RefCell>——线程不共享；Arc<Mutex>）
+        let last_index_cell = std::sync::Arc::new(std::sync::Mutex::new(last_index));
+        let max_size_cell = std::sync::Arc::new(std::sync::Mutex::new(max_size));
         limit_concurrent_with(concurrent_count, start_index, url_map.len() as i32, |it| {
-            let result: Vec<SearchBook> = if it <= max_size {
-                *last_index_cell.borrow_mut() = (*last_index_cell.borrow()).max(it);
-                let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
-                    None
-                } else {
-                    Some(Box::new(|node: crate::stubs::ObjectNode| {
-                        let source_group = node.get("bookSourceGroup").unwrap_or_default();
-                        source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
-                    }))
-                };
-                let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
-                let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
-                if book_source_list.is_none() || empty {
-                    max_size = it;
-                    Vec::new()
-                } else {
-                    crate::stubs::block_on(self.search_book_with_source(
-                        book_source_list.unwrap().get_string(0),
-                        book.clone(),
-                        accurate,
+            let result: Vec<SearchBook> = {
+                let max_size = *max_size_cell.lock().unwrap();
+                if it <= max_size {
+                    { let mut li = last_index_cell.lock().unwrap(); *li = (*li).max(it); }
+                    let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
+                        None
+                    } else {
+                        Some(Box::new(|node: crate::stubs::ObjectNode| {
+                            let source_group = node.get("bookSourceGroup").unwrap_or_default();
+                            source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
+                        }))
+                    };
+                    let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
+                    let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
+                    if book_source_list.is_none() || empty {
+                        { let mut ms = max_size_cell.lock().unwrap(); *ms = it; }
+                        Vec::new()
+                    } else {
+                        crate::stubs::block_on(self.search_book_with_source(
+                            book_source_list.unwrap().get_string(0),
+                            book.clone(),
+                            accurate,
                         user_name_space.clone(),
                     ))
                 }
             } else {
                 Vec::new()
+            }
             };
             Box::new(result)
         }, |list, loop_count| {
@@ -1422,7 +1438,7 @@ impl BookController {
             }
             // 返回本轮数据
             response.write(&("data: ".to_string()
-                + &json_encode(Any::from(map!("lastIndex" => *last_index_cell.borrow(), "data" => loop_result)), false)
+                + &json_encode(Any::from(map!("lastIndex" => *last_index_cell.lock().unwrap(), "data" => loop_result)), false)
                 + "\n\n"));
             LOGGER.info(format!("Loog: {} resultList.size: {}", loop_count, result_list.len()));
 
@@ -1433,7 +1449,7 @@ impl BookController {
                 result_list.len() < search_size as usize
             }
         });
-        let last_index = *last_index_cell.borrow();
+        let last_index = *last_index_cell.lock().unwrap();
         response.write("event: end\n");
         response.end("data: ".to_string()
             + &json_encode(Any::from(map!("lastIndex" => last_index, "isEnd" => (last_index >= url_map.len() as i32))), false)
@@ -1508,32 +1524,38 @@ impl BookController {
         };
         let mut max_size = url_map.len() as i32;
         let start_index = last_index + 1;
+        // fix: 并发安全状态（原 &mut 捕获——Fn 闭包不允许）
+        let last_index_cell = std::sync::Arc::new(std::sync::Mutex::new(last_index));
+        let max_size_cell = std::sync::Arc::new(std::sync::Mutex::new(max_size));
         limit_concurrent_with(concurrent_count, start_index, url_map.len() as i32, |it| {
-            let result: Vec<SearchBook> = if it <= max_size {
-                last_index = last_index.max(it);
-                let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
-                    None
+            let result: Vec<SearchBook> = {
+                let max_size = *max_size_cell.lock().unwrap();
+                if it <= max_size {
+                    { let mut li = last_index_cell.lock().unwrap(); *li = (*li).max(it); }
+                    let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
+                        None
+                    } else {
+                        Some(Box::new(|node: crate::stubs::ObjectNode| {
+                            let source_group = node.get("bookSourceGroup").unwrap_or_default();
+                            source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
+                        }))
+                    };
+                    let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
+                    let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
+                    if book_source_list.is_none() || empty {
+                        { let mut ms = max_size_cell.lock().unwrap(); *ms = it; }
+                        Vec::new()
+                    } else {
+                        crate::stubs::block_on(self.search_book_with_source(
+                            book_source_list.unwrap().get_string(0),
+                            book.clone(),
+                            true,
+                            user_name_space.clone(),
+                        ))
+                    }
                 } else {
-                    Some(Box::new(|node: crate::stubs::ObjectNode| {
-                        let source_group = node.get("bookSourceGroup").unwrap_or_default();
-                        source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
-                    }))
-                };
-                let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
-                let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
-                if book_source_list.is_none() || empty {
-                    max_size = it;
                     Vec::new()
-                } else {
-                    crate::stubs::block_on(self.search_book_with_source(
-                        book_source_list.unwrap().get_string(0),
-                        book.clone(),
-                        true,
-                        user_name_space.clone(),
-                    ))
                 }
-            } else {
-                Vec::new()
             };
             Box::new(result)
         }, |list, loop_count| {
@@ -1651,11 +1673,14 @@ impl BookController {
         };
         let mut max_size = url_map.len() as i32;
         let start_index = last_index + 1;
-        // fix: handler/need_continue 同时借用 last_index → Rc<RefCell> 共享
-        let last_index_cell = std::rc::Rc::new(std::cell::RefCell::new(last_index));
+        // fix: 并发安全状态（原 Rc<RefCell>——线程不共享）
+        let last_index_cell = std::sync::Arc::new(std::sync::Mutex::new(last_index));
+        let max_size_cell = std::sync::Arc::new(std::sync::Mutex::new(max_size));
         limit_concurrent_with(concurrent_count, start_index, max_size, |it| {
-            let result: Vec<SearchBook> = if it <= max_size {
-                *last_index_cell.borrow_mut() = (*last_index_cell.borrow()).max(it);
+            let result: Vec<SearchBook> = {
+                let max_size = *max_size_cell.lock().unwrap();
+                if it <= max_size {
+                    { let mut li = last_index_cell.lock().unwrap(); *li = (*li).max(it); }
                 let filter: Option<Box<dyn Fn(crate::stubs::ObjectNode) -> bool>> = if book_source_group.is_empty() {
                     None
                 } else {
@@ -1664,21 +1689,22 @@ impl BookController {
                         source_group.is_not_blank() && (source_group + ",").contains(&(book_source_group.clone() + ","))
                     }))
                 };
-                let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
-                let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
-                if book_source_list.is_none() || empty {
-                    max_size = it;
-                    Vec::new()
+                    let book_source_list = parse_json_string_list(&book_source_file, None, None, it, it, None, filter.as_deref());
+                    let empty = book_source_list.as_ref().map_or(true, |l| l.0.is_empty());
+                    if book_source_list.is_none() || empty {
+                        { let mut ms = max_size_cell.lock().unwrap(); *ms = it; }
+                        Vec::new()
+                    } else {
+                        crate::stubs::block_on(self.search_book_with_source(
+                            book_source_list.unwrap().get_string(0),
+                            book.clone().unwrap_or_default(),
+                            true,
+                            user_name_space.clone(),
+                        ))
+                    }
                 } else {
-                    crate::stubs::block_on(self.search_book_with_source(
-                        book_source_list.unwrap().get_string(0),
-                        book.clone().unwrap_or_default(),
-                        true,
-                        user_name_space.clone(),
-                    ))
+                    Vec::new()
                 }
-            } else {
-                Vec::new()
             };
             Box::new(result)
         }, |list, loop_count| {
@@ -1692,7 +1718,7 @@ impl BookController {
             }
             // 返回本轮数据
             response.write(&("data: ".to_string()
-                + &json_encode(Any::from(map!("lastIndex" => *last_index_cell.borrow(), "data" => loop_result)), false)
+                + &json_encode(Any::from(map!("lastIndex" => *last_index_cell.lock().unwrap(), "data" => loop_result)), false)
                 + "\n\n"));
             LOGGER.info(format!("Loog: {} resultList.size: {}", loop_count, result_list.len()));
 
@@ -1703,7 +1729,7 @@ impl BookController {
                 result_list.len() < search_size as usize
             }
         });
-        let last_index = *last_index_cell.borrow();
+        let last_index = *last_index_cell.lock().unwrap();
         self.save_book_sources(book.clone().unwrap_or_default(), result_list, user_name_space, false);
         response.write("event: end\n");
         response.end("data: ".to_string()
@@ -2940,10 +2966,10 @@ impl BookController {
         }
         let local_cache_dir = self.get_chapter_cache_dir(&book_info, user_name_space.clone());
         let mut is_end = false;
-        // fix: handler/need_continue 两个闭包同时借用 success_count 等（Rc<RefCell> 共享内部可变性）
-        let success_count = std::rc::Rc::new(std::cell::RefCell::new(0_i32));
-        let failed_count = std::rc::Rc::new(std::cell::RefCell::new(0_i32));
-        let cached_chapter_content_set = std::rc::Rc::new(std::cell::RefCell::new(cached_chapter_content_set));
+        // fix: 并发安全状态（原 Rc<RefCell>——线程不共享）
+        let success_count = std::sync::Arc::new(std::sync::Mutex::new(0_i32));
+        let failed_count = std::sync::Arc::new(std::sync::Mutex::new(0_i32));
+        let cached_chapter_content_set = std::sync::Arc::new(std::sync::Mutex::new(cached_chapter_content_set));
 
         context.connection().close_handler(|| {
             LOGGER.info("客户端已断开链接，停止 cacheBookSSE");
@@ -2954,7 +2980,7 @@ impl BookController {
         concurrent_count = if concurrent_count > 0 { concurrent_count } else { 24 };
         LOGGER.info(format!("cacheBookSSE concurrentCount: {} refresh: {}", concurrent_count, refresh));
         limit_concurrent_with(concurrent_count, 0, chapter_list.len() as i32, |it| {
-            if !cached_chapter_content_set.borrow().contains(&it) {
+            if !cached_chapter_content_set.lock().unwrap().contains(&it) {
                 let chapter_index = it;
                 let chapter_info = chapter_list.get(it as usize).cloned().unwrap_or_default();
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -2984,8 +3010,8 @@ impl BookController {
                         &chapter_info,
                         &content,
                     ));
-                    *success_count.borrow_mut() += 1;
-                    cached_chapter_content_set.borrow_mut().insert(chapter_index);
+                    *success_count.lock().unwrap() += 1;
+                    cached_chapter_content_set.lock().unwrap().insert(chapter_index);
                 }));
             }
             Box::new(it)
@@ -2995,9 +3021,9 @@ impl BookController {
             } else {
                 // 返回本轮数据
                 let result = map!(
-                    "cachedCount" => cached_chapter_content_set.borrow().len(),
-                    "successCount" => *success_count.borrow(),
-                    "failedCount" => *failed_count.borrow()
+                    "cachedCount" => cached_chapter_content_set.lock().unwrap().len(),
+                    "successCount" => *success_count.lock().unwrap(),
+                    "failedCount" => *failed_count.lock().unwrap()
                 );
                 response.write(&("data: ".to_string() + &json_encode(Any::from(result.clone()), false) + "\n\n"));
                 LOGGER.info(format!("Loog: {} list.size: {} result: {:?}", loop_count, list.len(), result));
@@ -3007,9 +3033,9 @@ impl BookController {
         response.write("event: end\n");
         response.end("data: ".to_string()
             + &json_encode(Any::from(map!(
-                "cachedCount" => cached_chapter_content_set.borrow().len(),
-                "successCount" => *success_count.borrow(),
-                "failedCount" => *failed_count.borrow()
+                "cachedCount" => cached_chapter_content_set.lock().unwrap().len(),
+                "successCount" => *success_count.lock().unwrap(),
+                "failedCount" => *failed_count.lock().unwrap()
             )), false)
             + "\n\n");
         let _ = return_data;

@@ -38,12 +38,12 @@ pub struct BookChapter {
     // override val variableMap: HashMap<String, String> by lazy {
     //     GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
     // }
-    pub variable_map_cache: RefCell<Option<HashMap<String, String>>>,
+    pub variable_map_cache: std::sync::Mutex<Option<HashMap<String, String>>>,
 }
 
 impl BookChapter {
     pub fn variable_map(&self) -> HashMap<String, String> {
-        if let Some(cached) = self.variable_map_cache.borrow().as_ref() {
+        if let Some(cached) = self.variable_map_cache.lock().unwrap().as_ref() {
             return cached.clone();
         }
         let map = GSON::from_json_object::<HashMap<String, String>>(
@@ -51,7 +51,7 @@ impl BookChapter {
         )
             .get_or_null()
             .unwrap_or_else(HashMap::new);
-        *self.variable_map_cache.borrow_mut() = Some(map.clone());
+        *self.variable_map_cache.lock().unwrap() = Some(map.clone());
         map
     }
 
@@ -62,7 +62,7 @@ impl BookChapter {
         } else {
             map.remove(&key);
         }
-        *self.variable_map_cache.borrow_mut() = Some(map.clone());
+        *self.variable_map_cache.lock().unwrap() = Some(map.clone());
         self.variable = Some(GSON::to_json(map));
     }
 
@@ -112,7 +112,7 @@ impl Default for BookChapter {
             end_fragment_id: None,
             variable: None,
             user_name_space: String::new(),
-            variable_map_cache: RefCell::new(None),
+            variable_map_cache: std::sync::Mutex::new(None),
         }
     }
 }
@@ -159,7 +159,7 @@ impl<'de> serde::Deserialize<'de> for BookChapter {
             end_fragment_id: gs("endFragmentId"),
             variable: gs("variable"),
             user_name_space: gs("userNameSpace").unwrap_or_default(),
-            variable_map_cache: std::cell::RefCell::new(None),
+            variable_map_cache: std::sync::Mutex::new(None),
         })
     }
 }

@@ -69,7 +69,7 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("wordCount"), map_opt(v.word_count.clone()));
     m.insert(String::from("canUpdate"), json!(v.can_update));
     m.insert(String::from("type"), json!(v.r#type));
-    m.insert(String::from("readConfig"), match v.read_config.borrow().as_ref() {
+    m.insert(String::from("readConfig"), match v.read_config.lock().unwrap().as_ref() {
         Some(c) => json!({
             "reverseToc": c.reverse_toc,
             "pageAnim": c.page_anim,

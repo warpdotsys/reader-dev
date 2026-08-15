@@ -8506,7 +8506,7 @@ impl Clone for crate::io_legado_app_data_entities_rssarticle::RssArticle {
             read: self.read,
             variable: self.variable.clone(),
             user_name_space: self.user_name_space.clone(),
-            variable_map_cache: self.variable_map_cache.clone(),
+            variable_map_cache: std::cell::RefCell::new(self.variable_map_cache.borrow().clone()),
         }
     }
 }
@@ -8628,7 +8628,7 @@ impl Clone for crate::io_legado_app_data_entities_bookchapter::BookChapter {
             end_fragment_id: self.end_fragment_id.clone(),
             variable: self.variable.clone(),
             user_name_space: self.user_name_space.clone(),
-            variable_map_cache: self.variable_map_cache.clone(),
+            variable_map_cache: std::sync::Mutex::new(self.variable_map_cache.lock().unwrap().clone()),
         }
     }
 }
@@ -8682,14 +8682,14 @@ impl Clone for crate::io_legado_app_data_entities_book::Book {
             origin_order: self.origin_order,
             use_replace_rule: self.use_replace_rule,
             variable: self.variable.clone(),
-            read_config: self.read_config.clone(),
+            read_config: std::sync::Mutex::new(self.read_config.lock().unwrap().clone()),
             is_in_shelf: self.is_in_shelf,
             last_check_error: self.last_check_error.clone(),
             info_html: self.info_html.clone(),
             toc_html: self.toc_html.clone(),
             root_dir: self.root_dir.clone(),
             user_name_space: self.user_name_space.clone(),
-            variable_map_cache: self.variable_map_cache.clone(),
+            variable_map_cache: std::sync::Mutex::new(self.variable_map_cache.lock().unwrap().clone()),
         }
     }
 }
@@ -9139,7 +9139,7 @@ impl Clone for crate::io_legado_app_data_entities_searchbook::SearchBook {
             user_name_space: self.user_name_space.clone(),
             info_html: self.info_html.clone(),
             toc_html: self.toc_html.clone(),
-            variable_map_cache: RefCell::new(None),
+            variable_map_cache: std::cell::RefCell::new(None),
             origins: self.origins.clone(),
         }
     }

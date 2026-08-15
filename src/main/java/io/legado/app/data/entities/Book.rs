@@ -56,7 +56,7 @@ pub struct Book {
     pub origin_order: i32,                  //书源排序
     pub use_replace_rule: bool,             // 正文使用净化替换规则
     pub variable: Option<String>,           // 自定义书籍变量信息(用于书源规则检索书籍信息)
-    pub read_config: RefCell<Option<ReadConfig>>,
+    pub read_config: std::sync::Mutex<Option<ReadConfig>>,
     // @get:JsonProperty("isInShelf")
     pub is_in_shelf: bool,
     pub last_check_error: Option<String>,
@@ -76,7 +76,7 @@ pub struct Book {
 
     // @delegate:Transient
     // override val variableMap: HashMap<String, String> by lazy { ... }
-    pub variable_map_cache: RefCell<Option<HashMap<String, String>>>,
+    pub variable_map_cache: std::sync::Mutex<Option<HashMap<String, String>>>,
 }
 
 impl Book {
@@ -120,7 +120,7 @@ impl Book {
     //     GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
     // }
     pub fn variable_map(&self) -> HashMap<String, String> {
-        if let Some(cached) = self.variable_map_cache.borrow().as_ref() {
+        if let Some(cached) = self.variable_map_cache.lock().unwrap().as_ref() {
             return cached.clone();
         }
         let map = GSON::from_json_object::<HashMap<String, String>>(
@@ -128,7 +128,7 @@ impl Book {
         )
         .get_or_null()
         .unwrap_or_else(HashMap::new);
-        *self.variable_map_cache.borrow_mut() = Some(map.clone());
+        *self.variable_map_cache.lock().unwrap() = Some(map.clone());
         map
     }
 
@@ -139,7 +139,7 @@ impl Book {
         } else {
             map.remove(&key);
         }
-        *self.variable_map_cache.borrow_mut() = Some(map.clone());
+        *self.variable_map_cache.lock().unwrap() = Some(map.clone());
         self.variable = Some(GSON::to_json(map));
     }
 
@@ -165,29 +165,31 @@ impl Book {
 
     #[allow(elided_lifetimes_in_paths)]
     // private fun config(): ReadConfig
-    fn config(&self) -> RefMut<'_, ReadConfig> {
-        if self.read_config.borrow().is_none() {
-            *self.read_config.borrow_mut() = Some(ReadConfig::default());
+    fn config(&self) -> std::sync::MutexGuard<'_, Option<ReadConfig>> {
+        let mut guard = self.read_config.lock().unwrap();
+        if guard.is_none() {
+            *guard = Some(ReadConfig::default());
         }
-        RefMut::map(self.read_config.borrow_mut(), |c| c.as_mut().unwrap())
+        guard
     }
 
     pub fn set_del_tag(&self, tag: i64) {
         let mut config = self.config();
+        let config = config.as_mut().unwrap();
         config.del_tag =
             if (config.del_tag & tag) == tag { config.del_tag & !tag } else { config.del_tag | tag };
     }
 
     pub fn get_del_tag(&self, tag: i64) -> bool {
-        (self.config().del_tag & tag) == tag
+        (self.config().as_ref().unwrap().del_tag & tag) == tag
     }
 
     pub fn get_pdf_image_width(&self) -> f32 {
-        self.config().pdf_image_width
+        self.config().as_ref().unwrap().pdf_image_width
     }
 
     pub fn set_pdf_image_width(&self, value: f32) {
-        self.config().pdf_image_width = value;
+        self.config().as_mut().unwrap().pdf_image_width = value;
     }
 
     pub fn get_folder_name(&self) -> String {
@@ -437,14 +439,14 @@ impl Default for Book {
             origin_order: 0,
             use_replace_rule: true,
             variable: None,
-            read_config: RefCell::new(None),
+            read_config: std::sync::Mutex::new(None),
             is_in_shelf: false,
             last_check_error: None,
             info_html: None,
             toc_html: None,
             root_dir: String::new(),
             user_name_space: String::new(),
-            variable_map_cache: RefCell::new(None),
+            variable_map_cache: std::sync::Mutex::new(None),
         }
     }
 }
@@ -505,7 +507,7 @@ impl<'de> serde::Deserialize<'de> for Book {
             use_replace_rule: v.get("useReplaceRule").and_then(|x| x.as_bool()).unwrap_or(true),
             variable: gs("variable"),
             // fix: 真实解析 readConfig（原恒 None，翻页动画/去标签等 5/7 项配置重启丢失）
-            read_config: std::cell::RefCell::new(v.get("readConfig").and_then(|c| {
+            read_config: std::sync::Mutex::new(v.get("readConfig").and_then(|c| {
                 Some(ReadConfig {
                     reverse_toc: c.get("reverseToc").and_then(|x| x.as_bool()).unwrap_or(false),
                     page_anim: c.get("pageAnim").and_then(|x| x.as_i64()).map(|i| i as i32).unwrap_or(-1),
@@ -522,7 +524,7 @@ impl<'de> serde::Deserialize<'de> for Book {
             toc_html: gs("tocHtml"),
             root_dir: gs("rootDir").unwrap_or_default(),
             user_name_space: gs("userNameSpace").unwrap_or_default(),
-            variable_map_cache: std::cell::RefCell::new(None),
+            variable_map_cache: std::sync::Mutex::new(None),
         })
     }
 }
