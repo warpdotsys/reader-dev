@@ -678,7 +678,39 @@ impl QueryTTF {
 
                         glyf.push(g); // glyf.add(g)
                     } else {
-                        // 复合字体暂未使用
+                        // fix: 复合字形——消耗组件数据并推入占位轮廓（原完全跳过导致 glyf 索引与字体错位，
+                        //      code_to_glyph 映射错乱）
+                        let mut done = false;
+                        while !done {
+                            let flags = font_reader.read_uint16();
+                            let _glyph_index = font_reader.read_uint16();
+                            if (flags & 0x0001) != 0 {
+                                font_reader.get_bytes(4); // ARG_1_AND_2_ARE_WORDS
+                            } else {
+                                font_reader.get_bytes(2);
+                            }
+                            if (flags & 0x0008) != 0 {
+                                font_reader.get_bytes(2); // WE_HAVE_A_SCALE
+                            } else if (flags & 0x0040) != 0 {
+                                font_reader.get_bytes(4); // WE_HAVE_AN_X_AND_Y_SCALE
+                            } else if (flags & 0x0080) != 0 {
+                                font_reader.get_bytes(8); // WE_HAVE_A_TWO_BY_TWO
+                            }
+                            done = (flags & 0x0020) == 0; // MORE_COMPONENTS
+                        }
+                        glyf.push(GlyfLayout {
+                            number_of_contours: -1,
+                            x_min: 0,
+                            y_min: 0,
+                            x_max: 0,
+                            y_max: 0,
+                            end_pts_of_contours: Vec::new(),
+                            instruction_length: 0,
+                            instructions: Vec::new(),
+                            flags: Vec::new(),
+                            x_coordinates: Vec::new(),
+                            y_coordinates: Vec::new(),
+                        });
                     }
                     i += 1;
                 }

@@ -202,3 +202,12 @@ fn test_get_string_multi_rule() {
     let out = format!("{}", r.unwrap());
     assert!(out.contains("XP"), "xpath rule: {out}");
 }
+#[test]
+fn test_source_methods_injected() {
+    use reader::stubs::{Any, SimpleBindings};
+    let mut b = SimpleBindings::new();
+    b.put("source", Any::Str(r#"{"bookSourceUrl":"http://x.com","header":"{\"Referer\":\"http://x.com/ref\"}"}"#.to_string()));
+    let r = reader::runtime::js::eval_js_script("(typeof source.ajax === 'function') + '|' + source.getHeaderMap().Referer + '|' + source.getBookSourceUrl()", &b);
+    let out = format!("{}", r.unwrap());
+    assert_eq!(out, "true|http://x.com/ref|http://x.com", "source methods: {out}");
+}

@@ -826,6 +826,20 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         let _ = context.register_global_property(boa_engine::property::PropertyKey::from(js_string!(key)), val, Attribute::WRITABLE | Attribute::ENUMERABLE | Attribute::CONFIGURABLE);
     }
 
+    // fix: source 对象方法注入（Kotlin source 是带方法的对象——source.ajax()/getCookie()/getHeaderMap()；
+    //      原 JSON 绑定仅字段可用，依赖 source 方法的规则失败）
+    let _ = context.eval(Source::from_bytes(
+        b"(() => { try { if (typeof source === 'object' && source !== null) { \
+          if (typeof java === 'object' && java !== null) { \
+          source.ajax = function(url) { return java.ajax(url); }; \
+          source.ajaxAll = function(urls) { return java.ajaxAll(urls); }; \
+          source.getCookie = function(key) { return java.getCookie(source.bookSourceUrl || '', key || ''); }; \
+          } \
+          source.getHeaderMap = function() { try { return JSON.parse(source.header || '{}'); } catch(e) { return {}; } }; \
+          source.getBookSourceUrl = function() { return source.bookSourceUrl || ''; }; \
+          } } catch(e) {} })();"
+        .as_slice(),
+    ));
     match context.eval(Source::from_bytes(js.as_bytes())) {
         Ok(v) => match v.to_json(&mut context) {
             Ok(Some(json)) => Some(value_to_any(&json)),
