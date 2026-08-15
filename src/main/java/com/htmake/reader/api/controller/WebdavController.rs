@@ -52,7 +52,10 @@ impl WebdavController {
     //     return decodedPath(context.request().path())
     // }
     fn request_path(context: &RoutingContext) -> String {
-        return Self::decoded_path(&context.request().path());
+        // fix: 剥离 /reader3/webdav 挂载前缀（原完整路径被当作文件路径——根目录 404，WebDAV 客户端连不上）
+        let path = context.request().path();
+        let stripped = path.strip_prefix("/reader3/webdav").unwrap_or(path.as_str());
+        return Self::decoded_path(&stripped.to_string());
     }
 
     // private fun resolveWebdavPath(context: RoutingContext, path: String): File? {
