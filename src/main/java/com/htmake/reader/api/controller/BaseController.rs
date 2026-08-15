@@ -360,6 +360,13 @@ impl BaseController {
         if let Some(username) = username {
             return username;
         }
+        // fallback: 从 accessToken 解析（check_auth 的 put 未生效时兜底）
+        let access_token = context.query_param("accessToken").unwrap_or_default();
+        if let Some(u) = access_token.splitn(2, ':').next() {
+            if !u.is_empty() {
+                return u.to_string();
+            }
+        }
         return String::from("default");
     }
 
