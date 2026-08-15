@@ -162,7 +162,7 @@ fn test_book_read_config_roundtrip() {
     let mut book = Book::default();
     book.name = "配置书".into();
     {
-        let mut rc = book.read_config.borrow_mut();
+        let mut rc = book.read_config.lock().unwrap();
         *rc = Some(ReadConfig {
             reverse_toc: true,
             page_anim: 2,
@@ -177,7 +177,7 @@ fn test_book_read_config_roundtrip() {
     assert!(json.contains("\"reverseToc\":true"), "write reverseToc: {json}");
     assert!(json.contains("\"delTag\":14"), "write delTag: {json}");
     let parsed: Book = serde_json::from_str(&json).expect("parse book");
-    let rc = parsed.read_config.borrow();
+    let rc = parsed.read_config.lock().unwrap();
     let rc = rc.as_ref().expect("readConfig parsed");
     assert!(rc.reverse_toc, "reverseToc roundtrip");
     assert_eq!(rc.page_anim, 2, "pageAnim roundtrip");
@@ -272,4 +272,16 @@ fn test_rss_source_rule_content_serialized() {
     rs.rule_content = Some("css:.content".to_string());
     let json = reader::stubs::rss_source_to_json(&rs).to_string();
     assert!(json.contains("ruleContent"), "ruleContent 应序列化（保存后不丢正文规则）: {json}");
+}
+#[test]
+fn test_any_option_map_serialization() {
+    use reader::stubs::{any_to_json_value, Any};
+    let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
+    m.insert("username".to_string(), Box::new("transwarp".to_string()));
+    let opt: Option<std::collections::HashMap<String, Box<dyn std::any::Any>>> = Some(m);
+    let v = any_to_json_value(&opt);
+    assert_eq!(v.to_string(), "{\"username\":\"transwarp\"}", "Some map 应序列化");
+    let none: Option<std::collections::HashMap<String, Box<dyn std::any::Any>>> = None;
+    let v2 = any_to_json_value(&none);
+    assert_eq!(v2, serde_json::Value::Null, "None 应为 null");
 }

@@ -10377,6 +10377,13 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<JsonObject>() { return json_object_to_value(v); }
     if let Some(v) = d.downcast_ref::<JsonArray>() { return json_array_to_value(v); }
     if let Some(v) = d.downcast_ref::<HashMap<String, Box<dyn std::any::Any>>>() { return any_map_boxed_to_value(v); }
+    // fix: getUserInfo 的 userInfo 是 Option<HashMap<...>>——原无 Option 分支序列化为 null
+    if let Some(v) = d.downcast_ref::<Option<std::collections::HashMap<String, Box<dyn std::any::Any>>>>() {
+        return match v {
+            Some(m) => any_map_boxed_to_value(m),
+            None => Value::Null,
+        };
+    }
     if let Some(v) = d.downcast_ref::<HashMap<String, i32>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
     if let Some(v) = d.downcast_ref::<HashMap<String, i64>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
     if let Some(v) = d.downcast_ref::<HashMap<String, u32>>() { return Value::Object(v.iter().map(|(k, x)| (k.clone(), json!(*x))).collect()); }
