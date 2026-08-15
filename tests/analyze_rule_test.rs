@@ -30,10 +30,10 @@ fn test_analyze_rule_get_var_in_js() {
     let mut bindings = SimpleBindings::new();
     bindings.put("bookName", "书名甲".to_string());
     let r = ar
-        .eval_js("java.getString('@get:{bookName}')".to_string(), None)
+        .eval_js("java.getString('@get:name')".to_string(), None)
         .map(|v| v.to_string())
         .unwrap_or_default();
-    assert_eq!(r, "书名甲", "@get:{{bookName}} 应经 get_variable 提取");
+    assert_eq!(r, "书名甲", "@get:{{name}} 应经 get_variable 提取");
 }
 
 #[test]
@@ -44,10 +44,10 @@ fn test_analyze_rule_js_book_binding() {
     let bs = BookSource::default();
     let mut ar = AnalyzeRule::new(&book, Some(&bs), None::<&dyn reader::io_legado_app_model_debuglog::DebugLog>);
     let r = ar
-        .eval_js("book.bookName + '|' + source.bookSourceUrl".to_string(), None)
+        .eval_js("book.name + '|' + source.bookSourceUrl".to_string(), None)
         .map(|v| v.to_string())
         .unwrap_or_default();
-    assert_eq!(r, "绑定书名|", "book 绑定应包含 bookName（source 绑定真实书源 JSON 含 bookSourceUrl）");
+    assert_eq!(r, "绑定书名|", "book 绑定应包含 name（source 绑定真实书源 JSON 含 bookSourceUrl）");
 }
 
 #[test]
