@@ -972,33 +972,33 @@ impl BookController {
                 return return_data;
             }
             if book_info.is_pdf() {
-                if !self.convert_pdf_to_image(book_info.clone(), false) {
-                    return_data.set_error_msg("PDF生成图片失败".to_string());
-                    return return_data;
-                }
+                // fix: PDF 页文本渲染（原图片渲染产出空 png——PDF 书 Web 阅读完全空白；
+                //      lopdf 提取页面文本排为段落）
+                let mut content = String::new();
+                let local_path = book_info.clone().get_local_file().path();
+                let document = crate::stubs::PDDocument::load(&local_path);
                 if let (Some(start), Some(end)) = (chapter_info.start, chapter_info.end) {
                     if start <= end {
-                        let public_book_url = book_info
-                            .book_url
-                            .replace("\\", "/")
-                            .replace("storage/data/", "/book-assets/");
                         for page in start..end {
-                            self.convert_pdf_page_to_image(book_info.clone(), page as i32, refresh > 0);
-                            let page_file = File::new(&work_dir_join(vec![
-                                book_info.book_url.clone(),
-                                String::from("index"),
-                                format!("output-{}.png", page),
-                            ]));
-                            LOGGER.info(format!("chapterFilePath: {}", page_file.absolute_path));
-                            if !page_file.exists() {
-                                return_data.set_error_msg("章节文件不存在".to_string());
-                                return return_data;
+                            let page_text = document
+                                .document_catalog
+                                .pages
+                                .pages
+                                .get(page as usize)
+                                .map(|p| p.text.clone())
+                                .unwrap_or_default();
+                            if !page_text.is_empty() {
+                                let escaped = page_text
+                                    .replace('&', "&amp;")
+                                    .replace('<', "&lt;")
+                                    .replace('>', "&gt;")
+                                    .replace('\n', "<br/>");
+                                content += &format!("<p style=\"margin:0 0 1.2em 0;line-height:1.8\">{}</p>", escaped);
                             }
-                            let file_url = "__API_ROOT__".to_string() + &public_book_url + &format!("/index/output-{}.png", page);
-                            content += &format!("<img src='{}' />", file_url);
                         }
                     }
                 }
+                close_quietly(&document);
                 return_data.set_data(Box::new(Any::Str(content)), String::new());
                 return return_data;
             }
