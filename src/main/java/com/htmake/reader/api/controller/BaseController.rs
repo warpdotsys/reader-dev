@@ -348,13 +348,15 @@ impl BaseController {
         }
         // 管理权限，可以修改 userNameSpace 来获取任意用户信息
         self.check_manager_auth(context);
-        let user_ns = context.get("userNameSpace");
+        // fix: 用 store 读取（原 context.get 实现为 query_param——读不到 check_auth put 的 username，
+        //      恒回落 default → 书架/书源/进度全用错命名空间，用户看不到自己数据）
+        let user_ns = context.get_user::<String>("userNameSpace");
         if let Some(user_ns) = user_ns {
             if !user_ns.is_empty() {
                 return user_ns;
             }
         }
-        let username = context.get("username");
+        let username = context.get_user::<String>("username");
         if let Some(username) = username {
             return username;
         }
