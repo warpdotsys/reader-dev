@@ -7155,6 +7155,17 @@ pub fn gson_to_json_placeholder<T: 'static>(value: &T) -> String {
     if let Some(v) = any.downcast_ref::<Vec<crate::io_legado_app_data_entities_book::Book>>() {
         return crate::stubs::books_to_json(v).to_string();
     }
+    if let Some(e) = any.downcast_ref::<crate::com_htmake_reader_entity_basicerror::BasicError>() {
+        return serde_json::json!({
+            "error": e.error,
+            "exception": e.exception,
+            "message": e.message,
+            "path": e.path,
+            "status": e.status,
+            "timestamp": e.timestamp,
+        })
+        .to_string();
+    }
     if let Some(v) = any.downcast_ref::<Any>() {
         return crate::stubs::any_to_json_value(v).to_string();
     }
@@ -9111,10 +9122,11 @@ impl Clone for crate::io_legado_app_data_entities_searchbook::SearchBook {
 
 // ================= Resource.rs 转录追加（仅追加，不改已有内容） =================
 
-// Resource derive(Clone, PartialEq) 依赖；okhttp3 MediaType 占位补充（Clone 由 derive 提供，见 618 行）
+// Resource derive(Clone, PartialEq) 依赖；okhttp3 MediaType 补充（Clone 由 derive 提供，见 618 行）
+// fix: 按名字比较（原恒真——is_bitmap_image 恒 true、XHTML 判定错乱，EPUB 封面/资源分类失效）
 impl PartialEq for MediaType {
-    fn eq(&self, _other: &Self) -> bool {
-        true
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
     }
 }
 

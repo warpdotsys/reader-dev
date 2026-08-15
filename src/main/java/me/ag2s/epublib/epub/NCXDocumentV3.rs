@@ -476,13 +476,27 @@ impl crate::me_ag2s_epublib_util_resourceutil::Document {
 }
 
 impl Element {
-    // fix: DOMUtil::Element 无 getTagName/getTextContent, 按 Java 语义占位
+    // fix: 真实（原恒空——EPUB3 高级属性/meta 值读不到）
     pub fn get_tag_name(&self) -> String {
-        String::new()
+        self.tag_name.clone()
     }
 
     pub fn get_text_content(&self) -> String {
-        String::new()
+        let mut out = String::new();
+        collect_element_text(self, &mut out);
+        out
+    }
+}
+
+fn collect_element_text(el: &crate::me_ag2s_epublib_epub_domutil::Element, out: &mut String) {
+    if el.is_text {
+        out.push_str(&el.text_data);
+        return;
+    }
+    for node in &el.children {
+        if let Some(child) = node.as_element() {
+            collect_element_text(&child, out);
+        }
     }
 }
 

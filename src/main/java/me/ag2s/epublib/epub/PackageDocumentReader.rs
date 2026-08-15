@@ -418,6 +418,9 @@ impl PackageDocumentReader {
 pub struct ReaderError;
 
 fn decode_url(s: String, _encoding: &str) -> Result<String, ()> {
-    // fix: 占位实现（原 Java 为 URLDecoder.decode，完整实现见 NCXDocumentV3::decode_url）
-    Ok(s)
+    // fix: 真实 percent 解码（原原样返回——manifest 中 %20/中文 href 与 zip 条目名不匹配，资源被丢弃）
+    match percent_encoding::percent_decode_str(&s).decode_utf8() {
+        Ok(decoded) => Ok(decoded.into_owned()),
+        Err(_) => Ok(s),
+    }
 }

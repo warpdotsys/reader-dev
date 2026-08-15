@@ -89,11 +89,11 @@ impl PackageDocumentMetadataReader {
         let meta_tags = metadata_element.get_elements_by_tag_name(OPF_TAGS_META);
         for i in 0..meta_tags.get_length() {
             let meta_node = meta_tags.item(i);
-            let property = meta_node.get_attributes().get_named_item(OPF_ATTRIBUTES_PROPERTY);
-            if let Some(property) = property {
-                let name = property.get_node_value();
+            // fix: 真实属性读取（原 get_attributes → 空 NamedNodeMap——EPUB3 rendition:layout 等属性全丢）
+            let property = meta_node.get_attribute(OPF_ATTRIBUTES_PROPERTY);
+            if !property.is_empty() {
                 let value = meta_node.get_text_content();
-                result.insert(QName::new(name), value);
+                result.insert(QName::new(property), value);
             }
         }
 
@@ -237,14 +237,21 @@ impl Element {
 }
 
 impl Node {
-    // fix: 占位实现, Java getTextContent 返回节点文本
+    // fix: 真实（原恒空——属性节点/文本节点值读不到）
     pub fn get_text_content(&self) -> String {
-        String::new()
+        match (&self.element, &self.text) {
+            (Some(e), _) => e.text_data.clone(),
+            (None, Some(t)) => t.clone(),
+            _ => String::new(),
+        }
     }
 
-    // fix: 占位实现, Java getNodeValue 返回属性值
     pub fn get_node_value(&self) -> String {
-        String::new()
+        match (&self.element, &self.text) {
+            (Some(e), _) => e.text_data.clone(),
+            (None, Some(t)) => t.clone(),
+            _ => String::new(),
+        }
     }
 }
 
