@@ -38,8 +38,10 @@ impl Rss {
             None,
             None,
             rss_source.get_header_map(),
-            debug_log.map(|_| Box::new(Debug) as Box<dyn DebugLog>)
+            debug_log.map(|dl| dl.clone_box())
         );
+        // fix: 启用 RSS 源 cookie jar（原 source 占位恒 false——需登录的 RSS 源抓取失败）
+        analyze_url.set_cookie_enabled(rss_source.enabled_cookie_jar.unwrap_or(false));
         let body = analyze_url.get_str_response_await(None, None, false).await.body().cloned();
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${sortUrl}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")
@@ -66,8 +68,10 @@ impl Rss {
             None,
             None,
             rss_source.get_header_map(),
-            debug_log.map(|_| Box::new(Debug) as Box<dyn DebugLog>)
+            debug_log.map(|dl| dl.clone_box())
         );
+        // fix: 启用 RSS 源 cookie jar（原 source 占位恒 false——需登录的 RSS 源抓取失败）
+        analyze_url.set_cookie_enabled(rss_source.enabled_cookie_jar.unwrap_or(false));
         let body = analyze_url.get_str_response_await(None, None, false).await.body().cloned();
         // debugLog?.log(rssSource.sourceUrl, "┌获取链接内容:${rssArticle.link}")
         // debugLog?.log(rssSource.sourceUrl, "└\n${body}")

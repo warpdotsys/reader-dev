@@ -35,16 +35,8 @@ impl EpubProcessorSupport {
     }
 
     pub fn create_xml_serializer_writer(out: Writer) -> XmlSerializer {
-        /*
-         * Disable XmlPullParserFactory here before it doesn't work when
-         * building native image using GraalVM
-         */
-        let mut factory = XmlPullParserFactory::new_instance();
-        factory.set_validating(true);
-        // fix: 原 Java `var result: XmlSerializer` 误转录为 Option，直接持有 serializer
-        let mut result = factory.new_serializer();
-
-        //result = new KXmlSerializer();
+        // fix: 真实 serializer（原 XmlPullParserFactory::new_instance/new_serializer todo!()——EPUB 导出 panic）
+        let mut result = XmlSerializer::new();
         result.set_feature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
         result.set_output(out);
         result
@@ -119,7 +111,11 @@ impl EntityResolverImpl {
 #[derive(Clone)]
 pub struct DocumentBuilderFactory;
 pub struct DocumentBuilder;
-pub struct XmlSerializer;
+// fix: 真实 XML 序列化（原 todo!()——EPUB 导出 OPF/NCX 空文件；buf 拼接 + take_output 取走）
+pub struct XmlSerializer {
+    pub buf: String,
+    pub open_tag: Option<String>,
+}
 pub struct XmlPullParserFactory;
 pub struct Writer;
 pub struct OutputStream;
@@ -139,8 +135,54 @@ impl DocumentBuilder {
 }
 
 impl XmlSerializer {
-    pub fn set_feature(&mut self, _name: &str, _value: bool) { todo!() }
-    pub fn set_output(&mut self, _out: Writer) { todo!() }
+    pub fn new() -> Self {
+        XmlSerializer { buf: String::new(), open_tag: None }
+    }
+    fn close_open_tag(&mut self) {
+        if self.open_tag.take().is_some() {
+            self.buf.push('>');
+        }
+    }
+    pub fn set_feature(&mut self, _name: &str, _value: bool) {}
+    pub fn set_output(&mut self, _out: Writer) {}
+    pub fn start_document(&mut self, _encoding: &str, _standalone: bool) {
+        self.buf = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        self.open_tag = None;
+    }
+    pub fn set_prefix(&mut self, _prefix: &str, _namespace: &str) {}
+    pub fn start_tag(&mut self, _namespace: &str, name: &str) {
+        self.close_open_tag();
+        self.buf.push('<');
+        self.buf.push_str(name);
+        self.open_tag = Some(name.to_string());
+    }
+    pub fn attribute(&mut self, _namespace: &str, name: &str, value: String) {
+        let v = value.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;");
+        self.buf.push(' ');
+        self.buf.push_str(name);
+        self.buf.push_str("=\"");
+        self.buf.push_str(&v);
+        self.buf.push('"');
+    }
+    pub fn text(&mut self, text: &str) {
+        self.close_open_tag();
+        let t = text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+        self.buf.push_str(&t);
+    }
+    pub fn end_tag(&mut self, _namespace: &str, name: &str) {
+        self.close_open_tag();
+        self.buf.push_str("</");
+        self.buf.push_str(name);
+        self.buf.push('>');
+    }
+    pub fn end_document(&mut self) {
+        self.close_open_tag();
+    }
+    pub fn flush(&mut self) {}
+    pub fn take_output(&mut self) -> String {
+        self.close_open_tag();
+        std::mem::take(&mut self.buf)
+    }
 }
 
 impl XmlPullParserFactory {

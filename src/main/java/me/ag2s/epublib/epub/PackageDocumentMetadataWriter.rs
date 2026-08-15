@@ -199,23 +199,59 @@ impl PackageDocumentMetadataWriter {
     }
 }
 
-pub struct XmlSerializer;
+// fix: 真实 XML 序列化（原全空实现——EPUB 导出 OPF 空文件；buf 拼接 + take_output 由写入方取走）
+pub struct XmlSerializer {
+    buf: String,
+    open_tag: Option<String>,
+}
 pub struct SerError;
 
 impl XmlSerializer {
-    pub fn start_tag(&mut self, _namespace: &str, _name: &str) {
-        // fix: 占位 stub（降级实现，不做实际输出）
+    pub fn new() -> Self {
+        XmlSerializer { buf: String::new(), open_tag: None }
     }
-    pub fn set_prefix(&mut self, _prefix: &str, _namespace: &str) {
-        // fix: 占位 stub（降级实现，不做实际输出）
+    fn close_open_tag(&mut self) {
+        if self.open_tag.take().is_some() {
+            self.buf.push('>');
+        }
     }
-    pub fn attribute(&mut self, _namespace: &str, _name: &str, _value: String) {
-        // fix: 占位 stub（降级实现，不做实际输出）
+    pub fn start_document(&mut self, _encoding: &str, _standalone: bool) {
+        self.buf = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        self.open_tag = None;
     }
-    pub fn text(&mut self, _text: &str) {
-        // fix: 占位 stub（降级实现，不做实际输出）
+    pub fn start_tag(&mut self, _namespace: &str, name: &str) {
+        self.close_open_tag();
+        self.buf.push('<');
+        self.buf.push_str(name);
+        self.open_tag = Some(name.to_string());
     }
-    pub fn end_tag(&mut self, _namespace: &str, _name: &str) {
-        // fix: 占位 stub（降级实现，不做实际输出）
+    pub fn set_prefix(&mut self, _prefix: &str, _namespace: &str) {}
+    pub fn attribute(&mut self, _namespace: &str, name: &str, value: String) {
+        let v = value.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;");
+        self.buf.push(' ');
+        self.buf.push_str(name);
+        self.buf.push_str("=\"");
+        self.buf.push_str(&v);
+        self.buf.push('"');
+    }
+    pub fn text(&mut self, text: &str) {
+        self.close_open_tag();
+        let t = text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+        self.buf.push_str(&t);
+    }
+    pub fn end_tag(&mut self, _namespace: &str, name: &str) {
+        self.close_open_tag();
+        self.buf.push_str("</");
+        self.buf.push_str(name);
+        self.buf.push('>');
+    }
+    pub fn end_document(&mut self) {
+        self.close_open_tag();
+    }
+    pub fn flush(&mut self) {}
+    // fix: 写入方取走序列化结果（原 out 为占位 Writer，内容丢失）
+    pub fn take_output(&mut self) -> String {
+        self.close_open_tag();
+        std::mem::take(&mut self.buf)
     }
 }

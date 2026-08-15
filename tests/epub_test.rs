@@ -118,3 +118,30 @@ fn test_reader_read_all() {
     eprintln!("DBG text head = {}", &text[..text.len().min(60)]);
     assert!(text.contains("链路测试"), "reader should decode all content");
 }
+#[test]
+fn test_epub_export() {
+    use reader::me_ag2s_epublib_domain_epubbook::EpubBook;
+    use reader::me_ag2s_epublib_domain_resource::Resource;
+    use reader::me_ag2s_epublib_epub_epubwriter::{EpubWriter, OutputStream};
+    let mut book = EpubBook::new();
+    let mut md = reader::me_ag2s_epublib_domain_metadata::Metadata::new(); md.set_titles(vec!["导出书名".to_string()]); book.set_metadata(md);
+    book.add_resource(Resource::with_data_and_href(b"<html><body>content</body></html>".to_vec(), "text/chap1.xhtml".to_string()));
+    let out = OutputStream::new_for_file(String::new());
+    let data_rc = out.data.clone();
+    EpubWriter::new().write(book, out).expect("epub write");
+    let bytes = data_rc.borrow().clone();
+    assert!(!bytes.is_empty(), "epub output non-empty");
+    // 解压检查关键文件
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("zip parse");
+    let mut names = Vec::new();
+    for i in 0..archive.len() {
+        if let Ok(e) = archive.by_index(i) {
+            names.push(e.name().to_string());
+        }
+    }
+    assert!(names.iter().any(|n| n == "mimetype"), "mimetype entry: {names:?}");
+    assert!(names.iter().any(|n| n.contains("content.opf")), "opf entry: {names:?}");
+    let opf = archive.by_name("OEBPS/content.opf").map(|mut e| { let mut s = String::new(); use std::io::Read; let _ = e.read_to_string(&mut s); s }).unwrap_or_default();
+    assert!(opf.contains("<package") && opf.contains("<metadata"), "opf should contain package/metadata, got: {opf}");
+    assert!(opf.contains("导出书名"), "opf should contain title");
+}

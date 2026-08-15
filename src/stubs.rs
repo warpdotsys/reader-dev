@@ -6673,10 +6673,6 @@ impl crate::me_ag2s_epublib_util_stringutil::StringUtil {
     }
 }
 
-impl crate::me_ag2s_epublib_epub_epubprocessorsupport::XmlSerializer {
-    pub fn flush(&self) {}
-}
-
 impl crate::me_ag2s_epublib_epub_ncxdocumentv3::NcxV3Error {
     pub fn printStackTrace(&self) {}
 }
@@ -9920,7 +9916,7 @@ impl From<crate::me_ag2s_epublib_epub_epubprocessorsupport::XmlSerializer>
     for crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::XmlSerializer
 {
     fn from(_: crate::me_ag2s_epublib_epub_epubprocessorsupport::XmlSerializer) -> Self {
-        crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::XmlSerializer
+        crate::me_ag2s_epublib_epub_packagedocumentmetadatawriter::XmlSerializer::new()
     }
 }
 // ---- YueduApi/BaseController 转录修复补充 2（追加；只追加不改写） ----

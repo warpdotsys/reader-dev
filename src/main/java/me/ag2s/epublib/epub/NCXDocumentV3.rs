@@ -264,10 +264,12 @@ impl NCXDocumentV3 {
 
     pub fn create_ncx_resource_full(identifiers: &Vec<Identifier>,
                              title: String, authors: &Vec<Author>, table_of_contents: &TableOfContents) -> Result<Resource, NcxV3Error> {
-        let data = ByteArrayOutputStream::new();
-        // fix: Java 将 data 传入 createXmlSerializer; EPS::OutputStream 为空 stub, 用单元值占位
-        let mut out = EpubProcessorSupport::create_xml_serializer_stream(OutputStream);
+        let mut data = ByteArrayOutputStream::new();
+        // fix: 真实序列化（原 create_xml_serializer_stream 占位 out——NCX 空文件；take_output 取 XML）
+        let mut out = crate::me_ag2s_epublib_epub_epubprocessorsupport::XmlSerializer::new();
         Self::write_full(&mut out, identifiers, title, authors, table_of_contents)?;
+        let xml = out.take_output();
+        data.write(xml.as_bytes());
 
         let mut resource = Resource::with_id_data(Some(NCXDocumentV3::NCX_ITEM_ID.to_string()), Some(data.to_byte_array()),
             Some(NCXDocumentV3::DEFAULT_NCX_HREF.to_string()), Some(NCXDocumentV3::V3_NCX_MEDIATYPE.clone()));

@@ -262,18 +262,7 @@ impl PackageDocumentWriter {
 }
 
 // fix: XmlSerializer/SerError 复用 PackageDocumentMetadataWriter 的本地 stub 类型，
-// 以保证 write_meta_data(book, serializer) 的类型一致；此处仅补充本文件用到的缺失方法。
-impl XmlSerializer {
-    pub fn start_document(&mut self, _encoding: &str, _standalone: bool) {
-        // fix: 占位 stub（降级实现，不做实际输出）
-    }
-    pub fn end_document(&mut self) {
-        // fix: 占位 stub（降级实现，不做实际输出）
-    }
-    pub fn flush(&mut self) {
-        // fix: 占位 stub（降级实现，不做实际输出）
-    }
-}
+//      以保证 write_meta_data(book, serializer) 的类型一致；序列化方法已在其定义处实现
 
 impl ThrowableExt for SerError {
     fn localized_message(&self) -> String {

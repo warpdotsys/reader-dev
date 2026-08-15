@@ -124,6 +124,11 @@ impl AnalyzeUrl {
     }
     //
     // class 构造 (含 init 块)
+    /// fix: RSS 等场景（source 非 BookSource 无法传入）——构造后启用 cookie jar
+    pub fn set_cookie_enabled(&mut self, enabled: bool) {
+        self.enabled_cookie_jar = enabled;
+    }
+
     pub fn new(
         m_url: String,
         key: Option<String>,

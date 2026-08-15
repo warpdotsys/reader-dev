@@ -191,10 +191,12 @@ impl NCXDocumentV2 {
 
     pub fn create_ncx_resource_full(identifiers: &Vec<Identifier>,
                              title: String, authors: &Vec<Author>, table_of_contents: &TableOfContents) -> Result<Resource, NcxError> {
-        let data = ByteArrayOutputStream::new();
-        // fix: Java 将 data 传入 createXmlSerializer; EPS::OutputStream 为空 stub, 用单元占位
-        let mut out = EpubProcessorSupport::create_xml_serializer_stream(OutputStream);
+        let mut data = ByteArrayOutputStream::new();
+        // fix: 真实序列化（原 create_xml_serializer_stream 占位 out——NCX 空文件；take_output 取 XML）
+        let mut out = crate::me_ag2s_epublib_epub_epubprocessorsupport::XmlSerializer::new();
         let _ = Self::write_full(&mut out, identifiers, title, authors, table_of_contents);
+        let xml = out.take_output();
+        data.write(xml.as_bytes());
         Ok(Resource::with_id_data(Some(NCXDocumentV2::NCX_ITEM_ID.to_string()), Some(data.to_byte_array()),
             Some(NCXDocumentV2::DEFAULT_NCX_HREF.to_string()), Some(MediaTypes::NCX)))
     }
@@ -366,13 +368,3 @@ impl crate::me_ag2s_epublib_util_resourceutil::Document {
     }
 }
 
-impl XmlSerializer {
-    // fix: EPS::XmlSerializer 为空 stub, 补齐 NCX 写入所需方法
-    pub fn start_document(&mut self, _encoding: &str, _standalone: bool) {}
-    pub fn set_prefix(&mut self, _prefix: &str, _namespace: &str) {}
-    pub fn start_tag(&mut self, _namespace: &str, _name: &str) {}
-    pub fn attribute(&mut self, _namespace: &str, _name: &str, _value: String) {}
-    pub fn end_tag(&mut self, _namespace: &str, _name: &str) {}
-    pub fn text(&mut self, _text: &str) {}
-    pub fn end_document(&mut self) {}
-}

@@ -75,11 +75,10 @@ impl WebBook {
         source
     }
 
-    // fix: debug_logger 为 Box<dyn DebugLog> 无法从 &self 移出/克隆（AnalyzeUrl::new 需所有权），
-    //      debug_log 开启时用 Debug 占位（同 BookSource.rs set_logger 占位约定）
+    // fix: 真实调试对象克隆（原 Debug 空占位——调试日志全部丢失）
     fn debug_log_box(&self) -> Option<Box<dyn DebugLog>> {
         if self.debug_log {
-            Some(Box::new(Debug) as Box<dyn DebugLog>)
+            self.debug_logger.as_ref().map(|dl| dl.clone_box())
         } else {
             None
         }

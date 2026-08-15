@@ -106,15 +106,11 @@ impl EpubWriter {
 
     fn write_package_document(&self, book: &EpubBook, result_stream: &mut ZipOutputStream) -> Result<(), io::Error> {
         result_stream.put_next_entry(ZipEntry::new("OEBPS/content.opf".to_string()));
-        let proc_serializer =
-            EpubProcessorSupport::create_xml_serializer_stream(ProcOutputStream::from(result_stream.clone()));
-        // fix: EpubProcessorSupport 与 PackageDocumentMetadataWriter 各自定义同名 stub XmlSerializer，
-        //      PackageDocumentWriter::write 需要后者；经 From 桥接转换
-        let mut xml_serializer = PDMXmlSerializer::from(proc_serializer);
+        // fix: 真实 XML 序列化（原 XmlSerializer 占位空输出——OPF 空文件；take_output 写 zip）
+        let mut xml_serializer = PDMXmlSerializer::new();
         PackageDocumentWriter::write(self, &mut xml_serializer, book);
-        xml_serializer.flush();
-        //		String resultAsString = result.toString();
-        //		resultStream.write(resultAsString.getBytes(Constants.ENCODING));
+        let xml = xml_serializer.take_output();
+        result_stream.write(xml.into_bytes());
         Ok(())
     }
 

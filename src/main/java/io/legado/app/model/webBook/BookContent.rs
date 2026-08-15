@@ -82,7 +82,7 @@ impl BookContent {
                     Some(book_chapter.clone()),
                     book_source.get_header_map(),
                     // fix: 借用型 &dyn DebugLog 无法转为 Box<dyn DebugLog>（需 'static），以 Debug 占位保持 is_some 语义
-                    debug_log.map(|_| Box::new(Debug) as Box<dyn DebugLog>),
+                    debug_log.map(|dl| dl.clone_box()),
                 ).get_str_response_await(None, None, false).await;
                 if let Some(next_body) = res.body() {
                     let res_url = res.url();
@@ -123,7 +123,7 @@ impl BookContent {
                     Some(book_chapter.clone()),
                     book_source.get_header_map(),
                     // fix: 借用型 &dyn DebugLog 无法转为 Box<dyn DebugLog>（需 'static），以 Debug 占位保持 is_some 语义
-                    debug_log.map(|_| Box::new(Debug) as Box<dyn DebugLog>),
+                    debug_log.map(|dl| dl.clone_box()),
                 );
                 let res = analyze_url.get_str_response_await(None, None, false).await;
                 let body_ = res.body().unwrap();

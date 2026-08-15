@@ -129,6 +129,14 @@ fn ajax_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engi
                 }
             }
         }
+        // fix: 携带书源 cookie jar（原无——需登录 cookie 的站点 JS 请求失败）
+        let cookie_js = "(() => { try { return String(cookie); } catch(e) { return ''; } })()";
+        if let Ok(v) = ctx.eval(boa_engine::Source::from_bytes(cookie_js.as_bytes())) {
+            let cookie_val = v.to_string(&mut *ctx).map(|s| s.to_std_string().unwrap_or_default()).unwrap_or_default();
+            if !cookie_val.is_empty() && !headers.contains_key("Cookie") {
+                headers.insert(String::from("Cookie"), cookie_val);
+            }
+        }
         let (_, _, body) = js_http_request("GET", &url.to_std_string().unwrap_or_default(), &headers, None);
         body
     };
@@ -152,23 +160,48 @@ fn ajax_all_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_
             }
         }
     }
-    // 并发（每 URL 一个线程；限制最大并发避免资源耗尽）
-    let mut handles = Vec::new();
-    for url in urls.iter().take(32) {
-        let url = url.clone();
-        handles.push(std::thread::spawn(move || {
-            let mut headers = std::collections::HashMap::new();
-            headers.insert(
-                String::from("User-Agent"),
-                crate::io_legado_app_constant_appconst::AppConst::userAgent(),
-            );
-            let (_, _, body) = js_http_request("GET", &url, &headers, None);
-            body
-        }));
+    // 书源自定义 header（与 ajax 一致）
+    let mut base_headers = std::collections::HashMap::new();
+    base_headers.insert(
+        String::from("User-Agent"),
+        crate::io_legado_app_constant_appconst::AppConst::userAgent(),
+    );
+    let source_js = "(() => { try { return typeof source === 'object' && source !== null ? source : null; } catch(e) { return null; } })()";
+    if let Ok(v) = ctx.eval(boa_engine::Source::from_bytes(source_js.as_bytes())) {
+        if let Ok(Some(json)) = v.to_json(ctx) {
+            if let Some(obj) = json.as_object() {
+                if let Some(h) = obj.get("header").and_then(|x| x.as_str()) {
+                    if let Ok(hv) = serde_json::from_str::<serde_json::Value>(h) {
+                        if let Some(ho) = hv.as_object() {
+                            for (k, val) in ho {
+                                if let Some(s) = val.as_str() {
+                                    base_headers.insert(k.clone(), s.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+    // 分批并发（每批 32；原 take(32) 静默丢弃超出部分，返回数组与输入不对齐）
     let mut results: Vec<serde_json::Value> = Vec::new();
-    for h in handles {
-        results.push(serde_json::Value::String(h.join().unwrap_or_default()));
+    let mut idx = 0usize;
+    while idx < urls.len() {
+        let batch = urls.len().min(idx + 32);
+        let mut handles = Vec::new();
+        for url in &urls[idx..batch] {
+            let url = url.clone();
+            let headers = base_headers.clone();
+            handles.push(std::thread::spawn(move || {
+                let (_, _, body) = js_http_request("GET", &url, &headers, None);
+                body
+            }));
+        }
+        for h in handles {
+            results.push(serde_json::Value::String(h.join().unwrap_or_default()));
+        }
+        idx = batch;
     }
     Ok(JsValue::from_json(&Value::Array(results), ctx).unwrap_or(JsValue::null()))
 }
