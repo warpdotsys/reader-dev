@@ -247,3 +247,29 @@ fn test_zlib_roundtrip() {
     }
     assert_eq!(String::from_utf8_lossy(&out), "UMD chapter content", "zlib roundtrip");
 }
+#[test]
+fn test_with_timeout_fires() {
+    use reader::stubs::with_timeout;
+    let fut = with_timeout(50, || async { std::future::pending::<i32>().await });
+    let r = std::panic::catch_unwind(|| reader::stubs::block_on(fut));
+    assert!(r.is_err(), "withTimeout 应超时 panic（原不超时挂起）");
+    // 正常完成不 panic
+    let fut2 = with_timeout(1000, || async { 42 });
+    let v = reader::stubs::block_on(fut2);
+    assert_eq!(v, 42, "正常 future 应完成");
+}
+#[test]
+fn test_search_book_type_serialized() {
+    let mut sb = reader::io_legado_app_data_entities_searchbook::SearchBook::default();
+    sb.r#type = 1;
+    let json = reader::stubs::search_book_to_json(&sb).to_string();
+    assert!(json.contains("\"type\":1"), "type 应序列化（音频书源契约）: {json}");
+}
+
+#[test]
+fn test_rss_source_rule_content_serialized() {
+    let mut rs = reader::io_legado_app_data_entities_rsssource::RssSource::default();
+    rs.rule_content = Some("css:.content".to_string());
+    let json = reader::stubs::rss_source_to_json(&rs).to_string();
+    assert!(json.contains("ruleContent"), "ruleContent 应序列化（保存后不丢正文规则）: {json}");
+}

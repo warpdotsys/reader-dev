@@ -96,9 +96,10 @@ impl SourceAnalyzer {
                     .unwrap_or_else(|| panic!("格式不对"));
                 source.book_source_name = jsonItem.readString("bookSourceName").unwrap_or("".to_string());
                 source.book_source_group = jsonItem.readString("bookSourceGroup");
-                // loginUrl = jsonItem.readString("loginUrl")
-                // loginUi = jsonItem.readString("loginUi")
-                // loginCheckJs = jsonItem.readString("loginCheckJs")
+                // fix: 旧格式书源导入（原注释掉——loginUrl/loginUi/loginCheckJs 配置丢失）
+                source.login_url = jsonItem.readString("loginUrl");
+                source.login_ui = jsonItem.readString("loginUi");
+                source.login_check_js = jsonItem.readString("loginCheckJs");
                 source.book_source_comment = Some(jsonItem.readString("bookSourceComment").unwrap_or_default());
                 source.book_url_pattern = jsonItem.readString("ruleBookUrlPattern");
                 source.custom_order = jsonItem.readInt("serialNumber").unwrap_or(0);
@@ -201,11 +202,11 @@ impl SourceAnalyzer {
                     Some(Any::Str(s)) => Some(s),
                     Some(other) => JsonPath::parse(other).readString("url"),
                 };
-                // source.loginUi = if (sourceAny.loginUi is List<*>) {
-                //     GSON.toJson(sourceAny.loginUi)
-                // } else {
-                //     sourceAny.loginUi?.toString()
-                // }
+                // fix: 真实解析 loginUi（原注释掉——书源登录 UI 配置丢失，前端登录表单无法按源渲染）
+                source.login_ui = sourceAny.loginUi.as_ref().map(|ui| match ui {
+                    Any::Str(s) => s.clone(),
+                    other => GSON::new().toJson(other),
+                });
                 source.login_check_js = sourceAny.loginCheckJs;
                 source.book_source_comment = sourceAny.bookSourceComment;
                 source.last_update_time = sourceAny.lastUpdateTime;

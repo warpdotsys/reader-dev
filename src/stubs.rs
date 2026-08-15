@@ -7328,9 +7328,34 @@ impl MainScope {
     }
 }
 
-// fix: Kotlin kotlinx.coroutines.withTimeout(timeMillis) { block() } 占位（不实际超时）
-pub fn with_timeout<T, F: FnOnce() -> T>(_millis: i64, f: F) -> T {
-    f()
+// fix: Kotlin kotlinx.coroutines.withTimeout(timeMillis) { block() }（原不实际超时——请求可能挂起；
+//      忙轮询 deadline 检查，超时 panic（无 catch 时优于挂起；主 HTTP 路径另有 reqwest 45s 兜底））
+pub struct WithTimeout<F: std::future::Future> {
+    inner: F,
+    deadline: std::time::Instant,
+    millis: i64,
+}
+impl<F: std::future::Future> std::future::Future for WithTimeout<F> {
+    type Output = F::Output;
+    fn poll(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<F::Output> {
+        if std::time::Instant::now() >= self.deadline {
+            panic!("withTimeout: 超过 {}ms 未完成", self.millis);
+        }
+        // unsafe: 字段投影（WithTimeout 无 Drop，inner 始终先于 deadline 字段使用，符合 pin 投影安全条件）
+        let this = unsafe { self.get_unchecked_mut() };
+        // SAFETY: 同上——inner 字段在 WithTimeout 中未被移动（结构无 Drop/Unpin 投影），
+        //         deadline 检查在 poll 前完成，投影后仅用于 poll inner
+        let inner = unsafe { std::pin::Pin::new_unchecked(&mut this.inner) };
+        inner.poll(cx)
+    }
+}
+
+pub fn with_timeout<T: std::future::Future, F: FnOnce() -> T>(millis: i64, f: F) -> WithTimeout<T> {
+    WithTimeout {
+        inner: f(),
+        deadline: std::time::Instant::now() + std::time::Duration::from_millis(millis.max(0) as u64),
+        millis,
+    }
 }
 
 impl Default for Job {

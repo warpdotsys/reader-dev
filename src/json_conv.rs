@@ -169,6 +169,8 @@ pub fn rss_source_to_json(v: &crate::io_legado_app_data_entities_rsssource::RssS
     m.insert(String::from("ruleDescription"), map_opt(v.rule_description.clone()));
     m.insert(String::from("ruleImage"), map_opt(v.rule_image.clone()));
     m.insert(String::from("ruleLink"), map_opt(v.rule_link.clone()));
+    // fix: 缺失 ruleContent（Kotlin RssSource.ruleContent——保存一次后正文规则永久丢失，RSS 正文解析失效）
+    m.insert(String::from("ruleContent"), map_opt(v.rule_content.clone()));
     m.insert(String::from("style"), map_opt(v.style.clone()));
     m.insert(String::from("enableJs"), json!(v.enable_js));
     m.insert(String::from("loadWithBaseUrl"), json!(v.load_with_base_url));
@@ -266,6 +268,8 @@ pub fn search_book_to_json(v: &crate::io_legado_app_data_entities_searchbook::Se
     m.insert(String::from("userNameSpace"), json!(v.user_name_space));
     m.insert(String::from("infoHtml"), map_opt(v.info_html.clone()));
     m.insert(String::from("tocHtml"), map_opt(v.toc_html.clone()));
+    // fix: 缺失 type（Kotlin SearchBook.type——音频书源加入书架后恒被当文本书）
+    m.insert(String::from("type"), json!(v.r#type as i64));
     Value::Object(m)
 }
 
