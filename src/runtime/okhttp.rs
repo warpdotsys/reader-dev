@@ -21,6 +21,13 @@ fn execute_inner(
     proxy: Option<&str>,
     proxy_auth: Option<(&str, &str)>,
 ) -> Result<Response, crate::stubs::Throwable> {
+    // fix: socks4 代理手写握手（reqwest 仅支持 socks5——书源配置 socks4:// 时代理不生效）
+    if let Some(p) = proxy {
+        let p_trim = p.trim();
+        if p_trim.starts_with("socks4://") {
+            return socks4_http_request(req, p_trim, proxy_auth);
+        }
+    }
     let mut client_builder = reqwest::blocking::Client::builder()
         .redirect(reqwest::redirect::Policy::limited(10))
         .connect_timeout(std::time::Duration::from_secs(15))
@@ -87,5 +94,178 @@ fn execute_inner(
         headers,
         body_text,
         url: final_url,
+    })
+}
+
+/// socks4/socks4a 手写代理（HTTP 场景；HTTPS 隧道需 TLS 手动协商——返回错误提示）
+fn socks4_http_request(
+    req: &Request,
+    proxy: &str,
+    proxy_auth: Option<(&str, &str)>,
+) -> Result<Response, crate::stubs::Throwable> {
+    use std::io::{Read, Write};
+    let rest = proxy.trim_start_matches("socks4://");
+    let (proxy_host, proxy_port) = match rest.rsplit_once(':') {
+        Some((h, p)) => (h.to_string(), p.parse::<u16>().unwrap_or(1080)),
+        None => (rest.to_string(), 1080),
+    };
+    let (target_host, target_port, https) = parse_target(&req.url);
+    if https {
+        return Err(crate::stubs::StubError::new("socks4 代理暂不支持 HTTPS 隧道".to_string()));
+    }
+    let mut stream = std::net::TcpStream::connect((proxy_host.as_str(), proxy_port))
+        .map_err(|e| crate::stubs::StubError::new(format!("socks4 connect: {}", e)))?;
+    stream.set_read_timeout(Some(std::time::Duration::from_secs(30))).ok();
+    // SOCKS4a CONNECT 握手
+    let userid = proxy_auth.map(|(u, _)| u).unwrap_or("");
+    let mut handshake = Vec::new();
+    handshake.push(0x04); // VN = 4
+    handshake.push(0x01); // CD = CONNECT
+    handshake.extend_from_slice(&target_port.to_be_bytes());
+    handshake.extend_from_slice(&[0, 0, 0, 1]); // SOCKS4a 域名标记
+    handshake.extend_from_slice(userid.as_bytes());
+    handshake.push(0x00);
+    handshake.extend_from_slice(target_host.as_bytes());
+    handshake.push(0x00);
+    stream.write_all(&handshake).map_err(|e| crate::stubs::StubError::new(format!("socks4 handshake write: {}", e)))?;
+    let mut reply = [0u8; 8];
+    stream.read_exact(&mut reply).map_err(|e| crate::stubs::StubError::new(format!("socks4 handshake read: {}", e)))?;
+    if reply[1] != 0x5A {
+        return Err(crate::stubs::StubError::new(format!("socks4 connect 被拒绝 (code {})", reply[1])));
+    }
+    // 构造并发送 HTTP 请求
+    let (_, _, path) = split_url_path(&req.url);
+    let mut http = String::new();
+    http.push_str(&format!("{} {} HTTP/1.1\r\n", req.method, path));
+    let mut headers = req.headers.clone();
+    headers.insert(String::from("Host"), target_host.clone());
+    for (k, v) in &headers {
+        http.push_str(&format!("{}: {}\r\n", k, v));
+    }
+    http.push_str("\r\n");
+    if let Some(b) = &req.body {
+        http.push_str(b);
+    }
+    stream.write_all(http.as_bytes()).map_err(|e| crate::stubs::StubError::new(format!("socks4 http write: {}", e)))?;
+    parse_http_response(&mut stream)
+}
+
+/// 从 URL 解析目标 host/port/https
+fn parse_target(url: &str) -> (String, u16, bool) {
+    let https = url.starts_with("https://");
+    let rest = url
+        .trim_start_matches("http://")
+        .trim_start_matches("https://");
+    let hostport = match rest.find('/') {
+        Some(i) => &rest[..i],
+        None => rest,
+    };
+    match hostport.rsplit_once(':') {
+        Some((h, p)) => (
+            h.to_string(),
+            p.parse::<u16>().unwrap_or(if https { 443 } else { 80 }),
+            https,
+        ),
+        None => (hostport.to_string(), if https { 443 } else { 80 }, https),
+    }
+}
+
+/// 从 URL 提取请求路径（默认 /）
+fn split_url_path(url: &str) -> (String, u16, String) {
+    let (host, port, _) = parse_target(url);
+    let rest = url
+        .trim_start_matches("http://")
+        .trim_start_matches("https://");
+    let path = match rest.find('/') {
+        Some(i) => rest[i..].to_string(),
+        None => String::from("/"),
+    };
+    (host, port, path)
+}
+
+/// 从原始 TCP 流解析 HTTP 响应（状态行 + headers + Content-Length/chunked body）
+fn parse_http_response(stream: &mut std::net::TcpStream) -> Result<Response, crate::stubs::Throwable> {
+    use std::io::Read;
+    let mut buf = Vec::new();
+    let mut tmp = [0u8; 8192];
+    let header_end = loop {
+        let n = stream.read(&mut tmp).map_err(|e| crate::stubs::StubError::new(format!("socks4 read: {}", e)))?;
+        if n == 0 {
+            return Err(crate::stubs::StubError::new("socks4 连接提前关闭".to_string()));
+        }
+        buf.extend_from_slice(&tmp[..n]);
+        if let Some(pos) = buf.windows(4).position(|w| w == b"\r\n\r\n") {
+            break pos + 4;
+        }
+    };
+    let header_str = String::from_utf8_lossy(&buf[..header_end]).into_owned();
+    let status = header_str
+        .lines()
+        .next()
+        .unwrap_or("")
+        .split_whitespace()
+        .nth(1)
+        .and_then(|s| s.parse::<i32>().ok())
+        .unwrap_or(0);
+    let mut headers = std::collections::HashMap::new();
+    for line in header_str.lines().skip(1) {
+        if let Some(colon) = line.find(':') {
+            headers.insert(
+                line[..colon].trim().to_lowercase(),
+                line[colon + 1..].trim().to_string(),
+            );
+        }
+    }
+    let mut body = buf[header_end..].to_vec();
+    if let Some(cl) = headers.get("content-length").and_then(|v| v.parse::<usize>().ok()) {
+        while body.len() < cl {
+            let n = stream.read(&mut tmp).map_err(|e| crate::stubs::StubError::new(format!("socks4 body read: {}", e)))?;
+            if n == 0 {
+                break;
+            }
+            body.extend_from_slice(&tmp[..n]);
+        }
+        body.truncate(cl);
+    } else if headers.get("transfer-encoding").map(|v| v.contains("chunked")).unwrap_or(false) {
+        // 简化 chunked 解析
+        let mut decoded = Vec::new();
+        let mut rest = body;
+        loop {
+            // 读行（chunk size）
+            let mut line_end = None;
+            for (i, w) in rest.windows(2).enumerate() {
+                if w == b"\r\n" {
+                    line_end = Some(i);
+                    break;
+                }
+            }
+            let Some(le) = line_end else { break };
+            let size_str = String::from_utf8_lossy(&rest[..le]).to_string();
+            let size = usize::from_str_radix(size_str.split(';').next().unwrap_or("0").trim(), 16).unwrap_or(0);
+            rest.drain(..le + 2);
+            if size == 0 {
+                break;
+            }
+            while rest.len() < size {
+                let n = stream.read(&mut tmp).map_err(|e| crate::stubs::StubError::new(format!("socks4 chunk read: {}", e)))?;
+                if n == 0 {
+                    break;
+                }
+                rest.extend_from_slice(&tmp[..n]);
+            }
+            decoded.extend_from_slice(&rest[..size.min(rest.len())]);
+            rest.drain(..size);
+            // 跳过 chunk 尾部 \r\n
+            if rest.len() >= 2 && &rest[..2] == b"\r\n" {
+                rest.drain(..2);
+            }
+        }
+        body = decoded;
+    }
+    Ok(Response {
+        status,
+        headers,
+        body_text: String::from_utf8_lossy(&body).into_owned(),
+        url: String::new(),
     })
 }
