@@ -900,7 +900,9 @@ impl UserController {
     pub fn get_user_info(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         self.base.check_auth(context);
-        let username = context.session().get("username");
+        // fix: 用 context.get（check_auth 对 accessToken 登录 put 的 username）——
+        //      原 session.get 对 accessToken 登录恒 None → userInfo 恒 null，前端命名空间回落 default
+        let username = context.get("username");
         let secure = env().get_property_boolean("reader.app.secure");
         let secure_key = env().get_property("reader.app.secureKey");
 

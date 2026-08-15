@@ -593,8 +593,14 @@ export const App: any = {
         this.$nextTick(() => {
           this.$store.commit("setLoginAuth", true);
         });
-        if (this.remember && res.data.data && res.data.data.accessToken) {
-          this.$store.commit("setToken", res.data.data.accessToken);
+        // fix: 登录成功必须设置 token（原仅 remember 勾选时设置——未勾选"记住我"时
+        //      state.token 不更新，后续请求仍用旧/空 token → 登录无效果）
+        if (res.data.data && res.data.data.accessToken) {
+          if (this.remember) {
+            this.$store.commit("setToken", res.data.data.accessToken);
+          } else {
+            this.$store.state.token = res.data.data.accessToken;
+          }
         }
         this.getUserInfo().then(() => {
           this.$store.dispatch("syncFromLocalStorage");
