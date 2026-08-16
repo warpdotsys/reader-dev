@@ -9297,7 +9297,7 @@ impl JsonObject {
     }
 }
 
-fn user_json_value_to_any(v: &serde_json::Value) -> Box<dyn std::any::Any> {
+pub fn user_json_value_to_any(v: &serde_json::Value) -> Box<dyn std::any::Any> {
     match v {
         serde_json::Value::String(s) => Box::new(s.clone()),
         serde_json::Value::Bool(b) => Box::new(*b),

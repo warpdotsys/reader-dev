@@ -446,12 +446,22 @@ impl UserController {
         }
         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::Any>>> = std::collections::HashMap::new();
         let user_map_json: Option<JsonObject> = as_json_object(get_storage("data", vec![String::from("users")]).map(crate::stubs::Any::from_string));
-        if let Some(json) = user_map_json {
-            user_map = json.user_map_nested();
-        }
         let mut user_list: Vec<std::collections::HashMap<String, Box<dyn std::any::Any>>> = Vec::new();
-        for (_, value) in &user_map {
-            user_list.push(self.base.format_user(value));
+        // fix: 保序遍历（Kotlin LinkedHashMap 插入序；原 HashMap 迭代无序——用户列表顺序不稳定）
+        if let Some(json) = &user_map_json {
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(&json.0) {
+                if let Some(obj) = v.as_object() {
+                    for (_, inner) in obj {
+                        if let Some(inner_obj) = inner.as_object() {
+                            let mut m: std::collections::HashMap<String, Box<dyn std::any::Any>> = std::collections::HashMap::new();
+                            for (ik, iv) in inner_obj {
+                                m.insert(ik.clone(), crate::stubs::user_json_value_to_any(iv));
+                            }
+                            user_list.push(self.base.format_user(&m));
+                        }
+                    }
+                }
+            }
         }
         return return_data.set_data_owned(Box::new(user_list), String::from(""));
     }

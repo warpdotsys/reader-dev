@@ -6,7 +6,7 @@ description = "reader-dev legacy 分支全量 Rust 转录（可运行版）"
 
 [dependencies]
 regex = "1"
-serde_json = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
 serde = { version = "1", features = ["derive"] }
 url = "2"
 axum = "0.8"
