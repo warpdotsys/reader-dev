@@ -29,8 +29,12 @@ impl CURD<HttpTTS> for HttpTTSController {
     // override fun checker(json: JsonObject, entity: HttpTTS): Boolean {
     //     return entity.name == json.getString("name")
     // }
+    // fix: Kotlin getString("name") 缺 key → null 恒不匹配（同 ReplaceRuleController）
     fn checker(&self, json: &JsonObject, entity: &HttpTTS) -> bool {
-        return entity.name == json.get_string("name");
+        match json.get_string_opt("name") {
+            Some(v) => entity.name == v,
+            None => false,
+        }
     }
 
     // override fun beforeSave(entity: HttpTTS, db: DB<HttpTTS>): ReturnData? {

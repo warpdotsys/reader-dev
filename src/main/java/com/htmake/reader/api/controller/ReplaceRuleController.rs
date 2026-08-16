@@ -30,8 +30,12 @@ impl CURD<ReplaceRule> for ReplaceRuleController {
     // override fun checker(json: JsonObject, entity: ReplaceRule): Boolean {
     //     return entity.name == json.getString("name")
     // }
+    // fix: Kotlin getString("name") 缺 key → null 恒不匹配（原缺 key 返回 ""——空 name 实体误匹配）
     fn checker(&self, json: &JsonObject, entity: &ReplaceRule) -> bool {
-        return entity.name == json.get_string("name");
+        match json.get_string_opt("name") {
+            Some(v) => entity.name == v,
+            None => false,
+        }
     }
 
     // override fun beforeSave(entity: ReplaceRule, db: DB<ReplaceRule>): ReturnData? {

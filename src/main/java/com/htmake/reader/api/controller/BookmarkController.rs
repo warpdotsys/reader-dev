@@ -30,11 +30,13 @@ impl CURD<Bookmark> for BookmarkController {
     // override fun checker(json: JsonObject, entity: Bookmark): Boolean {
     //     return entity.time == json.getLong("time")
     // }
+    // fix: Kotlin getLong("time") 缺 key → null 恒不匹配（原 get_long("time",0)——time==0 实体误匹配）
     fn checker(&self, json: &JsonObject, entity: &Bookmark) -> bool {
-        return entity.time == json.get_long("time", 0);
+        match json.get_long_opt("time") {
+            Some(v) => entity.time == v,
+            None => false,
+        }
     }
-
-    // override fun beforeSave(entity: Bookmark, db: DB<Bookmark>): ReturnData? {
     //     if (entity.bookName.isEmpty() && entity.bookAuthor.isEmpty()) {
     //         return ReturnData().setErrorMsg("书签信息错误")
     //     }
