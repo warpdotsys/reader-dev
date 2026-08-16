@@ -35,6 +35,16 @@
 - 非书架章节缓存落盘+用户隔离——v6.0.22
 - headers-end 回调先执行再读响应头（DAV 头注入）——v6.0.23
 
+**v6.0.24 新增修复**（书架刷新并发16/send_file Content-Type+404/IDN 字节切片/bodyAsJson 校验/HttpTTS deleteMulti/users 全局锁/宽松相对URL/checkNotEmpty/时间字段默认/CORS/405/静态缓存头/isSuccessful/header 大小写/limitConcurrent 空批/zip 内存读取/text.xxx/:has 伪类/定时任务丢轮/重定向上限 20/exploreBook 校验）——本地全绿（42/42 + 7/7 + unit）
+
+**已知限制（架构/边缘，标记保留）**：
+- SSE 流式：单线程 tokio 架构下缓冲发送（text/event-stream 已设，功能可用，渐进显示降级）
+- gb18030 4 字节生僻字：encoding_rs GBK 覆盖 2 字节（罕见）
+- 跨域重定向 reqwest 剥离 cookie/Authorization（okhttp 保留；罕见）
+- 查询参数多值 last-wins（现有接口单值）
+- 定时任务串行执行（Kotlin IO 池并发——Rust 串行等效结果，更安全）
+- 决策项（Rust 增强保留）：chapterUrl 匹配块/分页 redirectUrl/SourceAnalyzer login 字段/PDF 文本渲染/裸 CSS 规则
+
 ---
 
 # 详细差异清单
