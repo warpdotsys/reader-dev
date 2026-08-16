@@ -351,22 +351,13 @@ impl AnalyzeByJSoup {
             "all" => text_s.push(elements.outer_html()),
             _ => {
                 for element in elements.iter() {
-                    // CSS 选择器优先（div.content 等），否则按属性读取
-                    let sel = element.select(last_rule);
-                    if sel.size() > 0 {
-                        for e in sel.iter() {
-                            let t = e.text();
-                            if !t.is_empty() && !text_s.contains(&t) {
-                                text_s.push(t);
-                            }
-                        }
-                    } else {
-                        let url = element.attr(last_rule);
-                        if is_blank(&url) || text_s.contains(&url) {
-                            continue;
-                        }
-                        text_s.push(url);
+                    // fix: 恢复 Kotlin 语义——直接取属性（原先 CSS 选择后 attr：@title/@img 等
+                    //      恰好匹配子树标签时结果错误）
+                    let url = element.attr(last_rule);
+                    if is_blank(&url) || text_s.contains(&url) {
+                        continue;
                     }
+                    text_s.push(url);
                 }
             }
         }
