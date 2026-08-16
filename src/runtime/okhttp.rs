@@ -29,7 +29,8 @@ fn execute_inner(
         }
     }
     let mut client_builder = reqwest::blocking::Client::builder()
-        .redirect(reqwest::redirect::Policy::limited(10))
+        // fix: 重定向上限 20（okhttp 默认；原 limited(10)）
+        .redirect(reqwest::redirect::Policy::limited(20))
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(45))
         // fix: 与原版 OkHttp unsafeTrustManager 一致——全信任证书（自签/过期站点可用）
