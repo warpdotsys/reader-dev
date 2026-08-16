@@ -10587,6 +10587,9 @@ impl JsonObjectOptionExt for Option<JsonObject> {
 }
 
 impl JsonObject {
+    pub fn get_string_opt(&self, key: &str) -> Option<String> {
+        self.get_string_opt_inner(key)
+    }
     pub fn get_string_opt_inner(&self, key: &str) -> Option<String> {
         serde_json::from_str::<serde_json::Value>(&self.0).ok()
             .and_then(|v| v.get(key).cloned())
