@@ -408,8 +408,10 @@ fn execute_rules(
                     return (404, HashMap::new(), Some(b"Not Found".to_vec()));
                 }
                 RouteStep::Static(sh) => {
-                    let mut resp = ctx.response.borrow_mut();
-                    serve_static(sh, &path, &mut resp);
+                    {
+                        let mut resp = ctx.response.borrow_mut();
+                        serve_static(sh, &path, &mut resp);
+                    }
                     let r = ctx.response.borrow();
                     let status = if r.status == 0 { 200 } else { r.status };
                     let (s, h, b) = (status, r.headers.clone(), r.body.clone());

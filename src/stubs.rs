@@ -5457,10 +5457,23 @@ impl File {
 fn normalize_path_lexical(path: &str) -> String {
     let bytes = path.as_bytes();
     let drive = if bytes.len() >= 2 && bytes[1] == b':' { Some(&path[..2]) } else { None };
-    let rooted = path.starts_with('/') || path.starts_with('\\') || drive.is_some();
+    // 根分隔符：路径开头 / \，或盘符后紧跟 / \（C:\）
+    let has_root_sep = path.starts_with('/')
+        || path.starts_with('\\')
+        || drive.map_or(false, |d| {
+            let rest = &path[d.len()..];
+            rest.starts_with('/') || rest.starts_with('\\')
+        });
+    let rooted = has_root_sep;
     let sep = if path.contains('\\') { '\\' } else { '/' };
     let mut stack: Vec<&str> = Vec::new();
     for seg in path.split(|c| c == '/' || c == '\\') {
+        // fix: 跳过盘符段（原把 "C:" 同时压入 stack——输出 "C:C:/..." 双重盘符）
+        if let Some(d) = drive {
+            if seg == d {
+                continue;
+            }
+        }
         match seg {
             "" | "." => {}
             ".." => match stack.last() {
@@ -5481,7 +5494,7 @@ fn normalize_path_lexical(path: &str) -> String {
     let mut out = String::new();
     if let Some(d) = drive {
         out.push_str(d);
-        if path.starts_with('/') || path.starts_with('\\') {
+        if has_root_sep {
             out.push(sep);
         }
     } else if path.starts_with('/') || path.starts_with('\\') {
