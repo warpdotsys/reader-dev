@@ -27,13 +27,12 @@ pub fn rss_article_to_json(v: &crate::io_legado_app_data_entities_rssarticle::Rs
     m.insert(String::from("title"), json!(v.title));
     m.insert(String::from("order"), json!(v.order));
     m.insert(String::from("link"), json!(v.link));
-    m.insert(String::from("pubDate"), map_opt(v.pub_date.clone()));
-    m.insert(String::from("description"), map_opt(v.description.clone()));
-    m.insert(String::from("content"), map_opt(v.content.clone()));
-    m.insert(String::from("image"), map_opt(v.image.clone()));
+    insert_opt(&mut m, "pubDate", v.pub_date.clone());
+    insert_opt(&mut m, "description", v.description.clone());
+    insert_opt(&mut m, "content", v.content.clone());
+    insert_opt(&mut m, "image", v.image.clone());
     m.insert(String::from("read"), json!(v.read));
-    m.insert(String::from("variable"), map_opt(v.variable.clone()));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
+    insert_opt(&mut m, "variable", v.variable.clone());
     Value::Object(m)
 }
 
@@ -49,24 +48,24 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("originName"), json!(v.origin_name));
     m.insert(String::from("name"), json!(v.name));
     m.insert(String::from("author"), json!(v.author));
-    m.insert(String::from("kind"), map_opt(v.kind.clone()));
-    m.insert(String::from("customTag"), map_opt(v.custom_tag.clone()));
-    m.insert(String::from("coverUrl"), map_opt(v.cover_url.clone()));
-    m.insert(String::from("customCoverUrl"), map_opt(v.custom_cover_url.clone()));
-    m.insert(String::from("intro"), map_opt(v.intro.clone()));
-    m.insert(String::from("customIntro"), map_opt(v.custom_intro.clone()));
-    m.insert(String::from("charset"), map_opt(v.charset.clone()));
+    insert_opt(&mut m, "kind", v.kind.clone());
+    insert_opt(&mut m, "customTag", v.custom_tag.clone());
+    insert_opt(&mut m, "coverUrl", v.cover_url.clone());
+    insert_opt(&mut m, "customCoverUrl", v.custom_cover_url.clone());
+    insert_opt(&mut m, "intro", v.intro.clone());
+    insert_opt(&mut m, "customIntro", v.custom_intro.clone());
+    insert_opt(&mut m, "charset", v.charset.clone());
     m.insert(String::from("group"), json!(v.group));
-    m.insert(String::from("latestChapterTitle"), map_opt(v.latest_chapter_title.clone()));
+    insert_opt(&mut m, "latestChapterTitle", v.latest_chapter_title.clone());
     m.insert(String::from("latestChapterTime"), json!(v.latest_chapter_time));
     m.insert(String::from("lastCheckTime"), json!(v.last_check_time));
     m.insert(String::from("lastCheckCount"), json!(v.last_check_count as i64));
     m.insert(String::from("totalChapterNum"), json!(v.total_chapter_num as i64));
-    m.insert(String::from("durChapterTitle"), map_opt(v.dur_chapter_title.clone()));
+    insert_opt(&mut m, "durChapterTitle", v.dur_chapter_title.clone());
     m.insert(String::from("durChapterIndex"), json!(v.dur_chapter_index as i64));
     m.insert(String::from("durChapterPos"), json!(v.dur_chapter_pos as i64));
     m.insert(String::from("durChapterTime"), json!(v.dur_chapter_time));
-    m.insert(String::from("wordCount"), map_opt(v.word_count.clone()));
+    insert_opt(&mut m, "wordCount", v.word_count.clone());
     m.insert(String::from("canUpdate"), json!(v.can_update));
     m.insert(String::from("type"), json!(v.r#type));
     m.insert(String::from("readConfig"), match v.read_config.lock().unwrap().as_ref() {
@@ -84,13 +83,12 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     m.insert(String::from("order"), json!(v.order as i64));
     m.insert(String::from("originOrder"), json!(v.origin_order as i64));
     m.insert(String::from("useReplaceRule"), json!(v.use_replace_rule));
-    m.insert(String::from("variable"), map_opt(v.variable.clone()));
+    insert_opt(&mut m, "variable", v.variable.clone());
     m.insert(String::from("isInShelf"), json!(v.is_in_shelf));
-    m.insert(String::from("lastCheckError"), map_opt(v.last_check_error.clone()));
-    m.insert(String::from("infoHtml"), map_opt(v.info_html.clone()));
-    m.insert(String::from("tocHtml"), map_opt(v.toc_html.clone()));
+    insert_opt(&mut m, "lastCheckError", v.last_check_error.clone());
+    insert_opt(&mut m, "infoHtml", v.info_html.clone());
+    insert_opt(&mut m, "tocHtml", v.toc_html.clone());
     m.insert(String::from("rootDir"), json!(v.root_dir));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
     Value::Object(m)
 }
 
@@ -102,26 +100,25 @@ pub fn book_source_to_json(v: &crate::io_legado_app_data_entities_booksource::Bo
     let mut m = serde_json::Map::new();
     m.insert(String::from("bookSourceUrl"), json!(v.book_source_url));
     m.insert(String::from("bookSourceName"), json!(v.book_source_name));
-    m.insert(String::from("bookSourceGroup"), map_opt(v.book_source_group.clone()));
+    insert_opt(&mut m, "bookSourceGroup", v.book_source_group.clone());
     m.insert(String::from("bookSourceType"), json!(v.book_source_type as i64));
-    m.insert(String::from("bookUrlPattern"), map_opt(v.book_url_pattern.clone()));
+    insert_opt(&mut m, "bookUrlPattern", v.book_url_pattern.clone());
     m.insert(String::from("customOrder"), json!(v.custom_order as i64));
     m.insert(String::from("enabled"), json!(v.enabled));
     m.insert(String::from("enabledExplore"), json!(v.enabled_explore));
-    m.insert(String::from("enabledCookieJar"), map_opt(v.enabled_cookie_jar.clone()));
-    m.insert(String::from("concurrentRate"), map_opt(v.concurrent_rate.clone()));
-    m.insert(String::from("header"), map_opt(v.header.clone()));
-    m.insert(String::from("loginUrl"), map_opt(v.login_url.clone()));
-    m.insert(String::from("loginUi"), map_opt(v.login_ui.clone()));
-    m.insert(String::from("loginCheckJs"), map_opt(v.login_check_js.clone()));
-    m.insert(String::from("bookSourceComment"), map_opt(v.book_source_comment.clone()));
-    m.insert(String::from("variableComment"), map_opt(v.variable_comment.clone()));
+    insert_opt(&mut m, "enabledCookieJar", v.enabled_cookie_jar.clone());
+    insert_opt(&mut m, "concurrentRate", v.concurrent_rate.clone());
+    insert_opt(&mut m, "header", v.header.clone());
+    insert_opt(&mut m, "loginUrl", v.login_url.clone());
+    insert_opt(&mut m, "loginUi", v.login_ui.clone());
+    insert_opt(&mut m, "loginCheckJs", v.login_check_js.clone());
+    insert_opt(&mut m, "bookSourceComment", v.book_source_comment.clone());
+    insert_opt(&mut m, "variableComment", v.variable_comment.clone());
     m.insert(String::from("lastUpdateTime"), json!(v.last_update_time));
     m.insert(String::from("respondTime"), json!(v.respond_time));
     m.insert(String::from("weight"), json!(v.weight as i64));
-    m.insert(String::from("exploreUrl"), map_opt(v.explore_url.clone()));
-    m.insert(String::from("searchUrl"), map_opt(v.search_url.clone()));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
+    insert_opt(&mut m, "exploreUrl", v.explore_url.clone());
+    insert_opt(&mut m, "searchUrl", v.search_url.clone());
     if let Some(r) = &v.rule_search {
         m.insert(String::from("ruleSearch"), search_rule_to_json(r));
     }
@@ -149,33 +146,32 @@ pub fn rss_source_to_json(v: &crate::io_legado_app_data_entities_rsssource::RssS
     m.insert(String::from("sourceUrl"), json!(v.source_url));
     m.insert(String::from("sourceName"), json!(v.source_name));
     m.insert(String::from("sourceIcon"), json!(v.source_icon));
-    m.insert(String::from("sourceGroup"), map_opt(v.source_group.clone()));
-    m.insert(String::from("sourceComment"), map_opt(v.source_comment.clone()));
+    insert_opt(&mut m, "sourceGroup", v.source_group.clone());
+    insert_opt(&mut m, "sourceComment", v.source_comment.clone());
     m.insert(String::from("enabled"), json!(v.enabled));
-    m.insert(String::from("variableComment"), map_opt(v.variable_comment.clone()));
-    m.insert(String::from("enabledCookieJar"), map_opt(v.enabled_cookie_jar.clone()));
-    m.insert(String::from("concurrentRate"), map_opt(v.concurrent_rate.clone()));
-    m.insert(String::from("header"), map_opt(v.header.clone()));
-    m.insert(String::from("loginUrl"), map_opt(v.login_url.clone()));
-    m.insert(String::from("loginUi"), map_opt(v.login_ui.clone()));
-    m.insert(String::from("loginCheckJs"), map_opt(v.login_check_js.clone()));
-    m.insert(String::from("sortUrl"), map_opt(v.sort_url.clone()));
+    insert_opt(&mut m, "variableComment", v.variable_comment.clone());
+    insert_opt(&mut m, "enabledCookieJar", v.enabled_cookie_jar.clone());
+    insert_opt(&mut m, "concurrentRate", v.concurrent_rate.clone());
+    insert_opt(&mut m, "header", v.header.clone());
+    insert_opt(&mut m, "loginUrl", v.login_url.clone());
+    insert_opt(&mut m, "loginUi", v.login_ui.clone());
+    insert_opt(&mut m, "loginCheckJs", v.login_check_js.clone());
+    insert_opt(&mut m, "sortUrl", v.sort_url.clone());
     m.insert(String::from("singleUrl"), json!(v.single_url));
     m.insert(String::from("articleStyle"), json!(v.article_style as i64));
-    m.insert(String::from("ruleArticles"), map_opt(v.rule_articles.clone()));
-    m.insert(String::from("ruleNextPage"), map_opt(v.rule_next_page.clone()));
-    m.insert(String::from("ruleTitle"), map_opt(v.rule_title.clone()));
-    m.insert(String::from("rulePubDate"), map_opt(v.rule_pub_date.clone()));
-    m.insert(String::from("ruleDescription"), map_opt(v.rule_description.clone()));
-    m.insert(String::from("ruleImage"), map_opt(v.rule_image.clone()));
-    m.insert(String::from("ruleLink"), map_opt(v.rule_link.clone()));
+    insert_opt(&mut m, "ruleArticles", v.rule_articles.clone());
+    insert_opt(&mut m, "ruleNextPage", v.rule_next_page.clone());
+    insert_opt(&mut m, "ruleTitle", v.rule_title.clone());
+    insert_opt(&mut m, "rulePubDate", v.rule_pub_date.clone());
+    insert_opt(&mut m, "ruleDescription", v.rule_description.clone());
+    insert_opt(&mut m, "ruleImage", v.rule_image.clone());
+    insert_opt(&mut m, "ruleLink", v.rule_link.clone());
     // fix: 缺失 ruleContent（Kotlin RssSource.ruleContent——保存一次后正文规则永久丢失，RSS 正文解析失效）
-    m.insert(String::from("ruleContent"), map_opt(v.rule_content.clone()));
-    m.insert(String::from("style"), map_opt(v.style.clone()));
+    insert_opt(&mut m, "ruleContent", v.rule_content.clone());
+    insert_opt(&mut m, "style", v.style.clone());
     m.insert(String::from("enableJs"), json!(v.enable_js));
     m.insert(String::from("loadWithBaseUrl"), json!(v.load_with_base_url));
     m.insert(String::from("customOrder"), json!(v.custom_order as i64));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
     Value::Object(m)
 }
 
@@ -187,10 +183,10 @@ pub fn replace_rule_to_json(v: &crate::io_legado_app_data_entities_replacerule::
     let mut m = serde_json::Map::new();
     m.insert(String::from("id"), json!(v.id));
     m.insert(String::from("name"), json!(v.name));
-    m.insert(String::from("group"), map_opt(v.group.clone()));
+    insert_opt(&mut m, "group", v.group.clone());
     m.insert(String::from("pattern"), json!(v.pattern));
     m.insert(String::from("replacement"), json!(v.replacement));
-    m.insert(String::from("scope"), map_opt(v.scope.clone()));
+    insert_opt(&mut m, "scope", v.scope.clone());
     m.insert(String::from("scopeTitle"), json!(v.scope_title));
     m.insert(String::from("scopeContent"), json!(v.scope_content));
     m.insert(String::from("isEnabled"), json!(v.is_enabled));
@@ -208,7 +204,7 @@ pub fn book_group_to_json(v: &crate::io_legado_app_data_entities_bookgroup::Book
     let mut m = serde_json::Map::new();
     m.insert(String::from("groupId"), json!(v.group_id));
     m.insert(String::from("groupName"), json!(v.group_name));
-    m.insert(String::from("cover"), map_opt(v.cover.clone()));
+    insert_opt(&mut m, "cover", v.cover.clone());
     m.insert(String::from("order"), json!(v.order as i64));
     m.insert(String::from("show"), json!(v.show));
     Value::Object(m)
@@ -256,18 +252,17 @@ pub fn search_book_to_json(v: &crate::io_legado_app_data_entities_searchbook::Se
     m.insert(String::from("originName"), json!(v.origin_name));
     m.insert(String::from("name"), json!(v.name));
     m.insert(String::from("author"), json!(v.author));
-    m.insert(String::from("kind"), map_opt(v.kind.clone()));
-    m.insert(String::from("coverUrl"), map_opt(v.cover_url.clone()));
-    m.insert(String::from("intro"), map_opt(v.intro.clone()));
-    m.insert(String::from("wordCount"), map_opt(v.word_count.clone()));
-    m.insert(String::from("latestChapterTitle"), map_opt(v.latest_chapter_title.clone()));
+    insert_opt(&mut m, "kind", v.kind.clone());
+    insert_opt(&mut m, "coverUrl", v.cover_url.clone());
+    insert_opt(&mut m, "intro", v.intro.clone());
+    insert_opt(&mut m, "wordCount", v.word_count.clone());
+    insert_opt(&mut m, "latestChapterTitle", v.latest_chapter_title.clone());
     m.insert(String::from("tocUrl"), json!(v.toc_url));
     m.insert(String::from("time"), json!(v.time));
-    m.insert(String::from("variable"), map_opt(v.variable.clone()));
+    insert_opt(&mut m, "variable", v.variable.clone());
     m.insert(String::from("originOrder"), json!(v.origin_order as i64));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
-    m.insert(String::from("infoHtml"), map_opt(v.info_html.clone()));
-    m.insert(String::from("tocHtml"), map_opt(v.toc_html.clone()));
+    insert_opt(&mut m, "infoHtml", v.info_html.clone());
+    insert_opt(&mut m, "tocHtml", v.toc_html.clone());
     // fix: 缺失 type（Kotlin SearchBook.type——音频书源加入书架后恒被当文本书）
     m.insert(String::from("type"), json!(v.r#type as i64));
     Value::Object(m)
@@ -285,14 +280,13 @@ pub fn book_chapter_to_json(v: &crate::io_legado_app_data_entities_bookchapter::
     m.insert(String::from("baseUrl"), json!(v.base_url));
     m.insert(String::from("bookUrl"), json!(v.book_url));
     m.insert(String::from("index"), json!(v.index as i64));
-    m.insert(String::from("resourceUrl"), map_opt(v.resource_url.clone()));
-    m.insert(String::from("tag"), map_opt(v.tag.clone()));
-    m.insert(String::from("start"), map_opt(v.start.clone()));
-    m.insert(String::from("end"), map_opt(v.end.clone()));
-    m.insert(String::from("startFragmentId"), map_opt(v.start_fragment_id.clone()));
-    m.insert(String::from("endFragmentId"), map_opt(v.end_fragment_id.clone()));
-    m.insert(String::from("variable"), map_opt(v.variable.clone()));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
+    insert_opt(&mut m, "resourceUrl", v.resource_url.clone());
+    insert_opt(&mut m, "tag", v.tag.clone());
+    insert_opt(&mut m, "start", v.start.clone());
+    insert_opt(&mut m, "end", v.end.clone());
+    insert_opt(&mut m, "startFragmentId", v.start_fragment_id.clone());
+    insert_opt(&mut m, "endFragmentId", v.end_fragment_id.clone());
+    insert_opt(&mut m, "variable", v.variable.clone());
     Value::Object(m)
 }
 
@@ -305,16 +299,15 @@ pub fn http_tts_to_json(v: &crate::io_legado_app_data_entities_httptts::HttpTTS)
     m.insert(String::from("id"), json!(v.id));
     m.insert(String::from("name"), json!(v.name));
     m.insert(String::from("url"), json!(v.url));
-    m.insert(String::from("contentType"), map_opt(v.content_type.clone()));
-    m.insert(String::from("concurrentRate"), map_opt(v.concurrent_rate.clone()));
-    m.insert(String::from("loginUrl"), map_opt(v.login_url.clone()));
-    m.insert(String::from("loginUi"), map_opt(v.login_ui.clone()));
-    m.insert(String::from("header"), map_opt(v.header.clone()));
-    m.insert(String::from("jsLib"), map_opt(v.js_lib.clone()));
-    m.insert(String::from("enabledCookieJar"), map_opt(v.enabled_cookie_jar.clone()));
-    m.insert(String::from("loginCheckJs"), map_opt(v.login_check_js.clone()));
+    insert_opt(&mut m, "contentType", v.content_type.clone());
+    insert_opt(&mut m, "concurrentRate", v.concurrent_rate.clone());
+    insert_opt(&mut m, "loginUrl", v.login_url.clone());
+    insert_opt(&mut m, "loginUi", v.login_ui.clone());
+    insert_opt(&mut m, "header", v.header.clone());
+    insert_opt(&mut m, "jsLib", v.js_lib.clone());
+    insert_opt(&mut m, "enabledCookieJar", v.enabled_cookie_jar.clone());
+    insert_opt(&mut m, "loginCheckJs", v.login_check_js.clone());
     m.insert(String::from("lastUpdateTime"), json!(v.last_update_time));
-    m.insert(String::from("userNameSpace"), json!(v.user_name_space));
     Value::Object(m)
 }
 
@@ -361,6 +354,13 @@ pub fn map_opt<T: ToString>(v: Option<T>) -> Value {
             }
         }
         None => Value::Null,
+    }
+}
+
+/// fix: 对齐 Kotlin Gson NON_NULL——null 字段省略不写入（原显式 null 污染落盘/响应 JSON）
+pub fn insert_opt<T: ToString>(m: &mut serde_json::Map<String, Value>, key: &str, v: Option<T>) {
+    if let Some(x) = v {
+        m.insert(key.to_string(), map_opt(Some(x)));
     }
 }
 
