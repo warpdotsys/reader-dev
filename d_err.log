@@ -1,0 +1,31 @@
+[web] static root: src/main/resources/web
+dispatch: POST /reader3/login
+  match: path=/reader3/login method=POST rules=1
+    rule /reader3/login Some(POST) score=25
+dispatch: POST /reader3/saveBookSource?accessToken=
+  match: path=/reader3/saveBookSource method=POST rules=1
+    rule /reader3/saveBookSource Some(POST) score=25
+
+thread '<unnamed>' (25052) panicked at src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:96:40:
+格式不对
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+dispatch: GET /reader3/searchBook?key=%E6%B5%8B%E8%AF%95&bookSourceUrl=http%3A%2F%2Flocalhost%3A18999
+  match: path=/reader3/searchBook method=GET rules=2
+    rule /reader3/searchBook Some(GET) score=25
+dispatch: GET /reader3/getBookContent?url=http%3A%2F%2Flocalhost%3A18999%2Fbook%2F1&chapterUrl=http%3A%2F%2Flocalhost%3A18999%2Fcontent%2F1&bookSourceUrl=http%3A%2F%2Flocalhost%3A18999&index=0
+  match: path=/reader3/getBookContent method=GET rules=2
+    rule /reader3/getBookContent Some(GET) score=25
+
+thread '<unnamed>' (25052) panicked at src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:96:40:
+格式不对
+[okhttp] enqueue executing:  http://localhost:18999/book/1
+
+thread '<unnamed>' (25052) panicked at src\..\src\main\java\io\legado\app\utils\SourceAnalyzer.rs:96:40:
+格式不对
+[okhttp] enqueue executing:  http://localhost:18999/book/1
+
+thread '<unnamed>' (25052) panicked at src\..\src\main\java\io\legado\app\model\webBook\BookChapterList.rs:112:13:
+目录为空
+
+thread '<unnamed>' (25052) panicked at src\..\src\main\java\com\htmake\reader\api\controller\BookController.rs:2487:25:
+目录为空
