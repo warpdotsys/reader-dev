@@ -7660,8 +7660,25 @@ pub struct Collector;
 
 impl Collector {
     // jsoup Collector.collect(evaluator, root) -> Elements
-    pub fn collect(_evaluator: Evaluator, _root: &Element) -> Elements {
-        Elements::default()
+    // fix: 真实实现（原空实现——id.xxx 前置规则恒空）
+    pub fn collect(evaluator: Evaluator, root: &Element) -> Elements {
+        match evaluator {
+            Evaluator::Id(id) => {
+                let doc = scraper::Html::parse_fragment(&root.html);
+                let sel = match scraper::Selector::parse(&format!("#{}", id)) {
+                    Ok(s) => s,
+                    Err(_) => return Elements::default(),
+                };
+                let mut list = Vec::new();
+                for e in doc.select(&sel) {
+                    list.push(Element {
+                        text: crate::runtime::html::jsoup_normalise_text(&e),
+                        html: e.html().to_string(),
+                    });
+                }
+                Elements { list }
+            }
+        }
     }
 }
 
@@ -10748,7 +10765,11 @@ pub fn any_to_value(a: &crate::stubs::Any) -> Value {
         crate::stubs::Any::JXDocument(d) => Value::String(d.text.clone()),
         crate::stubs::Any::Document(d) => Value::String(d.text.clone()),
         crate::stubs::Any::Element(e) => Value::String(e.text.clone()),
-        crate::stubs::Any::Elements(es) => Value::String(es.to_string()),
+        // fix: Elements → 文本数组（JS 规则 result.eachText()/result[0]/result.length 可用；
+        //      原无分隔拼接——"章一章二章三"）
+        crate::stubs::Any::Elements(es) => {
+            Value::Array(es.list.iter().map(|e| Value::String(e.text.clone())).collect())
+        }
     }
 }
 

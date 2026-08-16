@@ -85,6 +85,14 @@ pub fn own_text_of(html: &str) -> String {
     res.trim().to_string()
 }
 
+/// 剔除 <script>/<style> 块（jsoup Elements.select(...).remove() 语义；Element 仅有 html 字符串）
+pub fn strip_script_style_html(html: &str) -> String {
+    let re_script = fancy_regex::Regex::new(r"(?is)<script[^>]*>.*?</script>").unwrap();
+    let re_style = fancy_regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap();
+    let s = re_script.replace_all(html, "");
+    re_style.replace_all(&s, "").to_string()
+}
+
 /// HTML 纯文本（jsoup 规范化）
 pub fn text_of(html: &str) -> String {
     let doc = scraper::Html::parse_fragment(html);
@@ -132,8 +140,20 @@ pub fn tag_name_of(html: &str) -> String {
 /// CSS 选择器
 pub fn select_elements(html: &str, css: &str) -> Elements {
     let doc = scraper::Html::parse_fragment(html);
+    // fix: 中间伪类（div:contains(x) span）——先整体尝试 scraper（标准伪类如 :first-child 直接可用）；
+    //      失败再降级剥离 jsoup 伪类
+    if let Ok(sel) = scraper::Selector::parse(css) {
+        let mut list: Vec<Element> = Vec::new();
+        for e in doc.select(&sel) {
+            list.push(Element {
+                text: jsoup_normalise_text(&e),
+                html: e.html().to_string(),
+            });
+        }
+        return Elements { list };
+    }
     // jsoup 伪类降级（:contains/:containsOwn/:eq/:gt/:lt/:first/:last——scraper 不支持）
-    let (base_css, pseudos) = parse_jsoup_pseudo(css);
+    let (base_css, pseudos, tail) = parse_jsoup_pseudo(css);
     let Ok(sel) = scraper::Selector::parse(&base_css) else {
         return Elements::default();
     };
@@ -193,6 +213,14 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
             _ => {}
         }
     }
+    // fix: 中间伪类后的后缀选择器（div:contains(x) span → 过滤后对每个元素继续选择 span）
+    if let Some(tail) = tail {
+        let mut final_list = Vec::new();
+        for el in list {
+            final_list.extend(el.select(&tail).list);
+        }
+        list = final_list;
+    }
     Elements { list }
 }
 
@@ -206,10 +234,12 @@ enum JsoupPseudo {
     Last,
 }
 
-/// 从 CSS 尾部提取 jsoup 伪类（scraper 不支持），返回基础选择器 + 伪类列表
-fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
+/// 从 CSS 尾部提取 jsoup 伪类（scraper 不支持），返回基础选择器 + 伪类列表 + 伪类后的后缀选择器
+/// fix: 原实现 rfind 尾部剥离——中间伪类（div:contains(x) span）把伪类后的内容一并丢弃
+fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>, Option<String>) {
     let mut base = css.trim().to_string();
     let mut pseudos = Vec::new();
+    let mut tail: Option<String> = None;
     loop {
         let trimmed = base.trim_end();
         if let Some(idx) = trimmed.rfind(":contains(") {
@@ -218,6 +248,10 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 let inner = &trimmed[idx + ":contains(".len()..close - 1];
                 let text = inner.trim().trim_matches(['\'', '"']);
                 pseudos.push(JsoupPseudo::Contains(text.to_string()));
+                let after = trimmed[close..].trim();
+                if tail.is_none() && !after.is_empty() {
+                    tail = Some(after.to_string());
+                }
                 base = trimmed[..idx].to_string();
                 continue;
             }
@@ -228,22 +262,32 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 let inner = &trimmed[idx + ":containsOwn(".len()..close - 1];
                 let text = inner.trim().trim_matches(['\'', '"']);
                 pseudos.push(JsoupPseudo::ContainsOwn(text.to_string()));
+                let after = trimmed[close..].trim();
+                if tail.is_none() && !after.is_empty() {
+                    tail = Some(after.to_string());
+                }
                 base = trimmed[..idx].to_string();
                 continue;
             }
         }
-        // fix: 通用剥离括号类伪类（:has/:matches/:containsWholeText/:matchesOwn——scraper 不支持，
-        //      条件忽略仅保留基础选择器；原选择器解析失败返回空）
+        // fix: 通用剥离括号类伪类（:has/:matches/:containsWholeText/:matchesOwn——scraper 不支持；
+        //      条件剥离保留伪类后内容为 tail）
         let mut strip_pos: Option<usize> = None;
+        let mut strip_end: Option<usize> = None;
         for pseudo_name in [":has(", ":matches(", ":containsWholeText(", ":matchesOwn("] {
             if let Some(idx) = trimmed.rfind(pseudo_name) {
-                if trimmed[idx..].find(')').is_some() {
+                if let Some(c) = trimmed[idx..].find(')') {
                     strip_pos = Some(idx);
+                    strip_end = Some(idx + c + 1);
                     break;
                 }
             }
         }
-        if let Some(idx) = strip_pos {
+        if let (Some(idx), Some(close)) = (strip_pos, strip_end) {
+            let after = trimmed[close..].trim();
+            if tail.is_none() && !after.is_empty() {
+                tail = Some(after.to_string());
+            }
             base = trimmed[..idx].to_string();
             continue;
         }
@@ -253,6 +297,10 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 let inner = &trimmed[idx + ":eq(".len()..close - 1];
                 if let Ok(n) = inner.trim().parse::<usize>() {
                     pseudos.push(JsoupPseudo::Eq(n));
+                    let after = trimmed[close..].trim();
+                    if tail.is_none() && !after.is_empty() {
+                        tail = Some(after.to_string());
+                    }
                     base = trimmed[..idx].to_string();
                     continue;
                 }
@@ -264,6 +312,10 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 let inner = &trimmed[idx + ":gt(".len()..close - 1];
                 if let Ok(n) = inner.trim().parse::<usize>() {
                     pseudos.push(JsoupPseudo::Gt(n));
+                    let after = trimmed[close..].trim();
+                    if tail.is_none() && !after.is_empty() {
+                        tail = Some(after.to_string());
+                    }
                     base = trimmed[..idx].to_string();
                     continue;
                 }
@@ -275,6 +327,10 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
                 let inner = &trimmed[idx + ":lt(".len()..close - 1];
                 if let Ok(n) = inner.trim().parse::<usize>() {
                     pseudos.push(JsoupPseudo::Lt(n));
+                    let after = trimmed[close..].trim();
+                    if tail.is_none() && !after.is_empty() {
+                        tail = Some(after.to_string());
+                    }
                     base = trimmed[..idx].to_string();
                     continue;
                 }
@@ -292,7 +348,7 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>) {
         }
         break;
     }
-    (base, pseudos)
+    (base, pseudos, tail)
 }
 
 /// 直接子元素（第一层）

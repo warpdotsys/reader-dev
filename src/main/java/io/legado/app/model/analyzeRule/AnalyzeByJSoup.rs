@@ -340,11 +340,12 @@ impl AnalyzeByJSoup {
                 }
             }
             "html" => {
-                elements.select("script").remove();
-                elements.select("style").remove();
-                let html = elements.outer_html();
-                if !html.is_empty() {
-                    text_s.push(html);
+                // fix: 剔除 script/style 后取 HTML（Kotlin jsoup 从 DOM 移除；Element 仅有 html 字符串——正则剔除）
+                for element in elements.iter() {
+                    let html = crate::runtime::html::strip_script_style_html(&element.outer_html());
+                    if !html.is_empty() {
+                        text_s.push(html);
+                    }
                 }
             }
             "all" => text_s.push(elements.outer_html()),
