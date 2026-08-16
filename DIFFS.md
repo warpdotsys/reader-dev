@@ -3,6 +3,23 @@
 > 目标：与 Kotlin 原版**包含细节的完全一致重新实现**。每个问题必须完全解决后才能从本文件删除。包括"待确认"问题——不确定的也要验证并修复到一致。
 > 状态标记：`[未修]`（待修复）/ `[修复中]` / `[已修]`（修复并验证后删除条目）。已修复验证的条目直接从本文件删除。
 
+## 修复进度汇总（v6.0.20 已包含）
+
+**已修复并验证**（e2e 42/42 + secure 7/7 + cargo test 全绿）：
+- P0：16.4/4.1/6.2/6.3/7.1/12.1（handler panic 兜底 500）、16.3（body 10MB）、16.2（原始字节）、10.1（路径穿越 normalize/starts_with 真实实现）、10.2/6.7（READER_APP_SECURE 认证）
+- 网络层：15.1（form body+Content-Type）、15.2（单次字符集解码）、15.3（二进制原始字节）、15.4（Set-Cookie 大小写/多值）、15.5（URL 编码真实）、15.6（网络错误异常传播）、15.7（postJson Content-Type）、15.8（socks4 修正）、15.10（read timeout 15s）
+- 1.7/7.2（PDF 闭区间+页序）、7.3/18.1/18.2/18.3（GBK 解码链+utf8ToGbk）、11.1/11.2/11.3（封面 clone 引用/UA+Referer/redirectUrl 基准）、3.1/3.2/3.8（lastIndex 读回+SSE isEnd）、19.2（Any::downcast_ref 真实实现）、17.1-17.4（定时任务 await/去重/守护）、16.5（路由链 next() 执行）、16.1/10.3（headers_end 真实执行）、16.6/16.7（multipart 文件名+表单字段）、6.1（logout token_map）、5.1（负数 index 保护）、3.3/3.4（{{bookName}} 自引用+@put: 变量）、1.1/1.6/2.1/2.3/9.2（header map JSON 解析+@js 求值+登录头）、1.4（POST 顶层 chapterUrl）、2.2（分页 ruleData）、9.1/9.5/9.7（RSS baseUrl/key/ruleData 参数）、8B.1/8B.2/19.1（@js: 贪婪+@result 对齐 Kotlin）、8B.3/8B.5/8B.8（JS cookie/cache 对象绑定+Set-Cookie 写回）、8B.4（JsExtensions 补齐约 28 个方法）、13.1（text 规范化）、13.2（result Elements 数组）、13.4（中间伪类 tail）、13.5（id.xxx 前置）、13.6（@html strip script/style）、13.7/13.8（ownText/textNodes 直接子文本）、13.10（:contains 大小写）、13.11（Entities.unescape 全表）
+- **生产崩溃（malloc_consolidate ABRT）三个根因**：RoutingContext::get_user ptr::read 双 free、coroutine_handler 悬垂闭包 transmute、YueduApi self_ref 悬垂
+- **Release 包 web 目录**：web/ 与 src/main/resources/web 双路径
+- **normalize 盘符 bug**（C:C:/... 双重盘符）——WebDAV 400/404 修复
+
+**剩余待处理**（P1 低危 + P2）：
+- 1.3（useWebView）、1.8/5.5（chapterUrl 匹配块——Rust 增强，需决策）、2.5/3.12（分页 redirectUrl/JS_PATTERN 决策项）、4.5（SourceAnalyzer login 字段——Rust 增强，需决策）、13.3（:has 条件剥离——已部分改善保留 tail）、13.9/13.12-13.15（低危）、14.1-14.10（缓存落盘/多用户隔离）、16.8（SSE 流式）、16.10（session 续期）、16.11-16.15（CORS/405/静态头/bodyAsJson/多值）、18.4-18.12（CacheManager/临时文件/hashCode/getBaseUrl panic/zip 注释）、19.3-19.7、20.1-20.6（前端 bug）、序列化字段 userNameSpace 等 P2 打磨
+
+---
+
+# 详细差异清单
+
 ---
 
 ## 1. 正文链差异（agent 1）
