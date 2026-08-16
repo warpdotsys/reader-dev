@@ -52,3 +52,15 @@ target_*/
 *.txt
 
 front_*.log
+front_out.log
+front_err.log
+d_out.log
+d_err.log
+d2_out.log
+d2_err.log
+wd_out.log
+wd_err.log
+sec_out.log
+sec_err.log
+sec2_out.log
+sec2_err.log
