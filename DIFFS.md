@@ -18,6 +18,25 @@
 
 ---
 
+## 修复进度汇总（v6.0.23 已部署验证）
+
+**v6.0.23 生产验证（192.168.18.75:4396）全部通过**：
+- 登录（secure 模式）✓、getUserInfo ✓（堆损坏双 free 修复——不再崩溃）、书架 169 本 ✓、正文（诡秘之主 567ms）✓、封面 200 ✓、书源 429 ✓、WebDAV PROPFIND 207 + DAV/MS-Author-Via/Allow 头 ✓、换源 ✓
+- 本地回归：front_flow 42/42 + secure_mode 7/7 + cargo test 全绿
+
+**v6.0.20-23 新增修复**（在之前汇总基础上）：
+- 生产崩溃三根因（get_user ptr::read 双 free / coroutine_handler 悬垂闭包 / self_ref 悬垂）——v6.0.20
+- Release web 目录双路径——v6.0.20
+- normalize 盘符 bug——v6.0.20
+- getResultLast 裸 CSS 规则支持（保留增强）——v6.0.21
+- useWebView 对齐 Kotlin 硬失败——v6.0.21
+- 失效书源缓存落盘恢复、session 续期、序列化 insert_opt 省略 null、bookSourceExploreList 序列化、checker 缺 key、密码字符数、缓存章节解析报错、JS 失败抛错、getUserList 保序、preserve_order——v6.0.21/22
+- 前端：滚动模式 __API_ROOT__ 全局替换 / cacheBookSSE token / HttpTTS loadHttpTTS / renderEpub 兼容 /assets——v6.0.22
+- 非书架章节缓存落盘+用户隔离——v6.0.22
+- headers-end 回调先执行再读响应头（DAV 头注入）——v6.0.23
+
+---
+
 # 详细差异清单
 
 ---
