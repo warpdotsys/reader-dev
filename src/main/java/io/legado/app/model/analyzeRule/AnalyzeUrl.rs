@@ -472,13 +472,19 @@ impl AnalyzeUrl {
             }
         }
         bindings.set("result", result.cloned());
-        SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(|a| {
-            let text = match &a {
-                crate::stubs::Any::Str(s) => s.clone(),
-                _ => crate::stubs::any_to_value(&a).to_string(),
-            };
-            JsValue { value: Some(text) }
-        })
+        // fix: JS 执行失败抛错（Kotlin SCRIPT_ENGINE.eval 抛 ScriptException→请求失败；
+        //      原静默 None→URL 段变空→取到错误页面/规则无结果，难以排查）
+        let js_head = js_str[..js_str.len().min(120)].to_string();
+        match SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings) {
+            Some(a) => {
+                let text = match &a {
+                    crate::stubs::Any::Str(s) => s.clone(),
+                    _ => crate::stubs::any_to_value(&a).to_string(),
+                };
+                Some(JsValue { value: Some(text) })
+            }
+            None => panic!("JS 执行失败: {}", js_head),
+        }
     }
 
     pub fn put(&mut self, key: String, value: String) -> String {

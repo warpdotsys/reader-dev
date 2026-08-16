@@ -590,8 +590,12 @@ impl AnalyzeRule {
         bindings.put("title", self.chapter.as_ref().map(|c| c.title.clone()));
         bindings.put("src", self.content.clone());
         bindings.put("nextChapterUrl", self.next_chapter_url.clone());
-        // fix: 引擎占位恒返回 None；若有值包装为 Any::Str 标记
-        SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings).map(Box::new)
+        // fix: JS 执行失败抛错（同 AnalyzeUrl.eval_js——Kotlin ScriptException 向上传播）
+        let js_head = js_str[..js_str.len().min(120)].to_string();
+        match SCRIPT_ENGINE.eval_downcast_any(js_str, &mut bindings) {
+            Some(a) => Some(Box::new(a)),
+            None => panic!("JS 执行失败: {}", js_head),
+        }
     }
 
     // override fun getSource(): BaseSource? {
