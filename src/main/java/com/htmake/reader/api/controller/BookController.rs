@@ -277,6 +277,44 @@ impl BookController {
         CACHE.get_or_init(LocalCache::new).clone()
     }
 
+    /// 非书架章节缓存落盘路径（Kotlin ACache 落盘 3600s + 按用户目录；原仅内存——重启后全失）
+    fn book_chapters_cache_file(&self, user_name_space: &str, cache_key: &str) -> File {
+        let dir = File::new(&work_dir_multi(&["storage", "cache", "bookChaptersCache", user_name_space]));
+        if !dir.exists() {
+            dir.mkdirs();
+        }
+        let name = MD5Utils::md5Encode(Some(cache_key));
+        File::new(&(dir.path() + File::SEPARATOR + &name))
+    }
+
+    /// 非书架章节缓存读取（内存 → 落盘兜底，3600s 有效）
+    fn get_book_chapters_cache_value(&self, cache_key: &str, user_name_space: &str) -> Option<String> {
+        let cache = self.get_book_chapters_cache(user_name_space.to_string());
+        if let Some(v) = cache.get_as_string(cache_key) {
+            return Some(v);
+        }
+        let file = self.book_chapters_cache_file(user_name_space, cache_key);
+        if !file.exists() {
+            return None;
+        }
+        let now = crate::stubs::System::now_millis();
+        if now - file.last_modified() > 3_600_000 {
+            return None;
+        }
+        let content = file.read_text();
+        if content.is_empty() {
+            return None;
+        }
+        cache.put(cache_key, &content, 3600);
+        Some(content)
+    }
+
+    /// 非书架章节缓存写入（内存 + 落盘）
+    fn put_book_chapters_cache_value(&self, cache_key: &str, value: &str, user_name_space: &str) {
+        self.get_book_chapters_cache(user_name_space.to_string()).put(cache_key, value, 3600);
+        self.book_chapters_cache_file(user_name_space, cache_key).write_text(value);
+    }
+
     pub fn web_book(&self, book_source: String, debug_log: bool, user_name_space: String) -> WebBook {
         return WebBook::from_json_string(&book_source, debug_log, None, Some(user_name_space));
     }
@@ -2406,7 +2444,6 @@ impl BookController {
     pub async fn get_local_chapter_list(&self, book: Book, book_source: Option<String>, refresh: bool, user_name_space: String, debug_log: bool, mutex: Option<Mutex>) -> List<BookChapter> {
         let mut book = book;
         let md5_encode = MD5Utils::md5Encode(Some(&book.book_url));
-        let book_chapters_cache = self.get_book_chapters_cache(user_name_space.clone());
         let cache_key = book.name.clone() + "_" + &book.author + &md5_encode;
         let chapter_list = if book.is_in_shelf {
             as_json_array(
@@ -2415,7 +2452,8 @@ impl BookController {
                     .map(crate::stubs::Any::from_string),
             )
         } else {
-            as_json_array(book_chapters_cache.get_as_string(&cache_key).map(crate::stubs::Any::from_string))
+            // fix: 落盘兜底（原仅内存——重启后缓存全失，未入书架书籍每次重复抓取）
+            as_json_array(self.get_book_chapters_cache_value(&cache_key, &user_name_space).map(crate::stubs::Any::from_string))
         };
 
         if chapter_list.is_none() || refresh {
@@ -2503,7 +2541,8 @@ impl BookController {
                     new_chapter_list.iter().map(crate::stubs::JsonObject::map_from).collect(),
                 )
                 .to_string();
-                book_chapters_cache.put(&cache_key, &chapter_json, 3600);
+                // fix: 落盘（原仅内存——重启后缓存全失）
+                self.put_book_chapters_cache_value(&cache_key, &chapter_json, &user_name_space);
             }
             self.save_shelf_book_latest_chapter(book.clone(), new_chapter_list.clone(), user_name_space, mutex).await;
             return new_chapter_list;
