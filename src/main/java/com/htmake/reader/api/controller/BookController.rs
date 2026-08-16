@@ -230,10 +230,30 @@ impl BookController {
     pub fn is_invalid_book_source(&self, book_source: BookSource, user_name_space: String) -> bool {
         // fix: 键一致（md5——与落盘文件名/get_invalid_book_sources 读取匹配；原 source_url 键不匹配恒 miss）
         let key = MD5Utils::md5Encode16(&book_source.book_source_url);
-        return self
-            .get_invalid_book_source_cache(user_name_space)
-            .get_as_string(&key)
-            .is_some();
+        let cache = self.get_invalid_book_source_cache(user_name_space);
+        if cache.get_as_string(&key).is_some() {
+            return true;
+        }
+        // fix: 重启后从落盘恢复（原仅内存——重启后失效标记全丢，坏书源被反复请求）
+        Self::restore_invalid_book_source_from_disk(&cache, &key).is_some()
+    }
+
+    /// 落盘恢复：storage/cache/invalidBookSourceCache/{key}，600 秒内有效
+    fn restore_invalid_book_source_from_disk(cache: &LocalCache, key: &str) -> Option<String> {
+        let file = File::new(&(work_dir_multi(&["storage", "cache", "invalidBookSourceCache"]) + File::SEPARATOR + key));
+        if !file.exists() {
+            return None;
+        }
+        let now = crate::stubs::System::now_millis();
+        if now - file.last_modified() > 600_000 {
+            return None;
+        }
+        let content = file.read_text();
+        if content.is_empty() {
+            return None;
+        }
+        cache.put(key, &content, 600);
+        Some(content)
     }
 
     pub fn add_invalid_book_source(&self, source_url: String, invalid_info: Map<String, Any>, user_name_space: String) {
@@ -278,6 +298,12 @@ impl BookController {
                 if let Some(info) = invalid_book_source_cache.get_by_hash_code(&f.name) {
                     let parsed: Map<String, Any> = serde_json::from_str(&info).unwrap_or_default();
                     invalid_book_source_list.push(parsed);
+                } else {
+                    // fix: 重启后从落盘恢复（原仅内存——重启后列表恒空）
+                    if let Some(info) = Self::restore_invalid_book_source_from_disk(&invalid_book_source_cache, &f.name) {
+                        let parsed: Map<String, Any> = serde_json::from_str(&info).unwrap_or_default();
+                        invalid_book_source_list.push(parsed);
+                    }
                 }
             }
         }
