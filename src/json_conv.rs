@@ -86,6 +86,7 @@ pub fn book_to_json(v: &crate::io_legado_app_data_entities_book::Book) -> Value 
     insert_opt(&mut m, "variable", v.variable.clone());
     m.insert(String::from("isInShelf"), json!(v.is_in_shelf));
     insert_opt(&mut m, "lastCheckError", v.last_check_error.clone());
+    // Kotlin Gson 序列化含 infoHtml/tocHtml/rootDir（@JsonIgnoreProperties 仅对 Jackson 生效）——保持一致
     insert_opt(&mut m, "infoHtml", v.info_html.clone());
     insert_opt(&mut m, "tocHtml", v.toc_html.clone());
     m.insert(String::from("rootDir"), json!(v.root_dir));
