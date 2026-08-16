@@ -384,6 +384,8 @@ fn execute_rules(
                         return (s, h, b);
                     }
                     if ctx.response.borrow().ended {
+                        // fix: 先执行 headers-end 回调（注入 DAV 等响应头）再读取（原先 clone 后执行——注入头丢失）
+                        ctx.run_headers_end_handlers();
                         let r = ctx.response.borrow();
                         let status = if r.status == 0 { 200 } else { r.status };
                         let (s, h, b) = if let Some(p) = &r.send_file {
@@ -396,7 +398,6 @@ fn execute_rules(
                             (status, r.headers.clone(), r.body.clone())
                         };
                         drop(r);
-                        ctx.run_headers_end_handlers();
                         return (s, h, b);
                     }
                     if ctx.next_called.get() {
