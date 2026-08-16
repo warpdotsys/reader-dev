@@ -184,6 +184,15 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
                         break;
                     }
                 }
+                // fix: :has(selector)——元素包含匹配后代（jsoup 语义）
+                JsoupPseudo::Has(sel_str) => {
+                    if let Ok(sel) = scraper::Selector::parse(sel_str) {
+                        if e.select(&sel).next().is_none() {
+                            pass = false;
+                            break;
+                        }
+                    }
+                }
                 _ => {}
             }
         }
@@ -229,6 +238,7 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
 enum JsoupPseudo {
     Contains(String),
     ContainsOwn(String),
+    Has(String),
     Eq(usize),
     Gt(usize),
     Lt(usize),
@@ -272,11 +282,26 @@ fn parse_jsoup_pseudo(css: &str) -> (String, Vec<JsoupPseudo>, Option<String>) {
                 continue;
             }
         }
-        // fix: 通用剥离括号类伪类（:has/:matches/:containsWholeText/:matchesOwn——scraper 不支持；
+        // fix: :has(selector) 实现为过滤（jsoup 语义：元素包含匹配 selector 的后代；
+        //      原条件剥离——div:has(a) 返回所有 div 过度匹配，索引错位）
+        if let Some(idx) = trimmed.rfind(":has(") {
+            let close = trimmed[idx..].find(')').map(|c| idx + c + 1);
+            if let Some(close) = close {
+                let inner = &trimmed[idx + ":has(".len()..close - 1];
+                pseudos.push(JsoupPseudo::Has(inner.trim().to_string()));
+                let after = trimmed[close..].trim();
+                if tail.is_none() && !after.is_empty() {
+                    tail = Some(after.to_string());
+                }
+                base = trimmed[..idx].to_string();
+                continue;
+            }
+        }
+        // fix: 通用剥离括号类伪类（:matches/:containsWholeText/:matchesOwn——scraper 不支持；
         //      条件剥离保留伪类后内容为 tail）
         let mut strip_pos: Option<usize> = None;
         let mut strip_end: Option<usize> = None;
-        for pseudo_name in [":has(", ":matches(", ":containsWholeText(", ":matchesOwn("] {
+        for pseudo_name in [":matches(", ":containsWholeText(", ":matchesOwn("] {
             if let Some(idx) = trimmed.rfind(pseudo_name) {
                 if let Some(c) = trimmed[idx..].find(')') {
                     strip_pos = Some(idx);

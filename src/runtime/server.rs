@@ -642,7 +642,12 @@ fn spawn_scheduled_jobs() {
                 Err(_) => continue,
             };
             // 每 10 分钟：书架刷新 + 远程书源订阅（方法内部按配置间隔自判）
-            if total_min % 10 == 0 && last_run_min != Some(total_min) {
+            // fix: 距上次 ≥10 分钟触发（原 total_min%10==0 窗口判断——任务执行跨过边界丢轮；Kotlin cron 延迟不丢）
+            let due = match last_run_min {
+                Some(last) => total_min - last >= 10,
+                None => total_min % 10 == 0,
+            };
+            if due {
                 // fix: 任务各自独立 catch（Kotlin 每任务独立调度——一个任务失败不影响其他）
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.shelf_update_job()));
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.remote_book_source_sub_update_job()));
