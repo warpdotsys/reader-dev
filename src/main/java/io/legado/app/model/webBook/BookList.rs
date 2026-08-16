@@ -264,11 +264,8 @@ impl BookList {
         search_book.r#type = book_source.book_source_type;
         search_book.origin_order = book_source.custom_order;
         search_book.set_user_name_space(analyze_rule.get_user_name_space());
-        // fix: 同 get_info_item——SearchBook 无 Clone，move 后不可再用；以快照充当规则数据
-        let mut rule_data_search_book = SearchBook::default();
-        rule_data_search_book.variable = search_book.variable.clone();
-        rule_data_search_book.user_name_space = search_book.user_name_space.clone();
-        analyze_rule.rule_data = Box::new(rule_data_search_book);
+        // fix: 以实时副本充当规则数据（{{bookName}} 自引用/@put: 变量持久化；原空快照——自引用解析为空）
+        analyze_rule.rule_data = Box::new(search_book.clone());
         analyze_rule.set_content(Some(item.clone()), None);
         // coroutineContext.ensureActive()
         if log {
@@ -277,6 +274,7 @@ impl BookList {
             }
         }
         search_book.name = BookHelp::format_book_name(&analyze_rule.get_string_inner(rule_name.clone(), None, false));
+        analyze_rule.set_book_field("bookName", search_book.name.clone());
         if log {
             if let Some(dl) = debug_log {
                 dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.name)), false);
@@ -290,6 +288,7 @@ impl BookList {
                 }
             }
             search_book.author = BookHelp::format_book_author(&analyze_rule.get_string_inner(rule_author.clone(), None, false));
+            analyze_rule.set_book_field("bookAuthor", search_book.author.clone());
             if log {
                 if let Some(dl) = debug_log {
                     dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.author)), false);
@@ -304,6 +303,7 @@ impl BookList {
             // try {
             if let Some(kind_list) = analyze_rule.get_string_list_inner(rule_kind.clone(), None, false) {
                 search_book.kind = Some(kind_list.join(","));
+                analyze_rule.set_book_field("bookKind", kind_list.join(","));
             }
             if log {
                 if let Some(dl) = debug_log {
@@ -321,6 +321,7 @@ impl BookList {
             }
             // try {
             search_book.word_count = Some(StringUtils::wordCountFormat(Some(&analyze_rule.get_string_inner(rule_word_count.clone(), None, false))));
+            analyze_rule.set_book_field("bookWordCount", search_book.word_count.clone().unwrap_or_default());
             if log {
                 if let Some(dl) = debug_log {
                     dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.word_count.clone().unwrap_or_default())), false);
@@ -390,10 +391,15 @@ impl BookList {
             if search_book.book_url.is_empty() {
                 search_book.book_url = base_url.to_string();
             }
+            analyze_rule.set_book_field("bookUrl", search_book.book_url.clone());
             if log {
                 if let Some(dl) = debug_log {
                     dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", search_book.book_url)), false);
                 }
+            }
+            // fix: 读回规则数据中 @put: 写入的变量（Kotlin ruleData=searchBook 本体——变量随条目返回）
+            if let Some(v) = analyze_rule.rule_data_variable() {
+                search_book.variable = Some(v);
             }
             return Some(search_book);
         }

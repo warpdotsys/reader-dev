@@ -66,12 +66,13 @@ impl ConverterFactory for EncodeConverter {
             let mut charset_name: Option<String> = None;
             // val mediaType = value.contentType()
             let media_type = value.content_type();
-            //根据http头判断
+            //根据http头判断（Content-Type 的 charset 参数）
             if media_type.is_some() {
-                // val charset = mediaType.charset()
-                let charset = media_type.as_ref().unwrap().charset();
-                // charsetName = charset?.displayName()
-                charset_name = charset.map(|it| it.to_string());
+                let charset = media_type
+                    .as_ref()
+                    .and_then(|ct| ct.split(';').skip(1).find_map(|p| p.trim().strip_prefix("charset=")))
+                    .map(|it| it.trim_matches('"').to_string());
+                charset_name = charset;
             }
 
             // if (charsetName == None) {

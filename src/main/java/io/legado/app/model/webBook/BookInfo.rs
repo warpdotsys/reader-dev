@@ -157,7 +157,8 @@ impl BookInfo {
         // try {
         let cover_url = analyze_rule.get_string(info_rule.cover_url.clone(), None, false);
         if !cover_url.is_empty() {
-            book.cover_url = Some(get_absolute_url(crate::stubs::URL::parse(&book_source.book_source_url).ok().as_ref(), cover_url.clone()));
+            // fix: 基准用详情页重定向后的最终 URL（Kotlin getAbsoluteURL(redirectUrl, it)；原用书源 URL——跨域重定向+相对封面规则时封面 404）
+            book.cover_url = Some(get_absolute_url(crate::stubs::URL::parse(redirect_url).ok().as_ref(), cover_url.clone()));
         }
         if let Some(dl) = debug_log {
             dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", book.cover_url.clone().unwrap_or_default())), false);

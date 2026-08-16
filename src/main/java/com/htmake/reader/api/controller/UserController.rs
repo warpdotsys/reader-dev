@@ -376,11 +376,27 @@ impl UserController {
                         return return_data.set_error_msg_owned(String::from("请重新登录")).set_data_owned(Box::new(String::from("NEED_LOGIN")), String::new());
                     }
                 };
-                let token_map_val = current_user.get("token_map").and_then(|v| v.downcast_ref::<std::collections::HashMap<String, i64>>());
-                let token_map = token_map_val.cloned();
+                // fix: token_map 实际类型是 HashMap<String, Box<dyn Any>>（user_json_value_to_any 的 Object 分支），
+                //      downcast 精确匹配 HashMap<String, i64> 恒失败——logout 从未清除 token（退出后 accessToken 仍有效）
+                let token_map = current_user.get("token_map").and_then(|v| v.downcast_ref::<std::collections::HashMap<String, Box<dyn std::any::Any>>>()).map(|m| {
+                    m.iter()
+                        .map(|(k, v)| {
+                            let val = v
+                                .downcast_ref::<i64>()
+                                .copied()
+                                .or_else(|| v.downcast_ref::<i32>().map(|i| *i as i64))
+                                .unwrap_or(0);
+                            (k.clone(), val)
+                        })
+                        .collect::<std::collections::HashMap<String, i64>>()
+                });
                 if let Some(mut token_map) = token_map {
                     token_map.remove(&access_token);
-                    current_user.insert(String::from("token_map"), Box::new(token_map));
+                    let as_any: std::collections::HashMap<String, Box<dyn std::any::Any>> = token_map
+                        .into_iter()
+                        .map(|(k, v)| (k, Box::new(v) as Box<dyn std::any::Any>))
+                        .collect();
+                    current_user.insert(String::from("token_map"), Box::new(as_any));
                 }
                 if current_user.get("token").and_then(|v| v.downcast_ref::<String>().cloned()).unwrap_or(String::from("")) == access_token {
                     current_user.insert(String::from("token"), Box::new(String::from("")));

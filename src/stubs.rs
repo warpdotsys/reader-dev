@@ -628,7 +628,9 @@ pub struct Request {
     pub url: String,
     pub headers: HashMap<String, String>,
     pub body: Option<String>,
+    pub body_bytes: Option<Vec<u8>>,
     pub form_fields: HashMap<String, String>,
+    pub content_type: Option<String>,
 }
 
 impl Request {
@@ -664,6 +666,10 @@ impl RequestBuilder {
         let mut r = self.inner.borrow_mut();
         r.method = String::from("POST");
         r.body = Some(body.text);
+        r.body_bytes = body.bytes;
+        if let Some(mt) = &body.media_type {
+            r.content_type = Some(mt.clone());
+        }
         self
     }
     pub fn get(&self) -> &Self {
@@ -711,6 +717,8 @@ pub struct MediaType {
 #[derive(Debug, Clone, Default)]
 pub struct RequestBody {
     pub text: String,
+    pub media_type: Option<String>,
+    pub bytes: Option<Vec<u8>>,
 }
 
 impl RequestBody {
@@ -718,7 +726,11 @@ impl RequestBody {
         RequestBody::default()
     }
     pub fn from_text(text: impl Into<String>) -> RequestBody {
-        RequestBody { text: text.into() }
+        RequestBody { text: text.into(), media_type: None, bytes: None }
+    }
+    // okhttp3 RequestBody.create(mediaType, text)
+    pub fn create(media_type: &MediaType, text: impl Into<String>) -> RequestBody {
+        RequestBody { text: text.into(), media_type: Some(media_type.name.to_string()), bytes: None }
     }
 }
 
@@ -726,7 +738,9 @@ impl RequestBody {
 pub struct Response {
     pub status: i32,
     pub headers: HashMap<String, String>,
+    pub headers_multi: HashMap<String, Vec<String>>,
     pub body_text: String,
+    pub body_bytes: Vec<u8>,
     pub url: String,
 }
 
@@ -749,11 +763,30 @@ impl Response {
         }
     }
     // okhttp3 Response.headers(name) -> List<String>（AnalyzeUrl.saveCookieJar 使用）
+    // fix: 大小写不敏感（reqwest 将响应头小写化）+ 支持多值（多 Set-Cookie）
     pub fn headers(&self, name: &str) -> Vec<String> {
-        match self.headers.get(name) {
-            Some(v) => vec![v.clone()],
-            None => Vec::new(),
+        let lower = name.to_lowercase();
+        if let Some(v) = self.headers_multi.get(&lower) {
+            return v.clone();
         }
+        for (k, v) in &self.headers {
+            if k.eq_ignore_ascii_case(name) {
+                return vec![v.clone()];
+            }
+        }
+        Vec::new()
+    }
+    // okhttp3 Response.header(name)（单值）
+    pub fn header(&self, name: &str) -> Option<String> {
+        for (k, v) in &self.headers {
+            if k.eq_ignore_ascii_case(name) {
+                return Some(v.clone());
+            }
+        }
+        None
+    }
+    pub fn content_type(&self) -> Option<String> {
+        self.header("content-type")
     }
     pub fn to_string(&self) -> String {
         self.url.clone()
@@ -767,6 +800,8 @@ impl Response {
     pub fn body_option(&self) -> Option<ResponseBody> {
         Some(ResponseBody {
             text: Some(self.body_text.clone()),
+            bytes: self.body_bytes.clone(),
+            content_type: self.content_type(),
         })
     }
 }
@@ -1027,13 +1062,25 @@ pub trait StringExt: AsRef<str> + ToString {
         let t = self.to_string().trim().to_string();
         t.starts_with('[') && t.ends_with(']')
     }
-    // okhttp3 String.toMediaType()（AnalyzeUrl 使用）
+    // okhttp3 String.toMediaType()（AnalyzeUrl 使用）——fix: 真实 MediaType（原恒 None）
     fn to_media_type(&self) -> Option<MediaType> {
-        None
+        if self.to_string().trim().is_empty() {
+            None
+        } else {
+            Some(MediaType {
+                name: Box::leak(self.to_string().into_boxed_str()),
+                default_extension: "",
+                extensions: &[],
+            })
+        }
     }
-    // okhttp3 String.toRequestBody()（AnalyzeUrl 使用）——fix: 真实文本（原恒空 body）
-    fn to_request_body(&self, _media_type: Option<MediaType>) -> RequestBody {
-        RequestBody::from_text(self.to_string())
+    // okhttp3 String.toRequestBody()（AnalyzeUrl 使用）——fix: 真实文本 + Content-Type（原恒空 body）
+    fn to_request_body(&self, media_type: Option<MediaType>) -> RequestBody {
+        RequestBody {
+            text: self.to_string(),
+            media_type: media_type.map(|m| m.name.to_string()),
+            bytes: None,
+        }
     }
     // Kotlin String.equals(Object)（RestVerticle rawMethod().equals("PUT") 使用）
     fn equals(&self, other: &str) -> bool {
@@ -1942,10 +1989,44 @@ impl Any {
     pub fn r#type(&self) -> Type {
         Type
     }
-    // Kotlin `as? T` 智能转换占位（ReaderUIApplication windowConfig 读取使用；占位返回 None）
+    // Kotlin `as? T` 智能转换（fix: 真实实现——原恒 None 导致 bookSourceMap 索引全 0、CacheManager 永不命中。
+    //      支持数字/布尔/字符串基本类型；单线程使用，调用方需立即消费返回的引用）
     pub fn downcast_ref<T: 'static>(&self) -> Option<&T> {
-        None
+        use std::any::TypeId;
+        let tid = TypeId::of::<T>();
+        let value: Option<Box<dyn std::any::Any>> = match self {
+            Any::Long(i) if tid == TypeId::of::<i32>() => Some(Box::new(*i as i32) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<i64>() => Some(Box::new(*i) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<f64>() => Some(Box::new(*i as f64) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<f32>() => Some(Box::new(*i as f32) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<u32>() => Some(Box::new(*i as u32) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<u64>() => Some(Box::new(*i as u64) as Box<dyn std::any::Any>),
+            Any::Long(i) if tid == TypeId::of::<bool>() => Some(Box::new(*i != 0) as Box<dyn std::any::Any>),
+            Any::Double(d) if tid == TypeId::of::<f64>() => Some(Box::new(*d) as Box<dyn std::any::Any>),
+            Any::Double(d) if tid == TypeId::of::<f32>() => Some(Box::new(*d as f32) as Box<dyn std::any::Any>),
+            Any::Double(d) if tid == TypeId::of::<i32>() => Some(Box::new(*d as i32) as Box<dyn std::any::Any>),
+            Any::Double(d) if tid == TypeId::of::<i64>() => Some(Box::new(*d as i64) as Box<dyn std::any::Any>),
+            Any::Double(d) if tid == TypeId::of::<u64>() => Some(Box::new(*d as u64) as Box<dyn std::any::Any>),
+            Any::Bool(b) if tid == TypeId::of::<bool>() => Some(Box::new(*b) as Box<dyn std::any::Any>),
+            Any::Bool(b) if tid == TypeId::of::<i32>() => Some(Box::new(*b as i32) as Box<dyn std::any::Any>),
+            Any::Str(s) if tid == TypeId::of::<String>() => Some(Box::new(s.clone()) as Box<dyn std::any::Any>),
+            Any::Str(s) if tid == TypeId::of::<i32>() => s.parse::<i32>().ok().map(|v| Box::new(v) as Box<dyn std::any::Any>),
+            Any::Str(s) if tid == TypeId::of::<i64>() => s.parse::<i64>().ok().map(|v| Box::new(v) as Box<dyn std::any::Any>),
+            Any::Str(s) if tid == TypeId::of::<f64>() => s.parse::<f64>().ok().map(|v| Box::new(v) as Box<dyn std::any::Any>),
+            Any::Str(s) if tid == TypeId::of::<bool>() => Some(Box::new(!s.is_empty() && s != "false" && s != "0") as Box<dyn std::any::Any>),
+            _ => None,
+        };
+        let value = value?;
+        DOWNCAST_CELL.with(|c| unsafe {
+            let slot = &mut *c.get();
+            *slot = Some(value);
+            slot.as_ref().unwrap().downcast_ref::<T>()
+        })
     }
+}
+
+thread_local! {
+    static DOWNCAST_CELL: std::cell::UnsafeCell<Option<Box<dyn std::any::Any>>> = const { std::cell::UnsafeCell::new(None) };
 }
 
 // fix: `Option<&Any>.downcast_ref::<T>()`（Kotlin `map["key"] as? T` 转录；显式导入优先级高于 glob）
@@ -4103,15 +4184,21 @@ pub struct SSLContext;
 pub struct SSLSocketFactory;
 
 // ---- ResponseBody ----
+#[derive(Clone, Default)]
 pub struct ResponseBody {
     pub text: Option<String>,
+    pub bytes: Vec<u8>,
+    pub content_type: Option<String>,
 }
 impl ResponseBody {
     pub fn new() -> Self {
-        ResponseBody { text: None }
+        ResponseBody::default()
     }
     pub fn string(&self) -> String {
         self.text.clone().unwrap_or_default()
+    }
+    pub fn content_type(&self) -> Option<&str> {
+        self.content_type.as_deref()
     }
 }
 
@@ -4140,12 +4227,26 @@ pub fn empty_list<T>() -> Vec<T> {
 pub fn mutable_list_of<T>(items: Vec<T>) -> Vec<T> {
     items
 }
-pub fn url_encode(s: String) -> String {
-    s
+// fix: 真实 URL 编码（Kotlin URLEncoder：字母数字._- 保留，空格→+，其余 %XX；utf8ToGbk 类场景 charset 为 GBK 时先转码）
+pub fn url_encode(s: &str) -> String {
+    url_encode_charset(s.to_string(), "UTF-8")
 }
-// Kotlin URLEncoder.encode(value, charset)（AnalyzeUrl.analyzeFields 使用）
-pub fn url_encode_charset(s: String, _charset: &str) -> String {
-    s
+pub fn url_encode_charset(s: String, charset: &str) -> String {
+    let bytes: Vec<u8> = if charset.to_lowercase().contains("gbk") || charset.to_lowercase().contains("gb") && !charset.to_lowercase().contains("utf") {
+        let (enc, _, _) = encoding_rs::GBK.encode(&s);
+        enc.into_owned()
+    } else {
+        s.into_bytes()
+    };
+    let mut out = String::new();
+    for &b in &bytes {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'.' | b'-' | b'_' | b'*' => out.push(b as char),
+            b' ' => out.push('+'),
+            _ => out.push_str(&format!("%{:02X}", b)),
+        }
+    }
+    out
 }
 // Kotlin ByteArray.toHexString()（AnalyzeUrl.getStrResponseAwait 使用）
 pub fn byte_to_hex_string(bytes: &[u8]) -> String {
@@ -4407,17 +4508,24 @@ impl WebRequest {
     pub fn async_get_bytes_in_thread(&self) -> Option<Vec<u8>> {
         let url = self.url.clone();
         let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        let headers = self.headers.clone();
         std::thread::spawn(move || {
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .ok()?;
             rt.block_on(async {
+                // fix: 透传请求头（防盗链 UA/Referer）
                 let client = reqwest::Client::builder()
                     .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .danger_accept_invalid_certs(true)
                     .build()
                     .ok()?;
-                let resp = client.get(&url).send().await.ok()?;
+                let mut req = client.get(&url);
+                for (k, v) in &headers {
+                    req = req.header(k, v);
+                }
+                let resp = req.send().await.ok()?;
                 resp.bytes().await.ok().map(|b| b.to_vec())
             })
         })
@@ -5216,13 +5324,13 @@ impl File {
     }
     // ---- WebdavController 转录所需 java.nio.file.Path / java.io.File 方法 ----
 
-    // Path.normalize()
+    // Path.normalize() —— 真实词法规范化（解析 . 与 ..，对齐 java.nio.Path.normalize）
     pub fn normalize(&self) -> File {
-        File::new(&self.file_path)
+        File::new(&normalize_path_lexical(&self.file_path))
     }
-    // Path.startsWith(other)
+    // Path.startsWith(other) —— 按路径分段比较（对齐 java.nio.Path.startsWith）
     pub fn starts_with(&self, base: &File) -> bool {
-        self.file_path.starts_with(&base.file_path)
+        path_segments_prefix(&self.file_path, &base.file_path)
     }
     // Path.toFile()
     pub fn to_file(&self) -> File {
@@ -5261,10 +5369,68 @@ impl File {
     }
 }
 
+// ---- java.nio.Path.normalize / startsWith 的辅助实现（防路径穿越） ----
+fn normalize_path_lexical(path: &str) -> String {
+    let bytes = path.as_bytes();
+    let drive = if bytes.len() >= 2 && bytes[1] == b':' { Some(&path[..2]) } else { None };
+    let rooted = path.starts_with('/') || path.starts_with('\\') || drive.is_some();
+    let sep = if path.contains('\\') { '\\' } else { '/' };
+    let mut stack: Vec<&str> = Vec::new();
+    for seg in path.split(|c| c == '/' || c == '\\') {
+        match seg {
+            "" | "." => {}
+            ".." => match stack.last() {
+                // 消费普通段
+                Some(x) if *x != ".." => {
+                    stack.pop();
+                }
+                _ => {
+                    // 相对路径下的前导 .. 保留；绝对路径根目录下的 .. 忽略（对齐 java）
+                    if !rooted {
+                        stack.push("..");
+                    }
+                }
+            },
+            s => stack.push(s),
+        }
+    }
+    let mut out = String::new();
+    if let Some(d) = drive {
+        out.push_str(d);
+        if path.starts_with('/') || path.starts_with('\\') {
+            out.push(sep);
+        }
+    } else if path.starts_with('/') || path.starts_with('\\') {
+        out.push(sep);
+    }
+    out.push_str(&stack.join(&sep.to_string()));
+    if out.is_empty() {
+        if rooted {
+            out.push(sep);
+        } else {
+            out.push('.');
+        }
+    }
+    out
+}
+
+fn path_segments_prefix(path: &str, base: &str) -> bool {
+    let a: Vec<&str> = path.split(|c| c == '/' || c == '\\').filter(|s| !s.is_empty()).collect();
+    let b: Vec<&str> = base.split(|c| c == '/' || c == '\\').filter(|s| !s.is_empty()).collect();
+    if b.len() > a.len() {
+        return false;
+    }
+    a[..b.len()] == b[..]
+}
+
 // ---- okhttp3.ResponseBody 补充 bytes()（JsExtensions 使用） ----
 impl ResponseBody {
+    // fix: 返回原始字节（原为 lossy 解码后重编码——二进制内容损坏）
     pub fn bytes(&self) -> Vec<u8> {
-        self.string().as_bytes().to_vec()
+        if !self.bytes.is_empty() {
+            return self.bytes.clone();
+        }
+        self.text.clone().unwrap_or_default().into_bytes()
     }
 }
 // ---------------- SQLTable/JSONTable findBy 补充（mapTo(clazz) 带 Class 参数版） ----------------
@@ -5320,6 +5486,8 @@ impl PDDocument {
                         text,
                     });
                 }
+                // fix: 按页号升序（原 HashMap 迭代顺序不定——页文本错位/越界）
+                pages.sort_by_key(|p| p.page_index);
                 (page_map.len() as i32, pages)
             }
             None => (0, Vec::new()),
@@ -5577,7 +5745,8 @@ impl Chain {
                 self.proxy_auth.as_ref().map(|(u, p)| (u.as_str(), p.as_str())),
             ) {
                 Ok(r) => r,
-                Err(_) => Response::default(),
+                // fix: Kotlin okhttp onFailure → resumeWithException（异常传播给调用方，书源标记失败/错误响应）
+                Err(e) => panic!("{}", e.msg().unwrap_or_default()),
             }
         }
     }
@@ -5626,11 +5795,11 @@ impl OkHttpClientBuilder {
     pub fn add_network_interceptor(&self, _interceptor: HttpLoggingInterceptor) -> &Self {
         self
     }
-    // fix: 代理真实生效（reqwest Proxy::all）
+    // fix: 代理真实生效（reqwest Proxy::all）；Kotlin 用 java.net Proxy.Type.SOCKS（socks4 协议）→ socks4:// 走手写握手
     pub fn proxy(&mut self, proxy: Proxy) -> &mut Self {
         let scheme = match proxy.type_ {
             ProxyType::HTTP => "http://",
-            ProxyType::SOCKS => "socks5://",
+            ProxyType::SOCKS => "socks4://",
             ProxyType::DIRECT => "",
         };
         self.proxy = Some(format!("{}{}:{}", scheme, proxy.addr.host, proxy.addr.port));
@@ -7429,23 +7598,41 @@ impl ThrowableExt for crate::me_ag2s_epublib_util_resourceutil::ParseError {
 
 // ==================== fix: OkHttpUtils.rs 转录所需追加（只增不改） ====================
 
-// okhttp3 FormBody / FormBody.Builder 占位（build() 返回 RequestBody 以复用 RequestBuilder.post）
+// okhttp3 FormBody / FormBody.Builder（真实构造 application/x-www-form-urlencoded body）
 pub struct FormBody;
-pub struct FormBodyBuilder;
+#[derive(Debug, Default)]
+pub struct FormBodyBuilder {
+    pub fields: std::cell::RefCell<Vec<(String, String)>>,
+}
 impl FormBody {
     pub fn builder() -> FormBodyBuilder {
-        FormBodyBuilder
+        FormBodyBuilder::default()
     }
 }
 impl FormBodyBuilder {
-    pub fn add(&self, _name: &str, _value: &str) -> &Self {
+    pub fn add(&self, name: &str, value: &str) -> &Self {
+        self.fields
+            .borrow_mut()
+            .push((name.to_string(), url_encode(value)));
         self
     }
-    pub fn add_encoded(&self, _name: &str, _value: &str) -> &Self {
+    pub fn add_encoded(&self, name: &str, value: &str) -> &Self {
+        self.fields.borrow_mut().push((name.to_string(), value.to_string()));
         self
     }
     pub fn build(&self) -> RequestBody {
-        RequestBody::default()
+        let parts = self
+            .fields
+            .borrow()
+            .iter()
+            .map(|(k, v)| format!("{}={}", url_encode(k), v))
+            .collect::<Vec<_>>()
+            .join("&");
+        RequestBody {
+            text: parts,
+            media_type: Some("application/x-www-form-urlencoded".to_string()),
+            bytes: None,
+        }
     }
 }
 
@@ -7546,18 +7733,15 @@ pub trait ByteArrayExt {
     fn to_request_body(&self, _media_type: Option<MediaType>) -> RequestBody;
 }
 impl ByteArrayExt for Vec<u8> {
-    fn to_request_body(&self, _media_type: Option<MediaType>) -> RequestBody {
-        RequestBody::from_text(String::from_utf8_lossy(self).to_string())
+    fn to_request_body(&self, media_type: Option<MediaType>) -> RequestBody {
+        RequestBody {
+            text: String::from_utf8_lossy(self).to_string(),
+            media_type: media_type.map(|m| m.name.to_string()),
+            bytes: Some(self.clone()),
+        }
     }
 }
 
-
-// okhttp3 ResponseBody.contentType()（OkHttpUtils.text 使用）
-impl ResponseBody {
-    pub fn content_type(&self) -> Option<MediaType> {
-        None
-    }
-}
 
 // okhttp3 MediaType.charset()（OkHttpUtils.text 使用）
 impl MediaType {
@@ -8527,6 +8711,7 @@ pub fn analyze_url_new_placeholder(
     m_url: String,
     source: Option<crate::io_legado_app_data_entities_booksource::BookSource>,
     header_map_f: Option<std::collections::HashMap<String, String>>,
+    rule_data: Option<Box<dyn crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface>>,
 ) -> crate::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl {
     crate::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl::new(
         m_url,
@@ -8536,7 +8721,7 @@ pub fn analyze_url_new_placeholder(
         None,
         String::new(),
         source,
-        None,
+        rule_data,
         None,
         header_map_f,
         None,
@@ -8739,16 +8924,69 @@ impl Clone for crate::io_legado_app_data_entities_booksource::BookSource {
 //      placeholder: UA header + raw header string, same logic as the header_map_f fallback in AnalyzeUrl.rs)
 impl crate::io_legado_app_data_entities_booksource::BookSource {
     pub fn get_header_map(&self) -> Option<HashMap<String, String>> {
-        let mut hm = HashMap::new();
-        hm.insert(
-            crate::io_legado_app_constant_appconst::AppConst::UA_NAME.to_string(),
-            crate::io_legado_app_constant_appconst::AppConst::userAgent(),
-        );
-        if let Some(h) = self.header.clone() {
-            hm.insert("header".to_string(), h);
-        }
-        Some(hm)
+        Some(parse_source_header_map(self.header.clone(), false, None, None))
     }
+    pub fn get_header_map_with_user(&self, has_login_header: bool, user_name_space: Option<String>) -> Option<HashMap<String, String>> {
+        Some(parse_source_header_map(self.header.clone(), has_login_header, Some(self.get_key()), user_name_space))
+    }
+}
+
+/// Kotlin BaseSource.getHeaderMap 语义：UA + header JSON（@js:/<js> 求值）+ 可选登录头合并
+pub fn parse_source_header_map(
+    header: Option<String>,
+    has_login_header: bool,
+    source_key: Option<String>,
+    user_name_space: Option<String>,
+) -> HashMap<String, String> {
+    use crate::io_legado_app_constant_appconst::AppConst;
+    let mut hm = HashMap::new();
+    hm.insert(AppConst::UA_NAME.to_string(), AppConst::userAgent());
+    if let Some(h) = header {
+        if !h.is_empty() {
+            // fix: @js:/<js> 头部求值（Kotlin evalJS；原占位把整段 JSON 塞进 "header" 单头）
+            let evaluated = if h.starts_with("@js:") || h.starts_with("@JS:") {
+                crate::runtime::js::eval_js_script(&h[4..], &crate::stubs::SimpleBindings::default())
+                    .map(|a| a.to_string())
+                    .unwrap_or_default()
+            } else if h.starts_with("<js>") || h.starts_with("<JS>") {
+                h.rfind('<')
+                    .map(|i| h[4..i].to_string())
+                    .and_then(|js| crate::runtime::js::eval_js_script(&js, &crate::stubs::SimpleBindings::default()))
+                    .map(|a| a.to_string())
+                    .unwrap_or_default()
+            } else {
+                h.clone()
+            };
+            if !evaluated.is_empty() {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&evaluated) {
+                    if let Some(obj) = v.as_object() {
+                        for (k, val) in obj {
+                            if let Some(s) = val.as_str() {
+                                hm.insert(k.clone(), s.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // 登录头合并（Kotlin getLoginHeaderMap——cacheManager loginHeader_{key}）
+    if has_login_header {
+        if let (Some(key), Some(ns)) = (source_key, user_name_space) {
+            if let Some(cache) = crate::io_legado_app_help_cachemanager::CacheManager::new(ns).get(&format!("loginHeader_{}", key)) {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&cache) {
+                    if let Some(obj) = v.as_object() {
+                        for (k, val) in obj {
+                            if let Some(s) = val.as_str() {
+                                hm.insert(k.clone(), s.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    hm
 }
 
 // ---------------- FileController 转录补充（追加） ----------------
@@ -8786,14 +9024,89 @@ impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface
         self.user_name_space.clone()
     }
 
+    // fix: 真实写入（原只写 variable 字符串——get_variable 经空 variable_map 恒 None；
+    //      @put: 变量在搜索条目内丢失、随 SearchBook 返回时也不持久化）
     fn put_variable(&mut self, key: &str, value: Option<&str>) {
-        let mut map = self.variable_map().clone();
+        let mut map = self.variable_map_cache.borrow().clone().unwrap_or_else(|| {
+            crate::stubs::GSON::from_json_object::<HashMap<String, String>>(self.variable.clone().unwrap_or_default())
+                .get_or_null()
+                .unwrap_or_else(HashMap::new)
+        });
         if let Some(v) = value {
             map.insert(key.to_string(), v.to_string());
         } else {
             map.remove(key);
         }
-        self.variable = Some(GSON::to_json(map));
+        *self.variable_map_cache.borrow_mut() = Some(map.clone());
+        self.variable = Some(crate::stubs::GSON::to_json(map));
+    }
+
+    fn get_variable(&self, key: &str) -> Option<String> {
+        self.variable_map().get(key).cloned()
+    }
+
+    // fix: 同步已解析字段（{{bookName}} 自引用）
+    fn set_field(&mut self, key: &str, value: String) {
+        match key {
+            "bookName" => self.name = value,
+            "bookAuthor" => self.author = value,
+            "bookUrl" => self.book_url = value,
+            "bookKind" => self.kind = Some(value),
+            "bookWordCount" => self.word_count = Some(value),
+            "bookIntro" => self.info_html = Some(value),
+            _ => {}
+        }
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+// fix: SearchBook 实现 BaseBook（搜索条目规则 {{bookName}}/{{bookAuthor}} 等自引用；
+//      Kotlin ruleData = searchBook 本体，字段实时可见）
+impl crate::io_legado_app_data_entities_basebook::BaseBook for crate::io_legado_app_data_entities_searchbook::SearchBook {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn set_name(&mut self, value: String) {
+        self.name = value;
+    }
+    fn author(&self) -> &str {
+        &self.author
+    }
+    fn set_author(&mut self, value: String) {
+        self.author = value;
+    }
+    fn book_url(&self) -> &str {
+        &self.book_url
+    }
+    fn set_book_url(&mut self, value: String) {
+        self.book_url = value;
+    }
+    fn kind(&self) -> Option<&str> {
+        self.kind.as_deref()
+    }
+    fn set_kind(&mut self, value: Option<String>) {
+        self.kind = value;
+    }
+    fn word_count(&self) -> Option<&str> {
+        self.word_count.as_deref()
+    }
+    fn set_word_count(&mut self, value: Option<String>) {
+        self.word_count = value;
+    }
+    fn info_html(&self) -> Option<&str> {
+        self.info_html.as_deref()
+    }
+    fn set_info_html(&mut self, value: Option<String>) {
+        self.info_html = value;
+    }
+    fn toc_html(&self) -> Option<&str> {
+        self.toc_html.as_deref()
+    }
+    fn set_toc_html(&mut self, value: Option<String>) {
+        self.toc_html = value;
     }
 }
 
@@ -9452,10 +9765,14 @@ impl crate::io_legado_app_data_entities_basebook::BaseBook for crate::io_legado_
 // fix: stubs::BookController 缺 syncBookProgressFromWebdav（WebdavController.webdavUpload 使用）
 
 // fix: BaseController.app_config 为模块私有字段（BaseController.rs 未提供 getter），跨模块不可直接读取；
-//      Spring 容器 bean 反序列化未打通，占位返回 false（等效默认非安全模式，webdav 认证校验跳过）
+//      读取 READER_APP_SECURE 环境变量（relaxed binding，等效 Spring reader.app.secure 配置）
 impl crate::com_htmake_reader_api_controller_basecontroller::BaseController {
     pub fn get_app_config_secure(&self) -> bool {
-        false
+        let v = std::env::var("READER_APP_SECURE").unwrap_or_default();
+        !v.is_empty() && !v.eq_ignore_ascii_case("false")
+    }
+    pub fn get_app_config_secure_key(&self) -> Option<String> {
+        std::env::var("READER_APP_SECUREKEY").ok().filter(|s| !s.is_empty())
     }
 }
 // fix: WebdavController 路由处理需要 CURD RoutingContext 版本（与 io::vertx 版已统一为同一类型）
@@ -9641,15 +9958,8 @@ impl serde::Serialize for crate::io_legado_app_data_entities_rule_contentrule::C
 //      占位：UA 头 + 原始 header 字符串，逻辑与 BookSource 扩展一致）
 impl crate::io_legado_app_data_entities_rsssource::RssSource {
     pub fn get_header_map(&self) -> Option<HashMap<String, String>> {
-        let mut hm = HashMap::new();
-        hm.insert(
-            crate::io_legado_app_constant_appconst::AppConst::UA_NAME.to_string(),
-            crate::io_legado_app_constant_appconst::AppConst::userAgent(),
-        );
-        if let Some(h) = self.header.clone() {
-            hm.insert("header".to_string(), h);
-        }
-        Some(hm)
+        // fix: 真实解析 header JSON（原占位把原始 JSON 塞进 "header" 单头——Cookie/Referer 失效）
+        Some(parse_source_header_map(self.header.clone(), false, None, None))
     }
 }
 

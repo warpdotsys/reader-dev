@@ -205,7 +205,9 @@ pub async fn await_call(call: &Call<Response>) -> Response {
     let recv = rx.recv().await;
     match recv {
         Some(Ok(response)) => response,
-        _ => Response::default(),
+        // fix: Kotlin block.resumeWithException(e)——网络错误以异常传播（panic 模拟，由上层 catch_unwind 兜底）
+        Some(Err(e)) => panic!("{}", e.msg().unwrap_or_default()),
+        None => panic!("网络请求通道关闭"),
     }
 }
 
@@ -218,9 +220,15 @@ pub fn text(body: &ResponseBody, encode: Option<&str>) -> String {
         return decode_bytes_with_charset(&response_bytes, charset_name);
     }
 
-    // 根据 http 头判断
-    if let Some(_charset) = body.content_type().and_then(|it| it.charset().map(|c| c.to_owned())) {
-        return decode_bytes_with_charset(&response_bytes, &_charset);
+    // 根据 http 头判断（Content-Type 的 charset 参数）
+    if let Some(ct) = body.content_type() {
+        if let Some(charset) = ct
+            .split(';')
+            .skip(1)
+            .find_map(|p| p.trim().strip_prefix("charset="))
+        {
+            return decode_bytes_with_charset(&response_bytes, &charset.trim_matches('"'));
+        }
     }
 
     // 根据内容判断（meta charset）

@@ -8,6 +8,7 @@ use boa_engine::{Context, JsValue, Source};
 use serde_json::Value;
 
 use crate::stubs::{Any, JsonArray, JsonObject, SimpleBindings};
+use crate::io_legado_app_help_http_api_cookiemanager::CookieManager;
 
 /// serde_json::Value → Any
 pub fn value_to_any(v: &Value) -> Any {
@@ -75,7 +76,99 @@ fn bind_value(bindings: &SimpleBindings, key: &str, ctx: &mut Context) -> JsValu
         )
         .unwrap_or(JsValue::null());
     }
+    // fix: CookieStore/CacheManager 实例 → 带方法 JS 对象（cookie.getCookie()/setCookie()/replaceCookie()、cache.get()/put()）
+    if let Some(cs) = any_ref.downcast_ref::<crate::io_legado_app_help_http_cookiestore::CookieStore>() {
+        set_current_js_ns(cs.user_name_space.clone());
+        return cookie_store_js_object(&cs.user_name_space, ctx);
+    }
+    if let Some(cm) = any_ref.downcast_ref::<crate::io_legado_app_help_cachemanager::CacheManager>() {
+        set_current_js_ns(cm.user_name_space.clone());
+        return cache_manager_js_object(&cm.user_name_space, ctx);
+    }
     JsValue::null()
+}
+
+thread_local! {
+    static CURRENT_JS_NS: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
+fn set_current_js_ns(ns: String) {
+    CURRENT_JS_NS.with(|c| *c.borrow_mut() = Some(ns));
+}
+
+fn current_js_ns() -> String {
+    CURRENT_JS_NS.with(|c| c.borrow().clone()).unwrap_or_default()
+}
+
+/// 响应 Set-Cookie 写回 cookie jar（Kotlin JsExtensions java.get/head/post 自动保存登录 cookie）
+fn save_set_cookie_to_jar(url: &str, resp_headers: &std::collections::HashMap<String, String>) {
+    if let Some(set_cookie) = resp_headers.get("set-cookie") {
+        let ns = current_js_ns();
+        if !ns.is_empty() {
+            crate::io_legado_app_help_http_cookiestore::CookieStore::new(ns).set_cookie(url, Some(set_cookie));
+        }
+    }
+}
+
+/// cookie 对象（Kotlin CookieStore 绑定；方法经当前命名空间构造实例）
+fn cookie_store_js_object(_ns: &str, ctx: &mut Context) -> JsValue {
+    boa_engine::object::ObjectInitializer::new(ctx)
+        .function(NativeFunction::from_fn_ptr(cookie_get_native), js_string!("getCookie"), 2)
+        .function(NativeFunction::from_fn_ptr(cookie_get_native), js_string!("getKey"), 2)
+        .function(NativeFunction::from_fn_ptr(cookie_set_native), js_string!("setCookie"), 2)
+        .function(NativeFunction::from_fn_ptr(cookie_replace_native), js_string!("replaceCookie"), 2)
+        .build()
+        .into()
+}
+
+fn cookie_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    use crate::io_legado_app_help_http_api_cookiemanager::CookieManager;
+    let url = arg_string(args, 0, ctx);
+    let key = arg_string(args, 1, ctx);
+    let cs = crate::io_legado_app_help_http_cookiestore::CookieStore::new(current_js_ns());
+    let cookie = cs.get_cookie(&url);
+    let val = if key.is_empty() { cookie } else { cs.get_key(&url, &key) };
+    Ok(JsValue::from_json(&Value::String(val), ctx).unwrap_or(JsValue::null()))
+}
+
+fn cookie_set_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    use crate::io_legado_app_help_http_api_cookiemanager::CookieManager;
+    let url = arg_string(args, 0, ctx);
+    let cookie = arg_string(args, 1, ctx);
+    crate::io_legado_app_help_http_cookiestore::CookieStore::new(current_js_ns()).set_cookie(&url, Some(&cookie));
+    Ok(JsValue::null())
+}
+
+fn cookie_replace_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    use crate::io_legado_app_help_http_api_cookiemanager::CookieManager;
+    let url = arg_string(args, 0, ctx);
+    let cookie = arg_string(args, 1, ctx);
+    crate::io_legado_app_help_http_cookiestore::CookieStore::new(current_js_ns()).replace_cookie(&url, &cookie);
+    Ok(JsValue::null())
+}
+
+/// cache 对象（Kotlin CacheManager 绑定；get/put）
+fn cache_manager_js_object(_ns: &str, ctx: &mut Context) -> JsValue {
+    boa_engine::object::ObjectInitializer::new(ctx)
+        .function(NativeFunction::from_fn_ptr(cache_get_native), js_string!("get"), 1)
+        .function(NativeFunction::from_fn_ptr(cache_put_native), js_string!("put"), 2)
+        .build()
+        .into()
+}
+
+fn cache_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let key = arg_string(args, 0, ctx);
+    let cm = crate::io_legado_app_help_cachemanager::CacheManager::new(current_js_ns());
+    let val = cm.get(&key).unwrap_or_default();
+    Ok(JsValue::from_json(&Value::String(val), ctx).unwrap_or(JsValue::null()))
+}
+
+fn cache_put_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let key = arg_string(args, 0, ctx);
+    let value = arg_string(args, 1, ctx);
+    let cm = crate::io_legado_app_help_cachemanager::CacheManager::new(current_js_ns());
+    cm.put(&key, &value, 0);
+    Ok(JsValue::null())
 }
 
 /// Any → JsValue
@@ -129,15 +222,25 @@ fn ajax_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engi
                 }
             }
         }
-        // fix: 携带书源 cookie jar（原无——需登录 cookie 的站点 JS 请求失败）
-        let cookie_js = "(() => { try { return String(cookie); } catch(e) { return ''; } })()";
-        if let Ok(v) = ctx.eval(boa_engine::Source::from_bytes(cookie_js.as_bytes())) {
-            let cookie_val = v.to_string(&mut *ctx).map(|s| s.to_std_string().unwrap_or_default()).unwrap_or_default();
+        // fix: 携带书源 cookie jar（原从绑定字符串读——绑定改对象后 String(cookie) 为 [object Object]；
+        //      改为从当前命名空间的 cookie jar 读取）
+        let ns = current_js_ns();
+        if !ns.is_empty() {
+            let cs = crate::io_legado_app_help_http_cookiestore::CookieStore::new(ns);
+            let url_str = url.to_std_string().unwrap_or_default();
+            let cookie_val = cs.get_cookie(&url_str);
             if !cookie_val.is_empty() && !headers.contains_key("Cookie") {
                 headers.insert(String::from("Cookie"), cookie_val);
             }
         }
-        let (_, _, body) = js_http_request("GET", &url.to_std_string().unwrap_or_default(), &headers, None);
+        let (_, resp_headers, body) = js_http_request("GET", &url.to_std_string().unwrap_or_default(), &headers, None);
+        // fix: Set-Cookie 自动写回 cookie jar（Kotlin JsExtensions java.get/head/post 语义——登录流程依赖）
+        if let Some(set_cookie) = resp_headers.get("set-cookie") {
+            let ns = current_js_ns();
+            if !ns.is_empty() {
+                crate::io_legado_app_help_http_cookiestore::CookieStore::new(ns).set_cookie(&url.to_std_string().unwrap_or_default(), Some(set_cookie));
+            }
+        }
         body
     };
     Ok(JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null()))
@@ -432,6 +535,7 @@ fn java_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_
     let headers = parse_js_map(args, 1, ctx);
     // fix: 真实请求（原 statusCode 恒 200 / headers 恒 null）
     let (status, resp_headers, text) = js_http_request("GET", &url, &headers, None);
+    save_set_cookie_to_jar(&url, &resp_headers);
     let headers_js = headers_to_js(&resp_headers, ctx);
     let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
     let obj = boa_engine::object::ObjectInitializer::new(ctx)
@@ -448,6 +552,7 @@ fn java_head_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa
     let headers = parse_js_map(args, 1, ctx);
     // fix: 真实 HEAD 请求（原恒返回 statusCode 200，探测类规则全部失效）
     let (status, resp_headers, _) = js_http_request("HEAD", &url, &headers, None);
+    save_set_cookie_to_jar(&url, &resp_headers);
     let headers_js = headers_to_js(&resp_headers, ctx);
     let obj = boa_engine::object::ObjectInitializer::new(ctx)
         .property(js_string!("statusCode"), status, boa_engine::property::Attribute::all())
@@ -463,6 +568,7 @@ fn java_post_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa
     let headers = parse_js_map(args, 2, ctx);
     // fix: 真实请求（原 statusCode 恒 200）
     let (status, resp_headers, text) = js_http_request("POST", &url, &headers, Some(&body));
+    save_set_cookie_to_jar(&url, &resp_headers);
     let headers_js = headers_to_js(&resp_headers, ctx);
     let body_val = JsValue::from_json(&Value::String(text), ctx).unwrap_or(JsValue::null());
     let obj = boa_engine::object::ObjectInitializer::new(ctx)

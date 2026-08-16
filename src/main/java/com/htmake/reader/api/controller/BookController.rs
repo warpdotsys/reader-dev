@@ -381,9 +381,12 @@ impl BookController {
                 context.response().set_status_code(404).end(String::new());
             }),
             || {
+                // fix: 补 User-Agent + Referer（防盗链图源无 UA/Referer 返回 403——封面裂）
                 let body_bytes = self
                     .web_client
                     .get_abs(&cover_url)
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .header("Referer", cover_url.rsplit_once('/').map(|(h, _)| h).unwrap_or(""))
                     .timeout(10000)
                     .async_get_bytes_in_thread();
                 if let Some(body_bytes) = body_bytes {
@@ -686,7 +689,9 @@ impl BookController {
         let chapter_list = self
             .get_local_chapter_list(book_info.clone(), book_source, false, user_name_space.clone(), false, None)
             .await;
-        if chapter_index >= chapter_list.len() as i32 {
+        // fix: 负数 index 报错（Kotlin chapterList.get(-1) 抛 IndexOutOfBoundsException→500，进度不变；
+        //      -1 as usize 溢出为 MAX→unwrap_or_default 默认章节→静默覆盖进度为 0/清空标题）
+        if chapter_index < 0 || chapter_index >= chapter_list.len() as i32 {
             return_data.set_error_msg("章节不存在".to_string());
             return return_data;
         }
@@ -762,10 +767,18 @@ impl BookController {
         let epub_content: i32;
         if context.request().method() == HttpMethod::POST {
             // post 请求
+            // fix: 顶层 chapterUrl 优先（Kotlin `bodyAsJson.getString("chapterUrl") ?: bookChapter.url`；
+            //      原忽略顶层字段——Android 端等直接 POST chapterUrl 的客户端拿到空）
             chapter_url = context
                 .body_as_json()
-                .get_json_object("bookChapter")
-                .map(|j| j.get_string("url"))
+                .get_string_opt("chapterUrl")
+                .filter(|s| !s.is_empty())
+                .or_else(|| {
+                    context
+                        .body_as_json()
+                        .get_json_object("bookChapter")
+                        .map(|j| j.get_string("url"))
+                })
                 .unwrap_or_default();
             book_url = context
                 .body_as_json()
@@ -997,23 +1010,23 @@ impl BookController {
                 let local_path = book_info.clone().get_local_file().path();
                 let document = crate::stubs::PDDocument::load(&local_path);
                 if let (Some(start), Some(end)) = (chapter_info.start, chapter_info.end) {
-                    if start <= end {
-                        for page in start..end {
-                            let page_text = document
-                                .document_catalog
-                                .pages
-                                .pages
-                                .get(page as usize)
-                                .map(|p| p.text.clone())
-                                .unwrap_or_default();
-                            if !page_text.is_empty() {
-                                let escaped = page_text
-                                    .replace('&', "&amp;")
-                                    .replace('<', "&lt;")
-                                    .replace('>', "&gt;")
-                                    .replace('\n', "<br/>");
-                                content += &format!("<p style=\"margin:0 0 1.2em 0;line-height:1.8\">{}</p>", escaped);
-                            }
+                    // fix: 闭区间 start..=end（Kotlin `for (page in start..end)` 含末页；start==end 单页章节）；
+                    //      pages 已按页号升序——0 基连续索引（对齐 PDFBox getPage）
+                    for page in start..=end {
+                        let page_text = document
+                            .document_catalog
+                            .pages
+                            .pages
+                            .get(page as usize)
+                            .map(|p| p.text.clone())
+                            .unwrap_or_default();
+                        if !page_text.is_empty() {
+                            let escaped = page_text
+                                .replace('&', "&amp;")
+                                .replace('<', "&lt;")
+                                .replace('>', "&gt;")
+                                .replace('\n', "<br/>");
+                            content += &format!("<p style=\"margin:0 0 1.2em 0;line-height:1.8\">{}</p>", escaped);
                         }
                     }
                 }
@@ -1292,6 +1305,9 @@ impl BookController {
                 result_list.len() < search_size as usize
             }
         });
+        // fix: 读回并发推进的 lastIndex（Kotlin 闭包内 lastIndex = Math.max(lastIndex, it) 后返回更新值；
+        //      i32 为 Copy 不随 cell 更新——原返回旧值导致前端"加载更多"重复拉同一批书源）
+        let last_index = *last_index_cell.lock().unwrap();
         return_data.set_data(Box::new(map!("lastIndex" => last_index, "list" => result_list)), String::new());
         return return_data;
     }
@@ -1450,9 +1466,11 @@ impl BookController {
             }
         });
         let last_index = *last_index_cell.lock().unwrap();
+        // fix: isEnd 用收缩后的 maxSize（同 search_book_source_sse）
+        let max_size = *max_size_cell.lock().unwrap();
         response.write("event: end\n");
         response.end("data: ".to_string()
-            + &json_encode(Any::from(map!("lastIndex" => last_index, "isEnd" => (last_index >= url_map.len() as i32))), false)
+            + &json_encode(Any::from(map!("lastIndex" => last_index, "isEnd" => (last_index >= max_size))), false)
             + "\n\n");
     }
 
@@ -1573,6 +1591,8 @@ impl BookController {
             }
         });
         self.save_book_sources(book, result_list.clone(), user_name_space, false);
+        // fix: 读回并发推进的 lastIndex（同 search_book_multi）
+        let last_index = *last_index_cell.lock().unwrap();
         return_data.set_data(Box::new(map!("lastIndex" => last_index, "list" => result_list)), String::new());
         return return_data;
     }
@@ -1730,6 +1750,8 @@ impl BookController {
             }
         });
         let last_index = *last_index_cell.lock().unwrap();
+        // fix: isEnd 用收缩后的 maxSize（Kotlin maxSize 收缩 + isEnd = lastIndex >= maxSize；原用外层未收缩值恒 false）
+        let max_size = *max_size_cell.lock().unwrap();
         self.save_book_sources(book.clone().unwrap_or_default(), result_list, user_name_space, false);
         response.write("event: end\n");
         response.end("data: ".to_string()
@@ -1837,31 +1859,32 @@ impl BookController {
 
                 // 刷新源
                 let mut result_list: Vec<SearchBook> = Vec::new();
-                let concurrent_count = 16;
-                limit_concurrent_with(concurrent_count, 0, list.size(), |it| {
-                    let result: Vec<SearchBook> = {
-                        let search_book = list.get_json_object(it).map_to::<SearchBook>().unwrap_or_default();
-                        if search_book.origin == "loc_book" {
-                            vec![search_book]
-                        } else {
-                            let book_source = self.get_book_source_string_by_source_url_opt(search_book.origin.clone(), user_name_space.clone());
-                            if let Some(bs) = book_source {
-                                crate::stubs::block_on(self.search_book_with_source(bs, book.clone(), true, user_name_space.clone()))
-                            } else {
-                                Vec::new()
-                            }
-                        }
-                    };
-                    Box::new(result)
-                }, |list, _| {
-                    // logger.info("list: {}", list)
-                    for it in list {
-                        if let Some(book_list) = it.downcast_ref::<Vec<SearchBook>>() {
-                            result_list.add_all(book_list.clone());
+                // fix: Kotlin 为协程并发（挂起不阻塞）；Rust 转录的 limit_concurrent_with+block_on
+                //      会同步阻塞单线程 tokio 事件循环（刷新源时全站请求超时）。
+                //      改为真正的 async 并发（buffer_unordered，16 并发，不阻塞其他请求）。
+                let mut futures: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = Vec<SearchBook>> + Send>>> = Vec::new();
+                for i in 0..list.size() {
+                    let search_book = list.get_json_object(i).map_to::<SearchBook>().unwrap_or_default();
+                    if search_book.origin == "loc_book" {
+                        result_list.push(search_book);
+                    } else {
+                        let book_source = self.get_book_source_string_by_source_url_opt(search_book.origin.clone(), user_name_space.clone());
+                        if let Some(bs) = book_source {
+                            let book_c = book.clone();
+                            let ns = user_name_space.clone();
+                            futures.push(Box::pin(async move {
+                                self.search_book_with_source(bs, book_c, true, ns).await
+                            }));
                         }
                     }
-                    true
-                });
+                }
+                if !futures.is_empty() {
+                    use futures_util::stream::StreamExt;
+                    let results: Vec<Vec<SearchBook>> = futures_util::stream::iter(futures).buffer_unordered(16).collect().await;
+                    for r in results {
+                        result_list.extend(r);
+                    }
+                }
                 // logger.info("refreshed bookSourceList: {}", resultList)
                 self.save_book_sources(book, result_list.clone(), user_name_space, true);
                 return_data.set_data(Box::new(result_list), String::new());
@@ -1947,8 +1970,9 @@ impl BookController {
             }
             book = self.merge_book_cache_info(book).await;
         }
-        self.save_book_cover(book.clone(), user_name_space.clone(), book_source).await;
-        self.save_local_book_cover(book.clone(), user_name_space.clone()).await;
+        // fix: 传可变引用（Kotlin 引用语义——coverUrl 改写必须反映到 saveBookToShelf 持久化；原 clone 导致书架存远程 URL）
+        self.save_book_cover(&mut book, user_name_space.clone(), book_source).await;
+        self.save_local_book_cover(&mut book, user_name_space.clone()).await;
         let result = self.save_book_to_shelf(book, user_name_space, context);
         if let Some(err) = result.second() {
             return_data.set_error_msg(err.clone());
@@ -4432,7 +4456,7 @@ impl BookController {
 
     /// Download and save a book's cover image locally.
     /// JAR signature: public final Object saveBookCover(Book, String, String?, Continuation)
-    pub async fn save_book_cover(&self, mut book: Book, user_name_space: String, book_source: Option<String>) {
+    pub async fn save_book_cover(&self, book: &mut Book, user_name_space: String, book_source: Option<String>) {
         let cover_url = book.get_display_cover();
         if cover_url.is_none() || cover_url.as_ref().unwrap().starts_with("/") {
             return;
@@ -4483,7 +4507,7 @@ impl BookController {
         }
     }
 
-    pub async fn save_local_book_cover(&self, mut book: Book, user_name_space: String) {
+    pub async fn save_local_book_cover(&self, book: &mut Book, user_name_space: String) {
         let cover_url = book.get_display_cover();
         if cover_url.as_ref().map_or(true, |s| s.is_empty()) || cover_url.as_ref().unwrap().starts_with("/") {
             return;

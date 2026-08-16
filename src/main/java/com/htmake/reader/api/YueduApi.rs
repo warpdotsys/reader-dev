@@ -683,13 +683,14 @@ impl YueduApi {
 
             logger.info("开始检查书架书籍更新");
             // 刷新系统默认书架
-            book_controller.get_book_shelf_books(true, "default".to_string());
+            // fix: async fn 未 await——future 被 drop 整链不执行（定时任务静默失效）
+            pollster::block_on(book_controller.get_book_shelf_books(true, "default".to_string()));
 
             // 刷新用户书架
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
                 if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
-                    book_controller.get_book_shelf_books(true, user.username.clone());
+                    pollster::block_on(book_controller.get_book_shelf_books(true, user.username.clone()));
                 }
                 false
             });
@@ -737,13 +738,14 @@ impl YueduApi {
             let book_controller = BookController::new();
 
             // 备份默认用户
-            book_controller.save_to_webdav("default".to_string(), None);
+            // fix: async fn 未 await——future 被 drop 自动备份从未执行
+            pollster::block_on(book_controller.save_to_webdav("default".to_string(), None));
 
             // 备份其他用户
             let user_controller = UserController::new();
             user_controller.for_each_user(&mut |user: &mut User| {
                 if user.last_login_at >= System::current_time_millis() - 259200000_i64 {
-                    book_controller.save_to_webdav(user.username.clone(), None);
+                    pollster::block_on(book_controller.save_to_webdav(user.username.clone(), None));
                 }
                 false
             });

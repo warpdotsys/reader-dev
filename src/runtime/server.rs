@@ -142,13 +142,15 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
 
 // 路径匹配：返回特异性分数（越高越优先），None 表示不匹配
 // 精确路径 > 带通配前缀 > 全通配（/*）> 空路径（route()）
-/// 解析请求体：multipart/form-data 提取文件并保存到 storage/file-uploads；否则按 UTF-8 文本
-fn parse_http_body(bytes: &[u8], content_type: &str) -> (String, Vec<String>) {
+/// 解析请求体：multipart/form-data 提取文件并保存到 storage/file-uploads（返回表单字段以合并进参数，
+/// 对齐 vert.x BodyHandler setMergeFormAttributes(true)）；否则按 UTF-8 文本
+/// 返回 (body_str, [(保存路径, 客户端原始文件名)], 表单字段)
+fn parse_http_body(bytes: &[u8], content_type: &str) -> (String, Vec<(String, String)>, Vec<(String, String)>) {
     let ct_lower = content_type.to_lowercase();
     if ct_lower.contains("multipart/form-data") {
         let boundary = extract_boundary(content_type);
         if let Some(boundary) = boundary {
-            let files = parse_multipart(bytes, &boundary);
+            let (files, form_fields) = parse_multipart(bytes, &boundary);
             let mut uploads = Vec::new();
             let dir = std::path::Path::new("storage").join("file-uploads");
             let _ = std::fs::create_dir_all(&dir);
@@ -162,13 +164,13 @@ fn parse_http_body(bytes: &[u8], content_type: &str) -> (String, Vec<String>) {
                     .collect();
                 let path = dir.join(format!("{}_{}", name, safe_name));
                 let _ = std::fs::write(&path, &data);
-                uploads.push(path.to_string_lossy().to_string());
+                uploads.push((path.to_string_lossy().to_string(), safe_name));
             }
-            return (String::new(), uploads);
+            return (String::new(), uploads, form_fields);
         }
-        (String::new(), Vec::new())
+        (String::new(), Vec::new(), Vec::new())
     } else {
-        (String::from_utf8_lossy(bytes).to_string(), Vec::new())
+        (String::from_utf8_lossy(bytes).to_string(), Vec::new(), Vec::new())
     }
 }
 
@@ -182,9 +184,10 @@ fn extract_boundary(content_type: &str) -> Option<String> {
     None
 }
 
-/// 解析 multipart body：返回 (字段名, 数据, 文件名)
-fn parse_multipart(bytes: &[u8], boundary: &str) -> Vec<(String, Vec<u8>, String)> {
+/// 解析 multipart body：返回 (文件[(字段名, 数据, 文件名)], 表单字段[(字段名, 值)])
+fn parse_multipart(bytes: &[u8], boundary: &str) -> (Vec<(String, Vec<u8>, String)>, Vec<(String, String)>) {
     let mut result = Vec::new();
+    let mut form_fields = Vec::new();
     let boundary_bytes = format!("--{}", boundary).into_bytes();
     let body = bytes;
     let mut pos = 0usize;
@@ -224,7 +227,12 @@ fn parse_multipart(bytes: &[u8], boundary: &str) -> Vec<(String, Vec<u8>, String
                 }
             }
             if !name.is_empty() {
-                result.push((name, data, filename));
+                if filename.is_empty() {
+                    // fix: 普通表单字段合并（对齐 vert.x setMergeFormAttributes(true)）
+                    form_fields.push((name, String::from_utf8_lossy(&data).to_string()));
+                } else {
+                    result.push((name, data, filename));
+                }
             }
         }
         // 跳过 --boundary（可能是结尾 --boundary--）
@@ -237,7 +245,7 @@ fn parse_multipart(bytes: &[u8], boundary: &str) -> Vec<(String, Vec<u8>, String
             pos += 2;
         }
     }
-    result
+    (result, form_fields)
 }
 
 fn find_bytes(haystack: &[u8], needle: &[u8], start: usize) -> Option<usize> {
@@ -304,24 +312,25 @@ fn execute_rules(
     query_map: &HashMap<String, String>,
     headers: &HashMap<String, String>,
     body: String,
-    file_uploads: Vec<String>,
+    raw_body: Vec<u8>,
+    file_uploads: Vec<(String, String)>,
     path_params: &HashMap<String, String>,
 ) -> (i32, HashMap<String, String>, Option<Vec<u8>>) {
     let path = uri.split('?').next().unwrap_or(uri).to_string();
-    // 选择特异性最高的匹配规则（vertx 语义：最长匹配优先）
-    let mut best: Option<(i32, &RouteRule)> = None;
+    // fix: vert.x 链式语义——收集所有匹配规则（按特异性降序、同分按注册序），handler 调 next() 继续后续规则
+    //      （原只执行最高分一条：/book-assets/*、/epub/* 的 JS 注入 handler 后 static 永不执行——书籍资源 404）
+    let mut matched: Vec<(i32, usize, &RouteRule)> = Vec::new();
     eprintln!("  match: path={} method={} rules={}", path, method, rules.len());
-    for rule in rules {
+    for (idx, rule) in rules.iter().enumerate() {
         if let Some(score) = rule_match_score(rule, method, &path) {
             eprintln!("    rule {} {:?} score={}", rule.path, rule.method, score);
-            if best.as_ref().map(|(s, _)| score > *s).unwrap_or(true) {
-                best = Some((score, rule));
-            }
+            matched.push((score, idx, rule));
         }
     }
-    let Some((_, rule)) = best else {
+    matched.sort_by_key(|(score, idx, _)| (std::cmp::Reverse(*score), *idx));
+    if matched.is_empty() {
         return (404, HashMap::new(), Some(b"Not Found".to_vec()));
-    };
+    }
     let mut ctx = crate::stubs::io::vertx::RoutingContext::new();
     ctx.file_uploads = file_uploads;
     {
@@ -342,34 +351,79 @@ fn execute_rules(
         req.path_params = path_params.clone();
         req.headers = headers.clone();
         req.body = Some(body.clone());
-        req.raw_body = body.clone().into_bytes();
+        req.raw_body = raw_body;
     }
-    let mut steps = rule.steps.borrow_mut();
-    for step in steps.iter_mut() {
-        match step {
-            RouteStep::Handler(f) => {
-                f(&mut ctx);
-                if ctx.response.borrow().ended {
-                    break;
+    // 链式执行所有匹配规则：handler 调 next() 继续下一条；end()/Static 为终态
+    for (_, _, rule) in matched {
+        ctx.next_called.set(false);
+        let mut steps = rule.steps.borrow_mut();
+        let mut progressed = false;
+        for step in steps.iter_mut() {
+            match step {
+                RouteStep::Handler(f) => {
+                    // fix: Kotlin vert.x 捕获控制器异常 → 500 JSON；转录的 handler 大量使用 unwrap()/panic!，
+                    //      无兜底会杀死整个 HTTP 服务线程。统一 catch_unwind → 500 JSON（模拟 onHandlerError）。
+                    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        f(&mut ctx);
+                    }));
+                    if result.is_err() {
+                        let mut resp = ctx.response.borrow_mut();
+                        resp.status = 500;
+                        resp.headers.insert("content-type".to_string(), "application/json; charset=utf-8".to_string());
+                        resp.body = Some(
+                            format!(
+                                r#"{{"error":"Internal Server Error","exception":"","message":"服务器内部错误","path":"{}","status":500,"timestamp":{}}}"#,
+                                path, crate::stubs::System::current_time_millis()
+                            )
+                            .into_bytes(),
+                        );
+                        resp.ended = true;
+                        let (s, h, b) = (500, resp.headers.clone(), resp.body.clone());
+                        drop(resp);
+                        ctx.run_headers_end_handlers();
+                        return (s, h, b);
+                    }
+                    if ctx.response.borrow().ended {
+                        let r = ctx.response.borrow();
+                        let status = if r.status == 0 { 200 } else { r.status };
+                        let (s, h, b) = if let Some(p) = &r.send_file {
+                            if let Ok(content) = std::fs::read(p) {
+                                (status, r.headers.clone(), Some(content))
+                            } else {
+                                (status, r.headers.clone(), r.body.clone())
+                            }
+                        } else {
+                            (status, r.headers.clone(), r.body.clone())
+                        };
+                        drop(r);
+                        ctx.run_headers_end_handlers();
+                        return (s, h, b);
+                    }
+                    if ctx.next_called.get() {
+                        progressed = true;
+                        break;
+                    }
+                    // handler 未 end 也未 next → 链终止（对齐 vert.x）
+                    ctx.run_headers_end_handlers();
+                    return (404, HashMap::new(), Some(b"Not Found".to_vec()));
+                }
+                RouteStep::Static(sh) => {
+                    let mut resp = ctx.response.borrow_mut();
+                    serve_static(sh, &path, &mut resp);
+                    let r = ctx.response.borrow();
+                    let status = if r.status == 0 { 200 } else { r.status };
+                    let (s, h, b) = (status, r.headers.clone(), r.body.clone());
+                    drop(r);
+                    ctx.run_headers_end_handlers();
+                    return (s, h, b);
                 }
             }
-            RouteStep::Static(sh) => {
-                let mut resp = ctx.response.borrow_mut();
-                serve_static(sh, &path, &mut resp);
-                break;
-            }
+        }
+        if !progressed {
+            break;
         }
     }
-    if ctx.response.borrow().ended {
-        let r = ctx.response.borrow();
-        let status = if r.status == 0 { 200 } else { r.status };
-        if let Some(path) = &r.send_file {
-            if let Ok(content) = std::fs::read(path) {
-                return (status, r.headers.clone(), Some(content));
-            }
-        }
-        return (status, r.headers.clone(), r.body.clone());
-    }
+    ctx.run_headers_end_handlers();
     (404, HashMap::new(), Some(b"Not Found".to_vec()))
 }
 
@@ -400,7 +454,8 @@ async fn dispatch(
     query: axum::extract::Query<HashMap<String, String>>,
     headers: axum::http::HeaderMap,
     body: String,
-    file_uploads: Vec<String>,
+    raw_body: Vec<u8>,
+    file_uploads: Vec<(String, String)>,
 ) -> axum::response::Response {
     eprintln!("dispatch: {} {}", method, uri);
     let mut header_map = HashMap::new();
@@ -428,6 +483,7 @@ async fn dispatch(
         &query.0,
         &header_map,
         body,
+        raw_body,
         file_uploads,
         &params,
     );
@@ -472,8 +528,15 @@ pub fn build_axum_app(router: Router) -> axum::Router {
                     .get("content-type")
                     .map(|v| v.to_str().unwrap_or("").to_string())
                     .unwrap_or_default();
-                let (body_str, file_uploads) = parse_http_body(&body, &content_type);
-                dispatch(rules_static, method, uri, params.0, query, headers, body_str, file_uploads).await
+                // fix: 保留原始字节（WebDAV PUT/封面下载等二进制接口，lossy 解码会损坏数据）
+                let raw_body = body.to_vec();
+                let (body_str, file_uploads, form_fields) = parse_http_body(&body, &content_type);
+                // fix: 表单字段合并进参数（对齐 vert.x setMergeFormAttributes(true)）
+                let mut query_map = query.0.clone();
+                for (k, v) in form_fields {
+                    query_map.insert(k, v);
+                }
+                dispatch(rules_static, method, uri, params.0, axum::extract::Query(query_map), headers, body_str, raw_body, file_uploads).await
             }
         };
         app = app.route(&axpath, axum::routing::any(handler));
@@ -482,6 +545,9 @@ pub fn build_axum_app(router: Router) -> axum::Router {
             app = app.route("/", axum::routing::any(handler));
         }
     }
+
+    // fix: 对齐 vert.x BodyHandler 默认 10MB 上限（axum 默认 2MB 会拒绝大文件上传/WebDAV PUT）
+    app = app.layer(axum::extract::DefaultBodyLimit::max(10 * 1024 * 1024));
 
     async fn not_found() -> axum::response::Response {
         axum::response::Response::builder()
@@ -536,30 +602,42 @@ fn spawn_scheduled_jobs() {
     std::thread::spawn(|| {
         use chrono::Timelike;
         let mut last_run_min: Option<i64> = None;
+        // fix: 每日任务去重（30s 轮询下 23:50:00/23:50:30 各触发一次——Kotlin cron 秒级仅 1 次）
+        let mut last_backup_min: Option<i64> = None;
+        let mut last_clear_min: Option<i64> = None;
+        let mut last_gc_min: Option<i64> = None;
         loop {
             std::thread::sleep(std::time::Duration::from_secs(30));
             let now = chrono::Local::now();
             let total_min = now.hour() as i64 * 60 + now.minute() as i64;
-            let api = crate::com_htmake_reader_api_yueduapi::YueduApi::new();
+            // fix: YueduApi::new 移入 catch_unwind（原在循环体裸调用——panic 杀死整个定时线程，5 个任务永久停止）
+            let api = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                crate::com_htmake_reader_api_yueduapi::YueduApi::new()
+            })) {
+                Ok(api) => api,
+                Err(_) => continue,
+            };
             // 每 10 分钟：书架刷新 + 远程书源订阅（方法内部按配置间隔自判）
             if total_min % 10 == 0 && last_run_min != Some(total_min) {
-                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    api.shelf_update_job();
-                    api.remote_book_source_sub_update_job();
-                }));
+                // fix: 任务各自独立 catch（Kotlin 每任务独立调度——一个任务失败不影响其他）
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.shelf_update_job()));
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.remote_book_source_sub_update_job()));
                 last_run_min = Some(total_min);
             }
             // 23:50 每日自动 WebDAV 备份
-            if now.hour() == 23 && now.minute() == 50 {
+            if now.hour() == 23 && now.minute() == 50 && last_backup_min != Some(total_min) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_backup()));
+                last_backup_min = Some(total_min);
             }
             // 23:59 每日清理不活跃用户
-            if now.hour() == 23 && now.minute() == 59 {
+            if now.hour() == 23 && now.minute() == 59 && last_clear_min != Some(total_min) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.clear_user()));
+                last_clear_min = Some(total_min);
             }
             // 2:00 每日自动 GC
-            if now.hour() == 2 && now.minute() == 0 {
+            if now.hour() == 2 && now.minute() == 0 && last_gc_min != Some(total_min) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_gc()));
+                last_gc_min = Some(total_min);
             }
         }
     });

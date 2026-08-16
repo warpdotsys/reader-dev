@@ -24,6 +24,13 @@ pub struct CookieStore {
     pub cache_instance: Mutex<ACacheManager>,
 }
 
+// fix: SimpleBindings 绑定（AnyDebug 要求 Debug）
+impl std::fmt::Debug for CookieStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "CookieStore({})", self.user_name_space)
+    }
+}
+
 impl CookieStore {
     pub fn new(user_name_space: String) -> CookieStore {
         CookieStore {
@@ -46,7 +53,7 @@ impl CookieStore {
 
 impl CookieStore {
     // fun getKey(url: String, key: String): String = cookieToMap(getCookie(url))[key] ?: ""
-    fn get_key(&self, url: &str, key: &str) -> String {
+    pub fn get_key(&self, url: &str, key: &str) -> String {
         self.cookie_to_map(&self.get_cookie(url)).get(key).cloned().unwrap_or("".to_string())
     }
 

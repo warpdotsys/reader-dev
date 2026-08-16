@@ -66,9 +66,9 @@ impl BookChapterList {
                 while !next_url.is_empty() && !next_url_list.contains(&next_url) {
                     next_url_list.push(next_url.clone());
                     // fix: Kotlin `AnalyzeUrl(mUrl=nextUrl, source=bookSource, ruleData=book,
-                    //      headerMapF=bookSource.getHeaderMap(), debugLog=debugLog)`——AnalyzeUrl::new 收所有权,
-                    //      source/ruleData/debugLog 为引用无法转移, 由 stubs 占位构造（同 AnalyzeRule::new 占位约定）
-                    let mut analyze_url = analyze_url_new_placeholder(next_url.clone(), Some(book_source.clone()), book_source.get_header_map());
+                    //      headerMapF=bookSource.getHeaderMap(), debugLog=debugLog)`——传真实 ruleData
+                    //      （原 None：分页 URL 的 {{bookName}} 失效 + cookie 命名空间变 "unknow"）
+                    let mut analyze_url = analyze_url_new_placeholder(next_url.clone(), Some(book_source.clone()), book_source.get_header_map(), Some(Box::new(book.clone())));
                     let res = analyze_url.get_str_response_await(None, None, false).await;
                     if let Some(next_body) = res.body() {
                         let res_url = res.url();
@@ -93,7 +93,8 @@ impl BookChapterList {
                 let mut url_data: Vec<(String, String, String)> = Vec::new();
                 for it in 0..chapter_data.1.len() {
                     let url_str = chapter_data.1[it].clone();
-                    let mut analyze_url = analyze_url_new_placeholder(url_str.clone(), Some(book_source.clone()), book_source.get_header_map());
+                    // fix: 传真实 ruleData（同分页分支——cookie 命名空间 + {{bookName}}）
+                    let mut analyze_url = analyze_url_new_placeholder(url_str.clone(), Some(book_source.clone()), book_source.get_header_map(), Some(Box::new(book.clone())));
                     let res = analyze_url.get_str_response_await(None, None, false).await;
                     let body_ = res.body().cloned().unwrap();
                     url_data.push((url_str, res.url(), body_));

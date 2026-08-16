@@ -19,6 +19,13 @@ pub struct CacheManager {
     pub cache_instance: Mutex<ACacheManager>,
 }
 
+// fix: SimpleBindings 绑定（AnyDebug 要求 Debug）
+impl std::fmt::Debug for CacheManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "CacheManager({})", self.user_name_space)
+    }
+}
+
 impl CacheManager {
     pub fn new(user_name_space: String) -> CacheManager {
         CacheManager {

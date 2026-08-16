@@ -207,8 +207,10 @@ impl WebdavController {
         let wd_ptr = &*boxed as *const WebdavController;
         router.route_with_path("/reader3/webdav*").global_handler_curd(move |it| {
             let webdav_controller = unsafe { &*wd_ptr };
-            it.add_headers_end_handler(|_| {
-                let mut res = it.response();
+            // fix: headers-end 回调需 'static——克隆 ctx（Rc 共享同一请求/响应对象）
+            let ctx = it.clone();
+            it.add_headers_end_handler(move |_| {
+                let mut res = ctx.response();
                 res.put_header("DAV", "1,2");
                 res.put_header("Access-Control-Allow-Origin", "*");
                 res.put_header("Access-Control-Allow-Credentials", "true");

@@ -8,6 +8,15 @@ pub struct RuleData {
     variable_map: HashMap<String, String>,
 }
 
+// fix: Rss.get_articles 以副本充当 AnalyzeUrl 规则数据（{{put:}} 变量在解析后读回）
+impl Clone for RuleData {
+    fn clone(&self) -> Self {
+        RuleData {
+            variable_map: self.variable_map.clone(),
+        }
+    }
+}
+
 impl RuleDataInterface for RuleData {
     fn variable_map(&self) -> &HashMap<String, String> {
         &self.variable_map

@@ -77,7 +77,7 @@ impl TextFile {
         if tf.book.charset.is_none() {
             tf.book.charset = Some(EncodingDetect::get_encode(tf.book.get_local_file()));
         }
-        let result = String::from_utf8_lossy(&buffer[..]).to_string()
+        let result = decode_bytes_with_opt_charset(&buffer[..], tf.book.charset.as_deref())
             .substring_after(&book_chapter.title)
             .replace_with_regex("^[\\n\\s]+", "　　");
         *book = tf.book;
@@ -101,7 +101,8 @@ impl TextFile {
             }
             self.charset = self.book.file_charset();
             if self.book.toc_url.is_blank() {
-                let block_content = String::from_utf8_lossy(&buffer[0..length as usize]).to_string();
+                // fix: 按检测到的字符集解码（原恒 UTF-8 lossy——GBK txt 乱码 + 偏移漂移）
+                let block_content = decode_bytes_with_opt_charset(&buffer[0..length as usize], self.book.charset.as_deref());
                 self.book.toc_url = self.get_toc_rule(&block_content).map(|p| p.pattern()).unwrap_or(String::new());
             }
         }
@@ -158,8 +159,8 @@ impl TextFile {
                     i -= 1;
                 }
             }
-            //将数据转换成String, 不能超过length
-            block_content = String::from_utf8_lossy(&buffer[0..end]).to_string();
+            //将数据转换成String, 不能超过length（fix: 按检测到的字符集解码——GBK 文件）
+            block_content = decode_bytes_with_opt_charset(&buffer[0..end], self.book.charset.as_deref());
             buffer.copy_within(end..buffer_start + length, 0);
             buffer_start = buffer_start + length - end;
             length = end;
@@ -400,5 +401,15 @@ impl TextFile {
             .iter()
             .filter(|it| it.enable)
             .collect();
+    }
+}
+
+/// 按检测到的字符集解码（GBK/GB18030/Big5 等；无/UTF-8 时按 UTF-8 lossy）
+pub fn decode_bytes_with_opt_charset(bytes: &[u8], charset: Option<&str>) -> String {
+    match charset {
+        Some(c) if !c.is_empty() && !c.eq_ignore_ascii_case("utf-8") && !c.eq_ignore_ascii_case("utf8") => {
+            crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(bytes, c)
+        }
+        _ => String::from_utf8_lossy(bytes).into_owned(),
     }
 }

@@ -21,6 +21,7 @@ use std::cmp::Ordering;
 //    ))]
 //)
 // @JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "origins", "kindList")
+// （Clone 实现见 stubs.rs——字段全 pub 逐项克隆）
 pub struct SearchBook {
     //    @PrimaryKey
     pub book_url: String,

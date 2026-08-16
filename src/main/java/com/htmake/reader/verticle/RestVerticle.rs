@@ -68,8 +68,10 @@ impl RestVerticle {
                 .set_session_cookie_path("/");
         });
         self.router.as_mut().unwrap().route().global_handler(move |it| {
-            it.add_headers_end_handler(|_| {
-                let cookie = it.get_cookie(&cookie_name2);
+            let ctx = it.clone();
+            let cookie_name3 = cookie_name2.clone();
+            it.add_headers_end_handler(move |_| {
+                let cookie = ctx.get_cookie(&cookie_name3);
                 if let Some(mut cookie) = cookie {
                     // 每次访问都延长cookie有效期
                     cookie.set_max_age(2 * 86400 * 1000);
@@ -81,11 +83,12 @@ impl RestVerticle {
 
         // CORS support
         self.router.as_mut().unwrap().route().global_handler(|it| {
-            it.add_headers_end_handler(|_| {
-                let origin = it.request().get_header("Origin");
+            let ctx = it.clone();
+            it.add_headers_end_handler(move |_| {
+                let origin = ctx.request().get_header("Origin");
                 if let Some(origin) = origin {
                     if !origin.is_empty() {
-                        let mut res = it.response();
+                        let mut res = ctx.response();
                         res.put_header("Access-Control-Allow-Origin", &origin);
                         res.put_header("Access-Control-Allow-Credentials", "true");
                         res.put_header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE");

@@ -80,6 +80,19 @@ impl AnalyzeRule {
         // fix: as_any 无法下转 dyn BaseBook（非 Sized），改转具体 Book 再升为 trait 对象；
         //      AnalyzeRule::new 占位构造器填充的 ruleData 非 Book，恒返回 None
         self.rule_data.as_any().downcast_ref::<Book>().map(|b| b as &dyn BaseBook)
+            .or_else(|| self.rule_data.as_any().downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>().map(|b| b as &dyn BaseBook))
+    }
+
+    // fix: 同步搜索条目已解析字段到规则数据（Kotlin ruleData = 正在填充的 searchBook 本体，
+    //      {{bookName}}/{{bookAuthor}} 等自引用实时可见；Rust 以克隆副本充当——需显式同步）
+    pub fn set_book_field(&mut self, key: &str, value: String) {
+        self.book_variables.insert(key.to_string(), value.clone());
+        self.rule_data.set_field(key, value);
+    }
+
+    // fix: 读取规则数据（SearchBook 副本）的 @put: 变量（随条目返回持久化）
+    pub fn rule_data_variable(&self) -> Option<String> {
+        self.rule_data.as_any().downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>().map(|b| b.variable.clone()).flatten()
     }
 
     // @JvmOverloads
@@ -567,9 +580,10 @@ impl AnalyzeRule {
         if let Some(c) = &self.chapter {
             bindings.put("chapter", crate::stubs::Any::Str(crate::stubs::book_chapter_to_json(c).to_string()));
         }
-        // fix: 绑定真实 cookie/cache 数据（原命名空间字符串——依赖这两者的 JS 规则拿到错误值；与 AnalyzeUrl 一致）
-        bindings.set("cookie", crate::io_legado_app_help_http_cookiestore::CookieStore::new(self.get_user_name_space()).get_cookie(""));
-        bindings.set("cache", crate::io_legado_app_help_cachemanager::CacheManager::new(self.get_user_name_space()).get(""));
+        // fix: CookieStore/CacheManager 真实实例绑定（JS 可调方法；原字符串——方法调用 TypeError）
+        let user_name_space = self.get_user_name_space();
+        bindings.put("cookie", crate::io_legado_app_help_http_cookiestore::CookieStore::new(user_name_space.clone()));
+        bindings.put("cache", crate::io_legado_app_help_cachemanager::CacheManager::new(user_name_space));
         bindings.put("result", result);
         bindings.put("baseUrl", self.base_url.clone());
         // fix: chapter 已绑定完整 JSON 对象（book_chapter_to_json），不再用标题字符串覆盖

@@ -554,7 +554,9 @@ pub trait JsExtensions {
         // val unicode = String(utf8.toByteArray(), charset("UTF-8"))
         let unicode = String::from_utf8_lossy(utf8.as_bytes()).into_owned();
         // return String(unicode.toByteArray(charset("GBK")), Charsets.UTF_8)
-        String::from_utf8_lossy(unicode.as_bytes()).into_owned()
+        // fix: 真实 GBK 字节后按 UTF-8 重解释（原三段 lossy 等于恒等变换——GBK 站点编码失效）
+        let (gbk_bytes, _, _) = encoding_rs::GBK.encode(&unicode);
+        String::from_utf8_lossy(&gbk_bytes).into_owned()
     }
 
     fn encode_uri(&self, str: &str) -> String {
@@ -624,7 +626,7 @@ pub trait JsExtensions {
             // val charsetName = EncodingDetect.getEncode(file)
             let charset_name = EncodingDetect::getEncode_file(&file);
             // return String(file.readBytes(), charset(charsetName))
-            return String::from_utf8_lossy(&file.read_bytes()).into_owned();
+            return crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(&file.read_bytes(), &charset_name);
         }
         "".to_string()
     }
@@ -633,7 +635,7 @@ pub trait JsExtensions {
         let file = self.get_file(path);
         if file.exists() {
             // return String(file.readBytes(), charset(charsetName))
-            return String::from_utf8_lossy(&file.read_bytes()).into_owned();
+            return crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(&file.read_bytes(), charset_name);
         }
         "".to_string()
     }
@@ -698,7 +700,8 @@ pub trait JsExtensions {
         // fix: File::list_files 直接返回 Vec<File>，无需 Option 判断
         for f in unzip_folder.list_files() {
             let charset_name = EncodingDetect::getEncode_file(&f);
-            contents.push_str(&String::from_utf8_lossy(&f.read_bytes()));
+            // fix: 按检测到的字符集解码（原恒 UTF-8 lossy——GBK 文件乱码）
+            contents.push_str(&crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(&f.read_bytes(), &charset_name));
             contents.push_str("\n");
         }
         // contents.deleteCharAt(contents.length - 1)
@@ -722,7 +725,7 @@ pub trait JsExtensions {
         // val charsetName = EncodingDetect.getEncode(byteArray)
         let charset_name = EncodingDetect::getEncode(&byte_array);
         // return String(byteArray, Charset.forName(charsetName))
-        String::from_utf8_lossy(&byte_array).into_owned()
+        crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(&byte_array, &charset_name)
     }
 
     fn get_zip_string_content_with_charset(&self, url: &str, path: &str, charset_name: &str) -> String {
@@ -732,7 +735,7 @@ pub trait JsExtensions {
             None => return "".to_string(),
         };
         // return String(byteArray, Charset.forName(charsetName))
-        String::from_utf8_lossy(&byte_array).into_owned()
+        crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(&byte_array, charset_name)
     }
 
     /**

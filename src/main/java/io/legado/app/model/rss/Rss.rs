@@ -23,10 +23,9 @@ impl Rss {
         debug_log: Option<&dyn DebugLog>
     ) -> (Vec<RssArticle>, Option<String>) {
         let rule_data = RuleData::new();
-        // fix: 原 Kotlin AnalyzeUrl(mUrl=sortUrl, page=page, source=rssSource, ruleData=ruleData,
-        //      headerMapF=rssSource.getHeaderMap(), debugLog=debugLog)；转录 new 收所有权，
-        //      source/ruleData 类型不匹配或需所有权 → 置空占位（同 analyze_url_new_placeholder 约定），
-        //      debug_log 借用型无法转 Box，以 Debug 占位保持 is_some 语义
+        // fix: Kotlin AnalyzeUrl(mUrl=sortUrl, page=page, source=rssSource, ruleData=ruleData,
+        //      headerMapF=rssSource.getHeaderMap(), debugLog=debugLog)——ruleData 真实传入
+        //      （原 None：sortUrl 的 {{put:}} 变量丢失）；source 因类型限制（AnalyzeUrl 仅收 BookSource）置空
         let mut analyze_url = AnalyzeUrl::new(
             sort_url.to_string(),
             None,
@@ -35,7 +34,7 @@ impl Rss {
             None,
             String::new(),
             None,
-            None,
+            Some(Box::new(rule_data.clone())),
             None,
             rss_source.get_header_map(),
             debug_log.map(|dl| dl.clone_box())
@@ -54,18 +53,19 @@ impl Rss {
         rss_source: &RssSource,
         debug_log: Option<&dyn DebugLog>
     ) -> String {
-        // fix: 原 Kotlin AnalyzeUrl(mUrl=rssArticle.link, key=rssArticle.origin, source=rssSource,
-        //      ruleData=rssArticle, headerMapF=rssSource.getHeaderMap(), debugLog=debugLog)；
-        //      source/ruleData 需所有权置空占位，debug_log 以 Debug 占位
+        // fix: Kotlin AnalyzeUrl(mUrl=rssArticle.link, baseUrl=rssArticle.origin, source=rssSource,
+        //      ruleData=rssArticle, headerMapF=rssSource.getHeaderMap(), debugLog=debugLog)——
+        //      原参数错位（origin 塞进 key、base_url 空串→相对 link 抓取失败）；
+        //      ruleData 真实传入（{{put:}} 变量）；source 因类型限制置空
         let mut analyze_url = AnalyzeUrl::new(
             rss_article.link.clone(),
-            Some(rss_article.origin.clone()),
             None,
             None,
             None,
-            String::new(),
             None,
+            rss_article.origin.clone(),
             None,
+            Some(Box::new(rss_article.clone())),
             None,
             rss_source.get_header_map(),
             debug_log.map(|dl| dl.clone_box())
@@ -78,8 +78,9 @@ impl Rss {
         // fix: E0596 set_content/get_string 需要 &mut self
         let mut analyze_rule = AnalyzeRule::new(&*rss_article, None, debug_log);
         analyze_rule.set_content(body.map(|s| Box::new(Any::Str(s))), None)
-            // fix: get_absolute_url 占位签名 (Option<&URL>, String)——原 Kotlin 传 baseUrl(rssArticle.origin)
-            .set_base_url(Some(get_absolute_url(None, rss_article.link.clone())));
+            // fix: 基准 = origin 解析 link（Kotlin NetworkUtils.getAbsoluteURL(rssArticle.origin, rssArticle.link)；
+            //      原 get_absolute_url(None, link)——相对 link 基准错误）
+            .set_base_url(Some(get_absolute_url(crate::stubs::URL::parse(&rss_article.origin).ok().as_ref(), rss_article.link.clone())));
         return analyze_rule.get_string(Some(rule_content.to_string()), None, false);
     }
 }

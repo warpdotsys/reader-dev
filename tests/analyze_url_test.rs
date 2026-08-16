@@ -48,9 +48,9 @@ fn test_regex_direct() {
 #[test]
 fn test_analyze_url_js_and_page() {
     use reader::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl;
-    // @js: 段执行（URL 构造）
+    // @js: 段执行（URL 构造）——Kotlin 语义：@js: 贪婪到串尾（无闭合 @）
     let mut au = AnalyzeUrl::new(
-        "http://x.com/@js:1+2@.html".to_string(),
+        "http://x.com/@js:1+2".to_string(),
         None,
         None,
         None,
@@ -67,5 +67,5 @@ fn test_analyze_url_js_and_page() {
     au.init_url();
     let url = au.rule_url.clone();
     println!("DBG js url: {}", url);
-    assert!(url.contains("3.html"), "@js 应执行: {}", url);
+    assert!(url.contains("3"), "@js 应执行: {}", url);
 }

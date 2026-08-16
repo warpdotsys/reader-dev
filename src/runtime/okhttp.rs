@@ -49,30 +49,28 @@ fn execute_inner(
         .build()
         .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
 
-    let url = if req.form_fields.is_empty() {
-        req.url.clone()
-    } else {
-        let mut u = req.url.clone();
-        let sep = if u.contains('?') { '&' } else { '?' };
-        let mut parts = Vec::new();
-        for (k, v) in &req.form_fields {
-            parts.push(format!("{}={}", k, v));
-        }
-        u.push(sep);
-        u.push_str(&parts.join("&"));
-        u
-    };
-
+    // fix: POST form 的 body 作为请求体发送（Kotlin FormBody 语义），不拼 URL
     let mut builder = if req.method == "POST" {
-        client.post(&url)
+        let mut b = client.post(&req.url);
+        // fix: form body 必须带 Content-Type: application/x-www-form-urlencoded
+        let has_ct = req.headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("content-type"));
+        if !has_ct {
+            if let Some(ct) = &req.content_type {
+                b = b.header("Content-Type", ct);
+            }
+        }
+        b
     } else {
-        client.get(&url)
+        client.get(&req.url)
     };
 
     for (k, v) in &req.headers {
         builder = builder.header(k, v);
     }
-    if let Some(body) = &req.body {
+    // fix: 二进制 body 用原始字节（lossy 文本会损坏）
+    if let Some(body_bytes) = &req.body_bytes {
+        builder = builder.body(body_bytes.clone());
+    } else if let Some(body) = &req.body {
         builder = builder.body(body.clone());
     }
 
@@ -82,17 +80,24 @@ fn execute_inner(
 
     let status = resp.status().as_u16() as i32;
     let mut headers = std::collections::HashMap::new();
+    let mut headers_multi = std::collections::HashMap::new();
     for (k, v) in resp.headers() {
+        let key = k.as_str().to_lowercase();
         if let Ok(v) = v.to_str() {
-            headers.insert(k.as_str().to_string(), v.to_string());
+            headers.insert(key.clone(), v.to_string());
+            headers_multi.entry(key).or_insert_with(Vec::new).push(v.to_string());
         }
     }
     let final_url = resp.url().to_string();
-    let body_text = resp.text().unwrap_or_default();
+    // fix: 保留原始字节（lossy 解码会损坏二进制内容——封面/图片/EPUB 下载）
+    let body_bytes = resp.bytes().unwrap_or_default().to_vec();
+    let body_text = String::from_utf8_lossy(&body_bytes).into_owned();
     Ok(Response {
         status,
         headers,
+        headers_multi,
         body_text,
+        body_bytes,
         url: final_url,
     })
 }
@@ -264,8 +269,10 @@ fn parse_http_response(stream: &mut std::net::TcpStream) -> Result<Response, cra
     }
     Ok(Response {
         status,
-        headers,
+        headers: headers.clone(),
+        headers_multi: headers.iter().map(|(k, v)| (k.clone(), vec![v.clone()])).collect(),
         body_text: String::from_utf8_lossy(&body).into_owned(),
+        body_bytes: body,
         url: String::new(),
     })
 }

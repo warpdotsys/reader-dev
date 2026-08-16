@@ -148,9 +148,10 @@ impl ResponseHandle {
 pub struct RoutingContext {
     pub request: Rc<RefCell<HttpRequest>>,
     pub response: Rc<RefCell<HttpResponse>>,
-    pub next_called: bool,
+    pub next_called: std::rc::Rc<std::cell::Cell<bool>>,
     pub failed: Option<Throwable>,
-    pub file_uploads: Vec<String>,
+    pub headers_end_handlers: std::rc::Rc<std::cell::RefCell<Vec<Box<dyn FnOnce() + 'static>>>>,
+    pub file_uploads: Vec<(String, String)>,
     pub store: Rc<RefCell<HashMap<String, Rc<dyn std::any::Any>>>>,
     pub base_path: String,
 }
@@ -160,8 +161,9 @@ impl Default for RoutingContext {
         RoutingContext {
             request: Rc::new(RefCell::new(HttpRequest::default())),
             response: Rc::new(RefCell::new(HttpResponse::default())),
-            next_called: false,
+            next_called: std::rc::Rc::new(std::cell::Cell::new(false)),
             failed: None,
+            headers_end_handlers: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
             file_uploads: Vec::new(),
             store: Rc::new(RefCell::new(HashMap::new())),
             base_path: String::new(),
@@ -230,8 +232,9 @@ impl RoutingContext {
     }
 
     pub fn next(&self) {
-        // 链式 handler 由服务器调度；next 语义：不再拦截，继续后续 handler。
-        // 单 handler 场景无需动作。
+        // fix: 链式 handler 语义（Kotlin handler 调 next() 继续后续匹配路由；原 no-op 导致
+        //      /book-assets/*、/epub/* 的 JS 注入 handler 后 static 永不执行——书籍资源 404）
+        self.next_called.set(true);
     }
 
     pub fn absolute_uri(&self) -> String {
@@ -246,12 +249,23 @@ impl RoutingContext {
         self.request.borrow().get_header(name)
     }
 
-    pub fn add_headers_end_handler(&self, _f: impl FnOnce(())) {
-        // 响应头结束回调：CORS 头已在服务器层统一处理
+    // fix: 真实存储并执行（原 no-op——WebDAV 的 DAV/MS-Author-Via/Allow 响应头全部缺失，
+    //      客户端无法协商挂载）；在 execute_rules 响应返回前统一执行
+    pub fn add_headers_end_handler(&self, f: impl FnOnce(()) + 'static) {
+        let stored: Box<dyn FnOnce() + 'static> = Box::new(move || f(()));
+        self.headers_end_handlers.borrow_mut().push(stored);
+    }
+
+    /// 执行所有已注册的 headers-end 回调（响应发送前）
+    pub fn run_headers_end_handlers(&self) {
+        let handlers = std::mem::take(&mut *self.headers_end_handlers.borrow_mut());
+        for h in handlers {
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(h));
+        }
     }
 
     pub fn file_uploads(&self) -> Vec<String> {
-        self.file_uploads.clone()
+        self.file_uploads.iter().map(|(p, _)| p.clone()).collect()
     }
 
     pub fn body_as_string(&self) -> String {
@@ -394,7 +408,12 @@ impl RoutingContext {
         if self.file_uploads.is_empty() {
             None
         } else {
-            Some(self.file_uploads.iter().map(|p| FileUpload::new(p.clone())).collect())
+            Some(
+                self.file_uploads
+                    .iter()
+                    .map(|(path, name)| FileUpload::new(path.clone(), name.clone()))
+                    .collect(),
+            )
         }
     }
 
@@ -442,18 +461,19 @@ impl Session {
 }
 
 pub struct FileUpload {
-    pub file_name: String,
+    pub uploaded_path: String,
+    pub original_name: String,
 }
 
 impl FileUpload {
-    pub fn new(file_name: String) -> FileUpload {
-        FileUpload { file_name }
+    pub fn new(uploaded_path: String, original_name: String) -> FileUpload {
+        FileUpload { uploaded_path, original_name }
     }
     pub fn uploaded_file_name(&self) -> String {
-        self.file_name.clone()
+        self.uploaded_path.clone()
     }
     pub fn file_name(&self) -> String {
-        self.file_name.clone()
+        self.original_name.clone()
     }
 }
 

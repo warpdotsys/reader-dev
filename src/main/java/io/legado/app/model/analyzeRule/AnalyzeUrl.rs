@@ -178,26 +178,15 @@ impl AnalyzeUrl {
                 s.base_url = s.base_url[..url_matcher.start()].to_string(); // baseUrl = baseUrl.substring(0, urlMatcher.start())
             }
             // (headerMapF ?: source?.getHeaderMap(true))?.let {
-            // fix: BookSource 未实现 BaseSource（无 get_header_map 方法），占位为 UA 头（同 BaseSource::get_header_map 基础逻辑）
+            // fix: 真实书源 header 解析（@js:/<js> 求值 + 登录头合并；原占位 JSON 原样塞 "header" 头）
             let header_map_f = header_map_f.or_else(|| {
                 s.source.as_ref().map(|src| {
-                    let mut hm = HashMap::new();
-                    hm.insert(AppConst::UA_NAME.to_string(), AppConst::userAgent());
-                    if let Some(h) = src.header.clone() {
-                        // fix: 解析书源 header JSON（{"key":"value"}）为多个头（Kotlin getHeaderMap 语义）
-                        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&h) {
-                            if let Some(obj) = v.as_object() {
-                                for (k, val) in obj {
-                                    if let Some(s) = val.as_str() {
-                                        hm.insert(k.clone(), s.to_string());
-                                    }
-                                }
-                            }
-                        } else {
-                            hm.insert("header".to_string(), h);
-                        }
-                    }
-                    hm
+                    crate::stubs::parse_source_header_map(
+                        src.header.clone(),
+                        true,
+                        Some(src.get_key()),
+                        Some(s.get_user_name_space()),
+                    )
                 })
             });
             if let Some(it) = header_map_f {
@@ -238,45 +227,59 @@ impl AnalyzeUrl {
 
     /**
      * 执行@js,<js></js>
+     * fix: 对齐 Kotlin analyzeJs（JS_PATTERN="<js>([\w\W]*?)</js>|@js:([\w\W]*)" 大小写不敏感）：
+     *      ①匹配前文本段 trim 后 @result 替换为当前 ruleUrl（Kotlin L108-114）；
+     *      ②<js> 非贪婪到 </js>、@js: 贪婪吃到字符串末尾（group2 优先）；
+     *      ③eval 结果整体替换 ruleUrl（Kotlin L115 `ruleUrl = evalJS(...) as String`）
+     *      原实现：@js: 要求闭合 @（无闭合段不执行——主流 "@js:计算URL" 写法直接失败）、拼接而非替换
      */
     fn analyze_js(&mut self) {
-        // fix: 原 JS_PATTERN 匹配恒空 → 真实扫描 <js>...</js> 与 @js:...@ 段并执行
-        let mut result = String::new();
-        let mut rest = self.rule_url.clone();
+        let original = self.rule_url.clone();
+        let mut rule_url = original.clone();
+        let mut start = 0usize;
         loop {
-            if let Some(start) = rest.find("<js>") {
-                result.push_str(&rest[..start]);
-                if let Some(end_rel) = rest[start..].find("</js>") {
-                    let js = &rest[start + 4..start + end_rel];
-                    let val = self
-                        .eval_js(js.to_string(), Some(&rest))
-                        .map(|v| v.to_string())
-                        .unwrap_or_default();
-                    result.push_str(&val);
-                    rest = rest[start + end_rel + 5..].to_string();
-                    continue;
-                }
+            let lower = original[start..].to_lowercase();
+            let rel = match (lower.find("<js>"), lower.find("@js:")) {
+                (Some(a), Some(b)) => Some(a.min(b)),
+                (Some(a), None) => Some(a),
+                (None, Some(b)) => Some(b),
+                (None, None) => None,
+            };
+            let Some(rel) = rel else { break };
+            let abs = start + rel;
+            // 匹配前文本段（Kotlin substring(start, matchStart).trim；非空则 @result 替换为当前 ruleUrl）
+            let prefix = if abs <= rule_url.len() { rule_url[..abs].trim().to_string() } else { String::new() };
+            if !prefix.is_empty() {
+                rule_url = prefix.replace("@result", &rule_url);
             }
-            if let Some(start) = rest.find("@js:") {
-                result.push_str(&rest[..start]);
-                // 从 @js: 之后找结束 @
-                if let Some(end_rel) = rest[start + 4..].find('@') {
-                    if end_rel > 0 {
-                        let js = &rest[start + 4..start + 4 + end_rel];
-                        let val = self
-                            .eval_js(js.to_string(), Some(&rest))
-                            .map(|v| v.to_string())
-                            .unwrap_or_default();
-                        result.push_str(&val);
-                        rest = rest[start + 4 + end_rel + 1..].to_string();
-                        continue;
-                    }
+            let is_tag = original[abs..].starts_with('<');
+            let js = if is_tag {
+                // <js>([\w\W]*?)</js> 非贪婪
+                let rest = &original[abs + 4..];
+                match rest.to_lowercase().find("</js>") {
+                    Some(e) => rest[..e].to_string(),
+                    None => break,
                 }
+            } else {
+                // @js:([\w\W]*) 贪婪到串尾（group2）
+                original[abs + 4..].to_string()
+            };
+            let val = self.eval_js(js, Some(&rule_url.clone())).map(|v| v.to_string()).unwrap_or_default();
+            // Kotlin: ruleUrl = evalJS(...) as String（整体替换）
+            rule_url = val;
+            if is_tag {
+                // 从 </js> 后继续（Kotlin start = matcher.end()）
+                if let Some(e) = original[abs + 4..].to_lowercase().find("</js>") {
+                    start = abs + 4 + e + 5;
+                } else {
+                    break;
+                }
+            } else {
+                // @js: 吃到串尾——循环结束
+                break;
             }
-            result.push_str(&rest);
-            break;
         }
-        self.rule_url = result;
+        self.rule_url = rule_url;
     }
 
     /**
@@ -441,9 +444,11 @@ impl AnalyzeUrl {
         let mut bindings = SimpleBindings::new(); // val bindings = SimpleBindings()
         // fix: java 由全局对象提供（eval_js_script 注册扩展方法），此处不覆盖
         bindings.set("baseUrl", self.base_url.clone());
-        // fix: CookieStore/CacheManager 占位——绑定命名空间字符串
-        bindings.set("cookie", CookieStore::new(self.get_user_name_space()).get_cookie("")); // bindings["cookie"] = CookieStore(...)
-        bindings.set("cache", CacheManager::new(self.get_user_name_space()).get("")); // bindings["cache"] = CacheManager(...)
+        // fix: CookieStore/CacheManager 真实实例绑定（JS 可调 cookie.getCookie()/cookie.setCookie()/cache.get()/cache.put()；
+        //      原绑定字符串——方法调用 TypeError、cookie 登录流程全失效）
+        let user_name_space = self.get_user_name_space();
+        bindings.put("cookie", CookieStore::new(user_name_space.clone()));
+        bindings.put("cache", CacheManager::new(user_name_space));
         bindings.set("page", self.page);
         bindings.set("key", self.key.clone());
         bindings.set("speakText", self.speak_text.clone());
