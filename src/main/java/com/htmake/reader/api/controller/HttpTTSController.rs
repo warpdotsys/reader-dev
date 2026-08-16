@@ -118,4 +118,9 @@ impl HttpTTSController {
     pub fn delete_http_tts(&self, context: &RoutingContext) -> ReturnData {
         return self.delete(context);
     }
+
+    // fix: deleteMulti 路由原指向单删（前端发数组→单删解析失败；Kotlin 继承缺陷）——真批量删除
+    pub fn delete_http_tts_list(&self, context: &RoutingContext) -> ReturnData {
+        return self.delete_multi(context);
+    }
 }

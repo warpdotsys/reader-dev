@@ -121,12 +121,14 @@ impl NetworkUtils {
         if url == None || !url.unwrap().starts_with("http") {
             return None;
         }
-        let index = url.unwrap().index_of("/", 9);
-        if index == -1 {
-            Some(url.unwrap().to_string())
-        } else {
-            Some(url.unwrap()[0..index as usize].to_string())
+        // fix: 字节安全切片（原 index_of 返回字节索引 + s[0..index]——IDN 域名（http://中文.com/）第 9 字节落在多字节字符内 → panic）
+        let s = url.unwrap();
+        for (pos, (byte_idx, c)) in s.char_indices().enumerate() {
+            if pos >= 9 && c == '/' {
+                return Some(s[..byte_idx].to_string());
+            }
         }
+        Some(s.to_string())
     }
 
     pub fn getSubDomain(url: Option<&str>) -> String {

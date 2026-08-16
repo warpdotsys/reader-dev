@@ -117,6 +117,8 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
             let mime = mime_guess::from_path(&full).first_or_octet_stream();
             response.status = 200;
             response.headers.insert("content-type".to_string(), mime.to_string());
+            // fix: 静态资源缓存头（vert.x StaticHandler 默认 Cache-Control: max-age=86400）
+            response.headers.insert("cache-control".to_string(), "max-age=86400".to_string());
             response.body = Some(bytes);
             response.ended = true;
             return;
@@ -129,6 +131,7 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
     if let Ok(bytes) = std::fs::read(&index) {
         response.status = 200;
         response.headers.insert("content-type".to_string(), "text/html; charset=utf-8".to_string());
+        response.headers.insert("cache-control".to_string(), "max-age=86400".to_string());
         response.body = Some(bytes);
         response.ended = true;
         return;
@@ -329,6 +332,14 @@ fn execute_rules(
     }
     matched.sort_by_key(|(score, idx, _)| (std::cmp::Reverse(*score), *idx));
     if matched.is_empty() {
+        // fix: 路径匹配但方法不匹配 → 405（vert.x 语义；原落 /* 静态 404）
+        let method_mismatch = rules.iter().any(|rule| {
+            rule_match_score(&RouteRule { path: rule.path.clone(), method: None, steps: rule.steps.clone() }, method, &path).is_some()
+                && rule_match_score(rule, method, &path).is_none()
+        });
+        if method_mismatch {
+            return (405, HashMap::new(), Some(b"Method Not Allowed".to_vec()));
+        }
         return (404, HashMap::new(), Some(b"Not Found".to_vec()));
     }
     let mut ctx = crate::stubs::io::vertx::RoutingContext::new();
@@ -389,10 +400,19 @@ fn execute_rules(
                         let r = ctx.response.borrow();
                         let status = if r.status == 0 { 200 } else { r.status };
                         let (s, h, b) = if let Some(p) = &r.send_file {
-                            if let Ok(content) = std::fs::read(p) {
-                                (status, r.headers.clone(), Some(content))
-                            } else {
-                                (status, r.headers.clone(), r.body.clone())
+                            match std::fs::read(p) {
+                                Ok(content) => {
+                                    // fix: 自动推断 Content-Type（vert.x sendFile 语义；原未设时缺失——浏览器按 octet-stream 处理）
+                                    let mut headers = r.headers.clone();
+                                    if !headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("content-type")) {
+                                        if let Some(mime) = mime_guess::from_path(p).first_raw() {
+                                            headers.insert("content-type".to_string(), mime.to_string());
+                                        }
+                                    }
+                                    (status, headers, Some(content))
+                                }
+                                // fix: 读取失败 → 404（原 200 空 body——文件不存在时静默成功）
+                                Err(_) => (404, r.headers.clone(), Some(b"Not Found".to_vec())),
                             }
                         } else {
                             (status, r.headers.clone(), r.body.clone())
@@ -474,7 +494,8 @@ async fn dispatch(
         let mut h = HashMap::new();
         h.insert("Access-Control-Allow-Origin".to_string(), origin.clone());
         h.insert("Access-Control-Allow-Credentials".to_string(), "true".to_string());
-        h.insert("Access-Control-Allow-Methods".to_string(), "GET, POST, PATCH, PUT, DELETE, OPTIONS".to_string());
+        // fix: 对齐 Kotlin Allow-Methods（原多 OPTIONS）
+        h.insert("Access-Control-Allow-Methods".to_string(), "GET, POST, PATCH, PUT, DELETE".to_string());
         h.insert("Access-Control-Allow-Headers".to_string(), "Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With".to_string());
         return axum_response(200, &h, Some(b"".to_vec()));
     }

@@ -155,6 +155,8 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
     // jsoup 伪类降级（:contains/:containsOwn/:eq/:gt/:lt/:first/:last——scraper 不支持）
     let (base_css, pseudos, tail) = parse_jsoup_pseudo(css);
     let Ok(sel) = scraper::Selector::parse(&base_css) else {
+        // fix: 无效选择器打日志（原静默空——拼错选择器难以排查；Kotlin 抛 SelectorParseException）
+        eprintln!("[jsoup] 无效选择器: {:?} (原规则: {})", base_css, css);
         return Elements::default();
     };
     let mut list: Vec<Element> = Vec::new();

@@ -808,8 +808,10 @@ pub fn parse_json_string_list(
             }
             if let Some(ce) = check_not_empty.as_ref() {
                 for k in ce {
-                    let v = object_node.0.get(k).cloned().unwrap_or_default();
-                    item.put(k, !v.is_empty());
+                    // fix: Kotlin 仅对象存在该字段时 put（缺失 → 键不存在；原无条件 put——缺失产生显式 false）
+                    if let Some(v) = object_node.0.get(k) {
+                        item.put(k, !v.is_empty());
+                    }
                 }
             }
             result_list.add(item.to_string());

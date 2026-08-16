@@ -96,7 +96,12 @@ where
             need_continue(result_list, loop_count);
             break;
         }
-        if !need_continue(result_list, loop_count) {
+        // fix: 对齐 Kotlin limitConcurrent——空结果批次不触发 needContinue（仅结果非空时判断终止；
+        //      原空批次也调——结果已达标时空批次提前终止，与 Kotlin 多跑一轮差异）
+        let batch_non_empty = result_list.iter().any(|r| {
+            r.downcast_ref::<Vec<SearchBook>>().map(|v| !v.is_empty()).unwrap_or(true)
+        });
+        if batch_non_empty && !need_continue(result_list, loop_count) {
             break;
         }
         loop_count += 1;
@@ -143,7 +148,8 @@ macro_rules! mutable_set_of {
 //      书籍信息缓存不刷新、失败书源被永久跳过）
 #[derive(Clone, Default)]
 pub struct LocalCache {
-    map: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, (String, i64)>>>,
+    // (value, deadline, insert_time)
+    map: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, (String, i64, i64)>>>,
 }
 
 impl LocalCache {
@@ -155,7 +161,7 @@ impl LocalCache {
     pub fn get_as_string(&self, key: &str) -> Option<String> {
         let mut m = self.map.lock().unwrap();
         match m.get(key) {
-            Some((v, deadline)) => {
+            Some((v, deadline, _)) => {
                 if *deadline == 0 || *deadline > crate::stubs::System::now_millis() {
                     Some(v.clone())
                 } else {
@@ -170,12 +176,16 @@ impl LocalCache {
         self.get_as_string(hash_code)
     }
     pub fn put(&self, key: &str, value: &str, save_time: i32) {
-        let deadline = if save_time == 0 {
-            0
-        } else {
-            crate::stubs::System::now_millis() + save_time as i64 * 1000
-        };
-        self.map.lock().unwrap().insert(key.to_string(), (value.to_string(), deadline));
+        let now = crate::stubs::System::now_millis();
+        let deadline = if save_time == 0 { 0 } else { now + save_time as i64 * 1000 };
+        let mut m = self.map.lock().unwrap();
+        // fix: 容量上限（对齐 Kotlin ACache 10000 条目——原无界 HashMap 内存无限增长）
+        if !m.contains_key(key) && m.len() >= 10_000 {
+            if let Some(oldest) = m.iter().min_by_key(|(_, (_, _, t))| *t).map(|(k, _)| k.clone()) {
+                m.remove(&oldest);
+            }
+        }
+        m.insert(key.to_string(), (value.to_string(), deadline, now));
     }
 }
 
@@ -1195,6 +1205,13 @@ impl BookController {
             // get 请求
             rule_find_url = context.query_param("ruleFindUrl").unwrap_or_default();
             page = context.query_param("page").map(|s| s.to_int()).unwrap_or(1);
+        }
+
+        // fix: ruleFindUrl 缺失时整请求失败（Kotlin exploreBook(null) → AnalyzeUrl NPE → 500；
+        //      原空串对书源根 URL 发请求——返回无关数据/空列表）
+        if rule_find_url.is_empty() {
+            return_data.set_error_msg("获取探索链接失败".to_string());
+            return return_data;
         }
 
         let result = self
@@ -2407,36 +2424,54 @@ impl BookController {
             return Vec::new();
         }
         let mut book_list: Vec<Book> = Vec::new();
-        let sync_mutex = std::sync::Mutex::new(());
+        // fix: Kotlin limitConcurrent(16) 并发刷新（原串行——大书架刷新线性放大）；
+        //      结果按原书架索引排序（保持书架顺序稳定）
+        let mut futures: Vec<(usize, std::pin::Pin<Box<dyn std::future::Future<Output = Book> + Send>>)> = Vec::new();
         for i in 0..bookshelf.size() {
             let mut book = bookshelf.get_json_object(i).map_to::<Book>().unwrap_or_default();
             book.is_in_shelf = true;
             if !book.is_local_book() && book.can_update && refresh {
-                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    let book_source = self.get_book_source_string_by_source_url_opt(book.origin.clone(), user_name_space.clone());
-                    if book_source.is_some() {
-                        let book_chapter_list = crate::stubs::block_on(self.get_local_chapter_list(
-                            book.clone(),
-                            book_source,
-                            refresh,
-                            user_name_space.clone(),
-                            false,
-                            None,
-                        ));
-                        if book_chapter_list.len() > 0 {
-                            let book_chapter = book_chapter_list.last().cloned().unwrap_or_default();
-                            book.latest_chapter_title = Some(book_chapter.title);
+                let b = book.clone();
+                let ns = user_name_space.clone();
+                let self_ref = self;
+                futures.push((i as usize, Box::pin(async move {
+                    let mut book = b;
+                    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        let book_source = self_ref.get_book_source_string_by_source_url_opt(book.origin.clone(), ns.clone());
+                        if book_source.is_some() {
+                            let book_chapter_list = crate::stubs::block_on(self_ref.get_local_chapter_list(
+                                book.clone(),
+                                book_source,
+                                refresh,
+                                ns.clone(),
+                                false,
+                                None,
+                            ));
+                            if book_chapter_list.len() > 0 {
+                                let book_chapter = book_chapter_list.last().cloned().unwrap_or_default();
+                                book.latest_chapter_title = Some(book_chapter.title);
+                            }
+                            if book_chapter_list.len() as i32 - book.total_chapter_num > 0 {
+                                book.last_check_time = System::current_time_millis();
+                                book.last_check_count = book_chapter_list.len() as i32 - book.total_chapter_num;
+                            }
+                            book.total_chapter_num = book_chapter_list.len() as i32;
                         }
-                        if book_chapter_list.len() as i32 - book.total_chapter_num > 0 {
-                            book.last_check_time = System::current_time_millis();
-                            book.last_check_count = book_chapter_list.len() as i32 - book.total_chapter_num;
-                        }
-                        book.total_chapter_num = book_chapter_list.len() as i32;
-                    }
-                }));
+                    }));
+                    book
+                })));
+            } else {
+                book_list.push(book);
             }
-            let _guard = sync_mutex.lock();
-            book_list.push(book);
+        }
+        if !futures.is_empty() {
+            use futures_util::stream::StreamExt;
+            let stream = futures_util::stream::iter(futures.into_iter().map(|(idx, fut)| async move { (idx, fut.await) }));
+            let mut results: Vec<(usize, Book)> = stream.buffer_unordered(16).collect().await;
+            results.sort_by_key(|(idx, _)| *idx);
+            for (_, b) in results {
+                book_list.push(b);
+            }
         }
         return book_list;
     }

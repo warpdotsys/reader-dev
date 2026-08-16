@@ -459,7 +459,8 @@ impl YueduApi {
         router.post("/reader3/httpTTS/save").coroutine_handler(move |it| http_tts_controller.save_http_tts(it));
         router.post("/reader3/httpTTS/saveMulti").coroutine_handler(move |it| http_tts_controller.save_http_tts_list(it));
         router.post("/reader3/httpTTS/delete").coroutine_handler(move |it| http_tts_controller.delete_http_tts(it));
-        router.post("/reader3/httpTTS/deleteMulti").coroutine_handler(move |it| http_tts_controller.delete_http_tts(it));
+        // fix: deleteMulti 路由指向真批量删除（原指向单删——前端发数组导致解析失败）
+        router.post("/reader3/httpTTS/deleteMulti").coroutine_handler(move |it| http_tts_controller.delete_http_tts_list(it));
     }
 
     // suspend fun setupPort() {

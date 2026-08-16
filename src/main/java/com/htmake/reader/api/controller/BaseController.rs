@@ -35,6 +35,16 @@ fn save_storage(base: &str, names: Vec<String>, value: Box<dyn std::any::Any>) {
 
 // private val logger = KotlinLogging.logger {}
 
+// fix: users.json 读写全局互斥锁（Kotlin BaseController 单一 userMutex；原转录 with_lock 空实现 +
+//      各实例独立 Mutex——并发 login/logout 同时写 users.json 丢失更新）
+static USERS_JSON_MUTEX: std::sync::OnceLock<std::sync::Mutex<()>> = std::sync::OnceLock::new();
+pub fn users_json_lock_guard() -> std::sync::MutexGuard<'static, ()> {
+    USERS_JSON_MUTEX
+        .get_or_init(|| std::sync::Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+}
+
 // open class BaseController(override val coroutineContext: CoroutineContext): CoroutineScope {
 pub struct BaseController {
     // var loginExpireDays = 7
@@ -100,7 +110,10 @@ impl BaseController {
     //     }
     // }
     pub fn save_user_session(&self, context: &RoutingContext, user: &mut User, regenerate_token: bool) -> std::collections::HashMap<String, Box<dyn std::any::Any>> {
-        let _guard = self.user_mutex.with_lock();
+        // fix: 全局 users.json 锁（Kotlin 单一 userMutex；原 with_lock 空实现 + 各实例独立 Mutex——
+        //      并发 login/logout 同时写 users.json 丢失更新）
+        let users_guard = users_json_lock_guard();
+        let _ = &users_guard;
         let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, crate::stubs::Any>> = std::collections::HashMap::new();
         let user_map_json: Option<JsonObject> = as_json_object(get_storage("data", vec![String::from("users")]).map(crate::stubs::Any::from_string));
         if let Some(json) = user_map_json {

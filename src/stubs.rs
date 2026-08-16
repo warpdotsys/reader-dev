@@ -721,7 +721,13 @@ impl Request {
         RequestBuilder::default()
     }
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers.get(name).map(|s| s.as_str())
+        // fix: 大小写不敏感（okhttp 语义；原精确匹配——书源写小写 user-agent 时拦截器补双 UA）
+        for (k, v) in &self.headers {
+            if k.eq_ignore_ascii_case(name) {
+                return Some(v.as_str());
+            }
+        }
+        None
     }
     pub fn new_builder(&self) -> RequestBuilder {
         // fix: 复制当前请求（原返回空 builder——拦截器重建请求丢失 url/method/body，请求全失败）
@@ -834,8 +840,9 @@ impl Response {
     pub fn execute(&self) -> Response {
         self.clone()
     }
+    // fix: okhttp isSuccessful = 200..299（原 200..400——3xx 无 Location 时被视为成功不重试）
     pub fn is_successful(&self) -> bool {
-        self.status >= 200 && self.status < 400
+        self.status >= 200 && self.status < 300
     }
     pub fn code(&self) -> i32 {
         self.status
@@ -1811,7 +1818,15 @@ impl JsonObject {
         JsonObject(String::new())
     }
     // Kotlin `JsonObject(String)` 解析构造
+    // fix: 校验 JSON 合法性且必须是对象（Kotlin 非法/非对象抛 DecodeException→500；原原样保存——
+    //      users.json 损坏时静默按空处理→注册新用户覆盖全部用户）
     pub fn new_parsed(s: &str) -> JsonObject {
+        if !s.trim().is_empty() {
+            match serde_json::from_str::<serde_json::Value>(s) {
+                Ok(v) if v.is_object() => {}
+                _ => panic!("解析请求体失败: {}", &s[..s.len().min(80)]),
+            }
+        }
         JsonObject(s.to_string())
     }
     pub fn put(&mut self, key: &str, value: impl std::fmt::Display) {
@@ -2785,19 +2800,40 @@ impl InputStream for Vec<u8> {
 
 // ---------------- java.io.FileInputStream / FileOutputStream 占位（基于 std::fs 降级实现） ----------------
 
+trait ReadSeek: std::io::Read + std::io::Seek + Send {
+    fn len(&self) -> u64;
+}
+impl ReadSeek for std::fs::File {
+    fn len(&self) -> u64 {
+        self.metadata().map(|m| m.len()).unwrap_or(0)
+    }
+}
+impl ReadSeek for std::io::Cursor<Vec<u8>> {
+    fn len(&self) -> u64 {
+        self.get_ref().len() as u64
+    }
+}
+
 pub struct FileInputStream {
-    inner: Option<std::fs::File>,
+    inner: Option<Box<dyn ReadSeek>>,
 }
 
 impl FileInputStream {
     pub fn new(file: &File) -> FileInputStream {
         FileInputStream {
-            inner: std::fs::File::open(&file.path()).ok(),
+            inner: std::fs::File::open(&file.path()).ok().map(|f| Box::new(f) as Box<dyn ReadSeek>),
         }
     }
 
     pub fn new_path(path: &str) -> FileInputStream {
         FileInputStream::new(&File::new(path))
+    }
+
+    // fix: 内存字节流（zip 条目解压不落临时文件——原临时文件永不清理 + 并发竞争）
+    pub fn from_bytes(bytes: Vec<u8>) -> FileInputStream {
+        FileInputStream {
+            inner: Some(Box::new(std::io::Cursor::new(bytes))),
+        }
     }
 
     pub fn read(&mut self, b: &mut [u8], off: usize, len: usize) -> i32 {
@@ -4892,21 +4928,20 @@ impl ZipFile {
             pos: 0,
         }
     }
-    // 真实解压单条目到临时文件
+    // 真实解压单条目（fix: 内存读取——原写 %TEMP% 临时文件永不清理 + 同 zip 并发竞争同一路径）
     pub fn getInputStream(&self, entry: &ZipEntry) -> FileInputStream {
         use std::io::Read;
-        let tmp = std::env::temp_dir().join(format!("reader_zip_{}_{}", self.path.replace(['/', '\\', ':'], "_"), entry.name.replace(['/', '\\', ':'], "_")));
         if let Ok(file) = std::fs::File::open(&self.path) {
             if let Ok(mut archive) = zip::ZipArchive::new(file) {
                 if let Ok(mut e) = archive.by_name(&entry.name) {
                     let mut buf = Vec::new();
                     if e.read_to_end(&mut buf).is_ok() {
-                        let _ = std::fs::write(&tmp, &buf);
+                        return FileInputStream::from_bytes(buf);
                     }
                 }
             }
         }
-        FileInputStream::new_path(&tmp.to_string_lossy())
+        FileInputStream::from_bytes(Vec::new())
     }
     pub fn close(&self) {}
 }
@@ -7005,8 +7040,26 @@ impl NetworkInterface {
 
 // Java URL(base, relative) 相对地址解析（NetworkUtils 转录使用）
 impl URL {
+    // fix: 宽松相对解析（java.net.URL(base, relative) 接受空格/非 ASCII；url::Url::join 严格失败时——
+    //      中文路径/含空格章节 URL 返回原样相对路径导致下游请求失败）
     pub fn new_relative(base: &URL, relative: &str) -> Result<URL, StubError> {
-        base.0.join(relative).map(URL).map_err(|e| StubError::new(e.to_string()))
+        if let Ok(u) = base.0.join(relative) {
+            return Ok(URL(u));
+        }
+        // 宽松 fallback：对相对路径做百分号编码后重试
+        let encoded = percent_encoding::utf8_percent_encode(relative, percent_encoding::NON_ALPHANUMERIC).to_string();
+        if let Ok(u) = base.0.join(&encoded) {
+            return Ok(URL(u));
+        }
+        // 最终 fallback：base 目录 + 相对路径拼接（编码空格/非 ASCII）
+        let mut b = base.0.clone();
+        if let Some(seg) = relative.split(['?', '#']).next() {
+            b = b.join(&format!("./{}", percent_encoding::utf8_percent_encode(seg, percent_encoding::NON_ALPHANUMERIC).to_string())).unwrap_or(b);
+        }
+        if let Some(query_or_frag) = relative.find('?').or_else(|| relative.find('#')) {
+            b = url::Url::parse(&(b.to_string() + &relative[query_or_frag..])).unwrap_or(b);
+        }
+        Ok(URL(b))
     }
 }
 
@@ -8882,7 +8935,7 @@ impl FileInputStream {
         use std::io::{Read, Seek};
         if let Some(f) = self.inner.as_mut() {
             let cur = f.stream_position().unwrap_or(0);
-            let len = f.metadata().map(|m| m.len()).unwrap_or(0);
+            let len = f.len();
             let target = ((cur as i64).saturating_add(n)).clamp(0, len as i64);
             f.seek(std::io::SeekFrom::Start(target as u64)).ok();
             return target - cur as i64;
@@ -9925,9 +9978,24 @@ impl Element {
         crate::runtime::html::select_elements(&self.html, &format!(".{}", class))
     }
     pub fn get_elements_containing_own_text(&self, text: &str) -> Elements {
-        // fix: 按直接文本子节点包含匹配（scraper 遍历所有元素）
+        // fix: 按直接文本子节点包含匹配（scraper 遍历所有元素）；根元素自身也纳入（Kotlin Collector 语义）
         let doc = scraper::Html::parse_fragment(&self.html);
         let mut result = Vec::new();
+        // 根元素自身
+        let root_direct: String = doc
+            .root_element()
+            .children()
+            .filter_map(|c| match c.value() {
+                scraper::node::Node::Text(t) => Some(t.to_string()),
+                _ => None,
+            })
+            .collect();
+        if root_direct.contains(text) {
+            result.push(Element {
+                text: root_direct,
+                html: self.html.clone(),
+            });
+        }
         if let Ok(sel) = scraper::Selector::parse("*") {
             for el in doc.select(&sel) {
                 let direct: String = el

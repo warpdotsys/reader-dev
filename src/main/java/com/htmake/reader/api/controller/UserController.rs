@@ -359,7 +359,9 @@ impl UserController {
             let tmp: Vec<&str> = access_token.splitn(2, ':').collect();
             if tmp.len() >= 2 {
                 access_token = tmp[1].to_string();
-                let _guard = self.user_mutex.with_lock();
+                // fix: 与 save_user_session 统一全局锁（原各实例独立 Mutex + with_lock 空实现——并发丢失更新）
+                let users_guard = crate::com_htmake_reader_api_controller_basecontroller::users_json_lock_guard();
+                let _ = &users_guard;
                 let mut user_map: std::collections::HashMap<String, std::collections::HashMap<String, Box<dyn std::any::Any>>> = std::collections::HashMap::new();
                 let user_map_json: Option<JsonObject> = as_json_object(get_storage("data", vec![String::from("users")]).map(crate::stubs::Any::from_string));
                 if let Some(json) = user_map_json {
@@ -368,7 +370,7 @@ impl UserController {
                 let current_user = match user_map.get_mut(&username) {
                     Some(v) => v,
                     None => {
-                        let _ = _guard;
+                        let _ = &users_guard;
                         let updated = false;
                         if !updated {
                             return return_data.set_error_msg_owned(String::from("系统错误"));
@@ -405,7 +407,7 @@ impl UserController {
                 let updated_user = std::mem::take(current_user);
                 user_map.insert(username, updated_user);
                 save_storage("data", vec![String::from("users")], &user_map);
-                let _ = _guard;
+                let _ = &users_guard;
             }
         }
         return return_data.set_error_msg_owned(String::from("请重新登录")).set_data_owned(Box::new(String::from("NEED_LOGIN")), String::new());

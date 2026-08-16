@@ -492,8 +492,9 @@ impl<'de> serde::Deserialize<'de> for Book {
             charset: gs("charset"),
             group: gl("group"),
             latest_chapter_title: gs("latestChapterTitle"),
-            latest_chapter_time: gl("latestChapterTime"),
-            last_check_time: gl("lastCheckTime"),
+            // fix: Kotlin data class 默认 System.currentTimeMillis()（原缺失为 0——1970 年显示）
+            latest_chapter_time: v.get("latestChapterTime").and_then(|x| x.as_i64()).unwrap_or_else(crate::stubs::System::now_millis),
+            last_check_time: v.get("lastCheckTime").and_then(|x| x.as_i64()).unwrap_or_else(crate::stubs::System::now_millis),
             last_check_count: gi("lastCheckCount"),
             total_chapter_num: gi("totalChapterNum"),
             dur_chapter_title: gs("durChapterTitle"),
