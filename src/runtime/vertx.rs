@@ -375,6 +375,11 @@ impl RoutingContext {
         let mut map = session_store().lock().unwrap();
         if let Some(id) = &existing {
             if let Some(data) = map.get(id) {
+                // fix: 每次访问续期（Kotlin addHeadersEndHandler 续期 2 天；原不续期——活跃用户 7 天后强制重登）
+                self.response.borrow_mut().headers.insert(
+                    "Set-Cookie".to_string(),
+                    format!("reader.session={}; Path=/; Max-Age=172800; SameSite=Lax", id),
+                );
                 return Session { id: id.clone(), data: data.clone() };
             }
         }
