@@ -640,16 +640,9 @@ impl AnalyzeUrl {
             str_response = if let Some(body) = web_view_body {
                 StrResponse::new_url(&self.url, Some(body))
             } else {
-                // 回退普通 HTTP 请求（无头渲染不可用时至少能取到服务端 HTML）
-                let mut headers = self.header_map.clone();
-                headers.insert(crate::io_legado_app_constant_appconst::AppConst::UA_NAME.to_string(), crate::io_legado_app_constant_appconst::AppConst::userAgent());
-                let (_status, _resp_headers, text) = crate::runtime::js::js_http_request(
-                    if matches!(self.method, RequestMethod::POST) { "POST" } else { "GET" },
-                    &self.url,
-                    &headers,
-                    self.body.as_deref(),
-                );
-                StrResponse::new_url(&self.url, Some(text))
+                // fix: 对齐 Kotlin——webview 适配器不可用（无头浏览器未配置）时整请求失败
+                //      （Kotlin DefaultAdpater throw "不支持webview"；原回退普通 HTTP 拿未渲染 HTML——规则产出错内容/空内容）
+                panic!("不支持webview: {}", &self.url[..self.url.len().min(100)]);
             };
         } else {
             str_response = new_call_str_response(
