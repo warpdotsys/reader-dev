@@ -10824,6 +10824,20 @@ pub fn any_to_json_value(d: &dyn std::any::Any) -> Value {
     if let Some(v) = d.downcast_ref::<Vec<serde_json::Value>>() { return Value::Array(v.clone()); }
     if let Some(v) = d.downcast_ref::<HashMap<String, crate::stubs::Any>>() { return any_map_to_value(v); }
     if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Box<dyn std::any::Any>>>>() { return Value::Array(v.iter().map(any_map_boxed_to_value).collect()); }
+    // fix: bookSourceExploreList（Vec<HashMap<String, Option<String>>>）——原无分支序列化为 null
+    if let Some(v) = d.downcast_ref::<Vec<std::collections::HashMap<String, Option<String>>>>() {
+        return Value::Array(
+            v.iter()
+                .map(|m| {
+                    Value::Object(
+                        m.iter()
+                            .map(|(k, val)| (k.clone(), val.clone().map(Value::String).unwrap_or(Value::Null)))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        );
+    }
     if let Some(v) = d.downcast_ref::<Vec<HashMap<String, Any>>>() { return Value::Array(v.iter().map(any_map_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<Vec<JsonObject>>() { return Value::Array(v.iter().map(json_object_to_value).collect()); }
     if let Some(v) = d.downcast_ref::<crate::io_legado_app_data_entities_book::Book>() { return book_to_json(v); }
