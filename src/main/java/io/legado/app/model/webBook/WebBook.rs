@@ -125,9 +125,14 @@ impl WebBook {
             //检测书源是否已登录
             if let Some(check_js) = self.book_source.login_check_js.clone() {
                 if check_js.is_not_blank() {
-                    // fix: Kotlin `res = analyzeUrl.evalJS(checkJs, res) as StrResponse` —— eval_js 返回 Option<JsValue>
-                    //      非 StrResponse，仅当 JS 返回字符串时重建 res（保留 url）
-                    if let Some(js_value) = analyze_url.eval_js(check_js, res.body()) {
+                    // fix: Kotlin `res = analyzeUrl.evalJS(checkJs, res) as StrResponse`——result 绑定整个响应对象
+                    //      （JS 可访问 result.url/result.body；原传 body 字符串——依赖 result.url 的登录 JS 拿不到）
+                    let result_obj = serde_json::json!({
+                        "url": res.url(),
+                        "body": res.body().cloned().unwrap_or_default(),
+                    })
+                    .to_string();
+                    if let Some(js_value) = analyze_url.eval_js(check_js, Some(&result_obj)) {
                         if let Some(js_str) = js_value.as_string() {
                             let res_url = res.url();
                             res = StrResponse::new_url(&res_url, Some(js_str));
@@ -194,7 +199,7 @@ impl WebBook {
         if let Some(check_js) = self.book_source.login_check_js.clone() {
             if check_js.is_not_blank() {
                 // fix: 同 search_book，eval_js 返回 Option<JsValue>，仅字符串结果重建 res
-                if let Some(js_value) = analyze_url.eval_js(check_js, res.body()) {
+                if let Some(js_value) = analyze_url.eval_js(check_js, Some(&serde_json::json!({ "url": res.url(), "body": res.body().cloned().unwrap_or_default() }).to_string())) {
                     if let Some(js_str) = js_value.as_string() {
                         let res_url = res.url();
                         res = StrResponse::new_url(&res_url, Some(js_str));
@@ -253,7 +258,7 @@ impl WebBook {
             let mut response = analyze_url.get_str_response_await(None, None, true).await;
             if let Some(check_js) = self.book_source.login_check_js.clone() {
                 if check_js.is_not_blank() {
-                    if let Some(js_value) = analyze_url.eval_js(check_js, response.body()) {
+                    if let Some(js_value) = analyze_url.eval_js(check_js, Some(&serde_json::json!({ "url": response.url(), "body": response.body().cloned().unwrap_or_default() }).to_string())) {
                         if let Some(js_str) = js_value.as_string() {
                             let res_url = response.url();
                             response = StrResponse::new_url(&res_url, Some(js_str));
@@ -332,7 +337,7 @@ impl WebBook {
             //检测书源是否已登录
             if let Some(check_js) = self.book_source.login_check_js.clone() {
                 if check_js.is_not_blank() {
-                    if let Some(js_value) = analyze_url.eval_js(check_js, res.body()) {
+                    if let Some(js_value) = analyze_url.eval_js(check_js, Some(&serde_json::json!({ "url": res.url(), "body": res.body().cloned().unwrap_or_default() }).to_string())) {
                         if let Some(js_str) = js_value.as_string() {
                             let res_url = res.url();
                             res = StrResponse::new_url(&res_url, Some(js_str));

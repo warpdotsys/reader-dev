@@ -542,9 +542,16 @@ impl BookController {
                         Ok((book2, chapters)) => {
                             file_list.push(map!("book" => book2, "chapters" => chapters));
                         }
-                        Err(_) => {
-                            // fix: 原 catch 分支以空章节占位
-                            file_list.push(map!("book" => book.clone(), "chapters" => Vec::<BookChapter>::new()));
+                        Err(e) => {
+                            let msg = crate::stubs::panic_message(e);
+                            if msg.contains("Chapterlist is empty") {
+                                // Kotlin 仅 catch TocEmptyException（目录为空——空章节入库）
+                                file_list.push(map!("book" => book.clone(), "chapters" => Vec::<BookChapter>::new()));
+                            } else {
+                                // fix: 其他异常（损坏 epub 等）→ 整请求失败（Kotlin 只捕 TocEmptyException，
+                                //      其余异常 500 拒绝导入；原一切 panic 空章节入库——损坏文件静默"成功"）
+                                panic!("{}", msg);
+                            }
                         }
                     }
                 }

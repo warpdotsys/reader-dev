@@ -471,7 +471,9 @@ impl AnalyzeUrl {
                 bindings.set("source", false);
             }
         }
-        bindings.set("result", result.cloned());
+        // fix: result 以 Any::Str 绑定（JSON 对象形态自动解析为 JS 对象——loginCheckJs 的 result.url/result.body 可用；
+        //      原 Option<String> 绑定恒为字符串字面）
+        bindings.put("result", crate::stubs::Any::Str(result.cloned().unwrap_or_default()));
         // fix: JS 执行失败抛错（Kotlin SCRIPT_ENGINE.eval 抛 ScriptException→请求失败；
         //      原静默 None→URL 段变空→取到错误页面/规则无结果，难以排查）
         let js_head = js_str[..js_str.len().min(120)].to_string();

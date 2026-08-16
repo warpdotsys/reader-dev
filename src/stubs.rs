@@ -1867,9 +1867,10 @@ impl JsonObject {
         serde_json::from_str::<serde_json::Value>(&self.0)
             .ok()
             .and_then(|v| v.get(key).cloned())
-            .map(|v| match v {
-                serde_json::Value::String(s) => s,
-                other => other.to_string(),
+            // fix: 非字符串值返回默认空（Kotlin getString 语义；原 to_string——数字 username 等通过）
+            .and_then(|v| match v {
+                serde_json::Value::String(s) => Some(s),
+                _ => None,
             })
             .unwrap_or_default()
     }

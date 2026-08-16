@@ -29,8 +29,8 @@ fn execute_inner(
         }
     }
     let mut client_builder = reqwest::blocking::Client::builder()
-        // fix: 重定向上限 20（okhttp 默认；原 limited(10)）
-        .redirect(reqwest::redirect::Policy::limited(20))
+        // fix: 手动跟随重定向（保留 cookie/Authorization 头——okhttp 语义；reqwest 自动重定向跨 host 剥离）
+        .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(45))
         // fix: 与原版 OkHttp unsafeTrustManager 一致——全信任证书（自签/过期站点可用）
@@ -50,36 +50,71 @@ fn execute_inner(
         .build()
         .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
 
-    // fix: POST form 的 body 作为请求体发送（Kotlin FormBody 语义），不拼 URL
-    let mut builder = if req.method == "POST" {
-        let mut b = client.post(&req.url);
-        // fix: form body 必须带 Content-Type: application/x-www-form-urlencoded
-        let has_ct = req.headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("content-type"));
-        if !has_ct {
-            if let Some(ct) = &req.content_type {
-                b = b.header("Content-Type", ct);
+    // fix: 手动跟随重定向（≤20 跳；保留全部请求头——okhttp 跨域重定向保留 cookie/Authorization）
+    let mut current_url = req.url.clone();
+    let mut current_headers = req.headers.clone();
+    let mut current_method = req.method.clone();
+    for _hop in 0..20 {
+        let mut builder = if current_method == "POST" {
+            let mut b = client.post(&current_url);
+            let has_ct = current_headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("content-type"));
+            if !has_ct {
+                if let Some(ct) = &req.content_type {
+                    b = b.header("Content-Type", ct);
+                }
             }
+            b
+        } else {
+            client.get(&current_url)
+        };
+        for (k, v) in &current_headers {
+            builder = builder.header(k, v);
         }
-        b
-    } else {
-        client.get(&req.url)
-    };
-
-    for (k, v) in &req.headers {
-        builder = builder.header(k, v);
+        if let Some(body_bytes) = &req.body_bytes {
+            builder = builder.body(body_bytes.clone());
+        } else if let Some(body) = &req.body {
+            builder = builder.body(body.clone());
+        }
+        let resp = builder
+            .send()
+            .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
+        let status = resp.status().as_u16();
+        if (300..400).contains(&status) {
+            let Some(loc) = resp.headers().get("location").map(|v| v.to_str().unwrap_or("").to_string()) else {
+                // 无 Location 的 3xx——作为最终响应返回
+                return build_response(resp, status);
+            };
+            if loc.is_empty() {
+                return build_response(resp, status);
+            }
+            current_url = resp
+                .url()
+                .join(&loc)
+                .map(|u| u.to_string())
+                .unwrap_or_else(|_| {
+                    if loc.starts_with("http://") || loc.starts_with("https://") {
+                        loc
+                    } else {
+                        // 相对路径——基于当前 URL 目录拼接
+                        current_url
+                            .rsplit_once('/')
+                            .map(|(base, _)| format!("{}/{}", base, loc.trim_start_matches('/')))
+                            .unwrap_or(loc)
+                    }
+                });
+            // 302/303 → POST 转 GET（okhttp followRedirects 语义）；307/308 保留方法
+            if (status == 302 || status == 303) && current_method == "POST" {
+                current_method = "GET".to_string();
+            }
+            continue;
+        }
+        return build_response(resp, status);
     }
-    // fix: 二进制 body 用原始字节（lossy 文本会损坏）
-    if let Some(body_bytes) = &req.body_bytes {
-        builder = builder.body(body_bytes.clone());
-    } else if let Some(body) = &req.body {
-        builder = builder.body(body.clone());
-    }
+    Err(crate::stubs::StubError::new("重定向次数超过 20 次".to_string()))
+}
 
-    let resp = builder
-        .send()
-        .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
-
-    let status = resp.status().as_u16() as i32;
+fn build_response(resp: reqwest::blocking::Response, status: u16) -> Result<Response, crate::stubs::Throwable> {
+    let status = status as i32;
     let mut headers = std::collections::HashMap::new();
     let mut headers_multi = std::collections::HashMap::new();
     for (k, v) in resp.headers() {

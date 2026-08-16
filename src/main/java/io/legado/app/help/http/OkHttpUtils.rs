@@ -244,7 +244,8 @@ pub fn decode_bytes_with_charset(bytes: &[u8], charset: &str) -> String {
     let lower = charset.to_lowercase().replace(['-', '_'], "");
     match lower.as_str() {
         "utf8" | "utf8bom" | "" => String::from_utf8_lossy(bytes).into_owned(),
-        "gbk" | "gb2312" | "gb18030" | "gbk2312" => {
+        "gb18030" => decode_gb18030(bytes),
+        "gbk" | "gb2312" | "gbk2312" => {
             let (text, _, _) = encoding_rs::GBK.decode(bytes);
             text.into_owned()
         }
@@ -436,4 +437,53 @@ pub fn post_json(builder: &mut RequestBuilder, json: Option<&str>) {
         let request_body = json.to_request_body("application/json; charset=UTF-8".to_media_type());
         builder.post(request_body);
     }
+}
+
+/// gb18030 完整解码（4 字节序列 + 2 字节 GBK；encoding_rs::GBK 仅覆盖 2 字节——CJK 扩展 A 生僻字变 U+FFFD）
+/// gb18030 4 字节映射（WHATWG）：
+///   索引 ptr = (b0-0x81)*12600 + (b1-0x30)*1260 + (b2-0x81)*10 + (b3-0x30)
+///   ptr < 0x990 → U+10000+ptr；ptr >= 0xE7E → U+1E000+(ptr-0xE7E)；0x990..0xE7D 保留区（U+FFFD）
+fn decode_gb18030(bytes: &[u8]) -> String {
+    let mut out = String::new();
+    let mut i = 0usize;
+    let mut gbk_start = 0usize;
+    while i + 3 < bytes.len() {
+        let b0 = bytes[i];
+        let b1 = bytes[i + 1];
+        let b2 = bytes[i + 2];
+        let b3 = bytes[i + 3];
+        if (0x81..=0xFE).contains(&b0)
+            && (0x30..=0x39).contains(&b1)
+            && (0x81..=0xFE).contains(&b2)
+            && (0x30..=0x39).contains(&b3)
+        {
+            if gbk_start < i {
+                let (text, _, _) = encoding_rs::GBK.decode(&bytes[gbk_start..i]);
+                out.push_str(&text);
+            }
+            let ptr = (b0 as u32 - 0x81) * 12600
+                + (b1 as u32 - 0x30) * 1260
+                + (b2 as u32 - 0x81) * 10
+                + (b3 as u32 - 0x30);
+            let cp = if ptr < 0x990 {
+                0x10000 + ptr
+            } else if ptr >= 0xE7E {
+                0x1E000 + (ptr - 0xE7E)
+            } else {
+                0xFFFD
+            };
+            if let Some(c) = char::from_u32(cp) {
+                out.push(c);
+            }
+            i += 4;
+            gbk_start = i;
+        } else {
+            i += 1;
+        }
+    }
+    if gbk_start < bytes.len() {
+        let (text, _, _) = encoding_rs::GBK.decode(&bytes[gbk_start..]);
+        out.push_str(&text);
+    }
+    out
 }

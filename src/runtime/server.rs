@@ -543,7 +543,7 @@ pub fn build_axum_app(router: Router) -> axum::Router {
         let handler = move |method: axum::http::Method,
                              uri: axum::http::Uri,
                              params: axum::extract::Path<HashMap<String, String>>,
-                             query: axum::extract::Query<HashMap<String, String>>,
+                             query: axum::extract::Query<Vec<(String, String)>>,
                              headers: axum::http::HeaderMap,
                              body: axum::body::Bytes| {
             async move {
@@ -555,8 +555,12 @@ pub fn build_axum_app(router: Router) -> axum::Router {
                 // fix: 保留原始字节（WebDAV PUT/封面下载等二进制接口，lossy 解码会损坏数据）
                 let raw_body = body.to_vec();
                 let (body_str, file_uploads, form_fields) = parse_http_body(&body, &content_type);
-                // fix: 表单字段合并进参数（对齐 vert.x setMergeFormAttributes(true)）
-                let mut query_map = query.0.clone();
+                // fix: 多值参数取第一个（vert.x queryParam().firstOrNull；axum HashMap 同键覆盖取最后）
+                let mut query_map = HashMap::new();
+                for (k, v) in query.0 {
+                    query_map.entry(k).or_insert(v);
+                }
+                // fix: 表单字段合并进参数（对齐 vert.x setMergeFormAttributes(true)——表单字段覆盖查询参数）
                 for (k, v) in form_fields {
                     query_map.insert(k, v);
                 }

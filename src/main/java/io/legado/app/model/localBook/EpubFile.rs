@@ -233,15 +233,20 @@ impl EpubFile {
         return None;
     }
 
-    fn get_body(&self, res: &Resource, start_fragment_id: Option<String>, end_fragment_id: Option<String>) -> Element {
-        // fix: 按资源声明的编码解码（原仅 UTF-8 lossy；GBK 等 epub 乱码）
+    /// 按资源声明编码解码（fix: 标题回退提取也用此——原两处固定 UTF-8 lossy，GBK epub 标题乱码）
+    fn decode_resource_data(&self, res: &Resource) -> String {
         let data = res.get_data().map(|d| d.as_slice()).unwrap_or(&[]);
         let encoding = res.get_input_encoding().clone();
-        let text = if encoding.is_empty() || encoding.eq_ignore_ascii_case("utf-8") {
+        if encoding.is_empty() || encoding.eq_ignore_ascii_case("utf-8") {
             String::from_utf8_lossy(data).to_string()
         } else {
             crate::io_legado_app_help_http_okhttputils::decode_bytes_with_charset(data, &encoding)
-        };
+        }
+    }
+
+    fn get_body(&self, res: &Resource, start_fragment_id: Option<String>, end_fragment_id: Option<String>) -> Element {
+        // fix: 按资源声明的编码解码（原仅 UTF-8 lossy；GBK 等 epub 乱码）
+        let text = self.decode_resource_data(res);
         let body = Jsoup::parse(text).body();
         if let Some(sid) = start_fragment_id.as_ref() {
             if !sid.is_empty() {
@@ -355,7 +360,7 @@ impl EpubFile {
                     let mut title = resource.get_title().clone();
                     if title.is_empty() {
                         // try {
-                        let doc = Jsoup::parse(String::from_utf8_lossy(resource.get_data().unwrap_or(&Vec::new())).to_string());
+                        let doc = Jsoup::parse(self.decode_resource_data(resource));
                         let elements = doc.get_elements_by_tag("title");
                         if elements.size() > 0 {
                             title = elements.get(0).text();
@@ -391,7 +396,7 @@ impl EpubFile {
                 let mut title = resource.get_title().clone();
                 if title.is_empty() {
                     // try {
-                    let doc = Jsoup::parse(String::from_utf8_lossy(resource.get_data().unwrap_or(&Vec::new())).to_string());
+                    let doc = Jsoup::parse(self.decode_resource_data(resource));
                     let elements = doc.get_elements_by_tag("title");
                     if elements.size() > 0 {
                         title = elements.get(0).text();
