@@ -2,10 +2,93 @@
 
 use crate::stubs::{Element, Elements};
 
-/// HTML 纯文本
+/// jsoup 块级元素（text() 在其后追加空格）——jsoup 的 appendWhitespaceIfBr 算法
+fn is_jsoup_block_tag(tag: &str) -> bool {
+    matches!(
+        tag,
+        "address" | "article" | "aside" | "blockquote" | "br" | "dd" | "div" | "dl" | "dt" | "fieldset"
+            | "figcaption" | "figure" | "footer" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
+            | "header" | "hr" | "li" | "main" | "nav" | "ol" | "p" | "pre" | "section" | "table" | "ul"
+            | "tr" | "td" | "th"
+    )
+}
+
+/// 递归收集文本（跳过 script/style；块级元素与 <br> 前后追加空格）
+fn collect_jsoup_text(el: &scraper::ElementRef, out: &mut String) {
+    for child in el.children() {
+        match child.value() {
+            scraper::node::Node::Text(t) => out.push_str(t),
+            scraper::node::Node::Element(_) => {
+                if let Some(ce) = scraper::ElementRef::wrap(child) {
+                    let tag = ce.value().name().to_ascii_lowercase();
+                    // jsoup text() 不含 script/style（DataNode）
+                    if tag == "script" || tag == "style" {
+                        continue;
+                    }
+                    if is_jsoup_block_tag(&tag) {
+                        out.push(' ');
+                    }
+                    collect_jsoup_text(&ce, out);
+                    if is_jsoup_block_tag(&tag) {
+                        out.push(' ');
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// jsoup 文本规范化：空白折叠（换行/制表→空格、连续空白合并）+ trim + 块级/<br> 分隔
+/// fix: 原 scraper e.text() 原始拼接（<p>段一</p><p>段二</p>→"段一段二"、br 不换行、script 混入）
+pub fn jsoup_normalise_text(el: &scraper::ElementRef) -> String {
+    let mut raw = String::new();
+    collect_jsoup_text(el, &mut raw);
+    let mut res = String::new();
+    let mut last_space = false;
+    for c in raw.chars() {
+        if c.is_whitespace() {
+            if !last_space {
+                res.push(' ');
+                last_space = true;
+            }
+        } else {
+            res.push(c);
+            last_space = false;
+        }
+    }
+    res.trim().to_string()
+}
+
+/// jsoup ownText()：仅直接文本子节点（规范化 + trim）
+pub fn own_text_of(html: &str) -> String {
+    let doc = scraper::Html::parse_fragment(html);
+    let mut raw = String::new();
+    for child in doc.root_element().children() {
+        if let scraper::node::Node::Text(t) = child.value() {
+            raw.push_str(t);
+        }
+    }
+    let mut res = String::new();
+    let mut last_space = false;
+    for c in raw.chars() {
+        if c.is_whitespace() {
+            if !last_space {
+                res.push(' ');
+                last_space = true;
+            }
+        } else {
+            res.push(c);
+            last_space = false;
+        }
+    }
+    res.trim().to_string()
+}
+
+/// HTML 纯文本（jsoup 规范化）
 pub fn text_of(html: &str) -> String {
     let doc = scraper::Html::parse_fragment(html);
-    doc.root_element().text().collect::<String>()
+    jsoup_normalise_text(&doc.root_element())
 }
 
 /// 第一个元素的 HTML 与纯文本
@@ -13,7 +96,7 @@ pub fn first_element(html: &str) -> (String, String) {
     let doc = scraper::Html::parse_fragment(html);
     let mut it = doc.root_element().children().filter_map(|c| scraper::ElementRef::wrap(c));
     if let Some(el) = it.next() {
-        return (el.html().to_string(), el.text().collect::<String>());
+        return (el.html().to_string(), jsoup_normalise_text(&el));
     }
     (String::new(), String::new())
 }
@@ -60,7 +143,8 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
         for p in &pseudos {
             match p {
                 JsoupPseudo::Contains(t) => {
-                    if !e.text().collect::<String>().contains(t.as_str()) {
+                    // fix: jsoup :contains 大小写不敏感、基于规范化文本
+                    if !jsoup_normalise_text(&e).to_lowercase().contains(&t.to_lowercase()) {
                         pass = false;
                         break;
                     }
@@ -73,7 +157,7 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
                             _ => None,
                         })
                         .collect();
-                    if !direct.contains(t.as_str()) {
+                    if !direct.to_lowercase().contains(&t.to_lowercase()) {
                         pass = false;
                         break;
                     }
@@ -83,7 +167,7 @@ pub fn select_elements(html: &str, css: &str) -> Elements {
         }
         if pass {
             list.push(Element {
-                text: e.text().collect::<String>(),
+                text: jsoup_normalise_text(&e),
                 html: e.html().to_string(),
             });
         }
@@ -219,7 +303,7 @@ pub fn children_of(html: &str) -> Elements {
         if let Some(el) = scraper::ElementRef::wrap(child) {
             let h = el.html().to_string();
             list.push(Element {
-                text: text_of(&h),
+                text: jsoup_normalise_text(&el),
                 html: h,
             });
         }
@@ -246,7 +330,7 @@ pub fn title_of(html: &str) -> String {
     };
     doc.select(&sel)
         .next()
-        .map(|e| e.text().collect::<String>())
+        .map(|e| jsoup_normalise_text(&e))
         .unwrap_or_default()
 }
 
@@ -258,7 +342,7 @@ pub fn body_of(html: &str) -> (String, String) {
         Err(_) => return (String::new(), String::new()),
     };
     match doc.select(&sel).next() {
-        Some(e) => (e.html().to_string(), e.text().collect::<String>()),
+        Some(e) => (e.html().to_string(), jsoup_normalise_text(&e)),
         None => (html.to_string(), text_of(html)),
     }
 }

@@ -644,14 +644,26 @@ fn spawn_scheduled_jobs() {
 }
 
 pub fn run_application(port: i32, context_path: &str) {
-    let mut yuedu_api = crate::com_htmake_reader_api_yueduapi::YueduApi::new();
+    // fix: 栈上 yuedu_api 经 init_router 的 self_ref 转 &'static（L228）——run_application 返回后悬垂（UAF）。
+    //      改为 Box::leak（'static，与控制器生命周期一致）
+    let yuedu_api: &'static mut crate::com_htmake_reader_api_yueduapi::YueduApi =
+        Box::leak(Box::new(crate::com_htmake_reader_api_yueduapi::YueduApi::new()));
     let mut router = Router::router(crate::stubs::io::vertx::Vertx::vertx());
 
     // 静态资源：项目内 web 构建产物
-    let web_root = "src/main/resources/web";
+    // fix: Release 包前端位于 workdir 下 web/（GitHub Actions 打包 src/main/resources/web → package/web）；
+    //      开发模式为 src/main/resources/web。优先检测存在者（原仅前者——Release 解压后网页 404）
+    let web_root = if std::path::Path::new("src/main/resources/web").exists() {
+        "src/main/resources/web".to_string()
+    } else if std::path::Path::new("web").exists() {
+        "web".to_string()
+    } else {
+        "src/main/resources/web".to_string()
+    };
+    eprintln!("[web] static root: {}", web_root);
     router
         .route_with_path("/*")
-        .handler_static(crate::stubs::io::vertx::StaticHandler::create_root(web_root));
+        .handler_static(crate::stubs::io::vertx::StaticHandler::create_root(&web_root));
 
     // API 路由
     yuedu_api.init_router(&mut router);

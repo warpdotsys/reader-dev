@@ -470,12 +470,95 @@ pub static SCRIPT_ENGINE: ScriptEngine = ScriptEngine;
 pub struct Entities;
 
 impl Entities {
+    /// jsoup Entities.unescape：常用命名实体 + &#123; / &#x1F; 数字引用
+    /// fix: 原仅 5 个命名实体、数字引用不解码——&nbsp;/&#8220;/&hellip; 等保留在结果中
     pub fn unescape(s: String) -> Result<String, StubError> {
-        Ok(s.replace("&amp;", "&")
-            .replace("&lt;", "<")
-            .replace("&gt;", ">")
-            .replace("&quot;", "\"")
-            .replace("&#39;", "'"))
+        let mut out = String::with_capacity(s.len());
+        let chars: Vec<char> = s.chars().collect();
+        let mut i = 0usize;
+        while i < chars.len() {
+            let c = chars[i];
+            if c == '&' {
+                // 数字引用 &#123; / &#x1F;（可带分号）
+                if i + 1 < chars.len() && chars[i + 1] == '#' {
+                    let mut j = i + 2;
+                    let mut hex = false;
+                    if j < chars.len() && (chars[j] == 'x' || chars[j] == 'X') {
+                        hex = true;
+                        j += 1;
+                    }
+                    let start = j;
+                    while j < chars.len() && chars[j] != ';' && chars[j].is_alphanumeric() {
+                        j += 1;
+                    }
+                    if j > start {
+                        let digits: String = chars[start..j].iter().collect();
+                        if let Ok(code) = if hex { u32::from_str_radix(&digits, 16) } else { digits.parse::<u32>() } {
+                            if let Some(ch) = char::from_u32(code) {
+                                out.push(ch);
+                                // 跳过 ';'（若存在）
+                                if j < chars.len() && chars[j] == ';' {
+                                    j += 1;
+                                }
+                                i = j;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                // 命名实体
+                let named = [
+                    ("amp;", '&'),
+                    ("lt;", '<'),
+                    ("gt;", '>'),
+                    ("quot;", '"'),
+                    ("apos;", '\''),
+                    ("nbsp;", '\u{00A0}'),
+                    ("hellip;", '…'),
+                    ("mdash;", '—'),
+                    ("ndash;", '–'),
+                    ("ldquo;", '\u{201C}'),
+                    ("rdquo;", '\u{201D}'),
+                    ("lsquo;", '\u{2018}'),
+                    ("rsquo;", '\u{2019}'),
+                    ("middot;", '·'),
+                    ("laquo;", '«'),
+                    ("raquo;", '»'),
+                    ("times;", '×'),
+                    ("divide;", '÷'),
+                    ("copy;", '©'),
+                    ("reg;", '®'),
+                    ("trade;", '™'),
+                    ("deg;", '°'),
+                    ("plusmn;", '±'),
+                    ("sect;", '§'),
+                    ("para;", '¶'),
+                    ("bull;", '•'),
+                    ("euro;", '€'),
+                    ("pound;", '£'),
+                    ("yen;", '¥'),
+                    ("cent;", '¢'),
+                ];
+                let rest: String = chars[i + 1..].iter().take(10).collect();
+                let mut matched = false;
+                for (entity, ch) in named {
+                    if rest.starts_with(entity) {
+                        out.push(ch);
+                        i += 1 + entity.len();
+                        matched = true;
+                        break;
+                    }
+                }
+                if matched {
+                    continue;
+                }
+                out.push(c);
+            } else {
+                out.push(c);
+            }
+            i += 1;
+        }
+        Ok(out)
     }
 
     pub fn escape(s: &str) -> String {
@@ -1320,7 +1403,8 @@ impl Element {
         crate::runtime::html::tag_name_of(&self.html)
     }
     pub fn own_text(&self) -> String {
-        crate::runtime::html::text_of(&self.html)
+        // fix: jsoup ownText()——仅直接文本子节点（原返回整棵子树文本）
+        crate::runtime::html::own_text_of(&self.html)
     }
 }
 
@@ -9996,19 +10080,15 @@ impl crate::io_legado_app_model_analyzerule_ruledata::RuleData {
     }
 }
 impl Element {
-    // fix: jsoup Element.textNodes()（AnalyzeByJSoup "textNodes" 规则使用；基于片段重解析）
+    // fix: jsoup Element.textNodes()——仅**直接**子文本节点（原 select("*") 收集所有后代——行数/顺序错位）
     pub fn text_nodes(&self) -> Vec<TextNode> {
         let doc = scraper::Html::parse_fragment(&self.html);
         let mut result: Vec<TextNode> = Vec::new();
-        if let Ok(sel) = scraper::Selector::parse("*") {
-            for el in doc.select(&sel) {
-                for c in el.children() {
-                    if let scraper::node::Node::Text(t) = c.value() {
-                        let s = t.to_string();
-                        if !s.trim().is_empty() {
-                            result.push(TextNode { text: s });
-                        }
-                    }
+        for c in doc.root_element().children() {
+            if let scraper::node::Node::Text(t) = c.value() {
+                let s = t.to_string();
+                if !s.trim().is_empty() {
+                    result.push(TextNode { text: s });
                 }
             }
         }

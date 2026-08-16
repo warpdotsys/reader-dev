@@ -329,12 +329,15 @@ impl RoutingContext {
         self.store.borrow_mut().insert(key.to_string(), Rc::new(value));
     }
 
-    pub fn get_user<T: 'static>(&self, key: &str) -> Option<T> {
+    // fix: 严重内存错误——原实现 `Rc::try_unwrap().unwrap_or_else(ptr::read)` 对共享 Rc 做位拷贝：
+    //      调用方与 store 内 Rc 各持有一份含堆指针的 T（String/User），双方各自 drop →
+    //      每次认证请求（check_auth → put → get_user）双重释放 → 堆损坏（malloc_consolidate ABRT）。
+    //      改为克隆语义（T: Clone），单一所有权
+    pub fn get_user<T: 'static + Clone>(&self, key: &str) -> Option<T> {
         self.store
             .borrow()
             .get(key)
-            .and_then(|v| v.clone().downcast::<T>().ok())
-            .map(|rc| Rc::try_unwrap(rc).unwrap_or_else(|rc| unsafe { std::ptr::read(&*rc) }))
+            .and_then(|v| v.downcast_ref::<T>().cloned())
     }
 
     pub fn body_as_json(&self) -> Option<JsonObject> {

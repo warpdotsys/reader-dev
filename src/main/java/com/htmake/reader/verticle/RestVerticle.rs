@@ -194,11 +194,11 @@ impl RestVerticle {
      * An extension method for simplifying coroutines usage with Vert.x Web routers
      */
     // fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Any?) {
-    pub fn coroutine_handler(&self, this: Route, fn_: &dyn Fn(RoutingContext) -> Option<Any>) {
-        // fix: fn_ 为借用引用，transmute 到 'static 后转裸指针使闭包可 'static（fn_ 生命周期覆盖程序运行期）
-        let fn_static: &'static dyn Fn(RoutingContext) -> Option<Any> =
-            unsafe { std::mem::transmute(fn_) };
-        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = fn_static;
+    pub fn coroutine_handler(&self, this: Route, fn_: impl Fn(RoutingContext) -> Option<Any> + 'static) {
+        // fix: 严重内存错误——原 transmute 把调用点栈上临时闭包提升为 'static：语句结束闭包即析构，
+        //      之后每个请求调用悬垂闭包（垃圾捕获/函数指针）→ SIGSEGV/堆损坏。
+        //      改为 Box 堆存储（泄漏 'static，与控制器生命周期一致）
+        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = Box::into_raw(Box::new(fn_));
         global_handler(this, move |ctx| {
             let f = unsafe { &*fn_ptr };
             let result = f(ctx.clone());
@@ -207,10 +207,8 @@ impl RestVerticle {
     }
 
     // fun Route.coroutineHandlerWithoutRes(fn: suspend (RoutingContext) -> Any?) {
-    pub fn coroutine_handler_without_res(&self, this: Route, fn_: &dyn Fn(RoutingContext) -> Option<Any>) {
-        let fn_static: &'static dyn Fn(RoutingContext) -> Option<Any> =
-            unsafe { std::mem::transmute(fn_) };
-        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = fn_static;
+    pub fn coroutine_handler_without_res(&self, this: Route, fn_: impl Fn(RoutingContext) -> Option<Any> + 'static) {
+        let fn_ptr: *const dyn Fn(RoutingContext) -> Option<Any> = Box::into_raw(Box::new(fn_));
         global_handler(this, move |ctx| {
             let f = unsafe { &*fn_ptr };
             let _ = f(ctx.clone());
