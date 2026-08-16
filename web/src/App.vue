@@ -738,7 +738,7 @@ export default {
       );
     },
     // fix: HttpTTS 列表加载（原组件调用 loadHttpTTS 但从未定义——列表恒空、朗读不可用）
-    loadHttpTTS(refresh) {
+    loadHttpTTS() {
       return Axios.get(this.api + "/httpTTS/list", {
         params: {
           simple: 1
