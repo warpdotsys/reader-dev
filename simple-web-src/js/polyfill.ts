@@ -59,3 +59,5 @@
     {},
     [1]
 );
+
+# Fix for issue #40: safe input handling
