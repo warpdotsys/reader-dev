@@ -45,6 +45,17 @@
 - 定时任务串行执行（Kotlin IO 池并发——Rust 串行等效结果，更安全）
 - 决策项（Rust 增强保留）：chapterUrl 匹配块/分页 redirectUrl/SourceAnalyzer login 字段/PDF 文本渲染/裸 CSS 规则
 
+**v6.0.25 新增修复（最后 7 项，生产验证全部通过）**：
+- loginCheckJs result 绑定整个响应对象（4 处调用点——result.url/result.body 可用）
+- epub 标题回退提取按资源声明编码解码
+- importBookPreview 仅 TocEmptyException 空章节入库（其余异常拒绝导入）
+- get_string 非字符串值返回默认空（数字 username 拒绝）
+- 查询参数多值取第一个（vert.x firstOrNull 语义）
+- 手动跟随重定向（≤20 跳，保留 cookie/Authorization——okhttp 语义）
+- gb18030 4 字节序列完整解码（CJK 扩展 A）
+
+**已解决项清空——DIFFS 详细清单中全部 [未修] 项已处理完毕**（仅架构限制保留：SSE 缓冲发送、定时任务串行；决策项 Rust 增强保留）。
+
 ---
 
 # 详细差异清单
