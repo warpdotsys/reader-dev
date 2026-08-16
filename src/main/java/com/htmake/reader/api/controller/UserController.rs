@@ -236,7 +236,7 @@ impl UserController {
             if username.len() < 5 {
                 return return_data.set_error_msg_owned(String::from("用户名不能低于5位"));
             }
-            if password.len() < app_config().min_user_password_length as usize {
+            if password.chars().count() < app_config().min_user_password_length as usize {
                 return return_data.set_error_msg_owned(format!("密码不能低于{}位", app_config().min_user_password_length));
             }
             if username == "default" {
@@ -542,7 +542,7 @@ impl UserController {
         if username.len() < 5 {
             return return_data.set_error_msg_owned(String::from("用户名不能低于5位"));
         }
-        if password.len() < 8 {
+        if password.chars().count() < 8 {
             return return_data.set_error_msg_owned(String::from("密码不能低于8位"));
         }
         if username == "default" {
@@ -654,7 +654,7 @@ impl UserController {
         if password.is_empty() {
             return return_data.set_error_msg_owned(String::from("请输入密码"));
         }
-        if password.len() < app_config().min_user_password_length as usize {
+        if password.chars().count() < app_config().min_user_password_length as usize {
             return return_data.set_error_msg_owned(format!("密码不能低于{}位", app_config().min_user_password_length));
         }
         if username == "default" {

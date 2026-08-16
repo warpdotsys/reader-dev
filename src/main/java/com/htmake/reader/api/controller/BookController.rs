@@ -2511,8 +2511,13 @@ impl BookController {
         let mut local_chapter_list: Vec<BookChapter> = Vec::new();
         let chapter_list = chapter_list.unwrap();
         for i in 0..chapter_list.size() {
-            let _chapter = chapter_list.get_json_object(i).map_to::<BookChapter>().unwrap_or_default();
-            local_chapter_list.push(_chapter);
+            // fix: 缓存损坏时整链报错（Kotlin mapTo 失败抛异常→500；原 unwrap_or_default 产出空白章节）
+            let chapter = chapter_list
+                .get_json_object(i)
+                .map_to::<BookChapter>()
+                .ok_or_else(|| panic!("缓存章节解析失败: index {}", i))
+                .unwrap();
+            local_chapter_list.push(chapter);
         }
         return local_chapter_list;
     }
