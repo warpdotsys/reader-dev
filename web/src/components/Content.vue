@@ -287,7 +287,8 @@ export default {
                     // 将 src 替换为 data-src 懒加载
                     a = a
                       .replace(/src=/g, "data-src=")
-                      .replace("__API_ROOT__", this.$store.getters.apiRoot);
+                      // fix: 全局替换（原仅第一处——滚动模式多图章节第 2 张起 src 残留 __API_ROOT__ 裂图）
+                      .replace(/__API_ROOT__/g, this.$store.getters.apiRoot);
                     return (
                       <div
                         style={this.containerStyle}
@@ -483,7 +484,11 @@ export default {
       }
     },
     renderEpub() {
-      if (!this.content.startsWith("/book-assets")) {
+      // fix: 兼容上传导入的 epub（bookUrl=/assets/... → 后端返回 /assets/... 路径；原仅 /book-assets 门禁——上传 epub 正文空白）
+      if (
+        !this.content.startsWith("/book-assets") &&
+        !this.content.startsWith("/assets")
+      ) {
         return null;
       }
       return (

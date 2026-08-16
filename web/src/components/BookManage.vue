@@ -632,7 +632,9 @@ export default {
         }
         const params = {
           url: book.bookUrl,
-          refresh: 0
+          refresh: 0,
+          // fix: secure 模式需要 accessToken（后端 cacheBookSSE 先 check_auth；原缺 token 必然 NEED_LOGIN）
+          accessToken: this.$store.state.token
         };
         const url = buildURL(self.api + "/cacheBookSSE", params);
         tryClose();

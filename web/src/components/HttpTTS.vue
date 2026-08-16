@@ -101,7 +101,10 @@ export default {
   watch: {
     show(isVisible) {
       if (isVisible) {
-        //
+        // fix: 打开时加载列表（原恒空——无任何初始化加载通道）
+        if (this.$root.$children[0].loadHttpTTS) {
+          this.$root.$children[0].loadHttpTTS();
+        }
       }
     }
   },

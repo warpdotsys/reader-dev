@@ -737,6 +737,25 @@ export default {
         }
       );
     },
+    // fix: HttpTTS 列表加载（原组件调用 loadHttpTTS 但从未定义——列表恒空、朗读不可用）
+    loadHttpTTS(refresh) {
+      return Axios.get(this.api + "/httpTTS/list", {
+        params: {
+          simple: 1
+        }
+      }).then(
+        res => {
+          if (res.data.isSuccess) {
+            this.$store.commit("setHttpTTS", res.data.data || []);
+          }
+        },
+        error => {
+          this.$message.error(
+            "加载TTS列表失败 " + (error && error.toString())
+          );
+        }
+      );
+    },
     loadBookSource(refresh) {
       return cacheFirstRequest(
         () =>
