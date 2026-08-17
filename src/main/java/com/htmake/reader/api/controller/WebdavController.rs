@@ -80,15 +80,13 @@ impl WebdavController {
     //     return resolveWebdavPath(context, decodedPath(destinationPath))
     // }
     fn destination_path(&self, context: &RoutingContext) -> Option<File> {
-        let destination = match context.request().get_header("Destination") {
-            Some(v) => v,
-            None => return None,
-        };
-        let destination_path = match std::panic::catch_unwind(|| URL::new(destination.clone()).map(|u| u.path()).unwrap_or_default()) {
-            Ok(p) => p,
-            Err(_) => return None,
-        };
-        return self.resolve_webdav_path(context, &Self::decoded_path(&destination_path));
+        let destination = context.request().get_header("Destination")?;
+        let url = URL::new(destination).ok()?;
+        let path = url.path();
+        if path.is_empty() || path == "/" {
+            return None;
+        }
+        self.resolve_webdav_path(context, &Self::decoded_path(&path))
     }
 
     // init {

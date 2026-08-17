@@ -2177,21 +2177,14 @@ impl BookController {
 
         // 更新目录；JAR 保持目录刷新失败不影响书源切换结果
         let new_book_info = new_book_info.unwrap();
-        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = crate::stubs::block_on(self.get_local_chapter_list(
-                new_book_info.clone(),
-                book_source_string,
-                true,
-                user_name_space,
-                false,
-                None,
-            ));
-        })) {
-            Ok(_) => {}
-            Err(e) => {
-                let _ = crate::stubs::panic_message(e);
-            }
-        }
+        let _ = self.get_local_chapter_list(
+            new_book_info.clone(),
+            book_source_string,
+            true,
+            user_name_space,
+            false,
+            None,
+        ).await;
         return_data.set_data(Box::new(new_book_info), String::new());
         return return_data;
     }

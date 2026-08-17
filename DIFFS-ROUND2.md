@@ -1249,3 +1249,28 @@
 - **Kotlin**: 按 `(5 + (rate - 0.5) * 30)` 换算传入语速。
 - **Rust**: 硬编码语速为 0。
 - **修复**: 从请求参数中提取 `rate` 并动态换算 `speech_rate` 传入 TTS 引擎。
+
+
+---
+
+## AD. 第 13 轮深度差异排查报告（ROUND 13，2026-08-17）
+
+### AD1 [已修·P0 致命] WebDAV Destination 解析失败导致用户 WebDAV 根目录被整目录静默递归删除 (Critical Data Loss Bug)
+- **Kotlin**: `WebdavController.kt:92` 若 `Destination` 为非合法绝对 URL 时安全返回 `null` 并返回 400。
+- **Rust**: `WebdavController.rs:87` 异常时回退为 `""`，`resolve_webdav_path` 误将其解析为用户 WebDAV 根目录。若携带 `Overwrite: T`，直接调用 `delete_recursively()` 将用户整个 WebDAV 根目录（全部备份包与书籍）清空删除。
+- **修复**: 严密校验 URL 合法性与 `path` 非空/非根路径判定，解析失败时返回 `None` 彻底杜绝误删。
+
+### AD2 [已修·P1 高] `StringUtils.rs` `isNumeric` 纯数字判断失效（导致字数转换异常）
+- **Kotlin**: `StringUtils.kt:241` 将纯数字转换为 `x.x万字` 或 `x字`。
+- **Rust**: `StringUtils.rs:233` 依赖的 `Pattern::matches` 桩未执行 `find` 恒返回 `false`，导致所有纯数字字数原样输出。
+- **修复**: 直接基于字符 ASCII 数字判断，确保纯数字字数（如 `"350000"`）正确转换为 `"35万字"`。
+
+### AD3 [已修·P1 高] `BookGroupController.rs` 63 位位运算溢出 Panic 保护
+- **Kotlin**: Java 64 模移位。
+- **Rust**: `group_id << 1` 达到 63 位时在 Debug 模式下发生 `attempt to shift left with overflow` Panic。
+- **修复**: 增加 `group_id >= (1_i64 << 62)` 上限截断保护。
+
+### AD4 [已修·P1 高] `set_book_source` 异步方法内消除自旋 `block_on`
+- **Kotlin**: 协程原生 `suspend` 调用。
+- **Rust**: 在 `pub async fn` 内嵌套调用 `crate::stubs::block_on` 引起 Tokio 线程自旋与调度卡死。
+- **修复**: 统一改用原生 `.await` 调用。

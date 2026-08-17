@@ -231,9 +231,12 @@ impl StringUtils {
      * 是否数字
      */
     pub fn isNumeric(str: &str) -> bool {
-        let pattern = Pattern::compile("-?[0-9]+");
-        let isNum = pattern.matcher(str.to_string());
-        isNum.matches()
+        let s = str.trim();
+        if s.is_empty() {
+            return false;
+        }
+        let s = s.strip_prefix('-').unwrap_or(s);
+        !s.is_empty() && s.chars().all(|c| c.is_ascii_digit())
     }
 
     pub fn wordCountFormat(wc: Option<&str>) -> String {

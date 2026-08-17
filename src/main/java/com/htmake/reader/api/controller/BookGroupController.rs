@@ -31,7 +31,11 @@ impl BookGroupController {
         }
         let mut group_id = 1_i64;
         while (group_id & ids_sum) != 0_i64 {
-            group_id = group_id << 1;
+            if group_id >= (1_i64 << 62) {
+                group_id = 0;
+                break;
+            }
+            group_id <<= 1;
         }
         entity.group_id = group_id;
         entity.order = max_order + 1;
