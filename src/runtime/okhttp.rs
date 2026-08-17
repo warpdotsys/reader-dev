@@ -63,29 +63,39 @@ fn execute_inner(
     };
     let client: &reqwest::blocking::Client = custom_client.as_ref().unwrap_or(client.unwrap());
 
-    // fix: 手动跟随重定向（≤20 跳；保留全部请求头——okhttp 跨域重定向保留 cookie/Authorization）
+    // 遵循 RFC 及 OkHttp 重定向规范：处理 301/302/303/307/308 状态转换、清空 Ghost Body 并过滤跨域敏感头
     let mut current_url = req.url.clone();
     let mut current_headers = req.headers.clone();
     let mut current_method = req.method.clone();
+    let mut current_body = req.body.clone();
+    let mut current_body_bytes = req.body_bytes.clone();
+    let mut current_content_type = req.content_type.clone();
+
     for _hop in 0..20 {
-        let mut builder = if current_method == "POST" {
-            let mut b = client.post(&current_url);
+        let method = match current_method.to_ascii_uppercase().as_str() {
+            "POST" => reqwest::Method::POST,
+            "PUT" => reqwest::Method::PUT,
+            "DELETE" => reqwest::Method::DELETE,
+            "HEAD" => reqwest::Method::HEAD,
+            "PATCH" => reqwest::Method::PATCH,
+            "OPTIONS" => reqwest::Method::OPTIONS,
+            _ => reqwest::Method::GET,
+        };
+        let mut builder = client.request(method, &current_url);
+        if current_method == "POST" || current_method == "PUT" || current_method == "PATCH" {
             let has_ct = current_headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("content-type"));
             if !has_ct {
-                if let Some(ct) = &req.content_type {
-                    b = b.header("Content-Type", ct);
+                if let Some(ct) = &current_content_type {
+                    builder = builder.header("Content-Type", ct);
                 }
             }
-            b
-        } else {
-            client.get(&current_url)
-        };
+        }
         for (k, v) in &current_headers {
             builder = builder.header(k, v);
         }
-        if let Some(body_bytes) = &req.body_bytes {
+        if let Some(body_bytes) = &current_body_bytes {
             builder = builder.body(body_bytes.clone());
-        } else if let Some(body) = &req.body {
+        } else if let Some(body) = &current_body {
             builder = builder.body(body.clone());
         }
         let resp = builder
@@ -94,13 +104,12 @@ fn execute_inner(
         let status = resp.status().as_u16();
         if (300..400).contains(&status) {
             let Some(loc) = resp.headers().get("location").map(|v| v.to_str().unwrap_or("").to_string()) else {
-                // 无 Location 的 3xx——作为最终响应返回
                 return build_response(resp, status);
             };
             if loc.is_empty() {
                 return build_response(resp, status);
             }
-            current_url = resp
+            let next_url = resp
                 .url()
                 .join(&loc)
                 .map(|u| u.to_string())
@@ -108,16 +117,35 @@ fn execute_inner(
                     if loc.starts_with("http://") || loc.starts_with("https://") {
                         loc
                     } else {
-                        // 相对路径——基于当前 URL 目录拼接
                         current_url
                             .rsplit_once('/')
                             .map(|(base, _)| format!("{}/{}", base, loc.trim_start_matches('/')))
                             .unwrap_or(loc)
                     }
                 });
-            // 302/303 → POST 转 GET（okhttp followRedirects 语义）；307/308 保留方法
-            if (status == 302 || status == 303) && current_method == "POST" {
+
+            // 跨域 Header 过滤（若 host/port/scheme 变化，剥离 Authorization、Cookie、Host）
+            if let (Ok(u1), Ok(u2)) = (url::Url::parse(&current_url), url::Url::parse(&next_url)) {
+                if u1.host_str() != u2.host_str() || u1.port() != u2.port() || u1.scheme() != u2.scheme() {
+                    current_headers.retain(|k, _| {
+                        let lk = k.to_ascii_lowercase();
+                        lk != "authorization" && lk != "cookie" && lk != "host"
+                    });
+                }
+            }
+
+            current_url = next_url;
+
+            // 301, 302, 303 → 转 GET 并彻底清除请求体载荷与相关 Headers
+            if (status == 301 || status == 302 || status == 303) && (current_method == "POST" || status == 303) {
                 current_method = "GET".to_string();
+                current_body = None;
+                current_body_bytes = None;
+                current_content_type = None;
+                current_headers.retain(|k, _| {
+                    let lk = k.to_ascii_lowercase();
+                    lk != "content-type" && lk != "content-length" && lk != "transfer-encoding"
+                });
             }
             continue;
         }

@@ -1229,3 +1229,23 @@
 - **Kotlin**: `BookController.kt:3547` 自动从 `BookSource` 解析并注入动态防盗链 Header。
 - **Rust**: 构造 `AnalyzeUrl` 时第 10 个参数固定传入 `None`。
 - **修复**: 传入 `parsed_src.as_ref().and_then(|bs| bs.get_header_map())`，确保防盗链封面正常下载与 EPUB 封面生成。
+
+
+---
+
+## AC. 第 12 轮深度差异排查报告（ROUND 12，2026-08-17）
+
+### AC1 [已修·P0 极高] 301/302/303 重定向与 Ghost Body 清空及跨域敏感 Header 过滤
+- **Kotlin/OkHttp**: 遵循 RFC 规范，301/302/303 从 POST 转 GET 时彻底移除请求体及 `Content-Type`/`Content-Length`；跨域跳转时自动剥离 `Authorization`、`Cookie`、`Host`。
+- **Rust**: 301 遗漏判断仍为 POST；302/303 转 GET 后依然从原不可变 `req` 提取并发送原 POST Body（Ghost Body）且残留 `Content-Type`，触发目标服务器 400/405；跨域跳转无条件透传全部 Header（凭证外泄与 Host 污染）。
+- **修复**: 在 `src/runtime/okhttp.rs` 中完整实现可变请求体与 Header 的重定向清洗状态机，301/302/303 转 GET 时清空 Body 与相关 Header，跨域跳转时剥离敏感头。
+
+### AC2 [已修·P0 极高] `AnalyzeByJSoup.rs` CSS 规则无 `@` 时 `rfind('@').unwrap()` 触发 Panic
+- **Kotlin**: 安全处理无 `@` 后缀的 CSS 规则。
+- **Rust**: `AnalyzeByJSoup.rs:161` 当规则为 `@CSS:div.title`（未带 `@text` / `@attr`）时，`rfind('@')` 返回 `None`，`.unwrap()` 导致线程直接 Panic 崩溃。
+- **修复**: 增加 `if let Some(last_index) = rule_str_x.rfind('@')` 安全分支，未找到 `@` 时直接提取 `self.element.select(&rule_str_x)` 文本。
+
+### AC3 [已修·P1 高] `BookController.rs:4235` `tts_by_api` 语速参数计算
+- **Kotlin**: 按 `(5 + (rate - 0.5) * 30)` 换算传入语速。
+- **Rust**: 硬编码语速为 0。
+- **修复**: 从请求参数中提取 `rate` 并动态换算 `speech_rate` 传入 TTS 引擎。

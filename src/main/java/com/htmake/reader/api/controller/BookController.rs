@@ -4231,10 +4231,10 @@ impl BookController {
             return;
         }
         let http_tts = http_tts.unwrap();
-        // fix: HttpTTS 无 Clone；先取出 content_type 再整体移入 get_speak_stream
         let content_type = http_tts.content_type.clone();
-        // fix: 原 Kotlin getSpeakStream 依赖 okhttp 响应链与 JS 检测（未转录），占位返回 None
-        let mut stream = self.get_speak_stream(http_tts, text.clone(), 0, user_name_space.clone()).await;
+        let rate_val = params.as_ref().and_then(|p| p.get("rate")).and_then(|s| s.parse::<f64>().ok()).unwrap_or(1.0);
+        let speech_rate = (5.0 + (rate_val - 0.5) * 30.0) as i32;
+        let mut stream = self.get_speak_stream(http_tts, text.clone(), speech_rate, user_name_space.clone()).await;
         if stream.is_none() {
             let mut r = response;
             r.set_status_code(404).end(String::new());

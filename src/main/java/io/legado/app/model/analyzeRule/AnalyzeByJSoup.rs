@@ -158,11 +158,14 @@ impl AnalyzeByJSoup {
             let mut results: Vec<Vec<String>> = Vec::new(); // ArrayList<List<String>>()
             for rule_str_x in rule_str_s {
                 let temp: Option<Vec<String>> = if source_rule.is_css {
-                    let last_index = rule_str_x.rfind('@').unwrap();
-                    Some(self.get_result_last(
-                        self.element.select(&rule_str_x[0..last_index]),
-                        &rule_str_x[last_index + 1..],
-                    ))
+                    if let Some(last_index) = rule_str_x.rfind('@') {
+                        Some(self.get_result_last(
+                            self.element.select(&rule_str_x[0..last_index]),
+                            &rule_str_x[last_index + 1..],
+                        ))
+                    } else {
+                        Some(self.get_result_last(self.element.select(&rule_str_x), "text"))
+                    }
                 } else {
                     self.get_result_list(&rule_str_x)
                 };
@@ -423,12 +426,13 @@ impl ElementsSingle {
             temp.children() //允许索引直接作为根元素，此时前置规则为空，效果与children相同
         } else {
             let rules: Vec<&str> = self.before_rule.split('.').collect();
+            let sub = rules.get(1).copied().unwrap_or("");
             match rules[0] {
-                "children" => temp.children(), //允许索引直接作为根元素，此时前置规则为空，效果与children相同
-                "class" => temp.get_elements_by_class(rules[1]),
-                "tag" => temp.get_elements_by_tag(rules[1]),
-                "id" => Collector::collect(Evaluator::Id(rules[1].to_string()), temp),
-                "text" => temp.get_elements_containing_own_text(rules[1]),
+                "children" => temp.children(),
+                "class" if !sub.is_empty() => temp.get_elements_by_class(sub),
+                "tag" if !sub.is_empty() => temp.get_elements_by_tag(sub),
+                "id" if !sub.is_empty() => Collector::collect(Evaluator::Id(sub.to_string()), temp),
+                "text" if !sub.is_empty() => temp.get_elements_containing_own_text(sub),
                 _ => temp.select(&self.before_rule),
             }
         };
