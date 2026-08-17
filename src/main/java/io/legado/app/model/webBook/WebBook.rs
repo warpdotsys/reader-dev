@@ -77,8 +77,10 @@ impl WebBook {
 
     // fix: 真实调试对象克隆（原 Debug 空占位——调试日志全部丢失）
     fn debug_log_box(&self) -> Option<Box<dyn DebugLog>> {
-        if self.debug_log {
-            self.debug_logger.as_ref().map(|dl| dl.clone_box())
+        if let Some(dl) = &self.debug_logger {
+            Some(dl.clone_box())
+        } else if self.debug_log {
+            Some(Box::new(Debug))
         } else {
             None
         }

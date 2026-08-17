@@ -3854,11 +3854,16 @@ impl BookController {
 
         for user_name_space in self.mongo_user_namespaces() {
             for file_name in BACKUP_FILE_NAMES {
+                let real_name = if file_name.ends_with(".json") {
+                    file_name.to_string()
+                } else {
+                    format!("{}.json", file_name)
+                };
                 let file = File::new(&work_dir_join(vec![
                     String::from("storage"),
                     String::from("data"),
                     user_name_space.clone(),
-                    format!("{}.json", file_name),
+                    real_name,
                 ]));
                 if file.exists() {
                     file.delete();
@@ -4634,6 +4639,8 @@ impl BookController {
             return;
         }
         match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let parsed_src = source.as_ref().and_then(|it| BookSource::from_json(it.clone()).get_or_null());
+            let header_map = parsed_src.as_ref().and_then(|bs| bs.get_header_map());
             let mut analyze_url = crate::io_legado_app_model_analyzerule_analyzeurl::AnalyzeUrl::new(
                 cover_url_str.clone(),
                 None,
@@ -4641,10 +4648,10 @@ impl BookController {
                 None,
                 None,
                 String::new(),
-                source.as_ref().and_then(|it| BookSource::from_json(it.clone()).get_or_null()),
+                parsed_src,
                 None,
                 None,
-                None,
+                header_map,
                 None,
             );
             let bytes = crate::stubs::block_on(analyze_url.get_byte_array_await());

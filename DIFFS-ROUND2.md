@@ -1204,3 +1204,28 @@
 
 ### AA5 [已修·P1 高] `AppConfig` 环境变量读取笔误
 - **修复**: 支持标准环境变量 `READER_APP_SHELFUPDATEINTEVAL` 及 `READER_APP_SHELF_UPDATE_INTERVAL`。
+
+
+---
+
+## AB. 第 11 轮深度差异排查报告（ROUND 11，2026-08-17）
+
+### AB1 [已修·P0 严重] `WebBook.debug_log_box()` 门控缺陷导致 SSE 调试底层日志静默丢弃
+- **Kotlin**: `WebBook.kt:49-58` 优先使用 `debugLogger` 并下发给 `AnalyzeUrl`、`BookList`、`BookChapterList`、`BookContent`。
+- **Rust**: `WebBook.rs:79-85` 中 `if self.debug_log` 导致 SSE 调试时 `debug_log_box()` 恒返回 `None`，`AnalyzeUrl` 的网络请求、动态计算与 URL 变化全被丢弃。
+- **修复**: 重构 `debug_log_box()` 优先返回 `self.debug_logger`，次选 `Debug` 单例。
+
+### AB2 [已修·P0 严重] 正文阶段调试输出 `String` 序列化丢失（输出 `└{}`）
+- **Kotlin**: `Debugger.kt:186-187` 输出正文文本。
+- **Rust**: `stubs.rs:7539` `gson_to_json_placeholder` 未提供针对 `String` / `&str` 的分支，直接降级返回 `"{}"`。
+- **修复**: 在 `gson_to_json_placeholder` 中加入 `String` / `&str` 的序列化支持，真实输出抓取到的章节内容。
+
+### AB3 [已修·P0 严重] MongoDB 还原双重扩展名 Bug (`.json.json`)
+- **Kotlin**: `BookController.kt:2933`。
+- **Rust**: `BookController.rs:3859` 对已有 `.json` 后缀的文件名再次 `format!("{}.json", file_name)`，尝试删除不存在的 `bookSource.json.json` 导致旧数据无法清理。
+- **修复**: 判断扩展名，避免二次拼接 `.json`。
+
+### AB4 [已修·P1 高] `save_book_cover` 与 `set_cover` 补齐书源防盗链 Headers
+- **Kotlin**: `BookController.kt:3547` 自动从 `BookSource` 解析并注入动态防盗链 Header。
+- **Rust**: 构造 `AnalyzeUrl` 时第 10 个参数固定传入 `None`。
+- **修复**: 传入 `parsed_src.as_ref().and_then(|bs| bs.get_header_map())`，确保防盗链封面正常下载与 EPUB 封面生成。
