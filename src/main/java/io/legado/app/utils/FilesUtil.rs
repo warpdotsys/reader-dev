@@ -596,20 +596,23 @@ impl FileUtils {
      * 追加文本内容
      */
     pub fn appendText(path: &str, content: &str) -> bool {
-        let file = File::new(path);
-        let mut writer: Option<FileWriter> = None;
-        let result: Result<bool, std::io::Error> = (|| {
-            if !file.exists() {
-                file.createNewFile();
-            }
-            writer = Some(FileWriter::new(&file, true));
-            writer.as_mut().unwrap().write(content);
-            Ok(true)
-        })();
-        Self::closeSilently(writer.as_mut().map(|f| f as &mut dyn Closeable));
-        match result {
-            Ok(b) => b,
-            Err(_) => false,
+        Self::appendTextWithCharset(path, content, "UTF-8")
+    }
+
+    pub fn appendTextWithCharset(path: &str, content: &str, charset: &str) -> bool {
+        use std::io::Write;
+        let bytes = if charset.is_empty() || charset.eq_ignore_ascii_case("utf-8") {
+            content.as_bytes().to_vec()
+        } else if let Some(encoding) = encoding_rs::Encoding::for_label(charset.as_bytes()) {
+            let (encoded, _, _) = encoding.encode(content);
+            encoded.into_owned()
+        } else {
+            content.as_bytes().to_vec()
+        };
+        if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
+            file.write_all(&bytes).is_ok()
+        } else {
+            false
         }
     }
 

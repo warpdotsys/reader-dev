@@ -3372,8 +3372,9 @@ impl BookController {
         let filename = format!("《{}》作者：{}.txt", book_info.name, book_info.get_real_author());
         let book_path = FileUtils::getPath(&export_dir, &[filename.as_str()]);
         let book_file = FileUtils::createFileWithReplace(&book_path);
+        let charset = app_config().export_charset.clone();
         self.get_all_contents(book_info.clone(), book_source, user_name_space, |text: String, _src_list: Option<Vec<Triple<String, i32, String>>>| {
-            FileUtils::appendText(&book_file.path(), &text);
+            FileUtils::appendTextWithCharset(&book_file.path(), &text, &charset);
         })
         .await;
         return book_file;
@@ -3482,16 +3483,9 @@ impl BookController {
     pub async fn set_cover(&self, book: Book, epub_book: &mut EpubBook, book_source_string: String) {
         let cover_url = book.get_display_cover();
         if cover_url.is_none() {
-            // fix: 默认封面（1x1 深色 PNG 常量；原 TODO 无封面书籍导出无封面）
-            const DEFAULT_COVER_PNG: &[u8] = &[
-                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-                0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
-                0x00, 0x00, 0x03, 0x00, 0x01, 0x25, 0x45, 0x40, 0x5C, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
-                0x44, 0xAE, 0x42, 0x60, 0x82,
-            ];
-            epub_book.set_cover_image(Some(Resource::new_bytes(DEFAULT_COVER_PNG.to_vec(), "Images/cover.jpg")));
-        } else if cover_url.as_ref().unwrap().starts_with("/") {
+            return;
+        }
+        if cover_url.as_ref().unwrap().starts_with("/") {
             // 本地 /assets 封面
             let cover_path = cover_url.unwrap().replace("/", File::SEPARATOR).substring(1);
             let cover_file = File::new(&work_dir_join(vec![String::from("storage"), cover_path]));

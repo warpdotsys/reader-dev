@@ -85,12 +85,7 @@ pub struct DB<T> {
 
 impl<T: EntityToJson + serde::de::DeserializeOwned> DB<T> {
     fn table_file_path(&self) -> String {
-        std::path::Path::new("storage")
-            .join("data")
-            .join(&self.user_name_space)
-            .join(self.name.clone() + ".json")
-            .to_string_lossy()
-            .to_string()
+        crate::com_htmake_reader_utils_vertext::get_storage_file(&[String::from("data"), self.user_name_space.clone(), self.name.clone()], "json").path()
     }
 
     fn load_cached(&self) -> JsonArray {

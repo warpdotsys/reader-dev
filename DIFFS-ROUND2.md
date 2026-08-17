@@ -1136,3 +1136,23 @@
 
 ### X5 [已修·P3 低] `Utf8BomUtils.rs:36` `hasBom` 边界条件 `>= 3` 容错
 - **修复**: 在 `removeUTF8BOM`、`removeUTF8BOM_bytes`、`hasBom` 中将 `len > 3` 改为 `len >= 3`。
+
+
+---
+
+## Y. 第 8 轮深度差异排查报告（ROUND 8，2026-08-17）
+
+### Y1 [已修·P0 严重] TXT 导出编码固定 UTF-8（`exportCharset` 被忽略）
+- **Kotlin**: `BookController.kt:2440` 使用 `Charset.forName(appConfig.exportCharset)` 按用户配置导出（如 GBK/GB18030/Big5）。
+- **Rust**: `BookController.rs:3376` 调用的 `FilesUtil.rs:598` `appendText` 硬编码为 UTF-8 写入，导致配置了 `READER_APP_EXPORTCHARSET=GBK` 时在电子书阅读器上出现乱码。
+- **修复**: 在 `FilesUtil.rs` 中增加 `appendTextWithCharset`，并在 `BookController.rs:export_to_txt` 中读取 `app_config().export_charset` 执行对应的编码转换写入。
+
+### Y2 [已修·P1 高] `DB.rs` 存储路径与 `VertExt.rs` 路径分离
+- **Kotlin**: 复用统一的 `getStorage` / `saveStorage`。
+- **Rust**: `DB.rs:88` 使用相对路径 `"storage/data/..."`，在设置了 `READER_APP_WORKDIR` 时导致路径分裂。
+- **修复**: 统一调用 `crate::com_htmake_reader_utils_vertext::get_storage_file`，确保全局存储路径一致。
+
+### Y3 [已修·P2 中] EPUB 导出在书籍无封面时的占位图行为对齐
+- **Kotlin**: `BookController.kt:2591` 若 `coverUrl == null` 则不设封面（保持无封面）。
+- **Rust**: 注入了一个 1x1 深色 PNG 并硬编码命名为 `Images/cover.jpg`。
+- **修复**: 严格对齐 Kotlin 原版，无封面时不注入虚假占位图片。
