@@ -892,7 +892,7 @@ impl BookSourceController {
         }
         let url: String;
         if context.request().method() == HttpMethod::POST {
-            url = context.body_as_json().unwrap().get_string("url");
+            url = context.body_as_json().map(|j| j.get_string("url")).unwrap_or_default();
         } else {
             url = context.query_param("url").unwrap_or(String::from(""));
         }

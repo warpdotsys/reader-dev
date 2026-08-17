@@ -1176,3 +1176,31 @@
 - **Kotlin**: `QueryTTF.java:549, 560` 依托 JVM 数组边界检查。
 - **Rust**: Format 4 / Format 12 下标计算为负数或下溢强转 `as usize` 时发生 Panic；`in_limit` 强转 `u16` 发生整数溢出。
 - **修复**: 增加切片边界判空防护，并将 `in_limit` 升级为 `u32` 避免 Unicode 扩展平面码点溢出。
+
+
+---
+
+## AA. 第 10 轮深度差异排查报告（ROUND 10，2026-08-17）
+
+### AA1 [已修·P0 极高] `server.rs` 调度器午夜 00:00 溢出死锁（次日起定时任务停摆）
+- **Kotlin**: Spring `@Scheduled` 基于独立时钟线程触发。
+- **Rust**: `total_min = now.hour() * 60 + now.minute()` 是 0..1439。当第一天 23:50 运行后 `last_run_min = Some(1430)`。跨过午夜 00:00 后 `total_min - 1430` 为负数，`>= 10` 全天都不成立，导致服务启动第二天开始书架刷新和订阅同步永久停止。
+- **修复**: 改用 Unix 纪元时间戳 `now.timestamp() / 60` 驱动绝对时间跨度比较，且每日备份/清理改用 `today` 日期对象去重。
+
+### AA2 [已修·P0 极高] `Calendar.get` 缺失 `MINUTE`/`DAY_OF_MONTH`/`SECOND` 字段
+- **Kotlin**: `YueduApi.kt:518, 619` 依靠真实分钟计算 `minuteFromToday = hour * 60 + minute`。
+- **Rust**: `stubs.rs:6788` 中 `Calendar::get` 仅实现了 `Calendar::HOUR`，其余分支恒返回 0，导致远程订阅在 0点/12点 重复狂刷 6 次。
+- **修复**: 补齐 `YEAR`, `MONTH`, `DAY_OF_MONTH`, `HOUR`, `HOUR_OF_DAY`, `MINUTE`, `SECOND`, `MILLISECOND` 等字段的完整映射。
+
+### AA3 [已修·P0 极高] `StringIsTrueExt::is_true` 误判非空字符串（导致分卷目录判定失效与章节丢失）
+- **Kotlin**: `StringExtensions.kt:41-46` 除 `"false"`, `"no"`, `"not"`, `"0"`, 空白 以外的任意非空字符串（如 `"volume"`, `"卷"`, `"yes"`）均被判定为 `true`。
+- **Rust**: `stubs.rs:8968` 仅认 `"true"` 和 `"1"`，导致书源分卷规则（返回 `"volume"` 或 `"卷"`）被误判为 `false`，进而触发无 URL 章节被全数剔除吞掉。
+- **修复**: 对齐 Kotlin 原版布尔真值判定逻辑。
+
+### AA4 [已修·P0 极高] `RuleAnalyzer.rs` `trim()` 越界 Panic
+- **Kotlin**: Java 边界安全。
+- **Rust**: `while q[self.pos as usize] == '@' || ...` 缺少 `self.pos < q.len()` 边界检查，规则末尾是 `@` 或空白符时直接 Panic。
+- **修复**: 补齐边界安全检查 `while (self.pos as usize) < q.len() && ...`。
+
+### AA5 [已修·P1 高] `AppConfig` 环境变量读取笔误
+- **修复**: 支持标准环境变量 `READER_APP_SHELFUPDATEINTEVAL` 及 `READER_APP_SHELF_UPDATE_INTERVAL`。

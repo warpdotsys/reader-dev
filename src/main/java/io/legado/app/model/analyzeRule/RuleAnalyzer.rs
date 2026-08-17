@@ -36,17 +36,12 @@ impl RuleAnalyzer {
     }
 
     pub fn trim(&mut self) {
-        // 修剪当前规则之前的"@"或者空白符
-        // 在while里重复设置start和startX会拖慢执行速度，所以先来个判断是否存在需要修剪的字段，最后再一次性设置start和startX
         let q: Vec<char> = self.queue.chars().collect();
-        if q[self.pos as usize] == '@' || q[self.pos as usize] < '!' { // queue[pos] == '@' || queue[pos] < '!'
+        while (self.pos as usize) < q.len() && (q[self.pos as usize] == '@' || q[self.pos as usize] < '!') {
             self.pos += 1;
-            while q[self.pos as usize] == '@' || q[self.pos as usize] < '!' {
-                self.pos += 1;
-            }
-            self.start = self.pos; // 开始点推移
-            self.start_x = self.pos; // 规则起始点推移
         }
+        self.start = self.pos;
+        self.start_x = self.pos;
     }
 
     //将pos重置为0，方便复用

@@ -633,48 +633,50 @@ pub fn start_server(router: Router, port: i32, on_listen: impl FnMut(bool) + Sen
 fn spawn_scheduled_jobs() {
     std::thread::spawn(|| {
         use chrono::Timelike;
-        let mut last_run_min: Option<i64> = None;
-        // fix: 每日任务去重（30s 轮询下 23:50:00/23:50:30 各触发一次——Kotlin cron 秒级仅 1 次）
-        let mut last_backup_min: Option<i64> = None;
-        let mut last_clear_min: Option<i64> = None;
-        let mut last_gc_min: Option<i64> = None;
+        let mut last_run_epoch_min: Option<i64> = None;
+        let mut last_backup_day: Option<chrono::NaiveDate> = None;
+        let mut last_clear_day: Option<chrono::NaiveDate> = None;
+        let mut last_gc_day: Option<chrono::NaiveDate> = None;
         loop {
             std::thread::sleep(std::time::Duration::from_secs(30));
             let now = chrono::Local::now();
-            let total_min = now.hour() as i64 * 60 + now.minute() as i64;
-            // fix: YueduApi::new 移入 catch_unwind（原在循环体裸调用——panic 杀死整个定时线程，5 个任务永久停止）
+            let epoch_min = now.timestamp() / 60;
+            let today = now.date_naive();
+
             let api = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 crate::com_htmake_reader_api_yueduapi::YueduApi::new()
             })) {
                 Ok(api) => api,
                 Err(_) => continue,
             };
-            // 每 10 分钟：书架刷新 + 远程书源订阅（方法内部按配置间隔自判）
-            // fix: 距上次 ≥10 分钟触发（原 total_min%10==0 窗口判断——任务执行跨过边界丢轮；Kotlin cron 延迟不丢）
-            let due = match last_run_min {
-                Some(last) => total_min - last >= 10,
-                None => total_min % 10 == 0,
+
+            // 每 10 分钟调度一次（采用绝对时间戳，彻底解决午夜 00:00 翻转死锁）
+            let due = match last_run_epoch_min {
+                Some(last) => epoch_min - last >= 10,
+                None => epoch_min % 10 == 0,
             };
             if due {
-                // fix: 任务各自独立 catch（Kotlin 每任务独立调度——一个任务失败不影响其他）
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.shelf_update_job()));
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.remote_book_source_sub_update_job()));
-                last_run_min = Some(total_min);
+                last_run_epoch_min = Some(epoch_min);
             }
+
             // 23:50 每日自动 WebDAV 备份
-            if now.hour() == 23 && now.minute() == 50 && last_backup_min != Some(total_min) {
+            if now.hour() == 23 && now.minute() >= 50 && last_backup_day != Some(today) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_backup()));
-                last_backup_min = Some(total_min);
+                last_backup_day = Some(today);
             }
+
             // 23:59 每日清理不活跃用户
-            if now.hour() == 23 && now.minute() == 59 && last_clear_min != Some(total_min) {
+            if now.hour() == 23 && now.minute() >= 59 && last_clear_day != Some(today) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.clear_user()));
-                last_clear_min = Some(total_min);
+                last_clear_day = Some(today);
             }
+
             // 2:00 每日自动 GC
-            if now.hour() == 2 && now.minute() == 0 && last_gc_min != Some(total_min) {
+            if now.hour() == 2 && now.minute() >= 0 && last_gc_day != Some(today) {
                 let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| api.auto_gc()));
-                last_gc_min = Some(total_min);
+                last_gc_day = Some(today);
             }
         }
     });

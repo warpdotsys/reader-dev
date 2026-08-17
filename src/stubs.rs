@@ -6783,17 +6783,33 @@ impl SimpleDateFormat {
 }
 
 impl Calendar {
-    // Kotlin Calendar.HOUR / Calendar.get(field)（StringUtils.dateConvert_source 使用；真实取时）
-    pub const HOUR: i32 = 11;
+    pub const YEAR: i32 = 1;
+    pub const MONTH: i32 = 2;
+    pub const DAY_OF_MONTH: i32 = 5;
+    pub const HOUR_OF_DAY: i32 = 11;
+    pub const HOUR: i32 = 10;
+    pub const MINUTE: i32 = 12;
+    pub const SECOND: i32 = 13;
+    pub const MILLISECOND: i32 = 14;
+
     pub fn get(&self, field: i32) -> i32 {
-        use chrono::{TimeZone, Timelike};
+        use chrono::{Datelike, TimeZone, Timelike};
         match chrono::Local.timestamp_millis_opt(self.time).single() {
             Some(dt) => match field {
-                Calendar::HOUR => dt.hour() as i32,
+                Calendar::YEAR => dt.year(),
+                Calendar::MONTH => dt.month() as i32 - 1,
+                Calendar::DAY_OF_MONTH => dt.day() as i32,
+                Calendar::HOUR_OF_DAY | Calendar::HOUR => dt.hour() as i32,
+                Calendar::MINUTE => dt.minute() as i32,
+                Calendar::SECOND => dt.second() as i32,
                 _ => 0,
             },
             None => 0,
         }
+    }
+    pub fn set(&mut self, _field: i32, _value: i32) {}
+    pub fn time_in_millis(&self) -> i64 {
+        self.timeInMillis
     }
 }
 
@@ -8154,18 +8170,7 @@ impl System {
     pub fn gc() {}
 }
 
-// ---- java.util.Calendar 补充（YueduApi.getSystemInfo / 定时任务） ----
-impl Calendar {
-    pub const DAY_OF_MONTH: i32 = 5;
-    pub const HOUR_OF_DAY: i32 = 11;
-    pub const MINUTE: i32 = 12;
-    pub const SECOND: i32 = 13;
-    pub const MILLISECOND: i32 = 14;
-    pub fn set(&mut self, _field: i32, _value: i32) {}
-    pub fn time_in_millis(&self) -> i64 {
-        self.timeInMillis
-    }
-}
+// ---- java.util.Calendar impl consolidated at line 6785 ----
 
 // ---- ApplicationContext.publishEvent 占位（YueduApi.started / onStartError） ----
 impl ApplicationContext {
@@ -8971,13 +8976,20 @@ pub trait StringIsTrueExt {
 
 impl StringIsTrueExt for String {
     fn is_true(&self) -> bool {
-        self.eq_ignore_ascii_case("true") || self.trim().parse::<i64>().map_or(false, |n| n == 1)
+        self.as_str().is_true()
     }
 }
 
 impl StringIsTrueExt for &str {
     fn is_true(&self) -> bool {
-        self.eq_ignore_ascii_case("true") || self.trim().parse::<i64>().map_or(false, |n| n == 1)
+        let s = self.trim();
+        if s.is_empty() || s.eq_ignore_ascii_case("null") {
+            return false;
+        }
+        !(s.eq_ignore_ascii_case("false")
+            || s.eq_ignore_ascii_case("no")
+            || s.eq_ignore_ascii_case("not")
+            || s == "0")
     }
 }
 // ---- TextFile 转录补充（io.legado.app.model.localBook.TextFile） ----
@@ -9373,7 +9385,7 @@ impl crate::com_htmake_reader_utils_springcontextutils::SpringContextUtils {
         cfg.work_dir = env_str("READER_APP_WORKDIR", cfg.work_dir);
         cfg.mongo_uri = env_str("READER_APP_MONGOURI", cfg.mongo_uri);
         cfg.mongo_db_name = env_str("READER_APP_MONGODBNAME", cfg.mongo_db_name);
-        cfg.shelf_update_inteval = env_int("READER_APP_SHELDUPDATEINTEVAL", cfg.shelf_update_inteval);
+        cfg.shelf_update_inteval = env_int("READER_APP_SHELFUPDATEINTEVAL", env_int("READER_APP_SHELF_UPDATE_INTERVAL", env_int("READER_APP_SHELDUPDATEINTEVAL", cfg.shelf_update_inteval)));
         cfg.remote_webview_api = env_str("READER_APP_REMOTEWEBVIEWAPI", cfg.remote_webview_api);
         cfg.auto_backup_user_data = env_bool("READER_APP_AUTOBACKUPUSERDATA", cfg.auto_backup_user_data);
         cfg.remote_book_source_update_interval = env_int("READER_APP_REMOTEBOOKSOURCEUPDATEINTERVAL", cfg.remote_book_source_update_interval);
