@@ -1156,3 +1156,23 @@
 - **Kotlin**: `BookController.kt:2591` 若 `coverUrl == null` 则不设封面（保持无封面）。
 - **Rust**: 注入了一个 1x1 深色 PNG 并硬编码命名为 `Images/cover.jpg`。
 - **修复**: 严格对齐 Kotlin 原版，无封面时不注入虚假占位图片。
+
+
+---
+
+## Z. 第 9 轮深度差异排查报告（ROUND 9，2026-08-17）
+
+### Z1 [已修·P0 严重] 搜索书源分组过滤 `bookSourceGroup` 100% 过滤失败
+- **Kotlin**: `BookController.kt:856-859` 判定 `(sourceGroup + ",").contains(bookSourceGroup + ",")`。
+- **Rust**: `stubs.rs:10634` 中 `JsonNode::contains` 硬编码返回 `false`，且 `Add<&str>` 恒返回自身未拼接字符串，导致传入 `bookSourceGroup` 分组搜索时所有书源均被排除（返回 0 结果）。
+- **修复**: 在 `JsonNode` 中实现完整的 `as_text()`、`contains()` 以及 `Add<&str>` / `Add<String>` 字符串拼接运算。
+
+### Z2 [已修·P0 严重] JS 运行时 `source` 对象缺失变量与凭据存取方法绑定
+- **Kotlin**: `BaseSource.kt:42-46, 138-148` 提供 `source.getVariable()`, `source.setVariable()`, `source.putVariable()`, `source.getLoginInfo()`, `source.putLoginInfo()`, `source.getLoginHeader()`, `source.putLoginHeader()` 等。
+- **Rust**: `src/runtime/js.rs:1012-1021` 仅注入了 5 个辅助函数，缺失所有变量与登录凭据方法，执行相应书源脚本时直接报 `TypeError: source.getVariable is not a function` 崩溃。
+- **修复**: 在 `js.rs` 的 `source` 原型中补齐完整的源级变量存取与凭据委托方法绑定。
+
+### Z3 [已修·P1 高] `QueryTTF.rs` Cmap/Glyf 下标访问缺少边界保护
+- **Kotlin**: `QueryTTF.java:549, 560` 依托 JVM 数组边界检查。
+- **Rust**: Format 4 / Format 12 下标计算为负数或下溢强转 `as usize` 时发生 Panic；`in_limit` 强转 `u16` 发生整数溢出。
+- **修复**: 增加切片边界判空防护，并将 `in_limit` 升级为 `u32` 避免 Unicode 扩展平面码点溢出。

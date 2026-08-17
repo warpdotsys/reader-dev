@@ -870,8 +870,12 @@ pub fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
                 return 0;
             }
             if tab.id_range_offset[start as usize] != 0 {
-                // glyfID = tab.glyphIdArray[code - tab.startCode[start] + (tab.idRangeOffset[start] >> 1) - (tab.idRangeOffset.length - start)]
-                glyf_id = tab.glyph_id_array[(code - tab.start_code[start as usize] + (tab.id_range_offset[start as usize] >> 1) - (tab.id_range_offset.len() as i32 - start)) as usize];
+                let idx = code - tab.start_code[start as usize] + (tab.id_range_offset[start as usize] >> 1) - (tab.id_range_offset.len() as i32 - start);
+                if idx >= 0 && (idx as usize) < tab.glyph_id_array.len() {
+                    glyf_id = tab.glyph_id_array[idx as usize];
+                } else {
+                    glyf_id = 0;
+                }
             } else {
                 glyf_id = code + tab.id_delta[start as usize] as i32; // glyfID = code + tab.idDelta[start]  (fix: Java short 自动提升为 int)
             }
@@ -892,8 +896,7 @@ pub fn get_glyf_index(cmap: &CmapLayout, pps: &[(i32, i32)], code: i32) -> i32 {
                 CmapFormat::Format12(t) => t,
                 _ => unreachable!(),
             };
-            // if (code > tab.groups.get(tab.numGroups - 1).getMiddle()) return 0
-            if code > tab.groups[(tab.num_groups - 1) as usize].1 {
+            if tab.num_groups <= 0 || tab.groups.is_empty() || code > tab.groups.last().map(|g| g.1).unwrap_or(0) {
                 return 0;
             }
             // 二分法查找数值索引

@@ -10624,19 +10624,38 @@ impl JsonNode {
     pub fn get(&self, key: &str) -> Option<JsonNode> {
         self.0.get(key).cloned().map(JsonNode)
     }
-    pub fn to_string(&self) -> String {
+    pub fn as_text(&self) -> String {
         match &self.0 {
             serde_json::Value::String(s) => s.clone(),
             other => other.to_string(),
         }
     }
-    pub fn is_not_blank(&self) -> bool { !self.0.is_null() }
-    pub fn contains(&self, _other: &str) -> bool { false }
+    pub fn to_string(&self) -> String {
+        self.as_text()
+    }
+    pub fn is_not_blank(&self) -> bool {
+        match &self.0 {
+            serde_json::Value::Null => false,
+            serde_json::Value::String(s) => !s.trim().is_empty(),
+            _ => true,
+        }
+    }
+    pub fn contains(&self, other: &str) -> bool {
+        self.as_text().contains(other)
+    }
 }
 impl Default for JsonNode { fn default() -> JsonNode { JsonNode::new() } }
 impl std::ops::Add<&str> for JsonNode {
     type Output = JsonNode;
-    fn add(self, _rhs: &str) -> JsonNode { self }
+    fn add(self, rhs: &str) -> JsonNode {
+        JsonNode(serde_json::Value::String(format!("{}{}", self.as_text(), rhs)))
+    }
+}
+impl std::ops::Add<String> for JsonNode {
+    type Output = JsonNode;
+    fn add(self, rhs: String) -> JsonNode {
+        JsonNode(serde_json::Value::String(format!("{}{}", self.as_text(), rhs)))
+    }
 }
 
 pub struct HttpServerResponse;

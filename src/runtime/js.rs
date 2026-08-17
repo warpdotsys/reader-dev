@@ -1015,6 +1015,16 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
           source.ajax = function(url) { return java.ajax(url); }; \
           source.ajaxAll = function(urls) { return java.ajaxAll(urls); }; \
           source.getCookie = function(key) { return java.getCookie(source.bookSourceUrl || '', key || ''); }; \
+          source.getVariable = function() { return java.get(source.bookSourceUrl || 'sourceVariable') || ''; }; \
+          source.setVariable = function(v) { return java.put(source.bookSourceUrl || 'sourceVariable', v || ''); }; \
+          source.putVariable = function(v) { return java.put(source.bookSourceUrl || 'sourceVariable', v || ''); }; \
+          source.getLoginInfo = function() { return java.get((source.bookSourceUrl || '') + '_loginInfo') || ''; }; \
+          source.putLoginInfo = function(v) { return java.put((source.bookSourceUrl || '') + '_loginInfo', v || ''); }; \
+          source.getLoginHeader = function() { return java.get((source.bookSourceUrl || '') + '_loginHeader') || ''; }; \
+          source.putLoginHeader = function(v) { return java.put((source.bookSourceUrl || '') + '_loginHeader', v || ''); }; \
+          source.removeLoginInfo = function() { return java.put((source.bookSourceUrl || '') + '_loginInfo', ''); }; \
+          source.removeLoginHeader = function() { return java.put((source.bookSourceUrl || '') + '_loginHeader', ''); }; \
+          source.login = function() { return ''; }; \
           } \
           source.getHeaderMap = function() { try { return JSON.parse(source.header || '{}'); } catch(e) { return {}; } }; \
           source.getBookSourceUrl = function() { return source.bookSourceUrl || ''; }; \
