@@ -146,8 +146,9 @@ impl ZipUtils {
         if !srcFile.exists() {
             return true;
         }
-        let sep = if Self::isSpace(Some(&rootPath1)) { String::new() } else { File::separator() };
+        let sep = if Self::isSpace(Some(&rootPath1)) { String::new() } else { "/".to_string() };
         rootPath1 = rootPath1 + &sep + &srcFile.name();
+        rootPath1 = rootPath1.replace('\\', "/");
         if srcFile.isDirectory() {
             let fileList = srcFile.listFiles();
             if fileList == None || fileList.as_ref().unwrap().is_empty() {

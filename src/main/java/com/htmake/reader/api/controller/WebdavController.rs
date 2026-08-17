@@ -394,8 +394,13 @@ impl WebdavController {
         }
         let authorization = authorization.unwrap();
 
-        // Basic YTox
-        let auth = base64_decode(&authorization.replace("Basic ", "")).splitn(2, ':').map(|s| s.to_string()).collect::<Vec<String>>();
+        // Basic YTox (大小写不敏感)
+        let auth_str = if authorization.to_ascii_lowercase().starts_with("basic ") {
+            &authorization[6..]
+        } else {
+            authorization.as_str()
+        };
+        let auth = base64_decode(auth_str.trim()).splitn(2, ':').map(|s| s.to_string()).collect::<Vec<String>>();
         if auth.len() < 2 {
             return false;
         }
@@ -578,8 +583,11 @@ impl WebdavController {
         //         String.format(dirResponse, url, modifiedDate, modifiedDate, name)
         //     }
         // }
+        fn xml_escape(s: &str) -> String {
+            s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;").replace('\'', "&apos;")
+        }
         fn formatter(f: &File, url: &String, show_name: bool, file_response: &str, dir_response: &str) -> String {
-            let name = if show_name { f.name() } else { String::from("") };
+            let name = if show_name { xml_escape(&f.name()) } else { String::from("") };
             let modified_date = simple_date_format("yyyy-MM-dd HH:mm:ss", f.last_modified());
             if f.is_file() {
                 string_format(file_response, &[url.clone(), modified_date.clone(), modified_date, name, f.length().to_string(), String::new()])

@@ -215,25 +215,17 @@ impl BookChapterList {
                     base_url: redirect_url.to_string(),
                     ..Default::default()
                 };
-                analyze_rule.chapter = Some(book_chapter);
-                book_chapter = analyze_rule.chapter.take().unwrap();
-                book_chapter.title = analyze_rule.get_string(toc_rule.chapter_name.clone(), None, false);
-                analyze_rule.chapter = Some(book_chapter);
-                book_chapter = analyze_rule.chapter.take().unwrap();
-                book_chapter.url = analyze_rule.get_string(toc_rule.chapter_url.clone(), None, false);
-                analyze_rule.chapter = Some(book_chapter);
-                book_chapter = analyze_rule.chapter.take().unwrap();
-                book_chapter.tag = Some(analyze_rule.get_string(toc_rule.update_time.clone(), None, false));
-                analyze_rule.chapter = Some(book_chapter);
-                book_chapter = analyze_rule.chapter.take().unwrap();
                 book_chapter.set_user_name_space(book.get_user_name_space());
-                analyze_rule.chapter = Some(book_chapter);
-                book_chapter = analyze_rule.chapter.take().unwrap();
+                analyze_rule.chapter = Some(book_chapter.clone());
+                book_chapter.title = analyze_rule.get_string(toc_rule.chapter_name.clone(), None, false);
+                analyze_rule.chapter = Some(book_chapter.clone());
+                book_chapter.url = analyze_rule.get_string(toc_rule.chapter_url.clone(), None, false);
+                analyze_rule.chapter = Some(book_chapter.clone());
+                book_chapter.tag = Some(analyze_rule.get_string(toc_rule.update_time.clone(), None, false));
+                analyze_rule.chapter = Some(book_chapter.clone());
                 let is_volume = analyze_rule.get_string(toc_rule.is_volume.clone(), None, false);
-                book_chapter.is_volume = false;
-                if is_volume.is_true() {
-                    book_chapter.is_volume = true;
-                }
+                book_chapter.is_volume = is_volume.is_true();
+                analyze_rule.chapter = Some(book_chapter.clone());
                 if book_chapter.url.is_empty() {
                     if book_chapter.is_volume {
                         book_chapter.url = book_chapter.title.clone() + &index.to_string();

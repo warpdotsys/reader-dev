@@ -423,8 +423,15 @@ fn java_time_format_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context)
         .first()
         .map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(0))
         .unwrap_or(0);
-    let format = arg_string(args, 1, ctx);
-    let sh: i32 = args.get(2).map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(0)).unwrap_or(0);
+    let mut format = arg_string(args, 1, ctx);
+    if format.is_empty() {
+        format = "yyyy/MM/dd HH:mm:ss".to_string();
+    }
+    let sh: i32 = if args.len() >= 3 {
+        args.get(2).map(|a| a.to_string(ctx).unwrap_or_default().to_std_string().unwrap_or_default().parse().unwrap_or(8)).unwrap_or(8)
+    } else {
+        8
+    };
     use chrono::TimeZone;
     let out = match chrono::FixedOffset::east_opt(sh * 3600) {
         Some(tz) => match tz.timestamp_millis_opt(time_ms).single() {
@@ -612,25 +619,30 @@ fn java_post_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa
     Ok(obj.into())
 }
 
-/// java.cacheFile(url) → 下载到 storage/cache 返回本地路径
+/// java.cacheFile(url) → 下载并缓存，返回文本内容（对齐 Kotlin JsExtensions.kt）
 fn java_cache_file_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
     let url = arg_string(args, 0, ctx);
-    let bytes = crate::stubs::WebClient::new().get_abs(&url).timeout(30000).async_get_bytes_in_thread();
-    let path = if let Some(bytes) = bytes {
-        if bytes.is_empty() {
-            String::new()
-        } else {
-            let dir = std::path::Path::new("storage").join("cache").join("js");
-            let _ = std::fs::create_dir_all(&dir);
-            let name = format!("{}.bin", crate::stubs::md5_encode16(url));
-            let file = dir.join(&name);
-            let _ = std::fs::write(&file, &bytes);
-            file.to_string_lossy().to_string()
+    if url.is_empty() {
+        return Ok(JsValue::null());
+    }
+    let key = crate::stubs::md5_encode16(url.clone());
+    let dir = std::path::Path::new("storage").join("cache").join("js");
+    let file = dir.join(format!("{}.bin", key));
+    if file.exists() {
+        if let Ok(cached) = std::fs::read_to_string(&file) {
+            if !cached.is_empty() {
+                return Ok(JsValue::from_json(&Value::String(cached), ctx).unwrap_or(JsValue::null()));
+            }
         }
+    }
+    let text = crate::stubs::WebClient::new().get_abs(&url).timeout(30000).async_get_text_in_thread();
+    if let Some(content) = text {
+        let _ = std::fs::create_dir_all(&dir);
+        let _ = std::fs::write(&file, content.as_bytes());
+        Ok(JsValue::from_json(&Value::String(content), ctx).unwrap_or(JsValue::null()))
     } else {
-        String::new()
-    };
-    Ok(JsValue::from_json(&Value::String(path), ctx).unwrap_or(JsValue::null()))
+        Ok(JsValue::null())
+    }
 }
 
 /// java.readFile(path) → 读取文件文本
@@ -939,7 +951,9 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_get_file_native), js_string!("getFile"), 1)
         .function(NativeFunction::from_fn_ptr(java_import_script_native), js_string!("importScript"), 1)
         .function(NativeFunction::from_fn_ptr(java_get_string_native), js_string!("getString"), 2)
+        .function(NativeFunction::from_fn_ptr(java_random_uuid_native), js_string!("randomUUID"), 0)
         .function(NativeFunction::from_fn_ptr(java_random_uuid_native), js_string!("randomUuid"), 0)
+        .function(NativeFunction::from_fn_ptr(java_head_native), js_string!("connect"), 2)
         .function(NativeFunction::from_fn_ptr(java_html_format_native), js_string!("htmlFormat"), 1)
         .function(NativeFunction::from_fn_ptr(java_encode_uri_native), js_string!("encodeURI"), 1)
         .function(NativeFunction::from_fn_ptr(java_toast_native), js_string!("toast"), 1)

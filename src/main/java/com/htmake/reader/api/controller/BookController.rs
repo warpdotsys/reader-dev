@@ -3743,17 +3743,21 @@ impl BookController {
     }
 
     pub async fn search_position(&self, m_content: String, pattern: String) -> List<i32> {
-        let mut position: Vec<i32> = Vec::new();
-        let mut index = m_content.index_of(&pattern, 0);
-        if index >= 0 {
-            //搜索到内容允许净化
-            // if (book!!.getUseReplaceRule()) { ... }
-            while index >= 0 {
-                position.push(index);
-                index = m_content.index_of(&pattern, (index + 1) as usize);
+        let mut positions: Vec<i32> = Vec::new();
+        if pattern.is_empty() {
+            return positions;
+        }
+        let content_chars: Vec<char> = m_content.chars().collect();
+        let pattern_chars: Vec<char> = pattern.chars().collect();
+        if content_chars.len() < pattern_chars.len() {
+            return positions;
+        }
+        for i in 0..=(content_chars.len() - pattern_chars.len()) {
+            if content_chars[i..i + pattern_chars.len()] == pattern_chars[..] {
+                positions.push(i as i32);
             }
         }
-        return position;
+        positions
     }
 
     pub fn get_result_and_query_index(
@@ -3762,22 +3766,26 @@ impl BookController {
         query_index_in_content: i32,
         query: String,
     ) -> Pair<i32, String> {
-        // 左右移动20个字符，构建关键词周边文字，在搜索结果里显示
-        // todo: 判断段落，只在关键词所在段落内分割
-        // todo: 利用标点符号分割完整的句
-        // todo: length和设置结合，自由调整周边文字长度
         let length = 20;
+        let content_chars: Vec<char> = content.chars().collect();
+        let query_char_len = query.chars().count() as i32;
+        let total_len = content_chars.len() as i32;
+
         let mut po1 = query_index_in_content - length;
-        let mut po2 = query_index_in_content + query.len() as i32 + length;
+        let mut po2 = query_index_in_content + query_char_len + length;
         if po1 < 0 {
             po1 = 0;
         }
-        if po2 > content.len() as i32 {
-            po2 = content.len() as i32;
+        if po2 > total_len {
+            po2 = total_len;
         }
         let query_index_in_result = query_index_in_content - po1;
-        let new_text = content.substring_range(po1 as usize, po2 as usize);
-        return Pair::new(query_index_in_result, new_text);
+        let new_text: String = if po1 < po2 && (po1 as usize) < content_chars.len() {
+            content_chars[po1 as usize..(po2 as usize).min(content_chars.len())].iter().collect()
+        } else {
+            String::new()
+        };
+        Pair::new(query_index_in_result, new_text)
     }
 
     pub fn mongo_user_namespaces(&self) -> List<String> {

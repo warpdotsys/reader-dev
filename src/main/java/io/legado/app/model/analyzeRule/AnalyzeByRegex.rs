@@ -20,7 +20,7 @@ impl AnalyzeByRegex {
             // 新建容器
             let mut info = array_list_of::<String>();
             for group_index in 0..=res_m.group_count() {
-                info.add(res_m.group_idx(group_index).unwrap());
+                info.add(res_m.group_idx(group_index).unwrap_or_default());
             }
             Some(info)
         } else {

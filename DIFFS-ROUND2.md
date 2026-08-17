@@ -1045,3 +1045,46 @@
 - **Q9** — EPUB 标签清洗、CBZ 漫画信息抽取、PDF 双模式切分一致
 - **S6** — 确认全站无服务端 WebSocket 监听端点，仅出站 TTS 客户端长连接
 
+
+
+---
+
+## V. 第 5 轮深度差异排查报告（ROUND 5，2026-08-17）
+
+### V1 [已修·P0 严重] 全文检索 `searchBookContent` UTF-8 字节索引与切片 Panic 崩溃
+- **Kotlin**: `BookController.kt:2831-2869` 使用 UTF-16 字符维度 `indexOf` 逐字步进，`po1 = queryIndex - 20`, `po2 = queryIndex + query.length + 20` 截取前后 20 个字符。
+- **Rust**: `BookController.rs:3753, 3779` + `stubs.rs:1104`：`index_of` 返回字节偏移量，`(index + 1)` 直接落入中文字符内部导致 `byte index is not a char boundary` panic；`substring_range` 字节切片直接越界 panic。
+- **修复**: 重构为基于 Unicode `char` 维度的安全匹配与安全切片，前后截取精确为 20 个汉字/字符，彻底杜绝切片 Panic。
+
+### V2 [已修·P0 严重] 书架部分刷新时列表排序严重错乱（未更新书前置，更新书全部沉底）
+- **Kotlin**: `BookController.kt:1687-1721` 并发刷新但保持书架原始索引顺序一致。
+- **Rust**: `BookController.rs:2436-2483` 将不更新的书直接先 push 进 `book_list`，刷新的书籍在 futures 完成后被追加在末尾，导致刷新的网络书被移至书架最后。
+- **修复**: 采用固定大小槽位按原始书架索引就地更新，严格保持原始书架顺序（100% 稳定）。
+
+### V3 [已修·P0 严重] `BookChapterList.rs` 中 `chapter` 被 `take().unwrap()` 导致解析规则执行时 `chapter` 恒为 `None`
+- **Kotlin**: `BookChapterList.kt:183-188` `analyzeRule.chapter = bookChapter` 全程保留引用，支持 `@put:` 与 JS 访问 `chapter`。
+- **Rust**: `BookChapterList.rs:218-228` `analyze_rule.chapter.take().unwrap()` 将其置空，导致字段规则执行时 `chapter` 恒为 `None`，`@put:` 错误存入全局变量。
+- **修复**: 移除错误的 `take()`，在字段提取完成后统一回写 `book_chapter`。
+
+### V4 [已修·P0 严重] `java.cacheFile` 返回值语义完全颠倒（返回路径 vs 文本内容）
+- **Kotlin**: `JsExtensions.kt:148-159` 返回下载并缓存的**文本内容**。
+- **Rust**: `src/runtime/js.rs:616-633` 返回了本地文件路径（`"storage/cache/js/xxx.bin"`），导致 JS 执行 `eval(java.cacheFile(url))` 时报 SyntaxError。
+- **修复**: 改为返回缓存的文本内容（`String`）。
+
+### V5 [已修·P1 高] `java.timeFormat` 签名错位导致 1 参调用恒返回空串
+- **Kotlin**: `JsExtensions.kt:310-312` 1 参模式默认格式为 `"yyyy/MM/dd HH:mm:ss"`。
+- **Rust**: `src/runtime/js.rs:421-437` 仅支持 3 参，1 参调用时格式为空串导致解析失败。
+- **修复**: 支持 1 参（默认格式）、2 参及 3 参通用解析，默认时区 +8 区。
+
+### V6 [已修·P1 高] `AnalyzeByRegex::get_element` unwrap panic
+- **Kotlin**: `AnalyzeByRegex.kt:18-20`。
+- **Rust**: `AnalyzeByRegex.rs:23` 对未命中的可选捕获组直接 `.unwrap()` 导致 panic。
+- **修复**: 替换为 `unwrap_or_default()`（与 `get_elements` 保持一致）。
+
+### V7 [已修·P1 高] Windows 下 `ZipUtils.rs` 打包 ZIP Entry 包含反斜杠 `\` 破坏跨平台恢复
+- **Kotlin**: `ZipUtils.kt:146`。
+- **Rust**: `ZipUtils.rs:149-151` Windows 下 `File::separator()` 返回 `\`，导致 WebDAV 备份 zip 包中的路径带有反斜杠，在 Linux/Android 上解压无法还原目录结构。
+- **修复**: ZIP Entry 路径统一替换为正斜杠 `/`。
+
+### V8 [已修·P2 中] WebDAV Basic 认证大小写敏感与 PROPFIND XML 实体转义
+- **修复**: `WebdavController.rs` Basic 认证忽略大小写；PROPFIND 生成 XML 时对文件名进行 XML 实体转义（`&`, `<`, `>`, `"`, `'`）。
