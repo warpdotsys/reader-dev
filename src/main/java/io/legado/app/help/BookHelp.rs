@@ -171,49 +171,25 @@ impl BookHelp {
     }
 
     pub async fn save_images(
-        scope: &CoroutineScope,
+        _scope: &CoroutineScope,
         book_source: &BookSource,
         book: &Book,
         book_chapter: &BookChapter,
         content: &str,
     ) {
-        // val awaitList = arrayListOf<Deferred<Int>>()
-        let mut await_list: Vec<Deferred> = Vec::new();
-        // content.split("\n").forEach {
-        //     val matcher = AppPattern.imgPattern.matcher(it)
-        //     if (matcher.find()) {
-        //         matcher.group_idx(1)?.let { src ->
-        //             val mSrc = NetworkUtils.getAbsoluteURL(bookChapter.url, src)
-        //             val req: Deferred<Int> = scope.async {
-        //                 saveImage(bookSource, book, mSrc)
-        //                 return@async 1
-        //             }
-        //             awaitList.add(req)
-        //         }
-        //     }
-        // }
-        for it in content.split("\n") {
+        let mut img_urls: Vec<String> = Vec::new();
+        for it in content.split('\n') {
             let matcher = AppPattern::imgPattern().find(it);
             if let Some(matcher) = matcher {
-                // fix: Kotlin `matcher.group(1)?.let {}` → group_values 空串判断
                 let src = matcher.group_values(1);
                 if !src.is_empty() {
                     let m_src = NetworkUtils::getAbsoluteURL(Some(book_chapter.url.as_str()), &src);
-                    // fix: 方法名 `async` 为 Rust 关键字 → r#async 转义
-                    let req: Deferred = scope.r#async(|| async move {
-                        Self::save_image(Some(book_source), book, m_src.as_str()).await;
-                        return 1;
-                    });
-                    await_list.push(req);
+                    img_urls.push(m_src);
                 }
             }
         }
-        // awaitList.forEach {
-        //     it.await()
-        // }
-        for it in await_list {
-            // fix: 方法名 `await` 为 Rust 关键字 → r#await 转义（对应 Kotlin 的 it.await()）
-            it.r#await();
+        for url in img_urls {
+            Self::save_image(Some(book_source), book, &url).await;
         }
     }
 

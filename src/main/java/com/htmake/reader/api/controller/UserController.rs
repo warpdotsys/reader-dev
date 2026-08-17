@@ -443,6 +443,7 @@ impl UserController {
         if !app_config().secure || app_config().secure_key.is_empty() {
             return return_data.set_error_msg_owned(String::from("不支持的操作"));
         }
+        let _users_lock = crate::com_htmake_reader_api_controller_basecontroller::users_json_lock_guard();
         if !self.base.check_manager_auth(context) {
             return return_data.set_data_owned(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
         }
@@ -658,6 +659,7 @@ impl UserController {
         if !app_config().secure || app_config().secure_key.is_empty() {
             return return_data.set_error_msg_owned(String::from("不支持的操作"));
         }
+        let _users_lock = crate::com_htmake_reader_api_controller_basecontroller::users_json_lock_guard();
         let username = context.body_as_json().map(|j| j.get_string("username")).unwrap_or(String::from(""));
         let password = context.body_as_json().map(|j| j.get_string("password")).unwrap_or(String::from(""));
         if username.is_empty() {
@@ -746,6 +748,7 @@ impl UserController {
         if !app_config().secure || app_config().secure_key.is_empty() {
             return return_data.set_error_msg_owned(String::from("不支持的操作"));
         }
+        let _users_lock = crate::com_htmake_reader_api_controller_basecontroller::users_json_lock_guard();
         if !self.base.check_manager_auth(context) {
             return return_data.set_data_owned(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
         }
@@ -845,6 +848,7 @@ impl UserController {
         if !app_config().secure || app_config().secure_key.is_empty() {
             return return_data.set_error_msg_owned(String::from("不支持的操作"));
         }
+        let _users_lock = crate::com_htmake_reader_api_controller_basecontroller::users_json_lock_guard();
         if !self.base.check_manager_auth(context) {
             return return_data.set_data_owned(Box::new(String::from("NEED_SECURE_KEY")), String::from("请输入管理密码"));
         }

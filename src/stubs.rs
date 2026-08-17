@@ -3088,15 +3088,18 @@ pub struct Files;
 
 impl Files {
     pub fn create_temp_file(dir: File, prefix: &str, suffix: &str) -> File {
+        static TEMP_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+        let count = TEMP_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let ts = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_millis())
+            .map(|d| d.as_nanos())
             .unwrap_or(0);
         File::new(&format!(
-            "{}/{}{}{}",
+            "{}/{}_{}_{}{}",
             dir.path().trim_end_matches('/'),
             prefix,
             ts,
+            count,
             suffix
         ))
     }
@@ -3107,7 +3110,19 @@ impl Files {
         file.exists()
     }
     pub fn move_path(from: &File, to: &File, _option: StandardCopyOption) {
-        let _ = std::fs::rename(&from.path(), &to.path());
+        let from_p = from.path();
+        let to_p = to.path();
+        if std::fs::rename(&from_p, &to_p).is_err() {
+            if let Some(parent) = to.parent_file() {
+                let _ = std::fs::create_dir_all(parent.path());
+            }
+            let _ = std::fs::remove_file(&to_p);
+            if std::fs::rename(&from_p, &to_p).is_err() {
+                if std::fs::copy(&from_p, &to_p).is_ok() {
+                    let _ = std::fs::remove_file(&from_p);
+                }
+            }
+        }
     }
     pub fn delete_if_exists(file: &File) {
         if file.exists() {

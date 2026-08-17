@@ -1088,3 +1088,23 @@
 
 ### V8 [已修·P2 中] WebDAV Basic 认证大小写敏感与 PROPFIND XML 实体转义
 - **修复**: `WebdavController.rs` Basic 认证忽略大小写；PROPFIND 生成 XML 时对文件名进行 XML 实体转义（`&`, `<`, `>`, `"`, `'`）。
+
+
+---
+
+## W. 第 6 轮深度差异排查报告（ROUND 6，2026-08-17）
+
+### W1 [已修·P0 严重] `BookHelp::save_images` 协程转录为空壳（正文图片缓存丢失）
+- **Kotlin**: `BookHelp.kt:124-148` 遍历正文中的 `<img>` 标签，通过 `scope.async { saveImage(...) }` 并发下载图片并等待写入本地缓存。
+- **Rust**: `stubs.rs` 中 `CoroutineScope::r#async` 丢弃闭包参数，正文图片下载任务完全不执行，离线阅读/导出 EPUB 图片附件失效。
+- **修复**: 重构 `BookHelp.rs` 中的 `save_images`，提取全部图片 URL 并真实执行 `save_image` 异步下载落盘。
+
+### W2 [已修·P0 严重] 临时文件写入重名碰撞与 Windows 原子重命名失败（静默丢数据）
+- **Kotlin**: `VertExt.kt:166-175` 使用 `Files.createTempFile` 生成唯一临时文件，写完后先备份再 `ATOMIC_MOVE`。
+- **Rust**: `stubs.rs:3090-3116` `create_temp_file` 采用毫秒命名（高并发下重名碰撞相互覆盖）；`move_path` 仅调用 `std::fs::rename`，在 Windows 上目标存在时报错并被静默丢弃，导致新内容丢失。
+- **修复**: `create_temp_file` 引入纳秒时间戳与原子自增计数器；`move_path` 在 Windows 上若目标已存在先安全移除再 rename，若跨卷失败回退到 copy+remove，杜绝静默失败。
+
+### W3 [已修·P1 高] `users.json` 管理端操作（增删改、重置密码）未纳入全局锁保护
+- **Kotlin**: 依赖统一的锁机制或按接口事务更新。
+- **Rust**: `UserController.rs` 的 `add_user`、`reset_password`、`delete_users`、`update_user` 均为无锁裸读写，若恰逢用户后台 Token 自动续期/登录（`save_user_session` 持有锁），两端并发覆写会导致新用户丢失或密码重置失效。
+- **修复**: 在 `UserController.rs` 所有涉及 `users.json` 修改的入口补齐 `let _users_lock = users_json_lock_guard();`，确保全局事务互斥。
