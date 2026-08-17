@@ -4082,7 +4082,9 @@ impl BookController {
     pub fn get_tts_voices(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.base.check_auth(context) {
-            return return_data.set_data_with_error(Box::new(crate::stubs::Any::Str("NEED_LOGIN".to_string())), "请登录后使用".to_string());
+            let mut rd = return_data;
+            rd.set_data_with_error(Box::new(crate::stubs::Any::Str("NEED_LOGIN".to_string())), "请登录后使用".to_string());
+            return rd;
         }
         let voices_json = r#"[
             {"name":"晓晓 (女声，温暖/小说)","value":"zh-CN-XiaoxiaoNeural","locale":"zh-CN","gender":"Female"},
@@ -4104,9 +4106,10 @@ impl BookController {
             {"name":"云枫 (男声，磁性)","value":"zh-CN-YunfengNeural","locale":"zh-CN","gender":"Male"},
             {"name":"云皓 (男声，新闻)","value":"zh-CN-YunhaoNeural","locale":"zh-CN","gender":"Male"}
         ]"#;
-        let voices_val: serde_json::Value = serde_json::from_str(voices_json).unwrap_or_default();
-        return_data.set_data(Box::new(crate::stubs::Any::from(voices_val)), String::new());
-        return_data
+        let arr = as_json_array(Some(crate::stubs::Any::from_string(voices_json.to_string()))).unwrap_or_else(JsonArray::new);
+        let mut rd = return_data;
+        rd.set_data(Box::new(arr), String::new());
+        rd
     }
 
     pub async fn text_to_speech(&self, context: RoutingContext) {
