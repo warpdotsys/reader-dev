@@ -1108,3 +1108,31 @@
 - **Kotlin**: 依赖统一的锁机制或按接口事务更新。
 - **Rust**: `UserController.rs` 的 `add_user`、`reset_password`、`delete_users`、`update_user` 均为无锁裸读写，若恰逢用户后台 Token 自动续期/登录（`save_user_session` 持有锁），两端并发覆写会导致新用户丢失或密码重置失效。
 - **修复**: 在 `UserController.rs` 所有涉及 `users.json` 修改的入口补齐 `let _users_lock = users_json_lock_guard();`，确保全局事务互斥。
+
+
+---
+
+## X. 第 7 轮深度差异排查报告（ROUND 7，2026-08-17）
+
+### X1 [已修·P0 严重] `HtmlFormatter.rs:74` Eager Evaluation 引发必现 Panic
+- **Kotlin**: `HtmlFormatter.kt:47` `matcher.group(1)?.let { ... } ?: matcher.group(2) ?: matcher.group(3)!!`（短路求值）。
+- **Rust**: `HtmlFormatter.rs:74` `...unwrap_or(matcher.group_idx(3).unwrap())`（急切求值）。当正文图片匹配第 1 分支或第 2 分支时，第 3 捕获组为 `None`，但 `unwrap_or(...)` 在传入前就执行了 `.unwrap()`，直接触发 panic 导致正文解析失败。
+- **修复**: 改为 `.or_else(|| matcher.group_idx(2)).or_else(|| matcher.group_idx(3)).unwrap_or_default()`。
+
+### X2 [已修·P0 严重] `BookContent.rs:155-156` 调试日志输出 UTF-8 字符边界切片 Panic
+- **Kotlin**: `BookContent.kt:117-121` 使用 UTF-16 字符维度 `substring`。
+- **Rust**: `BookContent.rs:152-160` 直接按字节切片 `content_str[..150]` 与 `content_str[len-150..]`，切在多字节汉字中间立即引发 `byte index is not a char boundary` Panic。
+- **修复**: 使用字符迭代器 `content_str.chars().collect::<Vec<char>>()` 提取首尾 150 个字符。
+
+### X3 [已修·P1 高] `BookContent.rs:111-135` 多页正文抓取 `res.body().unwrap()` Panic
+- **Kotlin**: `BookContent.kt:86-107`。
+- **Rust**: `res.body().unwrap()` 无判空保护，任何一页网络失败会导致整章抓取崩溃。
+- **修复**: 补齐 `if let Some(body_) = res.body()` 判空保护，且防越界终止条件改为以 `redirect_url` 解析绝对路径比较。
+
+### X4 [已修·P2 中] `BookController.rs:1714` POST SSE 默认搜索数对齐
+- **Kotlin**: `BookController.kt:1134` POST 默认值为 30。
+- **Rust**: `BookController.rs:1714` POST 默认值误写为 5。
+- **修复**: 改为 30。
+
+### X5 [已修·P3 低] `Utf8BomUtils.rs:36` `hasBom` 边界条件 `>= 3` 容错
+- **修复**: 在 `removeUTF8BOM`、`removeUTF8BOM_bytes`、`hasBom` 中将 `len > 3` 改为 `len >= 3`。

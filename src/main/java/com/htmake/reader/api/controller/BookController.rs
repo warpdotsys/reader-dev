@@ -1578,7 +1578,7 @@ impl BookController {
             // post 请求
             book_url = context.body_as_json().get_string_opt("url").unwrap_or_default();
             last_index = context.body_as_json().get_integer("lastIndex", -1);
-            search_size = context.body_as_json().get_integer("searchSize", 5);
+            search_size = context.body_as_json().get_integer("searchSize", 30);
             book_source_group = context.body_as_json().get_string_or("bookSourceGroup", "");
         } else {
             // get 请求
@@ -1711,7 +1711,7 @@ impl BookController {
             // post 请求
             book_url = context.body_as_json().get_string_opt("url").unwrap_or_default();
             last_index = context.body_as_json().get_integer("lastIndex", -1);
-            search_size = context.body_as_json().get_integer("searchSize", 5);
+            search_size = context.body_as_json().get_integer("searchSize", 30);
             book_source_group = context.body_as_json().get_string_or("bookSourceGroup", "");
             refresh = context.body_as_json().get_integer("refresh", 0);
         } else {

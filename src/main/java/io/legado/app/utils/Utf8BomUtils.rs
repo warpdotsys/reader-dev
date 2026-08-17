@@ -9,7 +9,7 @@ impl Utf8BomUtils {
 
     pub fn removeUTF8BOM(xmlText: &str) -> String {
         let bytes = xmlText.as_bytes();
-        let containsBOM = (bytes.len() > 3
+        let containsBOM = (bytes.len() >= 3
             && bytes[0] == Self::UTF8_BOM_BYTES()[0]
             && bytes[1] == Self::UTF8_BOM_BYTES()[1]
             && bytes[2] == Self::UTF8_BOM_BYTES()[2]);
@@ -20,7 +20,7 @@ impl Utf8BomUtils {
     }
 
     pub fn removeUTF8BOM_bytes(bytes: &[u8]) -> Vec<u8> {
-        let containsBOM = (bytes.len() > 3
+        let containsBOM = (bytes.len() >= 3
             && bytes[0] == Self::UTF8_BOM_BYTES()[0]
             && bytes[1] == Self::UTF8_BOM_BYTES()[1]
             && bytes[2] == Self::UTF8_BOM_BYTES()[2]);
@@ -33,7 +33,7 @@ impl Utf8BomUtils {
     }
 
     pub fn hasBom(bytes: &[u8]) -> bool {
-        (bytes.len() > 3
+        (bytes.len() >= 3
             && bytes[0] == Self::UTF8_BOM_BYTES()[0]
             && bytes[1] == Self::UTF8_BOM_BYTES()[1]
             && bytes[2] == Self::UTF8_BOM_BYTES()[2])

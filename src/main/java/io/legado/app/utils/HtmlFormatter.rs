@@ -62,16 +62,21 @@ impl HtmlFormatter {
             let mut param = String::new();
             sb.append_str(&keepImgHtml[appendPos..matcher.start()]);
             // fix: E0308——getAbsoluteURL_url 第二参需要 &str，先把 Option 链求值结果绑定为 String
-            let src = matcher.group_idx(1).map(|it| {
-                let paramPattern = PARAM_PATTERN();
-                let mut urlMatcher = paramPattern.matcher(it.clone());
-                if urlMatcher.find() {
-                    param = format!(",{}", &it[urlMatcher.end()..]);
-                    it[0..urlMatcher.start()].to_string()
-                } else {
-                    it.to_string()
-                }
-            }).or_else(|| matcher.group_idx(2)).unwrap_or(matcher.group_idx(3).unwrap());
+            let src = matcher
+                .group_idx(1)
+                .map(|it| {
+                    let param_pattern = PARAM_PATTERN();
+                    let mut url_matcher = param_pattern.matcher(it.clone());
+                    if url_matcher.find() {
+                        param = format!(",{}", &it[url_matcher.end()..]);
+                        it[0..url_matcher.start()].to_string()
+                    } else {
+                        it.to_string()
+                    }
+                })
+                .or_else(|| matcher.group_idx(2))
+                .or_else(|| matcher.group_idx(3))
+                .unwrap_or_default();
             sb.append_str(&format!(
                 "<img src=\"{}\"",
                 NetworkUtils::getAbsoluteURL_url(

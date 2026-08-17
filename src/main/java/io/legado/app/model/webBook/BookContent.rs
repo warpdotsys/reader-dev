@@ -62,11 +62,12 @@ impl BookContent {
         if content_data.1.len() == 1 {
             let mut next_url = content_data.1[0].clone();
             while !next_url.is_empty() && !next_url_list.contains(&next_url) {
-                if !m_next_chapter_url.is_none()
-                    && get_absolute_url(crate::stubs::URL::parse(base_url).ok().as_ref(), next_url.clone())
-                    == get_absolute_url(crate::stubs::URL::parse(base_url).ok().as_ref(), m_next_chapter_url.as_ref().unwrap().clone())
-                {
-                    break;
+                if let Some(next_chap) = &m_next_chapter_url {
+                    let next_abs = NetworkUtils::getAbsoluteURL(Some(redirect_url), &next_url);
+                    let chap_abs = NetworkUtils::getAbsoluteURL(Some(redirect_url), next_chap);
+                    if !next_abs.is_empty() && next_abs == chap_abs {
+                        break;
+                    }
                 }
                 next_url_list.push(next_url.clone());
                 // coroutineContext.ensureActive()
@@ -126,12 +127,13 @@ impl BookContent {
                     debug_log.map(|dl| dl.clone_box()),
                 );
                 let res = analyze_url.get_str_response_await(None, None, false).await;
-                let body_ = res.body().unwrap();
-                let res_url = res.url();
-                futures.push(Self::analyze_content_private(
-                    book, &url_str, &res_url, body_, &content_rule,
-                    book_chapter, book_source, &m_next_chapter_url, false, debug_log
-                ));
+                if let Some(body_) = res.body() {
+                    let res_url = res.url();
+                    futures.push(Self::analyze_content_private(
+                        book, &url_str, &res_url, body_, &content_rule,
+                        book_chapter, book_source, &m_next_chapter_url, false, debug_log
+                    ));
+                }
             }
             for fut in futures {
                 // coroutineContext.ensureActive()
@@ -149,11 +151,14 @@ impl BookContent {
             dl.log(Some(&book_source.book_source_url), Some("┌获取章节名称"), false);
             dl.log(Some(&book_source.book_source_url), Some(&format!("└{}", book_chapter.title)), false);
             dl.log(Some(&book_source.book_source_url), Some(&format!("┌获取正文内容 (长度：{})", content_str.len())), false);
-            if content_str.len() > 300 {
+            let chars_vec: Vec<char> = content_str.chars().collect();
+            if chars_vec.len() > 300 {
+                let head: String = chars_vec[..150].iter().collect();
+                let tail: String = chars_vec[chars_vec.len() - 150..].iter().collect();
                 dl.log(Some(&book_source.book_source_url), Some(&format!(
                     "└\n{} ... {}",
-                    content_str[..150].to_string(),
-                    content_str[content_str.len() - 150..].to_string()
+                    head,
+                    tail
                 )), false);
             } else {
                 dl.log(Some(&book_source.book_source_url), Some(&format!("└\n{}", content_str)), false);
