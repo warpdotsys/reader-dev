@@ -4675,7 +4675,7 @@ impl WebRequest {
     /// 独立线程 + 独立 tokio runtime 执行 async GET（pollster/同步上下文均安全）
     pub fn async_get_text_in_thread(&self) -> Option<String> {
         let url = self.url.clone();
-        let timeout_ms = self.timeout_ms.unwrap_or(3000);
+        let timeout_ms = self.timeout_ms.unwrap_or(30000);
         std::thread::spawn(move || {
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
@@ -4684,10 +4684,33 @@ impl WebRequest {
             rt.block_on(async {
                 let client = reqwest::Client::builder()
                     .timeout(std::time::Duration::from_millis(timeout_ms))
+                    .danger_accept_invalid_certs(true)
+                    .redirect(reqwest::redirect::Policy::limited(10))
+                    .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                     .build()
                     .ok()?;
                 let resp = client.get(&url).send().await.ok()?;
-                resp.text().await.ok()
+                let status = resp.status();
+                if !status.is_success() && status.as_u16() != 304 {
+                    return None;
+                }
+                let mut text = resp.text().await.ok()?;
+                if text.starts_with('\u{feff}') {
+                    text.remove(0);
+                }
+                let trimmed = text.trim();
+                if !trimmed.starts_with('[') && !trimmed.starts_with('{') {
+                    let decoded_bytes = crate::stubs::Base64::decode_str(trimmed, 0);
+                    if !decoded_bytes.is_empty() {
+                        if let Ok(decoded_str) = String::from_utf8(decoded_bytes) {
+                            let dt = decoded_str.trim();
+                            if dt.starts_with('[') || dt.starts_with('{') {
+                                text = decoded_str;
+                            }
+                        }
+                    }
+                }
+                Some(text)
             })
         })
         .join()

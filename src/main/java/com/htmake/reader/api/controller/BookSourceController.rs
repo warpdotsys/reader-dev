@@ -901,16 +901,14 @@ impl BookSourceController {
             return;
         }
 
-        // launch(MDCContext() + Dispatchers.IO) {
-        // fix: 原 web_client blocking 在 tokio runtime 内会 panic → 独立线程 + 独立 tokio runtime 执行 async GET
-        let body = self.web_client.get_abs(&url).timeout(3000).async_get_text_in_thread();
+        // fix: 超时放宽至 30s，支持 GitHub/Gitee/自建源/Base64 解码，单源 Object 自动适配
+        let body = self.web_client.get_abs(&url).timeout(30000).async_get_text_in_thread();
         let return_data = std::cell::RefCell::new(return_data);
         if let Some(body) = body {
             context.success(return_data.borrow_mut().set_data(Box::new(vec![body]), String::from("")));
         } else {
             context.success(return_data.borrow_mut().set_error_msg(String::from("远程书源链接错误")));
         }
-        // }
     }
 
     // fun generateBookSourceMap(userNameSpace: String, bookSourceJsonArray: JsonArray? = None): Map<String, Int> {
