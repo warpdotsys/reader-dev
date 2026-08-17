@@ -429,3 +429,289 @@
 
 ### 已修/已确认（无需处理）
 - A3（部署 WORKDIR=/ 已绕开——compose 需补 env）、C12、C15、E7、F8/F9/F12、G12/G13、F10（决策）
+
+---
+
+# 第三轮深度差异报告（ROUND 3，追加）
+
+> 7 个 agent 于 2026-08-17 完成。覆盖：JS 引擎（BoA vs Rhino）能力、导出链、数据迁移兼容、安全边界、资源泄漏/性能、HTTP 协议响应头、系统管理杂项。
+> 状态标记：[未修] / [决策] / [架构] / [已确认]
+
+## H. JS 引擎能力深链（agent 1）——Kotlin Rhino 1.7.13 fork vs Rust BoA 0.21.1（default features float16+xsum，无 annex-b/intl）
+
+### H1 [未修·严重] String.prototype.substr 缺失（及 trimLeft/trimRight）——annex-b feature 未启用
+- 模式: `str.substr(0, 10)`、`s.substr(-3)`——老书源大量使用
+- Kotlin Rhino fork: 支持（已 backport）；Rust BoA: TypeError → 规则失败
+- 验证: BoA 0.21.1 string/mod.rs:173 在 #[cfg(feature="annex-b")] 内
+- 修复: Cargo.toml 开启 boa_engine "annex-b"
+
+### H2 [未修·严重] Date.prototype.toLocaleString/toLocaleDateString/toLocaleTimeString 抛 "Function Unimplemented"
+- 模式: `new Date().toLocaleDateString()`（"今天日期"常见）
+- Kotlin: 返回本地化日期串；Rust BoA: 三个方法体均 Err（date/mod.rs:1611-1666）
+- 修复: eval_js_script 注入 polyfill
+
+### H3 [未修·严重] Promise/async 结果悬置
+- 模式: `(async () => {...})()`、async function
+- Kotlin Rhino fork: 解析期 SyntaxError（无 async/await）→ 显式失败
+- Rust BoA: 能解析但 eval_js_script 从不调用 context.run_jobs() → await 永不恢复；Promise 经 to_json 变 {} → **静默错误结果**（比显式失败更难排查）
+
+### H4 [未修·严重] book/chapter 对象方法全部缺失
+- 模式: `book.getVariable('xxx')`、`book.putVariable('a','b')`、`book.save()`、`chapter.getVariable('pos')`
+- Kotlin: Java Bean 反射绑定方法可调；Rust: 绑定纯 JSON 数据对象 → TypeError
+- 字段访问（book.name 等）正常——仅方法缺失
+- 修复: 注入 getVariable/putVariable/save 委托（类似 source 方法注入）
+
+### H5 [未修·严重] 任何 JS 错误 → Rust panic! 崩溃（非可捕获异常）
+- Kotlin: ScriptException → 单书源规则失败，应用继续
+- Rust: eval_js_script 返回 None → AnalyzeUrl.rs:488/AnalyzeRule.rs:597 panic!("JS 执行失败") → 请求崩溃（有 handler 兜底 500 但把单源失败放大）
+- 修复: 改返回 Err 或空结果
+
+### H6 [未修·高] undefined 结果字符串化: Kotlin "undefined" vs Rust "null"
+- BoA 0.21 to_json 对 undefined 返回 Ok(None) → Any::Null → "null"；URL/书源地址被拼成含 "null" 的串
+
+### H7 [未修·高] 数组/对象结果字符串化: Kotlin "a,b"/"[object Object]" vs Rust ["a","b"]/{"a":1}（getString 路径；getStringList 的 Any::List 语义正确）
+
+### H8 [未修·中高] 数值字符串化: AnalyzeUrl 路径整值 Double "3.0" vs Kotlin "3"（%.0f）；NaN/Infinity → "null" vs "NaN"
+
+### H9 [未修·中] null 结果: Kotlin 调用方回退 vs Rust 产出 "null" 文本参与拼接
+
+### H10 [未修·中] Date.parse/new Date(str) 严格 ISO——"2024-01-01 12:00:00"/"2024/01/01" → NaN（Kotlin Rhino 宽松）
+
+### H11 [决策] 正则引擎差异（regress 0.10.5 vs Rhino regexp）——Rust 增强：lookbehind/命名捕获组/replaceAll/matchAll（Rhino fork 均无）；个别边界偏差（lookbehind 内含捕获组/\b 在 lookbehind 后/Unicode i+u 折叠）——整体增强保留
+
+### H12 [未修·中] @cookie:{key} 旁路失效（String(cookie) → "[object Object]"——正路 cookie.getCookie() 可用）
+
+### H13 [未修·中] book 绑定 false/namespace 串（ruleData 非 Book 时）——`book == null` 判空反转
+
+### H14 [未修·低] annex-b 其他缺失（anchor/big/blink 等 HTML 包装方法）；console.log 双引擎均无（书源用 java.log）
+
+### H15 [已确认] encodeURI/decodeURI 规范一致（中文/emoji 正确；0.21 修复 decodeURI OOB panic）
+
+**BoA 0.21 验证通过清单**：String 全部标准方法、RegExp（含 lookbehind/命名组）、Array 全部、JSON、Date 基础、Math、URI、ES6+（含可选链/??/replaceAll——Rust 增强）、\uXXXX/emoji/.length（UTF-16 语义一致）
+**10 个典型书源 JS 片段**: java.ajax().match()[1] ✅、IIFE ✅、JSON.parse ✅、fromCharCode ✅、encodeURIComponent 拼接 ✅、getTime ✅、exec 循环 ✅、substr ❌、toLocaleDateString ❌、book.getVariable ❌、async ⚠️悬置
+
+---
+
+## I. 导出链（agent 2）
+
+### I1 [未修·高] EPUB 导出 META-INF/container.xml 写入 0 字节
+- Rust: `EpubWriter.rs:123-136` write_container 用 OutputStreamWriter::new(result_stream.clone())——ZipOutputStream::clone（253-262 行）将 zip 字段置 None → 所有 write() 空操作（4857/4877 行 if let Some(w) 守卫失效）
+- 影响: 导出 epub 的 container.xml 为 0 字节——Calibre/Apple Books/静读天下无法打开
+- 验证: unzip -l 或 epubcheck
+
+### I2 [未修·高] EPUB mimetype 条目被 Deflate 压缩（违反 OCF 规范）
+- Kotlin: mimetype 以 STORED 不压缩 + CRC/Size 预置 + zip 第一项
+- Rust: `EpubWriter.rs:144-153` 设置了 STORED/CRC/Size 但 put_next_entry（230-236）恒用 Deflated 忽略 entry.method/size/crc
+- 影响: epubcheck 必报错；部分严格阅读器拒绝打开
+
+### I3 [未修·中] TXT/EPUB 导出章节缓存非法 UTF-8 整章变空
+- Kotlin: readText() UTF-8 解码非法字节替换为 U+FFFD（内容不丢）
+- Rust: read_to_string(...).unwrap_or_default() → 任何非法字节整章返回空串
+- 验证: 向缓存 {index}.txt 写入 0x81 字节后导出
+
+### I4 [未修·中] exportCharset/exportNoChapterName 未绑定 env（Rust export_to_txt 根本不读 export_charset——固定 UTF-8；export_no_chapter_name 恒 false）
+- Kotlin: 设 READER_APP_EXPORTCHARSET=GBK 可生效
+- 修复: 绑定 env + export_to_txt 读取 charset
+
+### I5 [未修·低] EPUB 章节标题 replacen 字面量替代 replaceFirst 正则（"\\s*\\n\\s*" 永远匹配不到→序号 span/br 失效；含 \n 标题输出未闭合 span）
+
+### I6 [未修·低] EPUB OPF spine toc 属性为空（get_spine_mut 缺失——attach_toc_resource 降级；epubcheck 报错，多数阅读器可容忍）
+
+### I7 [未修·低] 空备份 zip: Kotlin 产出空 zip 成功 vs Rust 返回 None → 前端"备份失败"
+
+### I8 [决策] sendFile 读取失败 404 vs Kotlin 200 空（Rust 更合理）
+
+### I9 [已确认] TXT 导出编码/换行（UTF-8 无 BOM + LF）、Content-Disposition、Content-Type、单文件导出、前端触发全部一致
+
+### I10 [已确认] 备份 zip 中文条目名 UTF-8 flag（zip crate EFS bit 11 自动设置）；epub 封面 LazyResource 降级嵌入字节（图片不丢）
+
+---
+
+## J. 数据迁移兼容（agent 3）——Kotlin 存量数据 → Rust 读取
+
+### J1 [未修·严重] Cookie jar 文件名算法不匹配 → 全部 cookie miss → 迁移后所有站点需重新登录
+- Kotlin: ACache.kt:722 key.hashCode()（Java 31-hash）；Rust: stubs.rs:1116-1120 DefaultHasher(SipHash13)
+- 内容格式兼容（无头文件 isDue=false 正常读）——仅文件名 miss
+- 影响: 登录态全部丢失（服务端账号不受影响）
+
+### J2 [未修·严重] users.json 缺字段默认值 → 旧 JAR 文件迁移后书源/加书被禁
+- Kotlin: data class 构造默认（enable_book_source=true、enable_rss_source=true、book_limit=200、book_source_limit=100）
+- Rust: to_data_class() 缺字段默认 false/0 → enable_book_source=false（书源功能被禁）、book_limit=0（无法加书——bookshelf.size()>=0 恒真）、book_source_limit=0（无法加源）
+- 仅影响旧版 JAR 写出的缺字段文件；新格式 13 键全匹配
+- 修复: to_data_class 缺字段给 Kotlin 默认值
+
+### J3 [未修·严重] bookSource.json 旧格式字符串规则源经 map_to 路径静默丢规则
+- Kotlin: Jackson mapTo 抛 DecodeException（源整体失败可见）
+- Rust: BookSource.rs:398-403 手写 Deserialize serde_json 失败 → .ok() → rule_toc/rule_content 静默 None → 书源"还在"但解析全失效（更隐蔽）
+- SourceAnalyzer 路径支持旧格式 ✓（仅 map_to 路径差异）
+
+### J4 [未修·中] bookChaptersCache 文件名不匹配（hashCode vs md5）→ 非书架书目录缓存 miss（自愈重新抓取）
+
+### J5 [未修·中] invalidBookSourceCache 目录（无 ns 子目录）+ 文件名（md5 vs hashCode）双重不匹配 → 失效标记 miss（自愈）
+
+### J6 [未修·中] bookInfoCache Rust 从不读磁盘（纯内存 LocalCache）→ 书籍信息缓存 miss（自愈）
+
+### J7 [未修·中] runtimeCache 文件名不匹配（QueryTTF 等缓存 miss——自愈）
+
+### J8 [未修·低] bookshelf durChapterTime 缺省 0 vs Kotlin now（"最近阅读"排序异常——仅旧文件）
+
+### J9 [已确认] enabledCookieJar None vs false（等价）；respondTime 缺省 0 vs 180000（map_to 路径排序显示差异）
+
+### J10 [未修·低] rssSources variableComment 读侧丢弃（再保存时注释丢失）
+
+### J11 [提示] cookie 内容格式反向迁移：Rust 写带日期头 → Kotlin isDue 立即判过期删除（仅回迁场景）
+
+**已确认兼容**: bookshelf.json 全部键（含 Jackson getter 键被忽略不丢数据）、bookmark/bookGroup/replaceRule/httpTTS/txtTocRule（include_str 同一文件 100% 一致）、rssArticles（不持久化）、bookCoverCache（md5+ext 一致）、users.json 键与密码哈希算法、书架内章节缓存路径与 BookChapter 13 键
+
+---
+
+## K. 安全边界（agent 4）
+
+### K1 [未修·严重-严重] getUserInfo 通过未校验 accessToken 泄露任意用户实时 token（完全接管）
+- Kotlin: getUserInfo 只读 session().get("username")（仅成功 checkAuth 写入）
+- Rust: check_auth 失败后回退解析未校验的 `?accessToken=用户名:任意值` → getUserInfoClass(victim) → format_user 返回 accessToken = victim 真实当前 token → **用该 token 完全以 victim 身份调用所有 API**
+- 验证: secure 模式 GET /reader3/getUserInfo?accessToken=alice:xxx → data.userInfo.accessToken = alice:<真实token>
+- 修复: getUserInfo 的 accessToken 回退路径必须先校验 token
+
+### K2 [未修·严重] getUserNameSpace 的 accessToken 回退 → 未认证跨用户读数据
+- Kotlin: 回退 "default" 命名空间（无跨用户）
+- Rust: BaseController.rs:376-382 回退解析 accessToken 用户名——所有调用 checkAuth 但不检查返回值的接口（getBookSources/getBookSource/explore_book/search_book/get_book_info/文件管理 __HOME__/WebDAV resolve_webdav_path）→ 未认证可把命名空间指向任意用户读数据
+- 验证: GET /reader3/getBookSources?accessToken=alice:garbage → 返回 alice 私有书源
+- 修复: get_user_name_space 的 accessToken 回退需校验
+
+### K3 [未修·严重-Windows] 静态文件服务反斜杠路径穿越
+- Rust: serve_static L106 只按 / 切分、只过滤字面 ..——`GET /assets/..\..\data\users.json` → Windows 下解析到 storage\data\users.json（全部用户密码哈希+salt+token）200 直读
+- Linux 无影响；Windows 开发/部署环境可直读
+- 修复: 同时按 \ 切分
+
+### K4 [未修·高] multipart 字段名未清洗 → 认证前任意路径写文件
+- Rust: parse_http_body L168 dir.join(format!("{}_{}", name, safe_name))——filename 清洗了但字段名 name 未清洗；写入发生在认证之前（所有 multipart POST 触发）
+- 利用: name="..\..\..\任意目录\x" → storage\file-uploads\..\..\..\任意目录\x_<sanitized> 任意创建文件
+- 修复: name 也做字符清洗
+
+### K5 [已确认-两版相同] secureKey 为空时 userNS 覆盖形同虚设（任何已登录用户可带 ?userNS=victim 访问任意用户数据）
+### K6 [已确认-两版相同] /book-assets/*、/epub/* 未认证直接暴露整个 storage/data 树（allowRootFileSystemAccess）
+### K7 [已确认-两版相同] secureKey 明文非恒定时间比较
+### K8 [已确认-两版相同] token 生成（MD5(MD5(user+ts)+ts)）/7 天过期/日志含 accessToken
+### K9 [未修·低] WebDAV Basic 前缀大小写敏感（Rust 拒绝 `basic xxx` 小写——Kotlin 忽略大小写）
+
+**已确认**: check_auth 覆盖范围两版路由表一致、控制器层路径穿越（%2e%2e/双编码/绝对路径均拦截）、上传白名单与 10MB 上限、logout 失效已修、会话 cookie 隔离
+
+---
+
+## L. 资源泄漏与性能（agent 5）
+
+### L1 [未修·最高] download_images 泄漏 → 图片重试永久挂死（服务挂死+内存泄漏）
+- Kotlin: try/catch/finally（finally 必 remove）
+- Rust: BookHelp.rs:224-267 remove 只在成功路径；网络错误 panic（OkHttpUtils.rs:209）被 catch_unwind 吞掉 → 条目永久残留 → 下次同 src `while contains { delay(100).await }`（无超时）无限等待 → **单线程服务器永久卡死全站无响应**
+- 修复: finally 语义（catch_unwind 包住 + 必 remove）
+
+### L2 [未修·高] session_store 无界增长（无 7 天超时清理）
+- Kotlin: LocalSessionStore 自带 reaper 定期清理
+- Rust: vertx.rs:369-394 OnceLock<Mutex<HashMap>> 无 TTL 无清理；无 cookie 客户端每请求新建条目 → 数天数十万级
+- 修复: 加过期清理
+
+### L3 [架构] 单线程 HTTP + 全同步阻塞 handler（慢书源 45s 冻结全站）——同 E1
+### L4 [未修·高] 章节/书籍缓存无字节上限
+- LocalCache 仅 10k 条计数上限（无字节）；章节列表单条 ~600KB → 最坏 6GB；Kotlin ACache 2MB/5MB 磁盘上限
+- 修复: put 时按值大小淘汰或加字节预算
+
+### L5 [未修·高] Matcher::find 空匹配死循环 + fancy-regex 无执行步数限制（ReDoS）
+- stubs.rs:276-292 find 空匹配 pos 不前进（Kotlin Java 前进 1 字符）；fancy-regex 回溯 VM 无步数/耗时上限（(a+)+ 指数爆炸）
+- 书源规则可空匹配/嵌套量词 → 单线程服务器挂死（catch_unwind 救不了挂死）
+- 修复: find 空匹配推进 + 超时/步数限制
+
+### L6 [未修·中高] HTTP 连接不复用（每请求新建 reqwest Client——TIME_WAIT 堆积、端口压力；Kotlin 共享 okHttpClient 连接池）
+### L7 [未修·中] send_file 整读内存（GB 级 ×2 峰值——WebDAV 大备份/EPUB 导出）
+### L8 [未修·中] 用户级 Mutex 无 RAII（fetch_start 区间内 panic → locked 永不复位 → 之后所有 lock 无限自旋 CPU 100%）
+### L9 [架构] block_on noop-waker 忙轮询（当前热路径即时 Ready；真实 pending future 单核 100%）
+### L10 [未修·中低] WebSocket 每连接一线程 + 无连接超时 + 无界发送通道
+### L11 [未修·低] STORAGE_LOCKS thread_local（跨线程互斥失效——服务器/worker/定时线程不共享锁）
+### L12 [未修·低] ACache mInstanceMap 键不一致（absoluteFile vs absolutePath——每请求泄漏小实例）
+
+**已确认无问题**: thread::spawn 全部 join 回收、zip/文件句柄 Drop 关闭、DOWNCAST_CELL/OnceLock 有界、定时任务线程独立、TTSService 30s deadline
+
+---
+
+## M. HTTP 协议响应头（agent 6）——对照 vert.x 3.8.5 反编译字节码
+
+### M1 [未修·中高] 静态资源 Range/206 缺失
+- Kotlin: StaticHandler rangeSupport=true → Accept-Ranges: bytes、Range → 206+Content-Range、越界 416
+- Rust: serve_static 整读 200 全量
+- 影响: EPUB 内 audio/video seek、断点续传、部分 WebDAV 客户端分段 GET
+- 注: 动态 sendFile 接口两端都不支持 Range（vert.x-core sendFile 无 Range 解析——已实锤）
+
+### M2 [未修·中] 405 分支不可达（/* 静态规则恒匹配 → matched 恒非空 → 405 逻辑被架空 → 404）
+- Kotlin: 路径匹配方法不匹配 → 405
+- Rust: server.rs:334-344 的 405 分支因 /* (method=None) 恒匹配而不可达 → 落静态 → 404
+- 之前修的 405 实际没生效！需要重做判定（方法不匹配应先于 /* 判定）
+- 验证: curl -I /reader3/getBookSource → Kotlin 405 vs Rust 404
+
+### M3 [未修·中] 会话 Set-Cookie Max-Age 差 1000 倍 + SameSite 差异
+- Kotlin: vert.x 3.8.5 把 ms 当秒写 → Max-Age=604800000（≈19 年）无 SameSite/HttpOnly
+- Rust: 真实秒 Max-Age=604800 + SameSite=Lax（跨站 iframe/子域请求不带 cookie）
+- 影响: 第三方客户端按 Max-Age 判过期不同；SameSite=Lax 影响嵌入场景
+- 决策: 对齐 Kotlin（ms 当秒写）还是保留正确语义？
+
+### M4 [未修·中低] 登出不下发删除 cookie（Rust session() 先续期再 destroy——响应仍带有效 cookie；remove_cookie 未被调用）
+- 修复: logout 路径调用 remove_cookie
+
+### M5 [未修·低中] 静态 Cache-Control 无 public 前缀/Last-Modified/Vary（CDN/反代共享缓存与 304 协商差异）
+### M6 [未修·低中] 静态 text/html 无 charset（web/index.html 有 meta charset 缓解——simple-web 自建页有风险）
+### M7 [未修·低] 302 Location 相对 vs 绝对（/simple-web——浏览器均正常）
+### M8 [未修·低] CORS 预检 body/Content-Type/Set-Cookie 删除头差异（浏览器不读 body——无影响）
+### M9 [决策] Date 头：Kotlin API 响应无 Date vs Rust 恒有（中间缓存 Age 计算差异——Rust 更规范）
+### M10 [未修·低] 静态 MIME 差异（.js/.ttf/.woff——浏览器均接受）+ 500 JSON exception 恒空 vs Kotlin throwable.toString()
+
+**已确认一致**: gzip 均不压缩、Server 头均不输出、Content-Length 自动、JSON charset 均有、WebDAV 响应头、Cache-Control 怪值（86400/300）原样复刻、CORS echo、头名大小写（HTTP/1.1 不敏感）、Content-Disposition 编码、错误页无 Content-Type
+
+---
+
+## N. 系统管理/杂项 API（agent 7）
+
+### N1 [未修·高] 备份/下载/恢复接口阻塞整个 HTTP（pollster::block_on 单线程）
+- 接口: backupToWebdav、user/downloadBackupFile、file/restore——zip 打包+WebDAV 数十秒期间所有其他请求挂起
+- Kotlin: 协程挂起不阻塞
+- 验证: 触发保存备份后立即 curl /getBookGroups——Rust 直到备份完成才返回
+
+### N2 [未修·中高] --ui 模式 windowConfig 死代码（ReaderUIApplication.rs 转录完整但 main.rs 不接线——windowConfig.json 永不读写；--ui 打开 URL 不带 nopwa=1 → SW 注册差异）
+### N3 [未修·中] /health 404（RestVerticle::start 从未被调用——连带 SessionHandler/Cookie 延长/LoggerHandler 全局 handler 未生效；auth 靠前端 axios 追加 accessToken 兜底）
+- 修复: 注册 /health 路由（简单）
+### N4 [已确认-两端一致] Mongo 备份/恢复静默无效（backup 本地读写、restore 路径双后缀错误——前端无入口）
+### N5 [已确认] 版本号前端硬编码 v6.0.0（两版一致）；getSystemInfo 无 version 字段
+### N6 [已确认] getSystemInfo 死接口（两端一致，fonts 恒 null）
+### N7 [已确认] updateForce/SW（Rust 部署可用——一致）
+### N8-N12 [已确认一致] 恢复默认书源（无备份——两端一致）、用户备份/恢复（backupFileNames 10 文件一致）、字体管理（上传/删除/列表一致）、TTS 配置（纯前端 localStorage）、系统清理/定时任务（deleteBookCache 一致）
+
+---
+
+## 第三轮修复优先级汇总
+
+### P0（安全/数据丢失/挂死，必须修）
+1. **K1/K2** — getUserInfo/getUserNameSpace 的未校验 accessToken 回退（token 泄露+跨用户越权）
+2. **L1** — download_images finally（图片重试永久挂死）
+3. **L5** — Matcher::find 空匹配死循环 + 正则超时（服务挂死）
+4. **K3** — Windows 反斜杠路径穿越（读 users.json）
+5. **K4** — multipart 字段名清洗（认证前任意写文件）
+6. **J2** — users.json 缺字段默认值（旧数据迁移后功能被禁）
+7. **I1/I2** — EPUB 导出 container.xml 0 字节 + mimetype 压缩（导出 epub 打不开）
+8. **H1-H5** — JS 引擎（annex-b/substr、toLocaleString polyfill、Promise 悬置、book 方法、panic→Err）
+
+### P1（功能错误/泄漏）
+9. **M2** — 405 判定重做（当前被 /* 架空）
+10. **M4** — logout remove_cookie
+11. **L2/L4** — session_store 清理 + 缓存字节上限
+12. **H6-H13** — JS 结果字符串化差异
+13. **J3** — bookSource 旧格式 map_to 路径
+14. **I3/I4** — 导出缓存非法 UTF-8 + exportCharset 绑定
+15. **L6/L8** — 连接复用 + Mutex RAII
+16. **N1** — 备份阻塞（架构级——同 E1/C6）
+
+### P2（打磨/决策）
+17. H14/H15、I5-I10、J4-J11、K9、M1/M3/M5-M10、N2/N3、L7/L10-L12
+
+### 已确认（无需处理）
+- 迁移兼容大项（bookshelf/bookmark/bookGroup/replaceRule/httpTTS/txtTocRule/书封面缓存/密码哈希）
+- 安全一致项（check_auth 覆盖/上传白名单/控制器层穿越拦截）
+- 系统管理一致项（备份集/字体/TTS/SW/默认书源）
+- 前端契约全部对齐
