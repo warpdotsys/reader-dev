@@ -1,236 +1,71 @@
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import "./plugins/element.js";
-import store from "./plugins/vuex.js";
-import "./plugins/md5.js";
-import { registerServiceWorker } from "./registerServiceWorker";
-import noCover from "./assets/imgs/noCover.jpeg";
-import noImage from "./assets/imgs/noImage.png";
-import VueLazyload from "vue-lazyload";
-import { jsonEncode } from "./plugins/safe-json-stringify";
-import localforage from "localforage";
-import "./styles/v5-theme.css";
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
-declare module "vue-lazyload";
+import App from './App.vue'
+import router from './router'
+import { lazy } from './directives/lazy'
+import './styles/main.css'
 
-declare global {
-  interface Window {
-    errorAlert?: boolean;
-    serviceWorkerReady?: boolean;
-    $cacheStorage: any;
-    errorMsgList?: string[];
-    customFonts?: { [fontName: string]: string };
-    shelfBooks?: any;
-    getQueryString(queryName: string): string | null;
+// 主题由阅读页顶部按钮切换（html[data-theme=light|dark|paper]，见 styles/main.css）
+// 旧 html.dark hack（强制 dark class + main.css 反向重映射）已清理
+
+// GAP 75：内置网络字体加载失败提示（@font-face 已有 font-display: swap 兜底——
+// 失败时浏览器回退系统字体，此处仅 console.warn 标注，便于排查）
+if (typeof document !== 'undefined' && 'fonts' in document) {
+  const FONT_FAMILIES = ['LXGW WenKai', 'Source Han Serif CN']
+  for (const family of FONT_FAMILIES) {
+    document.fonts
+      .load(`16px "${family}"`, '永州之野产异蛇，黑质而白章')
+      .then(
+        (loaded) => {
+          if (!loaded || loaded.length === 0) {
+            console.warn(`[fonts] "${family}" 加载失败（font-display: swap 已回退系统字体）`)
+          }
+        },
+        () => {
+          console.warn(`[fonts] "${family}" 加载失败（font-display: swap 已回退系统字体）`)
+        },
+      )
   }
-  interface Navigator {
-    standalone?: boolean;
-  }
-  const process: {
-    env: {
-      NODE_ENV?: string;
-      BASE_URL?: string;
-      VUE_APP_BUILD_VERSION?: string;
-    };
-  };
 }
 
-try {
-  // 设置全局错误收集
-  if (window.location.href.indexOf("errorAlert") > 0) {
-    window.errorAlert = true;
-  }
-  window.onerror = function(event, source, lineno, colno, error) {
-    if (window.errorAlert) {
-      window.alert(
-        (jsonEncode as any)({
-          event: event,
-          source,
-          lineno,
-          colno,
-          error: error
-        })
-      );
-    }
-  };
-  window.addEventListener("unhandledrejection", e => {
-    if (window.errorAlert) {
-      window.alert((jsonEncode as any)(e));
-    }
-  });
+const app = createApp(App)
+app.use(createPinia())
+app.use(router)
+app.use(ElementPlus)
+app.directive('lazy', lazy)
+app.mount('#app')
 
-  Vue.config.errorHandler = e => {
-    if (window.errorAlert) {
-      window.alert((jsonEncode as any)(e));
-    }
-  };
-
-  window.$cacheStorage = localforage.createInstance({
-    name: "cacheStorage"
-  });
-
-  registerServiceWorker();
-
-  Vue.config.productionTip = false;
-
-  Vue.use(VueLazyload, {
-    observer: true
-  });
-
-  Vue.mixin({
-    computed: {
-      api() {
-        return this.$store.getters.api;
-      },
-      isWebApp() {
-        return window.navigator.standalone;
-      },
-      isPWA() {
-        return ["fullscreen", "standalone", "minimal-ui"].some(
-          displayMode =>
-            window.matchMedia("(display-mode: " + displayMode + ")").matches
-        );
-      },
-      isNightTheme() {
-        return this.$store.getters.isNight;
-      },
-      currentUserName() {
-        return this.$store.getters.currentUserName;
-      }
-    },
-    methods: {
-      getImagePath(url: string, useSW?: boolean): any {
-        if (
-          url &&
-          (url.startsWith("http://") ||
-            url.startsWith("https://") ||
-            url.startsWith("//"))
-        ) {
-          if (useSW && window.serviceWorkerReady) {
-            return url;
-          }
-          return (this as any).api + "/cover?path=" + url;
-        }
-        if (!url) return false;
-        // 默认是接口服务器上的资源
-        return (this as any).$store.getters.apiRoot + url;
-      },
-      getCover(coverUrl: any, normal?: boolean, useSW?: boolean): any {
-        coverUrl = (this as any).getImagePath(coverUrl, useSW);
-        if (coverUrl) {
-          return normal
-            ? coverUrl
-            : {
-                src: coverUrl,
-                error: noCover
-              };
-        }
-        return noCover;
-      },
-      getImage(imageUrl: any, normal?: boolean, useSW?: boolean): any {
-        imageUrl = (this as any).getImagePath(imageUrl, useSW);
-        if (imageUrl) {
-          return normal
-            ? imageUrl
-            : {
-                src: imageUrl,
-                error: noCover
-              };
-        }
-        return noImage;
-      },
-      renderForm(
-        name: string,
-        info: any,
-        items: any[],
-        onChange: (value: any) => void
-      ) {
-        this.$createElement;
-        Vue.component(name, {
-          render() {
-            const h = arguments[0];
-            return h(
-              "div",
-              { style: { textAlign: "center" } },
-              items.map(item => {
-                switch (item.type) {
-                  case "input":
-                    return h("div", { class: "form-item" }, [
-                      h(
-                        "span",
-                        { style: { display: "inline-block", width: "85px" } },
-                        [item.label, "："]
-                      ),
-                      h("el-input", {
-                        attrs: { size: "mini" },
-                        style: { width: "172px" },
-                        model: {
-                          value: this.info[item.name],
-                          callback: value => this.$set(this.info, item.name, value)
-                        }
-                      })
-                    ]);
-                  case "select":
-                    return h("div", { class: "form-item" }, [
-                      h(
-                        "span",
-                        { style: { display: "inline-block", width: "85px" } },
-                        [item.label, "："]
-                      ),
-                      h(
-                        "el-select",
-                        {
-                          attrs: {
-                            size: "mini",
-                            filterable: true,
-                            multiple:
-                              typeof item.multiple === "undefined" ||
-                              item.multiple,
-                            placeholder: item.placeholder || ""
-                          },
-                          model: {
-                            value: this.info[item.name],
-                            callback: value => this.$set(this.info, item.name, value)
-                          }
-                        },
-                        item.options.map((option, index) =>
-                          h("el-option", {
-                            key: item.name + "-op-" + index,
-                            attrs: { label: option.label, value: option.value }
-                          })
-                        )
-                      )
-                    ]);
-                  default:
-                    return null;
-                }
-              })
-            );
-          },
-          data() {
-            return { info, items };
-          },
-          watch: {
-            info: {
-              handler(value) {
-                onChange(value);
-              },
-              deep: true
+// PWA：Service Worker 注册——仅生产模式（开发期热更新会与 SW 缓存互相干扰）；
+// sw.js 为 ES Module（导出纯函数供 node 单测，M5）——须以 { type: 'module' } 注册
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js', { type: 'module' })
+      .then((reg) => {
+        // legacy updateForce + SKIP_WAITING：新版本 SW 安装完成后立即接管并刷新页面
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing
+          if (!worker) return
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+              worker.postMessage({ type: 'SKIP_WAITING' })
             }
-          }
-        });
-        const component = Vue.component(name);
-        return this.$createElement(component);
-      }
-    }
-  });
-
-  new Vue({
-    router,
-    store,
-    render: h => h(App)
-  } as any).$mount("#app");
-} catch (error) {
-  alert(error.stack);
+          })
+        })
+      })
+      .catch((err) => {
+        // 注册失败不阻断应用（如非 https/localhost 环境）
+        console.warn('[sw] register failed:', err)
+      })
+  })
+  let swReloading = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swReloading) return
+    swReloading = true
+    window.location.reload()
+  })
 }
