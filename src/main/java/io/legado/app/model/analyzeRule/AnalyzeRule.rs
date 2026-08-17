@@ -1003,16 +1003,20 @@ impl AnalyzeRule {
     // }
     // fix: 原 companion object 的 Pattern 常量改为关联函数（Pattern::compile 非 const 构造，参考 AppPattern/AppConst 约定）
     pub fn PUT_PATTERN() -> Pattern {
-        Pattern::compile_with("@put:(\\{[^}]+?\\})", Pattern::CASE_INSENSITIVE)
+        static P: std::sync::LazyLock<Pattern> = std::sync::LazyLock::new(|| Pattern::compile_with(r"@put:(\{[^}]+?\})", Pattern::CASE_INSENSITIVE));
+        P.clone()
     }
     pub fn EVAL_PATTERN() -> Pattern {
-        Pattern::compile_with("@get:\\{[^}]+?\\}|\\{\\{[\\w\\W]*?\\}\\}", Pattern::CASE_INSENSITIVE)
+        static P: std::sync::LazyLock<Pattern> = std::sync::LazyLock::new(|| Pattern::compile_with(r"@get:\{[^}]+?\}|\{\{[\w\W]*?\}\}", Pattern::CASE_INSENSITIVE));
+        P.clone()
     }
     pub fn REGEX_PATTERN() -> Pattern {
-        Pattern::compile("\\$\\d{1,2}")
+        static P: std::sync::LazyLock<Pattern> = std::sync::LazyLock::new(|| Pattern::compile(r"\$\d{1,2}"));
+        P.clone()
     }
     pub fn TITLE_NUM_PATTERN() -> Pattern {
-        Pattern::compile("(第)(.+?)(章)")
+        static P: std::sync::LazyLock<Pattern> = std::sync::LazyLock::new(|| Pattern::compile(r"(第)(.+?)(章)"));
+        P.clone()
     }
 }
 

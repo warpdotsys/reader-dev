@@ -1,6 +1,7 @@
 # 前端交互流程模拟（登录 → 保存书源 → 搜索 → 详情 → 目录 → 正文）
 # 与浏览器实际交互 API 序列一致
 $ErrorActionPreference = 'Continue'
+Add-Type -AssemblyName System.Net.Http
 $readerPort = 18094
 
 # 启动 mock 书源 + reader

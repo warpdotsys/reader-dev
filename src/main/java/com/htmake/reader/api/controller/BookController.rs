@@ -4169,7 +4169,7 @@ impl BookController {
         } else {
             let mut r = response;
             r.put_header("Content-Type", "audio/mpeg");
-            r.end(crate::stubs::io::vertx::Buffer::new(audio_bytes).to_string());
+            r.end_bytes(audio_bytes);
         }
     }
 
@@ -4218,7 +4218,7 @@ impl BookController {
         } else {
             let mut r = response;
             r.put_header("Content-Type", &content_type.unwrap_or_else(|| "audio/mpeg".to_string()));
-            r.end(crate::stubs::io::vertx::Buffer::new(bytes).to_string());
+            r.end_bytes(bytes);
         }
     }
 

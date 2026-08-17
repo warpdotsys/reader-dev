@@ -101,7 +101,7 @@ where
     fn list(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.check_user_auth(context) {
-            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data_with_error(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
             return return_data;
         }
         let user_ns = self.get_user_ns(context);
@@ -133,10 +133,17 @@ where
     fn save(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.check_user_auth(context) {
-            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data_with_error(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
             return return_data;
         }
-        let entity = self.convert_to_entity(&context.body_as_json().unwrap());
+        let body_json = match context.body_as_json() {
+            Some(j) => j,
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
+        };
+        let entity = self.convert_to_entity(&body_json);
         let user_ns = self.get_user_ns(context);
         let mut db: DB<T> = DB::<T>::table::<T>(user_ns, self.get_table_name(), String::from("JSON"));
 
@@ -175,7 +182,7 @@ where
     fn save_multi(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.check_user_auth(context) {
-            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data_with_error(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
             return return_data;
         }
         let entities = self.convert_to_entity_list(&context.body_as_string());
@@ -220,10 +227,17 @@ where
     fn delete(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.check_user_auth(context) {
-            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data_with_error(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
             return return_data;
         }
-        let entity = self.convert_to_entity(&context.body_as_json().unwrap());
+        let body_json = match context.body_as_json() {
+            Some(j) => j,
+            None => {
+                return_data.set_error_msg(String::from("参数错误"));
+                return return_data;
+            }
+        };
+        let entity = self.convert_to_entity(&body_json);
         let user_ns = self.get_user_ns(context);
         let mut db: DB<T> = DB::<T>::table::<T>(user_ns, self.get_table_name(), String::from("JSON"));
 
@@ -260,7 +274,7 @@ where
     fn delete_multi(&self, context: &RoutingContext) -> ReturnData {
         let mut return_data = ReturnData::new();
         if !self.check_user_auth(context) {
-            return_data.set_data(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
+            return_data.set_data_with_error(Box::new(String::from("NEED_LOGIN")), String::from("请登录后使用"));
             return return_data;
         }
         let entities = self.convert_to_entity_list(&context.body_as_string());

@@ -16,6 +16,18 @@ pub fn execute(
         .map_err(|_| crate::stubs::StubError::new("request thread panicked"))?
 }
 
+static SHARED_HTTP_CLIENT: std::sync::LazyLock<reqwest::blocking::Client> = std::sync::LazyLock::new(|| {
+    reqwest::blocking::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .connect_timeout(std::time::Duration::from_secs(15))
+        .timeout(std::time::Duration::from_secs(45))
+        .danger_accept_invalid_certs(true)
+        .pool_idle_timeout(std::time::Duration::from_secs(300))
+        .pool_max_idle_per_host(10)
+        .build()
+        .expect("failed to build shared http client")
+});
+
 fn execute_inner(
     req: &Request,
     proxy: Option<&str>,
@@ -28,27 +40,28 @@ fn execute_inner(
             return socks4_http_request(req, p_trim, proxy_auth);
         }
     }
-    let mut client_builder = reqwest::blocking::Client::builder()
-        // fix: 手动跟随重定向（保留 cookie/Authorization 头——okhttp 语义；reqwest 自动重定向跨 host 剥离）
-        .redirect(reqwest::redirect::Policy::none())
-        .connect_timeout(std::time::Duration::from_secs(15))
-        .timeout(std::time::Duration::from_secs(45))
-        // fix: 与原版 OkHttp unsafeTrustManager 一致——全信任证书（自签/过期站点可用）
-        .danger_accept_invalid_certs(true);
-    if let Some(p) = proxy {
+    let (custom_client, client) = if let Some(p) = proxy {
         if !p.trim().is_empty() {
+            let mut client_builder = reqwest::blocking::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .connect_timeout(std::time::Duration::from_secs(15))
+                .timeout(std::time::Duration::from_secs(45))
+                .danger_accept_invalid_certs(true);
             if let Ok(mut rp) = reqwest::Proxy::all(p) {
-                // fix: 代理账号密码（Proxy-Authorization Basic）
                 if let Some((u, pw)) = proxy_auth {
                     rp = rp.basic_auth(u, pw);
                 }
                 client_builder = client_builder.proxy(rp);
             }
+            let c = client_builder.build().map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
+            (Some(c), None)
+        } else {
+            (None, Some(&*SHARED_HTTP_CLIENT))
         }
-    }
-    let client = client_builder
-        .build()
-        .map_err(|e| crate::stubs::StubError::new(e.to_string()))?;
+    } else {
+        (None, Some(&*SHARED_HTTP_CLIENT))
+    };
+    let client: &reqwest::blocking::Client = custom_client.as_ref().unwrap_or(client.unwrap());
 
     // fix: 手动跟随重定向（≤20 跳；保留全部请求头——okhttp 跨域重定向保留 cookie/Authorization）
     let mut current_url = req.url.clone();

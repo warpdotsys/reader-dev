@@ -715,3 +715,333 @@
 - 安全一致项（check_auth 覆盖/上传白名单/控制器层穿越拦截）
 - 系统管理一致项（备份集/字体/TTS/SW/默认书源）
 - 前端契约全部对齐
+
+---
+
+# 第四轮深度差异排查报告（ROUND 4）
+
+> 7 个方向排查完成于 2026-08-17。本轮覆盖：
+> - **O 章节**：变量系统深链（`{{}}`、`@get:`、`@put:`、`@js:` 解析、传递、作用域与持久化）
+> - **P 章节**：TTS 完整实现（Edge TTS、HttpTTS、textToSpeechCn、WebSocket 与音频格式）
+> - **Q 章节**：本地书格式深链（EPUB / UMD / CBZ / PDF / TXT 编码、目录、正文与边角）
+> - **R 章节**：前端交互与渲染细节契约（Web 组件、阅读设置、SSE 流、漫画、字体）
+> - **S 章节**：WebSocket 与长连接（出站 TTS 客户端、事件循环与保活机制）
+> - **T 章节**：错误处理、重试策略与用户反馈（响应结构、状态码、异常传播、静默失败）
+> - **U 章节**：性能热点与算法复杂度（HTTP 连接池、正则预编译、DOM 反复解析、JSON 查重、Tokio 阻塞）
+>
+> 状态标记：`[未修·严重/P0]` / `[未修·高/P1]` / `[未修·中/P2]` / `[架构]` / `[决策]` / `[已确认]`
+
+---
+
+## O. 变量系统深链
+
+### O1 [未修·严重] `AnalyzeRule::new` 使用占位数据丢弃 `ruleData` 实体，导致 `book()` 恒 `None` 且 `@put:` 无法写入书籍实体
+- **Kotlin**: `AnalyzeRule.kt:33-37` 构造函数接收 `var ruleData: RuleDataInterface`，`val book get() = ruleData as? BaseBook` 直接持有传入的 `Book` 或 `SearchBook` 实体引用。在解析过程中遇到 `@put:` 时，`put()` 直接调用 `book?.putVariable(key, value)` 将变量写入书籍并在内存和持久化层生效。
+- **Rust**: `stubs.rs:8443-8470` 的 `AnalyzeRule::new` 构造器中硬编码 `rule_data: Box::new(AnalyzeRulePlaceholderData)`。`AnalyzeRule.rs:79-84` 的 `pub fn book(&self)` 通过 downcast 检查 `self.rule_data` 恒返回 `None`！当解析 `@put:` 时（`AnalyzeRule.rs:501-508`），变量仅写入 `AnalyzeRule` 局部的 `book_variables` HashMap 和 `AnalyzeRulePlaceholderData` 的空实现中，传入的 `Book` 实体从未被写入，后续落盘保存（`bookshelf.json`）时 `book.variable` 仍为空。
+- **影响**: 所有依赖 `@put:` 提取并保存书籍变量（如动态 token、防盗链签名、加密参数）的书源，在解析完成后变量全部丢失；下次请求无法读取。
+- **修复建议**: `AnalyzeRule` 改为真实保存传入的 `rule_data` 并在 `put` 时回写到实体。
+
+### O2 [未修·严重] `Book` 与 `SearchBook` 的 `variable_map()` 恒返回静态空 Map，导致 `get_variable()` 恒 `None`
+- **Kotlin**: `Book.kt:96-107` 与 `BookChapter.kt:29-41` 中，`variableMap` 由 `variable` JSON 反序列化延迟初始化，`getVariable(key)` 从 `variableMap` 中读取，`putVariable(key, value)` 写入 Map 并同步序列化回 `variable` 字段。
+- **Rust**: `stubs.rs:9869-9873`（Book）与 `stubs.rs:9185-9189`（SearchBook）的 `RuleDataInterface` 实现中，`variable_map` 恒返回静态空 Map；`RuleDataInterface.rs:11-13` 默认 `get_variable` 实现调用 `variable_map()`，导致通过 `RuleDataInterface` 或 `BaseBook` 读取 `Book` 变量时恒返回 `None`。
+- **影响**: 即使 `Book.variable` 字段有值（例如已持久化到 `bookshelf.json`），在规则引擎或 JS 中通过 `ruleData.getVariable(key)` 读取时永远读取不到。
+- **修复建议**: 在 `impl RuleDataInterface for Book` 和 `SearchBook` 中重写 `get_variable`，直接解析 `self.variable` 获取。
+
+### O3 [未修·高] `WebBook.rs` 各阶段（搜索/发现/详情/目录/正文）所有权转移以克隆副本传递，导致阶段间变量传递中断
+- **Kotlin**: `WebBook.kt:48-78`（搜索）：`val variableBook = SearchBook()` 传入 `AnalyzeUrl` 和 `BookList.analyzeBookList`，`AnalyzeUrl` 解析 URL 时 `@put:` 写入的变量，在 `BookList` 解析列表时实时可见，并传递给每一个 `SearchBook`。
+- **Rust**: `WebBook.rs:119, 148, 192, 215, 253, 331, 389` 中传给 `AnalyzeUrl` 的是 `Some(Box::new(variable_book.clone()))` 克隆副本。`init_url()` 内执行 `@js:` 或 URL `@put:` 产生的变量全被写入了克隆的 Box 中，而传给 `BookList` 的 `&variable_book` 仍然为空。
+- **影响**: 搜索 URL、发现 URL 或详情页 URL 中通过 `@put:` 或 `@js: java.put()` 提取的变量，无法传递到列表解析器、详情解析器或正文解析器中。
+- **修复建议**: 统一 `RuleData` 生命周期引用，或在 `AnalyzeUrl` 执行完成后将产生的变量同步回主对象。
+
+### O4 [未修·严重] JS 引擎中缺失 `java.put` 且 `java.get` 被劫持为 HTTP GET（与变量系统冲突）
+- **Kotlin**: `AnalyzeRule.kt:35` 实现 `JsExtensions`，`evalJS` 时注入 `bindings["java"] = this`。支持 `java.put(key, value)`（变量存入）、`java.get(key)`（变量读取）、`java.get(url, headers)`（HTTP 请求）。
+- **Rust**: `src/runtime/js.rs:884-942` 中 `java.put` 完全未注册（调用必抛 `TypeError: java.put is not a function`）；`java.get` 被硬编码绑定为 `java_get_native`（HTTP GET），在 JS 中调用 `java.get("token")` 时会将 `"token"` 当作 URL 发送 HTTP 网络请求。
+- **影响**: 大量在 JS 规则块中使用 `java.put()` 或 `java.get()` 的书源 100% 报错崩溃或发错请求。
+- **修复建议**: 在 `js.rs` 注册 `java.put`；在 `java.get` 中根据参数特征区分变量读取与 HTTP 请求。
+
+### O5 [未修·高] JS 绑定的 `book` / `chapter` / `source` 对象缺少 `putVariable` / `getVariable` 等实例方法
+- **Kotlin**: `AnalyzeRule.kt:649-653` 绑定的 `source`, `book`, `chapter` 具备 `book.getVariable('key')`、`book.putVariable('key', 'val')`、`source.getKey()` 等实例方法。
+- **Rust**: `js.rs:48-50` 将它们序列化为普通 JSON Object 传入 Boa 引擎，未注入 prototype 实例方法。
+- **影响**: 进阶书源在详情/正文 JS 中读写书籍级或章节级变量时报错 `TypeError: book.getVariable is not a function`。
+- **修复建议**: 在 JS 初始化脚本中为 `book`、`chapter`、`source` 注入 prototype 包装方法。
+
+### O6 [未修·高] `RuleAnalyzer` 字节与字符索引混用导致中文字符串切片 panic 或错切
+- **Kotlin**: 全程使用 UTF-16 字符（Char/CodePoint）计数与切片。
+- **Rust**: `RuleAnalyzer.rs` 中 `consume_to` 使用字节索引，`consume_to_any` 使用字符计数 `chars().nth(pos)`，最终切片 `queue[start..pos]` 又直接按字节索引切片。当规则中包含中文字符时，触发 `byte index X is not a char boundary` panic。
+- **修复建议**: `RuleAnalyzer` 内部统一基于字符边界或 `Vec<char>` 处理。
+
+### O7 [未修·中] `AnalyzeRule` / `AnalyzeUrl` 变量作用域优先级与持久化生命周期不一致
+- **Kotlin**: 3 级链：`chapter?.putVariable(...) ?: book?.putVariable(...) ?: ruleData.putVariable(...)`。
+- **Rust**: `AnalyzeRule.rs:501-508` 的 `put` 跳过了 `Book` 实体；`get` 优先级倒置；多用户并发锁粒度缺少 userNS。
+- **修复建议**: 对齐 Kotlin 3 级作用域链，确保所有写操作最终同步到实体对象的 `variable` 字段。
+
+### O8 [未修·低] `eval_js` 中非 Book 时 `book` 绑定类型差异（string vs null）
+- **Kotlin**: 当 `ruleData` 不是 `Book` 时，`bindings["book"] = null`。
+- **Rust**: `AnalyzeUrl.rs:461` 绑定为命名空间字符串（如 `"admin"`）。
+- **修复建议**: 改为绑定 `crate::stubs::Any::Null`。
+
+---
+
+## P. TTS 完整实现
+
+### P1 [未修·严重] `BookController.rs` TTS 音频响应经 UTF-8 Lossy 损坏（MP3 100% 播放失败）
+- **Kotlin**: `BookController.kt:3140, 3167` 使用二进制安全的 Vert.x Buffer 直接输出字节流。
+- **Rust**: `BookController.rs:4172, 4221` 使用 `r.end(crate::stubs::io::vertx::Buffer::new(audio_bytes).to_string())`，将 MP3 二进制字节按 UTF-8 lossy 转码为 String，非 UTF-8 字节被破坏为 `\u{FFFD}`（`0xEF 0xBF 0xBD`）。
+- **影响**: Web 前端或外部客户端通过 `/reader3/book/tts?type=edge&text=...` 请求音频流时，返回的 MP3 数据 100% 损坏，HTML5 `<audio>` 播放器解码报错。
+- **修复建议**: 为 `ResponseHandle` 增加 `end_bytes(Vec<u8>)` 方法，直接发送原始二进制数据。
+
+### P2 [未修·严重] `ByteString::last_index_of` 与 Edge TTS 帧解析逻辑缺陷导致垃圾字节混入音频流
+- **Kotlin**: `TTSService.java:79-85` 正确寻找最后一个匹配项并判断索引非 -1。
+- **Rust**: `stubs.rs:6146-6155` 中 `ByteString.last_index_of` 使用了 `.position()`（前向搜索）而非 `.rposition()`；`TTSService.rs:147-148` 在返回 `-1` 时直接做 `+12` 得到 `11`，使得 `audio_index != -1` 恒为 `true`。
+- **影响**: Edge TTS 收到控制帧或元数据帧时，将非音频数据误拼入音频流，造成音频头部或中间混入噪声。
+- **修复建议**: `ByteString.last_index_of` 改为 `.rposition()`，并在加偏移前先判别 `-1`。
+
+### P3 [未修·高] `BookController.rs` `tts_by_api` 语速参数硬编码为 0（忽略前端 `rate` 配置）
+- **Kotlin**: `BookController.kt:3155` 计算 `speechRate = (5 + (rate - 0.5) * 30).toInt()` 并传入。
+- **Rust**: `BookController.rs:4193` 将 `speech_rate` 硬编码为 `0`。
+- **影响**: 前端调节 HttpTTS 语速滑块完全无效。
+- **修复建议**: 补充语速计算公式并传入 `get_speak_stream`。
+
+### P4 [未修·高] `HttpTTS` `get_speak_stream` 缺失 `AnalyzeUrl` 规则解析、`loginCheckJs` 与重试机制
+- **Kotlin**: `BookController.kt:3230-3289` 使用 `AnalyzeUrl` 完整支持 GET/POST、`{{speakText}}`、`@js:` 签名、`loginCheckJs` 校验、`Content-Type` 错误检测与 5 次重试。
+- **Rust**: `BookController.rs:4300-4333` 仅做简单字符串替换，只支持 GET，无 JS 签名，无重试。
+- **影响**: 复杂第三方 HttpTTS 无法使用。
+- **修复建议**: 改用 `AnalyzeUrl` 驱动请求并补齐重试与类型检测。
+
+### P5 [未修·高] `BookController.rs` TTS 异常处理器未关闭 HTTP 响应导致连接永久挂起
+- **Kotlin**: `BookController.kt:3104` 异常时调用 `response.setStatusCode(404).end()`。
+- **Rust**: `BookController.rs:4117` 异常闭包内创建了 response 副本但从未调用 `set_status_code` / `end`。
+- **影响**: TTS 发生异常时前端连接挂死直到 30s 超时。
+- **修复建议**: 补充 `r.set_status_code(404).end(String::new())`。
+
+### P6 [架构·中] Edge TTS 每次请求重建 WebSocket 连接与 Tokio Runtime
+- **Kotlin**: 单例复用 WebSocket 长连接，仅断开时重建。
+- **Rust**: 每次请求新建单线程 Tokio Runtime 并建立全新 WebSocket 连接。
+- **修复建议**: 实现全局 `TTSService` 单例复用长连接。
+
+### P7 [已确认] `textToSpeechCn` 接口请求与 302 重定向行为两端一致
+
+---
+
+## Q. 本地书格式深链
+
+### Q1 [未修·P0 极高] TextFile 非 UTF-8 编码（GBK / Big5 / UTF-16）章节偏移漂移与正文错位
+- **Kotlin**: `TextFile.kt:143,209` 使用 `chapterContent.toByteArray(charset).size` 计算章节在原始字符集下的物理字节跨度。
+- **Rust**: `TextFile.rs:177,245` 使用 `chapter_content.as_bytes().len()`（UTF-8 字节长度）。
+- **影响**: 对 GBK / Big5 / UTF-16 编码小说，计算出的章节 start/end 字节偏移严重漂移，阅读时 `bis.skip` 跳至错误位置造成乱码、截断或空内容。
+- **修复建议**: 按文件字符集重新编码字符串以获取准确字节长度。
+
+### Q2 [未修·P0 极高] UmdReader::read 中 `std::mem::replace` 导致 `prev.unwrap()` 100% Panic 瘫痪
+- **Kotlin**: 直接使用传入的 `InputStream` 构造 `StreamReader`。
+- **Rust**: `UmdReader.rs:46` 用 `std::mem::replace` 替换 `None` 初值后调用 `prev.unwrap()`，100% 触发 panic。
+- **影响**: UMD 格式书籍导入、预览、解析目录与正文完全瘫痪崩溃。
+- **修复建议**: 删除 `std::mem::replace`，直接使用传入的 `input_stream`。
+
+### Q3 [未修·P1 高] UmdUtils::unicode_bytes_to_string 遇到非法/代理区字节时 `.unwrap()` Panic
+- **Kotlin**: `(char) c` 强转容错。
+- **Rust**: `UmdUtils.rs:77` 调用 `char::from_u32(c as u32).unwrap()`。遇到 UTF-16 代理区码点时 panic。
+- **修复建议**: 改为 `unwrap_or('\u{FFFD}')` 或 `std::char::decode_utf16`。
+
+### Q4 [未修·P1 高] EncodingDetectHelp 文件打开与空文件 `.unwrap()` / 越界 Panic
+- **Rust**: `EncodingDetectHelp.rs:146,153,172` 直接调用 `File::open().unwrap()`，未检查空文件直接读 `temp_byte[0]`，负数索引直接当下标。
+- **修复建议**: 加 match 容错与长度/索引范围检查。
+
+### Q5 [未修·P1 高] EpubFile / UmdFile 静态单例 `static mut` 无并发互斥保护
+- **Kotlin**: 使用 `@Synchronized` 保证并发安全。
+- **Rust**: `EpubFile.rs:81` 与 `UmdFile.rs:57` 使用裸 `pub static mut` 和 `unsafe` 读写，多请求并发时产生 Data Race 与实例覆盖。
+- **修复建议**: 参照 `CbzFile.rs` 改用 `Mutex<Option<...>>`。
+
+### Q6 [未修·P2 中] FileController 本地书导入 `root_dir` 引起 `storage/storage` 双重路径
+- **修复建议**: 将 `FileController.rs:672` 改为 `get_work_dir("", vec![])`。
+
+### Q7 [未修·P2 中] ZipFile / ResourcesLoader 解压单条目重复解析 Central Directory I/O 放大
+- **修复建议**: 持有 `Arc<Mutex<ZipArchive<File>>>` 句柄避免单条目重复全量打开。
+
+### Q8 [未修·P2 中] 本地书异常分类缺失与损坏文件静默入库
+- **修复建议**: 区分 `TocEmptyException` 与 `CorruptedFile`。
+
+### Q9 [已确认一致] EPUB HTML 标签清洗规则、CBZ 漫画元数据、PDF 双模式切分一致
+
+---
+
+## R. 前端交互与渲染细节契约
+
+### R1 [未修·严重] 鉴权与权限拦截错误 `isSuccess` 状态倒置（NEED_LOGIN / NEED_SECURE_KEY）
+- **Kotlin**: `CURD.kt:92` 返回 `{"isSuccess": false, "errorMsg": "请登录后使用", "data": "NEED_LOGIN"}`。
+- **Rust**: `CURD.rs` 与 `UserController.rs` 内部调用 `set_data` 将 `is_success` 置为 `true`，返回 `{"isSuccess": true, "errorMsg": "请登录后使用", "data": "NEED_LOGIN"}`。
+- **影响**: 前端 `axios.ts` 仅在 `!isSuccess` 时才弹登录/安全密码框；`isSuccess: true` 导致前端误判为成功，弹绿色 Toast 或渲染错误字符串，未登录拦截全面失效。
+- **修复建议**: 在认证拦截与 `set_data_owned` 返回特定错误码时明确令 `is_success = false`。
+
+### R2 [未修·严重] cacheBookSSE 伪流式响应与事件流全量缓冲阻塞
+- **Kotlin**: `response.setChunked(true)` 实时发送每章进度事件流。
+- **Rust**: `HttpResponse` 将 `write()` 缓存在内存中，全部章节抓取完毕后才一次性返回，且在此期间单线程事件循环被完全阻塞。
+- **影响**: 前端进度条卡死在 0% 直至最后跳 100% 或 30s 超时；全站其他 HTTP 请求被冻结。
+- **修复建议**: 引入真实 Axum SSE 流式响应并异步处理。
+
+### R3 [未修·高] `saveBookConfig` 仅更新 pdfImageWidth 且缺少通用配置合并
+- **影响**: 前端在阅读界面配置的段落重排、替换规则开启状态等无法持久化到 `Book.readConfig`。
+- **修复建议**: 扩展 `save_book_config` 支持 `readConfig` 完整 JSON 对象合并。
+
+### R4 [未修·高] 漫画/图片正文 `__API_ROOT__` 渲染与懒加载代理丢失
+- **影响**: 跨域部署或反向代理下漫画和插图直连触发 403 裂图。
+- **修复建议**: 补齐 `save_images` 并对齐图片 URL 代理重写逻辑。
+
+### R5 [未修·中] 前端书源失效检测 (`checkBookSource`) 契约传参失配与本地状态未同步
+- **修复建议**: 前端与后端统一在失败时将错误书源标识记录并返回标准错误。
+
+### R6 [未修·中] 字体管理二进制传输与自定义字体 CSS 注入差异
+- **修复建议**: 对字体文件名进行 URL 解码并补齐字体 MIME 类型。
+
+### R7 [未修·中低] 书架/进度同步时间戳精度与 WebDAV 远端冲突解决机制
+- **修复建议**: 确保 `save_book_progress` 始终注入当前系统毫秒时间戳。
+
+### R8 [未修·中低] 批量操作 (`CURD.rs` / `BookManage.ts`) 反序列化失败熔断机制缺失
+
+---
+
+## S. WebSocket 与长连接
+
+### S1 [未修·P0 极高] `ws_loop` 中 `async { rx.try_recv().ok() }` 导致 20ms 忙轮询与 CPU 浪费
+- **Kotlin**: OkHttp 异步 WebSocket，空闲时处于系统 I/O 阻塞休眠状态，CPU 为 0。
+- **Rust**: `stubs.rs:6234-6270` 在 `tokio::select!` 中使用 `async { rx.try_recv().ok() }` + `sleep(20ms)`。
+- **影响**: 空闲时每秒被唤醒 50 次，持续产生无意义的上下文切换和 CPU 开销。
+- **修复建议**: 通道改为 `tokio::sync::mpsc`，使用 `rx.recv().await` 实现真正的事件驱动挂起。
+
+### S2 [未修·P1 高] OkHttpClient::new_web_socket 每连接泄露独立 OS 线程与 Tokio Runtime
+- **影响**: 每次重试都会创建独立的 OS 线程和单线程 Runtime，增加线程栈内存开销。
+- **修复建议**: 复用全局 Tokio Runtime 派生异步任务。
+
+### S3 [未修·P1 高] `ping_interval` 为空壳桩，无心跳保活导致长连接静默断开
+- **影响**: TTS 长连接空闲超过 30~60 秒后被服务端静默掐断，下次合成必报错。
+- **修复建议**: 在 `ws_loop` 中加入 20s 周期性 Ping 保活心跳。
+
+### S4 [未修·P2 中] TTSService `synthesising` 标志与超时保护完善
+- **修复建议**: 加入 RAII 守护确保 `synthesising = false` 必被重置。
+
+### S5 [未修·P2 中] TTS 二进制音频流多重内存克隆与缓冲开销
+- **修复建议**: 将 `ByteString` 内部存储改为 `bytes::Bytes` 零拷贝切片。
+
+### S6 [已确认一致] 确认全站无服务端 WebSocket 监听端点，仅出站 TTS 客户端长连接
+
+---
+
+## T. 错误处理、重试策略与用户反馈
+
+### T1 [未修·严重] 500 异常响应缺少 `errorMsg` 字段导致前端静默吞错
+- **Kotlin**: `VertRoute.kt:20` 返回包含 `message` 的错误结构。
+- **Rust**: `server.rs:384` panic 兜底返回 `{"message":"服务器内部错误"}` 但**无 `errorMsg` 字段**。
+- **影响**: 前端 `axios.ts:154` 依赖 `res.errorMsg` 弹窗，500 时 `errorMsg` 为 `undefined`，导致前端**完全不弹错误提示，用户点击毫无反应（静默失败）**。
+- **修复建议**: 在 `server.rs` 的 500 响应中补齐 `"errorMsg": "服务器内部错误"` 及 `"isSuccess": false`。
+
+### T2 [未修·严重] CURD 单条操作空请求体/非法 JSON 直接 panic 引发 500
+- **Kotlin**: 捕获 `DecodeException` 返回 `ReturnData().setErrorMsg("参数错误")`。
+- **Rust**: `CURD.rs:139, 226` 对 `context.body_as_json().unwrap()` 直接 unwrap。空请求体直接崩溃。
+- **修复建议**: 改为 match 处理并在 None 时安全返回错误提示。
+
+### T3 [未修·高] HTTP 跨模块调用异常栈与原始错误信息丢失
+- **修复建议**: 使用 `thiserror` 保留错误分类与链路信息。
+
+### T4 [未修·高] 正文抓取与换源网络超时缺少渐进重试与熔断降级
+- **影响**: 网络抖动时正文加载失败率上升，单个死链书源阻塞 45 秒。
+- **修复建议**: 在 `okhttp.rs` / `WebBook.rs` 增加 2~3 次轻量重试机制。
+
+### T5 [未修·中] WebDAV 错误状态码映射不全 (401/404/409/412 vs 500)
+- **修复建议**: 对齐 RFC 4918 WebDAV 标准 HTTP 状态码。
+
+### T6 [未修·中] 文件上传与静态资源 404/413 响应结构不符合 ReturnData 契约
+- **修复建议**: API 路由下的 404/405/413 错误统一输出 JSON 格式。
+
+### T7 [未修·低] TTS 音频异常静默输出 200 乱码字节而非显式错误
+- **修复建议**: TTS 失败时显式返回非 200 状态码或标准 ReturnData JSON。
+
+---
+
+## U. 性能热点与算法复杂度
+
+### U1 [未修·严重] HTTP 请求每调用新建 OS 线程与 TLS 客户端（长连接与连接池彻底失效）
+- **Kotlin**: 全局共享单例 `OkHttpClient`（5 空闲连接，5 分钟 Keep-Alive，共享 DNS 缓存）。
+- **Rust**: `src/runtime/okhttp.rs:14-51` 每次请求都通过 `std::thread::spawn` 裸起 OS 线程并 `reqwest::blocking::Client::builder().build()` 新建客户端。
+- **影响**: 彻底丧失 HTTP Keep-Alive，每次重新加载根证书并执行 TCP 握手 + TLS 协商；高并发搜索或批量抓取时瞬间创建数百个 OS 线程，延迟上升 5~10 倍并容易耗尽句柄。
+- **修复建议**: 使用全局单例/延迟初始化的 `reqwest::blocking::Client`，移除每次请求裸起线程的设计。
+
+### U2 [未修·严重] 正则表达式每次动态编译（伴生常量转关联函数引发 CPU 暴增）
+- **Kotlin**: `PUT_RULE`、`GET_RULE` 等在伴生对象中作为 `val` 常量仅编译一次。
+- **Rust**: `AnalyzeRule.rs:1004-1015` 将它们写为函数，每次调用都执行 `Pattern::compile_with`。
+- **影响**: 遍历书籍列表或目录时，每项重复编译正则数千次，CPU 消耗暴增。
+- **修复建议**: 使用 `std::sync::LazyLock` 将常用正则表达式预编译为静态单例。
+
+### U3 [未修·严重] 规则引擎 DOM 树与 HTML 字符串反复 O(N*M) 往复解析与堆分配
+- **Kotlin**: Jsoup 在内存中维护完整节点树，子选择器通过指针遍历，零重复序列化。
+- **Rust**: `Element` 仅持有 `html: String`。多级规则链中，上一级生成的子 HTML 字符串被下一级重新 `parse_fragment` 数千次。
+- **影响**: 2,000 章目录页触发 4,000+ 次完整 DOM 树构建与析构，严重拖慢解析速度。
+- **修复建议**: 重构 `Element` 使其在规则链执行期间持有解析后的 DOM 引用。
+
+### U4 [未修·高] DB 存储层线性扫描中的 O(N^2) 重复 JSON 反序列化
+- **Rust**: `DB.rs:163-171, 203-211` 在 `save` 和 `save_multi` 查重循环中，每次迭代均重复调用 `serde_json::from_str(&json)`。
+- **影响**: 批量保存 100 条书源时触发 100,000 次 JSON 解析，导致秒级卡顿。
+- **修复建议**: 将 `&json` 的反序列化移至循环外。
+
+### U5 [架构·高] 单线程 Tokio Runtime 阻塞式 IO 导致全站事件循环冻结
+- **影响**: 任何耗时较长的同步操作会导致整个 HTTP 服务器主事件循环完全停摆。
+- **修复建议**: 重型计算与阻塞 IO 逐步派发至阻塞线程池或改造为异步。
+
+### U6 [未修·中] 大文本/章节解析中的大量 String Clone 与无预分配内存碎片
+- **修复建议**: 传参引入 `&str` / `Cow<str>`，并在已知容量场景预分配内存。
+
+### U7 [未修·中] ACache 缓存读写频繁 I/O 与缺少内存级 L1 缓存
+- **修复建议**: 为 ACache 补充轻量级内存 LRU 缓存层。
+
+---
+
+## 第四轮修复优先级汇总（按严重度）
+
+### P0（阻断/严重缺陷/数据丢失/服务崩溃）
+1. **O1** — `AnalyzeRule::new` 丢弃 `ruleData`，导致 `book()` 恒空且 `@put:` 无法持久化写入书籍
+2. **O2** — `Book`/`SearchBook` 的 `variable_map` 恒返回空 Map，导致 `get_variable` 恒空
+3. **P1** — `Buffer::to_string()` UTF-8 Lossy 损坏二进制 MP3 音频流（TTS 播放 100% 失败）
+4. **Q1** — `TextFile` 非 UTF-8 编码按 UTF-8 计算章节长度，导致正文字节偏移全盘漂移错位
+5. **Q2** — `UmdReader::read` 中 `prev.unwrap()` 导致 UMD 解析 100% Panic 崩溃
+6. **R1** — 鉴权拦截错误 `isSuccess` 状态倒置（`NEED_LOGIN` 返回 `true` 导致登录拦截失效）
+7. **S1** — `ws_loop` 中 `async { rx.try_recv() }` 产生 20ms 忙轮询与无意义 CPU 占用
+8. **T1** — 500 响应缺少 `errorMsg` 字段，导致前端所有异常静默吞错
+9. **T2** — `CURD.rs` 空请求体 `.unwrap()` 直接 panic 升级为 500
+10. **U1** — HTTP 请求每调用新建 OS 线程与 TLS 客户端（长连接池失效、线程创建开销巨大）
+11. **U2** — 正则表达式伴生常量转关联函数导致每次重复编译（CPU 暴增）
+12. **U3** — 规则引擎 DOM 树与 HTML 字符串反复 $O(N \times M)$ 往复解析与堆分配
+
+### P1（高危/功能异常/资源泄露）
+13. **O4** — JS 引擎缺失 `java.put` 且 `java.get` 被误作为 HTTP GET
+14. **O3** — `WebBook.rs` 各阶段传递克隆副本导致变量链断裂
+15. **O5** — JS 中 `book`/`chapter`/`source` 缺少 `getVariable`/`putVariable` 等实例方法
+16. **O6** — `RuleAnalyzer` 字节与字符索引混用导致中文规则切片 panic
+17. **P2** — `ByteString::last_index_of` 与 Edge TTS 帧解析逻辑缺陷（垃圾字节混入）
+18. **P3** — `tts_by_api` 语速参数写死为 0（忽略前端设置）
+19. **P4** — `HttpTTS` `get_speak_stream` 缺失 `AnalyzeUrl` 与校验重试机制
+20. **P5** — TTS 异常处理器未关闭 HTTP 响应导致客户端挂死
+21. **Q3** — `UmdUtils` 遇到非标/代理区双字节时 `from_u32().unwrap()` 崩溃
+22. **Q4** — `EncodingDetectHelp` 文件打开与空文件 `temp_byte[0]` 未加防守 Panic
+23. **Q5** — `EpubFile`/`UmdFile` 全局 `static mut` 裸访问导致多请求数据竞争与 UB
+24. **R2** — `cacheBookSSE` 伪流式响应全量缓冲阻塞
+25. **R3** — `saveBookConfig` 缺少通用排版配置合并
+26. **R4** — 漫画/插图正文 `__API_ROOT__` 渲染与懒加载代理丢失
+27. **S2** — `new_web_socket` 每次新建独立 OS 线程与 Tokio Runtime
+28. **S3** — 缺乏周期性 Ping 心跳导致 TTS 长连接空闲静默断开
+29. **T3** — HTTP 跨模块调用异常栈与原始错误信息丢失
+30. **T4** — 正文抓取与换源网络超时缺少渐进重试与熔断降级
+31. **U4** — DB 存储层线性扫描中的 $O(N^2)$ 重复 JSON 反序列化
+32. **U5** — 单线程 Tokio Runtime 阻塞式 IO 导致全站事件循环冻结
+
+### P2（打磨/边界优化/架构优化）
+33. **O7** / **O8** — 变量作用域优先级与非 Book 上下文 `book` 绑定类型
+34. **P6** — Edge TTS 每次请求重建 WebSocket
+35. **Q6**~**Q8** — 本地书 `storage/storage` 路径、ZipFile I/O 放大、损坏文件静默入库
+36. **R5**~**R8** — 失效书源检测传参、字体管理、时间戳精度、批量操作原子性
+37. **S4** / **S5** — TTS `synthesising` 超时复位、音频 Vec 内存切片优化
+38. **T5**~**T7** — WebDAV 状态码对齐、静态 404 JSON 契约、TTS 显式错误
+39. **U6** / **U7** — 字符串预分配与 ACache 内存 L1 缓存
+
+### 已确认一致项（无需处理）
+- **P7** — `textToSpeechCn` 接口请求与 302 重定向行为两端一致
+- **Q9** — EPUB 标签清洗、CBZ 漫画信息抽取、PDF 双模式切分一致
+- **S6** — 确认全站无服务端 WebSocket 监听端点，仅出站 TTS 客户端长连接
+

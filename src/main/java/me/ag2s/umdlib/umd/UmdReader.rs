@@ -43,8 +43,7 @@ impl<'a> UmdReader<'a> {
 
     pub fn read(&mut self, input_stream: &'a mut dyn Read) -> UmdBook {
         self.book = UmdBook::new();
-        let prev = std::mem::replace(&mut self.input_stream, Some(input_stream));
-        let mut reader = StreamReader::new(prev.unwrap());
+        let mut reader = StreamReader::new(input_stream);
         let mut umd_header = UmdHeader::new();
         if reader.read_int_le() != (0xde9a9b89u32 as i32) {
             panic!("Wrong header");

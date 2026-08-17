@@ -281,7 +281,17 @@ impl<'a> Matcher<'a> {
         match self.re.find_from_pos(&self.hay, self.pos) {
             Ok(Some(m)) => {
                 self.last = Some((m.start(), m.end()));
-                self.pos = m.end();
+                let next_pos = if m.end() == self.pos {
+                    // 空匹配：必须向前推进 1 个字符，防止 while matcher.find() 无限死循环
+                    if let Some(ch) = self.hay[self.pos..].chars().next() {
+                        self.pos + ch.len_utf8()
+                    } else {
+                        self.hay.len() + 1
+                    }
+                } else {
+                    m.end()
+                };
+                self.pos = next_pos;
                 if !self.in_range {
                     self.in_range = true;
                 }
@@ -312,6 +322,12 @@ impl<'a> Matcher<'a> {
 
     pub fn group_idx(&self, i: usize) -> Option<String> {
         let (s, e) = self.last?;
+        // 优先在全串 captures_from_pos 捕获，保留 lookbehind / \b 上下文
+        if let Ok(Some(caps)) = self.re.captures_from_pos(&self.hay, s) {
+            if let Some(m) = caps.get(i) {
+                return Some(m.as_str().to_string());
+            }
+        }
         let caps = self.re.captures(&self.hay[s..e]).ok()??;
         caps.get(i).map(|m| m.as_str().to_string())
     }
@@ -3488,19 +3504,21 @@ pub struct UpdateResult {
 
 // ---------------- java.nio.charset.Charset 占位（QueryTTF 等使用） ----------------
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Charset;
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Charset(pub String);
 
 impl Charset {
-    pub const US_ASCII: Charset = Charset;
-    pub const UTF_8: Charset = Charset;
-    pub const UTF_16BE: Charset = Charset;
-    // fix: 合并原 2760 行重复 Charset 占位的方法（E0428 只保留首个定义）
-    pub fn for_name(_name: &str) -> Charset {
-        Charset
+    pub const US_ASCII: Charset = Charset(String::new());
+    pub const UTF_8: Charset = Charset(String::new());
+    pub const UTF_16BE: Charset = Charset(String::new());
+    pub fn for_name(name: &str) -> Charset {
+        Charset(name.to_string())
     }
     pub fn default_charset() -> Charset {
-        Charset
+        Charset("UTF-8".to_string())
+    }
+    pub fn name(&self) -> &str {
+        if self.0.is_empty() { "UTF-8" } else { &self.0 }
     }
 }
 
@@ -6186,7 +6204,7 @@ impl Buffer {
 // okhttp3.WebSocket 占位（send 恒 true，等价 Java 发送成功）
 #[derive(Debug, Clone, Default)]
 pub struct WebSocket {
-    sender: Option<std::sync::mpsc::Sender<String>>,
+    sender: Option<tokio::sync::mpsc::UnboundedSender<String>>,
     events: std::sync::Arc<std::sync::Mutex<Vec<WebSocketEvent>>>,
 }
 
@@ -6211,7 +6229,7 @@ impl WebSocket {
 /// WebSocket 连接线程：tungstenite 连接 + 双向收发
 fn ws_loop(
     req: tokio_tungstenite::tungstenite::http::Request<()>,
-    rx: std::sync::mpsc::Receiver<String>,
+    mut rx: tokio::sync::mpsc::UnboundedReceiver<String>,
     events: std::sync::Arc<std::sync::Mutex<Vec<WebSocketEvent>>>,
 ) {
     use futures_util::{SinkExt, StreamExt};
@@ -6230,6 +6248,8 @@ fn ws_loop(
                 return;
             }
         };
+        let mut ping_interval = tokio::time::interval(std::time::Duration::from_secs(20));
+        ping_interval.tick().await;
         loop {
             tokio::select! {
                 msg = ws.next() => {
@@ -6259,13 +6279,18 @@ fn ws_loop(
                         _ => break,
                     }
                 }
-                text = async { rx.try_recv().ok() } => {
-                    if let Some(t) = text {
-                        if ws.send(Message::Text(t.into())).await.is_err() {
-                            break;
+                text = rx.recv() => {
+                    match text {
+                        Some(t) => {
+                            if ws.send(Message::Text(t.into())).await.is_err() {
+                                break;
+                            }
                         }
+                        None => break,
                     }
-                    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+                }
+                _ = ping_interval.tick() => {
+                    let _ = ws.send(Message::Ping(vec![])).await;
                 }
             }
         }
@@ -6313,7 +6338,7 @@ impl CountDownLatch {
 impl OkHttpClient {
     // okhttp3 OkHttpClient.newWebSocket(Request, WebSocketListener)
     pub fn new_web_socket(&self, request: Request, _listener: impl std::any::Any) -> WebSocket {
-        let (tx, rx) = std::sync::mpsc::channel::<String>();
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<String>();
         let events = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
         let events2 = events.clone();
         let mut req = match tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(request.url.as_str()) {
@@ -7950,11 +7975,7 @@ pub fn tokio_oneshot_channel<T>() -> (OneshotSender<T>, OneshotReceiver<T>) {
     (OneshotSender(shared.clone()), OneshotReceiver(shared))
 }// ---------------- EpubFile.rs 转录追加（仅追加，不改已有内容） ----------------
 
-impl Default for Charset {
-    fn default() -> Self {
-        Charset
-    }
-}
+
 
 impl Document {
     // fix: jsoup Document.body()（EpubFile 转录使用）
@@ -8457,8 +8478,16 @@ impl crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
             book_variables.insert(String::from("bookIntro"), b.intro.clone().unwrap_or_default());
         }
         let source_book_source = source.cloned();
+        let cloned_rule_data: Box<dyn crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface> =
+            if let Some(b) = rule_data.as_any().downcast_ref::<crate::io_legado_app_data_entities_book::Book>() {
+                Box::new(b.clone())
+            } else if let Some(sb) = rule_data.as_any().downcast_ref::<crate::io_legado_app_data_entities_searchbook::SearchBook>() {
+                Box::new(sb.clone())
+            } else {
+                Box::new(AnalyzeRulePlaceholderData)
+            };
         crate::io_legado_app_model_analyzerule_analyzerule::AnalyzeRule {
-            rule_data: Box::new(AnalyzeRulePlaceholderData),
+            rule_data: cloned_rule_data,
             // fix: 真实书源（BaseSource 已实现；原恒 None——依赖 source 的 JS 规则拿不到对象）
             source: source.map(|s| Box::new(s.clone()) as Box<dyn crate::io_legado_app_data_entities_basesource::BaseSource>),
             // fix: 真实调试对象（原恒 None——书源规则调试日志完全失效）
@@ -9210,7 +9239,9 @@ impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface
     }
 
     fn get_variable(&self, key: &str) -> Option<String> {
-        self.variable_map().get(key).cloned()
+        self.variable.as_ref().and_then(|v| {
+            serde_json::from_str::<std::collections::HashMap<String, String>>(v).ok()
+        }).and_then(|m| m.get(key).cloned())
     }
 
     // fix: 同步已解析字段（{{bookName}} 自引用）
@@ -9390,16 +9421,16 @@ impl ToDataClass for std::collections::HashMap<String, Box<dyn std::any::Any>> {
                 .or_else(|| self.get(k).and_then(|v| v.downcast_ref::<f64>().copied().map(|f| f as i64)))
                 .unwrap_or(0)
         };
-        let gb = |k: &str| {
+        let gb_def = |k: &str, def: bool| {
             self.get(k)
                 .and_then(|v| v.downcast_ref::<bool>().copied())
-                .unwrap_or(false)
+                .unwrap_or(def)
         };
-        let gi = |k: &str| {
+        let gi_def = |k: &str, def: i32| {
             self.get(k)
                 .and_then(|v| v.downcast_ref::<i32>().copied())
                 .or_else(|| self.get(k).and_then(|v| v.downcast_ref::<i64>().copied().map(|i| i as i32)))
-                .unwrap_or(0)
+                .unwrap_or(def)
         };
         let token_map = self.get("token_map").and_then(|v| {
             v.downcast_ref::<std::collections::HashMap<String, Box<dyn std::any::Any>>>().map(|m| {
@@ -9420,13 +9451,13 @@ impl ToDataClass for std::collections::HashMap<String, Box<dyn std::any::Any>> {
             token: gs("token"),
             last_login_at: gl("last_login_at"),
             created_at: gl("created_at"),
-            enable_webdav: gb("enable_webdav"),
+            enable_webdav: gb_def("enable_webdav", true),
             token_map,
-            enable_local_store: gb("enable_local_store"),
-            enable_book_source: gb("enable_book_source"),
-            enable_rss_source: gb("enable_rss_source"),
-            book_source_limit: gi("book_source_limit"),
-            book_limit: gi("book_limit"),
+            enable_local_store: gb_def("enable_local_store", true),
+            enable_book_source: gb_def("enable_book_source", true),
+            enable_rss_source: gb_def("enable_rss_source", true),
+            book_source_limit: gi_def("book_source_limit", 100),
+            book_limit: gi_def("book_limit", 200),
         })
     }
 }
@@ -9865,11 +9896,15 @@ pub fn analyze_rule_stub_regex_get_elements(
 //      此处按结构体既有方法补齐；as_any 返回自身使 ruleData 为 Box<Book> 时 downcast 成功
 //      （AnalyzeRule::new 占位构造器以 AnalyzeRulePlaceholderData 填充，book() 仍返回 None）。
 impl crate::io_legado_app_model_analyzerule_ruledatainterface::RuleDataInterface for crate::io_legado_app_data_entities_book::Book {
-    // fix: RefCell 缓存无法返回稳定引用（E0515），改用 OnceLock 静态占位
     fn variable_map(&self) -> &HashMap<String, String> {
         use std::sync::OnceLock;
         static EMPTY: OnceLock<HashMap<String, String>> = OnceLock::new();
         EMPTY.get_or_init(HashMap::new)
+    }
+    fn get_variable(&self, key: &str) -> Option<String> {
+        self.variable.as_ref().and_then(|v| {
+            serde_json::from_str::<std::collections::HashMap<String, String>>(v).ok()
+        }).and_then(|m| m.get(key).cloned())
     }
     fn get_user_name_space(&self) -> String {
         self.user_name_space.clone()
@@ -10289,8 +10324,8 @@ impl ToDataClass for std::collections::HashMap<String, crate::stubs::Any> {
                 .unwrap_or_default()
         };
         let gl = |k: &str| self.get(k).and_then(|v| v.as_long()).unwrap_or(0);
-        let gb = |k: &str| self.get(k).and_then(|v| v.as_bool()).unwrap_or(false);
-        let gi = |k: &str| self.get(k).and_then(|v| v.as_long().map(|l| l as i32)).unwrap_or(0);
+        let gb_def = |k: &str, def: bool| self.get(k).and_then(|v| v.as_bool()).unwrap_or(def);
+        let gi_def = |k: &str, def: i32| self.get(k).and_then(|v| v.as_long().map(|l| l as i32)).unwrap_or(def);
         let token_map = self.get("token_map").and_then(|v| v.as_map()).map(|m| {
             m.iter()
                 .map(|(k, val)| (k.clone(), val.as_long().unwrap_or(0)))
@@ -10303,13 +10338,13 @@ impl ToDataClass for std::collections::HashMap<String, crate::stubs::Any> {
             token: gs("token"),
             last_login_at: gl("last_login_at"),
             created_at: gl("created_at"),
-            enable_webdav: gb("enable_webdav"),
+            enable_webdav: gb_def("enable_webdav", true),
             token_map,
-            enable_local_store: gb("enable_local_store"),
-            enable_book_source: gb("enable_book_source"),
-            enable_rss_source: gb("enable_rss_source"),
-            book_source_limit: gi("book_source_limit"),
-            book_limit: gi("book_limit"),
+            enable_local_store: gb_def("enable_local_store", true),
+            enable_book_source: gb_def("enable_book_source", true),
+            enable_rss_source: gb_def("enable_rss_source", true),
+            book_source_limit: gi_def("book_source_limit", 100),
+            book_limit: gi_def("book_limit", 200),
         })
     }
 }

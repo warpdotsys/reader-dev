@@ -123,6 +123,11 @@ impl ResponseHandle {
         r.body = Some(s.into_bytes());
         r.ended = true;
     }
+    pub fn end_bytes(&mut self, bytes: Vec<u8>) {
+        let mut r = self.0.borrow_mut();
+        r.body = Some(bytes);
+        r.ended = true;
+    }
     pub fn json(&mut self, s: String) {
         let mut r = self.0.borrow_mut();
         r.headers

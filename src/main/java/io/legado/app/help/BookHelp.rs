@@ -218,17 +218,23 @@ impl BookHelp {
     }
 
     pub async fn save_image(book_source: Option<&BookSource>, book: &Book, src: &str) {
-        // while (downloadImages.contains(src)) {
-        //     delay(100)
-        // }
-        while download_images.contains(src) {
+        let mut wait_count = 0;
+        while download_images.contains(src) && wait_count < 100 {
             delay(100).await;
+            wait_count += 1;
         }
         if Self::get_image(book, src).exists() {
             return;
         }
+        struct DownloadGuard<'a>(&'a str);
+        impl<'a> Drop for DownloadGuard<'a> {
+            fn drop(&mut self) {
+                download_images.remove(self.0);
+            }
+        }
         download_images.add(src);
-        // fix: Kotlin `AnalyzeUrl(src, source = bookSource)`；传书源 + 请求头（防盗链 Referer 等）
+        let _guard = DownloadGuard(src);
+
         let mut analyze_url = AnalyzeUrl::new(
             src.to_string(),
             None,
@@ -242,20 +248,6 @@ impl BookHelp {
             book_source.and_then(|bs| bs.get_header_map()),
             None,
         );
-        // try {
-        //     analyzeUrl.getByteArrayAwait().let {
-        //         FileUtils.createFileIfNotExist(
-        //             getBookCacheDir(book),
-        //             cacheImageFolderName,
-        //             "${MD5Utils.md5Encode16(src)}.${getImageSuffix(src)}"
-        //         ).writeBytes(it)
-        //     }
-        // } catch (e: Exception) {
-        //     e.printStackTrace()
-        // } finally {
-        //     downloadImages.remove(src)
-        // }
-        // fix: get_byte_array_await 返回 Vec<u8>（无 Result 错误路径），Kotlin try/catch 等价分支省略
         let bytes = analyze_url.get_byte_array_await().await;
         FileUtils::createFileIfNotExist(
             &Self::get_book_cache_dir(book),
@@ -264,7 +256,6 @@ impl BookHelp {
                 format!("{}.{}", MD5Utils::md5Encode16(src), Self::get_image_suffix(src)).as_str(),
             ],
         ).write_bytes(bytes);
-        download_images.remove(src);
     }
 
     pub fn get_image(book: &Book, src: &str) -> File {

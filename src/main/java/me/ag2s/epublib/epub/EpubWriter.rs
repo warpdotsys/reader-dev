@@ -122,16 +122,8 @@ impl EpubWriter {
      */
     fn write_container(result_stream: &mut ZipOutputStream) -> Result<(), io::Error> {
         result_stream.put_next_entry(ZipEntry::new("META-INF/container.xml".to_string()));
-        let mut out = OutputStreamWriter::new(result_stream.clone());
-        out.write("<?xml version=\"1.0\"?>\n");
-        out.write(
-            "<container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\">\n");
-        out.write("\t<rootfiles>\n");
-        out.write(
-            "\t\t<rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/>\n");
-        out.write("\t</rootfiles>\n");
-        out.write("</container>");
-        out.flush();
+        let content = "<?xml version=\"1.0\"?>\n<container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\">\n\t<rootfiles>\n\t\t<rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/>\n\t</rootfiles>\n</container>";
+        result_stream.write(content.as_bytes().to_vec());
         Ok(())
     }
 
@@ -229,8 +221,13 @@ impl ZipOutputStream {
     }
     pub fn put_next_entry(&mut self, entry: ZipEntry) {
         if let Some(zip) = self.zip.as_mut() {
+            let method = if entry.method == ZipEntry::STORED {
+                zip::CompressionMethod::Stored
+            } else {
+                zip::CompressionMethod::Deflated
+            };
             let options = zip::write::SimpleFileOptions::default()
-                .compression_method(zip::CompressionMethod::Deflated);
+                .compression_method(method);
             let _ = zip.start_file(entry.name, options);
         }
     }

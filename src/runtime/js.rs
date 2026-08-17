@@ -90,6 +90,23 @@ fn bind_value(bindings: &SimpleBindings, key: &str, ctx: &mut Context) -> JsValu
 
 thread_local! {
     static CURRENT_JS_NS: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+    static CURRENT_JS_VARS: std::cell::RefCell<std::collections::HashMap<String, String>> = std::cell::RefCell::new(std::collections::HashMap::new());
+}
+
+pub fn set_current_js_vars(vars: std::collections::HashMap<String, String>) {
+    CURRENT_JS_VARS.with(|c| *c.borrow_mut() = vars);
+}
+
+pub fn get_current_js_vars() -> std::collections::HashMap<String, String> {
+    CURRENT_JS_VARS.with(|c| c.borrow().clone())
+}
+
+pub fn put_current_js_var(k: String, v: String) {
+    CURRENT_JS_VARS.with(|c| { c.borrow_mut().insert(k, v); });
+}
+
+pub fn get_current_js_var(k: &str) -> Option<String> {
+    CURRENT_JS_VARS.with(|c| c.borrow().get(k).cloned())
 }
 
 fn set_current_js_ns(ns: String) {
@@ -529,11 +546,27 @@ fn headers_to_js(headers: &std::collections::HashMap<String, String>, ctx: &mut 
     init.build().into()
 }
 
-/// java.get(url, headers) → { body, statusCode, headers }（Connection.Response 简化）
+/// java.put(key, value) → String (变量存储)
+fn java_put_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    let k = arg_string(args, 0, ctx);
+    let v = arg_string(args, 1, ctx);
+    put_current_js_var(k.clone(), v.clone());
+    Ok(JsValue::from(js_string!(v)))
+}
+
+/// java.get(url, headers) → { body, statusCode, headers } 或 java.get(key) → String (变量读取)
 fn java_get_native(_this: &JsValue, args: &[JsValue], ctx: &mut Context) -> boa_engine::JsResult<JsValue> {
+    if args.len() == 1 {
+        let key = arg_string(args, 0, ctx);
+        if !key.starts_with("http://") && !key.starts_with("https://") && !key.starts_with('/') {
+            if let Some(v) = get_current_js_var(&key) {
+                return Ok(JsValue::from(js_string!(v)));
+            }
+            return Ok(JsValue::null());
+        }
+    }
     let url = arg_string(args, 0, ctx);
     let headers = parse_js_map(args, 1, ctx);
-    // fix: 真实请求（原 statusCode 恒 200 / headers 恒 null）
     let (status, resp_headers, text) = js_http_request("GET", &url, &headers, None);
     save_set_cookie_to_jar(&url, &resp_headers);
     let headers_js = headers_to_js(&resp_headers, ctx);
@@ -897,6 +930,7 @@ pub fn eval_js_script(js: &str, bindings: &SimpleBindings) -> Option<Any> {
         .function(NativeFunction::from_fn_ptr(java_time_format_utc_native), js_string!("timeFormatUTC"), 3)
         .function(NativeFunction::from_fn_ptr(java_log_native), js_string!("log"), 1)
         .function(NativeFunction::from_fn_ptr(java_get_cookie_native), js_string!("getCookie"), 2)
+        .function(NativeFunction::from_fn_ptr(java_put_native), js_string!("put"), 2)
         .function(NativeFunction::from_fn_ptr(java_get_native), js_string!("get"), 2)
         .function(NativeFunction::from_fn_ptr(java_head_native), js_string!("head"), 2)
         .function(NativeFunction::from_fn_ptr(java_post_native), js_string!("post"), 3)

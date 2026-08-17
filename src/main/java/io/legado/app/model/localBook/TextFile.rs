@@ -19,6 +19,21 @@ use crate::stubs::Charset;
 //
 // private val logger = KotlinLogging.logger {}
 
+fn get_str_bytes_len(s: &str, charset_name: &str) -> usize {
+    let lower = charset_name.to_lowercase();
+    if lower == "utf-8" || lower == "utf8" {
+        s.len()
+    } else if lower.contains("gbk") || lower.contains("gb2312") || lower.contains("gb18030") {
+        let (bytes, _, _) = encoding_rs::GBK.encode(s);
+        bytes.len()
+    } else if let Some(enc) = encoding_rs::Encoding::for_label(lower.as_bytes()) {
+        let (bytes, _, _) = enc.encode(s);
+        bytes.len()
+    } else {
+        s.len()
+    }
+}
+
 pub struct TextFile {
     book: Book,
 
@@ -174,7 +189,7 @@ impl TextFile {
                 let chapter_start = matcher.start();
                 //获取章节内容
                 let chapter_content = block_content[seek_pos..chapter_start].to_string();
-                let chapter_length = chapter_content.as_bytes().len();
+                let chapter_length = get_str_bytes_len(&chapter_content, self.charset.name());
                 let last_start = toc.last().map(|c: &BookChapter| c.start).flatten().unwrap_or(cur_offset);
                 if self.book.get_split_long_chapter()
                     && cur_offset + chapter_length as i64 - last_start > self.max_length_with_toc as i64
@@ -184,7 +199,7 @@ impl TextFile {
                     }
                     //章节字数太多进行拆分
                     let last_title = toc.last().map(|c| c.title.clone());
-                    let last_title_length = last_title.as_ref().map(|t| t.as_bytes().len()).unwrap_or(0);
+                    let last_title_length = last_title.as_ref().map(|t| get_str_bytes_len(t, self.charset.name())).unwrap_or(0);
                     let mut chapters = self.analyze(
                         last_start + last_title_length as i64,
                         cur_offset + chapter_length as i64
@@ -242,7 +257,7 @@ impl TextFile {
                         last_chapter.is_volume =
                             chapter_content.substring_after(&last_chapter.title).is_blank();
                         last_chapter.end = Some(
-                            last_chapter.start.unwrap() + chapter_content.as_bytes().len() as i64
+                            last_chapter.start.unwrap() + get_str_bytes_len(&chapter_content, self.charset.name()) as i64
                         );
                         //创建当前章节
                         let mut cur_chapter = BookChapter::default();

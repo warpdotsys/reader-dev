@@ -1,7 +1,7 @@
 # secure 模式用户系统验证：登录/会话/自动登录/users.json 持久化
 $ErrorActionPreference = 'Continue'
 $readerPort = 18111
-Remove-Item storage\data\default\users*.json, storage\data\default\.users.key -Force -ErrorAction SilentlyContinue
+Remove-Item storage\data\users*.json, storage\data\default\users*.json, storage\data\default\.users.key, storage\data\.users.key -Force -ErrorAction SilentlyContinue
 $env:READER_APP_SECURE = 'true'
 $env:READER_APP_SECUREKEY = 'adminpwd'
 $proc = Start-Process -FilePath 'D:\rust\target\debug\reader.exe' -ArgumentList "--port=$readerPort", '--workdir=C:\Users\chong\reader-dev-legacy' -WorkingDirectory 'C:\Users\chong\reader-dev-legacy' -PassThru -RedirectStandardOutput 'D:\rust\sec_out.log' -RedirectStandardError 'D:\rust\sec_err.log'

@@ -59,6 +59,13 @@ impl ReturnData {
         self
     }
 
+    pub fn set_data_with_error(&mut self, data: Box<dyn std::any::Any>, error_msg: String) -> &mut ReturnData {
+        self.is_success = false;
+        self.error_msg = error_msg;
+        self.data = Some(data);
+        self
+    }
+
     // fun setData(data: Any, msg: String = ""): ReturnData {
     //     this.isSuccess = true
     //     this.errorMsg = msg

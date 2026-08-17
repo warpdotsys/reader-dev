@@ -102,8 +102,8 @@ fn serve_static(handler: &StaticHandler, req_path: &str, response: &mut HttpResp
             }
         }
     }
-    // 防目录穿越
-    let clean: Vec<&str> = rel.split('/').filter(|s| *s != ".." && !s.is_empty()).collect();
+    // 防目录穿越（同时切分 / 和 \，过滤 .. 与 .）
+    let clean: Vec<&str> = rel.split(['/', '\\']).filter(|s| *s != ".." && *s != "." && !s.is_empty()).collect();
     let clean = clean.join("/");
     let full = if root.is_empty() {
         clean
@@ -161,11 +161,15 @@ fn parse_http_body(bytes: &[u8], content_type: &str) -> (String, Vec<(String, St
                 if data.is_empty() {
                     continue;
                 }
+                let safe_field_name: String = name
+                    .chars()
+                    .map(|c| if c.is_alphanumeric() || c == '_' || c == '-' { c } else { '_' })
+                    .collect();
                 let safe_name: String = filename
                     .chars()
                     .map(|c| if c.is_alphanumeric() || c == '.' || c == '_' || c == '-' { c } else { '_' })
                     .collect();
-                let path = dir.join(format!("{}_{}", name, safe_name));
+                let path = dir.join(format!("{}_{}", safe_field_name, safe_name));
                 let _ = std::fs::write(&path, &data);
                 uploads.push((path.to_string_lossy().to_string(), safe_name));
             }
@@ -383,7 +387,7 @@ fn execute_rules(
                         resp.headers.insert("content-type".to_string(), "application/json; charset=utf-8".to_string());
                         resp.body = Some(
                             format!(
-                                r#"{{"error":"Internal Server Error","exception":"","message":"服务器内部错误","path":"{}","status":500,"timestamp":{}}}"#,
+                                r#"{{"isSuccess":false,"errorMsg":"服务器内部错误","error":"Internal Server Error","exception":"","message":"服务器内部错误","path":"{}","status":500,"timestamp":{}}}"#,
                                 path, crate::stubs::System::current_time_millis()
                             )
                             .into_bytes(),
