@@ -1,0 +1,458 @@
+/* ============================================================
+   reader-dev-legacy: v5.2.4 现代极简设计语言全量适配系统
+   遵循原则：
+   1. 借鉴 archive/master-v5.2.4 精致的色彩/排版/阴影/毛玻璃/胶囊按钮设计
+   2. 完美适配当前 Vue 2 + Element UI 6.0 完备功能代码
+   3. 零 API 变动、零交互逻辑变动、功能零丢失
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --bg-float: rgba(250, 250, 250, 0.88);
+  --hover: #f4f4f6;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --border: #e5e5e8;
+  --border-strong: #d4d4d8;
+  --text-1: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  --accent: #4f46e5;
+  --accent-deep: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --accent-glow: rgba(79, 70, 229, 0.18);
+  --on-accent: #ffffff;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 20px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter",
+    "Segoe UI", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    system-ui, sans-serif;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text-1);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ---------- 滚动条细化 ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+/* ============================================================
+   1. 顶栏导航与通用 Header（毛玻璃微透明）
+   ============================================================ */
+
+.header,
+.el-header,
+.topbar,
+.nav-bar {
+  background: var(--bg-float) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* 导航项胶囊化微悬浮 */
+.nav-item,
+.nav-link,
+.header-btn {
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+.nav-item:hover,
+.nav-link:hover {
+  background-color: var(--hover);
+  color: var(--accent) !important;
+}
+
+/* ============================================================
+   2. 书架卡片与书影立体质感
+   ============================================================ */
+
+.book-item,
+.bookshelf-item,
+.book-card {
+  border-radius: var(--radius) !important;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease !important;
+}
+
+.book-item:hover,
+.bookshelf-item:hover,
+.book-card:hover {
+  transform: translateY(-3px) !important;
+}
+
+/* 封面精致书影 */
+.book-cover,
+.cover-img,
+.book-item img {
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.book-item:hover .book-cover,
+.book-item:hover img {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 状态微胶囊 (Badge) */
+.badge-pill,
+.book-badge,
+.tag-badge {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+}
+
+/* ============================================================
+   3. Element UI 现代控件全量映射
+   ============================================================ */
+
+/* 按钮系 */
+.el-button {
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.el-button--primary {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--on-accent) !important;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+}
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: #5b54e8 !important;
+  border-color: #5b54e8 !important;
+  box-shadow: 0 3px 8px var(--accent-glow);
+}
+.el-button--primary:active {
+  background-color: var(--accent-deep) !important;
+  border-color: var(--accent-deep) !important;
+}
+.el-button--primary.is-plain {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: rgba(79, 70, 229, 0.3) !important;
+  box-shadow: none;
+}
+.el-button--primary.is-plain:hover,
+.el-button--primary.is-plain:focus {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+/* 输入框与文本域 */
+.el-input__inner,
+.el-textarea__inner {
+  border-radius: 6px !important;
+  border-color: var(--border) !important;
+  background-color: var(--surface) !important;
+  color: var(--text-1) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+/* 单选/复选/开关 */
+.el-checkbox__input.is-checked .el-checkbox__inner,
+.el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: var(--accent) !important;
+}
+.el-radio__input.is-checked .el-radio__inner {
+  border-color: var(--accent) !important;
+  background-color: var(--accent) !important;
+}
+.el-radio__input.is-checked + .el-radio__label {
+  color: var(--accent) !important;
+}
+.el-switch.is-checked .el-switch__core {
+  border-color: var(--accent) !important;
+  background-color: var(--accent) !important;
+}
+
+/* 标签页与分页 */
+.el-tabs__item.is-active {
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+.el-tabs__active-bar {
+  background-color: var(--accent) !important;
+  border-radius: 2px;
+}
+.el-tabs__item:hover {
+  color: var(--accent-deep) !important;
+}
+.el-pager li.active {
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+.el-pager li:hover {
+  color: var(--accent) !important;
+}
+
+/* 弹窗对话框（现代卡片感） */
+.el-dialog {
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+  overflow: hidden;
+}
+.el-dialog__header {
+  padding: 18px 24px 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+.el-dialog__title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px;
+  color: var(--text-1) !important;
+}
+.el-dialog__body {
+  padding: 20px 24px !important;
+  color: var(--text-2) !important;
+}
+.el-dialog__footer {
+  padding: 14px 24px 18px !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+/* 卡片 */
+.el-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  background-color: var(--card) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.el-card__header {
+  border-bottom: 1px solid var(--border) !important;
+  font-weight: 600;
+}
+
+/* 表格 */
+.el-table {
+  background-color: transparent !important;
+}
+.el-table th.el-table__cell {
+  background-color: var(--bg) !important;
+  color: var(--text-2) !important;
+  font-weight: 600;
+}
+.el-table td.el-table__cell,
+.el-table th.el-table__cell.is-leaf {
+  border-bottom: 1px solid var(--border) !important;
+}
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--hover) !important;
+}
+
+/* 下拉菜单 & 浮层 */
+.el-select-dropdown,
+.el-dropdown-menu,
+.el-popover,
+.el-popper {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  background-color: var(--surface) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+.el-dropdown-menu__item:not(.is-disabled):hover,
+.el-dropdown-menu__item:focus {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+}
+.el-select-dropdown__item.selected {
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover {
+  background-color: var(--hover) !important;
+}
+
+/* 轻提示与确认弹窗（极简白底细边框，替代 Element 粗暴纯色） */
+.el-message {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+.el-message .el-message__content {
+  color: var(--text-1) !important;
+  font-size: 13.5px !important;
+}
+.el-message-box {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 22px !important;
+}
+.el-message-box__title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--text-1) !important;
+}
+.el-message-box__content {
+  color: var(--text-2) !important;
+  font-size: 13.5px !important;
+  line-height: 1.7 !important;
+}
+
+/* ============================================================
+   4. 深色主题 .night-theme（v5.2.4 极夜深灰体系）
+   ============================================================ */
+
+.night-theme {
+  color-scheme: dark;
+  --bg: #16161a;
+  --bg-float: rgba(22, 22, 26, 0.88);
+  --hover: #26262c;
+  --surface: #202026;
+  --card: #202026;
+  --border: #2e2e36;
+  --border-strong: #3f3f49;
+  --text-1: #ececf0;
+  --text-2: #a1a1ad;
+  --text-3: #63636e;
+  --accent: #8b87ff;
+  --accent-deep: #a5a2ff;
+  --accent-soft: rgba(139, 135, 255, 0.14);
+  --accent-glow: rgba(139, 135, 255, 0.25);
+  --on-accent: #16161c;
+  background-color: var(--bg) !important;
+  color: var(--text-1) !important;
+}
+
+.night-theme .el-button--primary {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--on-accent) !important;
+}
+.night-theme .el-button--primary:hover,
+.night-theme .el-button--primary:focus {
+  background-color: var(--accent-deep) !important;
+  border-color: var(--accent-deep) !important;
+  color: var(--on-accent) !important;
+}
+.night-theme .el-button--primary.is-plain {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: rgba(139, 135, 255, 0.35) !important;
+}
+.night-theme .el-button--primary.is-plain:hover,
+.night-theme .el-button--primary.is-plain:focus {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--on-accent) !important;
+}
+
+.night-theme .el-input__inner,
+.night-theme .el-textarea__inner {
+  background-color: #24242a !important;
+  border-color: var(--border) !important;
+  color: var(--text-1) !important;
+}
+.night-theme .el-input__inner:focus,
+.night-theme .el-textarea__inner:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+.night-theme .el-dialog,
+.night-theme .el-card,
+.night-theme .el-select-dropdown,
+.night-theme .el-dropdown-menu,
+.night-theme .el-message-box,
+.night-theme .el-popover,
+.night-theme .el-popper {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-1) !important;
+}
+.night-theme .el-dialog__title,
+.night-theme .el-message-box__title {
+  color: var(--text-1) !important;
+}
+.night-theme .el-dialog__body,
+.night-theme .el-message-box__content {
+  color: var(--text-2) !important;
+}
+
+.night-theme .el-table th.el-table__cell {
+  background-color: #1a1a20 !important;
+  color: var(--text-2) !important;
+}
+.night-theme .el-table td.el-table__cell {
+  border-bottom: 1px solid var(--border) !important;
+}
+.night-theme .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--hover) !important;
+}
+
+.night-theme .el-message {
+  background-color: #26262c !important;
+  border-color: var(--border) !important;
+  color: var(--text-1) !important;
+}
+
+/* ============================================================
+   5. 移动端响应式与触屏优化
+   ============================================================ */
+
+.el-dialog,
+.el-message-box {
+  max-width: 92vw;
+}
+.el-message {
+  max-width: 88vw;
+}
+
+@media (max-width: 768px) {
+  .el-button {
+    min-height: 38px;
+  }
+  .book-item,
+  .bookshelf-item {
+    margin-bottom: 12px;
+  }
+}

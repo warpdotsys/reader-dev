@@ -1,24 +1,24 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2018",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "lib": ["ES2018", "DOM", "DOM.Iterable"],
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "allowJs": true,
+    "checkJs": false,
     "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "useDefineForClassFields": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
     "jsx": "preserve",
-    "baseUrl": ".",
+    "noEmit": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
