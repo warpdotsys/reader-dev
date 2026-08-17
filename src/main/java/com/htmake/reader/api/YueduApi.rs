@@ -424,6 +424,13 @@ impl YueduApi {
 
         router.get("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
         router.post("/reader3/book/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
+        router.get("/reader3/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
+        router.post("/reader3/tts").coroutine_handler_without_res(move |it| book_controller.text_to_speech(it.clone()));
+        router.get("/reader3/getTTSVoices").coroutine_handler(move |it| book_controller.get_tts_voices(it));
+        router.get("/reader3/getHttpTTSList").coroutine_handler(move |it| http_tts_controller.get_http_tts_list(it));
+        router.post("/reader3/saveHttpTTS").coroutine_handler(move |it| http_tts_controller.save_http_tts(it));
+        router.post("/reader3/deleteHttpTTS").coroutine_handler(move |it| http_tts_controller.delete_http_tts(it));
+        router.post("/reader3/deleteHttpTTSs").coroutine_handler(move |it| http_tts_controller.delete_http_tts_list(it));
         // 保存书籍章节内容到缓存
         router.post("/reader3/saveBookContent").coroutine_handler(move |it| book_controller.save_book_content(it.clone()));
 

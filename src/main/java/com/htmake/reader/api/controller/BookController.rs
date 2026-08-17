@@ -4078,6 +4078,37 @@ impl BookController {
         }
     }
 
+    
+    pub fn get_tts_voices(&self, context: &RoutingContext) -> ReturnData {
+        let mut return_data = ReturnData::new();
+        if !self.base.check_auth(context) {
+            return return_data.set_data_with_error(Box::new(crate::stubs::Any::Str("NEED_LOGIN".to_string())), "请登录后使用".to_string());
+        }
+        let voices_json = r#"[
+            {"name":"晓晓 (女声，温暖/小说)","value":"zh-CN-XiaoxiaoNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"云希 (男声，沉稳/解说)","value":"zh-CN-YunxiNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"云健 (男声，影视/激情)","value":"zh-CN-YunjianNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"晓伊 (女声，亲切/对话)","value":"zh-CN-XiaoyiNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"云扬 (男声，专业/新闻)","value":"zh-CN-YunyangNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"晓辰 (女声，自然)","value":"zh-CN-XiaochenNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓涵 (女声，舒缓)","value":"zh-CN-XiaohanNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓梦 (女声，故事)","value":"zh-CN-XiaomengNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓秋 (女声，知性)","value":"zh-CN-XiaoqiuNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓睿 (女声，儿童)","value":"zh-CN-XiaoruiNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓双 (女声，童声)","value":"zh-CN-XiaoshuangNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓颜 (女声，动漫)","value":"zh-CN-XiaoyanNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"晓悠 (女声，情感)","value":"zh-CN-XiaoyouNeural","locale":"zh-CN","gender":"Female"},
+            {"name":"云夏 (男声，活泼)","value":"zh-CN-YunxiaNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"云野 (男声，故事)","value":"zh-CN-YunyeNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"云泽 (男声，纪录片)","value":"zh-CN-YunzeNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"云枫 (男声，磁性)","value":"zh-CN-YunfengNeural","locale":"zh-CN","gender":"Male"},
+            {"name":"云皓 (男声，新闻)","value":"zh-CN-YunhaoNeural","locale":"zh-CN","gender":"Male"}
+        ]"#;
+        let voices_val: serde_json::Value = serde_json::from_str(voices_json).unwrap_or_default();
+        return_data.set_data(Box::new(crate::stubs::Any::from(voices_val)), String::new());
+        return_data
+    }
+
     pub async fn text_to_speech(&self, context: RoutingContext) {
         if !self.base.check_auth(&context) {
             context.response().set_status_code(403).end("未登录".to_string());
@@ -4096,7 +4127,10 @@ impl BookController {
         };
         let text = value("text");
         let tts_type = {
-            let v = value("type");
+            let mut v = value("type");
+            if v.is_empty() {
+                v = value("engine");
+            }
             if v.is_empty() {
                 "edge".to_string()
             } else {
