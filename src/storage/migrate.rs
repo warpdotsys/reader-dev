@@ -487,12 +487,13 @@ async fn migrate_chapter_cache(
                         continue;
                     };
                     sqlx::query(
-                        "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content) VALUES (?1, ?2, ?3, ?4)",
+                        "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content, user_namespace) VALUES (?1, ?2, ?3, ?4, ?5)",
                     )
                     .bind(&book_url)
                     .bind(idx)
                     .bind(&title)
                     .bind(&content)
+                    .bind(ns)
                     .execute(&mut *tx)
                     .await?;
                     inserted += 1;

@@ -913,6 +913,7 @@ mod tests {
             .unwrap();
         storage
             .save_chapters(
+                "default",
                 &book_url,
                 &[
                     ("第一章".to_string(), "正文一。".to_string()),
@@ -984,7 +985,7 @@ mod tests {
                 .await
                 .unwrap();
             storage
-                .save_chapters(&book_url, &[("第一章".to_string(), "正文。".to_string())])
+                .save_chapters("default", &book_url, &[("第一章".to_string(), "正文。".to_string())])
                 .await
                 .unwrap();
         }
