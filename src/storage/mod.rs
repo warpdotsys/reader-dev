@@ -2023,16 +2023,22 @@ impl Storage {
     }
 
     /// 保存章节（本地书）
-    pub async fn save_chapters(&self, book_url: &str, chapters: &[(String, String)]) -> Result<()> {
+    pub async fn save_chapters(
+        &self,
+        ns: &str,
+        book_url: &str,
+        chapters: &[(String, String)],
+    ) -> Result<()> {
         let mut tx = self.pool.begin().await?;
         for (i, (title, content)) in chapters.iter().enumerate() {
             sqlx::query(
-                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content) VALUES (?1, ?2, ?3, ?4)",
+                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content, user_namespace) VALUES (?1, ?2, ?3, ?4, ?5)",
             )
             .bind(book_url)
             .bind(i as i64)
             .bind(title)
             .bind(content)
+            .bind(ns)
             .execute(&mut *tx)
             .await?;
         }
@@ -3656,12 +3662,13 @@ impl Storage {
             .collect();
         for (i, (title, content)) in chapters.iter().enumerate() {
             sqlx::query(
-                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content) VALUES (?1,?2,?3,?4)",
+                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content, user_namespace) VALUES (?1,?2,?3,?4,?5)",
             )
             .bind(&info.book_url)
             .bind(i as i64)
             .bind(title)
             .bind(content)
+            .bind(ns)
             .execute(&mut *tx)
             .await?;
         }
@@ -3696,19 +3703,21 @@ impl Storage {
             return Ok(false);
         }
         let mut tx = self.pool.begin().await?;
-        // 覆盖式重建章节（重复迁移幂等）
-        sqlx::query("DELETE FROM book_chapters WHERE book_url = ?1")
+        // 覆盖式重建章节（重复迁移幂等）；仅删当前命名空间章节——防共享 book_url 误删他用户章节
+        sqlx::query("DELETE FROM book_chapters WHERE book_url = ?1 AND user_namespace = ?2")
             .bind(book_url)
+            .bind(ns)
             .execute(&mut *tx)
             .await?;
         for (i, (title, content)) in chapters.iter().enumerate() {
             sqlx::query(
-                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content) VALUES (?1,?2,?3,?4)",
+                "INSERT OR REPLACE INTO book_chapters (book_url, chapter_index, title, content, user_namespace) VALUES (?1,?2,?3,?4,?5)",
             )
             .bind(book_url)
             .bind(i as i64)
             .bind(title)
             .bind(content)
+            .bind(ns)
             .execute(&mut *tx)
             .await?;
         }
@@ -3833,12 +3842,13 @@ impl Storage {
         .await?;
         for (i, (title, content)) in chapters.iter().enumerate() {
             sqlx::query(
-                "INSERT INTO book_chapters (book_url, chapter_index, title, content) VALUES (?1, ?2, ?3, ?4)",
+                "INSERT INTO book_chapters (book_url, chapter_index, title, content, user_namespace) VALUES (?1, ?2, ?3, ?4, ?5)",
             )
             .bind(book_url)
             .bind(i as i64)
             .bind(title)
             .bind(content)
+            .bind(ns)
             .execute(&mut *tx)
             .await?;
         }
@@ -6519,6 +6529,84 @@ mod tests {
         cleanup(storage, "locbooktype").await;
     }
 
+    /// BUGFIX 回归：非 default 命名空间导入本地书，章节写入带 user_namespace，
+    /// TOC 与正文（get_chapter_content 按 ns 过滤）均可读；他用户隔离不可读。
+    #[tokio::test]
+    async fn test_save_local_book_non_default_ns_chapters_readable() {
+        let storage = test_storage("locbookns").await;
+        let imported = crate::service::local_book::ImportedBook {
+            meta: Default::default(),
+            chapters: vec![
+                crate::service::local_book::Chapter {
+                    title: "第一章".into(),
+                    content: "正文一".into(),
+                },
+                crate::service::local_book::Chapter {
+                    title: "第二章".into(),
+                    content: "正文二".into(),
+                },
+            ],
+            cover: None,
+            format: "epub".into(),
+        };
+        let info = crate::model::book_chapter::BookInfo {
+            book_url: "local://userabook".into(),
+            name: "用户A的书".into(),
+            origin: "local".into(),
+            ..Default::default()
+        };
+        storage
+            .save_local_book("userA", &info, &imported)
+            .await
+            .unwrap();
+        // 章节按 userA ns 落库
+        assert_eq!(storage.count_chapters("userA", "local://userabook").await.unwrap(), 2);
+        // TOC 可列出
+        let toc = storage
+            .list_chapters_with_word_count("local://userabook")
+            .await
+            .unwrap();
+        assert_eq!(toc.len(), 2);
+        assert_eq!(toc[0].1, "第一章");
+        assert_eq!(toc[0].2, 3, "正文一 3 字符");
+        // 正文按 userA ns 可读
+        assert_eq!(
+            storage
+                .get_chapter_content("userA", "local://userabook", 0)
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("正文一")
+        );
+        assert_eq!(
+            storage
+                .get_chapter_content("userA", "local://userabook", 1)
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("正文二")
+        );
+        // 跨用户隔离：他人命名空间读不到
+        assert_eq!(
+            storage
+                .get_chapter_content("userB", "local://userabook", 0)
+                .await
+                .unwrap(),
+            None,
+            "他用户命名空间不应读到章节正文"
+        );
+        assert_eq!(
+            storage
+                .get_chapter_content("default", "local://userabook", 0)
+                .await
+                .unwrap(),
+            None,
+            "default 命名空间不应读到 userA 的章节（回归：旧缺陷写 default 导致可读）"
+        );
+
+        cleanup(storage, "locbookns").await;
+    }
+
     /// F-10：目录缓存写入 → 命中 → 过期未命中
     #[tokio::test]
     async fn test_toc_cache_roundtrip() {
@@ -8637,6 +8725,7 @@ mod tests {
             .unwrap();
         storage
             .save_chapters(
+                "default",
                 "local://book1",
                 &[
                     ("第一章".to_string(), "正文一甲乙丙丁".to_string()),
@@ -8685,6 +8774,7 @@ mod tests {
             .unwrap();
         storage
             .save_chapters(
+                "default",
                 "local://book1",
                 &[("第四章".to_string(), "正文四".to_string())],
             )
@@ -8713,6 +8803,7 @@ mod tests {
         // 书 A：本地书章节 + 书源书正文缓存（md5 键）混合
         storage
             .save_chapters(
+                "default",
                 "https://book.com/a",
                 &[
                     ("第一章".to_string(), "正文一二三四五".to_string()),
@@ -8733,6 +8824,7 @@ mod tests {
             .unwrap();
         storage
             .save_chapters(
+                "default",
                 "https://book.com/b",
                 &[("第一章".to_string(), "另一本".to_string())],
             )
@@ -8823,6 +8915,7 @@ mod tests {
         // WAL 副作用文件存在（reader.db-wal 惰性创建——写一次触发）
         storage
             .save_chapters(
+                "default",
                 "local://waltest",
                 &[("第一章".to_string(), "正文".to_string())],
             )
@@ -8895,6 +8988,7 @@ mod tests {
         let storage = test_storage("search").await;
         storage
             .save_chapters(
+                "default",
                 "local://book1",
                 &[
                     ("第一章".to_string(), "这是第一章的正文，关键词出现了。".to_string()),
@@ -8906,6 +9000,7 @@ mod tests {
             .unwrap();
         storage
             .save_chapters(
+                "default",
                 "local://book2",
                 &[("第一章".to_string(), "另一本书里的关键词。".to_string())],
             )
@@ -8953,6 +9048,7 @@ mod tests {
         // 大小写不敏感（ASCII）
         storage
             .save_chapters(
+                "default",
                 "local://book3",
                 &[("Ch1".to_string(), "Hello World here".to_string())],
             )
@@ -8975,6 +9071,7 @@ mod tests {
         // %/_ 作为字面量转义（不当作 LIKE 通配符）
         storage
             .save_chapters(
+                "default",
                 "local://book4",
                 &[
                     ("C1".to_string(), "进度5_0%完成。".to_string()),
@@ -9390,7 +9487,7 @@ mod tests {
 
         // 与本地书顺序索引共存：哈希键域（~2^60）不重叠 0..n
         storage
-            .save_chapters(book_url, &[("本地1".to_string(), "本地内容1".to_string())])
+            .save_chapters("default", book_url, &[("本地1".to_string(), "本地内容1".to_string())])
             .await
             .unwrap();
         assert_eq!(
@@ -10225,7 +10322,7 @@ mod tests {
             .await
             .unwrap();
         storage
-            .save_chapters(url, &[("第一章".into(), "正文一".into())])
+            .save_chapters("default", url, &[("第一章".into(), "正文一".into())])
             .await
             .unwrap();
         storage
@@ -10290,7 +10387,7 @@ mod tests {
             .await
             .unwrap();
         storage
-            .save_chapters(url, &[("第一章".into(), "正文".into())])
+            .save_chapters("default", url, &[("第一章".into(), "正文".into())])
             .await
             .unwrap();
         storage.cache_toc("default", url, url, "[]").await.unwrap();
@@ -10340,7 +10437,7 @@ mod tests {
             .await
             .unwrap();
         storage
-            .save_chapters(url, &[("第一章".into(), "正文".into())])
+            .save_chapters("default", url, &[("第一章".into(), "正文".into())])
             .await
             .unwrap();
 
@@ -10374,7 +10471,7 @@ mod tests {
             .await
             .unwrap();
         storage
-            .save_chapters(url, &[("旧章".into(), "旧正文".into())])
+            .save_chapters("default", url, &[("旧章".into(), "旧正文".into())])
             .await
             .unwrap();
 

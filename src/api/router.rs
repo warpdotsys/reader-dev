@@ -4980,7 +4980,7 @@ async fn refresh_local_book(
         .iter()
         .map(|c| (c.title.clone(), c.content.clone()))
         .collect();
-    if let Err(e) = state.storage.save_chapters(&url, &pairs).await {
+    if let Err(e) = state.storage.save_chapters(&namespace, &url, &pairs).await {
         tracing::error!("refreshLocalBook 章节入库失败: {e}");
         return Json(ReturnData::err("刷新失败"));
     }
@@ -11427,6 +11427,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "https://book.com/a",
                 &[("第一章".to_string(), "正文A".to_string())],
             )
@@ -11435,6 +11436,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "https://book.com/b",
                 &[("第一章".to_string(), "正文B".to_string())],
             )
@@ -11497,6 +11499,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "https://book.com/a",
                 &[("第一章".to_string(), "正文A2".to_string())],
             )
@@ -11535,6 +11538,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "https://book.com/b",
                 &[("第一章".to_string(), "正文B".to_string())],
             )
@@ -11587,7 +11591,7 @@ mod tests {
         let local_url = "storage/data/default/本地书.txt";
         state
             .storage
-            .save_chapters(local_url, &[("第一章".to_string(), "本地正文".to_string())])
+            .save_chapters("default", local_url, &[("第一章".to_string(), "本地正文".to_string())])
             .await
             .unwrap();
         state
@@ -11645,6 +11649,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "https://book.com/a",
                 &[
                     ("第一章".to_string(), "正文一二三".to_string()),
@@ -14864,6 +14869,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://book1",
                 &[
                     ("第一章".to_string(), "正文一甲乙".to_string()),
@@ -15023,6 +15029,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://book1",
                 &[
                     (
@@ -16007,6 +16014,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://abc",
                 &[
                     ("第一章".to_string(), "第一段内容".to_string()),
@@ -16575,6 +16583,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://exp1",
                 &[
                     ("第一章".to_string(), "正文一 <甲> & 乙。".to_string()),
@@ -16754,6 +16763,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://expfont",
                 &[("第一章".to_string(), "正文一。".to_string())],
             )
@@ -17119,6 +17129,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://gbk1",
                 &[("第一章".to_string(), "正文😀结束。".to_string())],
             )
@@ -17188,6 +17199,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 "local://gbk2",
                 &[("第一章".to_string(), "纯中文正文。".to_string())],
             )
@@ -17531,6 +17543,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 book_url,
                 &[
                     ("第一章".to_string(), "正文一".to_string()),
@@ -17758,6 +17771,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 book_url,
                 &[
                     ("第一章".to_string(), "正文一".to_string()),
@@ -17875,6 +17889,7 @@ mod tests {
         state
             .storage
             .save_chapters(
+                "default",
                 book_url,
                 &[
                     ("第一章".to_string(), "正文一".to_string()),
@@ -18333,7 +18348,7 @@ mod tests {
         }
         state
             .storage
-            .save_chapters("https://b.com/1", &[("第一章".into(), "正文".into())])
+            .save_chapters("default", "https://b.com/1", &[("第一章".into(), "正文".into())])
             .await
             .unwrap();
 
