@@ -18,7 +18,10 @@ importScripts(
   "precache-manifest.0d903434eaa73f94acefeef5d39c6628.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "reader"});
+// Encoding repair generation utf8fix1: activate a freshly versioned cache.
+self.skipWaiting();
+workbox.core.clientsClaim();
+workbox.core.setCacheNameDetails({prefix: "reader-utf8fix1"});
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {

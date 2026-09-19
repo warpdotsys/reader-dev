@@ -27,6 +27,19 @@ public class WebResourceEncodingTest {
         assertTrue(script.contains("书架"));
     }
 
+    @Test
+    public void serviceWorkerForcesAFullCleanPrecacheGeneration() throws Exception {
+        String serviceWorker = decodeUtf8Strictly(readResource("/web/service-worker.js"));
+        String manifest = decodeUtf8Strictly(readResource(
+                "/web/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js"));
+
+        assertTrue(serviceWorker.contains("Encoding repair generation utf8fix1"));
+        assertTrue(serviceWorker.contains("self.skipWaiting()"));
+        assertTrue(serviceWorker.contains("workbox.core.clientsClaim()"));
+        assertTrue(serviceWorker.contains("reader-utf8fix1"));
+        assertTrue(manifest.contains("\"revision\": \"utf8fix1-"));
+    }
+
     private static byte[] readResource(String path) throws IOException {
         InputStream input = WebResourceEncodingTest.class.getResourceAsStream(path);
         assertNotNull("Missing classpath resource " + path, input);

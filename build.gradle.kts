@@ -191,6 +191,13 @@ tasks.named<ProcessResources>("processResources") {
             line.replace("https://r.htmake.com", "https://license.medwarp.cn")
         }
     }
+    // The broken deployment may already be in the Workbox precache. Give all
+    // entries a new revision generation so existing browsers fetch clean bytes.
+    filesMatching("web/precache-manifest.*.js") {
+        filter { line: String ->
+            line.replace("\"revision\": \"", "\"revision\": \"utf8fix1-")
+        }
+    }
 }
 
 tasks.create<io.github.fvarrui.javapackager.gradle.PackageTask>("buildReader"){
