@@ -182,6 +182,10 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 // minified bundle. Rewrite only that literal in generated resources, leaving
 // the extracted reference asset byte-for-byte available for provenance.
 tasks.named<ProcessResources>("processResources") {
+    // Gradle 6.1.1 otherwise uses the host default charset for line filters.
+    // On Windows that decoded the UTF-8 Vue bundles as GBK and produced
+    // malformed JavaScript in the boot JAR.
+    filteringCharset = "UTF-8"
     filesMatching("web/js/*.js") {
         filter { line: String ->
             line.replace("https://r.htmake.com", "https://license.medwarp.cn")
