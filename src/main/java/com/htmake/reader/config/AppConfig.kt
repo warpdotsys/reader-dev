@@ -35,6 +35,12 @@ class AppConfig {
     // Remote webview API
     var remoteWebviewApi: String = ""
 
+    // License centre. The public key is injected at deployment time so the
+    // signing private key never needs to be present in this application.
+    var licenseServerUrl: String = "https://license.medwarp.cn"
+    var licensePublicKey: String = ""
+    var licenseCheckEnabled: Boolean = true
+
     // Default user permission settings
     var defaultUserEnableWebdav: Boolean = false
     var defaultUserEnableLocalStore: Boolean = false

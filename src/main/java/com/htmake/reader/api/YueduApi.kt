@@ -26,6 +26,7 @@ import com.htmake.reader.api.controller.BookmarkController
 import com.htmake.reader.api.controller.BookGroupController
 import com.htmake.reader.api.controller.FileController
 import com.htmake.reader.api.controller.HttpTTSController
+import com.htmake.reader.api.controller.LicenseController
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.getStorage
@@ -46,6 +47,7 @@ import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.getTraceId
 import com.htmake.reader.init.ReaderAdapter
 import io.legado.app.adapters.ReaderAdapterHelper
@@ -192,6 +194,7 @@ class YueduApi : RestVerticle() {
         val bookGroupController = BookGroupController(coroutineContext)
         val fileController = FileController(coroutineContext)
         val httpTTSController = HttpTTSController(coroutineContext)
+        val licenseController = LicenseController(coroutineContext)
 
         /** 书源模块 */
         router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }
@@ -385,6 +388,15 @@ class YueduApi : RestVerticle() {
 
         /** 清理不活跃用户 */
         router.post("/reader3/clearInactiveUsers").coroutineHandler { userController.clearInactiveUsers(it) }
+
+        /** 许可证客户端。签发和激活状态保存在独立许可证中心。 */
+        router.get("/reader3/getLicense").coroutineHandler { licenseController.getLicense(it) }
+        router.post("/reader3/importLicense").coroutineHandlerWithoutRes { licenseController.importLicense(it) }
+        router.get("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
+        router.post("/reader3/isHostValid").coroutineHandler { licenseController.isHostValid(it) }
+        router.post("/reader3/decryptLicense").coroutineHandler { licenseController.decryptLicense(it) }
+        router.post("/reader3/sendCodeToEmail").coroutineHandlerWithoutRes { licenseController.sendCodeToEmail(it) }
+        router.post("/reader3/supplyLicense").coroutineHandlerWithoutRes { licenseController.supplyLicense(it) }
 
         /** webdav备份 */
         router.post("/reader3/backupToWebdav").coroutineHandler { webdavController.backupToWebdav(it) }
@@ -605,6 +617,28 @@ class YueduApi : RestVerticle() {
     fun autoGC()
     {
         System.gc()
+    }
+
+    /**
+     * 保留原版的联机校验节奏；网络失败保持当前状态，只有签名有效的
+     * isValid=false 响应才会撤销本地许可证。
+     */
+    @Scheduled(cron = "0 4/15 7-23 * * ?")
+    fun checkLicense() {
+        if (!appConfig.licenseCheckEnabled) return
+        val license = getInstalledLicense(true)
+        if (license.type == "default") return
+        MDC.put("traceId", getTraceId())
+        launch(MDCContext() + Dispatchers.IO) {
+            try {
+                delay(Random.nextLong(10, 121) * 1000)
+                delay(Random.nextLong(1, 11) * 1000)
+                logger.info("开始检查授权是否正常")
+                LicenseController(coroutineContext).checkLicense(license)
+            } catch (e: Exception) {
+                logger.info("许可证定时校验失败: {}", e.message)
+            }
+        }
     }
 
     /**

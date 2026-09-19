@@ -4,6 +4,7 @@ import java.lang.reflect.*
 import io.github.fvarrui.javapackager.model.Platform
 import io.github.fvarrui.javapackager.model.WindowsConfig
 import de.undercouch.gradle.tasks.download.Download
+import org.gradle.language.jvm.tasks.ProcessResources
 
 buildscript {
     val kotlin_version: String by extra{"1.5.21"}
@@ -69,6 +70,17 @@ repositories {
     maven("https://gitlab.com/api/v4/projects/26729549/packages/maven")
     google()
     jcenter()
+}
+
+// The reference JAR contains the Netty line selected by Vert.x 3.8.5 rather
+// than Spring Boot 2.1.6's older BOM value.
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "io.netty") {
+            useVersion("4.1.42.Final")
+            because("match reader-pro-3.2.14.jar BOOT-INF/lib")
+        }
+    }
 }
 
 val compileOnly by configurations.getting {
@@ -155,8 +167,26 @@ tasks.withType<KotlinCompile> {
 }
 
 application {
-    // Define the main class for the application
-    mainClassName = "com.htmake.reader.ReaderUIApplicationKt"
+    // The reference JAR starts the headless Spring/Vert.x server entrypoint.
+    mainClassName = "com.htmake.reader.ReaderApplicationKt"
+}
+
+tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    mainClassName = "com.htmake.reader.ReaderApplicationKt"
+    // JavaFX is used only by the optional desktop packager. The reference
+    // headless Spring Boot JAR does not ship JavaFX modules.
+    exclude("**/javafx-*.jar")
+}
+
+// The retained 3.2.14 frontend has the former centre URL embedded in its
+// minified bundle. Rewrite only that literal in generated resources, leaving
+// the extracted reference asset byte-for-byte available for provenance.
+tasks.named<ProcessResources>("processResources") {
+    filesMatching("web/js/*.js") {
+        filter { line: String ->
+            line.replace("https://r.htmake.com", "https://license.medwarp.cn")
+        }
+    }
 }
 
 tasks.create<io.github.fvarrui.javapackager.gradle.PackageTask>("buildReader"){

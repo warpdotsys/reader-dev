@@ -22,6 +22,11 @@ reader:
     mongoDbName: "reader"
     shelfUpdateInteval: 30
     remoteWebviewApi: ""
+    licenseServerUrl: "https://license.medwarp.cn"
+    # Production X.509/SPKI public key from license.medwarp.cn. Override with
+    # READER_APP_LICENSEPUBLICKEY only when intentionally changing centres.
+    licensePublicKey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhFWTonRmC1scWqok+JOeYUmwWLYJ2f2oHAn0fAepvInjrCba+JlWqn2x3qbrPxC659jja1DrIzuzkArhXOMhsLiEEBD5micdWIDDWdGuwscAhPp1aacsH2/J9t7ijhzRRY9/wgmo7q21lFQ0kDRQg4VMu8pXK3JhXbHrF3l9t/ccDlTo4Dgq0DBnsnMYzIAuDKLpfwtKkveBWUDJn/IJpa9xyo+b+lI0Ah6xU0/XNMwZsSk044kp0CKWdqvHqiJcF7ocCWAtV7l9JHpTxiRrxlLzawR32O66LbQw/rDe8V/xPby33qIVGjMGJefRJP86565VRDCyaXF+PUivxmEuRwIDAQAB"
+    licenseCheckEnabled: true
     defaultUserEnableWebdav: true
     defaultUserEnableLocalStore: true
     defaultUserEnableBookSource: true

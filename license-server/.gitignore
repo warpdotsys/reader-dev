@@ -1,0 +1,10 @@
+.gradle/
+build/
+.env
+data/*.db
+data/*.db-*
+data/*.key
+data/*.pub
+data/*.pkcs8
+data/*.spki
+!data/.gitkeep

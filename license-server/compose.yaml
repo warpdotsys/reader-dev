@@ -1,0 +1,17 @@
+services:
+  license:
+    build: .
+    image: medwarp/reader-license:0.1.0
+    restart: unless-stopped
+    environment:
+      LICENSE_ADMIN_TOKEN: ${LICENSE_ADMIN_TOKEN:?set a long random token in .env}
+      LICENSE_ISSUER: https://license.medwarp.cn
+      LICENSE_DATA_DIR: /var/lib/reader-license
+      LICENSE_LEGACY_RSA_ENABLED: "true"
+      LICENSE_CORS_ALLOWED_ORIGINS: ${LICENSE_CORS_ALLOWED_ORIGINS:-}
+    volumes:
+      - license-data:/var/lib/reader-license
+    ports:
+      - "127.0.0.1:8080:8080"
+volumes:
+  license-data:

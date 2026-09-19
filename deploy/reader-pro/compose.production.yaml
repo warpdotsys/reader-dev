@@ -1,0 +1,38 @@
+services:
+  reader-pro:
+    build:
+      context: .
+    image: medwarp/reader-pro-restored:4.0.7
+    container_name: reader-pro-restored
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      READER_APP_WORKDIR: /
+      READER_SERVER_PORT: "8080"
+      READER_APP_LICENSESERVERURL: https://license.medwarp.cn
+      READER_APP_LICENSECHECKENABLED: "true"
+    volumes:
+      - ./storage:/storage
+      - ./logs:/logs
+    ports:
+      - "127.0.0.1:18088:8080"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+

@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'cn.medwarp.reader'
+version = '0.1.0'
+
+repositories { mavenCentral() }
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+dependencies {
+    implementation 'org.xerial:sqlite-jdbc:3.46.1.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'org.slf4j:slf4j-nop:1.7.36'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+}
+
+mainClassName = 'cn.medwarp.reader.license.LicenseServer'
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('jar') { manifest { attributes 'Main-Class': mainClassName } }
+
+task fatJar(type: Jar) {
+    archiveClassifier = 'all'
+    manifest { attributes 'Main-Class': mainClassName }
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('build') { dependsOn fatJar }

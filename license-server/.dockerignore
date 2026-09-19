@@ -1,0 +1,9 @@
+.gradle
+.git
+.env
+data
+src
+gradle
+gradlew
+gradlew.bat
+*.md

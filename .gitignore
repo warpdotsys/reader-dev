@@ -1,11 +1,19 @@
 HELP.md
-.gradle
+.gradle/
 build/
+out/
+runtime/
+work/
+reports/runtime-*/
+reference/extracted/
+reference/decompiled/
+reference/original/*.jar
+.tools/
+
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
 !**/src/test/**
 
-### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -14,36 +22,27 @@ build/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
-out/
 
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
 .vscode/
-
 .vertx
-out
 
-#/src/main/resources/application-prod.yml
 /src/main/resources/application-default.yml
-
 /storage*
 /logs
 /bin
 /file-uploads
 /reader-assets
 /.lh/
-
 /server/logs
 /server/storage
 /server/target
