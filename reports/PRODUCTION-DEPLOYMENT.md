@@ -37,7 +37,7 @@
 - 服务端导入位置：`/opt/reader-pro-restored/storage/data`
 - 服务端复核：文件数和总字节数均与源数据一致，中文路径抽样存在
 
-首次 ZIP 尝试因服务端解包出现中文文件名不一致而被拒绝，没有作为生产数据使用；对应不完整解包目录保留为 `/opt/reader-pro-restored/storage.zip-incomplete-20260919` 供追溯。
+首次 ZIP 尝试因服务端解包出现中文文件名不一致而被拒绝，没有作为生产数据使用。生产验证完成后，服务端上传归档和不完整解包目录已清理；源数据、正式导入目录和旧 Rust 数据均未改动。
 
 ## 验证结果
 
@@ -65,4 +65,3 @@
 2. 执行 `/www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf`。
 3. 配置检查通过后执行 `/www/server/nginx/sbin/nginx -s reload -c /www/server/nginx/conf/nginx.conf`。
 4. 停止新容器不会影响仍在运行的旧 `reader` 容器及其原有数据。
-
