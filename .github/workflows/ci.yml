@@ -17,13 +17,13 @@ concurrency:
 jobs:
   build:
     name: Test and build JAR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Temurin JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '11'
@@ -39,7 +39,7 @@ jobs:
           test -s build/libs/reader-4.0.7.jar
           sha256sum build/libs/reader-4.0.7.jar | tee build/libs/SHA256SUMS
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reader-pro-${{ github.sha }}
           path: |
@@ -47,4 +47,3 @@ jobs:
             build/libs/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
-

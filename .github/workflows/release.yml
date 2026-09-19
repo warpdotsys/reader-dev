@@ -15,11 +15,11 @@ concurrency:
 jobs:
   build:
     name: Build release artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout tagged source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Verify tag belongs to legacy
@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$GITHUB_SHA" origin/legacy
           test -f "docs/releases/${GITHUB_REF_NAME}.md"
       - name: Set up Temurin JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '11'
@@ -45,7 +45,7 @@ jobs:
           install -m 0644 build/libs/reader-4.0.7.jar "dist/reader-pro-${GITHUB_REF_NAME}.jar"
           (cd dist && sha256sum "reader-pro-${GITHUB_REF_NAME}.jar" > SHA256SUMS)
       - name: Upload immutable release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reader-pro-release
           path: dist/
@@ -55,16 +55,16 @@ jobs:
   deploy:
     name: Deploy production
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
       name: production
       url: https://read.medwarp.cn
     steps:
       - name: Checkout deployment configuration
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Download release artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: reader-pro-release
           path: dist
@@ -169,15 +169,15 @@ jobs:
   publish:
     name: Publish GitHub Release
     needs: [build, deploy]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
       - name: Checkout release notes
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Download released artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: reader-pro-release
           path: dist
