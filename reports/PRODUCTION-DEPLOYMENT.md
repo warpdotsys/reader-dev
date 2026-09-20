@@ -65,3 +65,14 @@
 2. 执行 `/www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf`。
 3. 配置检查通过后执行 `/www/server/nginx/sbin/nginx -s reload -c /www/server/nginx/conf/nginx.conf`。
 4. 停止新容器不会影响仍在运行的旧 `reader` 容器及其原有数据。
+
+## 2026-09-20 GitHub 托管 Runner 发布更新
+
+- 当前生产标签：`v4.0.7-restored.7`。
+- 当前制品 SHA-256：`9bdfe481c01ec9e0636ff7b34f691ed6f5773c32ad0e82633c2d744d6d238933`。
+- GitHub Actions：[run 35504681394](https://github.com/warpdotsys/reader-dev/actions/runs/35504681394)。
+- GitHub Release：[v4.0.7-restored.7](https://github.com/warpdotsys/reader-dev/releases/tag/v4.0.7-restored.7)。
+- 构建、部署和发布均使用 GitHub 托管 Runner；生产服务器未安装自托管 Runner。
+- 部署作业通过标准 22 端口公钥 SSH 连接，测试期临时 22222 监听及防火墙规则已删除。
+- 生产容器 `reader-pro-restored` 当前健康，首页及 `/reader3/getSystemInfo` 公网复验通过严格 UTF-8 解码。
+- 请求日志安全修复与历史日志处置证据见 `reports/SECURITY-LOGGING-REMEDIATION.md`。
