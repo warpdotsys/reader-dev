@@ -84,13 +84,11 @@ jobs:
         env:
           PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
           PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
-          PROD_SSH_PORT: '22222'
         run: |
           set -euo pipefail
           release_dir="/opt/reader-pro-restored/releases/${GITHUB_REF_NAME}"
           for attempt in 1 2 3 4 5; do
-            if ssh -p "$PROD_SSH_PORT" \
-                -o "HostKeyAlias=$PROD_SSH_HOST" \
+            if ssh \
                 -o ConnectTimeout=20 \
                 -o ConnectionAttempts=3 \
                 -o ServerAliveInterval=15 \
@@ -107,7 +105,7 @@ jobs:
           done
           for attempt in 1 2 3 4 5; do
             if rsync --archive --partial --append-verify \
-                -e "ssh -p $PROD_SSH_PORT -o HostKeyAlias=$PROD_SSH_HOST -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
+                -e "ssh -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
                 "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
                 dist/SHA256SUMS \
                 deploy/reader-pro/Dockerfile \
@@ -127,13 +125,11 @@ jobs:
         env:
           PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
           PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
-          PROD_SSH_PORT: '22222'
           RELEASE_TAG: ${{ github.ref_name }}
           RELEASE_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          ssh -p "$PROD_SSH_PORT" \
-            -o "HostKeyAlias=$PROD_SSH_HOST" \
+          ssh \
             -o ConnectTimeout=20 \
             -o ConnectionAttempts=3 \
             -o ServerAliveInterval=15 \
