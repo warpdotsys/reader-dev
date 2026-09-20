@@ -131,6 +131,8 @@ jobs:
           install -m 0644 "$release_dir/Dockerfile" "$app_dir/Dockerfile"
           install -m 0644 "$release_dir/compose.production.yaml" "$app_dir/compose.yaml"
           install -m 0644 "$release_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
+          install -d -m 0750 -o 10001 -g 10001 "$app_dir/logs"
+          find "$app_dir/logs" -maxdepth 1 -type f -name 'reader-*.log' -exec chmod 0640 {} +
           /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf
           cd "$app_dir"
           docker compose build reader-pro

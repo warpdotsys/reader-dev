@@ -6,8 +6,6 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CorsHandler
-import io.vertx.ext.web.handler.LoggerFormat
-import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.ext.web.handler.SessionHandler
 import io.vertx.ext.web.sstore.LocalSessionStore
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -20,10 +18,18 @@ import com.htmake.reader.utils.error
 import com.htmake.reader.utils.globalHandler
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.toDir
-import java.net.URLDecoder
+import java.util.concurrent.TimeUnit
 
 
 private val logger = KotlinLogging.logger {}
+
+fun sanitizeRequestTargetForLog(requestTarget: String): String {
+    val path = requestTarget.substringBefore('?').substringBefore('#')
+    return path.asSequence()
+        .map { if (it == '\r' || it == '\n' || it == '\t') '_' else it }
+        .take(2048)
+        .joinToString("")
+}
 
 abstract class RestVerticle : CoroutineVerticle() {
 
@@ -76,22 +82,13 @@ abstract class RestVerticle : CoroutineVerticle() {
 
         router.route().globalHandler(BodyHandler.create())
 
-        router.route().globalHandler(LoggerHandler.create(LoggerFormat.DEFAULT))
         router.route("/reader3/*").globalHandler {
-            logger.info("{} {}", it.request().rawMethod(), URLDecoder.decode(it.request().absoluteURI(), "UTF-8"))
-            if (!it.request().rawMethod().equals("PUT") && (it.fileUploads() == null || it.fileUploads().isEmpty()) && !it.bodyAsString.isNullOrEmpty() && it.bodyAsString.length < 1000) {
-                val sensitiveLicensePaths = setOf(
-                    "/reader3/importLicense",
-                    "/reader3/activateLicense",
-                    "/reader3/decryptLicense",
-                    "/reader3/sendCodeToEmail",
-                    "/reader3/supplyLicense"
-                )
-                if (it.request().path() in sensitiveLicensePaths) {
-                    logger.info("Request body: <redacted>")
-                } else {
-                    logger.info("Request body: {}", it.bodyAsString)
-                }
+            val startedAt = System.nanoTime()
+            val method = it.request().rawMethod()
+            val path = sanitizeRequestTargetForLog(it.request().path())
+            it.addBodyEndHandler { _ ->
+                val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
+                logger.info("{} {} -> {} ({} ms)", method, path, it.response().statusCode, elapsedMillis)
             }
             it.next()
         }
