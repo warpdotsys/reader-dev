@@ -55,7 +55,7 @@ jobs:
   deploy:
     name: Deploy production
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     timeout-minutes: 20
     environment:
       name: production
@@ -104,7 +104,7 @@ jobs:
             sleep $((attempt * 10))
           done
           for attempt in 1 2 3 4 5; do
-            if rsync --archive --partial --append-verify \
+            if rsync --archive --partial --inplace \
                 -e "ssh -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
                 "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
                 dist/SHA256SUMS \
