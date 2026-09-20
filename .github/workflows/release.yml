@@ -88,12 +88,23 @@ jobs:
           set -euo pipefail
           release_dir="/opt/reader-pro-restored/releases/${GITHUB_REF_NAME}"
           ssh "${PROD_SSH_USER}@${PROD_SSH_HOST}" "install -d -m 0755 '$release_dir'"
-          scp "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
-              dist/SHA256SUMS \
-              deploy/reader-pro/Dockerfile \
-              deploy/reader-pro/compose.production.yaml \
-              deploy/reader-pro/read.medwarp.cn.conf \
-              "${PROD_SSH_USER}@${PROD_SSH_HOST}:${release_dir}/"
+          for attempt in 1 2 3 4 5; do
+            if rsync --archive --partial --append-verify \
+                -e "ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
+                "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
+                dist/SHA256SUMS \
+                deploy/reader-pro/Dockerfile \
+                deploy/reader-pro/compose.production.yaml \
+                deploy/reader-pro/read.medwarp.cn.conf \
+                "${PROD_SSH_USER}@${PROD_SSH_HOST}:${release_dir}/"; then
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              echo "Artifact upload failed after $attempt attempts." >&2
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
       - name: Activate release with rollback
         shell: bash
         env:
