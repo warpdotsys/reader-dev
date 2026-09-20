@@ -109,6 +109,7 @@ jobs:
                 "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
                 dist/SHA256SUMS \
                 deploy/reader-pro/Dockerfile \
+                deploy/reader-pro/Dockerfile.overlay \
                 deploy/reader-pro/compose.production.yaml \
                 deploy/reader-pro/read.medwarp.cn.conf \
                 "${PROD_SSH_USER}@${PROD_SSH_HOST}:${release_dir}/"; then
@@ -160,13 +161,21 @@ jobs:
           trap rollback ERR
           install -m 0644 "$artifact" "$app_dir/reader-4.0.7.jar"
           install -m 0644 "$release_dir/Dockerfile" "$app_dir/Dockerfile"
+          install -m 0644 "$release_dir/Dockerfile.overlay" "$app_dir/Dockerfile.overlay"
           install -m 0644 "$release_dir/compose.production.yaml" "$app_dir/compose.yaml"
           install -m 0644 "$release_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
           install -d -m 0750 -o 10001 -g 10001 "$app_dir/logs"
           find "$app_dir/logs" -maxdepth 1 -type f -name 'reader-*.log' -exec chmod 0640 {} +
           /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf
           cd "$app_dir"
-          docker compose build reader-pro
+          runtime_base=medwarp/reader-pro-restored:runtime-jdk11-jammy-v1
+          docker image inspect "$runtime_base" > /dev/null 2>&1 \
+            || docker tag "medwarp/reader-pro-restored:rollback-${RELEASE_TAG}" "$runtime_base"
+          docker build --pull=false \
+            --build-arg "BASE_IMAGE=$runtime_base" \
+            --file Dockerfile.overlay \
+            --tag medwarp/reader-pro-restored:4.0.7 \
+            .
           docker compose up -d --no-deps reader-pro
           for attempt in $(seq 1 24); do
             status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' reader-pro-restored)
