@@ -1,0 +1,255 @@
+{
+  "sourceIndex": 98,
+  "sourceName": "快眼看书（优+）",
+  "query": "斗破苍穹",
+  "bookResultIndex": 0,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "4b557a880c0f6d9dbd9517472964a30272ca372a7f4140da5433f3ae44e68a01",
+  "original": {
+    "steps": [
+      {
+        "step": "search",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 100,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "zero",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "6574afd61452e298d06306cf0cdac762e5b41b161e3d7e94751c6d151f958e4e"
+      },
+      {
+        "step": "book-info",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "hasTocUrl": true,
+        "shape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "coverUrl": "non-default",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "intro": "non-default",
+          "isInShelf": "bool:False",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "non-default",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        },
+        "resultSha256": "57ea6e7b3e2a09f6b55a4c82389dd5430aaa93e112b0502c6de4faa857147c44"
+      },
+      {
+        "step": "chapter-list",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1914,
+        "shape": [
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "zero",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          }
+        ],
+        "resultSha256": "13fd4e66978504e7824c0e1cb2d54c9863a9554e271de3b28ec6ecfc57ccf5d2"
+      },
+      {
+        "step": "content",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "length": 2852,
+        "sha256": "27d041ededd93e919f4d3de969a0e13061e40001c84da51bdce12068348b45e1"
+      }
+    ],
+    "bookUrlSha256": "21f200e5c62c8d79057d46f7a469a1b214d02a10885f9f475d65a73032287d50"
+  },
+  "restored": {
+    "steps": [
+      {
+        "step": "search",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 100,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "zero",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "6574afd61452e298d06306cf0cdac762e5b41b161e3d7e94751c6d151f958e4e"
+      },
+      {
+        "step": "book-info",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "hasTocUrl": true,
+        "shape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "coverUrl": "non-default",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "intro": "non-default",
+          "isInShelf": "bool:False",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "non-default",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        },
+        "resultSha256": "57ea6e7b3e2a09f6b55a4c82389dd5430aaa93e112b0502c6de4faa857147c44"
+      },
+      {
+        "step": "chapter-list",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1914,
+        "shape": [
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "zero",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          }
+        ],
+        "resultSha256": "13fd4e66978504e7824c0e1cb2d54c9863a9554e271de3b28ec6ecfc57ccf5d2"
+      },
+      {
+        "step": "content",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "length": 2852,
+        "sha256": "27d041ededd93e919f4d3de969a0e13061e40001c84da51bdce12068348b45e1"
+      }
+    ],
+    "bookUrlSha256": "21f200e5c62c8d79057d46f7a469a1b214d02a10885f9f475d65a73032287d50"
+  },
+  "sameStepSummaries": true,
+  "productionSmoke": {
+    "steps": [
+      {
+        "step": "search",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 100,
+        "shape": [
+          {
+            "_userNameSpace": "non-default",
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "zero",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "6574afd61452e298d06306cf0cdac762e5b41b161e3d7e94751c6d151f958e4e"
+      },
+      {
+        "step": "book-info",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "hasTocUrl": true,
+        "shape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "coverUrl": "non-default",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "intro": "non-default",
+          "isInShelf": "bool:False",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "non-default",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        },
+        "resultSha256": "57ea6e7b3e2a09f6b55a4c82389dd5430aaa93e112b0502c6de4faa857147c44"
+      }
+    ]
+  }
+}
