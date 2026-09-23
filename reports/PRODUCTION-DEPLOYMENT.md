@@ -76,3 +76,15 @@
 - 部署作业通过标准 22 端口公钥 SSH 连接，测试期临时 22222 监听及防火墙规则已删除。
 - 生产容器 `reader-pro-restored` 当前健康，首页及 `/reader3/getSystemInfo` 公网复验通过严格 UTF-8 解码。
 - 请求日志安全修复与历史日志处置证据见 `reports/SECURITY-LOGGING-REMEDIATION.md`。
+
+## 2026-09-23 导入资源目录修复
+
+浏览器实测发现用户封面 URL 返回 404。导入源 `D:\Download\storage\data` 中包含 `assets/` 子目录；服务器原样导入后，资源实际位于 `/opt/reader-pro-restored/storage/data/assets`，而 Java/Kotlin 服务固定从 `/opt/reader-pro-restored/storage/assets` 提供 `/assets/*`。这是部署目录布局问题，文件本身未丢失。
+
+- 将嵌套目录中的 130 个文件（66,654,762 bytes）复制到服务读取目录；源文件保留，不覆盖其它已有资源。
+- 原 `reader.css` 是 3,535 字节的用户自定义样式；线上 54 字节文件是应用自动生成的默认样式。替换前已把默认文件备份到 `/opt/reader-pro-restored/releases/data-assets-repair-20260923/reader.css.before-repair`。
+- 修复后，源目录和正式资源目录的 130 个同名文件经 `rsync -rnc` 校验内容差异为 0；自定义样式 SHA-256 为 `D39266E9FF7186F22C20942B2333104E7B3C2F6E8E06D581F7D5D6CCF417DBF4`。
+- 容器重启清除旧静态资源缓存后，公网封面 URL 返回 200、48,905 字节；`/assets/reader.css` 返回 200、3,535 字节。浏览器实际显示了此前缺失的封面，容器状态为 `healthy`。
+- 另有一条 `/assets/covers/...` 封面 URL 在导入数据中无对应文件，仍返回 404；前端使用原版占位图。本次没有凭空生成或改写书籍记录。
+
+未来迁移 `storage/data` 时，需要检查是否含有嵌套 `assets/`，并把它同步至正式 `storage/assets/`；若正式位置已有自定义文件，应先逐文件比对，避免覆盖用户更改。

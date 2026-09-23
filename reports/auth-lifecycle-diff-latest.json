@@ -1,0 +1,328 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "restoredJarSha256": "543F9480C9B7E3DD60638B842D22EF88C7D97A4A70D4BF9B2D268289CD0F0248",
+  "comparisons": [
+    {
+      "probe": "login-unknown",
+      "semanticEqual": true,
+      "original": {
+        "probe": "login-unknown",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "用户不存在",
+        "dataType": "null"
+      },
+      "restored": {
+        "probe": "login-unknown",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "用户不存在",
+        "dataType": "null"
+      }
+    },
+    {
+      "probe": "register",
+      "semanticEqual": true,
+      "original": {
+        "probe": "register",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userFields": [
+          "accessToken",
+          "bookLimit",
+          "bookSourceLimit",
+          "createdAt",
+          "enableBookSource",
+          "enableLocalStore",
+          "enableRssSource",
+          "enableWebdav",
+          "lastLoginAt",
+          "username"
+        ],
+        "tokenHasUserPrefix": true
+      },
+      "restored": {
+        "probe": "register",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userFields": [
+          "accessToken",
+          "bookLimit",
+          "bookSourceLimit",
+          "createdAt",
+          "enableBookSource",
+          "enableLocalStore",
+          "enableRssSource",
+          "enableWebdav",
+          "lastLoginAt",
+          "username"
+        ],
+        "tokenHasUserPrefix": true
+      }
+    },
+    {
+      "probe": "login-wrong-password",
+      "semanticEqual": true,
+      "original": {
+        "probe": "login-wrong-password",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "密码错误",
+        "dataType": "null"
+      },
+      "restored": {
+        "probe": "login-wrong-password",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "密码错误",
+        "dataType": "null"
+      }
+    },
+    {
+      "probe": "login-correct",
+      "semanticEqual": true,
+      "original": {
+        "probe": "login-correct",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userFields": [
+          "accessToken",
+          "bookLimit",
+          "bookSourceLimit",
+          "createdAt",
+          "enableBookSource",
+          "enableLocalStore",
+          "enableRssSource",
+          "enableWebdav",
+          "lastLoginAt",
+          "username"
+        ],
+        "tokenHasUserPrefix": true
+      },
+      "restored": {
+        "probe": "login-correct",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userFields": [
+          "accessToken",
+          "bookLimit",
+          "bookSourceLimit",
+          "createdAt",
+          "enableBookSource",
+          "enableLocalStore",
+          "enableRssSource",
+          "enableWebdav",
+          "lastLoginAt",
+          "username"
+        ],
+        "tokenHasUserPrefix": true
+      }
+    },
+    {
+      "probe": "user-info-cookie",
+      "semanticEqual": true,
+      "original": {
+        "probe": "user-info-cookie",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userInfoPresent": true,
+        "secure": true
+      },
+      "restored": {
+        "probe": "user-info-cookie",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userInfoPresent": true,
+        "secure": true
+      }
+    },
+    {
+      "probe": "user-info-token",
+      "semanticEqual": true,
+      "original": {
+        "probe": "user-info-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userInfoPresent": true,
+        "secure": true
+      },
+      "restored": {
+        "probe": "user-info-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "userInfoPresent": true,
+        "secure": true
+      }
+    },
+    {
+      "probe": "bookshelf-token",
+      "semanticEqual": true,
+      "original": {
+        "probe": "bookshelf-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "array",
+        "dataCount": 0
+      },
+      "restored": {
+        "probe": "bookshelf-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "array",
+        "dataCount": 0
+      }
+    },
+    {
+      "probe": "save-user-config",
+      "semanticEqual": true,
+      "original": {
+        "probe": "save-user-config",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "String"
+      },
+      "restored": {
+        "probe": "save-user-config",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "String"
+      }
+    },
+    {
+      "probe": "get-user-config",
+      "semanticEqual": true,
+      "original": {
+        "probe": "get-user-config",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "configFields": [
+          "@updateTime",
+          "options",
+          "probe"
+        ],
+        "probeMarker": "source-parity",
+        "fontSize": 16,
+        "updateTimeIsNumber": true
+      },
+      "restored": {
+        "probe": "get-user-config",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "PSCustomObject",
+        "configFields": [
+          "@updateTime",
+          "options",
+          "probe"
+        ],
+        "probeMarker": "source-parity",
+        "fontSize": 16,
+        "updateTimeIsNumber": true
+      }
+    },
+    {
+      "probe": "logout",
+      "semanticEqual": true,
+      "original": {
+        "probe": "logout",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "String"
+      },
+      "restored": {
+        "probe": "logout",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "dataType": "String"
+      }
+    },
+    {
+      "probe": "bookshelf-revoked-token",
+      "semanticEqual": true,
+      "original": {
+        "probe": "bookshelf-revoked-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "dataType": "String"
+      },
+      "restored": {
+        "probe": "bookshelf-revoked-token",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "dataType": "String"
+      }
+    }
+  ],
+  "storage": {
+    "original": {
+      "usersFile": true,
+      "userNamespace": true,
+      "configFile": true,
+      "configFields": [
+        "@updateTime",
+        "options",
+        "probe"
+      ],
+      "configMarker": "source-parity"
+    },
+    "restored": {
+      "usersFile": true,
+      "userNamespace": true,
+      "configFile": true,
+      "configFields": [
+        "@updateTime",
+        "options",
+        "probe"
+      ],
+      "configMarker": "source-parity"
+    }
+  }
+}
