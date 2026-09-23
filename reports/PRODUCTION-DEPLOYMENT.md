@@ -95,3 +95,7 @@
 - 服务器 `DEPLOYED_RELEASE` 标记为 `v4.0.7-restored.8`；标记与当前 JAR 的 SHA-256 同为 `D2AA722284965C7B05544C98C49B509B2E52F37CC0487FB860FFC75D7B53D780`；容器状态 `running/healthy`。
 - 公网匿名、只读的真实书源搜索与详情均为 HTTP 200；搜索 100 条，结果摘要与本地恢复版一致，搜索响应不再暴露 `_userNameSpace`。
 - 生产登录态目录、正文、书架和缓存链路仍未验证。使用现有 accessToken 自动登录会更新 `users.json`，故未将其视为无副作用检查。完整差分与边界见 `reports/LIVE-SOURCE-READING-DIFF.md`。
+
+## 2026-09-23 导入账户的隔离复核
+
+在服务器本机启动受限临时容器，仅挂载生产数据中一个账户、一条书源和书架的私有副本；正式容器与源数据未作为写入目标。现有 token 认证、169 项书架、100 条搜索结果、1914 章目录与首章正文均通过，正文哈希与原 JAR/恢复版差分一致。正式 `users.json`、该账户书源和书架在测试前后 SHA-256 不变；临时容器和副本已清理。证据和复现方法见 `reports/STAGED-PRODUCTION-DATA-READING.md`。生产容器本体的登录态请求与 UI 点击仍未验证。
