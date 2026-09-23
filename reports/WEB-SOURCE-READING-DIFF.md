@@ -29,5 +29,5 @@ pwsh -NoProfile -File .\scripts\compare-web-source-reading.ps1
 ## 尚未验证
 
 - 本探针比较全部 JSON 字段名和默认值类别，但非默认值只逐项比较关键业务字段；动态时间戳等仍需更完整的结构契约测试。
-- 未覆盖真实第三方书源、JS 规则、登录态书源、翻页/发现、封面图片、正文缓存命中、SSE 搜索、书源切换和 WebDAV。
+- 本探针未覆盖真实第三方书源、JS 规则、登录态书源、翻页/发现、封面图片、正文缓存命中、SSE 搜索、书源切换和 WebDAV。独立的 SSE 单源/双源分页差分见 `reports/SSE-PAGINATION-DIFF.md`，真实书源 SSE 见 `reports/LIVE-SOURCE-READING-DIFF.md`，WebDAV 见 `reports/WEBDAV-LIFECYCLE-DIFF.md`。
 - 这是本机黑盒差分，不代表线上 `read.medwarp.cn` 已部署该构建或生产数据已完成兼容验证。

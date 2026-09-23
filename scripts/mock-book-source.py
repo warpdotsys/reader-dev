@@ -27,7 +27,7 @@ class Handler(BaseHTTPRequestHandler):
                 "<html><div class='book'><a href='/book'>"
                 "<span class='name'>差分测试书</span></a>"
                 "<span class='author'>测试作者</span></div></html>"
-                if key == "差分" else "<html></html>"
+                if key in ("差分", "差分测试书") else "<html></html>"
             )
         else:
             body = PAGES.get(parsed.path)

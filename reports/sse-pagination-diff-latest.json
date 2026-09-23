@@ -1,0 +1,267 @@
+{
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "cd81fc945928e9e558bceed6970ad152e500bf0ca92128ece5c34e4fec3b3b89",
+  "comparisons": [
+    {
+      "probe": "anonymous",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "anonymous",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "data": "NEED_LOGIN"
+      },
+      "restored": {
+        "probe": "anonymous",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "data": "NEED_LOGIN"
+      }
+    },
+    {
+      "probe": "no-source",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "no-source",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "未配置书源",
+        "data": null
+      },
+      "restored": {
+        "probe": "no-source",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "未配置书源",
+        "data": null
+      }
+    },
+    {
+      "probe": "missing-key",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "missing-key",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "请输入搜索关键字",
+        "data": null
+      },
+      "restored": {
+        "probe": "missing-key",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "请输入搜索关键字",
+        "data": null
+      }
+    },
+    {
+      "probe": "one-source",
+      "equal": false,
+      "acceptedCursorFix": true,
+      "original": {
+        "probe": "one-source",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": false,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      },
+      "restored": {
+        "probe": "one-source",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": true,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      }
+    },
+    {
+      "probe": "unknown-book",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "unknown-book",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "书籍信息错误",
+        "data": null
+      },
+      "restored": {
+        "probe": "unknown-book",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "书籍信息错误",
+        "data": null
+      }
+    },
+    {
+      "probe": "one-source-switch",
+      "equal": false,
+      "acceptedCursorFix": true,
+      "original": {
+        "probe": "one-source-switch",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": false,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      },
+      "restored": {
+        "probe": "one-source-switch",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": true,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      }
+    },
+    {
+      "probe": "two-source-page-1",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "two-source-page-1",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": false,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      },
+      "restored": {
+        "probe": "two-source-page-1",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 0,
+        "isEnd": false,
+        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+      }
+    },
+    {
+      "probe": "two-source-page-2",
+      "equal": false,
+      "acceptedCursorFix": true,
+      "original": {
+        "probe": "two-source-page-2",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 1,
+        "isEnd": false,
+        "resultSha256": "0eb3670f59c371560ab71a946c305160c7303ad3c838ae1a9c1212f5692e5105"
+      },
+      "restored": {
+        "probe": "two-source-page-2",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 1,
+        "terminalEvent": "end",
+        "lastIndex": 1,
+        "isEnd": true,
+        "resultSha256": "0eb3670f59c371560ab71a946c305160c7303ad3c838ae1a9c1212f5692e5105"
+      }
+    },
+    {
+      "probe": "exhausted",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "exhausted",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "没有更多了",
+        "data": null
+      },
+      "restored": {
+        "probe": "exhausted",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 1,
+        "dataCount": 0,
+        "terminalEvent": "error",
+        "isSuccess": false,
+        "errorMsg": "没有更多了",
+        "data": null
+      }
+    }
+  ]
+}
