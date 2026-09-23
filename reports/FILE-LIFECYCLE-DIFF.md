@@ -48,6 +48,6 @@ pwsh -NoProfile -File .\scripts\compare-file-lifecycle.ps1
 
 ## 尚未验证
 
-- 批量删除、导入预览、备份恢复、目录解析的实际导入（`import=1`）和 WebDAV。当前目录解析只测试了 `import=0` 的预览模式。
+- 批量删除、导入预览、备份恢复、目录解析的实际导入（`import=1`）。当前目录解析只测试了 `import=0` 的预览模式。WebDAV 的独立生命周期差分见 `reports/WEBDAV-LIFECYCLE-DIFF.md`。
 - 特殊文件名、符号链接、路径穿越、超大文件和并发写入；其中安全边界应另行验证，不能为追求旧版一致性而恢复旧漏洞。
 - 生产数据中的全部文件路径和内容。此次测试只覆盖隔离临时数据。

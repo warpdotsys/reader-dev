@@ -1,0 +1,416 @@
+{
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "cd81fc945928e9e558bceed6970ad152e500bf0ca92128ece5c34e4fec3b3b89",
+  "comparisons": [
+    {
+      "probe": "options-anonymous",
+      "equal": true,
+      "original": {
+        "probe": "options-anonymous",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      },
+      "restored": {
+        "probe": "options-anonymous",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      }
+    },
+    {
+      "probe": "propfind-anonymous",
+      "equal": true,
+      "original": {
+        "probe": "propfind-anonymous",
+        "status": 401,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      },
+      "restored": {
+        "probe": "propfind-anonymous",
+        "status": 401,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      }
+    },
+    {
+      "probe": "propfind-wrong-password",
+      "equal": true,
+      "original": {
+        "probe": "propfind-wrong-password",
+        "status": 401,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      },
+      "restored": {
+        "probe": "propfind-wrong-password",
+        "status": 401,
+        "contentType": "",
+        "bodyLength": 0,
+        "davHeader": "1,2",
+        "allowHeader": "OPTIONS,DELETE,GET,PUT,PROPFIND,MKCOL,MOVE,COPY,LOCK,UNLOCK"
+      }
+    },
+    {
+      "probe": "propfind-root",
+      "equal": true,
+      "original": {
+        "probe": "propfind-root",
+        "status": 207,
+        "contentType": "",
+        "entries": [
+          {
+            "path": "/reader3/webdav/",
+            "displayName": "",
+            "collection": true,
+            "contentLength": "",
+            "hasModified": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "propfind-root",
+        "status": 207,
+        "contentType": "",
+        "entries": [
+          {
+            "path": "/reader3/webdav/",
+            "displayName": "",
+            "collection": true,
+            "contentLength": "",
+            "hasModified": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "mkcol",
+      "equal": true,
+      "original": {
+        "probe": "mkcol",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "mkcol",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "put-file",
+      "equal": true,
+      "original": {
+        "probe": "put-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "put-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "get-file",
+      "equal": true,
+      "original": {
+        "probe": "get-file",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=a.txt",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "get-file",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=a.txt",
+        "cacheControl": "86400"
+      }
+    },
+    {
+      "probe": "put-unicode",
+      "equal": true,
+      "original": {
+        "probe": "put-unicode",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "put-unicode",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "get-unicode",
+      "equal": true,
+      "original": {
+        "probe": "get-unicode",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=%E7%AB%A0%E8%8A%82-%E4%B8%AD%E6%96%87.txt",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "get-unicode",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=%E7%AB%A0%E8%8A%82-%E4%B8%AD%E6%96%87.txt",
+        "cacheControl": "86400"
+      }
+    },
+    {
+      "probe": "propfind-directory",
+      "equal": true,
+      "original": {
+        "probe": "propfind-directory",
+        "status": 207,
+        "contentType": "",
+        "entries": [
+          {
+            "path": "/reader3/webdav/probe/",
+            "displayName": "",
+            "collection": true,
+            "contentLength": "",
+            "hasModified": true
+          },
+          {
+            "path": "/reader3/webdav/probe/a.txt",
+            "displayName": "a.txt",
+            "collection": false,
+            "contentLength": "14",
+            "hasModified": true
+          },
+          {
+            "path": "/reader3/webdav/probe/章节-中文.txt",
+            "displayName": "章节-中文.txt",
+            "collection": false,
+            "contentLength": "14",
+            "hasModified": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "propfind-directory",
+        "status": 207,
+        "contentType": "",
+        "entries": [
+          {
+            "path": "/reader3/webdav/probe/",
+            "displayName": "",
+            "collection": true,
+            "contentLength": "",
+            "hasModified": true
+          },
+          {
+            "path": "/reader3/webdav/probe/a.txt",
+            "displayName": "a.txt",
+            "collection": false,
+            "contentLength": "14",
+            "hasModified": true
+          },
+          {
+            "path": "/reader3/webdav/probe/章节-中文.txt",
+            "displayName": "章节-中文.txt",
+            "collection": false,
+            "contentLength": "14",
+            "hasModified": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "copy-file",
+      "equal": true,
+      "original": {
+        "probe": "copy-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "copy-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "move-file",
+      "equal": true,
+      "original": {
+        "probe": "move-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "move-file",
+        "status": 201,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "get-moved",
+      "equal": true,
+      "original": {
+        "probe": "get-moved",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=c.txt",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "get-moved",
+        "status": 200,
+        "contentType": "",
+        "length": 14,
+        "sha256": "860111831ed35a9534f2083a114b44eead4d1d3701a6fe6ea3ee4d29de8d40e6",
+        "disposition": "attachment; filename=c.txt",
+        "cacheControl": "86400"
+      }
+    },
+    {
+      "probe": "lock-file",
+      "equal": true,
+      "original": {
+        "probe": "lock-file",
+        "status": 200,
+        "contentType": "",
+        "tokenIsUuid": true,
+        "headerMatchesToken": true,
+        "lockRootPath": "/reader3/webdav/probe/a.txt",
+        "timeout": "Second-3600"
+      },
+      "restored": {
+        "probe": "lock-file",
+        "status": 200,
+        "contentType": "",
+        "tokenIsUuid": true,
+        "headerMatchesToken": true,
+        "lockRootPath": "/reader3/webdav/probe/a.txt",
+        "timeout": "Second-3600"
+      }
+    },
+    {
+      "probe": "unlock-file",
+      "equal": true,
+      "original": {
+        "probe": "unlock-file",
+        "status": 204,
+        "contentType": "",
+        "hasLockTokenHeader": true
+      },
+      "restored": {
+        "probe": "unlock-file",
+        "status": 204,
+        "contentType": "",
+        "hasLockTokenHeader": true
+      }
+    },
+    {
+      "probe": "delete-original",
+      "equal": true,
+      "original": {
+        "probe": "delete-original",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "delete-original",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "get-deleted",
+      "equal": true,
+      "original": {
+        "probe": "get-deleted",
+        "status": 404,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "get-deleted",
+        "status": 404,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "delete-unicode",
+      "equal": true,
+      "original": {
+        "probe": "delete-unicode",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "delete-unicode",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    },
+    {
+      "probe": "delete-directory",
+      "equal": true,
+      "original": {
+        "probe": "delete-directory",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      },
+      "restored": {
+        "probe": "delete-directory",
+        "status": 200,
+        "contentType": "",
+        "bodyLength": 0
+      }
+    }
+  ],
+  "storage": {
+    "original": {
+      "webdavRootExists": true,
+      "remainingEntries": []
+    },
+    "restored": {
+      "webdavRootExists": true,
+      "remainingEntries": []
+    }
+  }
+}
