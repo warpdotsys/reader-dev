@@ -99,7 +99,9 @@ if (api) {
 } else {
     api = $.cookie.get("api");
 }
-$.ajax.baseURL = api || window.myStorage.getItem("api_prefix") || "/reader3";
+var simpleWebPath = window.location.pathname.match(/^(.*)\/simple-web(?:\/|$)/);
+var defaultApi = (simpleWebPath ? simpleWebPath[1] : "") + "/reader3";
+$.ajax.baseURL = api || window.myStorage.getItem("api_prefix") || defaultApi;
 
 // Response interceptor - check for login required
 $.ajax.onResponse = function (responseText) {

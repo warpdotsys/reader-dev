@@ -90,6 +90,15 @@ The app is a vanilla JavaScript single-page-style application with 4 HTML entry 
 Currently there is no automated build pipeline for simple-web. The minified files in
 `src/main/resources/simple-web/` are the deployed versions with content-hash filenames.
 
+The restored JAR keeps the original minified bundle. The readable
+`assets/js/context-path-20260923.js` compatibility shim runs immediately after
+`common-eebd186870.js` on all four pages, setting the same-origin default API
+prefix from the current `/simple-web/` path while preserving explicit API
+settings. `scripts/sync-simple-web-context-path.ps1` idempotently adds its script
+tag to the bundled HTML pages. The corresponding source default is in
+`js/template-data.js`; a future full rebuild should carry that logic directly
+and can then remove the shim.
+
 To deploy changes from this source:
 1. Edit files in `simple-web-src/`
 2. Minify JS/CSS (e.g., using terser/cssnano)

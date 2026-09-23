@@ -88,6 +88,7 @@ try {
     Assert-Http $root ("/" + $assets.Css) 200
     Assert-Http $root ("/" + $assets.Js) 200
     Assert-Http $root "/reader3/getSystemInfo" 200
+    Assert-Http $root "/simple-web/" 200
 
     $sub = Start-Reader "subpath" "/reader"
     Wait-Ready "$sub/reader/reader3/getSystemInfo"
@@ -100,6 +101,9 @@ try {
     Assert-Http $sub "/reader/manifest.json" 200
     Assert-Http $sub "/reader/assets/reader.css" 200
     Assert-Http $sub "/reader/reader3/getSystemInfo" 200
+    foreach ($page in @("", "reader.html", "search.html", "rss.html")) {
+        Assert-Http $sub ("/reader/simple-web/" + $page) 200
+    }
     Assert-Http $sub ("/" + $assets.Css) 404
     $passed = $true
 } finally {

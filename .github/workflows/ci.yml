@@ -28,6 +28,14 @@ jobs:
           distribution: temurin
           java-version: '11'
           cache: gradle
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify simple-web compatibility
+        run: |
+          node --check src/main/resources/simple-web/assets/js/context-path-20260923.js
+          node scripts/test-simple-web-context-path.js
       - name: Build and test
         run: |
           chmod +x gradlew
