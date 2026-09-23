@@ -32,6 +32,22 @@ function New-Client {
     return $client
 }
 
+function Read-Response([Net.Http.HttpResponseMessage]$Response) {
+    $bytes = $Response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()
+    $type = [string]$Response.Content.Headers.ContentType
+    $value = if ($type -match 'json') {
+        [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json -Depth 50
+    } else { $null }
+    return [pscustomobject]@{
+        status = [int]$Response.StatusCode
+        contentType = $type
+        disposition = [string]$Response.Content.Headers.ContentDisposition
+        cacheControl = [string]$Response.Headers.CacheControl
+        bytes = $bytes
+        value = $value
+    }
+}
+
 function Invoke-Api([Net.Http.HttpClient]$Client, [string]$BaseUri, [string]$Method, [string]$Path, [object]$Body = $null) {
     $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::new($Method), $BaseUri + $Path)
     try {
@@ -40,21 +56,22 @@ function Invoke-Api([Net.Http.HttpClient]$Client, [string]$BaseUri, [string]$Met
             $request.Content = [Net.Http.StringContent]::new($json, [Text.Encoding]::UTF8, "application/json")
         }
         $response = $Client.SendAsync($request).GetAwaiter().GetResult()
-        try {
-            $bytes = $response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()
-            $type = [string]$response.Content.Headers.ContentType
-            $value = if ($type -match 'json') {
-                [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json -Depth 50
-            } else { $null }
-            return [pscustomobject]@{
-                status = [int]$response.StatusCode
-                contentType = $type
-                disposition = [string]$response.Content.Headers.ContentDisposition
-                cacheControl = [string]$response.Headers.CacheControl
-                bytes = $bytes
-                value = $value
-            }
-        }
+        try { return Read-Response $response }
+        finally { $response.Dispose() }
+    }
+    finally { $request.Dispose() }
+}
+
+function Invoke-Upload([Net.Http.HttpClient]$Client, [string]$BaseUri, [string]$Path, [byte[]]$Bytes) {
+    $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post, $BaseUri + $Path)
+    $multipart = [Net.Http.MultipartFormDataContent]::new()
+    $fileContent = [Net.Http.ByteArrayContent]::new($Bytes)
+    $fileContent.Headers.ContentType = [Net.Http.Headers.MediaTypeHeaderValue]::Parse('application/octet-stream')
+    $multipart.Add($fileContent, 'file', '上传.bin')
+    $request.Content = $multipart
+    try {
+        $response = $Client.SendAsync($request).GetAwaiter().GetResult()
+        try { return Read-Response $response }
         finally { $response.Dispose() }
     }
     finally { $request.Dispose() }
@@ -76,7 +93,7 @@ function Format-Response([object]$Response, [string]$Probe) {
         $result.isSuccess = [bool]$Response.value.isSuccess
         $result.errorMsg = [string]$Response.value.errorMsg
         $data = $Response.value.data
-        if ($Probe -in @('root-list', 'notes-list', 'notes-with-directory-list')) {
+        if ($Probe -in @('root-list', 'notes-list', 'notes-with-directory-list', 'upload-binary', 'notes-with-upload-list')) {
             $result.data = @($data | ForEach-Object {
                 [ordered]@{
                     name = [string]$_.name
@@ -85,6 +102,22 @@ function Format-Response([object]$Response, [string]$Probe) {
                     isDirectory = [bool]$_.isDirectory
                     lastModifiedIsNumber = $null -ne $_.lastModified -and
                         $_.lastModified -is [ValueType]
+                }
+            } | Sort-Object name)
+        } elseif ($Probe -eq 'parse-preview') {
+            $result.data = @($data | ForEach-Object {
+                $book = [ordered]@{}
+                foreach ($property in @($_.book.PSObject.Properties | Sort-Object Name)) {
+                    $book[$property.Name] = if ($property.Name -in @('latestChapterTime', 'lastCheckTime', 'durChapterTime')) {
+                        if ($property.Value -is [ValueType]) { 'number' } else { 'not-number' }
+                    } else { $property.Value }
+                }
+                [ordered]@{
+                    name = [string]$_.name
+                    path = [string]$_.path
+                    size = [long]$_.size
+                    lastModifiedIsNumber = $_.lastModified -is [ValueType]
+                    book = $book
                 }
             } | Sort-Object name)
         } else {
@@ -176,6 +209,28 @@ function Run-Lifecycle([string]$Jar, [string]$WorkDir, [int]$Port, [string]$User
         Assert-Success $mkdir "mkdir"
         $results += Format-Response $mkdir "mkdir"
         $results += Format-Response (Invoke-Api $clientA $baseUri "GET" "/reader3/file/list?home=__HOME__&path=/notes") "notes-with-directory-list"
+        $preview = Invoke-Api $clientA $baseUri "GET" "/reader3/file/parse?home=__HOME__&path=/notes&import=0"
+        Assert-Success $preview "parse-preview"
+        if ($preview.value.data.Count -ne 1 -or $preview.value.data[0].name -cne "差分.txt" -or
+            $preview.value.data[0].book.name -cne "差分") {
+            throw "parse-preview did not return the local text book"
+        }
+        $results += Format-Response $preview "parse-preview"
+        $binary = [byte[]]@(0, 1, 2, 13, 10, 127, 128, 255)
+        $upload = Invoke-Upload $clientA $baseUri "/reader3/file/upload?home=__HOME__&path=/notes" $binary
+        Assert-Success $upload "upload-binary"
+        if ($upload.value.data.Count -ne 1 -or $upload.value.data[0].name -cne "上传.bin") {
+            throw "upload-binary did not return the uploaded file"
+        }
+        $results += Format-Response $upload "upload-binary"
+        $results += Format-Response (Invoke-Api $clientA $baseUri "GET" "/reader3/file/list?home=__HOME__&path=/notes") "notes-with-upload-list"
+        $binaryPath = [uri]::EscapeDataString("/notes/上传.bin")
+        $binaryDownload = Invoke-Api $clientA $baseUri "GET" "/reader3/file/download?home=__HOME__&path=$binaryPath"
+        if ($binaryDownload.status -ne 200 -or
+            -not [Linq.Enumerable]::SequenceEqual[byte]($binaryDownload.bytes, $binary)) {
+            throw "Downloaded binary differs from the uploaded bytes"
+        }
+        $results += Format-Response $binaryDownload "download-uploaded-binary"
         $otherUserGet = Invoke-Api $clientB $baseUri "GET" "/reader3/file/get?home=__HOME__&path=$queryPath"
         if ($otherUserGet.value.isSuccess -or $otherUserGet.value.errorMsg -ne "路径不存在") {
             throw "The second user could access the first user's file"
@@ -186,16 +241,21 @@ function Run-Lifecycle([string]$Jar, [string]$WorkDir, [int]$Port, [string]$User
         Assert-Success $delete "delete-text"
         $results += Format-Response $delete "delete-text"
         $results += Format-Response (Invoke-Api $clientA $baseUri "GET" "/reader3/file/get?home=__HOME__&path=$queryPath") "get-after-delete"
+        $deleteBinary = Invoke-Api $clientA $baseUri "POST" "/reader3/file/delete" `
+            @{ home = "__HOME__"; path = "/notes/上传.bin" }
+        Assert-Success $deleteBinary "delete-uploaded-binary"
+        $results += Format-Response $deleteBinary "delete-uploaded-binary"
 
         $storageA = Join-Path $WorkDir "storage\data\$UserA\notes"
         $storageB = Join-Path $WorkDir "storage\data\$UserB\notes"
         $storage = [ordered]@{
             userANotesDirectory = Test-Path -LiteralPath $storageA -PathType Container
             userANotesFileDeleted = -not (Test-Path -LiteralPath (Join-Path $storageA "差分.txt"))
+            userAUploadedFileDeleted = -not (Test-Path -LiteralPath (Join-Path $storageA "上传.bin"))
             userBNotesDirectoryAbsent = -not (Test-Path -LiteralPath $storageB)
         }
         if (-not $storage.userANotesDirectory -or -not $storage.userANotesFileDeleted -or
-            -not $storage.userBNotesDirectoryAbsent) {
+            -not $storage.userAUploadedFileDeleted -or -not $storage.userBNotesDirectoryAbsent) {
             throw "User file storage layout or isolation is incorrect"
         }
         return [pscustomobject]@{

@@ -128,7 +128,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
                 fileList += mapOf(
                     "name" to destination.name,
                     "size" to destination.length(),
-                    "path" to "/" + destination.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                    "path" to File.separator + destination.relativeTo(baseDir).path,
                     "lastModified" to destination.lastModified(),
                     "isDirectory" to destination.isDirectory
                 )
@@ -314,7 +314,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
                 fileList += mapOf(
                     "name" to file.name,
                     "size" to file.length(),
-                    "path" to "/" + file.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                    "path" to File.separator + file.relativeTo(baseDir).path,
                     "lastModified" to file.lastModified(),
                     "book" to book
                 )

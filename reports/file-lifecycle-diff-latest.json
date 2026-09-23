@@ -1,6 +1,6 @@
 {
   "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
-  "restoredJarSha256": "5747585D280CB8027CD98FAC0A86D7F6C037A1313E77541648935002233AF643",
+  "restoredJarSha256": "19DE110A91B2DD632D159E728A4AB0F4D3FC9A3D513D7D62330F79EB95163301",
   "comparisons": [
     {
       "probe": "anonymous-list",
@@ -233,6 +233,206 @@
       }
     },
     {
+      "probe": "parse-preview",
+      "semanticEqual": true,
+      "original": {
+        "probe": "parse-preview",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "lastModifiedIsNumber": true,
+            "book": {
+              "author": "",
+              "bookUrl": "storage/data/fileprobe319032fa53/notes/差分.txt",
+              "canUpdate": false,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "number",
+              "group": 0,
+              "isInShelf": false,
+              "lastCheckCount": 0,
+              "lastCheckTime": "number",
+              "latestChapterTime": "number",
+              "name": "差分",
+              "order": 0,
+              "origin": "loc_book",
+              "originName": "storage\\data\\fileprobe319032fa53\\notes\\差分.txt",
+              "originOrder": 0,
+              "tocUrl": "",
+              "totalChapterNum": 0,
+              "type": 0,
+              "useReplaceRule": true
+            }
+          }
+        ]
+      },
+      "restored": {
+        "probe": "parse-preview",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "lastModifiedIsNumber": true,
+            "book": {
+              "author": "",
+              "bookUrl": "storage/data/fileprobe319032fa53/notes/差分.txt",
+              "canUpdate": false,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "number",
+              "group": 0,
+              "isInShelf": false,
+              "lastCheckCount": 0,
+              "lastCheckTime": "number",
+              "latestChapterTime": "number",
+              "name": "差分",
+              "order": 0,
+              "origin": "loc_book",
+              "originName": "storage\\data\\fileprobe319032fa53\\notes\\差分.txt",
+              "originOrder": 0,
+              "tocUrl": "",
+              "totalChapterNum": 0,
+              "type": 0,
+              "useReplaceRule": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "upload-binary",
+      "semanticEqual": true,
+      "original": {
+        "probe": "upload-binary",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "上传.bin",
+            "path": "\\notes\\上传.bin",
+            "size": 8,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "upload-binary",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "上传.bin",
+            "path": "\\notes\\上传.bin",
+            "size": 8,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "notes-with-upload-list",
+      "semanticEqual": true,
+      "original": {
+        "probe": "notes-with-upload-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "上传.bin",
+            "path": "\\notes\\上传.bin",
+            "size": 8,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "子目录",
+            "path": "\\notes\\子目录",
+            "size": 0,
+            "isDirectory": true,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "notes-with-upload-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "上传.bin",
+            "path": "\\notes\\上传.bin",
+            "size": 8,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "子目录",
+            "path": "\\notes\\子目录",
+            "size": 0,
+            "isDirectory": true,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "download-uploaded-binary",
+      "semanticEqual": true,
+      "original": {
+        "probe": "download-uploaded-binary",
+        "status": 200,
+        "contentType": "application/octet-stream",
+        "byteLength": 8,
+        "sha256": "52B1A7176B53A61F8F31005FC1526B2E97473EB15F572A1223587949F45BF922",
+        "disposition": "attachment; filename=%E4%B8%8A%E4%BC%A0.bin",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "download-uploaded-binary",
+        "status": 200,
+        "contentType": "application/octet-stream",
+        "byteLength": 8,
+        "sha256": "52B1A7176B53A61F8F31005FC1526B2E97473EB15F572A1223587949F45BF922",
+        "disposition": "attachment; filename=%E4%B8%8A%E4%BC%A0.bin",
+        "cacheControl": "86400"
+      }
+    },
+    {
       "probe": "other-user-get",
       "semanticEqual": true,
       "original": {
@@ -291,17 +491,39 @@
         "errorMsg": "路径不存在",
         "data": null
       }
+    },
+    {
+      "probe": "delete-uploaded-binary",
+      "semanticEqual": true,
+      "original": {
+        "probe": "delete-uploaded-binary",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "delete-uploaded-binary",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
     }
   ],
   "storage": {
     "original": {
       "userANotesDirectory": true,
       "userANotesFileDeleted": true,
+      "userAUploadedFileDeleted": true,
       "userBNotesDirectoryAbsent": true
     },
     "restored": {
       "userANotesDirectory": true,
       "userANotesFileDeleted": true,
+      "userAUploadedFileDeleted": true,
       "userBNotesDirectoryAbsent": true
     }
   }
