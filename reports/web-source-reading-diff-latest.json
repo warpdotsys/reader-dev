@@ -1,0 +1,469 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "restoredJarSha256": "4B557A880C0F6D9DBD9517472964A30272CA372A7F4140DA5433F3AE44E68A01",
+  "fixtureBase": "http://127.0.0.1:55530",
+  "comparisons": [
+    {
+      "probe": "source-save",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "source-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "",
+        "fieldShape": null
+      },
+      "restored": {
+        "probe": "source-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "",
+        "fieldShape": null
+      }
+    },
+    {
+      "probe": "search",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "search",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分测试书",
+            "author": "测试作者",
+            "bookUrl": "http://127.0.0.1:55530/book",
+            "origin": "http://127.0.0.1:55530"
+          }
+        ],
+        "fieldShape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "empty-string",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "zero",
+            "time": "zero",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ]
+      },
+      "restored": {
+        "probe": "search",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分测试书",
+            "author": "测试作者",
+            "bookUrl": "http://127.0.0.1:55530/book",
+            "origin": "http://127.0.0.1:55530"
+          }
+        ],
+        "fieldShape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "empty-string",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "zero",
+            "time": "zero",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ]
+      }
+    },
+    {
+      "probe": "book-info",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "book-info",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": {
+          "name": "差分测试书",
+          "author": "测试作者",
+          "bookUrl": "http://127.0.0.1:55530/book",
+          "tocUrl": "http://127.0.0.1:55530/toc",
+          "origin": "http://127.0.0.1:55530"
+        },
+        "fieldShape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "isInShelf": "bool:False",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "zero",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        }
+      },
+      "restored": {
+        "probe": "book-info",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": {
+          "name": "差分测试书",
+          "author": "测试作者",
+          "bookUrl": "http://127.0.0.1:55530/book",
+          "tocUrl": "http://127.0.0.1:55530/toc",
+          "origin": "http://127.0.0.1:55530"
+        },
+        "fieldShape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "isInShelf": "bool:False",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "zero",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        }
+      }
+    },
+    {
+      "probe": "book-save",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "book-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": {
+          "name": "差分测试书",
+          "author": "测试作者",
+          "bookUrl": "http://127.0.0.1:55530/book",
+          "tocUrl": "http://127.0.0.1:55530/toc",
+          "origin": "http://127.0.0.1:55530"
+        },
+        "fieldShape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "isInShelf": "bool:True",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "zero",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        }
+      },
+      "restored": {
+        "probe": "book-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": {
+          "name": "差分测试书",
+          "author": "测试作者",
+          "bookUrl": "http://127.0.0.1:55530/book",
+          "tocUrl": "http://127.0.0.1:55530/toc",
+          "origin": "http://127.0.0.1:55530"
+        },
+        "fieldShape": {
+          "author": "non-default",
+          "bookUrl": "non-default",
+          "canUpdate": "bool:True",
+          "durChapterIndex": "zero",
+          "durChapterPos": "zero",
+          "durChapterTime": "non-default",
+          "group": "zero",
+          "isInShelf": "bool:True",
+          "lastCheckCount": "zero",
+          "lastCheckTime": "non-default",
+          "latestChapterTime": "non-default",
+          "name": "non-default",
+          "order": "zero",
+          "origin": "non-default",
+          "originName": "non-default",
+          "originOrder": "zero",
+          "tocUrl": "non-default",
+          "totalChapterNum": "zero",
+          "type": "zero",
+          "useReplaceRule": "bool:True"
+        }
+      }
+    },
+    {
+      "probe": "shelf",
+      "semanticEqual": false,
+      "acceptedDivergence": true,
+      "original": {
+        "probe": "shelf",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "宸垎娴嬭瘯涔�",
+            "author": "娴嬭瘯浣滆��",
+            "bookUrl": "http://127.0.0.1:55530/book",
+            "tocUrl": "http://127.0.0.1:55530/toc",
+            "origin": "http://127.0.0.1:55530"
+          }
+        ],
+        "fieldShape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "canUpdate": "bool:True",
+            "durChapterIndex": "zero",
+            "durChapterPos": "zero",
+            "durChapterTime": "non-default",
+            "group": "zero",
+            "isInShelf": "bool:True",
+            "lastCheckCount": "zero",
+            "lastCheckTime": "non-default",
+            "latestChapterTime": "non-default",
+            "name": "non-default",
+            "order": "zero",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "zero",
+            "tocUrl": "non-default",
+            "totalChapterNum": "zero",
+            "type": "zero",
+            "useReplaceRule": "bool:True"
+          }
+        ]
+      },
+      "restored": {
+        "probe": "shelf",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分测试书",
+            "author": "测试作者",
+            "bookUrl": "http://127.0.0.1:55530/book",
+            "tocUrl": "http://127.0.0.1:55530/toc",
+            "origin": "http://127.0.0.1:55530"
+          }
+        ],
+        "fieldShape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "canUpdate": "bool:True",
+            "durChapterIndex": "zero",
+            "durChapterPos": "zero",
+            "durChapterTime": "non-default",
+            "group": "zero",
+            "isInShelf": "bool:True",
+            "lastCheckCount": "zero",
+            "lastCheckTime": "non-default",
+            "latestChapterTime": "non-default",
+            "name": "non-default",
+            "order": "zero",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "zero",
+            "tocUrl": "non-default",
+            "totalChapterNum": "zero",
+            "type": "zero",
+            "useReplaceRule": "bool:True"
+          }
+        ]
+      }
+    },
+    {
+      "probe": "chapter-list",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "chapter-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "title": "第一章 起点",
+            "url": "/chapter/1",
+            "index": 0
+          },
+          {
+            "title": "第二章 继续",
+            "url": "/chapter/2",
+            "index": 1
+          }
+        ],
+        "fieldShape": [
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "zero",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          },
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "non-default",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          }
+        ]
+      },
+      "restored": {
+        "probe": "chapter-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "title": "第一章 起点",
+            "url": "/chapter/1",
+            "index": 0
+          },
+          {
+            "title": "第二章 继续",
+            "url": "/chapter/2",
+            "index": 1
+          }
+        ],
+        "fieldShape": [
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "zero",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          },
+          {
+            "baseUrl": "non-default",
+            "bookUrl": "non-default",
+            "index": "non-default",
+            "isVolume": "bool:False",
+            "tag": "empty-string",
+            "title": "non-default",
+            "url": "non-default"
+          }
+        ]
+      }
+    },
+    {
+      "probe": "content-0",
+      "semanticEqual": false,
+      "acceptedDivergence": true,
+      "original": {
+        "probe": "content-0",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "　　　　第一段，中文与 UTF-8。\n　　第二段，符号 & 空格。\n　　\n",
+        "fieldShape": null
+      },
+      "restored": {
+        "probe": "content-0",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "　　　　第一段，中文与 UTF-8。\n　　第二段，符号 & 空格。\n　　",
+        "fieldShape": null
+      }
+    },
+    {
+      "probe": "content-1",
+      "semanticEqual": false,
+      "acceptedDivergence": true,
+      "original": {
+        "probe": "content-1",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "　　　　终章内容固定。\n　　\n",
+        "fieldShape": null
+      },
+      "restored": {
+        "probe": "content-1",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "　　　　终章内容固定。\n　　",
+        "fieldShape": null
+      }
+    }
+  ]
+}

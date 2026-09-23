@@ -1,6 +1,6 @@
 {
   "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
-  "restoredJarSha256": "C80EBC8357E4C39D7E7B1787A12F7333E296929D114DC0F512A47AE8F7D4E3BD",
+  "restoredJarSha256": "4B557A880C0F6D9DBD9517472964A30272CA372A7F4140DA5433F3AE44E68A01",
   "comparisons": [
     {
       "probe": "anonymous-list",
@@ -259,7 +259,7 @@
             "lastModifiedIsNumber": true,
             "book": {
               "author": "",
-              "bookUrl": "storage/data/fileprobef698b33501/notes/差分.txt",
+              "bookUrl": "storage/data/fileprobe0571ba034b/notes/差分.txt",
               "canUpdate": false,
               "durChapterIndex": 0,
               "durChapterPos": 0,
@@ -272,7 +272,7 @@
               "name": "差分",
               "order": 0,
               "origin": "loc_book",
-              "originName": "storage\\data\\fileprobef698b33501\\notes\\差分.txt",
+              "originName": "storage\\data\\fileprobe0571ba034b\\notes\\差分.txt",
               "originOrder": 0,
               "tocUrl": "",
               "totalChapterNum": 0,
@@ -296,7 +296,7 @@
             "lastModifiedIsNumber": true,
             "book": {
               "author": "",
-              "bookUrl": "storage/data/fileprobef698b33501/notes/差分.txt",
+              "bookUrl": "storage/data/fileprobe0571ba034b/notes/差分.txt",
               "canUpdate": false,
               "durChapterIndex": 0,
               "durChapterPos": 0,
@@ -309,7 +309,7 @@
               "name": "差分",
               "order": 0,
               "origin": "loc_book",
-              "originName": "storage\\data\\fileprobef698b33501\\notes\\差分.txt",
+              "originName": "storage\\data\\fileprobe0571ba034b\\notes\\差分.txt",
               "originOrder": 0,
               "tocUrl": "",
               "totalChapterNum": 0,
@@ -529,7 +529,7 @@
         "data": [
           {
             "author": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "canUpdate": false,
             "durChapterIndex": 0,
             "durChapterPos": 0,
@@ -542,7 +542,7 @@
             "name": "readable",
             "order": 0,
             "origin": "loc_book",
-            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originName": "storage\\data\\fileprobe0571ba034b\\reading\\readable.txt",
             "originOrder": 0,
             "tocUrl": "",
             "totalChapterNum": 0,
@@ -560,7 +560,7 @@
         "data": [
           {
             "author": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "canUpdate": false,
             "durChapterIndex": 0,
             "durChapterPos": 0,
@@ -573,7 +573,7 @@
             "name": "readable",
             "order": 0,
             "origin": "loc_book",
-            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originName": "storage\\data\\fileprobe0571ba034b\\reading\\readable.txt",
             "originOrder": 0,
             "tocUrl": "",
             "totalChapterNum": 0,
@@ -603,7 +603,7 @@
         "errorMsg": "",
         "data": {
           "author": "",
-          "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+          "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
           "canUpdate": false,
           "durChapterIndex": 0,
           "durChapterPos": 0,
@@ -616,7 +616,7 @@
           "name": "readable",
           "order": 0,
           "origin": "loc_book",
-          "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+          "originName": "storage\\data\\fileprobe0571ba034b\\reading\\readable.txt",
           "originOrder": 0,
           "tocUrl": "",
           "totalChapterNum": 0,
@@ -637,21 +637,21 @@
         "errorMsg": "",
         "data": [
           {
-            "url": "b363449b0e40f7cd",
+            "url": "baa0ba26f4aa128a",
             "title": "第一章 开始",
             "isVolume": false,
             "baseUrl": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "index": 0,
             "start": 0,
             "end": 45
           },
           {
-            "url": "2fb2b5136b77c363",
+            "url": "fa90f184f2725931",
             "title": "第二章 继续",
             "isVolume": false,
             "baseUrl": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "index": 1,
             "start": 45,
             "end": 89
@@ -666,21 +666,21 @@
         "errorMsg": "",
         "data": [
           {
-            "url": "b363449b0e40f7cd",
+            "url": "baa0ba26f4aa128a",
             "title": "第一章 开始",
             "isVolume": false,
             "baseUrl": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "index": 0,
             "start": 0,
             "end": 45
           },
           {
-            "url": "2fb2b5136b77c363",
+            "url": "fa90f184f2725931",
             "title": "第二章 继续",
             "isVolume": false,
             "baseUrl": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "index": 1,
             "start": 45,
             "end": 89
@@ -743,7 +743,7 @@
         "data": [
           {
             "author": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "canUpdate": false,
             "durChapterIndex": 0,
             "durChapterPos": 0,
@@ -758,7 +758,7 @@
             "name": "readable",
             "order": 0,
             "origin": "loc_book",
-            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originName": "storage\\data\\fileprobe0571ba034b\\reading\\readable.txt",
             "originOrder": 0,
             "tocUrl": "",
             "totalChapterNum": 2,
@@ -776,7 +776,7 @@
         "data": [
           {
             "author": "",
-            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "bookUrl": "storage/data/fileprobe0571ba034b/reading/readable.txt",
             "canUpdate": false,
             "durChapterIndex": 0,
             "durChapterPos": 0,
@@ -791,7 +791,7 @@
             "name": "readable",
             "order": 0,
             "origin": "loc_book",
-            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originName": "storage\\data\\fileprobe0571ba034b\\reading\\readable.txt",
             "originOrder": 0,
             "tocUrl": "",
             "totalChapterNum": 2,

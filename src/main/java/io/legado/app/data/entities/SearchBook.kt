@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 //        onDelete = ForeignKey.CASCADE
 //    ))]
 //)
-@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "origins", "kindList")
+@JsonIgnoreProperties("variableMap", "infoHtml", "tocHtml", "origins", "kindList", "_userNameSpace", "userNameSpace")
 data class SearchBook(
 //    @PrimaryKey
     override var bookUrl: String = "",
@@ -37,6 +37,7 @@ data class SearchBook(
     var originOrder: Int = 0
 ) :  BaseBook, Comparable<SearchBook> {
 
+    @Transient
     private var _userNameSpace = ""
 
 //    @Ignore
