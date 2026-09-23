@@ -16,9 +16,13 @@ python -B .\scripts\compare-live-source-reading.py --source-namespace YOUR_NAMES
 
 ## 有意修复的 SSE 终帧差异
 
-仅配置一个书源时，原始 JAR 的两种 SSE 终帧均是 `lastIndex=0, isEnd=false`；这与服务端下一次请求的“没有更多了”判断相矛盾。恢复版将终帧修正为 `lastIndex=0, isEnd=true`，其它帧字段及结果一致。零基索引判断另有单元测试；黑盒脚本只接受这两个接口中恰好这一布尔值的差异，出现其它差异会失败。此次恢复构建 SHA-256：`2CE4C1ABA8B40471A036C266F7E4ECFC586EB91C83878CB246194B21C25DA8EF`；尚未部署。
+仅配置一个书源时，原始 JAR 的两种 SSE 终帧均是 `lastIndex=0, isEnd=false`；这与服务端下一次请求的“没有更多了”判断相矛盾。恢复版将终帧修正为 `lastIndex=0, isEnd=true`，其它帧字段及结果一致。零基索引判断另有单元测试；黑盒脚本只接受这两个接口中恰好这一布尔值的差异，出现其它差异会失败。本机恢复构建 SHA-256：`2CE4C1ABA8B40471A036C266F7E4ECFC586EB91C83878CB246194B21C25DA8EF`；此哈希是发布前本机构建，不是 GitHub 发布制品哈希。
 
-另外，对当前已部署的 `https://read.medwarp.cn` 发起了匿名、只读的搜索与详情请求：两项均为 HTTP 200、`isSuccess=true`，搜索亦返回 100 条且全体书目摘要与本地一致，详情含目录地址。线上当前搜索响应仍多出内部 `_userNameSpace` 字段；本地恢复构建已修复，尚未部署该修复。线上目录与正文因需要登录，本轮没有调用，不应称为生产端到端阅读验证。
+## 发布后的独立复核
+
+`v4.0.7-restored.8` 已由 GitHub 托管 runner 部署；服务器标记和当前 JAR 的 SHA-256 均为 `D2AA722284965C7B05544C98C49B509B2E52F37CC0487FB860FFC75D7B53D780`，容器为 `running/healthy`。再次用同一真实书源匿名访问生产 API：搜索与详情均 HTTP 200，搜索 100 条且全体书目摘要与本地一致，搜索 JSON 不再含 `_userNameSpace`，首条结果字段形态也与本地恢复版一致。仍未在生产账号下读取目录或正文。
+
+另外，发布前对当时已部署的 `https://read.medwarp.cn` 发起了匿名、只读的搜索与详情请求：两项均为 HTTP 200、`isSuccess=true`，搜索亦返回 100 条且全体书目摘要与本地一致，详情含目录地址。当时线上搜索响应仍多出内部 `_userNameSpace` 字段；本地恢复构建已修复。线上目录与正文因需要登录，本轮没有调用，不应称为生产端到端阅读验证。发布后的状态见后文独立复核。
 
 ## 真实书源自身的失败样本
 

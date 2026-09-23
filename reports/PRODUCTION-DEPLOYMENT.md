@@ -68,13 +68,13 @@
 
 ## 2026-09-20 GitHub 托管 Runner 发布更新
 
-- 当前生产标签：`v4.0.7-restored.7`。
-- 当前制品 SHA-256：`9bdfe481c01ec9e0636ff7b34f691ed6f5773c32ad0e82633c2d744d6d238933`。
+- 当日生产标签：`v4.0.7-restored.7`。
+- 当日制品 SHA-256：`9bdfe481c01ec9e0636ff7b34f691ed6f5773c32ad0e82633c2d744d6d238933`。
 - GitHub Actions：[run 35504681394](https://github.com/warpdotsys/reader-dev/actions/runs/35504681394)。
 - GitHub Release：[v4.0.7-restored.7](https://github.com/warpdotsys/reader-dev/releases/tag/v4.0.7-restored.7)。
 - 构建、部署和发布均使用 GitHub 托管 Runner；生产服务器未安装自托管 Runner。
 - 部署作业通过标准 22 端口公钥 SSH 连接，测试期临时 22222 监听及防火墙规则已删除。
-- 生产容器 `reader-pro-restored` 当前健康，首页及 `/reader3/getSystemInfo` 公网复验通过严格 UTF-8 解码。
+- 当日生产容器 `reader-pro-restored` 健康，首页及 `/reader3/getSystemInfo` 公网复验通过严格 UTF-8 解码。
 - 请求日志安全修复与历史日志处置证据见 `reports/SECURITY-LOGGING-REMEDIATION.md`。
 
 ## 2026-09-23 导入资源目录修复
@@ -88,3 +88,10 @@
 - 另有一条 `/assets/covers/...` 封面 URL 在导入数据中无对应文件，仍返回 404；前端使用原版占位图。本次没有凭空生成或改写书籍记录。
 
 未来迁移 `storage/data` 时，需要检查是否含有嵌套 `assets/`，并把它同步至正式 `storage/assets/`；若正式位置已有自定义文件，应先逐文件比对，避免覆盖用户更改。
+
+## 2026-09-23 v4.0.7-restored.8 发布
+
+- GitHub 托管 runner 的构建、生产部署、公网检查和 Release 发布全部成功：[发布流水线](https://github.com/warpdotsys/reader-dev/actions/runs/35833753491)、[发布说明与制品](https://github.com/warpdotsys/reader-dev/releases/tag/v4.0.7-restored.8)。
+- 服务器 `DEPLOYED_RELEASE` 标记为 `v4.0.7-restored.8`；标记与当前 JAR 的 SHA-256 同为 `D2AA722284965C7B05544C98C49B509B2E52F37CC0487FB860FFC75D7B53D780`；容器状态 `running/healthy`。
+- 公网匿名、只读的真实书源搜索与详情均为 HTTP 200；搜索 100 条，结果摘要与本地恢复版一致，搜索响应不再暴露 `_userNameSpace`。
+- 生产登录态目录、正文、书架和缓存链路仍未验证。使用现有 accessToken 自动登录会更新 `users.json`，故未将其视为无副作用检查。完整差分与边界见 `reports/LIVE-SOURCE-READING-DIFF.md`。
