@@ -83,6 +83,17 @@ function Assert-Success([object]$Response, [string]$Probe) {
     }
 }
 
+function Format-Book([object]$Book) {
+    if ($null -eq $Book) { return $null }
+    $result = [ordered]@{}
+    foreach ($property in @($Book.PSObject.Properties | Sort-Object Name)) {
+        $result[$property.Name] = if ($property.Name -in @('latestChapterTime', 'lastCheckTime', 'durChapterTime')) {
+            if ($property.Value -is [ValueType]) { 'number' } else { 'not-number' }
+        } else { $property.Value }
+    }
+    return $result
+}
+
 function Format-Response([object]$Response, [string]$Probe) {
     $result = [ordered]@{
         probe = $Probe
@@ -120,6 +131,10 @@ function Format-Response([object]$Response, [string]$Probe) {
                     book = $book
                 }
             } | Sort-Object name)
+        } elseif ($Probe -in @('reading-shelf', 'reading-shelf-after-progress')) {
+            $result.data = @($data | ForEach-Object { Format-Book $_ })
+        } elseif ($Probe -eq 'reading-book-info') {
+            $result.data = Format-Book $data
         } else {
             $result.data = $data
         }
@@ -133,13 +148,15 @@ function Format-Response([object]$Response, [string]$Probe) {
 }
 
 function Wait-Reader([Net.Http.HttpClient]$Client, [string]$BaseUri, [Diagnostics.Process]$Process) {
-    for ($attempt = 0; $attempt -lt 90; $attempt++) {
+    $deadline = [DateTime]::UtcNow.AddSeconds(60)
+    while ([DateTime]::UtcNow -lt $deadline) {
         if ($Process.HasExited) { throw "Reader exited during startup with code $($Process.ExitCode)" }
         try {
             $response = Invoke-Api $Client $BaseUri "GET" "/reader3/getSystemInfo"
             if ($response.status -eq 200 -and $response.value.isSuccess) { return }
         }
-        catch { Start-Sleep -Milliseconds 500 }
+        catch { }
+        Start-Sleep -Milliseconds 500
     }
     throw "Reader did not become ready: $BaseUri"
 }
@@ -236,6 +253,48 @@ function Run-Lifecycle([string]$Jar, [string]$WorkDir, [int]$Port, [string]$User
             throw "The second user could access the first user's file"
         }
         $results += Format-Response $otherUserGet "other-user-get"
+
+        $readingText = "第一章 开始`n这是第一章的正文。`n第二章 继续`n这是第二章的正文。"
+        $readingPath = "/reading/readable.txt"
+        $readingSave = Invoke-Api $clientA $baseUri "POST" "/reader3/file/save" `
+            @{ home = "__HOME__"; path = $readingPath; content = $readingText }
+        Assert-Success $readingSave "reading-save"
+        $results += Format-Response $readingSave "reading-save"
+        $readingImport = Invoke-Api $clientA $baseUri "GET" "/reader3/file/parse?home=__HOME__&path=/reading&import=1"
+        Assert-Success $readingImport "reading-import"
+        $results += Format-Response $readingImport "reading-import"
+        $shelf = Invoke-Api $clientA $baseUri "GET" "/reader3/getBookshelf"
+        Assert-Success $shelf "reading-shelf"
+        if ($shelf.value.data.Count -ne 1) { throw "reading-shelf did not contain exactly one imported book" }
+        $results += Format-Response $shelf "reading-shelf"
+        $bookUrl = [uri]::EscapeDataString([string]$shelf.value.data[0].bookUrl)
+        $bookInfo = Invoke-Api $clientA $baseUri "GET" "/reader3/getBookInfo?url=$bookUrl"
+        if ($bookInfo.value.isSuccess -and
+            $bookInfo.value.data.bookUrl -cne $shelf.value.data[0].bookUrl) {
+            throw "reading-book-info returned a different book"
+        }
+        $results += Format-Response $bookInfo "reading-book-info"
+        $chapters = Invoke-Api $clientA $baseUri "GET" "/reader3/getChapterList?url=$bookUrl"
+        Assert-Success $chapters "reading-chapters"
+        if ($chapters.value.data.Count -ne 2) { throw "reading-chapters did not return two chapters" }
+        $results += Format-Response $chapters "reading-chapters"
+        $readingContent = Invoke-Api $clientA $baseUri "GET" "/reader3/getBookContent?url=$bookUrl&index=0"
+        Assert-Success $readingContent "reading-content"
+        if ($readingContent.value.data -cne "第一章 开始`n这是第一章的正文。`n") {
+            throw "reading-content differs from the original TXT chapter format"
+        }
+        $results += Format-Response $readingContent "reading-content"
+        $progressSave = Invoke-Api $clientA $baseUri "POST" "/reader3/saveBookProgress" `
+            @{ url = [string]$shelf.value.data[0].bookUrl; index = 0 }
+        Assert-Success $progressSave "reading-progress-save"
+        $results += Format-Response $progressSave "reading-progress-save"
+        $progressShelf = Invoke-Api $clientA $baseUri "GET" "/reader3/getBookshelf"
+        Assert-Success $progressShelf "reading-shelf-after-progress"
+        if ($progressShelf.value.data[0].durChapterIndex -ne 0 -or
+            $progressShelf.value.data[0].totalChapterNum -ne 2) {
+            throw "reading progress was not persisted on the bookshelf"
+        }
+        $results += Format-Response $progressShelf "reading-shelf-after-progress"
         $delete = Invoke-Api $clientA $baseUri "POST" "/reader3/file/delete" `
             @{ home = "__HOME__"; path = $filePath }
         Assert-Success $delete "delete-text"
@@ -284,9 +343,27 @@ try {
     $comparisons = foreach ($index in 0..($original.probes.Count - 1)) {
         $left = $original.probes[$index]
         $right = $restored.probes[$index]
+        $leftJson = ConvertTo-Json $left -Compress -Depth 25
+        $rightJson = ConvertTo-Json $right -Compress -Depth 25
+        $equal = $leftJson -ceq $rightJson
+        $accepted = $false
+        if (-not $equal -and $left.probe -eq 'reading-book-info') {
+            $accepted = $left.status -eq 200 -and -not $left.isSuccess -and
+                $left.errorMsg -eq '未配置书源' -and $right.status -eq 200 -and
+                $right.isSuccess -and $right.data.origin -eq 'loc_book'
+        }
+        if (-not $equal -and $left.probe -eq 'reading-shelf-after-progress') {
+            $titlePattern = '"(latestChapterTitle|durChapterTitle)":"[^"]*"'
+            $leftWithoutTitles = [regex]::Replace($leftJson, $titlePattern, '"$1":"<normalized-title>"')
+            $rightWithoutTitles = [regex]::Replace($rightJson, $titlePattern, '"$1":"<normalized-title>"')
+            $accepted = $leftWithoutTitles -ceq $rightWithoutTitles -and
+                $right.data[0].latestChapterTitle -ceq '第二章 继续' -and
+                $right.data[0].durChapterTitle -ceq '第一章 开始'
+        }
         [pscustomobject]@{
             probe = $left.probe
-            semanticEqual = (ConvertTo-Json $left -Compress -Depth 20) -ceq (ConvertTo-Json $right -Compress -Depth 20)
+            semanticEqual = $equal
+            acceptedDivergence = $accepted
             original = $left
             restored = $right
         }
@@ -298,11 +375,11 @@ try {
         storage = [ordered]@{ original = $original.storage; restored = $restored.storage }
     }
     $report | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $OutputPath -Encoding utf8
-    $comparisons | Select-Object probe, semanticEqual | Format-Table -AutoSize
+    $comparisons | Select-Object probe, semanticEqual, acceptedDivergence | Format-Table -AutoSize
     Write-Host "Report: $OutputPath"
     Write-Host "Isolated run data: $runRoot"
-    if (@($comparisons | Where-Object { -not $_.semanticEqual }).Count -ne 0) {
-        throw "File lifecycle differs from original JAR"
+    if (@($comparisons | Where-Object { -not $_.semanticEqual -and -not $_.acceptedDivergence }).Count -ne 0) {
+        throw "Unreviewed file or reading lifecycle difference from original JAR"
     }
     if ((ConvertTo-Json $original.storage -Compress -Depth 10) -cne
         (ConvertTo-Json $restored.storage -Compress -Depth 10)) {

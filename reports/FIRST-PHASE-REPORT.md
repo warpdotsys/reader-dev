@@ -2,6 +2,8 @@
 
 日期：2026-09-19（Asia/Shanghai）
 
+本文件是第一阶段的历史快照，不能代表当前完成状态。后续已恢复许可证中心并扩展认证、文件和本地阅读差分；以 `LICENSE-CENTER-RECOVERY.md`、`AUTH-LIFECYCLE-DIFF.md`、`FILE-LIFECYCLE-DIFF.md`、`LOCAL-READING-DIFF.md` 及最新生产部署记录为准。
+
 ## 结论
 
 第一阶段已经产生可编译、可启动的独立 Java/Kotlin 恢复工程，而不是方案或空脚手架。工程固定以 Git 提交 `90b62afd47b08a1795365e9eecbe6da3e08af27f`（`origin/legacy` / `v4.0.7`）为真实源码骨架，再用原始 JAR 的 158 个非 class 应用资源覆盖资源层。原始 Web 前端因此保持 JAR 版本。

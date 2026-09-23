@@ -38,8 +38,6 @@ class TextFile(private val book: Book) {
                 book.charset = EncodingDetect.getEncode(book.getLocalFile())
             }
             return String(buffer, book.fileCharset())
-                .substringAfter(bookChapter.title)
-                .replace("^[\\n\\s]+".toRegex(), "　　")
         }
 
     }

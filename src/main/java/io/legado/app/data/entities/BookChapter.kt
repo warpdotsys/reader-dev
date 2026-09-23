@@ -26,6 +26,7 @@ data class BookChapter(
         var variable: String? = null        //变量
 ): RuleDataInterface {
 
+    @Transient
     private var _userNameSpace = ""
 
     @delegate:Transient

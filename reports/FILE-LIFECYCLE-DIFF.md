@@ -12,7 +12,7 @@ pwsh -NoProfile -File .\scripts\compare-file-lifecycle.ps1
 ```
 
 本次原始 JAR SHA-256：`B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C`。
-本次恢复构建 SHA-256：`19DE110A91B2DD632D159E728A4AB0F4D3FC9A3D513D7D62330F79EB95163301`。
+本次恢复构建 SHA-256：`C80EBC8357E4C39D7E7B1787A12F7333E296929D114DC0F512A47AE8F7D4E3BD`。
 
 ## 已从 JAR 验证并成功重建
 
@@ -38,7 +38,7 @@ pwsh -NoProfile -File .\scripts\compare-file-lifecycle.ps1
 | 删除后读取 | 返回“路径不存在” |
 | 删除已上传的二进制文件 | 删除成功，存储文件不再存在 |
 
-测试还断言第一用户文件确实写入其 `storage/data/<用户>/notes`，随后确实删除，第二用户目录不存在。动态的文件修改时间和本地书籍检查时间只比较数值类型，不比较毫秒值；书籍其它 JSON 字段和默认值逐项比较。逐项结果见 `reports/file-lifecycle-diff-latest.json`；任何语义或存储差异使脚本返回非零退出码。
+测试还断言第一用户文件确实写入其 `storage/data/<用户>/notes`，随后确实删除，第二用户目录不存在。动态的文件修改时间和本地书籍检查时间只比较数值类型，不比较毫秒值；书籍其它 JSON 字段和默认值逐项比较。逐项结果见 `reports/file-lifecycle-diff-latest.json`。同一脚本现增加 8 项本地阅读探针，故 JSON 共 25 项；其中 2 项有经人工审查的旧版缺陷改进，详见 `reports/LOCAL-READING-DIFF.md`。其余差异或存储布局错误均使脚本返回非零退出码。
 
 ## 已修复的差异
 

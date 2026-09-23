@@ -1,10 +1,11 @@
 {
   "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
-  "restoredJarSha256": "19DE110A91B2DD632D159E728A4AB0F4D3FC9A3D513D7D62330F79EB95163301",
+  "restoredJarSha256": "C80EBC8357E4C39D7E7B1787A12F7333E296929D114DC0F512A47AE8F7D4E3BD",
   "comparisons": [
     {
       "probe": "anonymous-list",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "anonymous-list",
         "status": 200,
@@ -25,6 +26,7 @@
     {
       "probe": "root-list",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "root-list",
         "status": 200,
@@ -45,6 +47,7 @@
     {
       "probe": "save-text",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "save-text",
         "status": 200,
@@ -65,6 +68,7 @@
     {
       "probe": "get-text",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "get-text",
         "status": 200,
@@ -85,6 +89,7 @@
     {
       "probe": "notes-list",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "notes-list",
         "status": 200,
@@ -121,6 +126,7 @@
     {
       "probe": "download-attachment",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "download-attachment",
         "status": 200,
@@ -143,6 +149,7 @@
     {
       "probe": "download-stream",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "download-stream",
         "status": 200,
@@ -165,6 +172,7 @@
     {
       "probe": "mkdir",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "mkdir",
         "status": 200,
@@ -185,6 +193,7 @@
     {
       "probe": "notes-with-directory-list",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "notes-with-directory-list",
         "status": 200,
@@ -235,6 +244,7 @@
     {
       "probe": "parse-preview",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "parse-preview",
         "status": 200,
@@ -249,7 +259,7 @@
             "lastModifiedIsNumber": true,
             "book": {
               "author": "",
-              "bookUrl": "storage/data/fileprobe319032fa53/notes/差分.txt",
+              "bookUrl": "storage/data/fileprobef698b33501/notes/差分.txt",
               "canUpdate": false,
               "durChapterIndex": 0,
               "durChapterPos": 0,
@@ -262,7 +272,7 @@
               "name": "差分",
               "order": 0,
               "origin": "loc_book",
-              "originName": "storage\\data\\fileprobe319032fa53\\notes\\差分.txt",
+              "originName": "storage\\data\\fileprobef698b33501\\notes\\差分.txt",
               "originOrder": 0,
               "tocUrl": "",
               "totalChapterNum": 0,
@@ -286,7 +296,7 @@
             "lastModifiedIsNumber": true,
             "book": {
               "author": "",
-              "bookUrl": "storage/data/fileprobe319032fa53/notes/差分.txt",
+              "bookUrl": "storage/data/fileprobef698b33501/notes/差分.txt",
               "canUpdate": false,
               "durChapterIndex": 0,
               "durChapterPos": 0,
@@ -299,7 +309,7 @@
               "name": "差分",
               "order": 0,
               "origin": "loc_book",
-              "originName": "storage\\data\\fileprobe319032fa53\\notes\\差分.txt",
+              "originName": "storage\\data\\fileprobef698b33501\\notes\\差分.txt",
               "originOrder": 0,
               "tocUrl": "",
               "totalChapterNum": 0,
@@ -313,6 +323,7 @@
     {
       "probe": "upload-binary",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "upload-binary",
         "status": 200,
@@ -349,6 +360,7 @@
     {
       "probe": "notes-with-upload-list",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "notes-with-upload-list",
         "status": 200,
@@ -413,6 +425,7 @@
     {
       "probe": "download-uploaded-binary",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "download-uploaded-binary",
         "status": 200,
@@ -435,6 +448,7 @@
     {
       "probe": "other-user-get",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "other-user-get",
         "status": 200,
@@ -453,8 +467,344 @@
       }
     },
     {
+      "probe": "reading-save",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "reading-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
+    },
+    {
+      "probe": "reading-import",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-import",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "readable.txt"
+          }
+        ]
+      },
+      "restored": {
+        "probe": "reading-import",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "readable.txt"
+          }
+        ]
+      }
+    },
+    {
+      "probe": "reading-shelf",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-shelf",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "author": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "canUpdate": false,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": "number",
+            "group": 0,
+            "isInShelf": true,
+            "lastCheckCount": 0,
+            "lastCheckTime": "number",
+            "latestChapterTime": "number",
+            "name": "readable",
+            "order": 0,
+            "origin": "loc_book",
+            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originOrder": 0,
+            "tocUrl": "",
+            "totalChapterNum": 0,
+            "type": 0,
+            "useReplaceRule": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "reading-shelf",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "author": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "canUpdate": false,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": "number",
+            "group": 0,
+            "isInShelf": true,
+            "lastCheckCount": 0,
+            "lastCheckTime": "number",
+            "latestChapterTime": "number",
+            "name": "readable",
+            "order": 0,
+            "origin": "loc_book",
+            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originOrder": 0,
+            "tocUrl": "",
+            "totalChapterNum": 0,
+            "type": 0,
+            "useReplaceRule": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "reading-book-info",
+      "semanticEqual": false,
+      "acceptedDivergence": true,
+      "original": {
+        "probe": "reading-book-info",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "未配置书源",
+        "data": null
+      },
+      "restored": {
+        "probe": "reading-book-info",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": {
+          "author": "",
+          "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+          "canUpdate": false,
+          "durChapterIndex": 0,
+          "durChapterPos": 0,
+          "durChapterTime": "number",
+          "group": 0,
+          "isInShelf": true,
+          "lastCheckCount": 0,
+          "lastCheckTime": "number",
+          "latestChapterTime": "number",
+          "name": "readable",
+          "order": 0,
+          "origin": "loc_book",
+          "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+          "originOrder": 0,
+          "tocUrl": "",
+          "totalChapterNum": 0,
+          "type": 0,
+          "useReplaceRule": true
+        }
+      }
+    },
+    {
+      "probe": "reading-chapters",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-chapters",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "url": "b363449b0e40f7cd",
+            "title": "第一章 开始",
+            "isVolume": false,
+            "baseUrl": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "index": 0,
+            "start": 0,
+            "end": 45
+          },
+          {
+            "url": "2fb2b5136b77c363",
+            "title": "第二章 继续",
+            "isVolume": false,
+            "baseUrl": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "index": 1,
+            "start": 45,
+            "end": 89
+          }
+        ]
+      },
+      "restored": {
+        "probe": "reading-chapters",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "url": "b363449b0e40f7cd",
+            "title": "第一章 开始",
+            "isVolume": false,
+            "baseUrl": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "index": 0,
+            "start": 0,
+            "end": 45
+          },
+          {
+            "url": "2fb2b5136b77c363",
+            "title": "第二章 继续",
+            "isVolume": false,
+            "baseUrl": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "index": 1,
+            "start": 45,
+            "end": 89
+          }
+        ]
+      }
+    },
+    {
+      "probe": "reading-content",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-content",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "第一章 开始\n这是第一章的正文。\n"
+      },
+      "restored": {
+        "probe": "reading-content",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "第一章 开始\n这是第一章的正文。\n"
+      }
+    },
+    {
+      "probe": "reading-progress-save",
+      "semanticEqual": true,
+      "acceptedDivergence": false,
+      "original": {
+        "probe": "reading-progress-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "reading-progress-save",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
+    },
+    {
+      "probe": "reading-shelf-after-progress",
+      "semanticEqual": false,
+      "acceptedDivergence": true,
+      "original": {
+        "probe": "reading-shelf-after-progress",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "author": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "canUpdate": false,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": "number",
+            "durChapterTitle": "缁楊兛绔寸粩锟� 瀵拷婵拷",
+            "group": 0,
+            "isInShelf": true,
+            "lastCheckCount": 2,
+            "lastCheckTime": "number",
+            "latestChapterTime": "number",
+            "latestChapterTitle": "缂佹鍏涚花鈺冪博閿燂拷 缂備綀鍛暰",
+            "name": "readable",
+            "order": 0,
+            "origin": "loc_book",
+            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originOrder": 0,
+            "tocUrl": "",
+            "totalChapterNum": 2,
+            "type": 0,
+            "useReplaceRule": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "reading-shelf-after-progress",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "author": "",
+            "bookUrl": "storage/data/fileprobef698b33501/reading/readable.txt",
+            "canUpdate": false,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": "number",
+            "durChapterTitle": "第一章 开始",
+            "group": 0,
+            "isInShelf": true,
+            "lastCheckCount": 2,
+            "lastCheckTime": "number",
+            "latestChapterTime": "number",
+            "latestChapterTitle": "第二章 继续",
+            "name": "readable",
+            "order": 0,
+            "origin": "loc_book",
+            "originName": "storage\\data\\fileprobef698b33501\\reading\\readable.txt",
+            "originOrder": 0,
+            "tocUrl": "",
+            "totalChapterNum": 2,
+            "type": 0,
+            "useReplaceRule": true
+          }
+        ]
+      }
+    },
+    {
       "probe": "delete-text",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "delete-text",
         "status": 200,
@@ -475,6 +825,7 @@
     {
       "probe": "get-after-delete",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "get-after-delete",
         "status": 200,
@@ -495,6 +846,7 @@
     {
       "probe": "delete-uploaded-binary",
       "semanticEqual": true,
+      "acceptedDivergence": false,
       "original": {
         "probe": "delete-uploaded-binary",
         "status": 200,
