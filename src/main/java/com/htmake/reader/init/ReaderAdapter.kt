@@ -6,11 +6,16 @@ import io.legado.app.model.DebugLog
 import com.htmake.reader.utils.getWorkDir
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.WebviewRenderer
+import com.htmake.reader.utils.WebviewRequest
 
 /**
  * Singleton ReaderAdapter implementation using getWorkDir from VertExt.kt.
  */
 object ReaderAdapter : ReaderAdapterInterface {
+
+    @Volatile
+    internal var webviewRenderer: WebviewRenderer = RemoteWebview
 
     override fun getWorkDir(subPath: String): String {
         return com.htmake.reader.utils.getWorkDir(subPath)
@@ -42,19 +47,19 @@ object ReaderAdapter : ReaderAdapterInterface {
         userNameSpace: String,
         debugLog: DebugLog?
     ): StrResponse? {
-        return RemoteWebview.getStrResponse(
+        return webviewRenderer.render(WebviewRequest(
             url = url,
             html = html,
             encode = encode.takeUnless { it.isNullOrEmpty() } ?: headerMap?.get("charset"),
             tag = tag,
             headerMap = headerMap,
             sourceRegex = sourceRegex,
-            js_source = javaScript,
+            javaScript = javaScript,
             proxy = proxy,
-            isPost = post,
+            post = post,
             body = body,
             userNameSpace = userNameSpace,
             debugLog = debugLog
-        )
+        ))
     }
 }

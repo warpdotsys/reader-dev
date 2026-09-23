@@ -8,12 +8,27 @@ import io.legado.app.model.DebugLog
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.help.http.CookieStore
 
-object RemoteWebview {
+object RemoteWebview : WebviewRenderer {
     var remoteWebviewApi: String = ""
 
     fun setRemoteApi(remoteApi: String) {
         remoteWebviewApi = remoteApi
     }
+
+    override suspend fun render(request: WebviewRequest): StrResponse = getStrResponse(
+        url = request.url,
+        html = request.html,
+        encode = request.encode,
+        tag = request.tag,
+        headerMap = request.headerMap,
+        sourceRegex = request.sourceRegex,
+        js_source = request.javaScript,
+        proxy = request.proxy,
+        isPost = request.post,
+        body = request.body,
+        userNameSpace = request.userNameSpace,
+        debugLog = request.debugLog
+    )
 
     suspend fun getStrResponse(
         url: String? = null,
