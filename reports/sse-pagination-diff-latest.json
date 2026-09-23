@@ -103,7 +103,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": false,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       },
       "restored": {
         "probe": "one-source",
@@ -115,7 +115,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": true,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       }
     },
     {
@@ -161,7 +161,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": false,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       },
       "restored": {
         "probe": "one-source-switch",
@@ -173,7 +173,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": true,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       }
     },
     {
@@ -190,7 +190,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": false,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       },
       "restored": {
         "probe": "two-source-page-1",
@@ -202,7 +202,7 @@
         "terminalEvent": "end",
         "lastIndex": 0,
         "isEnd": false,
-        "resultSha256": "d9757881f5f08d73e005df166a06ee59f19c61e105432dc51c12b804fc3f1e1b"
+        "resultSha256": "baf71f5ab9cf09e63eb7e294d2f66cb0ff3685d7e92aae0434f710e235ddfa64"
       }
     },
     {
@@ -219,7 +219,7 @@
         "terminalEvent": "end",
         "lastIndex": 1,
         "isEnd": false,
-        "resultSha256": "0eb3670f59c371560ab71a946c305160c7303ad3c838ae1a9c1212f5692e5105"
+        "resultSha256": "752338786da697a0190c4b5765f74716d65353757226798c67a7d792590d219f"
       },
       "restored": {
         "probe": "two-source-page-2",
@@ -231,7 +231,38 @@
         "terminalEvent": "end",
         "lastIndex": 1,
         "isEnd": true,
-        "resultSha256": "0eb3670f59c371560ab71a946c305160c7303ad3c838ae1a9c1212f5692e5105"
+        "resultSha256": "752338786da697a0190c4b5765f74716d65353757226798c67a7d792590d219f"
+      }
+    },
+    {
+      "probe": "two-source-concurrent",
+      "equal": false,
+      "acceptedCursorFix": true,
+      "original": {
+        "probe": "two-source-concurrent",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 2,
+        "terminalEvent": "end",
+        "lastIndex": 1,
+        "isEnd": false,
+        "resultSha256": "714295f3154f5554052c05c97f969ae2025d48625cee6ed8697ecd62969980c9",
+        "maxFixtureConcurrency": 2
+      },
+      "restored": {
+        "probe": "two-source-concurrent",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "cacheControl": "no-cache",
+        "frameCount": 2,
+        "dataCount": 2,
+        "terminalEvent": "end",
+        "lastIndex": 1,
+        "isEnd": true,
+        "resultSha256": "714295f3154f5554052c05c97f969ae2025d48625cee6ed8697ecd62969980c9",
+        "maxFixtureConcurrency": 2
       }
     },
     {
@@ -261,6 +292,27 @@
         "isSuccess": false,
         "errorMsg": "没有更多了",
         "data": null
+      }
+    },
+    {
+      "probe": "abort-recovery",
+      "equal": true,
+      "acceptedCursorFix": false,
+      "original": {
+        "probe": "abort-recovery",
+        "sourceActiveAtClose": true,
+        "systemInfoHealthy": true,
+        "repeatSseComplete": true,
+        "repeatTerminalEvent": "end",
+        "serverObservedDisconnect": true
+      },
+      "restored": {
+        "probe": "abort-recovery",
+        "sourceActiveAtClose": true,
+        "systemInfoHealthy": true,
+        "repeatSseComplete": true,
+        "repeatTerminalEvent": "end",
+        "serverObservedDisconnect": true
       }
     }
   ]

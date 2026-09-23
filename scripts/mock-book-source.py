@@ -2,6 +2,9 @@
 
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+from threading import Lock
+import time
 from urllib.parse import parse_qs, urlsplit
 
 
@@ -15,20 +18,42 @@ PAGES = {
     "/chapter/2": "<html><div class='content'><p>终章内容固定。</p></div></html>",
 }
 
+_search_lock = Lock()
+_active_searches = 0
+_max_active_searches = 0
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        global _active_searches, _max_active_searches
         parsed = urlsplit(self.path)
         if parsed.path == "/health":
             body = "ready"
+        elif parsed.path == "/stats":
+            with _search_lock:
+                if parse_qs(parsed.query).get("reset") == ["1"]:
+                    _max_active_searches = _active_searches
+                body = json.dumps({"activeSearches": _active_searches,
+                                   "maxActiveSearches": _max_active_searches})
         elif parsed.path == "/search":
-            key = parse_qs(parsed.query).get("key", [""])[0]
-            body = (
-                "<html><div class='book'><a href='/book'>"
-                "<span class='name'>差分测试书</span></a>"
-                "<span class='author'>测试作者</span></div></html>"
-                if key in ("差分", "差分测试书") else "<html></html>"
-            )
+            with _search_lock:
+                _active_searches += 1
+                _max_active_searches = max(_max_active_searches, _active_searches)
+            try:
+                params = parse_qs(parsed.query)
+                delay_ms = min(max(int(params.get("delayMs", ["0"])[0]), 0), 1000)
+                if delay_ms:
+                    time.sleep(delay_ms / 1000)
+                key = params.get("key", [""])[0]
+                body = (
+                    "<html><div class='book'><a href='/book'>"
+                    "<span class='name'>差分测试书</span></a>"
+                    "<span class='author'>测试作者</span></div></html>"
+                    if key in ("差分", "差分测试书") else "<html></html>"
+                )
+            finally:
+                with _search_lock:
+                    _active_searches -= 1
         else:
             body = PAGES.get(parsed.path)
         if body is None:

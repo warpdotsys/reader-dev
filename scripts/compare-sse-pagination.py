@@ -44,9 +44,9 @@ def require_success(response, step):
     return value.get("data")
 
 
-def read_sse(opener, base, name, endpoint, params, terminal):
+def read_sse(opener, base, name, endpoint, params, terminal, timeout=35):
     req = urllib.request.Request(base + endpoint + "?" + urllib.parse.urlencode(params))
-    with opener.open(req, timeout=35) as response:
+    with opener.open(req, timeout=timeout) as response:
         raw = response.read(MAX_SSE_BYTES + 1)
         status = response.status
         content_type = response.headers.get("Content-Type", "")
@@ -107,10 +107,11 @@ def assert_incomplete_eof_rejected():
 
 
 def source(fixture_base, suffix):
+    delay = "&delayMs=800" if suffix == "source-three" else "&delayMs=500"
     return {
         "bookSourceUrl": fixture_base + "/" + suffix,
         "bookSourceName": "SSE fixture " + suffix,
-        "searchUrl": fixture_base + "/search?key={{key}}",
+        "searchUrl": fixture_base + "/search?key={{key}}" + delay,
         "ruleSearch": {"bookList": ".book", "name": ".name@text",
                        "author": ".author@text", "bookUrl": "a@href"},
         "ruleBookInfo": {"name": "h1@text", "author": ".author@text",
@@ -119,6 +120,54 @@ def source(fixture_base, suffix):
                     "chapterUrl": "a@href"},
         "ruleContent": {"content": ".content@html"},
     }
+
+
+def fixture_stats(base, reset=False):
+    suffix = "/stats?reset=1" if reset else "/stats"
+    with urllib.request.urlopen(base + suffix, timeout=5) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def abort_stream_then_probe(opener, base, fixture_base):
+    endpoint = "/reader3/searchBookMultiSSE"
+    params = urllib.parse.urlencode({"key": "差分", "lastIndex": -1,
+                                     "searchSize": 3, "concurrentCount": 2})
+    req = urllib.request.Request(base + endpoint + "?" + params)
+    with opener.open(req, timeout=10) as response:
+        first_frame = bytearray()
+        while len(first_frame) < 100_000:
+            line = response.readline()
+            if not line:
+                raise AssertionError("SSE ended before the first data frame")
+            first_frame.extend(line)
+            if first_frame.endswith(b"\n\n"):
+                break
+        else:
+            raise AssertionError("First SSE frame exceeded 100 KB")
+        parse_sse_frames(bytes(first_frame), "abort-first-frame", "message")
+        deadline = time.monotonic() + 0.5
+        source_active = False
+        while time.monotonic() < deadline:
+            source_active = fixture_stats(fixture_base)["activeSearches"] > 0
+            if source_active:
+                break
+            time.sleep(0.02)
+    # The third source remains in flight when the client's response closes.
+    time.sleep(1.0)
+    try:
+        status, value = get_json(opener, base, "/reader3/getSystemInfo", timeout=5)
+        healthy = status == 200 and value.get("isSuccess") is True
+        repeat = read_sse(opener, base, "after-abort", endpoint,
+                          {"key": "差分", "lastIndex": -1,
+                           "searchSize": 1, "concurrentCount": 1}, "end", timeout=8)
+        return {"probe": "abort-recovery", "sourceActiveAtClose": source_active,
+                "systemInfoHealthy": healthy,
+                "repeatSseComplete": repeat["dataCount"] == 1 and repeat["lastIndex"] == 0,
+                "repeatTerminalEvent": repeat["terminalEvent"]}
+    except (OSError, ValueError, urllib.error.URLError, AssertionError) as error:
+        return {"probe": "abort-recovery", "sourceActiveAtClose": source_active,
+                "systemInfoHealthy": False,
+                "repeatSseComplete": False, "failureType": type(error).__name__}
 
 
 def run_reader(jar, java, workdir, port, fixture_base, username, password):
@@ -177,8 +226,25 @@ def run_reader(jar, java, workdir, port, fixture_base, username, password):
             probes.append(read_sse(opener, base, "two-source-page-2", multi,
                                    {"key": "差分", "lastIndex": first_page["lastIndex"],
                                     "searchSize": 1, "concurrentCount": 1}, "end"))
+            fixture_stats(fixture_base, reset=True)
+            probes.append(read_sse(opener, base, "two-source-concurrent", multi,
+                                   {"key": "差分", "lastIndex": -1,
+                                    "searchSize": 2, "concurrentCount": 2}, "end"))
+            probes[-1]["maxFixtureConcurrency"] = fixture_stats(fixture_base)["maxActiveSearches"]
             probes.append(read_sse(opener, base, "exhausted", multi,
                                    {"key": "差分", "lastIndex": 1}, "error"))
+            require_success(get_json(opener, base, "/reader3/saveBookSource",
+                                     source(fixture_base, "source-three")), "save third source")
+            probes.append(abort_stream_then_probe(opener, base, fixture_base))
+            disconnect_lines = [line for file in (workdir / "logs").glob("reader-*.log")
+                                for line in file.read_bytes().splitlines()
+                                if b"searchBookMultiSSE" in line]
+            # The original JAR writes local Windows logs in GBK; match only the
+            # ASCII logger/method markers rather than assuming a log encoding.
+            probes[-1]["serverObservedDisconnect"] = any(
+                b"BookController - " in line and b"searchBookMultiSSE" in line
+                for line in disconnect_lines
+            )
             return probes
         finally:
             process.terminate()
@@ -217,6 +283,7 @@ def assert_contract(probes):
         "one-source-switch": (0, 1),
         "two-source-page-1": (0, 1),
         "two-source-page-2": (1, 1),
+        "two-source-concurrent": (1, 2),
     }
     for name, (cursor, count) in pages.items():
         result = by_name[name]
@@ -224,13 +291,21 @@ def assert_contract(probes):
                 result["lastIndex"] != cursor or result["dataCount"] != count or
                 not isinstance(result["isEnd"], bool) or
                 result["cacheControl"] != "no-cache"):
-            raise AssertionError(f"Unexpected SSE page contract: {name}")
+            raise AssertionError(f"Unexpected SSE page contract: {name}: {result}")
     if by_name["two-source-page-1"]["isEnd"] is not False:
         raise AssertionError("First of two source pages must not be terminal")
     if by_name["one-source"]["resultSha256"] != by_name["two-source-page-1"]["resultSha256"]:
         raise AssertionError("First paginated result changed when adding the second source")
     if by_name["two-source-page-1"]["resultSha256"] == by_name["two-source-page-2"]["resultSha256"]:
         raise AssertionError("Second source page repeated the first source result")
+    if by_name["two-source-concurrent"].get("maxFixtureConcurrency", 0) < 2:
+        raise AssertionError("The fixture did not observe two overlapping source requests")
+    recovery = by_name["abort-recovery"]
+    if (recovery.get("repeatSseComplete") is not True or
+            recovery.get("systemInfoHealthy") is not True or
+            recovery.get("sourceActiveAtClose") is not True or
+            recovery.get("serverObservedDisconnect") is not True):
+        raise AssertionError(f"New SSE failed after client disconnect: {recovery}")
 
 
 def main():
@@ -299,7 +374,7 @@ def main():
     for left, right in zip(original, restored):
         if left["probe"] != right["probe"]:
             raise AssertionError("SSE probe ordering differs")
-        source_count = 2 if left["probe"] == "two-source-page-2" else 1
+        source_count = 2 if left["probe"] in ("two-source-page-2", "two-source-concurrent") else 1
         allowed = accepted_cursor_fix(left, right, source_count)
         comparisons.append({"probe": left["probe"], "equal": left == right,
                             "acceptedCursorFix": allowed, "original": left, "restored": right})

@@ -35,4 +35,4 @@ python -B .\scripts\compare-live-source-reading.py --source-namespace YOUR_NAMES
 ## 尚未验证
 
 - 生产容器本体的登录态目录、正文、书架以及缓存链路；现有 accessToken 自动登录路径会写入 `users.json` 的最后登录时间，故不将其包装成纯只读验证。隔离副本已完成其中一条书源的认证与阅读链路。
-- 真实书源的其他书目、翻页、JS 规则全集、封面图片、SSE 多源并发及长期稳定性。固定双源的顺序分页差分另见 `reports/SSE-PAGINATION-DIFF.md`，不能代替多源并发测试。
+- 真实书源的其他书目、翻页、JS 规则全集、封面图片、真实站点的 SSE 多源并发及长期稳定性。固定站点的双源并发和受控断线差分另见 `reports/SSE-PAGINATION-DIFF.md`，不能代替真实站点的大规模并发测试。
