@@ -19,7 +19,7 @@ class CookieStore(val userNameSpace: String) : CookieManager {
     )
 
     override fun setCookie(url: String, cookie: String?) {
-        val domain = NetworkUtils.getSubDomain(url)
+        val domain = cookieKey(url)
         if (domain.isNotEmpty()) cacheInstance.put(domain, cookie ?: "")
     }
 
@@ -39,14 +39,24 @@ class CookieStore(val userNameSpace: String) : CookieManager {
     }
 
     override fun getCookie(url: String): String {
-        val domain = NetworkUtils.getSubDomain(url)
+        val domain = cookieKey(url)
         return if (domain.isEmpty()) "" else cacheInstance.getAsString(domain) ?: ""
     }
 
     fun getKey(url: String, key: String): String = cookieToMap(getCookie(url))[key] ?: ""
 
     override fun removeCookie(url: String) {
-        NetworkUtils.getSubDomain(url).takeIf { it.isNotEmpty() }?.let(cacheInstance::remove)
+        cookieKey(url).takeIf { it.isNotEmpty() }?.let(cacheInstance::remove)
+    }
+
+    /** Legacy callers also pass a bare domain or a domain suffixed with `_cookieJar`. */
+    private fun cookieKey(urlOrDomain: String): String {
+        val domain = NetworkUtils.getSubDomain(urlOrDomain)
+        if (domain.isNotEmpty()) return domain
+        if (urlOrDomain.isEmpty() ||
+            urlOrDomain.any { !it.isLetterOrDigit() && it !in "._:-" }
+        ) return ""
+        return urlOrDomain
     }
 
     override fun cookieToMap(cookie: String): MutableMap<String, String> {
