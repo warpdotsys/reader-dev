@@ -1,0 +1,68 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "restoredJarSha256": "6F6CAB12229CE6729B380F261F23183423337D1F4ABC9C30EB6FEC4ADA70A40E",
+  "original": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "",
+      ""
+    ]
+  },
+  "restored": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "session=alpha==",
+      ""
+    ]
+  },
+  "expectedOriginalCookieSequence": [
+    "",
+    "",
+    ""
+  ],
+  "expectedRestoredCookieSequence": [
+    "",
+    "session=alpha==",
+    ""
+  ]
+}

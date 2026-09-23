@@ -45,7 +45,7 @@
 
 完成条件：在**单个 Reader 容器**中，无独立 WebView 容器即可运行被选中的 WebView 书源；固定样本与真实书源的结果、Cookie/用户隔离和异常路径通过差分；空闲与并发资源预算、崩溃恢复及升级回滚均有实测证据。以上均为待办，当前版本尚不具备内置指纹浏览器。
 
-进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，现有远程渲染仍为唯一默认实现；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据和验证边界见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`。这仍只是植入准备；候选本地引擎、真实书源差分、容器镜像及生产切换均未完成。
+进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，现有远程渲染仍为唯一默认实现；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。这仍只是植入准备；候选本地引擎、真实书源差分、容器镜像及生产切换均未完成。
 
 ## 后续候选项（尚未承诺）
 

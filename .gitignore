@@ -9,6 +9,7 @@ reference/extracted/
 reference/decompiled/
 reference/original/*.jar
 .tools/
+__pycache__/
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
