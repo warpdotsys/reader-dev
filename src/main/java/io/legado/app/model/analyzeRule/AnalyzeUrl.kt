@@ -408,7 +408,7 @@ class AnalyzeUrl(
         if (cookieList.isEmpty()) return
         val cookieStore = CookieStore(getUserNameSpace())
         val domain = NetworkUtils.getSubDomain(url)
-        cookieList.forEach { cookieStore.replaceCookie("${domain}_cookieJar", it) }
+        cookieList.forEach { cookieStore.replaceResponseCookie("${domain}_cookieJar", it) }
     }
 
     @JvmOverloads

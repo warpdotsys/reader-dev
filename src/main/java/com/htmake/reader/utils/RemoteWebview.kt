@@ -77,7 +77,7 @@ object RemoteWebview : WebviewRenderer {
                 val cookies = strResponse.raw.headers("Set-Cookie")
                 if (cookies.size > 0) {
                     for (cookie in cookies) {
-                        CookieStore(userNameSpace).replaceCookie(subDomain + "_cookieJar", cookie)
+                        CookieStore(userNameSpace).replaceResponseCookie(subDomain + "_cookieJar", cookie)
                     }
                 }
             }
