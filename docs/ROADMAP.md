@@ -1,128 +1,27 @@
-# Reader-dev 路线图（Roadmap）
+# Reader-dev 维护路线
 
-> 状态：Rust 重构已在 master 分支启动（开发中，不发版）；Kotlin 稳定版维护移至 legacy 分支。
-> 更新日期：2026-08-03
+更新日期：2026-09-23。
 
----
+## 当前方向
 
-## Rust 重构开发策略（2026-08-03 起）
+- `legacy` 是默认分支和 Java/Kotlin 混合工程的维护主线。以原始 `reader-pro-3.2.14.jar` 的可观察行为与数据格式为兼容基线，优先使用可读源码和可重复构建，而不是字节码热补丁。
+- Rust 旧线和 Go 重写成果保留作历史参考，暂不继续全量重写，也不以它们作为当前版本的兼容性依据。旧 Rust 专属问题不等于已修复；仍适用于当前产品的问题继续跟踪。
+- 前端现阶段保留原 JAR 的 Vue 2 界面。只有后端兼容性和主要缺陷稳定后，才评估接入 Vue 3 设计；不能直接把 Rust/master 前端视为可替换资源。
+- 已发布版本、构建证据和已知限制见 `docs/releases/` 与 `reports/`。本路线图描述优先级，不代表其中每项已经交付。
 
-- **分支布局**：`master` 分支 = Rust 重构开发分支（空分支起步）；Kotlin 稳定版保留在 `legacy` 分支
-- **开发中不发版、不 release**：master 分支上的提交/标签不会发布 Docker 镜像或 GitHub Release
-- **可 pre-release / 临时 tag**：master 允许打 pre-release/临时 tag 作开发里程碑，但不触发发布
-- **docker-publish 发版 guard**：工作流含「发版保护」步骤——仅当触发 SHA 是 `origin/legacy` 的祖先时允许发版（`OK 允许发版`），否则直接 `exit 1` 拒绝（`Rust 开发分支禁止发版（防止用户误更新）`）
+## 近期优先级
 
-## Rust 重构吸收计划功能
+1. **行为与数据兼容**：继续扩展原始 JAR、恢复版、隔离生产数据副本之间的差分，覆盖认证、用户命名空间、书源规则、书架、正文缓存、本地书、文件格式、WebDAV、SSE、下载和异常路径。将有意修复与未解释的差异分开记录。
+2. **可维护源码**：逐类核对反编译或近似源码与 JAR 的差异。Kotlin 伪代码必须人工整理；不能为了通过编译而增加空实现。每个可恢复功能应有明确测试或差分证据。
+3. **部署与发布安全**：GitHub 托管 runner 构建并发版，记录制品散列、已知问题和回滚方法。生产数据只在备份及隔离验证后迁移；本地构建成功不自动等于线上已经更新。
+4. **当前缺陷**：继续跟踪 [#49 子目录部署](https://github.com/warpdotsys/reader-dev/issues/49)和 [#34 章节固化](https://github.com/warpdotsys/reader-dev/issues/34)。`/reader` 无尾斜杠入口已在源码中修复并通过本机黑盒检查，但 #49 涉及的反向代理、前端完整交互和生产部署尚未验收，不据此关闭。
 
-Rust 重构版将吸收以下远期计划能力（编号对应下文各远期小节）：
+## 后续候选项（尚未承诺）
 
-| 能力 | 远期编号 | 说明 |
-| --- | --- | --- |
-| SQLite 兼容迁移 | 远期 2 | JSON → SQLite 一键迁移（自动检测 / 增量迁移 / 校验 / 备份回滚） |
-| legado 多规则解析 | 远期 3 | CSS Selector / JSONPath / XPath / Regex / JavaScript 多规则引擎 |
-| 书籍格式扩展 | 远期 4 | MOBI / AZW3 / AZW / FB2 等本地书籍格式支持 |
+- 在不改变旧数据语义的前提下改善 JSON 存储性能；任何 SQLite 迁移都必须具备备份、校验和可回滚路径，且不能先于兼容基线验收。
+- 扩展书源规则和本地书格式时，优先在现有 Kotlin/Java 工程中做增量实现与回归测试，避免再次引入全量语言重写。
+- Vue 3 设计只作为交互参考；是否移植和何时移植，以后端接口、登录与阅读链路稳定为前提。
 
----
+## 验证用语
 
-## 远期计划（按优先级）
-
-### 1. Rust 重写（终极目标）
-
-**目标**：将服务端从 Kotlin/JVM（Vert.x）重写为 Rust，获得：
-- 单二进制部署（无 JVM 依赖、启动毫秒级、内存占用大幅降低）
-- 高并发低资源消耗（参考 [Maple0517/reader-next](https://github.com/Maple0517/reader-next) 的 Rust 路线验证）
-- 更安全的依赖链（Rust 生态 CVE 面小）
-
-**参考**：
-- `Maple0517/reader-next`：reader-rust 独立续作，Rust 120 万行 + Vue 3 前端，已实现书源解析/书架/本地书/AI 功能
-- `givenge/reader-rust`：上游 Rust 移植
-
-**产物策略（双形态，行业最佳实践：Gitea/Traefik 同款）**：
-- **形态 1：scratch 镜像**（`FROM scratch` + COPY 静态二进制）——生产主部署（148 容器形态不变：reader_share_net/storage 卷/pangolin/回滚机制）
-  - 镜像仅 1 个文件，无 OS 层/shell/包管理器 → **系统层 CVE = 0**（终结现 Alpine apk 维护），仅剩 Rust 依赖层（cargo audit，CVE 面极小）
-- **形态 2：裸静态二进制**（`x86_64-unknown-linux-musl` 编译）——GitHub Release 附件分发，`scp` 即可部署 + systemd 示例 unit
-- **前端二进制内嵌**（rust-embed 编译进二进制）→ 真·单文件全功能，镜像形态复用
-
-**实现要点**：
-- CA 证书：scratch 镜像 COPY ca-certificates；裸二进制依赖宿主证书或内置
-- 时区数据：内置 tzdata（许可到期校验/时间显示）
-- 数据目录：两者指向 `storage/`（env 指定），数据格式与迁移工具（远期 2）一致
-
-**约束**：
-- **API 兼容**：`/reader3/*` 路径与行为保持与现版一致（客户端无缝切换）
-- **数据兼容**：现有 `storage/` 数据可平滑导入（见远期 2）
-- **前端可复用**：Vue 前端保留，仅适配新后端 API
-
-**时机**：许可系统稳定运行后评估；可作为独立分支推进，与 Kotlin 版并行维护一段时间。
-
----
-
-### 2. 数据库性能升级（含兼容迁移）
-
-**目标**：JSON 文件存储（`storage/data/*.json`）升级为高性能数据库：
-- **SQLite**（首选）：单文件、零运维、支持事务/索引/并发读，参考 reader-next 的 `storage/reader.db` 方案
-- 解决 JSON 存储痛点：全量读写、无索引查询、并发写竞争、大数据量（书源 500000+/书籍多）性能劣化
-
-**兼容迁移（硬性要求）**：
-- 提供**一键迁移工具**：现有 JSON（用户/书架/书源/书籍/许可/配置）→ SQLite，**自动检测 + 增量迁移 + 校验**
-- 迁移前自动备份 JSON（storage 卷快照）
-- 迁移失败可**回滚**（保留原 JSON）
-- 许可系统数据（申请/机器登记/吊销）同步迁移
-
-**参考**：reader-next 的 storage 层（SQLite + 文件缓存 + 上传资源分离）。
-
-**时机**：Rust 重写前可作为独立优化（Kotlin 版先上 SQLite）；或并入重写一并完成。
-
----
-
-### 3. 书源解析多规则（对齐 warpdotsys/legado）
-
-**目标**：书源解析从单一规则体系扩展为**多规则引擎**：
-- **CSS Selector / JSONPath / XPath / Regex / JavaScript** 五种规则类型（对齐 legado 生态的 analyzeRule）
-- 实现上**对齐 [warpdotsys/legado](https://github.com/warpdotsys/legado)**（阅读Sigma，gedoor/legado 分支）：
-  - legado 是 **Kotlin** 技术栈，与现版（Kotlin/JVM）**可直接移植** analyzeRule 实现
-  - 移植其规则解析/执行核心（CSS/JSONPath/XPath/Regex/JS 调度）
-  - 兼容 legado 书源规则语法（让 legado 书源可直接导入使用）
-
-**现有基础**：已对齐 reader-pro JAR 的 analyzeRule（字节码级审计），作为兼容基线；
-**扩展方式**：在保持现有规则行为不变的前提下**增量引入**多规则支持（向后兼容，旧书源不受影响）。
-
-**参考**：`warpdotsys/legado`（阅读Sigma）analyzeRule 实现、`Maple0517/reader-next` 的 parser 层（Rust 版多规则）。
-
-**时机**：可先于 Rust 重写在 Kotlin 版实现（直接移植 legado Kotlin 代码），重写时再迁移。
-
----
-
-### 4. 本地书籍格式扩展
-
-**目标**：本地书籍支持从现有限制扩展：
-- 现有：TXT / EPUB / PDF / CBZ（对齐 reader-pro JAR）
-- 扩展：**MOBI / AZW3 / AZW / FB2**（Kindle 系格式优先，参考 reader-next 已支持 MOBI 的解析方案）
-- 配套：格式转换（上传时归一化为内部格式）、章节解析优化、大文件分章性能
-
-**参考**：`Maple0517/reader-next` 的本地书籍支持（TXT/EPUB/MOBI/PDF + 跨设备进度）。
-
-**时机**：与多规则解析解耦，可独立推进。
-
----
-
-## 依赖关系
-
-```
-远期 3（多规则解析）──┐
-远期 4（书籍格式）  ──┼──▶ 远期 1（Rust 重写吸收全部能力）
-远期 2（SQLite）   ──┘
-```
-
-- 远期 3/4 可先于重写在 Kotlin 版落地（Kotlin 生态直接复用 legado 代码）
-- 远期 2 若先落地，重写时需保留迁移工具
-- 远期 1 是收敛点：重写版继承全部远期能力 + 许可系统
-
----
-
-## 非远期（当前主线，不列入上表）
-
-- JAR 兼容性维护（reader-pro-3.2.14 对齐）
-- CVE 修复与依赖升级
-- 发布流水线（GitHub Actions + DE runner + ghcr/Docker Hub）
-- 用户/功能**不做许可限制**（决策：永远不限制；`READER_APP_USERLIMIT` 等 env 默认宽松 500000）
+维护记录应明确区分“已从 JAR 验证”“已从近似源码推断”“已成功重建”和“尚未验证”。共同失败的第三方书源不应记为恢复版回归；仅有 HTTP 建连的 SSE 不应记为完整成功；本机通过不应写成生产已部署。

@@ -107,8 +107,21 @@ abstract class RestVerticle : CoroutineVerticle() {
         }
 
         val contextPath = getContextPath()
-        val mainRouter = if (contextPath.isNotEmpty()) {
-            Router.router(vertx).also { it.mountSubRouter(contextPath.toDir(true), router) }
+        val mountPath = if (contextPath.isEmpty() || contextPath == "/") "" else contextPath.toDir(true)
+        val mainRouter = if (mountPath.isNotEmpty()) {
+            Router.router(vertx).also { main ->
+                // Without the trailing slash, browsers resolve relative web assets at the site root.
+                main.get(mountPath).handler { ctx ->
+                    if (ctx.request().path() == mountPath) {
+                        val query = ctx.request().query()
+                        val location = "$mountPath/" + if (query.isNullOrEmpty()) "" else "?$query"
+                        ctx.response().setStatusCode(308).putHeader("Location", location).end()
+                    } else {
+                        ctx.next()
+                    }
+                }
+                main.mountSubRouter(mountPath, router)
+            }
         } else {
             router
         }
