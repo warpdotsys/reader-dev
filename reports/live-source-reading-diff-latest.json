@@ -3,10 +3,47 @@
   "sourceName": "快眼看书（优+）",
   "query": "斗破苍穹",
   "bookResultIndex": 0,
+  "sse": true,
   "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
-  "restoredJarSha256": "4b557a880c0f6d9dbd9517472964a30272ca372a7f4140da5433f3ae44e68a01",
+  "restoredJarSha256": "2ce4c1aba8b40471a036c266f7e4ecfc586eb91c83878cb246194b21c25da8ef",
   "original": {
     "steps": [
+      {
+        "step": "source-save",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": ""
+      },
+      {
+        "step": "search-sse",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "frameCount": 2,
+        "count": 41,
+        "terminalEvent": "end",
+        "isEnd": false,
+        "lastIndex": 0,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "non-default",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "24dc99255937c53ae67ec96ad1841fb7300274db85c87e5b8abb6ba9c940d786"
+      },
       {
         "step": "search",
         "status": 200,
@@ -65,6 +102,36 @@
           "useReplaceRule": "bool:True"
         },
         "resultSha256": "57ea6e7b3e2a09f6b55a4c82389dd5430aaa93e112b0502c6de4faa857147c44"
+      },
+      {
+        "step": "source-sse",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "frameCount": 2,
+        "count": 1,
+        "terminalEvent": "end",
+        "isEnd": false,
+        "lastIndex": 0,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "non-default",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "0fd9483247531b98c2099831c5d9d95a371e63f46d4aa87c2546d57efaeb0a63"
       },
       {
         "step": "chapter-list",
@@ -99,6 +166,42 @@
   "restored": {
     "steps": [
       {
+        "step": "source-save",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": ""
+      },
+      {
+        "step": "search-sse",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "frameCount": 2,
+        "count": 41,
+        "terminalEvent": "end",
+        "isEnd": true,
+        "lastIndex": 0,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "non-default",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "24dc99255937c53ae67ec96ad1841fb7300274db85c87e5b8abb6ba9c940d786"
+      },
+      {
         "step": "search",
         "status": 200,
         "isSuccess": true,
@@ -158,6 +261,36 @@
         "resultSha256": "57ea6e7b3e2a09f6b55a4c82389dd5430aaa93e112b0502c6de4faa857147c44"
       },
       {
+        "step": "source-sse",
+        "status": 200,
+        "contentType": "text/event-stream",
+        "frameCount": 2,
+        "count": 1,
+        "terminalEvent": "end",
+        "isEnd": true,
+        "lastIndex": 0,
+        "shape": [
+          {
+            "author": "non-default",
+            "bookUrl": "non-default",
+            "coverUrl": "non-default",
+            "infoHtml": "empty-string",
+            "intro": "empty-string",
+            "latestChapterTitle": "non-default",
+            "name": "non-default",
+            "origin": "non-default",
+            "originName": "non-default",
+            "originOrder": "non-default",
+            "time": "non-default",
+            "tocHtml": "empty-string",
+            "tocUrl": "empty-string",
+            "type": "zero",
+            "wordCount": "empty-string"
+          }
+        ],
+        "resultSha256": "0fd9483247531b98c2099831c5d9d95a371e63f46d4aa87c2546d57efaeb0a63"
+      },
+      {
         "step": "chapter-list",
         "status": 200,
         "isSuccess": true,
@@ -187,7 +320,12 @@
     ],
     "bookUrlSha256": "21f200e5c62c8d79057d46f7a469a1b214d02a10885f9f475d65a73032287d50"
   },
-  "sameStepSummaries": true,
+  "sameStepSummaries": false,
+  "acceptedDivergences": [
+    "search-sse-isEnd",
+    "source-sse-isEnd"
+  ],
+  "parityOrAccepted": true,
   "productionSmoke": {
     "steps": [
       {

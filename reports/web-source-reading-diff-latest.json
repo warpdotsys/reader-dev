@@ -1,7 +1,7 @@
 {
   "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
-  "restoredJarSha256": "4B557A880C0F6D9DBD9517472964A30272CA372A7F4140DA5433F3AE44E68A01",
-  "fixtureBase": "http://127.0.0.1:55530",
+  "restoredJarSha256": "2CE4C1ABA8B40471A036C266F7E4ECFC586EB91C83878CB246194B21C25DA8EF",
+  "fixtureBase": "http://127.0.0.1:62554",
   "comparisons": [
     {
       "probe": "source-save",
@@ -40,8 +40,8 @@
           {
             "name": "差分测试书",
             "author": "测试作者",
-            "bookUrl": "http://127.0.0.1:55530/book",
-            "origin": "http://127.0.0.1:55530"
+            "bookUrl": "http://127.0.0.1:62554/book",
+            "origin": "http://127.0.0.1:62554"
           }
         ],
         "fieldShape": [
@@ -73,8 +73,8 @@
           {
             "name": "差分测试书",
             "author": "测试作者",
-            "bookUrl": "http://127.0.0.1:55530/book",
-            "origin": "http://127.0.0.1:55530"
+            "bookUrl": "http://127.0.0.1:62554/book",
+            "origin": "http://127.0.0.1:62554"
           }
         ],
         "fieldShape": [
@@ -110,9 +110,9 @@
         "data": {
           "name": "差分测试书",
           "author": "测试作者",
-          "bookUrl": "http://127.0.0.1:55530/book",
-          "tocUrl": "http://127.0.0.1:55530/toc",
-          "origin": "http://127.0.0.1:55530"
+          "bookUrl": "http://127.0.0.1:62554/book",
+          "tocUrl": "http://127.0.0.1:62554/toc",
+          "origin": "http://127.0.0.1:62554"
         },
         "fieldShape": {
           "author": "non-default",
@@ -146,9 +146,9 @@
         "data": {
           "name": "差分测试书",
           "author": "测试作者",
-          "bookUrl": "http://127.0.0.1:55530/book",
-          "tocUrl": "http://127.0.0.1:55530/toc",
-          "origin": "http://127.0.0.1:55530"
+          "bookUrl": "http://127.0.0.1:62554/book",
+          "tocUrl": "http://127.0.0.1:62554/toc",
+          "origin": "http://127.0.0.1:62554"
         },
         "fieldShape": {
           "author": "non-default",
@@ -187,9 +187,9 @@
         "data": {
           "name": "差分测试书",
           "author": "测试作者",
-          "bookUrl": "http://127.0.0.1:55530/book",
-          "tocUrl": "http://127.0.0.1:55530/toc",
-          "origin": "http://127.0.0.1:55530"
+          "bookUrl": "http://127.0.0.1:62554/book",
+          "tocUrl": "http://127.0.0.1:62554/toc",
+          "origin": "http://127.0.0.1:62554"
         },
         "fieldShape": {
           "author": "non-default",
@@ -223,9 +223,9 @@
         "data": {
           "name": "差分测试书",
           "author": "测试作者",
-          "bookUrl": "http://127.0.0.1:55530/book",
-          "tocUrl": "http://127.0.0.1:55530/toc",
-          "origin": "http://127.0.0.1:55530"
+          "bookUrl": "http://127.0.0.1:62554/book",
+          "tocUrl": "http://127.0.0.1:62554/toc",
+          "origin": "http://127.0.0.1:62554"
         },
         "fieldShape": {
           "author": "non-default",
@@ -265,9 +265,9 @@
           {
             "name": "宸垎娴嬭瘯涔�",
             "author": "娴嬭瘯浣滆��",
-            "bookUrl": "http://127.0.0.1:55530/book",
-            "tocUrl": "http://127.0.0.1:55530/toc",
-            "origin": "http://127.0.0.1:55530"
+            "bookUrl": "http://127.0.0.1:62554/book",
+            "tocUrl": "http://127.0.0.1:62554/toc",
+            "origin": "http://127.0.0.1:62554"
           }
         ],
         "fieldShape": [
@@ -305,9 +305,9 @@
           {
             "name": "差分测试书",
             "author": "测试作者",
-            "bookUrl": "http://127.0.0.1:55530/book",
-            "tocUrl": "http://127.0.0.1:55530/toc",
-            "origin": "http://127.0.0.1:55530"
+            "bookUrl": "http://127.0.0.1:62554/book",
+            "tocUrl": "http://127.0.0.1:62554/toc",
+            "origin": "http://127.0.0.1:62554"
           }
         ],
         "fieldShape": [

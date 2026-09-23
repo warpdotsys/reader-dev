@@ -1012,7 +1012,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             }
         }
         response.write("event: end\n")
-        response.end("data: " + jsonEncode(mapOf("lastIndex" to lastIndex, "isEnd" to (lastIndex >= urlMap.size)), false) + "\n\n")
+        response.end("data: " + jsonEncode(mapOf("lastIndex" to lastIndex, "isEnd" to SourceScanCursor.isComplete(lastIndex, urlMap.size)), false) + "\n\n")
     }
 
     suspend fun searchBookSource(context: RoutingContext): ReturnData {
@@ -1229,7 +1229,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
         saveBookSources(book, resultList, userNameSpace)
         response.write("event: end\n")
-        response.end("data: " + jsonEncode(mapOf("lastIndex" to lastIndex, "isEnd" to (lastIndex >= maxSize)), false) + "\n\n")
+        response.end("data: " + jsonEncode(mapOf("lastIndex" to lastIndex, "isEnd" to SourceScanCursor.isComplete(lastIndex, maxSize)), false) + "\n\n")
     }
 
     suspend fun searchBookWithSource(bookSourceString: String, book: Book, accurate: Boolean = true, userNameSpace: String = "default"): ArrayList<SearchBook> {

@@ -1,16 +1,22 @@
 # 线上现有真实书源差分
 
-验证日期：2026-09-23（Asia/Shanghai）。经只读 SSH，从已部署服务的 `storage/data/transwarp/bookSource.json` 中仅提取一个无需登录配置的书源规则至测试进程内存；未导出整份书源库。原始 JAR 和当前恢复构建分别在本机临时目录启动，以合成账号调用同一真实书源。测试没有修改生产书源、书架或用户数据，也没有把章节正文或书源规则写入报告。
+验证日期：2026-09-23（Asia/Shanghai）。经只读 SSH，从已部署服务的 `storage/data/<账户目录>/bookSource.json` 中仅提取一个无需登录配置的书源规则至测试进程内存；未导出整份书源库。原始 JAR 和当前恢复构建分别在本机临时目录启动，以合成账号调用同一真实书源。测试没有修改生产书源、书架或用户数据，也没有把章节正文或书源规则写入报告。
 
 运行（需预先配置对服务器的只读 SSH 访问）：
 
 ```powershell
-python -B .\scripts\compare-live-source-reading.py --source-index 98 --query 斗破苍穹 --production-smoke --quiet --report .\reports\live-source-reading-diff-latest.json
+python -B .\scripts\compare-live-source-reading.py --source-namespace YOUR_NAMESPACE --source-index 98 --query 斗破苍穹 --sse --production-smoke --quiet --report .\reports\live-source-reading-diff-latest.json
 ```
 
 ## 已从原始 JAR 验证并成功重建
 
 “快眼看书（优+）”书源搜索返回 100 条；对同一本书，两版详情成功、目录各 1914 章、首章正文各 2852 个 Unicode 字符。搜索、详情、目录的 HTTP 状态、`isSuccess`、`errorMsg`、结果数量及首条对象的字段名/默认值类别一致；全部搜索书目、详情关键字段及全部章节的名称/URL/索引摘要亦一致。正文 UTF-8 SHA-256 在两版均为 `27D041EDEDD93E919F4D3DE969A0E13061E40001C84DA51BDCE12068348B45E1`。正文只计算长度和哈希，不保存或展示文本。
+
+两种 SSE 接口都验证到真正的 `event: end` 终帧（各 2 帧），没有把连接建立或提前 EOF 算作完成。多源搜索 SSE 返回 41 条，换源 SSE 返回 1 条；两版每个流的数据数量、字段形态和书目摘要一致。
+
+## 有意修复的 SSE 终帧差异
+
+仅配置一个书源时，原始 JAR 的两种 SSE 终帧均是 `lastIndex=0, isEnd=false`；这与服务端下一次请求的“没有更多了”判断相矛盾。恢复版将终帧修正为 `lastIndex=0, isEnd=true`，其它帧字段及结果一致。零基索引判断另有单元测试；黑盒脚本只接受这两个接口中恰好这一布尔值的差异，出现其它差异会失败。此次恢复构建 SHA-256：`2CE4C1ABA8B40471A036C266F7E4ECFC586EB91C83878CB246194B21C25DA8EF`；尚未部署。
 
 另外，对当前已部署的 `https://read.medwarp.cn` 发起了匿名、只读的搜索与详情请求：两项均为 HTTP 200、`isSuccess=true`，搜索亦返回 100 条且全体书目摘要与本地一致，详情含目录地址。线上当前搜索响应仍多出内部 `_userNameSpace` 字段；本地恢复构建已修复，尚未部署该修复。线上目录与正文因需要登录，本轮没有调用，不应称为生产端到端阅读验证。
 
@@ -24,5 +30,5 @@ python -B .\scripts\compare-live-source-reading.py --source-index 98 --query 斗
 
 ## 尚未验证
 
-- 线上登录后的目录、正文、书架以及缓存链路；本轮不使用生产账号凭据，也不创建生产测试账号。
+- 线上登录后的目录、正文、书架以及缓存链路；本轮不使用生产账号凭据，也不创建生产测试账号。现有 accessToken 自动登录路径会写入 `users.json` 的最后登录时间，故不能称其为纯只读验证。
 - 真实书源的其他书目、翻页、JS 规则全集、封面图片、SSE 搜索及长期稳定性。
