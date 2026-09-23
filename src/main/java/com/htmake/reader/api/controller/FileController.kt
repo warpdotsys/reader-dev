@@ -102,7 +102,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
             mapOf(
                 "name" to item.name,
                 "size" to item.length(),
-                "path" to "/" + item.relativeTo(baseDir).path.replace(File.separatorChar, '/'),
+                "path" to File.separator + item.relativeTo(baseDir).path,
                 "lastModified" to item.lastModified(),
                 "isDirectory" to item.isDirectory
             )

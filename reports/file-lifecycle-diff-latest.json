@@ -1,0 +1,308 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "restoredJarSha256": "5747585D280CB8027CD98FAC0A86D7F6C037A1313E77541648935002233AF643",
+  "comparisons": [
+    {
+      "probe": "anonymous-list",
+      "semanticEqual": true,
+      "original": {
+        "probe": "anonymous-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "data": "NEED_LOGIN"
+      },
+      "restored": {
+        "probe": "anonymous-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "请登录后使用",
+        "data": "NEED_LOGIN"
+      }
+    },
+    {
+      "probe": "root-list",
+      "semanticEqual": true,
+      "original": {
+        "probe": "root-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": []
+      },
+      "restored": {
+        "probe": "root-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": []
+      }
+    },
+    {
+      "probe": "save-text",
+      "semanticEqual": true,
+      "original": {
+        "probe": "save-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "save-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
+    },
+    {
+      "probe": "get-text",
+      "semanticEqual": true,
+      "original": {
+        "probe": "get-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "跨版本文件内容\nUnicode ✓"
+      },
+      "restored": {
+        "probe": "get-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": "跨版本文件内容\nUnicode ✓"
+      }
+    },
+    {
+      "probe": "notes-list",
+      "semanticEqual": true,
+      "original": {
+        "probe": "notes-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "notes-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "download-attachment",
+      "semanticEqual": true,
+      "original": {
+        "probe": "download-attachment",
+        "status": 200,
+        "contentType": "text/plain",
+        "byteLength": 33,
+        "sha256": "D9C20CAA768230F4714947E3EE0E2BAE0C62AB7C6CE0D59068498FF23B17943D",
+        "disposition": "attachment; filename=%E5%B7%AE%E5%88%86.txt",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "download-attachment",
+        "status": 200,
+        "contentType": "text/plain",
+        "byteLength": 33,
+        "sha256": "D9C20CAA768230F4714947E3EE0E2BAE0C62AB7C6CE0D59068498FF23B17943D",
+        "disposition": "attachment; filename=%E5%B7%AE%E5%88%86.txt",
+        "cacheControl": "86400"
+      }
+    },
+    {
+      "probe": "download-stream",
+      "semanticEqual": true,
+      "original": {
+        "probe": "download-stream",
+        "status": 200,
+        "contentType": "text/plain",
+        "byteLength": 33,
+        "sha256": "D9C20CAA768230F4714947E3EE0E2BAE0C62AB7C6CE0D59068498FF23B17943D",
+        "disposition": "",
+        "cacheControl": "86400"
+      },
+      "restored": {
+        "probe": "download-stream",
+        "status": 200,
+        "contentType": "text/plain",
+        "byteLength": 33,
+        "sha256": "D9C20CAA768230F4714947E3EE0E2BAE0C62AB7C6CE0D59068498FF23B17943D",
+        "disposition": "",
+        "cacheControl": "86400"
+      }
+    },
+    {
+      "probe": "mkdir",
+      "semanticEqual": true,
+      "original": {
+        "probe": "mkdir",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "mkdir",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
+    },
+    {
+      "probe": "notes-with-directory-list",
+      "semanticEqual": true,
+      "original": {
+        "probe": "notes-with-directory-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "子目录",
+            "path": "\\notes\\子目录",
+            "size": 0,
+            "isDirectory": true,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      },
+      "restored": {
+        "probe": "notes-with-directory-list",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [
+          {
+            "name": "子目录",
+            "path": "\\notes\\子目录",
+            "size": 0,
+            "isDirectory": true,
+            "lastModifiedIsNumber": true
+          },
+          {
+            "name": "差分.txt",
+            "path": "\\notes\\差分.txt",
+            "size": 33,
+            "isDirectory": false,
+            "lastModifiedIsNumber": true
+          }
+        ]
+      }
+    },
+    {
+      "probe": "other-user-get",
+      "semanticEqual": true,
+      "original": {
+        "probe": "other-user-get",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "路径不存在",
+        "data": null
+      },
+      "restored": {
+        "probe": "other-user-get",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "路径不存在",
+        "data": null
+      }
+    },
+    {
+      "probe": "delete-text",
+      "semanticEqual": true,
+      "original": {
+        "probe": "delete-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      },
+      "restored": {
+        "probe": "delete-text",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": ""
+      }
+    },
+    {
+      "probe": "get-after-delete",
+      "semanticEqual": true,
+      "original": {
+        "probe": "get-after-delete",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "路径不存在",
+        "data": null
+      },
+      "restored": {
+        "probe": "get-after-delete",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8",
+        "isSuccess": false,
+        "errorMsg": "路径不存在",
+        "data": null
+      }
+    }
+  ],
+  "storage": {
+    "original": {
+      "userANotesDirectory": true,
+      "userANotesFileDeleted": true,
+      "userBNotesDirectoryAbsent": true
+    },
+    "restored": {
+      "userANotesDirectory": true,
+      "userANotesFileDeleted": true,
+      "userBNotesDirectoryAbsent": true
+    }
+  }
+}
