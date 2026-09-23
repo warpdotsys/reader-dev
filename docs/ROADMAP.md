@@ -38,6 +38,7 @@
 - [ ] 从现有书源中提取 `webView` 用例，补齐原 JAR、当前远程服务和候选内置引擎的黑盒对照，特别覆盖 POST、代理、脚本、编码、跳转、Cookie 和多用户隔离；形成可复现但不泄露书源凭据的样本集。
 - [ ] 用统一 `WebviewRenderer` 边界封装现有远程实现与本地候选实现；先允许按配置切换/回退，不改变普通非 WebView 书源和 `storage/data` 格式。明确页面复用、用户会话隔离、超时取消、进程退出与资源回收。
 - [ ] 在 GitHub 托管 runner 上构建可复现的浏览器版镜像，锁定浏览器/驱动版本与 SHA-256，构建期下载并记录许可证、SBOM 和架构支持；运行时不得临时拉取浏览器。现有 `Dockerfile.source`/`Dockerfile.slim` 使用 Alpine；[Playwright 官方说明](https://playwright.dev/java/docs/docker) Firefox/WebKit 浏览器构建不支持 musl/Alpine，因此先用 glibc 基础镜像做 PoC，并验证 amd64、arm64，保留不带浏览器的轻量产物。
+- [ ] 若选 Camoufox，吸取旧 Rust 容器 [#48](https://github.com/warpdotsys/reader-dev/issues/48) 的 Python 3.12/3.13 解释器错配教训：安装、启动和健康检查必须使用同一绝对解释器路径，并在镜像测试中执行一次真实渲染。#48 属于停用的旧镜像，不作为当前 Java/Kotlin 版已存在的缺陷重开。
 - [ ] 浏览器以非 root 身份运行，核对 sandbox/seccomp、字体和证书、临时目录、进程树、内存/并发上限及 SSRF/内网访问策略。若候选需要本机 WebSocket，仅绑定 loopback、使用临时受限端点，不能作为公开服务；不得为省事使用 `--no-sandbox` 作为生产默认值。
 - [ ] 同时验证无头与必要时的虚拟显示模式。Camoufox 的[虚拟显示方案](https://camoufox.com/python/virtual-display/)需要 Xvfb；任何模式都必须在实际生产镜像中测试，不把宿主机 PoC 当成容器验收。
 - [ ] 小流量灰度后再考虑将本地引擎设为默认；发布说明列出镜像体积、额外内存、可用架构、已知不兼容书源及回滚步骤。远程接口待存量用户迁移验证后再决定废弃，不在第一步删除。

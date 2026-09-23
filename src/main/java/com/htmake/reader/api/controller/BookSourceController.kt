@@ -56,8 +56,6 @@ import java.lang.Runtime
 import kotlin.collections.mutableMapOf
 import kotlin.system.measureTimeMillis
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat;
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.model.rss.Rss
@@ -67,10 +65,27 @@ import java.nio.file.Paths
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.slf4j.MDCContext
 import io.vertx.kotlin.coroutines.awaitResult
 
 private val logger = KotlinLogging.logger {}
+
+internal fun parseRemoteBookSources(body: String): JsonArray {
+    val sources = if (body.trimStart().startsWith("[")) {
+        JsonArray(body)
+    } else {
+        JsonArray().add(JsonObject(body))
+    }
+    if (sources.size() == 0) {
+        throw IllegalArgumentException("远程书源为空")
+    }
+    for (i in 0 until sources.size()) {
+        val source = sources.getJsonObject(i)
+        if (source?.getString("bookSourceUrl").isNullOrBlank()) {
+            throw IllegalArgumentException("远程书源数据无效")
+        }
+    }
+    return sources
+}
 
 class BookSourceController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
     private var webClient: WebClient
@@ -456,6 +471,10 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             context.success(returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用"))
             return
         }
+        if (!canEditBookSource(context)) {
+            context.success(returnData.setErrorMsg("权限不足"))
+            return
+        }
         var url: String
         if (context.request().method() == HttpMethod.POST) {
             url = context.bodyAsJson.getString("url") ?: ""
@@ -467,15 +486,27 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             return
         }
 
-        launch(MDCContext() + Dispatchers.IO) {
-            webClient.getAbs(url).timeout(3000).send {
-                var body = it.result()?.bodyAsString()
-                if (body != null) {
-                    context.success(returnData.setData(arrayListOf(body)))
-                } else {
-                    context.success(returnData.setErrorMsg("远程书源链接错误"))
-                }
+        try {
+            val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+                webClient.getAbs(url).timeout(3000).send(handler)
             }
+            if (response.statusCode() !in 200..299) {
+                context.success(returnData.setErrorMsg("远程书源链接错误：HTTP ${response.statusCode()}"))
+                return
+            }
+            val body = response.bodyAsString()
+            val sources = parseRemoteBookSources(body)
+            val saved = saveBookSources(context, sources)
+            if (saved.isSuccess) {
+                // Preserve the response shape for existing callers while making
+                // the endpoint's documented save operation actually persist.
+                context.success(returnData.setData(arrayListOf(body), saved.errorMsg))
+            } else {
+                context.success(saved)
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "远程书源导入失败" }
+            context.success(returnData.setErrorMsg("远程书源链接或数据错误"))
         }
     }
 

@@ -29,6 +29,13 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlsplit(self.path)
         if parsed.path == "/health":
             body = "ready"
+        elif parsed.path == "/source.json":
+            base = f"http://127.0.0.1:{self.server.server_port}"
+            body = json.dumps([{
+                "bookSourceUrl": base,
+                "bookSourceName": "Remote import fixture",
+                "searchUrl": f"{base}/search?key={{{{key}}}}",
+            }])
         elif parsed.path == "/stats":
             with _search_lock:
                 if parse_qs(parsed.query).get("reset") == ["1"]:
@@ -61,7 +68,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         data = body.encode("utf-8")
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        content_type = "application/json" if parsed.path == "/source.json" else "text/html"
+        self.send_header("Content-Type", f"{content_type}; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
