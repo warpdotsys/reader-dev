@@ -19,6 +19,8 @@ import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.net.InetAddress
+import java.util.concurrent.atomic.AtomicInteger
 
 class LocalWebviewRendererTest {
     @get:Rule val temp = TemporaryFolder()
@@ -27,6 +29,7 @@ class LocalWebviewRendererTest {
     private lateinit var baseUrl: String
     private lateinit var originalUserDir: String
     private lateinit var originalAdapter: ReaderAdapterInterface
+    private val privateRedirectHits = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -40,6 +43,13 @@ class LocalWebviewRendererTest {
         renderer = LocalWebviewRenderer(executable, 5000, allowPrivateNetworks = true)
         server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
+            if (exchange.requestURI.path == "/redirect-to-private") {
+                exchange.responseHeaders.add("Location", "http://metadata.example:${server.address.port}/target")
+                exchange.sendResponseHeaders(302, -1)
+                exchange.close()
+                return@createContext
+            }
+            if (exchange.requestURI.path == "/target") privateRedirectHits.incrementAndGet()
             val body = exchange.requestBody.readBytes().toString(StandardCharsets.UTF_8)
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
             val marker = "${exchange.requestMethod}|$body|$cookie"
@@ -101,6 +111,28 @@ class LocalWebviewRendererTest {
         } finally {
             strictRenderer.close()
         }
+    }
+
+    @Test
+    fun deniesPrivateRedirectTargetsBeforeTheyReachTheNetwork() = runBlocking {
+        val policy = BrowserNetworkPolicy(resolve = { host ->
+            when (host) {
+                "127.0.0.1" -> arrayOf(InetAddress.getByName("8.8.8.8"))
+                "metadata.example" -> arrayOf(InetAddress.getByName("127.0.0.1"))
+                else -> emptyArray()
+            }
+        })
+        val strictRenderer = LocalWebviewRenderer(
+            System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, policy)
+        try {
+            strictRenderer.render(request("/redirect-to-private", "reader-a"))
+            fail("A redirect to a private address must be rejected")
+        } catch (error: BrowserNetworkPolicyViolation) {
+            assertTrue(error.message.orEmpty().contains("阻止"))
+        } finally {
+            strictRenderer.close()
+        }
+        assertEquals("Redirect target must never reach the fixture server", 0, privateRedirectHits.get())
     }
 
     @Test(expected = UnsupportedOperationException::class)

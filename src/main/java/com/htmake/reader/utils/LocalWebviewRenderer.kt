@@ -23,17 +23,30 @@ import java.util.concurrent.atomic.AtomicInteger
  * Opt-in browser capability baseline. No production default or fingerprint claim.
  * All Playwright calls run on one worker because its Java objects are not thread-safe.
  */
-class LocalWebviewRenderer(
-    private val executablePath: String = "",
-    private val timeoutMs: Int = 20_000,
-    private val allowPrivateNetworks: Boolean = System.getenv("READER_BROWSER_ALLOW_PRIVATE_NETWORKS")
-        ?.equals("true", ignoreCase = true) == true
+class LocalWebviewRenderer private constructor(
+    private val executablePath: String,
+    private val timeoutMs: Int,
+    allowPrivateNetworks: Boolean,
+    networkPolicyOverride: BrowserNetworkPolicy?
 ) : WebviewRenderer {
+    constructor(
+        executablePath: String = "",
+        timeoutMs: Int = 20_000,
+        allowPrivateNetworks: Boolean = System.getenv("READER_BROWSER_ALLOW_PRIVATE_NETWORKS")
+            ?.equals("true", ignoreCase = true) == true
+    ) : this(executablePath, timeoutMs, allowPrivateNetworks, null)
+
+    internal constructor(
+        executablePath: String,
+        timeoutMs: Int,
+        networkPolicy: BrowserNetworkPolicy
+    ) : this(executablePath, timeoutMs, false, networkPolicy)
+
     private val pending = AtomicInteger(0)
     private val worker = Executors.newSingleThreadExecutor { task ->
         Thread(task, "reader-local-webview").apply { isDaemon = true }
     }.asCoroutineDispatcher()
-    private val networkPolicy = BrowserNetworkPolicy(allowPrivateNetworks)
+    private val networkPolicy = networkPolicyOverride ?: BrowserNetworkPolicy(allowPrivateNetworks)
     private var playwright: Playwright? = null
     private var browser: Browser? = null
 
