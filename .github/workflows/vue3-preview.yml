@@ -5,11 +5,13 @@ on:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'browser-poc/**'
       - 'web-vue3/**'
   pull_request:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'browser-poc/**'
       - 'web-vue3/**'
   workflow_dispatch:
 
@@ -41,3 +43,87 @@ jobs:
           path: web-vue3/dist/
           if-no-files-found: error
           retention-days: 14
+
+  e2e:
+    name: Isolated login, search, and reading in Chromium
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
+      - name: Build Reader and install preview dependencies
+        run: |
+          chmod +x gradlew
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew test bootJar --no-daemon
+          npm ci --prefix web-vue3
+      - name: Resolve Chromium on hosted runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          if [[ -z "$chrome" ]]; then
+            npx --yes playwright@1.63.0 install chromium
+            chrome="$(find "$HOME/.cache/ms-playwright" -type f -name chrome -path '*/chrome-linux*/chrome' -print -quit)"
+          fi
+          test -n "$chrome" && test -x "$chrome"
+          echo "READER_BROWSER_EXECUTABLE=$chrome" >> "$GITHUB_ENV"
+      - name: Run isolated backend, book source, and Vite preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/vue3-reader-data"
+          python3 scripts/mock-book-source.py --port 18894 > "$RUNNER_TEMP/vue3-source.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-source.pid"
+          java -jar build/libs/reader-4.0.7.jar \
+            "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
+            --reader.server.port=18895 --reader.app.secure=true \
+            --reader.app.licenseCheckEnabled=false \
+            > "$RUNNER_TEMP/vue3-reader.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-reader.pid"
+          READER_BACKEND_URL=http://127.0.0.1:18895 npm --prefix web-vue3 run dev -- --host 127.0.0.1 \
+            > "$RUNNER_TEMP/vue3-vite.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-vite.pid"
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:18894/health > /dev/null && \
+               curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null && \
+               curl -fsS http://127.0.0.1:5173/login > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:18894/health > /dev/null
+          curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null
+          curl -fsS http://127.0.0.1:5173/login > /dev/null
+      - name: Exercise Vue 3 pages with isolated accounts
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_VUE3_ISOLATED: '1'
+          READER_VUE3_PREVIEW_URL: http://127.0.0.1:5173
+          READER_BOOK_FIXTURE_URL: http://127.0.0.1:18894
+        run: |
+          ./gradlew -p browser-poc test --tests 'com.medwarp.reader.browserpoc.Vue3Preview*Test' --no-daemon
+          for report in browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview*Test.xml; do
+            grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
+          done
+      - name: Preserve diagnostics and stop isolated services
+        if: always()
+        shell: bash
+        run: |
+          for service in vite reader source; do
+            if [[ -f "$RUNNER_TEMP/vue3-$service.pid" ]]; then
+              kill "$(cat "$RUNNER_TEMP/vue3-$service.pid")" 2>/dev/null || true
+            fi
+          done
+          for service in vite reader source; do
+            if [[ -f "$RUNNER_TEMP/vue3-$service.log" ]]; then
+              echo "=== $service (last 80 lines) ==="
+              tail -n 80 "$RUNNER_TEMP/vue3-$service.log"
+            fi
+          done
