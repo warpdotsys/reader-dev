@@ -48,6 +48,7 @@ public class Vue3PreviewSecureFileTest {
                 page.navigate(previewUrl + "/files");
                 page.locator(".file-page").waitFor();
                 String folder = "secure-folder-" + UUID.randomUUID().toString().substring(0, 8);
+                String queryCompatFolder = folder + "-query-compat";
                 try {
                     page.locator(".toolbar button:has-text('新建文件夹')").click();
                     page.locator(".dlg-overlay .dlg-input").fill(folder);
@@ -60,15 +61,31 @@ public class Vue3PreviewSecureFileTest {
                     page.locator(".dlg-overlay:has-text('管理密码') .btn-primary").click();
                     page.locator(".row-name:text-is('" + folder + "')").waitFor();
                     assertEquals(0, page.locator(".dlg-overlay:has-text('管理密码')").count());
-                } finally {
-                    page.evaluate("async ({folder, key}) => {" +
+                    Object secureKeyInUrl = page.evaluate("performance.getEntriesByType('resource')" +
+                            ".some(entry => entry.name.includes('secureKey'))");
+                    assertTrue("Manager key must not appear in request URLs",
+                            !Boolean.TRUE.equals(secureKeyInUrl));
+                    Object legacyQueryAccepted = page.evaluate("async ({folder, key}) => {" +
                             "const token = localStorage.getItem('reader_access_token');" +
                             "const query = new URLSearchParams({accessToken:token,secureKey:key});" +
-                            "const response = await fetch('/reader3/file/delete?' + query," +
+                            "const response = await fetch('/reader3/file/mkdir?' + query," +
                             "{method:'POST',headers:{'Content-Type':'application/json'}," +
-                            "body:JSON.stringify({path:'/' + folder,home:'__LOCAL_STORE__'})});" +
+                            "body:JSON.stringify({path:'/',name:folder,home:'__LOCAL_STORE__'})});" +
                             "return (await response.json()).isSuccess; }",
-                            Map.of("folder", folder, "key", managerKey));
+                            Map.of("folder", queryCompatFolder, "key", managerKey));
+                    assertTrue("Legacy query-based manager authentication must remain valid",
+                            Boolean.TRUE.equals(legacyQueryAccepted));
+                } finally {
+                    page.evaluate("async ({folders, key}) => {" +
+                            "const token = localStorage.getItem('reader_access_token');" +
+                            "const query = new URLSearchParams({accessToken:token});" +
+                            "return Promise.all(folders.map(async folder => {" +
+                            "const response = await fetch('/reader3/file/delete?' + query," +
+                            "{method:'POST',headers:{'Content-Type':'application/json'," +
+                            "'X-Reader-Secure-Key':key}," +
+                            "body:JSON.stringify({path:'/' + folder,home:'__LOCAL_STORE__'})});" +
+                            "return (await response.json()).isSuccess; })); }",
+                            Map.of("folders", new String[]{folder, queryCompatFolder}, "key", managerKey));
                 }
             } finally {
                 browser.close();

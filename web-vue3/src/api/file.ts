@@ -8,9 +8,9 @@ export function setFileSecureKey(key: string): void {
   fileSecureKey = key
 }
 
-/** BaseController.checkManagerAuth reads secureKey from the query, not the JSON/form body. */
-function secureParams(): Record<string, string> | undefined {
-  return fileSecureKey ? { secureKey: fileSecureKey } : undefined
+/** Send the manager secret in a header so it is not copied into proxy URL logs. */
+function secureHeaders(): Record<string, string> | undefined {
+  return fileSecureKey ? { 'X-Reader-Secure-Key': fileSecureKey } : undefined
 }
 
 /**
@@ -34,7 +34,7 @@ export function getFile(path: string, home = ''): Promise<ReturnData<string>> {
 /** POST /reader3/file/save：写入文本文件（body { path, content }） */
 export function saveFile(path: string, content: string, home = ''): Promise<ReturnData<null>> {
   return request
-    .post('/file/save', { path, content, ...(home ? { home } : {}) }, { params: secureParams() })
+    .post('/file/save', { path, content, ...(home ? { home } : {}) }, { headers: secureHeaders() })
     .then((r) => r.data as ReturnData<null>)
 }
 
@@ -48,7 +48,7 @@ export function mkdir(
   return request
     .post('/file/mkdir', { path: parent, name, ...(home ? { home } : {}) }, {
       silent: opts?.silent,
-      params: secureParams(),
+      headers: secureHeaders(),
     })
     .then((r) => r.data as ReturnData<null>)
 }
@@ -56,14 +56,14 @@ export function mkdir(
 /** POST /reader3/file/rename：重命名文件/目录（body { path, name }；secure 模式书仓写需管理密码） */
 export function renameFile(path: string, name: string, home = ''): Promise<ReturnData<null>> {
   return request
-    .post('/file/rename', { path, name, ...(home ? { home } : {}) }, { params: secureParams() })
+    .post('/file/rename', { path, name, ...(home ? { home } : {}) }, { headers: secureHeaders() })
     .then((r) => r.data as ReturnData<null>)
 }
 
 /** POST /reader3/file/move：同一 home 内移动任意文件或目录，不经浏览器读写内容。 */
 export function moveFile(path: string, targetDir: string, home = ''): Promise<ReturnData<string>> {
   return request
-    .post('/file/move', { path, targetDir, ...(home ? { home } : {}) }, { params: secureParams() })
+    .post('/file/move', { path, targetDir, ...(home ? { home } : {}) }, { headers: secureHeaders() })
     .then((r) => r.data as ReturnData<string>)
 }
 
@@ -94,7 +94,7 @@ export function uploadFile(
   if (home) form.append('home', home)
   return request
     .post('/file/upload', form, {
-      params: secureParams(),
+      headers: secureHeaders(),
       timeout: 120_000,
       onUploadProgress: onProgress
         ? (e) => {
@@ -122,6 +122,6 @@ export function scanLocalBookDir(
 /** POST /reader3/file/delete：删除文件/目录（body { path }） */
 export function deleteFile(path: string, home = ''): Promise<ReturnData<null>> {
   return request
-    .post('/file/delete', { path, ...(home ? { home } : {}) }, { params: secureParams() })
+    .post('/file/delete', { path, ...(home ? { home } : {}) }, { headers: secureHeaders() })
     .then((r) => r.data as ReturnData<null>)
 }

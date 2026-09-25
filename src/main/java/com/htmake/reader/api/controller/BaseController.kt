@@ -189,7 +189,11 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
         if (appConfig.secureKey.isEmpty()) {
             return true
         }
-        var secureKey = context.queryParam("secureKey").firstOrNull() ?: ""
+        // New clients send the manager secret in a header so it does not appear in URL logs.
+        // Keep the query fallback for compatibility with the original Vue 2 client and scripts.
+        var secureKey = context.request().getHeader("X-Reader-Secure-Key")
+            ?: context.queryParam("secureKey").firstOrNull()
+            ?: ""
         if (secureKey.equals(appConfig.secureKey)) {
             // 判断是否需要修改 userNameSpace
             var userNS = context.queryParam("userNS").firstOrNull()
