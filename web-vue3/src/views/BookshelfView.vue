@@ -1860,16 +1860,18 @@ async function saveBookGroupPanel() {
   const book = menuBook.value
   if (!book || menuBusy.value) return
   menuBusy.value = true
+  let closeAfterSave = false
   try {
     await setBookGroups(book.bookUrl, bookGroupPanelIds.value)
     setBookGroupIdsLocal(book, bookGroupPanelIds.value)
     invalidateGroupCounts()
     ElMessage.success('分组已更新')
-    closeBookGroupPanel()
+    closeAfterSave = true
   } catch {
     // 错误提示已由拦截器统一处理
   } finally {
     menuBusy.value = false
+    if (closeAfterSave) closeBookGroupPanel()
   }
 }
 
