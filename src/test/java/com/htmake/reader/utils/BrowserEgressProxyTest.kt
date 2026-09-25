@@ -1,5 +1,6 @@
 package com.htmake.reader.utils
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -142,6 +143,125 @@ class BrowserEgressProxyTest {
             assertTrue(originRequest.get().startsWith("GET /path HTTP/1.1"))
             assertTrue(originRequest.get().contains("Host: target.example"))
             assertFalse("proxy credentials must not reach the origin", originRequest.get().contains("Proxy-Authorization"))
+        } finally {
+            runCatching { client?.close() }
+            egress.close()
+            runCatching { upstream.close() }
+            socksServer.join(1000)
+        }
+    }
+
+    @Test
+    fun httpProxyUsesPinnedAddressForConnectAndRelaysTunnelBytes() {
+        val upstream = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))
+        upstream.soTimeout = 3000
+        val connectRequest = AtomicReference("")
+        val tunnelPayload = AtomicReference("")
+        val httpProxy = Thread {
+            upstream.accept().use { socket ->
+                socket.soTimeout = 3000
+                val input = socket.getInputStream()
+                val output = socket.getOutputStream()
+                connectRequest.set(readHead(socket))
+                output.write("HTTP/1.1 200 Connection Established\r\n\r\n".toByteArray(StandardCharsets.ISO_8859_1))
+                output.flush()
+                tunnelPayload.set(readExactly(input, 5).toString(StandardCharsets.ISO_8859_1))
+                output.write("WORLD".toByteArray(StandardCharsets.ISO_8859_1))
+                output.flush()
+            }
+        }.apply { isDaemon = true; start() }
+
+        val pinnedAddress = InetAddress.getByName("198.51.100.9")
+        val policy = BrowserNetworkPolicy(allowPrivateNetworks = true) { host ->
+            if (host == "target.example") arrayOf(pinnedAddress) else arrayOf(InetAddress.getAllByName(host).first())
+        }
+        val egress = BrowserEgressProxy(policy, 3000, {},
+            BrowserUpstreamProxy.parse("http://127.0.0.1:${upstream.localPort}"))
+        var client: Socket? = null
+        try {
+            val port = egress.start().substringAfterLast(':').toInt()
+            client = Socket(InetAddress.getByName("127.0.0.1"), port).apply { soTimeout = 3000 }
+            client.getOutputStream().write(
+                "CONNECT target.example:443 HTTP/1.1\r\nHost: target.example:443\r\n\r\n"
+                    .toByteArray(StandardCharsets.ISO_8859_1)
+            )
+            client.getOutputStream().flush()
+            val response = readHead(client)
+            client.getOutputStream().write("HELLO".toByteArray(StandardCharsets.ISO_8859_1))
+            client.getOutputStream().flush()
+            val tunnelReply = readExactly(client.getInputStream(), 5).toString(StandardCharsets.ISO_8859_1)
+            client.shutdownOutput()
+            httpProxy.join(3000)
+
+            assertTrue(response.startsWith("HTTP/1.1 200 Connection Established"))
+            assertTrue(connectRequest.get().startsWith("CONNECT 198.51.100.9:443 HTTP/1.1"))
+            assertTrue(connectRequest.get().contains("Host: 198.51.100.9:443"))
+            assertEquals("HELLO", tunnelPayload.get())
+            assertEquals("WORLD", tunnelReply)
+        } finally {
+            runCatching { client?.close() }
+            egress.close()
+            runCatching { upstream.close() }
+            httpProxy.join(1000)
+        }
+    }
+
+    @Test
+    fun socks4UsesPinnedIpv4TargetAndPreservesOriginRequest() {
+        val upstream = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))
+        upstream.soTimeout = 3000
+        val socksTarget = AtomicReference("")
+        val originRequest = AtomicReference("")
+        val socksServer = Thread {
+            upstream.accept().use { socket ->
+                socket.soTimeout = 3000
+                val input = socket.getInputStream()
+                val output = socket.getOutputStream()
+                val request = readExactly(input, 8)
+                val user = ByteArrayOutputStream()
+                while (true) {
+                    val next = input.read()
+                    if (next < 0 || next == 0) break
+                    user.write(next)
+                }
+                val address = InetAddress.getByAddress(request.copyOfRange(4, 8)).hostAddress
+                val port = ((request[2].toInt() and 0xff) shl 8) or (request[3].toInt() and 0xff)
+                socksTarget.set("$address:$port")
+                if (request[0].toInt() != 4 || request[1].toInt() != 1 || user.size() != 0) {
+                    throw AssertionError("SOCKS4 CONNECT request was invalid")
+                }
+                output.write(byteArrayOf(0, 90, 0, 0, 0, 0, 0, 0))
+                output.flush()
+                originRequest.set(readHead(socket))
+                output.write(
+                    "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok".toByteArray(StandardCharsets.ISO_8859_1)
+                )
+                output.flush()
+            }
+        }.apply { isDaemon = true; start() }
+
+        val pinnedAddress = InetAddress.getByName("198.51.100.5")
+        val policy = BrowserNetworkPolicy(allowPrivateNetworks = true) { host ->
+            if (host == "target.example") arrayOf(pinnedAddress) else arrayOf(InetAddress.getAllByName(host).first())
+        }
+        val egress = BrowserEgressProxy(policy, 3000, {},
+            BrowserUpstreamProxy.parse("socks4://127.0.0.1:${upstream.localPort}"))
+        var client: Socket? = null
+        try {
+            val port = egress.start().substringAfterLast(':').toInt()
+            client = Socket(InetAddress.getByName("127.0.0.1"), port).apply { soTimeout = 3000 }
+            client.getOutputStream().write(
+                "GET http://target.example/path HTTP/1.1\r\nHost: target.example\r\nConnection: close\r\n\r\n"
+                    .toByteArray(StandardCharsets.ISO_8859_1)
+            )
+            client.getOutputStream().flush()
+            val response = client.getInputStream().readBytes().toString(StandardCharsets.ISO_8859_1)
+            socksServer.join(3000)
+
+            assertTrue(response.endsWith("ok"))
+            assertEquals("198.51.100.5:80", socksTarget.get())
+            assertTrue(originRequest.get().startsWith("GET /path HTTP/1.1"))
+            assertTrue(originRequest.get().contains("Host: target.example"))
         } finally {
             runCatching { client?.close() }
             egress.close()
