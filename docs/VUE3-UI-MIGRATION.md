@@ -14,7 +14,7 @@ Rust 前端 `web-ui/src/api/request.ts` 将请求发往 `/reader3`，以 query �
 
 可重复的静态扫描命令为 `cd web-vue3 && npm run audit:api`。2026-09-25 最新快照中，API 文件含 **109 个静态路由引用**，其中 **66 个**与当前 `YueduApi.kt` 注册路径同名，**43 个**不同名或未注册，另有 **7 处动态调用**尚未纳入。这只统计路径名，不校验 HTTP 方法、参数、响应或页面调用条件；部分不同名路由可能有替代接口。核心链路中的 `getBookToc` 已适配当前 `getChapterList`，正文按目录 `index` 取值并经隔离页面测试；其他同名路由仍须逐项核对语义。`/file/rename` 已补为沿用文件 home 与权限边界的真实文件／目录重命名；`scanLocalBookDir` 已接到本地文件导入书架。`getServerStats`、`getReadingStats`、`getBookCacheChapters`、`cacheBookRangeOnServer` 等仍无同名路由。不能因为前端存在或能构建就标为可用，也不能在没有核对语义时机械改名。
 
-Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、`/reader3`）；history 路由及资源根路径还需覆盖 `/reader/` 子目录部署，不能只在站点根目录测试。
+Vue 3 默认仍构建为根路径。通过 `READER_UI_BASE=/reader/` 可生成子目录构建，Vue Router、HTML 入口、字体、Logo 和相对 PWA 清单随之指向 `/reader/`；`/reader3` API 和 `/assets` 后端资源仍须由反向代理在站点根路径提供。本机已用生产构建的 Vite preview、隔离 Reader 和 Chromium 验证 `/reader/login` 直达、登录、跳转、搜索页刷新、静态资源与 API 代理；托管 runner 的子目录验收正在加入工作流。此验证不等于已在真实反向代理上部署。
 
 ## 实施顺序与验收
 

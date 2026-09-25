@@ -12,6 +12,20 @@ npm run build
 READER_BACKEND_URL=http://127.0.0.1:8080 npm run dev
 ```
 
+子目录构建保留根路径为默认值；仅在需要把界面挂载到 `/reader/` 时设置：
+
+```bash
+READER_UI_BASE=/reader/ npm run build
+READER_UI_BASE=/reader/ READER_BACKEND_URL=http://127.0.0.1:8080 \
+  npm run preview -- --host 127.0.0.1 --port 4173
+```
+
+此布局要求反向代理仍在站点根路径提供 `/reader3` API 和 `/assets` 动态资源，
+并把 `/reader/*` 的刷新请求回退到此构建的 `index.html`。`READER_UI_BASE`
+仅调整 Vue Router、静态资源及 PWA 清单路径，不会改写后端 API 前缀。
+`Vue3PreviewSubdirectoryTest` 会在隔离后端与 Chromium 上检查构建产物的
+登录、刷新、资源和根路径 API。
+
 `npm run build` 只验证 Vue/TypeScript 编译，不验证页面与 Java/Kotlin
 后端兼容。本目录尚未打入 Reader JAR、镜像或生产入口，原版 Vue 2
 仍是正式界面。预览构建只证明可编译；隔离浏览器测试只证明其覆盖的页面旅程，

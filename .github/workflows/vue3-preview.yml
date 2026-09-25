@@ -114,20 +114,52 @@ jobs:
           READER_VUE3_PREVIEW_URL: http://127.0.0.1:5173
           READER_BOOK_FIXTURE_URL: http://127.0.0.1:18894
         run: |
-          ./gradlew -p browser-poc test --tests 'com.medwarp.reader.browserpoc.Vue3Preview*Test' --no-daemon
-          for report in browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview*Test.xml; do
+          ./gradlew -p browser-poc test \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' --no-daemon
+          for name in Login Reading Search Source File; do
+            report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
+      - name: Build and serve the Vue 3 artifact at /reader/
+        shell: bash
+        run: |
+          set -euo pipefail
+          READER_UI_BASE=/reader/ npm --prefix web-vue3 run build
+          READER_UI_BASE=/reader/ READER_BACKEND_URL=http://127.0.0.1:18895 \
+            npm --prefix web-vue3 run preview -- --host 127.0.0.1 --port 4173 \
+            > "$RUNNER_TEMP/vue3-subdir.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-subdir.pid"
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/reader/login > /dev/null && \
+               curl -fsS http://127.0.0.1:4173/reader3/getSystemInfo > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:4173/reader/login > /dev/null
+          curl -fsS http://127.0.0.1:4173/reader3/getSystemInfo > /dev/null
+      - name: Verify the built subdirectory UI in Chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_VUE3_ISOLATED: '1'
+          READER_VUE3_SUBDIR_URL: http://127.0.0.1:4173/reader
+        run: |
+          ./gradlew -p browser-poc test \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest' --no-daemon
+          grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml
       - name: Preserve diagnostics and stop isolated services
         if: always()
         shell: bash
         run: |
-          for service in vite reader source; do
+          for service in vite reader source subdir; do
             if [[ -f "$RUNNER_TEMP/vue3-$service.pid" ]]; then
               kill "$(cat "$RUNNER_TEMP/vue3-$service.pid")" 2>/dev/null || true
             fi
           done
-          for service in vite reader source; do
+          for service in vite reader source subdir; do
             if [[ -f "$RUNNER_TEMP/vue3-$service.log" ]]; then
               echo "=== $service (last 80 lines) ==="
               tail -n 80 "$RUNNER_TEMP/vue3-$service.log"
