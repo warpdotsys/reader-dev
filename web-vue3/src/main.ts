@@ -44,7 +44,10 @@ app.mount('#app')
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js', { type: 'module' })
+      .register(`${import.meta.env.BASE_URL}sw.js`, {
+        type: 'module',
+        scope: import.meta.env.BASE_URL,
+      })
       .then((reg) => {
         // legacy updateForce + SKIP_WAITING：新版本 SW 安装完成后立即接管并刷新页面
         reg.addEventListener('updatefound', () => {

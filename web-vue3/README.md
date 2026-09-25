@@ -24,7 +24,7 @@ READER_UI_BASE=/reader/ READER_BACKEND_URL=http://127.0.0.1:8080 \
 并把 `/reader/*` 的刷新请求回退到此构建的 `index.html`。`READER_UI_BASE`
 仅调整 Vue Router、静态资源及 PWA 清单路径，不会改写后端 API 前缀。
 `Vue3PreviewSubdirectoryTest` 会在隔离后端与 Chromium 上检查构建产物的
-登录、刷新、资源和根路径 API。
+登录、刷新、资源、PWA Service Worker 作用域和根路径 API。
 
 `npm run build` 只验证 Vue/TypeScript 编译，不验证页面与 Java/Kotlin
 后端兼容。本目录尚未打入 Reader JAR、镜像或生产入口，原版 Vue 2

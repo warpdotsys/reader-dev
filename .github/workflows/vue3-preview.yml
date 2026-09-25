@@ -42,6 +42,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          node --test src/utils/sw.test.ts
           npm run audit:api
       - uses: actions/upload-artifact@v7
         with:

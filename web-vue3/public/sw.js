@@ -18,9 +18,20 @@
  * （web-ui/src/utils/sw.test.ts）直接导入；浏览器中 self 分支注册 SW 逻辑。
  */
 
-export const CACHE_VERSION = 'reader-shell-v3'
-export const SHELL_CACHE = `${CACHE_VERSION}-shell`
-export const STATIC_CACHE = `${CACHE_VERSION}-static`
+export const CACHE_VERSION = 'v4'
+
+/** Each UI mount point owns its own shell/cache; / and /reader/ must not evict each other. */
+export function shellPaths(scopeUrl) {
+  const pathname = new URL(scopeUrl, 'https://reader.invalid').pathname
+  const base = pathname.endsWith('/') ? pathname : `${pathname}/`
+  return { base, index: `${base}index.html`, manifest: `${base}manifest.webmanifest` }
+}
+
+const scopePaths = shellPaths(typeof self === 'undefined' ? '/' : self.registration.scope)
+const cacheScope = encodeURIComponent(scopePaths.base)
+const cachePrefix = `reader-shell-${cacheScope}-`
+export const SHELL_CACHE = `${cachePrefix}${CACHE_VERSION}-shell`
+export const STATIC_CACHE = `${cachePrefix}${CACHE_VERSION}-static`
 
 /** 动态 API 路径前缀：一律网络直连（不缓存） */
 export const API_PREFIX = '/reader3/'
@@ -51,7 +62,7 @@ export function isImageResponse(response) {
 }
 
 /** 预缓存的离线壳（install 时写入，供离线首屏） */
-const PRECACHE_URLS = ['/', '/index.html', '/manifest.webmanifest']
+const PRECACHE_URLS = [scopePaths.base, scopePaths.index, scopePaths.manifest]
 
 // ==================== 以下为浏览器 SW 注册逻辑（node 单测环境无 self，自动跳过） ====================
 
@@ -72,7 +83,11 @@ if (typeof self !== 'undefined' && typeof self.addEventListener === 'function') 
         .then((keys) =>
           Promise.all(
             keys
-              .filter((k) => k !== SHELL_CACHE && k !== STATIC_CACHE)
+              .filter((k) =>
+                (k.startsWith(cachePrefix) ||
+                  (scopePaths.base === '/' && /^reader-shell-v[1-3]-(shell|static)$/.test(k))) &&
+                k !== SHELL_CACHE && k !== STATIC_CACHE,
+              )
               .map((k) => caches.delete(k)),
           ),
         )
@@ -151,7 +166,7 @@ if (typeof self !== 'undefined' && typeof self.addEventListener === 'function') 
     // 导航请求（页面 / 前端路由）→ 网络优先 + 缓存回退（SPA：统一以 /index.html 为键）
     if (request.mode === 'navigate') {
       event.respondWith(
-        networkFirst(request, { cacheKey: '/index.html' }).catch(() => caches.match('/index.html')),
+        networkFirst(request, { cacheKey: scopePaths.index }).catch(() => caches.match(scopePaths.index)),
       )
       return
     }

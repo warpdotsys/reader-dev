@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.PlaywrightException;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -75,6 +76,28 @@ public class Vue3PreviewSubdirectoryTest {
                 assertEquals(".", resources.get("start"));
                 assertEquals(".", resources.get("scope"));
                 assertEquals(Boolean.TRUE, resources.get("api"));
+                Map<String, Object> worker = null;
+                for (int attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> actual = (Map<String, Object>) page.evaluate("async () => {" +
+                                "const ready=await Promise.race([navigator.serviceWorker.ready," +
+                                "new Promise((_,reject)=>setTimeout(()=>reject(new Error('SW timeout')),10000))]);" +
+                                "const keys=await caches.keys();" +
+                                "return {scope:new URL(ready.scope).pathname," +
+                                "shell:keys.some(k=>k.includes('%2Freader%2F')&&k.endsWith('-shell'))};" +
+                                "}");
+                        worker = actual;
+                        break;
+                    } catch (PlaywrightException error) {
+                        if (attempt == 2 || !error.getMessage().contains("Execution context was destroyed")) {
+                            throw error;
+                        }
+                        page.locator(".login-page").waitFor();
+                    }
+                }
+                assertEquals("/reader/", worker.get("scope"));
+                assertEquals(Boolean.TRUE, worker.get("shell"));
 
                 page.locator(".mode-switch button").nth(1).click();
                 page.locator("input[autocomplete=username]").fill("subdir" +

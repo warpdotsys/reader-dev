@@ -39,7 +39,13 @@ test('M5：仅合法图片响应可入代理缓存（错误 JSON 体不缓存）
 })
 
 test('M5：缓存版本已升级（旧 cache-first v1 缓存整体失效）+ 静态缓存条目上限已配置', () => {
-  assert.equal(sw.CACHE_VERSION, 'reader-shell-v3')
+  assert.equal(sw.CACHE_VERSION, 'v4')
+  assert.deepEqual(sw.shellPaths('/'), {
+    base: '/', index: '/index.html', manifest: '/manifest.webmanifest',
+  })
+  assert.deepEqual(sw.shellPaths('https://reader.example/reader/'), {
+    base: '/reader/', index: '/reader/index.html', manifest: '/reader/manifest.webmanifest',
+  })
   assert.ok(
     sw.STATIC_CACHE_MAX_ENTRIES > 0 && sw.STATIC_CACHE_MAX_ENTRIES <= 500,
     `条目上限应合理: ${sw.STATIC_CACHE_MAX_ENTRIES}`,
