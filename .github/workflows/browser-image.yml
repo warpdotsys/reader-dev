@@ -12,6 +12,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
   pull_request:
     branches: [legacy]
@@ -24,6 +25,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
   workflow_dispatch:
 
