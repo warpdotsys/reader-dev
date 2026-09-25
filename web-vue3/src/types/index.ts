@@ -46,6 +46,8 @@ export interface Book {
   totalChapterNum?: number
   /** 追更开关（后端 books.can_update；F-35 定时更新任务按此刷新书架书） */
   canUpdate?: boolean
+  /** 最后一次书架更新失败原因（legacy Book.lastCheckError；内置“更新错误”筛选使用） */
+  lastCheckError?: string | null
   [key: string]: unknown
 }
 

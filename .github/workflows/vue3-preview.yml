@@ -42,6 +42,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          node --test src/utils/groupContract.test.ts
           node --test src/utils/sw.test.ts
           npm run audit:api
       - uses: actions/upload-artifact@v7
@@ -120,8 +121,9 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewGroupTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' --no-daemon
-          for name in Login Reading Search Source File; do
+          for name in Login Reading Search Source Group File; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done

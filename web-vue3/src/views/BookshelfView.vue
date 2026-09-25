@@ -31,11 +31,11 @@ import { exportBook, type ExportFormat } from '@/api/export'
 import { downloadBlob } from '@/utils/download'
 import { canRescanBook } from '@/utils/localBook'
 import { moveGroupTo } from '@/utils/groupOrder'
+import { decodeGroupMask, encodeGroupMask, isInLegacyBookGroup } from '@/utils/groupContract'
 import { parseShelfView, shelfViewMetrics, type ShelfViewMode } from '@/utils/shelfView'
 import { proxyImageUrl } from '@/utils/imageProxy'
 import { useUserStore } from '@/stores/user'
 import { probeSecureMode } from '@/api/users'
-import { isNotImplemented } from '@/utils/errors'
 import TopNav from '@/components/TopNav.vue'
 import type { Book, BookGroup, Bookmark, ContentSearchHit, ImportPreview } from '@/types'
 
@@ -358,7 +358,7 @@ function invalidateGroupCounts() {
   })
 }
 
-/** 书籍多分组 ID 列表（groupIds 优先；旧单值 group 兜底） */
+/** 书籍多分组 ID 列表（显式 groupIds 优先；legacy group 是位掩码） */
 function bookGroupIds(book: Book): number[] {
   // 兼容后端可能返回的 JSON 字符串 / 逗号分隔文本（旧迁移数据）
   let raw: unknown = (book as { groupIds?: number[] | string }).groupIds
@@ -372,29 +372,29 @@ function bookGroupIds(book: Book): number[] {
     }
   }
   const ids = Array.isArray(raw)
-    ? raw.filter((x): x is number => typeof x === 'number' && Number.isFinite(x) && x > 0)
-    : book.group > 0
-      ? [book.group]
-      : []
+    ? raw.filter((x): x is number => typeof x === 'number' && Number.isSafeInteger(x) && x > 0)
+    : decodeGroupMask(book.group)
   return Array.from(new Set(ids)).sort((a, b) => a - b)
 }
 
 /** 书籍是否属于分组（0 = 未分组：无任何多分组） */
 function inGroup(book: Book, gid: number): boolean {
-  return gid === 0 ? bookGroupIds(book).length === 0 : bookGroupIds(book).includes(gid)
+  return isInLegacyBookGroup({ ...book, groupIds: bookGroupIds(book) }, gid)
 }
 
 /** 本地同步多分组（groupIds + 主分组 group 双字段一致） */
 function setBookGroupIdsLocal(book: Book, ids: number[]) {
-  const uniq = Array.from(new Set(ids.filter((x) => typeof x === 'number' && x > 0))).sort(
+  const uniq = Array.from(new Set(ids.filter((x) => Number.isSafeInteger(x) && x > 0))).sort(
     (a, b) => a - b,
   )
   book.groupIds = uniq
-  book.group = uniq[0] ?? 0
+  book.group = encodeGroupMask(uniq)
 }
 
 /** 可见分组（show=false 的隐藏分组不出现在分组栏筛选） */
-const visibleGroups = computed(() => groups.value.filter((g) => g.show !== false))
+// "全部" is already represented by the leading null tab; keep the other
+// legacy built-in filters while protecting their negative IDs from edits.
+const visibleGroups = computed(() => groups.value.filter((g) => g.id !== -1 && g.show !== false))
 
 /* ================= 书卡菜单（右键 / 长按 / hover ⋯） ================= */
 const menuBook = ref<Book | null>(null)
@@ -1074,6 +1074,7 @@ function resetMoveSelections() {
 }
 
 function toggleMoveAdd(gid: number) {
+  if (gid <= 0) return
   moveAddIds.value = moveAddIds.value.includes(gid)
     ? moveAddIds.value.filter((x) => x !== gid)
     : [...moveAddIds.value, gid]
@@ -1083,6 +1084,7 @@ function toggleMoveAdd(gid: number) {
 }
 
 function toggleMoveRemove(gid: number) {
+  if (gid <= 0) return
   moveRemoveIds.value = moveRemoveIds.value.includes(gid)
     ? moveRemoveIds.value.filter((x) => x !== gid)
     : [...moveRemoveIds.value, gid]
@@ -1426,6 +1428,7 @@ async function createGroup() {
 
 /** 重命名分组：saveBookGroup 带 id 覆盖（id>0） */
 function startRename(g: BookGroup) {
+  if (g.id <= 0) return
   renamingId.value = g.id
   renameName.value = g.name
   renameBusy.value = false
@@ -1464,7 +1467,7 @@ function onGroupCoverInput(g: BookGroup, value: string) {
 }
 
 async function saveGroupMeta(g: BookGroup) {
-  if (groupSaving.value) return
+  if (groupSaving.value || g.id <= 0) return
   groupSaving.value = true
   try {
     const cover = (groupCoverDraft.value[g.id] ?? g.cover ?? '').trim()
@@ -1486,6 +1489,7 @@ async function saveGroupMeta(g: BookGroup) {
 }
 
 async function toggleGroupShow(g: BookGroup) {
+  if (g.id <= 0) return
   g.show = !(g.show !== false)
   try {
     await saveGroupMeta(g)
@@ -1495,10 +1499,11 @@ async function toggleGroupShow(g: BookGroup) {
 }
 
 /**
- * 删除分组：POST /reader3/deleteBookGroup（后端并行实现中）——
- * 成功后端将组内书置未分组，本地同步；接口未实现（404）时友好提示。
+ * 旧版删除分组不会清理 Book.group 位掩码；先逐书移除该位，再删分组记录。
+ * 内置负数分组是筛选类别，不允许按普通用户分组删除。
  */
 async function deleteGroup(g: BookGroup) {
+  if (g.id <= 0) return
   const n = groupCount(g.id)
   try {
     await ElMessageBox.confirm(
@@ -1512,6 +1517,8 @@ async function deleteGroup(g: BookGroup) {
   if (groupSaving.value) return
   groupSaving.value = true
   try {
+    const memberUrls = books.value.filter((book) => bookGroupIds(book).includes(g.id)).map((book) => book.bookUrl)
+    if (memberUrls.length) await removeBookGroupMulti(memberUrls, g.id, { silent: true })
     await deleteBookGroup(g.id, { silent: true })
     groups.value = groups.value.filter((x) => x.id !== g.id)
     books.value.forEach((b) => {
@@ -1521,11 +1528,7 @@ async function deleteGroup(g: BookGroup) {
     if (activeGroup.value === g.id) activeGroup.value = null
     ElMessage.success(`已删除分组「${g.name}」`)
   } catch (err) {
-    if (isNotImplemented(err)) {
-      ElMessage.info('删除分组接口后端暂未提供（POST /reader3/deleteBookGroup）')
-    } else {
-      ElMessage.error(err instanceof Error ? err.message : '删除失败')
-    }
+    ElMessage.error(err instanceof Error ? err.message : '删除失败')
   } finally {
     groupSaving.value = false
   }
@@ -1539,6 +1542,7 @@ const groupOrderSaving = ref(false)
 
 /** 拖拽开始（记录源分组 id） */
 function onGroupDragStart(g: BookGroup, e: DragEvent) {
+  if (g.id <= 0) return
   draggingId.value = g.id
   groupOrderDirty.value = true
   if (e.dataTransfer) {
@@ -1549,7 +1553,7 @@ function onGroupDragStart(g: BookGroup, e: DragEvent) {
 
 /** 经过目标行：阻止默认（允许 drop） */
 function onGroupDragOver(g: BookGroup, e: DragEvent) {
-  if (draggingId.value === null || draggingId.value === g.id) return
+  if (draggingId.value === null || draggingId.value === g.id || g.id <= 0) return
   e.preventDefault()
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
 }
@@ -1560,7 +1564,7 @@ function onGroupDrop(g: BookGroup, e: DragEvent) {
   e.preventDefault()
   const from = draggingId.value
   draggingId.value = null
-  if (from === null || from === g.id) return
+  if (from === null || from === g.id || g.id <= 0) return
   groups.value = moveGroupTo(groups.value, from, g.id)
 }
 
@@ -1568,10 +1572,10 @@ function onGroupDragEnd() {
   draggingId.value = null
 }
 
-/** 保存排序：POST /reader3/saveBookGroupOrder（body {order:[{id,orderNum}]}） */
+/** 保存用户分组排序；内置负数分类保留 legacy 固定顺序。 */
 async function saveGroupOrder() {
   if (groupOrderSaving.value) return
-  const order = groups.value.map((g, i) => ({ id: g.id, orderNum: i }))
+  const order = groups.value.filter((g) => g.id > 0).map((g, i) => ({ id: g.id, orderNum: i }))
   if (!order.length) return
   groupOrderSaving.value = true
   try {
@@ -1913,6 +1917,7 @@ async function onGroupHeadDrop(gid: number, e: DragEvent) {
   dragBookUrl.value = null
   dragOverGroupId.value = null
   if (!url) return
+  if (gid < 0) return
   const book = books.value.find((x) => x.bookUrl === url)
   if (!book) return
   if (gid !== 0 && inGroup(book, gid)) {
@@ -2753,7 +2758,7 @@ onMounted(() => {
                   <input
                     type="checkbox"
                     :checked="bookGroupPanelIds.includes(g.id)"
-                    :disabled="menuBusy"
+                    :disabled="menuBusy || g.id <= 0"
                     @change="toggleBookGroupPanel(g.id)"
                   />
                   <span :title="g.name">{{ g.name }}</span>
@@ -2872,14 +2877,14 @@ onMounted(() => {
                 :key="g.id"
                 class="group-row"
                 :class="{ dragging: draggingId === g.id }"
-                draggable="true"
+                :draggable="g.id > 0"
                 @dragstart="onGroupDragStart(g, $event)"
                 @dragover="onGroupDragOver(g, $event)"
                 @drop="onGroupDrop(g, $event)"
                 @dragend="onGroupDragEnd"
               >
                 <!-- GAP 13：拖拽手柄 -->
-                <span class="group-drag" title="拖拽排序">
+                <span class="group-drag" :class="{ disabled: g.id <= 0 }" title="拖拽排序">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="9" cy="6" r="1.4" />
                     <circle cx="15" cy="6" r="1.4" />
@@ -2920,44 +2925,47 @@ onMounted(() => {
                 <template v-else>
                   <span class="group-row-name" :title="g.name">{{ g.name }}</span>
                   <span class="group-row-count">{{ groupCount(g.id) }} 本</span>
-                  <span class="group-cover-cell">
-                    <input
-                      class="group-cover-input"
-                      type="text"
-                      placeholder="封面 URL"
-                      spellcheck="false"
-                      :value="groupCoverDraft[g.id] ?? g.cover ?? ''"
-                      @input="onGroupCoverInput(g, ($event.target as HTMLInputElement).value)"
-                      @keydown.enter="saveGroupMeta(g)"
-                      @blur="saveGroupMeta(g)"
-                    />
-                  </span>
-                  <button
-                    class="group-del"
-                    :class="{ 'show-off': g.show === false }"
-                    type="button"
-                    :title="g.show === false ? '显示该分组' : '隐藏该分组'"
-                    :disabled="groupSaving"
-                    @click="toggleGroupShow(g)"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
-                      <circle cx="12" cy="12" r="2.6" />
-                      <path v-if="g.show === false" d="M4 4l16 16" />
-                    </svg>
-                  </button>
-                  <button class="group-del" type="button" title="重命名" @click="startRename(g)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-                    </svg>
-                  </button>
-                  <button class="group-del" type="button" title="删除分组" @click="deleteGroup(g)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 7h16" />
-                      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                      <path d="M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12" />
-                    </svg>
-                  </button>
+                  <template v-if="g.id > 0">
+                    <span class="group-cover-cell">
+                      <input
+                        class="group-cover-input"
+                        type="text"
+                        placeholder="封面 URL"
+                        spellcheck="false"
+                        :value="groupCoverDraft[g.id] ?? g.cover ?? ''"
+                        @input="onGroupCoverInput(g, ($event.target as HTMLInputElement).value)"
+                        @keydown.enter="saveGroupMeta(g)"
+                        @blur="saveGroupMeta(g)"
+                      />
+                    </span>
+                    <button
+                      class="group-del"
+                      :class="{ 'show-off': g.show === false }"
+                      type="button"
+                      :title="g.show === false ? '显示该分组' : '隐藏该分组'"
+                      :disabled="groupSaving"
+                      @click="toggleGroupShow(g)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+                        <circle cx="12" cy="12" r="2.6" />
+                        <path v-if="g.show === false" d="M4 4l16 16" />
+                      </svg>
+                    </button>
+                    <button class="group-del" type="button" title="重命名" @click="startRename(g)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                      </svg>
+                    </button>
+                    <button class="group-del" type="button" title="删除分组" @click="deleteGroup(g)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7h16" />
+                        <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        <path d="M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12" />
+                      </svg>
+                    </button>
+                  </template>
+                  <span v-else class="group-system-label">系统分组</span>
                 </template>
               </li>
             </ul>
@@ -3049,7 +3057,7 @@ onMounted(() => {
                     class="move-group-act add"
                     :class="{ active: moveAddIds.includes(g.id) }"
                     type="button"
-                    :disabled="manageBusy"
+                    :disabled="manageBusy || g.id <= 0"
                     @click="toggleMoveAdd(g.id)"
                   >
                     {{ moveAddIds.includes(g.id) ? '已选加入' : '加入' }}
@@ -3058,7 +3066,7 @@ onMounted(() => {
                     class="move-group-act remove"
                     :class="{ active: moveRemoveIds.includes(g.id) }"
                     type="button"
-                    :disabled="manageBusy"
+                    :disabled="manageBusy || g.id <= 0"
                     @click="toggleMoveRemove(g.id)"
                   >
                     {{ moveRemoveIds.includes(g.id) ? '已选移除' : '移除' }}
@@ -4894,6 +4902,14 @@ onMounted(() => {
   font-weight: 300;
   color: var(--text-3);
 }
+.group-system-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
 .group-del {
   flex-shrink: 0;
   width: 22px;
@@ -4938,6 +4954,10 @@ onMounted(() => {
   justify-content: center;
   color: var(--text-3);
   cursor: grab;
+}
+.group-drag.disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 .group-drag svg {
   width: 13px;
