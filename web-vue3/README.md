@@ -45,7 +45,9 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 阅读测试还需要在 loopback 启动 `scripts/mock-book-source.py`，设置
 `READER_BOOK_FIXTURE_URL`，然后把上述 `--tests` 改为
 `com.medwarp.reader.browserpoc.Vue3PreviewReadingTest`；它会检查书籍详情、
-目录、首章正文和下一章导航。`Vue3PreviewSearchTest` 还覆盖指定书源、
+目录、首章正文、下一章导航，以及从详情页分别下载 TXT 和 EPUB（检查后端
+`isEpub` 参数和 EPUB ZIP 文件头）。导出 UI 仅提供当前 Java/Kotlin 后端支持的
+TXT/EPUB，不显示未实现的 HTML 或 TXT 编码选项。`Vue3PreviewSearchTest` 还覆盖指定书源、
 多源 SSE、批量降级及未入架直读。`Vue3PreviewSourceTest` 检查远程预览
 不写库、确认后导入以及批量删除。`Vue3PreviewFileTest` 检查文件重命名、单文件／目录导入，
 以及服务端移动目录与二进制文件。`Vue3PreviewSecureFileTest` 使用另一隔离工作目录、

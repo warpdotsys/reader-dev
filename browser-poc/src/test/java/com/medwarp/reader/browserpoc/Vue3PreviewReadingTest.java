@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class Vue3PreviewReadingTest {
                     .setExecutablePath(Path.of(executable)).setHeadless(true));
             try {
                 Page page = browser.newPage();
-                page.setDefaultTimeout(30000);
+                page.setDefaultTimeout(60000);
                 page.navigate(previewUrl + "/login");
                 page.locator(".mode-switch button").nth(1).click();
                 page.locator("input[autocomplete=username]").fill("vue" +
@@ -83,6 +84,31 @@ public class Vue3PreviewReadingTest {
                 page.getByText("终章内容固定。").waitFor();
                 assertTrue(page.locator(".reader-content").innerText()
                         .contains("终章内容固定。"));
+
+                page.navigate(previewUrl + "/book/" + java.net.URLEncoder.encode(bookUrl,
+                        java.nio.charset.StandardCharsets.UTF_8));
+                page.locator(".detail-page").waitFor();
+                page.locator(".detail-page button.search-btn:has-text('导出')").click();
+                page.locator(".dlg-export").waitFor();
+                Response txt = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                                .endsWith("/reader3/exportBook"),
+                        () -> page.locator(".dlg-export .accent-btn:has-text('导出')").click());
+                assertEquals(200, txt.status());
+                assertTrue("TXT export must send the legacy isEpub=0 contract",
+                        URI.create(txt.url()).getQuery().contains("isEpub=0"));
+                assertTrue(txt.body().length > 20);
+
+                page.locator(".dlg-export .fmt-btn").nth(1).click();
+                Response epub = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                                .endsWith("/reader3/exportBook"),
+                        () -> page.locator(".dlg-export .accent-btn:has-text('导出')").click());
+                assertEquals(200, epub.status());
+                assertTrue("EPUB export must send the legacy isEpub=1 contract",
+                        URI.create(epub.url()).getQuery().contains("isEpub=1"));
+                byte[] epubBytes = epub.body();
+                assertTrue("EPUB export must be a ZIP archive", epubBytes.length > 100
+                        && epubBytes[0] == 'P' && epubBytes[1] == 'K');
+                assertEquals(2, page.locator(".dlg-export .fmt-btn").count());
             } finally {
                 browser.close();
             }

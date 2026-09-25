@@ -6,7 +6,7 @@ import { getBookshelf, saveBook } from '@/api/bookshelf'
 import { getBookInfo, getBookToc, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import { getInvalidBookSources } from '@/api/sources'
 import { deleteBookCache, getShelfBookWithCacheInfo, searchBookContent } from '@/api/cache'
-import { exportBook, type ExportEncoding, type ExportFormat } from '@/api/export'
+import { exportBook, type ExportFormat } from '@/api/export'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { proxyImageUrl } from '@/utils/imageProxy'
 import { uploadFile, mkdir } from '@/api/file'
@@ -720,25 +720,21 @@ async function relocateProgressAfterSwitch(r: SearchBook) {
   }
 }
 
-/* ================= 导出（GET /reader3/exportBook：txt/epub/html blob 下载 + txt 编码选择） ================= */
+/* ================= 导出（Java/Kotlin legacy 支持 TXT 与 EPUB） ================= */
 
 const EXPORT_FORMATS: { value: ExportFormat; label: string; tip: string }[] = [
   { value: 'txt', label: 'TXT', tip: '纯文本' },
   { value: 'epub', label: 'EPUB', tip: '电子书' },
-  { value: 'html', label: 'HTML', tip: '网页' },
 ]
 
 const exportOpen = ref(false)
 const exportFormat = ref<ExportFormat>('txt')
-/** GAP 144：txt 导出编码（UTF-8 / GBK——GBK 中文环境兼容；后端并行实现中，未就绪时仍输出 UTF-8） */
-const exportEncoding = ref<ExportEncoding>('utf-8')
 const exportBusy = ref(false)
 const exportMsg = ref('')
 const exportMsgError = ref(false)
 
 function openExport() {
   exportFormat.value = 'txt'
-  exportEncoding.value = 'utf-8'
   exportMsg.value = ''
   exportMsgError.value = false
   exportOpen.value = true
@@ -751,19 +747,15 @@ function closeExport() {
   document.body.style.overflow = ''
 }
 
-/** 导出并下载（失败在弹窗内提示，不弹全局 toast——接口可能未实现） */
+/** 导出并下载；格式映射到 legacy `isEpub` 参数。 */
 async function confirmExport() {
   if (exportBusy.value) return
   exportBusy.value = true
   exportMsg.value = ''
   exportMsgError.value = false
   try {
-    const { blob, warning } = await exportBook(
-      bookUrl.value,
-      exportFormat.value,
-      exportEncoding.value,
-    )
-    // 后端错误体（HTTP 200 + JSON）：在此识别并展示（encoding 未就绪时后端忽略参数仍输出 UTF-8）
+    const blob = await exportBook(bookUrl.value, exportFormat.value)
+    // 后端错误体（HTTP 200 + JSON）：在此识别并展示。
     if (blob.type.includes('application/json')) {
       try {
         const parsed = JSON.parse(await blob.text()) as { isSuccess?: boolean; errorMsg?: string }
@@ -779,22 +771,13 @@ async function confirmExport() {
     const name = `${(display.value.name || 'book').replace(/[\\/:*?"<>|]/g, '_')}.${exportFormat.value}`
     const ok = await downloadBlob(blob, name)
     if (ok) {
-      // P2：导出警告（并发抓章失败章节 / GBK 不可映射转义）——随下载成功提示展示
-      const warnParts: string[] = []
-      const failed = warning?.failedChapters?.length ?? 0
-      if (failed > 0) warnParts.push(`${failed} 章抓取失败已跳过`)
-      if (warning?.unmappableChars) warnParts.push(`GBK 无法编码 ${warning.unmappableChars} 个字符（已转义保留）`)
-      exportMsg.value = warnParts.length
-        ? `已下载 ${name}（警告：${warnParts.join('；')}）`
-        : `已下载 ${name}`
+      exportMsg.value = `已下载 ${name}`
       window.setTimeout(() => {
         if (!exportBusy.value) closeExport()
       }, 900)
     }
   } catch (err) {
-    exportMsg.value = isNotImplemented(err)
-      ? '导出接口后端暂未提供（GET /reader3/exportBook）'
-      : `导出失败：${err instanceof Error ? err.message : '请稍后重试'}`
+    exportMsg.value = `导出失败：${err instanceof Error ? err.message : '请稍后重试'}`
     exportMsgError.value = true
   } finally {
     exportBusy.value = false
@@ -1245,7 +1228,7 @@ watch(bookUrl, () => {
             <button v-if="shelfBook" class="search-btn" type="button" @click="openEdit">编辑</button>
             <!-- 换源（书架书且带书源：搜索同书其他书源并切换） -->
             <button v-if="canSwitchSource()" class="search-btn" type="button" @click="openSource">换源</button>
-            <!-- 导出（GET /reader3/exportBook：txt/epub/html blob 下载） -->
+            <!-- 导出（GET /reader3/exportBook：TXT/EPUB） -->
             <button class="search-btn" type="button" @click="openExport">导出</button>
             <!-- 章节缓存（服务器 / 本机双向：单章、至末尾、全本、指定范围） -->
             <button class="search-btn" type="button" @click="openCacheDialog">缓存</button>
@@ -1417,7 +1400,7 @@ watch(bookUrl, () => {
         </div>
       </Transition>
     </Teleport>
-    <!-- 导出弹层（GET /reader3/exportBook：txt/epub/html） -->
+    <!-- 导出弹层（GET /reader3/exportBook：TXT/EPUB） -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="exportOpen" class="dlg-overlay" @click.self="closeExport">
@@ -1451,31 +1434,7 @@ watch(bookUrl, () => {
                 <span class="fmt-tip">{{ f.tip }}</span>
               </button>
             </div>
-            <!-- GAP 144：txt 编码选择（UTF-8 / GBK——后端并行实现中，未就绪时仍输出 UTF-8） -->
-            <div v-if="exportFormat === 'txt'" class="export-enc">
-              <span class="enc-label">编码</span>
-              <div class="enc-seg">
-                <button
-                  class="enc-btn"
-                  :class="{ active: exportEncoding === 'utf-8' }"
-                  type="button"
-                  :disabled="exportBusy"
-                  @click="exportEncoding = 'utf-8'"
-                >
-                  UTF-8
-                </button>
-                <button
-                  class="enc-btn"
-                  :class="{ active: exportEncoding === 'gbk' }"
-                  type="button"
-                  :disabled="exportBusy"
-                  @click="exportEncoding = 'gbk'"
-                >
-                  GBK
-                </button>
-              </div>
-            </div>
-            <p class="field-tip">由服务器生成 {{ exportFormat.toUpperCase() }} 文件并下载{{ exportFormat === 'txt' ? `（${exportEncoding.toUpperCase()} 编码）` : '' }}。</p>
+            <p class="field-tip">由服务器生成 {{ exportFormat.toUpperCase() }} 文件并下载。</p>
             <p v-if="exportMsg" class="search-msg" :class="{ error: exportMsgError }">{{ exportMsg }}</p>
             <div class="dlg-actions">
               <button class="ghost-btn" type="button" :disabled="exportBusy" @click="closeExport">取消</button>
@@ -2706,53 +2665,6 @@ watch(bookUrl, () => {
   font-weight: 300;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
-}
-
-/* txt 编码选择（GAP 144：UTF-8 / GBK） */
-.export-enc {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.enc-label {
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: var(--text-3);
-}
-.enc-seg {
-  display: flex;
-  gap: 6px;
-}
-.enc-btn {
-  padding: 5px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-2);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    background-color 0.2s ease;
-}
-.enc-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.enc-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-.enc-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
 }
 
 /* ================= 元数据编辑弹层（GAP 145） ================= */

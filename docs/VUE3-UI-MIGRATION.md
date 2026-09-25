@@ -31,3 +31,5 @@ Vue 3 默认仍构建为根路径。通过 `READER_UI_BASE=/reader/` 可生成�
 预览回滚：当前生产入口仍在 `web/`，Vue 3 只在独立 `web-vue3/` 和 CI 中运行。停止 Vite 预览即可回到现有 Vue 2 界面，不需要改动生产数据；将来若切换正式入口，必须先准备独立的静态资源版本和明确的入口回切步骤，再按第 5 条验收。
 
 文件页增量验证：`Vue3PreviewFileTest` 已在本机和 [GitHub 托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36113258471) 中验证重命名、正文不变、拒绝 `../` 路径和同名覆盖，以及单文件和递归目录导入；同一托管流程还验证了目录与二进制文件移动后的内容、拒绝移动到自身子目录／越界路径／同名目标。`Vue3PreviewSecureFileTest` 也在该 [托管流程](https://github.com/warpdotsys/reader-dev/actions/runs/36113258471) 中通过：独立工作目录和非生产管理密码验证错误密码提示、正确密码重试、根目录新建、列表刷新，以及请求 URL 不含密钥；测试另行确认旧版 `secureKey` query 仍可用。`checkManagerAuth` 现优先读取 `X-Reader-Secure-Key` 请求头，同时保留 `secureKey` query 作为 Vue 2 和脚本的兼容入口；Vue 3 只发请求头。旧客户端若继续用 query，生产仍须使用 HTTPS 并避免记录完整 URL。`/file/move` 是恢复工程的新增接口，不是原 JAR 接口，尚无 JAR 黑盒对照。文件页可导入格式提示已按当前 Java/Kotlin 实际支持的 txt、epub、umd、cbz、pdf 收紧，未宣称支持其他格式。文件页其余入口未全部验收，不能把整个文件页视为完成。
+
+导出兼容增量：Vue3 的详情页和书架弹窗现只显示 Java/Kotlin 后端可实现的 TXT、EPUB；统一将格式映射到 `GET /reader3/exportBook` 的 `isEpub=0|1`，不再展示后端会忽略的 HTML、GBK 编码选项或尚未实现的 warning。隔离 Reader + Chromium 本机测试已覆盖两种 UI 下载路径，并断言 EPUB 响应为 ZIP；当前工作流提交后的托管 runner 验证尚待完成。该测试使用合成书源，不代表线上真实书源或所有书籍导出均已验证。
