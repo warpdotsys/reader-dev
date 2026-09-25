@@ -212,7 +212,7 @@ export interface FileItem {
   [key: string]: unknown
 }
 
-/** 替换规则（当前 localStorage: reader_replace_rules；后端就绪后 ↔ POST /reader3/saveReplaceRule 等，见 api/replaceRules.ts 契约注释） */
+/** Vue 3 替换规则视图模型；与 legacy ReplaceRule 的 Long/pattern/isEnabled 由 API adapter 映射。 */
 export interface ReplaceRule {
   id: string
   name: string

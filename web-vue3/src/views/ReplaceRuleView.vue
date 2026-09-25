@@ -14,21 +14,25 @@ import { useUserStore } from '@/stores/user'
 import { checkTestRegex } from '@/utils/regexGuard'
 import type { ReplaceRule, TxtTocRule } from '@/types'
 import { isDefaultTxtTocRuleId } from '@/utils/tocRules'
+import { newReplaceRuleId } from '@/api/replaceRuleAdapter'
 
 const router = useRouter()
 const store = useUserStore()
 
-/* ================= 列表（localStorage: reader_replace_rules，见 api/replaceRules.ts 契约注释） ================= */
+/* ================= 列表（Java/Kotlin 服务端为准；离线时显式标记本地缓存） ================= */
 const rules = ref<ReplaceRule[]>([])
 const loading = ref(true)
+const loadWarning = ref('')
 
 async function load() {
   loading.value = true
   try {
     const res = await getReplaceRules()
     rules.value = res.data ?? []
+    loadWarning.value = res.isSuccess ? '' : res.errorMsg
   } catch {
     rules.value = []
+    loadWarning.value = '替换规则加载失败；当前没有可确认的服务端数据'
   } finally {
     loading.value = false
   }
@@ -37,7 +41,7 @@ async function load() {
 const enabledCount = computed(() => rules.value.filter((r) => r.enabled).length)
 
 function newId(): string {
-  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+  return newReplaceRuleId()
 }
 
 /* ================= 新增 / 编辑弹窗 ================= */
@@ -78,24 +82,40 @@ async function confirmSave() {
     ElMessage.warning('「查找」内容不能为空')
     return
   }
-  editorBusy.value = true
+  const name = form.value.name.trim() || find
   const editing = editingId.value
+  if (rules.value.some((item) => item.name === name && item.id !== editing)) {
+    ElMessage.warning('规则名称已存在；legacy 服务端按名称识别替换规则，请使用不同名称')
+    return
+  }
+  editorBusy.value = true
+  const previous = editing ? rules.value.find((item) => item.id === editing) : undefined
   const rule: ReplaceRule = {
-    id: editing ?? newId(),
-    name: form.value.name.trim() || find,
+    ...(previous ?? {}),
+    id: previous && previous.name !== name ? newId() : editing ?? newId(),
+    name,
     find,
     replace: form.value.replace,
     enabled: form.value.enabled,
     order: editing ? (rules.value.find((r) => r.id === editing)?.order ?? 0) : rules.value.length,
   }
   try {
-    // 当前为 localStorage 占位；后端就绪后走 POST /reader3/saveReplaceRule（见 api/replaceRules.ts）
-    const res = await saveReplaceRule(rule)
-    // P1-C2：后端生效 id 与本地不一致（归属冲突改插新 id）→ 同步本地条目 id，避免重复保存
-    if (res.data && typeof res.data === 'object' && res.data.id && res.data.id !== rule.id) {
-      rule.id = res.data.id
-      editingId.value = res.data.id
+    let res
+    if (previous && previous.name !== rule.name) {
+      // legacy CURD identifies replacement rules by name, not id; migrate a
+      // rename by creating the new name and then deleting the old record.
+      res = await saveReplaceRule(rule)
+      if (!res.isSuccess) loadWarning.value = res.errorMsg
+      const deleted = await deleteReplaceRule(previous)
+      if (!deleted.isSuccess) {
+        loadWarning.value = '新名称已保存，但旧名称尚未从服务端确认删除；请重新加载核对'
+        await load()
+        return
+      }
+    } else {
+      res = await saveReplaceRule(rule)
     }
+    loadWarning.value = res.isSuccess ? '' : res.errorMsg
     if (editing) {
       const i = rules.value.findIndex((r) => r.id === editing)
       if (i >= 0) rules.value[i] = rule
@@ -103,6 +123,8 @@ async function confirmSave() {
       rules.value.push(rule)
     }
     closeEditor()
+  } catch {
+    // request.ts surfaces the server's real validation/authentication error.
   } finally {
     editorBusy.value = false
   }
@@ -118,10 +140,7 @@ async function toggleRule(r: ReplaceRule) {
   r.enabled = !prev // 乐观更新
   try {
     const res = await saveReplaceRule({ ...r, enabled: !prev })
-    // P1-C2：后端生效 id 同步（归属冲突改插新 id 时避免后续保存重复建规则）
-    if (res.data && typeof res.data === 'object' && res.data.id && res.data.id !== r.id) {
-      r.id = res.data.id
-    }
+    loadWarning.value = res.isSuccess ? '' : res.errorMsg
   } catch {
     r.enabled = prev // 失败回滚
   } finally {
@@ -153,7 +172,9 @@ async function confirmDelete() {
     deleteBusy.value = true
     try {
       if (many.kind === 'replace') {
-        await deleteReplaceRules(many.ids)
+        const selected = rules.value.filter((rule) => many.ids.includes(rule.id))
+        const res = await deleteReplaceRules(selected)
+        loadWarning.value = res.isSuccess ? '' : res.errorMsg
         const removed = new Set(many.ids)
         rules.value = rules.value.filter((x) => !removed.has(x.id))
         selectedIds.value = new Set()
@@ -175,8 +196,13 @@ async function confirmDelete() {
   deleteBusy.value = true
   try {
     if (t.kind === 'replace') {
-      // 当前为 localStorage 占位；后端就绪后走 POST /reader3/deleteReplaceRule（见 api/replaceRules.ts）
-      await deleteReplaceRule(String(t.id))
+      const rule = rules.value.find((item) => item.id === String(t.id))
+      if (!rule) {
+        ElMessage.warning('找不到待删除的替换规则，请刷新后重试')
+        return
+      }
+      const res = await deleteReplaceRule(rule)
+      loadWarning.value = res.isSuccess ? '' : res.errorMsg
       rules.value = rules.value.filter((x) => x.id !== String(t.id))
     } else {
       await deleteTxtTocRule(t.id)
@@ -260,11 +286,12 @@ async function importJson() {
   const list = (arr as Array<Record<string, unknown>>)
     .filter((x) => x && typeof x === 'object')
     .map((x, i) => ({
-      id: typeof x.id === 'string' && x.id ? x.id : newId(),
-      name: typeof x.name === 'string' && x.name ? x.name : String(x.find ?? `规则 ${i + 1}`),
-      find: typeof x.find === 'string' ? x.find : '',
-      replace: typeof x.replace === 'string' ? x.replace : '',
-      enabled: typeof x.enabled === 'boolean' ? x.enabled : true,
+      ...x,
+      id: typeof x.id === 'string' && x.id ? x.id : typeof x.id === 'number' ? String(x.id) : newId(),
+      name: typeof x.name === 'string' && x.name ? x.name : String(x.find ?? x.pattern ?? `规则 ${i + 1}`),
+      find: typeof x.find === 'string' ? x.find : typeof x.pattern === 'string' ? x.pattern : '',
+      replace: typeof x.replace === 'string' ? x.replace : typeof x.replacement === 'string' ? x.replacement : '',
+      enabled: typeof x.enabled === 'boolean' ? x.enabled : typeof x.isEnabled === 'boolean' ? x.isEnabled : true,
       order: typeof x.order === 'number' ? x.order : rules.value.length + i,
     }))
     .filter((r) => r.find)
@@ -275,7 +302,10 @@ async function importJson() {
   jsonBusy.value = true
   try {
     const res = await saveReplaceRules(list)
-    jsonMsg.value = `已导入 ${res.data?.count ?? list.length} 条规则（服务端不可用时仅保存在本机）`
+    jsonMsg.value = res.isSuccess
+      ? `已导入 ${res.data?.count ?? list.length} 条规则并保存到服务端`
+      : `已导入 ${res.data?.count ?? list.length} 条规则，但仅保存在本机：${res.errorMsg}`
+    loadWarning.value = res.isSuccess ? '' : res.errorMsg
     await load()
   } finally {
     jsonBusy.value = false
@@ -543,6 +573,7 @@ onMounted(() => {
       <p v-if="store.isAdmin && store.defaultConfigMode" class="default-mode-note">
         正在编辑系统配置（default）：规则对所有用户生效
       </p>
+      <p v-if="loadWarning" class="backend-warning" role="status">{{ loadWarning }}</p>
 
       <!-- 选项卡 -->
       <div class="tabs">
@@ -685,7 +716,7 @@ onMounted(() => {
         </div>
       </template>
 
-      <p class="foot-tip">替换规则已同步到服务端（登录账号内多设备一致）；服务不可用时自动降级为本地浏览器存储。TXT 目录规则存储于服务端，上传 TXT 本地书时分章使用。</p>
+      <p class="foot-tip">替换规则正常时保存在登录账号的服务端；服务不可达时只写入此浏览器，并显示未同步提示。TXT 目录规则存储于服务端，上传 TXT 本地书时分章使用。</p>
     </main>
 
     <!-- 新增 / 编辑规则弹窗 -->
@@ -1082,6 +1113,16 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 1px;
+}
+.backend-warning {
+  margin: -10px 0 18px;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--warn, #f5a524) 42%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warn, #f5a524) 10%, transparent);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .section-title {
   margin: 0;

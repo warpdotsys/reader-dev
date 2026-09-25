@@ -1,164 +1,176 @@
 import { get, post } from './request'
 import { onBackendReachable } from './backendFlag'
+import { fromLegacyReplaceRule, toLegacyReplaceRule } from './replaceRuleAdapter'
 import type { ReplaceRule, ReturnData } from '@/types'
 
 /**
- * 替换规则存储层 —— 后端为主（GET/POST /reader3/*ReplaceRule*），localStorage 为降级缓存：
- * - 后端可用：读写走服务端（账号内多设备一致），成功后镜像写 localStorage（阅读页渲染
- *   走同步的 loadReplaceRules，无需等待网络）
- * - 后端失败（未启动/接口异常）：读写降级到 localStorage，功能不中断
+ * 替换规则适配器。
+ * Vue 3 用 find/replace/enabled；Java/Kotlin data class 使用 pattern/
+ * replacement/isEnabled、Long id。所有服务端请求必须经过显式字段映射，
+ * 不能把 Vue/Rust 形状直接发给 legacy CURD。
  *
- * ============================ 后端契约 ============================
- * GET  /reader3/getReplaceRules    → ReturnData<ReplaceRule[]>
- * POST /reader3/saveReplaceRule    body: ReplaceRule        → ReturnData<null>
- * POST /reader3/saveReplaceRules   body: ReplaceRule[]      → ReturnData<{ count: number }>
- * POST /reader3/deleteReplaceRule  body: { id: string }     → ReturnData<null>
- * POST /reader3/deleteReplaceRules body: { ids: string[] } | { all: true } | 规则对象数组 → ReturnData<{ count }>
- * ================================================================
- * localStorage key: reader_replace_rules（值为 ReplaceRule[] 的 JSON）
+ * GET  /reader3/getReplaceRules    → legacy ReplaceRule[]
+ * POST /reader3/saveReplaceRule   → legacy ReplaceRule
+ * POST /reader3/saveReplaceRules  → legacy ReplaceRule[]
+ * POST /reader3/deleteReplaceRule → 完整 legacy ReplaceRule（控制器按 name 匹配）
+ * POST /reader3/deleteReplaceRules → legacy ReplaceRule[]
+ *
+ * localStorage 只作为明确标注的离线缓存；HTTP/业务错误不会伪装成本地成功。
  */
 
 const STORAGE_KEY = 'reader_replace_rules'
+let backendDown = false
 
-/** 同步读取（阅读页渲染时直接使用；localStorage 异常时返回空数组） */
 export function loadReplaceRules(): ReplaceRule[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const arr = JSON.parse(raw) as unknown
     if (!Array.isArray(arr)) return []
-    return (arr as ReplaceRule[]).filter((r) => r && typeof r === 'object' && typeof r.find === 'string')
+    return (arr as ReplaceRule[]).filter(
+      (rule) => rule && typeof rule === 'object' && typeof rule.find === 'string',
+    )
   } catch {
     return []
   }
 }
 
-/** 同步持久化整表（后端成功后的本地镜像 / 后端失败时的降级存储） */
 export function persistReplaceRules(rules: ReplaceRule[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rules))
   } catch {
-    /* localStorage 满/不可用：忽略 */
+    // Quota/private-mode errors must not turn a successful server write into a failure.
   }
 }
 
-/** 后端不可达标志（本模块内短路，避免每次操作都等 15s 超时） */
-let backendDown = false
-
-/** 业务错误（拦截器 reject 携带 data / HTTP 响应）——后端可达，展示真实错误；纯网络错误才置 backendDown */
-function errMsg(err: unknown, fallback: string): { msg: string; down: boolean } {
-  if (err instanceof Error) {
-    const e = err as Error & { data?: unknown; response?: { data?: { errorMsg?: string } }; code?: string }
-    if ('data' in e || 'response' in e) {
-      const timeout =
-        e.code === 'ECONNABORTED' || (e.message || '').toLowerCase().includes('timeout')
-      const msg = timeout
-        ? '请求超时，请稍后重试'
-        : e.response?.data?.errorMsg || e.message || fallback
-      return { msg, down: false }
-    }
+function isOfflineTransportError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const candidate = error as Error & {
+    data?: unknown
+    response?: unknown
+    code?: string
   }
-  backendDown = true
-  return { msg: '服务端暂不可用，已降级本地数据', down: true }
+  if ('data' in candidate || 'response' in candidate) return false
+  if (
+    candidate.code === 'ECONNABORTED' ||
+    candidate.code === 'ETIMEDOUT' ||
+    /timeout/i.test(candidate.message)
+  ) {
+    return false
+  }
+  return true
 }
 
-/** GET /reader3/getReplaceRules（后端优先；失败降级 localStorage 并镜像缓存） */
+function offlineResult<T>(data: T): ReturnData<T> {
+  return { isSuccess: false, errorMsg: '服务端不可达，本次变更仅保存在本机，尚未同步', data }
+}
+
+function mergeLocalRules(rules: ReplaceRule[]): void {
+  const current = loadReplaceRules()
+  for (const rule of rules) {
+    const index = current.findIndex((item) => item.name === rule.name || item.id === rule.id)
+    if (index >= 0) current[index] = rule
+    else current.push(rule)
+  }
+  persistReplaceRules(current)
+}
+
+function removeLocalRules(rules: ReplaceRule[]): void {
+  const ids = new Set(rules.map((rule) => rule.id))
+  const names = new Set(rules.map((rule) => rule.name))
+  persistReplaceRules(loadReplaceRules().filter((rule) => !ids.has(rule.id) && !names.has(rule.name)))
+}
+
 export async function getReplaceRules(): Promise<ReturnData<ReplaceRule[]>> {
+  if (backendDown) return offlineResult(loadReplaceRules())
+  try {
+    const response = await get<unknown>('/getReplaceRules')
+    if (!Array.isArray(response.data)) {
+      throw new Error('服务器返回的替换规则不是数组')
+    }
+    const rules = response.data.map(fromLegacyReplaceRule)
+    persistReplaceRules(rules)
+    return { ...response, data: rules }
+  } catch (error) {
+    if (!isOfflineTransportError(error)) throw error
+    backendDown = true
+    return offlineResult(loadReplaceRules())
+  }
+}
+
+export async function saveReplaceRule(rule: ReplaceRule): Promise<ReturnData<null>> {
   if (backendDown) {
-    return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: loadReplaceRules() }
+    mergeLocalRules([rule])
+    return offlineResult(null)
   }
   try {
-    const res = await get<ReplaceRule[]>('/getReplaceRules')
-    persistReplaceRules(res.data ?? []) // 镜像到本地（阅读页同步渲染）
-    return res
-  } catch {
+    const response = await post<unknown>('/saveReplaceRule', toLegacyReplaceRule(rule))
+    mergeLocalRules([rule])
+    return { ...response, data: null }
+  } catch (error) {
+    if (!isOfflineTransportError(error)) throw error
     backendDown = true
-    return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: loadReplaceRules() }
+    mergeLocalRules([rule])
+    return offlineResult(null)
   }
 }
 
-/** POST /reader3/saveReplaceRule（后端优先；失败降级 localStorage）
- *  P1-C2：响应 data.id = 后端生效 id（归属冲突时后端改插新 id——前端据此同步本地列表） */
-export async function saveReplaceRule(rule: ReplaceRule): Promise<ReturnData<{ id?: string } | null>> {
-  if (!backendDown) {
-    try {
-      const res = await post<{ id?: string } | null>('/saveReplaceRule', rule)
-      // 镜像更新本地缓存
-      const list = loadReplaceRules()
-      const i = list.findIndex((r) => r.id === rule.id)
-      if (i >= 0) list[i] = rule
-      else list.push(rule)
-      persistReplaceRules(list)
-      return res
-    } catch {
-      backendDown = true
-    }
-  }
-  // 降级：本地增改
-  const list = loadReplaceRules()
-  const i = list.findIndex((r) => r.id === rule.id)
-  if (i >= 0) list[i] = rule
-  else list.push(rule)
-  persistReplaceRules(list)
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: null }
-}
-
-/** POST /reader3/saveReplaceRules（批量；后端失败降级为整表本地覆盖） */
 export async function saveReplaceRules(rules: ReplaceRule[]): Promise<ReturnData<{ count: number }>> {
-  if (!backendDown) {
-    try {
-      const res = await post<{ count: number }>('/saveReplaceRules', rules)
-      persistReplaceRules(rules)
-      return res
-    } catch {
-      backendDown = true
-    }
+  if (backendDown) {
+    mergeLocalRules(rules)
+    return offlineResult({ count: rules.length })
   }
-  persistReplaceRules(rules)
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: { count: rules.length } }
+  try {
+    const response = await post<unknown>('/saveReplaceRules', rules.map(toLegacyReplaceRule))
+    mergeLocalRules(rules)
+    return { ...response, data: { count: rules.length } }
+  } catch (error) {
+    if (!isOfflineTransportError(error)) throw error
+    backendDown = true
+    mergeLocalRules(rules)
+    return offlineResult({ count: rules.length })
+  }
 }
 
-/** POST /reader3/deleteReplaceRule（后端优先；失败降级 localStorage） */
-export async function deleteReplaceRule(id: string): Promise<ReturnData<null>> {
-  if (!backendDown) {
-    try {
-      const res = await post<null>('/deleteReplaceRule', { id })
-      persistReplaceRules(loadReplaceRules().filter((r) => r.id !== id))
-      return res
-    } catch {
-      backendDown = true
-    }
+export async function deleteReplaceRule(rule: ReplaceRule): Promise<ReturnData<null>> {
+  if (backendDown) {
+    removeLocalRules([rule])
+    return offlineResult(null)
   }
-  persistReplaceRules(loadReplaceRules().filter((r) => r.id !== id))
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: null }
+  try {
+    const response = await post<unknown>('/deleteReplaceRule', toLegacyReplaceRule(rule))
+    removeLocalRules([rule])
+    return { ...response, data: null }
+  } catch (error) {
+    if (!isOfflineTransportError(error)) throw error
+    backendDown = true
+    removeLocalRules([rule])
+    return offlineResult(null)
+  }
 }
 
-/** POST /reader3/deleteReplaceRules（批量；后端失败降级为逐条 deleteReplaceRule） */
-export async function deleteReplaceRules(ids: string[]): Promise<ReturnData<{ count: number }>> {
-  if (ids.length === 0) return { isSuccess: false, errorMsg: '参数错误', data: { count: 0 } }
-  if (!backendDown) {
-    try {
-      const res = await post<{ count: number }>('/deleteReplaceRules', { ids }, { silent: true })
-      const removed = new Set(ids)
-      persistReplaceRules(loadReplaceRules().filter((r) => !removed.has(r.id)))
-      return res
-    } catch (err) {
-      const { msg, down } = errMsg(err, '批量删除规则失败')
-      if (!down) return { isSuccess: false, errorMsg: msg, data: { count: 0 } }
-    }
+export async function deleteReplaceRules(rules: ReplaceRule[]): Promise<ReturnData<{ count: number }>> {
+  if (rules.length === 0) return { isSuccess: true, errorMsg: '', data: { count: 0 } }
+  if (backendDown) {
+    removeLocalRules(rules)
+    return offlineResult({ count: rules.length })
   }
-  let count = 0
-  for (const id of ids) {
-    const res = await deleteReplaceRule(id)
-    if (res.isSuccess) count += 1
+  try {
+    // CURD.deleteMulti expects an array of entities, not { ids: [...] }.
+    const response = await post<unknown>('/deleteReplaceRules', rules.map(toLegacyReplaceRule), { silent: true })
+    removeLocalRules(rules)
+    return { ...response, data: { count: rules.length } }
+  } catch (error) {
+    if (!isOfflineTransportError(error)) throw error
+    backendDown = true
+    removeLocalRules(rules)
+    return offlineResult({ count: rules.length })
   }
-  return { isSuccess: true, errorMsg: '', data: { count } }
 }
 
-/** 恢复后端调用（登录态变化/网络恢复时由上层调用） */
+/** Any successful API response makes a later retry use the server again. */
 export function resetBackendFlag(): void {
   backendDown = false
 }
 
-// P2：任一后端请求成功（request.ts 拦截器）即复位短路标志——网络恢复后自动回到后端优先
 onBackendReachable(resetBackendFlag)

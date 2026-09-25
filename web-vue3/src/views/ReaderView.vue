@@ -1150,9 +1150,10 @@ async function addFilterFromSelection() {
     enabled: true,
     order: rules.length,
   })
-  await saveReplaceRules(rules)
+  const saved = await saveReplaceRules(rules)
   refreshReplaceRules()
-  ElMessage.success('已添加过滤规则')
+  if (saved.isSuccess) ElMessage.success('已添加过滤规则并同步到服务端')
+  else ElMessage.warning(saved.errorMsg)
 }
 
 /** 编辑书签（打开弹窗；副本保存到 bookmarkEditing） */
