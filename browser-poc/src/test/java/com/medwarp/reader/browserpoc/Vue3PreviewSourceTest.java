@@ -87,7 +87,7 @@ public class Vue3PreviewSourceTest {
                 try {
                     page.locator(".source-row button[title^='编辑书源']").click();
                 } catch (RuntimeException failure) {
-                    System.err.println("Source edit button state after create: " + page.evaluate(
+                    String state = String.valueOf(page.evaluate(
                             "() => JSON.stringify(Array.from(document.querySelectorAll('.source-row')).map(row => ({" +
                                     "name: row.querySelector('.source-name')?.textContent," +
                                     "buttons: Array.from(row.querySelectorAll('button')).map(button => {" +
@@ -97,7 +97,17 @@ public class Vue3PreviewSourceTest {
                                     "visibility: getComputedStyle(button).visibility," +
                                     "rect: {x: rect.x, y: rect.y, width: rect.width, height: rect.height}};" +
                                     "})})))"));
-                    throw failure;
+                    String runnerTemp = System.getenv("RUNNER_TEMP");
+                    if (runnerTemp != null && !runnerTemp.isEmpty()) {
+                        try {
+                            page.screenshot(new Page.ScreenshotOptions()
+                                    .setPath(Path.of(runnerTemp, "vue3-source-edit-timeout.png"))
+                                    .setFullPage(true));
+                        } catch (RuntimeException screenshotFailure) {
+                            failure.addSuppressed(screenshotFailure);
+                        }
+                    }
+                    throw new AssertionError("Could not click source edit button; source rows: " + state, failure);
                 }
                 page.locator("[aria-label='编辑书源'] .field-input").nth(1).fill("Vue3 CRUD renamed");
                 page.locator("[aria-label='编辑书源'] .field-input").nth(2).fill("browser-check edited");

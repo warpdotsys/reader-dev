@@ -127,6 +127,16 @@ jobs:
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
+      - name: Preserve Vue 3 source journey diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vue3-source-browser-diagnostics-${{ github.sha }}
+          path: |
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml
+            ${{ runner.temp }}/vue3-source-edit-timeout.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Start a separate Reader with manager-key protection
         shell: bash
         run: |
