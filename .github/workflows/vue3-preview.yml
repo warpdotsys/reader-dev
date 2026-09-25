@@ -8,6 +8,7 @@ on:
       - 'browser-poc/**'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   pull_request:
     branches: [legacy]
@@ -16,6 +17,7 @@ on:
       - 'browser-poc/**'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   workflow_dispatch:
 
@@ -49,7 +51,7 @@ jobs:
           retention-days: 14
 
   e2e:
-    name: Isolated login, search, and reading in Chromium
+    name: Isolated Vue 3 browser journeys in Chromium
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:

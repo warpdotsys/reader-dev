@@ -209,6 +209,46 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
         return returnData.setData("")
     }
 
+    suspend fun rename(context: RoutingContext): ReturnData {
+        checkAccess(context, isSave = true, isDelete = true)?.let { return it }
+        val returnData = ReturnData()
+        val path = context.bodyAsJson?.getString("path", "") ?: ""
+        val name = context.bodyAsJson?.getString("name", "") ?: ""
+        if (path.isEmpty() || name.isEmpty() || name == "." || name == ".." ||
+            name.startsWith(".") || name.contains('/') || name.contains('\\') || name.contains('\u0000')) {
+            return returnData.setErrorMsg("参数错误")
+        }
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val source = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("参数错误")
+        if (!source.exists()) return returnData.setErrorMsg("路径不存在")
+        return try {
+            // Resolve real paths here as well: this route must remain safe even if
+            // the shared resolver changes or a directory is a symlink/junction.
+            val baseReal = baseDir.toPath().toRealPath()
+            val sourceReal = source.toPath().toRealPath()
+            if (!sourceReal.startsWith(baseReal)) returnData.setErrorMsg("参数错误")
+            else if (sourceReal == baseReal) returnData.setErrorMsg("不能重命名根目录")
+            else {
+                val parentReal = source.parentFile.toPath().toRealPath()
+                if (!parentReal.startsWith(baseReal)) returnData.setErrorMsg("参数错误")
+                else {
+                    val target = parentReal.resolve(name).normalize()
+                    if (!target.startsWith(baseReal)) returnData.setErrorMsg("参数错误")
+                    else if (java.nio.file.Files.exists(target, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                        returnData.setErrorMsg("路径已存在")
+                    } else {
+                        java.nio.file.Files.move(source.toPath(), target)
+                        returnData.setData("")
+                    }
+                }
+            }
+        } catch (_: java.io.IOException) {
+            returnData.setErrorMsg("重命名失败")
+        } catch (_: java.nio.file.InvalidPathException) {
+            returnData.setErrorMsg("参数错误")
+        }
+    }
+
     suspend fun delete(context: RoutingContext): ReturnData {
         checkAccess(context, isDelete = true)?.let { return it }
         val returnData = ReturnData()

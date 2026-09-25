@@ -12,7 +12,7 @@
 
 Rust 前端 `web-ui/src/api/request.ts` 将请求发往 `/reader3`，以 query 参数附带 `accessToken`，并按 `ReturnData.isSuccess/errorMsg/data` 处理结果；`web-ui/src/router/index.ts` 使用 HTML5 history 路由。Java/Kotlin 的 `YueduApi.kt` 显式注册了 `/reader3/login`、`getBookshelf`、`getBookInfo`、`searchBook`、`getBookContent`、`getBookGroups` 和部分 `/reader3/file/*` 路由。这只能证明路径名初步重合，不能证明参数、默认值、响应体或鉴权语义一致。
 
-可重复的静态扫描命令为 `cd web-vue3 && npm run audit:api`。2026-09-25 快照中，API 文件含 **109 个静态路由引用**，其中 **64 个**与当前 `YueduApi.kt` 注册路径同名，**45 个**不同名或未注册，另有 **7 处动态调用**尚未纳入。这只统计路径名，不校验 HTTP 方法、参数、响应或页面调用条件；部分不同名路由可能有替代接口。核心链路中的 `getBookToc` 已适配当前 `getChapterList`，正文按目录 `index` 取值并经隔离页面测试；其他同名路由仍须逐项核对语义。`getServerStats`、`getReadingStats`、`getBookCacheChapters`、`cacheBookRangeOnServer`、`scanLocalBookDir` 与 `/file/rename` 尚未找到同名路由。不能因为前端存在或能构建就标为可用，也不能在没有核对语义时机械改名。
+可重复的静态扫描命令为 `cd web-vue3 && npm run audit:api`。2026-09-25 最新快照中，API 文件含 **109 个静态路由引用**，其中 **65 个**与当前 `YueduApi.kt` 注册路径同名，**44 个**不同名或未注册，另有 **7 处动态调用**尚未纳入。这只统计路径名，不校验 HTTP 方法、参数、响应或页面调用条件；部分不同名路由可能有替代接口。核心链路中的 `getBookToc` 已适配当前 `getChapterList`，正文按目录 `index` 取值并经隔离页面测试；其他同名路由仍须逐项核对语义。`/file/rename` 已补为沿用文件 home 与权限边界的真实文件／目录重命名。`getServerStats`、`getReadingStats`、`getBookCacheChapters`、`cacheBookRangeOnServer`、`scanLocalBookDir` 等仍无同名路由。不能因为前端存在或能构建就标为可用，也不能在没有核对语义时机械改名。
 
 Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、`/reader3`）；history 路由及资源根路径还需覆盖 `/reader/` 子目录部署，不能只在站点根目录测试。
 
@@ -29,3 +29,5 @@ Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、
 **已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookInfo/getChapterList/getBookContent` 查询需用 `bookSourceUrl` 查书源；正文还要求 `index` 且不能同时给非空 `chapterUrl`。批量搜索返回 `{lastIndex,list}`，不是数组或页码；旧后端的精确搜索使用关键词 `=` 前缀。预览界面已按这些契约适配；“路由同名”仍不等于可用。原 `saveFromRemoteSource` 是写入接口，不能当只读预览使用；新增的 `previewRemoteBookSources` 在用户确认前不写书源。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建、隔离 Reader 服务及四项 Chromium 页面测试均在本机和 GitHub 托管 runner 通过（[工作流记录](https://github.com/warpdotsys/reader-dev/actions/runs/36106399555)）。测试覆盖注册、令牌、刷新后空书架，确定性书源的搜索、多源 SSE、指定单源、SSE 失败后批量降级、未入架详情/目录/正文、入架书正文和下一章导航，以及远程预览只读、确认导入和批量删除。**尚未验证**：线上真实书源、大量书源下的游标续搜、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。
 
 预览回滚：当前生产入口仍在 `web/`，Vue 3 只在独立 `web-vue3/` 和 CI 中运行。停止 Vite 预览即可回到现有 Vue 2 界面，不需要改动生产数据；将来若切换正式入口，必须先准备独立的静态资源版本和明确的入口回切步骤，再按第 5 条验收。
+
+文件页增量验证：`Vue3PreviewFileTest` 在本机隔离 Reader 与 Chromium 中通过，覆盖从 Vue 3 页面重命名、正文不变，以及拒绝 `../` 路径和同名覆盖。该新增项仍需 GitHub 托管 runner 复测；文件页的 `scanLocalBookDir` 尚无后端对应路由，不能把整个文件页视为完成。文件页可导入格式提示已按当前 Java/Kotlin 实际支持的 txt、epub、umd、cbz、pdf 收紧，未宣称支持其他格式。

@@ -33,8 +33,8 @@ const files = ref<FileItem[]>([])
 const loading = ref(false)
 const selectedPath = ref<string | null>(null)
 
-/** 与后端 local_book::SUPPORTED_EXTENSIONS 对齐：文件页可导入书架的类型 */
-const BOOK_EXTS = new Set(['epub', 'txt', 'mobi', 'azw3', 'pdf', 'fb2', 'docx', 'zip', 'cbz', 'umd'])
+/** Java/Kotlin 的 file/importPreview、file/parse 当前实际支持的格式。 */
+const BOOK_EXTS = new Set(['epub', 'txt', 'pdf', 'cbz', 'umd'])
 
 function fileExt(name: string): string {
   const idx = name.lastIndexOf('.')
@@ -822,7 +822,7 @@ onBeforeUnmount(() => {
             class="tool-btn"
             type="button"
             :disabled="!selectedItem || !isBookFile(selectedItem)"
-            :title="selectedItem && !isBookFile(selectedItem) ? '请先选中一个书籍文件（epub/txt/mobi/azw3/pdf/fb2/docx/zip/cbz/umd）' : '选中书籍文件后导入书架'"
+            :title="selectedItem && !isBookFile(selectedItem) ? '请先选中一个书籍文件（epub/txt/pdf/cbz/umd）' : '选中书籍文件后导入书架'"
             @click="openImportBook"
           >
             导入书架
@@ -841,7 +841,7 @@ onBeforeUnmount(() => {
             class="tool-btn"
             type="button"
             :disabled="!selectedPath"
-            title="文本文件可用"
+            title="文件和目录均可重命名"
             @click="openRename"
           >
             重命名
