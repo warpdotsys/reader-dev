@@ -62,7 +62,7 @@ class BrowserNetworkPolicyTest {
         assertBlocked(policy, "file:///etc/passwd")
         policy.requireRequestUrl("data:text/plain,ok")
         policy.requireRequestUrl("blob:https://source.example/id")
-        assertBlockedRequest(policy, "ws://127.0.0.1:9000/socket")
+        assertBlockedRequest(BrowserNetworkPolicy(), "ws://127.0.0.1:9000/socket")
     }
 
     @Test
