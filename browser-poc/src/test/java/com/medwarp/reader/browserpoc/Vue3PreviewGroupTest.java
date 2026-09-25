@@ -79,12 +79,16 @@ public class Vue3PreviewGroupTest {
                 checkGroup(page, renamed);
                 checkGroup(page, secondName);
                 page.locator("[aria-label='设置分组'] .dlg-foot .accent-btn").click();
+                page.locator("[aria-label='设置分组']").waitFor(new Locator.WaitForOptions()
+                        .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
 
                 Map<String, Object> groupedBook = getBook(page, bookUrl);
                 long firstId = getGroupId(page, renamed);
                 long secondId = getGroupId(page, secondName);
-                assertEquals("Selected group bits must be combined in legacy Book.group",
-                        firstId | secondId, ((Number) groupedBook.get("group")).longValue());
+                long actualMask = ((Number) groupedBook.get("group")).longValue();
+                assertEquals("Book.group must persist both selected legacy bits; first=" + firstId
+                                + ", second=" + secondId + ", actual=" + actualMask,
+                        firstId | secondId, actualMask);
 
                 // Reopening after a full reload checks mask decoding, not only local UI state.
                 page.reload();
