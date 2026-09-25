@@ -71,6 +71,9 @@ public class Vue3PreviewGroupTest {
                         .filter(new Locator.FilterOptions().setHasText("全部"));
                 assertEquals(0, allGroup.locator("button[title='删除分组']").count());
 
+                page.locator("[aria-label='分组管理'] button[title='关闭']").click();
+                page.locator("[aria-label='分组管理']").waitFor(new Locator.WaitForOptions()
+                        .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
                 page.locator(".book-card").first().locator(".card-menu-btn").click();
                 page.locator(".ctx-item").filter(new Locator.FilterOptions().setHasText("设置分组")).click();
                 checkGroup(page, renamed);
