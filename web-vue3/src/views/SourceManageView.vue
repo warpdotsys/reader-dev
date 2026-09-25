@@ -783,6 +783,7 @@ async function confirmAdd() {
   addBusy.value = true
   try {
     await saveBookSource(buildSource(addForm.value))
+    addBusy.value = false // 先复位再关闭；请求进行中时 closeAdd 会拒绝关闭
     closeAdd()
     await load()
   } catch {
