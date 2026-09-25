@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 /** The file page's rename action must reach a real, scoped backend operation. */
 public class Vue3PreviewFileTest {
     @Test
-    public void renamePreservesContentAndRejectsTraversalOrOverwrite() {
+    public void renameAndImportThroughTheFilePage() {
         String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
         String executable = System.getProperty("browser.executable", "");
         Assume.assumeTrue(previewUrl != null && !executable.isEmpty()
@@ -53,6 +54,7 @@ public class Vue3PreviewFileTest {
                 String oldName = "rename-before-" + suffix + ".txt";
                 String newName = "rename-after-" + suffix + ".txt";
                 String collisionName = "rename-existing-" + suffix + ".txt";
+                String importDir = "import-dir-" + suffix;
                 assertTrue(api(page, "/file/save", Map.of("path", "/" + oldName,
                         "content", "reader-rename-preserves-content", "home", "__HOME__")));
                 assertTrue(api(page, "/file/save", Map.of("path", "/" + collisionName,
@@ -75,10 +77,49 @@ public class Vue3PreviewFileTest {
                             "name", collisionName, "home", "__HOME__")));
                     assertEquals("do-not-overwrite",
                             apiData(page, "/file/get", "/" + collisionName));
+
+                    page.locator(".row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                            .setHasText(newName)).locator(".row-select").click();
+                    page.locator(".toolbar button:has-text('导入书架')").click();
+                    Response imported = page.waitForResponse(
+                            response -> URI.create(response.url()).getPath()
+                                    .endsWith("/reader3/scanLocalBookDir"),
+                            () -> page.locator(".dlg-overlay .btn-primary").click());
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = (Map<String, Object>)
+                            page.evaluate("text => JSON.parse(text)", imported.text());
+                    assertTrue(Boolean.TRUE.equals(result.get("isSuccess")));
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> counts = (Map<String, Object>) result.get("data");
+                    assertEquals(1, ((Number) counts.get("imported")).intValue());
+                    assertEquals(0, ((Number) counts.get("failed")).intValue());
+
+                    assertTrue(api(page, "/file/save", Map.of("path", "/" + importDir + "/one.txt",
+                            "content", "第一章 起始\n正文一", "home", "__HOME__")));
+                    assertTrue(api(page, "/file/save", Map.of("path", "/" + importDir + "/nested/two.txt",
+                            "content", "第一章 起始\n正文二", "home", "__HOME__")));
+                    page.locator(".home-pills button:has-text('根')").click();
+                    page.locator(".home-pills button:has-text('用户数据')").click();
+                    page.locator(".row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                            .setHasText(importDir)).locator(".row-main").click();
+                    page.locator(".toolbar button:has-text('导入目录')").click();
+                    Response directoryImport = page.waitForResponse(
+                            response -> URI.create(response.url()).getPath()
+                                    .endsWith("/reader3/scanLocalBookDir"),
+                            () -> page.locator(".dlg-overlay .btn-primary").click());
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> directoryResult = (Map<String, Object>)
+                            page.evaluate("text => JSON.parse(text)", directoryImport.text());
+                    assertTrue(Boolean.TRUE.equals(directoryResult.get("isSuccess")));
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> directoryCounts = (Map<String, Object>) directoryResult.get("data");
+                    assertEquals(2, ((Number) directoryCounts.get("imported")).intValue());
+                    assertEquals(0, ((Number) directoryCounts.get("failed")).intValue());
                 } finally {
                     api(page, "/file/delete", Map.of("path", "/" + oldName, "home", "__HOME__"));
                     api(page, "/file/delete", Map.of("path", "/" + newName, "home", "__HOME__"));
                     api(page, "/file/delete", Map.of("path", "/" + collisionName, "home", "__HOME__"));
+                    api(page, "/file/delete", Map.of("path", "/" + importDir, "home", "__HOME__"));
                 }
             } finally {
                 browser.close();

@@ -249,6 +249,75 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
         }
     }
 
+    suspend fun scanLocalBookDir(context: RoutingContext): ReturnData {
+        checkAccess(context)?.let { return it }
+        val returnData = ReturnData()
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val path = context.bodyAsJson?.getString("path", "/") ?: "/"
+        val recursive = context.bodyAsJson?.getBoolean("recursive", true) ?: true
+        val selected = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("参数错误")
+        if (!selected.exists()) return returnData.setErrorMsg("路径不存在")
+        val baseReal: java.nio.file.Path
+        val selectedReal: java.nio.file.Path
+        try {
+            baseReal = baseDir.toPath().toRealPath()
+            selectedReal = selected.toPath().toRealPath()
+        } catch (_: java.io.IOException) {
+            return returnData.setErrorMsg("路径不存在")
+        }
+        if (!selectedReal.startsWith(baseReal)) return returnData.setErrorMsg("参数错误")
+        if (selected.isFile && getFileExt(selected.name) !in setOf("txt", "epub", "umd", "cbz", "pdf")) {
+            return returnData.setErrorMsg("不支持导入${getFileExt(selected.name)}格式的书籍文件")
+        }
+
+        val userNameSpace = getUserNameSpace(context)
+        val rootDir = getWorkDir().let { if (it.endsWith(File.separator)) it else it + File.separator }
+        val bookController = BookController(coroutineContext)
+        val errors = ArrayList<Map<String, String>>()
+        var imported = 0
+        var total = 0
+        val stream = try {
+            when {
+                selected.isFile -> java.util.stream.Stream.of(selectedReal)
+                recursive -> java.nio.file.Files.walk(selectedReal)
+                else -> java.nio.file.Files.list(selectedReal)
+            }
+        } catch (_: java.io.IOException) {
+            return returnData.setErrorMsg("目录扫描失败")
+        }
+        try {
+            stream.use { paths ->
+                paths.forEach { candidate ->
+                    if (!java.nio.file.Files.isRegularFile(candidate, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return@forEach
+                    val file = candidate.toFile()
+                    if (file.name.startsWith(".") || getFileExt(file.name) !in setOf("txt", "epub", "umd", "cbz", "pdf")) {
+                        return@forEach
+                    }
+                    total++
+                    try {
+                        val relativePath = file.path.removePrefix(rootDir)
+                        val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)
+                        book.setUserNameSpace(userNameSpace)
+                        val result = bookController.saveBookToShelf(book, userNameSpace, context)
+                        if (result.second == null && result.first.isInShelf) imported++
+                        else errors += mapOf("name" to file.name, "error" to (result.second ?: "导入失败"))
+                    } catch (e: Exception) {
+                        logger.warn(e) { "Local book import failed: ${file.name}" }
+                        errors += mapOf("name" to file.name, "error" to "解析或导入失败")
+                    }
+                }
+            }
+        } catch (_: java.io.UncheckedIOException) {
+            return returnData.setErrorMsg("目录扫描中断；部分书籍可能已导入")
+        }
+        return returnData.setData(mapOf(
+            "imported" to imported,
+            "failed" to (total - imported),
+            "total" to total,
+            "errors" to errors
+        ))
+    }
+
     suspend fun delete(context: RoutingContext): ReturnData {
         checkAccess(context, isDelete = true)?.let { return it }
         val returnData = ReturnData()
