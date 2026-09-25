@@ -26,8 +26,8 @@ Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、
 
 ## 当前结论
 
-**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookInfo/getChapterList/getBookContent` 查询需用 `bookSourceUrl` 查书源；正文还要求 `index` 且不能同时给非空 `chapterUrl`。批量搜索返回 `{lastIndex,list}`，不是数组或页码；旧后端的精确搜索使用关键词 `=` 前缀。预览界面已按这些契约适配；“路由同名”仍不等于可用。原 `saveFromRemoteSource` 是写入接口，不能当只读预览使用；新增的 `previewRemoteBookSources` 在用户确认前不写书源。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建、隔离 Reader 服务及四项 Chromium 页面测试均在本机和 GitHub 托管 runner 通过（[工作流记录](https://github.com/warpdotsys/reader-dev/actions/runs/36106399555)）。测试覆盖注册、令牌、刷新后空书架，确定性书源的搜索、多源 SSE、指定单源、SSE 失败后批量降级、未入架详情/目录/正文、入架书正文和下一章导航，以及远程预览只读、确认导入和批量删除。**尚未验证**：线上真实书源、大量书源下的游标续搜、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。
+**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookInfo/getChapterList/getBookContent` 查询需用 `bookSourceUrl` 查书源；正文还要求 `index` 且不能同时给非空 `chapterUrl`。批量搜索返回 `{lastIndex,list}`，不是数组或页码；旧后端的精确搜索使用关键词 `=` 前缀。预览界面已按这些契约适配；“路由同名”仍不等于可用。原 `saveFromRemoteSource` 是写入接口，不能当只读预览使用；新增的 `previewRemoteBookSources` 在用户确认前不写书源。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建、隔离 Reader 服务及五项 Chromium 页面测试均在本机和 GitHub 托管 runner 通过（[工作流记录](https://github.com/warpdotsys/reader-dev/actions/runs/36109403492)）。测试覆盖注册、令牌、刷新后空书架，确定性书源的搜索、多源 SSE、指定单源、SSE 失败后批量降级、未入架详情/目录/正文、入架书正文和下一章导航，远程预览只读、确认导入和批量删除，以及文件重命名和单文件／递归目录入架。**尚未验证**：线上真实书源、大量书源下的游标续搜、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。
 
 预览回滚：当前生产入口仍在 `web/`，Vue 3 只在独立 `web-vue3/` 和 CI 中运行。停止 Vite 预览即可回到现有 Vue 2 界面，不需要改动生产数据；将来若切换正式入口，必须先准备独立的静态资源版本和明确的入口回切步骤，再按第 5 条验收。
 
-文件页增量验证：`Vue3PreviewFileTest` 已在本机和 [GitHub 托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36108601257) 中验证重命名、正文不变，以及拒绝 `../` 路径和同名覆盖。随后补入 `scanLocalBookDir`，本机隔离测试验证了单文件和递归目录导入；这一新增部分尚需托管 runner 复测。文件页可导入格式提示已按当前 Java/Kotlin 实际支持的 txt、epub、umd、cbz、pdf 收紧，未宣称支持其他格式。文件页其余入口未全部验收，不能把整个文件页视为完成。
+文件页增量验证：`Vue3PreviewFileTest` 已在本机和 [GitHub 托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36109403492) 中验证重命名、正文不变、拒绝 `../` 路径和同名覆盖，以及单文件和递归目录导入。文件页可导入格式提示已按当前 Java/Kotlin 实际支持的 txt、epub、umd、cbz、pdf 收紧，未宣称支持其他格式。文件页其余入口未全部验收，不能把整个文件页视为完成。
