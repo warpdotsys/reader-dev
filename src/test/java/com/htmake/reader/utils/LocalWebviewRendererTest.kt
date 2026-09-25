@@ -50,6 +50,35 @@ class LocalWebviewRendererTest {
                 return@createContext
             }
             if (exchange.requestURI.path == "/target") privateRedirectHits.incrementAndGet()
+            if (exchange.requestURI.path == "/asset.js") {
+                val script = "document.querySelector('#resource-result').textContent='asset-loaded'"
+                    .toByteArray(StandardCharsets.UTF_8)
+                exchange.responseHeaders.add("Content-Type", "application/javascript; charset=UTF-8")
+                exchange.sendResponseHeaders(200, script.size.toLong())
+                exchange.responseBody.use { it.write(script) }
+                return@createContext
+            }
+            if (exchange.requestURI.path == "/resource-page") {
+                val html = "<html><body><div id='resource-result'></div><script src='/asset.js'></script></body></html>"
+                    .toByteArray(StandardCharsets.UTF_8)
+                exchange.responseHeaders.add("Content-Type", "text/html; charset=UTF-8")
+                exchange.sendResponseHeaders(200, html.size.toLong())
+                exchange.responseBody.use { it.write(html) }
+                return@createContext
+            }
+            if (exchange.requestURI.path == "/events") {
+                exchange.responseHeaders.add("Content-Type", "text/event-stream; charset=UTF-8")
+                exchange.responseHeaders.add("Cache-Control", "no-cache")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { stream ->
+                    stream.write("data: first\n\n".toByteArray(StandardCharsets.UTF_8))
+                    stream.flush()
+                    Thread.sleep(150)
+                    stream.write("data: second\n\n".toByteArray(StandardCharsets.UTF_8))
+                    stream.flush()
+                }
+                return@createContext
+            }
             val body = exchange.requestBody.readBytes().toString(StandardCharsets.UTF_8)
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
             val marker = "${exchange.requestMethod}|$body|$cookie"
@@ -100,6 +129,22 @@ class LocalWebviewRendererTest {
     }
 
     @Test
+    fun javascriptSubresourcesUseTheGuardedProxy() = runBlocking {
+        val response = renderer.render(request("/resource-page", "reader-a",
+            script = "document.querySelector('#resource-result').textContent"))
+        assertEquals("asset-loaded", response.body)
+    }
+
+    @Test
+    fun chunkedEventStreamsReachThePageBeforeTheOriginCloses() = runBlocking {
+        val response = renderer.render(request("/resource-page", "reader-a", script =
+            "new Promise(resolve => { const events = []; const source = new EventSource('/events'); " +
+                "source.onmessage = event => { events.push(event.data); if (events.length === 2) { " +
+                "source.close(); resolve(events.join(',')); } }; })"))
+        assertEquals("first,second", response.body)
+    }
+
+    @Test
     fun deniesPrivateTargetsByDefaultBeforeLaunchingChromium() = runBlocking {
         val strictRenderer = LocalWebviewRenderer(
             System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, allowPrivateNetworks = false)
@@ -114,24 +159,28 @@ class LocalWebviewRendererTest {
     }
 
     @Test
-    fun characterizesRedirectsThatAreNotInspectedByPlaywrightRouting() = runBlocking {
-        val policy = BrowserNetworkPolicy(resolve = { host ->
-            when (host) {
-                "127.0.0.1" -> arrayOf(InetAddress.getByName("8.8.8.8"))
-                else -> emptyArray()
+    fun blocksPrivateRedirectsAtTheEgressProxy() = runBlocking {
+        val policy = object : BrowserNetworkPolicy() {
+            override fun resolveRequestTarget(value: String): BrowserNetworkTarget? {
+                val uri = java.net.URI(value)
+                if (uri.host == "127.0.0.1") {
+                    return BrowserNetworkTarget(uri, "127.0.0.1", uri.port,
+                        listOf(InetAddress.getByName("127.0.0.1")))
+                }
+                return super.resolveRequestTarget(value)
             }
-        })
+        }
         val strictRenderer = LocalWebviewRenderer(
             System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, policy)
         try {
-            val response = strictRenderer.render(request("/redirect-to-private", "reader-a"))
-            assertTrue("Chromium follows the redirect and receives the loopback response",
-                response.body.orEmpty().contains("GET|"))
+            strictRenderer.render(request("/redirect-to-private", "reader-a"))
+            fail("The private redirect target must be rejected by the egress proxy")
+        } catch (_: BrowserNetworkPolicyViolation) {
+            // Expected: the first loopback fixture is allowed only by this test policy.
         } finally {
             strictRenderer.close()
         }
-        assertEquals("A context route currently does not re-check the redirect destination",
-            1, privateRedirectHits.get())
+        assertEquals("The rejected redirect must never reach the fixture target", 0, privateRedirectHits.get())
     }
 
     @Test(expected = UnsupportedOperationException::class)

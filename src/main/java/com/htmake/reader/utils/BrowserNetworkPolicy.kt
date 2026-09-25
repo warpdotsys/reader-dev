@@ -8,7 +8,7 @@ import java.net.URI
 import java.util.Locale
 
 /** Application-layer guard for browser navigations and HTTP(S) subresources. */
-internal class BrowserNetworkPolicy(
+internal open class BrowserNetworkPolicy(
     private val allowPrivateNetworks: Boolean = false,
     private val resolve: (String) -> Array<InetAddress> = { InetAddress.getAllByName(it) }
 ) {
@@ -18,20 +18,25 @@ internal class BrowserNetworkPolicy(
         if (scheme != "http" && scheme != "https") {
             throw BrowserNetworkPolicyViolation("本地 WebView 仅允许 HTTP/HTTPS 页面")
         }
-        requireNetworkTarget(uri)
+        resolveRequestTarget(value)
     }
 
     fun requireRequestUrl(value: String) {
+        resolveRequestTarget(value)
+    }
+
+    /** Resolve once, validate the whole DNS answer set, and hand the pinned addresses to the egress socket. */
+    internal open fun resolveRequestTarget(value: String): BrowserNetworkTarget? {
         val uri = parse(value)
         when (uri.scheme?.lowercase(Locale.ROOT)) {
-            "http", "https", "ws", "wss" -> requireNetworkTarget(uri)
+            "http", "https", "ws", "wss" -> return requireNetworkTarget(uri)
             // These schemes do not open a network connection. Do not allow file:, ftp:, or custom schemes.
-            "about", "blob", "data" -> Unit
+            "about", "blob", "data" -> return null
             else -> throw BrowserNetworkPolicyViolation("本地 WebView 已阻止不支持的资源协议")
         }
     }
 
-    private fun requireNetworkTarget(uri: URI) {
+    private fun requireNetworkTarget(uri: URI): BrowserNetworkTarget {
         if (uri.rawUserInfo != null) {
             throw BrowserNetworkPolicyViolation("本地 WebView 不接受包含账号信息的 URL")
         }
@@ -62,10 +67,9 @@ internal class BrowserNetworkPolicy(
         if (host.contains('%')) {
             throw BrowserNetworkPolicyViolation("本地 WebView 不接受带区域标识的 IP 地址")
         }
-        if (allowPrivateNetworks) return
-        if (host == "localhost" || host.endsWith(".localhost") ||
+        if (!allowPrivateNetworks && (host == "localhost" || host.endsWith(".localhost") ||
             host == "local" || host.endsWith(".local") ||
-            host.endsWith(".internal") || host.endsWith(".home.arpa")) {
+            host.endsWith(".internal") || host.endsWith(".home.arpa"))) {
             throw BrowserNetworkPolicyViolation("本地 WebView 已阻止本机或内网主机名")
         }
 
@@ -74,9 +78,14 @@ internal class BrowserNetworkPolicy(
         } catch (_: Exception) {
             throw BrowserNetworkPolicyViolation("本地 WebView 无法验证目标主机地址")
         }
-        if (addresses.isEmpty() || addresses.any { !isPublicInternetAddress(it) }) {
+        if (addresses.isEmpty() || (!allowPrivateNetworks && addresses.any { !isPublicInternetAddress(it) })) {
             throw BrowserNetworkPolicyViolation("本地 WebView 已阻止本机、内网或保留地址")
         }
+        val port = uri.port.takeIf { it > 0 } ?: when (uri.scheme.lowercase(Locale.ROOT)) {
+            "https", "wss" -> 443
+            else -> 80
+        }
+        return BrowserNetworkTarget(uri, host, port, addresses.toList())
     }
 
     private fun parse(value: String): URI = try {
@@ -125,5 +134,12 @@ internal class BrowserNetworkPolicy(
         return true
     }
 }
+
+internal data class BrowserNetworkTarget(
+    val uri: URI,
+    val host: String,
+    val port: Int,
+    val addresses: List<InetAddress>
+)
 
 internal class BrowserNetworkPolicyViolation(message: String) : IllegalArgumentException(message)

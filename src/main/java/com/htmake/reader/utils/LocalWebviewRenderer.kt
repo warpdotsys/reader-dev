@@ -75,90 +75,89 @@ class LocalWebviewRenderer private constructor(
         if (System.getenv("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD") != "1") {
             throw IllegalStateException("本地 WebView 要求 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1，禁止运行时下载浏览器")
         }
+        val upstreamProxy = request.proxy?.takeIf { it.isNotBlank() }?.let(BrowserUpstreamProxy::parse)
 
         val activeBrowser = getBrowser()
-        val contextOptions = Browser.NewContextOptions()
-            .setAcceptDownloads(false)
-            .setServiceWorkers(ServiceWorkerPolicy.BLOCK)
-        if (!request.proxy.isNullOrBlank()) contextOptions.setProxy(Proxy(request.proxy))
-        val headers = request.headerMap ?: emptyMap()
-        headers.entries.firstOrNull { it.key.equals("User-Agent", ignoreCase = true) }
-            ?.value?.let(contextOptions::setUserAgent)
-        val context = activeBrowser.newContext(contextOptions)
+        val blockedNetworkRequest = AtomicBoolean(false)
+        val egressProxy = BrowserEgressProxy(networkPolicy, timeoutMs,
+            { blockedNetworkRequest.set(true) }, upstreamProxy)
         try {
-            context.setDefaultTimeout(timeoutMs.toDouble())
-            context.setDefaultNavigationTimeout(timeoutMs.toDouble())
-            val domain = NetworkUtils.getSubDomain(url)
-            val cookieStore = CookieStore(request.userNameSpace)
-            val cookies = cookieStore.cookieToMap(cookieStore.getCookie(domain))
-            headers.entries.firstOrNull { it.key.equals("Cookie", ignoreCase = true) }
-                ?.value?.let { cookies.putAll(cookieStore.cookieToMap(it)) }
-            if (cookies.isNotEmpty()) {
-                context.addCookies(cookies.map { (name, value) -> Cookie(name, value).setUrl(url) })
-            }
-            val extraHeaders = headers.filterKeys { key ->
-                !key.equals("Cookie", ignoreCase = true) &&
-                    !key.equals("User-Agent", ignoreCase = true) &&
-                    !key.equals("Host", ignoreCase = true) &&
-                    !key.equals("Content-Length", ignoreCase = true)
-            }
-            if (extraHeaders.isNotEmpty()) context.setExtraHTTPHeaders(extraHeaders)
+            val proxyEndpoint = egressProxy.start()
+            val contextOptions = Browser.NewContextOptions()
+                .setAcceptDownloads(false)
+                .setServiceWorkers(ServiceWorkerPolicy.BLOCK)
+                .setProxy(Proxy(proxyEndpoint).setBypass("<-loopback>"))
+            val headers = request.headerMap ?: emptyMap()
+            headers.entries.firstOrNull { it.key.equals("User-Agent", ignoreCase = true) }
+                ?.value?.let(contextOptions::setUserAgent)
+            val context = activeBrowser.newContext(contextOptions)
+            try {
+                context.setDefaultTimeout(timeoutMs.toDouble())
+                context.setDefaultNavigationTimeout(timeoutMs.toDouble())
+                val domain = NetworkUtils.getSubDomain(url)
+                val cookieStore = CookieStore(request.userNameSpace)
+                val cookies = cookieStore.cookieToMap(cookieStore.getCookie(domain))
+                headers.entries.firstOrNull { it.key.equals("Cookie", ignoreCase = true) }
+                    ?.value?.let { cookies.putAll(cookieStore.cookieToMap(it)) }
+                if (cookies.isNotEmpty()) {
+                    context.addCookies(cookies.map { (name, value) -> Cookie(name, value).setUrl(url) })
+                }
+                val extraHeaders = headers.filterKeys { key ->
+                    !key.equals("Cookie", ignoreCase = true) &&
+                        !key.equals("User-Agent", ignoreCase = true) &&
+                        !key.equals("Host", ignoreCase = true) &&
+                        !key.equals("Content-Length", ignoreCase = true)
+                }
+                if (extraHeaders.isNotEmpty()) context.setExtraHTTPHeaders(extraHeaders)
 
-            val postSent = AtomicBoolean(false)
-            val blockedNetworkRequest = AtomicBoolean(false)
-            context.route("**/*") { route ->
-                try {
-                    networkPolicy.requireRequestUrl(route.request().url())
-                } catch (_: BrowserNetworkPolicyViolation) {
-                    blockedNetworkRequest.set(true)
-                    route.abort()
-                    return@route
+                val postSent = AtomicBoolean(false)
+                context.route("**/*") { route ->
+                    try {
+                        networkPolicy.requireRequestUrl(route.request().url())
+                    } catch (_: BrowserNetworkPolicyViolation) {
+                        blockedNetworkRequest.set(true)
+                        route.abort()
+                        return@route
+                    }
+                    if (request.post && route.request().isNavigationRequest && route.request().url() == url &&
+                        postSent.compareAndSet(false, true)) {
+                        route.resume(Route.ResumeOptions().setMethod("POST").setPostData(request.body ?: ""))
+                    } else route.resume()
                 }
-                if (request.post && route.request().isNavigationRequest && route.request().url() == url &&
-                    postSent.compareAndSet(false, true)) {
-                    route.resume(Route.ResumeOptions().setMethod("POST").setPostData(request.body ?: ""))
-                } else route.resume()
-            }
-            context.routeWebSocket("**/*") { socket ->
-                try {
-                    networkPolicy.requireRequestUrl(socket.url())
-                    socket.connectToServer()
-                } catch (_: BrowserNetworkPolicyViolation) {
-                    blockedNetworkRequest.set(true)
-                    socket.close()
-                }
-            }
-            val page = context.newPage()
-            val body = try {
-                page.navigate(url, Page.NavigateOptions()
-                    .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                    .setTimeout(timeoutMs.toDouble()))
-                failIfNetworkRequestBlocked(blockedNetworkRequest)
-                if (request.html != null) {
-                    page.setContent(request.html, Page.SetContentOptions()
+                val page = context.newPage()
+                val body = try {
+                    page.navigate(url, Page.NavigateOptions()
                         .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                         .setTimeout(timeoutMs.toDouble()))
                     failIfNetworkRequestBlocked(blockedNetworkRequest)
+                    if (request.html != null) {
+                        page.setContent(request.html, Page.SetContentOptions()
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(timeoutMs.toDouble()))
+                        failIfNetworkRequestBlocked(blockedNetworkRequest)
+                    }
+                    val result = if (request.javaScript.isNullOrBlank()) page.content()
+                        else page.evaluate(request.javaScript)?.toString() ?: ""
+                    failIfNetworkRequestBlocked(blockedNetworkRequest)
+                    result
+                } catch (e: RuntimeException) {
+                    if (blockedNetworkRequest.get()) {
+                        throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
+                    }
+                    throw e
                 }
-                val result = if (request.javaScript.isNullOrBlank()) page.content()
-                    else page.evaluate(request.javaScript)?.toString() ?: ""
-                failIfNetworkRequestBlocked(blockedNetworkRequest)
-                result
-            } catch (e: RuntimeException) {
-                if (blockedNetworkRequest.get()) {
-                    throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
-                }
-                throw e
-            }
 
-            if (domain.isNotEmpty()) {
-                val stored = context.cookies(url).joinToString(";") { "${it.name}=${it.value}" }
-                cookieStore.setCookie("${domain}_cookieJar", stored)
-                cookieStore.setCookie(domain, stored)
+                if (domain.isNotEmpty()) {
+                    val stored = context.cookies(url).joinToString(";") { "${it.name}=${it.value}" }
+                    cookieStore.setCookie("${domain}_cookieJar", stored)
+                    cookieStore.setCookie(domain, stored)
+                }
+                return StrResponse(url, body)
+            } finally {
+                context.close()
             }
-            return StrResponse(url, body)
         } finally {
-            context.close()
+            egressProxy.close()
         }
     }
 
@@ -176,7 +175,13 @@ class LocalWebviewRenderer private constructor(
         val driver = Playwright.create(Playwright.CreateOptions()
             .setEnv(mapOf("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD" to "1")))
         try {
-            val options = BrowserType.LaunchOptions().setHeadless(true)
+            val options = BrowserType.LaunchOptions()
+                .setHeadless(true)
+                .setArgs(listOf(
+                    "--disable-quic",
+                    "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+                    "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"
+                ))
             if (executablePath.isNotBlank()) options.setExecutablePath(Paths.get(executablePath))
             val launched = driver.chromium().launch(options)
             playwright = driver

@@ -11,7 +11,12 @@ on:
       - 'scripts/smoke-local-webview.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserUpstreamProxyTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
   pull_request:
@@ -24,7 +29,12 @@ on:
       - 'scripts/smoke-local-webview.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserUpstreamProxyTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
   workflow_dispatch:
@@ -73,7 +83,7 @@ jobs:
           fi
           test -n "$chrome" && test -x "$chrome"
           echo "READER_BROWSER_EXECUTABLE=$chrome" >> "$GITHUB_ENV"
-      - name: Exercise local renderer redirect enforcement in Chromium
+      - name: Verify redirect, resources, and streaming in Chromium
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: ./gradlew test --tests 'com.htmake.reader.utils.LocalWebviewRendererTest' --no-daemon
