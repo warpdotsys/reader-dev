@@ -52,12 +52,17 @@ GitHub 托管 runner 的
 `.github/workflows/browser-image.yml` 负责构建镜像并在隔离数据目录下运行合成书源
 搜索及 Cookie 回归；生产部署仍需另行验证和发布。
 
-已知限制：目前只是普通 Chromium 功能基线，不是指纹浏览器；
-`sourceRegex` 与非 UTF-8 `encode` 在本地模式下显式报错；真实书源、代理、
-多用户并发、容器沙箱和资源预算仍需验证。本地浏览器默认执行应用层内网目标检查，
-但它不能替代容器/主机出口防火墙；DNS rebinding、代理端二次解析和非 HTTP 通道
-仍需在部署网络单独限制。Playwright 路由处理重定向链时只检查首个 URL，
-因此重定向后的私网目标必须由出口网络策略拦截。仅受控测试/自管内网可显式设置
-`READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true` 放行私网目标。若切换后有兼容问题，可在同一
-完整镜像中设置 `READER_APP_WEBVIEWRENDERER=remote` 回退。不要在没有
-数据备份与正式发布验证的情况下直接替换生产容器或挂载生产 `storage/data`。
+已知限制：目前是普通 Chromium 功能基线，不是指纹浏览器；`sourceRegex` 与非 UTF-8
+`encode` 在本地模式下仍明确报错，尚未完成真实书源差分、ARM64、生产网络隔离、长期
+并发与资源预算验证。HTTP 和 SOCKS4/5 上游代理已由本地出口代理支持，并有固定 IP、
+认证和凭据隔离单元测试；尚未用真实第三方代理或真实书源验证兼容率。
+
+GitHub runner [36131976893](https://github.com/warpdotsys/reader-dev/actions/runs/36131976893)
+已用真实 Chromium 验证重定向内网拦截、JS 子资源、分块 SSE、GET/POST 与 Cookie 隔离，
+并在单个 Reader 镜像中完成合成书源烟测。该测试不是生产网络隔离审计：应用层出口代理
+不能替代主机/容器防火墙，公网不可信书源部署仍应在网络层拦截云元数据、loopback、
+RFC1918 与 IPv6 ULA。workflow 的 loopback 烟测显式启用了
+`READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true`，只用于固定合成夹具，不应照搬到不可信
+书源可写入的生产实例。若后续兼容性回归要求回退，可在同一完整镜像中设置
+`READER_APP_WEBVIEWRENDERER=remote`。不要在没有数据备份与正式发布验证的情况下直接替换
+生产容器或挂载生产 `storage/data`。
