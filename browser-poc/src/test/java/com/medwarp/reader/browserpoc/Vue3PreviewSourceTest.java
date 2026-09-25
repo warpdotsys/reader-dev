@@ -84,7 +84,21 @@ public class Vue3PreviewSourceTest {
                 page.waitForFunction("document.querySelector('.source-row .source-name')?.textContent.includes('Vue3 CRUD source')");
                 assertEquals(1, sourceCount(page));
 
-                page.locator(".source-row button[title^='编辑书源']").click();
+                try {
+                    page.locator(".source-row button[title^='编辑书源']").click();
+                } catch (RuntimeException failure) {
+                    System.err.println("Source edit button state after create: " + page.evaluate(
+                            "() => JSON.stringify(Array.from(document.querySelectorAll('.source-row')).map(row => ({" +
+                                    "name: row.querySelector('.source-name')?.textContent," +
+                                    "buttons: Array.from(row.querySelectorAll('button')).map(button => {" +
+                                    "const rect = button.getBoundingClientRect();" +
+                                    "return {text: button.innerText, title: button.title," +
+                                    "display: getComputedStyle(button).display," +
+                                    "visibility: getComputedStyle(button).visibility," +
+                                    "rect: {x: rect.x, y: rect.y, width: rect.width, height: rect.height}};" +
+                                    "})})))"));
+                    throw failure;
+                }
                 page.locator("[aria-label='编辑书源'] .field-input").nth(1).fill("Vue3 CRUD renamed");
                 page.locator("[aria-label='编辑书源'] .field-input").nth(2).fill("browser-check edited");
                 Response edited = page.waitForResponse(
