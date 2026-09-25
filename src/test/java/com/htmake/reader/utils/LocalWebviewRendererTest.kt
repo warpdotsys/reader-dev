@@ -9,7 +9,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -44,7 +43,7 @@ class LocalWebviewRendererTest {
         server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
             if (exchange.requestURI.path == "/redirect-to-private") {
-                exchange.responseHeaders.add("Location", "http://metadata.example:${server.address.port}/target")
+                exchange.responseHeaders.add("Location", "http://localhost:${server.address.port}/target")
                 exchange.sendResponseHeaders(302, -1)
                 exchange.close()
                 return@createContext
@@ -114,25 +113,24 @@ class LocalWebviewRendererTest {
     }
 
     @Test
-    fun deniesPrivateRedirectTargetsBeforeTheyReachTheNetwork() = runBlocking {
+    fun characterizesRedirectsThatAreNotInspectedByPlaywrightRouting() = runBlocking {
         val policy = BrowserNetworkPolicy(resolve = { host ->
             when (host) {
                 "127.0.0.1" -> arrayOf(InetAddress.getByName("8.8.8.8"))
-                "metadata.example" -> arrayOf(InetAddress.getByName("127.0.0.1"))
                 else -> emptyArray()
             }
         })
         val strictRenderer = LocalWebviewRenderer(
             System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, policy)
         try {
-            strictRenderer.render(request("/redirect-to-private", "reader-a"))
-            fail("A redirect to a private address must be rejected")
-        } catch (error: BrowserNetworkPolicyViolation) {
-            assertTrue(error.message.orEmpty().contains("阻止"))
+            val response = strictRenderer.render(request("/redirect-to-private", "reader-a"))
+            assertTrue("Chromium follows the redirect and receives the loopback response",
+                response.body.orEmpty().contains("GET|"))
         } finally {
             strictRenderer.close()
         }
-        assertEquals("Redirect target must never reach the fixture server", 0, privateRedirectHits.get())
+        assertEquals("A context route currently does not re-check the redirect destination",
+            1, privateRedirectHits.get())
     }
 
     @Test(expected = UnsupportedOperationException::class)

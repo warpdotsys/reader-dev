@@ -72,6 +72,30 @@ public class Vue3PreviewSourceTest {
                 page.locator(".el-message-box__btns .el-button--primary").click();
                 page.waitForFunction("!document.querySelector('.source-row')");
                 assertEquals(0, sourceCount(page));
+
+                page.locator(".head-actions .accent-outline-btn").click();
+                page.locator("[aria-label='新增书源'] input").nth(0).fill(fixtureUrl);
+                page.locator("[aria-label='新增书源'] input").nth(1).fill("Vue3 CRUD source");
+                page.locator("[aria-label='新增书源'] input").nth(2).fill("browser-check");
+                Response saved = page.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/saveBookSource"),
+                        () -> page.locator("[aria-label='新增书源'] button[type=submit]").click());
+                assertEquals(200, saved.status());
+                page.waitForFunction("document.querySelector('.source-row .source-name')?.textContent.includes('Vue3 CRUD source')");
+                assertEquals(1, sourceCount(page));
+
+                page.locator(".source-row button[title^='编辑书源']").click();
+                page.locator("[aria-label='编辑书源'] .field-input").nth(1).fill("Vue3 CRUD renamed");
+                page.locator("[aria-label='编辑书源'] .field-input").nth(2).fill("browser-check edited");
+                Response edited = page.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/saveBookSource"),
+                        () -> page.locator("[aria-label='编辑书源'] button[type=submit]").click());
+                assertEquals(200, edited.status());
+                page.waitForFunction("document.querySelector('.source-row .source-name')?.textContent.includes('Vue3 CRUD renamed')");
+                Map<?, ?> source = onlySource(page);
+                assertEquals(fixtureUrl, source.get("bookSourceUrl"));
+                assertEquals("Vue3 CRUD renamed", source.get("bookSourceName"));
+                assertEquals("browser-check edited", source.get("bookSourceGroup"));
             } finally {
                 browser.close();
             }
@@ -85,5 +109,15 @@ public class Vue3PreviewSourceTest {
                 "const result = await response.json();" +
                 "if (!result.isSuccess) throw new Error(result.errorMsg);" +
                 "return result.data.length; }")) .intValue();
+    }
+
+    private static Map<?, ?> onlySource(Page page) {
+        return (Map<?, ?>) page.evaluate("async () => {" +
+                "const token = localStorage.getItem('reader_access_token');" +
+                "const response = await fetch('/reader3/getBookSources?accessToken=' + encodeURIComponent(token));" +
+                "const result = await response.json();" +
+                "if (!result.isSuccess) throw new Error(result.errorMsg);" +
+                "if (result.data.length !== 1) throw new Error('Expected exactly one source');" +
+                "return result.data[0]; }");
     }
 }
