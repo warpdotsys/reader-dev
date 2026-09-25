@@ -14,8 +14,8 @@ import {
   moveFile,
   setFileSecureKey,
   scanLocalBookDir,
+  restoreBackup,
 } from '@/api/file'
-import { restoreFromZip } from '@/api/backup'
 import { isNeedSecureKey } from '@/api/users'
 import { downloadBlob } from '@/utils/download'
 import type { FileItem } from '@/types'
@@ -602,50 +602,45 @@ async function removeSelected() {
   }
 }
 
-/* ---------------- 从备份 zip 还原（restoreFromZip：上传备份文件恢复书源/书架等） ---------------- */
+/* ---------------- 使用 legacy /reader3/file/restore 还原当前 home 中的 ZIP ---------------- */
 const restoreOpen = ref(false)
-const restoreFile = ref<File | null>(null)
-const restoreOverwrite = ref(false)
+const restorePath = ref('')
+const restoreName = ref('')
 const restoreBusy = ref(false)
 
 function openRestore() {
-  restoreFile.value = null
-  restoreOverwrite.value = false
+  const selected = selectedItem.value
+  if (!selected || selected.isDirectory || !selected.name.toLowerCase().endsWith('.zip')) {
+    ElMessage.info('请先在当前目录选择一个 ZIP 备份文件')
+    return
+  }
+  restorePath.value = selected.path
+  restoreName.value = selected.name
   restoreBusy.value = false
   restoreOpen.value = true
 }
 
-function onRestorePick(e: Event) {
-  const input = e.target as HTMLInputElement
-  restoreFile.value = input.files?.[0] ?? null
-}
-
 async function doRestore() {
   if (restoreBusy.value) return
-  const file = restoreFile.value
-  if (!file) {
-    ElMessage.warning('请选择备份文件')
+  const sourcePath = restorePath.value
+  if (!sourcePath) {
+    ElMessage.warning('请选择 ZIP 备份文件')
     return
   }
   restoreBusy.value = true
-  const restored = await runWrite(async () => {
-    const res = await restoreFromZip(file, file.name, restoreOverwrite.value)
-    const data = res.data
-    const restored = data?.restored ?? {}
-    const restoredText = Object.entries(restored)
-      .filter(([, n]) => n > 0)
-      .map(([k, n]) => `${k} ${n}`)
-      .join('、')
-    ElMessage.success(
-      restoredText
-        ? `已还原：${restoredText}`
-        : '还原完成（未覆盖已存在数据，可开启覆盖后重试）',
-    )
-    restoreOpen.value = false
-    restoreFile.value = null
-    restoreBusy.value = false
-  })
-  if (!restored) {
+  try {
+    const restored = await runWrite(async () => {
+      const res = await restoreBackup(sourcePath, home.value)
+      if (!res.isSuccess) throw new Error(res.errorMsg || '备份还原失败')
+    })
+    if (restored) {
+      ElMessage.success('旧版 ZIP 还原接口已完成；备份中的用户数据会覆盖对应现有数据')
+      restoreOpen.value = false
+      restorePath.value = ''
+      restoreName.value = ''
+      await loadList()
+    }
+  } finally {
     restoreBusy.value = false
   }
 }
@@ -827,7 +822,13 @@ onBeforeUnmount(() => {
               {{ sortDesc ? '↓' : '↑' }}
             </button>
           </div>
-          <button class="tool-btn" type="button" title="从备份 zip 恢复书源、书架、分组、RSS、替换规则、书签、配置等" @click="openRestore">
+          <button
+            class="tool-btn"
+            type="button"
+            :disabled="!selectedItem || selectedItem.isDirectory || !selectedItem.name.toLowerCase().endsWith('.zip')"
+            title="还原当前目录中选中的旧版 ZIP 备份"
+            @click="openRestore"
+          >
             还原备份
           </button>
           <button
@@ -1035,32 +1036,15 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 从备份 zip 还原弹窗 -->
+    <!-- 通过旧版 /reader3/file/restore 还原服务器上的 ZIP；该接口会覆盖备份包含的数据 -->
     <div v-if="restoreOpen" class="dlg-overlay" @click.self="restoreBusy ? null : (restoreOpen = false)">
       <div class="dlg">
         <h3 class="dlg-title">从备份还原</h3>
-        <p class="dlg-path">恢复书源、书架、分组、RSS 订阅、替换规则、书签、用户配置等</p>
-        <label class="file-pick" :class="{ picked: restoreFile }">
-          <input type="file" accept=".zip" @change="onRestorePick" />
-          <span>{{ restoreFile?.name || '选择备份 zip' }}</span>
-        </label>
-        <label class="restore-opt">
-          <button
-            class="switch"
-            :class="{ on: restoreOverwrite }"
-            type="button"
-            role="switch"
-            :aria-checked="restoreOverwrite"
-            @click="restoreOverwrite = !restoreOverwrite"
-          >
-            <span class="switch-knob"></span>
-          </button>
-          <span class="restore-opt-label">覆盖已存在数据</span>
-        </label>
-        <p class="rename-tip">默认逐项幂等：已存在的书源/书籍/分组等跳过，不会重复导入；开启覆盖后以备份为准。</p>
+        <p class="dlg-path">{{ restoreName }} · {{ restorePath }}</p>
+        <p class="rename-tip">此操作调用原版服务端恢复逻辑，会替换备份中包含的当前用户数据，不支持“仅补缺”或关闭覆盖。请先确认已有可用备份；恢复后可能需要重新加载页面。</p>
         <div class="dlg-actions">
           <button class="btn-plain" type="button" :disabled="restoreBusy" @click="restoreOpen = false">取消</button>
-          <button class="btn-primary" type="button" :disabled="!restoreFile || restoreBusy" @click="doRestore">
+          <button class="btn-primary" type="button" :disabled="!restorePath || restoreBusy" @click="doRestore">
             {{ restoreBusy ? '还原中…' : '开始还原' }}
           </button>
         </div>

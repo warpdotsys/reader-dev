@@ -94,6 +94,7 @@ jobs:
           java -jar build/libs/reader-4.0.7.jar \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
             --reader.server.port=18895 --reader.app.secure=true \
+            --reader.app.defaultUserEnableWebdav=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-reader.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-reader.pid"
@@ -122,8 +123,9 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewGroupTest' \
-            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' --no-daemon
-          for name in Login Reading Search Source Group File; do
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
+          for name in Login Reading Search Source Group File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done

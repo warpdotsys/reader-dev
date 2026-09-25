@@ -243,7 +243,8 @@ export interface HttpTts {
 
 /** TXT 目录规则（/reader3/getTxtTocRules → TxtTocRule，对齐 legado TxtTocRule：id/name/rule/enable/serialNumber） */
 export interface TxtTocRule {
-  id: string
+  /** legacy legado TxtTocRule.id is a Long; Rust preview snapshots may use a string id. */
+  id: string | number
   name: string
   rule: string
   enable: boolean

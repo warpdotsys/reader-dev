@@ -13,6 +13,7 @@ import { deleteTxtTocRule, getTxtTocRules, importDefaultTxtTocRules, saveTxtTocR
 import { useUserStore } from '@/stores/user'
 import { checkTestRegex } from '@/utils/regexGuard'
 import type { ReplaceRule, TxtTocRule } from '@/types'
+import { isDefaultTxtTocRuleId } from '@/utils/tocRules'
 
 const router = useRouter()
 const store = useUserStore()
@@ -129,11 +130,11 @@ async function toggleRule(r: ReplaceRule) {
 }
 
 /* ================= 删除（极简确认弹窗；替换规则 / TXT 目录规则共用） ================= */
-const deleting = ref<{ kind: 'replace' | 'txt'; id: string; name: string } | null>(null)
+const deleting = ref<{ kind: 'replace' | 'txt'; id: string | number; name: string } | null>(null)
 const deletingMany = ref<{ kind: 'replace' | 'txt'; ids: string[] } | null>(null)
 const deleteBusy = ref(false)
 
-function askDelete(kind: 'replace' | 'txt', r: { id: string; name: string }) {
+function askDelete(kind: 'replace' | 'txt', r: { id: string | number; name: string }) {
   deleting.value = { kind, id: r.id, name: r.name }
   deletingMany.value = null
   document.body.style.overflow = 'hidden'
@@ -158,8 +159,8 @@ async function confirmDelete() {
         selectedIds.value = new Set()
       } else {
         for (const id of many.ids) await deleteTxtTocRule(id)
-        const removed = new Set(many.ids)
-        txtRules.value = txtRules.value.filter((x) => !removed.has(x.id))
+        const removed = new Set(many.ids.map(String))
+        txtRules.value = txtRules.value.filter((x) => !removed.has(String(x.id)))
       }
       closeDelete()
     } catch {
@@ -175,11 +176,11 @@ async function confirmDelete() {
   try {
     if (t.kind === 'replace') {
       // 当前为 localStorage 占位；后端就绪后走 POST /reader3/deleteReplaceRule（见 api/replaceRules.ts）
-      await deleteReplaceRule(t.id)
-      rules.value = rules.value.filter((x) => x.id !== t.id)
+      await deleteReplaceRule(String(t.id))
+      rules.value = rules.value.filter((x) => x.id !== String(t.id))
     } else {
       await deleteTxtTocRule(t.id)
-      txtRules.value = txtRules.value.filter((x) => x.id !== t.id)
+      txtRules.value = txtRules.value.filter((x) => String(x.id) !== String(t.id))
     }
     closeDelete()
   } catch {
@@ -365,7 +366,7 @@ async function loadTxtRules() {
 
 /** 内置默认规则（后端固定 id default-N）：不可停用 / 删除 */
 function isDefaultTxtRule(r: TxtTocRule): boolean {
-  return (r.id || '').startsWith('default-')
+  return isDefaultTxtTocRuleId(r.id)
 }
 
 async function toggleTxtRule(r: TxtTocRule) {

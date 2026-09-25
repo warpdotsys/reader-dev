@@ -1,47 +1,29 @@
 import { post } from './request'
-import { downloadFile } from './file'
+import { downloadFile, listFiles } from './file'
 import type { ReturnData } from '@/types'
+import { latestLegacyWebdavBackup, LEGACY_WEBDAV_BACKUP_DIR } from '@/utils/backup'
 
 /**
  * POST /reader3/backupToWebdav：备份数据到 WebDAV。
- * body { path?: string }：目标子目录（默认 webdav/legado）。
- * GAP 151：路径参数已随请求发送；后端当前固定写入 webdav/legado（create_backup_zip 硬编码），
- * 尚未消费 path 参数——前端先传参预留，后端支持后即可切换目录。
- * 响应：ReturnData<{ path: string }>，path 为备份 zip 的绝对路径
- * （storage/data/{ns}/webdav/legado/backup-{ts}.zip）。
+ * Legacy 合约不接收路径参数，成功时 data 为空字符串；文件固定写入当前用户 home 下
+ * webdav/legado/backupYYYY-MM-DD.zip。
  */
-export function backupToWebdav(path?: string): Promise<ReturnData<{ path: string }>> {
-  return post<{ path: string }>('/backupToWebdav', path ? { path } : undefined)
+export function backupToWebdav(): Promise<ReturnData<string>> {
+  return post<string>('/backupToWebdav')
 }
 
-/**
- * 下载备份 zip：backupToWebdav 返回绝对路径，取其文件名，按「用户数据根（__HOME__）下
- * {dir}/」的相对路径走 GET /reader3/file/download（file/download 的 path 是 home 根下相对路径）。
- * GAP 151：dir 默认 webdav/legado（后端当前固定目录）；传入备份路径配置后与 backupToWebdav(path) 对齐。
- */
-export function downloadBackupZip(absPath: string, dir = 'webdav/legado'): Promise<Blob> {
-  const name = absPath.split(/[\\/]/).filter(Boolean).pop() || 'backup.zip'
-  const cleanDir = dir.trim().replace(/^\/+|\/+$/g, '')
-  return downloadFile(cleanDir ? `${cleanDir}/${name}` : name, '__HOME__')
+/** List only the caller's legacy backup folder and return the newest dated archive path. */
+export async function getLatestWebdavBackup() {
+  const listing = await listFiles(LEGACY_WEBDAV_BACKUP_DIR, '__HOME__')
+  const backup = latestLegacyWebdavBackup(listing.data ?? [])
+  if (!backup) throw new Error('备份接口未在当前用户的 webdav/legado 目录生成 ZIP')
+  return backup
 }
 
-/** 备份还原报告（/reader3/restoreFromZip → data） */
-export interface RestoreReport {
-  restored: Record<string, number>
-  skipped: Record<string, number>
-}
-
-/**
- * POST /reader3/restoreFromZip：从备份 zip 恢复（multipart：file + overwrite 字段）。
- * overwrite=false（默认）时逐项幂等：已存在数据跳过；true 则覆盖。
- */
-export function restoreFromZip(
-  file: File | Blob,
-  name: string,
-  overwrite = false,
-): Promise<ReturnData<RestoreReport>> {
-  const form = new FormData()
-  form.append('file', file, name)
-  form.append('overwrite', overwrite ? 'true' : 'false')
-  return post<RestoreReport>('/restoreFromZip', form, { timeout: 120_000 })
+/** Download a dated backup only when its path is inside the caller's legacy backup folder. */
+export async function downloadWebdavBackup(path: string): Promise<Blob> {
+  const name = path.replace(/\\/g, '/').split('/').pop() ?? ''
+  const backup = latestLegacyWebdavBackup([{ name, path, isDirectory: false, lastModified: 0 }])
+  if (!backup) throw new Error('备份路径无效')
+  return downloadFile(backup.path, '__HOME__')
 }

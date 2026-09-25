@@ -78,6 +78,13 @@ export function downloadFile(path: string, home = ''): Promise<Blob> {
     .then((r) => r.data as Blob)
 }
 
+/** POST /reader3/file/restore: restore a server-side ZIP using the legacy backup format. */
+export function restoreBackup(path: string, home = ''): Promise<ReturnData<string>> {
+  return request
+    .post('/file/restore', { path, ...(home ? { home } : {}) }, { headers: secureHeaders() })
+    .then((r) => r.data as ReturnData<string>)
+}
+
 /**
  * POST /reader3/file/upload：multipart 上传（字段 file + path + home，FormData 交 axios 设 Content-Type）
  * @param onProgress 上传进度回调（0-100）

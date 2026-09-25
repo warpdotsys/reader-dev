@@ -28,7 +28,7 @@ import {
 } from '@/utils/readerBg'
 import { clearCache, getCacheInfo } from '@/api/cache'
 import { clearTtsCache, ttsCacheStats } from '@/utils/ttsCache'
-import { backupToWebdav, downloadBackupZip } from '@/api/backup'
+import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/api/backup'
 import { getSystemInfo } from '@/api/system'
 import { deleteTxtTocRule, getTxtTocRules, importDefaultTxtTocRules, saveTxtTocRule } from '@/api/txtTocRules'
 import { getBookshelf } from '@/api/bookshelf'
@@ -38,6 +38,7 @@ import { getUserConfig, saveUserConfig } from '@/api/userConfig'
 import { getReadingStats } from '@/api/stats'
 import { getOpdsSettings, saveOpdsSettings } from '@/api/opds'
 import { setGlobalHanMode, syncHanMode } from '@/utils/hanMode'
+import { isDefaultTxtTocRuleId, txtTocRuleKey } from '@/utils/tocRules'
 import {
   loadReaderConfig,
   applyReaderConfig,
@@ -386,10 +387,12 @@ async function loadTxtTocRules() {
   }
 }
 
-const customTocRules = computed(() => tocRules.value.filter((r) => !r.id.startsWith('default-')))
+const customTocRules = computed(() => tocRules.value.filter((r) => !isDefaultTxtTocRuleId(r.id)))
 
-function newTocId(): string {
-  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+let lastTocRuleId = 0
+function newTocId(): number {
+  lastTocRuleId = Math.max(Date.now(), lastTocRuleId + 1)
+  return lastTocRuleId
 }
 
 /* 新增弹窗 */
@@ -436,8 +439,9 @@ async function confirmAddToc() {
 const tocToggling = ref<Set<string>>(new Set())
 
 async function toggleTocRule(r: TxtTocRule) {
-  if (tocToggling.value.has(r.id) || r.id.startsWith('default-')) return
-  tocToggling.value.add(r.id)
+  const id = txtTocRuleKey(r.id)
+  if (tocToggling.value.has(id) || isDefaultTxtTocRuleId(r.id)) return
+  tocToggling.value.add(id)
   const prev = r.enable
   r.enable = !prev
   try {
@@ -445,7 +449,7 @@ async function toggleTocRule(r: TxtTocRule) {
   } catch {
     r.enable = prev
   } finally {
-    tocToggling.value.delete(r.id)
+    tocToggling.value.delete(id)
   }
 }
 
@@ -454,7 +458,7 @@ const deletingToc = ref<TxtTocRule | null>(null)
 const deleteTocBusy = ref(false)
 
 function askDeleteToc(r: TxtTocRule) {
-  if (r.id.startsWith('default-')) return
+  if (isDefaultTxtTocRuleId(r.id)) return
   deletingToc.value = r
   document.body.style.overflow = 'hidden'
 }
@@ -1231,48 +1235,34 @@ async function copyWebdavUrl() {
 const backupBusy = ref(false)
 const backupPath = ref('')
 const backupDownloadBusy = ref(false)
-/** GAP 151：备份目标子目录（默认 webdav/legado；localStorage 记忆） */
-const BACKUP_PATH_KEY = 'reader_backup_path'
-const backupDir = ref(localStorage.getItem(BACKUP_PATH_KEY) || 'webdav/legado')
-watch(backupDir, (v) => {
-  try {
-    localStorage.setItem(BACKUP_PATH_KEY, v)
-  } catch {
-    /* ignore */
-  }
-})
-
 async function runBackup() {
   if (backupBusy.value) return
   backupBusy.value = true
   backupPath.value = ''
   try {
-    const res = await backupToWebdav(backupDir.value.trim() || undefined)
-    backupPath.value = res.data?.path ?? ''
-    if (!backupPath.value) {
-      ElMessage.warning('备份完成，但未返回文件路径')
-    } else {
-      ElMessage.success('备份完成')
-    }
-  } catch {
-    // 错误提示已由拦截器处理
+    await backupToWebdav()
+    const backup = await getLatestWebdavBackup()
+    backupPath.value = backup.path
+    ElMessage.success('备份完成')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '备份失败')
   } finally {
     backupBusy.value = false
   }
 }
 
-/** 下载备份 zip：返回绝对路径 → 取其文件名拼 __HOME__/{备份路径} 相对路径 → file/download */
+/** 下载 ZIP：仅接受当前用户备份目录下的 legacy 日期文件名。 */
 async function downloadBackup() {
   if (backupDownloadBusy.value) return
   const abs = backupPath.value
   if (!abs) return
   backupDownloadBusy.value = true
   try {
-    const blob = await downloadBackupZip(abs, backupDir.value.trim() || 'webdav/legado')
+    const blob = await downloadWebdavBackup(abs)
     const name = abs.split(/[\\/]/).filter(Boolean).pop() || 'backup.zip'
     await downloadBlob(blob, name)
-  } catch {
-    // 请求层已提示
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '下载备份失败')
   } finally {
     backupDownloadBusy.value = false
   }
@@ -1285,18 +1275,15 @@ async function runExportData() {
   if (exportBusy.value) return
   exportBusy.value = true
   try {
-    const res = await backupToWebdav()
-    const abs = res.data?.path ?? ''
-    if (!abs) {
-      ElMessage.warning('备份完成但未返回文件路径，无法下载')
-      return
-    }
-    const blob = await downloadBackupZip(abs)
-    const name = abs.split(/[\\/]/).filter(Boolean).pop() || 'backup.zip'
+    await backupToWebdav()
+    const backup = await getLatestWebdavBackup()
+    backupPath.value = backup.path
+    const blob = await downloadWebdavBackup(backup.path)
+    const name = backup.name
     await downloadBlob(blob, name)
     ElMessage.success('已导出备份')
-  } catch {
-    // 请求层已提示
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '导出失败')
   } finally {
     exportBusy.value = false
   }
@@ -1718,7 +1705,7 @@ async function runExportData() {
       </section>
 
       <!-- 数据备份 -->
-      <section class="card">
+      <section class="card" data-testid="data-backup-card">
         <h2 class="card-title">数据备份</h2>
         <div class="row">
           <span class="row-label">WebDAV 地址</span>
@@ -1728,16 +1715,8 @@ async function runExportData() {
           </button>
         </div>
         <div class="row">
-          <span class="row-label">备份路径</span>
-          <input
-            v-model="backupDir"
-            class="path-input"
-            type="text"
-            placeholder="webdav/legado"
-            maxlength="120"
-            spellcheck="false"
-            :title="backupDir"
-          />
+          <span class="row-label">备份目录</span>
+          <span class="row-value mono">webdav/legado</span>
         </div>
         <div class="row">
           <span class="row-label">WebDAV 备份</span>
@@ -1748,14 +1727,14 @@ async function runExportData() {
         </div>
         <div class="row">
           <span class="row-label">导出数据</span>
-          <span class="row-value">备份为 zip 并直接下载（{{ backupDir.trim() || 'webdav/legado' }} 目录）</span>
+          <span class="row-value">按旧版备份格式生成 ZIP 并下载</span>
           <button class="row-action" type="button" :disabled="exportBusy" @click="runExportData">
             {{ exportBusy ? '导出中…' : '导出数据' }}
           </button>
         </div>
         <div v-if="backupPath" class="row">
           <span class="row-label">下载备份</span>
-          <span class="row-value mono backup-path" :title="backupPath">{{ backupPath }}</span>
+          <span class="row-value mono backup-path" data-testid="backup-path" :title="backupPath">{{ backupPath }}</span>
           <button
             class="row-action"
             type="button"
@@ -1765,7 +1744,7 @@ async function runExportData() {
             {{ backupDownloadBusy ? '下载中…' : '下载备份' }}
           </button>
         </div>
-        <p class="card-note">WebDAV 地址供外部客户端（如 RaiDrive、文件管理器）挂载访问；备份/导出需要后端已配置 WebDAV。备份路径参数已随请求发送，后端当前固定写入 webdav/legado 目录（路径参数待后端支持）。</p>
+        <p class="card-note">WebDAV 地址供外部客户端（如 RaiDrive、文件管理器）挂载访问；备份需要当前用户已开启 WebDAV。备份遵循旧版接口，固定写入当前用户数据目录下的 webdav/legado，并通过同一用户的文件权限下载。</p>
       </section>
 
       <!-- 缓存（契约 GET /reader3/getCacheInfo + POST /reader3/clearCache） -->
@@ -1831,20 +1810,20 @@ async function runExportData() {
           <li v-for="r in tocRules" :key="r.id" class="tts-row">
             <span class="tts-name" :title="r.name">{{ r.name }}</span>
             <span class="tts-url mono" :title="r.rule">{{ r.rule }}</span>
-            <span class="tts-type">{{ r.id.startsWith('default-') ? '默认' : `#${r.serialNumber}` }}</span>
+            <span class="tts-type">{{ isDefaultTxtTocRuleId(r.id) ? '默认' : `#${r.serialNumber}` }}</span>
             <button
               class="switch"
               :class="{ on: r.enable }"
               type="button"
               role="switch"
               :aria-checked="r.enable"
-              :title="r.id.startsWith('default-') ? '默认规则不可单独停用' : (r.enable ? '停用' : '启用')"
+              :title="isDefaultTxtTocRuleId(r.id) ? '默认规则不可单独停用' : (r.enable ? '停用' : '启用')"
               @click="toggleTocRule(r)"
             >
               <span class="switch-knob"></span>
             </button>
             <button
-              v-if="!r.id.startsWith('default-')"
+              v-if="!isDefaultTxtTocRuleId(r.id)"
               class="tts-del"
               type="button"
               title="删除规则"

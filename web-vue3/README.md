@@ -57,8 +57,14 @@ TXT/EPUB，不显示未实现的 HTML 或 TXT 编码选项。`Vue3PreviewSearchT
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 GitHub 托管 runner 的 `vue3-preview.yml` 会自行构建 Reader、启动隔离服务，
-执行原有五项浏览器测试、单独的安全文件测试以及子目录构建测试；
+执行登录、阅读、搜索、书源、分组、文件和备份七项浏览器测试、单独的安全文件测试以及子目录构建测试；
 无需在用户或宿主 Docker 上预装 Chrome。
+
+备份旅程遵循 legacy `/reader3/backupToWebdav` 的空字符串响应及用户 home 下
+`webdav/legado/backupYYYY-MM-DD.zip` 路径；导出会经文件 API 下载此 ZIP。还原只接受
+文件管理器中当前 home 已存在的 ZIP，并调用 `/reader3/file/restore`。原版恢复逻辑会替换
+归档所包含的用户数据，因此界面明确警告；不提供后端并不存在的“覆盖/合并”开关，也不把任意
+本地 ZIP 上传伪装成受支持的恢复 API。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、
 SSE/下载和 `/reader/` 子目录路径。Rust 前端中的“后端待实现”降级
