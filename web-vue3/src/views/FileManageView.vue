@@ -11,6 +11,7 @@ import {
   mkdir,
   deleteFile,
   renameFile,
+  moveFile,
   setFileSecureKey,
   scanLocalBookDir,
 } from '@/api/file'
@@ -152,7 +153,7 @@ function onRowClick(item: FileItem) {
   enter(item)
 }
 
-/** 批量移动（GAP 补：后端无 MOVE 接口 → 文本文件 读→写→删 组合；目录/二进制提示） */
+/** 批量移动：后端在同一 home 内执行文件系统 move，保留二进制内容。 */
 const moveOpen = ref(false)
 const moveTarget = ref('')
 const moveBusy = ref(false)
@@ -172,8 +173,10 @@ async function doMultiMove() {
   }
   const items = files.value.filter((f) => multiSelected.value.has(f.path))
   if (!items.length) return
+  const targetPath = '/' + target
   // 目标不能是选中项本身或其子路径
-  if (items.some((it) => it.path === target || target.startsWith(it.path + '/'))) {
+  if (items.some((it) => targetPath === it.path.replaceAll('\\', '/') ||
+    targetPath.startsWith(it.path.replaceAll('\\', '/') + '/'))) {
     ElMessage.warning('目标目录不能是选中项本身或其子目录')
     return
   }
@@ -182,16 +185,8 @@ async function doMultiMove() {
     let ok = 0
     const skipped: string[] = []
     for (const item of items) {
-      if (item.isDirectory) {
-        skipped.push(`${item.name}（目录）`)
-        continue
-      }
-      if (!isTextFile(item.name)) {
-        skipped.push(`${item.name}（非文本）`)
-        continue
-      }
-      const newPath = joinPath(target, item.name)
-      if (newPath === item.path) {
+      const newPath = joinPath(targetPath, item.name)
+      if (newPath === item.path.replaceAll('\\', '/')) {
         skipped.push(`${item.name}（已在目标目录）`)
         continue
       }
@@ -200,10 +195,7 @@ async function doMultiMove() {
         continue
       }
       const moved = await runWrite(async () => {
-        // file/save 自动建父目录；组合：读旧 → 写新 → 删旧（写失败则旧文件保留）
-        const res = await getFile(item.path, home.value)
-        await saveFile(newPath, res.data ?? '', home.value)
-        await deleteFile(item.path, home.value)
+        await moveFile(item.path, target, home.value)
       })
       if (moved) {
         ok++
@@ -314,7 +306,17 @@ const PREVIEW_MAX_SIZE = 5 * 1024 * 1024
 const secureKey = ref('')
 const secureKeyOpen = ref(false)
 const secureBusy = ref(false)
+const secureError = ref('')
 let pendingSecureRetry: (() => Promise<void>) | null = null
+let pendingSecureResolve: ((success: boolean) => void) | null = null
+
+function finishSecureRetry(success: boolean) {
+  pendingSecureRetry = null
+  pendingSecureResolve?.(success)
+  pendingSecureResolve = null
+  secureKeyOpen.value = false
+  secureError.value = ''
+}
 
 async function runWrite(action: () => Promise<void>): Promise<boolean> {
   try {
@@ -322,22 +324,32 @@ async function runWrite(action: () => Promise<void>): Promise<boolean> {
     return true
   } catch (err) {
     if (isNeedSecureKey(err)) {
+      if (pendingSecureRetry) return false
       pendingSecureRetry = action
       secureKeyOpen.value = true
+      secureError.value = ''
+      return new Promise<boolean>((resolve) => {
+        pendingSecureResolve = resolve
+      })
     }
     return false
   }
 }
 
 async function confirmSecureKey() {
-  if (secureBusy.value) return
+  if (secureBusy.value || !pendingSecureRetry) return
   secureBusy.value = true
   try {
     setFileSecureKey(secureKey.value.trim())
-    const retry = pendingSecureRetry
-    pendingSecureRetry = null
-    secureKeyOpen.value = false
-    if (retry) await retry()
+    await pendingSecureRetry()
+    finishSecureRetry(true)
+  } catch (err) {
+    if (isNeedSecureKey(err)) {
+      setFileSecureKey('')
+      secureError.value = '管理密码不正确，请重试'
+    } else {
+      finishSecureRetry(false)
+    }
   } finally {
     secureBusy.value = false
   }
@@ -346,8 +358,7 @@ async function confirmSecureKey() {
 function clearSecureKey() {
   setFileSecureKey('')
   secureKey.value = ''
-  pendingSecureRetry = null
-  secureKeyOpen.value = false
+  finishSecureRetry(false)
 }
 
 /* ---------------- 路径工具 ---------------- */
@@ -558,7 +569,7 @@ async function doMkdir() {
     return
   }
   const created = await runWrite(async () => {
-    await mkdir(path.value, name, home.value)
+    await mkdir(path.value || '/', name, home.value)
   })
   if (created) {
     ElMessage.success('创建成功')
@@ -755,6 +766,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  finishSecureRetry(false)
   if (longPressTimer) {
     clearTimeout(longPressTimer)
     longPressTimer = undefined
@@ -1162,7 +1174,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 批量移动弹窗（GAP 补：文本文件 读→写→删 组合；目录/二进制提示后端 MOVE 未就绪） -->
+    <!-- 批量移动弹窗（同一 home 内服务端文件系统移动，支持目录和二进制文件） -->
     <div v-if="moveOpen" class="dlg-overlay" @click.self="moveOpen = false">
       <div class="dlg">
         <h3 class="dlg-title">移动 {{ multiSelected.size }} 项</h3>
@@ -1176,7 +1188,7 @@ onBeforeUnmount(() => {
           @keyup.enter="doMultiMove"
         />
         <p class="rename-tip">
-          以「读取内容 → 写入新路径 → 删除旧文件」组合实现（仅文本文件）；目录与二进制文件暂不支持——后端 MOVE 接口未就绪。
+          直接在服务器上移动文件或目录，保留原始字节；目标目录不存在时自动创建，同名目标不会覆盖。
         </p>
         <div class="dlg-actions">
           <button class="btn-plain" type="button" :disabled="moveBusy" @click="moveOpen = false">取消</button>
@@ -1223,7 +1235,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- secure 模式书仓写/删管理密码 -->
-    <div v-if="secureKeyOpen" class="dlg-overlay" @click.self="secureBusy ? null : (secureKeyOpen = false)">
+    <div v-if="secureKeyOpen" class="dlg-overlay" @click.self="secureBusy ? null : clearSecureKey()">
       <div class="dlg">
         <h3 class="dlg-title">管理密码</h3>
         <p class="dlg-path">当前为安全模式（secure），书仓写/删操作需要管理密码（secureKey）。</p>
@@ -1236,6 +1248,7 @@ onBeforeUnmount(() => {
           spellcheck="false"
           @keyup.enter="confirmSecureKey"
         />
+        <p v-if="secureError" role="alert" class="rename-tip">{{ secureError }}</p>
         <div class="dlg-actions">
           <button class="btn-plain" type="button" :disabled="secureBusy" @click="clearSecureKey">
             取消

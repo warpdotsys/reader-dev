@@ -55,6 +55,9 @@ public class Vue3PreviewFileTest {
                 String newName = "rename-after-" + suffix + ".txt";
                 String collisionName = "rename-existing-" + suffix + ".txt";
                 String importDir = "import-dir-" + suffix;
+                String moveDir = "move-dir-" + suffix;
+                String movedDir = "moved-" + suffix;
+                String binaryName = "binary-" + suffix + ".bin";
                 assertTrue(api(page, "/file/save", Map.of("path", "/" + oldName,
                         "content", "reader-rename-preserves-content", "home", "__HOME__")));
                 assertTrue(api(page, "/file/save", Map.of("path", "/" + collisionName,
@@ -115,11 +118,44 @@ public class Vue3PreviewFileTest {
                     Map<String, Object> directoryCounts = (Map<String, Object>) directoryResult.get("data");
                     assertEquals(2, ((Number) directoryCounts.get("imported")).intValue());
                     assertEquals(0, ((Number) directoryCounts.get("failed")).intValue());
+
+                    assertTrue(api(page, "/file/save", Map.of("path", "/" + moveDir + "/nested/part.txt",
+                            "content", "directory-content", "home", "__HOME__")));
+                    assertTrue(uploadBinary(page, binaryName));
+                    page.locator(".home-pills button:has-text('根')").click();
+                    page.locator(".home-pills button:has-text('用户数据')").click();
+                    page.locator(".row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                            .setHasText(binaryName)).click(new com.microsoft.playwright.Locator.ClickOptions()
+                            .setButton(com.microsoft.playwright.options.MouseButton.RIGHT));
+                    page.locator(".row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                            .setHasText(moveDir)).locator(".row-select").click();
+                    page.locator(".multi-bar button:has-text('移动')").click();
+                    page.locator(".dlg-overlay .dlg-input").fill(movedDir);
+                    page.locator(".dlg-overlay .btn-primary").click();
+                    page.locator(".row-name:text-is('" + binaryName + "')").waitFor(
+                            new com.microsoft.playwright.Locator.WaitForOptions()
+                                    .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
+                    assertEquals("directory-content", apiData(page, "/file/get",
+                            "/" + movedDir + "/" + moveDir + "/nested/part.txt"));
+                    assertEquals("0,255,1,128,65", downloadBytes(page,
+                            "/" + movedDir + "/" + binaryName));
+                    assertFalse(api(page, "/file/move", Map.of("path", "/" + movedDir + "/" + moveDir,
+                            "targetDir", movedDir + "/" + moveDir + "/child", "home", "__HOME__")));
+                    assertFalse(api(page, "/file/move", Map.of("path", "/" + movedDir + "/" + binaryName,
+                            "targetDir", "../escape", "home", "__HOME__")));
+                    assertTrue(api(page, "/file/save", Map.of("path", "/" + binaryName,
+                            "content", "collision-marker", "home", "__HOME__")));
+                    assertFalse(api(page, "/file/move", Map.of("path", "/" + movedDir + "/" + binaryName,
+                            "targetDir", "/", "home", "__HOME__")));
+                    assertEquals("collision-marker", apiData(page, "/file/get", "/" + binaryName));
                 } finally {
                     api(page, "/file/delete", Map.of("path", "/" + oldName, "home", "__HOME__"));
                     api(page, "/file/delete", Map.of("path", "/" + newName, "home", "__HOME__"));
                     api(page, "/file/delete", Map.of("path", "/" + collisionName, "home", "__HOME__"));
                     api(page, "/file/delete", Map.of("path", "/" + importDir, "home", "__HOME__"));
+                    api(page, "/file/delete", Map.of("path", "/" + moveDir, "home", "__HOME__"));
+                    api(page, "/file/delete", Map.of("path", "/" + movedDir, "home", "__HOME__"));
+                    api(page, "/file/delete", Map.of("path", "/" + binaryName, "home", "__HOME__"));
                 }
             } finally {
                 browser.close();
@@ -145,5 +181,25 @@ public class Vue3PreviewFileTest {
                 "if (!result.isSuccess) throw new Error(result.errorMsg);" +
                 "return result.data; }", Map.of("path", path, "file", file));
         return String.valueOf(result);
+    }
+
+    private static boolean uploadBinary(Page page, String name) {
+        Object result = page.evaluate("async name => {" +
+                "const token = localStorage.getItem('reader_access_token');" +
+                "const form = new FormData();" +
+                "form.append('file', new Blob([new Uint8Array([0,255,1,128,65])]), name);" +
+                "form.append('path', '/'); form.append('home', '__HOME__');" +
+                "const response = await fetch('/reader3/file/upload?accessToken=' + encodeURIComponent(token)," +
+                "{method:'POST',body:form}); return (await response.json()).isSuccess; }", name);
+        return Boolean.TRUE.equals(result);
+    }
+
+    private static String downloadBytes(Page page, String file) {
+        return String.valueOf(page.evaluate("async file => {" +
+                "const token = localStorage.getItem('reader_access_token');" +
+                "const query = new URLSearchParams({accessToken:token,path:file,home:'__HOME__'});" +
+                "const response = await fetch('/reader3/file/download?' + query);" +
+                "if (!response.ok) throw new Error('download status ' + response.status);" +
+                "return Array.from(new Uint8Array(await response.arrayBuffer())).join(','); }", file));
     }
 }

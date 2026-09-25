@@ -125,6 +125,41 @@ jobs:
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
+      - name: Start a separate Reader with manager-key protection
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/vue3-secure-data"
+          java -jar build/libs/reader-4.0.7.jar \
+            "--reader.app.workDir=$RUNNER_TEMP/vue3-secure-data" \
+            --reader.server.port=18896 --reader.app.secure=true \
+            --reader.app.secureKey=Vue3ProbeManagerKey-2026 \
+            --reader.app.defaultUserEnableLocalStore=true \
+            --reader.app.licenseCheckEnabled=false \
+            > "$RUNNER_TEMP/vue3-secure.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-secure.pid"
+          READER_BACKEND_URL=http://127.0.0.1:18896 npm --prefix web-vue3 run dev -- \
+            --host 127.0.0.1 --port 5174 --strictPort \
+            > "$RUNNER_TEMP/vue3-secure-vite.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/vue3-secure-vite.pid"
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null && \
+               curl -fsS http://127.0.0.1:5174/login > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null
+          curl -fsS http://127.0.0.1:5174/login > /dev/null
+      - name: Verify secure file write and retry in Chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_VUE3_ISOLATED: '1'
+          READER_VUE3_SECURE_URL: http://127.0.0.1:5174
+          READER_TEST_MANAGER_KEY: Vue3ProbeManagerKey-2026
+        run: |
+          ./gradlew -p browser-poc test \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest' --no-daemon
+          grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml
       - name: Build and serve the Vue 3 artifact at /reader/
         shell: bash
         run: |
@@ -155,12 +190,12 @@ jobs:
         if: always()
         shell: bash
         run: |
-          for service in vite reader source subdir; do
+          for service in vite reader source secure secure-vite subdir; do
             if [[ -f "$RUNNER_TEMP/vue3-$service.pid" ]]; then
               kill "$(cat "$RUNNER_TEMP/vue3-$service.pid")" 2>/dev/null || true
             fi
           done
-          for service in vite reader source subdir; do
+          for service in vite reader source secure secure-vite subdir; do
             if [[ -f "$RUNNER_TEMP/vue3-$service.log" ]]; then
               echo "=== $service (last 80 lines) ==="
               tail -n 80 "$RUNNER_TEMP/vue3-$service.log"

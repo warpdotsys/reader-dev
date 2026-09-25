@@ -422,6 +422,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/file/save").coroutineHandler { fileController.save(it) }
         router.post("/reader3/file/mkdir").coroutineHandler { fileController.mkdir(it) }
         router.post("/reader3/file/rename").coroutineHandler { fileController.rename(it) }
+        router.post("/reader3/file/move").coroutineHandler { fileController.move(it) }
         router.post("/reader3/scanLocalBookDir").coroutineHandler { fileController.scanLocalBookDir(it) }
         router.get("/reader3/file/download").coroutineHandlerWithoutRes { fileController.download(it) }
         router.post("/reader3/file/upload").coroutineHandler { fileController.upload(it) }

@@ -47,12 +47,16 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 `com.medwarp.reader.browserpoc.Vue3PreviewReadingTest`；它会检查书籍详情、
 目录、首章正文和下一章导航。`Vue3PreviewSearchTest` 还覆盖指定书源、
 多源 SSE、批量降级及未入架直读。`Vue3PreviewSourceTest` 检查远程预览
-不写库、确认后导入以及批量删除。`Vue3PreviewFileTest` 检查文件重命名与单文件、目录导入。
-五项测试都禁止非 loopback 预览地址，且必须显式设置
+不写库、确认后导入以及批量删除。`Vue3PreviewFileTest` 检查文件重命名、单文件／目录导入，
+以及服务端移动目录与二进制文件。`Vue3PreviewSecureFileTest` 使用另一隔离工作目录、
+启用 `reader.app.secureKey` 的 Reader 和独立 Vite 端口，检查错误密码后的重试、
+正确密码下根目录新建与列表刷新；需额外设置 `READER_VUE3_SECURE_URL` 和合成的
+`READER_TEST_MANAGER_KEY`。所有测试都禁止非 loopback 预览地址，且必须显式设置
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 GitHub 托管 runner 的 `vue3-preview.yml` 会自行构建 Reader、启动隔离服务，
-并执行上述五项浏览器测试；无需在用户或宿主 Docker 上预装 Chrome。
+执行原有五项浏览器测试、单独的安全文件测试以及子目录构建测试；
+无需在用户或宿主 Docker 上预装 Chrome。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、
 SSE/下载和 `/reader/` 子目录路径。Rust 前端中的“后端待实现”降级

@@ -249,6 +249,64 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
         }
     }
 
+    suspend fun move(context: RoutingContext): ReturnData {
+        checkAccess(context, isSave = true, isDelete = true)?.let { return it }
+        val returnData = ReturnData()
+        val path = context.bodyAsJson?.getString("path", "") ?: ""
+        val targetDirInput = context.bodyAsJson?.getString("targetDir", "") ?: ""
+        if (path.isEmpty() || path.contains('\u0000') || targetDirInput.isEmpty() || targetDirInput.contains('\u0000')) {
+            return returnData.setErrorMsg("参数错误")
+        }
+        val baseDir = getFileHome(context) ?: return returnData.setErrorMsg("参数错误")
+        val source = resolveSecurePath(baseDir, path) ?: return returnData.setErrorMsg("参数错误")
+        if (!source.exists()) return returnData.setErrorMsg("路径不存在")
+        return try {
+            val baseReal = baseDir.toPath().toRealPath()
+            val sourceReal = source.toPath().toRealPath()
+            if (!sourceReal.startsWith(baseReal) || sourceReal == baseReal) {
+                returnData.setErrorMsg("参数错误")
+            } else {
+                val requested = baseReal.resolve(targetDirInput.trimStart('/', '\\')).normalize()
+                if (!requested.startsWith(baseReal)) returnData.setErrorMsg("参数错误")
+                else {
+                    // Resolve the nearest existing ancestor before creating directories;
+                    // a symlink/junction must not redirect the target outside this home.
+                    var ancestor = requested
+                    while (!java.nio.file.Files.exists(ancestor, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                        ancestor = ancestor.parent ?: return returnData.setErrorMsg("参数错误")
+                    }
+                    val ancestorReal = ancestor.toRealPath()
+                    if (!ancestorReal.startsWith(baseReal) || !java.nio.file.Files.isDirectory(ancestorReal)) {
+                        returnData.setErrorMsg("参数错误")
+                    } else {
+                        val destinationDir = ancestorReal.resolve(ancestor.relativize(requested)).normalize()
+                        if (!destinationDir.startsWith(baseReal) ||
+                            (source.isDirectory && destinationDir.startsWith(sourceReal))) {
+                            returnData.setErrorMsg("不能移动到自身或子目录")
+                        } else {
+                            java.nio.file.Files.createDirectories(destinationDir)
+                            val destinationReal = destinationDir.toRealPath()
+                            if (!destinationReal.startsWith(baseReal)) returnData.setErrorMsg("参数错误")
+                            else {
+                                val target = destinationReal.resolve(source.name)
+                                if (java.nio.file.Files.exists(target, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                                    returnData.setErrorMsg("目标路径已存在")
+                                } else {
+                                    java.nio.file.Files.move(source.toPath(), target)
+                                    returnData.setData("/" + baseReal.relativize(target).toString().replace('\\', '/'))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (_: java.io.IOException) {
+            returnData.setErrorMsg("移动失败")
+        } catch (_: java.nio.file.InvalidPathException) {
+            returnData.setErrorMsg("参数错误")
+        }
+    }
+
     suspend fun scanLocalBookDir(context: RoutingContext): ReturnData {
         checkAccess(context)?.let { return it }
         val returnData = ReturnData()
