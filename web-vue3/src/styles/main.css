@@ -1,0 +1,395 @@
+/* ================= 内置网络字体（子集化 woff2，离线可用） ================= */
+@font-face {
+  font-family: 'LXGW WenKai';
+  src: url('/fonts/lxgw-wenkai-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Han Serif CN';
+  src: url('/fonts/source-han-serif-cn-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* 视觉隐藏但可被程序化/原生激活的控件（Safari 对 display:none 的 file input 点击不可靠） */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   夜读 · 主题 A（极简高级 · 浅色）
+   近白底 / 大留白 / 细字重 / 单一强调色 #4f46e5
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --bg-float: rgba(250, 250, 250, 0.86);
+  --hover: #f4f4f5;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d8;
+  --text-1: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  --accent: #4f46e5;
+  --accent-deep: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  /* 强调色上的文字（浅色主题白字 / 深色主题深字） */
+  --on-accent: #ffffff;
+  --radius: 8px;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter',
+    'Segoe UI', 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+    system-ui, sans-serif;
+}
+
+/* ---------- 主题变量体系 ----------
+   界面主题：浅色（默认 :root）/ 深色 两档，由 html[data-theme] 挂载
+   （设置页「外观」+ utils/uiTheme.ts，跟随系统时解析为 light/dark）。
+   阅读内容主题（浅色/深色/暖色）见下方 .reader-page[data-reader-theme] 块。 */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1a1a1a;
+  --bg-float: rgba(26, 26, 26, 0.86);
+  --hover: #26262b;
+  --surface: #212126;
+  --card: #212126;
+  --border: #2f2f36;
+  --border-strong: #3f3f47;
+  --text-1: #ececf0;
+  --text-2: #a3a3ad;
+  --text-3: #63636d;
+  /* 柔化强调色：浅紫 + 深色文字保证对比度 */
+  --accent: #8b87ff;
+  --accent-deep: #a5a2ff;
+  --accent-soft: rgba(139, 135, 255, 0.14);
+  --on-accent: #16161c;
+  /* Element Plus 深色映射 */
+  --el-bg-color: #212126;
+  --el-bg-color-overlay: #26262c;
+  --el-border-color: #2f2f36;
+  --el-border-color-light: #2f2f36;
+  --el-border-color-lighter: #2f2f36;
+  --el-fill-color-blank: #212126;
+  --el-fill-color-light: #26262b;
+  --el-text-color-primary: #ececf0;
+  --el-text-color-regular: #a3a3ad;
+  --el-text-color-placeholder: #63636d;
+  --el-message-bg-color: #26262c;
+  --el-message-text-color: #ececf0;
+  --el-message-border-color: #2f2f36;
+  --el-mask-color: rgba(0, 0, 0, 0.6);
+  --el-overlay-color-lighter: rgba(0, 0, 0, 0.45);
+  --el-overlay-color-light: rgba(0, 0, 0, 0.6);
+  --el-overlay-color: rgba(0, 0, 0, 0.7);
+}
+
+/* ---------- 阅读内容主题（与界面主题分离） ----------
+   阅读页配色由 .reader-page[data-reader-theme=...] 决定（阅读页顶栏/正文/底部栏），
+   与 html[data-theme]（界面主题：浅色/深色，作用于书架/设置等 UI）互不影响。
+   阅读页根元素必须显式 background: var(--bg)（见 ReaderView）。 */
+.reader-page[data-reader-theme='light'] {
+  color-scheme: light;
+  --bg: #fafafa;
+  --bg-float: rgba(250, 250, 250, 0.86);
+  --hover: #f4f4f5;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d8;
+  --text-1: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  --accent: #4f46e5;
+  --accent-deep: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --on-accent: #ffffff;
+}
+
+.reader-page[data-reader-theme='dark'] {
+  color-scheme: dark;
+  --bg: #17171a;
+  --bg-float: rgba(23, 23, 26, 0.86);
+  --hover: #26262c;
+  --surface: #1e1e23;
+  --card: #1e1e23;
+  --border: #2e2e36;
+  --border-strong: #3f3f49;
+  --text-1: #ececf1;
+  --text-2: #a1a1ad;
+  --text-3: #63636e;
+  --accent: #8b87ff;
+  --accent-deep: #a5a2ff;
+  --accent-soft: rgba(139, 135, 255, 0.14);
+  --on-accent: #16161c;
+}
+
+.reader-page[data-reader-theme='warm'] {
+  color-scheme: light;
+  --bg: #f7f0e6;
+  --bg-float: rgba(247, 240, 230, 0.88);
+  --hover: #efe7d6;
+  --surface: #fbf6ec;
+  --card: #fbf6ec;
+  --border: #e7dcc6;
+  --border-strong: #d6c8a9;
+  --text-1: #3d382c;
+  --text-2: #6d6450;
+  --text-3: #a99f84;
+  --accent: #4f46e5;
+  --accent-deep: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --on-accent: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* 主题切换 200ms 淡变 */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* 滚动条（细条，随主题变量） */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+/* ---------- 页面切换（fade 200ms，App.vue 引用） ---------- */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+/* ---------- 入场 fade（单次 200ms，用于各页根元素） ---------- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- Element Plus 主题映射 ----------
+   三档主题变量在各自 html[data-theme] 块内定义（见上）。
+   旧 html.dark hack（main.ts 强加 dark class + 此处重映射回浅色）已清理。 */
+
+/* 轻提示：白底细边框，极浅阴影 */
+.el-message {
+  border-radius: 8px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06) !important;
+}
+.el-message .el-message__content {
+  color: var(--text-1) !important;
+  font-size: 13px !important;
+}
+.el-message .el-message-icon--success {
+  color: #529b2e !important;
+}
+.el-message .el-message-icon--warning {
+  color: #c47f17 !important;
+}
+.el-message .el-message-icon--error {
+  color: #cf4444 !important;
+}
+.el-message .el-message-icon--info {
+  color: #737373 !important;
+}
+
+/* 确认弹窗：极简面板 + 项目强调色按钮（替换 Element 默认蓝） */
+.el-message-box {
+  padding: 20px;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
+}
+.el-message-box__header {
+  padding: 0 0 12px;
+}
+.el-message-box__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--text-1);
+}
+.el-message-box__title .el-message-box__status {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  color: var(--accent) !important;
+}
+.el-message-box__content {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--text-2);
+}
+.el-message-box__btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 18px 0 0;
+}
+.el-message-box__btns .el-button {
+  min-height: 34px;
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 400;
+}
+.el-message-box__btns .el-button--default {
+  border-color: var(--border);
+  background: none;
+  color: var(--text-2);
+}
+.el-message-box__btns .el-button--default:hover {
+  border-color: var(--border-strong);
+  color: var(--text-1);
+}
+.el-message-box__btns .el-button--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.el-message-box__btns .el-button--primary:hover {
+  border-color: var(--accent-deep);
+  background: var(--accent-deep);
+}
+.el-message-box__headerbtn {
+  color: var(--text-3);
+}
+.el-message-box__headerbtn:hover {
+  color: var(--text-1);
+}
+
+/* ---------- Logo（细线书形，随 currentColor 着色） ---------- */
+.logo-mark {
+  display: block;
+  color: var(--accent);
+}
+
+/* ============================================================
+   移动端全局适配（各视图内的 @media 微调见对应 .vue）
+   ============================================================ */
+
+/* 弹窗宽度上限：任何弹层不超过 92vw（触屏安全边距） */
+.el-dialog,
+.el-message-box,
+.dlg {
+  max-width: 92vw;
+}
+.el-message {
+  max-width: 88vw;
+}
+
+/* 窄屏：弹窗/抽屉贴近边缘 + 触控目标下限 40px（列表行 / 胶囊按钮） */
+@media (max-width: 960px) {
+  /* 平板/手机统一顶栏：第二行整宽横向滚动，防止导航把页面撑宽 */
+  body .topbar {
+    flex-wrap: wrap;
+  }
+  body .user-area {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  body .user-area::-webkit-scrollbar {
+    display: none;
+  }
+  body .user-area .nav-link,
+  body .user-area .user-chip,
+  body .user-area .logout-btn,
+  body .user-area .default-config-btn {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .el-dialog {
+    --el-dialog-width: 92vw;
+  }
+  .el-message-box {
+    --el-messagebox-width: 88vw;
+  }
+  .el-message-box__btns .el-button {
+    min-height: 40px;
+  }
+  .capsule,
+  .row-action,
+  .nav-link,
+  .font-btn,
+  .toc-btn {
+    min-height: 40px;
+  }
+}
+
+/* 全局徽标（各视图 brand 统一；具体尺寸由各视图覆盖） */
+.brand-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: cover;
+}

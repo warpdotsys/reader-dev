@@ -1,0 +1,27 @@
+{
+  "name": "reader-web-ui-a",
+  "private": true,
+  "version": "6.0.45",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "element-plus": "^2.10.4",
+    "fflate": "^0.8.3",
+    "hls.js": "^1.7.1",
+    "pinia": "^3.0.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.0.0",
+    "vue-tsc": "^3.0.1"
+  }
+}

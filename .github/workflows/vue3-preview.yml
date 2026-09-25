@@ -1,0 +1,42 @@
+name: Vue 3 preview build
+
+on:
+  push:
+    branches: [legacy]
+    paths:
+      - '.github/workflows/vue3-preview.yml'
+      - 'web-vue3/**'
+  pull_request:
+    branches: [legacy]
+    paths:
+      - '.github/workflows/vue3-preview.yml'
+      - 'web-vue3/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web-vue3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
+      - name: Install locked dependencies and compile preview
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vue3-preview-${{ github.sha }}
+          path: web-vue3/dist/
+          if-no-files-found: error
+          retention-days: 14
