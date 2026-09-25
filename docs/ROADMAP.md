@@ -61,6 +61,12 @@
 
 安全增量（应用层，不等于完整网络隔离）：Chromium 的 HTTP、HTTPS CONNECT 与 WebSocket 经每次渲染独立的 loopback 出口代理；对每个请求重新解析、检查整个 DNS 答案集并连接到已校验的 IP，重定向和子资源因此也经过相同规则。上游 HTTP/SOCKS 代理同样接收固定 IP 目标；书源代理端点本身也受网络策略约束。Playwright 路由仍保留作纵深防御，Service Worker 禁用，Chromium 禁用 QUIC 并限制非代理 WebRTC UDP。默认拒绝 loopback、私网、链路本地、共享地址、保留网段以及 `.localhost`/`.local`/`.internal` 主机名，并拒绝 `file:` 等非网络协议。**回归证据**：[runner 36131976893](https://github.com/warpdotsys/reader-dev/actions/runs/36131976893)中的真实 Chromium 重定向 fixture 从允许的 `127.0.0.1` 跳转到 `localhost` 后被出口代理拒绝，目标端命中数为 0；JS 子资源与分块 SSE 同时通过。`READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true` 仅为受控合成 fixture/自管内网显式放行；托管镜像烟测使用该开关，不证明公网生产隔离。应用层代理仍不等于内核级网络隔离，DNS/UDP/未来 Chromium 通道及生产 Docker 网络均未完成独立审计；不可信书源可写入的公网部署仍应配置主机出口防火墙拦截云元数据、loopback、RFC1918 和 IPv6 ULA，并在真实部署网络验证。
 
+### 2026-09-25 `sourceRegex` 与 HTML 字符集增量
+
+本节覆盖上方较早快照中“仍不支持 `sourceRegex` 和非 UTF-8 `encode`”的结论：本地 Chromium 现在会先执行网络策略，再用完整正则匹配请求 URL；命中时捕获该资源 URL、终止该资源下载，并以 `StrResponse(原页面 URL, 命中资源 URL)` 返回。合成 Chrome 测试通过并确认目标夹具服务器没有收到被嗅探资源。对直接提供的 HTML，`encode` 现支持 JVM 可识别字符集，并通过指定字符集往返模拟 legacy `loadDataWithBaseURL` 的可表示字符与替换行为；GBK 中文与未知字符集错误测试均通过。HTTP 页面导航仍由 HTTP 头/HTML 元信息决定编码，不把 `encode` 错用于 HTTP 响应解码。
+
+行为参考为[近似 legado Android `BackstageWebView` 实现](https://gitea.yamby.cn/yusheng/QieKan-3.0/src/commit/45ffb0ef213421373ad539e15880f4e2288f529e/app/src/main/java/io/legado/app/help/http/BackstageWebView.kt)：它对资源 URL 使用整串正则匹配，并把匹配的资源 URL 作为响应；这不是 `reader-pro-3.2.14.jar` 等版本证明。恢复版的 `sourceRegex`/字符集语义仍需与原 JAR 和真实远程 `/render.html` 服务做受控黑盒差分；期间保留远程 renderer 回退。此增量全量本机 Gradle + 已安装 Chrome 回归为 26 套件、56 用例、0 失败/错误/跳过，不能替代托管镜像验收或真实书源兼容测试。
+
 ## 后续候选项（尚未承诺）
 
 - 在不改变旧数据语义的前提下改善 JSON 存储性能；任何 SQLite 迁移都必须具备备份、校验和可回滚路径，且不能先于兼容基线验收。

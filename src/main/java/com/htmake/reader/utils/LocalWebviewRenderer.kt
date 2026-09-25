@@ -14,6 +14,7 @@ import io.legado.app.help.http.StrResponse
 import io.legado.app.utils.NetworkUtils
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.nio.charset.Charset
 import java.nio.file.Paths
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -65,12 +66,8 @@ class LocalWebviewRenderer private constructor(
     private fun renderOnWorker(request: WebviewRequest): StrResponse {
         val url = request.url ?: throw IllegalArgumentException("本地 WebView 需要 HTTP URL")
         networkPolicy.requireDocumentUrl(url)
-        if (!request.sourceRegex.isNullOrBlank()) {
-            throw UnsupportedOperationException("本地 WebView 尚未验证 sourceRegex 语义；请使用远程实现")
-        }
-        if (!request.encode.isNullOrBlank() && !request.encode.equals("UTF-8", ignoreCase = true)) {
-            throw UnsupportedOperationException("本地 WebView 尚未验证指定字符集；请使用远程实现")
-        }
+        val sourcePattern = request.sourceRegex?.takeIf { it.isNotBlank() }?.let(::Regex)
+        val html = request.html?.let { encodeHtmlForWebView(it, request.encode) }
         if (timeoutMs <= 0) throw IllegalArgumentException("browserTimeoutMs must be positive")
         if (System.getenv("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD") != "1") {
             throw IllegalStateException("本地 WebView 要求 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1，禁止运行时下载浏览器")
@@ -79,6 +76,7 @@ class LocalWebviewRenderer private constructor(
 
         val activeBrowser = getBrowser()
         val blockedNetworkRequest = AtomicBoolean(false)
+        val matchedSourceUrl = java.util.concurrent.atomic.AtomicReference<String?>(null)
         val egressProxy = BrowserEgressProxy(networkPolicy, timeoutMs,
             { blockedNetworkRequest.set(true) }, upstreamProxy)
         try {
@@ -119,6 +117,12 @@ class LocalWebviewRenderer private constructor(
                         route.abort()
                         return@route
                     }
+                    val resourceUrl = route.request().url()
+                    if (sourcePattern?.matches(resourceUrl) == true) {
+                        matchedSourceUrl.compareAndSet(null, resourceUrl)
+                        route.abort()
+                        return@route
+                    }
                     if (request.post && route.request().isNavigationRequest && route.request().url() == url &&
                         postSent.compareAndSet(false, true)) {
                         route.resume(Route.ResumeOptions().setMethod("POST").setPostData(request.body ?: ""))
@@ -126,17 +130,39 @@ class LocalWebviewRenderer private constructor(
                 }
                 val page = context.newPage()
                 val body = try {
-                    page.navigate(url, Page.NavigateOptions()
-                        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                        .setTimeout(timeoutMs.toDouble()))
+                    try {
+                        page.navigate(url, Page.NavigateOptions()
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(timeoutMs.toDouble()))
+                    } catch (e: RuntimeException) {
+                        if (matchedSourceUrl.get() == null) throw e
+                    }
                     failIfNetworkRequestBlocked(blockedNetworkRequest)
-                    if (request.html != null) {
-                        page.setContent(request.html, Page.SetContentOptions()
+                    if (html != null && matchedSourceUrl.get() == null) {
+                        page.setContent(html, Page.SetContentOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                             .setTimeout(timeoutMs.toDouble()))
                         failIfNetworkRequestBlocked(blockedNetworkRequest)
                     }
-                    val result = if (request.javaScript.isNullOrBlank()) page.content()
+                    val result = if (sourcePattern != null) {
+                        if (matchedSourceUrl.get() == null && !request.javaScript.isNullOrBlank()) {
+                            try {
+                                // Legacy WebView executes this as a javascript: URL; indirect eval
+                                // runs in the page's global scope and intentionally ignores its result.
+                                page.evaluate("(source) => { (0, eval)(source); }", request.javaScript)
+                            } catch (e: RuntimeException) {
+                                if (matchedSourceUrl.get() == null) throw e
+                            }
+                        }
+                        val deadline = System.nanoTime() + timeoutMs * 1_000_000L
+                        while (matchedSourceUrl.get() == null && System.nanoTime() < deadline) {
+                            failIfNetworkRequestBlocked(blockedNetworkRequest)
+                            val remainingMs = (deadline - System.nanoTime()) / 1_000_000L
+                            if (remainingMs > 0) page.waitForTimeout(minOf(50.0, remainingMs.toDouble()))
+                        }
+                        matchedSourceUrl.get()
+                            ?: throw IllegalStateException("本地 WebView 在 ${timeoutMs}ms 内未找到匹配 sourceRegex 的资源")
+                    } else if (request.javaScript.isNullOrBlank()) page.content()
                         else page.evaluate(request.javaScript)?.toString() ?: ""
                     failIfNetworkRequestBlocked(blockedNetworkRequest)
                     result
@@ -144,6 +170,7 @@ class LocalWebviewRenderer private constructor(
                     if (blockedNetworkRequest.get()) {
                         throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
                     }
+                    matchedSourceUrl.get()?.let { return@renderOnWorker StrResponse(url, it) }
                     throw e
                 }
 
@@ -165,6 +192,19 @@ class LocalWebviewRenderer private constructor(
         if (blocked.get()) {
             throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
         }
+    }
+
+    private fun encodeHtmlForWebView(html: String, encode: String?): String {
+        if (encode.isNullOrBlank()) return html
+        val charset = try {
+            Charset.forName(encode)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("不支持的 WebView HTML 字符集: $encode", e)
+        }
+        // Android loadDataWithBaseURL encodes the supplied String using the requested charset.
+        // Playwright accepts an already-decoded String, so round-trip it to preserve the same
+        // representable characters and charset replacement behavior.
+        return String(html.toByteArray(charset), charset)
     }
 
     private fun getBrowser(): Browser {

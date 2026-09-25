@@ -30,6 +30,7 @@ class LocalWebviewRendererTest {
     private lateinit var originalUserDir: String
     private lateinit var originalAdapter: ReaderAdapterInterface
     private val privateRedirectHits = AtomicInteger()
+    private val matchedResourceHits = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -79,6 +80,7 @@ class LocalWebviewRendererTest {
                 }
                 return@createContext
             }
+            if (exchange.requestURI.path == "/media") matchedResourceHits.incrementAndGet()
             val body = exchange.requestBody.readBytes().toString(StandardCharsets.UTF_8)
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
             val marker = "${exchange.requestMethod}|$body|$cookie"
@@ -145,6 +147,26 @@ class LocalWebviewRendererTest {
     }
 
     @Test
+    fun sourceRegexReturnsTheFirstMatchingResourceUrlAndAbortsItsFetch() = runBlocking {
+        val resourceUrl = "$baseUrl/media?token=alpha"
+        val response = renderer.render(request("/echo", "reader-a",
+            script = "fetch('$resourceUrl').catch(() => {})",
+            regex = Regex.escape(resourceUrl)))
+
+        assertEquals(resourceUrl, response.body)
+        assertEquals("A sniffed source should not be downloaded into the origin fixture", 0, matchedResourceHits.get())
+    }
+
+    @Test
+    fun htmlInputSupportsDeclaredNonUtf8Charset() = runBlocking {
+        val html = "<html><body><div id='result'>中文字符集</div></body></html>"
+        val response = renderer.render(request("/echo", "reader-a", script = "document.body.innerText")
+            .copy(html = html, encode = "GBK"))
+
+        assertTrue(response.body!!.contains("中文字符集"))
+    }
+
+    @Test
     fun deniesPrivateTargetsByDefaultBeforeLaunchingChromium() = runBlocking {
         val strictRenderer = LocalWebviewRenderer(
             System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, allowPrivateNetworks = false)
@@ -183,8 +205,11 @@ class LocalWebviewRendererTest {
         assertEquals("The rejected redirect must never reach the fixture target", 0, privateRedirectHits.get())
     }
 
-    @Test(expected = UnsupportedOperationException::class)
-    fun unsupportedRegexIsNotSilentlyIgnored() {
-        runBlocking { renderer.render(request("/echo", "reader-a", regex = "delete-me")) }
+    @Test(expected = IllegalArgumentException::class)
+    fun unknownHtmlCharsetFailsWithClearValidationError() {
+        runBlocking {
+            renderer.render(request("/echo", "reader-a")
+                .copy(html = "<html></html>", encode = "not-a-real-charset"))
+        }
     }
 }

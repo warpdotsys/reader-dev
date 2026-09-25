@@ -52,9 +52,10 @@ GitHub 托管 runner 的
 `.github/workflows/browser-image.yml` 负责构建镜像并在隔离数据目录下运行合成书源
 搜索及 Cookie 回归；生产部署仍需另行验证和发布。
 
-已知限制：目前是普通 Chromium 功能基线，不是指纹浏览器；`sourceRegex` 与非 UTF-8
-`encode` 在本地模式下仍明确报错，尚未完成真实书源差分、ARM64、生产网络隔离、长期
-并发与资源预算验证。HTTP 和 SOCKS4/5 上游代理已由本地出口代理支持，并有固定 IP、
+已知限制：目前是普通 Chromium 功能基线，不是指纹浏览器；合成 Chromium 测试已覆盖
+`sourceRegex` 资源 URL 捕获和 GBK HTML 输入，但尚未与原 JAR 或真实远程 WebView 做语义差分；
+也尚未完成真实书源差分、ARM64、生产网络隔离、长期并发与资源预算验证。HTTP 和 SOCKS4/5
+上游代理已由本地出口代理支持，并有固定 IP、
 认证和凭据隔离单元测试；尚未用真实第三方代理或真实书源验证兼容率。
 
 GitHub runner [36131976893](https://github.com/warpdotsys/reader-dev/actions/runs/36131976893)
