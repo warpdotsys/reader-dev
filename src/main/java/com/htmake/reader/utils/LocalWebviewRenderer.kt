@@ -7,6 +7,7 @@ import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.Route
 import com.microsoft.playwright.options.Cookie
 import com.microsoft.playwright.options.Proxy
+import com.microsoft.playwright.options.ServiceWorkerPolicy
 import com.microsoft.playwright.options.WaitUntilState
 import io.legado.app.help.http.CookieStore
 import io.legado.app.help.http.StrResponse
@@ -24,12 +25,15 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class LocalWebviewRenderer(
     private val executablePath: String = "",
-    private val timeoutMs: Int = 20_000
+    private val timeoutMs: Int = 20_000,
+    private val allowPrivateNetworks: Boolean = System.getenv("READER_BROWSER_ALLOW_PRIVATE_NETWORKS")
+        ?.equals("true", ignoreCase = true) == true
 ) : WebviewRenderer {
     private val pending = AtomicInteger(0)
     private val worker = Executors.newSingleThreadExecutor { task ->
         Thread(task, "reader-local-webview").apply { isDaemon = true }
     }.asCoroutineDispatcher()
+    private val networkPolicy = BrowserNetworkPolicy(allowPrivateNetworks)
     private var playwright: Playwright? = null
     private var browser: Browser? = null
 
@@ -47,9 +51,7 @@ class LocalWebviewRenderer(
 
     private fun renderOnWorker(request: WebviewRequest): StrResponse {
         val url = request.url ?: throw IllegalArgumentException("本地 WebView 需要 HTTP URL")
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            throw IllegalArgumentException("本地 WebView 仅接受 HTTP/HTTPS URL")
-        }
+        networkPolicy.requireDocumentUrl(url)
         if (!request.sourceRegex.isNullOrBlank()) {
             throw UnsupportedOperationException("本地 WebView 尚未验证 sourceRegex 语义；请使用远程实现")
         }
@@ -62,7 +64,9 @@ class LocalWebviewRenderer(
         }
 
         val activeBrowser = getBrowser()
-        val contextOptions = Browser.NewContextOptions().setAcceptDownloads(false)
+        val contextOptions = Browser.NewContextOptions()
+            .setAcceptDownloads(false)
+            .setServiceWorkers(ServiceWorkerPolicy.BLOCK)
         if (!request.proxy.isNullOrBlank()) contextOptions.setProxy(Proxy(request.proxy))
         val headers = request.headerMap ?: emptyMap()
         headers.entries.firstOrNull { it.key.equals("User-Agent", ignoreCase = true) }
@@ -87,26 +91,52 @@ class LocalWebviewRenderer(
             }
             if (extraHeaders.isNotEmpty()) context.setExtraHTTPHeaders(extraHeaders)
 
-            val page = context.newPage()
-            if (request.post) {
-                val sent = AtomicBoolean(false)
-                page.route("**/*") { route ->
-                    if (route.request().isNavigationRequest && route.request().url() == url &&
-                        sent.compareAndSet(false, true)) {
-                        route.resume(Route.ResumeOptions().setMethod("POST").setPostData(request.body ?: ""))
-                    } else route.resume()
+            val postSent = AtomicBoolean(false)
+            val blockedNetworkRequest = AtomicBoolean(false)
+            context.route("**/*") { route ->
+                try {
+                    networkPolicy.requireRequestUrl(route.request().url())
+                } catch (_: BrowserNetworkPolicyViolation) {
+                    blockedNetworkRequest.set(true)
+                    route.abort()
+                    return@route
+                }
+                if (request.post && route.request().isNavigationRequest && route.request().url() == url &&
+                    postSent.compareAndSet(false, true)) {
+                    route.resume(Route.ResumeOptions().setMethod("POST").setPostData(request.body ?: ""))
+                } else route.resume()
+            }
+            context.routeWebSocket("**/*") { socket ->
+                try {
+                    networkPolicy.requireRequestUrl(socket.url())
+                    socket.connectToServer()
+                } catch (_: BrowserNetworkPolicyViolation) {
+                    blockedNetworkRequest.set(true)
+                    socket.close()
                 }
             }
-            page.navigate(url, Page.NavigateOptions()
-                .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                .setTimeout(timeoutMs.toDouble()))
-            if (request.html != null) {
-                page.setContent(request.html, Page.SetContentOptions()
+            val page = context.newPage()
+            val body = try {
+                page.navigate(url, Page.NavigateOptions()
                     .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                     .setTimeout(timeoutMs.toDouble()))
+                failIfNetworkRequestBlocked(blockedNetworkRequest)
+                if (request.html != null) {
+                    page.setContent(request.html, Page.SetContentOptions()
+                        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(timeoutMs.toDouble()))
+                    failIfNetworkRequestBlocked(blockedNetworkRequest)
+                }
+                val result = if (request.javaScript.isNullOrBlank()) page.content()
+                    else page.evaluate(request.javaScript)?.toString() ?: ""
+                failIfNetworkRequestBlocked(blockedNetworkRequest)
+                result
+            } catch (e: RuntimeException) {
+                if (blockedNetworkRequest.get()) {
+                    throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
+                }
+                throw e
             }
-            val body = if (request.javaScript.isNullOrBlank()) page.content()
-                else page.evaluate(request.javaScript)?.toString() ?: ""
 
             if (domain.isNotEmpty()) {
                 val stored = context.cookies(url).joinToString(";") { "${it.name}=${it.value}" }
@@ -116,6 +146,12 @@ class LocalWebviewRenderer(
             return StrResponse(url, body)
         } finally {
             context.close()
+        }
+    }
+
+    private fun failIfNetworkRequestBlocked(blocked: AtomicBoolean) {
+        if (blocked.get()) {
+            throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
         }
     }
 

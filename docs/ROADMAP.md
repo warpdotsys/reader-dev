@@ -47,6 +47,8 @@
 
 进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，远程渲染仍可配置回退；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR 与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。独立的 [Playwright Java 功能基线 PoC](../browser-poc/README.md)在本机 Chrome 上 4 项合成页面测试通过。`LocalWebviewRenderer` 已接入 Java/Kotlin 工程，本机 3 项合成测试通过；不支持的 `sourceRegex` 和指定字符集会明确报错。[唯一完整产物的 GitHub runner 单容器测试](https://github.com/warpdotsys/reader-dev/actions/runs/36101643673)在 amd64 上验证 JAR 驱动、镜像内 Chromium、非 root/去 capabilities 条件、首页接口、3 次书源搜索与 Cookie `空 → session=alpha== → 空` 通过。当前不是指纹引擎，真实书源差分、生产环境与长期资源预算仍未完成。
 
+安全增量（应用层，不等于完整网络隔离）：本地 Chromium 的初始目标、Playwright 可路由的 HTTP(S) 资源和 WebSocket 现经 `BrowserNetworkPolicy` 校验；Service Worker 被禁用，网络路由在 BrowserContext 层注册。默认拒绝解析到 loopback、私网、链路本地、共享地址、保留网段的目标以及 `.localhost`/`.local`/`.internal` 主机名，并拒绝 `file:` 等非网络协议。**重定向仍未由应用层封闭**：Playwright 的 route handler 对重定向链只处理首个 URL，重定向目标还需要容器/主机出口策略兜底。`READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true` 是显式私网放行开关，只用于受控内网部署/本机合成 fixture，不应在不可信书源可写入的服务上启用。该 JVM 解析检查无法单独消除 DNS rebinding、代理端二次解析、重定向和 WebRTC 等通道风险；仍须在容器/主机出口侧限制对云元数据、loopback、RFC1918 和 IPv6 ULA 的访问，并用真实部署网络验证。托管镜像测试为 loopback fixture 显式启用该开关，不代表生产已验证。
+
 ## 后续候选项（尚未承诺）
 
 - 在不改变旧数据语义的前提下改善 JSON 存储性能；任何 SQLite 迁移都必须具备备份、校验和可回滚路径，且不能先于兼容基线验收。

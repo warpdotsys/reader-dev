@@ -77,6 +77,7 @@ jobs:
             -e READER_APP_WORKDIR=/ \
             -e READER_APP_SECURE=true \
             -e READER_APP_LICENSECHECKENABLED=false \
+            -e READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true \
             reader-browser:smoke
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo >/dev/null; then break; fi

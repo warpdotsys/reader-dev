@@ -9,6 +9,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -36,7 +37,7 @@ class LocalWebviewRendererTest {
         originalAdapter = ReaderAdapterHelper.getAdapter()
         System.setProperty("user.dir", temp.root.absolutePath)
         ReaderAdapterHelper.setAdapter(DefaultAdpater())
-        renderer = LocalWebviewRenderer(executable, 5000)
+        renderer = LocalWebviewRenderer(executable, 5000, allowPrivateNetworks = true)
         server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
             val body = exchange.requestBody.readBytes().toString(StandardCharsets.UTF_8)
@@ -86,6 +87,20 @@ class LocalWebviewRendererTest {
         val bob = renderer.render(request("/echo", "bob", script = "document.querySelector('#result').textContent"))
         assertTrue(alice.body!!.contains("sid=alpha"))
         assertFalse(bob.body!!.contains("sid=alpha"))
+    }
+
+    @Test
+    fun deniesPrivateTargetsByDefaultBeforeLaunchingChromium() = runBlocking {
+        val strictRenderer = LocalWebviewRenderer(
+            System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, allowPrivateNetworks = false)
+        try {
+            strictRenderer.render(request("/echo", "reader-a"))
+            fail("Loopback targets must be blocked by default")
+        } catch (_: BrowserNetworkPolicyViolation) {
+            // Expected: the request is rejected before browser startup.
+        } finally {
+            strictRenderer.close()
+        }
     }
 
     @Test(expected = UnsupportedOperationException::class)
