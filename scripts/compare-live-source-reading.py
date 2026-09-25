@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import http.cookiejar
 import json
+import os
 import re
 import secrets
 import socket
@@ -139,13 +140,19 @@ def read_sse(opener, base, value, source_search=False):
 
 
 def run_jar(jar, workdir, reader_port, source, query, credentials, book_url=None,
-            book_result_index=0, with_sse=False):
+            book_result_index=0, with_sse=False, local_browser_executable=None):
     base = f"http://127.0.0.1:{reader_port}"
+    command = [str(JAVA), "-jar", str(jar), f"--reader.app.workDir={workdir}",
+               f"--reader.server.port={reader_port}", "--reader.app.secure=true",
+               "--reader.app.licenseCheckEnabled=false", "--spring.profiles.active=prod"]
+    environment = os.environ.copy()
+    if local_browser_executable is not None:
+        command.extend(("--reader.app.webviewRenderer=local",
+                        f"--reader.app.browserExecutablePath={local_browser_executable}"))
+        environment["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"
     process = subprocess.Popen(
-        [str(JAVA), "-jar", str(jar), f"--reader.app.workDir={workdir}",
-         f"--reader.server.port={reader_port}", "--reader.app.secure=true",
-         "--reader.app.licenseCheckEnabled=false", "--spring.profiles.active=prod"],
-        cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        command, cwd=ROOT, env=environment,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     result = {"steps": []}
@@ -287,12 +294,66 @@ def main():
                         help="Also call deployed anonymous search and book-info endpoints")
     parser.add_argument("--sse", action="store_true",
                         help="Also compare complete local SSE search streams")
+    parser.add_argument("--local-browser-only", action="store_true",
+                        help="Probe only the restored JAR with its built-in renderer; no JAR parity claim")
+    parser.add_argument("--browser-executable", type=Path,
+                        help="Installed browser for a local diagnostic run; production image bundles Chromium")
     args = parser.parse_args()
-    for path in (JAVA, ORIGINAL, RESTORED):
+    if args.local_browser_only and (not args.browser_executable or
+                                    not args.browser_executable.is_file()):
+        parser.error("--local-browser-only requires an existing --browser-executable")
+    if args.browser_executable and not args.local_browser_only:
+        parser.error("--browser-executable is only used with --local-browser-only")
+    for path in ((JAVA, RESTORED) if args.local_browser_only else (JAVA, ORIGINAL, RESTORED)):
         if not path.is_file():
             raise FileNotFoundError(path)
     source = source_from_production(args.source_index, args.source_namespace)
+    if args.local_browser_only:
+        # An imported source rule may contain JVM-side scripts. Keep this diagnostic
+        # limited to script-free sources rather than executing user rules on the host.
+        def contains_rule_script(value):
+            if isinstance(value, str):
+                lowered = value.lower()
+                return any(marker in lowered for marker in ("@js:", "<js>", "javascript:"))
+            if isinstance(value, dict):
+                return any(contains_rule_script(item) for item in value.values())
+            if isinstance(value, list):
+                return any(contains_rule_script(item) for item in value)
+            return False
+        if contains_rule_script(source):
+            raise ValueError("Selected source contains scripts; local host diagnostic refused")
     credentials = ("liveprobe" + secrets.token_hex(5), "Probe-" + secrets.token_hex(18))
+    if args.local_browser_only:
+        with tempfile.TemporaryDirectory(prefix="reader-local-webview-source-") as temp:
+            restored, _ = run_jar(
+                RESTORED, Path(temp) / "restored", port(), source, args.query, credentials,
+                book_result_index=args.book_result_index, with_sse=args.sse,
+                local_browser_executable=str(args.browser_executable.resolve()))
+        report = {
+            "mode": "restored-local-browser-only",
+            "sourceIndex": args.source_index,
+            "sourceName": source.get("bookSourceName"),
+            "query": args.query,
+            "restoredJarSha256": hashlib.sha256(RESTORED.read_bytes()).hexdigest(),
+            "restored": restored,
+            "jarParityVerified": False,
+        }
+        if args.report:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if args.quiet:
+            print(json.dumps({
+                "mode": report["mode"], "sourceIndex": args.source_index,
+                "sourceName": report["sourceName"],
+                "restoredSteps": [(step["step"], step.get("count")) for step in restored["steps"]],
+                "restoredFailure": restored.get("failure") or restored.get("incomplete"),
+                "jarParityVerified": False,
+            }, ensure_ascii=False))
+        else:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        if restored.get("failure") or restored.get("incomplete"):
+            raise SystemExit(1)
+        return
     with tempfile.TemporaryDirectory(prefix="reader-live-source-") as temp:
         tempdir = Path(temp)
         original, book_url = run_jar(ORIGINAL, tempdir / "original", port(), source,

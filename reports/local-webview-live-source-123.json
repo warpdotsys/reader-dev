@@ -1,0 +1,22 @@
+{
+  "mode": "restored-local-browser-only",
+  "sourceIndex": 123,
+  "sourceName": "过期杂志（优+）",
+  "query": "三国演义",
+  "restoredJarSha256": "de75b17e5bb76724bf973a6e56d5e58db8ce254bcd9af06ac385af918e028a95",
+  "restored": {
+    "steps": [
+      {
+        "step": "search",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 0,
+        "shape": [],
+        "resultSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    ],
+    "incomplete": "search returned no books"
+  },
+  "jarParityVerified": false
+}

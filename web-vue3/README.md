@@ -37,7 +37,7 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 GitHub 托管 runner 的 `vue3-preview.yml` 会自行构建 Reader、启动隔离服务，
-并执行上述三项浏览器测试；无需在用户或宿主 Docker 上预装 Chrome。
+并执行上述四项浏览器测试；无需在用户或宿主 Docker 上预装 Chrome。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、
 SSE/下载和 `/reader/` 子目录路径。Rust 前端中的“后端待实现”降级
