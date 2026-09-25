@@ -14,7 +14,8 @@ READER_BACKEND_URL=http://127.0.0.1:8080 npm run dev
 
 `npm run build` 只验证 Vue/TypeScript 编译，不验证页面与 Java/Kotlin
 后端兼容。本目录尚未打入 Reader JAR、镜像或生产入口，原版 Vue 2
-仍是正式界面。不要把预览成功当成登录、书架或阅读功能验收。
+仍是正式界面。预览构建只证明可编译；隔离浏览器测试只证明其覆盖的页面旅程，
+不能推断其余功能可用。
 
 本机的 opt-in 页面测试需要一个**隔离** Reader 工作目录、Vite
 预览和已安装的 Chrome。先把 Vite 的 `READER_BACKEND_URL` 指向隔离
@@ -33,6 +34,9 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 目录、首章正文和下一章导航。`Vue3PreviewSearchTest` 还覆盖指定书源、
 多源 SSE、批量降级及未入架直读。三项测试都禁止非 loopback 预览地址，且必须显式设置
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
+
+GitHub 托管 runner 的 `vue3-preview.yml` 会自行构建 Reader、启动隔离服务，
+并执行上述三项浏览器测试；无需在用户或宿主 Docker 上预装 Chrome。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、
 SSE/下载和 `/reader/` 子目录路径。Rust 前端中的“后端待实现”降级

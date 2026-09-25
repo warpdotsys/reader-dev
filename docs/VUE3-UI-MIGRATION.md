@@ -26,4 +26,6 @@ Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、
 
 ## 当前结论
 
-**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookInfo/getChapterList/getBookContent` 查询需用 `bookSourceUrl` 查书源；正文还要求 `index` 且不能同时给非空 `chapterUrl`。批量搜索返回 `{lastIndex,list}`，不是数组或页码；旧后端的精确搜索使用关键词 `=` 前缀。预览界面已按这些契约适配；“路由同名”仍不等于可用。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建在本机及 GitHub 托管 runner 通过。隔离数据目录下的浏览器测试覆盖注册、令牌、刷新后空书架，以及确定性书源的搜索、多源 SSE、指定单源、SSE 失败后批量降级、未入架详情/目录/正文、入架书正文和下一章导航。**尚未验证**：线上真实书源、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。
+**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookInfo/getChapterList/getBookContent` 查询需用 `bookSourceUrl` 查书源；正文还要求 `index` 且不能同时给非空 `chapterUrl`。批量搜索返回 `{lastIndex,list}`，不是数组或页码；旧后端的精确搜索使用关键词 `=` 前缀。预览界面已按这些契约适配；“路由同名”仍不等于可用。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建、隔离 Reader 服务及三项 Chromium 页面测试均在本机和 GitHub 托管 runner 通过（[工作流记录](https://github.com/warpdotsys/reader-dev/actions/runs/36105141216)）。测试覆盖注册、令牌、刷新后空书架，以及确定性书源的搜索、多源 SSE、指定单源、SSE 失败后批量降级、未入架详情/目录/正文、入架书正文和下一章导航。**尚未验证**：线上真实书源、大量书源下的游标续搜、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。
+
+预览回滚：当前生产入口仍在 `web/`，Vue 3 只在独立 `web-vue3/` 和 CI 中运行。停止 Vite 预览即可回到现有 Vue 2 界面，不需要改动生产数据；将来若切换正式入口，必须先准备独立的静态资源版本和明确的入口回切步骤，再按第 5 条验收。
