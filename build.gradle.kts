@@ -87,8 +87,6 @@ val compileOnly by configurations.getting {
     extendsFrom(configurations["annotationProcessor"])
 }
 
-val browserRuntime by configurations.creating
-
 dependencies {
     val kotlin_version: String by extra{"1.5.21"}
     // val kotlin_version: String by extra
@@ -117,9 +115,7 @@ dependencies {
     // 网络
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.squareup.okhttp3:logging-interceptor:4.1.0")
-    compileOnly("com.microsoft.playwright:playwright:1.63.0")
-    testImplementation("com.microsoft.playwright:playwright:1.63.0")
-    browserRuntime("com.microsoft.playwright:playwright:1.63.0")
+    implementation("com.microsoft.playwright:playwright:1.63.0")
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.6.1")
     implementation("com.julienviet:retrofit-vertx:1.1.3")
@@ -180,15 +176,6 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
     mainClassName = "com.htmake.reader.ReaderApplicationKt"
     // JavaFX is used only by the optional desktop packager. The reference
     // headless Spring Boot JAR does not ship JavaFX modules.
-    exclude("**/javafx-*.jar")
-}
-
-tasks.register<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJarBrowser") {
-    group = "build"
-    description = "Build the opt-in Reader JAR with the Playwright runtime."
-    mainClassName = "com.htmake.reader.ReaderApplicationKt"
-    archiveClassifier.set("browser")
-    classpath = files(sourceSets.getByName("main").runtimeClasspath, browserRuntime)
     exclude("**/javafx-*.jar")
 }
 

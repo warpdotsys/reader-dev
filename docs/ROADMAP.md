@@ -17,7 +17,7 @@
 
 持续约束：原始 JAR 与 `storage/data` 兼容仍是业务基线；缺陷修复继续配差分测试，不新增伪造空实现。GitHub 托管 runner 负责构建和发版，生产数据只在备份及隔离验证后迁移。继续跟踪 [#49 子目录部署](https://github.com/warpdotsys/reader-dev/issues/49)与 [#34 章节固化](https://github.com/warpdotsys/reader-dev/issues/34)；`/reader` 无尾斜杠入口的本机修复不等于 #49 已在生产验收。
 
-## 内置指纹无头浏览器（计划，尚未选型或实施）
+## 内置指纹无头浏览器（普通 Chromium 基线已验证，指纹引擎未选型）
 
 目标是让需要 `webView` 的书源在 Reader 的一个部署单元内完成渲染：浏览器二进制和驱动随浏览器版镜像预装，由 Java/Kotlin 服务监管本地子进程；不要求用户再运行 `readerwebview` 容器，也不对公网开放浏览器控制端口。这里的“内置”不等于把浏览器塞进 JVM 进程，更不等于给普通 Chromium 改个 User-Agent 就宣称具备指纹能力。
 
@@ -37,7 +37,7 @@
 
 - [ ] 从现有书源中提取 `webView` 用例，补齐原 JAR、当前远程服务和候选内置引擎的黑盒对照，特别覆盖 POST、代理、脚本、编码、跳转、Cookie 和多用户隔离；形成可复现但不泄露书源凭据的样本集。
 - [ ] 用统一 `WebviewRenderer` 边界封装现有远程实现与本地候选实现；先允许按配置切换/回退，不改变普通非 WebView 书源和 `storage/data` 格式。明确页面复用、用户会话隔离、超时取消、进程退出与资源回收。
-- [ ] 在 GitHub 托管 runner 上构建可复现的浏览器版镜像，锁定浏览器/驱动版本与 SHA-256，构建期下载并记录许可证、SBOM 和架构支持；运行时不得临时拉取浏览器。现有 `Dockerfile.source`/`Dockerfile.slim` 使用 Alpine；[Playwright 官方说明](https://playwright.dev/java/docs/docker) Firefox/WebKit 浏览器构建不支持 musl/Alpine，因此先用 glibc 基础镜像做 PoC，并验证 amd64、arm64，保留不带浏览器的轻量产物。
+- [ ] 在 GitHub 托管 runner 上持续构建唯一的完整 JAR/镜像，锁定浏览器/驱动版本与 SHA-256，记录许可证、SBOM 和架构支持；运行时不得临时拉取浏览器。普通产物不再另行提供轻量版。当前基于 glibc 镜像的 amd64 合成书源测试已通过；arm64、真实书源和长期资源预算仍待验证。
 - [ ] 若选 Camoufox，吸取旧 Rust 容器 [#48](https://github.com/warpdotsys/reader-dev/issues/48) 的 Python 3.12/3.13 解释器错配教训：安装、启动和健康检查必须使用同一绝对解释器路径，并在镜像测试中执行一次真实渲染。#48 属于停用的旧镜像，不作为当前 Java/Kotlin 版已存在的缺陷重开。
 - [ ] 浏览器以非 root 身份运行，核对 sandbox/seccomp、字体和证书、临时目录、进程树、内存/并发上限及 SSRF/内网访问策略。若候选需要本机 WebSocket，仅绑定 loopback、使用临时受限端点，不能作为公开服务；不得为省事使用 `--no-sandbox` 作为生产默认值。
 - [ ] 同时验证无头与必要时的虚拟显示模式。Camoufox 的[虚拟显示方案](https://camoufox.com/python/virtual-display/)需要 Xvfb；任何模式都必须在实际生产镜像中测试，不把宿主机 PoC 当成容器验收。
@@ -45,7 +45,7 @@
 
 完成条件：在**单个 Reader 容器**中，无独立 WebView 容器即可运行被选中的 WebView 书源；固定样本与真实书源的结果、Cookie/用户隔离和异常路径通过差分；空闲与并发资源预算、崩溃恢复及升级回滚均有实测证据。以上均为待办，当前版本尚不具备内置指纹浏览器。
 
-进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，远程渲染仍为默认实现；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR 与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。独立的 [Playwright Java 功能基线 PoC](../browser-poc/README.md)在本机 Chrome 上 4 项合成页面测试通过。当前还将 `LocalWebviewRenderer` 以显式配置接入了 Java/Kotlin 工程，本机 3 项合成测试通过；不支持的 `sourceRegex` 和指定字符集会明确报错。浏览器版 [单容器镜像定义](../deploy/reader-pro/Dockerfile.browser)尚未构建或验收。这仍不是指纹引擎，真实书源差分、非 root 沙箱和生产切换均未完成。
+进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，远程渲染仍可配置回退；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR 与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。独立的 [Playwright Java 功能基线 PoC](../browser-poc/README.md)在本机 Chrome 上 4 项合成页面测试通过。`LocalWebviewRenderer` 已接入 Java/Kotlin 工程，本机 3 项合成测试通过；不支持的 `sourceRegex` 和指定字符集会明确报错。首次 [GitHub runner 单容器测试](https://github.com/warpdotsys/reader-dev/actions/runs/36100744495)在 amd64 上验证首页接口、3 次书源搜索与 Cookie `空 → session=alpha== → 空` 通过；这是当时的实验镜像，唯一完整产物的改造还需重新运行 CI。当前不是指纹引擎，真实书源差分、生产沙箱与切换仍未完成。
 
 ## 后续候选项（尚未承诺）
 

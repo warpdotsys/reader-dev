@@ -16,7 +16,7 @@ jobs:
   build:
     name: Build release artifact
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 50
     steps:
       - name: Checkout tagged source
         uses: actions/checkout@v7
@@ -35,15 +35,21 @@ jobs:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - name: Run tests and build JAR
+      - name: Run tests and build the complete JAR and image
         shell: bash
         run: |
           set -euo pipefail
           chmod +x gradlew
-          ./gradlew clean test bootJar --no-daemon --stacktrace
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar --no-daemon --stacktrace
           install -d dist
           install -m 0644 build/libs/reader-4.0.7.jar "dist/reader-pro-${GITHUB_REF_NAME}.jar"
-          (cd dist && sha256sum "reader-pro-${GITHUB_REF_NAME}.jar" > SHA256SUMS)
+          cp build/libs/reader-4.0.7.jar deploy/reader-pro/
+          docker build -f deploy/reader-pro/Dockerfile \
+            -t medwarp/reader-pro-restored:4.0.7 deploy/reader-pro
+          docker save medwarp/reader-pro-restored:4.0.7 \
+            | gzip -1 > "dist/reader-image-${GITHUB_REF_NAME}.tar.gz"
+          (cd dist && sha256sum "reader-pro-${GITHUB_REF_NAME}.jar" \
+            "reader-image-${GITHUB_REF_NAME}.tar.gz" > SHA256SUMS)
       - name: Upload immutable release artifact
         uses: actions/upload-artifact@v7
         with:
@@ -107,9 +113,9 @@ jobs:
             if rsync --archive --partial --inplace \
                 -e "ssh -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
                 "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
+                "dist/reader-image-${GITHUB_REF_NAME}.tar.gz" \
                 dist/SHA256SUMS \
                 deploy/reader-pro/Dockerfile \
-                deploy/reader-pro/Dockerfile.overlay \
                 deploy/reader-pro/compose.production.yaml \
                 deploy/reader-pro/read.medwarp.cn.conf \
                 "${PROD_SSH_USER}@${PROD_SSH_HOST}:${release_dir}/"; then
@@ -142,6 +148,7 @@ jobs:
           release_dir="$app_dir/releases/$RELEASE_TAG"
           rollback_dir="$app_dir/releases/rollback-${RELEASE_TAG}"
           artifact="$release_dir/reader-pro-${RELEASE_TAG}.jar"
+          image_archive="$release_dir/reader-image-${RELEASE_TAG}.tar.gz"
           cd "$release_dir"
           sha256sum -c SHA256SUMS
           install -d -m 0755 "$rollback_dir"
@@ -154,29 +161,22 @@ jobs:
             install -m 0644 "$rollback_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
             docker tag "medwarp/reader-pro-restored:rollback-${RELEASE_TAG}" medwarp/reader-pro-restored:4.0.7
             cd "$app_dir"
-            docker compose up -d --no-deps --force-recreate reader-pro || true
+            docker compose up -d --no-deps --no-build --force-recreate reader-pro || true
             /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf \
               && /www/server/nginx/sbin/nginx -s reload -c /www/server/nginx/conf/nginx.conf || true
           }
           trap rollback ERR
           install -m 0644 "$artifact" "$app_dir/reader-4.0.7.jar"
           install -m 0644 "$release_dir/Dockerfile" "$app_dir/Dockerfile"
-          install -m 0644 "$release_dir/Dockerfile.overlay" "$app_dir/Dockerfile.overlay"
           install -m 0644 "$release_dir/compose.production.yaml" "$app_dir/compose.yaml"
           install -m 0644 "$release_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
           install -d -m 0750 -o 10001 -g 10001 "$app_dir/logs"
           find "$app_dir/logs" -maxdepth 1 -type f -name 'reader-*.log' -exec chmod 0640 {} +
           /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf
           cd "$app_dir"
-          runtime_base=medwarp/reader-pro-restored:runtime-jdk11-jammy-v1
-          docker image inspect "$runtime_base" > /dev/null 2>&1 \
-            || docker tag "medwarp/reader-pro-restored:rollback-${RELEASE_TAG}" "$runtime_base"
-          docker build --pull=false \
-            --build-arg "BASE_IMAGE=$runtime_base" \
-            --file Dockerfile.overlay \
-            --tag medwarp/reader-pro-restored:4.0.7 \
-            .
-          docker compose up -d --no-deps reader-pro
+          gzip -dc "$image_archive" | docker load
+          docker image inspect medwarp/reader-pro-restored:4.0.7 >/dev/null
+          docker compose up -d --no-deps --no-build --force-recreate reader-pro
           for attempt in $(seq 1 24); do
             status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' reader-pro-restored)
             [ "$status" = healthy ] && break

@@ -22,7 +22,7 @@
 
 内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。浏览器仍使用远程渲染路径，新 UI 尚未接入或上线；原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
 
-浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。它的本机测试通过不等于浏览器已随 Reader 部署；用户容器不能依赖宿主机 Chrome，正式方案必须把浏览器和系统依赖打进同一个 Reader 镜像。
+浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目只保留一个完整 JAR 和一个正式镜像定义：JAR 含浏览器驱动，镜像同时包含 Chromium 与系统依赖，用户容器不依赖宿主机 Chrome。现有远程渲染配置暂留作回滚；内置方案的真实书源兼容与指纹能力尚未验收。单容器合成书源测试见 [GitHub Actions](https://github.com/warpdotsys/reader-dev/actions/workflows/browser-image.yml)。
 
 ## 新许可证中心
 

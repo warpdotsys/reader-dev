@@ -7,7 +7,7 @@ on:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
-      - 'deploy/reader-pro/Dockerfile.browser'
+      - 'deploy/reader-pro/Dockerfile'
       - 'scripts/smoke-local-webview.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
@@ -19,7 +19,7 @@ on:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
-      - 'deploy/reader-pro/Dockerfile.browser'
+      - 'deploy/reader-pro/Dockerfile'
       - 'scripts/smoke-local-webview.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   integration:
-    name: Build and smoke-test self-contained browser image
+    name: Build and smoke-test the full Reader image
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -46,24 +46,23 @@ jobs:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - name: Test and build both JAR variants
+      - name: Test and build the full JAR
         run: |
           chmod +x gradlew
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar bootJarBrowser --no-daemon --stacktrace
-      - name: Assert default JAR has no browser runtime
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar --no-daemon --stacktrace
+      - name: Verify browser runtime in the only JAR
         shell: bash
         run: |
           set -euo pipefail
-          ! unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/.*playwright'
-          unzip -Z1 build/libs/reader-4.0.7-browser.jar | grep -q 'BOOT-INF/lib/playwright-1.63.0.jar'
-          unzip -Z1 build/libs/reader-4.0.7-browser.jar | grep -q 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
-          sha256sum build/libs/reader-4.0.7.jar build/libs/reader-4.0.7-browser.jar
+          unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/playwright-1.63.0.jar'
+          unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
+          sha256sum build/libs/reader-4.0.7.jar
       - name: Build one-container image
         shell: bash
         run: |
           set -euo pipefail
-          cp build/libs/reader-4.0.7-browser.jar deploy/reader-pro/
-          docker build -f deploy/reader-pro/Dockerfile.browser -t reader-browser:smoke deploy/reader-pro
+          cp build/libs/reader-4.0.7.jar deploy/reader-pro/
+          docker build -f deploy/reader-pro/Dockerfile -t reader-browser:smoke deploy/reader-pro
       - name: Run Reader API and WebView fixture inside the image
         shell: bash
         run: |
@@ -71,6 +70,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/reader-browser-data"
           chmod 777 "$RUNNER_TEMP/reader-browser-data"
           docker run -d --name reader-browser-smoke --network host --shm-size=1g \
+            --security-opt no-new-privileges:true --cap-drop ALL \
             -v "$RUNNER_TEMP/reader-browser-data:/storage" \
             -e READER_SERVER_PORT=18890 \
             -e READER_APP_WORKDIR=/storage \
