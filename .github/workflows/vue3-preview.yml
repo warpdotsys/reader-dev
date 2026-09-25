@@ -6,12 +6,16 @@ on:
     paths:
       - '.github/workflows/vue3-preview.yml'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'web-vue3/**'
   pull_request:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'web-vue3/**'
   workflow_dispatch:
 

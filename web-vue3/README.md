@@ -32,7 +32,8 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 `READER_BOOK_FIXTURE_URL`，然后把上述 `--tests` 改为
 `com.medwarp.reader.browserpoc.Vue3PreviewReadingTest`；它会检查书籍详情、
 目录、首章正文和下一章导航。`Vue3PreviewSearchTest` 还覆盖指定书源、
-多源 SSE、批量降级及未入架直读。三项测试都禁止非 loopback 预览地址，且必须显式设置
+多源 SSE、批量降级及未入架直读。`Vue3PreviewSourceTest` 检查远程预览
+不写库、确认后导入以及批量删除。四项测试都禁止非 loopback 预览地址，且必须显式设置
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 GitHub 托管 runner 的 `vue3-preview.yml` 会自行构建 Reader、启动隔离服务，

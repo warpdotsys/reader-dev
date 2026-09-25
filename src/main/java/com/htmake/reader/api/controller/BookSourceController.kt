@@ -291,6 +291,44 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         return returnData.setData(arrayListOf<Int>())
     }
 
+    /** Fetch and inspect a remote source list without importing any entries. */
+    suspend fun previewRemoteBookSources(context: RoutingContext): ReturnData {
+        val returnData = ReturnData()
+        if (!checkAuth(context)) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        if (!canEditBookSource(context)) {
+            return returnData.setErrorMsg("权限不足")
+        }
+        val url = context.bodyAsJson?.getString("url") ?: ""
+        if (url.isBlank()) {
+            return returnData.setErrorMsg("请输入远程书源链接")
+        }
+        try {
+            val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+                webClient.getAbs(url).timeout(3000).send(handler)
+            }
+            if (response.statusCode() !in 200..299) {
+                return returnData.setErrorMsg("远程书源链接错误：HTTP ${response.statusCode()}")
+            }
+            val sources = parseRemoteBookSources(response.bodyAsString())
+            val existing = mutableSetOf<String>()
+            getUserBookSourceJson(getUserNameSpace(context))?.let { current ->
+                for (i in 0 until current.size()) {
+                    current.getJsonObject(i)?.getString("bookSourceUrl")?.let { existing.add(it) }
+                }
+            }
+            val preview = ArrayList<Map<String, Any?>>(sources.size())
+            for (i in 0 until sources.size()) {
+                preview.add(sources.getJsonObject(i).map)
+            }
+            return returnData.setData(mapOf("sources" to preview, "existing" to existing.toList()))
+        } catch (e: Exception) {
+            logger.warn(e) { "远程书源预览失败" }
+            return returnData.setErrorMsg("远程书源链接或数据错误")
+        }
+    }
+
     suspend fun deleteBookSource(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
         if (!checkAuth(context)) {

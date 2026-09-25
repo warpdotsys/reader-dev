@@ -227,6 +227,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/readSourceFile").coroutineHandler { bookSourceController.readSourceFile(it) }
 
         router.post("/reader3/saveFromRemoteSource").coroutineHandlerWithoutRes { bookSourceController.saveFromRemoteSource(it) }
+        router.post("/reader3/previewRemoteBookSources").coroutineHandler { bookSourceController.previewRemoteBookSources(it) }
 
         // 设置默认书源
         router.post("/reader3/setAsDefaultBookSources").coroutineHandler { bookSourceController.setAsDefaultBookSources(it) }

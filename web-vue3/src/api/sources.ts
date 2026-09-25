@@ -16,14 +16,13 @@ export function saveBookSources(sources: BookSource[]): Promise<ReturnData<{ cou
   return post<{ count: number }>('/saveBookSources', sources)
 }
 
-/** POST /reader3/saveFromRemoteSource?preview=1：服务端抓取远程书源 JSON 并返回列表（不写库） */
+/** POST /reader3/previewRemoteBookSources：只读预览；确认后另行 saveBookSources。 */
 export function previewRemoteSource(
   url: string,
 ): Promise<ReturnData<{ sources: BookSource[]; existing: string[] }>> {
   return post<{ sources: BookSource[]; existing: string[] }>(
-    '/saveFromRemoteSource',
+    '/previewRemoteBookSources',
     { url },
-    { params: { preview: 1 }, timeout: 60000 },
   )
 }
 
@@ -33,14 +32,15 @@ export function deleteBookSource(bookSourceUrl: string): Promise<ReturnData<null
 }
 
 /**
- * POST /reader3/deleteBookSources：批量删除书源（body = 书源 URL 数组）。
- * 后端并行实现中（可能 404）：调用方传 { silent: true } 自行降级逐源 deleteBookSource。
+ * POST /reader3/deleteBookSources：旧后端要求对象数组，而非 URL 字符串数组。
  */
 export function deleteBookSources(
   urls: string[],
   opts?: { silent?: boolean },
 ): Promise<ReturnData<{ deleted?: number } | null>> {
-  return post<{ deleted?: number } | null>('/deleteBookSources', urls, opts)
+  return post<{ deleted?: number } | null>(
+    '/deleteBookSources', urls.map((bookSourceUrl) => ({ bookSourceUrl })), opts,
+  )
 }
 
 /**

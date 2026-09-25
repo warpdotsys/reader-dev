@@ -54,8 +54,15 @@ public class Vue3PreviewLoginTest {
                         response -> response.url().contains("/reader3/getBookshelf"),
                         page::reload);
                 assertEquals(200, shelf.status());
-                assertTrue(shelf.text().contains("\"isSuccess\":true"));
                 page.locator(".bookshelf-page").waitFor();
+                // Chromium can discard a reload response body after navigation;
+                // inspect the envelope through a fresh authenticated request.
+                assertEquals(true, page.evaluate("async () => {" +
+                        "const token = localStorage.getItem('reader_access_token');" +
+                        "const response = await fetch('/reader3/getBookshelf?accessToken=' + encodeURIComponent(token));" +
+                        "const result = await response.json();" +
+                        "return response.status === 200 && result.isSuccess === true &&" +
+                        "Array.isArray(result.data) && result.data.length === 0; }"));
             } finally {
                 browser.close();
             }
