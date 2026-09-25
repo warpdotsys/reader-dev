@@ -21,13 +21,13 @@ export function searchBookSource(
   return get<SearchBook[]>('/searchBookSource', { url, bookSource }, opts)
 }
 
-/** GET /reader3/getBookToc：章节目录（tocUrl=info.tocUrl + bookSource） */
+/** Java/Kotlin GET /reader3/getChapterList：必须传书籍 bookUrl，不是 tocUrl。 */
 export function getBookToc(
-  tocUrl: string,
+  bookUrl: string,
   bookSource: string,
   opts?: { timeout?: number },
 ): Promise<ReturnData<BookChapter[]>> {
-  return get<BookChapter[]>('/getBookToc', { tocUrl, bookSource }, opts)
+  return get<BookChapter[]>('/getChapterList', { url: bookUrl, bookSource }, opts)
 }
 
 /* ================= GAP 81：换源 SSE 流式（/reader3/searchBookSourceSSE） ================= */
@@ -63,18 +63,32 @@ export function searchBookSourceSSE(
 }
 
 /**
- * GET /reader3/getBookContent：章节正文（chapterUrl + bookSource，正文在 data.content）
+ * GET /reader3/getBookContent：旧后端仅在 chapterUrl 为空且 index >= 0 时
+ * 从目录中解析 BookChapter；直接传 chapterUrl 无法获取正文。
  * epubContent=1 且为 EPUB 本地书 → 返回 HTML 结构化正文（legacy 参数对齐；缺省/0 = 纯文本不变）
  */
-export function getBookContent(
+export async function getBookContent(
+  bookUrl: string,
   chapterUrl: string,
   bookSource: string,
-  opts?: { timeout?: number },
+  opts?: { timeout?: number; index?: number; cache?: boolean },
   epubContent?: number,
 ): Promise<ReturnData<BookContent>> {
-  return get<BookContent>(
+  let index = opts?.index
+  if (index === undefined || index < 0) {
+    const toc = await getBookToc(bookUrl, bookSource, opts)
+    index = toc.data.findIndex((chapter) => chapter.url === chapterUrl)
+  }
+  if (index < 0) throw new Error(`目录中未找到章节：${chapterUrl}`)
+  const response = await get<BookContent | string>(
     '/getBookContent',
-    { chapterUrl, bookSource, ...(epubContent === 1 ? { epubContent } : {}) },
+    { url: bookUrl, index, bookSource, ...(opts?.cache ? { cache: 1 } : {}), ...(epubContent === 1 ? { epubContent } : {}) },
     opts,
   )
+  return {
+    ...response,
+    // The Java/Kotlin endpoint returns a plain string for ordinary chapters;
+    // the Rust UI expected { content }. EPUB HTML mode already returns a map.
+    data: typeof response.data === 'string' ? { content: response.data } : response.data,
+  }
 }

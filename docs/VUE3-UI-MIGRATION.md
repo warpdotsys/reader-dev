@@ -12,7 +12,7 @@
 
 Rust 前端 `web-ui/src/api/request.ts` 将请求发往 `/reader3`，以 query 参数附带 `accessToken`，并按 `ReturnData.isSuccess/errorMsg/data` 处理结果；`web-ui/src/router/index.ts` 使用 HTML5 history 路由。Java/Kotlin 的 `YueduApi.kt` 显式注册了 `/reader3/login`、`getBookshelf`、`getBookInfo`、`searchBook`、`getBookContent`、`getBookGroups` 和部分 `/reader3/file/*` 路由。这只能证明路径名初步重合，不能证明参数、默认值、响应体或鉴权语义一致。
 
-在当前 `YueduApi.kt` 显式注册表中，未找到 Rust UI 所调用的 `getServerStats`、`getReadingStats`、`getBookCacheChapters`、`cacheBookRangeOnServer`、`scanLocalBookDir` 与 `/file/rename`。这些页面不能因为前端存在或能构建就标为可用；是否有替代接口、前端降级或实际运行差异仍待逐项测试。
+可重复的静态扫描命令为 `cd web-vue3 && npm run audit:api`。2026-09-25 快照中，API 文件含 **108 个静态路由引用**，其中 **63 个**与当前 `YueduApi.kt` 注册路径同名，**45 个**不同名或未注册，另有 **7 处动态调用**尚未纳入。这只统计路径名，不校验 HTTP 方法、参数、响应或页面调用条件；部分不同名路由可能有替代接口。核心链路中的 `getBookToc` 已适配当前 `getChapterList`，正文按目录 `index` 取值并经隔离页面测试；其他同名路由仍须逐项核对语义。`getServerStats`、`getReadingStats`、`getBookCacheChapters`、`cacheBookRangeOnServer`、`scanLocalBookDir` 与 `/file/rename` 尚未找到同名路由。不能因为前端存在或能构建就标为可用，也不能在没有核对语义时机械改名。
 
 Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、`/reader3`）；history 路由及资源根路径还需覆盖 `/reader/` 子目录部署，不能只在站点根目录测试。
 
@@ -26,4 +26,4 @@ Rust UI 的字体资源和 Vite 开发代理使用根路径（例如 `/fonts`、
 
 ## 当前结论
 
-**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。**已成功重建**：独立 `web-vue3/` 快照在本机执行 Vue/TypeScript 生产构建通过，开发代理改指向本机 Java/Kotlin 默认端口；隔离数据目录下的浏览器端到端测试完成注册、令牌写入、页面刷新和空书架 `getBookshelf`（1 项测试，0 跳过、0 失败）。GitHub 托管 runner 的预览构建仍待完成。**尚未验证**：完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：逐页功能迁移和默认入口切换。
+**已从源码验证**：Rust 前端的设计系统和请求约定存在；Java/Kotlin 注册了部分同名路由。`getBookContent` 旧后端要求 `index` 且不能同时给非空 `chapterUrl`，预览界面已按此适配；“路由同名”不等于可用。**已成功重建**：独立 `web-vue3/` 的 Vue/TypeScript 生产构建在本机及 GitHub 托管 runner 通过。隔离数据目录下的浏览器测试完成注册、令牌写入、刷新后空书架；另用本机确定性书源走通书籍详情、两章目录、首章中文正文及点击下一章后第二章正文渲染（两项测试均 0 跳过、0 失败）。**尚未验证**：线上真实书源、完整页面/接口兼容、缺失接口的替代方案、子目录部署和生产可用性。**尚未实施**：完整逐页功能迁移和默认入口切换。

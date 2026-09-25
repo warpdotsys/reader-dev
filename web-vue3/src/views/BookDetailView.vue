@@ -365,12 +365,11 @@ const tocLoaded = ref(false)
 const tocError = ref(false)
 const TOC_PREVIEW_MAX = 50
 
-/** 目录数据源：tocUrl 取实时详情/书架，缺省用 bookUrl 兜底（与阅读页一致）；origin 同上 */
-function tocParams(): { tocUrl: string; origin: string } | null {
+/** Java/Kotlin 目录接口按 bookUrl 查询，不接受 tocUrl。 */
+function tocParams(): { bookUrl: string; origin: string } | null {
   const origin = shelfBook.value?.origin || info.value?.origin || queryOrigin.value
   if (!origin) return null
-  const tocUrl = info.value?.tocUrl || shelfBook.value?.tocUrl || bookUrl.value
-  return { tocUrl, origin }
+  return { bookUrl: shelfBook.value?.bookUrl || bookUrl.value, origin }
 }
 
 async function openToc() {
@@ -384,7 +383,7 @@ async function openToc() {
   tocLoading.value = true
   tocError.value = false
   try {
-    const res = await getBookToc(p.tocUrl, p.origin)
+    const res = await getBookToc(p.bookUrl, p.origin)
     tocChapters.value = res.data ?? []
     tocLoaded.value = true
     if (tocChapters.value.length === 0) tocError.value = true
@@ -692,7 +691,7 @@ async function relocateProgressAfterSwitch(r: SearchBook) {
   const oldIdx = typeof b.durChapterIndex === 'number' ? b.durChapterIndex : -1
   if (oldIdx < 0) return // 无进度不处理
   try {
-    const tocRes = await getBookToc(r.tocUrl || b.tocUrl, r.origin)
+    const tocRes = await getBookToc(r.bookUrl || b.bookUrl, r.origin)
     const toc = tocRes.isSuccess ? (tocRes.data ?? []) : []
     const newIdx = relocateChapterIndex(oldIdx, b.durChapterTitle, toc)
     if (newIdx < 0) return // 目录为空等异常：不动服务端进度

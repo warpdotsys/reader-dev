@@ -34,6 +34,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          npm run audit:api
       - uses: actions/upload-artifact@v7
         with:
           name: vue3-preview-${{ github.sha }}

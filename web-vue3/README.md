@@ -16,7 +16,7 @@ READER_BACKEND_URL=http://127.0.0.1:8080 npm run dev
 后端兼容。本目录尚未打入 Reader JAR、镜像或生产入口，原版 Vue 2
 仍是正式界面。不要把预览成功当成登录、书架或阅读功能验收。
 
-本机的 opt-in 登录烟雾测试需要一个**隔离** Reader 工作目录、Vite
+本机的 opt-in 页面测试需要一个**隔离** Reader 工作目录、Vite
 预览和已安装的 Chrome。先把 Vite 的 `READER_BACKEND_URL` 指向隔离
 Reader，再在仓库根目录设置 `READER_VUE3_PREVIEW_URL` 和
 `READER_BROWSER_EXECUTABLE`，并确认 `READER_VUE3_ISOLATED=1`，运行：
@@ -26,8 +26,12 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
   --tests com.medwarp.reader.browserpoc.Vue3PreviewLoginTest --no-daemon
 ```
 
-测试会注册随机账户，检查登录 token 和刷新后的空书架 API；它禁止非
-loopback 的预览 URL。不要将 Vite 代理指向生产数据或公网服务。
+登录测试会注册随机账户，检查登录 token 和刷新后的空书架 API。
+阅读测试还需要在 loopback 启动 `scripts/mock-book-source.py`，设置
+`READER_BOOK_FIXTURE_URL`，然后把上述 `--tests` 改为
+`com.medwarp.reader.browserpoc.Vue3PreviewReadingTest`；它会检查书籍详情、
+目录、首章正文和下一章导航。两项测试都禁止非 loopback 预览地址，且必须显式设置
+`READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、
 SSE/下载和 `/reader/` 子目录路径。Rust 前端中的“后端待实现”降级

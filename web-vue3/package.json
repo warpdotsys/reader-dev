@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit:api": "node scripts/audit-api-routes.mjs"
   },
   "dependencies": {
     "axios": "^1.10.0",

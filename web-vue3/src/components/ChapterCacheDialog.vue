@@ -195,7 +195,10 @@ async function startLocal(f: number, t: number) {
       const item = selected[cursor++]
       if (!item) return
       try {
-        const res = await getBookContent(item.ch.url, props.origin || '')
+        const res = await getBookContent(props.bookUrl, item.ch.url, props.origin || '', {
+          index: item.ch.index,
+          cache: true,
+        })
         const text = res.data?.content ?? ''
         if (text) {
           await saveLocalChapter({

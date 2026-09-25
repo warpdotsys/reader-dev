@@ -2425,8 +2425,10 @@ function preloadNextChapterImages() {
   const next = realChapters.value[fi + 1]
   if (preloadedChapters.has(next.url)) return
   preloadedChapters.add(next.url)
-  void getBookContent(next.url, shelfBook.value.origin, {
+  void getBookContent(shelfBook.value.bookUrl, next.url, shelfBook.value.origin, {
     timeout: chapterTimeout.value * 1000,
+    index: chapters.value.indexOf(next),
+    cache: true,
   })
     .then((res) => {
       for (const u of extractImageUrls(res.data?.content ?? '').slice(0, 5)) {
@@ -2814,9 +2816,10 @@ async function loadContent(chapterUrl: string) {
   try {
     if (wantHtml) {
       const res = await getBookContent(
+        bookUrl.value,
         chapterUrl,
         shelfBook.value.origin,
-        { timeout: chapterTimeout.value * 1000 },
+        { timeout: chapterTimeout.value * 1000, index: chapterIndex.value },
         1,
       )
       chapterHtml.value = res.data?.content ?? ''
@@ -2825,8 +2828,9 @@ async function loadContent(chapterUrl: string) {
       const local = await getLocalChapter(bookUrl.value, chapterUrl)
       text = local?.content ?? ''
       if (!text) {
-        const res = await getBookContent(chapterUrl, shelfBook.value.origin, {
+        const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
           timeout: chapterTimeout.value * 1000,
+          index: chapterIndex.value,
         })
         text = res.data?.content ?? ''
         if (typeof res.data?.chapterWordCount === 'number') {
@@ -3177,7 +3181,7 @@ async function loadSourcePreview(r: SearchBook, key: string) {
   const b = shelfBook.value
   if (!b) return
   try {
-    const tocRes = await getBookToc(r.tocUrl || b.tocUrl, r.origin, {
+    const tocRes = await getBookToc(r.bookUrl || b.bookUrl, r.origin, {
       timeout: chapterTimeout.value * 1000,
     })
     const toc = tocRes.isSuccess ? (tocRes.data ?? []) : []
@@ -3188,8 +3192,10 @@ async function loadSourcePreview(r: SearchBook, key: string) {
     let currentLast = ''
     if (idx >= 0 && toc[idx] && !toc[idx].isVolume && isTextBook.value) {
       const ch = toc[idx]
-      const contentRes = await getBookContent(ch.url, r.origin, {
+      const contentRes = await getBookContent(r.bookUrl || b.bookUrl, ch.url, r.origin, {
         timeout: chapterTimeout.value * 1000,
+        index: idx,
+        cache: true,
       })
       const text = contentRes.data?.content ?? ''
       const paras = text
@@ -3232,7 +3238,7 @@ async function switchSource(r: SearchBook) {
     b.originName = r.originName
     b.tocUrl = r.tocUrl
     currentOrigin.value = r.origin
-    const tocRes = await getBookToc(r.tocUrl || b.tocUrl, r.origin, {
+    const tocRes = await getBookToc(r.bookUrl || b.bookUrl, r.origin, {
       timeout: chapterTimeout.value * 1000,
     })
     if (!tocRes.isSuccess || !tocRes.data?.length) {
@@ -3555,8 +3561,9 @@ async function loadNonTextChapter(chapterUrl: string) {
   comicPage.value = 0
   hlsFailed.value = false
   try {
-    const res = await getBookContent(chapterUrl, shelfBook.value.origin, {
+    const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
       timeout: chapterTimeout.value * 1000,
+      index: chapterIndex.value,
     })
     const data = res.data ?? {}
     if (isAudioBook.value) {
@@ -3701,7 +3708,7 @@ async function init() {
 
     // 目录 + 详情并行拉取
     const [tocRes, infoRes] = await Promise.allSettled([
-      getBookToc(shelfBook.value!.tocUrl, shelfBook.value!.origin, {
+      getBookToc(shelfBook.value!.bookUrl, shelfBook.value!.origin, {
         timeout: chapterTimeout.value * 1000,
       }),
       getBookInfo(shelfBook.value!.bookUrl, shelfBook.value!.origin, { silent: true }),
