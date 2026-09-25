@@ -89,6 +89,7 @@ async function confirmSave() {
     return
   }
   editorBusy.value = true
+  let closeAfterSave = false
   const previous = editing ? rules.value.find((item) => item.id === editing) : undefined
   const rule: ReplaceRule = {
     ...(previous ?? {}),
@@ -122,11 +123,12 @@ async function confirmSave() {
     } else {
       rules.value.push(rule)
     }
-    closeEditor()
+    closeAfterSave = true
   } catch {
     // request.ts surfaces the server's real validation/authentication error.
   } finally {
     editorBusy.value = false
+    if (closeAfterSave) closeEditor()
   }
 }
 
@@ -467,18 +469,21 @@ async function confirmTxtSave() {
     return
   }
   txtBusy.value = true
+  let closeAfterSave = false
   try {
-    await saveTxtTocRule({
+    const response = await saveTxtTocRule({
       id: '',
       name,
       rule,
       enable: txtForm.value.enable,
       serialNumber: txtRules.value.length,
     })
-    closeTxtEditor()
+    if (!response.isSuccess) ElMessage.warning(response.errorMsg)
+    closeAfterSave = true
     await loadTxtRules()
   } finally {
     txtBusy.value = false
+    if (closeAfterSave) closeTxtEditor()
   }
 }
 
