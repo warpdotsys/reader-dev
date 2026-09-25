@@ -3,24 +3,48 @@ import { useUserStore } from '@/stores/user'
 import { openSSEPost } from './sse'
 import type { ReturnData, SearchBook } from '@/types'
 
-/**
- * POST /reader3/searchBookMulti：多书源并发搜索（body {key, maxSources, page, exact}；signal 可中止请求）
- * page 从 1 开始——普通（非 SSE）搜索分页场景（GAP 100：批量模式「加载更多」逐页累加）。
- * exact=true 时后端按书名/作者等值过滤（大小写/全半角忽略）。
- */
-export function searchBookMulti(
-  key: string,
-  maxSources = 50,
+export interface SearchPage {
+  lastIndex: number
+  list: SearchBook[]
+  /** 单源精确筛选前的数量，用来判断书源页是否已经耗尽。 */
+  rawCount?: number
+}
+
+export interface SearchRequest {
+  key: string
+  lastIndex: number
+  searchSize?: number
+  bookSourceGroup?: string
+  sourceUrl?: string
+  page?: number
+  exact?: boolean
+}
+
+/** legacy 多源搜索用 lastIndex 游标；单源搜索改用 /searchBook 的页码。 */
+export async function searchBookMulti(
+  params: SearchRequest,
   signal?: AbortSignal,
-  page = 1,
-  exact = false,
-  bookSourceGroup = '',
-): Promise<ReturnData<SearchBook[]>> {
-  return post<SearchBook[]>(
-    '/searchBookMulti',
-    { key, maxSources, page, exact: exact ? 1 : 0, bookSourceGroup },
-    { signal },
-  )
+): Promise<ReturnData<SearchPage>> {
+  if (params.sourceUrl) {
+    const result = await post<SearchBook[]>('/searchBook', {
+      key: params.key,
+      page: params.page ?? 1,
+      bookSourceUrl: params.sourceUrl,
+    }, { signal })
+    const normalizedKey = params.key.normalize('NFKC').toLocaleLowerCase()
+    const list = params.exact
+      ? result.data.filter((book) =>
+          book.name?.normalize('NFKC').toLocaleLowerCase() === normalizedKey ||
+          book.author?.normalize('NFKC').toLocaleLowerCase() === normalizedKey)
+      : result.data
+    return { ...result, data: { lastIndex: params.page ?? 1, list, rawCount: result.data.length } }
+  }
+  return post<SearchPage>('/searchBookMulti', {
+    key: params.exact ? `=${params.key}` : params.key,
+    lastIndex: params.lastIndex,
+    searchSize: params.searchSize ?? 50,
+    bookSourceGroup: params.bookSourceGroup ?? '',
+  }, { signal })
 }
 
 /* ================= SSE 流式搜索（/reader3/searchBookMultiSSE） ================= */
@@ -69,11 +93,10 @@ export function searchBookMultiSSE(
   const token = useUserStore().accessToken
   const body: Record<string, unknown> = { key: params.key }
   if (params.bookSourceGroup !== undefined) body.bookSourceGroup = params.bookSourceGroup
-  if (params.bookSourceUrl !== undefined) body.bookSourceUrl = params.bookSourceUrl
   if (params.lastIndex !== undefined) body.lastIndex = params.lastIndex
   if (params.searchSize !== undefined) body.searchSize = params.searchSize
   if (params.concurrentCount !== undefined) body.concurrentCount = params.concurrentCount
-  if (params.exact !== undefined) body.exact = params.exact ? 1 : 0
+  if (params.exact) body.key = `=${params.key}`
 
   return openSSEPost('/reader3/searchBookMultiSSE', body, cbs, token)
 }

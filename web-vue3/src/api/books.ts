@@ -3,9 +3,9 @@ import { useUserStore } from '@/stores/user'
 import { openSSEPost } from './sse'
 import type { BookChapter, BookContent, BookInfo, ReturnData, SearchBook } from '@/types'
 
-/** GET /reader3/getBookInfo：书籍详情（参数 url + bookSource=book.origin） */
+/** Java/Kotlin 从 bookSourceUrl 查找书源；bookSource 仅接受完整 JSON 对象。 */
 export function getBookInfo(url: string, bookSource: string, opts?: { silent?: boolean }): Promise<ReturnData<BookInfo>> {
-  return get<BookInfo>('/getBookInfo', { url, bookSource }, opts)
+  return get<BookInfo>('/getBookInfo', { url, bookSourceUrl: bookSource }, opts)
 }
 
 /**
@@ -27,7 +27,7 @@ export function getBookToc(
   bookSource: string,
   opts?: { timeout?: number },
 ): Promise<ReturnData<BookChapter[]>> {
-  return get<BookChapter[]>('/getChapterList', { url: bookUrl, bookSource }, opts)
+  return get<BookChapter[]>('/getChapterList', { url: bookUrl, bookSourceUrl: bookSource }, opts)
 }
 
 /* ================= GAP 81：换源 SSE 流式（/reader3/searchBookSourceSSE） ================= */
@@ -82,7 +82,7 @@ export async function getBookContent(
   if (index < 0) throw new Error(`目录中未找到章节：${chapterUrl}`)
   const response = await get<BookContent | string>(
     '/getBookContent',
-    { url: bookUrl, index, bookSource, ...(opts?.cache ? { cache: 1 } : {}), ...(epubContent === 1 ? { epubContent } : {}) },
+    { url: bookUrl, index, bookSourceUrl: bookSource, ...(opts?.cache ? { cache: 1 } : {}), ...(epubContent === 1 ? { epubContent } : {}) },
     opts,
   )
   return {

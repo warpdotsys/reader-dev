@@ -1,4 +1,5 @@
-async (base) => {
+async (input) => {
+  const base = typeof input === 'string' ? input : input.base;
   const post = async (path, body) => {
     const response = await fetch('/reader3/' + path, {
       method: 'POST',
@@ -25,7 +26,9 @@ async (base) => {
   };
   await post('saveBookSource', source);
   const bookUrl = base + '/book';
-  const info = await post('getBookInfo', { url: bookUrl, bookSource: source });
-  await post('saveBook', info);
+  if (typeof input === 'string' || input.saveBook !== false) {
+    const info = await post('getBookInfo', { url: bookUrl, bookSource: source });
+    await post('saveBook', info);
+  }
   return bookUrl;
 }

@@ -30,7 +30,8 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -p browser-poc test \
 阅读测试还需要在 loopback 启动 `scripts/mock-book-source.py`，设置
 `READER_BOOK_FIXTURE_URL`，然后把上述 `--tests` 改为
 `com.medwarp.reader.browserpoc.Vue3PreviewReadingTest`；它会检查书籍详情、
-目录、首章正文和下一章导航。两项测试都禁止非 loopback 预览地址，且必须显式设置
+目录、首章正文和下一章导航。`Vue3PreviewSearchTest` 还覆盖指定书源、
+多源 SSE、批量降级及未入架直读。三项测试都禁止非 loopback 预览地址，且必须显式设置
 `READER_VUE3_ISOLATED=1`。不要将 Vite 代理指向生产数据或公网服务。
 
 后续按 `../docs/VUE3-UI-MIGRATION.md` 核查接口、登录、书源、阅读、

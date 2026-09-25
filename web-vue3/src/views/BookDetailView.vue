@@ -253,8 +253,7 @@ async function addToShelf() {
 }
 
 function startReading() {
-  if (!shelfBook.value) return
-  void router.push(`/reader/${encodeURIComponent(shelfBook.value.bookUrl)}`)
+  if (shelfBook.value) openReader()
 }
 
 /** GAP 157：续读进度——durChapterIndex>0 时「开始阅读」显示「续读 第 N 章」（N=章节号 1 起） */
@@ -278,25 +277,34 @@ const readProgress = computed<{ percent: number; cur: number; total: number } | 
   }
 })
 
-/** 非书架书直接阅读（不加入书架——退出时阅读器提醒入架） */
-function startReadingTemp() {
+/** 统一阅读入口：临时书在跳章时也必须保留书源和详情。 */
+function openReader(chapter?: number) {
   const b = shelfBook.value ?? info.value
   if (!b) return
-  const cover =
-    typeof b.customCoverUrl === 'string' && b.customCoverUrl
-      ? b.customCoverUrl
-      : b.coverUrl || ''
-  const q = new URLSearchParams({
-    source: b.origin || '',
-    sourceName: b.originName || '',
-    toc: b.tocUrl || b.bookUrl || '',
-    name: b.name || '',
-    author: b.author || '',
-    cover,
-    // 非文本书临时直读：阅读器按 type 分派渲染（0 文本/1 音频/2 漫画/3 文件/4 视频）
-    type: String(typeof b.type === 'number' && b.type >= 0 && b.type <= 4 ? b.type : 0),
-  })
-  void router.push(`/reader/${encodeURIComponent(b.bookUrl)}?${q.toString()}`)
+  const query: Record<string, string> = {}
+  if (chapter !== undefined) query.chapter = String(chapter)
+  if (!shelfBook.value) {
+    const cover =
+      typeof b.customCoverUrl === 'string' && b.customCoverUrl
+        ? b.customCoverUrl
+        : b.coverUrl || ''
+    Object.assign(query, {
+      source: b.origin || queryOrigin.value,
+      sourceName: b.originName || '',
+      toc: b.tocUrl || b.bookUrl || '',
+      name: b.name || '',
+      author: b.author || '',
+      cover,
+      // 非文本书临时直读：阅读器按 type 分派渲染（0 文本/1 音频/2 漫画/3 文件/4 视频）
+      type: String(typeof b.type === 'number' && b.type >= 0 && b.type <= 4 ? b.type : 0),
+    })
+  }
+  void router.push({ path: `/reader/${encodeURIComponent(b.bookUrl)}`, query })
+}
+
+/** 非书架书直接阅读（不加入书架——退出时阅读器提醒入架） */
+function startReadingTemp() {
+  openReader()
 }
 
 /* ================= GAP 19：自定义封面（图片上传到 __HOME__/covers → saveBook customCoverUrl → 展示） ================= */
@@ -420,7 +428,7 @@ const currentChapterIndex = computed(() =>
 
 /** 点击目录项 → 阅读器并跳章 */
 function goToChapterFromToc(idx: number) {
-  void router.push(`/reader/${encodeURIComponent(bookUrl.value)}?chapter=${idx}`)
+  openReader(idx)
 }
 
 /* ================= 全书搜索（GET /reader3/searchBookContent，本地书正文逐章匹配） ================= */
@@ -484,7 +492,7 @@ async function runSearch() {
 /** 点击命中 → 跳阅读页并定位到该章（/reader/:bookUrl?chapter=index） */
 function goToHit(hit: ContentSearchHit) {
   closeSearch()
-  void router.push(`/reader/${encodeURIComponent(bookUrl.value)}?chapter=${hit.chapterIndex}`)
+  openReader(hit.chapterIndex)
 }
 
 /* ================= 换源（GET /reader3/searchBookSource：搜索同书其他书源，点击切换） ================= */

@@ -22,8 +22,9 @@ const key = ref('')
 /** 按书源分组搜索：空串 = 全部（结果列表本身仍按书源分组折叠） */
 const activeSearchGroup = ref('')
 
-/* P1-4 单源指定：空 = 全部书源；选中后仅搜该源（后端 bookSourceUrl 精确匹配） */
+/* 单源指定：空 = 全部书源；选中后使用 legacy /searchBook。 */
 const singleSourceUrl = ref('')
+watch(singleSourceUrl, () => { activeSearchGroup.value = '' })
 const allSources = ref<{ name: string; url: string }[]>([])
 
 /* P1-4 并发线程数（8-64 五档，localStorage 持久化） */
@@ -66,7 +67,7 @@ async function loadSearchGroups() {
     searchGroups.value = []
   }
 }
-/** 精确匹配开关（默认关=模糊 contains；开启后请求带 exact=1，后端按书名/作者等值过滤） */
+/** 多源搜索用 = 前缀启用 legacy 精确匹配；单源结果在前端按书名/作者筛选。 */
 const EXACT_KEY = 'reader_search_exact'
 function loadExact(): boolean {
   try {
@@ -92,14 +93,18 @@ async function openUrlBook() {
   searching.value = true
   errorMsg.value = ''
   try {
-    const res = await getBookInfo(url, '', { silent: true })
+    const res = await getBookInfo(url, singleSourceUrl.value, { silent: true })
     if (!res.isSuccess) {
       errorMsg.value = res.errorMsg || '未获取到书籍信息，请确认链接是否支持直接打开'
       searched.value = true
       return
     }
     pushHistory(url)
-    void router.push(`/book/${encodeURIComponent(url)}`)
+    const origin = res.data?.origin || singleSourceUrl.value
+    void router.push({
+      path: `/book/${encodeURIComponent(url)}`,
+      query: origin ? { origin } : undefined,
+    })
   } catch {
     errorMsg.value = '未获取到书籍信息，请确认链接是否支持直接打开'
     searched.value = true
@@ -135,8 +140,9 @@ let searchSeq = 0
 
 /* ================= GAP 100：搜索分页（批量模式逐页「加载更多」；SSE 已全量则提示已全部） ================= */
 
-/** 批量模式当前已加载页（后端 searchBookMulti page 从 1 开始） */
+/** 单源搜索页码；多源批量模式使用后端 lastIndex 游标。 */
 const batchPage = ref(1)
+const batchCursor = ref(-1)
 /** 批量模式是否已全部（某页无新增去重结果 → 到底） */
 const batchExhausted = ref(false)
 const batchLoadingMore = ref(false)
@@ -200,8 +206,16 @@ async function doSearch(kw?: string) {
   completedSources.clear()
   searchedSources.value = 0
   batchPage.value = 1
+  batchCursor.value = -1
   batchExhausted.value = false
   batchLoadingMore.value = false
+
+  // 多源 SSE 没有单源筛选参数；选中具体书源时走 /searchBook。
+  if (singleSourceUrl.value) {
+    usingSSE.value = false
+    await runBatch(word, seq)
+    return
+  }
 
   // 1) 优先 SSE 流式搜索（增量显示）
   try {
@@ -222,8 +236,11 @@ async function doSearch(kw?: string) {
           searchedSources.value = completedSources.size
           mergeBooks(books)
         },
-        onEnd: () => {
+        onEnd: (lastIndex, isEnd) => {
           if (seq !== searchSeq) return
+          batchCursor.value = lastIndex
+          batchExhausted.value = isEnd
+          if (!isEnd) usingSSE.value = false
           searching.value = false
           searched.value = true
           pushHistory(word)
@@ -254,18 +271,19 @@ async function doSearch(kw?: string) {
   }
 }
 
-/** 批量降级：现有 searchBookMulti（maxSources=50，AbortSignal 可中止），按 page 分页累加 */
+/** SSE 失败后按书源游标继续；单源搜索按该书源自己的页码继续。 */
 async function runBatch(word: string, seq: number, page = 1) {
   batchAbort = new AbortController()
   try {
-    const res = await searchBookMulti(
-      word,
-      50,
-      batchAbort.signal,
+    const res = await searchBookMulti({
+      key: word,
+      lastIndex: batchCursor.value,
+      searchSize: 50,
       page,
-      exact.value,
-      activeSearchGroup.value,
-    )
+      exact: exact.value,
+      bookSourceGroup: activeSearchGroup.value,
+      sourceUrl: singleSourceUrl.value,
+    }, batchAbort.signal)
     if (seq !== searchSeq) return
     if (!res.isSuccess) {
       if ((res.data as unknown) === 'NEED_LOGIN' || (res.errorMsg || '').includes('请登录')) {
@@ -276,23 +294,27 @@ async function runBatch(word: string, seq: number, page = 1) {
       }
       throw new Error(res.errorMsg || '搜索失败，请稍后重试')
     }
-    const before = bookMap.size
-    mergeBooks(res.data ?? [])
+    const previousCursor = batchCursor.value
+    mergeBooks(res.data.list ?? [])
     batchPage.value = page
-    // 该页无新增去重结果 → 已全部（后续「加载更多」不再出现）
-    if (bookMap.size === before) batchExhausted.value = true
+    batchCursor.value = res.data.lastIndex
+    batchExhausted.value = singleSourceUrl.value
+      ? res.data.rawCount === 0
+      : batchCursor.value <= previousCursor ||
+        (allSources.value.length > 0 && batchCursor.value >= allSources.value.length - 1)
     searched.value = true
     pushHistory(word)
   } catch (err) {
     if (seq !== searchSeq) return
-    errorMsg.value = err instanceof Error ? err.message : '搜索失败，请稍后重试'
+    if (err instanceof Error && err.message === '没有更多了') batchExhausted.value = true
+    else errorMsg.value = err instanceof Error ? err.message : '搜索失败，请稍后重试'
   } finally {
     if (seq === searchSeq) searching.value = false
     if (batchAbort && seq !== searchSeq) batchAbort = null
   }
 }
 
-/** GAP 100：批量模式「加载更多」——下一页 searchBookMulti 合并去重 */
+/** 批量模式「加载更多」：多源接续 lastIndex，单源递增 page。 */
 async function loadMore() {
   if (usingSSE.value || searching.value || batchLoadingMore.value || batchExhausted.value) return
   const word = key.value.trim()
@@ -302,23 +324,29 @@ async function loadMore() {
   batchLoadingMore.value = true
   batchAbort = new AbortController()
   try {
-    const res = await searchBookMulti(
-      word,
-      50,
-      batchAbort.signal,
-      nextPage,
-      exact.value,
-      activeSearchGroup.value,
-    )
+    const res = await searchBookMulti({
+      key: word,
+      lastIndex: batchCursor.value,
+      searchSize: 50,
+      page: nextPage,
+      exact: exact.value,
+      bookSourceGroup: activeSearchGroup.value,
+      sourceUrl: singleSourceUrl.value,
+    }, batchAbort.signal)
     if (seq !== searchSeq) return
     if (!res.isSuccess) throw new Error(res.errorMsg || '加载失败，请稍后重试')
-    const before = bookMap.size
-    mergeBooks(res.data ?? [])
+    const previousCursor = batchCursor.value
+    mergeBooks(res.data.list ?? [])
     batchPage.value = nextPage
-    if (bookMap.size === before) batchExhausted.value = true
+    batchCursor.value = res.data.lastIndex
+    batchExhausted.value = singleSourceUrl.value
+      ? res.data.rawCount === 0
+      : batchCursor.value <= previousCursor ||
+        (allSources.value.length > 0 && batchCursor.value >= allSources.value.length - 1)
   } catch (err) {
     if (seq !== searchSeq) return
-    errorMsg.value = err instanceof Error ? err.message : '加载失败，请稍后重试'
+    if (err instanceof Error && err.message === '没有更多了') batchExhausted.value = true
+    else errorMsg.value = err instanceof Error ? err.message : '加载失败，请稍后重试'
   } finally {
     if (seq === searchSeq) batchLoadingMore.value = false
     batchAbort = null
@@ -662,7 +690,7 @@ onBeforeUnmount(() => {
           @focus="onSearchFocus"
           @blur="closeSuggest"
         />
-        <!-- 精确匹配开关：默认关（模糊）；开启后请求 exact=1，后端按书名/作者等值过滤 -->
+        <!-- 精确匹配：多源用 legacy 的 = 前缀，单源对结果按书名/作者筛选 -->
         <button
           class="exact-toggle"
           type="button"
@@ -708,7 +736,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- 按书源分组搜索：胶囊选择，切换后立即重搜 -->
-      <div v-if="searchGroups.length" class="group-filter">
+      <div v-if="searchGroups.length && !singleSourceUrl" class="group-filter">
         <button
           class="group-chip"
           :class="{ active: activeSearchGroup === '' }"
@@ -815,6 +843,13 @@ onBeforeUnmount(() => {
       <!-- 空结果 / 已停止 -->
       <div v-else-if="searched && !results.length" class="state-row">
         <span class="state-text">{{ stopped ? t('search.stopped') : t('search.noResults', { k: key.trim() }) }}</span>
+        <button
+          v-if="!stopped && !usingSSE && !batchExhausted"
+          class="retry-btn"
+          type="button"
+          :disabled="batchLoadingMore"
+          @click="loadMore"
+        >{{ batchLoadingMore ? t('common.loading') : t('common.loadMore') }}</button>
       </div>
 
       <!-- 结果列表（SSE 增量累积；按书源分组折叠，GAP 23） -->
