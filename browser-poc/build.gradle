@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.microsoft.playwright:playwright:1.63.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+application {
+    mainClassName = 'com.medwarp.reader.browserpoc.BrowserProbe'
+}
+
+test {
+    useJUnit()
+    systemProperty 'browser.executable', System.getenv('READER_BROWSER_EXECUTABLE') ?: ''
+    environment 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD', '1'
+}
+
+run {
+    environment 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD', '1'
+}

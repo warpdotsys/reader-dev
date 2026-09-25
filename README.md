@@ -18,6 +18,12 @@
 
 不得覆盖原始 JAR，不得以空实现替代缺失业务逻辑。
 
+## 当前开发主线
+
+内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。浏览器仍使用远程渲染路径，新 UI 尚未接入或上线；原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
+
+浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。它的本机测试通过不等于浏览器已随 Reader 部署；用户容器不能依赖宿主机 Chrome，正式方案必须把浏览器和系统依赖打进同一个 Reader 镜像。
+
 ## 新许可证中心
 
 `license-server/` 是为 `https://license.medwarp.cn` 新建的独立服务。它不保存任何硬编码私钥、管理员令牌或 SMTP 凭据；SQLite、签名密钥和审计记录均放在部署时指定的持久化数据目录。

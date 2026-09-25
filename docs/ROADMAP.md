@@ -1,21 +1,21 @@
 # Reader-dev 维护路线
 
-更新日期：2026-09-23。
+更新日期：2026-09-25。
 
 ## 当前方向
 
 - `legacy` 是默认分支和 Java/Kotlin 混合工程的维护主线。以原始 `reader-pro-3.2.14.jar` 的可观察行为与数据格式为兼容基线，优先使用可读源码和可重复构建，而不是字节码热补丁。
 - Rust 旧线和 Go 重写成果保留作历史参考，暂不继续全量重写，也不以它们作为当前版本的兼容性依据。旧 Rust 专属问题不等于已修复；仍适用于当前产品的问题继续跟踪。
-- 前端现阶段保留原 JAR 的 Vue 2 界面。只有后端兼容性和主要缺陷稳定后，才评估接入 Vue 3 设计；不能直接把 Rust/master 前端视为可替换资源。
+- 当前发布版继续保留原 JAR 的 Vue 2 界面作为回退；新 UI 工作转向参考 Rust `master/web-ui` 的 Vue 3 设计语言，但以 Java/Kotlin 后端为唯一接入目标。Rust 前端的功能不全，不能直接替换现有页面或照搬其后端契约。
 - 已发布版本、构建证据和已知限制见 `docs/releases/` 与 `reports/`。本路线图描述优先级，不代表其中每项已经交付。
 
-## 近期优先级
+## 近期主线（2026-09-25 调整）
 
-1. **行为与数据兼容**：继续扩展原始 JAR、恢复版、隔离生产数据副本之间的差分，覆盖认证、用户命名空间、书源规则、书架、正文缓存、本地书、文件格式、WebDAV、SSE、下载和异常路径。将有意修复与未解释的差异分开记录。
-2. **可维护源码**：逐类核对反编译或近似源码与 JAR 的差异。Kotlin 伪代码必须人工整理；不能为了通过编译而增加空实现。每个可恢复功能应有明确测试或差分证据。
-3. **部署与发布安全**：GitHub 托管 runner 构建并发版，记录制品散列、已知问题和回滚方法。生产数据只在备份及隔离验证后迁移；本地构建成功不自动等于线上已经更新。
-4. **当前缺陷**：继续跟踪 [#49 子目录部署](https://github.com/warpdotsys/reader-dev/issues/49)和 [#34 章节固化](https://github.com/warpdotsys/reader-dev/issues/34)。`/reader` 无尾斜杠入口已在源码中修复并通过本机黑盒检查，但 #49 涉及的反向代理、前端完整交互和生产部署尚未验收，不据此关闭。
-5. **内置浏览器能力**：完成下述指纹无头浏览器选型和植入验证，目标是取消运行时必须另行部署 `remote-webview` 容器；在兼容性和资源成本达标前，不切换现有默认路径。
+1. **内置浏览器**：先以固定 WebView 书源样本比较原 JAR、现有远程服务和本地候选引擎，再做单容器 PoC、进程隔离和资源预算。目标是无需另行部署 `remote-webview`；在实测达标前保留远程实现和回滚路径。下文的候选表不是选型结论。
+2. **Vue 3 界面**：参考 Rust `master/web-ui` 的设计语言（配色、排版、导航和阅读体验），但页面功能与请求契约以当前 Java/Kotlin 服务和原 JAR 为准。先在独立目录建立可预览、可测试的前端，再逐页接入；完整登录、书架、搜索、阅读、书源管理通过验收前，不替换线上 Vue 2 入口。具体边界见 [Vue 3 UI 迁移核查](VUE3-UI-MIGRATION.md)。
+3. **项目 Markdown 文档**：维护 README、部署、开发、兼容性与发布说明；每项写明已验证事实、待办、复现命令和已知问题，避免把 PoC、构建成功或近似源码推断写成已上线功能。文档随对应实现和测试同步更新。
+
+持续约束：原始 JAR 与 `storage/data` 兼容仍是业务基线；缺陷修复继续配差分测试，不新增伪造空实现。GitHub 托管 runner 负责构建和发版，生产数据只在备份及隔离验证后迁移。继续跟踪 [#49 子目录部署](https://github.com/warpdotsys/reader-dev/issues/49)与 [#34 章节固化](https://github.com/warpdotsys/reader-dev/issues/34)；`/reader` 无尾斜杠入口的本机修复不等于 #49 已在生产验收。
 
 ## 内置指纹无头浏览器（计划，尚未选型或实施）
 
@@ -45,13 +45,13 @@
 
 完成条件：在**单个 Reader 容器**中，无独立 WebView 容器即可运行被选中的 WebView 书源；固定样本与真实书源的结果、Cookie/用户隔离和异常路径通过差分；空闲与并发资源预算、崩溃恢复及升级回滚均有实测证据。以上均为待办，当前版本尚不具备内置指纹浏览器。
 
-进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，现有远程渲染仍为唯一默认实现；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。这仍只是植入准备；候选本地引擎、真实书源差分、容器镜像及生产切换均未完成。
+进度记录：已在源码中加入 `WebviewRenderer`/`WebviewRequest` 边界，远程渲染仍为默认实现；定向测试覆盖适配器参数传递、`/render.html` 请求协议及按用户命名空间保存远程 Cookie。原 JAR 中 `_cookieJar` 非 URL 键被忽略的问题已在源码中有意修复，证据见 `reports/WEBVIEW-COOKIE-COMPATIBILITY.md`；原 JAR 与恢复版的三次受控 WebView 黑盒差分见 `reports/WEBVIEW-DIFF-AND-CANDIDATES.md`。独立的 [Playwright Java 功能基线 PoC](../browser-poc/README.md)在本机 Chrome 上 4 项合成页面测试通过。当前还将 `LocalWebviewRenderer` 以显式配置接入了 Java/Kotlin 工程，本机 3 项合成测试通过；不支持的 `sourceRegex` 和指定字符集会明确报错。浏览器版 [单容器镜像定义](../deploy/reader-pro/Dockerfile.browser)尚未构建或验收。这仍不是指纹引擎，真实书源差分、非 root 沙箱和生产切换均未完成。
 
 ## 后续候选项（尚未承诺）
 
 - 在不改变旧数据语义的前提下改善 JSON 存储性能；任何 SQLite 迁移都必须具备备份、校验和可回滚路径，且不能先于兼容基线验收。
 - 扩展书源规则和本地书格式时，优先在现有 Kotlin/Java 工程中做增量实现与回归测试，避免再次引入全量语言重写。
-- Vue 3 设计只作为交互参考；是否移植和何时移植，以后端接口、登录与阅读链路稳定为前提。
+- Vue 3 界面的工作范围和回退门槛以上述近期主线为准；不从 Rust 前端推断 Java/Kotlin 后端已经实现同名接口。
 
 ## 验证用语
 

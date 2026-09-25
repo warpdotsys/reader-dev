@@ -34,6 +34,9 @@ class AppConfig {
     var shelfUpdateInteval: Int = 10
     // Remote webview API
     var remoteWebviewApi: String = ""
+    var webviewRenderer: String = "remote"
+    var browserExecutablePath: String = ""
+    var browserTimeoutMs: Int = 20000
 
     // License centre. The public key is injected at deployment time so the
     // signing private key never needs to be present in this application.

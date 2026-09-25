@@ -1,0 +1,90 @@
+name: Browser image integration
+
+on:
+  push:
+    branches: [legacy]
+    paths:
+      - '.github/workflows/browser-image.yml'
+      - 'build.gradle.kts'
+      - 'cli.gradle'
+      - 'deploy/reader-pro/Dockerfile.browser'
+      - 'scripts/smoke-local-webview.py'
+      - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
+  pull_request:
+    branches: [legacy]
+    paths:
+      - '.github/workflows/browser-image.yml'
+      - 'build.gradle.kts'
+      - 'cli.gradle'
+      - 'deploy/reader-pro/Dockerfile.browser'
+      - 'scripts/smoke-local-webview.py'
+      - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: Build and smoke-test self-contained browser image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+      - name: Test and build both JAR variants
+        run: |
+          chmod +x gradlew
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar bootJarBrowser --no-daemon --stacktrace
+      - name: Assert default JAR has no browser runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/.*playwright'
+          unzip -Z1 build/libs/reader-4.0.7-browser.jar | grep -q 'BOOT-INF/lib/playwright-1.63.0.jar'
+          unzip -Z1 build/libs/reader-4.0.7-browser.jar | grep -q 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
+          sha256sum build/libs/reader-4.0.7.jar build/libs/reader-4.0.7-browser.jar
+      - name: Build one-container image
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp build/libs/reader-4.0.7-browser.jar deploy/reader-pro/
+          docker build -f deploy/reader-pro/Dockerfile.browser -t reader-browser:smoke deploy/reader-pro
+      - name: Run Reader API and WebView fixture inside the image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/reader-browser-data"
+          chmod 777 "$RUNNER_TEMP/reader-browser-data"
+          docker run -d --name reader-browser-smoke --network host --shm-size=1g \
+            -v "$RUNNER_TEMP/reader-browser-data:/storage" \
+            -e READER_SERVER_PORT=18890 \
+            -e READER_APP_WORKDIR=/storage \
+            -e READER_APP_LICENSECHECKENABLED=false \
+            reader-browser:smoke
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo >/dev/null
+          python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
+      - name: Print container diagnostics and stop it
+        if: always()
+        shell: bash
+        run: |
+          docker logs --tail=200 reader-browser-smoke || true
+          docker rm -f reader-browser-smoke || true

@@ -47,6 +47,7 @@ import com.htmake.reader.utils.zip
 import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
+import com.htmake.reader.utils.LocalWebviewRenderer
 import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.getTraceId
 import com.htmake.reader.init.ReaderAdapter
@@ -102,6 +103,14 @@ class YueduApi : RestVerticle() {
         return env.getProperty("reader.server.contextPath", "") ?: ""
     }
 
+    override suspend fun stop() {
+        try {
+            (ReaderAdapter.webviewRenderer as? LocalWebviewRenderer)?.close()
+        } finally {
+            super.stop()
+        }
+    }
+
     override suspend fun initRouter(router: Router) {
         setupPort()
 
@@ -111,6 +120,11 @@ class YueduApi : RestVerticle() {
 
         if (appConfig.remoteWebviewApi.isNotEmpty()) {
             RemoteWebview.setRemoteApi(appConfig.remoteWebviewApi)
+        }
+        ReaderAdapter.webviewRenderer = when (appConfig.webviewRenderer.lowercase()) {
+            "remote" -> RemoteWebview
+            "local" -> LocalWebviewRenderer(appConfig.browserExecutablePath, appConfig.browserTimeoutMs)
+            else -> throw IllegalArgumentException("Unsupported reader.app.webviewRenderer: ${appConfig.webviewRenderer}")
         }
         ReaderAdapterHelper.setAdapter(ReaderAdapter)
 

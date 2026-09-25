@@ -37,6 +37,9 @@ configurations {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // LocalWebviewRenderer needs this API at compile time; the default
+    // source image keeps using RemoteWebview and must stay browser-free.
+    compileOnly 'com.microsoft.playwright:playwright:1.63.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.5.2'
     // vertx
