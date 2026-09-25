@@ -76,6 +76,7 @@ public class Vue3PreviewReplaceRuleTest {
                 Locator dialog = page.locator(".dlg[aria-label='编辑替换规则']");
                 dialog.locator(".field-input").nth(0).fill(renamedName);
                 dialog.locator(".dlg-actions .accent-btn").click();
+                waitForEditorClosed(page);
                 row(page, renamedName).waitFor();
                 List<Map<String, Object>> afterRename = getRules(page);
                 Map<String, Object> renamedStored = findRule(afterRename, renamedName);
@@ -134,7 +135,13 @@ public class Vue3PreviewReplaceRuleTest {
         dialog.locator(".field-input").nth(1).fill(find);
         dialog.locator(".field-input").nth(2).fill(replacement);
         dialog.locator(".dlg-actions .accent-btn").click();
+        waitForEditorClosed(page);
         row(page, name).waitFor();
+    }
+
+    private static void waitForEditorClosed(Page page) {
+        page.locator(".dlg[aria-label='编辑替换规则']").waitFor(new Locator.WaitForOptions()
+                .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
     }
 
     private static Locator row(Page page, String name) {
