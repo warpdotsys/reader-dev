@@ -71,9 +71,11 @@ jobs:
           chmod 777 "$RUNNER_TEMP/reader-browser-data"
           docker run -d --name reader-browser-smoke --network host --shm-size=1g \
             --security-opt no-new-privileges:true --cap-drop ALL \
+            --tmpfs /tmp:size=256m,mode=1777 \
             -v "$RUNNER_TEMP/reader-browser-data:/storage" \
             -e READER_SERVER_PORT=18890 \
-            -e READER_APP_WORKDIR=/storage \
+            -e READER_APP_WORKDIR=/ \
+            -e READER_APP_SECURE=true \
             -e READER_APP_LICENSECHECKENABLED=false \
             reader-browser:smoke
           for attempt in $(seq 1 60); do

@@ -46,12 +46,5 @@ jobs:
           set -euo pipefail
           test -s build/libs/reader-4.0.7.jar
           sha256sum build/libs/reader-4.0.7.jar | tee build/libs/SHA256SUMS
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: reader-pro-${{ github.sha }}
-          path: |
-            build/libs/reader-4.0.7.jar
-            build/libs/SHA256SUMS
-          if-no-files-found: error
-          retention-days: 14
+      # The JAR alone does not contain Chromium. Only the complete image is a
+      # distributable product; release.yml publishes it with the JAR.

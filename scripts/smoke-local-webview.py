@@ -37,7 +37,7 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         if number == 1:
             self.send_header("Set-Cookie", "session=alpha==; Path=/; HttpOnly; SameSite=Lax")
-        elif number == 2:
+        elif number == 3:
             self.send_header("Set-Cookie", "session=; Max-Age=0; Path=/")
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
@@ -60,6 +60,14 @@ def call(opener, base, path, body):
         return value
 
 
+def get_json(opener, base, path):
+    with opener.open(base + path, timeout=35) as response:
+        value = json.loads(response.read().decode("utf-8"))
+        if response.status != 200 or value.get("isSuccess") is not True:
+            raise RuntimeError(f"{path}: HTTP {response.status}, {value.get('errorMsg')}")
+        return value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reader-base", default="http://127.0.0.1:18890")
@@ -73,13 +81,20 @@ def main():
     thread = threading.Thread(target=fixture.serve_forever, daemon=True)
     thread.start()
     try:
-        opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-        username = "localwebview" + secrets.token_hex(5)
-        password = "Probe-" + secrets.token_hex(12)
-        for is_login in (False, True):
-            call(opener, args.reader_base, "/reader3/login", {
-                "username": username, "password": password, "isLogin": is_login})
+        def create_account():
+            account = urllib.request.build_opener(
+                urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+            username = "localwebview" + secrets.token_hex(5)
+            password = "Probe-" + secrets.token_hex(12)
+            for is_login in (False, True):
+                call(account, args.reader_base, "/reader3/login", {
+                    "username": username, "password": password, "isLogin": is_login})
+            return account
+
+        alice = create_account()
+        bob = create_account()
+        if get_json(alice, args.reader_base, "/reader3/getUserInfo").get("data", {}).get("secure") is not True:
+            raise RuntimeError("User isolation fixture requires READER_APP_SECURE=true")
         source = {
             "bookSourceUrl": fixture_base,
             "bookSourceName": "Local browser loopback fixture",
@@ -90,16 +105,18 @@ def main():
             "ruleToc": {"chapterList": ".chapter"},
             "ruleContent": {"content": ".content@html"},
         }
-        call(opener, args.reader_base, "/reader3/saveBookSource", source)
+        call(alice, args.reader_base, "/reader3/saveBookSource", source)
+        call(bob, args.reader_base, "/reader3/saveBookSource", source)
         searches = []
-        for key in ("first", "second", "third"):
-            value = call(opener, args.reader_base, "/reader3/searchBook", {
+        for account, key in ((alice, "alice-first"), (bob, "bob-first"),
+                             (alice, "alice-second"), (alice, "alice-third")):
+            value = call(account, args.reader_base, "/reader3/searchBook", {
                 "key": key, "page": 1, "bookSourceUrl": fixture_base})
             books = value.get("data")
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "本地浏览器测试书":
                 raise RuntimeError(f"Unexpected result for {key}: {books!r}")
             searches.append({"key": key, "count": len(books)})
-        expected = ["", "session=alpha==", ""]
+        expected = ["", "", "session=alpha==", ""]
         if fixture.cookies != expected:
             raise RuntimeError(f"Cookie sequence {fixture.cookies!r}, expected {expected!r}")
         print(json.dumps({"searches": searches, "cookieSequence": fixture.cookies},
