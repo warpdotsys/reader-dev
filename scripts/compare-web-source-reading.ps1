@@ -46,6 +46,26 @@ function Invoke-Json([Net.Http.HttpClient]$Client, [string]$Base, [string]$Path,
     finally { $request.Dispose() }
 }
 
+function Invoke-Binary([Net.Http.HttpClient]$Client, [string]$Base, [string]$Path, [string]$Probe) {
+    $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Get, $Base + $Path)
+    try {
+        $response = $Client.SendAsync($request).GetAwaiter().GetResult()
+        try {
+            $bytes = $response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()
+            return [pscustomobject]@{
+                probe = $Probe
+                status = [int]$response.StatusCode
+                contentType = [string]$response.Content.Headers.ContentType
+                cacheControl = if ($response.Headers.Contains('Cache-Control')) {
+                    $response.Headers.GetValues('Cache-Control') -join ','
+                } else { '' }
+                byteLength = $bytes.Length
+                sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
+            }
+        } finally { $response.Dispose() }
+    } finally { $request.Dispose() }
+}
+
 function New-Client {
     $handler = [Net.Http.HttpClientHandler]::new()
     $handler.UseCookies = $true
@@ -119,11 +139,15 @@ function Select-Result([object]$Response, [string]$Name) {
                 tocUrl = $_.tocUrl; origin = $_.origin
             }
         })
-    } elseif ($Name -eq 'book-save') {
+    } elseif ($Name -in @('book-save', 'source-switch')) {
         $data = [ordered]@{
             name = $data.name; author = $data.author; bookUrl = $data.bookUrl
             tocUrl = $data.tocUrl; origin = $data.origin
         }
+    } elseif ($Name -eq 'shelf-after-switch') {
+        $data = @($data | ForEach-Object {
+            [ordered]@{ bookUrl = $_.bookUrl; tocUrl = $_.tocUrl; origin = $_.origin }
+        })
     }
     return [pscustomobject]@{
         probe = $Name
@@ -157,6 +181,22 @@ function Run-Reader([string]$Jar, [string]$Dir, [int]$Port, [object]$Source,
         Assert-Success (Invoke-Json $client $base '/reader3/login' `
             @{ username = $User; password = $Password; isLogin = $true }) 'login'
         $results = @()
+        $missingCover = Invoke-Binary $client $base '/reader3/cover' 'cover-missing-path'
+        if ($missingCover.status -ne 404 -or $missingCover.byteLength -ne 0) {
+            throw 'Cover without path did not return an empty 404'
+        }
+        $results += $missingCover
+        $fixtureCover = $client.GetByteArrayAsync("$($Source.bookSourceUrl)/cover.png").GetAwaiter().GetResult()
+        $expectedCoverSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($fixtureCover))
+        $coverPath = '/reader3/cover?path=' + [uri]::EscapeDataString("$($Source.bookSourceUrl)/cover.png")
+        foreach ($coverName in @('cover-first-fetch', 'cover-cache-hit')) {
+            $cover = Invoke-Binary $client $base $coverPath $coverName
+            if ($cover.status -ne 200 -or $cover.sha256 -cne $expectedCoverSha -or
+                $cover.contentType -notmatch 'image/png') {
+                throw "$coverName did not return the fixture PNG"
+            }
+            $results += $cover
+        }
         $sourceSave = Invoke-Json $client $base '/reader3/saveBookSource' $Source
         Assert-Success $sourceSave 'source-save'
         $results += Select-Result $sourceSave 'source-save'
@@ -180,6 +220,10 @@ function Run-Reader([string]$Jar, [string]$Dir, [int]$Port, [object]$Source,
         $save = Invoke-Json $client $base '/reader3/saveBook' $info.value.data
         Assert-Success $save 'book-save'
         $results += Select-Result $save 'book-save'
+        $candidateFile = Join-Path $Dir 'storage\data' $User '差分测试书_测试作者\bookSource.json'
+        if (-not (Test-Path -LiteralPath $candidateFile -PathType Leaf)) {
+            throw 'Expected candidate-source file was not written under the original book name'
+        }
         $shelf = Invoke-Json $client $base '/reader3/getBookshelf'
         Assert-Success $shelf 'shelf'
         if (@($shelf.value.data).Count -ne 1) { throw 'Shelf count was not one' }
@@ -203,6 +247,94 @@ function Run-Reader([string]$Jar, [string]$Dir, [int]$Port, [object]$Source,
             }
             $results += Select-Result $content "content-$index"
         }
+        $expectedCustomContent = '固定自定义正文。'
+        $saveContentNoUrl = Invoke-Json $client $base '/reader3/saveBookContent' `
+            @{ index = 0; content = $expectedCustomContent }
+        $results += Select-Result $saveContentNoUrl 'save-content-no-url'
+        $saveContentUnknown = Invoke-Json $client $base '/reader3/saveBookContent' `
+            @{ url = "$($Source.bookSourceUrl)/unknown"; index = 0; content = $expectedCustomContent }
+        $results += Select-Result $saveContentUnknown 'save-content-unknown-book'
+        $saveContent = Invoke-Json $client $base '/reader3/saveBookContent' `
+            @{ url = $BookUrl; index = 0; content = $expectedCustomContent }
+        Assert-Success $saveContent 'save-content'
+        $results += Select-Result $saveContent 'save-content'
+        $customContent = Invoke-Json $client $base '/reader3/getBookContent' `
+            @{ url = $BookUrl; index = 0 }
+        Assert-Success $customContent 'content-after-save'
+        if ($customContent.value.data -cne $expectedCustomContent) {
+            throw 'Custom chapter content was not read back exactly'
+        }
+        $results += Select-Result $customContent 'content-after-save'
+        $userDataDir = Join-Path $Dir 'storage\data' $User
+        $chapterZeroFiles = @(Get-ChildItem -LiteralPath $userDataDir -Recurse -Filter '0.txt' -File)
+        $customFiles = @($chapterZeroFiles | Where-Object { $_.Directory.Name -eq 'custom' })
+        if ($customFiles.Count -ne 1 -or
+            [IO.File]::ReadAllText($customFiles[0].FullName, [Text.Encoding]::UTF8) -cne $expectedCustomContent) {
+            throw 'Custom chapter cache did not persist the exact UTF-8 content'
+        }
+        $matchingChapterFiles = @($chapterZeroFiles | Where-Object {
+            $_.Directory.Name -ne 'custom' -and
+            [IO.File]::ReadAllText($_.FullName, [Text.Encoding]::UTF8) -ceq $expectedCustomContent
+        })
+        if ($matchingChapterFiles.Count -lt 1) {
+            throw 'Chapter cache did not persist the custom content'
+        }
+        $results += [pscustomobject]@{
+            probe = 'custom-cache-storage'
+            customSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $customFiles[0].FullName).Hash
+            matchingChapterCache = $true
+        }
+        $searchContentNoUrl = Invoke-Json $client $base '/reader3/searchBookContent'
+        $results += Select-Result $searchContentNoUrl 'search-content-no-url'
+        $searchContentNoKeyword = Invoke-Json $client $base '/reader3/searchBookContent' `
+            @{ url = $BookUrl }
+        $results += Select-Result $searchContentNoKeyword 'search-content-no-keyword'
+        $searchContentUnknown = Invoke-Json $client $base '/reader3/searchBookContent' `
+            @{ url = "$($Source.bookSourceUrl)/unknown"; keyword = '固定自定义' }
+        $results += Select-Result $searchContentUnknown 'search-content-unknown-book'
+        $searchContent = Invoke-Json $client $base '/reader3/searchBookContent' `
+            @{ url = $BookUrl; keyword = '固定自定义'; lastIndex = -1; size = 10 }
+        $results += Select-Result $searchContent 'search-content-custom'
+        $missingAvailable = Invoke-Json $client $base '/reader3/getAvailableBookSource'
+        $results += Select-Result $missingAvailable 'available-missing-url'
+        $unknownAvailable = Invoke-Json $client $base '/reader3/getAvailableBookSource' `
+            @{ url = "$($Source.bookSourceUrl)/unknown" }
+        $results += Select-Result $unknownAvailable 'available-unknown-book'
+        $available = Invoke-Json $client $base `
+            ('/reader3/getAvailableBookSource?url=' + [uri]::EscapeDataString($BookUrl))
+        Assert-Success $available 'available-candidates'
+        $results += Select-Result $available 'available-candidates'
+
+        $alternateSource = $Source.Clone()
+        $alternateSource.bookSourceUrl = "$($Source.bookSourceUrl)/alternate"
+        $alternateSource.bookSourceName = 'Deterministic alternate source'
+        $alternateSave = Invoke-Json $client $base '/reader3/saveBookSource' $alternateSource
+        Assert-Success $alternateSave 'alternate-source-save'
+        $results += Select-Result $alternateSave 'alternate-source-save'
+        $missingSwitch = Invoke-Json $client $base '/reader3/setBookSource'
+        $results += Select-Result $missingSwitch 'switch-missing-book-url'
+        $unknownSwitch = Invoke-Json $client $base '/reader3/setBookSource' `
+            @{ bookUrl = "$($Source.bookSourceUrl)/unknown"; newUrl = $BookUrl;
+               bookSourceUrl = $alternateSource.bookSourceUrl }
+        $results += Select-Result $unknownSwitch 'switch-unknown-book'
+        $newBookUrl = "$BookUrl`?source=alternate"
+        $switch = Invoke-Json $client $base '/reader3/setBookSource' `
+            @{ bookUrl = $BookUrl; newUrl = $newBookUrl;
+               bookSourceUrl = $alternateSource.bookSourceUrl }
+        Assert-Success $switch 'source-switch'
+        if ($switch.value.data.bookUrl -cne $newBookUrl -or
+            $switch.value.data.origin -cne $alternateSource.bookSourceUrl) {
+            throw 'Source switch did not update book URL and origin'
+        }
+        $results += Select-Result $switch 'source-switch'
+        $afterSwitch = Invoke-Json $client $base '/reader3/getBookshelf'
+        Assert-Success $afterSwitch 'shelf-after-switch'
+        if (@($afterSwitch.value.data).Count -ne 1 -or
+            $afterSwitch.value.data[0].bookUrl -cne $newBookUrl -or
+            $afterSwitch.value.data[0].origin -cne $alternateSource.bookSourceUrl) {
+            throw 'Shelf did not retain the switched URL and origin'
+        }
+        $results += Select-Result $afterSwitch 'shelf-after-switch'
         return ,$results
     }
     finally {
@@ -273,6 +405,54 @@ try {
                 $left.contentType -ceq $right.contentType -and
                 $left.errorMsg -ceq $right.errorMsg -and
                 $left.data -ceq ($right.data + "`n")
+        }
+        if (-not $equal -and $left.probe -eq 'search-content-custom') {
+            $failurePrefix = 'java.lang.Exception: 保存文件失败: '
+            $isolatedPrefix = Join-Path $runRoot "original\storage\data\$user"
+            $failurePath = if ([string]$left.errorMsg -clike "$failurePrefix*") {
+                ([string]$left.errorMsg).Substring($failurePrefix.Length)
+            } else { '' }
+            $hit = @($right.data.list)
+            $accepted = $left.status -eq 200 -and $right.status -eq 200 -and
+                $left.contentType -ceq $right.contentType -and
+                $left.isSuccess -eq $false -and $null -eq $left.data -and
+                $failurePath.StartsWith(($isolatedPrefix + '\'), [StringComparison]::OrdinalIgnoreCase) -and
+                $failurePath.Length -gt 260 -and
+                $failurePath.EndsWith('.json', [StringComparison]::OrdinalIgnoreCase) -and
+                $right.isSuccess -eq $true -and $right.errorMsg -ceq '' -and
+                $right.data.lastIndex -eq 1 -and $hit.Count -eq 1 -and
+                @($hit[0].PSObject.Properties.Name).Count -eq 10 -and
+                $hit[0].chapterTitle -ceq '第一章 起点' -and
+                $hit[0].resultText -ceq '固定自定义正文。' -and
+                $hit[0].query -ceq '固定自定义' -and
+                $hit[0].chapterIndex -eq 0 -and $hit[0].pageIndex -eq 0 -and
+                $hit[0].pageSize -eq 0 -and $hit[0].resultCount -eq 0 -and
+                $hit[0].resultCountWithinChapter -eq 0 -and
+                $hit[0].queryIndexInResult -eq 0 -and $hit[0].queryIndexInChapter -eq 0
+        }
+        if (-not $equal -and $left.probe -eq 'available-candidates') {
+            $accepted = $left.status -eq 200 -and $right.status -eq 200 -and
+                $left.isSuccess -and $right.isSuccess -and
+                $left.contentType -ceq $right.contentType -and
+                $left.errorMsg -ceq $right.errorMsg -and
+                @($left.data).Count -eq 0 -and @($right.data).Count -eq 1 -and
+                $right.data[0].bookUrl -ceq $bookUrl -and
+                $right.data[0].origin -ceq $source.bookSourceUrl -and
+                $right.data[0].name -ceq '差分测试书' -and
+                $right.data[0].author -ceq '测试作者'
+        }
+        if (-not $equal -and $left.probe -eq 'source-switch') {
+            $accepted = $left.status -eq 200 -and $right.status -eq 200 -and
+                $left.isSuccess -and $right.isSuccess -and
+                $left.contentType -ceq $right.contentType -and
+                $left.errorMsg -ceq $right.errorMsg -and
+                $left.data.bookUrl -ceq $right.data.bookUrl -and
+                $left.data.tocUrl -ceq $right.data.tocUrl -and
+                $left.data.origin -ceq $right.data.origin -and
+                $left.data.name -cne '差分测试书' -and
+                $left.data.author -cne '测试作者' -and
+                $right.data.name -ceq '差分测试书' -and
+                $right.data.author -ceq '测试作者'
         }
         [pscustomobject]@{
             probe = $left.probe

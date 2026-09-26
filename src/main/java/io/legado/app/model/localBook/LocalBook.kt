@@ -11,6 +11,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.nio.file.Paths
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import javax.script.SimpleBindings
@@ -109,9 +110,14 @@ object LocalBook {
                 }
             }
             if (book.isEpub()) {
-                bookFile = bookFile.parentFile!!
-                if (bookFile.exists()) {
-                    FileUtils.delete(bookFile, true)
+                // Only the legacy directory/index.epub layout owns its parent directory.
+                // A directly imported EPUB must never remove adjacent user files.
+                val originPath = Paths.get(book.originName).normalize()
+                val legacyDirectory = bookFile.parentFile.toPath().normalize().endsWith(originPath)
+                if (legacyDirectory) {
+                    FileUtils.delete(bookFile.parentFile, true)
+                } else if (bookFile.exists()) {
+                    bookFile.delete()
                 }
             }
         }

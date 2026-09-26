@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -13,6 +13,7 @@ import {
   refreshLocalBook,
   removeBookGroup,
   removeBookGroupMulti,
+  saveBook,
   saveBookGroup,
   saveBookGroupOrder,
   setBookGroups,
@@ -25,7 +26,7 @@ import {
   saveBookmark,
   saveBookmarks,
 } from '@/api/bookmarks'
-import { uploadLocalBook, importBookPreview } from '@/api/upload'
+import { discardImportPreview, importBookPreview, type LocalBookImportPreview } from '@/api/upload'
 import { searchBookContent } from '@/api/cache'
 import { exportBook, type ExportFormat } from '@/api/export'
 import { downloadBlob } from '@/utils/download'
@@ -37,7 +38,7 @@ import { proxyImageUrl } from '@/utils/imageProxy'
 import { useUserStore } from '@/stores/user'
 import { probeSecureMode } from '@/api/users'
 import TopNav from '@/components/TopNav.vue'
-import type { Book, BookGroup, Bookmark, ContentSearchHit, ImportPreview } from '@/types'
+import type { Book, BookGroup, Bookmark, ContentSearchHit } from '@/types'
 
 const router = useRouter()
 const store = useUserStore()
@@ -412,11 +413,11 @@ let suppressClick = false
 /* ================= 导入本地书 ================= */
 interface ImportItem {
   file: File
-  status: 'pending' | 'uploading' | 'done' | 'error'
+  status: 'preparing' | 'pending' | 'uploading' | 'done' | 'error'
   progress: number
   error?: string
-  /** 导入预览（POST /reader3/importBookPreview；undefined=探测中 / null=未实现或失败 → 直接上传） */
-  preview?: ImportPreview | null
+  /** 后端已经保存的临时本地书与目录；确认后由 book 提交给 /saveBook。 */
+  preview?: LocalBookImportPreview
 }
 
 const importOpen = ref(false)
@@ -429,6 +430,7 @@ const importDone = ref(false)
 const importSummary = ref('')
 const acceptTip = ref('')
 const importItems = ref<ImportItem[]>([])
+let importSession = 0
 
 /** 整体进度：按文件大小加权 */
 const totalProgress = computed(() => {
@@ -442,12 +444,12 @@ const hasPending = computed(() => importItems.value.some((it) => it.status === '
 const hasPendingCount = computed(() => importItems.value.filter((it) => it.status === 'pending').length)
 const failedCount = computed(() => importItems.value.filter((it) => it.status === 'error').length)
 
-/* ================= 导入预览（POST /reader3/importBookPreview：选文件后先探测；404/未实现 → 直接上传） ================= */
+/* ================= 导入预览（真实 Java/Kotlin：上传保存 → 返回 Book/目录 → saveBook 入书架） ================= */
 
 /** 是否任一文件拿到预览数据（后端实现判定） */
 const previewSupported = computed(() => importItems.value.some((it) => it.preview != null))
 /** 是否仍有文件在探测预览中 */
-const previewChecking = computed(() => importItems.value.some((it) => it.preview === undefined))
+const previewChecking = computed(() => importItems.value.some((it) => it.status === 'preparing'))
 /** 拿到预览数据的文件（用于弹窗展示） */
 const previewedItems = computed(() => importItems.value.filter((it) => it.preview != null))
 
@@ -455,29 +457,39 @@ const previewedItems = computed(() => importItems.value.filter((it) => it.previe
 function previewChapters(item: ImportItem): string[] {
   const p = item.preview
   if (!p) return []
-  const raw = Array.isArray(p.chapters) ? p.chapters : p.chapterList
-  if (!Array.isArray(raw)) return []
-  return raw
-    .map((c) => (typeof c === 'string' ? c : (c?.title ?? '')))
+  return p.chapters
+    .map((c) => c.title ?? '')
     .filter((t) => !!t)
     .slice(0, 5)
 }
 
 function previewChapterCount(item: ImportItem): number {
-  const p = item.preview
-  if (!p) return 0
-  if (typeof p.chapterCount === 'number' && p.chapterCount >= 0) return p.chapterCount
-  const raw = Array.isArray(p.chapters) ? p.chapters : p.chapterList
-  return Array.isArray(raw) ? raw.length : 0
+  return item.preview?.chapters.length ?? 0
 }
 
-/** 单文件导入预览：成功 → 预览数据（弹窗展示，确认后仍走 uploadLocalBook）；404/未实现/失败 → preview=null 直接上传 */
-async function checkPreview(item: ImportItem) {
+/**
+ * 单文件预览同时完成 Java/Kotlin 的资产保存。接口失败时不伪造“直接上传”
+ * 降级：该路由在原版中不存在，继续会得到 404 且无法入书架。
+ */
+async function checkPreview(item: ImportItem, session: number) {
   try {
     const res = await importBookPreview(item.file)
-    item.preview = res.data ?? null
-  } catch {
-    item.preview = null
+    const preview = res.data?.[0]
+    if (!preview?.book?.bookUrl || !preview.book.origin) {
+      item.status = 'error'
+      item.error = '服务器未返回可导入书籍'
+      return
+    }
+    // 用户在请求完成前关闭弹窗时，回收已经保存但未入架的用户资产。
+    if (session !== importSession || !importOpen.value) {
+      void discardImportPreview(preview)
+      return
+    }
+    item.preview = preview
+    item.status = 'pending'
+  } catch (err) {
+    item.status = 'error'
+    item.error = err instanceof Error ? err.message : '解析书籍失败'
   }
 }
 
@@ -492,18 +504,14 @@ function isSupported(file: File): boolean {
   return (
     name.endsWith('.epub') ||
     name.endsWith('.txt') ||
-    name.endsWith('.mobi') ||
-    name.endsWith('.azw3') ||
     name.endsWith('.pdf') ||
-    name.endsWith('.fb2') ||
-    name.endsWith('.docx') ||
-    file.type === 'application/epub+zip' ||
-    file.type === 'text/plain' ||
-    file.type.startsWith('text/')
+    name.endsWith('.cbz') ||
+    name.endsWith('.umd')
   )
 }
 
 function openImport() {
+  importSession++
   importOpen.value = true
   uploadBusy.value = false
   importDone.value = false
@@ -516,6 +524,9 @@ function openImport() {
 
 function closeImport() {
   if (uploadBusy.value) return
+  importSession++
+  // `importBookPreview` 已将待确认文件写入用户 assets；关闭或取消时回收未入架项。
+  for (const item of importItems.value) discardPreview(item)
   importOpen.value = false
   document.body.style.overflow = ''
 }
@@ -526,17 +537,19 @@ function addFiles(files: File[]) {
   const ignored = files.length - valid.length
   const added: ImportItem[] = []
   for (const f of valid) {
-    const item: ImportItem = { file: f, status: 'pending', progress: 0, preview: undefined }
+    // checkPreview 持有同一个响应式对象；直接修改 push 前的原始对象不会触发模板更新。
+    const item = reactive<ImportItem>({ file: f, status: 'preparing', progress: 0 })
     importItems.value.push(item)
     added.push(item)
   }
-  acceptTip.value = ignored > 0 ? `已忽略 ${ignored} 个不支持的文件（支持 .epub / .txt / .mobi / .azw3 / .pdf / .fb2 / .docx）` : ''
+  acceptTip.value = ignored > 0 ? `已忽略 ${ignored} 个不支持的文件（支持 .epub / .txt / .pdf / .cbz / .umd）` : ''
   if (valid.length > 0) {
     importDone.value = false
     importSummary.value = ''
   }
-  // 导入预览（后端 /reader3/importBookPreview；404/未实现 → 直接上传降级）
-  for (const item of added) void checkPreview(item)
+  // 后端预览会保存资产，成功后才允许“开始导入”。
+  const session = importSession
+  for (const item of added) void checkPreview(item, session)
 }
 
 function onPick(e: Event) {
@@ -562,9 +575,19 @@ function onDrop(e: DragEvent) {
   addFiles(Array.from(e.dataTransfer?.files ?? []))
 }
 
+function discardPreview(item: ImportItem) {
+  if (item.preview && item.status !== 'done') void discardImportPreview(item.preview)
+}
+
+function importFormat(file: File): string {
+  const dot = file.name.lastIndexOf('.')
+  return dot >= 0 ? file.name.slice(dot + 1).toUpperCase() : '未知格式'
+}
+
 function removeItem(i: number) {
   if (uploadBusy.value) return
-  importItems.value.splice(i, 1)
+  const [item] = importItems.value.splice(i, 1)
+  if (item) discardPreview(item)
 }
 
 /**
@@ -582,7 +605,7 @@ async function checkImportDuplicates(): Promise<boolean> {
   const shelfNames = new Set(shelf.map((b) => b.name.trim()).filter(Boolean))
   const dups = new Set<string>()
   for (const item of importItems.value) {
-    const name = (item.preview?.name || item.file.name.replace(/\.[^.]+$/, '')).trim()
+    const name = (item.preview?.book.name || item.file.name.replace(/\.[^.]+$/, '')).trim()
     if (name && shelfNames.has(name)) dups.add(name)
   }
   if (dups.size === 0) return true
@@ -600,9 +623,9 @@ async function checkImportDuplicates(): Promise<boolean> {
   }
 }
 
-/** 逐个上传（每个文件一次 multipart POST），完成后自动刷新书架 */
+/** 逐个确认入架。文件已由 importBookPreview 保存，此处只提交原版 Book JSON。 */
 async function startUpload() {
-  if (uploadBusy.value || importItems.value.length === 0) return
+  if (uploadBusy.value || previewChecking.value || !hasPending.value) return
   // GAP 126：同名书确认弹窗（取消则中止本次导入）
   if (!(await checkImportDuplicates())) {
     ElMessage.info('已取消导入')
@@ -617,7 +640,8 @@ async function startUpload() {
     item.status = 'uploading'
     item.progress = 0
     try {
-      await uploadLocalBook(item.file, (p) => (item.progress = p))
+      if (!item.preview) throw new Error('书籍尚未解析完成')
+      await saveBook(item.preview.book)
       item.status = 'done'
       item.progress = 100
       ok++
@@ -2559,12 +2583,12 @@ onMounted(() => {
                 <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
               </svg>
               <p class="dz-text">点击选择文件，或将文件拖拽到此处</p>
-              <p class="dz-sub">支持 .epub / .txt / .mobi / .azw3 / .pdf / .fb2 / .docx · 可多选</p>
+              <p class="dz-sub">支持 .epub / .txt / .pdf / .cbz / .umd · 可多选</p>
               <input
                 ref="fileInput"
                 class="visually-hidden"
                 type="file"
-                accept=".epub,.txt,.mobi,.azw3,.pdf,.fb2,.docx,application/epub+zip,text/plain"
+                accept=".epub,.txt,.pdf,.cbz,.umd,application/epub+zip,text/plain"
                 multiple
                 @change="onPick"
               />
@@ -2577,7 +2601,8 @@ onMounted(() => {
                 <span class="file-name" :title="item.file.name">{{ item.file.name }}</span>
                 <span class="file-size">{{ fmtSize(item.file.size) }}</span>
                 <span class="file-state" :class="item.status">
-                  <template v-if="item.status === 'pending'">待导入</template>
+                  <template v-if="item.status === 'preparing'">正在解析…</template>
+                  <template v-else-if="item.status === 'pending'">待导入</template>
                   <template v-else-if="item.status === 'uploading'">
                     <svg class="mini-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                       <path d="M21 12a9 9 0 1 1-6.2-8.56" />
@@ -2590,7 +2615,7 @@ onMounted(() => {
                   <template v-else>{{ item.error || '导入失败' }}</template>
                 </span>
                 <button
-                  v-if="item.status === 'pending' && !uploadBusy"
+                  v-if="(item.status === 'preparing' || item.status === 'pending' || item.status === 'error') && !uploadBusy"
                   class="file-remove"
                   type="button"
                   title="移除"
@@ -2603,26 +2628,26 @@ onMounted(() => {
               </li>
             </ul>
 
-            <!-- 导入预览（后端 /reader3/importBookPreview：书名/作者/格式/章节数/前 5 章标题；未实现则隐藏并直接上传） -->
+            <!-- 导入预览：后端已保存资产；确认后以返回的 Book 调用 /saveBook 入书架。 -->
             <div v-if="previewSupported" class="preview-panel">
               <p class="preview-title">导入预览</p>
               <div v-for="(item, i) in previewedItems" :key="`pv-${i}`" class="preview-item">
                 <p class="preview-head">
-                  <span class="preview-name" :title="item.preview?.name || item.file.name">
-                    {{ item.preview?.name || item.file.name }}
+                  <span class="preview-name" :title="item.preview?.book.name || item.file.name">
+                    {{ item.preview?.book.name || item.file.name }}
                   </span>
                   <span class="preview-meta">
-                    {{ item.preview?.author ? item.preview.author + ' · ' : '' }}{{ item.preview?.format || '未知格式' }} · {{ previewChapterCount(item) }} 章
+                    {{ item.preview?.book.author ? item.preview.book.author + ' · ' : '' }}{{ importFormat(item.file) }} · {{ previewChapterCount(item) }} 章
                   </span>
                 </p>
                 <ol v-if="previewChapters(item).length" class="preview-chapters">
                   <li v-for="(ch, j) in previewChapters(item)" :key="j">{{ ch }}</li>
                 </ol>
               </div>
-              <p class="preview-tip">预览由服务器解析 · 确认无误后点击「开始导入」（确认后仍走上传接口）</p>
+              <p class="preview-tip">预览由服务器解析并临时保存 · 确认无误后点击「开始导入」加入书架</p>
             </div>
             <p v-else-if="importItems.length && !previewChecking" class="preview-tip muted">
-              服务器未提供导入预览（POST /reader3/importBookPreview），将直接上传
+              没有可导入的书籍；请查看每个文件的错误提示
             </p>
 
             <!-- 底部：整体进度 / 摘要 + 操作 -->
@@ -2631,7 +2656,7 @@ onMounted(() => {
                 <svg class="mini-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                   <path d="M21 12a9 9 0 1 1-6.2-8.56" />
                 </svg>
-                <span>正在导入 {{ uploadIndex + 1 }} / {{ importItems.length }} · {{ totalProgress }}%</span>
+                <span>正在加入书架 {{ uploadIndex + 1 }} / {{ importItems.length }} · {{ totalProgress }}%</span>
               </div>
               <div v-else-if="importDone" class="overall" :class="{ hasError: failedCount > 0 }">
                 {{ importSummary }}
@@ -2643,7 +2668,7 @@ onMounted(() => {
                 <button
                   class="accent-btn"
                   type="button"
-                  :disabled="uploadBusy || !hasPending"
+                  :disabled="uploadBusy || previewChecking || !hasPending"
                   @click="startUpload"
                 >
                   {{ uploadBusy ? '导入中…' : hasPending ? `开始导入（${hasPendingCount}）` : '开始导入' }}

@@ -1,21 +1,9 @@
-import { get } from './request'
 import type { ReturnData } from '@/types'
 
 /**
- * 阅读统计 —— 后端契约（并行实现中）
- *
- * GET /reader3/getReadingStats → ReturnData<ReadingStats>
- *   后端实现形态（storage::ReadingStats，camelCase）：
- *     {
- *       today:  <秒>,                       // 今日阅读秒数
- *       week:   <秒>,                       // 近 7 天阅读秒数
- *       total:  <秒>,                       // 累计阅读秒数
- *       books:  [{ bookUrl, name, seconds, chars }]   // 单书汇总（按秒数降序）
- *     }
- *   契约描述形态（兼容读取）：today/week/total 为 {count,minutes,books} 对象，TOP 列表字段 topBooks。
- *
- * 说明：接口未实现（404）时调用方 silent 降级——用本地阅读进度（reader-progress-*）
- * 计算近似统计并标注「本地统计」。
+ * 阅读统计没有可等价映射的 Java/Kotlin 路由。当前服务端只持久化章节进度，
+ * 未记录时长/字数聚合；因此不能编造 getReadingStats 响应。
+ * 调用方会捕获此明确错误并显示标注过的本地近似统计。
  */
 
 /** 单个时间窗统计（契约形态；秒数形态由调用方归一化） */
@@ -49,7 +37,7 @@ export interface ReadingStats {
   [key: string]: unknown
 }
 
-/** GET /reader3/getReadingStats（silent：未实现时调用方降级本地统计） */
+/** 当前后端没有阅读时长统计模型。 */
 export function getReadingStats(): Promise<ReturnData<ReadingStats>> {
-  return get<ReadingStats>('/getReadingStats', undefined, { silent: true })
+  return Promise.reject(new Error('当前 Java/Kotlin 服务端未实现阅读统计接口'))
 }

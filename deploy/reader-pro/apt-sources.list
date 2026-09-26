@@ -1,0 +1,7 @@
+# Immutable Ubuntu Jammy package index used by the complete Reader image.
+# The timestamped snapshot was verified reachable on 2026-09-26.  Do not
+# replace it with archive.ubuntu.com; update this file deliberately and review
+# the resulting image digest.
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy main universe
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy-updates main universe
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy-security main universe

@@ -189,16 +189,21 @@ export interface RssSource {
   [key: string]: unknown
 }
 
-/** RSS 文章（/reader3/getRssArticles → data 数组；content 为正文 HTML，getRssArticle 单独拉取） */
+/** RSS 文章（Java/Kotlin RssArticle 的 JSON 形状；正文另走 getRssContent）。 */
 export interface RssArticle {
-  url: string
+  /** 文章所在 feed / 分类地址；与 link 一起构成文章身份。 */
+  origin: string
+  sort?: string
   title: string
-  author?: string | null
-  time: number
+  order?: number
+  link: string
+  pubDate?: string | null
+  description?: string | null
   content?: string | null
-  cover?: string | null
-  /** 已读标记（getRssArticles 返回 hasRead；点击文章后置 true） */
-  hasRead?: boolean
+  image?: string | null
+  /** 服务端列表中的当前 read 值；本项目没有对应的持久化写入路由。 */
+  read?: boolean
+  variable?: string | null
   [key: string]: unknown
 }
 
@@ -381,7 +386,7 @@ export interface CacheInfo {
   [key: string]: unknown
 }
 
-/** 书源订阅（后端 /reader3/getSourceSubs 为主，localStorage: reader_source_subs 降级，见 api/sourceSubs.ts；
+/** 书源订阅（服务端为准，localStorage 仅按用户与命名空间保留离线只读镜像，见 api/sourceSubs.ts；
  * 禁用后停止自动刷新，订阅记录与已导入书源保留） */
 export interface SourceSub {
   url: string
@@ -421,8 +426,10 @@ export interface BookSource {
 /** 书源登录态（/reader3/getBookSourceCookie → CookieRow，camelCase） */
 export interface CookieRow {
   sourceUrl: string
-  /** Cookie 原文（本人可见，UI 仅展示摘要） */
+  /** 仅包含名称和掩码，不返回 Cookie 原文 */
   cookie: string
+  hasCookie?: boolean
+  cookiePreview?: string
   userAgent?: string
   loginHeader?: string
   updatedAt: number

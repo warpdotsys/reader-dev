@@ -1,6 +1,6 @@
 # Reader-dev 维护路线
 
-更新日期：2026-09-25。
+更新日期：2026-09-26。
 
 ## 当前方向
 
@@ -9,7 +9,7 @@
 - 当前发布版继续保留原 JAR 的 Vue 2 界面作为回退；新 UI 工作转向参考 Rust `master/web-ui` 的 Vue 3 设计语言，但以 Java/Kotlin 后端为唯一接入目标。Rust 前端的功能不全，不能直接替换现有页面或照搬其后端契约。
 - 已发布版本、构建证据和已知限制见 `docs/releases/` 与 `reports/`。本路线图描述优先级，不代表其中每项已经交付。
 
-## 近期主线（2026-09-25 调整）
+## 近期主线（2026-09-26 调整）
 
 1. **内置浏览器**：先以固定 WebView 书源样本比较原 JAR、现有远程服务和本地候选引擎，再做单容器 PoC、进程隔离和资源预算。目标是无需另行部署 `remote-webview`；在实测达标前保留远程实现和回滚路径。下文的候选表不是选型结论。
 2. **Vue 3 界面**：参考 Rust `master/web-ui` 的设计语言（配色、排版、导航和阅读体验），但页面功能与请求契约以当前 Java/Kotlin 服务和原 JAR 为准。先在独立目录建立可预览、可测试的前端，再逐页接入；完整登录、书架、搜索、阅读、书源管理通过验收前，不替换线上 Vue 2 入口。具体边界见 [Vue 3 UI 迁移核查](VUE3-UI-MIGRATION.md)。
@@ -17,9 +17,11 @@
 
 持续约束：原始 JAR 与 `storage/data` 兼容仍是业务基线；缺陷修复继续配差分测试，不新增伪造空实现。GitHub 托管 runner 负责构建和发版，生产数据只在备份及隔离验证后迁移。继续跟踪 [#49 子目录部署](https://github.com/warpdotsys/reader-dev/issues/49)与 [#34 章节固化](https://github.com/warpdotsys/reader-dev/issues/34)；`/reader` 无尾斜杠入口的本机修复不等于 #49 已在生产验收。
 
-## 最终完整版本发布与部署门槛（2026-09-25 新增）
+## 最终完整版本发布与部署门槛（2026-09-26 更新）
 
-本节是浏览器、Vue 3 主界面、兼容性回归和项目文档均达到各自验收条件之后的最后阶段；不得为了提前发版而降低上述验收标准。发布前重新查询 GitHub 最新正式 Release，并选择严格高于它的统一产品版本；当前（2026-09-25）查到的最新正式版为 `v6.0.45`，恢复线 `v4.0.7-restored.8` 是预发布，最终版本号须在实际发布时再次核实，不能把现在的快照当成永久版本结论。
+本节也是当前交付目标的追加完成定义：先完成并验收内置浏览器、Vue 3 全功能界面、兼容性回归、项目文档及托管 CI；然后统一提升后端与所有 Web 版本号、构建并发布 GitHub Release、GHCR 和 Docker Hub 镜像；最后在 `cdn.medwarp.cn` 部署、验证并记录回滚。只有这些阶段都完成且有证据，才把整个目标视为完成。
+
+本节是浏览器、Vue 3 主界面、兼容性回归和项目文档均达到各自验收条件之后的最后阶段；不得为了提前发版而降低上述验收标准。发布前重新查询 GitHub 最新正式 Release，并选择严格高于它的统一产品版本；本机 GitHub CLI 于 2026-09-26 查到的最新正式版为 `v6.0.45`，恢复线 `v4.0.7-restored.8` 是预发布，最终版本号须在实际发布时再次核实，不能把现在的快照当成永久版本结论。
 
 - [ ] 盘点并统一后端 `build.gradle.kts`、原版前端 `web/package.json`、Vue 3 前端 `web-vue3/package.json`、嵌入静态资源及容器标签的版本声明；全部提升到高于发布前最新正式 Release 的版本。当前可见值为后端 `4.0.7`、原版 Web `4.0.7`、Vue 3 Web `6.0.45`，存在版本不一致。
 - [ ] 在 GitHub 托管 runner 上执行完整测试、前后端构建、镜像构建和制品校验；发布说明采用项目维护者口吻，明确实际验证范围、已知问题、升级/数据兼容注意事项及回滚方法。
@@ -27,9 +29,9 @@
 - [ ] 将已验证的产物部署到用户指定的 `cdn.medwarp.cn` 主机，先保留现有容器、配置和存储的可回滚副本，再执行健康检查及公网冒烟测试。`cdn.medwarp.cn` 在此处是部署主机；当前应用公网域名仍配置为 `read.medwarp.cn`，不得擅自把两者混为一谈或更改应用域名。
 - [ ] 若需要导入数据，先确认数据来源和目标命名空间，备份目标 `storage/data` 并在隔离副本验证格式、用户归属和读写；未经校验不得覆盖现有生产数据。部署和数据导入分别记录证据、结果与回滚步骤。
 
-**当前发布链路缺口（已检查仓库配置，尚未改造）**：`.github/workflows/release.yml` 当前只接受 `v*-restored.*` 标签，生成离线镜像归档后直接部署，并在成功后创建 GitHub prerelease；未见 GHCR 或 Docker Hub 推送步骤。现有部署配置使用 `medwarp/reader-pro-restored:4.0.7`，工作流实际针对 `read.medwarp.cn`，不是本次指定的 `cdn.medwarp.cn` 部署主机。以上发布目标全部仍未完成。
+**当前发布链路状态（源码候选，尚未实际发布）**：已把正式版标签校验、GitHub 托管 runner 的 Vue 3 构建、GHCR/Docker Hub 双镜像推送、`cdn.medwarp.cn` 部署与故障回滚写入工作流；PyPI 固定依赖的 wheel SHA-256 也已写入锁文件。上述工作流仍需提交后由 GitHub runner 实跑，双架构容器构建与镜像仓库凭据、生产 SSH/回滚分支仍需现场验证。当前未升版本、未创建 Release、未推送镜像、未部署，不能把静态检查视为上线证据。
 
-## 内置指纹无头浏览器（普通 Chromium 基线已验证，指纹引擎未选型）
+## 内置指纹无头浏览器（Camoufox 候选正在接入，尚未完成容器验收）
 
 目标是让需要 `webView` 的书源在 Reader 的一个部署单元内完成渲染：浏览器二进制和驱动随浏览器版镜像预装，由 Java/Kotlin 服务监管本地子进程；不要求用户再运行 `readerwebview` 容器，也不对公网开放浏览器控制端口。这里的“内置”不等于把浏览器塞进 JVM 进程，更不等于给普通 Chromium 改个 User-Agent 就宣称具备指纹能力。
 
@@ -66,6 +68,10 @@
 本节覆盖上方较早快照中“仍不支持 `sourceRegex` 和非 UTF-8 `encode`”的结论：本地 Chromium 现在会先执行网络策略，再用完整正则匹配请求 URL；命中时捕获该资源 URL、终止该资源下载，并以 `StrResponse(原页面 URL, 命中资源 URL)` 返回。合成 Chrome 测试通过并确认目标夹具服务器没有收到被嗅探资源。对直接提供的 HTML，`encode` 现支持 JVM 可识别字符集，并通过指定字符集往返模拟 legacy `loadDataWithBaseURL` 的可表示字符与替换行为；GBK 中文与未知字符集错误测试均通过。HTTP 页面导航仍由 HTTP 头/HTML 元信息决定编码，不把 `encode` 错用于 HTTP 响应解码。
 
 行为参考为[近似 legado Android `BackstageWebView` 实现](https://gitea.yamby.cn/yusheng/QieKan-3.0/src/commit/45ffb0ef213421373ad539e15880f4e2288f529e/app/src/main/java/io/legado/app/help/http/BackstageWebView.kt)：它对资源 URL 使用整串正则匹配，并把匹配的资源 URL 作为响应；这不是 `reader-pro-3.2.14.jar` 等版本证明。恢复版的 `sourceRegex`/字符集语义仍需与原 JAR 和真实远程 `/render.html` 服务做受控黑盒差分；期间保留远程 renderer 回退。此增量全量本机 Gradle + 已安装 Chrome 回归为 26 套件、56 用例、0 失败/错误/跳过，不能替代托管镜像验收或真实书源兼容测试。
+
+### Camoufox 候选接入快照（2026-09-26，容器尚未验收）
+
+本轮源码已加入 Reader 管理的 Python/Camoufox renderer、每次渲染独立浏览器上下文、现有 SSRF 出口代理、Cookie 用户命名空间回写、进程超时/回收以及非 HTTP 资源协议拦截。镜像默认配置指向 Camoufox；Python 包固定为 `0.5.6`、Playwright 固定为 `1.62.0`，浏览器版本锁定 `v152.0.4-beta.30`，安装脚本在解包前校验 GitHub release asset 的大小与 SHA-256。**已成功重建**：本机 Java/Kotlin 全量测试与 Vue 3 JAR 构建通过；**已在隔离 Windows 运行时验证**：真实 Camoufox GET/POST、脚本子资源、Cookie 回写和 `sourceRegex` 捕获通过。**尚未验证**：GitHub 托管 runner 的 Linux 双架构容器构建、镜像内合成及真实书源旅程、生产网络隔离、并发资源预算、ARM64 和部署回滚。旧 Chromium runner 与本机 Windows 测试均不能替代这些验证；当前生产版本也尚未包含此候选。
 
 ## 后续候选项（尚未承诺）
 

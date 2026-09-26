@@ -1,8 +1,8 @@
 services:
   reader-pro:
-    build:
-      context: .
-    image: medwarp/reader-pro-restored:4.0.7
+    # The release workflow supplies an immutable registry reference, including
+    # its digest. Production must never rebuild an image from host files.
+    image: ${READER_IMAGE:?READER_IMAGE must be an immutable image reference}
     container_name: reader-pro-restored
     restart: unless-stopped
     env_file:
@@ -13,7 +13,9 @@ services:
       READER_SERVER_PORT: "8080"
       READER_APP_LICENSESERVERURL: https://license.medwarp.cn
       READER_APP_LICENSECHECKENABLED: "true"
-      READER_APP_WEBVIEWRENDERER: local
+      # The complete production image carries Camoufox itself.  Do not silently
+      # fall back to a host-installed Chromium or a second WebView container.
+      READER_APP_WEBVIEWRENDERER: camoufox
     volumes:
       - ./storage:/storage
       - ./logs:/logs

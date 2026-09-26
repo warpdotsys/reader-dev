@@ -26,7 +26,6 @@ import {
   bgImageUrl as bgImageUrlOf,
   type BgMode,
 } from '@/utils/readerBg'
-import { clearCache, getCacheInfo } from '@/api/cache'
 import { clearTtsCache, ttsCacheStats } from '@/utils/ttsCache'
 import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/api/backup'
 import { getSystemInfo } from '@/api/system'
@@ -56,7 +55,7 @@ import { isNotImplemented } from '@/utils/errors'
 import { DAILY_STATS_KEY, last7Days, parseDailyStats } from '@/utils/dailyStats'
 import { useUserStore } from '@/stores/user'
 import { downloadBlob } from '@/utils/download'
-import type { CacheClearType, CacheInfo, HttpTts, SystemInfo, TxtTocRule } from '@/types'
+import type { HttpTts, SystemInfo, TxtTocRule } from '@/types'
 
 const router = useRouter()
 const store = useUserStore()
@@ -263,13 +262,13 @@ async function confirmAddTts() {
   }
   ttsBusy.value = true
   try {
-    // 当前为 localStorage 占位；后端就绪后走 POST /reader3/saveHttpTTS（见 api/httpTts.ts）
-    await saveHttpTts({
+    const result = await saveHttpTts({
       id: newTtsId(),
       name: ttsForm.value.name.trim() || url,
       url,
       type: ttsForm.value.type,
     })
+    if (!result.isSuccess) ElMessage.warning('服务端不可用，听书源已暂存到当前浏览器')
     await loadTtsList()
     closeAddTts()
   } finally {
@@ -291,8 +290,8 @@ async function confirmDeleteTts() {
   if (!t || deleteTtsBusy.value) return
   deleteTtsBusy.value = true
   try {
-    // 当前为 localStorage 占位；后端就绪后走 POST /reader3/deleteHttpTTS（见 api/httpTts.ts）
-    await deleteHttpTts(t.id)
+    const result = await deleteHttpTts(t)
+    if (!result.isSuccess) ElMessage.warning('服务端不可用，仅删除了当前浏览器的缓存')
     ttsList.value = ttsList.value.filter((x) => x.id !== t.id)
     closeDeleteTts()
   } catch {
@@ -319,8 +318,10 @@ async function removeSelectedTts() {
   ttsBusy.value = true
   try {
     const ids = [...ttsSelected.value]
-    const res = await deleteHttpTtsMany(ids)
-    ElMessage.success(`已删除 ${res.data?.count ?? ids.length} 个听书源`)
+    const targets = ttsList.value.filter((t) => ids.includes(t.id))
+    const result = await deleteHttpTtsMany(targets)
+    if (result.isSuccess) ElMessage.success(`已删除 ${targets.length} 个听书源`)
+    else ElMessage.warning(`服务端不可用，仅删除了当前浏览器缓存中的 ${targets.length} 个听书源`)
     ttsSelected.value = new Set()
     await loadTtsList()
   } catch {
@@ -343,8 +344,9 @@ async function importTtsFile(file: File) {
     ElMessage.warning('未找到有效听书源数据')
     return
   }
-  const res = await saveHttpTtsMulti(parsed)
-  ElMessage.success(`已导入 ${res.data?.count ?? parsed.length} 个听书源`)
+  const result = await saveHttpTtsMulti(parsed)
+  if (result.isSuccess) ElMessage.success(`已导入 ${parsed.length} 个听书源`)
+  else ElMessage.warning(`服务端不可用，已暂存 ${parsed.length} 个听书源到当前浏览器`)
   await loadTtsList()
 }
 
@@ -504,7 +506,6 @@ onMounted(() => {
   loadTtsList()
   loadSysInfo()
   loadTxtTocRules()
-  loadCacheInfo()
   loadServerPref()
   loadOpdsCfg()
 })
@@ -995,60 +996,15 @@ function closeStats() {
   document.body.style.overflow = ''
 }
 
-/* ================= 缓存管理（契约 GET /reader3/getCacheInfo + POST /reader3/clearCache） ================= */
-
-const cacheInfo = ref<CacheInfo | null>(null)
-/** 后端契约是否可用（getCacheInfo 静默探测；未实现时置 false，界面显示「后端待实现」） */
-const cacheReady = ref(false)
-const cacheBusy = ref(false)
-
-/** 清理类型（极简胶囊单选）：目录 / 章节 / 全部 */
-const CLEAR_TYPES: { value: CacheClearType; label: string }[] = [
-  { value: 'toc', label: '目录' },
-  { value: 'chapters', label: '章节' },
-  { value: 'all', label: '全部' },
-]
-const cacheType = ref<CacheClearType>('chapters')
+/* ================= 缓存管理 =================
+ * 已验证：后端仅支持单书缓存信息与单书删除，入口在书籍详情。
+ * 不存在全局统计/清理 API，因此这里不发出虚假的探测请求或成功提示。 */
 
 function fmtSize(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return '0 B'
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
   return `${(n / 1024 / 1024).toFixed(1)} MB`
-}
-
-async function loadCacheInfo() {
-  try {
-    const res = await getCacheInfo()
-    cacheInfo.value = res.data ?? null
-    cacheReady.value = true
-  } catch {
-    // 接口未实现（404）/网络失败：静默降级显示「后端待实现」
-    cacheInfo.value = null
-    cacheReady.value = false
-  }
-}
-
-function clearTypeLabel(t: CacheClearType): string {
-  return CLEAR_TYPES.find((x) => x.value === t)?.label ?? t
-}
-
-async function runClearCache() {
-  if (!cacheReady.value) {
-    ElMessage.info('清理缓存接口后端待实现（POST /reader3/clearCache）')
-    return
-  }
-  if (cacheBusy.value) return
-  cacheBusy.value = true
-  try {
-    await clearCache(cacheType.value)
-    ElMessage.success(`已清理${clearTypeLabel(cacheType.value)}缓存`)
-    await loadCacheInfo()
-  } catch {
-    // 已提示
-  } finally {
-    cacheBusy.value = false
-  }
 }
 
 /* ================= P0-3b 听书缓存（Cache API 本地音频，独立于后端章节缓存） ================= */
@@ -1747,45 +1703,14 @@ async function runExportData() {
         <p class="card-note">WebDAV 地址供外部客户端（如 RaiDrive、文件管理器）挂载访问；备份需要当前用户已开启 WebDAV。备份遵循旧版接口，固定写入当前用户数据目录下的 webdav/legado，并通过同一用户的文件权限下载。</p>
       </section>
 
-      <!-- 缓存（契约 GET /reader3/getCacheInfo + POST /reader3/clearCache） -->
+      <!-- 缓存：后端当前仅支持单书操作，入口在书籍详情页 -->
       <section class="card">
         <h2 class="card-title">缓存</h2>
         <div class="row">
-          <span class="row-label">缓存统计</span>
-          <span v-if="cacheReady" class="row-value">
-            章节 {{ cacheInfo?.chapterCount ?? 0 }} · 目录 {{ cacheInfo?.tocCacheCount ?? 0 }} · {{ fmtSize(cacheInfo?.totalSize ?? 0) }}
-          </span>
-          <span v-else class="row-value">后端待实现</span>
+          <span class="row-label">书籍正文</span>
+          <span class="row-value">按书管理</span>
         </div>
-        <div class="row">
-          <span class="row-label">清理缓存</span>
-          <div class="cache-types">
-            <button
-              v-for="t in CLEAR_TYPES"
-              :key="t.value"
-              class="capsule"
-              :class="{ active: cacheType === t.value }"
-              type="button"
-              :disabled="!cacheReady || cacheBusy"
-              @click="cacheType = t.value"
-            >
-              {{ t.label }}
-            </button>
-          </div>
-          <button
-            class="row-action cache-clear"
-            type="button"
-            :disabled="!cacheReady || cacheBusy"
-            :title="cacheReady ? '清理所选类型缓存' : '清理接口后端待实现'"
-            @click="runClearCache"
-          >
-            {{ cacheBusy ? '清理中…' : '清理' }}
-          </button>
-        </div>
-        <p v-if="!cacheReady" class="card-note">
-          缓存统计接口 GET /reader3/getCacheInfo 与清理接口 POST /reader3/clearCache 后端待实现。
-        </p>
-        <p v-else class="card-note">正文/目录缓存占用磁盘空间，清理后再次打开会重新拉取。</p>
+        <p class="card-note">当前 Java/Kotlin 后端提供单书缓存状态与单书清理。请在书籍详情页操作；全局缓存统计和批量清理尚无后端接口，因此本页不会显示不可靠的数据或“清理成功”。</p>
         <!-- P0-3b 听书音频缓存（浏览器 Cache API，与后端章节缓存独立） -->
         <div class="row">
           <span class="row-label">听书音频</span>

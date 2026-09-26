@@ -135,7 +135,7 @@ class Debugger(val logMsg: (String) -> Unit) : DebugLog {
     private suspend fun infoDebug(webBook: WebBook, book: Book) {
         webBook.debugLogger = this@Debugger
         log(msg = "︾开始解析详情页")
-        runCatching { webBook.getBookInfo(book.bookUrl) }
+        runCatching { webBook.getBookInfo(book) }
                 .onSuccess {
                     log("┌书籍详情")
                     log("└" + GSON.toJson(it))
@@ -184,7 +184,7 @@ class Debugger(val logMsg: (String) -> Unit) : DebugLog {
         runCatching { webBook.getBookContent(book, bookChapter, nextChapterUrl) }
                 .onSuccess {
                     log("┌正文内容")
-                    log("└" + GSON.toJson(it))
+                    log("└" + it)
                     log(webBook.sourceUrl, "︽正文页解析完成")
                 }
                 .onFailure {

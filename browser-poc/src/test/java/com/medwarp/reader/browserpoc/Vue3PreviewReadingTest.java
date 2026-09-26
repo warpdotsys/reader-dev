@@ -80,7 +80,12 @@ public class Vue3PreviewReadingTest {
                 }
                 assertTrue(page.locator(".reader-content").innerText()
                         .contains("第一段，中文与 UTF-8。"));
-                page.locator(".chapter-nav button").last().click();
+                Response progress = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                                .endsWith("/reader3/saveBookProgress"),
+                        () -> page.locator(".chapter-nav button").last().click());
+                assertEquals(200, progress.status());
+                assertTrue("The legacy progress endpoint must accept the Vue 3 chapter update",
+                        progress.text().contains("\"isSuccess\":true"));
                 page.getByText("终章内容固定。").waitFor();
                 assertTrue(page.locator(".reader-content").innerText()
                         .contains("终章内容固定。"));

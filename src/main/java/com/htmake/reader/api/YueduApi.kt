@@ -27,6 +27,9 @@ import com.htmake.reader.api.controller.BookGroupController
 import com.htmake.reader.api.controller.FileController
 import com.htmake.reader.api.controller.HttpTTSController
 import com.htmake.reader.api.controller.LicenseController
+import com.htmake.reader.api.controller.SourceLoginController
+import com.htmake.reader.api.controller.TxtTocRuleController
+import com.htmake.reader.api.controller.SourceSubscriptionController
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.getStorage
@@ -48,6 +51,7 @@ import com.htmake.reader.utils.jsonEncode
 import com.htmake.reader.utils.getRelativePath
 import com.htmake.reader.utils.RemoteWebview
 import com.htmake.reader.utils.LocalWebviewRenderer
+import com.htmake.reader.utils.CamoufoxWebviewRenderer
 import com.htmake.reader.utils.getInstalledLicense
 import com.htmake.reader.utils.getTraceId
 import com.htmake.reader.init.ReaderAdapter
@@ -105,7 +109,7 @@ class YueduApi : RestVerticle() {
 
     override suspend fun stop() {
         try {
-            (ReaderAdapter.webviewRenderer as? LocalWebviewRenderer)?.close()
+            ReaderAdapter.webviewRenderer.close()
         } finally {
             super.stop()
         }
@@ -124,6 +128,11 @@ class YueduApi : RestVerticle() {
         ReaderAdapter.webviewRenderer = when (appConfig.webviewRenderer.lowercase()) {
             "remote" -> RemoteWebview
             "local" -> LocalWebviewRenderer(appConfig.browserExecutablePath, appConfig.browserTimeoutMs)
+            "camoufox" -> CamoufoxWebviewRenderer(
+                appConfig.camoufoxPythonExecutable,
+                appConfig.camoufoxBrowserVersion,
+                appConfig.browserTimeoutMs
+            )
             else -> throw IllegalArgumentException("Unsupported reader.app.webviewRenderer: ${appConfig.webviewRenderer}")
         }
         ReaderAdapterHelper.setAdapter(ReaderAdapter)
@@ -131,8 +140,47 @@ class YueduApi : RestVerticle() {
         // 旧版数据迁移
         migration()
 
-        // web界面
-        router.route("/*").handler(StaticHandler.create("web").setDefaultContentEncoding("UTF-8"));
+        // Keep the original Vue 2 bundle packaged as a rollback; Vue 3 is opt-in until
+        // the complete compatibility suite passes and the release switches the default.
+        val webRoot = when (appConfig.webUi.trim().lowercase()) {
+            "vue2" -> "web"
+            "vue3" -> "web-vue3"
+            else -> throw IllegalArgumentException("Unsupported reader.app.webUi: ${appConfig.webUi}")
+        }
+        val vue3IndexHtml = if (webRoot == "web-vue3") {
+            javaClass.classLoader.getResourceAsStream("web-vue3/index.html")
+                ?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                ?: throw IllegalStateException("Vue 3 UI was selected but is not packaged in the JAR")
+        } else null
+
+        // Serve the entry page and HTML5 history routes from the packaged Vue 3 index.
+        // StaticHandler can otherwise pick up the uncompiled Vite index.html in the
+        // source checkout before trying the JAR classpath.
+        if (vue3IndexHtml != null) {
+            router.route("/*").handler { ctx ->
+                val path = ctx.request().path()
+                val acceptsHtml = ctx.request().getHeader("Accept")
+                    ?.contains("text/html", ignoreCase = true) == true
+                val isDynamicOrResource = path.startsWith("/reader3") || path.startsWith("/assets/") ||
+                    path.startsWith("/book-assets/") || path.startsWith("/epub/") ||
+                    path.startsWith("/static/") ||
+                    path.startsWith("/simple-web") || path == "/health"
+                val isEntryPath = path == "/" || path == "/index.html"
+                // A book URL encoded into /book/:url can contain dots, so only a
+                // single-segment file name should be treated as a root asset.
+                val isRootAsset = path.lastIndexOf('/') == 0 && path.substringAfterLast('/').contains('.')
+                if (ctx.request().method() == HttpMethod.GET && !isDynamicOrResource &&
+                    (isEntryPath || (acceptsHtml && !isRootAsset))) {
+                    ctx.response()
+                        .putHeader("Content-Type", "text/html; charset=UTF-8")
+                        .putHeader("Cache-Control", "no-cache")
+                        .end(vue3IndexHtml)
+                } else {
+                    ctx.next()
+                }
+            }
+        }
+        router.route("/*").handler(StaticHandler.create(webRoot).setDefaultContentEncoding("UTF-8"));
 
         // assets
         var assetsDir = getWorkDir("storage", "assets");
@@ -209,6 +257,9 @@ class YueduApi : RestVerticle() {
         val fileController = FileController(coroutineContext)
         val httpTTSController = HttpTTSController(coroutineContext)
         val licenseController = LicenseController(coroutineContext)
+        val sourceLoginController = SourceLoginController(coroutineContext)
+        val txtTocRuleController = TxtTocRuleController(coroutineContext)
+        val sourceSubscriptionController = SourceSubscriptionController(coroutineContext, bookSourceController)
 
         /** 书源模块 */
         router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }
@@ -229,10 +280,29 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/saveFromRemoteSource").coroutineHandlerWithoutRes { bookSourceController.saveFromRemoteSource(it) }
         router.post("/reader3/previewRemoteBookSources").coroutineHandler { bookSourceController.previewRemoteBookSources(it) }
 
+        // Vue 3 remote source subscriptions. The storage format remains compatible
+        // with the legacy remoteBookSourceSub.json scheduler.
+        router.get("/reader3/getSourceSubs").coroutineHandler { sourceSubscriptionController.getSourceSubs(it) }
+        router.post("/reader3/previewSourceSub").coroutineHandler { sourceSubscriptionController.previewSourceSub(it) }
+        router.post("/reader3/saveSourceSub").coroutineHandler { sourceSubscriptionController.saveSourceSub(it) }
+        router.post("/reader3/refreshSourceSub").coroutineHandler { sourceSubscriptionController.refreshSourceSub(it) }
+        router.post("/reader3/deleteSourceSub").coroutineHandler { sourceSubscriptionController.deleteSourceSub(it) }
+        router.post("/reader3/deleteSourceSubs").coroutineHandler { sourceSubscriptionController.deleteSourceSubs(it) }
+        router.post("/reader3/setSourceSubEnabled").coroutineHandler { sourceSubscriptionController.setSourceSubEnabled(it) }
+
         // 设置默认书源
         router.post("/reader3/setAsDefaultBookSources").coroutineHandler { bookSourceController.setAsDefaultBookSources(it) }
         router.post("/reader3/deleteUserBookSource").coroutineHandler { bookSourceController.deleteUserBookSource(it) }
         router.post("/reader3/deleteBookSourcesFile").coroutineHandler { bookSourceController.deleteBookSourcesFile(it) }
+
+        // Vue 3 source-login contract. Cookie persistence is shared with the legacy
+        // request engine and isolated by the authenticated user namespace.
+        router.post("/reader3/loginBookSource").coroutineHandler { sourceLoginController.loginBookSource(it) }
+        router.post("/reader3/setBookSourceCookie").coroutineHandler { sourceLoginController.setBookSourceCookie(it) }
+        router.get("/reader3/getBookSourceCookie").coroutineHandler { sourceLoginController.getBookSourceCookie(it) }
+        router.post("/reader3/getBookSourceCookie").coroutineHandler { sourceLoginController.getBookSourceCookie(it) }
+        router.post("/reader3/getCaptcha").coroutineHandler { sourceLoginController.getCaptcha(it) }
+        router.post("/reader3/submitCaptcha").coroutineHandler { sourceLoginController.submitCaptcha(it) }
 
         /** 书籍模块 */
         // 书架
@@ -295,7 +365,10 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/refreshLocalBook").coroutineHandler { bookController.refreshLocalBook(it) }
 
         // 获取txt章节规则
-        router.get("/reader3/getTxtTocRules").coroutineHandler { bookController.getTxtTocRules(it) }
+        router.get("/reader3/getTxtTocRules").coroutineHandler { txtTocRuleController.getTxtTocRules(it) }
+        router.post("/reader3/saveTxtTocRule").coroutineHandler { txtTocRuleController.saveTxtTocRule(it) }
+        router.post("/reader3/deleteTxtTocRule").coroutineHandler { txtTocRuleController.deleteTxtTocRule(it) }
+        router.post("/reader3/importDefaultTxtTocRules").coroutineHandler { txtTocRuleController.importDefaultTxtTocRules(it) }
         router.post("/reader3/getChapterListByRule").coroutineHandler { bookController.getChapterListByRule(it) }
 
         // 书籍分组
@@ -438,7 +511,7 @@ class YueduApi : RestVerticle() {
         router.post("/reader3/httpTTS/save").coroutineHandler { httpTTSController.saveHttpTTS(it) }
         router.post("/reader3/httpTTS/saveMulti").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
         router.post("/reader3/httpTTS/delete").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
-        router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
+        router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTSList(it) }
     }
 
     suspend fun setupPort() {

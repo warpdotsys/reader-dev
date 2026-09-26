@@ -5,7 +5,11 @@ on:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'build.gradle.kts'
+      - 'web/package.json'
+      - 'deploy/reader-pro/Dockerfile'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
@@ -14,7 +18,11 @@ on:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'build.gradle.kts'
+      - 'web/package.json'
+      - 'deploy/reader-pro/Dockerfile'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
@@ -32,8 +40,8 @@ jobs:
       run:
         working-directory: web-vue3
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
@@ -42,11 +50,9 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test src/utils/groupContract.test.ts
-          node --test src/utils/sw.test.ts
-          node --test src/api/replaceRuleAdapter.test.ts
+          npm test
           npm run audit:api
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-preview-${{ github.sha }}
           path: web-vue3/dist/
@@ -58,22 +64,32 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
           cache-dependency-path: web-vue3/package-lock.json
       - name: Build Reader and install preview dependencies
         run: |
-          chmod +x gradlew
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew test bootJar --no-daemon
           npm ci --prefix web-vue3
+          npm run build --prefix web-vue3
+          chmod +x gradlew
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -PreaderWebUi=vue3 test bootJar --no-daemon
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          echo "READER_JAR=$jar" >> "$GITHUB_ENV"
+      - name: Assert Vue 3 assets are packaged in the Reader JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -Z1 "$READER_JAR" | grep -q 'BOOT-INF/classes/web-vue3/index.html'
+          unzip -Z1 "$READER_JAR" | grep -q 'BOOT-INF/classes/web-vue3/static/index-.*\.js'
       - name: Resolve Chromium on hosted runner
         shell: bash
         run: |
@@ -92,30 +108,32 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vue3-reader-data"
           python3 scripts/mock-book-source.py --port 18894 > "$RUNNER_TEMP/vue3-source.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-source.pid"
-          java -jar build/libs/reader-4.0.7.jar \
+          java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
             --reader.server.port=18895 --reader.app.secure=true \
+            --reader.app.web-ui=vue3 \
             --reader.app.defaultUserEnableWebdav=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-reader.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-reader.pid"
-          READER_BACKEND_URL=http://127.0.0.1:18895 npm --prefix web-vue3 run dev -- --host 127.0.0.1 \
-            > "$RUNNER_TEMP/vue3-vite.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/vue3-vite.pid"
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:18894/health > /dev/null && \
                curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null && \
-               curl -fsS http://127.0.0.1:5173/login > /dev/null; then break; fi
+               curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null; then break; fi
             sleep 2
           done
           curl -fsS http://127.0.0.1:18894/health > /dev/null
           curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null
-          curl -fsS http://127.0.0.1:5173/login > /dev/null
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null
+          curl -fsS http://127.0.0.1:18895/ > "$RUNNER_TEMP/vue3-root.html"
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > "$RUNNER_TEMP/vue3-login.html"
+          cmp "$RUNNER_TEMP/vue3-root.html" "$RUNNER_TEMP/vue3-login.html"
+          grep -q '/static/index-.*\.js' "$RUNNER_TEMP/vue3-root.html"
       - name: Exercise Vue 3 pages with isolated accounts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           READER_VUE3_ISOLATED: '1'
-          READER_VUE3_PREVIEW_URL: http://127.0.0.1:5173
+          READER_VUE3_PREVIEW_URL: http://127.0.0.1:18895
           READER_BOOK_FIXTURE_URL: http://127.0.0.1:18894
         run: |
           ./gradlew -p browser-poc test \
@@ -133,7 +151,7 @@ jobs:
           done
       - name: Preserve Vue 3 source journey diagnostics
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-source-browser-diagnostics-${{ github.sha }}
           path: |
@@ -146,30 +164,27 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/vue3-secure-data"
-          java -jar build/libs/reader-4.0.7.jar \
+          java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-secure-data" \
             --reader.server.port=18896 --reader.app.secure=true \
+            --reader.app.web-ui=vue3 \
             --reader.app.secureKey=Vue3ProbeManagerKey-2026 \
             --reader.app.defaultUserEnableLocalStore=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-secure.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-secure.pid"
-          READER_BACKEND_URL=http://127.0.0.1:18896 npm --prefix web-vue3 run dev -- \
-            --host 127.0.0.1 --port 5174 --strictPort \
-            > "$RUNNER_TEMP/vue3-secure-vite.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/vue3-secure-vite.pid"
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null && \
-               curl -fsS http://127.0.0.1:5174/login > /dev/null; then break; fi
+               curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null; then break; fi
             sleep 2
           done
           curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null
-          curl -fsS http://127.0.0.1:5174/login > /dev/null
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null
       - name: Verify secure file write and retry in Chromium
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           READER_VUE3_ISOLATED: '1'
-          READER_VUE3_SECURE_URL: http://127.0.0.1:5174
+          READER_VUE3_SECURE_URL: http://127.0.0.1:18896
           READER_TEST_MANAGER_KEY: Vue3ProbeManagerKey-2026
         run: |
           ./gradlew -p browser-poc test \

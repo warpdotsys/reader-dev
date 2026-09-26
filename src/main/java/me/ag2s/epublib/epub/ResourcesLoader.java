@@ -72,8 +72,7 @@ public class ResourcesLoader {
                         .createResource(zipEntry, zipFile.getInputStream(zipEntry));
                 /*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
                 if (href.endsWith("opf")) {
-                    String string = new String(resource.getData()).replace("smlns=\"", "xmlns=\"");
-                    resource.setData(string.getBytes());
+                    repairOpfNamespace(resource);
                 }
 
             }
@@ -133,8 +132,7 @@ public class ResourcesLoader {
             Resource resource = ResourceUtil.createResource(zipEntry, zipInputStream);
             ///*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
             if (href.endsWith("opf")) {
-                String string = new String(resource.getData()).replace("smlns=\"", "xmlns=\"");
-                resource.setData(string.getBytes());
+                repairOpfNamespace(resource);
             }
             if (resource.getMediaType() == MediaTypes.XHTML) {
                 resource.setInputEncoding(defaultHtmlEncoding);
@@ -143,6 +141,14 @@ public class ResourcesLoader {
         } while (zipEntry != null);
 
         return result;
+    }
+
+    private static void repairOpfNamespace(Resource resource) throws IOException {
+        // Only ASCII text is changed. ISO-8859-1 provides a reversible mapping for
+        // every byte, so the XML declaration and non-ASCII metadata stay intact.
+        String content = new String(resource.getData(), java.nio.charset.StandardCharsets.ISO_8859_1);
+        resource.setData(content.replace("smlns=\"", "xmlns=\"")
+                .getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
     }
 
 

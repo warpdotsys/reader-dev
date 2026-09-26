@@ -22,6 +22,8 @@ export interface RequestOptions {
   timeout?: number
   /** 额外 query 参数（与 axios 实例自动携带的 accessToken 合并） */
   params?: Record<string, unknown>
+  /** 额外请求头（管理密钥等不能出现在 URL 的凭据） */
+  headers?: Record<string, string>
 }
 
 /** axios 实例：baseURL=/reader3，accessToken 自动携带（query），401/NEED_LOGIN 跳登录 */
@@ -93,7 +95,7 @@ export function get<T>(
   opts?: RequestOptions,
 ): Promise<ReturnData<T>> {
   return request
-    .get(url, { params, silent: opts?.silent, timeout: opts?.timeout })
+    .get(url, { params, headers: opts?.headers, silent: opts?.silent, timeout: opts?.timeout })
     .then((r) => r.data as ReturnData<T>)
 }
 
@@ -103,13 +105,19 @@ export function post<T>(
   data?: unknown,
   paramsOrOpts?: Record<string, unknown> | RequestOptions,
 ): Promise<ReturnData<T>> {
-  const isOpts = !!paramsOrOpts && ('silent' in paramsOrOpts || 'signal' in paramsOrOpts)
+  const isOpts = !!paramsOrOpts && ('silent' in paramsOrOpts || 'signal' in paramsOrOpts || 'headers' in paramsOrOpts)
   const params = isOpts
     ? (paramsOrOpts as RequestOptions).params
     : (paramsOrOpts as Record<string, unknown> | undefined)
   const opts = isOpts ? (paramsOrOpts as RequestOptions) : undefined
   return request
-    .post(url, data, { params, silent: opts?.silent, signal: opts?.signal, timeout: opts?.timeout })
+    .post(url, data, {
+      params,
+      headers: opts?.headers,
+      silent: opts?.silent,
+      signal: opts?.signal,
+      timeout: opts?.timeout,
+    })
     .then((r) => r.data as ReturnData<T>)
 }
 

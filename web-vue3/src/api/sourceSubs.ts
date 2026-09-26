@@ -3,9 +3,9 @@ import { onBackendReachable } from './backendFlag'
 import type { BookSource, ReturnData, SourceSub } from '@/types'
 
 /**
- * 书源订阅存储层 —— 后端为主（/reader3/getSourceSubs 等），localStorage 为降级缓存：
+ * 书源订阅存储层 —— 服务端为准，localStorage 仅为离线只读镜像：
  * - 后端可用：读写走服务端（账号内多设备一致）
- * - 后端失败：降级 localStorage（reader_source_subs），功能不中断
+ * - 后端不可用：可读取上次缓存，但写操作明确失败，避免离线假成功
  *
  * ============================ 后端契约 ============================
  * GET  /reader3/getSourceSubs      → ReturnData<SourceSub[]>
@@ -18,18 +18,40 @@ import type { BookSource, ReturnData, SourceSub } from '@/types'
  * POST /reader3/deleteSourceSubs   body: string[] | { urls: [] } → ReturnData<{ deleted }>
  * POST /reader3/setSourceSubEnabled body: { url, enabled } → ReturnData<{ enabled }>
  * ================================================================
- * localStorage key: reader_source_subs（值为 SourceSub[] 的 JSON）
+ * localStorage key: reader_source_subs:<username>:<scope>（值为 SourceSub[] 的 JSON）。
+ * 旧全局键不迁移：它无法证明属于哪个用户，读取会造成跨账号泄露。
  * 订阅只记录远程书源地址与名称；书源数据由后端 saveSourceSub/refreshSourceSub 导入，
- * 降级模式下由调用方前端 fetch + saveBookSources 导入。
+ * 不在服务端业务拒绝或网络断开时切换到浏览器抓取。
  * 订阅支持「禁用」：禁用后停止自动刷新，保留订阅记录与已导入书源；删除则移除订阅。
  */
 
 const STORAGE_KEY = 'reader_source_subs'
 
+function scopedStorageKey(): string | null {
+  try {
+    const localToken = localStorage.getItem('reader_access_token')
+    const sessionToken = sessionStorage.getItem('reader_access_token')
+    const username = localToken
+      ? localStorage.getItem('reader_username')
+      : sessionToken
+        ? sessionStorage.getItem('reader_username')
+        : null
+    if (!username) return null
+    const defaultScope =
+      localStorage.getItem('reader_default_config_mode') === '1' ||
+      sessionStorage.getItem('reader_default_config_mode') === '1'
+    return `${STORAGE_KEY}:${encodeURIComponent(username)}:${defaultScope ? 'default' : 'user'}`
+  } catch {
+    return null
+  }
+}
+
 /** 同步读取（localStorage 异常时返回空数组） */
 export function loadSourceSubs(): SourceSub[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const key = scopedStorageKey()
+    if (!key) return []
+    const raw = localStorage.getItem(key)
     if (!raw) return []
     const arr = JSON.parse(raw) as unknown
     if (!Array.isArray(arr)) return []
@@ -42,13 +64,14 @@ export function loadSourceSubs(): SourceSub[] {
 /** 同步持久化整表 */
 export function persistSourceSubs(subs: SourceSub[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(subs))
+    const key = scopedStorageKey()
+    if (key) localStorage.setItem(key, JSON.stringify(subs))
   } catch {
     /* localStorage 满/不可用：忽略 */
   }
 }
 
-/** 业务错误（拦截器 reject 携带 data / HTTP 响应）——后端可达，展示真实错误；纯网络错误才置 backendDown */
+/** 业务错误保留原文案；网络错误明确提示未写入服务器。 */
 function errMsg(err: unknown, fallback: string): { msg: string; down: boolean } {
   if (err instanceof Error) {
     const e = err as Error & { data?: unknown; response?: { data?: { errorMsg?: string } }; code?: string }
@@ -61,16 +84,14 @@ function errMsg(err: unknown, fallback: string): { msg: string; down: boolean } 
       return { msg, down: false }
     }
   }
-  // 网络错误不再做永久短路：request.ts 在任一后端成功/HTTP 响应时复位；
-  // 这里保留 down 标记仅用于调用方决定是否降级本地存储，不缓存全局状态。
-  return { msg: '服务端暂不可用，已降级本地数据', down: true }
+  return { msg: '服务端暂不可用，订阅未更改', down: true }
 }
 
 /** GET /reader3/getSourceSubs（后端优先；失败降级 localStorage 并镜像缓存） */
 export async function getSourceSubs(): Promise<ReturnData<SourceSub[]>> {
   try {
     const res = await get<SourceSub[]>('/getSourceSubs', undefined, { silent: true })
-    persistSourceSubs(res.data ?? [])
+    if (res.isSuccess) persistSourceSubs(res.data ?? [])
     return res
   } catch (err) {
     const { msg } = errMsg(err, '获取订阅列表失败')
@@ -79,8 +100,8 @@ export async function getSourceSubs(): Promise<ReturnData<SourceSub[]>> {
 }
 
 /**
- * POST /reader3/saveSourceSub（后端优先：抓取校验 + 订阅入库 + 批量导入书源，返回导入数）。
- * 降级（后端不可达）：仅写入 localStorage，data=null —— 调用方需自行导入书源（fetch + saveBookSources）。
+ * POST /reader3/saveSourceSub（服务端抓取校验、持久化并导入书源）。
+ * 失败时不写本地镜像，也不伪装成一个仅在当前浏览器存在的订阅。
  */
 export async function saveSourceSub(
   url: string,
@@ -93,6 +114,10 @@ export async function saveSourceSub(
       { url, name, ...(selectedUrls ? { selectedUrls } : {}) },
       { silent: true, timeout: 60000 },
     )
+    // A reachable backend can reject SSRF, invalid payloads, limits, or permissions.
+    // That is a real business failure, not an offline condition: do not create a
+    // local-only subscription or make the UI appear to have saved it.
+    if (!res.isSuccess) return res
     const list = loadSourceSubs()
     const existing = list.find((s) => s.url === url)
     if (existing) {
@@ -103,18 +128,9 @@ export async function saveSourceSub(
     persistSourceSubs(list)
     return res
   } catch (err) {
-    const { msg, down } = errMsg(err, '订阅失败')
-    if (!down) return { isSuccess: false, errorMsg: msg, data: null }
+    const { msg } = errMsg(err, '订阅失败')
+    return { isSuccess: false, errorMsg: msg, data: null }
   }
-  const list = loadSourceSubs()
-  const existing = list.find((s) => s.url === url)
-  if (existing) {
-    existing.name = name
-  } else {
-    list.push({ url, name })
-  }
-  persistSourceSubs(list)
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: null }
 }
 
 /**
@@ -136,22 +152,20 @@ export async function previewSourceSub(
   }
 }
 
-/** POST /reader3/deleteSourceSub（后端优先；失败降级 localStorage） */
+/** POST /reader3/deleteSourceSub（服务端确认成功后才更新本地镜像） */
 export async function deleteSourceSub(url: string): Promise<ReturnData<null>> {
   try {
     const res = await post<null>('/deleteSourceSub', { url }, { silent: true })
-    persistSourceSubs(loadSourceSubs().filter((s) => s.url !== url))
+    if (res.isSuccess) persistSourceSubs(loadSourceSubs().filter((s) => s.url !== url))
     return res
   } catch (err) {
-    const { msg, down } = errMsg(err, '删除订阅失败')
-    if (!down) return { isSuccess: false, errorMsg: msg, data: null }
+    const { msg } = errMsg(err, '删除订阅失败')
+    return { isSuccess: false, errorMsg: msg, data: null }
   }
-  persistSourceSubs(loadSourceSubs().filter((s) => s.url !== url))
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: null }
 }
 
 /**
- * POST /reader3/deleteSourceSubs（批量；后端失败降级为逐条 deleteSourceSub）。
+ * POST /reader3/deleteSourceSubs（批量；服务端失败时保留本地镜像，避免伪报已删除）。
  */
 export async function deleteSourceSubs(urls: string[]): Promise<ReturnData<{ deleted: number }>> {
   if (urls.length === 0) return { isSuccess: false, errorMsg: '参数错误', data: { deleted: 0 } }
@@ -161,24 +175,20 @@ export async function deleteSourceSubs(urls: string[]): Promise<ReturnData<{ del
       { urls },
       { silent: true },
     )
-    const keep = new Set(urls)
-    persistSourceSubs(loadSourceSubs().filter((s) => !keep.has(s.url)))
+    if (res.isSuccess) {
+      const keep = new Set(urls)
+      persistSourceSubs(loadSourceSubs().filter((s) => !keep.has(s.url)))
+    }
     return res
   } catch (err) {
-    const { msg, down } = errMsg(err, '批量删除订阅失败')
-    if (!down) return { isSuccess: false, errorMsg: msg, data: { deleted: 0 } }
+    const { msg } = errMsg(err, '批量删除订阅失败')
+    return { isSuccess: false, errorMsg: msg, data: { deleted: 0 } }
   }
-  let deleted = 0
-  for (const url of urls) {
-    const res = await deleteSourceSub(url)
-    if (res.isSuccess) deleted += 1
-  }
-  return { isSuccess: true, errorMsg: '', data: { deleted } }
 }
 
 /**
  * POST /reader3/setSourceSubEnabled（启停订阅：禁用后定时任务跳过自动刷新，
- * 订阅记录与已导入书源保留）。后端失败降级 localStorage。
+ * 订阅记录与已导入书源保留）。服务端失败时本地镜像也保持原状。
  */
 export async function setSourceSubEnabled(
   url: string,
@@ -190,25 +200,21 @@ export async function setSourceSubEnabled(
       { url, enabled },
       { silent: true },
     )
+    if (!res.isSuccess) return res
     const list = loadSourceSubs()
     const sub = list.find((s) => s.url === url)
     if (sub) sub.enabled = enabled
     persistSourceSubs(list)
     return res
   } catch (err) {
-    const { msg, down } = errMsg(err, '操作失败')
-    if (!down) return { isSuccess: false, errorMsg: msg, data: { enabled } }
+    const { msg } = errMsg(err, '操作失败')
+    return { isSuccess: false, errorMsg: msg, data: { enabled } }
   }
-  const list = loadSourceSubs()
-  const sub = list.find((s) => s.url === url)
-  if (sub) sub.enabled = enabled
-  persistSourceSubs(list)
-  return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: { enabled } }
 }
 
 /**
  * POST /reader3/refreshSourceSub（后端优先：重新拉取远程书源 JSON 并覆盖导入书源表，返回导入数；
- * 订阅不存在返回业务失败）。失败返回 isSuccess=false（不抛异常），由调用方降级为前端 fetch + saveBookSources 导入。
+ * 订阅不存在返回业务失败）。失败返回 isSuccess=false，不进行浏览器直连回退。
  */
 export async function refreshSourceSub(url: string): Promise<ReturnData<{ count: number }>> {
   try {
@@ -218,8 +224,8 @@ export async function refreshSourceSub(url: string): Promise<ReturnData<{ count:
       { silent: true, timeout: 60000 },
     )
   } catch (err) {
-    const { msg, down } = errMsg(err, '刷新订阅失败')
-    return { isSuccess: false, errorMsg: down ? '' : msg, data: { count: 0 } }
+    const { msg } = errMsg(err, '刷新订阅失败')
+    return { isSuccess: false, errorMsg: msg, data: { count: 0 } }
   }
 }
 

@@ -1,38 +1,40 @@
 import request from './request'
-import type { ImportPreview, ReturnData } from '@/types'
+import type { Book, BookChapter, ReturnData } from '@/types'
 
 /**
- * POST /reader3/importBookPreview（multipart/form-data，字段名 file）：导入前预览——
- * 服务端解析本地书返回 {name, author, format, chapterCount, chapters[]}。
- * 后端并行实现中（可能 404）：静默失败（silent），调用方降级为直接上传。
+ * Java/Kotlin 的本地书导入预览结果。
+ *
+ * `/importBookPreview` 不是纯预览接口：它先把 multipart 文件保存到当前用户的
+ * `storage/assets/<namespace>/book`，再返回可直接提交给 `/saveBook` 的完整 Book。
+ * 因此前端必须保留这个 Book，确认时调用 saveBook；不能再请求不存在的
+ * `/uploadLocalBook`。
  */
-export function importBookPreview(file: File): Promise<ReturnData<ImportPreview | null>> {
+export interface LocalBookImportPreview {
+  book: Book
+  chapters: BookChapter[]
+}
+
+/**
+ * POST /reader3/importBookPreview（multipart/form-data，字段名可为 file、file0 等）：
+ * 保存并解析本地书，返回 `[{ book, chapters }]`。调用方确认后将 `book` POST 到
+ * `/saveBook` 才会入书架。
+ */
+export function importBookPreview(file: File): Promise<ReturnData<LocalBookImportPreview[]>> {
   const form = new FormData()
   form.append('file', file)
   return request
     .post('/importBookPreview', form, { timeout: 120_000, silent: true })
-    .then((r) => r.data as ReturnData<ImportPreview | null>)
+    .then((r) => r.data as ReturnData<LocalBookImportPreview[]>)
 }
 
 /**
- * POST /reader3/uploadLocalBook（multipart/form-data，字段名 file，单文件逐个上传）
- * 注意：FormData 交给 axios 自动设置 Content-Type（含 boundary），切勿手动指定。
- * 上传大文件放宽超时；onProgress 回传 0-100 百分比。
+ * 丢弃尚未入书架的本地书预览文件。
+ * 这是 legacy `/deleteFile` 的受限用户资产清理接口；已成功 saveBook 的文件不能调用。
  */
-export function uploadLocalBook(
-  file: File,
-  onProgress?: (percent: number) => void,
-): Promise<ReturnData<unknown>> {
-  const form = new FormData()
-  form.append('file', file)
+export function discardImportPreview(preview: LocalBookImportPreview): Promise<ReturnData<unknown> | null> {
+  const url = preview.book.bookUrl
+  if (!url.startsWith('/assets/')) return Promise.resolve(null)
   return request
-    .post('/uploadLocalBook', form, {
-      timeout: 120_000,
-      onUploadProgress: (e) => {
-        if (onProgress && e.total) {
-          onProgress(Math.round((e.loaded / e.total) * 100))
-        }
-      },
-    })
+    .post('/deleteFile', { url }, { timeout: 30_000, silent: true })
     .then((r) => r.data as ReturnData<unknown>)
 }

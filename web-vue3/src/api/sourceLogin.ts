@@ -42,8 +42,8 @@ export function loginBookSource(params: {
 export function setBookSourceCookie(
   bookSource: string,
   cookie: string,
-): Promise<ReturnData<{ success: boolean; cleared?: boolean }>> {
-  return post<{ success: boolean; cleared?: boolean }>('/setBookSourceCookie', { bookSource, cookie })
+): Promise<ReturnData<{ success: boolean; cleared?: boolean; clearedSourceUrls?: string[] }>> {
+  return post<{ success: boolean; cleared?: boolean; clearedSourceUrls?: string[] }>('/setBookSourceCookie', { bookSource, cookie })
 }
 
 /** GET/POST /reader3/getBookSourceCookie：读取当前用户全部书源登录态（Cookie 管理） */

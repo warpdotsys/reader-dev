@@ -94,6 +94,88 @@ function Format-Book([object]$Book) {
     return $result
 }
 
+function Format-Epub([byte[]]$Bytes) {
+    $stream = [IO.MemoryStream]::new($Bytes, $false)
+    try {
+        $archive = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Read, $true)
+        try {
+            $entries = @($archive.Entries | Where-Object { -not $_.FullName.EndsWith('/') } | ForEach-Object {
+                $entry = $_
+                $entryStream = $entry.Open()
+                try {
+                    $content = [IO.MemoryStream]::new()
+                    try {
+                        $entryStream.CopyTo($content)
+                        $entryBytes = $content.ToArray()
+                    } finally { $content.Dispose() }
+                } finally { $entryStream.Dispose() }
+                [ordered]@{
+                    path = $entry.FullName
+                    length = $entryBytes.Length
+                    sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($entryBytes))
+                    normalizedSha256 = if ($entry.FullName -in @('OEBPS/toc.ncx', 'OEBPS/content.opf')) {
+                        $normalized = [Text.Encoding]::UTF8.GetString($entryBytes)
+                        $normalized = [regex]::Replace($normalized,
+                            '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '<uuid>')
+                        $normalized = [regex]::Replace($normalized, '\b20\d{2}-\d{2}-\d{2}\b', '<date>')
+                        [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+                            [Text.Encoding]::UTF8.GetBytes($normalized)))
+                    } else { $null }
+                }
+            } | Sort-Object path)
+            if (-not @($entries | Where-Object { $_.path -eq 'mimetype' }).Count -or
+                -not @($entries | Where-Object { $_.path -eq 'META-INF/container.xml' }).Count -or
+                -not @($entries | Where-Object { $_.path -match '\.opf$' }).Count -or
+                @($entries | Where-Object { $_.path -match '\.html$|\.xhtml$' }).Count -lt 2) {
+                throw 'Exported EPUB lacks required container, metadata, or HTML entries'
+            }
+            return $entries
+        } finally { $archive.Dispose() }
+    } finally { $stream.Dispose() }
+}
+
+function Test-Epub-Encoding-Divergence([object]$Original, [object]$Restored) {
+    if ($Original.status -ne 200 -or $Restored.status -ne 200 -or
+        $Original.contentType -cne 'application/epub+zip' -or
+        $Original.contentType -cne $Restored.contentType -or
+        $Original.disposition -cne $Restored.disposition -or
+        $Original.cacheControl -cne $Restored.cacheControl -or
+        $Original.epubEntries.Count -ne $Restored.epubEntries.Count) { return $false }
+
+    # This fixed synthetic TXT fixture exposes the old JAR's platform-default
+    # HTML encoding and corrupted TOC titles. Accept only these exact outputs;
+    # all other EPUB entries must match by uncompressed bytes.
+    $expected = @{
+        'OEBPS/Text/intro.html' = @('79E5B410CAC3F236AEE3ACF64C4FAA77B32D40018ECD54528D8031FC3E62C23E',
+            'E6BAA8A38DF3F9FB17FB943094D89644478431C1B916508CE782366C89370202')
+        'OEBPS/Text/cover.html' = @('5E3D3E7DBC830CC7970F9F11C43818CECB37ADA1B9B6805F806B60DC3940843B',
+            'E631C94AE72BF98A912146D5844C94C174D6CC23492A722564283C99AB64C059')
+        'OEBPS/Text/chapter_0.html' = @('7916DFB070CE86EA1EE13F86A58C437C4398252A96F8ACE65873AFF89085B00C',
+            'CABA449A9A90D440F310005A3E31ECA33D463FF25A11EA98C13BF919E059C1B7')
+        'OEBPS/Text/chapter_1.html' = @('D54390E75766990C87277CD1E5C4DE91EB42C186CF8E3E0BAF356CCBF4679181',
+            '1E74F3AFAE9CA0EE339C29E5E99A84E55006F4160BC1F04570770E3602780E9F')
+        'OEBPS/toc.ncx' = @('997560D6FF7D72DD7F75612661E2AF33BDF027EE64B24BF515F4B263FEBC6260',
+            '9702C985E4500ADC92967D0C2032CC8E10C0DA53A03DDD1B0C278FB54528C3AA')
+    }
+    foreach ($index in 0..($Original.epubEntries.Count - 1)) {
+        $left = $Original.epubEntries[$index]
+        $right = $Restored.epubEntries[$index]
+        if ($left.path -cne $right.path) { return $false }
+        if ($left.path -eq 'OEBPS/content.opf') {
+            if ($left.normalizedSha256 -cne $right.normalizedSha256) { return $false }
+        } elseif ($expected.ContainsKey($left.path)) {
+            $oldHash = if ($left.path -eq 'OEBPS/toc.ncx') { $left.normalizedSha256 } else { $left.sha256 }
+            $newHash = if ($left.path -eq 'OEBPS/toc.ncx') { $right.normalizedSha256 } else { $right.sha256 }
+            if ($oldHash -cne $expected[$left.path][0] -or $newHash -cne $expected[$left.path][1]) {
+                return $false
+            }
+        } elseif ($left.length -ne $right.length -or $left.sha256 -cne $right.sha256) {
+            return $false
+        }
+    }
+    return $true
+}
+
 function Format-Response([object]$Response, [string]$Probe) {
     $result = [ordered]@{
         probe = $Probe
@@ -143,6 +225,9 @@ function Format-Response([object]$Response, [string]$Probe) {
         $result.sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($Response.bytes))
         $result.disposition = $Response.disposition
         $result.cacheControl = $Response.cacheControl
+        if ($Probe -eq 'export-local-txt-as-epub') {
+            $result.epubEntries = @(Format-Epub $Response.bytes)
+        }
     }
     return [pscustomobject]$result
 }
@@ -284,6 +369,27 @@ function Run-Lifecycle([string]$Jar, [string]$WorkDir, [int]$Port, [string]$User
             throw "reading-content differs from the original TXT chapter format"
         }
         $results += Format-Response $readingContent "reading-content"
+        $results += Format-Response (Invoke-Api $anonymous $baseUri "GET" "/reader3/exportBook?url=$bookUrl") "export-anonymous"
+        $results += Format-Response (Invoke-Api $clientA $baseUri "GET" "/reader3/exportBook") "export-missing-url"
+        $originalTxtBytes = [Text.Encoding]::UTF8.GetBytes($readingText)
+        foreach ($exportProbe in @(
+            @{ name = 'export-local-txt-get'; method = 'GET'; path = "/reader3/exportBook?url=$bookUrl&isEpub=0"; body = $null },
+            @{ name = 'export-local-txt-post'; method = 'POST'; path = '/reader3/exportBook'; body = @{ url = [string]$shelf.value.data[0].bookUrl; isEpub = 0 } }
+        )) {
+            $export = Invoke-Api $clientA $baseUri $exportProbe.method $exportProbe.path $exportProbe.body
+            if ($export.status -ne 200 -or $export.bytes.Length -ne $originalTxtBytes.Length -or
+                [Convert]::ToHexString($export.bytes) -cne [Convert]::ToHexString($originalTxtBytes) -or
+                -not $export.disposition.StartsWith('attachment;')) {
+                throw "$($exportProbe.name) did not return the original local TXT bytes as an attachment"
+            }
+            $results += Format-Response $export $exportProbe.name
+        }
+        $epubExport = Invoke-Api $clientA $baseUri 'GET' "/reader3/exportBook?url=$bookUrl&isEpub=1"
+        if ($epubExport.status -ne 200 -or -not $epubExport.disposition.StartsWith('attachment;') -or
+            $epubExport.bytes.Length -lt 100) {
+            throw 'export-local-txt-as-epub did not return an EPUB attachment'
+        }
+        $results += Format-Response $epubExport 'export-local-txt-as-epub'
         $progressSave = Invoke-Api $clientA $baseUri "POST" "/reader3/saveBookProgress" `
             @{ url = [string]$shelf.value.data[0].bookUrl; index = 0 }
         Assert-Success $progressSave "reading-progress-save"
@@ -359,6 +465,9 @@ try {
             $accepted = $leftWithoutTitles -ceq $rightWithoutTitles -and
                 $right.data[0].latestChapterTitle -ceq '第二章 继续' -and
                 $right.data[0].durChapterTitle -ceq '第一章 开始'
+        }
+        if (-not $equal -and $left.probe -eq 'export-local-txt-as-epub') {
+            $accepted = Test-Epub-Encoding-Divergence $left $right
         }
         [pscustomobject]@{
             probe = $left.probe

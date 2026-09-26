@@ -258,7 +258,7 @@ import { useRouter } from 'vue-router'
 import TopNav from '@/components/TopNav.vue'
 import { getExploreSources, getExploreUrls, exploreBook } from '@/api/explore'
 import { clearSearchHistory, loadSearchHistory, pushSearchHistory } from '@/utils/searchHistory'
-import type { BookSource, ExploreCategory, ExploreSourceInfo, SearchBook } from '@/types'
+import type { BookSource, ExploreCategory, SearchBook } from '@/types'
 
 const router = useRouter()
 
@@ -287,7 +287,7 @@ function clearHistory() {
   searchHistory.value = []
 }
 
-const sources = ref<ExploreSourceInfo[]>([])
+const sources = ref<BookSource[]>([])
 /* ============ 探索源收藏（localStorage: reader_fav_explore_sources {url: name}） ============ */
 const FAV_SRC_KEY = 'reader_fav_explore_sources'
 
@@ -320,7 +320,7 @@ function persistFavSrcs() {
 const isFavSource = (url: string) => !!favSrcs.value[url]
 
 /** 星标收藏/取消收藏探索书源 */
-function toggleFavSource(s: ExploreSourceInfo) {
+function toggleFavSource(s: BookSource) {
   if (favSrcs.value[s.bookSourceUrl]) {
     const next = { ...favSrcs.value }
     delete next[s.bookSourceUrl]
@@ -550,8 +550,13 @@ function coverGradient(name: string): string {
   return GRADIENTS[h % GRADIENTS.length]
 }
 
-function exploreCount(s: ExploreSourceInfo): number {
-  return s.categoryCount ?? 0
+function exploreCount(s: BookSource): number {
+  try {
+    return getExploreUrls(s).length
+  } catch {
+    // 动态规则在选中时显示明确错误，不把它计为可用分类。
+    return 0
+  }
 }
 
 async function loadSources() {
@@ -559,7 +564,8 @@ async function loadSources() {
   sourcesError.value = ''
   try {
     const res = await getExploreSources()
-    sources.value = (res.data ?? []) as ExploreSourceInfo[]
+    // JAR 内旧 Web 的语义是“exploreUrl 非空”，不是 Rust 分支的 enabledExplore。
+    sources.value = (res.data ?? []).filter((item) => !!item.exploreUrl?.trim())
   } catch {
     sourcesError.value = '书源加载失败'
   } finally {
@@ -567,15 +573,8 @@ async function loadSources() {
   }
 }
 
-function selectSource(s: ExploreSourceInfo) {
-  const full = sources.value.find((x) => x.bookSourceUrl === s.bookSourceUrl)
-  source.value = {
-    bookSourceUrl: s.bookSourceUrl,
-    bookSourceName: s.bookSourceName,
-    enabledExplore: true,
-    exploreUrl: '',
-  } as unknown as BookSource
-  void full
+function selectSource(s: BookSource) {
+  source.value = s
   categories.value = []
   activeUrl.value = ''
   books.value = []
@@ -593,9 +592,7 @@ async function loadCategories() {
   catsLoading.value = true
   catsError.value = ''
   try {
-    const res = await getExploreUrls(source.value.bookSourceUrl)
-    // 后端返回 [{title, url}]（JS 已执行）
-    const entries = (res.data ?? []) as ExploreCategory[]
+    const entries = getExploreUrls(source.value)
     categories.value = entries
     if (entries.length > 0) {
       // GAP 123：从收藏入口进入时选中收藏的分类
@@ -608,8 +605,8 @@ async function loadCategories() {
         await loadBooks(1)
       }
     }
-  } catch {
-    catsError.value = '分类加载失败'
+  } catch (error) {
+    catsError.value = error instanceof Error ? error.message : '分类加载失败'
   } finally {
     catsLoading.value = false
   }

@@ -233,7 +233,7 @@ class LocalWebviewRenderer private constructor(
         }
     }
 
-    suspend fun close() {
+    override suspend fun close() {
         try {
             withContext(worker) {
                 runCatching { browser?.close() }

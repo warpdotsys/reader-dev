@@ -1,9 +1,11 @@
 name: Release and deploy Reader Pro
 
+# GitHub tag globs cannot express the full SemVer grammar. This broad trigger
+# is followed by a strict stable-tag check before any build or registry write.
 on:
   push:
     tags:
-      - 'v*-restored.*'
+      - 'v*'
 
 permissions:
   contents: read
@@ -13,66 +15,234 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build release artifact
+  verify-release-inputs:
+    name: Verify stable release inputs
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      ghcr-image: ${{ steps.images.outputs.ghcr-image }}
+      dockerhub-image: ${{ steps.images.outputs.dockerhub-image }}
     steps:
-      - name: Checkout tagged source
-        uses: actions/checkout@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - name: Verify tag belongs to legacy
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Verify tag, branch ancestry, synchronized versions, and release ordering
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="$GITHUB_REF_NAME"
+          if [[ ! "$tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Only stable SemVer tags such as v4.1.0 are releaseable; got: $tag" >&2
+            exit 1
+          fi
+          version="${tag#v}"
+          git fetch --no-tags origin legacy
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/legacy
+          backend_version=$(sed -nE 's/^version = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' build.gradle.kts)
+          web_version=$(node -p "require('./web/package.json').version")
+          vue3_version=$(node -p "require('./web-vue3/package.json').version")
+          test "$backend_version" = "$version"
+          test "$web_version" = "$version"
+          test "$vue3_version" = "$version"
+          test -f "docs/releases/${tag}.md"
+          grep -Eq '^##[[:space:]]+已知问题' "docs/releases/${tag}.md"
+          latest=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --paginate \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -V | tail -n 1 || true)
+          if [[ -n "$latest" ]] && ! dpkg --compare-versions "$version" gt "$latest"; then
+            echo "Release version $version must be greater than latest formal GitHub Release $latest." >&2
+            exit 1
+          fi
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - name: Validate registry configuration without exposing credentials
+        id: images
+        shell: bash
+        env:
+          GHCR_IMAGE: ${{ vars.GHCR_IMAGE }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+        run: |
+          set -euo pipefail
+          : "${GHCR_IMAGE:?Repository variable GHCR_IMAGE must be ghcr.io/namespace/image}"
+          : "${DOCKERHUB_IMAGE:?Repository variable DOCKERHUB_IMAGE must be namespace/image}"
+          [[ "$GHCR_IMAGE" =~ ^ghcr\.io/[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
+          [[ "$DOCKERHUB_IMAGE" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
+          printf 'ghcr-image=%s\n' "$GHCR_IMAGE" >> "$GITHUB_OUTPUT"
+          printf 'dockerhub-image=%s\n' "$DOCKERHUB_IMAGE" >> "$GITHUB_OUTPUT"
+      - name: Refuse unverified Python wheel inputs
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin legacy
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/legacy
-          test -f "docs/releases/${GITHUB_REF_NAME}.md"
-      - name: Set up Temurin JDK 11
-        uses: actions/setup-java@v6
+          python3 scripts/verify_camoufox_wheel_lock.py deploy/reader-pro/requirements-camoufox.lock
+
+  build-and-publish-images:
+    name: Test, build, and publish immutable images
+    needs: verify-release-inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ghcr-digest: ${{ steps.digest.outputs.ghcr-digest }}
+      dockerhub-digest: ${{ steps.digest.outputs.dockerhub-digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - name: Run tests and build the complete JAR and image
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
+      - name: Install locked Vue 3 dependencies
+        working-directory: web-vue3
+        run: npm ci
+      - name: Run frontend, Java, and Kotlin tests; build release JAR
         shell: bash
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: |
           set -euo pipefail
           chmod +x gradlew
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar --no-daemon --stacktrace
-          install -d dist
-          install -m 0644 build/libs/reader-4.0.7.jar "dist/reader-pro-${GITHUB_REF_NAME}.jar"
-          cp build/libs/reader-4.0.7.jar deploy/reader-pro/
-          docker build -f deploy/reader-pro/Dockerfile \
-            -t medwarp/reader-pro-restored:4.0.7 deploy/reader-pro
-          docker save medwarp/reader-pro-restored:4.0.7 \
-            | gzip -1 > "dist/reader-image-${GITHUB_REF_NAME}.tar.gz"
-          (cd dist && sha256sum "reader-pro-${GITHUB_REF_NAME}.jar" \
-            "reader-image-${GITHUB_REF_NAME}.tar.gz" > SHA256SUMS)
-      - name: Upload immutable release artifact
-        uses: actions/upload-artifact@v7
+          npm --prefix web-vue3 test
+          npm --prefix web-vue3 run build
+          ./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon --stacktrace
+          version='${{ needs.verify-release-inputs.outputs.version }}'
+          jar="build/libs/reader-${version}.jar"
+          test -s "$jar"
+          install -d dist image-context
+          install -m 0644 "$jar" "dist/reader-pro-v${version}.jar"
+          sha256sum "dist/reader-pro-v${version}.jar" > dist/SHA256SUMS
+          install -m 0644 "$jar" "image-context/$(basename "$jar")"
+          cp deploy/reader-pro/Dockerfile deploy/reader-pro/requirements-camoufox.lock \
+            deploy/reader-pro/camoufox-browser.lock deploy/reader-pro/install_camoufox_pinned.py \
+            deploy/reader-pro/apt-sources.list deploy/reader-pro/docker-entrypoint.sh \
+            deploy/reader-pro/base-images.lock image-context/
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Read and validate locked base image digests
+        id: base-images
+        shell: bash
+        run: |
+          set -euo pipefail
+          lock=deploy/reader-pro/base-images.lock
+          temurin=$(sed -nE 's/^TEMURIN_JRE_IMAGE=(.+@sha256:[0-9a-f]{64})$/\1/p' "$lock")
+          playwright=$(sed -nE 's/^PLAYWRIGHT_JAVA_IMAGE=(.+@sha256:[0-9a-f]{64})$/\1/p' "$lock")
+          test -n "$temurin"
+          test -n "$playwright"
+          test "$(printf '%s\n' "$temurin" | wc -l)" = 1
+          test "$(printf '%s\n' "$playwright" | wc -l)" = 1
+          printf 'temurin=%s\nplaywright=%s\n' "$temurin" "$playwright" | tee dist/BASE_IMAGE_DIGESTS
+          printf 'wheel_hashes=enforced\n' >> dist/BASE_IMAGE_DIGESTS
+          printf 'temurin=%s\n' "$temurin" >> "$GITHUB_OUTPUT"
+          printf 'playwright=%s\n' "$playwright" >> "$GITHUB_OUTPUT"
+      - name: Run the complete-image Camoufox smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          version='${{ needs.verify-release-inputs.outputs.version }}'
+          docker build --pull -f image-context/Dockerfile \
+            --build-arg "READER_JAR=reader-${version}.jar" \
+            --build-arg "READER_VERSION=${version}" \
+            --build-arg "READER_BUILD_REVISION=${GITHUB_SHA}" \
+            --build-arg REQUIRE_WHEEL_HASHES=true \
+            --build-arg 'TEMURIN_JRE_IMAGE=${{ steps.base-images.outputs.temurin }}' \
+            --build-arg 'PLAYWRIGHT_JAVA_IMAGE=${{ steps.base-images.outputs.playwright }}' \
+            -t reader-pro:camoufox-smoke image-context
+          mkdir -p "$RUNNER_TEMP/reader-smoke-storage"
+          sudo chown 10001:10001 "$RUNNER_TEMP/reader-smoke-storage"
+          docker run -d --name reader-pro-camoufox-smoke --network host --shm-size=1g \
+            --security-opt no-new-privileges:true --cap-drop ALL \
+            -v "$RUNNER_TEMP/reader-smoke-storage:/storage" \
+            -e READER_SERVER_PORT=18890 -e READER_APP_WORKDIR=/ -e READER_APP_SECURE=true \
+            -e READER_APP_LICENSECHECKENABLED=false -e READER_APP_WEBVIEWRENDERER=camoufox \
+            -e READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true reader-pro:camoufox-smoke
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo | jq -e '.isSuccess == true' >/dev/null; then
+              curl -fsS http://127.0.0.1:18890/assets/reader-release.json \
+                | jq -e --arg version "$version" --arg revision "$GITHUB_SHA" \
+                  '.version == $version and .buildRevision == $revision' >/dev/null
+              docker exec reader-pro-camoufox-smoke python -m camoufox version
+              python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs reader-pro-camoufox-smoke
+          exit 1
+      - name: Stop smoke container
+        if: always()
+        run: docker rm -f reader-pro-camoufox-smoke || true
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
-          name: reader-pro-release
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Push the smoke-tested image to both registries
+        shell: bash
+        run: |
+          set -euo pipefail
+          ghcr='${{ needs.verify-release-inputs.outputs.ghcr-image }}:v${{ needs.verify-release-inputs.outputs.version }}'
+          dockerhub='${{ needs.verify-release-inputs.outputs.dockerhub-image }}:v${{ needs.verify-release-inputs.outputs.version }}'
+          docker tag reader-pro:camoufox-smoke "$ghcr"
+          docker tag reader-pro:camoufox-smoke "$dockerhub"
+          docker push "$ghcr"
+          docker push "$dockerhub"
+      - name: Verify both registry digests match
+        id: digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          ghcr='${{ needs.verify-release-inputs.outputs.ghcr-image }}:v${{ needs.verify-release-inputs.outputs.version }}'
+          dockerhub='${{ needs.verify-release-inputs.outputs.dockerhub-image }}:v${{ needs.verify-release-inputs.outputs.version }}'
+          ghcr_digest=$(docker buildx imagetools inspect "$ghcr" --format '{{.Manifest.Digest}}')
+          dockerhub_digest=$(docker buildx imagetools inspect "$dockerhub" --format '{{.Manifest.Digest}}')
+          test "$ghcr_digest" = "$dockerhub_digest"
+          printf 'ghcr-digest=%s\n' "$ghcr_digest" >> "$GITHUB_OUTPUT"
+          printf 'dockerhub-digest=%s\n' "$dockerhub_digest" >> "$GITHUB_OUTPUT"
+          printf '%s  %s\n%s  %s\n' "$ghcr_digest" "$ghcr" "$dockerhub_digest" "$dockerhub" | tee dist/IMAGE_DIGESTS
+          # Production pulls Docker Hub without credentials. Fail before the
+          # GitHub Release is published unless both registries are public.
+          anonymous_config="$RUNNER_TEMP/reader-anonymous-docker-config"
+          mkdir -p "$anonymous_config"
+          test "$(DOCKER_CONFIG="$anonymous_config" docker buildx imagetools inspect "$dockerhub" --format '{{.Manifest.Digest}}')" = "$dockerhub_digest"
+          test "$(DOCKER_CONFIG="$anonymous_config" docker buildx imagetools inspect "$ghcr" --format '{{.Manifest.Digest}}')" = "$ghcr_digest"
+      - name: Upload verifiable release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-pro-v${{ needs.verify-release-inputs.outputs.version }}
           path: dist/
           if-no-files-found: error
           retention-days: 90
 
-  deploy:
-    name: Deploy production
-    needs: build
-    runs-on: macos-15
-    timeout-minutes: 20
+  deploy-production:
+    name: Deploy immutable image to production
+    needs: [verify-release-inputs, build-and-publish-images, publish-github-release]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     environment:
       name: production
       url: https://read.medwarp.cn
     steps:
-      - name: Checkout deployment configuration
-        uses: actions/checkout@v7
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: reader-pro-release
+          name: reader-pro-v${{ needs.verify-release-inputs.outputs.version }}
           path: dist
       - name: Configure production SSH
         shell: bash
@@ -81,160 +251,241 @@ jobs:
           PROD_SSH_KNOWN_HOSTS: ${{ secrets.PROD_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
+          : "${PROD_SSH_KEY:?Missing production SSH key}"
+          : "${PROD_SSH_KNOWN_HOSTS:?Missing pinned production known_hosts entry}"
           install -d -m 0700 ~/.ssh
           printf '%s\n' "$PROD_SSH_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$PROD_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 0600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-      - name: Upload immutable artifact and deployment files
-        shell: bash
-        env:
-          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
-          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
-        run: |
-          set -euo pipefail
-          release_dir="/opt/reader-pro-restored/releases/${GITHUB_REF_NAME}"
-          for attempt in 1 2 3 4 5; do
-            if ssh \
-                -o ConnectTimeout=20 \
-                -o ConnectionAttempts=3 \
-                -o ServerAliveInterval=15 \
-                -o ServerAliveCountMax=20 \
-                "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
-                "install -d -m 0755 '$release_dir'"; then
-              break
-            fi
-            if [ "$attempt" -eq 5 ]; then
-              echo "Could not prepare the remote release directory after $attempt attempts." >&2
-              exit 1
-            fi
-            sleep $((attempt * 10))
-          done
-          for attempt in 1 2 3 4 5; do
-            if rsync --archive --partial --inplace \
-                -e "ssh -o ConnectTimeout=20 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
-                "dist/reader-pro-${GITHUB_REF_NAME}.jar" \
-                "dist/reader-image-${GITHUB_REF_NAME}.tar.gz" \
-                dist/SHA256SUMS \
-                deploy/reader-pro/Dockerfile \
-                deploy/reader-pro/compose.production.yaml \
-                deploy/reader-pro/read.medwarp.cn.conf \
-                "${PROD_SSH_USER}@${PROD_SSH_HOST}:${release_dir}/"; then
-              break
-            fi
-            if [ "$attempt" -eq 5 ]; then
-              echo "Artifact upload failed after $attempt attempts." >&2
-              exit 1
-            fi
-            sleep $((attempt * 10))
-          done
-      - name: Activate release with rollback
+      - name: Upload deployment manifest and activate with rollback snapshot
         shell: bash
         env:
           PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
           PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
           RELEASE_TAG: ${{ github.ref_name }}
+          READER_IMAGE: ${{ needs.verify-release-inputs.outputs.dockerhub-image }}@${{ needs.build-and-publish-images.outputs.dockerhub-digest }}
           RELEASE_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          ssh \
-            -o ConnectTimeout=20 \
-            -o ConnectionAttempts=3 \
-            -o ServerAliveInterval=15 \
-            -o ServerAliveCountMax=20 \
-            "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
-            "RELEASE_TAG='$RELEASE_TAG' RELEASE_RUN_URL='$RELEASE_RUN_URL' bash -s" <<'REMOTE'
+          : "${PROD_SSH_HOST:?Missing production SSH host}"
+          : "${PROD_SSH_USER:?Missing production SSH user}"
+          test "$PROD_SSH_HOST" = cdn.medwarp.cn
+          release_dir="/opt/reader-pro-restored/releases/${RELEASE_TAG}"
+          ssh_opts=(-o KexAlgorithms=diffie-hellman-group14-sha256 -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o StrictHostKeyChecking=yes)
+          ssh "${ssh_opts[@]}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" "install -d -m 0755 '$release_dir'"
+          scp "${ssh_opts[@]}" deploy/reader-pro/compose.production.yaml "$PROD_SSH_USER@$PROD_SSH_HOST:$release_dir/compose.production.yaml"
+          scp "${ssh_opts[@]}" dist/SHA256SUMS "$PROD_SSH_USER@$PROD_SSH_HOST:$release_dir/SHA256SUMS"
+          ssh "${ssh_opts[@]}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
+            "RELEASE_TAG='$RELEASE_TAG' READER_IMAGE='$READER_IMAGE' RELEASE_RUN_URL='$RELEASE_RUN_URL' bash -s" <<'REMOTE'
           set -euo pipefail
           app_dir=/opt/reader-pro-restored
           release_dir="$app_dir/releases/$RELEASE_TAG"
-          rollback_dir="$app_dir/releases/rollback-${RELEASE_TAG}"
-          artifact="$release_dir/reader-pro-${RELEASE_TAG}.jar"
-          image_archive="$release_dir/reader-image-${RELEASE_TAG}.tar.gz"
-          cd "$release_dir"
-          sha256sum -c SHA256SUMS
-          install -d -m 0755 "$rollback_dir"
-          cp -a "$app_dir/reader-4.0.7.jar" "$rollback_dir/reader-4.0.7.jar"
-          cp -a /etc/nginx/conf.d/read.medwarp.cn.conf "$rollback_dir/read.medwarp.cn.conf"
-          docker tag medwarp/reader-pro-restored:4.0.7 "medwarp/reader-pro-restored:rollback-${RELEASE_TAG}"
+          rollback_dir="$release_dir/rollback"
+          test -f "$app_dir/.env"
+          test -d "$app_dir/storage"
+          # Authenticate/pull before stopping the old container. This makes a
+          # private Docker Hub repository or a rate-limit failure non-disruptive.
+          docker pull "$READER_IMAGE"
+          docker image inspect --format '{{join .RepoDigests "\n"}}' "$READER_IMAGE" | grep -Fx "$READER_IMAGE"
+          install -d -m 0750 "$rollback_dir"
+          storage_bytes=$(du -sb "$app_dir/storage" | awk '{print $1}')
+          available_bytes=$(df -PB1 "$app_dir" | awk 'NR==2 {print $4}')
+          # Keep room for: the verified pre-deploy snapshot, failed-state rescue,
+          # restored storage, and filesystem/tar metadata. A fixed 2 GiB margin
+          # avoids a near-empty small installation passing on rounding alone.
+          required_bytes="$((storage_bytes * 3 + 2147483648))"
+          if [ "$available_bytes" -lt "$required_bytes" ]; then
+            echo "Insufficient rollback space: need ${required_bytes} bytes, have ${available_bytes}." >&2
+            exit 1
+          fi
+          initial_deploy=false
+          previous_image=''
+          if docker inspect reader-pro-restored >/dev/null 2>&1; then
+            previous_image=$(docker inspect --format '{{.Image}}' reader-pro-restored)
+            test -n "$previous_image"
+          else
+            # A first deployment has no service/image to restart. It still
+            # snapshots imported storage before activating the new container.
+            initial_deploy=true
+          fi
+          rollback_image="reader-pro-restored:rollback-${RELEASE_TAG}"
+          if [ "$initial_deploy" = false ]; then
+            docker image tag "$previous_image" "$rollback_image"
+            printf '%s\n' "$previous_image" > "$rollback_dir/previous-image-id"
+            printf '%s\n' "$rollback_image" > "$rollback_dir/rollback-image-ref"
+          fi
+          printf '%s\n' "$READER_IMAGE" > "$rollback_dir/expected-image-ref"
+          snapshot_ready=false
+          restore_previous_service() {
+            docker start reader-pro-restored
+            test "$(docker inspect -f '{{.State.Running}}' reader-pro-restored)" = true
+            test "$(docker inspect --format '{{.Image}}' reader-pro-restored)" = "$previous_image"
+          }
           rollback() {
-            echo 'Deployment failed; restoring previous JAR, image and Nginx configuration.' >&2
-            install -m 0644 "$rollback_dir/reader-4.0.7.jar" "$app_dir/reader-4.0.7.jar"
-            install -m 0644 "$rollback_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
-            docker tag "medwarp/reader-pro-restored:rollback-${RELEASE_TAG}" medwarp/reader-pro-restored:4.0.7
-            cd "$app_dir"
-            docker compose up -d --no-deps --no-build --force-recreate reader-pro || true
-            /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf \
-              && /www/server/nginx/sbin/nginx -s reload -c /www/server/nginx/conf/nginx.conf || true
+            trap - ERR
+            if [ "$snapshot_ready" != true ]; then
+              # No snapshot has been made and storage has not been moved: the
+              # original container and data are still the only safe rollback.
+              if [ "$initial_deploy" = false ]; then
+                if [ "$(docker inspect -f '{{.State.Running}}' reader-pro-restored)" != true ]; then
+                  restore_previous_service
+                fi
+                test "$(docker inspect -f '{{.State.Running}}' reader-pro-restored)" = true
+                test "$(docker inspect --format '{{.Image}}' reader-pro-restored)" = "$previous_image"
+              else
+                echo 'Initial deployment failed before snapshot; no previous Reader container was stopped.' >&2
+              fi
+              return
+            fi
+            docker stop reader-pro-restored || true
+            # Refuse to overlay a restored tree unless the failed state has
+            # first been archived and its archive has been verified.
+            rescue_ok=true
+            if ! tar --xattrs --acls -C "$app_dir" -cpf "$rollback_dir/rescue-after-failure-${RELEASE_TAG}.tar" .env storage compose.yaml \
+              || ! tar -tf "$rollback_dir/rescue-after-failure-${RELEASE_TAG}.tar" >/dev/null \
+              || ! sha256sum "$rollback_dir/rescue-after-failure-${RELEASE_TAG}.tar" > "$rollback_dir/rescue-after-failure-${RELEASE_TAG}.sha256"; then
+              rescue_ok=false
+              echo 'Failed to archive the fault state; restoring the already verified pre-deploy snapshot.' >&2
+            fi
+            if ! mv "$app_dir/storage" "$rollback_dir/storage-after-failure-${RELEASE_TAG}"; then
+              echo 'Could not move failed storage aside; attempting previous image without overwriting data.' >&2
+              if [ "$initial_deploy" = false ]; then
+                READER_IMAGE="$rollback_image" docker compose -f "$app_dir/compose.yaml" up -d --no-build --force-recreate reader-pro
+                test "$(docker inspect -f '{{.State.Running}}' reader-pro-restored)" = true
+                test "$(docker inspect --format '{{.Image}}' reader-pro-restored)" = "$previous_image"
+              fi
+              return 1
+            fi
+            tar -C "$app_dir" -xpf "$rollback_dir/state-before-${RELEASE_TAG}.tar"
+            if [ "$initial_deploy" = false ]; then
+              READER_IMAGE="$rollback_image" docker compose -f "$app_dir/compose.yaml" up -d --no-build --force-recreate reader-pro
+              test "$(docker inspect -f '{{.State.Running}}' reader-pro-restored)" = true
+              test "$(docker inspect --format '{{.Image}}' reader-pro-restored)" = "$previous_image"
+            fi
+            if [ "$rescue_ok" = false ]; then return 1; fi
           }
           trap rollback ERR
-          install -m 0644 "$artifact" "$app_dir/reader-4.0.7.jar"
-          install -m 0644 "$release_dir/Dockerfile" "$app_dir/Dockerfile"
+          if [ "$initial_deploy" = false ]; then docker stop reader-pro-restored; fi
+          # The service is stopped before archiving storage, so this is a
+          # consistent application-level snapshot rather than an online tar.
+          tar --xattrs --acls -C "$app_dir" -cpf "$rollback_dir/state-before-${RELEASE_TAG}.tar" .env storage compose.yaml
+          tar -tf "$rollback_dir/state-before-${RELEASE_TAG}.tar" >/dev/null
+          sha256sum "$rollback_dir/state-before-${RELEASE_TAG}.tar" > "$rollback_dir/state-before-${RELEASE_TAG}.sha256"
+          snapshot_ready=true
           install -m 0644 "$release_dir/compose.production.yaml" "$app_dir/compose.yaml"
-          install -m 0644 "$release_dir/read.medwarp.cn.conf" /etc/nginx/conf.d/read.medwarp.cn.conf
-          install -d -m 0750 -o 10001 -g 10001 "$app_dir/logs"
-          find "$app_dir/logs" -maxdepth 1 -type f -name 'reader-*.log' -exec chmod 0640 {} +
-          /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf
-          cd "$app_dir"
-          gzip -dc "$image_archive" | docker load
-          docker image inspect medwarp/reader-pro-restored:4.0.7 >/dev/null
-          docker compose up -d --no-deps --no-build --force-recreate reader-pro
-          for attempt in $(seq 1 24); do
+          READER_IMAGE="$READER_IMAGE" docker compose -f "$app_dir/compose.yaml" config --quiet
+          READER_IMAGE="$READER_IMAGE" docker compose -f "$app_dir/compose.yaml" up -d --no-build --force-recreate reader-pro
+          test "$(docker inspect --format '{{.Config.Image}}' reader-pro-restored)" = "$READER_IMAGE"
+          for attempt in $(seq 1 30); do
             status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' reader-pro-restored)
             [ "$status" = healthy ] && break
             [ "$status" = unhealthy ] && exit 1
-            sleep 5
+            sleep 4
           done
           [ "$(docker inspect -f '{{.State.Health.Status}}' reader-pro-restored)" = healthy ]
-          /www/server/nginx/sbin/nginx -s reload -c /www/server/nginx/conf/nginx.conf
-          curl -fsS -o /tmp/reader-home.html --resolve read.medwarp.cn:443:127.0.0.1 https://read.medwarp.cn/
-          curl -fsS --resolve read.medwarp.cn:443:127.0.0.1 \
-            https://read.medwarp.cn/reader3/getSystemInfo \
-            | python3 -c 'import json,sys; data=json.load(sys.stdin); assert data["isSuccess"] is True'
-          curl -fsS -o /tmp/reader-app.js --resolve read.medwarp.cn:443:127.0.0.1 \
-            'https://read.medwarp.cn/js/app.54619a3e.js?release-check=1'
-          python3 -c 'open("/tmp/reader-app.js", encoding="utf-8", errors="strict").read()'
-          artifact_sha=$(sha256sum "$artifact" | cut -d ' ' -f1)
-          printf 'tag=%s\nsha256=%s\nrun=%s\ndeployed_at=%s\n' \
-            "$RELEASE_TAG" "$artifact_sha" "$RELEASE_RUN_URL" "$(date --iso-8601=seconds)" \
-            > "$app_dir/DEPLOYED_RELEASE"
+          curl -fsS http://127.0.0.1:18088/reader3/getSystemInfo | python3 -c 'import json,sys; assert json.load(sys.stdin)["isSuccess"] is True'
+          printf 'tag=%s\nimage=%s\nrun=%s\ndeployed_at=%s\n' "$RELEASE_TAG" "$READER_IMAGE" "$RELEASE_RUN_URL" "$(date --iso-8601=seconds)" > "$app_dir/DEPLOYED_RELEASE"
           trap - ERR
           REMOTE
-      - name: Verify public endpoint
+      - name: Verify public application domain
         shell: bash
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.verify-release-inputs.outputs.version }}
+          RELEASE_REVISION: ${{ github.sha }}
+          READER_IMAGE: ${{ needs.verify-release-inputs.outputs.dockerhub-image }}@${{ needs.build-and-publish-images.outputs.dockerhub-digest }}
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --retry 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 https://read.medwarp.cn/ > /dev/null
-          curl --fail --silent --show-error --retry 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 30 https://read.medwarp.cn/reader3/getSystemInfo \
-            | python3 -c 'import json,sys; data=json.load(sys.stdin); assert data["isSuccess"] is True'
+          public_ok=false
+          if curl --fail --silent --show-error --retry 5 --retry-all-errors --connect-timeout 10 --max-time 30 https://read.medwarp.cn/ > /dev/null \
+            && curl --fail --silent --show-error --retry 5 --retry-all-errors --connect-timeout 10 --max-time 30 https://read.medwarp.cn/reader3/getSystemInfo | jq -e '.isSuccess == true' >/dev/null \
+            && curl --fail --silent --show-error --retry 5 --retry-all-errors --connect-timeout 10 --max-time 30 https://read.medwarp.cn/assets/reader-release.json \
+              | jq -e --arg version "$RELEASE_VERSION" --arg revision "$RELEASE_REVISION" '.version == $version and .buildRevision == $revision' >/dev/null; then
+            public_ok=true
+          fi
+          if [ "$public_ok" = true ]; then exit 0; fi
 
-  publish:
+          # The public path failed after local activation. Roll back remotely only
+          # after proving the container is the just-deployed immutable reference.
+          # This command preserves a rescue archive before restoring the verified
+          # pre-deploy snapshot and previous image.
+          test "$PROD_SSH_HOST" = cdn.medwarp.cn
+          ssh_opts=(-o KexAlgorithms=diffie-hellman-group14-sha256 -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o StrictHostKeyChecking=yes)
+          ssh "${ssh_opts[@]}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
+            "RELEASE_TAG='$RELEASE_TAG' READER_IMAGE='$READER_IMAGE' bash -s" <<'REMOTE_ROLLBACK'
+          set -euo pipefail
+          app_dir=/opt/reader-pro-restored
+          rollback_dir="$app_dir/releases/$RELEASE_TAG/rollback"
+          test -f "$rollback_dir/expected-image-ref"
+          test "$(cat "$rollback_dir/expected-image-ref")" = "$READER_IMAGE"
+          test "$(docker inspect --format '{{.Config.Image}}' reader-pro-restored)" = "$READER_IMAGE"
+          sha256sum -c "$rollback_dir/state-before-${RELEASE_TAG}.sha256"
+          failed_storage="$rollback_dir/storage-after-public-failure-${RELEASE_TAG}"
+          partial_restore="$rollback_dir/partial-public-restoration-${RELEASE_TAG}-$(date +%s)"
+          storage_moved=false
+          rollback_failed() {
+            original_status=$?
+            trap - ERR
+            # If any rollback step fails, restore the last running release and
+            # its latest storage. Preserve every intermediate tree for recovery.
+            if [ "$storage_moved" = true ]; then
+              if [ -e "$app_dir/storage" ]; then mv "$app_dir/storage" "$partial_restore" || true; fi
+              mv "$failed_storage" "$app_dir/storage" || true
+            fi
+            if [ -d "$app_dir/storage" ]; then
+              READER_IMAGE="$READER_IMAGE" docker compose -f "$app_dir/compose.yaml" up -d --no-build --force-recreate reader-pro \
+                || docker start reader-pro-restored || true
+            fi
+            echo 'Rollback failed; attempted to restore the just-deployed service and preserved all recovery material.' >&2
+            exit "$original_status"
+          }
+          trap rollback_failed ERR
+          docker stop reader-pro-restored
+          tar --xattrs --acls -C "$app_dir" -cpf "$rollback_dir/rescue-after-public-failure-${RELEASE_TAG}.tar" .env storage compose.yaml
+          tar -tf "$rollback_dir/rescue-after-public-failure-${RELEASE_TAG}.tar" >/dev/null
+          sha256sum "$rollback_dir/rescue-after-public-failure-${RELEASE_TAG}.tar" > "$rollback_dir/rescue-after-public-failure-${RELEASE_TAG}.sha256"
+          mv "$app_dir/storage" "$failed_storage"
+          storage_moved=true
+          tar -C "$app_dir" -xpf "$rollback_dir/state-before-${RELEASE_TAG}.tar"
+          if [ -f "$rollback_dir/rollback-image-ref" ]; then
+            rollback_image=$(cat "$rollback_dir/rollback-image-ref")
+            previous_image=$(cat "$rollback_dir/previous-image-id")
+            READER_IMAGE="$rollback_image" docker compose -f "$app_dir/compose.yaml" up -d --no-build --force-recreate reader-pro
+            test "$(docker inspect --format '{{.Image}}' reader-pro-restored)" = "$previous_image"
+            curl -fsS http://127.0.0.1:18088/reader3/getSystemInfo | python3 -c 'import json,sys; assert json.load(sys.stdin)["isSuccess"] is True'
+          else
+            docker rm reader-pro-restored
+          fi
+          trap - ERR
+          REMOTE_ROLLBACK
+          echo 'Public release verification failed; production was rolled back to its verified pre-deploy image and data.' >&2
+          exit 1
+
+  publish-github-release:
     name: Publish GitHub Release
-    needs: [build, deploy]
+    needs: [verify-release-inputs, build-and-publish-images]
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
-      - name: Checkout release notes
-        uses: actions/checkout@v7
-      - name: Download released artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: reader-pro-release
+          name: reader-pro-v${{ needs.verify-release-inputs.outputs.version }}
           path: dist
-      - name: Create immutable prerelease
+      - name: Create verified formal release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          tag="$GITHUB_REF_NAME"
+          notes="docs/releases/${tag}.md"
           test -f "$notes"
-          gh release create "$GITHUB_REF_NAME" \
-            dist/* \
-            --repo "$GITHUB_REPOSITORY" \
-            --verify-tag \
-            --prerelease \
-            --title "Reader Pro ${GITHUB_REF_NAME}" \
-            --notes-file "$notes"
+          gh release create "$tag" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "Reader Pro ${tag}" --notes-file "$notes"

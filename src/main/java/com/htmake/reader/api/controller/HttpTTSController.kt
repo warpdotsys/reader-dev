@@ -64,4 +64,8 @@ class HttpTTSController(coroutineContext: CoroutineContext): BaseController(coro
     suspend fun deleteHttpTTS(context: RoutingContext): ReturnData {
         return delete(context)
     }
+
+    suspend fun deleteHttpTTSList(context: RoutingContext): ReturnData {
+        return deleteMulti(context)
+    }
 }

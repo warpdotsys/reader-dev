@@ -1,6 +1,13 @@
 # Vue 3 UI 迁移核查
 
-更新日期：2026-09-25。本文记录源码核查结果与接入边界，不代表新界面已经发布。
+更新日期：2026-09-26。本文记录源码核查结果与接入边界，不代表新界面已经发布。下文带旧日期的 runner 与进度是当时快照，不应代替文首的当前状态。
+
+## 当前状态（2026-09-26）
+
+- Vue 3 仍是可选入口：`-PreaderWebUi=vue3` 打包、`--reader.app.web-ui=vue3` 运行；生产默认仍为 Vue 2，未切换 `read.medwarp.cn`。
+- 本机 JDK 11 已将 Vue 3 静态资源打入 Java/Kotlin JAR；`test bootJar` 通过。固定 SHA-256 为 `88C0250C4252B5FA6327B9622AC4B2CC6EE58B137019E73D61F7B029535D6E1D` 的隔离 JAR，经真实 Chrome 强制重跑 13 项浏览器测试：11 通过、0 失败、2 项因专用密钥或子目录环境缺失而跳过。测试用全新临时数据目录和合成书源，不是生产或原 JAR 的完整差分。
+- Vue 3 类型检查、Vite 生产构建与 129 项 Node 测试通过。静态路由盘点：API 文件中 91 个字面量路径全部在当前 `YueduApi.kt` 注册，另有 9 处动态调用点；这只说明路径存在，不能推出每个参数、鉴权、响应体或业务行为兼容。
+- 书源 Cookie 管理、TXT 目录规则、书源订阅等补齐接口已随本机 JAR 构建和后端测试通过。订阅新增/刷新只在服务端确认成功后显示成功，不在业务拒绝时切换到浏览器抓取。公网真实书源、Linux 完整镜像、GitHub 托管 runner 的本轮提交以及正式发布仍待验收。
 
 ## 目标与来源
 
@@ -39,3 +46,5 @@ Vue 3 默认仍构建为根路径。通过 `READER_UI_BASE=/reader/` 可生成�
 设置与备份兼容增量（2026-09-25，本机及 GitHub 托管 runner 均已验证）：旧后端 `TxtTocRule.id` 是 Long，内置规则用负数 ID；Vue 3 最初沿用 Rust 快照的 `default-*` 字符串判断，导致设置页触发 `r.id.startsWith is not a function` 并落入错误边界。现共用识别器兼容 legacy 负数和快照字符串 ID；7 项 Node 用例覆盖内置/自定义 ID，`vue-tsc` 与生产 Vite 构建通过。备份现按原 `backupToWebdav` 空字符串响应、用户 home 固定目录和日期 ZIP 文件工作；真实浏览器测试登录新用户、备份、获取路径、下载并校验 ZIP 文件头。还原仅从文件管理器中当前用户已有的 ZIP 调用实际 `/reader3/file/restore`，不再假设不存在的本地 ZIP 还原 API，也移除了后端不支持的“覆盖”开关。原版 `syncFromWebdav` 会删除并替换归档中包含的数据；还原对话框现明确警告。隔离浏览器已实际执行备份后下载再还原的流程。托管 runner [36139401215](https://github.com/warpdotsys/reader-dev/actions/runs/36139401215) 已通过七项核心浏览器旅程、secure 文件写入/重试及 `/reader/` 子目录刷新验证；同一提交的 [Java/Kotlin CI 36139401341](https://github.com/warpdotsys/reader-dev/actions/runs/36139401341) 通过构建、测试和产物校验。上述依据是恢复工程源码和合成隔离数据，尚不构成原始 3.2.14 JAR 差分或生产数据还原验证。
 
 替换规则兼容增量（2026-09-25）：接口名虽已在 `YueduApi.kt` 注册，Vue 3 原先仍把 `find/replace/enabled` 和随机字符串 ID 直接发送；legacy `ReplaceRule` 实际使用 `pattern/replacement/isEnabled` 与 Long ID。删除接口通过通用 CURD 按规则名称匹配，批量删除接收完整实体数组，并非 `{ ids }`。现新增双向 adapter，保留规则的 scope/regex 等未在简化编辑器显示的属性，改名时按 legacy 名称键迁移；业务错误不再降级伪装为本地成功，离线缓存会在页面明确提示未同步。新增隔离 Reader + Chromium 旅程覆盖创建、验证 JSON 字段与数字 ID、启停、改名、刷新重载和批量删除；测试还捕获并修复“busy 状态下关闭函数直接返回”导致的弹窗无法自动关闭。13 项 Node 单测、`vue-tsc` 和 Vite 生产构建通过；[GitHub 托管 runner 36143500512](https://github.com/warpdotsys/reader-dev/actions/runs/36143500512) 在提交 `12c2b5e6` 上通过完整 Vue 3 浏览器旅程、安全文件检查和 `/reader/` 子目录验证。该证据来自隔离恢复工程，不等于原始 3.2.14 JAR 差分或真实生产部署验收。
+
+2026-09-25 JAR 接线状态（待 GitHub CI 验证）：新增 `-PreaderWebUi=vue3` 打包选项，将 `web-vue3/dist` 放入独立 classpath 路径 `web-vue3/`；运行参数 `reader.app.web-ui=vue3` 选择该资源，并为 HTML5 history 路由提供 index 回退。Vue 2 `web/` 仍保留且是当前默认。当前只通过了本机 Vue 3 类型检查、API 静态盘点、115 项单测和临时目录生产构建；没有本机 JDK，因此 JAR 打包和直接对 JAR 的浏览器旅程尚未验证。本轮 runner 已改为直接访问打包后的 Reader，而非 Vite 开发代理；CI 通过前不切默认入口。

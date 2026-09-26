@@ -1,0 +1,5 @@
+# Official OCI index digests verified directly against each registry on 2026-09-26.
+# Update only through a reviewed change that re-verifies the registry response and
+# then records a new complete-image digest in the release artifacts.
+TEMURIN_JRE_IMAGE=eclipse-temurin@sha256:68607af464c53b34d7dd3ee25697d53531ec46a80326be95129346ff74ae6f8f
+PLAYWRIGHT_JAVA_IMAGE=mcr.microsoft.com/playwright/java@sha256:b727d779c161a504674a8eca16273e528143638d7f650ee628d0d6a86755b40c

@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getBookshelf, deleteBook } from '@/api/bookshelf'
+import { getBookshelf, deleteBook, saveBookProgress } from '@/api/bookshelf'
 import { getBookInfo, getBookToc, getBookContent, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import {
   deleteBookmarks,
@@ -14,7 +14,6 @@ import { getInvalidBookSources } from '@/api/sources'
 import { saveBook } from '@/api/bookshelf'
 import { getHttpTtsList } from '@/api/httpTts'
 import { get, post } from '@/api/request'
-import { getBookCacheChapters } from '@/api/cacheBook'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
@@ -2585,18 +2584,11 @@ const drawerChapters = computed(() => {
   return list
 })
 
-/** 已缓存章标记（服务器 book_chapters + 本机 IndexedDB 的实章索引；0 基） */
+/** 已缓存章标记（本机 IndexedDB 的实章索引；0 基）。
+ * Java/Kotlin 后端未提供已缓存章节列表路由，不能据此推断服务端单章状态。 */
 const cachedChapterIndexes = ref<Set<number>>(new Set())
 async function loadCacheMarkers() {
   const set = new Set<number>()
-  try {
-    const res = await getBookCacheChapters(bookUrl.value)
-    for (const ch of res.data?.chapters ?? []) {
-      if (typeof ch.index === 'number') set.add(ch.index)
-    }
-  } catch {
-    /* 服务器缓存接口未就绪/未入架——忽略，仍显示本机缓存 */
-  }
   try {
     const urls = await listLocalChapterUrls(bookUrl.value)
     const byUrl = new Map<string, number>()
@@ -2712,13 +2704,7 @@ function stopDailyTracker() {
 /** 进度服务端同步（POST /reader3/saveBookProgress；失败静默，不影响本地阅读） */
 function syncServerProgress() {
   if (!shelfBook.value || !currentChapter.value) return
-  void post('/saveBookProgress', {
-    bookUrl: bookUrl.value,
-    durChapterIndex: chapterIndex.value,
-    durChapterPos: Math.round(currentPos()),
-    durChapterTime: Date.now(),
-    durChapterTitle: currentChapter.value.title,
-  }).catch(() => {
+  void saveBookProgress(bookUrl.value, chapterIndex.value).catch(() => {
     /* 静默失败 */
   })
 }
@@ -3275,13 +3261,7 @@ async function switchSource(r: SearchBook) {
       b.durChapterTitle = ch.title
       b.durChapterPos = oldPos
       b.durChapterTime = Date.now()
-      void post('/saveBookProgress', {
-        bookUrl: b.bookUrl,
-        durChapterIndex: startIdx,
-        durChapterPos: oldPos,
-        durChapterTime: Date.now(),
-        durChapterTitle: ch.title,
-      }).catch(() => {
+      void saveBookProgress(b.bookUrl, startIdx).catch(() => {
         /* 静默失败 */
       })
     }

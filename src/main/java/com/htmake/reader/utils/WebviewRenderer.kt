@@ -21,4 +21,7 @@ data class WebviewRequest(
 
 interface WebviewRenderer {
     suspend fun render(request: WebviewRequest): StrResponse
+
+    /** Release renderer-owned workers and browser processes during application shutdown. */
+    suspend fun close() = Unit
 }

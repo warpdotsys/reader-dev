@@ -22,11 +22,10 @@ object RssParserDefault {
         val articleList = mutableListOf<RssArticle>()
         var currentArticle = RssArticle()
 
-        // val factory = XmlPullParserFactory.newInstance()
-        val factory = XmlPullParserFactory.newInstance("""
-        org.kxml2.io.KXmlParser
-        org.kxml2.io.KXmlSerializer
-               """, Thread.currentThread().getContextClassLoader().javaClass)
+        val factory = XmlPullParserFactory.newInstance(
+            "org.kxml2.io.KXmlParser,org.kxml2.io.KXmlSerializer",
+            RssParserDefault::class.java
+        )
         factory.isNamespaceAware = false
 
         val xmlPullParser = factory.newPullParser()

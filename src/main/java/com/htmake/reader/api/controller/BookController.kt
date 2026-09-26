@@ -618,21 +618,27 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                     return returnData.setErrorMsg("Epub书籍解压失败")
                 }
 
-                val epubRootDir = bookInfo.getEpubRootDir()
-                var chapterFilePath = getWorkDir(bookInfo.bookUrl, "index", epubRootDir, chapterInfo.url)
+                val epubDir = epubExtractDir(bookInfo)
+                val epubRootDir = bookInfo.getEpubRootDir(epubDir)
+                val chapterFilePath = File(epubDir, File(epubRootDir, chapterInfo.url).path).canonicalPath
                 logger.info("chapterFilePath: {} {}", chapterFilePath, epubRootDir)
-                if (!File(chapterFilePath).exists()) {
+                if (!File(chapterFilePath).isFile || !File(chapterFilePath).toPath().startsWith(epubDir.canonicalFile.toPath())) {
                     return returnData.setErrorMsg("章节文件不存在")
                 }
                 // 处理 js 注入脚本
                 // BookConfig.injectJavascriptToEpubChapter(chapterFilePath);
 
                 // 直接返回 html访问地址
-                val publicBookUrl = bookInfo.bookUrl.replace("\\", "/").replace("storage/data/", "/book-assets/")
+                val dataDir = File(getWorkDir("storage", "data")).canonicalFile.toPath()
+                val extractPath = epubDir.canonicalFile.toPath()
+                if (!extractPath.startsWith(dataDir)) {
+                    return returnData.setErrorMsg("章节文件不存在")
+                }
+                val publicBookUrl = "/book-assets/" + dataDir.relativize(extractPath).toString().replace("\\", "/")
                 if (epubRootDir.isEmpty()) {
-                    content = publicBookUrl + "/index/" + chapterInfo.url
+                    content = publicBookUrl + "/" + chapterInfo.url
                 } else {
-                    content = publicBookUrl + "/index/" + epubRootDir + "/" + chapterInfo.url
+                    content = publicBookUrl + "/" + epubRootDir + "/" + chapterInfo.url
                 }
                 if (epubContent > 0) {
                     return returnData.setData(
@@ -669,15 +675,22 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 val start = chapterInfo.start
                 val end = chapterInfo.end
                 if (start != null && end != null && start <= end) {
+                    val directPdf = File(getWorkDir(bookInfo.bookUrl)).isFile
                     val publicBookUrl = bookInfo.bookUrl.replace("\\", "/").replace("storage/data/", "/book-assets/")
                     for (page in start..end) {
                         convertPdfPageToImage(bookInfo, page.toInt(), refresh > 0)
-                        val pageFile = File(getWorkDir(bookInfo.bookUrl, "index", "output-$page.png"))
+                        val pageFile = File(pdfImageDir(bookInfo), "output-$page.png")
                         logger.info("chapterFilePath: {}", pageFile.absolutePath)
                         if (!pageFile.exists()) {
                             return returnData.setErrorMsg("章节文件不存在")
                         }
-                        val fileUrl = "__API_ROOT__" + publicBookUrl + "/index/output-$page.png"
+                        val fileUrl = if (directPdf) {
+                            val dataDir = File(getWorkDir("storage", "data"))
+                            val relativeImage = pageFile.relativeTo(dataDir).path.replace("\\", "/")
+                            "__API_ROOT__/book-assets/$relativeImage"
+                        } else {
+                            "__API_ROOT__" + publicBookUrl + "/index/output-$page.png"
+                        }
                         content += "<img src='" + fileUrl + "' />"
                     }
                 }
@@ -1026,7 +1039,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         var bookSourceGroup: String
         if (context.request().method() == HttpMethod.POST) {
             // post 请求
-            bookUrl = context.bodyAsJson.getString("url")
+            bookUrl = context.bodyAsJson.getString("url") ?: ""
             lastIndex = context.bodyAsJson.getInteger("lastIndex", -1)
             searchSize = context.bodyAsJson.getInteger("searchSize", 5)
             bookSourceGroup = context.bodyAsJson.getString("bookSourceGroup", "")
@@ -1960,8 +1973,23 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         saveUserStorage(userNameSpace, getRelativePath(book.name + "_" + book.author, "bookSource"), bookSourceList)
     }
 
+    private fun epubExtractDir(book: Book): File = if (File(getWorkDir(book.bookUrl)).isFile) {
+        File(BookHelp.getBookCacheDir(book), "epub-index")
+    } else {
+        File(getWorkDir(book.bookUrl + File.separator + "index"))
+    }
+
+    private fun extractDirectEpub(source: File, destination: File, force: Boolean, bookUrl: String): Boolean {
+        return DirectEpubExtractor.extract(source, destination, force, bookUrl)
+    }
+
     fun extractEpub(book: Book, force: Boolean = false): Boolean {
-        val epubExtractDir = File(getWorkDir(book.bookUrl + File.separator + "index"))
+        book.setRootDir(getWorkDir())
+        val directSource = File(getWorkDir(book.bookUrl)).isFile
+        val epubExtractDir = epubExtractDir(book)
+        if (directSource) {
+            return extractDirectEpub(book.getLocalFile(), epubExtractDir, force, book.bookUrl)
+        }
         if (force || !epubExtractDir.exists()) {
             epubExtractDir.deleteRecursively()
             var localEpubFile = File(getWorkDir(book.originName + File.separator + "index.epub"))
@@ -2794,8 +2822,18 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun searchChapter(book: Book, chapter: BookChapter, query: String): List<SearchResult> {
         val searchResultsWithinChapter: MutableList<SearchResult> = mutableListOf()
+        // The original TXT reader trims the chapter title for uncached search text.
+        // Keep the public reading response raw; cached custom content must not be rewritten.
+        val uncachedLocalTxt = book.isLocalBook() && !book.isEpub() && !book.isUmd() &&
+            !book.isCbz() && !book.isPdf() &&
+            !File(BookHelp.getBookCacheDir(book), "${chapter.index}.txt").exists()
         val chapterContent = BookHelp.getContent(book, chapter)
         if (chapterContent != null) {
+            val searchableContent = if (uncachedLocalTxt) {
+                chapterContent.substringAfter(chapter.title).replace(Regex("^[\\n\\s]+"), "　　")
+            } else {
+                chapterContent
+            }
             // withContext(Dispatchers.IO) {
             //     chapter.title = when (AppConfig.chineseConverterType) {
             //         1 -> ChineseUtils.t2s(chapter.title)
@@ -2809,10 +2847,10 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             //         useReplace = false
             //     ).joinToString("")
             // }
-            val positions = searchPosition(chapterContent, query)
+            val positions = searchPosition(searchableContent, query)
             logger.info("positions: {}", positions)
             positions.forEachIndexed { index, position ->
-                val construct = getResultAndQueryIndex(chapterContent, position, query)
+                val construct = getResultAndQueryIndex(searchableContent, position, query)
                 val result = SearchResult(
                     resultCountWithinChapter = index,
                     resultText = construct.second,
@@ -3331,8 +3369,14 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
      * Convert a single PDF page to image for a book.
      * JAR signature: public final void convertPdfPageToImage(io.legado.app.data.entities.Book, int, boolean)
      */
+    private fun pdfImageDir(book: Book): File = if (File(getWorkDir(book.bookUrl)).isFile) {
+        File(BookHelp.getBookCacheDir(book), "index")
+    } else {
+        File(getWorkDir(book.bookUrl + File.separator + "index"))
+    }
+
     fun convertPdfPageToImage(book: Book, pageIndex: Int, force: Boolean = false) {
-        val imageDir = File(getWorkDir(book.bookUrl + File.separator + "index"))
+        val imageDir = pdfImageDir(book)
         if (!imageDir.exists()) {
             imageDir.mkdirs()
         }
@@ -3342,13 +3386,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
             return
         }
         outputFile.deleteRecursively()
-        var localFile = File(getWorkDir(book.originName + File.separator + "index.pdf"))
-        if (book.originName.indexOf("localStore") > 0) {
-            localFile = File(getWorkDir(book.originName))
-        }
-        if (book.originName.indexOf("webdav") > 0) {
-            localFile = File(getWorkDir(book.originName))
-        }
+        val localFile = book.getLocalFile()
         val doc = org.apache.pdfbox.pdmodel.PDDocument.load(localFile)
         try {
             val renderer = org.apache.pdfbox.rendering.PDFRenderer(doc)
@@ -3387,6 +3425,8 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
      */
     fun saveBookToShelf(_book: Book, userNameSpace: String, context: RoutingContext): Pair<Book, String?> {
         var book = _book
+        book.setRootDir(getWorkDir())
+        book.setUserNameSpace(userNameSpace)
         if (book.origin.isNullOrEmpty()) {
             return Pair(book, "未找到书源信息")
         }
