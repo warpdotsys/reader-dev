@@ -10,7 +10,10 @@ on:
       - 'web-vue3/**'
       - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
+      - 'deploy/reader-pro/base-images.lock'
+      - 'deploy/reader-pro/apt-sources.list'
       - 'deploy/reader-pro/camoufox-browser.lock'
+      - 'deploy/reader-pro/docker-entrypoint.sh'
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
@@ -37,7 +40,10 @@ on:
       - 'web-vue3/**'
       - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
+      - 'deploy/reader-pro/base-images.lock'
+      - 'deploy/reader-pro/apt-sources.list'
       - 'deploy/reader-pro/camoufox-browser.lock'
+      - 'deploy/reader-pro/docker-entrypoint.sh'
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
@@ -76,6 +82,12 @@ jobs:
           distribution: temurin
           java-version: '11'
           cache: gradle
+      # The Camoufox wheel lock is intentionally generated for the image's
+      # Ubuntu Jammy / CPython 3.10 target. ubuntu-24.04's system python is
+      # 3.12 and would select a different, correctly rejected wheel hash.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
@@ -117,7 +129,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m venv "$RUNNER_TEMP/reader-camoufox"
+          python -m venv "$RUNNER_TEMP/reader-camoufox"
           "$RUNNER_TEMP/reader-camoufox/bin/pip" install --no-cache-dir \
             --requirement deploy/reader-pro/requirements-camoufox.lock
           READER_CAMOUFOX_PYTHON="$RUNNER_TEMP/reader-camoufox/bin/python" \

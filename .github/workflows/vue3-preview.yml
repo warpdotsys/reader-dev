@@ -28,6 +28,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -156,6 +157,7 @@ jobs:
           name: vue3-source-browser-diagnostics-${{ github.sha }}
           path: |
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml
+            ${{ runner.temp }}/vue3-source-login-timeout.png
             ${{ runner.temp }}/vue3-source-edit-timeout.png
           if-no-files-found: ignore
           retention-days: 7

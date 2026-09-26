@@ -81,9 +81,16 @@ jobs:
           set -euo pipefail
           python3 scripts/verify_camoufox_wheel_lock.py deploy/reader-pro/requirements-camoufox.lock
 
+  verify-vue3-e2e:
+    name: Require complete Vue 3 browser journeys for this release commit
+    needs: verify-release-inputs
+    permissions:
+      contents: read
+    uses: ./.github/workflows/vue3-preview.yml
+
   build-and-publish-images:
     name: Test, build, and publish immutable images
-    needs: verify-release-inputs
+    needs: [verify-release-inputs, verify-vue3-e2e]
     runs-on: ubuntu-24.04
     timeout-minutes: 80
     permissions:

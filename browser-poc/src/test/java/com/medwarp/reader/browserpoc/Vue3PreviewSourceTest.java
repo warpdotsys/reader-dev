@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,8 +48,37 @@ public class Vue3PreviewSourceTest {
                 page.locator("input[autocomplete=username]").fill("vue" +
                         UUID.randomUUID().toString().replace("-", "").substring(0, 10));
                 page.locator("input[autocomplete=current-password]").fill("SourceProbe-2026");
-                page.locator(".submit-btn").click();
-                page.locator(".bookshelf-page").waitFor();
+                Response registration = page.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/login"),
+                        () -> page.locator(".submit-btn").click());
+                assertEquals("Registration HTTP status", 200, registration.status());
+                String registrationBody = registration.text();
+                Matcher registrationError = Pattern.compile("\\\"errorMsg\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"")
+                        .matcher(registrationBody);
+                String errorMessage = registrationError.find() ? registrationError.group(1) : "missing errorMsg";
+                assertTrue("Registration rejected: " + errorMessage,
+                        Pattern.compile("\\\"isSuccess\\\"\\s*:\\s*true").matcher(registrationBody).find());
+                try {
+                    page.locator(".bookshelf-page").waitFor();
+                } catch (RuntimeException failure) {
+                    String state = String.valueOf(page.evaluate("() => JSON.stringify({" +
+                            "path: location.pathname," +
+                            "loggedInUser: localStorage.getItem('reader_username')," +
+                            "loginVisible: !!document.querySelector('.login-page')," +
+                            "message: document.querySelector('.el-message__content')?.textContent" +
+                            "})"));
+                    String runnerTemp = System.getenv("RUNNER_TEMP");
+                    if (runnerTemp != null && !runnerTemp.isEmpty()) {
+                        try {
+                            page.screenshot(new Page.ScreenshotOptions()
+                                    .setPath(Path.of(runnerTemp, "vue3-source-login-timeout.png"))
+                                    .setFullPage(true));
+                        } catch (RuntimeException screenshotFailure) {
+                            failure.addSuppressed(screenshotFailure);
+                        }
+                    }
+                    throw new AssertionError("Registration succeeded but shelf did not open: " + state, failure);
+                }
                 page.navigate(previewUrl + "/sources");
                 page.locator(".sources-page").waitFor();
                 assertEquals(0, sourceCount(page));

@@ -16,7 +16,7 @@ const dockerfile = read('deploy/reader-pro/Dockerfile')
 const baseImagesLock = read('deploy/reader-pro/base-images.lock')
 
 for (const token of [
-  'verify-release-inputs', 'build-and-publish-images', 'deploy-production',
+  'verify-release-inputs', 'verify-vue3-e2e', 'build-and-publish-images', 'deploy-production',
   'publish-github-release', 'origin/legacy', 'GHCR_IMAGE', 'DOCKERHUB_IMAGE',
   'DOCKERHUB_USERNAME', 'DOCKERHUB_PASSWORD', 'docker push',
   'docker buildx imagetools inspect', 'READER_IMAGE', 'https://read.medwarp.cn',
@@ -83,6 +83,11 @@ for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_JAVA_IMAGE']) {
 const browserWorkflow = read('.github/workflows/browser-image.yml')
 const ciWorkflow = read('.github/workflows/ci.yml')
 const vue3Workflow = read('.github/workflows/vue3-preview.yml')
+if (!vue3Workflow.includes('workflow_call:') ||
+    !workflow.includes('uses: ./.github/workflows/vue3-preview.yml') ||
+    !workflow.includes('needs: [verify-release-inputs, verify-vue3-e2e]')) {
+  throw new Error('release images must wait for the same-commit Vue 3 browser journeys')
+}
 for (const [name, content] of [['browser image', browserWorkflow], ['CI', ciWorkflow]]) {
   if (!content.includes('npm run build --prefix web-vue3') || !content.includes('-PreaderWebUi=vue3')) {
     throw new Error(`${name} workflow must build and package Vue 3`)
