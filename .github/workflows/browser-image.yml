@@ -117,14 +117,16 @@ jobs:
           docker pull --platform linux/amd64 "$image"
           container=$(docker create --platform linux/amd64 "$image" true)
           trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          echo 'Archived image container created without starting it.'
           docker cp "$container:/app/bin/reader.jar" "$jar"
+          stat --format='Archived JAR size: %s bytes' "$jar"
+          sha256sum "$jar"
           # Compare against the untouched local reader-pro-3.2.14.jar; the
           # mirror's tag or image labels are not evidence of equivalence.
           printf '%s  %s\n' \
             'b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c' \
-            "$jar" | sha256sum --check --status
+            "$jar" | sha256sum --check
           echo 'Original JAR SHA-256 matches the local read-only reference.'
-          stat --format='JAR size: %s bytes' "$jar"
           unzip -p "$jar" META-INF/MANIFEST.MF | grep -E \
             '^(Main-Class|Start-Class|Spring-Boot-Version|Implementation-Version):' || true
       - name: Confirm JAR is not published
