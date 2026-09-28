@@ -93,6 +93,11 @@ on:
         required: false
         type: boolean
         default: false
+      probe_remote_webview:
+        description: 'Probe the pinned historical remote WebView image with synthetic and public pages'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -102,6 +107,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  archived-remote-webview:
+    if: ${{ inputs.probe_remote_webview == true }}
+    name: Probe archived remote WebView reference
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run pinned historical service on loopback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a'
+          docker pull --platform linux/amd64 "$image"
+          docker run -d --name reader-archived-webview \
+            --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 \
+            --security-opt no-new-privileges \
+            --add-host=host.docker.internal:host-gateway \
+            -p 127.0.0.1:18050:8050 "$image"
+          python3 scripts/probe-archived-remote-webview.py \
+            --remote-base http://127.0.0.1:18050 \
+            --public-url https://m.jjjxsw.com/txt/
+      - name: Stop reference service and show bounded diagnostics
+        if: always()
+        shell: bash
+        run: |
+          docker logs --tail 40 reader-archived-webview 2>&1 || true
+          docker rm -f reader-archived-webview >/dev/null 2>&1 || true
+
   original-jar-provenance:
     if: ${{ inputs.probe_original_jar == true }}
     name: Verify archived original JAR provenance
@@ -135,7 +168,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true }}
+    if: ${{ inputs.probe_original_jar != true && inputs.probe_remote_webview != true }}
     name: Build and smoke-test the full Reader image
     runs-on: ubuntu-24.04
     timeout-minutes: 45
