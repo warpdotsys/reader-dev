@@ -11,7 +11,7 @@
 | 公开目录 `https://m.jjjxsw.com/txt/` | HTTP 200；正文 16,403 字节，SHA-256 `38c911694a9d98532883a34913a9c6bb68b11b368c635fbd005ffb6cdbc045e3` | 只记录渲染结果摘要；未与 Camoufox 的原始 HTML 同条件逐字节比较 |
 | `js_source` 返回字符串 | HTTP 200；正文 `script-result-ok`，16 字节，SHA-256 `fa3669b1c8bce6ac9a8d9df19da388dad91377d7345399afd762012c05f9939e` | 只证明返回值型脚本；页面副作用也执行了 |
 | `js_source` 返回对象/数组/数字 | 均 HTTP 200；对象 JSON 正文 26 字节、SHA-256 `f40d271486d8bc12ae170e30de191f09149ac8cd2c4208ace1a2464c93fba67c`；数组 JSON 正文 11 字节、SHA-256 `0fb5609573d0a6bc52f19b42db1f52a022b2baa2ee9899e38184b8337494ee94`；数字正文 `42`，SHA-256 `73475cb40a568e8da8a045ced110137e159f890ac4da883b6b17dc651b3a8049` | 对象/数组使用紧凑 JSON；这些是旧参考实现的实测值，不是原 JAR 的结果 |
-| `sourceRegex` 命中资源 | [单独探针](https://github.com/warpdotsys/reader-dev/actions/runs/36439381876)中合成服务收到了 `/regex-page` 与 `/regex-resource`，但 `/render.html` 20 秒未返回，容器未 OOM | 镜像源码监听器写的是 `response.request().url.match(...)`；[Playwright JavaScript API](https://playwright.dev/docs/api/class-request#url)要求 `request.url()`。这是该固定参考镜像的已知缺陷，不能外推至原生产实例 |
+| `sourceRegex` 命中资源 | [单独探针](https://github.com/warpdotsys/reader-dev/actions/runs/36439381876)中合成服务收到了 `/regex-page` 与 `/regex-resource`，但 `/render.html` 20 秒未返回，容器未 OOM；[复验作业](https://github.com/warpdotsys/reader-dev/actions/runs/36439959686)将此预期缺陷明确记录为 `response-listener-hangs` | 镜像源码监听器写的是 `response.request().url.match(...)`；[Playwright JavaScript API](https://playwright.dev/docs/api/class-request#url)要求 `request.url()`。这是该固定参考镜像的已知缺陷，不能外推至原生产实例 |
 
 合成 GET/POST 的响应都未向调用方暴露 `Set-Cookie` 响应头；合成页面确实发送了测试 Cookie。这是此参考镜像在该协议路径的观察值，不推断它的内部 Cookie 状态或原生产实例的行为。
 
