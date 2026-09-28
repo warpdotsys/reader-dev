@@ -103,7 +103,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: browser-image-${{ github.ref }}
+  # A reference probe must not cancel a full-image acceptance run on the same
+  # branch. Only supersede another run of the same mode.
+  group: browser-image-${{ github.ref }}-${{ inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}
   cancel-in-progress: true
 
 jobs:
