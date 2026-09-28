@@ -187,6 +187,18 @@ def main():
         if js_result["status"] != 200 or js_result["bodySha256"] != hashlib.sha256(
                 b"script-result-ok").hexdigest():
             raise RuntimeError("Archived WebView returned an unexpected script result")
+        # page.evaluate returns structured JavaScript values. The archived
+        # service JSON-serializes non-string results before sending its body.
+        for label, expression, expected in (
+                ("object", "({answer: 42, ready: true})", b'{"answer":42,"ready":true}'),
+                ("array", "['alpha', 7]", b'["alpha",7]'),
+                ("number", "42", b"42"),
+        ):
+            result = render(args.remote_base, fixture_url, js_source=expression, timeout=20)
+            print(json.dumps({"syntheticJsType": label, "result": result},
+                             sort_keys=True), flush=True)
+            if result["status"] != 200 or result["bodySha256"] != hashlib.sha256(expected).hexdigest():
+                raise RuntimeError(f"Archived WebView returned unexpected {label} script output")
     finally:
         fixture.shutdown()
         fixture.server_close()
