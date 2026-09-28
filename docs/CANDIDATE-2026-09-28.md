@@ -30,6 +30,8 @@
 
 `7710518d` 的设置页修正已在 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36416844091)、[Vue 3 Chromium 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36416847605)和 [完整单容器镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36416847244) 三道 GitHub 托管 runner 门禁通过。浏览器旅程使用隔离账号，不是生产账号。三道作业未在本次启用公开真实书源选项；前一轮真实书源结果仍需按其原提交范围解释。
 
+本轮 `f3e95b23` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36432696623)与[完整单容器镜像构建和容器内冒烟](https://github.com/warpdotsys/reader-dev/actions/runs/36432691482)通过；`b472589c` 的 [Vue 3 Chromium 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36433301875)通过。两提交之间只修正了该 Vue 3 workflow 的 Linux 回环监听文本断言，产品源码与锁定依赖未变。此前 [5192ef51 的 Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36431567550)和 [f3e95b23 的 Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36432659453)均在浏览器旅程开始前被此断言挡住：Linux `ss` 实际显示 `[::ffff:127.0.0.1]:18895`，不是普通 `127.0.0.1:18895`；修正后隔离账号旅程已跑完。`browser-image.yml` 中的原 JAR 来源探针和旧远程 WebView 探针是可选作业，本轮默认均跳过，不能算作三方差分通过。
+
 ## 已知问题与尚未验证
 
 - 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。浏览器内 JavaScript 主动删除既有 Cookie、复杂 Set-Cookie 日期/引号与跨站 SameSite 行为仍缺少完整端到端覆盖；JavaScript 删除目前只有快照协议单测。
