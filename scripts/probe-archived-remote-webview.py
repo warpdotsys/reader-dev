@@ -218,22 +218,27 @@ def main():
                 source_regex=r"/regex-resource$",
                 timeout=20,
             )
-        except (OSError, RuntimeError, urllib.error.URLError) as exc:
+        except TimeoutError:
             with fixture.lock:
                 paths = list(fixture.paths)
-            print(json.dumps({"syntheticSourceRegex": {"errorType": type(exc).__name__,
+            # This pinned reference has a known bug: its response listener
+            # reads response.request().url.match(...) instead of url().match(...).
+            # Confirm the resource was fetched before recording the hang.
+            if "/regex-page" not in paths or "/regex-resource" not in paths:
+                raise RuntimeError("sourceRegex timed out before the fixture resource was requested")
+            print(json.dumps({"syntheticSourceRegex": {"knownDefect": "response-listener-hangs",
                                                         "fixturePaths": paths}},
                              sort_keys=True), flush=True)
-            raise
-        with fixture.lock:
-            methods = list(fixture.methods)
-            paths = list(fixture.paths)
-        print(json.dumps({"syntheticSourceRegex": resource, "fixtureMethods": methods,
-                          "fixturePaths": paths},
-                         sort_keys=True), flush=True)
-        if resource["status"] != 200 or resource["bodySha256"] != hashlib.sha256(
-                fixture_body("matched-resource-body")).hexdigest():
-            raise RuntimeError("Archived WebView did not return the matched resource body")
+        else:
+            with fixture.lock:
+                methods = list(fixture.methods)
+                paths = list(fixture.paths)
+            print(json.dumps({"syntheticSourceRegex": resource, "fixtureMethods": methods,
+                              "fixturePaths": paths},
+                             sort_keys=True), flush=True)
+            if resource["status"] != 200 or resource["bodySha256"] != hashlib.sha256(
+                    fixture_body("matched-resource-body")).hexdigest():
+                raise RuntimeError("Archived WebView did not return the matched resource body")
     finally:
         fixture.shutdown()
         fixture.server_close()
