@@ -121,7 +121,7 @@ jobs:
           image='hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a'
           docker pull --platform linux/amd64 "$image"
           docker run -d --name reader-archived-webview \
-            --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 \
+            --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 --shm-size=1g \
             --security-opt no-new-privileges \
             --add-host=host.docker.internal:host-gateway \
             -p 127.0.0.1:18050:8050 "$image"
@@ -132,6 +132,7 @@ jobs:
         if: always()
         shell: bash
         run: |
+          docker inspect --format 'Container state: {{json .State}}' reader-archived-webview 2>&1 || true
           docker logs --tail 40 reader-archived-webview 2>&1 || true
           docker rm -f reader-archived-webview >/dev/null 2>&1 || true
 

@@ -127,7 +127,14 @@ def main():
     try:
         wait_port(args.remote_base)
         fixture_url = f"http://{args.fixture_host}:{fixture.server_port}/page"
-        get_result = render(args.remote_base, fixture_url)
+        try:
+            get_result = render(args.remote_base, fixture_url)
+        except Exception as exc:
+            with fixture.lock:
+                methods = list(fixture.methods)
+            print(json.dumps({"stage": "synthetic-get", "errorType": type(exc).__name__,
+                              "fixtureMethods": methods}, sort_keys=True), flush=True)
+            raise
         post_result = render(args.remote_base, fixture_url, "POST", "probe=1")
         js_result = render(args.remote_base, fixture_url,
                            js_source="document.body.setAttribute('data-probe','yes')")
