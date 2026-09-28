@@ -88,6 +88,11 @@ on:
         required: false
         type: boolean
         default: false
+      probe_original_jar:
+        description: 'Extract an archived upstream JAR without executing it and compare its SHA-256 to the local original'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -97,7 +102,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  original-jar-provenance:
+    if: ${{ inputs.probe_original_jar == true }}
+    name: Verify archived original JAR provenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Extract JAR from archived image without running it
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader:3.2.14'
+          jar="$RUNNER_TEMP/reader-pro-3.2.14.jar"
+          docker pull --platform linux/amd64 "$image"
+          container=$(docker create --platform linux/amd64 "$image" true)
+          trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          docker cp "$container:/app/bin/reader.jar" "$jar"
+          # Compare against the untouched local reader-pro-3.2.14.jar; the
+          # mirror's tag or image labels are not evidence of equivalence.
+          printf '%s  %s\n' \
+            'b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c' \
+            "$jar" | sha256sum --check --status
+          echo 'Original JAR SHA-256 matches the local read-only reference.'
+          stat --format='JAR size: %s bytes' "$jar"
+          unzip -p "$jar" META-INF/MANIFEST.MF | grep -E \
+            '^(Main-Class|Start-Class|Spring-Boot-Version|Implementation-Version):' || true
+      - name: Confirm JAR is not published
+        run: |
+          echo 'The verified JAR remains only in this ephemeral runner.'
+          echo 'It is not uploaded as an Actions artifact or committed to Git.'
+
   integration:
+    if: ${{ inputs.probe_original_jar != true }}
     name: Build and smoke-test the full Reader image
     runs-on: ubuntu-24.04
     timeout-minutes: 45
