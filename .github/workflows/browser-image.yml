@@ -122,7 +122,6 @@ jobs:
           docker pull --platform linux/amd64 "$image"
           docker run -d --name reader-archived-webview \
             --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 --shm-size=1g \
-            --security-opt no-new-privileges \
             --add-host=host.docker.internal:host-gateway \
             -p 127.0.0.1:18050:8050 "$image"
           python3 scripts/probe-archived-remote-webview.py \
