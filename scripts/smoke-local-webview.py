@@ -1,10 +1,12 @@
 """Exercise an opt-in local WebView Reader against a loopback-only book source.
 
-The target Reader must use an isolated work directory; this script registers one
-synthetic source and account there. It refuses non-loopback Reader addresses.
+The target Reader must use an isolated work directory; this script registers a
+synthetic source and disposable accounts there, then runs a bounded burst of
+independent users. It refuses non-loopback Reader addresses.
 """
 
 import argparse
+import concurrent.futures
 import http.cookiejar
 import json
 import secrets
@@ -71,7 +73,10 @@ def get_json(opener, base, path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reader-base", default="http://127.0.0.1:18890")
+    parser.add_argument("--concurrent-requests", type=int, default=4)
     args = parser.parse_args()
+    if not 1 <= args.concurrent_requests <= 8:
+        parser.error("Concurrent request count must stay between 1 and 8")
     parsed = urllib.parse.urlparse(args.reader_base)
     if parsed.scheme != "http" or parsed.hostname not in ("127.0.0.1", "localhost"):
         parser.error("Reader must be a loopback HTTP endpoint in an isolated work directory")
@@ -119,7 +124,29 @@ def main():
         expected = ["", "", "session=alpha==", ""]
         if fixture.cookies != expected:
             raise RuntimeError(f"Cookie sequence {fixture.cookies!r}, expected {expected!r}")
-        print(json.dumps({"searches": searches, "cookieSequence": fixture.cookies},
+
+        # A small simultaneous burst exercises the Reader queue and isolated
+        # browser contexts under the image's 2 GiB / 256 PID budget. Each
+        # account owns a separate HTTP cookie jar and saved source.
+        burst_accounts = [create_account() for _ in range(args.concurrent_requests)]
+        for account in burst_accounts:
+            call(account, args.reader_base, "/reader3/saveBookSource", source)
+
+        def burst_search(index):
+            value = call(burst_accounts[index], args.reader_base, "/reader3/searchBook", {
+                "key": f"burst-{index}", "page": 1, "bookSourceUrl": fixture_base})
+            books = value.get("data")
+            if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "本地浏览器测试书":
+                raise RuntimeError(f"Concurrent search {index} returned unexpected books")
+            return len(books)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.concurrent_requests) as pool:
+            burst_counts = list(pool.map(burst_search, range(args.concurrent_requests)))
+        if fixture.cookies != expected + [""] * args.concurrent_requests:
+            raise RuntimeError("Concurrent WebView requests leaked or changed a user Cookie")
+        print(json.dumps({"searches": searches, "cookieSequence": expected,
+                          "concurrentRequests": args.concurrent_requests,
+                          "concurrentBookCounts": burst_counts},
                          ensure_ascii=False))
     finally:
         fixture.shutdown()

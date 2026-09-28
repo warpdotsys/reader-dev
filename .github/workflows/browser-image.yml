@@ -293,6 +293,7 @@ jobs:
             --tmpfs /tmp:size=256m,mode=1777 \
             -v "$RUNNER_TEMP/reader-browser-data:/storage" \
             -e READER_SERVER_PORT=18890 \
+            -e READER_SERVER_BINDADDRESS=127.0.0.1 \
             -e READER_APP_WORKDIR=/ \
             -e READER_APP_SECURE=true \
             -e READER_APP_LICENSECHECKENABLED=false \
@@ -303,6 +304,9 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo >/dev/null
+          ss -lntH | grep ':18890' | tee "$RUNNER_TEMP/reader-browser-listener.txt"
+          grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18890([[:space:]]|$)' \
+            "$RUNNER_TEMP/reader-browser-listener.txt"
           docker exec reader-browser-smoke python -m camoufox version
           python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
           if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
