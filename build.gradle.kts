@@ -104,7 +104,8 @@ dependencies {
 
     // json
     implementation("com.google.code.gson:gson:2.8.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
+    // Exact version present in reader-pro-3.2.14.jar; avoid online dynamic-version lookup.
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.5")
 
     // log
     implementation("io.github.microutils:kotlin-logging:1.6.24")
