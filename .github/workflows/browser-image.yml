@@ -279,6 +279,7 @@ jobs:
             --build-arg "READER_VERSION=$version" \
             --build-arg "READER_BUILD_REVISION=$revision" \
             -t reader-browser:smoke deploy/reader-pro
+          docker image inspect --format 'Reader image size: {{.Size}} bytes' reader-browser:smoke
       - name: Run Reader API and WebView fixture inside the image
         shell: bash
         run: |
@@ -317,6 +318,11 @@ jobs:
         shell: bash
         run: |
           docker stats --no-stream --format 'name={{.Name}} memory={{.MemUsage}} pids={{.PIDs}}' reader-browser-smoke || true
-          docker exec reader-browser-smoke sh -c 'test ! -r /sys/fs/cgroup/memory.peak || cat /sys/fs/cgroup/memory.peak' || true
+          docker exec reader-browser-smoke sh -c '
+            for metric in memory.peak pids.peak; do
+              file="/sys/fs/cgroup/$metric"
+              if test -r "$file"; then printf "%s=" "$metric"; cat "$file"; fi
+            done
+          ' || true
           docker logs --tail=200 reader-browser-smoke || true
           docker rm -f reader-browser-smoke || true
