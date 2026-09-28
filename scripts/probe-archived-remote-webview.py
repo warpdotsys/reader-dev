@@ -150,24 +150,34 @@ def main():
                               "fixtureMethods": methods}, sort_keys=True), flush=True)
             raise
         post_result = render(args.remote_base, fixture_url, "POST", "probe=1")
-        js_result = render(args.remote_base, fixture_url,
-                           js_source="document.body.setAttribute('data-probe','yes')")
         with fixture.lock:
             methods = list(fixture.methods)
-        result = {"synthetic": {"get": get_result, "post": post_result,
-                                "js": js_result, "fixtureMethods": methods}}
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
+        print(json.dumps({"synthetic": {"get": get_result, "post": post_result,
+                                        "fixtureMethods": methods}},
+                         ensure_ascii=False, sort_keys=True), flush=True)
         if get_result["status"] != 200 or not get_result["hasGetMarker"]:
             raise RuntimeError("Archived WebView did not return the synthetic GET marker")
         if post_result["status"] != 200 or not post_result["hasPostMarker"]:
             raise RuntimeError("Archived WebView did not return the synthetic POST marker")
         if args.public_url:
             try:
-                result["public"] = render(args.remote_base, args.public_url, timeout=60)
+                public_result = render(args.remote_base, args.public_url, timeout=45)
             except (OSError, RuntimeError, urllib.error.URLError) as exc:
-                result["public"] = {"errorType": type(exc).__name__}
-            print(json.dumps({"public": result["public"]}, ensure_ascii=False,
+                public_result = {"errorType": type(exc).__name__}
+            print(json.dumps({"public": public_result}, ensure_ascii=False,
                              sort_keys=True), flush=True)
+        try:
+            js_result = render(args.remote_base, fixture_url,
+                               js_source="document.body.setAttribute('data-probe','yes')",
+                               timeout=20)
+        except (OSError, RuntimeError, urllib.error.URLError) as exc:
+            with fixture.lock:
+                methods = list(fixture.methods)
+            print(json.dumps({"syntheticJs": {"errorType": type(exc).__name__,
+                                               "fixtureMethods": methods}},
+                             sort_keys=True), flush=True)
+            raise RuntimeError("Archived WebView script render did not complete") from exc
+        print(json.dumps({"syntheticJs": js_result}, sort_keys=True), flush=True)
     finally:
         fixture.shutdown()
         fixture.server_close()
