@@ -4,7 +4,7 @@ import type { ReturnData, SystemInfo } from '@/types'
 /**
  * 系统信息 + 书源导出
  *
- * GET /reader3/getSystemInfo      → ReturnData<SystemInfo>（版本/端口/用户数/书数/书源数）
+ * GET /reader3/getSystemInfo      → ReturnData<SystemInfo>（JVM 内存和近期用户统计；不含版本号）
  * 书源导出使用 Java/Kotlin 已注册的 getBookSources 等价实现，在浏览器内组装
  * JSON Blob；服务端没有 exportBookSources 下载端点。
  */

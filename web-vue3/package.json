@@ -1,7 +1,7 @@
 {
   "name": "reader-web-ui-a",
   "private": true,
-  "version": "6.0.45",
+  "version": "4.0.7",
   "type": "module",
   "scripts": {
     "dev": "vite",

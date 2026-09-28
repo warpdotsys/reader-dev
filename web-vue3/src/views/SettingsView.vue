@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { version as VERSION } from '../../package.json'
 import TopNav from '@/components/TopNav.vue'
 import {
   deleteHttpTts,
@@ -60,10 +61,7 @@ import type { HttpTts, SystemInfo, TxtTocRule } from '@/types'
 const router = useRouter()
 const store = useUserStore()
 
-/** 版本号与后端 Cargo.toml 保持一致（getSystemInfo 不可用时兜底显示） */
-const VERSION = '5.2.4'
-
-/** 系统信息（/reader3/getSystemInfo，设置页「关于」区展示） */
+/** Java/Kotlin 的 getSystemInfo 不提供版本号，前端版本来自 package.json。 */
 const sysInfo = ref<SystemInfo | null>(null)
 
 async function loadSysInfo() {
@@ -71,7 +69,7 @@ async function loadSysInfo() {
     const res = await getSystemInfo()
     sysInfo.value = res.data ?? null
   } catch {
-    sysInfo.value = null // 后端不可用时静默（版本仍显示前端常量）
+    sysInfo.value = null // 后端不可用时静默；不伪造服务端版本或统计数字
   }
 }
 
@@ -599,6 +597,13 @@ async function loadServerPref() {
     }
     prefMsg.value = '已从服务器同步阅读偏好（服务器优先）'
   } catch (err) {
+    // 原 JAR 与恢复版在新账号尚无配置文件时都返回此业务错误；这是首次使用，
+    // 不应在设置页显示成红色的同步故障，也不应覆盖本地默认阅读偏好。
+    if (err instanceof Error && err.message.trim() === '没有备份文件') {
+      prefMsg.value = '尚无云端阅读偏好，正在使用本机设置'
+      prefMsgError.value = false
+      return
+    }
     prefMsg.value = isNotImplemented(err)
       ? '配置同步接口后端暂未提供（GET /reader3/getUserConfig）· 当前仅保存在本机'
       : `同步失败：${err instanceof Error ? err.message : '请稍后重试'}`
@@ -1030,6 +1035,8 @@ const opdsUrl = computed(() => {
   const base = `${window.location.origin}/opds`
   return store.accessToken ? `${base}?accessToken=${encodeURIComponent(store.accessToken)}` : base
 })
+/** 地址仍可一键复制，但页面和无障碍树不直接暴露访问令牌。 */
+const opdsDisplayUrl = computed(() => opdsUrl.value.replace(/([?&]accessToken=)[^&#]+/, '$1已隐藏'))
 const opdsCopied = ref(false)
 
 /* GAP 53：OPDS 独立账号 + 测试连接（GET/POST /reader3/getOpdsSettings|saveOpdsSettings；fetch /opds 验证） */
@@ -1633,7 +1640,7 @@ async function runExportData() {
         <h2 class="card-title">OPDS 访问</h2>
         <div class="row">
           <span class="row-label">OPDS 地址</span>
-          <span class="row-value mono">{{ opdsUrl }}</span>
+          <span class="row-value mono">{{ opdsDisplayUrl }}</span>
           <button class="row-action" type="button" @click="copyOpdsUrl">
             {{ opdsCopied ? '已复制' : '复制' }}
           </button>
@@ -1657,7 +1664,7 @@ async function runExportData() {
             {{ opdsTesting ? '测试中…' : '测试连接' }}
           </button>
         </div>
-        <p class="card-note">外部阅读器（如 legado、静读天下等）可通过此地址连接书架；已在地址中附带 accessToken，复制后粘贴到阅读器 OPDS 地址栏即可（未登录时不附带）。</p>
+        <p class="card-note">外部阅读器（如 legado、静读天下等）可通过此地址连接书架。页面已隐藏 accessToken；点击复制会得到完整地址，请仅粘贴到可信的阅读器中。</p>
       </section>
 
       <!-- 数据备份 -->
@@ -1831,8 +1838,8 @@ async function runExportData() {
           <span class="row-value">Reader Dev（夜读）</span>
         </div>
         <div class="row">
-          <span class="row-label">版本</span>
-          <span class="row-value">v{{ sysInfo?.version || VERSION }}</span>
+          <span class="row-label">前端版本</span>
+          <span class="row-value">v{{ VERSION }} · Java/Kotlin 候选界面</span>
         </div>
         <div class="row">
           <span class="row-label">定位</span>
@@ -1840,60 +1847,28 @@ async function runExportData() {
         </div>
         <div class="row">
           <span class="row-label">技术栈</span>
-          <span class="row-value">Rust + Vue 3 · legado 语义书源规则引擎</span>
+          <span class="row-value">Java/Kotlin + Vue 3 · legado 语义书源规则引擎</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.4</span>
-          <span class="row-value">搜索并发提升（多源 24 / SSE 48）· 内置反检测浏览器增强（stealth 指纹补齐 + 反爬域名自动优先）· 失效书源检测超时修复（96 并发 + 900s 前端超时）· 书架密度按钮/悬浮简介层叠修复 · 书源管理/文件页/设置页移动端布局修复 · 正文无换行智能分句</span>
+          <span class="row-label">服务端版本</span>
+          <span class="row-value">当前接口未提供；请以部署镜像标签和发布记录为准</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.3</span>
-          <span class="row-value">书源导入预览选择/排序（全选/反选/新增/重复标记）· 按书源分组搜索 · 书仓目录直接扫描导入书架 · 书架已读章节与未读更新数 · 正文 script 泄漏清洗 · java.createSymmetricCrypto 对称解密 · 暂不加入可返回 · 移动端竖屏适配</span>
+          <span class="row-label">浏览器渲染</span>
+          <span class="row-value">完整镜像内置 Camoufox；是否启用以服务端配置为准，普通 JAR 不自带浏览器二进制</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.2</span>
-          <span class="row-value">KindleMOBI 尾部附加数据清理（trailing/multibyte flags）与 PalmDoc 重叠回引展开，修复 4KB 边界后中文乱码与残留 HTML</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.2.1</span>
-          <span class="row-value">MOBI/AZW3 未知编码中文修复（PalmDoc/Huffman 原始字节解压 + chardetng 编码探测，样本正文验证通过）</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.2.0</span>
-          <span class="row-value">阅读中换源（作者/最新章/当前章末尾预览）· 规则引擎修复（JS 搜索 URL、相对 URL、URL/URLSearchParams、jsLib/variable 全局注入）· 统计式编码探测 · 内置反检测浏览器兜底 · Docker 分层复用 · 移动端自适应 · quickKey/点击区域/切章动画/章节超时 · 离线书架缓存 · 图片代理 · 多分组 · 书源 Cookie 管理 · 自定义字体 · 文件编辑 · 精确搜书</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.1.0</span>
-          <span class="row-value">legacy Web UI 批次 · simple-web 详情/换源/RSS 分类分页 · 内置背景图库 · 替换规则批量与 JSON · RSS 编辑与导入 · 订阅批量删除 · 阅读页详情与追更</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.0.9</span>
-          <span class="row-value">legacy 全量对齐 · 默认 TXT 目录规则 · 本地文件名书名/作者解析 · CBZ ComicInfo 与封面</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.0.8</span>
-          <span class="row-value">双向章节缓存 · 迁移 toc_url 回填 · 正文 HTML 清洗 · Android application 兼容</span>
-        </div>
-        <div class="row">
-          <span class="row-label">权限模型</span>
-          <span class="row-value">管理员管理系统 default 配置 · 普通用户私有覆盖仅对自己生效</span>
+          <span class="row-label">发布记录</span>
+          <span class="row-value"><a class="tg-link" href="https://github.com/warpdotsys/reader-dev/releases" target="_blank" rel="noopener">查看正式版本、已知问题与升级说明</a></span>
         </div>
         <template v-if="sysInfo">
           <div class="row">
-            <span class="row-label">服务端口</span>
-            <span class="row-value mono">{{ sysInfo.port }}</span>
+            <span class="row-label">JVM 当前堆</span>
+            <span class="row-value mono">{{ sysInfo.totalMemory || '未知' }}</span>
           </div>
           <div class="row">
-            <span class="row-label">用户数</span>
-            <span class="row-value">{{ sysInfo.userCount }}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">书籍数</span>
-            <span class="row-value">{{ sysInfo.bookCount }}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">书源数</span>
-            <span class="row-value">{{ sysInfo.bookSourceCount }}</span>
+            <span class="row-label">JVM 堆上限</span>
+            <span class="row-value mono">{{ sysInfo.maxMemory || '未知' }}</span>
           </div>
         </template>
         <div class="row">

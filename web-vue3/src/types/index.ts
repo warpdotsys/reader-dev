@@ -285,16 +285,19 @@ export interface UserUpdatePayload {
   isAdmin?: boolean
 }
 
-/** 系统信息（/reader3/getSystemInfo：版本/端口/用户数/书数/书源数） */
+/** Java/Kotlin 的 /reader3/getSystemInfo：JVM 内存与近期用户统计。 */
 export interface SystemInfo {
-  version: string
-  port: number
-  userCount: number
-  bookCount: number
-  bookSourceCount: number
+  fonts?: string | null
   freeMemory?: string
   totalMemory?: string
   maxMemory?: string
+  dayLoginUser?: number
+  sevenDayLoginUser?: number
+  monthLoginUser?: number
+  dayRegisterUser?: number
+  sevenDayRegisterUser?: number
+  monthRegisterUser?: number
+  keepUser?: number
   [key: string]: unknown
 }
 
