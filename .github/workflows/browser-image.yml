@@ -124,6 +124,15 @@ jobs:
             --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 --shm-size=1g \
             --add-host=host.docker.internal:host-gateway \
             -p 127.0.0.1:18050:8050 "$image"
+          docker image inspect --format \
+            'Archived entrypoint={{json .Config.Entrypoint}} cmd={{json .Config.Cmd}} workdir={{json .Config.WorkingDir}}' \
+            "$image"
+          docker exec reader-archived-webview pwd
+          # Inspect only public image code paths; never print runtime requests
+          # from authenticated sources or dump a complete application tree.
+          timeout 10s docker exec reader-archived-webview sh -lc \
+            "grep -R -n --include='*.js' --exclude-dir=node_modules -m 2 'js_source' /app /usr/src/app /home/node 2>/dev/null | head -n 15" \
+            || true
           python3 scripts/probe-archived-remote-webview.py \
             --remote-base http://127.0.0.1:18050 \
             --public-url https://m.jjjxsw.com/txt/
