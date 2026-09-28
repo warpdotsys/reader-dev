@@ -447,9 +447,13 @@ def render(payload):
                     if body is None:
                         raise TimeoutError("sourceRegex resource was not observed before timeout")
                 elif source:
+                    # The archived /render.html reference returns strings as-is
+                    # and JSON-serializes non-string page.evaluate results. In
+                    # particular, Object.toString() would lose source-rule data.
                     value = page.evaluate(
                         "(source) => { const value = (0, eval)(source); "
-                        "return value == null ? '' : value.toString(); }",
+                        "if (value == null) return ''; "
+                        "return typeof value === 'string' ? value : JSON.stringify(value); }",
                         source,
                     )
                     body = str(value or "")

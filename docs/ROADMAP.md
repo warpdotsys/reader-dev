@@ -15,7 +15,7 @@
 - **已从原始 JAR 验证**：同一公开站点的静态目录样本在原 JAR 和当前本机恢复构建中均返回 10 本书；HTTP 状态、`ReturnData` 及规范化数据摘要一致。该样本未启用 WebView，不能与上一条拼成原 JAR／旧远程服务／Camoufox 三方等价。
 - **尚未验证**：旧远程 WebView 服务当前不在生产主机运行，需另行建立可追溯、隔离的同条件对照；登录态、真实脚本规则、长期并发、ARM64、生产数据与公网部署也未通过验收。`legacy` 默认分支和生产 `read.medwarp.cn` 仍未切到该候选，不创建正式发布标签。候选三道门禁、已知问题和回滚边界见[验收记录](CANDIDATE-2026-09-28.md)。下文 2026-09-25/26 的进度段落保留历史语境，不能代替此快照。
 - **已排除一条错误对照**：公共镜像站的 3.2.14 标签并非本地原 JAR 的相同字节，大小和 SHA-256 均不同；不能用它补齐旧服务的三方差分。见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)。
-- **旧实现参考（不等于生产实例）**：固定摘要 `remote-webview:3.2.0` 在隔离 runner 上完成合成 GET/POST 与公开目录取回；额外 `js_source` 请求在 20 秒超时，探针保持红灯。见[旧远程 WebView 参考记录](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。原 JAR／旧参考／Camoufox 尚未同条件贯通。
+- **旧实现参考（不等于生产实例）**：固定摘要 `remote-webview:3.2.0` 在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上完成合成 GET/POST、公开目录，以及脚本返回字符串、对象、数组、数字的探针。最初无返回值的脚本探针不符合该实现的接口约定，不能作为故障证据。见[旧远程 WebView 参考记录](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。原 JAR／旧参考／Camoufox 尚未同条件贯通。
 
 ## 近期主线（2026-09-26 调整）
 

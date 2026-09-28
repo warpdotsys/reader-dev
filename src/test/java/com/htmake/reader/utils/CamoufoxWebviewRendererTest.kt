@@ -125,6 +125,19 @@ class CamoufoxWebviewRendererTest {
     }
 
     @Test
+    fun javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat() = runBlocking {
+        val cases = listOf(
+            "({answer: 42, ready: true})" to "{\"answer\":42,\"ready\":true}",
+            "['alpha', 7]" to "[\"alpha\",7]",
+            "42" to "42"
+        )
+        for ((expression, expected) in cases) {
+            val result = renderer.render(request("/resource-page", "script-types", javaScript = expression))
+            assertEquals("JavaScript expression $expression", expected, result.body)
+        }
+    }
+
+    @Test
     fun cookiesArePersistedPerReaderNamespace() = runBlocking {
         renderer.render(request("/seed", "alice"))
         val aliceJar = BrowserCookieJar.storedCookies(CookieStore("alice"))
