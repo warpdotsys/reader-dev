@@ -135,7 +135,7 @@ jobs:
           timeout 10s docker exec reader-archived-webview sh -lc \
             "grep -R -n --include='*.js' --exclude-dir=node_modules -m 2 'js_source' /app /usr/src/app /home/node 2>/dev/null | head -n 15" \
             || true
-          docker exec reader-archived-webview sed -n '102,140p' /app/index.js
+          docker exec reader-archived-webview sed -n '65,140p' /app/index.js
           python3 scripts/probe-archived-remote-webview.py \
             --remote-base http://127.0.0.1:18050 \
             --public-url https://m.jjjxsw.com/txt/

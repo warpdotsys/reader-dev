@@ -58,6 +58,7 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
         with self.server.lock:
             self.server.methods.append(self.command)
+            self.server.paths.append(self.path)
 
     def log_message(self, *_args):
         pass
@@ -68,6 +69,7 @@ class Fixture(ThreadingHTTPServer):
         super().__init__(("0.0.0.0", 0), FixtureHandler)
         self.lock = threading.Lock()
         self.methods = []
+        self.paths = []
 
 
 def wait_port(base, timeout=60):
@@ -209,15 +211,25 @@ def main():
                              sort_keys=True), flush=True)
             if result["status"] != 200 or result["bodySha256"] != hashlib.sha256(expected).hexdigest():
                 raise RuntimeError(f"Archived WebView returned unexpected {label} script output")
-        resource = render(
-            args.remote_base,
-            f"http://{args.fixture_host}:{fixture.server_port}/regex-page",
-            source_regex=r"/regex-resource$",
-            timeout=20,
-        )
+        try:
+            resource = render(
+                args.remote_base,
+                f"http://{args.fixture_host}:{fixture.server_port}/regex-page",
+                source_regex=r"/regex-resource$",
+                timeout=20,
+            )
+        except (OSError, RuntimeError, urllib.error.URLError) as exc:
+            with fixture.lock:
+                paths = list(fixture.paths)
+            print(json.dumps({"syntheticSourceRegex": {"errorType": type(exc).__name__,
+                                                        "fixturePaths": paths}},
+                             sort_keys=True), flush=True)
+            raise
         with fixture.lock:
             methods = list(fixture.methods)
-        print(json.dumps({"syntheticSourceRegex": resource, "fixtureMethods": methods},
+            paths = list(fixture.paths)
+        print(json.dumps({"syntheticSourceRegex": resource, "fixtureMethods": methods,
+                          "fixturePaths": paths},
                          sort_keys=True), flush=True)
         if resource["status"] != 200 or resource["bodySha256"] != hashlib.sha256(
                 fixture_body("matched-resource-body")).hexdigest():
