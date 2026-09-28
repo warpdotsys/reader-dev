@@ -11,6 +11,7 @@ on:
       - 'browser-poc/**'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
@@ -24,6 +25,7 @@ on:
       - 'browser-poc/**'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
@@ -111,7 +113,8 @@ jobs:
           echo $! > "$RUNNER_TEMP/vue3-source.pid"
           java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
-            --reader.server.port=18895 --reader.app.secure=true \
+            --reader.server.port=18895 --reader.server.bindAddress=127.0.0.1 \
+            --reader.app.secure=true \
             --reader.app.web-ui=vue3 \
             --reader.app.defaultUserEnableWebdav=true \
             --reader.app.licenseCheckEnabled=false \
@@ -125,6 +128,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:18894/health > /dev/null
           curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null
+          ss -lntH | awk '$4 ~ /127\.0\.0\.1:18895$/ {found=1} END {exit !found}'
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null
           curl -fsS http://127.0.0.1:18895/ > "$RUNNER_TEMP/vue3-root.html"
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > "$RUNNER_TEMP/vue3-login.html"
@@ -168,7 +172,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vue3-secure-data"
           java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-secure-data" \
-            --reader.server.port=18896 --reader.app.secure=true \
+            --reader.server.port=18896 --reader.server.bindAddress=127.0.0.1 \
+            --reader.app.secure=true \
             --reader.app.web-ui=vue3 \
             --reader.app.secureKey=Vue3ProbeManagerKey-2026 \
             --reader.app.defaultUserEnableLocalStore=true \
@@ -181,6 +186,7 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null
+          ss -lntH | awk '$4 ~ /127\.0\.0\.1:18896$/ {found=1} END {exit !found}'
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null
       - name: Verify secure file write and retry in Chromium
         env:

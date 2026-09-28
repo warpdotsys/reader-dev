@@ -521,6 +521,10 @@ class YueduApi : RestVerticle() {
         if (serverPort != null && serverPort > 0) {
             port = serverPort;
         }
+        bindAddress = env.getProperty("reader.server.bindAddress")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: "0.0.0.0"
     }
 
     suspend fun migration() {

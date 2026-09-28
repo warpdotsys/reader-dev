@@ -9,6 +9,7 @@
 - 本机产物 `build/libs/reader-4.0.7.jar` 为 285,614,283 字节，SHA-256 为 `53CB873590D895CA9AF286CD85B20C910AAB823CF15ABB54762F97D731B3D36F`。JAR 内已核对 `web-vue3/index.html`、`web-vue3/sw.js`、`camoufox/worker.py`、Playwright Java 与 driver bundle。散列仅标识此次本机构建，不等同于 GitHub 发布制品，也不证明字节级可重复构建。
 - Cookie bridge 已改用带 Domain、Path、Secure、HttpOnly、过期时间的结构化存储并按用户命名空间隔离；普通 HTTP 响应、历史平面 Cookie 迁移、Domain 删除、HTTP 不安全来源覆盖 Secure Cookie 和单次显式请求头均有定向测试。worker 正文/协议输出分别限制为 4/8 MiB，父进程 stdout 限制为 8 MiB；超限后恢复用例已通过。后续提交增加了 JavaScript 删除快照、公共后缀和精确 Path 回归；这些改动仍以 hosted Linux 真实 Camoufox 结果为最终门禁。
 - Vue 3 首次安装 Service Worker 不再在登录输入期间强制重载；更新改为用户确认后激活。本机独立浏览器此前验证了登录、书架、阅读、搜索、书源、分组、替换规则、文件和备份等基础旅程，但这不是生产或正式镜像内验收。
+- 最新本机隔离构建增加可选 `reader.server.bindAddress`；默认 `0.0.0.0` 保持旧部署行为，本机以 `127.0.0.1` 启动后，`netstat` 确认仅回环监听、`/reader3/getSystemInfo` 返回 HTTP 200。JDK 11/Gradle 6.1.1 离线 `test bootJar` 成功：84 项、0 失败、0 错误、13 跳过；产物 SHA-256 `A6B84FA76C628EA46E40DB5C7BCB8B115F2DE245757506C86AD5DF846397AE3E`。全新临时工作目录只生成合成账号，测试进程与该临时目录已清理。Chrome 中 Vue 3 登录表单和中文显示正常，但人工浏览器提交被自动化安全审查拦下；此轮不把它记作新的 UI 登录通过，继续以已通过的隔离 Chromium 旅程为既有证据。
 
 ## GitHub 托管 runner 验收
 
@@ -38,7 +39,7 @@
 - GitHub 托管 runner 当前将旧 Node.js 20 action 强制运行于 Node.js 24，并提示 `setup-java@v4` 维护期结束。现有门禁通过，但后续应升级并锁定新版本 action，避免未来平台迁移导致 CI 失效。
 - 单页正文 UTF-8 超过 4 MiB 会显式失败；这是一条安全/内存预算限制，可能影响超大章节或页面，需要用真实书源样本验证后决定是否调整。不能静默截断正文。
 - Vue 3 的基础旅程通过不代表与旧前端所有设置、书源规则和异常提示逐项一致。当前生产仍是原界面，线上登录只确认过一次成功进入书架并刷新后保持会话，未证明所有用户故障消失。
-- 2026-09-28 本地设置页视觉核查发现关于页沿用 Rust 版本履历、使用并不存在的后端统计字段、首次使用的云端偏好提示误报失败、OPDS 令牌明文显示；候选代码已修正，136 项 Node 测试、类型检查、Vite 构建和上述三道 hosted workflow 通过。生产旧界面的新登录尝试在提交前因浏览器连接中断；同一生产域名的登录 API 使用授权账号返回 `isSuccess=true` 和访问令牌，仅证明账号与后端入口可用，不能据此宣布界面登录正常或故障已复现。
+- 2026-09-28 本地设置页视觉核查发现关于页沿用 Rust 版本履历、使用并不存在的后端统计字段、首次使用的云端偏好提示误报失败、OPDS 令牌明文显示；候选代码已修正，136 项 Node 测试、类型检查、Vite 构建和上述三道 hosted workflow 通过。早期只测生产登录 API 不能证明页面可用；后来已单独完成[生产 Chrome 表单登录](PRODUCTION-CHROME-LOGIN-2026-09-28.md)，但这仍不是恢复候选的生产验收。
 
 ## 发布与回滚边界
 
