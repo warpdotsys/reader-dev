@@ -21,8 +21,23 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 MAX_BODY = 4 * 1024 * 1024
 
 
+def fixture_body(marker):
+    return (
+        "<!doctype html><html><body>"
+        f"<main id='result'>{marker}</main><span id='script'>pending</span>"
+        "<script>document.getElementById('script').textContent='script-ok'</script>"
+        "</body></html>"
+    ).encode("utf-8")
+
+
 class FixtureHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path == "/regex-page":
+            self.respond("<script>fetch('/regex-resource')</script>")
+            return
+        if self.path == "/regex-resource":
+            self.respond("matched-resource-body")
+            return
         self.respond("get-ok")
 
     def do_POST(self):
@@ -34,12 +49,7 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.respond("post-ok")
 
     def respond(self, marker):
-        body = (
-            "<!doctype html><html><body>"
-            f"<main id='result'>{marker}</main><span id='script'>pending</span>"
-            "<script>document.getElementById('script').textContent='script-ok'</script>"
-            "</body></html>"
-        ).encode("utf-8")
+        body = fixture_body(marker)
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Set-Cookie", "fixture=opaque; Path=/; HttpOnly; SameSite=Lax")
@@ -72,7 +82,7 @@ def wait_port(base, timeout=60):
     raise TimeoutError("Archived remote WebView did not open its loopback port")
 
 
-def render(base, url, method="GET", body=None, js_source=None, timeout=45):
+def render(base, url, method="GET", body=None, js_source=None, source_regex=None, timeout=45):
     payload = {
         "url": url,
         "html": None,
@@ -83,7 +93,7 @@ def render(base, url, method="GET", body=None, js_source=None, timeout=45):
         "body": body,
         "encode": None,
         "tag": None,
-        "sourceRegex": None,
+        "sourceRegex": source_regex,
     }
     request = urllib.request.Request(
         base.rstrip("/") + "/render.html",
@@ -199,6 +209,19 @@ def main():
                              sort_keys=True), flush=True)
             if result["status"] != 200 or result["bodySha256"] != hashlib.sha256(expected).hexdigest():
                 raise RuntimeError(f"Archived WebView returned unexpected {label} script output")
+        resource = render(
+            args.remote_base,
+            f"http://{args.fixture_host}:{fixture.server_port}/regex-page",
+            source_regex=r"/regex-resource$",
+            timeout=20,
+        )
+        with fixture.lock:
+            methods = list(fixture.methods)
+        print(json.dumps({"syntheticSourceRegex": resource, "fixtureMethods": methods},
+                         sort_keys=True), flush=True)
+        if resource["status"] != 200 or resource["bodySha256"] != hashlib.sha256(
+                fixture_body("matched-resource-body")).hexdigest():
+            raise RuntimeError("Archived WebView did not return the matched resource body")
     finally:
         fixture.shutdown()
         fixture.server_close()
