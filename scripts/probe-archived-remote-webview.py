@@ -7,6 +7,7 @@ No page body, cookie value, credentials, or book-source configuration is logged.
 
 import argparse
 import hashlib
+import http.client
 import json
 import socket
 import threading
@@ -126,9 +127,22 @@ def main():
     thread.start()
     try:
         wait_port(args.remote_base)
+        # A TCP listener can appear before the old service has initialized its
+        # browser. Retry only this first request on a reset; later failures
+        # remain visible as actual render failures.
+        time.sleep(3)
         fixture_url = f"http://{args.fixture_host}:{fixture.server_port}/page"
         try:
-            get_result = render(args.remote_base, fixture_url)
+            for attempt in range(1, 4):
+                try:
+                    get_result = render(args.remote_base, fixture_url)
+                    break
+                except (ConnectionResetError, http.client.RemoteDisconnected):
+                    print(json.dumps({"stage": "synthetic-get", "resetAttempt": attempt}),
+                          flush=True)
+                    if attempt == 3:
+                        raise
+                    time.sleep(2)
         except Exception as exc:
             with fixture.lock:
                 methods = list(fixture.methods)
