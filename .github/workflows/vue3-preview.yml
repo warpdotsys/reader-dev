@@ -128,7 +128,9 @@ jobs:
           done
           curl -fsS http://127.0.0.1:18894/health > /dev/null
           curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null
-          ss -lntH | awk '$4 ~ /127\.0\.0\.1:18895$/ {found=1} END {exit !found}'
+          ss -lntH | grep ':18895' | tee "$RUNNER_TEMP/vue3-reader-listener.txt"
+          grep -Eq '(^|[[:space:]])127\.0\.0\.1:18895([[:space:]]|$)' \
+            "$RUNNER_TEMP/vue3-reader-listener.txt"
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null
           curl -fsS http://127.0.0.1:18895/ > "$RUNNER_TEMP/vue3-root.html"
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > "$RUNNER_TEMP/vue3-login.html"
@@ -186,7 +188,9 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null
-          ss -lntH | awk '$4 ~ /127\.0\.0\.1:18896$/ {found=1} END {exit !found}'
+          ss -lntH | grep ':18896' | tee "$RUNNER_TEMP/vue3-secure-listener.txt"
+          grep -Eq '(^|[[:space:]])127\.0\.0\.1:18896([[:space:]]|$)' \
+            "$RUNNER_TEMP/vue3-secure-listener.txt"
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null
       - name: Verify secure file write and retry in Chromium
         env:
