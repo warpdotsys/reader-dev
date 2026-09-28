@@ -168,7 +168,13 @@ def main():
                              sort_keys=True), flush=True)
         try:
             js_result = render(args.remote_base, fixture_url,
-                               js_source="document.body.setAttribute('data-probe','yes')",
+                               # This archived implementation resolves the
+                               # returned value of page.evaluate(js_source).
+                               # A side-effect-only expression returns undefined
+                               # and takes its 30-attempt retry branch instead.
+                               js_source="(() => { document.body.setAttribute('data-probe','yes'); "
+                                         "return document.body.getAttribute('data-probe') === 'yes' "
+                                         "? 'script-result-ok' : 'script-result-failed'; })()",
                                timeout=20)
         except (OSError, RuntimeError, urllib.error.URLError) as exc:
             with fixture.lock:
@@ -178,6 +184,9 @@ def main():
                              sort_keys=True), flush=True)
             raise RuntimeError("Archived WebView script render did not complete") from exc
         print(json.dumps({"syntheticJs": js_result}, sort_keys=True), flush=True)
+        if js_result["status"] != 200 or js_result["bodySha256"] != hashlib.sha256(
+                b"script-result-ok").hexdigest():
+            raise RuntimeError("Archived WebView returned an unexpected script result")
     finally:
         fixture.shutdown()
         fixture.server_close()
