@@ -86,7 +86,7 @@ def wait_port(base, timeout=60):
 
 
 def render(base, url, method="GET", body=None, js_source=None, source_regex=None,
-           timeout=45, expect_integer=False):
+           timeout=45, expect_integer=False, expect_projection=False):
     payload = {
         "url": url,
         "html": None,
@@ -125,6 +125,17 @@ def render(base, url, method="GET", body=None, js_source=None, source_regex=None
             if not number.isascii() or not number.isdigit() or len(number) > 3:
                 raise RuntimeError("Archived WebView did not return a bounded integer")
             result["integerValue"] = int(number)
+        if expect_projection:
+            projection = json.loads(raw.decode("utf-8"))
+            if (not isinstance(projection, list) or not 1 <= len(projection) <= 100 or
+                    any(not isinstance(pair, list) or len(pair) != 2 or
+                        not isinstance(pair[0], str) or not pair[0] or len(pair[0]) > 256 or
+                        not isinstance(pair[1], str) or not pair[1].startswith(url) or
+                        len(pair[1]) > 1024 for pair in projection)):
+                raise RuntimeError("Archived WebView returned an invalid book projection")
+            result["projectionCount"] = len(projection)
+            result["projectionSha256"] = hashlib.sha256(json.dumps(
+                projection, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
         return result
 
 
@@ -201,6 +212,30 @@ def main():
             except (OSError, RuntimeError, urllib.error.URLError) as exc:
                 public_count_result = {"url": args.public_url, "errorType": type(exc).__name__}
             print(json.dumps({"publicDomBookListCount": public_count_result},
+                             ensure_ascii=False, sort_keys=True), flush=True)
+            try:
+                projection = render(
+                    args.remote_base, args.public_url,
+                    js_source=(
+                        "Array.from(document.querySelectorAll('.booklist_a .list_a'), row => {"
+                        " const main = row.querySelector('.main');"
+                        " const name = main && main.querySelector('strong');"
+                        " const link = main && main.querySelector('a');"
+                        " return [name ? name.textContent.trim() : '', link ? link.href : ''];"
+                        " })"
+                    ),
+                    timeout=45, expect_projection=True,
+                )
+                projection_result = {
+                    "url": args.public_url,
+                    "status": projection["status"],
+                    "count": projection["projectionCount"],
+                    "projectionSha256": projection["projectionSha256"],
+                    "observedAt": datetime.now(timezone.utc).isoformat(),
+                }
+            except (OSError, RuntimeError, ValueError, urllib.error.URLError) as exc:
+                projection_result = {"url": args.public_url, "errorType": type(exc).__name__}
+            print(json.dumps({"publicDomBookProjection": projection_result},
                              ensure_ascii=False, sort_keys=True), flush=True)
         try:
             js_result = render(args.remote_base, fixture_url,

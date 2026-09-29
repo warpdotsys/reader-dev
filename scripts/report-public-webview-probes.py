@@ -57,6 +57,7 @@ def compare(archived_log, camoufox_log):
     camoufox = records(camoufox_log)
     public = unique_record(archived, "public", "archived reference")
     dom = unique_record(archived, "publicDomBookListCount", "archived reference")
+    projection = unique_record(archived, "publicDomBookProjection", "archived reference")
     candidates = [item for item in camoufox if "source" in item]
     if len(candidates) != 1:
         raise ValueError("bundled Camoufox: expected exactly one source result")
@@ -66,22 +67,29 @@ def compare(archived_log, camoufox_log):
     parsed = urlparse(url) if isinstance(url, str) else None
     if (parsed is None or parsed.scheme != "https" or not parsed.hostname or
             parsed.username or parsed.password or parsed.query or parsed.fragment or
-            candidate.get("source") != url):
+            candidate.get("source") != url or projection.get("url") != url):
         raise ValueError("probe outputs do not identify the same credential-free HTTPS page")
-    if public.get("status") != 200 or dom.get("status") != 200:
-        raise ValueError("archived reference did not return HTTP 200 for both public probes")
+    if public.get("status") != 200 or dom.get("status") != 200 or projection.get("status") != 200:
+        raise ValueError("archived reference did not return HTTP 200 for all public probes")
     if candidate.get("status") != 200 or candidate.get("isSuccess") is not True:
         raise ValueError("bundled Camoufox public search did not succeed")
+    if candidate.get("errorMsg") not in (None, ""):
+        raise ValueError("bundled Camoufox returned a non-empty error message")
     archived_count = positive_count(dom.get("count"), "archived DOM")
+    projection_count = positive_count(projection.get("count"), "archived projection")
     candidate_count = positive_count(candidate.get("bookCount"), "Reader search")
     old_time = timestamp(dom.get("observedAt"), "archived DOM")
+    projection_time = timestamp(projection.get("observedAt"), "archived projection")
     new_time = timestamp(candidate.get("observedAt"), "Reader search")
     if not isinstance(public.get("bodySha256"), str) or len(public["bodySha256"]) != 64:
         raise ValueError("archived reference is missing its public response checksum")
     if not isinstance(candidate.get("projectionSha256"), str) or len(candidate["projectionSha256"]) != 64:
         raise ValueError("bundled Camoufox is missing its book projection checksum")
+    if not isinstance(projection.get("projectionSha256"), str) or len(projection["projectionSha256"]) != 64:
+        raise ValueError("archived reference is missing its book projection checksum")
 
     equal = archived_count == candidate_count
+    projection_equal = projection["projectionSha256"] == candidate["projectionSha256"]
     return {
         "scope": "archived-reference-vs-bundled-camoufox-public-page",
         "url": url,
@@ -94,17 +102,27 @@ def compare(archived_log, camoufox_log):
             "domListStatus": dom["status"],
             "domListCount": archived_count,
             "observedAt": dom["observedAt"],
+            "projectionCount": projection_count,
+            "projectionSha256": projection["projectionSha256"],
+            "projectionObservedAt": projection["observedAt"],
         },
         "bundledCamoufox": {
             "readerStatus": candidate["status"],
             "readerIsSuccess": candidate["isSuccess"],
+            "readerErrorMsgEmpty": True,
             "bookCount": candidate_count,
             "bookProjectionSha256": candidate["projectionSha256"],
             "observedAt": candidate["observedAt"],
         },
         "observationDeltaSeconds": round(abs((new_time - old_time).total_seconds()), 3),
+        "projectionDeltaSeconds": round(abs((new_time - projection_time).total_seconds()), 3),
         "countEqual": equal,
-        "interpretation": "matching-count-only" if equal else "divergent-count-needs-investigation",
+        "referenceInternalCountEqual": archived_count == projection_count,
+        "projectionEqual": projection_equal,
+        "interpretation": (
+            "matching-projection-with-time-skew" if projection_equal else
+            "divergent-projection-needs-investigation"
+        ),
     }
 
 
@@ -122,6 +140,9 @@ def main():
     if not result["countEqual"]:
         print("::warning::The archived DOM and Reader search counts differ; "
               "the public page may also have changed between observations.")
+    if not result["projectionEqual"]:
+        print("::warning::The archived and Reader book projections differ; "
+              "inspect site drift and parsing before attributing this to the browser.")
 
 
 if __name__ == "__main__":
