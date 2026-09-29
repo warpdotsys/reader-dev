@@ -51,6 +51,8 @@
 
 `b3297dca` 增加真实 Camoufox 的“`sourceRegex` 始终未命中→有界超时→同一渲染器的下一笔正常请求成功”回归。[托管完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36516767733)的保存版 JUnit XML 显示该类 **6 项、0 跳过、0 失败、0 错误**；新增用例约 8.8 秒，随后完整镜像和容器内合成书源烟测也通过。[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36516767734)与 [Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36516767720)均通过。本机没有 Camoufox，虽然新测试已离线编译成功，本机该类 6 项全跳过，不能将其列作本机真实浏览器通过。此用例只覆盖缺失匹配资源的超时与后续恢复，不证明慢站点导航、外部脚本、取消请求或长时间资源回收均已验收。
 
+`1deef714` 进一步加入只在回环地址运行的慢主页面夹具：主文档在超出 3 秒预算后才响应。该提交的[托管真实 Camoufox 合约报告](https://github.com/warpdotsys/reader-dev/actions/runs/36518203390)显示该类 **7 项、0 跳过、0 失败、0 错误**；新增用例约 8.7 秒，断言慢页面已被实际请求、渲染没有把错误页当成功正文返回，随后同一渲染器处理正常请求成功。完整镜像／容器内合成烟测、[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36518203396)与[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36518203378)均通过。本用例只覆盖合成 HTTP 主页面延迟及恢复，不证明所有真实 HTTPS、外部脚本、取消或长时资源占用均正常；先前从代码推测的“代理错误页伪成功”未在此样本中复现，因而没有据此修改生产代理行为。
+
 ## 已知问题与尚未验证
 
 - 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
