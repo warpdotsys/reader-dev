@@ -27,6 +27,21 @@ worker = load_worker()
 
 
 class WorkerCookieProtocolTest(unittest.TestCase):
+    def test_visible_browser_cookie_wins_over_header_fallback(self):
+        snapshot = {"name": "quoted", "value": '"alpha', "deleted": False}
+        fallback = {"name": "quoted", "value": '"alpha;beta"', "deleted": False}
+        values = {"quoted": snapshot}
+        self.assertIs(snapshot, worker.merge_response_cookie_fallbacks(
+            values, {"quoted"}, {"quoted": fallback}
+        )["quoted"])
+        self.assertIs(fallback, worker.merge_response_cookie_fallbacks(
+            {}, set(), {"quoted": fallback}
+        )["quoted"])
+        deletion = {"name": "quoted", "value": "", "deleted": True}
+        self.assertIs(deletion, worker.merge_response_cookie_fallbacks(
+            {"quoted": snapshot}, {"quoted"}, {"quoted": deletion}
+        )["quoted"])
+
     def test_quoted_semicolon_is_not_mistaken_for_an_attribute_separator(self):
         parsed = worker.parse_set_cookie(
             'quoted="alpha;beta"; Path=/; HttpOnly; '

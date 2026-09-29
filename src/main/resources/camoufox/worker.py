@@ -320,6 +320,14 @@ def missing_initial_cookie_tombstones(initial_visible, final_visible, response_f
     }
 
 
+def merge_response_cookie_fallbacks(cookie_values, final_visible, response_cookies):
+    """Let the browser snapshot win when it saw a live response cookie."""
+    for identity, fallback in response_cookies.items():
+        if fallback["deleted"] or identity not in final_visible:
+            cookie_values[identity] = fallback
+    return cookie_values
+
+
 def render(payload):
     url = payload["url"]
     timeout_ms = int(payload["timeoutMs"])
@@ -501,8 +509,9 @@ def render(payload):
 
                 # Firefox normally exposes a complete snapshot. For a Linux
                 # Camoufox release which omits a just-received HttpOnly cookie,
-                # structured Set-Cookie records above are merged after the snapshot.
-                # The fallback is same-origin only and includes expiry/deletion.
+                # structured Set-Cookie records can fill a missing snapshot.
+                # A visible browser cookie wins over our small header parser;
+                # explicit response deletions still override stale snapshots.
                 cookie_values = {}
                 final_visible = set()
                 for item in context.cookies():
@@ -520,7 +529,9 @@ def render(payload):
                 cookie_values.update(missing_initial_cookie_tombstones(
                     initial_visible, final_visible, response_cookies
                 ))
-                cookie_values.update(response_cookies)
+                merge_response_cookie_fallbacks(
+                    cookie_values, final_visible, response_cookies
+                )
                 # An explicit source script's observed deletion wins over the
                 # same-response Set-Cookie fallback. HttpOnly records are excluded
                 # above because document.cookie cannot delete them.

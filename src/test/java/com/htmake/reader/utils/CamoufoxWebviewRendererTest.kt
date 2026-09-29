@@ -96,6 +96,10 @@ class CamoufoxWebviewRendererTest {
                     exchange.responseHeaders.add("Set-Cookie", "session=alpha==; Path=/; HttpOnly")
                     respond(exchange, "seeded", "text/plain; charset=utf-8")
                 }
+                "/seed-renewed" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "session=beta==; Path=/; HttpOnly")
+                    respond(exchange, "renewed", "text/plain; charset=utf-8")
+                }
                 "/seed-scoped" -> {
                     exchange.responseHeaders.add("Set-Cookie", "scoped=only; Path=/scoped; HttpOnly")
                     respond(exchange, "seeded", "text/plain; charset=utf-8")
@@ -209,6 +213,20 @@ class CamoufoxWebviewRendererTest {
         // the fixture content, not the browser's presentation wrapper.
         assertTrue("Bob's synthetic echo was: ${bob.body}", bob.body?.contains("GET|||") == true)
         assertFalse("Bob inherited Alice's Cookie", bob.body?.contains("session=alpha==") == true)
+    }
+
+    @Test
+    fun existingHttpOnlyCookieCanBeRenewed() = runBlocking {
+        val user = "renewed-http-only"
+        renderer.render(request("/seed", user))
+        assertEquals("alpha==", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "session" }.value)
+        renderer.render(request("/seed-renewed", user))
+        assertEquals("beta==", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "session" }.value)
+        renderer.render(request("/echo", user))
+        assertTrue("Renewed HttpOnly Cookie was not replayed: ${echoCookie.get()}",
+            echoCookie.get().contains("session=beta=="))
     }
 
     @Test
