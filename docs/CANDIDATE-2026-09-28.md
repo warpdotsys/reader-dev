@@ -45,6 +45,10 @@
 
 `7daacc72` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36513673965)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36513673849)与[完整单镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36513674140)全部通过。新增的镜像内中文字体断言识别到 WenQuanYi Zen Hei Mono／文泉驿等宽正黑；四个独立账号并发搜索仍各返回一本书。未压缩镜像仍为 **4,224,352,971 字节**，短时 `memory.peak` **768,057,344 字节**（约 732 MiB），`pids.peak` **176**。字体可用不等于所有网页字体或字符渲染一致，真实需登录书源、生产环境和长时间负载仍未验证。
 
+当前产品提交 `c548bbda` 的[手动公开书源作业](https://github.com/warpdotsys/reader-dev/actions/runs/36515240318)已在 GitHub 托管 runner 通过：真实 Camoufox 合约、完整单镜像、镜像内中文字体与四个隔离账号的合成并发搜索通过；额外从无登录凭据的公开 WebView 目录解析到 **10 本**，`ReturnData` 为 HTTP 200、`isSuccess=true`、`errorMsg=""`，书名与书籍 URL 投影 SHA-256 为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`。未压缩镜像为 **4,224,352,970 字节**；2 GiB/256 PID/2 CPU 限制下此次短时 `memory.peak` 为 **799,502,336 字节**（约 762.5 MiB）、`pids.peak` 为 **196**。该摘要只标识本次可变公开目录的输出，不是跨日期稳定基线，也不能替代需登录书源、超时或长时间容量测试。镜像 `.Size` 与上次相差 1 字节，亦不能据此宣称字节级可重复构建。
+
+同一提交的[固定旧远程 WebView 参考镜像探针](https://github.com/warpdotsys/reader-dev/actions/runs/36515280090)亦通过；合成 GET/POST、脚本返回和已知 `sourceRegex` 监听卡住现象与历史记录一致，公开页 HTTP 200，但 HTML 长度／摘要随日期变化。详见[参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。两个作业并未把本地原始 JAR 接到同一远程服务，更未证明历史镜像与原生产实例同版，故仍未完成原 JAR／远程 WebView／内置浏览器的同条件三方差分。
+
 ## 已知问题与尚未验证
 
 - 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
