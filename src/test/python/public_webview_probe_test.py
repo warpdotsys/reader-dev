@@ -53,9 +53,6 @@ class PublicWebviewProbeTest(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.archived = [
             {"public": {"status": 200, "bodySha256": "a" * 64}},
-            {"publicDomBookListCount": {
-                "url": URL, "status": 200, "count": 17,
-                "observedAt": "2026-09-29T01:00:00+00:00"}},
             {"publicDomBookProjection": {
                 "url": URL, "status": 200, "count": 17,
                 "projectionSha256": "b" * 64,
@@ -87,12 +84,10 @@ class PublicWebviewProbeTest(unittest.TestCase):
         self.assertEqual(0, process.returncode, process.stderr)
         self.assertTrue(report["countEqual"])
         self.assertTrue(report["projectionEqual"])
-        self.assertTrue(report["referenceInternalCountEqual"])
         self.assertFalse(report["originalJarCompared"])
         self.assertFalse(report["referenceProvenProduction"])
         self.assertFalse(report["fullResponseParityProven"])
-        self.assertEqual(9, report["observationDeltaSeconds"])
-        self.assertEqual(5, report["projectionDeltaSeconds"])
+        self.assertEqual(5, report["observationDeltaSeconds"])
 
     def test_divergence_is_reported_without_false_failure(self):
         self.camoufox[0]["bookCount"] = 16
@@ -110,8 +105,8 @@ class PublicWebviewProbeTest(unittest.TestCase):
         self.assertNotEqual(0, process.returncode)
         self.assertIsNone(report)
 
-    def test_missing_public_count_is_not_a_pass(self):
-        self.archived.pop(1)
+    def test_missing_direct_page_is_not_a_pass(self):
+        self.archived.pop(0)
         process, report = self.run_compare()
         self.assertNotEqual(0, process.returncode)
         self.assertIsNone(report)
@@ -123,7 +118,7 @@ class PublicWebviewProbeTest(unittest.TestCase):
         self.assertIsNone(report)
 
     def test_bool_count_is_not_accepted_as_integer(self):
-        self.archived[1]["publicDomBookListCount"]["count"] = True
+        self.archived[1]["publicDomBookProjection"]["count"] = True
         process, report = self.run_compare()
         self.assertNotEqual(0, process.returncode)
         self.assertIsNone(report)
