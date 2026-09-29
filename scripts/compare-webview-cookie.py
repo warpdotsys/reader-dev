@@ -40,15 +40,21 @@ class Fixture(ThreadingHTTPServer):
     def __init__(self, address):
         super().__init__(address, FixtureHandler)
         self.calls = []
+        self.script_sources = []
         self.lock = threading.Lock()
 
     def reset(self):
         with self.lock:
             self.calls.clear()
+            self.script_sources.clear()
 
     def snapshot(self):
         with self.lock:
             return list(self.calls)
+
+    def script_snapshot(self):
+        with self.lock:
+            return list(self.script_sources)
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -70,6 +76,7 @@ class FixtureHandler(BaseHTTPRequestHandler):
                            if key.lower() == "cookie"), "")
             with self.server.lock:
                 self.server.calls.append(cookie)
+                self.server.script_sources.append(request.get("js_source"))
                 call_number = len(self.server.calls)
         except (ValueError, KeyError, TypeError):
             self.send_error(400)
@@ -109,11 +116,12 @@ def require_success(opener, base, path, body=None):
             "errorMsg": value.get("errorMsg", ""), "data": value.get("data")}
 
 
-def run_jar(java, jar, workdir, port, fixture_base, fixture):
+def run_jar(java, jar, workdir, port, fixture_base, fixture, exercise_script=False):
     base = f"http://127.0.0.1:{port}"
     workdir.mkdir(parents=True, exist_ok=True)
     launch = [str(java), "-Xms128m", "-Xmx768m", "-jar", str(jar),
               f"--reader.app.workDir={workdir}", f"--reader.server.port={port}",
+              "--reader.server.bindAddress=127.0.0.1",
               f"--reader.app.remote-webview-api={fixture_base}",
               "--reader.app.secure=true", "--reader.app.licenseCheckEnabled=false",
               "--spring.profiles.active=prod"]
@@ -171,7 +179,21 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture):
                                    f"names={names}, renderCalls={len(fixture.snapshot())}")
             probes.append({"status": result["status"], "isSuccess": True,
                            "errorMsg": result["errorMsg"], "count": len(books)})
-        return {"searches": probes, "renderCookieHeaders": fixture.snapshot()}
+        if exercise_script:
+            scripted_source = dict(source)
+            scripted_source["searchUrl"] = (
+                fixture_base + '/search, {"webView": true, "webJs": "document.title"}'
+            )
+            require_success(opener, base, "/reader3/saveBookSource", scripted_source)
+            result = require_success(opener, base, "/reader3/searchBook", {
+                "key": "script", "page": 1, "bookSourceUrl": fixture_base})
+            books = result["data"]
+            if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
+                raise RuntimeError("Script-bearing synthetic source did not parse one book")
+            probes.append({"status": result["status"], "isSuccess": True,
+                           "errorMsg": result["errorMsg"], "count": len(books)})
+        return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
+                "renderScriptSources": fixture.script_snapshot()}
     except Exception:
         log_output.flush()
         log_lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -196,6 +218,8 @@ def main():
                         default=ROOT / "build/libs/reader-4.0.7.jar")
     parser.add_argument("--report", type=Path,
                         default=ROOT / "reports/webview-cookie-diff-latest.json")
+    parser.add_argument("--exercise-script", action="store_true",
+                        help="Also verify a synthetic webJs rule is sent as js_source")
     args = parser.parse_args()
     for path in (args.java, args.original, args.restored):
         if not path.is_file():
@@ -210,17 +234,18 @@ def main():
             root = Path(directory)
             fixture.reset()
             original = run_jar(args.java, args.original, root / "original",
-                               free_port(), fixture_base, fixture)
+                               free_port(), fixture_base, fixture, args.exercise_script)
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
-                               free_port(), fixture_base, fixture)
+                               free_port(), fixture_base, fixture, args.exercise_script)
     finally:
         fixture.shutdown()
         fixture.server_close()
         worker.join(timeout=5)
 
-    expected_original = ["", "", ""]
-    expected_restored = ["", "session=alpha==", ""]
+    expected_original = ["", "", ""] + ([""] if args.exercise_script else [])
+    expected_restored = ["", "session=alpha==", ""] + ([""] if args.exercise_script else [])
+    expected_scripts = [None, None, None] + (["document.title"] if args.exercise_script else [])
     report = {
         "originalJarSha256": sha256(args.original),
         "restoredJarSha256": sha256(args.restored),
@@ -228,16 +253,21 @@ def main():
         "restored": restored,
         "expectedOriginalCookieSequence": expected_original,
         "expectedRestoredCookieSequence": expected_restored,
+        "expectedScriptSources": expected_scripts,
     }
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
     print(f"Original render Cookie sequence: {original['renderCookieHeaders']}")
     print(f"Restored render Cookie sequence: {restored['renderCookieHeaders']}")
+    print(f"Original render script sequence: {original['renderScriptSources']}")
+    print(f"Restored render script sequence: {restored['renderScriptSources']}")
     print(f"Report: {args.report}")
     if original["renderCookieHeaders"] != expected_original or \
             restored["renderCookieHeaders"] != expected_restored or \
-            original["searches"] != restored["searches"]:
+            original["searches"] != restored["searches"] or \
+            original["renderScriptSources"] != expected_scripts or \
+            restored["renderScriptSources"] != expected_scripts:
         raise RuntimeError("Unreviewed WebView Cookie differential")
 
 

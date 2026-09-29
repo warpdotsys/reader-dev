@@ -2,6 +2,7 @@ package io.legado.app.model.analyzeRule
 
 import com.script.SimpleBindings
 import com.htmake.reader.utils.BrowserCookieJar
+import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppConst.SCRIPT_ENGINE
 import io.legado.app.constant.AppConst.UA_NAME
@@ -352,10 +353,13 @@ class AnalyzeUrl(
             return StrResponse(url, StringUtils.byteToHexString(getByteArrayAwait()))
         }
         val concurrentRecord = fetchStart()
-        // Camoufox obtains structured cookies itself. Injecting the HTTP request
-        // header here would make those cookies look user-explicit to the browser
-        // and discard Path/Secure/hostOnly metadata on the return trip.
-        if (!(this.useWebView && useWebView)) setCookie(source?.getKey())
+        // In-process browsers obtain structured cookies themselves. A remote
+        // renderer still relies on Reader's Cookie header; skipping setCookie
+        // for every WebView request broke the remote rollback path.
+        if (!(this.useWebView && useWebView &&
+                    ReaderAdapterHelper.getAdapter().managesWebviewCookies())) {
+            setCookie(source?.getKey())
+        }
         val strResponse: StrResponse?
         if (this.useWebView && useWebView) {
             strResponse = if (method == RequestMethod.POST) {

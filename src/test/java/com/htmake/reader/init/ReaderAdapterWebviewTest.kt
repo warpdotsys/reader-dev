@@ -2,13 +2,32 @@ package com.htmake.reader.init
 
 import com.htmake.reader.utils.WebviewRenderer
 import com.htmake.reader.utils.WebviewRequest
+import com.htmake.reader.utils.RemoteWebview
 import io.legado.app.help.http.StrResponse
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ReaderAdapterWebviewTest {
+
+    @Test
+    fun remoteFallbackStillReceivesTheLegacyCookieHeader() {
+        val original = ReaderAdapter.webviewRenderer
+        try {
+            ReaderAdapter.webviewRenderer = RemoteWebview
+            assertFalse(ReaderAdapter.managesWebviewCookies())
+            ReaderAdapter.webviewRenderer = object : WebviewRenderer {
+                override suspend fun render(request: WebviewRequest): StrResponse =
+                    StrResponse(request.url ?: "", "rendered")
+            }
+            assertTrue(ReaderAdapter.managesWebviewCookies())
+        } finally {
+            ReaderAdapter.webviewRenderer = original
+        }
+    }
 
     @Test
     fun passesTheExistingRequestContractToTheSelectedRenderer() = runBlocking {
