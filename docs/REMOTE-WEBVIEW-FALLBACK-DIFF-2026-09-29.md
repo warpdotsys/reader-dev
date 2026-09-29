@@ -32,3 +32,5 @@ python -B scripts/compare-webview-cookie.py --restored-only --exercise-script --
 差分发现修复前的较早本机恢复 JAR（SHA-256 `A1F6E1BC8FD094232C65A3CA6E80207EA5595744DF8B40F68249074D4156AB96`）在强制远程回退时四次 Cookie 全为空：`AnalyzeUrl` 为内置浏览器跳过了旧式请求头，却也跳过了远程渲染器需要的 Cookie。现在由渲染器显式声明是否自行管理结构化 Cookie，适配器按该能力决定是否注入旧式请求头；未声明的新渲染器默认保留请求头。两份较早本机 JAR 分别保存在 `.tools/previous-builds/reader-4.0.7-A1F6E1BC.jar` 和 `.tools/previous-builds/reader-4.0.7-EEBD0374.jar`，均未覆盖或删除；它们不是原始 JAR。
 
 **尚未验证**：原生产远程 WebView 不可用，本夹具不代表其版本或行为；固定 Docker Hub 旧参考镜像与原生产实例不能画等号。此次没有对三者做同条件真实书源、实际 JavaScript 执行、代理、超时或长时间并发差分。包含 `81f14c19` 显式能力声明的 `207711f6` 已通过 [GitHub 托管 runner 全量测试与完整镜像烟测](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)；这仍不是原生产远程服务的同条件验证，也不构成发布许可。
+
+**后续隔离复验（不改写上面历史样本）**：已在仅回环网卡的 Linux 网络命名空间中实际运行原始 JAR 和更新的恢复构建，重新完成四次合成 Cookie／`js_source` 差分；见[独立记录与原始 JSON](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md)。该复验仍未执行生产远程 WebView 或真实脚本。

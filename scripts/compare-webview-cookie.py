@@ -130,7 +130,7 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture, exercise_script=Fal
     flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
     log_path = workdir / "reader.log"
     log_output = log_path.open("wb")
-    process = subprocess.Popen(launch, cwd=ROOT, stdout=log_output,
+    process = subprocess.Popen(launch, cwd=workdir, stdout=log_output,
                                stderr=subprocess.STDOUT, creationflags=flags)
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))

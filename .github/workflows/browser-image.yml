@@ -18,6 +18,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/run-webview-cookie-in-linux-netns.py'
+      - 'scripts/relocate-extracted-ubuntu-jre.py'
       - 'scripts/probe-archived-remote-webview.py'
       - 'scripts/report-public-webview-probes.py'
       - 'scripts/compare-webview-cookie.py'
@@ -46,6 +48,7 @@ on:
       - 'src/test/python/camoufox_worker_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
+      - 'src/test/python/netns_guard_test.py'
   pull_request:
     branches: [legacy]
     paths:
@@ -63,6 +66,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/run-webview-cookie-in-linux-netns.py'
+      - 'scripts/relocate-extracted-ubuntu-jre.py'
       - 'scripts/probe-archived-remote-webview.py'
       - 'scripts/report-public-webview-probes.py'
       - 'scripts/compare-webview-cookie.py'
@@ -91,6 +96,7 @@ on:
       - 'src/test/python/camoufox_worker_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
+      - 'src/test/python/netns_guard_test.py'
   workflow_dispatch:
     inputs:
       real_public_source:
