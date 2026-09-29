@@ -230,6 +230,10 @@ def main():
     args = parser.parse_args()
     if args.report.exists():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.original_network_isolated:
+        from original_jar_safety import require_original_jar_isolation
+
+        require_original_jar_isolation()
     for path in (args.java, args.original, args.restored):
         if not path.is_file():
             parser.error(f"Required file not found: {path}")

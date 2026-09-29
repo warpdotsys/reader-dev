@@ -6,6 +6,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($env:READER_ORIGINAL_JAR_NETWORK_ISOLATED -ne "confirmed") {
+    throw "Refusing to start the original JAR. Independently verify inbound network isolation, then set READER_ORIGINAL_JAR_NETWORK_ISOLATED=confirmed. This variable does not create isolation."
+}
 $root = Split-Path -Parent $PSScriptRoot
 if (-not $JavaHome) { $JavaHome = Join-Path $root ".tools\jdk-11.0.8" }
 if (-not $OriginalJar) { $OriginalJar = Join-Path $root "reference\original\reader-pro-3.2.14.original.jar" }

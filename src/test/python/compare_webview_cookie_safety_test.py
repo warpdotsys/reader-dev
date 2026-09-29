@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import os
 from pathlib import Path
 
 
@@ -41,6 +42,21 @@ class WebviewCookieCliSafetyTest(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("Report already exists", result.stderr)
             self.assertEqual(original, report.read_bytes())
+
+    def test_original_mode_also_requires_isolation_acknowledgment(self):
+        with tempfile.TemporaryDirectory(prefix="reader-webview-cli-") as directory:
+            report = Path(directory) / "new-report.json"
+            environment = os.environ.copy()
+            environment.pop("READER_ORIGINAL_JAR_NETWORK_ISOLATED", None)
+            result = subprocess.run(
+                [sys.executable, "-B", str(SCRIPT),
+                 "--original-network-isolated", "--report", str(report)],
+                cwd=ROOT, env=environment, capture_output=True, text=True,
+                timeout=10, check=False,
+            )
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Refusing to start the original JAR", result.stderr)
+            self.assertFalse(report.exists())
 
 
 if __name__ == "__main__":

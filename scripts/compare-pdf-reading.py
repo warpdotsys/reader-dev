@@ -252,6 +252,9 @@ def main():
         make_fixture(args.fixture_only)
         print(args.fixture_only.resolve())
         return
+    from original_jar_safety import require_original_jar_isolation
+
+    require_original_jar_isolation()
     for path in (JAVA, ORIGINAL, RESTORED):
         if not path.is_file():
             raise FileNotFoundError(path)

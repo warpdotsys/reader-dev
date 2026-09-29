@@ -9,7 +9,7 @@ $env:READER_APP_WEBVIEWRENDERER='remote'
 python -B scripts/compare-webview-cookie.py --exercise-script --report build/webview-script-diff-capability-20260929.json
 ```
 
-差分脚本现要求显式选择安全模式，且拒绝覆盖已有报告。本机只运行恢复版时使用 `--restored-only`；只有独立核验网络命名空间或入站阻断后，才能以 `--original-network-isolated` 运行原 JAR。参数本身不会创建隔离或防火墙规则。2026-09-29 提权**只读**核查发现，测试所用 JDK 11 `java.exe` 在有效入站规则中获准于 Private/Public 配置文件接收任意 TCP 本地端口、任意远端地址的连接；防火墙总体默认阻断入站并不能覆盖这条程序放行规则。因此本轮没有重新启动原 JAR，也没有修改防火墙。既往测试是否发生外部访问没有可用证据，不应将可能暴露误写为已遭访问。
+差分脚本现要求显式选择安全模式，且拒绝覆盖已有报告。本机只运行恢复版时使用 `--restored-only`；只有独立核验网络命名空间或入站阻断后，才能设置 `READER_ORIGINAL_JAR_NETWORK_ISOLATED=confirmed` 并以 `--original-network-isolated` 运行原 JAR。标记和参数都不会创建隔离或防火墙规则。其他 25 条 Python 和 3 条 PowerShell 原 JAR 差分脚本也加入了相同启动前检查；PDF 夹具模式、仅恢复版诊断不受影响。2026-09-29 提权**只读**核查发现，测试所用 JDK 11 `java.exe` 在有效入站规则中获准于 Private/Public 配置文件接收任意 TCP 本地端口、任意远端地址的连接；防火墙总体默认阻断入站并不能覆盖这条程序放行规则。因此本轮没有重新启动原 JAR，也没有修改防火墙。既往测试是否发生外部访问没有可用证据，不应将可能暴露误写为已遭访问。
 
 ```powershell
 $env:READER_APP_WEBVIEWRENDERER='remote'

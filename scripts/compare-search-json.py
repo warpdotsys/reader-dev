@@ -322,4 +322,7 @@ def main():
 
 
 if __name__ == "__main__":
+    from original_jar_safety import require_original_jar_isolation
+
+    require_original_jar_isolation()
     main()
