@@ -104,6 +104,7 @@ class CamoufoxWebviewRendererTest {
                 "/scripted-renew-delete" -> {
                     exchange.responseHeaders.add("Set-Cookie", "scripted=renewed; Path=/")
                     exchange.responseHeaders.add("Set-Cookie", "fresh=received; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "hidden=keep; Path=/; HttpOnly")
                     respond(exchange, "<html><body>renewed</body></html>", "text/html; charset=utf-8")
                 }
                 "/scoped/resource-page" -> respond(
@@ -203,15 +204,20 @@ class CamoufoxWebviewRendererTest {
         val deleted = renderer.render(request(
             "/scripted-renew-delete", user,
             javaScript = "document.cookie = 'scripted=; Max-Age=0; Path=/'; " +
-                "document.cookie = 'fresh=; Max-Age=0; Path=/'; 'deleted'"
+                "document.cookie = 'fresh=; Max-Age=0; Path=/'; " +
+                "document.cookie = 'hidden=; Max-Age=0; Path=/'; 'deleted'"
         ))
         assertEquals("deleted", deleted.body)
         val stored = BrowserCookieJar.storedCookies(CookieStore(user))
         assertFalse("webJs deletion was undone by Set-Cookie fallback: $stored",
             stored.any { it.name == "scripted" || it.name == "fresh" })
+        assertEquals("webJs must not revoke an HttpOnly Cookie", "keep",
+            stored.single { it.name == "hidden" }.value)
         val next = renderer.render(request("/echo", user))
         assertFalse("Deleted Cookie was sent on the next request: ${next.body}",
             next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
+        assertTrue("HttpOnly Cookie was lost on the next request: ${next.body}",
+            next.body?.contains("hidden=keep") == true)
     }
 
     @Test
