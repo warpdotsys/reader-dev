@@ -23,6 +23,12 @@ class ReaderAdapterWebviewTest {
                 override suspend fun render(request: WebviewRequest): StrResponse =
                     StrResponse(request.url ?: "", "rendered")
             }
+            assertFalse(ReaderAdapter.managesWebviewCookies())
+            ReaderAdapter.webviewRenderer = object : WebviewRenderer {
+                override val managesBrowserCookies = true
+                override suspend fun render(request: WebviewRequest): StrResponse =
+                    StrResponse(request.url ?: "", "rendered")
+            }
             assertTrue(ReaderAdapter.managesWebviewCookies())
         } finally {
             ReaderAdapter.webviewRenderer = original

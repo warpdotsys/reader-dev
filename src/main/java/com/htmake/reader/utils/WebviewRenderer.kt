@@ -20,6 +20,9 @@ data class WebviewRequest(
 )
 
 interface WebviewRenderer {
+    /** True only when this renderer imports and persists scoped browser cookies itself. */
+    val managesBrowserCookies: Boolean get() = false
+
     suspend fun render(request: WebviewRequest): StrResponse
 
     /** Release renderer-owned workers and browser processes during application shutdown. */

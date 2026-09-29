@@ -37,6 +37,8 @@ class CamoufoxWebviewRenderer(
     /** Test-only escape hatch for exercising the parent/worker protocol without Camoufox. */
     private val workerScriptOverride: Path? = null
 ) : WebviewRenderer {
+    override val managesBrowserCookies: Boolean = true
+
     private val pending = AtomicInteger(0)
     private val worker = Executors.newSingleThreadExecutor { task ->
         Thread(task, "reader-camoufox-webview").apply { isDaemon = true }

@@ -30,6 +30,8 @@ class LocalWebviewRenderer private constructor(
     allowPrivateNetworks: Boolean,
     networkPolicyOverride: BrowserNetworkPolicy?
 ) : WebviewRenderer {
+    override val managesBrowserCookies: Boolean = true
+
     constructor(
         executablePath: String = "",
         timeoutMs: Int = 20_000,
