@@ -34,6 +34,8 @@
 
 `1e91d94f` 修正 Camoufox 对对象、数组、数字型 JavaScript 返回值的编码，使其按旧参考镜像实测的紧凑 JSON 格式返回。其 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36438478628)通过；含同一产品源码的 `61d5b88c` [完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36439102342)通过 JAR 构建、真实 Camoufox 合约、单容器镜像构建及受限容器内 API/WebView 合成书源烟测。该作业 JAR SHA-256 为 `BCE9266B1F667DCA5A0C7C73ED2AE8A08AF45653E58F7ECD9E4D0614BDEC5BB9`；这是此 runner 的产物标识，不证明跨环境字节级可重复构建。随后提交只改了参考探针及文档，不改变产品逻辑。`ebda1164` 的 [Vue 3 预览构建与隔离 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36440229851)两个作业均通过；该旅程验证候选登录、书架、阅读、搜索、书源等既定测试场景，不等于生产 UI 验收。
 
+`51a91cc9` 的 [2026-09-29 完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36508005109)在 GitHub 托管 runner 成功：真实 Camoufox 合约、单镜像构建、2 GiB 内存／256 PID／2 CPU 上限中的合成烟测均通过；后者在四个独立账号并发搜索下分别得到一本书。该次 `docker image inspect .Size` 为 **5,611,994,503 字节**（约 5.23 GiB，未压缩镜像大小，不是传输量或宿主机实际占用）；容器 cgroup `memory.peak` 为 **778,379,264 字节**（约 742 MiB），`pids.peak` 为 **176**。这仅是短时合成负载的峰值，不代表真实站点或长时间运行的容量上限。其后的 `81f14c19` 将浏览器 Cookie 所有权改为显式能力声明，仍需对该提交单独完成 hosted 门禁；上述数值不可自动外推到新提交。
+
 ## 已知问题与尚未验证
 
 - 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。浏览器内 JavaScript 主动删除既有 Cookie、复杂 Set-Cookie 日期/引号与跨站 SameSite 行为仍缺少完整端到端覆盖；JavaScript 删除目前只有快照协议单测。
@@ -41,7 +43,7 @@
 - 固定摘要的旧远程 WebView 参考镜像在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上通过合成 GET、POST、公开目录以及脚本返回字符串、对象、数组和数字的探针。首次脚本探针因只有页面副作用而没有返回值，走了旧实现的空值重试分支；该超时不是已证实的服务故障。参考响应摘要、Cookie 与证据边界见[旧服务参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。Camoufox 曾把对象/数组调用 `toString()`，与已实测的参考 JSON 格式不同；候选源码已针对这一差异修改并通过上述真实浏览器和完整镜像门禁。不能把参考结果写成原 JAR 三方兼容通过。
 - 同一固定参考镜像的 `sourceRegex` 合成样本已从页面实际请求资源，但监听器未返回；源码使用 `request().url.match` 而非 Playwright API 的 `request().url().match`。这是[本镜像的已知缺陷](https://github.com/warpdotsys/reader-dev/actions/runs/36439381876)，在[预期缺陷探针](https://github.com/warpdotsys/reader-dev/actions/runs/36439959686)中复现并明确标记，不作为候选浏览器必须复现的行为，也不证明此前生产远程服务具有同样缺陷。
 - [远程回退合成差分](REMOTE-WEBVIEW-FALLBACK-DIFF-2026-09-29.md)发现并修复一处 Cookie 回放回归：为内置浏览器跳过 Cookie 请求头的条件曾误覆盖远程渲染器。修复后的本机 JAR 与原始 JAR 均把书源 `webJs` 传为 `js_source`；恢复版的结构化 Cookie 回放仍是有意的兼容性差异。此增量尚待托管 runner 重测，不等于原生产 WebView 的三方验收。
-- 2026-09-28 使用真实 Chrome 表单对当前线上原版完成登录，进入非空书架及书源分组；见[线上登录核验](PRODUCTION-CHROME-LOGIN-2026-09-28.md)。这仅证实现部署的 Chrome 路径在该次测试成功，Edge 与本候选的线上 UI 登录仍未验证。
+- 2026-09-28 与 2026-09-29 使用真实 Chrome 表单对当前线上原版完成登录；后一次退出旧会话再登录，读取到 169 本书；见[线上登录核验](PRODUCTION-CHROME-LOGIN-2026-09-28.md)。这仅证实现部署的 Chrome 路径在这两次测试成功，Edge 与本候选的线上 UI 登录仍未验证。
 - 本机缺少完整 Linux Camoufox 环境；hosted image 作业已确认真实浏览器与受限容器启动、合成请求和资源预算，但真实书源超时、生产负载、并发资源预算和 ARM64 尚未验收。
 - GitHub 托管 runner 当前将旧 Node.js 20 action 强制运行于 Node.js 24，并提示 `setup-java@v4` 维护期结束。现有门禁通过，但后续应升级并锁定新版本 action，避免未来平台迁移导致 CI 失效。
 - 单页正文 UTF-8 超过 4 MiB 会显式失败；这是一条安全/内存预算限制，可能影响超大章节或页面，需要用真实书源样本验证后决定是否调整。不能静默截断正文。
