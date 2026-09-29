@@ -18,6 +18,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/probe-archived-remote-webview.py'
+      - 'scripts/report-public-webview-probes.py'
       - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
@@ -43,6 +45,7 @@ on:
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
+      - 'src/test/python/public_webview_probe_test.py'
   pull_request:
     branches: [legacy]
     paths:
@@ -60,6 +63,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/probe-archived-remote-webview.py'
+      - 'scripts/report-public-webview-probes.py'
       - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
@@ -85,6 +90,7 @@ on:
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
+      - 'src/test/python/public_webview_probe_test.py'
   workflow_dispatch:
     inputs:
       real_public_source:
@@ -142,7 +148,14 @@ jobs:
           docker exec reader-archived-webview sed -n '65,140p' /app/index.js
           python3 scripts/probe-archived-remote-webview.py \
             --remote-base http://127.0.0.1:18050 \
-            --public-url https://m.jjjxsw.com/txt/
+            --public-url https://m.jjjxsw.com/txt/ \
+            | tee "$RUNNER_TEMP/archived-public-webview.log"
+      - name: Preserve bounded archived reference observations
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: archived-public-webview
+          path: ${{ runner.temp }}/archived-public-webview.log
+          if-no-files-found: error
       - name: Stop reference service and show bounded state
         if: always()
         shell: bash
@@ -184,7 +197,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true && inputs.probe_remote_webview != true }}
+    if: ${{ inputs.probe_original_jar != true }}
     name: Build and smoke-test the full Reader image
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -324,8 +337,16 @@ jobs:
           '
           python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
           if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
-            python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890
+            python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890 \
+              | tee "$RUNNER_TEMP/camoufox-public-webview.log"
           fi
+      - name: Preserve bounded bundled-browser observations
+        if: ${{ inputs.real_public_source == true }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: camoufox-public-webview
+          path: ${{ runner.temp }}/camoufox-public-webview.log
+          if-no-files-found: error
       - name: Print container diagnostics and stop it
         if: always()
         shell: bash
@@ -339,3 +360,34 @@ jobs:
           ' || true
           docker logs --tail=200 reader-browser-smoke || true
           docker rm -f reader-browser-smoke || true
+
+  compare-public-webview:
+    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true }}
+    needs: [archived-remote-webview, integration]
+    name: Compare public page observations (not production parity)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: archived-public-webview
+          path: ${{ runner.temp }}/public/archived
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: camoufox-public-webview
+          path: ${{ runner.temp }}/public/camoufox
+      - name: Compare statuses and parsed book-list counts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/report-public-webview-probes.py \
+            --archived-log "$RUNNER_TEMP/public/archived/archived-public-webview.log" \
+            --camoufox-log "$RUNNER_TEMP/public/camoufox/camoufox-public-webview.log" \
+            --report "$RUNNER_TEMP/public-comparison.json"
+      - name: Preserve comparison with provenance limits
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-webview-comparison
+          path: ${{ runner.temp }}/public-comparison.json
+          if-no-files-found: error

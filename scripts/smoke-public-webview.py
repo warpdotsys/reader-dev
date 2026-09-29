@@ -7,6 +7,7 @@ does not read production storage or download book chapters.
 """
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import http.cookiejar
 import json
@@ -79,7 +80,9 @@ def main():
         projection, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
     print(json.dumps({"source": PAGE_URL, "status": 200, "isSuccess": True,
                       "errorMsg": value.get("errorMsg"), "bookCount": len(books),
-                      "projectionSha256": checksum}, ensure_ascii=False))
+                      "projectionSha256": checksum,
+                      "observedAt": datetime.now(timezone.utc).isoformat()},
+                     ensure_ascii=False))
 
 
 if __name__ == "__main__":

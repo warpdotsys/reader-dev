@@ -6,6 +6,7 @@ No page body, cookie value, credentials, or book-source configuration is logged.
 """
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import http.client
 import json
@@ -84,7 +85,8 @@ def wait_port(base, timeout=60):
     raise TimeoutError("Archived remote WebView did not open its loopback port")
 
 
-def render(base, url, method="GET", body=None, js_source=None, source_regex=None, timeout=45):
+def render(base, url, method="GET", body=None, js_source=None, source_regex=None,
+           timeout=45, expect_integer=False):
     payload = {
         "url": url,
         "html": None,
@@ -107,7 +109,7 @@ def render(base, url, method="GET", body=None, js_source=None, source_regex=None
         raw = response.read(MAX_BODY + 1)
         if len(raw) > MAX_BODY:
             raise RuntimeError("Archived WebView response exceeded the 4 MiB probe limit")
-        return {
+        result = {
             "status": response.status,
             "contentType": response.headers.get("Content-Type", ""),
             "cookieNames": sorted({value.split("=", 1)[0]
@@ -118,6 +120,12 @@ def render(base, url, method="GET", body=None, js_source=None, source_regex=None
             "hasPostMarker": b"post-ok" in raw,
             "hasScriptMarker": b"script-ok" in raw,
         }
+        if expect_integer:
+            number = raw.strip()
+            if not number.isascii() or not number.isdigit() or len(number) > 3:
+                raise RuntimeError("Archived WebView did not return a bounded integer")
+            result["integerValue"] = int(number)
+        return result
 
 
 def main():
@@ -178,6 +186,22 @@ def main():
                 public_result = {"errorType": type(exc).__name__}
             print(json.dumps({"public": public_result}, ensure_ascii=False,
                              sort_keys=True), flush=True)
+            try:
+                public_count = render(
+                    args.remote_base, args.public_url,
+                    js_source="document.querySelectorAll('.booklist_a .list_a').length",
+                    timeout=45, expect_integer=True,
+                )
+                public_count_result = {
+                    "url": args.public_url,
+                    "status": public_count["status"],
+                    "count": public_count["integerValue"],
+                    "observedAt": datetime.now(timezone.utc).isoformat(),
+                }
+            except (OSError, RuntimeError, urllib.error.URLError) as exc:
+                public_count_result = {"url": args.public_url, "errorType": type(exc).__name__}
+            print(json.dumps({"publicDomBookListCount": public_count_result},
+                             ensure_ascii=False, sort_keys=True), flush=True)
         try:
             js_result = render(args.remote_base, fixture_url,
                                # This archived implementation resolves the
