@@ -19,6 +19,8 @@ import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -32,10 +34,12 @@ class CamoufoxWebviewRendererTest {
 
     private lateinit var renderer: CamoufoxWebviewRenderer
     private lateinit var server: HttpServer
+    private lateinit var serverWorkers: ExecutorService
     private lateinit var baseUrl: String
     private lateinit var originalUserDir: String
     private lateinit var originalAdapter: ReaderAdapterInterface
     private val mediaHits = AtomicInteger()
+    private val slowPageHits = AtomicInteger()
     private val unscopedProbeHits = AtomicInteger()
     private val unscopedProbeCookie = AtomicReference("")
 
@@ -53,6 +57,10 @@ class CamoufoxWebviewRendererTest {
         renderer = CamoufoxWebviewRenderer(python, version, 20_000, allowPrivateNetworks = true)
 
         server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        serverWorkers = Executors.newCachedThreadPool { task ->
+            Thread(task, "reader-camoufox-fixture").apply { isDaemon = true }
+        }
+        server.executor = serverWorkers
         server.createContext("/") { exchange ->
             val requestBody = exchange.requestBody.use { it.readBytes().toString(StandardCharsets.UTF_8) }
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
@@ -70,6 +78,16 @@ class CamoufoxWebviewRendererTest {
                 "/media" -> {
                     mediaHits.incrementAndGet()
                     respond(exchange, "media", "text/plain; charset=utf-8")
+                }
+                "/slow-page" -> {
+                    slowPageHits.incrementAndGet()
+                    try {
+                        Thread.sleep(10_000)
+                        respond(exchange, "late-page", "text/html; charset=utf-8")
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        exchange.close()
+                    }
                 }
                 "/seed" -> {
                     exchange.responseHeaders.add("Set-Cookie", "session=alpha==; Path=/; HttpOnly")
@@ -105,6 +123,7 @@ class CamoufoxWebviewRendererTest {
     fun tearDown() {
         if (::renderer.isInitialized) runBlocking { renderer.close() }
         if (::server.isInitialized) server.stop(0)
+        if (::serverWorkers.isInitialized) serverWorkers.shutdownNow()
         if (::originalAdapter.isInitialized) ReaderAdapterHelper.setAdapter(originalAdapter)
         if (::originalUserDir.isInitialized) System.setProperty("user.dir", originalUserDir)
     }
@@ -194,6 +213,28 @@ class CamoufoxWebviewRendererTest {
             // subsequent request starts. Process-count checks run in CI separately.
             val healthy = limited.render(request("/echo", "timeout-user"))
             assertTrue("A healthy request after timeout failed: ${healthy.body}", healthy.body?.contains("GET|||") == true)
+        } finally {
+            limited.close()
+        }
+    }
+
+    @Test
+    fun stalledMainNavigationFailsInsteadOfReturningProxyErrorPage() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val started = System.nanoTime()
+            val outcome = runCatching { limited.render(request("/slow-page", "slow-navigation-user")) }
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+            assertTrue("The slow main document was not actually requested", slowPageHits.get() > 0)
+            assertTrue("Main navigation exceeded its bounded watchdog: ${elapsedMs}ms", elapsedMs < 30_000)
+            assertTrue(
+                "A stalled main document returned an apparent success: ${outcome.getOrNull()?.body?.take(120)}",
+                outcome.exceptionOrNull() is IllegalStateException
+            )
+            val healthy = limited.render(request("/echo", "slow-navigation-user"))
+            assertTrue("A healthy request after a stalled page failed", healthy.body?.contains("GET|||") == true)
         } finally {
             limited.close()
         }
