@@ -433,6 +433,18 @@ def render(payload):
                     page.set_content(html, wait_until="domcontentloaded", timeout=timeout_ms)
 
                 source = payload.get("javaScript")
+                # A source rule may delete a non-HttpOnly cookie received by this
+                # very navigation. Capture the browser-accepted state before the
+                # rule runs: the earlier pre-navigation snapshot cannot observe
+                # such a cookie, while the Set-Cookie fallback would resurrect it.
+                before_source_script = {}
+                if source and state["matched_url"] is None:
+                    for item in context.cookies():
+                        visible = portable_snapshot_cookie(
+                            item, document_origin, response_cookies, request_cookie_metadata
+                        )
+                        if visible and not visible["httpOnly"]:
+                            before_source_script[cookie_identity(visible)] = visible
                 if source_pattern:
                     if state["matched_url"] is None and source:
                         try:
@@ -484,6 +496,12 @@ def render(payload):
                     initial_visible, final_visible, response_seen
                 ))
                 cookie_values.update(response_cookies)
+                # An explicit source script's observed deletion wins over the
+                # same-response Set-Cookie fallback. HttpOnly records are excluded
+                # above because document.cookie cannot delete them.
+                cookie_values.update(missing_initial_cookie_tombstones(
+                    before_source_script, final_visible, set()
+                ))
                 if len(cookie_values) > MAX_COOKIES:
                     raise CookieLimitExceeded()
                 if state["blocked"]:

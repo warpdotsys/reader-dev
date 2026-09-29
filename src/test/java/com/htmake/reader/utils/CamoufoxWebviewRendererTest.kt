@@ -97,6 +97,15 @@ class CamoufoxWebviewRendererTest {
                     exchange.responseHeaders.add("Set-Cookie", "scoped=only; Path=/scoped; HttpOnly")
                     respond(exchange, "seeded", "text/plain; charset=utf-8")
                 }
+                "/scripted-seed" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=original; Path=/")
+                    respond(exchange, "<html><body>seeded</body></html>", "text/html; charset=utf-8")
+                }
+                "/scripted-renew-delete" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=renewed; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "fresh=received; Path=/")
+                    respond(exchange, "<html><body>renewed</body></html>", "text/html; charset=utf-8")
+                }
                 "/scoped/resource-page" -> respond(
                     exchange,
                     "<html><body><div id='main-cookie'>$cookie</div><script src='/unscoped-probe'></script></body></html>",
@@ -182,6 +191,27 @@ class CamoufoxWebviewRendererTest {
         assertTrue("Scoped navigation lost its Cookie", page.body?.contains("scoped=only") == true)
         assertEquals("The cross-path script request must complete", 1, unscopedProbeHits.get())
         assertFalse("A /scoped Cookie leaked to /unscoped-probe", unscopedProbeCookie.get().contains("scoped=only"))
+    }
+
+    @Test
+    fun sourceJavaScriptDeletionOverridesSameResponseSetCookie() = runBlocking {
+        val user = "js-delete"
+        renderer.render(request("/scripted-seed", user))
+        assertEquals("original", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "scripted" }.value)
+
+        val deleted = renderer.render(request(
+            "/scripted-renew-delete", user,
+            javaScript = "document.cookie = 'scripted=; Max-Age=0; Path=/'; " +
+                "document.cookie = 'fresh=; Max-Age=0; Path=/'; 'deleted'"
+        ))
+        assertEquals("deleted", deleted.body)
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        assertFalse("webJs deletion was undone by Set-Cookie fallback: $stored",
+            stored.any { it.name == "scripted" || it.name == "fresh" })
+        val next = renderer.render(request("/echo", user))
+        assertFalse("Deleted Cookie was sent on the next request: ${next.body}",
+            next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
     }
 
     @Test
