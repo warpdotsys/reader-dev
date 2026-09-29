@@ -27,6 +27,20 @@ worker = load_worker()
 
 
 class WorkerCookieProtocolTest(unittest.TestCase):
+    def test_quoted_semicolon_is_not_mistaken_for_an_attribute_separator(self):
+        parsed = worker.parse_set_cookie(
+            'quoted="alpha;beta"; Path=/; HttpOnly; '
+            'Expires=Wed, 21 Oct 2037 07:28:00 GMT',
+            "http://books.example.test/page",
+        )
+        self.assertEqual('"alpha;beta"', parsed["value"])
+        self.assertTrue(parsed["httpOnly"])
+        self.assertGreater(parsed["expires"], 0)
+        self.assertIsNone(worker.parse_set_cookie(
+            'quoted="unterminated; Path=/; HttpOnly',
+            "http://books.example.test/page",
+        ))
+
     def test_non_http_only_response_creation_cannot_override_script_deletion(self):
         public = worker.parse_set_cookie(
             "scripted=renewed; Path=/", "http://books.example.test/page"

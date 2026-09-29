@@ -99,6 +99,28 @@ def same_origin(left, right):
     )
 
 
+def split_set_cookie_fields(raw_header):
+    """Split attributes without treating a semicolon inside quotes as a boundary."""
+    fields = []
+    start = 0
+    quoted = False
+    escaped = False
+    for index, character in enumerate(raw_header):
+        if escaped:
+            escaped = False
+        elif character == "\\" and quoted:
+            escaped = True
+        elif character == '"':
+            quoted = not quoted
+        elif character == ";" and not quoted:
+            fields.append(raw_header[start:index])
+            start = index + 1
+    if quoted:
+        return None
+    fields.append(raw_header[start:])
+    return fields
+
+
 def parse_set_cookie(raw_header, response_url):
     """Parse one response Set-Cookie into the portable Reader cookie record.
 
@@ -111,7 +133,9 @@ def parse_set_cookie(raw_header, response_url):
     # not become an unbounded alternate cookie parser.
     if not utf8_length_at_most(raw_header, MAX_COOKIE_VALUE_UTF8_BYTES + MAX_COOKIE_PATH_UTF8_BYTES + 4096):
         return None
-    pieces = raw_header.split(";")
+    pieces = split_set_cookie_fields(raw_header)
+    if pieces is None:
+        return None
     pair = pieces[0].strip() if pieces else ""
     name, separator, value = pair.partition("=")
     name = name.strip()

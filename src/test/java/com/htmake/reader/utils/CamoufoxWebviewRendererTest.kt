@@ -42,6 +42,9 @@ class CamoufoxWebviewRendererTest {
     private val slowPageHits = AtomicInteger()
     private val unscopedProbeHits = AtomicInteger()
     private val unscopedProbeCookie = AtomicReference("")
+    private val complexProbeHits = AtomicInteger()
+    private val complexProbeCookie = AtomicReference("")
+    private val echoCookie = AtomicReference("")
 
     @Before
     fun setUp() {
@@ -120,6 +123,18 @@ class CamoufoxWebviewRendererTest {
                             "</script></body></html>",
                         "text/html; charset=utf-8")
                 }
+                "/complex-cookie-page" -> {
+                    exchange.responseHeaders.add("Set-Cookie",
+                        "quoted=\"alpha;beta\"; Path=/; HttpOnly; Expires=Wed, 21 Oct 2037 07:28:00 GMT")
+                    respond(exchange,
+                        "<html><body><script src='/complex-cookie-probe'></script></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/complex-cookie-probe" -> {
+                    complexProbeCookie.set(cookie)
+                    complexProbeHits.incrementAndGet()
+                    respond(exchange, ";", "application/javascript; charset=utf-8")
+                }
                 "/scoped/resource-page" -> respond(
                     exchange,
                     "<html><body><div id='main-cookie'>$cookie</div><script src='/unscoped-probe'></script></body></html>",
@@ -130,11 +145,12 @@ class CamoufoxWebviewRendererTest {
                     unscopedProbeHits.incrementAndGet()
                     respond(exchange, ";", "application/javascript; charset=utf-8")
                 }
-                "/echo" -> respond(
-                    exchange,
-                    "${exchange.requestMethod}|$requestBody|$cookie|${exchange.requestHeaders.getFirst("X-Reader-Probe") ?: ""}",
-                    "text/plain; charset=utf-8"
-                )
+                "/echo" -> {
+                    echoCookie.set(cookie)
+                    respond(exchange,
+                        "${exchange.requestMethod}|$requestBody|$cookie|${exchange.requestHeaders.getFirst("X-Reader-Probe") ?: ""}",
+                        "text/plain; charset=utf-8")
+                }
                 else -> respond(exchange, "<html><body>empty</body></html>", "text/html; charset=utf-8")
             }
         }
@@ -252,6 +268,25 @@ class CamoufoxWebviewRendererTest {
         assertFalse("An inline-deleted Cookie was sent later: ${next.body}",
             next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
         assertTrue("HttpOnly Cookie was lost: ${next.body}", next.body?.contains("hidden=keep") == true)
+    }
+
+    @Test
+    fun quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted() = runBlocking {
+        val user = "quoted-cookie"
+        renderer.render(request("/complex-cookie-page", user))
+        assertEquals("The same-render browser subresource did not run", 1, complexProbeHits.get())
+        val observed = complexProbeCookie.get()
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        if (observed.contains("quoted=")) {
+            assertTrue("Browser accepted a Cookie that Reader did not retain: $stored",
+                stored.any { it.name == "quoted" })
+        } else {
+            assertFalse("Reader persisted a Cookie rejected by the browser: $stored",
+                stored.any { it.name == "quoted" })
+        }
+        renderer.render(request("/echo", user))
+        assertEquals("Persisted Cookie replay differs from the browser's own request",
+            observed, echoCookie.get())
     }
 
     @Test
