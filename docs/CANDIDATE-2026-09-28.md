@@ -39,6 +39,8 @@
 
 `815b64d2` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36509889238)与 [Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36509889235)通过；[完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36509889267)在 Docker 构建的 apt 下载步骤失败，固定 Ubuntu 快照站对部分包返回 500/502/503，镜像内烟测未运行。这是外部包源故障的证据，不是产品测试通过，也不是已证实的产品回归。Dockerfile 随后给该固定快照的更新与安装加 `Acquire::Retries=3`，不更换来源或放宽包版本；仍需新作业成功才能称当前提交的完整镜像门禁通过。
 
+`c11e395b` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36511744634)和 [Vue 3 Chromium 全旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36511744767)通过，后者包括新增的已有账号重新登录；但 [完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36511744723)再次因同一 Ubuntu 快照站对全部索引返回 500/502 而失败。`Acquire::Retries=3` 不能解决该持续外部故障。下一候选改用已核验 OCI 摘要的 Playwright Python Jammy 基础镜像，其已有 Python、浏览器及系统依赖；叠加固定 JRE 11 与哈希锁定的 Camoufox wheels，构建时不再调用 apt。该改动会改变镜像组成与体积，须重新完成完整镜像、真实 Camoufox、字体和受限容器烟测；在新作业成功前不能援引旧镜像的大小与峰值作为新镜像结论。
+
 ## 已知问题与尚未验证
 
 - 当前单镜像体积偏大：`51a91cc9` 作业测得未压缩镜像约 5.23 GiB。该值不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；后续如更换更小的基础镜像，仍须重跑真实 Camoufox、字体和完整镜像烟测，不能仅凭体积下降验收。

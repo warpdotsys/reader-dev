@@ -62,20 +62,23 @@ if (!compose.includes('image: ${READER_IMAGE:?READER_IMAGE must be an immutable 
 if (!compose.includes('READER_APP_WEBVIEWRENDERER: camoufox')) {
   throw new Error('production compose must select the in-image Camoufox renderer')
 }
+if (!compose.includes('init: true')) {
+  throw new Error('production compose must reap browser child processes with Docker init')
+}
 if (!dockerfile.includes('ARG READER_JAR') || !dockerfile.includes('COPY ${READER_JAR} /app/reader.jar')) {
   throw new Error('Dockerfile must receive versioned JAR through READER_JAR')
 }
-if (!dockerfile.includes('ARG TEMURIN_JRE_IMAGE\n') || !dockerfile.includes('ARG PLAYWRIGHT_JAVA_IMAGE\n') ||
+if (!dockerfile.includes('ARG TEMURIN_JRE_IMAGE\n') || !dockerfile.includes('ARG PLAYWRIGHT_PYTHON_IMAGE\n') ||
     !dockerfile.includes('ARG REQUIRE_WHEEL_HASHES=true') || !dockerfile.includes('--require-hashes')) {
   throw new Error('Dockerfile must accept digest-pinned bases and verify wheels by default')
 }
-for (const token of ['COPY apt-sources.list /etc/apt/sources.list', 'docker-entrypoint.sh /usr/local/bin/reader-entrypoint', 'READER_RELEASE_VERSION=${READER_VERSION}', 'ENTRYPOINT ["/usr/local/bin/reader-entrypoint"]']) {
+for (const token of ['docker-entrypoint.sh /usr/local/bin/reader-entrypoint', 'READER_RELEASE_VERSION=${READER_VERSION}', 'ENTRYPOINT ["/usr/local/bin/reader-entrypoint"]']) {
   if (!dockerfile.includes(token)) throw new Error(`Dockerfile missing reproducibility/release proof token: ${token}`)
 }
-if (!dockerfile.includes('rm -rf /etc/apt/sources.list.d')) {
-  throw new Error('Dockerfile must remove inherited floating apt sources before apt-get update')
+if (dockerfile.includes('apt-get') || dockerfile.includes('COPY apt-sources.list')) {
+  throw new Error('Dockerfile must not require live apt repositories during the image build')
 }
-for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_JAVA_IMAGE']) {
+for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_PYTHON_IMAGE']) {
   if (!new RegExp(`^${name}=.+@sha256:[0-9a-f]{64}$`, 'm').test(baseImagesLock)) {
     throw new Error(`base image lock missing immutable ${name}`)
   }

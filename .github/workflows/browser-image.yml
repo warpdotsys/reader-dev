@@ -266,15 +266,15 @@ jobs:
           test -n "$jar"
           jar_name=$(basename "$jar")
           temurin_jre_image=$(sed -n 's/^TEMURIN_JRE_IMAGE=//p' deploy/reader-pro/base-images.lock)
-          playwright_java_image=$(sed -n 's/^PLAYWRIGHT_JAVA_IMAGE=//p' deploy/reader-pro/base-images.lock)
+          playwright_python_image=$(sed -n 's/^PLAYWRIGHT_PYTHON_IMAGE=//p' deploy/reader-pro/base-images.lock)
           [[ "$temurin_jre_image" =~ ^eclipse-temurin@sha256:[0-9a-f]{64}$ ]]
-          [[ "$playwright_java_image" =~ ^mcr\.microsoft\.com/playwright/java@sha256:[0-9a-f]{64}$ ]]
+          [[ "$playwright_python_image" =~ ^mcr\.microsoft\.com/playwright/python@sha256:[0-9a-f]{64}$ ]]
           revision=$(git rev-parse --verify HEAD)
           version="ci-${revision:0:12}"
           cp "$jar" "deploy/reader-pro/$jar_name"
           docker build -f deploy/reader-pro/Dockerfile \
             --build-arg "TEMURIN_JRE_IMAGE=$temurin_jre_image" \
-            --build-arg "PLAYWRIGHT_JAVA_IMAGE=$playwright_java_image" \
+            --build-arg "PLAYWRIGHT_PYTHON_IMAGE=$playwright_python_image" \
             --build-arg "READER_JAR=$jar_name" \
             --build-arg "READER_VERSION=$version" \
             --build-arg "READER_BUILD_REVISION=$revision" \
@@ -292,7 +292,7 @@ jobs:
           chmod 777 "$RUNNER_TEMP/reader-browser-data"
           # Exercise the browser under a finite budget close to the 4 GiB
           # production host, rather than only on an unconstrained runner.
-          docker run -d --name reader-browser-smoke --network host --shm-size=1g \
+          docker run -d --init --name reader-browser-smoke --network host --shm-size=1g \
             --memory=2g --memory-swap=3g --pids-limit=256 --cpus=2 \
             --security-opt no-new-privileges:true --cap-drop ALL \
             --tmpfs /tmp:size=256m,mode=1777 \

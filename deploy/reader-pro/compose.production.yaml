@@ -5,6 +5,7 @@ services:
     image: ${READER_IMAGE:?READER_IMAGE must be an immutable image reference}
     container_name: reader-pro-restored
     restart: unless-stopped
+    init: true
     env_file:
       - .env
     environment:

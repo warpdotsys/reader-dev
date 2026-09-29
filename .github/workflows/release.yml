@@ -134,7 +134,7 @@ jobs:
           install -m 0644 "$jar" "image-context/$(basename "$jar")"
           cp deploy/reader-pro/Dockerfile deploy/reader-pro/requirements-camoufox.lock \
             deploy/reader-pro/camoufox-browser.lock deploy/reader-pro/install_camoufox_pinned.py \
-            deploy/reader-pro/apt-sources.list deploy/reader-pro/docker-entrypoint.sh \
+            deploy/reader-pro/docker-entrypoint.sh \
             deploy/reader-pro/base-images.lock image-context/
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Read and validate locked base image digests
@@ -144,7 +144,7 @@ jobs:
           set -euo pipefail
           lock=deploy/reader-pro/base-images.lock
           temurin=$(sed -nE 's/^TEMURIN_JRE_IMAGE=(.+@sha256:[0-9a-f]{64})$/\1/p' "$lock")
-          playwright=$(sed -nE 's/^PLAYWRIGHT_JAVA_IMAGE=(.+@sha256:[0-9a-f]{64})$/\1/p' "$lock")
+          playwright=$(sed -nE 's/^PLAYWRIGHT_PYTHON_IMAGE=(.+@sha256:[0-9a-f]{64})$/\1/p' "$lock")
           test -n "$temurin"
           test -n "$playwright"
           test "$(printf '%s\n' "$temurin" | wc -l)" = 1
@@ -164,11 +164,11 @@ jobs:
             --build-arg "READER_BUILD_REVISION=${GITHUB_SHA}" \
             --build-arg REQUIRE_WHEEL_HASHES=true \
             --build-arg 'TEMURIN_JRE_IMAGE=${{ steps.base-images.outputs.temurin }}' \
-            --build-arg 'PLAYWRIGHT_JAVA_IMAGE=${{ steps.base-images.outputs.playwright }}' \
+            --build-arg 'PLAYWRIGHT_PYTHON_IMAGE=${{ steps.base-images.outputs.playwright }}' \
             -t reader-pro:camoufox-smoke image-context
           mkdir -p "$RUNNER_TEMP/reader-smoke-storage"
           sudo chown 10001:10001 "$RUNNER_TEMP/reader-smoke-storage"
-          docker run -d --name reader-pro-camoufox-smoke --network host --shm-size=1g \
+          docker run -d --init --name reader-pro-camoufox-smoke --network host --shm-size=1g \
             --memory=2g --memory-swap=3g --pids-limit=256 --cpus=2 \
             --security-opt no-new-privileges:true --cap-drop ALL \
             -v "$RUNNER_TEMP/reader-smoke-storage:/storage" \

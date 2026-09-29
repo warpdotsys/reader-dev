@@ -41,8 +41,8 @@ SSH 只使用仓库 Secret 中的已验证 `known_hosts`，并显式启用
 这尚不等于镜像安装成功：正式流水线会强制 `pip --require-hashes`，并从
 `base-images.lock` 读取已核验的 Temurin 与 Playwright manifest digest，再以这些
 digest 构建；发布时不会重新从浮动 tag 解析 digest。Dockerfile 不接受浮动基础镜像
-默认值，并会移除基础镜像遗留的 apt 源；系统包只使用 `apt-sources.list` 所列的 Ubuntu
-快照。更新任一锁文件必须作为可审查的发布链路变更。
+默认值；固定的 Playwright Python 镜像已含 Python、浏览器及其系统依赖，构建过程
+不再访问曾返回 5xx 的 Ubuntu apt 快照源。更新任一锁文件必须作为可审查的发布链路变更。
 
 流水线会：
 
@@ -77,9 +77,10 @@ Playwright `1.62.0`、Firefox 依赖和经 SHA-256 校验的
 `v152.0.4-beta.30` 浏览器放进**同一个容器**。运行时设置
 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`、
 `READER_APP_WEBVIEWRENDERER=camoufox`，并使用
-`/opt/reader-camoufox/bin/python` 启动 worker；不要求 Docker 宿主机安装
+`/usr/bin/python3` 启动 worker；不要求 Docker 宿主机安装
 Chrome、Firefox 或独立 WebView 容器。只构建一个完整版本，不再构建或发布轻量版。
-远程 WebView 配置暂留作回滚。
+远程 WebView 配置暂留作回滚。生产 Compose 使用 Docker 内建 `init: true` 回收
+浏览器子进程；这不是独立的 WebView 服务。
 
 在 JDK 11 环境下，从仓库根目录构建唯一产物：
 

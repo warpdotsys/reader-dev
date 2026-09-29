@@ -11,4 +11,4 @@ printf '{"version":"%s","buildRevision":"%s"}\n' \
   > /storage/assets/reader-release.json
 chmod 0644 /storage/assets/reader-release.json
 
-exec /usr/bin/tini -- java -jar /app/reader.jar
+exec java -jar /app/reader.jar
