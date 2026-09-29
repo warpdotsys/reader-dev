@@ -19,6 +19,8 @@
 
 2026-09-29 在[同一次托管运行](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)中并行执行本固定镜像探针和完整 Reader/Camoufox 镜像。旧镜像直接渲染公开目录为 HTTP 200、16,279 字节、SHA-256 `1771f681b205d0d383db2fc92d95699e68a7f3e7cf152c8f620b2522583201fe`；再以 `document.querySelectorAll('.booklist_a .list_a').length` 读取到 **10** 个 DOM 节点。后者于 UTC 06:06:22 观测；Reader 的搜索结果于 UTC 06:13:36 观测，两次相隔 433.381 秒，且请求阶段不同。比较制品 `public-webview-comparison` 仅记录状态、数量、摘要和时间；两侧数量相同，但未逐字段比较书目，更未证明 HTML 字节一致。原 JAR 与原生产远程实例均未参加本轮。
 
+[下一轮托管作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531083960)显示：旧镜像的独立“返回纯数字”脚本有一次只得到不可解析的结果，因此比较作业按设计报错；同一旧镜像的书目数组投影和 Reader 搜索却都产生 10 项、相同的书名/URL SHA-256。不能因两个子作业成功而把整次红灯记成绿灯。`a53cc7be` 随后去掉冗余的数字脚本，直接用数组长度与摘要比较；[修正后的完整配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531865466)四个适用作业全部通过：参考与 Reader 的投影均为 10 项，SHA-256 均为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`，两次观测相隔 237.914 秒。原页面 HTML 摘要在不同请求间可变，所以这仍只证明此时段、此解析投影一致，不证明原生产服务或字节级页面一致。上传制品不包含书名、正文、凭据或 Cookie 值。
+
 探针最初只等 TCP 端口开放，首次请求偶发连接重置；在浏览器启动后等待并对**第一笔**请求做最多三次有界重试后，GET/POST 与公开页稳定完成。早期作业中单独调整 `/dev/shm` 或额外的 `no-new-privileges` 后仍出现重置，不能把这些失败误报为内存溢出。首轮 `js_source` 只执行页面副作用，没有返回值；镜像 `/app/index.js` 实际读取 `page.evaluate(js_source)` 的返回值，空值会重试，所以那次 20 秒超时是**无效的接口形态探针**，不是已证实的服务故障。改为返回字符串后通过，随后对象、数组和数字返回值也通过。该镜像使用 WebKit/Safari UA，内置候选使用 Camoufox/Firefox；这仍是潜在兼容差异。
 
 这份结果可作为后续请求形状、正文和 Cookie 差分的参考输入，但**不是三方验收完成**：本地原 JAR 没有连到这个临时服务；此前生产远程实例不存在可核验容器；公开镜像站同名 Reader JAR 也已证实与本地原件不同（见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)）。下一步需在可追溯的隔离网络中，用同一书源规则同时驱动本地原 JAR、该旧参考服务和内置 Camoufox，并分别记录脚本/超时差异。

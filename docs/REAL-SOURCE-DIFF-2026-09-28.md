@@ -33,6 +33,8 @@ python -B scripts/compare-real-public-explore.py
 
 [作业 36529322389](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)在同一提交 `e128bcb8` 上并行运行固定旧远程 WebView **参考镜像**与完整 Reader/Camoufox 镜像，使用相同的无凭据公开目录 URL。参考镜像直接渲染 HTTP 200，另一次页面内 JavaScript 选择器读到 **10** 个书目 DOM 节点；Reader 在 2 GiB 内存、256 PID、2 CPU 限制的单容器中，以 `webView=true` 测试书源搜索返回 HTTP 200、`isSuccess=true`、`errorMsg=""` 和 **10** 本书，书名/URL 投影 SHA-256 为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`。比较制品记录两次观测相隔 433.381 秒，`countEqual=true`，但明确标记 `fullResponseParityProven=false`、`originalJarCompared=false`、`referenceProvenProduction=false`。站点可变、请求阶段不同、旧参考镜像并非已证实的原生产实例；数量一致仅是有限的兼容线索，不是三方等价证明。作业只上传无正文、凭据及 Cookie 值的摘要。
 
+`52d30125` 的[首次数组投影作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531083960)在两个子作业中均得到 10 本及相同的书名/URL 投影摘要，但参考镜像额外的纯数字脚本偶发不可解析，导致整次比较作业失败。该失败是探针形式不稳定，不能写成产品解析失败或整轮验收通过。移除纯数字步骤后，`a53cc7be` 的[修正配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531865466)全部通过：参考镜像 JavaScript 返回的 10 个 `[name, bookUrl]` 与 Reader `webView=true` 搜索结果的相同投影 SHA-256 均为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`；Reader HTTP 200、`isSuccess=true`、`errorMsg=""`；采样相隔 237.914 秒。制品明确标注 `projectionEqual=true`、`fullResponseParityProven=false`、`originalJarCompared=false`、`referenceProvenProduction=false`。这是比“都是 10 本”更强的公开样本证据，但仍缺原 JAR、原生产远程实例、真实登录书源和同一 HTTP 响应内容控制，不能称三方兼容验收完成。
+
 ## 尚未验证
 
 - 原 JAR／恢复版的一致性样本是公开静态目录的真实 HTTP/规则解析，未启用 `webView`；另一个容器内样本启用了内置 Camoufox，但没有同条件运行原 JAR 和旧远程 WebView。两项证据不能拼接成三方等价，且站点本身不是依赖 JavaScript 或登录态的样本。

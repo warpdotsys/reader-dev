@@ -377,7 +377,7 @@ jobs:
         with:
           name: camoufox-public-webview
           path: ${{ runner.temp }}/public/camoufox
-      - name: Compare statuses and parsed book-list counts
+      - name: Compare public statuses and book projections
         shell: bash
         run: |
           set -euo pipefail

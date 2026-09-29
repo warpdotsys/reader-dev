@@ -55,6 +55,8 @@
 
 `e128bcb8` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36529289304)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36529289390)和[常规完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36529289469)均通过。另一次[手动配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)在同一提交同时运行旧远程 WebView 固定参考镜像和完整 Reader/Camoufox 镜像：公开目录 HTTP 均为 200，参考 DOM 节点与 Reader 解析书目均为 10；比较制品记录两次采样相隔 433.381 秒。Reader 响应 `isSuccess=true`、`errorMsg=""`；真实 Camoufox 合约 JUnit XML 为 **11 项、0 跳过、0 失败、0 错误**。本次镜像未压缩 `.Size` 为 **4,224,353,999 字节**；2 GiB/256 PID/2 CPU 上限下短时 `memory.peak` **807,415,808 字节**、`pids.peak` **192**。这些是同一公开 URL 的有界数量观测，不是原 JAR／原生产远程 WebView／内置浏览器三方验收；镜像大小也不是下载流量。详细界限见[公开实站差分](REAL-SOURCE-DIFF-2026-09-28.md)。
 
+`a53cc7be` 的[手动配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531865466)进一步比较书名/URL 投影摘要：旧参考镜像页面脚本与完整单镜像 Reader 搜索均为 10 本、SHA-256 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`，采样相隔 237.914 秒；适用作业全部成功。此提交的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36531856292)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36531856193)和[常规完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531856199)亦均通过。前一提交 `52d30125` 的[配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531083960)因额外纯数字脚本偶发不可解析而红灯，虽有两份相同投影摘要，不能将其记作工作流通过。新比较制品不记录书名明文，只保留状态、数量、摘要、时间和“非原 JAR／非已证实生产实例”的边界。
+
 ## 已知问题与尚未验证
 
 - 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
