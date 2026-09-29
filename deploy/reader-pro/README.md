@@ -102,7 +102,8 @@ Cookie 用户命名空间和 `sourceRegex` 资源捕获测试，再构建镜像�
 已知限制：Camoufox 仍处于候选接入阶段。[207711f6 的 GitHub 托管作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)
 已通过 Linux 真实 Camoufox 合约、无 apt 单镜像构建及受限容器内四账号合成书源烟测；
 未压缩镜像约 3.93 GiB，短时 cgroup 内存峰值约 737 MiB。该结果不是生产镜像发布或
-真实站点容量承诺；中文字体覆盖的单独门禁仍须按最新提交复核。尚未完成原 JAR 与远程
+真实站点容量承诺。[7daacc72 的镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513674140)
+还证实容器内存在支持中文的文泉驿正黑字体。尚未完成原 JAR 与远程
 WebView 的完整语义差分、真实书源差分、ARM64、生产网络隔离、长期并发与资源预算验证。
 HTTP 和 SOCKS4/5 上游代理由本地出口代理支持，并有固定 IP、认证和凭据隔离单元测试；
 尚未用真实第三方代理或真实书源验证兼容率。
