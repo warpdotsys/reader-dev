@@ -49,6 +49,8 @@ def main():
     parser.add_argument("--original", required=True, type=Path)
     parser.add_argument("--restored", required=True, type=Path)
     parser.add_argument("--report", required=True, type=Path)
+    parser.add_argument("--exercise-post", action="store_true",
+                        help="Include the synthetic POST request-shape comparison")
     args = parser.parse_args()
 
     # Isolation is checked before reading any JAR or granting the comparison
@@ -72,14 +74,17 @@ def main():
         parser.error("Unprivileged probe user cannot read all required inputs")
     env = os.environ.copy()
     env[ISOLATION_ACK] = "confirmed"
-    os.execve(sys.executable, [
+    probe = [
         sys.executable, str(SCRIPT),
         "--java", str(args.java),
         "--original", str(args.original),
         "--restored", str(args.restored),
         "--report", str(report),
         "--original-network-isolated", "--exercise-script",
-    ], env)
+    ]
+    if args.exercise_post:
+        probe.append("--exercise-post")
+    os.execve(sys.executable, probe, env)
 
 
 if __name__ == "__main__":

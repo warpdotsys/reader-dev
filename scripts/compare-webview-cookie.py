@@ -43,12 +43,14 @@ class Fixture(ThreadingHTTPServer):
         super().__init__(address, FixtureHandler)
         self.calls = []
         self.script_sources = []
+        self.request_fields = []
         self.lock = threading.Lock()
 
     def reset(self):
         with self.lock:
             self.calls.clear()
             self.script_sources.clear()
+            self.request_fields.clear()
 
     def snapshot(self):
         with self.lock:
@@ -57,6 +59,10 @@ class Fixture(ThreadingHTTPServer):
     def script_snapshot(self):
         with self.lock:
             return list(self.script_sources)
+
+    def request_snapshot(self):
+        with self.lock:
+            return list(self.request_fields)
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -76,9 +82,16 @@ class FixtureHandler(BaseHTTPRequestHandler):
                 raise ValueError("unexpected target")
             cookie = next((value for key, value in headers.items()
                            if key.lower() == "cookie"), "")
+            fixture_header = next((value for key, value in headers.items()
+                                   if key.lower() == "x-fixture"), None)
             with self.server.lock:
                 self.server.calls.append(cookie)
                 self.server.script_sources.append(request.get("js_source"))
+                self.server.request_fields.append({
+                    "httpMethod": request.get("http_method"),
+                    "body": request.get("body"),
+                    "testHeader": fixture_header,
+                })
                 call_number = len(self.server.calls)
         except (ValueError, KeyError, TypeError):
             self.send_error(400)
@@ -118,7 +131,8 @@ def require_success(opener, base, path, body=None):
             "errorMsg": value.get("errorMsg", ""), "data": value.get("data")}
 
 
-def run_jar(java, jar, workdir, port, fixture_base, fixture, exercise_script=False):
+def run_jar(java, jar, workdir, port, fixture_base, fixture,
+            exercise_script=False, exercise_post=False):
     base = f"http://127.0.0.1:{port}"
     workdir.mkdir(parents=True, exist_ok=True)
     launch = [str(java), "-Xms128m", "-Xmx768m", "-jar", str(jar),
@@ -194,8 +208,24 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture, exercise_script=Fal
                 raise RuntimeError("Script-bearing synthetic source did not parse one book")
             probes.append({"status": result["status"], "isSuccess": True,
                            "errorMsg": result["errorMsg"], "count": len(books)})
+        if exercise_post:
+            post_source = dict(source)
+            post_source["searchUrl"] = (
+                fixture_base + '/search, {"webView": true, "method": "POST", '
+                '"body": "q=post", "headers": {"X-Fixture": "synthetic"}, '
+                '"webJs": "document.title"}'
+            )
+            require_success(opener, base, "/reader3/saveBookSource", post_source)
+            result = require_success(opener, base, "/reader3/searchBook", {
+                "key": "post", "page": 1, "bookSourceUrl": fixture_base})
+            books = result["data"]
+            if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
+                raise RuntimeError("POST-bearing synthetic source did not parse one book")
+            probes.append({"status": result["status"], "isSuccess": True,
+                           "errorMsg": result["errorMsg"], "count": len(books)})
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
-                "renderScriptSources": fixture.script_snapshot()}
+                "renderScriptSources": fixture.script_snapshot(),
+                "renderRequestFields": fixture.request_snapshot()}
     except Exception:
         log_output.flush()
         log_lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -227,6 +257,8 @@ def main():
                       help="Run both JARs only after independently verifying inbound isolation")
     parser.add_argument("--exercise-script", action="store_true",
                         help="Also verify a synthetic webJs rule is sent as js_source")
+    parser.add_argument("--exercise-post", action="store_true",
+                        help="Also verify a synthetic WebView POST method, body, and header")
     args = parser.parse_args()
     if args.report.exists():
         parser.error(f"Report already exists; choose a new path: {args.report}")
@@ -249,18 +281,25 @@ def main():
             if args.original_network_isolated:
                 fixture.reset()
                 original = run_jar(args.java, args.original, root / "original",
-                                   free_port(), fixture_base, fixture, args.exercise_script)
+                                   free_port(), fixture_base, fixture,
+                                   args.exercise_script, args.exercise_post)
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
-                               free_port(), fixture_base, fixture, args.exercise_script)
+                               free_port(), fixture_base, fixture,
+                               args.exercise_script, args.exercise_post)
     finally:
         fixture.shutdown()
         fixture.server_close()
         worker.join(timeout=5)
 
-    expected_original = ["", "", ""] + ([""] if args.exercise_script else [])
-    expected_restored = ["", "session=alpha==", ""] + ([""] if args.exercise_script else [])
-    expected_scripts = [None, None, None] + (["document.title"] if args.exercise_script else [])
+    expected_original = ["", "", ""] + ([""] if args.exercise_script else []) + \
+                        ([""] if args.exercise_post else [])
+    expected_restored = ["", "session=alpha==", ""] + \
+                        ([""] if args.exercise_script else []) + ([""] if args.exercise_post else [])
+    expected_scripts = [None, None, None] + \
+                       (["document.title"] if args.exercise_script else []) + \
+                       (["document.title"] if args.exercise_post else [])
+    expected_post = {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}
     report = {
         "originalJarSha256": sha256(args.original),
         "originalExecuted": original is not None,
@@ -271,6 +310,8 @@ def main():
         "expectedRestoredCookieSequence": expected_restored,
         "expectedScriptSources": expected_scripts,
     }
+    if args.exercise_post:
+        report["expectedPostRequestFields"] = expected_post
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
@@ -282,13 +323,21 @@ def main():
     if original is not None:
         print(f"Original render script sequence: {original['renderScriptSources']}")
     print(f"Restored render script sequence: {restored['renderScriptSources']}")
+    if args.exercise_post:
+        if original is not None:
+            print(f"Original POST request fields: {original['renderRequestFields'][-1]}")
+        print(f"Restored POST request fields: {restored['renderRequestFields'][-1]}")
     print(f"Report: {args.report}")
     if restored["renderCookieHeaders"] != expected_restored or \
             restored["renderScriptSources"] != expected_scripts or \
+            (args.exercise_post and restored["renderRequestFields"][-1] != expected_post) or \
             (original is not None and (
                 original["renderCookieHeaders"] != expected_original or
                 original["searches"] != restored["searches"] or
-                original["renderScriptSources"] != expected_scripts)):
+                original["renderScriptSources"] != expected_scripts or
+                (args.exercise_post and (
+                    original["renderRequestFields"][-1] != expected_post or
+                    original["renderRequestFields"] != restored["renderRequestFields"])))):
         raise RuntimeError("Unreviewed WebView Cookie differential")
 
 

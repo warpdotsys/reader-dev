@@ -29,3 +29,17 @@ wsl.exe -d Ubuntu -u root --exec unshare --net --fork python3 /mnt/c/Users/chong
 ```
 
 **尚未验证**：原生产远程 WebView 不可用；固定旧参考镜像不能视为同版生产实例。本测试既未把旧远程服务和内置 Camoufox 加入同条件三方差分，也未验证真实书源、实际 JavaScript 执行、代理、登录态、超时、资源上限或生产数据兼容。它不构成候选发布或切换生产的许可。
+
+## 同日追加：POST 请求形态实测
+
+[新增原始 JSON](evidence/webview-post-netns-2026-09-29.json)来自同一隔离方式的**新双 JAR 运行**，原件和恢复 JAR 的 SHA-256 与上面一致。包装器只有显式加 `--exercise-post` 才增加第 5 次搜索；因此上面的四次搜索报告与复现命令仍可独立保留。第 5 次书源 URL 选项为 `webView=true`、`method=POST`、`body=q=post`、`headers.X-Fixture=synthetic` 和 `webJs=document.title`。
+
+| 观测 | 原始 JAR | 恢复构建 |
+| --- | --- | --- |
+| 第 5 次搜索 | HTTP 200、`isSuccess=true`、`errorMsg=""`、1 本固定书 | 相同 |
+| 传给 `/render.html` 的请求字段 | `http_method=POST`、`body=q=post`、`headers.X-Fixture=synthetic`、`js_source=document.title` | 相同 |
+| 第 1–5 次 Cookie 请求头 | 全为空 | 空 → `session=alpha==` → 空 → 空 → 空 |
+
+新增夹具同时记录前四次的请求字段：两边均为 `http_method=GET`，`body` 和 `X-Fixture` 均为空。JSON 文件已经与 WSL 中未改写的原始报告做语义比对；只保存合成头和请求体，不保存账号、访问令牌或生产 Cookie。复现时使用新的 `/var/tmp` 报告名，并在上面 `wsl.exe ...` 命令结尾添加 `--exercise-post`。
+
+**严格边界**：这是两个 Reader 向合成远程渲染器 `/render.html` 发送的请求**字段**差分。夹具不访问目标 `/search`，所以并未证明旧远程服务或内置 Camoufox 真正向目标站发送了 POST，也未证明脚本实际执行、响应正文等价或原生产实例同版。上述空 Cookie 与结构化 Cookie 回放仍是有意差异。

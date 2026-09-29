@@ -70,6 +70,7 @@
 - 原 JAR 的 `RestVerticle` 字节码使用 Vert.x `listen(port, handler)`，此前本机差分脚本传入的 `reader.server.bindAddress=127.0.0.1` 仅由恢复版支持；不能据此声称原进程只监听回环。提权只读核查还发现，测试所用 JDK 11 `java.exe` 在 Private/Public 配置文件下被入站规则允许任意 TCP 本地端口及任意远端地址，故本轮不在该主机重新启动原 JAR，也未改动防火墙。以前是否发生外部访问没有证据。26 条 Python 和 3 条 PowerShell 原 JAR 差分脚本现于启动前要求 `READER_ORIGINAL_JAR_NETWORK_ISOLATED=confirmed`；这仅是独立核验隔离后的确认标记，不创建网络隔离。PDF 夹具生成和仅恢复版诊断仍可无此标记运行。`compare-webview-cookie.py` 的双 JAR 模式还须显式选择，且禁止覆盖已有报告；未在本机用原 JAR 实跑这批保护。
 - 2026-09-28 与 2026-09-29 使用真实 Chrome 表单对当前线上原版完成登录；后一次退出旧会话再登录，读取到 169 本书；见[线上登录核验](PRODUCTION-CHROME-LOGIN-2026-09-28.md)。这仅证实现部署的 Chrome 路径在这两次测试成功，Edge 与本候选的线上 UI 登录仍未验证。
 - 2026-09-29 后续在仅回环网卡的 Linux 网络命名空间里实际运行本地原始 JAR 与当前恢复 JAR，对同一合成 `/render.html` 夹具完成四次 Cookie／`js_source` 差分；原 JAR 与恢复版的搜索状态及脚本字段相同，恢复版的 Cookie 回放是有意差异。该[原始证据与复现说明](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md)补强了上面的较早历史观测，但夹具不执行 JavaScript，也不代表原生产远程 WebView；不能据此关闭真实书源三方差分或发布门槛。
+- 同日新增显式 `--exercise-post` 的第 5 次合成搜索，原 JAR 与恢复版均把 `POST`、`q=post`、合成请求头和 `document.title` 脚本字段传给 `/render.html`，搜索均成功；[新原始 JSON 与限制](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加post-请求形态实测)已入库。夹具没有向目标站实际发 POST，故不能替代旧服务或内置浏览器的真正网络请求验收。
 - 本机缺少完整 Linux Camoufox 环境；hosted image 作业已确认真实浏览器与受限容器启动、合成请求和资源预算，但真实书源超时、生产负载、并发资源预算和 ARM64 尚未验收。
 - GitHub 托管 runner 当前将旧 Node.js 20 action 强制运行于 Node.js 24，并提示 `setup-java@v4` 维护期结束。现有门禁通过，但后续应升级并锁定新版本 action，避免未来平台迁移导致 CI 失效。
 - 单页正文 UTF-8 超过 4 MiB 会显式失败；这是一条安全/内存预算限制，可能影响超大章节或页面，需要用真实书源样本验证后决定是否调整。不能静默截断正文。

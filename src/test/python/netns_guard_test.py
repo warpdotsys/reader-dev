@@ -20,6 +20,7 @@ class NetnsGuardTest(unittest.TestCase):
                 "--original", str(SCRIPT),
                 "--restored", str(SCRIPT),
                 "--report", str(report),
+                "--exercise-post",
             ], capture_output=True, text=True, timeout=10, check=False)
             self.assertNotEqual(0, result.returncode)
             self.assertIn("Refusing to start JARs", result.stderr)
