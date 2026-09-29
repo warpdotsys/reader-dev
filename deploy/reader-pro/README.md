@@ -99,20 +99,21 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -PreaderWebUi=vue3 clean test bootJ
 Cookie 用户命名空间和 `sourceRegex` 资源捕获测试，再构建镜像并在隔离数据目录下运行
 合成书源搜索及 Cookie 回归；生产部署仍需另行验证和发布。
 
-已知限制：Camoufox 仍处于候选接入阶段。本机 Windows 隔离运行时已用固定浏览器验证
-GET/POST、脚本子资源、Cookie 回写与 `sourceRegex` 捕获，并完成 Gradle/JAR 构建；
-但 Linux 容器构建和镜像内真实渲染尚未通过 GitHub 托管 runner 验收，不能把旧 Chromium
-runner 或 Windows 结果视为生产镜像验收。尚未完成原 JAR 与远程
+已知限制：Camoufox 仍处于候选接入阶段。[207711f6 的 GitHub 托管作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)
+已通过 Linux 真实 Camoufox 合约、无 apt 单镜像构建及受限容器内四账号合成书源烟测；
+未压缩镜像约 3.93 GiB，短时 cgroup 内存峰值约 737 MiB。该结果不是生产镜像发布或
+真实站点容量承诺；中文字体覆盖的单独门禁仍须按最新提交复核。尚未完成原 JAR 与远程
 WebView 的完整语义差分、真实书源差分、ARM64、生产网络隔离、长期并发与资源预算验证。
 HTTP 和 SOCKS4/5 上游代理由本地出口代理支持，并有固定 IP、认证和凭据隔离单元测试；
 尚未用真实第三方代理或真实书源验证兼容率。
 
 GitHub runner [36131976893](https://github.com/warpdotsys/reader-dev/actions/runs/36131976893)
 记录的是旧 Chromium 实现的功能基线：重定向内网拦截、JS 子资源、分块 SSE、GET/POST 与
-Cookie 隔离，以及单个 Reader 镜像内的合成书源烟测。Camoufox 的对应验证会由新的
-`browser-image.yml` job 重新执行。应用层出口代理不能替代主机或容器防火墙；公网不可信
+Cookie 隔离，以及单个 Reader 镜像内的合成书源烟测。Camoufox 的对应候选验证见上述
+`browser-image.yml` 作业；二者都不等于原生产远程 WebView 三方差分。应用层出口代理不能替代主机或容器防火墙；公网不可信
 书源部署仍应在网络层拦截云元数据、loopback、RFC1918 与 IPv6 ULA。workflow 的 loopback
 烟测显式启用了 `READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true`，只用于固定合成夹具，
 不应照搬到不可信书源可写入的生产实例。若后续兼容性回归要求回退，可在同一完整镜像中设置
-`READER_APP_WEBVIEWRENDERER=remote`。不要在没有数据备份与正式发布验证的情况下直接替换
+`READER_APP_WEBVIEWRENDERER=remote`，但只有原远程 WebView 服务实际可用时才可采用。
+不要在没有数据备份与正式发布验证的情况下直接替换
 生产容器或挂载生产 `storage/data`。
