@@ -11,8 +11,8 @@ COPY apt-sources.list /etc/apt/sources.list
 
 RUN rm -rf /etc/apt/sources.list.d \
     && mkdir -p /etc/apt/sources.list.d \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl fontconfig fonts-noto-cjk tini python3 python3-venv \
+    && apt-get -o Acquire::Retries=3 update \
+    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends ca-certificates curl fontconfig fonts-noto-cjk tini python3 python3-venv \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 reader \
     && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin reader \
