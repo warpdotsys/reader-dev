@@ -27,6 +27,20 @@ worker = load_worker()
 
 
 class WorkerCookieProtocolTest(unittest.TestCase):
+    def test_non_http_only_response_creation_cannot_override_script_deletion(self):
+        public = worker.parse_set_cookie(
+            "scripted=renewed; Path=/", "http://books.example.test/page"
+        )
+        hidden = worker.parse_set_cookie(
+            "hidden=keep; Path=/; HttpOnly", "http://books.example.test/page"
+        )
+        deleted = worker.parse_set_cookie(
+            "scripted=; Path=/; Max-Age=0", "http://books.example.test/page"
+        )
+        self.assertFalse(worker.response_cookie_needs_fallback(public))
+        self.assertTrue(worker.response_cookie_needs_fallback(hidden))
+        self.assertTrue(worker.response_cookie_needs_fallback(deleted))
+
     def test_domain_delete_fallback_is_forwarded_but_domain_creation_stays_browser_only(self):
         deleted = worker.parse_set_cookie(
             "sid=gone; Domain=example.test; Path=/; Max-Age=0",

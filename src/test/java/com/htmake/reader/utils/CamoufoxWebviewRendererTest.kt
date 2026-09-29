@@ -107,6 +107,19 @@ class CamoufoxWebviewRendererTest {
                     exchange.responseHeaders.add("Set-Cookie", "hidden=keep; Path=/; HttpOnly")
                     respond(exchange, "<html><body>renewed</body></html>", "text/html; charset=utf-8")
                 }
+                "/page-script-delete" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=renewed; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "fresh=received; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "hidden=keep; Path=/; HttpOnly")
+                    respond(exchange,
+                        "<html><body><script>" +
+                            "document.cookie='scripted=; Max-Age=0; Path=/';" +
+                            "document.cookie='fresh=; Max-Age=0; Path=/';" +
+                            "document.cookie='hidden=; Max-Age=0; Path=/';" +
+                            "document.body.dataset.cookieScript='ran';" +
+                            "</script></body></html>",
+                        "text/html; charset=utf-8")
+                }
                 "/scoped/resource-page" -> respond(
                     exchange,
                     "<html><body><div id='main-cookie'>$cookie</div><script src='/unscoped-probe'></script></body></html>",
@@ -218,6 +231,27 @@ class CamoufoxWebviewRendererTest {
             next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
         assertTrue("HttpOnly Cookie was lost on the next request: ${next.body}",
             next.body?.contains("hidden=keep") == true)
+    }
+
+    @Test
+    fun pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies() = runBlocking {
+        val user = "page-js-delete"
+        renderer.render(request("/scripted-seed", user))
+        assertEquals("original", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "scripted" }.value)
+
+        val page = renderer.render(request("/page-script-delete", user))
+        assertTrue("The inline deletion script did not run: ${page.body}",
+            page.body?.contains("data-cookie-script=\"ran\"") == true)
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        assertFalse("The response fallback resurrected an inline-deleted Cookie: $stored",
+            stored.any { it.name == "scripted" || it.name == "fresh" })
+        assertEquals("An inline script revoked HttpOnly: $stored", "keep",
+            stored.single { it.name == "hidden" }.value)
+        val next = renderer.render(request("/echo", user))
+        assertFalse("An inline-deleted Cookie was sent later: ${next.body}",
+            next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
+        assertTrue("HttpOnly Cookie was lost: ${next.body}", next.body?.contains("hidden=keep") == true)
     }
 
     @Test

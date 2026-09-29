@@ -196,6 +196,11 @@ def cookie_identity(cookie):
     return "\0".join((cookie["name"], cookie["domain"], cookie["path"]))
 
 
+def response_cookie_needs_fallback(cookie):
+    """Never recreate a script-deleted non-HttpOnly cookie from response headers."""
+    return cookie["deleted"] or (cookie["hostOnly"] and cookie["httpOnly"])
+
+
 def request_matches_cookie(cookie, request_url):
     request = urlsplit(request_url)
     host = normalized_domain(request.hostname)
@@ -282,12 +287,12 @@ def cookie_changed_from_initial(cookie, initial_cookies, response_seen):
     return initial_cookies.get(identity) != cookie
 
 
-def missing_initial_cookie_tombstones(initial_visible, final_visible, response_seen):
+def missing_initial_cookie_tombstones(initial_visible, final_visible, response_fallbacks):
     """Propagate JavaScript/expiry deletions without guessing about unseen cookies."""
     return {
         identity: bounded_cookie(dict(cookie, value="", expires=0, deleted=True))
         for identity, cookie in initial_visible.items()
-        if identity not in final_visible and identity not in response_seen
+        if identity not in final_visible and identity not in response_fallbacks
     }
 
 
@@ -378,16 +383,13 @@ def render(payload):
                             parsed = parse_set_cookie(set_cookie, response.url)
                             if parsed:
                                 response_seen.add(cookie_identity(parsed))
-                            # Domain cookies require a public-suffix and browser
-                            # acceptance decision. Do not emulate that security
-                            # boundary in a fallback parser: context.cookies() is
-                            # authoritative for them. Host-only records can safely
-                            # bridge a Camoufox snapshot race (notably HttpOnly).
-                            # A real browser snapshot is authoritative for Domain
-                            # cookie creation (including public-suffix checks). A
-                            # deletion, however, must cross the snapshot race so it
-                            # can revoke a previously persisted same-domain record.
-                            if parsed and (parsed["hostOnly"] or parsed["deleted"]):
+                            # A browser snapshot is authoritative for non-HttpOnly
+                            # creations: page scripts may have removed a cookie
+                            # before navigation completes. Only host-only HttpOnly
+                            # creations need the Camoufox snapshot-race fallback.
+                            # Explicit deletion headers must always cross the race,
+                            # including Domain-scoped deletions.
+                            if parsed and response_cookie_needs_fallback(parsed):
                                 if len(response_cookies) >= MAX_COOKIES and cookie_identity(parsed) not in response_cookies:
                                     raise CookieLimitExceeded()
                                 response_cookies[cookie_identity(parsed)] = parsed
@@ -433,10 +435,9 @@ def render(payload):
                     page.set_content(html, wait_until="domcontentloaded", timeout=timeout_ms)
 
                 source = payload.get("javaScript")
-                # A source rule may delete a non-HttpOnly cookie received by this
-                # very navigation. Capture the browser-accepted state before the
-                # rule runs: the earlier pre-navigation snapshot cannot observe
-                # such a cookie, while the Set-Cookie fallback would resurrect it.
+                # A source rule may delete a non-HttpOnly cookie created during
+                # navigation. Capture browser-accepted state before the rule runs:
+                # the pre-navigation snapshot cannot observe that cookie.
                 before_source_script = {}
                 if source and state["matched_url"] is None:
                     for item in context.cookies():
@@ -493,7 +494,7 @@ def render(payload):
                         raise CookieLimitExceeded()
                     cookie_values[cookie_identity(cookie)] = cookie
                 cookie_values.update(missing_initial_cookie_tombstones(
-                    initial_visible, final_visible, response_seen
+                    initial_visible, final_visible, response_cookies
                 ))
                 cookie_values.update(response_cookies)
                 # An explicit source script's observed deletion wins over the
