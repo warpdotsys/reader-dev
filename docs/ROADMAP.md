@@ -17,6 +17,8 @@
 - **已排除一条错误对照**：公共镜像站的 3.2.14 标签并非本地原 JAR 的相同字节，大小和 SHA-256 均不同；不能用它补齐旧服务的三方差分。见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)。
 - **旧实现参考（不等于生产实例）**：固定摘要 `remote-webview:3.2.0` 在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上完成合成 GET/POST、公开目录，以及脚本返回字符串、对象、数组、数字的探针。最初无返回值的脚本探针不符合该实现的接口约定，不能作为故障证据。见[旧远程 WebView 参考记录](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。原 JAR／旧参考／Camoufox 尚未同条件贯通。
 
+**2026-09-29 追加**：当前候选 `e128bcb8` 的 Java/Kotlin、Vue 3 与完整单镜像三道托管门禁均通过；[同一次手动配对运行](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)对相同公开 URL 得到旧参考镜像 DOM 计数 10、内置 Camoufox 经 Reader 搜索解析 10，采样相隔 433.381 秒。它不是原 JAR 或原生产实例对照，不能抵消上面的三方与真实登录书源未验收项；详见[公开实站记录](REAL-SOURCE-DIFF-2026-09-28.md)。
+
 ## 近期主线（2026-09-26 调整）
 
 1. **内置浏览器**：先以固定 WebView 书源样本比较原 JAR、现有远程服务和本地候选引擎，再做单容器 PoC、进程隔离和资源预算。目标是无需另行部署 `remote-webview`；在实测达标前保留远程实现和回滚路径。下文的候选表不是选型结论。

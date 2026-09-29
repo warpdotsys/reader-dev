@@ -29,6 +29,10 @@ python -B scripts/compare-real-public-explore.py
 
 实站步骤是显式手动选项；普通 CI 仍运行确定性的合成书源，以免外部站点临时停机被误判为源码回归。站点列表会随时间变化，不能把两次不同环境的结果摘要视为严格字节差分；本节证明的是容器内公开实站的正向功能，而不是原 JAR 对 Camoufox 的等价性。
 
+## 2026-09-29 同一次托管运行的双侧公开页观测
+
+[作业 36529322389](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)在同一提交 `e128bcb8` 上并行运行固定旧远程 WebView **参考镜像**与完整 Reader/Camoufox 镜像，使用相同的无凭据公开目录 URL。参考镜像直接渲染 HTTP 200，另一次页面内 JavaScript 选择器读到 **10** 个书目 DOM 节点；Reader 在 2 GiB 内存、256 PID、2 CPU 限制的单容器中，以 `webView=true` 测试书源搜索返回 HTTP 200、`isSuccess=true`、`errorMsg=""` 和 **10** 本书，书名/URL 投影 SHA-256 为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`。比较制品记录两次观测相隔 433.381 秒，`countEqual=true`，但明确标记 `fullResponseParityProven=false`、`originalJarCompared=false`、`referenceProvenProduction=false`。站点可变、请求阶段不同、旧参考镜像并非已证实的原生产实例；数量一致仅是有限的兼容线索，不是三方等价证明。作业只上传无正文、凭据及 Cookie 值的摘要。
+
 ## 尚未验证
 
 - 原 JAR／恢复版的一致性样本是公开静态目录的真实 HTTP/规则解析，未启用 `webView`；另一个容器内样本启用了内置 Camoufox，但没有同条件运行原 JAR 和旧远程 WebView。两项证据不能拼接成三方等价，且站点本身不是依赖 JavaScript 或登录态的样本。
