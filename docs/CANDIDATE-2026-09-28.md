@@ -38,6 +38,7 @@
 
 ## 已知问题与尚未验证
 
+- 当前单镜像体积偏大：`51a91cc9` 作业测得未压缩镜像约 5.23 GiB。该值不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；后续如更换更小的基础镜像，仍须重跑真实 Camoufox、字体和完整镜像烟测，不能仅凭体积下降验收。
 - 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。浏览器内 JavaScript 主动删除既有 Cookie、复杂 Set-Cookie 日期/引号与跨站 SameSite 行为仍缺少完整端到端覆盖；JavaScript 删除目前只有快照协议单测。
 - 公共镜像站的 `hectorqin/reader:3.2.14` 中 JAR 已在 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36418763589)与本地原件做大小和 SHA-256 核对，**不一致**；不得把它冒充原 JAR 来完成三方差分。官方 Docker Hub 的同名 Reader 标签当前返回 404；旧远程 WebView 3.2.0 镜像可获取，但其是否为原生产实例仍未证实。证据见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)。
 - 固定摘要的旧远程 WebView 参考镜像在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上通过合成 GET、POST、公开目录以及脚本返回字符串、对象、数组和数字的探针。首次脚本探针因只有页面副作用而没有返回值，走了旧实现的空值重试分支；该超时不是已证实的服务故障。参考响应摘要、Cookie 与证据边界见[旧服务参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。Camoufox 曾把对象/数组调用 `toString()`，与已实测的参考 JSON 格式不同；候选源码已针对这一差异修改并通过上述真实浏览器和完整镜像门禁。不能把参考结果写成原 JAR 三方兼容通过。
