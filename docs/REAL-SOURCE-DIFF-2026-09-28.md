@@ -1,6 +1,6 @@
 # 公开真实书源首轮差分（2026-09-28）
 
-执行命令：
+历史执行命令（**不要在当前 Windows 主机上照抄重跑**）：原 JAR 的 Vert.x 监听没有采用恢复版的回环绑定参数，而测试所用 JDK 11 可被有效入站规则放行到 Private/Public 网络的任意 TCP 端口；此前本报告的“两个进程隔离工作目录”不等于网络入站隔离。新原 JAR 差分须先建立独立网络命名空间或明确阻断入站；本轮只读核查未改防火墙，也没有重新运行原 JAR。
 
 ```powershell
 $env:JAVA_HOME='C:\Users\chong\Documents\Codex\2026-09-16\g-i-t\work\reader-pro-restored\.tools\jdk-11.0.8'

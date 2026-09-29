@@ -1,6 +1,8 @@
-"""Loopback-only WebView Cookie differential for the original and restored JARs.
+"""WebView Cookie differential using disposable accounts and a loopback fixture.
 
-No production storage, third-party site, browser binary or real credentials are used.
+The archived JAR uses Vert.x's port-only listen call; passing bindAddress does
+not make it loopback-only. Run that JAR only inside separately verified network
+isolation. The safe mode launches only the restored JAR.
 """
 
 import argparse
@@ -216,11 +218,18 @@ def main():
                         default=ROOT / "reference/original/reader-pro-3.2.14.original.jar")
     parser.add_argument("--restored", type=Path,
                         default=ROOT / "build/libs/reader-4.0.7.jar")
-    parser.add_argument("--report", type=Path,
-                        default=ROOT / "reports/webview-cookie-diff-latest.json")
+    parser.add_argument("--report", type=Path, required=True,
+                        help="New report path; existing files are never overwritten")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--restored-only", action="store_true",
+                      help="Do not launch the original JAR on this host")
+    mode.add_argument("--original-network-isolated", action="store_true",
+                      help="Run both JARs only after independently verifying inbound isolation")
     parser.add_argument("--exercise-script", action="store_true",
                         help="Also verify a synthetic webJs rule is sent as js_source")
     args = parser.parse_args()
+    if args.report.exists():
+        parser.error(f"Report already exists; choose a new path: {args.report}")
     for path in (args.java, args.original, args.restored):
         if not path.is_file():
             parser.error(f"Required file not found: {path}")
@@ -232,9 +241,11 @@ def main():
     try:
         with tempfile.TemporaryDirectory(prefix="reader-webview-diff-") as directory:
             root = Path(directory)
-            fixture.reset()
-            original = run_jar(args.java, args.original, root / "original",
-                               free_port(), fixture_base, fixture, args.exercise_script)
+            original = None
+            if args.original_network_isolated:
+                fixture.reset()
+                original = run_jar(args.java, args.original, root / "original",
+                                   free_port(), fixture_base, fixture, args.exercise_script)
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture, args.exercise_script)
@@ -248,6 +259,7 @@ def main():
     expected_scripts = [None, None, None] + (["document.title"] if args.exercise_script else [])
     report = {
         "originalJarSha256": sha256(args.original),
+        "originalExecuted": original is not None,
         "restoredJarSha256": sha256(args.restored),
         "original": original,
         "restored": restored,
@@ -258,16 +270,21 @@ def main():
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
-    print(f"Original render Cookie sequence: {original['renderCookieHeaders']}")
+    if original is not None:
+        print(f"Original render Cookie sequence: {original['renderCookieHeaders']}")
+    else:
+        print("Original JAR not executed; recorded original expectations are not a current observation")
     print(f"Restored render Cookie sequence: {restored['renderCookieHeaders']}")
-    print(f"Original render script sequence: {original['renderScriptSources']}")
+    if original is not None:
+        print(f"Original render script sequence: {original['renderScriptSources']}")
     print(f"Restored render script sequence: {restored['renderScriptSources']}")
     print(f"Report: {args.report}")
-    if original["renderCookieHeaders"] != expected_original or \
-            restored["renderCookieHeaders"] != expected_restored or \
-            original["searches"] != restored["searches"] or \
-            original["renderScriptSources"] != expected_scripts or \
-            restored["renderScriptSources"] != expected_scripts:
+    if restored["renderCookieHeaders"] != expected_restored or \
+            restored["renderScriptSources"] != expected_scripts or \
+            (original is not None and (
+                original["renderCookieHeaders"] != expected_original or
+                original["searches"] != restored["searches"] or
+                original["renderScriptSources"] != expected_scripts)):
         raise RuntimeError("Unreviewed WebView Cookie differential")
 
 

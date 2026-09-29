@@ -89,6 +89,11 @@ if (!browserWorkflow.includes('fc-list :lang=zh family')) {
   throw new Error('browser image smoke test must verify CJK font coverage')
 }
 const ciWorkflow = read('.github/workflows/ci.yml')
+for (const [name, content] of [['release', workflow], ['browser image', browserWorkflow], ['CI', ciWorkflow]]) {
+  if (!content.includes("unittest discover -s src/test/python -p '*_test.py'")) {
+    throw new Error(`${name} workflow must execute browser and differential CLI safety tests`)
+  }
+}
 const vue3Workflow = read('.github/workflows/vue3-preview.yml')
 if (!vue3Workflow.includes('workflow_call:') ||
     !workflow.includes('uses: ./.github/workflows/vue3-preview.yml') ||

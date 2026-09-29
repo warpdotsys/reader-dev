@@ -38,8 +38,8 @@ jobs:
         run: |
           node --check src/main/resources/simple-web/assets/js/context-path-20260923.js
           node scripts/test-simple-web-context-path.js
-      - name: Verify browser worker protocol without a browser download
-        run: python3 -m unittest discover -s src/test/python -p 'camoufox_worker_test.py'
+      - name: Verify browser protocol and differential CLI safety without a browser download
+        run: python3 -m unittest discover -s src/test/python -p '*_test.py'
       - name: Build and test
         run: |
           npm ci --prefix web-vue3

@@ -121,7 +121,7 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          python3 -m unittest discover -s src/test/python -p 'camoufox_worker_test.py'
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
           npm --prefix web-vue3 test
           npm --prefix web-vue3 run build
           ./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon --stacktrace

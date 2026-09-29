@@ -18,6 +18,7 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
@@ -41,6 +42,7 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/compare_webview_cookie_safety_test.py'
   pull_request:
     branches: [legacy]
     paths:
@@ -58,6 +60,7 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/smoke-public-webview.py'
+      - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
@@ -81,6 +84,7 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/compare_webview_cookie_safety_test.py'
   workflow_dispatch:
     inputs:
       real_public_source:
@@ -204,7 +208,7 @@ jobs:
           cache-dependency-path: web-vue3/package-lock.json
       - name: Test and build the full JAR
         run: |
-          python3 -m unittest discover -s src/test/python -p 'camoufox_worker_test.py'
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
           npm ci --prefix web-vue3
           npm run build --prefix web-vue3
           npm test --prefix web-vue3
