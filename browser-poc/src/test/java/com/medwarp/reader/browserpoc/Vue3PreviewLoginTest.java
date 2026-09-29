@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class Vue3PreviewLoginTest {
     @Test
-    public void registerReloadAndLoadEmptyBookshelf() {
+    public void registerLogoutLoginReloadAndLoadEmptyBookshelf() {
         String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
         String executable = System.getProperty("browser.executable", "");
         Assume.assumeTrue(previewUrl != null && !previewUrl.isEmpty()
@@ -49,6 +49,20 @@ public class Vue3PreviewLoginTest {
                 assertEquals(username, page.evaluate("localStorage.getItem('reader_username')"));
                 String token = (String) page.evaluate("localStorage.getItem('reader_access_token')");
                 assertTrue("Login token must be namespaced to this account", token.startsWith(username + ":"));
+
+                // Registration's automatic sign-in is not the existing-user
+                // login journey. Exercise the actual form after logging out.
+                page.locator(".logout-btn").click();
+                page.locator(".login-page").waitFor();
+                assertEquals(null, page.evaluate("localStorage.getItem('reader_access_token')"));
+                page.locator("input[autocomplete=username]").fill(username);
+                page.locator("input[autocomplete=current-password]").fill("PreviewProbe-2026");
+                page.locator(".submit-btn").click();
+                page.locator(".bookshelf-page").waitFor();
+                assertEquals(username, page.evaluate("localStorage.getItem('reader_username')"));
+                String loginToken = (String) page.evaluate("localStorage.getItem('reader_access_token')");
+                assertTrue("Existing-user login token must be namespaced to this account",
+                        loginToken.startsWith(username + ":"));
 
                 Response shelf = page.waitForResponse(
                         response -> response.url().contains("/reader3/getBookshelf"),
