@@ -181,6 +181,11 @@ jobs:
                 | jq -e --arg version "$version" --arg revision "$GITHUB_SHA" \
                   '.version == $version and .buildRevision == $revision' >/dev/null
               docker exec reader-pro-camoufox-smoke python -m camoufox version
+              docker exec reader-pro-camoufox-smoke sh -ec '
+                family=$(fc-list :lang=zh family | sed -n "1p")
+                test -n "$family"
+                printf "CJK font family: %s\n" "$family"
+              '
               python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
               exit 0
             fi

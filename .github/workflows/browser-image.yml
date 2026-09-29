@@ -313,6 +313,11 @@ jobs:
           grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18890([[:space:]]|$)' \
             "$RUNNER_TEMP/reader-browser-listener.txt"
           docker exec reader-browser-smoke python -m camoufox version
+          docker exec reader-browser-smoke sh -ec '
+            family=$(fc-list :lang=zh family | sed -n "1p")
+            test -n "$family"
+            printf "CJK font family: %s\n" "$family"
+          '
           python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
           if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
             python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890

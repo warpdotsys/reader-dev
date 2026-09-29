@@ -41,9 +41,11 @@
 
 `c11e395b` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36511744634)和 [Vue 3 Chromium 全旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36511744767)通过，后者包括新增的已有账号重新登录；但 [完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36511744723)再次因同一 Ubuntu 快照站对全部索引返回 500/502 而失败。`Acquire::Retries=3` 不能解决该持续外部故障。下一候选改用已核验 OCI 摘要的 Playwright Python Jammy 基础镜像，其已有 Python、浏览器及系统依赖；叠加固定 JRE 11 与哈希锁定的 Camoufox wheels，构建时不再调用 apt。该改动会改变镜像组成与体积，须重新完成完整镜像、真实 Camoufox、字体和受限容器烟测；在新作业成功前不能援引旧镜像的大小与峰值作为新镜像结论。
 
+`207711f6` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36513001178)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36513001195)和[完整单镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)均通过。后者在固定 Playwright Python OCI 索引、固定 JRE 11、哈希锁定 wheels 和固定 Camoufox 浏览器资产下，无 apt 构建成功；镜像内 Python/Camoufox 能启动，四个独立账号并发搜索各返回一本书。`docker image inspect .Size` 为 **4,224,352,971 字节**（约 3.93 GiB，未压缩），比上一成功候选少 1,387,641,532 字节（约 24.7%）；2 GiB/256 PID/2 CPU 限制下的短时 cgroup `memory.peak` 为 **772,886,528 字节**（约 737 MiB）、`pids.peak` 为 **178**。镜像层诊断显示最大两层约 1.95 GB 与 1.28 GB，仍需后续分析压缩流量和生产磁盘共存空间。该作业未单独校验中文字体覆盖，也未运行真实需登录书源或长时间负载；不能将合成成功扩展成这些验收通过。
+
 ## 已知问题与尚未验证
 
-- 当前单镜像体积偏大：`51a91cc9` 作业测得未压缩镜像约 5.23 GiB。该值不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；后续如更换更小的基础镜像，仍须重跑真实 Camoufox、字体和完整镜像烟测，不能仅凭体积下降验收。
+- 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
 - 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。浏览器内 JavaScript 主动删除既有 Cookie、复杂 Set-Cookie 日期/引号与跨站 SameSite 行为仍缺少完整端到端覆盖；JavaScript 删除目前只有快照协议单测。
 - 公共镜像站的 `hectorqin/reader:3.2.14` 中 JAR 已在 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36418763589)与本地原件做大小和 SHA-256 核对，**不一致**；不得把它冒充原 JAR 来完成三方差分。官方 Docker Hub 的同名 Reader 标签当前返回 404；旧远程 WebView 3.2.0 镜像可获取，但其是否为原生产实例仍未证实。证据见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)。
 - 固定摘要的旧远程 WebView 参考镜像在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上通过合成 GET、POST、公开目录以及脚本返回字符串、对象、数组和数字的探针。首次脚本探针因只有页面副作用而没有返回值，走了旧实现的空值重试分支；该超时不是已证实的服务故障。参考响应摘要、Cookie 与证据边界见[旧服务参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。Camoufox 曾把对象/数组调用 `toString()`，与已实测的参考 JSON 格式不同；候选源码已针对这一差异修改并通过上述真实浏览器和完整镜像门禁。不能把参考结果写成原 JAR 三方兼容通过。

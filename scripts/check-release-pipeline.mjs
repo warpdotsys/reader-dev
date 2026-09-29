@@ -28,6 +28,7 @@ for (const token of [
   'StrictHostKeyChecking=yes', 'snapshot_ready=false', 'snapshot_ready=true',
   "grep -Eq '^##[[:space:]]+已知问题'", 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',
   'reader-anonymous-docker-config',
+  'fc-list :lang=zh family',
 ]) {
   if (!workflow.includes(token)) throw new Error(`release workflow missing required token: ${token}`)
 }
@@ -84,6 +85,9 @@ for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_PYTHON_IMAGE']) {
   }
 }
 const browserWorkflow = read('.github/workflows/browser-image.yml')
+if (!browserWorkflow.includes('fc-list :lang=zh family')) {
+  throw new Error('browser image smoke test must verify CJK font coverage')
+}
 const ciWorkflow = read('.github/workflows/ci.yml')
 const vue3Workflow = read('.github/workflows/vue3-preview.yml')
 if (!vue3Workflow.includes('workflow_call:') ||
