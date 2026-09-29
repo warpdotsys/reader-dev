@@ -19,6 +19,7 @@ import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -169,6 +170,33 @@ class CamoufoxWebviewRendererTest {
         val result = renderer.render(request("/resource-page", "reader", sourceRegex = ".*/media$"))
         assertEquals("$baseUrl/media", result.body)
         assertEquals(0, mediaHits.get())
+    }
+
+    @Test
+    fun unmatchedSourceRegexTimesOutAndTheNextRenderRecovers() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val started = System.nanoTime()
+            val failure = runCatching {
+                limited.render(request("/resource-page", "timeout-user", sourceRegex = ".*/never$"))
+            }.exceptionOrNull()
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+            assertTrue("An absent resource must time out: $failure", failure is IllegalStateException)
+            assertTrue(
+                "An absent resource returned an unrelated failure: ${failure?.message}",
+                failure?.message?.contains("TimeoutError") == true || failure?.message?.contains("超时") == true
+            )
+            assertTrue("The browser timeout exceeded the bounded parent watchdog: ${elapsedMs}ms", elapsedMs < 30_000)
+
+            // The timeout must not poison the single-render queue before a
+            // subsequent request starts. Process-count checks run in CI separately.
+            val healthy = limited.render(request("/echo", "timeout-user"))
+            assertTrue("A healthy request after timeout failed: ${healthy.body}", healthy.body?.contains("GET|||") == true)
+        } finally {
+            limited.close()
+        }
     }
 
     private fun request(
