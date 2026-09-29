@@ -280,6 +280,10 @@ jobs:
             --build-arg "READER_BUILD_REVISION=$revision" \
             -t reader-browser:smoke deploy/reader-pro
           docker image inspect --format 'Reader image size: {{.Size}} bytes' reader-browser:smoke
+          # Keep a bounded layer breakdown to identify which pinned runtime
+          # contributes most to the image before changing any base image.
+          docker history --human=false --format '{{.Size}} {{.CreatedBy}}' reader-browser:smoke \
+            | sort -nr | sed -n '1,8p'
       - name: Run Reader API and WebView fixture inside the image
         shell: bash
         run: |
