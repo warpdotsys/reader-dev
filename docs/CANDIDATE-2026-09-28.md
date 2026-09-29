@@ -49,6 +49,8 @@
 
 同一提交的[固定旧远程 WebView 参考镜像探针](https://github.com/warpdotsys/reader-dev/actions/runs/36515280090)亦通过；合成 GET/POST、脚本返回和已知 `sourceRegex` 监听卡住现象与历史记录一致，公开页 HTTP 200，但 HTML 长度／摘要随日期变化。详见[参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。两个作业并未把本地原始 JAR 接到同一远程服务，更未证明历史镜像与原生产实例同版，故仍未完成原 JAR／远程 WebView／内置浏览器的同条件三方差分。
 
+`b3297dca` 增加真实 Camoufox 的“`sourceRegex` 始终未命中→有界超时→同一渲染器的下一笔正常请求成功”回归。[托管完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36516767733)的保存版 JUnit XML 显示该类 **6 项、0 跳过、0 失败、0 错误**；新增用例约 8.8 秒，随后完整镜像和容器内合成书源烟测也通过。[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36516767734)与 [Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36516767720)均通过。本机没有 Camoufox，虽然新测试已离线编译成功，本机该类 6 项全跳过，不能将其列作本机真实浏览器通过。此用例只覆盖缺失匹配资源的超时与后续恢复，不证明慢站点导航、外部脚本、取消请求或长时间资源回收均已验收。
+
 ## 已知问题与尚未验证
 
 - 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
