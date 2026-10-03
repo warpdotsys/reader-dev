@@ -13,8 +13,10 @@ async (bookUrl) => {
       body: JSON.stringify({
         ...template,
         bookUrl: index === 0 ? bookUrl : bookUrl + '?layout=' + index,
-        name: 'Layout fixture ' + String(index).padStart(2, '0'),
-        author: 'Loopback fixture',
+        // saveBookToShelf identifies existing entries by name + author, not bookUrl.
+        // Preserve the original entry's identity instead of adding a renamed duplicate.
+        name: index === 0 ? template.name : 'Layout fixture ' + String(index).padStart(2, '0'),
+        author: index === 0 ? template.author : 'Loopback fixture',
         intro,
         // The legacy source cache can refresh intro; customIntro remains the user's override.
         customIntro: intro,
