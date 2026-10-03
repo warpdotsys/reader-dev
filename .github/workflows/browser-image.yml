@@ -47,6 +47,7 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
       - 'src/test/python/netns_guard_test.py'
@@ -96,11 +97,18 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
       - 'src/test/python/netns_guard_test.py'
   workflow_dispatch:
     inputs:
+      native_arch:
+        description: 'Native GitHub-hosted architecture for the full Reader image (no QEMU or self-hosted runner)'
+        required: false
+        type: choice
+        options: [amd64, arm64]
+        default: amd64
       real_public_source:
         description: 'Also read one public book-list page through the bundled Camoufox browser'
         required: false
@@ -123,7 +131,7 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
   cancel-in-progress: true
 
 jobs:
@@ -207,10 +215,22 @@ jobs:
   integration:
     if: ${{ inputs.probe_original_jar != true }}
     name: Build and smoke-test the full Reader image
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 45
+    env:
+      READER_CI_NATIVE_ARCH: ${{ inputs.native_arch || 'amd64' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify native hosted runner architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          machine=$(uname -m)
+          case "$READER_CI_NATIVE_ARCH:$RUNNER_ARCH:$machine" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) echo 'Unexpected runner architecture; refusing an emulated or mislabelled acceptance run.' >&2; exit 1 ;;
+          esac
+          printf 'Native hosted runner: expected=%s runner=%s kernel=%s\n' "$READER_CI_NATIVE_ARCH" "$RUNNER_ARCH" "$machine"
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
@@ -249,6 +269,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # ARM hosted images do not necessarily include the desktop/browser
+          # packages present on x64. These are runner-only test dependencies;
+          # the product image still gets its runtime from the locked OCI base.
+          if [[ "$READER_CI_NATIVE_ARCH" == arm64 ]]; then
+            npx --yes playwright@1.63.0 install-deps chromium firefox
+          fi
           chrome="$(command -v google-chrome || command -v chromium || true)"
           if [[ -z "$chrome" ]]; then
             npx --yes playwright@1.63.0 install chromium
@@ -305,6 +331,9 @@ jobs:
             --build-arg "READER_BUILD_REVISION=$revision" \
             -t reader-browser:smoke deploy/reader-pro
           docker image inspect --format 'Reader image size: {{.Size}} bytes' reader-browser:smoke
+          image_arch=$(docker image inspect --format '{{.Architecture}}' reader-browser:smoke)
+          test "$image_arch" = "$READER_CI_NATIVE_ARCH"
+          printf 'Full Reader image architecture: %s\n' "$image_arch"
           # Keep a bounded layer breakdown to identify which pinned runtime
           # contributes most to the image before changing any base image.
           docker history --human=false --format '{{.Size}} {{.CreatedBy}}' reader-browser:smoke \

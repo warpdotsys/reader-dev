@@ -26,6 +26,7 @@ def main():
     report = {
         "scope": "one full Reader image; sequential probes plus four-account burst",
         "kernel": platform.release(),
+        "architecture": platform.machine(),
         "memoryPeakBytes": number("memory.peak"),
         "memoryMaxBytes": number("memory.max"),
         "memoryEvents": counters("memory.events"),
