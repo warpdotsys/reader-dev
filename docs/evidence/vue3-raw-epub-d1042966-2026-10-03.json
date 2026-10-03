@@ -1,0 +1,63 @@
+{
+  "sourceCommit": "d1042966b607f134b3e86ea8dae6fbe6def5e8e2",
+  "pullRequestMergeCommit": "f04b6c1068fea38da4000e77d6465b0dde48dc67",
+  "runs": [
+    {"id": 37104916136, "name": "Java Kotlin CI", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37104916136"},
+    {"id": 37104916139, "name": "Vue 3 preview build", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37104916139"},
+    {"id": 37104916134, "name": "Browser image integration", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37104916134"}
+  ],
+  "executedImageAndUiRunnerLabels": ["ubuntu-24.04"],
+  "coreJUnit": [
+    {"name": "Backup", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 2.55},
+    {"name": "File", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.399},
+    {"name": "Group", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.49},
+    {"name": "LocalReading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 5.393},
+    {"name": "Login", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 2.785},
+    {"name": "Reading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.495},
+    {"name": "ReplaceRule", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.219},
+    {"name": "Search", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.916},
+    {"name": "ShelfLayout", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 7.095},
+    {"name": "Source", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 18.152}
+  ],
+  "additionalUiSteps": {"secureFile": "success", "subdirectoryBuild": "success", "subdirectoryJourney": "success"},
+  "protocolPythonTests": 40,
+  "frontendTests": 142,
+  "releaseSafetyStaticAndNegativeTestsPassed": true,
+  "generatedScreenshots": [
+    {"file": "vue3-local-reading-raw-synthetic.png", "sha256": "4a0625880e267d9fcb5d661acd525cb2e72a8ee2f97ff67ecd74fe70b24c1c2b", "visuallyReviewed": true},
+    {"file": "vue3-local-reading-synthetic.png", "sha256": "f1b8d8cbf9a74416acbb2d6a62fb68ddc69076d8708ed7124b388577ffcac1bc", "visuallyReviewed": false}
+  ],
+  "rawGeneratedJourney": {"ncxDiffersFromSpine": true, "cssAsserted": true, "scriptsRemoved": true, "innerLinkNavigated": true, "refreshAndPreviousChapterAsserted": true, "minimumIframeHeightPx": 320, "textReturnWithoutRefresh": true},
+  "camoufoxJUnit": {"tests": 11, "skipped": 0, "failures": 0, "errors": 0, "seconds": 86.759},
+  "resourceBudget": {
+    "architecture": "x86_64", "cpuPeriod": 100000, "cpuQuota": "200000",
+    "memoryPeakBytes": 764502016, "memoryMaxBytes": 2147483648,
+    "memoryEvents": {"high": 0, "low": 0, "max": 0, "oom": 0, "oom_group_kill": 0, "oom_kill": 0},
+    "pidsCurrent": 37, "pidsPeak": 177, "pidsMax": 256, "pidsEvents": {"max": 0},
+    "swapCurrentBytes": 0, "swapMaxBytes": 1073741824,
+    "scope": "one full Reader image; sequential probes plus four-account burst; not sustained load"
+  },
+  "syntheticImageProbe": {
+    "cookieSequence": ["", "", "session=alpha==", ""],
+    "scriptGet": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+    "post": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1, "body": "q=post", "testHeader": "synthetic"},
+    "fourAccountBurstCounts": [1, 1, 1, 1]
+  },
+  "imageOptionalJobsSkipped": ["Verify archived original JAR provenance", "Probe archived remote WebView reference", "Compare public page observations (not production parity)"],
+  "earlierUiFailure": {"sourceCommit": "891772118ca4cdf33e59847a125e59edfa2ec6e7", "runId": 37104144656, "failedTests": 1, "step": "previous chapter after raw refresh", "exactTimingCauseConfirmed": false, "assertionRemoved": false},
+  "privateBookValidation": {
+    "authorizedBookCount": 1, "sourceBytes": 37809796,
+    "sourceSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+    "rawSample805": {"paragraphs": 64, "visibleCharacters": 3952, "replacementCharacters": 0, "scriptNodes": 0, "refreshMatched": true},
+    "rawSample806": {"paragraphs": 57, "visibleCharacters": 4016, "replacementCharacters": 0, "scriptNodes": 0},
+    "latestLocalViewport": {"height": 566, "width": 852},
+    "returnToTextParagraphs": 66,
+    "opf": {"packageVersion": "2.0", "manifestItems": 1670, "spineItems": 1611, "dcCreatorCount": 0},
+    "sourceShelfUnchangedDuringReadOnlyProbe": true, "productionProgressMatchesPrior": true,
+    "bookBytesUploaded": false, "bookBodyUploaded": false, "privateScreenshotsUploaded": false
+  },
+  "localViewportJarSha256": "b0f6ddec4dd03ea019ca300c071ce968ae27ef81aace2f9f365ad2d9099f15ef",
+  "knownUnverified": ["same-XHTML multi-fragment exact TOC position", "raw iframe inner-scroll restoration", "nested CSS imports", "oversized EPUB resource boundary", "sustained production load", "formal multiarchitecture manifest"],
+  "productionChanged": false,
+  "formalRelease": false
+}
