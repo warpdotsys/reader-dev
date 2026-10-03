@@ -42,15 +42,19 @@ public class Vue3PreviewLocalReadingTest {
         Path txt = Files.createTempFile("synthetic-local-", ".txt");
         Path epub = Files.createTempFile("synthetic-local-", ".epub");
         Path fragments = Files.createTempFile("synthetic-fragments-", ".epub");
+        Path navFragments = Files.createTempFile("synthetic-nav-fragments-", ".epub");
         Files.writeString(txt, "第一章 起点\n" + TXT_TEXT + "\n第二章 终点\n" + TXT_LAST,
                 StandardCharsets.UTF_8);
         writeEpub(epub);
         writeFragmentEpub(fragments);
+        writeNavFragmentEpub(navFragments);
         try (Playwright playwright = Playwright.create(new Playwright.CreateOptions()
                 .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")))) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
                     .setExecutablePath(Path.of(executable)).setHeadless(true));
             try {
+                exportGeneratedFixture(fragments, "generated-ncx-fragments.epub");
+                exportGeneratedFixture(navFragments, "generated-nav-fragments.epub");
                 Page page = browser.newPage();
                 page.setDefaultTimeout(30000);
                 page.navigate(base + "/login");
@@ -73,6 +77,13 @@ public class Vue3PreviewLocalReadingTest {
                 page.locator(".bookshelf-page").waitFor();
                 String fragmentUrl = importBook(page, fragments);
                 verifyFragmentReading(page, base, fragmentUrl);
+                // The NCX journey finishes in raw mode; reset using the real UI.
+                page.locator("button[title^='EPUB 排版模式']").click();
+                page.locator(".reader-content:not(.epub-html)").waitFor();
+                page.navigate(base);
+                page.locator(".bookshelf-page").waitFor();
+                String navUrl = importBook(page, navFragments);
+                verifyNavFragmentReading(page, base, navUrl);
             } finally {
                 browser.close();
             }
@@ -80,6 +91,7 @@ public class Vue3PreviewLocalReadingTest {
             Files.deleteIfExists(txt);
             Files.deleteIfExists(epub);
             Files.deleteIfExists(fragments);
+            Files.deleteIfExists(navFragments);
         }
     }
 
@@ -307,6 +319,109 @@ public class Vue3PreviewLocalReadingTest {
         page.waitForCondition(() -> "false".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
     }
 
+    private static void verifyNavFragmentReading(Page page, String base, String bookUrl) {
+        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        Response toc = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/getChapterList"), () -> page.navigate(reader + "?chapter=0"));
+        assertEquals(200, toc.status());
+        assertEquals("EPUB3 nested navigation still uses the two legacy resource indices",
+                Boolean.TRUE, page.evaluate("raw => { const b=JSON.parse(raw); const d=b.data;"
+                        + "return b.isSuccess === true && d.length === 2"
+                        + " && d[0].index === 0 && d[0].url === 'Text/shared.xhtml'"
+                        + " && d[1].index === 1 && d[1].url === 'Text/later.xhtml'; }", toc.text()));
+        page.getByText("EPUB3 合成首节正文", new Page.GetByTextOptions().setExact(true)).waitFor();
+        page.locator("button[title^='EPUB 排版模式']").click();
+        page.locator(".reader-content.epub-html").waitFor();
+        page.locator("button[title^='EPUB 排版模式']").click();
+        waitRawReady(page);
+        page.locator(".toc-btn").click();
+        assertEquals("Nested nav entries are flattened without duplicates or landmark/NCX entries",
+                3, page.locator(".epub-toc-list button").count());
+        assertFalse(page.locator(".epub-toc-list").innerText().contains("重复目录"));
+        assertFalse(page.locator(".epub-toc-list").innerText().contains("地标不是目录"));
+        assertFalse(page.locator(".epub-toc-list").innerText().contains("旧 NCX 不应显示"));
+        page.locator(".epub-toc-list").getByText("NAV 中文小节",
+                new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).click();
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        assertTrue(page.url().contains("chapter=0"));
+        assertTrue(innerScroll(page) > 1000);
+        page.reload();
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+
+        page.locator(".toc-btn").click();
+        Response loaded;
+        try {
+            loaded = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/getBookContent")
+                && URI.create(response.url()).getQuery().contains("index=1"),
+                () -> page.locator(".epub-toc-list").getByText("NAV 后一文件",
+                        new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).click());
+        } catch (RuntimeException failure) {
+            // Dedicated generated-book account only: do not inspect any personal browser or shelf.
+            Object storedIndex = page.evaluate("async url => { const token=localStorage.getItem('reader_access_token')"
+                    + " || sessionStorage.getItem('reader_access_token');"
+                    + "const r=await fetch('/reader3/getBookshelf?refresh=0&accessToken=' + encodeURIComponent(token || ''));"
+                    + "const b=await r.json(); return b.data.find(book => book.bookUrl === url)?.durChapterIndex ?? null; }", bookUrl);
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                    System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                    "vue3-local-reading-nav-fragments-timeout-synthetic.png")));
+            throw new AssertionError("Generated EPUB3 cross-file content was not requested; page=" + page.url()
+                    + "; storedIndex=" + storedIndex + "; busy=" + page.locator("iframe.epub-frame").getAttribute("aria-busy")
+                    + "; innerScroll=" + innerScroll(page)
+                    + "; frameHeading=" + page.frameLocator("iframe.epub-frame").locator("h2").innerText(), failure);
+        }
+        assertEquals(200, loaded.status());
+        assertTrue(loaded.text().contains("\"isSuccess\":true"));
+        assertTrue(URI.create(loaded.url()).getQuery().contains("epubContent=1"));
+        // Legacy content reads also update the shelf index; do not invent a required extra POST.
+        assertEquals(1, ((Number) page.evaluate("async url => { const token=localStorage.getItem('reader_access_token')"
+                + " || sessionStorage.getItem('reader_access_token');"
+                + "const r=await fetch('/reader3/getBookshelf?refresh=0&accessToken=' + encodeURIComponent(token || ''));"
+                + "const b=await r.json(); return b.data.find(book => book.bookUrl === url).durChapterIndex; }", bookUrl)).intValue());
+        page.waitForCondition(() -> page.url().contains("chapter=1") && page.url().contains("epubAnchor=finale"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='finale']");
+        page.reload();
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='finale']");
+        Response saved = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/saveBookProgress"), () -> page.frameLocator("iframe.epub-frame")
+                .locator("body").evaluate("el => el.ownerDocument.defaultView.scrollBy({top:180,behavior:'instant'})"));
+        assertEquals(200, saved.status());
+        assertTrue(saved.text().contains("\"isSuccess\":true"));
+        assertEquals("Explicit scrolling keeps the old {url,index} transport at the second file",
+                Boolean.TRUE, page.evaluate("raw => { const b=JSON.parse(raw);"
+                        + "return b.index === 1 && Object.keys(b).sort().join(',') === 'index,url'; }",
+                        saved.request().postData()));
+        double savedPosition = innerScroll(page);
+        page.reload();
+        waitRawReady(page);
+        assertEquals(savedPosition, innerScroll(page), 2);
+        page.frameLocator("iframe.epub-frame").getByText("跨文件返回中文小节").click();
+        page.waitForCondition(() -> page.url().contains("chapter=0"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script").count());
+        assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+        assertEquals(0, page.getByText("目录锚点不存在，已回到本页顶部",
+                new Page.GetByTextOptions().setExact(true)).count());
+        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                "vue3-local-reading-nav-fragments-synthetic.png")));
+    }
+
+    /** Opt-in export of these generated fixtures only; never reads a private book. */
+    private static void exportGeneratedFixture(Path fixture, String name) throws Exception {
+        String directory = System.getenv("READER_GENERATED_EPUB_EXPORT_DIR");
+        if (directory == null || directory.isBlank()) return;
+        Path destination = Path.of(directory);
+        Files.createDirectories(destination);
+        Files.copy(fixture, destination.resolve(name)); // Fail instead of overwriting existing evidence.
+    }
+
     private static double innerScroll(Page page) {
         return ((Number) page.frameLocator("iframe.epub-frame").locator("body")
                 .evaluate("el => el.ownerDocument.defaultView.scrollY")).doubleValue();
@@ -345,6 +460,43 @@ public class Vue3PreviewLocalReadingTest {
                     + "<a href='#missing'>不存在锚点的合成链接</a>" + longSyntheticBody()
                     + "<a name='note'>合成旧式命名锚点</a>" + longSyntheticBody()
                     + "<script>/* SCRIPT-ONLY */</script></body></html>");
+        }
+    }
+
+    private static void writeNavFragmentEpub(Path path) throws Exception {
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(path))) {
+            entry(zip, "mimetype", "application/epub+zip");
+            entry(zip, "META-INF/container.xml", "<container><rootfiles><rootfile full-path='OEBPS/book.opf'/></rootfiles></container>");
+            entry(zip, "OEBPS/book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='3.0' unique-identifier='uid'>"
+                    + "<metadata xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:identifier id='uid'>synthetic-nav-fragments</dc:identifier>"
+                    + "<dc:title>合成 EPUB3 导航锚点</dc:title><dc:creator>测试作者</dc:creator></metadata>"
+                    + "<manifest><item id='nav' href='Nav/toc.xhtml' media-type='application/xhtml+xml' properties='nav'/>"
+                    + "<item id='ncx' href='toc.ncx' media-type='application/x-dtbncx+xml'/>"
+                    + "<item id='shared' href='Text/shared.xhtml' media-type='application/xhtml+xml'/>"
+                    + "<item id='later' href='Text/later.xhtml' media-type='application/xhtml+xml'/></manifest>"
+                    + "<spine toc='ncx'><itemref idref='shared'/><itemref idref='later'/></spine></package>");
+            // 'ops' is deliberately an alias for the EPUB namespace, not the literal prefix 'epub'.
+            entry(zip, "OEBPS/Nav/toc.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:ops='http://www.idpf.org/2007/ops'>"
+                    + "<head><title>生成导航</title></head><body><nav ops:type='toc'><ol>"
+                    + "<li><a href='../Text/shared.xhtml#intro'>NAV 首节</a><ol>"
+                    + "<li><a href='../Text/shared.xhtml#%E4%B8%AD%E6%96%87%E7%9B%AE%E6%A0%87'>NAV 中文小节</a></li>"
+                    + "</ol></li><li><a href='../Text/later.xhtml#finale'>NAV 后一文件</a></li>"
+                    + "<li><a href='../Text/shared.xhtml#intro'>重复目录</a></li></ol></nav>"
+                    + "<nav ops:type='landmarks'><ol><li><a href='../Text/shared.xhtml#note'>地标不是目录</a></li></ol></nav>"
+                    + "</body></html>");
+            entry(zip, "OEBPS/toc.ncx", "<ncx xmlns='http://www.daisy.org/z3986/2005/ncx/' version='2005-1'>"
+                    + "<head><meta name='dtb:uid' content='synthetic-nav-fragments'/></head><docTitle><text>生成 EPUB3 导航</text></docTitle>"
+                    + "<navMap><navPoint id='decoy' playOrder='1'><navLabel><text>旧 NCX 不应显示</text></navLabel>"
+                    + "<content src='Text/shared.xhtml#intro'/></navPoint></navMap></ncx>");
+            entry(zip, "OEBPS/Text/shared.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>EPUB3 生成正文</title></head><body>"
+                    + "<h2 id='intro'>NAV 首节</h2><p>EPUB3 合成首节正文</p>" + longSyntheticBody()
+                    + "<h2 id='中文目标'>NAV 中文小节</h2><p>EPUB3 合成中文小节正文</p>"
+                    + "<a href='later.xhtml#finale'>跨文件去后一节</a>" + longSyntheticBody()
+                    + "<a name='note'>生成注记</a><script>/* SCRIPT-ONLY */</script></body></html>");
+            entry(zip, "OEBPS/Text/later.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>EPUB3 后一正文文件</title></head><body>"
+                    + longSyntheticBody() + "<h2 id='finale'>NAV 后一文件</h2><p>EPUB3 合成后一文件正文</p>"
+                    + "<a href='shared.xhtml#%E4%B8%AD%E6%96%87%E7%9B%AE%E6%A0%87'>跨文件返回中文小节</a>"
+                    + longSyntheticBody() + "</body></html>");
         }
     }
 
