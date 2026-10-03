@@ -45,6 +45,13 @@ class AuthorizedStorageNetnsTest(unittest.TestCase):
         self.assertEqual(5, len(probe.BUSINESS_FILES))
         self.assertNotIn("users.json", probe.BUSINESS_FILES)
 
+    def test_json_comparison_preserves_types_and_defaults(self):
+        self.assertFalse(probe.same_json({"enabled": False}, {"enabled": 0}))
+        self.assertFalse(probe.same_json({"enabled": True}, {"enabled": 1}))
+        self.assertFalse(probe.same_json({"value": None}, {"value": ""}))
+        self.assertFalse(probe.same_json({"count": 0}, {"count": 0.0}))
+        self.assertTrue(probe.same_json({"a": 0, "b": False}, {"b": False, "a": 0}))
+
 
 if __name__ == "__main__":
     unittest.main()

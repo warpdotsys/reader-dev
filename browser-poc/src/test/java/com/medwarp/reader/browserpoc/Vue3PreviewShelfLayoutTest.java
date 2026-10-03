@@ -106,7 +106,8 @@ public class Vue3PreviewShelfLayoutTest {
                             card.hover();
                             Locator preview = card.locator(".hover-preview");
                             page.waitForCondition(() -> "visible".equals(preview
-                                    .evaluate("el => getComputedStyle(el).visibility")));
+                                    .evaluate("el => getComputedStyle(el).visibility"))
+                                    && "1".equals(preview.evaluate("el => getComputedStyle(el).opacity")));
                             @SuppressWarnings("unchecked")
                             Map<String, Object> bounds = (Map<String, Object>) preview.evaluate("el => {"
                                     + "const p=el.getBoundingClientRect();"
@@ -122,6 +123,11 @@ public class Vue3PreviewShelfLayoutTest {
                             assertNoHorizontalOverflow(page, "hovered " + scenario);
                         }
                         if (width == 1135 && density == 0) {
+                            // Capture the settled layout, not the previous card's
+                            // fading preview during a legitimate hover transition.
+                            page.waitForCondition(() -> (Boolean) page.evaluate("() => "
+                                    + "[...document.querySelectorAll('.book-card:not(:hover) .hover-preview')]"
+                                    + ".every(el => getComputedStyle(el).opacity === '0')"));
                             Path screenshot = Path.of(System.getenv().getOrDefault("RUNNER_TEMP", "build"))
                                     .resolve("vue3-shelf-layout-1135.png");
                             Files.createDirectories(screenshot.getParent());

@@ -31,9 +31,40 @@ Chrome 控制通道仍返回不可用；随后使用用户已授权的 Codex 内
 
 完整镜像真实 Camoufox 合约为 11 项、0 跳过/失败/错误，85.784 秒；合成脚本/POST、Cookie 删除与回放、四用户请求通过。此原生 amd64 样本内存峰值 870,260,736 字节（约 831 MiB）、PIDs 任务峰值 183，在 2 GiB / 256 PIDs / 2 CPU 限额下 OOM/PIDs 限额事件为 0，最终 swap 为 0。这组容器测试使用合成数据，并没有把真实私有副本送入 runner。
 
+## 后续增量：书架悬浮简介横向溢出
+
+`e30c7314` 将 `.hover-preview` 的最大宽度限制在其所属卡片以内，并允许长文本换行；没有以隐藏浮层或裁掉页面横向内容的方式绕过问题。本机授权副本的文档/可见宽度由 1,147/1,135 px 变为 1,135/1,135 px，小、中、大卡片模式均实测无溢出，书架仍为 169 本。包含章节同步与该布局修复的本机恢复 JAR SHA-256 为 `BA1E3ACB91F04BD6A3A10C7406A76E11CB82C1BF3D41212D22D14BEF6953085C`。
+
+新增合成浏览器回归覆盖 1,135、1,024、768 px 三种窗口宽度 × 三种卡片密度，共九组条件；分别检查隐藏状态、左右边缘卡片 hover、简介文字保留及浮层边界。夹具曾两次失败：第一次等待 15 张卡片超时；加入持久化数量断言后确认实际为 16 本，定位到旧后端按“书名＋作者”识别条目，给原条目改名实际新增一本。`086a647e` 修正夹具身份，不放宽布局断言；另将数据数量与虚拟书架的可见 DOM 数量分开验收。
+
+该提交的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/37097616578)、[Vue 3 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/37097616546)及[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37097616558)全部成功。下载核心 JUnit 为 9 项、0 跳过/失败/错误，布局旅程为 4.614 秒，章节刷新/导出旅程继续通过。实际受测 PR 合并提交为 `86dfd1676496ca3dcdfe50388d12b4da50ba63c6`。完整镜像 Camoufox 11 项无跳过/失败/错误，74.607 秒；内存峰值 900,874,240 字节（约 859 MiB）、PIDs 峰值 180，OOM/限额事件为 0。[独立证据](evidence/vue3-layout-086a647e-2026-10-03.json)保持为该时间点记录，不改写旧报告中的 12 px 发现。
+
+截图复核另发现此托管 Chromium 环境缺少中文字体，汉字显示为方框；这不是上述布局断言的失败，也不是应用字符串被替换字符破坏的证据。工作流增加中文字体安装与 `fc-list :lang=zh` 前置门禁后，`40238467` 的[托管 Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/37098305680)通过：九项核心旅程无跳过/失败/错误，日志实际找到 Noto CJK 字体；下载的同条件合成截图可辨“我的书架”“导入本地书”及中文简介，不再显示全页缺字方框。该[像素复核证据](evidence/vue3-fonts-40238467-2026-10-03.json)只证明此样本，完整发行镜像另有独立 CJK 字体检查。
+
+## 后续增量：原始 JAR 实读同一业务副本
+
+使用 [独立隔离探针](../scripts/compare-authorized-storage-in-netns.py)，在与 PID 1 不同、仅有 `lo`、没有外部接口的 Linux 网络命名空间内，降权到 UID/GID 65534 后依次启动只读原始 3.2.14 JAR 和上述恢复 JAR。每侧只有随机测试账号及临时工作目录，不复制生产账号、密码、令牌或 Cookie。原件 SHA-256 在执行前后均保持 `B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C`。
+
+两侧分别读取书架（禁用刷新）、分组、完整书源和替换规则：169/5/429/27 的数量、HTTP 200、`isSuccess`、`errorMsg`、ReturnData 字段与完整解析数据一致。比较保留 JSON 类型和默认值区别，不把 `false` 与 `0`、`null` 与空字符串混为相同。两边均通过仅 accessToken 读取同一书架、令牌用户前缀、匿名书架拒绝及第二用户空书架检查。五个业务输入、两侧导入的业务文件和原始 JAR 都未因本轮读取改变。安全负向测试确保普通主机调用在读取输入、启动 JAR 之前被拒绝。
+
+本轮输入为此前界面阅读验收后的五文件副本，共 5,954,537 字节，不是最初生产复制瞬间的 5,954,546 字节快照。报告只保存布尔结果和数量，私有 JSON、书目、规则和请求凭据不入库；[汇总证据](evidence/authorized-storage-netns-2026-10-03.json)保留边界。源数据中两份 `ruleSearch`、一份 `ruleBookInfo` 含 U+FFFD，原 JAR 与恢复版返回相同；书源名称、分组、评论和搜索 URL 中未发现该字符。规则可能有意匹配该字符，未确认前不自动修改原数据。
+
+复现要求 Python 3.11+、Linux `unshare`/`ip`、可读 JDK 11 与原件；报告必须是 `/var/tmp` 下新的路径。不得在普通主机直接启动原 JAR：
+
+```bash
+sudo unshare --net --fork python3 scripts/compare-authorized-storage-in-netns.py \
+  --java /absolute/jdk-11/bin/java \
+  --original /absolute/reader-pro-3.2.14.original.jar \
+  --restored /absolute/reader-4.0.7.jar \
+  --business-directory /absolute/authorized-five-file-copy \
+  --report /var/tmp/reader-authorized-storage-NEW.json
+```
+
+此样本没有访问外站、运行 WebView、登录真实书源、读取电子书文件、SSE 或下载；不是完整 storage 导入、生产用户鉴权或所有 429 个书源可用性的证明。
+
 ## 已知问题、尚未验证与回滚
 
-- 桌面书架的悬浮简介可带来轻微横向溢出：实测文档宽 1,147 px、可见宽 1,135 px，越界元素为 `.hover-preview`；本轮尚未修复。
+- 上述桌面悬浮简介溢出已修复并通过九组托管布局条件；不由此宣称所有视口、设备和页面都已验收。
 - 部分封面显示首字占位，未逐项区分上游不可用、源数据旧链接与代理问题。不可把取样文字没有替换字符解释为所有编码问题已解决。
 - 副本中约 60 本属于本地/文件类候选；未复制文件本体及原路径资源，因此本地正文尚未验证，也没有宣称完整 storage 导入成功。
 - 真实业务副本的交互验收使用 Windows JAR 与内部浏览器，不等于完整 Linux 镜像在生产网络中的同条件验收。需登录书源的原 JAR／历史 WebView／内置引擎差分、长期负载、生产出口与升级回滚继续独立验证。

@@ -86,6 +86,13 @@ def success(reply):
     return reply["value"].get("data")
 
 
+def same_json(left, right):
+    # Python equality conflates False/0 and True/1. Preserve JSON value types
+    # (and numeric representation) while ignoring object member ordering.
+    options = {"sort_keys": True, "ensure_ascii": False, "separators": (",", ":")}
+    return json.dumps(left, **options) == json.dumps(right, **options)
+
+
 def run_reader(java, jar, workdir, business, username, password):
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -143,8 +150,8 @@ def run_reader(java, jar, workdir, business, username, password):
                 "accessTokenNamespaced": token.startswith(username + ":"),
                 "tokenOnlyShelfEqual": token_reply["status"] == 200
                     and token_reply["value"].get("isSuccess") is True
-                    and token_reply["value"].get("data")
-                        == replies[READ_ROUTES[0]]["value"].get("data"),
+                    and same_json(token_reply["value"].get("data"),
+                                  replies[READ_ROUTES[0]]["value"].get("data")),
                 "anonymousShelfDenied": anonymous["value"].get("isSuccess") is False
                     and anonymous["value"].get("data") == "NEED_LOGIN",
                 "otherNamespaceEmpty": other_shelf == [],
@@ -170,12 +177,13 @@ def aggregate(left, right):
     return {
         "originalStatus": left["status"], "restoredStatus": right["status"],
         "statusEqual": left["status"] == right["status"],
-        "isSuccessEqual": a.get("isSuccess") == b.get("isSuccess"),
-        "errorMsgEqual": a.get("errorMsg") == b.get("errorMsg"),
+        "isSuccessEqual": same_json(a.get("isSuccess"), b.get("isSuccess")),
+        "errorMsgEqual": same_json(a.get("errorMsg"), b.get("errorMsg")),
         "envelopeFieldsEqual": set(a) == set(b),
         "originalCount": len(da) if isinstance(da, list) else None,
         "restoredCount": len(db) if isinstance(db, list) else None,
-        "dataEqual": da == db,
+        "dataEqual": same_json(da, db),
+        "jsonTypesComparedStrictly": True,
         "replacementCharacterObserved": left["replacementCharacter"] or right["replacementCharacter"],
     }
 
