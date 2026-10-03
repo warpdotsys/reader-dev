@@ -73,14 +73,19 @@ public class Vue3PreviewShelfLayoutTest {
                 page.locator(".submit-btn").click();
                 page.locator(".bookshelf-page").waitFor();
                 String bookUrl = (String) page.evaluate(resource("vue3-reading-setup.js"), fixtureUrl);
-                page.evaluate(resource("vue3-shelf-layout-setup.js"), bookUrl);
+                Number savedBooks = (Number) page.evaluate(resource("vue3-shelf-layout-setup.js"), bookUrl);
+                assertEquals(15, savedBooks.intValue());
                 page.reload();
-                page.waitForCondition(() -> page.locator(".book-card").count() == 15);
+                // A virtualized shelf need not mount all persisted books at once.
+                page.getByText("共 15 本", new Page.GetByTextOptions().setExact(false)).waitFor();
+                page.locator(".book-card").first().waitFor();
 
                 for (int width : new int[]{1135, 1024, 768}) {
                     page.setViewportSize(width, 865);
                     for (int density = 0; density < 3; density++) {
                         page.locator(".view-bar .sort-capsule").nth(density).click();
+                        assertTrue("Requested density must be active", page.locator(".view-bar .sort-capsule")
+                                .nth(density).getAttribute("class").contains("active"));
                         page.evaluate("window.scrollTo(0, 0)");
                         String scenario = "width=" + width + " density=" + density;
                         assertNoHorizontalOverflow(page, "hidden " + scenario);
