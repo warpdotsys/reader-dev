@@ -103,3 +103,34 @@
 两张本轮生成截图均已目视核验，中文、实体、原 CSS 和内链可见，无错误提示；仅合成截图纳入制品。普通 CI 日志明确记录前端 145 项、Python 40 项、发布流程静态检查及 5 项结构/负向测试通过。下载 Camoufox JUnit 11 项、0 跳过/失败/错误，87.026 秒；镜像合成 GET/POST、请求体/测试头、Cookie 删除/回放与四账户请求通过。内存峰值 816,467,968 字节（约 779 MiB），176 PIDs，2 GiB / 256 PIDs / 2 CPU 下限额事件为 0；不是长期并发或生产性能保证。三个历史来源/公开配对可选作业跳过，没有本次三方实站对照或 ARM64 证据。[逐项公开汇总](evidence/vue3-epub-progress-f5e4764f-2026-10-03.json)记录摘要与隐私边界，不借前一提交的绿灯代替。
 
 范围限制：原版像素位置只在同一浏览器本机恢复，不宣称跨设备同步；同一 XHTML 多 TOC fragment 的精确初始落点与嵌套 CSS、超大 EPUB 资源仍未验收。旧本机进度不删除，生产和原件不回写。回滚旧镜像/JAR 后新位置键会被忽略，不能通过删除其他书籍缓存来回滚。
+
+## 同页目录锚点增量（d6655420）
+
+先核实真实契约而非重编号：当前 Java/Kotlin `EpubFile.getChapterList()` 遍历 `allUniqueResources`，URL 使用 `resource.href`。新增生成 EPUB 的 NCX 有两个节点但共用一个 XHTML，实际 `getChapterList` 仅一项，URL `Text/shared.xhtml`；它不是两个后端章节。前两次本机诊断错误假定 `chapter=1` 有效，目标仍在下方 2030.71875 px，原始报告保留；不把错误的测试入口包装成兼容性证据，也没有为了通过测试伪造两个服务端章节。这一新样本尚未在原 JAR 上同条件复验，源码及候选运行观察不等于原 JAR 实证。
+
+随后在仅生成数据的回环服务 18932、固定旧候选 JAR `97cb1306...` 上，用有效 `chapter=0` 重新执行。点击片段链接后等待目标节点失败：JUnit 1 项、0 跳过、1 失败，46.643 秒；完整报告在忽略目录保留。该结果不是原 JAR 的失败，也不证明后续未执行的文件限定链接步骤。已停止这一个归属明确的临时基线进程，保留其测试数据和报告。
+
+源码修复保持后端不变：ZIP 文件路径与百分号解码后的 fragment 分开处理，链接以当前 XHTML 为基准，DOM 属性重写片段链接及文件限定链接，不再丢弃 `#fragment`。只使用书内已存在资源，继续拒绝外连协议、禁止书内脚本，不放宽 file home。目录 XML 惰性解析，原版抽屉补充被资源级目录合并的 NCX 锚点；不重编号章节、不改书架/进度存储格式。书内锚点使用独立 `epubAnchor` query 与本机位置记录，保持既有 `chapter` 和其他 query/hash。旧位置记录可继续读取；同一后端章节的不同锚点不会串用本机位置。
+
+没有位置记录时定位 ID 或旧式 `<a name>`；已有本机位置优先恢复像素。字体有界等待完成后用即时滚动，避免书内 `scroll-behavior:smooth` 让恢复结束后继续动画。不存在的锚点明确显示“目录锚点不存在，已回到本页顶部”；无法映射到现有后端目录的资源链接仍明确提示不能跳转。旧文档事件在切章/重定位后不会继续写新章。
+
+已成功重建：先实际执行 Vue 类型检查与 Vite 生产构建，再封装独立 `build/epub-fragments-compat-candidate/reader-4.0.7.jar`，SHA-256 `9fc21e5b49fbebb23b1f706f206ba86042aad5189b03374cb1363fc140462f5d`。Gradle 的 `verifyVue3UiDist` 只验证 dist 存在，不能代替前端实际构建。JDK 11 / Node 24 的隔离工作副本可依次运行：
+
+```powershell
+cd web-vue3
+npm ci
+npm test
+npm run build
+cd ..
+.\gradlew.bat -PreaderWebUi=vue3 bootJar --no-daemon --max-workers=1
+```
+
+本机前端 150 项、Python 40 项通过，类型检查、静态资源与 JAR 构建成功。本机浏览器 JUnit 1 项、0 跳过/失败/错误，17.341 秒，继续保留 TXT、双 XHTML EPUB 原有全部断言，新增单 XHTML 多锚点 EPUB：API 仅一章、原版补充目录两项、中文编码 ID、片段/文件限定链接、`name` 注记、同页刷新、已有像素优先和缺失锚点提示。整个新样本的后台保存仍为 `{url,index}`，`index=0`，不是伪造新的服务端协议。
+
+computer-use 技能促使在真实可见界面补做回归，仍只使用原授权隔离《黎明之剑》，不将它冒充锚点夹具：最终候选第 806 项 57 段、返回第 805 项 64 段，均内层 0 px、0 U+FFFD/脚本节点，无加载错误或错误锚点提示。只记录 DOM 计数，不直接读取隐式浏览器存储，不上传正文或截图。原 EPUB 和原 JAR SHA-256 再次复核不变；生产未操作。
+
+功能提交 `d6655420735053c705969d652a4218f443acba26` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/37110140802)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37110140774)与[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37110140814)均成功，执行标签均为 GitHub 托管 `ubuntu-24.04`。已下载核验 10 项核心 UI JUnit，均 0 跳过/失败/错误，本地阅读 9.705 秒，包含上述 NCX 新样本和旧 TXT/EPUB 全部断言；额外安全文件与 `/reader/` 子目录旅程步骤成功。合并测试 SHA `3b5f2c9a0c1e1cfe8ce1cb2239420a5fa0c51dd7`。普通 CI 日志明确记录 150 项前端、40 项 Python 和发布静态/5 项结构与负向检查通过。三张生成阅读截图均已目视检查，中文与实体正常，无错误提示，不含私有正文。
+
+本次下载 Camoufox 11 项、0 跳过/失败/错误，85.483 秒；完整镜像内合成 GET/POST 请求体/测试头、Cookie 删除/回放及四账户请求通过。内存峰值 832,016,384 字节（约 794 MiB）、180 PIDs，2 GiB / 256 PIDs / 2 CPU 下限额事件全为 0；不是长期负载或生产性能保证。三个可选历史来源/公开配对作业跳过，本次不宣称三方实站或 ARM64。当前运行、JUnit、截图摘要及隐私边界见[本轮公开汇总](evidence/vue3-epub-fragments-d6655420-2026-10-03.json)，不借前一提交绿灯替代；随后文档提交与这一功能提交的制品分开记录。
+
+本次 NCX 样本尚不证明 EPUB 3 nav 多锚点全部通过；新锚点样本原 JAR 同条件对照、嵌套 CSS、超大资源、跨设备像素/锚点进度、真实登录书源三方对照、正式双架构发布和生产部署仍未验收。回滚旧候选 JAR 或 Vue 2 时保留新增 query/本机记录即可，旧代码忽略这些扩展；不删其他书缓存，不回写测试目录。
