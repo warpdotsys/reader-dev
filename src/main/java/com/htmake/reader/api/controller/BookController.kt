@@ -69,6 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import me.ag2s.epublib.util.EpubArchivePolicy
 import java.lang.Runtime
 import kotlin.collections.mutableMapOf
 import kotlin.system.measureTimeMillis
@@ -269,6 +271,15 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 if (ext != "txt" && ext != "epub" && ext != "umd" && ext != "cbz" && ext != "pdf") {
                     file.deleteRecursively()
                     return returnData.setErrorMsg("不支持导入" + ext + "格式的书籍文件")
+                }
+                if (ext == "epub") {
+                    try {
+                        // Validate before replacing any same-name preview file or initializing the book.
+                        EpubArchivePolicy.validate(file)
+                    } catch (e: IOException) {
+                        file.delete()
+                        return returnData.setErrorMsg("EPUB 文件校验失败：" + (e.message ?: "压缩包无效"))
+                    }
                 }
                 // 文件名格式化
                 fileName = FileUtils.getNameExcludeExtension(fileName)
@@ -1990,22 +2001,11 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (directSource) {
             return extractDirectEpub(book.getLocalFile(), epubExtractDir, force, book.bookUrl)
         }
-        if (force || !epubExtractDir.exists()) {
-            epubExtractDir.deleteRecursively()
-            var localEpubFile = File(getWorkDir(book.originName + File.separator + "index.epub"))
-            if (book.originName.indexOf("localStore") > 0) {
-                // 本地书仓的源文件
-                localEpubFile = File(getWorkDir(book.originName))
-            }
-            if (book.originName.indexOf("webdav") > 0) {
-                // webdav 书仓的源文件
-                localEpubFile = File(getWorkDir(book.originName))
-            }
-            if (!localEpubFile.unzip(epubExtractDir.toString())) {
-                return false
-            }
+        var localEpubFile = File(getWorkDir(book.originName + File.separator + "index.epub"))
+        if (book.originName.indexOf("localStore") > 0 || book.originName.indexOf("webdav") > 0) {
+            localEpubFile = File(getWorkDir(book.originName))
         }
-        return true
+        return DirectEpubExtractor.extractLegacy(localEpubFile, epubExtractDir, force, book.bookUrl)
     }
 
     fun extractCbz(book: Book, force: Boolean = false): Boolean {

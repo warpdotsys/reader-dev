@@ -159,6 +159,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceTest' \
@@ -166,7 +167,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Reading LocalReading ShelfLayout Search Source Group ReplaceRule File Backup; do
+          for name in Login Reading LocalReading EpubSafety ShelfLayout Search Source Group ReplaceRule File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
@@ -201,6 +202,8 @@ jobs:
             ${{ runner.temp }}/vue3-local-reading-css-timeout-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-budget-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-budget-fallback-synthetic.png
+            ${{ runner.temp }}/vue3-epub-safety-synthetic.png
+            ${{ runner.temp }}/vue3-epub-safety-mobile-synthetic.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve Vue 3 source journey diagnostics

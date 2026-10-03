@@ -80,7 +80,7 @@ def projected(reply, base, owner, workdir):
             "replacementCharacter": reply["replacementCharacter"]}
 
 
-def run(java, jar, workdir, fixtures, owner, password):
+def run(java, jar, workdir, fixtures, owner, password, startup_failure_log=None):
     workdir.mkdir()
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -99,6 +99,12 @@ def run(java, jar, workdir, fixtures, owner, password):
             deadline = time.monotonic() + 75
             while time.monotonic() < deadline:
                 if process.poll() is not None:
+                    if startup_failure_log is not None:
+                        # Only this generated run's pre-login startup, never production logs.
+                        # Exclusive output preserves an earlier failed attempt.
+                        with startup_failure_log.open("xb") as evidence:
+                            with (workdir / "reader.log").open("rb") as source:
+                                evidence.write(source.read(65536))
                     raise RuntimeError("Isolated Reader exited before readiness")
                 try:
                     BASE.success(BASE.call(account, base, "getSystemInfo"))
@@ -194,8 +200,10 @@ def main():
     owner, password = "fragmentprobe" + secrets.token_hex(5), "Probe-" + secrets.token_hex(18)
     with tempfile.TemporaryDirectory(prefix="reader-generated-fragments-") as temporary:
         root = Path(temporary)
-        original = run(args.java, args.original, root / "original", fixtures, owner, password)
-        restored = run(args.java, args.restored, root / "restored", fixtures, owner, password)
+        original = run(args.java, args.original, root / "original", fixtures, owner, password,
+                       report.with_name(report.stem + "-original-startup-failure.log"))
+        restored = run(args.java, args.restored, root / "restored", fixtures, owner, password,
+                       report.with_name(report.stem + "-restored-startup-failure.log"))
     if BASE.digest(args.original) != original_hash or BASE.digest(args.restored) != restored_hash:
         raise RuntimeError("Read-only JAR input changed")
     equal = BASE.same_json(original, restored)

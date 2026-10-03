@@ -2597,7 +2597,7 @@ onMounted(() => {
 
             <!-- 文件列表：逐个状态 + 细字进度 -->
             <ul v-if="importItems.length" class="file-list">
-              <li v-for="(item, i) in importItems" :key="`${item.file.name}-${i}`" class="file-row">
+              <li v-for="(item, i) in importItems" :key="`${item.file.name}-${i}`" class="file-row" :class="{ 'has-error': item.status === 'error' }">
                 <span class="file-name" :title="item.file.name">{{ item.file.name }}</span>
                 <span class="file-size">{{ fmtSize(item.file.size) }}</span>
                 <span class="file-state" :class="item.status">
@@ -4261,6 +4261,18 @@ onMounted(() => {
   border: 1px solid var(--border);
   background: var(--bg);
 }
+.file-row.has-error {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 20px;
+}
+.file-row.has-error .file-state.error {
+  grid-row: 2;
+  grid-column: 1 / -1;
+}
+.file-row.has-error .file-remove {
+  grid-row: 1;
+  grid-column: 3;
+}
 .file-name {
   flex: 1;
   min-width: 0;
@@ -4298,10 +4310,10 @@ onMounted(() => {
 .file-state.error {
   color: #cf4444;
   min-width: 0;
-  max-width: 130px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .state-icon {
   width: 12px;
