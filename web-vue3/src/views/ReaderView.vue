@@ -55,6 +55,7 @@ import {
 import { relocateChapterIndex } from '@/utils/progressRelocate'
 import { listProfiles, saveProfile, deleteProfile, applyProfile } from '@/utils/readerConfig'
 import { sanitizeHtml } from '@/utils/sanitize'
+import { epubHtmlToText } from '@/utils/epubText'
 import type { Book, BookChapter, BookInfo, Bookmark, HttpTts, ReplaceRule, SearchBook } from '@/types'
 
 const route = useRoute()
@@ -217,13 +218,7 @@ const chapterHtml = ref('')
 const sanitizedChapterHtml = computed(() => sanitizeHtml(chapterHtml.value))
 /** HTML → 纯文本（听书朗读 / 复制本章在 HTML 模式下的内容来源；块级标签转换行） */
 function chapterPlainText(): string {
-  return chapterHtml.value
-    .replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(?:p|div|h[1-6]|li|tr|blockquote)>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return epubHtmlToText(chapterHtml.value)
 }
 /** 切换排版模式并按新模式重拉当前章（HTML 模式不走本机缓存，避免与纯文本缓存互串） */
 /** P0-1 三态循环切换（text→html→raw→text） */
@@ -2808,12 +2803,13 @@ async function loadContent(chapterUrl: string) {
   loadError.value = false
   content.value = ''
   chapterHtml.value = ''
-  // EPUB HTML 模式：不走本机缓存（缓存里可能是纯文本版本），直接带 epubContent=1 重取
+  // Java/Kotlin EPUB 默认响应是资源 URL，并不是正文。两种正文模式都
+  // 请求 XHTML；纯文本从惰性 DOM 提取，绕过此前可能缓存的资源 URL。
   const wantHtml = epubHtmlActive.value
   let text = ''
   let fetchedWordCount: number | null = null
   try {
-    if (wantHtml) {
+    if (isEpubBook.value) {
       const res = await getBookContent(
         bookUrl.value,
         chapterUrl,
@@ -2822,6 +2818,10 @@ async function loadContent(chapterUrl: string) {
         1,
       )
       chapterHtml.value = res.data?.content ?? ''
+      if (!wantHtml) {
+        text = epubHtmlToText(chapterHtml.value)
+        content.value = text
+      }
     } else {
       // 本机缓存优先；未命中再走服务器缓存/书源（getBookContent 命中服务器缓存，未命中自动抓取并写回）
       const local = await getLocalChapter(bookUrl.value, chapterUrl)

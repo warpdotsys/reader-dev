@@ -35,9 +35,15 @@ class OriginalJarSafetyTest(unittest.TestCase):
 
     def test_every_legacy_comparison_has_a_guard(self):
         compare_scripts = sorted(SCRIPTS.glob("compare-*.py"))
-        self.assertEqual(27, len(compare_scripts))
+        self.assertEqual(28, len(compare_scripts))
         for path in compare_scripts:
             body = path.read_text(encoding="utf-8")
+            if path.name == "compare-authorized-local-reading-in-netns.py":
+                guard = body.index("BASE.isolate_then_drop()  #")
+                self.assertLess(guard, body.index("if BASE.digest(args.original)"))
+                self.assertLess(guard, body.index("shelf_bytes = args.shelf.read_bytes()"))
+                self.assertLess(guard, body.index("original = run(args.java"))
+                continue
             if path.name == "compare-authorized-storage-in-netns.py":
                 # This comparison checks the kernel namespace itself, not an
                 # environment acknowledgment. Its runtime negative tests also
