@@ -12,6 +12,11 @@ SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "run-webview-cookie-i
 
 class NetnsGuardTest(unittest.TestCase):
     def test_regular_host_cannot_acknowledge_isolation(self):
+        for extra in ([], ["--archived-renderer"]):
+            with self.subTest(extra=extra):
+                self.check_host_refused(extra)
+
+    def check_host_refused(self, extra):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "must-not-exist.json"
             result = subprocess.run([
@@ -20,7 +25,7 @@ class NetnsGuardTest(unittest.TestCase):
                 "--original", str(SCRIPT),
                 "--restored", str(SCRIPT),
                 "--report", str(report),
-                "--exercise-post",
+                "--exercise-post", *extra,
             ], capture_output=True, text=True, timeout=10, check=False)
             self.assertNotEqual(0, result.returncode)
             self.assertIn("Refusing to start JARs", result.stderr)

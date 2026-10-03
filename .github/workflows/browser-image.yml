@@ -17,6 +17,7 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
       - 'scripts/relocate-extracted-ubuntu-jre.py'
@@ -65,6 +66,7 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
       - 'scripts/relocate-extracted-ubuntu-jre.py'
@@ -341,11 +343,22 @@ jobs:
             test -n "$family"
             printf "CJK font family: %s\n" "$family"
           '
-          python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
+          python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890 \
+            | tee "$RUNNER_TEMP/bundled-browser-synthetic.json"
           if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
             python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890 \
               | tee "$RUNNER_TEMP/camoufox-public-webview.log"
           fi
+          docker exec -i reader-browser-smoke python - < scripts/report-browser-cgroup.py \
+            | tee "$RUNNER_TEMP/bundled-browser-resource-budget.json"
+      - name: Preserve synthetic browser and resource observations
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bundled-browser-synthetic-and-resources
+          path: |
+            ${{ runner.temp }}/bundled-browser-synthetic.json
+            ${{ runner.temp }}/bundled-browser-resource-budget.json
+          if-no-files-found: error
       - name: Preserve bounded bundled-browser observations
         if: ${{ inputs.real_public_source == true }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

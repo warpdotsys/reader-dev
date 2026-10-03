@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import http.cookiejar
 import json
+import os
 import secrets
 import socket
 import subprocess
@@ -39,8 +40,9 @@ def sha256(path):
 
 
 class Fixture(ThreadingHTTPServer):
-    def __init__(self, address):
+    def __init__(self, address, archived_renderer=False):
         super().__init__(address, FixtureHandler)
+        self.archived_renderer = archived_renderer
         self.calls = []
         self.script_sources = []
         self.request_fields = []
@@ -66,7 +68,20 @@ class Fixture(ThreadingHTTPServer):
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if not self.server.archived_renderer or not self.path.startswith("/search"):
+            self.send_error(404)
+            return
+        self.serve_search("GET", None)
+
     def do_POST(self):
+        if self.server.archived_renderer and self.path.startswith("/search"):
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 65536:
+                self.send_error(400)
+                return
+            self.serve_search("POST", self.rfile.read(length).decode("utf-8"))
+            return
         if self.path != "/render.html":
             self.send_error(404)
             return
@@ -96,9 +111,33 @@ class FixtureHandler(BaseHTTPRequestHandler):
         except (ValueError, KeyError, TypeError):
             self.send_error(400)
             return
-        html = ("<html><div class='book'><a href='/book'>"
-                "<span class='name'>WebView差分书</span></a>"
-                "<span class='author'>测试作者</span></div></html>")
+        self.send_search_html(call_number)
+
+    def serve_search(self, method, body):
+        with self.server.lock:
+            self.server.calls.append(self.headers.get("Cookie", ""))
+            self.server.script_sources.append(None)
+            self.server.request_fields.append({
+                "httpMethod": method,
+                "body": body,
+                "testHeader": self.headers.get("X-Fixture"),
+            })
+            call_number = len(self.server.calls)
+        self.send_search_html(call_number)
+
+    def send_search_html(self, call_number):
+        if self.server.archived_renderer:
+            # The later probes require webJs to rewrite this marker. Parsing
+            # the unmodified target HTML cannot accidentally count as success.
+            name = "WebView脚本原始书" if call_number >= 4 else "WebView差分书"
+            html = ("<html><head><title>WebView差分页</title></head>"
+                    "<body><div class='book'><a href='/book'>"
+                    f"<span class='name'>{name}</span></a>"
+                    "<span class='author'>测试作者</span></div></body></html>")
+        else:
+            html = ("<html><div class='book'><a href='/book'>"
+                    "<span class='name'>WebView差分书</span></a>"
+                    "<span class='author'>测试作者</span></div></html>")
         data = html.encode("utf-8")
         self.send_response(200)
         if call_number == 1:
@@ -132,13 +171,13 @@ def require_success(opener, base, path, body=None):
 
 
 def run_jar(java, jar, workdir, port, fixture_base, fixture,
-            exercise_script=False, exercise_post=False):
+            exercise_script=False, exercise_post=False, renderer_base=None):
     base = f"http://127.0.0.1:{port}"
     workdir.mkdir(parents=True, exist_ok=True)
     launch = [str(java), "-Xms128m", "-Xmx768m", "-jar", str(jar),
               f"--reader.app.workDir={workdir}", f"--reader.server.port={port}",
               "--reader.server.bindAddress=127.0.0.1",
-              f"--reader.app.remote-webview-api={fixture_base}",
+              f"--reader.app.remote-webview-api={renderer_base or fixture_base}",
               "--reader.app.secure=true", "--reader.app.licenseCheckEnabled=false",
               "--spring.profiles.active=prod"]
     flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
@@ -197,8 +236,10 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                            "errorMsg": result["errorMsg"], "count": len(books)})
         if exercise_script:
             scripted_source = dict(source)
+            script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if renderer_base
+                      else "document.title")
             scripted_source["searchUrl"] = (
-                fixture_base + '/search, {"webView": true, "webJs": "document.title"}'
+                fixture_base + '/search, {"webView": true, "webJs": "' + script + '"}'
             )
             require_success(opener, base, "/reader3/saveBookSource", scripted_source)
             result = require_success(opener, base, "/reader3/searchBook", {
@@ -210,10 +251,12 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                            "errorMsg": result["errorMsg"], "count": len(books)})
         if exercise_post:
             post_source = dict(source)
+            script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if renderer_base
+                      else "document.title")
             post_source["searchUrl"] = (
                 fixture_base + '/search, {"webView": true, "method": "POST", '
                 '"body": "q=post", "headers": {"X-Fixture": "synthetic"}, '
-                '"webJs": "document.title"}'
+                '"webJs": "' + script + '"}'
             )
             require_success(opener, base, "/reader3/saveBookSource", post_source)
             result = require_success(opener, base, "/reader3/searchBook", {
@@ -259,6 +302,8 @@ def main():
                         help="Also verify a synthetic webJs rule is sent as js_source")
     parser.add_argument("--exercise-post", action="store_true",
                         help="Also verify a synthetic WebView POST method, body, and header")
+    parser.add_argument("--archived-renderer-base",
+                        help="Use the actual archived renderer on private loopback, not a synthetic /render.html")
     args = parser.parse_args()
     if args.report.exists():
         parser.error(f"Report already exists; choose a new path: {args.report}")
@@ -266,11 +311,20 @@ def main():
         from original_jar_safety import require_original_jar_isolation
 
         require_original_jar_isolation()
+    if args.archived_renderer_base:
+        if not args.original_network_isolated or args.archived_renderer_base != "http://127.0.0.1:8050":
+            parser.error("Archived renderer requires isolated original-JAR mode and private 127.0.0.1:8050")
+        if (os.name != "posix" or
+                str(os.stat("/proc/self/ns/net").st_ino) !=
+                os.environ.get("READER_PRIVATE_NETNS_INODE") or
+                [name for _, name in socket.if_nameindex()] != ["lo"]):
+            parser.error("Archived renderer probe requires a root-verified private loopback-only namespace")
     for path in (args.java, args.original, args.restored):
         if not path.is_file():
             parser.error(f"Required file not found: {path}")
     fixture_port = free_port()
-    fixture = Fixture(("127.0.0.1", fixture_port))
+    fixture = Fixture(("127.0.0.1", fixture_port),
+                      archived_renderer=bool(args.archived_renderer_base))
     fixture_base = f"http://127.0.0.1:{fixture_port}"
     worker = threading.Thread(target=fixture.serve_forever, daemon=True)
     worker.start()
@@ -282,11 +336,13 @@ def main():
                 fixture.reset()
                 original = run_jar(args.java, args.original, root / "original",
                                    free_port(), fixture_base, fixture,
-                                   args.exercise_script, args.exercise_post)
+                                   args.exercise_script, args.exercise_post,
+                                   args.archived_renderer_base)
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture,
-                               args.exercise_script, args.exercise_post)
+                               args.exercise_script, args.exercise_post,
+                               args.archived_renderer_base)
     finally:
         fixture.shutdown()
         fixture.server_close()
@@ -294,16 +350,23 @@ def main():
 
     expected_original = ["", "", ""] + ([""] if args.exercise_script else []) + \
                         ([""] if args.exercise_post else [])
-    expected_restored = ["", "session=alpha==", ""] + \
+    expected_restored = (["", "", ""] if args.archived_renderer_base else
+                         ["", "session=alpha==", ""]) + \
                         ([""] if args.exercise_script else []) + ([""] if args.exercise_post else [])
+    script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if args.archived_renderer_base
+              else "document.title")
     expected_scripts = [None, None, None] + \
-                       (["document.title"] if args.exercise_script else []) + \
-                       (["document.title"] if args.exercise_post else [])
+                       ([script] if args.exercise_script else []) + \
+                       ([script] if args.exercise_post else [])
     expected_post = {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}
     report = {
         "originalJarSha256": sha256(args.original),
         "originalExecuted": original is not None,
         "restoredJarSha256": sha256(args.restored),
+        "rendererMode": "archived-webkit" if args.archived_renderer_base else "synthetic-render-response",
+        "observedRequestEndpoint": "target /search" if args.archived_renderer_base else "synthetic /render.html",
+        "jsSourceDirectlyObserved": not bool(args.archived_renderer_base),
+        "scriptValidatedByResult": bool(args.archived_renderer_base and args.exercise_script),
         "original": original,
         "restored": restored,
         "expectedOriginalCookieSequence": expected_original,
@@ -315,26 +378,33 @@ def main():
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
+    endpoint = "target" if args.archived_renderer_base else "render"
     if original is not None:
-        print(f"Original render Cookie sequence: {original['renderCookieHeaders']}")
+        print(f"Original {endpoint} Cookie sequence: {original['renderCookieHeaders']}")
     else:
         print("Original JAR not executed; recorded original expectations are not a current observation")
-    print(f"Restored render Cookie sequence: {restored['renderCookieHeaders']}")
-    if original is not None:
+    print(f"Restored {endpoint} Cookie sequence: {restored['renderCookieHeaders']}")
+    if original is not None and not args.archived_renderer_base:
         print(f"Original render script sequence: {original['renderScriptSources']}")
-    print(f"Restored render script sequence: {restored['renderScriptSources']}")
+    if not args.archived_renderer_base:
+        print(f"Restored render script sequence: {restored['renderScriptSources']}")
     if args.exercise_post:
         if original is not None:
             print(f"Original POST request fields: {original['renderRequestFields'][-1]}")
         print(f"Restored POST request fields: {restored['renderRequestFields'][-1]}")
     print(f"Report: {args.report}")
+    expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *
+                       (3 + int(args.exercise_script)) +
+                       ([expected_post] if args.exercise_post else []))
     if restored["renderCookieHeaders"] != expected_restored or \
-            restored["renderScriptSources"] != expected_scripts or \
+            (args.archived_renderer_base and restored["renderRequestFields"] != expected_fields) or \
+            (not args.archived_renderer_base and restored["renderScriptSources"] != expected_scripts) or \
             (args.exercise_post and restored["renderRequestFields"][-1] != expected_post) or \
             (original is not None and (
                 original["renderCookieHeaders"] != expected_original or
                 original["searches"] != restored["searches"] or
-                original["renderScriptSources"] != expected_scripts or
+                (args.archived_renderer_base and original["renderRequestFields"] != expected_fields) or
+                (not args.archived_renderer_base and original["renderScriptSources"] != expected_scripts) or
                 (args.exercise_post and (
                     original["renderRequestFields"][-1] != expected_post or
                     original["renderRequestFields"] != restored["renderRequestFields"])))):

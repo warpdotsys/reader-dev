@@ -18,6 +18,7 @@ import sys
 
 ORIGINAL_SHA256 = "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c"
 ISOLATION_ACK = "READER_ORIGINAL_JAR_NETWORK_ISOLATED"
+ISOLATION_INODE = "READER_PRIVATE_NETNS_INODE"
 SCRIPT = Path(__file__).resolve().with_name("compare-webview-cookie.py")
 
 
@@ -51,6 +52,8 @@ def main():
     parser.add_argument("--report", required=True, type=Path)
     parser.add_argument("--exercise-post", action="store_true",
                         help="Include the synthetic POST request-shape comparison")
+    parser.add_argument("--archived-renderer", action="store_true",
+                        help="Use the archived WebKit service at private-loopback port 8050")
     args = parser.parse_args()
 
     # Isolation is checked before reading any JAR or granting the comparison
@@ -74,6 +77,9 @@ def main():
         parser.error("Unprivileged probe user cannot read all required inputs")
     env = os.environ.copy()
     env[ISOLATION_ACK] = "confirmed"
+    # /proc/1/ns/net is root-readable during the guard above, but may be
+    # inaccessible after dropping to nobody. Pass the verified inode down.
+    env[ISOLATION_INODE] = str(os.stat("/proc/self/ns/net").st_ino)
     probe = [
         sys.executable, str(SCRIPT),
         "--java", str(args.java),
@@ -84,6 +90,10 @@ def main():
     ]
     if args.exercise_post:
         probe.append("--exercise-post")
+    if args.archived_renderer:
+        with socket.create_connection(("127.0.0.1", 8050), timeout=3):
+            pass
+        probe.extend(["--archived-renderer-base", "http://127.0.0.1:8050"])
     os.execve(sys.executable, probe, env)
 
 

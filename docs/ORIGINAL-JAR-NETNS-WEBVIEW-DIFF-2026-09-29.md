@@ -43,3 +43,45 @@ wsl.exe -d Ubuntu -u root --exec unshare --net --fork python3 /mnt/c/Users/chong
 新增夹具同时记录前四次的请求字段：两边均为 `http_method=GET`，`body` 和 `X-Fixture` 均为空。JSON 文件已经与 WSL 中未改写的原始报告做语义比对；只保存合成头和请求体，不保存账号、访问令牌或生产 Cookie。复现时使用新的 `/var/tmp` 报告名，并在上面 `wsl.exe ...` 命令结尾添加 `--exercise-post`。
 
 **严格边界**：这是两个 Reader 向合成远程渲染器 `/render.html` 发送的请求**字段**差分。夹具不访问目标 `/search`，所以并未证明旧远程服务或内置 Camoufox 真正向目标站发送了 POST，也未证明脚本实际执行、响应正文等价或原生产实例同版。上述空 Cookie 与结构化 Cookie 回放仍是有意差异。
+
+## 同日追加：实际历史 WebKit 服务的双 JAR 差分
+
+本节于 2026-10-03 整理入库，运行发生在 2026-09-29。[独立 JSON 报告](evidence/archived-webkit-pair-2026-09-29.json)来自两个 JAR 实际调用固定摘要的历史 WebView 镜像，而非上面的模拟 `/render.html`。原始与恢复 JAR 摘要仍与本文开头一致。受测镜像为 `hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a`，平台为 `linux/amd64`；这只是可追溯的历史实现参考，未证明与原生产远程实例相同。
+
+旧服务容器使用 `--network none --memory=2g --cpus=2 --pids-limit=256 --shm-size=1g --cap-drop ALL --security-opt no-new-privileges`。由宿主机 `nsenter` 进入该容器的网络命名空间后，包装器再次核对命名空间与 PID 1 不同、仅有 `lo`，校验原 JAR 摘要，然后降权到 UID/GID 65534。两个 Reader 和目标夹具均使用该私有回环网络，旧服务位于 `127.0.0.1:8050`；没有生产数据或外部路由。包装器把已验证的网络命名空间 inode 传给降权后的探针，并由探针核对自身 inode 与接口，解决了非 root 无权读取 `/proc/1/ns/net` 的问题。
+
+| 目标端与 Reader 观测 | 原始 JAR | 恢复构建 |
+| --- | --- | --- |
+| 5 次搜索的结果 | 每次 HTTP 200、`isSuccess=true`、`errorMsg=""`、1 本固定书 | 相同 |
+| 前 4 次目标请求 | GET，空请求体，无测试头 | 相同 |
+| 第 5 次目标请求 | POST，`q=post`，`X-Fixture=synthetic` | 相同 |
+| 5 次目标 Cookie 请求头 | 全为空 | 相同 |
+| 第 4、5 次脚本结果 | 固定书名改写成功并被 Reader 解析 | 相同 |
+
+第 4、5 次目标 HTML 的书名为 `WebView脚本原始书`；配置的 `webJs` 返回 `document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')`。探针只接受解析后的 `WebView差分书`，因此未执行脚本、直接解析目标 HTML 的路径会失败。这证明此合成脚本结果参与了实际旧引擎链路。目标夹具没有截获 Reader 到旧服务的 `js_source` 字段，报告以 `jsSourceDirectlyObserved=false` 明示；`renderScriptSources` 的空值也不应解释成 Reader 未发送脚本。
+
+目标第 1 次响应设置 Cookie、第 2 次删除 Cookie，但本次两个 JAR 的目标 Cookie 均为空。与上面的模拟响应差分相比，观测位置已由 `/render.html` 改为实际目标 `/search`，且历史服务每次渲染使用新上下文、未将目标 `Set-Cookie` 转发到 Reader。不得把两个样本的 Cookie 序列合并为同一个行为结论。
+
+### 复现实际旧引擎模式
+
+在隔离测试主机上准备本地原件、恢复 JAR、可执行的 JDK 11 和 Docker。原件保持本地只读；报告使用新的 `/var/tmp` 文件名。以下命令的文件路径需要替换成测试主机实际路径，容器名也应使用本次专用名字。
+
+```bash
+docker run -d --name reader-archived-diff \
+  --platform linux/amd64 --network none --memory=2g --cpus=2 \
+  --pids-limit=256 --shm-size=1g --cap-drop ALL \
+  --security-opt no-new-privileges --restart no \
+  hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a
+renderer_pid=$(docker inspect --format '{{.State.Pid}}' reader-archived-diff)
+sudo nsenter --net=/proc/$renderer_pid/ns/net -- \
+  python3 /absolute/reader-pro-restored/scripts/run-webview-cookie-in-linux-netns.py \
+  --java /absolute/jdk-11/bin/java \
+  --original /absolute/reader-pro-3.2.14.original.jar \
+  --restored /absolute/reader-4.0.7.jar \
+  --report /var/tmp/reader-archived-webkit-NEW.json \
+  --exercise-post --archived-renderer
+docker stop reader-archived-diff
+docker rm reader-archived-diff
+```
+
+**尚未验证**：本节没有加入内置 Camoufox；未覆盖真实登录书源、完整脚本语义、代理、编码、超时、并发与长期资源曲线，也不证明原生产远程服务等价。测试容器和临时 Docker 缓存已清理，独立报告保留并与入库 JSON 做语义核对。新模式不改变默认合成模式；恢复版单独运行的合成模式也已回归，Cookie 为 `空 → session=alpha== → 空 → 空 → 空`，POST 字段保持一致。
