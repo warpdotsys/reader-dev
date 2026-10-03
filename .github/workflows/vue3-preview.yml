@@ -189,7 +189,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-local-reading-${{ github.sha }}
-          path: ${{ runner.temp }}/vue3-local-reading-synthetic.png
+          path: |
+            ${{ runner.temp }}/vue3-local-reading-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-raw-synthetic.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve Vue 3 source journey diagnostics

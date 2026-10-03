@@ -170,7 +170,9 @@ onBeforeUnmount(() => {
 .epub-iframe-wrap {
   position: relative;
   width: 100%;
-  height: 100%;
+  /* 父级按正文自然高度布局，100% 会回退为 iframe 默认的 150px。 */
+  height: clamp(320px, 65vh, 960px);
+  height: clamp(320px, 65dvh, 960px);
   overflow: hidden;
 }
 .epub-frame {

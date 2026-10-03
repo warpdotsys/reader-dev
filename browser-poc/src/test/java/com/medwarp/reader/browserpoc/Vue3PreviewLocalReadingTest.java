@@ -107,7 +107,7 @@ public class Vue3PreviewLocalReadingTest {
     }
 
     private static void verifyReading(Page page, String base, String bookUrl,
-                                      String first, String last, boolean epub) {
+                                      String first, String last, boolean epub) throws Exception {
         // URLEncoder is for form queries; Vue Router path segments need %20,
         // not '+'. The generated EPUB intentionally has spaces in its title.
         String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8)
@@ -160,8 +160,13 @@ public class Vue3PreviewLocalReadingTest {
                     new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
             assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script").count());
             assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+            assertTrue("Raw EPUB must not collapse to the browser's default 150px iframe",
+                    ((Number) page.locator("iframe.epub-frame").evaluate("el => el.clientHeight")).intValue() >= 320);
             assertEquals("rgb(17, 34, 51)", page.frameLocator("iframe.epub-frame").locator("p").first()
                     .evaluate("el => getComputedStyle(el).color"));
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                    System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                    "vue3-local-reading-raw-synthetic.png")));
             page.frameLocator("iframe.epub-frame").getByText("书内下一章").click();
             page.waitForCondition(() -> page.url().contains("chapter=1"));
             page.frameLocator("iframe.epub-frame").getByText(last,
@@ -169,9 +174,21 @@ public class Vue3PreviewLocalReadingTest {
             page.reload();
             page.frameLocator("iframe.epub-frame").getByText(last,
                     new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
-            page.locator(".chapter-nav button").first().click();
-            page.frameLocator("iframe.epub-frame").getByText(first,
-                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            try {
+                page.waitForResponse(response -> URI.create(response.url()).getPath()
+                        .endsWith("/reader3/getBookContent"),
+                        () -> page.locator(".chapter-nav button").first().click());
+                page.waitForCondition(() -> page.url().contains("chapter=0"));
+                page.frameLocator("iframe.epub-frame").getByText(first,
+                        new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            } catch (RuntimeException failure) {
+                page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                        System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                        "vue3-local-reading-raw-synthetic.png")));
+                throw new AssertionError("Generated EPUB previous chapter after raw refresh failed; page="
+                        + page.url() + "; navigation=" + page.locator(".chapter-nav").innerText()
+                        + "; frame=" + page.frameLocator("iframe.epub-frame").locator("body").innerText(), failure);
+            }
             page.locator("button[title^='EPUB 排版模式']").click();
             page.locator(".reader-content:not(.epub-html)").waitFor();
             assertTrue("Switching back to text must not require a refresh",
