@@ -32,6 +32,16 @@
 
 本机修复前/后报告与截图摘要见[机器可读证据](evidence/epub-progress-order-2026-10-03.json)。正文 GET 因服务器超时但实际晚到写入的异常网络情况，以及音视频分支的专门界面旅程，未在此样本证明；本修复不是后端全局事务或跨设备进度同步保证。
 
+## 新修复提交的实际托管验收
+
+源码提交 `c9f9ce6e338a64d22510c04bbacc0d03bfb608a4` 的三道 GitHub 托管 workflow 均成功：
+
+- [Java/Kotlin 37115145388](https://github.com/warpdotsys/reader-dev/actions/runs/37115145388)：构建与测试、155 项前端、45 项 Python、发布安全结构检查及 5 项负向检查通过。
+- [Vue 3 37115145387](https://github.com/warpdotsys/reader-dev/actions/runs/37115145387)：下载核心 JUnit 10 项均无跳过/失败/错误，生成阅读旅程 14.659 秒；新旧进度顺序断言通过。经理密钥文件和 `/reader/` 子目录步骤也实际执行并通过其 JUnit 非跳过检查。新增生成 EPUB3 截图已下载并目视核验中文及内链。制品使用 PR 合并快照 `63c5671ec3766b19b4a3cc770d46eb44fab3d95c`，不与源码 SHA 混淆。
+- [完整镜像 37115145390](https://github.com/warpdotsys/reader-dev/actions/runs/37115145390)：镜像内真实 Camoufox 11 项无跳过/失败/错误，合成脚本、POST、Cookie 和四账号请求均通过。本轮可选历史引擎、原件来源与公开页配对 jobs 未启用，不记为通过或第三侧对照。
+
+实际 jobs 的标签为 `ubuntu-24.04`、runner 名为 GitHub Actions，不是自托管。[下载的资源 JSON](evidence/c9f9ce6e-browser-resource-budget-2026-10-03.json)记录 2 CPU / 2 GiB / 256 PIDs，内存峰值 `756506624` 字节（约 721 MiB）、182 个任务，OOM/PIDs 限额事件为 0；这是短时顺序样本加四账号突发，不是长期吞吐保证，也不是下节两个 JAR 对照的内存峰值。[合成结果](evidence/c9f9ce6e-browser-synthetic-2026-10-03.json)和[提交/制品摘要](evidence/epub-progress-ci-c9f9ce6e-2026-10-03.json)分别保存。
+
 ## 原 JAR 同条件对照入口与当前状态
 
 新增 `scripts/compare-generated-epub-fragments-in-netns.py`，直接消费上述浏览器测试可选导出的同一份 NCX/nav EPUB，不另写一份可能不等价的夹具。两份受测文件摘要分别是：
@@ -43,9 +53,23 @@
 
 程序在读取任何输入前检查真实 Linux 内核网络命名空间必须与 PID 1 不同且只有 `lo`，启用回环后降权到 UID/GID 65534。仅接受固定生成标识、白名单 ZIP 条目和不超过 2 MiB 的夹具；裸环境变量不能代替隔离。原 JAR 固定校验 `b26fb476...30c8c`，报告必须为 `/var/tmp` 下未存在的新文件，两个 JAR/两个 EPUB 保持只读。
 
-计划比较 HTTP/ReturnData、章节 JSON 默认值与编号、规范化 XHTML 精确哈希、登录/token/用户命名空间、原 EPUB 下载字节、书架进度与格式。仅显式列出的正数时间字段被掩码，0/false/null/空字符串保留；报告记录比较投影和限制。
+比较 HTTP/ReturnData、章节 JSON 默认值与编号、规范化 XHTML 精确哈希、登录/token/用户命名空间、原 EPUB 下载字节、书架进度与格式。仅显式列出的正数时间字段被掩码，0/false/null/空字符串保留；报告记录比较投影和限制。
 
-**原 JAR 执行状态待下面实际结果更新**：本轮 WSL 启动报连接错误。备用服务器具备 `unshare`/`ip`/Python/Docker；第一次 SCP 在执行前被安全审查拒绝，没有上传。用户随后明确授权两个 JAR 副本进入 `cdn.medwarp.cn:/var/tmp/reader-generated-fragments-20261003.RMZay2`，仅用于无外网、2 CPU / 2 GiB 的生成样本隔离差分。已在该目录复制现有容器的 JRE 到隔离测试子目录、建立报告目录，没有停止、重启或改动生产容器；不传真实 EPUB、私有书架或正文。仅在最终修复候选构建完成后上传两份 JAR，原文件不覆盖。
+**已从原 JAR 实际验证**：第一次 SCP 在执行前被安全审查拒绝，没有上传。用户随后明确授权两个 JAR 副本进入 `cdn.medwarp.cn:/var/tmp/reader-generated-fragments-20261003.RMZay2`；本轮 WSL 不可用，因此实际使用该服务器的独立临时目录。输入包只含两份 JAR、两份诊断脚本和上述两本生成 EPUB，358569472 字节、不重复压缩；SHA-256 `3a1f76465ce599e5db1658f6f0c4b58c60f3de25609f2e9cf2c554fb75c55246`。远端四份输入摘要与本机一致，解包后的输入移除写权限。JRE 从现有容器只读复制，Temurin `11.0.32+9`；没有停止、重启或改动生产容器，不传真实 EPUB、私有书架或正文。
+
+`systemd-run` 临时单元设置 `CPUQuota=200%`、`MemoryMax=2G`、`TasksMax=256`、`RuntimeMaxSec=240`，再由 `unshare --net --fork` 和探针的真实内核检查建立只回环环境、降权 UID/GID 65534，先后实际运行两份 JAR。作业成功退出，`equal=true`，两个生成样本两侧如下：
+
+| 检查 | NCX | EPUB3 nav |
+| --- | --- | --- |
+| HTTP / ReturnData / 完整章节 JSON 默认值 | 相同，资源项 1 | 相同，资源项 2 |
+| 规范化 XHTML 精确哈希 | 相同 | 两章均相同 |
+| 读完后服务端资源级编号 | 两侧 0 | 两侧 1 |
+| EPUB 下载 | 200，2079 字节，输入哈希不变 | 200，3027 字节，输入哈希不变 |
+| session / token / 匿名 / 他人命名空间 | 全部边界断言通过 | 全部边界断言通过 |
+
+完整[原始 JSON 报告](evidence/generated-fragment-diff-2026-10-03.json)的 SHA-256 为 `332a0f02157d2c3a4f9d2c3b8ab105dbdbf96d7f0e9d5423e96b76c750645252`，远端、本机取回及入库三份字节相同。报告不含真实正文、口令或 token。普通 PowerShell 到 SSH 的管道在末行附加 CR，第一次报告名带 CR；已保留该原证据，只复制为正常名称再下载。后续使用 `tr -d '\r' | sh -s` 消除管道换行问题，没有删除或重写报告来伪造成功。
+
+两份 JAR/两个 EPUB 的输入保持不变。对照单元运行很快，结束后单元已回收，因此未获取它的可靠资源峰值；不把完整镜像的 721 MiB 采样或结束日志的瞬时数字冒充双 JAR 的测量。本轮不证明原 UI 导航像素、全格式/全书源等价或生产部署；恢复前端的像素与 sandbox 由独立浏览器旅程验证。
 
 普通主机的真实负向测试确认拒绝发生在读输入/启动 Java/写报告之前。新增 Python 单元测试验证两个生成标识、条目边界、严格 JSON 类型、精确 HTML 投影及普通主机拒绝。
 
@@ -60,8 +84,18 @@ sudo unshare --net --fork python3 scripts/compare-generated-epub-fragments-in-ne
   --report /var/tmp/reader-generated-fragments-NEW.json
 ```
 
-服务器实际执行前另加 2 CPU / 2 GiB / 256 Tasks 的外部 cgroup 限额；程序中的 `-XX:ActiveProcessorCount=2` 和 `-Xmx768m` 不能替代总进程树限额。上面的复现入口不是已经执行的服务器证据。
+服务器实际运行另加上述外部 cgroup 限额；程序中的 `-XX:ActiveProcessorCount=2` 和 `-Xmx768m` 不能替代总进程树限额。输入与报告须在新目录中复现，保留已存在的证据，不覆盖本轮报告。
+
+## 恢复构建入口
+
+在工程根目录，Node 24、JDK 11 环境下用锁文件与 Gradle Wrapper 重建 Vue 3 候选：
+
+```bash
+npm ci --prefix web-vue3 && npm run build --prefix web-vue3 && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 bash ./gradlew -PreaderWebUi=vue3 test bootJar --no-daemon --max-workers=2
+```
+
+产物为 `build/libs/reader-4.0.7.jar`。本机此次使用独立 init 脚本把候选输出到 `build/epub-order-candidate`，避免覆盖运行中的旧 JAR；不修改发布版本号，也不以本机构建代替正式托管发版。
 
 ## 仍未验收
 
-原 JAR 新锚点样本双侧运行、嵌套 CSS `@import`、超大 EPUB 解压/资源上限、跨设备原版进度、真实需登录书源的三方差分、长期负载、正式双架构 manifest、稳定版 Release/registry/生产部署仍未完成。回滚继续保留旧 JAR/Vue2 与原存储，不删除其他书籍缓存。
+嵌套 CSS `@import`、超大 EPUB 解压/资源上限、异常网络晚到写入、跨设备原版进度、真实需登录书源的三方差分、长期负载、正式双架构 manifest、稳定版 Release/registry/生产部署仍未完成。原 JAR 生成样本后端双侧运行已完成，但不能称为原 UI 锚点取样。回滚继续保留旧 JAR/Vue2 与原存储，不删除其他书籍缓存。
