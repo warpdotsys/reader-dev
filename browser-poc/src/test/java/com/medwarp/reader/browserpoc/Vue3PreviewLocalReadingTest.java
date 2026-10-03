@@ -141,6 +141,13 @@ public class Vue3PreviewLocalReadingTest {
             page.reload();
             page.locator(".reader-content.epub-html").waitFor();
             assertTrue(page.locator(".reader-content.epub-html").innerText().contains(first));
+            // Raw mode's legacy download contract is tracked separately; a
+            // failed raw load must still allow returning to readable text.
+            page.locator("button[title^='EPUB 排版模式']").click();
+            page.locator("button[title^='EPUB 排版模式']").click();
+            page.locator(".reader-content:not(.epub-html)").waitFor();
+            assertTrue("Switching back to text must not require a refresh",
+                    page.locator(".reader-content").innerText().contains(first));
         }
     }
 

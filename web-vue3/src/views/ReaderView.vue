@@ -2805,7 +2805,6 @@ async function loadContent(chapterUrl: string) {
   chapterHtml.value = ''
   // Java/Kotlin EPUB 默认响应是资源 URL，并不是正文。两种正文模式都
   // 请求 XHTML；纯文本从惰性 DOM 提取，绕过此前可能缓存的资源 URL。
-  const wantHtml = epubHtmlActive.value
   let text = ''
   let fetchedWordCount: number | null = null
   try {
@@ -2818,10 +2817,10 @@ async function loadContent(chapterUrl: string) {
         1,
       )
       chapterHtml.value = res.data?.content ?? ''
-      if (!wantHtml) {
-        text = epubHtmlToText(chapterHtml.value)
-        content.value = text
-      }
+      // Keep both projections ready: switching HTML -> raw -> text must not
+      // leave an empty text view until the user refreshes or changes chapter.
+      text = epubHtmlToText(chapterHtml.value)
+      content.value = text
     } else {
       // 本机缓存优先；未命中再走服务器缓存/书源（getBookContent 命中服务器缓存，未命中自动抓取并写回）
       const local = await getLocalChapter(bookUrl.value, chapterUrl)
