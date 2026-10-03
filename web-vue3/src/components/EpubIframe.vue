@@ -13,16 +13,19 @@ const props = defineProps<{
   doc: EpubDoc | null
   /** 根据 legacy TOC href 解析出的 ZIP 路径，不以 TOC 下标猜测 spine */
   path: string
+  initialScroll: number
 }>()
 
 const emit = defineEmits<{
   (e: 'navigate', href: string): void
-  (e: 'progress', ratio: number): void
+  (e: 'progress', ratio: number, scrollY: number, persist: boolean): void
 }>()
 
 const frameRef = ref<HTMLIFrameElement | null>(null)
 const srcdoc = ref('')
 const loading = ref(false)
+const restoring = ref(true)
+let frameEpoch = 0
 
 /** zip 路径 → blob URL；未知资源返回 '#' 占位 */
 function rewriteUrl(doc: EpubDoc, baseDir: string, raw: string): string {
@@ -96,6 +99,8 @@ function buildSrcdoc(doc: EpubDoc, itemPath: string): string {
 }
 
 async function renderCurrent(): Promise<void> {
+  frameEpoch++
+  restoring.value = true
   const doc = props.doc
   if (!doc || !props.path) {
     srcdoc.value = ''
@@ -111,24 +116,36 @@ async function renderCurrent(): Promise<void> {
 
 /* iframe 内事件桥接 */
 let clearFrameListeners: (() => void) | null = null
-function onFrameLoad(): void {
+async function onFrameLoad(): Promise<void> {
   clearFrameListeners?.()
   const win = frameRef.value?.contentWindow
   if (!win) return
+  const epoch = frameEpoch
   try {
-    const docEl = win.document.documentElement
+    const frameDoc = win.document
+    const docEl = frameDoc.documentElement
+    // load 已等待普通图片；字体仍可延迟改变高度。旧章/卸载后的等待不得回写新章。
+    await Promise.race([frameDoc.fonts.ready, new Promise(resolve => window.setTimeout(resolve, 3000))])
+    if (epoch !== frameEpoch || frameRef.value?.contentDocument !== frameDoc) return
+    const target = Number.isFinite(props.initialScroll) ? Math.max(0, props.initialScroll) : 0
+    win.scrollTo(0, Math.min(target, Math.max(0, docEl.scrollHeight - win.innerHeight)))
     const onScroll = () => {
       const max = docEl.scrollHeight - win.innerHeight
-      if (max > 0) emit('progress', Math.min(1, Math.max(0, win.scrollY / max)))
+      emit('progress', max > 0 ? Math.min(1, Math.max(0, win.scrollY / max)) : 0,
+        win.scrollY, !restoring.value)
     }
     win.addEventListener('scroll', onScroll, { passive: true })
-    win.document.addEventListener('click', onDocClick)
+    frameDoc.addEventListener('click', onDocClick)
     clearFrameListeners = () => {
       win.removeEventListener('scroll', onScroll)
-      win.document.removeEventListener('click', onDocClick)
+      frameDoc.removeEventListener('click', onDocClick)
     }
+    onScroll()
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    if (epoch === frameEpoch) restoring.value = false
   } catch {
     /* sandbox 同源策略下仍可访问（allow-same-origin），异常仅防御 */
+    if (epoch === frameEpoch) restoring.value = false
   }
 }
 
@@ -147,6 +164,7 @@ function onDocClick(e: MouseEvent): void {
 onMounted(() => void renderCurrent())
 watch(() => [props.doc, props.path] as const, () => void renderCurrent())
 onBeforeUnmount(() => {
+  frameEpoch++
   clearFrameListeners?.()
   /* blob URL 由持有方 destroyEpubDoc 统一回收 */
 })
@@ -160,6 +178,7 @@ onBeforeUnmount(() => {
       class="epub-frame"
       sandbox="allow-same-origin"
       :srcdoc="srcdoc"
+      :aria-busy="loading || restoring"
       title="EPUB 原版排版"
       @load="onFrameLoad"
     ></iframe>

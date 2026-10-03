@@ -56,6 +56,7 @@ import { relocateChapterIndex } from '@/utils/progressRelocate'
 import { listProfiles, saveProfile, deleteProfile, applyProfile } from '@/utils/readerConfig'
 import { sanitizeHtml } from '@/utils/sanitize'
 import { epubHtmlToText } from '@/utils/epubText'
+import { epubProgressKey, epubScrollPosition } from '@/utils/epubProgress'
 import type { Book, BookChapter, BookInfo, Bookmark, HttpTts, ReplaceRule, SearchBook } from '@/types'
 
 const route = useRoute()
@@ -189,6 +190,38 @@ const epubRawActive = computed(() => isEpubBook.value && epubMode.value === 'raw
 const epubDoc = shallowRef<EpubDoc | null>(null)
 const epubDocLoading = ref(false)
 const epubDocError = ref('')
+const epubScrollY = ref(0)
+const epubInitialScroll = ref(0)
+let epubStartFromTop = false
+function rawProgressKey(): string {
+  const namespace = store.isAdmin && store.defaultConfigMode ? 'default' : store.username || 'default'
+  return epubProgressKey(namespace, bookUrl.value)
+}
+watch([bookUrl, () => chapters.value[chapterIndex.value]?.url ?? '', epubRawActive], ([, url, raw]) => {
+  if (!raw || !url) return
+  let position = 0
+  try {
+    if (!epubStartFromTop) position = epubScrollPosition(localStorage.getItem(rawProgressKey()), url)
+  } catch { /* 存储被禁用时仍可阅读 */ }
+  epubStartFromTop = false
+  epubInitialScroll.value = position
+  epubScrollY.value = position
+})
+
+function onEpubProgress(ratio: number, position: number, persistPosition: boolean): void {
+  epubScrollY.value = position
+  scrollFrac.value = ratio
+  if (!persistPosition || !epubRawActive.value) return
+  try {
+    localStorage.setItem(rawProgressKey(), JSON.stringify({
+      chapterUrl: chapters.value[chapterIndex.value]?.url ?? '',
+      scrollY: position,
+      updatedAt: Date.now(),
+    }))
+  } catch { /* 存储不可用不阻塞滚动 */ }
+  window.clearTimeout(saveTimer)
+  saveTimer = window.setTimeout(saveProgress, 300)
+}
 const epubCurrentPath = computed(() => epubDoc.value
   ? epubChapterPath(epubDoc.value, chapters.value[chapterIndex.value]?.url ?? '') : '')
 async function ensureEpubDoc(): Promise<void> {
@@ -961,6 +994,7 @@ const jumpOpen = ref(false)
 const jumpNum = ref('')
 
 function updateScrollFrac() {
+  if (epubRawActive.value) return
   const v = flipViewRef.value
   if (isFlipMode() && v) {
     const max = v.scrollWidth - v.clientWidth
@@ -2670,6 +2704,7 @@ function progressKey(): string {
 /** 当前阅读位置（纵向滚动 px；仿真翻页为列轴 px；非文本书为媒体秒数/漫画页索引） */
 function currentPos(): number {
   if (isNonTextBook.value) return mediaPosition()
+  if (epubRawActive.value) return epubScrollY.value
   return isFlipMode() ? flipScrollLeft() : window.scrollY
 }
 
@@ -2878,7 +2913,11 @@ async function loadContent(chapterUrl: string) {
   // 等正文真正渲染（loading 置 false 后）再滚动，避免被加载态高度钳制
   await nextTick()
   if (isFlipMode()) measureFlipColumns()
-  if (restoreParagraphIdx != null) {
+  if (epubRawActive.value) {
+    // 原版的恢复位置由 iframe 应用，不能拿 iframe 像素去滚动宿主页面。
+    restoreScrollY = null
+    window.scrollTo(0, 0)
+  } else if (restoreParagraphIdx != null) {
     await applyRestoreParagraph()
   } else if (isFlipMode()) {
     const v = flipViewRef.value
@@ -2977,6 +3016,7 @@ function goToChapter(idx: number) {
   // 切章方向（hslide 模式正文滑入过渡动画用）
   chapterDir.value = idx > chapterIndex.value ? 1 : -1
   saveProgress()
+  epubStartFromTop = true
   chapterIndex.value = idx
   if (isNonTextBook.value) void loadNonTextChapter(ch.url)
   else void loadContent(ch.url)
@@ -4181,8 +4221,9 @@ onBeforeUnmount(() => {
             <EpubIframe
               :doc="epubDoc"
               :path="epubCurrentPath"
+              :initial-scroll="epubInitialScroll"
               @navigate="onEpubNav"
-              @progress="(r) => (scrollFrac = r)"
+              @progress="onEpubProgress"
             />
           </div>
           <div v-else-if="epubRawActive && epubDocLoading" class="state">

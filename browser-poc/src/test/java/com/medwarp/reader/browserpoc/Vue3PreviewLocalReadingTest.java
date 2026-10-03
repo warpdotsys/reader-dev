@@ -167,13 +167,12 @@ public class Vue3PreviewLocalReadingTest {
             page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
                     System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
                     "vue3-local-reading-raw-synthetic.png")));
+            verifyRawScrollRestore(page, bookUrl);
             page.frameLocator("iframe.epub-frame").getByText("书内下一章").click();
             page.waitForCondition(() -> page.url().contains("chapter=1"));
             page.frameLocator("iframe.epub-frame").getByText(last,
                     new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
-            page.reload();
-            page.frameLocator("iframe.epub-frame").getByText(last,
-                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            verifyRawScrollRestore(page, bookUrl);
             try {
                 page.waitForResponse(response -> URI.create(response.url()).getPath()
                         .endsWith("/reader3/getBookContent"),
@@ -194,6 +193,41 @@ public class Vue3PreviewLocalReadingTest {
             assertTrue("Switching back to text must not require a refresh",
                     page.locator(".reader-content").innerText().contains(first));
         }
+    }
+
+    private static void verifyRawScrollRestore(Page page, String bookUrl) {
+        // This evaluates only our generated fixture in a dedicated test browser, never personal tabs.
+        page.waitForCondition(() -> !"true".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+        String key = (String) page.evaluate("url => { const owner = localStorage.getItem('reader_username')"
+                + " || sessionStorage.getItem('reader_username') || 'default';"
+                + "return 'reader-epub-progress-' + encodeURIComponent(JSON.stringify([owner,url])); }", bookUrl);
+        Response saved = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/saveBookProgress"), () -> page.frameLocator("iframe.epub-frame")
+                .locator("body").evaluate("el => el.ownerDocument.defaultView.scrollTo(0, 600)"));
+        assertEquals(200, saved.status());
+        assertTrue(saved.text().contains("\"isSuccess\":true"));
+        assertEquals("Legacy progress transport remains {url,index}, not invented pixel fields",
+                Boolean.TRUE, page.evaluate("raw => { const b = JSON.parse(raw);"
+                        + "return typeof b.url === 'string' && Number.isInteger(b.index)"
+                        + " && Object.keys(b).sort().join(',') === 'index,url'; }", saved.request().postData()));
+        page.waitForCondition(() -> Boolean.TRUE.equals(page.evaluate("key => {"
+                + "try { return JSON.parse(localStorage.getItem(key)).scrollY >= 580; } catch { return false; } }", key)));
+        page.reload();
+        page.locator("iframe.epub-frame").waitFor();
+        page.waitForCondition(() -> "false".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+        Number position = (Number) page.frameLocator("iframe.epub-frame").locator("body")
+                .evaluate("el => el.ownerDocument.defaultView.scrollY");
+        assertTrue("Reload must restore inside the iframe, not scroll its host page; actual=" + position,
+                position.doubleValue() >= 580 && position.doubleValue() <= 620);
+        assertTrue("Host position must not be confused with iframe position",
+                ((Number) page.evaluate("() => window.scrollY")).doubleValue() < 80);
+    }
+
+    private static String longSyntheticBody() {
+        StringBuilder body = new StringBuilder();
+        for (int i = 0; i < 50; i++) body.append("<p>合成滚动定位段落 ").append(i)
+                .append("：仅用于验证滚动保存、字体排版及刷新恢复。</p>");
+        return body.toString();
     }
 
     private static void writeEpub(Path path) throws Exception {
@@ -223,9 +257,10 @@ public class Vue3PreviewLocalReadingTest {
                     + "<head><title>HEAD-ONLY</title><link rel='stylesheet' href='../Styles/main.css'/></head><body><h1>第一章</h1>"
                     + "<p>合成 EPUB 第一段，中文 &amp; 标点 &lt;明&gt;。</p>"
                     + "<a href='two.xhtml'>书内下一章</a>"
-                    + "<script>/* SCRIPT-ONLY */</script></body></html>");
+                    + longSyntheticBody() + "<script>/* SCRIPT-ONLY */</script></body></html>");
             entry(zip, "OEBPS/Text/two.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'>"
-                    + "<head><title>HEAD-ONLY</title></head><body><h1>第二章</h1><p>" + EPUB_LAST + "</p></body></html>");
+                    + "<head><title>HEAD-ONLY</title></head><body><h1>第二章</h1><p>" + EPUB_LAST + "</p>"
+                    + longSyntheticBody() + "</body></html>");
             entry(zip, "OEBPS/Styles/main.css", "p{color:rgb(17,34,51)}");
         }
     }
