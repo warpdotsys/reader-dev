@@ -1,5 +1,6 @@
 """Synthetic safety tests. CI never loads the owner's EPUB or bookshelf."""
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 import subprocess
 import sys
@@ -42,6 +43,25 @@ class AuthorizedLocalReadingNetnsTest(unittest.TestCase):
         self.assertNotIn("合成正文", str(first))
         self.assertNotIn("private-token", str(second))
         self.assertEqual(1, probe.html_facts("<body>\ufffd</body>")["replacementCharacters"])
+
+    def test_mismatched_or_unreadable_assets_cannot_pass(self):
+        side = {"facts": {"sourceUnchanged": True}, "chapters": {"0": {
+            "assetStatus": 200, "assetMatchesHtmlAfterInjection": True,
+            "bodyTextUnchangedByInjection": True}}}
+        good = {"tocEqual": True, "sampledChaptersEqual": True,
+                "original": side, "restored": deepcopy(side)}
+        probe.validate_result(good)
+        for field in ("tocEqual", "sampledChaptersEqual"):
+            wrong = deepcopy(good)
+            wrong[field] = False
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                probe.validate_result(wrong)
+        for field, value in (("assetStatus", 404), ("assetMatchesHtmlAfterInjection", False),
+                             ("bodyTextUnchangedByInjection", False)):
+            wrong = deepcopy(good)
+            wrong["restored"]["chapters"]["0"][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                probe.validate_result(wrong)
 
 
 if __name__ == "__main__":

@@ -98,9 +98,19 @@ public class Vue3PreviewLocalReadingTest {
 
     private static void verifyReading(Page page, String base, String bookUrl,
                                       String first, String last, boolean epub) {
-        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8);
-        Response initial = page.waitForResponse(response -> URI.create(response.url()).getPath()
-                .endsWith("/reader3/getBookContent"), () -> page.navigate(reader + "?chapter=0"));
+        // URLEncoder is for form queries; Vue Router path segments need %20,
+        // not '+'. The generated EPUB intentionally has spaces in its title.
+        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        Response initial;
+        try {
+            initial = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                    .endsWith("/reader3/getBookContent"), () -> page.navigate(reader + "?chapter=0"));
+        } catch (RuntimeException failure) {
+            throw new AssertionError("Generated " + (epub ? "EPUB" : "TXT")
+                    + " page did not request content; page=" + page.url()
+                    + "; visible=" + page.locator(".reader-page").innerText(), failure);
+        }
         assertEquals(200, initial.status());
         if (epub) assertTrue("Even default text mode must request XHTML, never display an asset URL",
                 URI.create(initial.url()).getQuery().contains("epubContent=1"));

@@ -75,6 +75,18 @@ def envelope(reply):
             "envelopeFields": sorted(value)}
 
 
+def validate_result(result):
+    if not result["tocEqual"] or not result["sampledChaptersEqual"]:
+        raise ValueError("Authorized local reading differs; inspect aggregate report")
+    for side in ("original", "restored"):
+        if not all(result[side]["facts"].values()):
+            raise ValueError("Read-only or namespace assertions failed; inspect aggregate report")
+        for chapter in result[side]["chapters"].values():
+            if (chapter["assetStatus"] != 200 or not chapter["assetMatchesHtmlAfterInjection"]
+                    or not chapter["bodyTextUnchangedByInjection"]):
+                raise ValueError("EPUB asset assertion failed; inspect aggregate report")
+
+
 def run(java, jar, workdir, book, asset, username, password):
     workdir.mkdir()
     url = f"storage/data/{username}/authorized.epub"
@@ -213,8 +225,7 @@ def main():
                         "No production progress writes, private raw responses or original paths published"]}
     report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False))
-    if not all(original["facts"].values()) or not all(restored["facts"].values()):
-        raise SystemExit("Read-only or namespace assertions failed; inspect aggregate report")
+    validate_result(result)
 
 
 if __name__ == "__main__":
