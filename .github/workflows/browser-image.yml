@@ -7,75 +7,274 @@ on:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
+      - 'web-vue3/**'
+      - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
+      - 'deploy/reader-pro/base-images.lock'
+      - 'deploy/reader-pro/apt-sources.list'
+      - 'deploy/reader-pro/camoufox-browser.lock'
+      - 'deploy/reader-pro/docker-entrypoint.sh'
+      - 'deploy/reader-pro/install_camoufox_pinned.py'
+      - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/report-browser-cgroup.py'
+      - 'scripts/smoke-public-webview.py'
+      - 'scripts/run-webview-cookie-in-linux-netns.py'
+      - 'scripts/relocate-extracted-ubuntu-jre.py'
+      - 'scripts/probe-archived-remote-webview.py'
+      - 'scripts/report-public-webview-probes.py'
+      - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserCookieJar.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
+      - 'src/main/java/com/htmake/reader/utils/CamoufoxWebviewRenderer.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/main/java/com/htmake/reader/utils/WebviewRenderer.kt'
+      - 'src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt'
+      - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserCookieJarTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/WebviewCookieCompatibilityTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserUpstreamProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererOutputLimitTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
+      - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
+      - 'src/test/java/io/legado/app/model/analyzeRule/**'
+      - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/browser_cgroup_report_test.py'
+      - 'src/test/python/compare_webview_cookie_safety_test.py'
+      - 'src/test/python/public_webview_probe_test.py'
+      - 'src/test/python/netns_guard_test.py'
   pull_request:
     branches: [legacy]
     paths:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
+      - 'web-vue3/**'
+      - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
+      - 'deploy/reader-pro/base-images.lock'
+      - 'deploy/reader-pro/apt-sources.list'
+      - 'deploy/reader-pro/camoufox-browser.lock'
+      - 'deploy/reader-pro/docker-entrypoint.sh'
+      - 'deploy/reader-pro/install_camoufox_pinned.py'
+      - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/report-browser-cgroup.py'
+      - 'scripts/smoke-public-webview.py'
+      - 'scripts/run-webview-cookie-in-linux-netns.py'
+      - 'scripts/relocate-extracted-ubuntu-jre.py'
+      - 'scripts/probe-archived-remote-webview.py'
+      - 'scripts/report-public-webview-probes.py'
+      - 'scripts/compare-webview-cookie.py'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserCookieJar.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
+      - 'src/main/java/com/htmake/reader/utils/CamoufoxWebviewRenderer.kt'
       - 'src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt'
+      - 'src/main/java/com/htmake/reader/utils/WebviewRenderer.kt'
+      - 'src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt'
+      - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserCookieJarTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/WebviewCookieCompatibilityTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserUpstreamProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererOutputLimitTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererGuardTest.kt'
       - 'src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt'
+      - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
+      - 'src/test/java/io/legado/app/model/analyzeRule/**'
+      - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/browser_cgroup_report_test.py'
+      - 'src/test/python/compare_webview_cookie_safety_test.py'
+      - 'src/test/python/public_webview_probe_test.py'
+      - 'src/test/python/netns_guard_test.py'
   workflow_dispatch:
+    inputs:
+      native_arch:
+        description: 'Native GitHub-hosted architecture for the full Reader image (no QEMU or self-hosted runner)'
+        required: false
+        type: choice
+        options: [amd64, arm64]
+        default: amd64
+      real_public_source:
+        description: 'Also read one public book-list page through the bundled Camoufox browser'
+        required: false
+        type: boolean
+        default: false
+      probe_original_jar:
+        description: 'Extract an archived upstream JAR without executing it and compare its SHA-256 to the local original'
+        required: false
+        type: boolean
+        default: false
+      probe_remote_webview:
+        description: 'Probe the pinned historical remote WebView image with synthetic and public pages'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: browser-image-${{ github.ref }}
+  # A reference probe must not cancel a full-image acceptance run on the same
+  # branch. Only supersede another run of the same mode.
+  group: browser-image-${{ github.ref }}-${{ inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
   cancel-in-progress: true
 
 jobs:
-  integration:
-    name: Build and smoke-test the full Reader image
+  archived-remote-webview:
+    if: ${{ inputs.probe_remote_webview == true }}
+    name: Probe archived remote WebView reference
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run pinned historical service on loopback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a'
+          docker pull --platform linux/amd64 "$image"
+          docker run -d --name reader-archived-webview \
+            --platform linux/amd64 --memory=2g --cpus=2 --pids-limit=256 --shm-size=1g \
+            --add-host=host.docker.internal:host-gateway \
+            -p 127.0.0.1:18050:8050 "$image"
+          docker image inspect --format \
+            'Archived entrypoint={{json .Config.Entrypoint}} cmd={{json .Config.Cmd}} workdir={{json .Config.WorkingDir}}' \
+            "$image"
+          docker exec reader-archived-webview pwd
+          # Inspect only public image code paths; never print runtime requests
+          # from authenticated sources or dump a complete application tree.
+          timeout 10s docker exec reader-archived-webview sh -lc \
+            "grep -R -n --include='*.js' --exclude-dir=node_modules -m 2 'js_source' /app /usr/src/app /home/node 2>/dev/null | head -n 15" \
+            || true
+          docker exec reader-archived-webview sed -n '65,140p' /app/index.js
+          python3 scripts/probe-archived-remote-webview.py \
+            --remote-base http://127.0.0.1:18050 \
+            --public-url https://m.jjjxsw.com/txt/ \
+            | tee "$RUNNER_TEMP/archived-public-webview.log"
+      - name: Preserve bounded archived reference observations
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: archived-public-webview
+          path: ${{ runner.temp }}/archived-public-webview.log
+          if-no-files-found: error
+      - name: Stop reference service and show bounded state
+        if: always()
+        shell: bash
+        run: |
+          docker inspect --format 'Container state: {{json .State}}' reader-archived-webview 2>&1 || true
+          # This image logs full render inputs; never publish its request log.
+          docker rm -f reader-archived-webview >/dev/null 2>&1 || true
+
+  original-jar-provenance:
+    if: ${{ inputs.probe_original_jar == true }}
+    name: Verify archived original JAR provenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Extract JAR from archived image without running it
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader:3.2.14'
+          jar="$RUNNER_TEMP/reader-pro-3.2.14.jar"
+          docker pull --platform linux/amd64 "$image"
+          container=$(docker create --platform linux/amd64 "$image" true)
+          trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          echo 'Archived image container created without starting it.'
+          docker cp "$container:/app/bin/reader.jar" "$jar"
+          stat --format='Archived JAR size: %s bytes' "$jar"
+          sha256sum "$jar"
+          # Compare against the untouched local reader-pro-3.2.14.jar; the
+          # mirror's tag or image labels are not evidence of equivalence.
+          printf '%s  %s\n' \
+            'b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c' \
+            "$jar" | sha256sum --check
+          echo 'Original JAR SHA-256 matches the local read-only reference.'
+          unzip -p "$jar" META-INF/MANIFEST.MF | grep -E \
+            '^(Main-Class|Start-Class|Spring-Boot-Version|Implementation-Version):' || true
+      - name: Confirm JAR is not published
+        run: |
+          echo 'The verified JAR remains only in this ephemeral runner.'
+          echo 'It is not uploaded as an Actions artifact or committed to Git.'
+
+  integration:
+    if: ${{ inputs.probe_original_jar != true }}
+    name: Build and smoke-test the full Reader image
+    runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    env:
+      READER_CI_NATIVE_ARCH: ${{ inputs.native_arch || 'amd64' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify native hosted runner architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          machine=$(uname -m)
+          case "$READER_CI_NATIVE_ARCH:$RUNNER_ARCH:$machine" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) echo 'Unexpected runner architecture; refusing an emulated or mislabelled acceptance run.' >&2; exit 1 ;;
+          esac
+          printf 'Native hosted runner: expected=%s runner=%s kernel=%s\n' "$READER_CI_NATIVE_ARCH" "$RUNNER_ARCH" "$machine"
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - uses: actions/setup-node@v7
+      # The Camoufox wheel lock is intentionally generated for the image's
+      # Ubuntu Jammy / CPython 3.10 target. ubuntu-24.04's system python is
+      # 3.12 and would select a different, correctly rejected wheel hash.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
       - name: Test and build the full JAR
         run: |
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
+          npm ci --prefix web-vue3
+          npm run build --prefix web-vue3
+          npm test --prefix web-vue3
           chmod +x gradlew
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew clean test bootJar --no-daemon --stacktrace
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon --stacktrace
       - name: Verify browser runtime in the only JAR
         shell: bash
         run: |
           set -euo pipefail
-          unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/playwright-1.63.0.jar'
-          unzip -Z1 build/libs/reader-4.0.7.jar | grep -q 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
-          sha256sum build/libs/reader-4.0.7.jar
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          unzip -Z1 "$jar" | grep -q 'BOOT-INF/lib/playwright-1.63.0.jar'
+          unzip -Z1 "$jar" | grep -q 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
+          unzip -Z1 "$jar" | grep -q 'BOOT-INF/classes/camoufox/worker.py'
+          sha256sum "$jar"
       - name: Resolve Chromium for the local renderer regression
         shell: bash
         run: |
           set -euo pipefail
+          # ARM hosted images do not necessarily include the desktop/browser
+          # packages present on x64. These are runner-only test dependencies;
+          # the product image still gets its runtime from the locked OCI base.
+          if [[ "$READER_CI_NATIVE_ARCH" == arm64 ]]; then
+            npx --yes playwright@1.63.0 install-deps chromium firefox
+          fi
           chrome="$(command -v google-chrome || command -v chromium || true)"
           if [[ -z "$chrome" ]]; then
             npx --yes playwright@1.63.0 install chromium
@@ -87,23 +286,73 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: ./gradlew test --tests 'com.htmake.reader.utils.LocalWebviewRendererTest' --no-daemon
+      - name: Install the pinned Camoufox runtime for renderer contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/reader-camoufox"
+          "$RUNNER_TEMP/reader-camoufox/bin/pip" install --no-cache-dir \
+            --requirement deploy/reader-pro/requirements-camoufox.lock
+          READER_CAMOUFOX_PYTHON="$RUNNER_TEMP/reader-camoufox/bin/python" \
+            "$RUNNER_TEMP/reader-camoufox/bin/python" deploy/reader-pro/install_camoufox_pinned.py
+      - name: Verify Camoufox GET/POST, scripts, cookies, and sourceRegex
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_BROWSER_ALLOW_PRIVATE_NETWORKS: 'true'
+          READER_CAMOUFOX_PYTHON: ${{ runner.temp }}/reader-camoufox/bin/python
+          READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'
+        run: ./gradlew test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --no-daemon
+      - name: Preserve Camoufox contract report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: camoufox-contract-report
+          path: build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          if-no-files-found: warn
       - name: Build one-container image
         shell: bash
         run: |
           set -euo pipefail
-          cp build/libs/reader-4.0.7.jar deploy/reader-pro/
-          docker build -f deploy/reader-pro/Dockerfile -t reader-browser:smoke deploy/reader-pro
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          jar_name=$(basename "$jar")
+          temurin_jre_image=$(sed -n 's/^TEMURIN_JRE_IMAGE=//p' deploy/reader-pro/base-images.lock)
+          playwright_python_image=$(sed -n 's/^PLAYWRIGHT_PYTHON_IMAGE=//p' deploy/reader-pro/base-images.lock)
+          [[ "$temurin_jre_image" =~ ^eclipse-temurin@sha256:[0-9a-f]{64}$ ]]
+          [[ "$playwright_python_image" =~ ^mcr\.microsoft\.com/playwright/python@sha256:[0-9a-f]{64}$ ]]
+          revision=$(git rev-parse --verify HEAD)
+          version="ci-${revision:0:12}"
+          cp "$jar" "deploy/reader-pro/$jar_name"
+          docker build -f deploy/reader-pro/Dockerfile \
+            --build-arg "TEMURIN_JRE_IMAGE=$temurin_jre_image" \
+            --build-arg "PLAYWRIGHT_PYTHON_IMAGE=$playwright_python_image" \
+            --build-arg "READER_JAR=$jar_name" \
+            --build-arg "READER_VERSION=$version" \
+            --build-arg "READER_BUILD_REVISION=$revision" \
+            -t reader-browser:smoke deploy/reader-pro
+          docker image inspect --format 'Reader image size: {{.Size}} bytes' reader-browser:smoke
+          image_arch=$(docker image inspect --format '{{.Architecture}}' reader-browser:smoke)
+          test "$image_arch" = "$READER_CI_NATIVE_ARCH"
+          printf 'Full Reader image architecture: %s\n' "$image_arch"
+          # Keep a bounded layer breakdown to identify which pinned runtime
+          # contributes most to the image before changing any base image.
+          docker history --human=false --format '{{.Size}} {{.CreatedBy}}' reader-browser:smoke \
+            | sort -nr | sed -n '1,8p'
       - name: Run Reader API and WebView fixture inside the image
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/reader-browser-data"
           chmod 777 "$RUNNER_TEMP/reader-browser-data"
-          docker run -d --name reader-browser-smoke --network host --shm-size=1g \
+          # Exercise the browser under a finite budget close to the 4 GiB
+          # production host, rather than only on an unconstrained runner.
+          docker run -d --init --name reader-browser-smoke --network host --shm-size=1g \
+            --memory=2g --memory-swap=3g --pids-limit=256 --cpus=2 \
             --security-opt no-new-privileges:true --cap-drop ALL \
             --tmpfs /tmp:size=256m,mode=1777 \
             -v "$RUNNER_TEMP/reader-browser-data:/storage" \
             -e READER_SERVER_PORT=18890 \
+            -e READER_SERVER_BINDADDRESS=127.0.0.1 \
             -e READER_APP_WORKDIR=/ \
             -e READER_APP_SECURE=true \
             -e READER_APP_LICENSECHECKENABLED=false \
@@ -114,10 +363,79 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:18890/reader3/getSystemInfo >/dev/null
-          python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890
+          ss -lntH | grep ':18890' | tee "$RUNNER_TEMP/reader-browser-listener.txt"
+          grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18890([[:space:]]|$)' \
+            "$RUNNER_TEMP/reader-browser-listener.txt"
+          docker exec reader-browser-smoke python -m camoufox version
+          docker exec reader-browser-smoke sh -ec '
+            family=$(fc-list :lang=zh family | sed -n "1p")
+            test -n "$family"
+            printf "CJK font family: %s\n" "$family"
+          '
+          python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890 \
+            | tee "$RUNNER_TEMP/bundled-browser-synthetic.json"
+          if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
+            python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890 \
+              | tee "$RUNNER_TEMP/camoufox-public-webview.log"
+          fi
+          docker exec -i reader-browser-smoke python - < scripts/report-browser-cgroup.py \
+            | tee "$RUNNER_TEMP/bundled-browser-resource-budget.json"
+      - name: Preserve synthetic browser and resource observations
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bundled-browser-synthetic-and-resources
+          path: |
+            ${{ runner.temp }}/bundled-browser-synthetic.json
+            ${{ runner.temp }}/bundled-browser-resource-budget.json
+          if-no-files-found: error
+      - name: Preserve bounded bundled-browser observations
+        if: ${{ inputs.real_public_source == true }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: camoufox-public-webview
+          path: ${{ runner.temp }}/camoufox-public-webview.log
+          if-no-files-found: error
       - name: Print container diagnostics and stop it
         if: always()
         shell: bash
         run: |
+          docker stats --no-stream --format 'name={{.Name}} memory={{.MemUsage}} pids={{.PIDs}}' reader-browser-smoke || true
+          docker exec reader-browser-smoke sh -c '
+            for metric in memory.peak pids.peak; do
+              file="/sys/fs/cgroup/$metric"
+              if test -r "$file"; then printf "%s=" "$metric"; cat "$file"; fi
+            done
+          ' || true
           docker logs --tail=200 reader-browser-smoke || true
           docker rm -f reader-browser-smoke || true
+
+  compare-public-webview:
+    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true }}
+    needs: [archived-remote-webview, integration]
+    name: Compare public page observations (not production parity)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: archived-public-webview
+          path: ${{ runner.temp }}/public/archived
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: camoufox-public-webview
+          path: ${{ runner.temp }}/public/camoufox
+      - name: Compare public statuses and book projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/report-public-webview-probes.py \
+            --archived-log "$RUNNER_TEMP/public/archived/archived-public-webview.log" \
+            --camoufox-log "$RUNNER_TEMP/public/camoufox/camoufox-public-webview.log" \
+            --report "$RUNNER_TEMP/public-comparison.json"
+      - name: Preserve comparison with provenance limits
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-webview-comparison
+          path: ${{ runner.temp }}/public-comparison.json
+          if-no-files-found: error

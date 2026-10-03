@@ -42,6 +42,7 @@ app.mount('#app')
 // PWA：Service Worker 注册——仅生产模式（开发期热更新会与 SW 缓存互相干扰）；
 // sw.js 为 ES Module（导出纯函数供 node 单测，M5）——须以 { type: 'module' } 注册
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  const notifyUpdateReady = () => window.dispatchEvent(new Event('reader:update-ready'))
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`, {
@@ -49,13 +50,15 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
         scope: import.meta.env.BASE_URL,
       })
       .then((reg) => {
-        // legacy updateForce + SKIP_WAITING：新版本 SW 安装完成后立即接管并刷新页面
+        // An update must wait for the user's choice. Reloading automatically
+        // can discard a login, source editor, or reading settings form.
+        if (reg.waiting && navigator.serviceWorker.controller) notifyUpdateReady()
         reg.addEventListener('updatefound', () => {
           const worker = reg.installing
           if (!worker) return
           worker.addEventListener('statechange', () => {
             if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-              worker.postMessage({ type: 'SKIP_WAITING' })
+              notifyUpdateReady()
             }
           })
         })
@@ -66,8 +69,20 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       })
   })
   let swReloading = false
+  let reloadRequested = false
+  window.addEventListener('reader:apply-update', () => {
+    reloadRequested = true
+    navigator.serviceWorker
+      .getRegistration(import.meta.env.BASE_URL)
+      .then((reg) => {
+        if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' })
+        else window.location.reload()
+      })
+      .catch(() => window.location.reload())
+  })
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (swReloading) return
+    // First install/claim and background updates never interrupt user input.
+    if (!reloadRequested || swReloading) return
     swReloading = true
     window.location.reload()
   })

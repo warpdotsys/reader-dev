@@ -1,53 +1,33 @@
 import { useUserStore } from '@/stores/user'
-import { get, post } from './request'
+import { post } from './request'
 import { parseSSEBlock, consumeSSEStreamBlocks } from './sse'
 import type { ReturnData } from '@/types'
 
 /**
- * 服务端缓存本书 —— 后端契约（后端并行实现中，未就绪时 silent 降级提示）
+ * 已验证的 Java/Kotlin 服务端缓存契约。
  *
- * POST /reader3/cacheBookOnServer?url=<bookUrl>   → 启动后台整书缓存任务，立即返回
- * POST /reader3/cacheBookRangeOnServer           → 启动后台章节范围缓存，返回 taskId
- *      ReturnData<{ started, url, cached, total, title }>
- * GET  /reader3/cacheBookSSE?url=<bookUrl>        → SSE 进度流（约每 300ms 一帧；taskId 精确订阅）
- *      data: { cached, total, title, finished, cancelled, error }
- * GET  /reader3/cancelCacheBook?url=<bookUrl>     → 取消任务（内存任务表移除）
+ * POST /reader3/cacheBookOnServer body: { bookUrlList: string[] }
+ *   异步整书预缓存；不提供任务号或进度。
+ * GET /reader3/cacheBookSSE?url=<bookUrl>&refresh=0&concurrentCount=24
+ *   当前请求直接执行整书缓存。SSE data 为
+ *   { cachedCount, successCount, failedCount }，以 event: end 结束。
  *
- * 说明：任务契约描述为「POST 即 SSE 进度」，后端实现为「POST 启动 + cacheBookSSE 轮询推送」，
- * 此处按后端实现对接（两者进度事件结构一致：{cached,total,title}）。
- * 传输层失败（网络错误 / 非 200）reject，由调用方 silent 降级提示。
+ * 服务端没有范围缓存、任务取消或已缓存章节列表 API。关闭 SSE 连接是唯一可用的停止方式；
+ * 调用方不得把它包装成精确取消或范围缓存。
  */
 
-/** POST /reader3/cacheBookOnServer 启动结果 */
-export interface CacheStartResult {
-  started: boolean
-  url?: string
-  cached: number
-  total: number
-  title?: string
-}
-
-/** POST /reader3/cacheBookRangeOnServer 启动结果（taskId 供 SSE/取消精确订阅） */
-export interface CacheRangeStartResult extends CacheStartResult {
-  taskId?: string
-}
-
-/** 缓存进度帧（SSE data） */
 export interface CacheSSEProgress {
-  cached: number
-  total: number
-  title?: string
-  finished?: boolean
-  cancelled?: boolean
-  error?: string | null
+  /** 缓存目录中已有章节的总数（含本次已写入） */
+  cachedCount: number
+  /** 本次 SSE 成功写入的章节数 */
+  successCount: number
+  /** 本次 SSE 拉取失败的章节数 */
+  failedCount: number
 }
 
 export interface CacheProgressCallbacks {
-  /** 进度帧到达 */
   onProgress: (p: CacheSSEProgress) => void
-  /** 流正常结束（含 finished 帧后结束） */
   onEnd?: () => void
-  /** 传输层失败（非用户关闭） */
   onStreamError: (msg: string) => void
 }
 
@@ -55,37 +35,9 @@ export interface CacheProgressHandle {
   close: () => void
 }
 
-/** POST /reader3/cacheBookOnServer：启动后台缓存（silent——未就绪时调用方降级） */
-export function cacheBookOnServer(url: string): Promise<ReturnData<CacheStartResult>> {
-  return post<CacheStartResult>('/cacheBookOnServer', { url }, { silent: true })
-}
-
-/** POST /reader3/cacheBookRangeOnServer：启动目录实章 0 基闭区间缓存任务 */
-export function cacheBookRangeOnServer(
-  url: string,
-  from: number,
-  to: number,
-): Promise<ReturnData<CacheRangeStartResult>> {
-  return post<CacheRangeStartResult>('/cacheBookRangeOnServer', { url, from, to }, { silent: true })
-}
-
-/** GET /reader3/getBookCacheChapters：拉取服务器已缓存章节（目录缓存标记用） */
-export interface ServerCachedChapter {
-  index: number
-  title: string
-  content: string
-}
-
-export interface ServerCachedChapters {
-  url: string
-  chapters: ServerCachedChapter[]
-  hasMore: boolean
-}
-
-export function getBookCacheChapters(
-  url: string,
-): Promise<ReturnData<ServerCachedChapters>> {
-  return get<ServerCachedChapters>('/getBookCacheChapters', { url }, { silent: true })
+/** 无进度的整书后台预缓存。需要进度时使用 cacheBookSSE。 */
+export function cacheBookOnServer(bookUrlList: string[]): Promise<ReturnData<string>> {
+  return post<string>('/cacheBookOnServer', { bookUrlList }, { silent: true })
 }
 
 function tryJson(s: string): unknown {
@@ -97,25 +49,17 @@ function tryJson(s: string): unknown {
 }
 
 function dispatchSSEBlock(block: string, cbs: CacheProgressCallbacks) {
-  // SSE 事件块解析统一走 api/sse.ts（P2：SSE 解析三处统一）
   const evt = parseSSEBlock(block)
   if (!evt || !evt.data) return
-  const p = tryJson(evt.data) as (CacheSSEProgress & { type?: unknown; message?: unknown }) | null
+  const p = tryJson(evt.data) as (CacheSSEProgress & { message?: unknown }) | null
   if (!p || typeof p !== 'object') return
-  // 兼容两种命名：`event: progress` 与无名事件 + JSON.type=progress（后端当前为无名 data 帧）
-  const isProgress =
-    evt.event === 'progress' || evt.event === '' || evt.event === 'message' || p.type === 'progress'
-  if (isProgress && typeof p.cached === 'number' && typeof p.total === 'number') {
+  if (typeof p.cachedCount === 'number') {
     cbs.onProgress({
-      cached: Math.max(0, p.cached),
-      total: Math.max(0, p.total),
-      title: typeof p.title === 'string' ? p.title : undefined,
-      finished: p.finished === true,
-      cancelled: p.cancelled === true,
-      error: typeof p.error === 'string' ? p.error : null,
+      cachedCount: Math.max(0, p.cachedCount),
+      successCount: typeof p.successCount === 'number' ? Math.max(0, p.successCount) : 0,
+      failedCount: typeof p.failedCount === 'number' ? Math.max(0, p.failedCount) : 0,
     })
-    if (p.finished === true) cbs.onEnd?.()
-  } else if (evt.event === 'error' || p.type === 'error') {
+  } else if (evt.event === 'error') {
     cbs.onStreamError(typeof p.message === 'string' ? p.message : '缓存任务失败')
   }
 }
@@ -125,7 +69,6 @@ async function consumeSSEStream(
   cbs: CacheProgressCallbacks,
   closed: () => boolean,
 ): Promise<void> {
-  // 块切分/增量消费统一走 api/sse.ts（P2：SSE 解析三处统一）
   let streamFailed = false
   await consumeSSEStreamBlocks(
     body,
@@ -136,23 +79,22 @@ async function consumeSSEStream(
       cbs.onStreamError(msg)
     },
   )
-  // 仅正常结束触发 onEnd（连接中断/用户关闭不触发——调用方据此判断「缓存完成」）
   if (!streamFailed && !closed()) cbs.onEnd?.()
 }
 
-/** GET /reader3/cacheBookSSE：订阅缓存进度流（原生 fetch 流式读取，accessToken 手动附加） */
+/** 订阅并执行整书缓存；refresh=1 会无视已有正文缓存重新拉取。 */
 export function cacheBookSSE(
-  key: string,
+  bookUrl: string,
   cbs: CacheProgressCallbacks,
-  useTaskId = false,
+  options: { refresh?: number; concurrentCount?: number } = {},
 ): Promise<CacheProgressHandle> {
   const controller = new AbortController()
   const token = useUserStore().accessToken
-  const idParam = useTaskId ? 'taskId' : 'url'
-  const query = token
-    ? `?${idParam}=${encodeURIComponent(key)}&accessToken=${encodeURIComponent(token)}`
-    : `?${idParam}=${encodeURIComponent(key)}`
-  return fetch(`/reader3/cacheBookSSE${query}`, {
+  const params = new URLSearchParams({ url: bookUrl })
+  if (typeof options.refresh === 'number') params.set('refresh', String(options.refresh))
+  if (typeof options.concurrentCount === 'number') params.set('concurrentCount', String(options.concurrentCount))
+  if (token) params.set('accessToken', token)
+  return fetch(`/reader3/cacheBookSSE?${params.toString()}`, {
     method: 'GET',
     headers: { Accept: 'text/event-stream' },
     signal: controller.signal,
@@ -162,16 +104,4 @@ export function cacheBookSSE(
     void consumeSSEStream(response.body, cbs, () => controller.signal.aborted)
     return { close: () => controller.abort() } satisfies CacheProgressHandle
   })
-}
-
-/** GET /reader3/cancelCacheBook：取消缓存任务（taskId 精确取消；silent——未就绪时调用方降级） */
-export function cancelCacheBook(
-  key: string,
-  useTaskId = false,
-): Promise<ReturnData<{ cancelled: boolean }>> {
-  return get<{ cancelled: boolean }>(
-    '/cancelCacheBook',
-    useTaskId ? { taskId: key } : { url: key },
-    { silent: true },
-  )
 }

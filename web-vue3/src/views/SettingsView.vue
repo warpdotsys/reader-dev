@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { version as VERSION } from '../../package.json'
 import TopNav from '@/components/TopNav.vue'
 import {
   deleteHttpTts,
@@ -26,7 +27,6 @@ import {
   bgImageUrl as bgImageUrlOf,
   type BgMode,
 } from '@/utils/readerBg'
-import { clearCache, getCacheInfo } from '@/api/cache'
 import { clearTtsCache, ttsCacheStats } from '@/utils/ttsCache'
 import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/api/backup'
 import { getSystemInfo } from '@/api/system'
@@ -56,15 +56,12 @@ import { isNotImplemented } from '@/utils/errors'
 import { DAILY_STATS_KEY, last7Days, parseDailyStats } from '@/utils/dailyStats'
 import { useUserStore } from '@/stores/user'
 import { downloadBlob } from '@/utils/download'
-import type { CacheClearType, CacheInfo, HttpTts, SystemInfo, TxtTocRule } from '@/types'
+import type { HttpTts, SystemInfo, TxtTocRule } from '@/types'
 
 const router = useRouter()
 const store = useUserStore()
 
-/** 版本号与后端 Cargo.toml 保持一致（getSystemInfo 不可用时兜底显示） */
-const VERSION = '5.2.4'
-
-/** 系统信息（/reader3/getSystemInfo，设置页「关于」区展示） */
+/** Java/Kotlin 的 getSystemInfo 不提供版本号，前端版本来自 package.json。 */
 const sysInfo = ref<SystemInfo | null>(null)
 
 async function loadSysInfo() {
@@ -72,7 +69,7 @@ async function loadSysInfo() {
     const res = await getSystemInfo()
     sysInfo.value = res.data ?? null
   } catch {
-    sysInfo.value = null // 后端不可用时静默（版本仍显示前端常量）
+    sysInfo.value = null // 后端不可用时静默；不伪造服务端版本或统计数字
   }
 }
 
@@ -263,13 +260,13 @@ async function confirmAddTts() {
   }
   ttsBusy.value = true
   try {
-    // 当前为 localStorage 占位；后端就绪后走 POST /reader3/saveHttpTTS（见 api/httpTts.ts）
-    await saveHttpTts({
+    const result = await saveHttpTts({
       id: newTtsId(),
       name: ttsForm.value.name.trim() || url,
       url,
       type: ttsForm.value.type,
     })
+    if (!result.isSuccess) ElMessage.warning('服务端不可用，听书源已暂存到当前浏览器')
     await loadTtsList()
     closeAddTts()
   } finally {
@@ -291,8 +288,8 @@ async function confirmDeleteTts() {
   if (!t || deleteTtsBusy.value) return
   deleteTtsBusy.value = true
   try {
-    // 当前为 localStorage 占位；后端就绪后走 POST /reader3/deleteHttpTTS（见 api/httpTts.ts）
-    await deleteHttpTts(t.id)
+    const result = await deleteHttpTts(t)
+    if (!result.isSuccess) ElMessage.warning('服务端不可用，仅删除了当前浏览器的缓存')
     ttsList.value = ttsList.value.filter((x) => x.id !== t.id)
     closeDeleteTts()
   } catch {
@@ -319,8 +316,10 @@ async function removeSelectedTts() {
   ttsBusy.value = true
   try {
     const ids = [...ttsSelected.value]
-    const res = await deleteHttpTtsMany(ids)
-    ElMessage.success(`已删除 ${res.data?.count ?? ids.length} 个听书源`)
+    const targets = ttsList.value.filter((t) => ids.includes(t.id))
+    const result = await deleteHttpTtsMany(targets)
+    if (result.isSuccess) ElMessage.success(`已删除 ${targets.length} 个听书源`)
+    else ElMessage.warning(`服务端不可用，仅删除了当前浏览器缓存中的 ${targets.length} 个听书源`)
     ttsSelected.value = new Set()
     await loadTtsList()
   } catch {
@@ -343,8 +342,9 @@ async function importTtsFile(file: File) {
     ElMessage.warning('未找到有效听书源数据')
     return
   }
-  const res = await saveHttpTtsMulti(parsed)
-  ElMessage.success(`已导入 ${res.data?.count ?? parsed.length} 个听书源`)
+  const result = await saveHttpTtsMulti(parsed)
+  if (result.isSuccess) ElMessage.success(`已导入 ${parsed.length} 个听书源`)
+  else ElMessage.warning(`服务端不可用，已暂存 ${parsed.length} 个听书源到当前浏览器`)
   await loadTtsList()
 }
 
@@ -504,7 +504,6 @@ onMounted(() => {
   loadTtsList()
   loadSysInfo()
   loadTxtTocRules()
-  loadCacheInfo()
   loadServerPref()
   loadOpdsCfg()
 })
@@ -598,6 +597,13 @@ async function loadServerPref() {
     }
     prefMsg.value = '已从服务器同步阅读偏好（服务器优先）'
   } catch (err) {
+    // 原 JAR 与恢复版在新账号尚无配置文件时都返回此业务错误；这是首次使用，
+    // 不应在设置页显示成红色的同步故障，也不应覆盖本地默认阅读偏好。
+    if (err instanceof Error && err.message.trim() === '没有备份文件') {
+      prefMsg.value = '尚无云端阅读偏好，正在使用本机设置'
+      prefMsgError.value = false
+      return
+    }
     prefMsg.value = isNotImplemented(err)
       ? '配置同步接口后端暂未提供（GET /reader3/getUserConfig）· 当前仅保存在本机'
       : `同步失败：${err instanceof Error ? err.message : '请稍后重试'}`
@@ -995,60 +1001,15 @@ function closeStats() {
   document.body.style.overflow = ''
 }
 
-/* ================= 缓存管理（契约 GET /reader3/getCacheInfo + POST /reader3/clearCache） ================= */
-
-const cacheInfo = ref<CacheInfo | null>(null)
-/** 后端契约是否可用（getCacheInfo 静默探测；未实现时置 false，界面显示「后端待实现」） */
-const cacheReady = ref(false)
-const cacheBusy = ref(false)
-
-/** 清理类型（极简胶囊单选）：目录 / 章节 / 全部 */
-const CLEAR_TYPES: { value: CacheClearType; label: string }[] = [
-  { value: 'toc', label: '目录' },
-  { value: 'chapters', label: '章节' },
-  { value: 'all', label: '全部' },
-]
-const cacheType = ref<CacheClearType>('chapters')
+/* ================= 缓存管理 =================
+ * 已验证：后端仅支持单书缓存信息与单书删除，入口在书籍详情。
+ * 不存在全局统计/清理 API，因此这里不发出虚假的探测请求或成功提示。 */
 
 function fmtSize(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return '0 B'
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
   return `${(n / 1024 / 1024).toFixed(1)} MB`
-}
-
-async function loadCacheInfo() {
-  try {
-    const res = await getCacheInfo()
-    cacheInfo.value = res.data ?? null
-    cacheReady.value = true
-  } catch {
-    // 接口未实现（404）/网络失败：静默降级显示「后端待实现」
-    cacheInfo.value = null
-    cacheReady.value = false
-  }
-}
-
-function clearTypeLabel(t: CacheClearType): string {
-  return CLEAR_TYPES.find((x) => x.value === t)?.label ?? t
-}
-
-async function runClearCache() {
-  if (!cacheReady.value) {
-    ElMessage.info('清理缓存接口后端待实现（POST /reader3/clearCache）')
-    return
-  }
-  if (cacheBusy.value) return
-  cacheBusy.value = true
-  try {
-    await clearCache(cacheType.value)
-    ElMessage.success(`已清理${clearTypeLabel(cacheType.value)}缓存`)
-    await loadCacheInfo()
-  } catch {
-    // 已提示
-  } finally {
-    cacheBusy.value = false
-  }
 }
 
 /* ================= P0-3b 听书缓存（Cache API 本地音频，独立于后端章节缓存） ================= */
@@ -1074,6 +1035,8 @@ const opdsUrl = computed(() => {
   const base = `${window.location.origin}/opds`
   return store.accessToken ? `${base}?accessToken=${encodeURIComponent(store.accessToken)}` : base
 })
+/** 地址仍可一键复制，但页面和无障碍树不直接暴露访问令牌。 */
+const opdsDisplayUrl = computed(() => opdsUrl.value.replace(/([?&]accessToken=)[^&#]+/, '$1已隐藏'))
 const opdsCopied = ref(false)
 
 /* GAP 53：OPDS 独立账号 + 测试连接（GET/POST /reader3/getOpdsSettings|saveOpdsSettings；fetch /opds 验证） */
@@ -1677,7 +1640,7 @@ async function runExportData() {
         <h2 class="card-title">OPDS 访问</h2>
         <div class="row">
           <span class="row-label">OPDS 地址</span>
-          <span class="row-value mono">{{ opdsUrl }}</span>
+          <span class="row-value mono">{{ opdsDisplayUrl }}</span>
           <button class="row-action" type="button" @click="copyOpdsUrl">
             {{ opdsCopied ? '已复制' : '复制' }}
           </button>
@@ -1701,7 +1664,7 @@ async function runExportData() {
             {{ opdsTesting ? '测试中…' : '测试连接' }}
           </button>
         </div>
-        <p class="card-note">外部阅读器（如 legado、静读天下等）可通过此地址连接书架；已在地址中附带 accessToken，复制后粘贴到阅读器 OPDS 地址栏即可（未登录时不附带）。</p>
+        <p class="card-note">外部阅读器（如 legado、静读天下等）可通过此地址连接书架。页面已隐藏 accessToken；点击复制会得到完整地址，请仅粘贴到可信的阅读器中。</p>
       </section>
 
       <!-- 数据备份 -->
@@ -1747,45 +1710,14 @@ async function runExportData() {
         <p class="card-note">WebDAV 地址供外部客户端（如 RaiDrive、文件管理器）挂载访问；备份需要当前用户已开启 WebDAV。备份遵循旧版接口，固定写入当前用户数据目录下的 webdav/legado，并通过同一用户的文件权限下载。</p>
       </section>
 
-      <!-- 缓存（契约 GET /reader3/getCacheInfo + POST /reader3/clearCache） -->
+      <!-- 缓存：后端当前仅支持单书操作，入口在书籍详情页 -->
       <section class="card">
         <h2 class="card-title">缓存</h2>
         <div class="row">
-          <span class="row-label">缓存统计</span>
-          <span v-if="cacheReady" class="row-value">
-            章节 {{ cacheInfo?.chapterCount ?? 0 }} · 目录 {{ cacheInfo?.tocCacheCount ?? 0 }} · {{ fmtSize(cacheInfo?.totalSize ?? 0) }}
-          </span>
-          <span v-else class="row-value">后端待实现</span>
+          <span class="row-label">书籍正文</span>
+          <span class="row-value">按书管理</span>
         </div>
-        <div class="row">
-          <span class="row-label">清理缓存</span>
-          <div class="cache-types">
-            <button
-              v-for="t in CLEAR_TYPES"
-              :key="t.value"
-              class="capsule"
-              :class="{ active: cacheType === t.value }"
-              type="button"
-              :disabled="!cacheReady || cacheBusy"
-              @click="cacheType = t.value"
-            >
-              {{ t.label }}
-            </button>
-          </div>
-          <button
-            class="row-action cache-clear"
-            type="button"
-            :disabled="!cacheReady || cacheBusy"
-            :title="cacheReady ? '清理所选类型缓存' : '清理接口后端待实现'"
-            @click="runClearCache"
-          >
-            {{ cacheBusy ? '清理中…' : '清理' }}
-          </button>
-        </div>
-        <p v-if="!cacheReady" class="card-note">
-          缓存统计接口 GET /reader3/getCacheInfo 与清理接口 POST /reader3/clearCache 后端待实现。
-        </p>
-        <p v-else class="card-note">正文/目录缓存占用磁盘空间，清理后再次打开会重新拉取。</p>
+        <p class="card-note">当前 Java/Kotlin 后端提供单书缓存状态与单书清理。请在书籍详情页操作；全局缓存统计和批量清理尚无后端接口，因此本页不会显示不可靠的数据或“清理成功”。</p>
         <!-- P0-3b 听书音频缓存（浏览器 Cache API，与后端章节缓存独立） -->
         <div class="row">
           <span class="row-label">听书音频</span>
@@ -1906,8 +1838,8 @@ async function runExportData() {
           <span class="row-value">Reader Dev（夜读）</span>
         </div>
         <div class="row">
-          <span class="row-label">版本</span>
-          <span class="row-value">v{{ sysInfo?.version || VERSION }}</span>
+          <span class="row-label">前端版本</span>
+          <span class="row-value">v{{ VERSION }} · Java/Kotlin 候选界面</span>
         </div>
         <div class="row">
           <span class="row-label">定位</span>
@@ -1915,60 +1847,28 @@ async function runExportData() {
         </div>
         <div class="row">
           <span class="row-label">技术栈</span>
-          <span class="row-value">Rust + Vue 3 · legado 语义书源规则引擎</span>
+          <span class="row-value">Java/Kotlin + Vue 3 · legado 语义书源规则引擎</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.4</span>
-          <span class="row-value">搜索并发提升（多源 24 / SSE 48）· 内置反检测浏览器增强（stealth 指纹补齐 + 反爬域名自动优先）· 失效书源检测超时修复（96 并发 + 900s 前端超时）· 书架密度按钮/悬浮简介层叠修复 · 书源管理/文件页/设置页移动端布局修复 · 正文无换行智能分句</span>
+          <span class="row-label">服务端版本</span>
+          <span class="row-value">当前接口未提供；请以部署镜像标签和发布记录为准</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.3</span>
-          <span class="row-value">书源导入预览选择/排序（全选/反选/新增/重复标记）· 按书源分组搜索 · 书仓目录直接扫描导入书架 · 书架已读章节与未读更新数 · 正文 script 泄漏清洗 · java.createSymmetricCrypto 对称解密 · 暂不加入可返回 · 移动端竖屏适配</span>
+          <span class="row-label">浏览器渲染</span>
+          <span class="row-value">完整镜像内置 Camoufox；是否启用以服务端配置为准，普通 JAR 不自带浏览器二进制</span>
         </div>
         <div class="row">
-          <span class="row-label">v5.2.2</span>
-          <span class="row-value">KindleMOBI 尾部附加数据清理（trailing/multibyte flags）与 PalmDoc 重叠回引展开，修复 4KB 边界后中文乱码与残留 HTML</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.2.1</span>
-          <span class="row-value">MOBI/AZW3 未知编码中文修复（PalmDoc/Huffman 原始字节解压 + chardetng 编码探测，样本正文验证通过）</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.2.0</span>
-          <span class="row-value">阅读中换源（作者/最新章/当前章末尾预览）· 规则引擎修复（JS 搜索 URL、相对 URL、URL/URLSearchParams、jsLib/variable 全局注入）· 统计式编码探测 · 内置反检测浏览器兜底 · Docker 分层复用 · 移动端自适应 · quickKey/点击区域/切章动画/章节超时 · 离线书架缓存 · 图片代理 · 多分组 · 书源 Cookie 管理 · 自定义字体 · 文件编辑 · 精确搜书</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.1.0</span>
-          <span class="row-value">legacy Web UI 批次 · simple-web 详情/换源/RSS 分类分页 · 内置背景图库 · 替换规则批量与 JSON · RSS 编辑与导入 · 订阅批量删除 · 阅读页详情与追更</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.0.9</span>
-          <span class="row-value">legacy 全量对齐 · 默认 TXT 目录规则 · 本地文件名书名/作者解析 · CBZ ComicInfo 与封面</span>
-        </div>
-        <div class="row">
-          <span class="row-label">v5.0.8</span>
-          <span class="row-value">双向章节缓存 · 迁移 toc_url 回填 · 正文 HTML 清洗 · Android application 兼容</span>
-        </div>
-        <div class="row">
-          <span class="row-label">权限模型</span>
-          <span class="row-value">管理员管理系统 default 配置 · 普通用户私有覆盖仅对自己生效</span>
+          <span class="row-label">发布记录</span>
+          <span class="row-value"><a class="tg-link" href="https://github.com/warpdotsys/reader-dev/releases" target="_blank" rel="noopener">查看正式版本、已知问题与升级说明</a></span>
         </div>
         <template v-if="sysInfo">
           <div class="row">
-            <span class="row-label">服务端口</span>
-            <span class="row-value mono">{{ sysInfo.port }}</span>
+            <span class="row-label">JVM 当前堆</span>
+            <span class="row-value mono">{{ sysInfo.totalMemory || '未知' }}</span>
           </div>
           <div class="row">
-            <span class="row-label">用户数</span>
-            <span class="row-value">{{ sysInfo.userCount }}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">书籍数</span>
-            <span class="row-value">{{ sysInfo.bookCount }}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">书源数</span>
-            <span class="row-value">{{ sysInfo.bookSourceCount }}</span>
+            <span class="row-label">JVM 堆上限</span>
+            <span class="row-value mono">{{ sysInfo.maxMemory || '未知' }}</span>
           </div>
         </template>
         <div class="row">

@@ -1,6 +1,8 @@
 package io.legado.app.model.analyzeRule
 
 import com.script.SimpleBindings
+import com.htmake.reader.utils.BrowserCookieJar
+import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppConst.SCRIPT_ENGINE
 import io.legado.app.constant.AppConst.UA_NAME
@@ -351,7 +353,13 @@ class AnalyzeUrl(
             return StrResponse(url, StringUtils.byteToHexString(getByteArrayAwait()))
         }
         val concurrentRecord = fetchStart()
-        setCookie(source?.getKey())
+        // In-process browsers obtain structured cookies themselves. A remote
+        // renderer still relies on Reader's Cookie header; skipping setCookie
+        // for every WebView request broke the remote rollback path.
+        if (!(this.useWebView && useWebView &&
+                    ReaderAdapterHelper.getAdapter().managesWebviewCookies())) {
+            setCookie(source?.getKey())
+        }
         val strResponse: StrResponse?
         if (this.useWebView && useWebView) {
             strResponse = if (method == RequestMethod.POST) {
@@ -408,7 +416,18 @@ class AnalyzeUrl(
         if (cookieList.isEmpty()) return
         val cookieStore = CookieStore(getUserNameSpace())
         val domain = NetworkUtils.getSubDomain(url)
-        cookieList.forEach { cookieStore.replaceResponseCookie("${domain}_cookieJar", it) }
+        // Preserve pre-existing flat state before a normal HTTP response makes
+        // this scope structured. BrowserCookieJar validates Domain records with
+        // the public suffix list instead of flattening response attributes.
+        BrowserCookieJar.migrateLegacyCookies(
+            cookieStore,
+            url,
+            if (enabledCookieJar) cookieStore.getCookie("${domain}_cookieJar") else ""
+        )
+        BrowserCookieJar.mergeResponseHeaders(cookieStore, url, cookieList)
+        // Do not write new Set-Cookie values back to the attribute-less legacy
+        // key. In particular, an HTTP `Secure` cookie or a rejected public-suffix
+        // Domain must not later be resurrected as an ordinary Cookie header.
     }
 
     @JvmOverloads
@@ -532,20 +551,30 @@ class AnalyzeUrl(
         val domain = NetworkUtils.getSubDomain(tag ?: url)
         if (domain.isEmpty()) return
         val cookieStore = CookieStore(getUserNameSpace())
-        if (enabledCookieJar) {
-            cookieStore.getCookie("${domain}_cookieJar")?.let {
-                cookieStore.replaceCookie(domain, it)
-            }
-        }
-        val cookie = cookieStore.getCookie(domain)
-        if (cookie.isNotEmpty()) {
-            val cookieMap = cookieStore.cookieToMap(cookie)
-            val customCookieMap = cookieStore.cookieToMap(headerMap["Cookie"] ?: "")
-            cookieMap.putAll(customCookieMap)
-            val newCookie = cookieStore.mapToCookie(cookieMap)
-            newCookie?.let {
-                headerMap.put("Cookie", it)
-            }
+        val legacyCookieJar = if (enabledCookieJar) {
+            // Legacy cookie jars are still supported, but remain request-local.
+            // Writing them into the domain key here would revive a scoped browser
+            // cookie after it was deleted and loses Path/Secure information.
+            cookieStore.getCookie("${domain}_cookieJar")
+        } else ""
+        // Browser records retain duplicate names with different paths. Manual and
+        // explicit legacy values are applied inside BrowserCookieJar after those
+        // records, while historical flat values are imported only before this
+        // Reader cookie scope becomes browser-managed.
+        val pairs = BrowserCookieJar.cookiesForRequest(
+            cookieStore,
+            url,
+            legacyCookieHeader = legacyCookieJar,
+            explicitCookieHeader = headerMap["Cookie"] ?: ""
+        )
+            .asSequence()
+            .sortedByDescending { it.path.length }
+            .map { "${it.name}=${it.value}" }
+            .toList()
+        if (pairs.isNotEmpty()) {
+            headerMap["Cookie"] = pairs.joinToString(";")
+        } else {
+            headerMap.remove("Cookie")
         }
     }
 

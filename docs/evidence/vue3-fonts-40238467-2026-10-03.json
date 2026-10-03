@@ -1,0 +1,22 @@
+{
+  "headCommit": "40238467cf09da2e9dca82e3f42dc6810ee9f64a",
+  "testedPrMergeCommit": "e772e3f777d95618590fd15670fc74cc4340dbe5",
+  "vue3Run": 37098305680,
+  "workflowSucceeded": true,
+  "coreTests": 9,
+  "coreSkipped": 0,
+  "coreFailures": 0,
+  "coreErrors": 0,
+  "layoutSeconds": 3.642,
+  "fontPackage": "fonts-noto-cjk",
+  "fontGuardPassed": true,
+  "observedFirstCjkFamily": "Noto Serif CJK JP",
+  "screenshotArtifact": "vue3-shelf-layout-e772e3f777d95618590fd15670fc74cc4340dbe5",
+  "screenshotVisuallyInspected": true,
+  "chineseShelfHeadingRendered": true,
+  "chineseImportButtonRendered": true,
+  "chineseFixtureIntroRendered": true,
+  "privateDataUsed": false,
+  "productionChanged": false,
+  "allChinesePagesOrEncodingsProven": false
+}

@@ -3,10 +3,9 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref , watch } from 'vue
 import { ElMessage } from 'element-plus'
 import {
   deleteRssSource,
-  getRssArticle,
+  getRssContent,
   getRssArticles,
   getRssSources,
-  markRssArticleRead,
   saveRssSource,
 } from '@/api/rss'
 import { t } from '@/utils/i18n'
@@ -55,6 +54,7 @@ const articlePage = ref(1)
 const hasMore = ref(false)
 const loadingMore = ref(false)
 const activeSortUrl = ref('')
+const activeSortName = ref('')
 
 /** legacy sortUrl 多段 `名称::地址`（&&/换行分隔）解析为分类 tab */
 function sortTabsOf(s: RssSource | undefined): { name: string; url: string }[] {
@@ -83,6 +83,7 @@ function clearArticles() {
   articlePage.value = 1
   hasMore.value = false
   activeSortUrl.value = ''
+  activeSortName.value = ''
   articleMode.value = false
   readingArticle.value = null
   articleContent.value = ''
@@ -121,6 +122,7 @@ async function selectSource(url: string) {
   hasMore.value = false
   const tabs = sortTabsOf(sources.value.find((s) => s.sourceUrl === url))
   activeSortUrl.value = tabs[0]?.url ?? ''
+  activeSortName.value = tabs[0]?.name ?? ''
   articleMode.value = false
   readingArticle.value = null
   articleContent.value = ''
@@ -133,14 +135,19 @@ async function loadArticles(page: number) {
   if (page === 1) loadingArticles.value = true
   else loadingMore.value = true
   try {
-    const res = await getRssArticles(selectedUrl.value, page, activeSortUrl.value || undefined)
+    const res = await getRssArticles(
+      selectedUrl.value,
+      page,
+      activeSortUrl.value || undefined,
+      activeSortName.value || undefined,
+    )
     const list = res.data ?? []
     if (page === 1) {
       articles.value = list
     } else {
       // 防重复（后端若忽略 page 参数返回全量）
-      const seen = new Set(articles.value.map((a) => a.url))
-      articles.value.push(...list.filter((a) => !seen.has(a.url)))
+      const seen = new Set(articles.value.map(articleKey))
+      articles.value.push(...list.filter((a) => !seen.has(articleKey(a))))
     }
     hasMore.value = list.length >= PAGE_SIZE
     articlePage.value = page
@@ -153,9 +160,10 @@ async function loadArticles(page: number) {
 }
 
 /** 切换分类 tab：清空列表回到第 1 页（后端按 sortUrl 抓对应分类 feed） */
-function switchSort(url: string) {
-  if (activeSortUrl.value === url) return
-  activeSortUrl.value = url
+function switchSort(tab: { name: string; url: string }) {
+  if (activeSortUrl.value === tab.url) return
+  activeSortUrl.value = tab.url
+  activeSortName.value = tab.name
   articles.value = []
   articlePage.value = 1
   hasMore.value = false
@@ -167,7 +175,35 @@ function switchSort(url: string) {
 }
 
 /** 未读计数（标题旁展示） */
-const unreadCount = computed(() => articles.value.filter((a) => !a.hasRead).length)
+/** Java/Kotlin 没有文章已读写入路由；状态仅保存在本浏览器，绝不伪装成服务端写入。 */
+const READ_KEY = 'rss_read_articles'
+function articleKey(a: RssArticle): string {
+  return `${a.origin}\u0000${a.link}`
+}
+function loadReadArticles(): Set<string> {
+  try {
+    const raw = localStorage.getItem(READ_KEY)
+    return new Set(raw ? (JSON.parse(raw) as string[]) : [])
+  } catch {
+    return new Set()
+  }
+}
+const locallyRead = ref<Set<string>>(loadReadArticles())
+function isRead(a: RssArticle): boolean {
+  return a.read === true || locallyRead.value.has(articleKey(a))
+}
+function markReadLocally(a: RssArticle): void {
+  if (isRead(a)) return
+  const next = new Set(locallyRead.value)
+  next.add(articleKey(a))
+  locallyRead.value = next
+  try {
+    localStorage.setItem(READ_KEY, JSON.stringify([...next]))
+  } catch {
+    // 存储不可用时，本页内状态仍保持。
+  }
+}
+const unreadCount = computed(() => articles.value.filter((a) => !isRead(a)).length)
 
 /* ================= P2-7 星标收藏（localStorage 持久化，键 = 文章链接） ================= */
 const STAR_KEY = 'rss_starred_articles'
@@ -187,14 +223,15 @@ function persistStars(): void {
     /* ignore */
   }
 }
-function isStarred(url: string): boolean {
-  return starred.value.has(url)
+function isStarred(article: RssArticle): boolean {
+  return starred.value.has(articleKey(article))
 }
 /** 星标开关（列表/阅读页共用；不请求后端） */
-function toggleStar(url: string): void {
+function toggleStar(article: RssArticle): void {
+  const key = articleKey(article)
   const next = new Set(starred.value)
-  if (next.has(url)) next.delete(url)
-  else next.add(url)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
   starred.value = next
   persistStars()
 }
@@ -209,7 +246,7 @@ const articleFilter = ref('')
 
 const filteredArticles = computed(() => {
   let list = articles.value
-  if (starOnly.value) list = list.filter((a) => starred.value.has(a.url))
+  if (starOnly.value) list = list.filter((a) => starred.value.has(articleKey(a)))
   const kw = articleFilter.value.trim()
   if (!kw) return list
   return list.filter((a) => (a.title || '').includes(kw))
@@ -237,14 +274,10 @@ async function openArticle(a: RssArticle) {
   readingArticle.value = a
   articleContent.value = ''
   loadingArticle.value = true
-  // 点击即已读（乐观更新 + 后端落库；失败静默，下次进入再同步）
-  if (!a.hasRead) {
-    a.hasRead = true
-    void markRssArticleRead(a.url, true).catch(() => {})
-  }
+  markReadLocally(a)
   try {
-    const res = await getRssArticle(a.url)
-    articleContent.value = sanitizeHtml(res.data?.content ?? '')
+    const res = await getRssContent(selectedUrl.value, a.link, a.origin)
+    articleContent.value = sanitizeHtml(res.data ?? '')
   } catch {
     // 错误提示已由拦截器统一处理
   } finally {
@@ -308,7 +341,7 @@ async function refreshAll() {
     refreshAllIndex.value = i + 1
     try {
       // getRssArticles 后端每次重新抓取 feed → 逐源即刷新；静默失败不打断
-      await getRssArticles(list[i].sourceUrl, 1, undefined, { silent: true })
+      await getRssArticles(list[i].sourceUrl, 1, undefined, undefined, { silent: true })
       ok++
     } catch {
       // 单源失败继续
@@ -523,7 +556,7 @@ async function confirmDelete() {
   if (!s || deleteBusy.value) return
   deleteBusy.value = true
   try {
-    await deleteRssSource(s.sourceUrl)
+    await deleteRssSource(s)
     closeDelete()
     await loadSources() // 若删除的是当前选中源，自动落到第一个可用源
   } catch {
@@ -536,22 +569,6 @@ async function confirmDelete() {
 function closeDelete() {
   deleting.value = null
   document.body.style.overflow = ''
-}
-
-/* ================= 时间格式化（兼容秒/毫秒时间戳） ================= */
-function fmtTime(t: number | undefined | null): string {
-  if (!t) return ''
-  const ms = t < 1e12 ? t * 1000 : t
-  const d = new Date(ms)
-  if (Number.isNaN(d.getTime())) return ''
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const now = new Date()
-  const hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`
-  if (d.toDateString() === now.toDateString()) return hm
-  if (d.getFullYear() === now.getFullYear()) {
-    return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${hm}`
-  }
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 onMounted(() => loadSources())
@@ -663,19 +680,19 @@ onBeforeUnmount(() => {
             <button
               v-if="readingArticle"
               class="star-btn article-star"
-              :class="{ on: isStarred(readingArticle.url) }"
+              :class="{ on: isStarred(readingArticle) }"
               type="button"
-              :title="isStarred(readingArticle.url) ? '取消星标' : '加入星标'"
-              @click="toggleStar(readingArticle.url)"
+              :title="isStarred(readingArticle) ? '取消星标' : '加入星标'"
+              @click="toggleStar(readingArticle)"
             >
-              {{ isStarred(readingArticle.url) ? '★' : '☆' }}
+              {{ isStarred(readingArticle) ? '★' : '☆' }}
             </button>
           </h1>
           <p class="article-meta">
-            <span>{{ readingArticle?.author || selectedSourceName }}</span>
-            <template v-if="fmtTime(readingArticle?.time)">
+            <span>{{ selectedSourceName }}</span>
+            <template v-if="readingArticle?.pubDate">
               <span class="meta-sep">·</span>
-              <span>{{ fmtTime(readingArticle?.time) }}</span>
+              <span>{{ readingArticle.pubDate }}</span>
             </template>
           </p>
           <div v-if="loadingArticle" class="state-text loading">{{ t('rss.articleLoading') }}</div>
@@ -707,7 +724,7 @@ onBeforeUnmount(() => {
               class="pill"
               type="button"
               :class="{ active: activeSortUrl === tab.url }"
-              @click="switchSort(tab.url)"
+              @click="switchSort(tab)"
             >
               {{ tab.name }}
             </button>
@@ -742,14 +759,14 @@ onBeforeUnmount(() => {
           <ul v-else ref="listEl" class="article-list">
             <li
               v-for="a in filteredArticles"
-              :key="a.url"
+              :key="articleKey(a)"
               class="article-item"
-              :class="{ read: a.hasRead }"
+              :class="{ read: isRead(a) }"
               @click="openArticle(a)"
             >
               <img
-                v-if="a.cover"
-                v-lazy="a.cover"
+                v-if="a.image"
+                v-lazy="a.image"
                 class="article-item-cover"
                 :alt="''"
                 loading="lazy"
@@ -757,21 +774,21 @@ onBeforeUnmount(() => {
               <div class="article-item-body">
                 <p class="article-item-title" :title="a.title">{{ a.title || t('rss.noTitle') }}</p>
                 <p class="article-item-meta">
-                  <span>{{ a.author || selectedSourceName }}</span>
-                  <template v-if="fmtTime(a.time)">
+                  <span>{{ selectedSourceName }}</span>
+                  <template v-if="a.pubDate">
                     <span class="meta-sep">·</span>
-                    <span>{{ fmtTime(a.time) }}</span>
+                    <span>{{ a.pubDate }}</span>
                   </template>
                 </p>
               </div>
               <button
                 class="star-btn"
-                :class="{ on: isStarred(a.url) }"
+                :class="{ on: isStarred(a) }"
                 type="button"
-                :title="isStarred(a.url) ? '取消星标' : '加入星标'"
-                @click.stop="toggleStar(a.url)"
+                :title="isStarred(a) ? '取消星标' : '加入星标'"
+                @click.stop="toggleStar(a)"
               >
-                {{ isStarred(a.url) ? '★' : '☆' }}
+                {{ isStarred(a) ? '★' : '☆' }}
               </button>
             </li>
           </ul>

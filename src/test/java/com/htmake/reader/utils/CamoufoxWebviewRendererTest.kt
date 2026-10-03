@@ -1,0 +1,395 @@
+package com.htmake.reader.utils
+
+import com.sun.net.httpserver.HttpServer
+import io.legado.app.adapters.DefaultAdpater
+import io.legado.app.adapters.ReaderAdapterHelper
+import io.legado.app.adapters.ReaderAdapterInterface
+import io.legado.app.help.http.CookieStore
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
+
+/**
+ * End-to-end contract checks for the packaged fingerprint engine. The hosted browser-image
+ * workflow supplies the pinned Camoufox runtime; ordinary unit-test runs skip this class.
+ */
+class CamoufoxWebviewRendererTest {
+    @get:Rule val temp = TemporaryFolder()
+
+    private lateinit var renderer: CamoufoxWebviewRenderer
+    private lateinit var server: HttpServer
+    private lateinit var serverWorkers: ExecutorService
+    private lateinit var baseUrl: String
+    private lateinit var originalUserDir: String
+    private lateinit var originalAdapter: ReaderAdapterInterface
+    private val mediaHits = AtomicInteger()
+    private val slowPageHits = AtomicInteger()
+    private val unscopedProbeHits = AtomicInteger()
+    private val unscopedProbeCookie = AtomicReference("")
+    private val complexProbeHits = AtomicInteger()
+    private val complexProbeCookie = AtomicReference("")
+    private val echoCookie = AtomicReference("")
+
+    @Before
+    fun setUp() {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: ""
+        assumeTrue(python.isNotBlank() && Files.isRegularFile(Paths.get(python)))
+        assumeTrue(System.getenv("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD") == "1")
+
+        originalUserDir = System.getProperty("user.dir")
+        originalAdapter = ReaderAdapterHelper.getAdapter()
+        System.setProperty("user.dir", temp.root.absolutePath)
+        ReaderAdapterHelper.setAdapter(DefaultAdpater())
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        renderer = CamoufoxWebviewRenderer(python, version, 20_000, allowPrivateNetworks = true)
+
+        server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        serverWorkers = Executors.newCachedThreadPool { task ->
+            Thread(task, "reader-camoufox-fixture").apply { isDaemon = true }
+        }
+        server.executor = serverWorkers
+        server.createContext("/") { exchange ->
+            val requestBody = exchange.requestBody.use { it.readBytes().toString(StandardCharsets.UTF_8) }
+            val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
+            when (exchange.requestURI.path) {
+                "/resource-page" -> {
+                    val html = "<html><body><div id='resource-result'></div>" +
+                        "<script src='/asset.js'></script><img src='/media'></body></html>"
+                    respond(exchange, html, "text/html; charset=utf-8")
+                }
+                "/asset.js" -> respond(
+                    exchange,
+                    "document.querySelector('#resource-result').textContent='asset-loaded'",
+                    "application/javascript; charset=utf-8"
+                )
+                "/media" -> {
+                    mediaHits.incrementAndGet()
+                    respond(exchange, "media", "text/plain; charset=utf-8")
+                }
+                "/slow-page" -> {
+                    slowPageHits.incrementAndGet()
+                    try {
+                        Thread.sleep(10_000)
+                        respond(exchange, "late-page", "text/html; charset=utf-8")
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        exchange.close()
+                    }
+                }
+                "/seed" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "session=alpha==; Path=/; HttpOnly")
+                    respond(exchange, "seeded", "text/plain; charset=utf-8")
+                }
+                "/seed-renewed" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "session=beta==; Path=/; HttpOnly")
+                    respond(exchange, "renewed", "text/plain; charset=utf-8")
+                }
+                "/seed-scoped" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scoped=only; Path=/scoped; HttpOnly")
+                    respond(exchange, "seeded", "text/plain; charset=utf-8")
+                }
+                "/scripted-seed" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=original; Path=/")
+                    respond(exchange, "<html><body>seeded</body></html>", "text/html; charset=utf-8")
+                }
+                "/scripted-renew-delete" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=renewed; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "fresh=received; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "hidden=keep; Path=/; HttpOnly")
+                    respond(exchange, "<html><body>renewed</body></html>", "text/html; charset=utf-8")
+                }
+                "/page-script-delete" -> {
+                    exchange.responseHeaders.add("Set-Cookie", "scripted=renewed; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "fresh=received; Path=/")
+                    exchange.responseHeaders.add("Set-Cookie", "hidden=keep; Path=/; HttpOnly")
+                    respond(exchange,
+                        "<html><body><script>" +
+                            "document.cookie='scripted=; Max-Age=0; Path=/';" +
+                            "document.cookie='fresh=; Max-Age=0; Path=/';" +
+                            "document.cookie='hidden=; Max-Age=0; Path=/';" +
+                            "document.body.dataset.cookieScript='ran';" +
+                            "</script></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/complex-cookie-page" -> {
+                    exchange.responseHeaders.add("Set-Cookie",
+                        "quoted=\"alpha;beta\"; Path=/; HttpOnly; Expires=Wed, 21 Oct 2037 07:28:00 GMT")
+                    respond(exchange,
+                        "<html><body><script src='/complex-cookie-probe'></script></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/complex-cookie-probe" -> {
+                    complexProbeCookie.set(cookie)
+                    complexProbeHits.incrementAndGet()
+                    respond(exchange, ";", "application/javascript; charset=utf-8")
+                }
+                "/scoped/resource-page" -> respond(
+                    exchange,
+                    "<html><body><div id='main-cookie'>$cookie</div><script src='/unscoped-probe'></script></body></html>",
+                    "text/html; charset=utf-8"
+                )
+                "/unscoped-probe" -> {
+                    unscopedProbeCookie.set(cookie)
+                    unscopedProbeHits.incrementAndGet()
+                    respond(exchange, ";", "application/javascript; charset=utf-8")
+                }
+                "/echo" -> {
+                    echoCookie.set(cookie)
+                    respond(exchange,
+                        "${exchange.requestMethod}|$requestBody|$cookie|${exchange.requestHeaders.getFirst("X-Reader-Probe") ?: ""}",
+                        "text/plain; charset=utf-8")
+                }
+                else -> respond(exchange, "<html><body>empty</body></html>", "text/html; charset=utf-8")
+            }
+        }
+        server.start()
+        baseUrl = "http://127.0.0.1:${server.address.port}"
+    }
+
+    @After
+    fun tearDown() {
+        if (::renderer.isInitialized) runBlocking { renderer.close() }
+        if (::server.isInitialized) server.stop(0)
+        if (::serverWorkers.isInitialized) serverWorkers.shutdownNow()
+        if (::originalAdapter.isInitialized) ReaderAdapterHelper.setAdapter(originalAdapter)
+        if (::originalUserDir.isInitialized) System.setProperty("user.dir", originalUserDir)
+    }
+
+    @Test
+    fun getPostScriptsAndSubresourcesUseTheBrowser() = runBlocking {
+        val get = renderer.render(request("/echo", "user-a", headers = mapOf("X-Reader-Probe" to "header-ok")))
+        assertTrue(get.body?.contains("GET|||header-ok") == true)
+
+        val post = renderer.render(request("/echo", "user-a", post = true, body = "page=2"))
+        assertTrue(post.body?.contains("POST|page=2|") == true)
+
+        val script = renderer.render(request(
+            "/resource-page",
+            "user-a",
+            javaScript = "document.querySelector('#resource-result').textContent"
+        ))
+        assertEquals("asset-loaded", script.body)
+    }
+
+    @Test
+    fun javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat() = runBlocking {
+        val cases = listOf(
+            "({answer: 42, ready: true})" to "{\"answer\":42,\"ready\":true}",
+            "['alpha', 7]" to "[\"alpha\",7]",
+            "42" to "42"
+        )
+        for ((expression, expected) in cases) {
+            val result = renderer.render(request("/resource-page", "script-types", javaScript = expression))
+            assertEquals("JavaScript expression $expression", expected, result.body)
+        }
+    }
+
+    @Test
+    fun cookiesArePersistedPerReaderNamespace() = runBlocking {
+        renderer.render(request("/seed", "alice"))
+        val aliceJar = BrowserCookieJar.storedCookies(CookieStore("alice"))
+        assertEquals("The synthetic Set-Cookie must be persisted for Alice", "alpha==", aliceJar.single { it.name == "session" }.value)
+        assertTrue("Bob must not inherit Alice's synthetic Cookie", BrowserCookieJar.storedCookies(CookieStore("bob")).isEmpty())
+        val alice = renderer.render(request("/echo", "alice"))
+        val bob = renderer.render(request("/echo", "bob"))
+        assertTrue("Alice's next synthetic echo was: ${alice.body}", alice.body?.contains("session=alpha==") == true)
+        // Firefox displays text/plain navigation inside an HTML <pre>; verify
+        // the fixture content, not the browser's presentation wrapper.
+        assertTrue("Bob's synthetic echo was: ${bob.body}", bob.body?.contains("GET|||") == true)
+        assertFalse("Bob inherited Alice's Cookie", bob.body?.contains("session=alpha==") == true)
+    }
+
+    @Test
+    fun existingHttpOnlyCookieCanBeRenewed() = runBlocking {
+        val user = "renewed-http-only"
+        renderer.render(request("/seed", user))
+        assertEquals("alpha==", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "session" }.value)
+        renderer.render(request("/seed-renewed", user))
+        assertEquals("beta==", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "session" }.value)
+        renderer.render(request("/echo", user))
+        assertTrue("Renewed HttpOnly Cookie was not replayed: ${echoCookie.get()}",
+            echoCookie.get().contains("session=beta=="))
+    }
+
+    @Test
+    fun importedHostOnlyCookieRetainsPathForSubresources() = runBlocking {
+        renderer.render(request("/seed-scoped", "scoped-user"))
+        val stored = BrowserCookieJar.storedCookies(CookieStore("scoped-user"))
+        assertEquals("/scoped", stored.single { it.name == "scoped" }.path)
+
+        val page = renderer.render(request("/scoped/resource-page", "scoped-user"))
+        assertTrue("Scoped navigation lost its Cookie", page.body?.contains("scoped=only") == true)
+        assertEquals("The cross-path script request must complete", 1, unscopedProbeHits.get())
+        assertFalse("A /scoped Cookie leaked to /unscoped-probe", unscopedProbeCookie.get().contains("scoped=only"))
+    }
+
+    @Test
+    fun sourceJavaScriptDeletionOverridesSameResponseSetCookie() = runBlocking {
+        val user = "js-delete"
+        renderer.render(request("/scripted-seed", user))
+        assertEquals("original", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "scripted" }.value)
+
+        val deleted = renderer.render(request(
+            "/scripted-renew-delete", user,
+            javaScript = "document.cookie = 'scripted=; Max-Age=0; Path=/'; " +
+                "document.cookie = 'fresh=; Max-Age=0; Path=/'; " +
+                "document.cookie = 'hidden=; Max-Age=0; Path=/'; 'deleted'"
+        ))
+        assertEquals("deleted", deleted.body)
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        assertFalse("webJs deletion was undone by Set-Cookie fallback: $stored",
+            stored.any { it.name == "scripted" || it.name == "fresh" })
+        assertEquals("webJs must not revoke an HttpOnly Cookie", "keep",
+            stored.single { it.name == "hidden" }.value)
+        val next = renderer.render(request("/echo", user))
+        assertFalse("Deleted Cookie was sent on the next request: ${next.body}",
+            next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
+        assertTrue("HttpOnly Cookie was lost on the next request: ${next.body}",
+            next.body?.contains("hidden=keep") == true)
+    }
+
+    @Test
+    fun pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies() = runBlocking {
+        val user = "page-js-delete"
+        renderer.render(request("/scripted-seed", user))
+        assertEquals("original", BrowserCookieJar.storedCookies(CookieStore(user))
+            .single { it.name == "scripted" }.value)
+
+        val page = renderer.render(request("/page-script-delete", user))
+        assertTrue("The inline deletion script did not run: ${page.body}",
+            page.body?.contains("data-cookie-script=\"ran\"") == true)
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        assertFalse("The response fallback resurrected an inline-deleted Cookie: $stored",
+            stored.any { it.name == "scripted" || it.name == "fresh" })
+        assertEquals("An inline script revoked HttpOnly: $stored", "keep",
+            stored.single { it.name == "hidden" }.value)
+        val next = renderer.render(request("/echo", user))
+        assertFalse("An inline-deleted Cookie was sent later: ${next.body}",
+            next.body?.contains("scripted=") == true || next.body?.contains("fresh=") == true)
+        assertTrue("HttpOnly Cookie was lost: ${next.body}", next.body?.contains("hidden=keep") == true)
+    }
+
+    @Test
+    fun quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted() = runBlocking {
+        val user = "quoted-cookie"
+        renderer.render(request("/complex-cookie-page", user))
+        assertEquals("The same-render browser subresource did not run", 1, complexProbeHits.get())
+        val observed = complexProbeCookie.get()
+        val stored = BrowserCookieJar.storedCookies(CookieStore(user))
+        if (observed.contains("quoted=")) {
+            assertTrue("Browser accepted a Cookie that Reader did not retain: $stored",
+                stored.any { it.name == "quoted" })
+        } else {
+            assertFalse("Reader persisted a Cookie rejected by the browser: $stored",
+                stored.any { it.name == "quoted" })
+        }
+        renderer.render(request("/echo", user))
+        assertEquals("Persisted Cookie replay differs from the browser's own request",
+            observed, echoCookie.get())
+    }
+
+    @Test
+    fun sourceRegexReturnsTheResourceUrlWithoutFetchingIt() = runBlocking {
+        val result = renderer.render(request("/resource-page", "reader", sourceRegex = ".*/media$"))
+        assertEquals("$baseUrl/media", result.body)
+        assertEquals(0, mediaHits.get())
+    }
+
+    @Test
+    fun unmatchedSourceRegexTimesOutAndTheNextRenderRecovers() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val started = System.nanoTime()
+            val failure = runCatching {
+                limited.render(request("/resource-page", "timeout-user", sourceRegex = ".*/never$"))
+            }.exceptionOrNull()
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+            assertTrue("An absent resource must time out: $failure", failure is IllegalStateException)
+            assertTrue(
+                "An absent resource returned an unrelated failure: ${failure?.message}",
+                failure?.message?.contains("TimeoutError") == true || failure?.message?.contains("超时") == true
+            )
+            assertTrue("The browser timeout exceeded the bounded parent watchdog: ${elapsedMs}ms", elapsedMs < 30_000)
+
+            // The timeout must not poison the single-render queue before a
+            // subsequent request starts. Process-count checks run in CI separately.
+            val healthy = limited.render(request("/echo", "timeout-user"))
+            assertTrue("A healthy request after timeout failed: ${healthy.body}", healthy.body?.contains("GET|||") == true)
+        } finally {
+            limited.close()
+        }
+    }
+
+    @Test
+    fun stalledMainNavigationFailsInsteadOfReturningProxyErrorPage() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val started = System.nanoTime()
+            val outcome = runCatching { limited.render(request("/slow-page", "slow-navigation-user")) }
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+            assertTrue("The slow main document was not actually requested", slowPageHits.get() > 0)
+            assertTrue("Main navigation exceeded its bounded watchdog: ${elapsedMs}ms", elapsedMs < 30_000)
+            assertTrue(
+                "A stalled main document returned an apparent success: ${outcome.getOrNull()?.body?.take(120)}",
+                outcome.exceptionOrNull() is IllegalStateException
+            )
+            val healthy = limited.render(request("/echo", "slow-navigation-user"))
+            assertTrue("A healthy request after a stalled page failed", healthy.body?.contains("GET|||") == true)
+        } finally {
+            limited.close()
+        }
+    }
+
+    private fun request(
+        path: String,
+        user: String,
+        headers: Map<String, String>? = null,
+        post: Boolean = false,
+        body: String? = null,
+        javaScript: String? = null,
+        sourceRegex: String? = null
+    ) = WebviewRequest(
+        url = baseUrl + path,
+        html = null,
+        encode = null,
+        tag = null,
+        headerMap = headers,
+        sourceRegex = sourceRegex,
+        javaScript = javaScript,
+        proxy = null,
+        post = post,
+        body = body,
+        userNameSpace = user,
+        debugLog = null
+    )
+
+    private fun respond(exchange: com.sun.net.httpserver.HttpExchange, body: String, contentType: String) {
+        val data = body.toByteArray(StandardCharsets.UTF_8)
+        exchange.responseHeaders.add("Content-Type", contentType)
+        exchange.sendResponseHeaders(200, data.size.toLong())
+        exchange.responseBody.use { it.write(data) }
+    }
+}

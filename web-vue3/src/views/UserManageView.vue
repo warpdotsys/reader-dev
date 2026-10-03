@@ -379,8 +379,10 @@ async function confirmDelete() {
   }
   deleteBusy.value = true
   try {
-    await deleteUser(target.username)
-    users.value = users.value.filter((x) => x.username !== target.username)
+    const res = await deleteUser(target.username)
+    users.value = Array.isArray(res.data)
+      ? (res.data as ReaderUser[])
+      : users.value.filter((x) => x.username !== target.username)
     ElMessage.success('已删除')
     closeDelete()
   } catch (err) {
@@ -457,11 +459,12 @@ async function confirmClean() {
   cleanBusy.value = true
   try {
     const res = await clearInactiveUsers(days)
-    const data = res.data as { deleted?: string[]; count?: number } | null
-    const deleted = Array.isArray(data?.deleted) ? data.deleted : []
-    users.value = users.value.filter((x) => !deleted.includes(x.username))
-    selected.value = new Set([...selected.value].filter((name) => !deleted.includes(name)))
-    ElMessage.success(`已清理 ${deleted.length} 个不活跃用户`)
+    const remaining = Array.isArray(res.data) ? (res.data as ReaderUser[]) : users.value
+    const alive = new Set(remaining.map((user) => user.username))
+    const deletedCount = users.value.filter((user) => !alive.has(user.username)).length
+    users.value = remaining
+    selected.value = new Set([...selected.value].filter((name) => alive.has(name)))
+    ElMessage.success(`已清理 ${deletedCount} 个不活跃用户`)
     closeClean()
   } catch (err) {
     handleManageError(err, confirmClean)

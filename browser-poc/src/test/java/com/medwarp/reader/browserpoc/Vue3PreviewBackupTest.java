@@ -45,7 +45,10 @@ public class Vue3PreviewBackupTest {
                 page.locator("input[autocomplete=username]").fill("vue" +
                         UUID.randomUUID().toString().replace("-", "").substring(0, 10));
                 page.locator("input[autocomplete=current-password]").fill("BackupProbe-2026");
-                page.locator(".submit-btn").click();
+                Response login = page.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/login"),
+                        () -> page.locator(".submit-btn").click());
+                assertLegacyLogin(login);
                 page.locator(".bookshelf-page").waitFor();
 
                 page.navigate(previewUrl + "/settings");
@@ -98,5 +101,12 @@ public class Vue3PreviewBackupTest {
                 browser.close();
             }
         }
+    }
+
+    private static void assertLegacyLogin(Response login) {
+        assertEquals(200, login.status());
+        String response = login.text();
+        assertTrue("Registration/login did not return the legacy success envelope: " + response,
+                response.contains("\"isSuccess\":true"));
     }
 }

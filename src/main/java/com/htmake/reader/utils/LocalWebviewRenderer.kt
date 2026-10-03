@@ -30,6 +30,8 @@ class LocalWebviewRenderer private constructor(
     allowPrivateNetworks: Boolean,
     networkPolicyOverride: BrowserNetworkPolicy?
 ) : WebviewRenderer {
+    override val managesBrowserCookies: Boolean = true
+
     constructor(
         executablePath: String = "",
         timeoutMs: Int = 20_000,
@@ -233,7 +235,7 @@ class LocalWebviewRenderer private constructor(
         }
     }
 
-    suspend fun close() {
+    override suspend fun close() {
         try {
             withContext(worker) {
                 runCatching { browser?.close() }

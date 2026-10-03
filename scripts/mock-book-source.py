@@ -3,9 +3,11 @@
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import struct
 from threading import Lock
 import time
 from urllib.parse import parse_qs, urlsplit
+import zlib
 
 
 PAGES = {
@@ -23,10 +25,28 @@ _active_searches = 0
 _max_active_searches = 0
 
 
+def _png_chunk(tag, content):
+    return (struct.pack(">I", len(content)) + tag + content +
+            struct.pack(">I", zlib.crc32(tag + content) & 0xFFFFFFFF))
+
+
+COVER_PNG = (b"\x89PNG\r\n\x1a\n" +
+             _png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)) +
+             _png_chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\x00")) +
+             _png_chunk(b"IEND", b""))
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         global _active_searches, _max_active_searches
         parsed = urlsplit(self.path)
+        if parsed.path == "/cover.png":
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(COVER_PNG)))
+            self.end_headers()
+            self.wfile.write(COVER_PNG)
+            return
         if parsed.path == "/health":
             body = "ready"
         elif parsed.path == "/source.json":
@@ -81,5 +101,9 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, required=True)
+    parser.add_argument("--http11", action="store_true",
+                        help="Use persistent HTTP/1.1 responses for debugger timing probes")
     args = parser.parse_args()
+    if args.http11:
+        Handler.protocol_version = "HTTP/1.1"
     ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()

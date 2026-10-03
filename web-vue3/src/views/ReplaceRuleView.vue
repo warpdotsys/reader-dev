@@ -383,6 +383,12 @@ const txtBusy = ref(false)
 
 const txtEnabledCount = computed(() => txtRules.value.filter((r) => r.enable).length)
 
+let lastTxtTocRuleId = 0
+function nextTxtTocRuleId(): number {
+  lastTxtTocRuleId = Math.max(Date.now(), lastTxtTocRuleId + 1)
+  return lastTxtTocRuleId
+}
+
 async function loadTxtRules() {
   txtLoading.value = true
   txtError.value = ''
@@ -472,7 +478,9 @@ async function confirmTxtSave() {
   let closeAfterSave = false
   try {
     const response = await saveTxtTocRule({
-      id: '',
+      // Java/Kotlin 的 legacy TxtTocRule.id 是 Long；新建时发送正数，
+      // 不能把 Rust 快照使用的空字符串 id 传给后端。
+      id: nextTxtTocRuleId(),
       name,
       rule,
       enable: txtForm.value.enable,

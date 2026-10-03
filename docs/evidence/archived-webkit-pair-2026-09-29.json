@@ -1,0 +1,185 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "originalExecuted": true,
+  "restoredJarSha256": "0B1EBE9E92B53E7256E96069F76668957754336DD34AB1728A9B25AD8458A2CF",
+  "rendererMode": "archived-webkit",
+  "observedRequestEndpoint": "target /search",
+  "jsSourceDirectlyObserved": false,
+  "scriptValidatedByResult": true,
+  "original": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "renderScriptSources": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "POST",
+        "body": "q=post",
+        "testHeader": "synthetic"
+      }
+    ]
+  },
+  "restored": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "renderScriptSources": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "POST",
+        "body": "q=post",
+        "testHeader": "synthetic"
+      }
+    ]
+  },
+  "expectedOriginalCookieSequence": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "expectedRestoredCookieSequence": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "expectedScriptSources": [
+    null,
+    null,
+    null,
+    "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')",
+    "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')"
+  ],
+  "expectedPostRequestFields": {
+    "httpMethod": "POST",
+    "body": "q=post",
+    "testHeader": "synthetic"
+  }
+}

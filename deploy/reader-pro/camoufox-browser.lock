@@ -1,0 +1,17 @@
+{
+  "releaseTag": "v152.0.4-beta.30",
+  "pythonPackageVersion": "0.5.6",
+  "playwrightVersion": "1.62.0",
+  "assets": {
+    "linux-x86_64": {
+      "name": "camoufox-152.0.4-beta.30-lin.x86_64.zip",
+      "size": 663467670,
+      "sha256": "5720d45b894ce1770543de024c6f10d514b38be560fa2dc3226b3d8586caf672"
+    },
+    "linux-arm64": {
+      "name": "camoufox-152.0.4-beta.30-lin.arm64.zip",
+      "size": 653870625,
+      "sha256": "60447260af8bebdb0ec3f2aa72f687b879e5598367303de2e3fdbc7a5be8c124"
+    }
+  }
+}

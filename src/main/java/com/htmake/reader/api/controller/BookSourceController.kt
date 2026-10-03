@@ -89,6 +89,7 @@ internal fun parseRemoteBookSources(body: String): JsonArray {
 
 class BookSourceController(coroutineContext: CoroutineContext): BaseController(coroutineContext) {
     private var webClient: WebClient
+    private val managedSubscriptionFetcher = RemoteSourceSubscriptionFetcher()
 
     init {
         webClient = SpringContextUtils.getBean("webClient", WebClient::class.java)
@@ -483,13 +484,24 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
         val remoteBookSourceList = asJsonArray(getUserStorage(userNameSpace, "remoteBookSourceSub")) ?: return
         for (i in 0 until remoteBookSourceList.size()) {
             val remoteBookSource = remoteBookSourceList.getJsonObject(i) ?: continue
+            // Historical entries omit this field and therefore continue to refresh.
+            // Vue 3 subscriptions set enabled=false to pause only automatic updates.
+            if (!isSourceSubscriptionAutoRefreshEnabled(remoteBookSource)) continue
             val url = remoteBookSource.getString("link") ?: continue
             if (url.isEmpty()) continue
             try {
-                val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
-                    webClient.getAbs(url).timeout(3000).send(handler)
+                // Records written by the Vue 3 subscription API carry `url`.
+                // They must be revalidated and connected to the pinned DNS answer
+                // for every automatic refresh. Pure legacy `link` records retain
+                // the original behaviour for storage compatibility.
+                val sourceList = if (isManagedSourceSubscription(remoteBookSource)) {
+                    managedSubscriptionFetcher.fetch(url)
+                } else {
+                    val response = awaitResult<io.vertx.ext.web.client.HttpResponse<io.vertx.core.buffer.Buffer>> { handler ->
+                        webClient.getAbs(url).timeout(3000).send(handler)
+                    }
+                    response.bodyAsJsonArray()
                 }
-                val sourceList = response.bodyAsJsonArray()
                 if (sourceList != null) {
                     logger.info("updateRemoteSourceSub link={}, result={}", url, saveUserBookSources(userNameSpace, user, sourceList).errorMsg)
                     remoteBookSourceList.set(i, remoteBookSource.put("lastSyncTime", System.currentTimeMillis()))
@@ -497,6 +509,9 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
                 }
             } catch (e: Exception) {
                 logger.error("更新远程书源失败", e)
+                // A managed subscription that later resolves to an unsafe target
+                // is skipped rather than aborting other users' scheduled refreshes.
+                if (isManagedSourceSubscription(remoteBookSource)) continue
                 throw Exception("更新远程书源失败")
             }
         }
@@ -535,13 +550,7 @@ class BookSourceController(coroutineContext: CoroutineContext): BaseController(c
             val body = response.bodyAsString()
             val sources = parseRemoteBookSources(body)
             val saved = saveBookSources(context, sources)
-            if (saved.isSuccess) {
-                // Preserve the response shape for existing callers while making
-                // the endpoint's documented save operation actually persist.
-                context.success(returnData.setData(arrayListOf(body), saved.errorMsg))
-            } else {
-                context.success(saved)
-            }
+            context.success(saved)
         } catch (e: Exception) {
             logger.warn(e) { "远程书源导入失败" }
             context.success(returnData.setErrorMsg("远程书源链接或数据错误"))

@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getBookshelf, saveBook } from '@/api/bookshelf'
+import { getBookshelf, saveBook, saveBookProgress } from '@/api/bookshelf'
 import { getBookInfo, getBookToc, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import { getInvalidBookSources } from '@/api/sources'
 import { deleteBookCache, getShelfBookWithCacheInfo, searchBookContent } from '@/api/cache'
@@ -10,7 +10,6 @@ import { exportBook, type ExportFormat } from '@/api/export'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { proxyImageUrl } from '@/utils/imageProxy'
 import { uploadFile, mkdir } from '@/api/file'
-import { post } from '@/api/request'
 import { downloadBlob } from '@/utils/download'
 import { relocateChapterIndex } from '@/utils/progressRelocate'
 import { buildTocEntries } from '@/utils/tocPreview'
@@ -165,6 +164,8 @@ async function load() {
   }
   // GAP 82：书架书 → 拉取单书缓存状态（silent；未实现隐藏）
   if (shelfBook.value) void loadShelfCacheInfo()
+  // 用户可能在书架请求尚未返回时打开目录；此时来源信息还不可用。
+  if (isTocTabOpen()) void openToc()
 }
 
 /** 由详情信息组装完整 Book JSON（saveBook 入架 body：type/group 用默认值 0） */
@@ -367,6 +368,9 @@ async function onCoverPick(e: Event) {
 /* ================= GAP 18：目录预览（getBookToc → 前 50 章 → 点击进阅读器跳章） ================= */
 
 const activeTab = ref<'detail' | 'toc'>('detail')
+function isTocTabOpen(): boolean {
+  return activeTab.value === 'toc'
+}
 const tocChapters = ref<BookChapter[]>([])
 const tocLoading = ref(false)
 const tocLoaded = ref(false)
@@ -382,6 +386,7 @@ function tocParams(): { bookUrl: string; origin: string } | null {
 
 async function openToc() {
   activeTab.value = 'toc'
+  if (loading.value) return
   if (tocLoaded.value) return
   const p = tocParams()
   if (!p) {
@@ -706,13 +711,7 @@ async function relocateProgressAfterSwitch(r: SearchBook) {
     const newTitle = toc[newIdx]?.title ?? b.durChapterTitle ?? ''
     b.durChapterIndex = newIdx
     b.durChapterTitle = newTitle
-    await post('/saveBookProgress', {
-      bookUrl: b.bookUrl,
-      durChapterIndex: newIdx,
-      durChapterPos: 0,
-      durChapterTime: Date.now(),
-      durChapterTitle: newTitle,
-    }).catch(() => {
+    await saveBookProgress(b.bookUrl, newIdx).catch(() => {
       /* 写回失败静默——阅读器内有范围守卫 */
     })
   } catch {

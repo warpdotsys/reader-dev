@@ -183,14 +183,18 @@ data class Book(
         logger.info("getLocalFile rootDir: {} originName: {}", rootDir, originName)
         if (isEpub() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 epub文件
-            return FileUtils.getFile(File(rootDir + originName), "index.epub")
+            val epubSource = File(rootDir + originName)
+            // 文件管理器可直接导入单个 EPUB；旧书架仍使用目录/index.epub。
+            return if (epubSource.isFile) epubSource else FileUtils.getFile(epubSource, "index.epub")
         }
         if (isCbz() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
             // 非本地/webdav书仓的 cbz文件
             return FileUtils.getFile(File(rootDir + originName), "index.cbz")
         }
         if (isPdf() && originName.indexOf("localStore") < 0 && originName.indexOf("webdav") < 0) {
-            return FileUtils.getFile(File(rootDir + originName), "index.pdf")
+            val pdfSource = File(rootDir + originName)
+            // Directly imported PDFs are files; older extracted books use a directory/index.pdf.
+            return if (pdfSource.isFile) pdfSource else FileUtils.getFile(pdfSource, "index.pdf")
         }
         return File(rootDir + originName)
     }
@@ -237,14 +241,14 @@ data class Book(
         }
     }
 
-    fun getEpubRootDir(): String {
+    fun getEpubRootDir(extractDir: File = File(bookUrl + File.separator + "index")): String {
         // 根据 content.opf 位置来确认root目录
         // var contentOPF = "OEBPS/content.opf"
 
         val defaultPath = "OEBPS"
 
         // 根据 META-INF/container.xml 来获取 contentOPF 位置
-        val containerRes = File(bookUrl + File.separator + "index" + File.separator + "META-INF" + File.separator + "container.xml")
+        val containerRes = File(extractDir, "META-INF" + File.separator + "container.xml")
         if (containerRes.exists()) {
             try {
                 val document = Jsoup.parse(containerRes.readText())

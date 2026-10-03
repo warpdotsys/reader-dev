@@ -1,0 +1,55 @@
+{
+  "gitCommit": "024da9d75600924eac3393b233b669b08935e191",
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37090342192",
+  "comparison": {
+    "archivedReference": {
+      "directPageSha256": "018b3d6351518a8744b047eb487a461426d888275d8da2d3f89a959b8bd3e1bd",
+      "directPageStatus": 200,
+      "observedAt": "2026-10-03T02:36:20.202540+00:00",
+      "projectionCount": 10,
+      "projectionSha256": "66b358fd579636fea1922725c1c228e318a554f98a989c3e881e80619a9beec4",
+      "projectionStatus": 200
+    },
+    "bundledCamoufox": {
+      "bookCount": 10,
+      "bookProjectionSha256": "66b358fd579636fea1922725c1c228e318a554f98a989c3e881e80619a9beec4",
+      "observedAt": "2026-10-03T02:43:16.864564+00:00",
+      "readerErrorMsgEmpty": true,
+      "readerIsSuccess": true,
+      "readerStatus": 200
+    },
+    "countEqual": true,
+    "fullResponseParityProven": false,
+    "interpretation": "matching-projection-with-time-skew",
+    "observationDeltaSeconds": 416.662,
+    "originalJarCompared": false,
+    "projectionEqual": true,
+    "referenceProvenProduction": false,
+    "scope": "archived-reference-vs-bundled-camoufox-public-page",
+    "url": "https://m.jjjxsw.com/txt/"
+  },
+  "resourceBudget": {
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 832761856,
+    "pidsCurrent": 38,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 199,
+    "scope": "one full Reader image; sequential probes plus four-account burst",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  }
+}

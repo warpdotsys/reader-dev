@@ -12,7 +12,11 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.ext.web.RoutingContext
 import mu.KotlinLogging
 import java.io.File
+import java.io.IOException
 import java.net.URLEncoder
+import java.nio.file.Files
+import java.nio.file.InvalidPathException
+import java.nio.file.LinkOption
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
@@ -20,9 +24,34 @@ private val logger = KotlinLogging.logger {}
 class FileController(coroutineContext: CoroutineContext) : BaseController(coroutineContext) {
 
     private fun resolveSecurePath(baseDir: File, relativePath: String): File? {
-        val basePath = baseDir.toPath().toAbsolutePath().normalize()
-        val resolved = basePath.resolve(relativePath.removePrefix("/").removePrefix("\\")).normalize()
-        return resolved.takeIf { it.startsWith(basePath) }?.toFile()
+        return try {
+            val basePath = baseDir.toPath().toAbsolutePath().normalize()
+            val requested = relativePath.removePrefix("/").removePrefix("\\")
+            val lexicalTarget = basePath.resolve(requested).normalize()
+            if (!lexicalTarget.startsWith(basePath)) return null
+
+            // Windows 的目录联接和 POSIX 符号链接都会让逻辑路径与物理路径不同。
+            // 必须从真实根目录逐段前进：每个已存在的节点都检查其真实位置，随后
+            // 的不存在节点才附加到已验证的真实祖先。这样既不会把正常文件误判为
+            // 越界，也不会把 I/O 再落回未经验证的逻辑路径。
+            val baseReal = basePath.toRealPath()
+            var target = baseReal
+            basePath.relativize(lexicalTarget).forEach { segment ->
+                val candidate = target.resolve(segment)
+                target = if (Files.exists(candidate, LinkOption.NOFOLLOW_LINKS)) {
+                    candidate.toRealPath().also {
+                        if (!it.startsWith(baseReal)) return null
+                    }
+                } else {
+                    candidate
+                }
+            }
+            target.toFile()
+        } catch (_: IOException) {
+            null
+        } catch (_: InvalidPathException) {
+            null
+        }
     }
 
     private fun requestedHome(context: RoutingContext): String = when {
@@ -419,7 +448,13 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
             if (ext !in setOf("txt", "epub", "umd", "cbz", "pdf")) {
                 return returnData.setErrorMsg("不支持导入${ext}格式的书籍文件")
             }
-            var relativePath = file.path
+            // Keep the JAR's mixed-separator path representation for local-book
+            // chapter IDs, while using the separately validated file for I/O.
+            val requestedPath = baseDir.path.trimEnd(File.separatorChar) + "/" +
+                path.removePrefix("/").removePrefix("\\")
+            var relativePath = if (
+                File(requestedPath).toPath().toAbsolutePath().normalize() == file.toPath().toAbsolutePath().normalize()
+            ) requestedPath else file.path
             if (relativePath.startsWith(rootDir)) relativePath = relativePath.removePrefix(rootDir)
             logger.debug("relative path: {}", relativePath)
             val book = Book.initLocalBook(relativePath.replace("\\", "/"), relativePath, rootDir)

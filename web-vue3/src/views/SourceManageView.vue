@@ -978,9 +978,11 @@ function markLoggedIn(url: string) {
   syncLoggedUrls()
 }
 
-function markLoggedOut(url: string) {
-  localStorage.removeItem(LOGIN_KEY(url))
+function markSourcesLoggedOut(urls: string[]) {
+  const affected = new Set(urls)
+  for (const url of affected) localStorage.removeItem(LOGIN_KEY(url))
   syncLoggedUrls()
+  cookieRows.value = cookieRows.value.filter((row) => !affected.has(row.sourceUrl))
 }
 
 const loginOpen = ref(false)
@@ -1190,7 +1192,8 @@ async function clearLoginCookie() {
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, '')
     if (res.data?.success) {
-      markLoggedOut(s.bookSourceUrl)
+      const cleared = res.data.clearedSourceUrls?.length ? res.data.clearedSourceUrls : [s.bookSourceUrl]
+      markSourcesLoggedOut(cleared)
       loginState.value = 'unknown'
       cookieSummary.value = ''
       captcha.value = null
@@ -1198,7 +1201,7 @@ async function clearLoginCookie() {
       captchaText.value = ''
       showManual.value = false
       manualCookie.value = ''
-      loginMsg.value = '已清除 Cookie（登录态失效）'
+      loginMsg.value = `已清除同域 ${cleared.length} 个书源的登录态`
       loginMsgError.value = false
     }
   } catch {
@@ -1212,7 +1215,7 @@ async function clearLoginCookie() {
 
 const cookieMgrOpen = ref(false)
 const cookieMgrBusy = ref<Set<string>>(new Set())
-/** 服务端登录态行（getBookSourceCookie：cookie/userAgent/loginHeader 摘要） */
+/** 服务端登录态行（getBookSourceCookie：仅返回脱敏摘要） */
 const cookieRows = ref<CookieRow[]>([])
 const cookieRowsMsg = ref('')
 
@@ -1245,10 +1248,9 @@ const loggedSources = computed(() => {
   return Array.from(merged.values())
 })
 
-/** 服务端登录态摘要（cookie 前 30 字符；无则空） */
+/** 服务端登录态摘要（后端已脱敏） */
 function cookiePreview(r: CookieRow): string {
-  const c = r.cookie?.trim() || ''
-  return c ? c.slice(0, 30) + (c.length > 30 ? '…' : '') : ''
+  return r.cookiePreview?.trim() || r.cookie?.trim() || ''
 }
 
 /** 域名提取（cookie 作用域按源 URL host） */
@@ -1287,9 +1289,9 @@ async function clearSourceCookie(s: BookSource) {
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, '')
     if (res.data?.success) {
-      markLoggedOut(s.bookSourceUrl)
-      cookieRows.value = cookieRows.value.filter((r) => r.sourceUrl !== s.bookSourceUrl)
-      ElMessage.success(`已清除「${s.bookSourceName}」的 Cookie`)
+      const cleared = res.data.clearedSourceUrls?.length ? res.data.clearedSourceUrls : [s.bookSourceUrl]
+      markSourcesLoggedOut(cleared)
+      ElMessage.success(`已清除同域 ${cleared.length} 个书源的登录态`)
     }
   } catch {
     // 拦截器已提示
@@ -1550,14 +1552,10 @@ async function confirmPreview() {
         else subs.value.push({ url: previewRemoteUrl.value, name })
         setSubMsg(`订阅成功：已导入 ${res.data?.count ?? selected.length} 个书源`)
       } else {
-        // 后端不可达降级：本地导入所选书源 + 订阅记录（api 已写入 localStorage）
-        const saveRes = await saveBookSources(selected)
-        const existing = subs.value.find((x) => x.url === previewRemoteUrl.value)
-        if (existing) existing.name = previewRemoteUrl.value
-        else subs.value.push({ url: previewRemoteUrl.value, name: previewRemoteUrl.value })
-        setSubMsg(
-          `订阅成功（本地通道）：已导入 ${saveRes.data?.count ?? selected.length} 个书源`,
-        )
+        const message = res.errorMsg || '服务端未确认订阅保存'
+        setSubMsg(`订阅失败：${message}`, true)
+        ElMessage.error(`订阅失败：${message}`)
+        return
       }
       previewRemoteUrl.value = ''
       subUrl.value = ''
@@ -1662,7 +1660,7 @@ async function confirmImport() {
   }
 }
 
-/* ================= 订阅源（远程书源订阅，后端 /reader3/getSourceSubs 等为主，localStorage 降级，见 api/sourceSubs.ts） ================= */
+/* ================= 订阅源（远程书源订阅，服务端为准；localStorage 仅作离线只读镜像） ================= */
 const subs = ref<SourceSub[]>([])
 const subUrl = ref('')
 const subBusy = ref(false)
@@ -1675,31 +1673,6 @@ function setSubMsg(msg: string, isError = false) {
   subMsgError.value = isError
 }
 
-/** 拉取远程书源 JSON 并批量导入，返回导入数量 */
-async function fetchAndImport(url: string): Promise<number> {
-  const resp = await fetch(url, { mode: 'cors' })
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-  const raw: unknown = await resp.json()
-  const list = normalizeSources(raw)
-  if (list.length === 0) throw new Error('未识别到书源（需为书源数组或含 bookSourceList 的对象）')
-  const res = await saveBookSources(list)
-  return res.data?.count ?? list.length
-}
-
-/**
- * 刷新订阅并导入书源：后端 POST /reader3/refreshSourceSub 优先（服务端拉取远程 JSON 并导入书源表）；
- * 后端不可用时降级为前端 fetch + saveBookSources（preFetched 可复用已拉取的列表，避免二次请求）。
- */
-async function refreshAndImport(url: string, preFetched?: BookSource[]): Promise<number> {
-  const res = await refreshSourceSub(url)
-  if (res.isSuccess) return res.data?.count ?? preFetched?.length ?? 0
-  if (preFetched) {
-    const saveRes = await saveBookSources(preFetched)
-    return saveRes.data?.count ?? preFetched.length
-  }
-  return fetchAndImport(url)
-}
-
 /** 新增订阅：服务端抓取（saveSourceSub 后端拉取远程 JSON——避免浏览器 CORS）+ 导入 */
 async function confirmAddSub() {
   if (subBusy.value) return
@@ -1708,34 +1681,15 @@ async function confirmAddSub() {
   subBusy.value = true
   setSubMsg('')
   try {
-    // 先预览：服务端抓取优先，失败降级前端 fetch，均只展示不写库
-    let list: BookSource[] | null = null
-    let existing: Set<string> = new Set()
+    // 订阅 URL 的安全校验与预览均由服务端完成；业务拒绝不能降级绕过。
     const preview = await previewSourceSub(url)
-    if (preview.isSuccess && preview.data?.sources?.length) {
-      list = preview.data.sources
-      existing = new Set(preview.data.existing ?? [])
-    } else {
-      try {
-        const resp = await fetch(url, { mode: 'cors' })
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-        const raw: unknown = await resp.json()
-        const parsed = normalizeSources(raw)
-        if (parsed.length > 0) {
-          list = parsed
-          existing = new Set(sources.value.map((s) => s.bookSourceUrl))
-        }
-      } catch {
-        // 下方统一报错
-      }
-    }
-    if (!list) {
+    if (!preview.isSuccess || !preview.data?.sources?.length) {
       throw new Error(
         preview.errorMsg || '未识别到书源（需为书源数组或含 bookSourceList 的对象）',
       )
     }
     previewRemoteUrl.value = url
-    openPreview(list, existing, '添加订阅书源', 'sub')
+    openPreview(preview.data.sources, new Set(preview.data.existing ?? []), '添加订阅书源', 'sub')
     setSubMsg('请选择要导入的书源后确认（支持全选/反选/选择新增/排序）')
   } catch (err) {
     setSubMsg(
@@ -1747,17 +1701,19 @@ async function confirmAddSub() {
   }
 }
 
-/** 刷新订阅：重新拉取远程书源并批量导入（后端 refreshSourceSub / 降级前端导入） */
+/** 刷新订阅：服务端负责抓取和导入，失败不可改走浏览器抓取。 */
 async function refreshSub(sub: SourceSub) {
   if (subBusyUrls.value.has(sub.url)) return
   subBusyUrls.value.add(sub.url)
   try {
-    const count = await refreshAndImport(sub.url)
+    const res = await refreshSourceSub(sub.url)
+    if (!res.isSuccess) throw new Error(res.errorMsg || '服务端未确认刷新')
+    const count = res.data?.count ?? 0
     setSubMsg(`已刷新「${sub.name}」，导入 ${count} 个书源`)
     await load()
   } catch (err) {
     setSubMsg(
-      `刷新失败：${err instanceof Error && err.message ? err.message : '未知错误'}（若为浏览器跨域限制，可下载后手动新增）`,
+      `刷新失败：${err instanceof Error && err.message ? err.message : '未知错误'}`,
       true,
     )
   } finally {
@@ -1783,8 +1739,9 @@ async function toggleSubEnabled(sub: SourceSub) {
         ? `已启用订阅「${sub.name}」：恢复自动刷新`
         : `已禁用订阅「${sub.name}」：停止自动刷新（已导入书源保留）`,
     )
-  } catch {
+  } catch (err) {
     sub.enabled = prev
+    setSubMsg(`操作失败：${err instanceof Error ? err.message : '服务端未确认状态变更'}`, true)
   }
 }
 
@@ -1862,6 +1819,10 @@ async function confirmDeleteSub() {
   try {
     if (list.length) {
       const res = await deleteSourceSubs(list.map((x) => x.url))
+      if (!res.isSuccess) {
+        setSubMsg(`删除失败：${res.errorMsg || '服务端未确认删除'}`, true)
+        return
+      }
       const removed = new Set(list.map((x) => x.url))
       subs.value = subs.value.filter((x) => !removed.has(x.url))
       subSelected.value = new Set()
@@ -1869,13 +1830,17 @@ async function confirmDeleteSub() {
         `已删除 ${res.data?.deleted ?? list.length} 个订阅：自动刷新不再导入书源（已导入的书源保留）`,
       )
     } else if (s) {
-      await deleteSourceSub(s.url)
+      const res = await deleteSourceSub(s.url)
+      if (!res.isSuccess) {
+        setSubMsg(`删除失败：${res.errorMsg || '服务端未确认删除'}`, true)
+        return
+      }
       subs.value = subs.value.filter((x) => x.url !== s.url)
       setSubMsg('已删除订阅：自动刷新不再导入书源（已导入的书源保留）')
     }
     closeDeleteSub()
-  } catch {
-    // 已提示
+  } catch (err) {
+    setSubMsg(`删除失败：${err instanceof Error ? err.message : '未知错误'}`, true)
   } finally {
     deleteSubBusy.value = false
   }
@@ -1888,8 +1853,9 @@ function closeDeleteSub() {
 }
 
 async function loadSubs() {
-  const res = await getSourceSubs() // 后端优先；失败降级 localStorage（api 层已处理）
+  const res = await getSourceSubs()
   subs.value = res.data ?? []
+  if (!res.isSuccess) setSubMsg(`${res.errorMsg || '服务端不可用'}；当前仅显示本账号上次缓存`, true)
 }
 
 onMounted(() => {
@@ -2001,11 +1967,11 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- 订阅源：远程书源订阅（后端 /reader3/getSourceSubs 等为主，localStorage 降级，见 api/sourceSubs.ts） -->
+      <!-- 订阅源：服务端为准，localStorage 仅是离线只读镜像。 -->
       <section class="subs-section">
         <div class="subs-head">
           <h2 class="subs-title">订阅源</h2>
-          <span class="subs-sub">远程书源订阅 · 已接入服务端（账号内多设备一致；服务不可用时降级本地存储）</span>
+          <span class="subs-sub">远程书源订阅 · 服务端保存，离线仅可查看上次缓存</span>
           <div v-if="subs.length > 0" class="subs-toolbar">
             <label class="subs-all">
               <input

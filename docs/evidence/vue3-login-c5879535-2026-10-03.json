@@ -1,0 +1,38 @@
+{
+  "gitCommit": "c5879535ac9aaf3f694c9e5e2adb103a37dc5e85",
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37092091245",
+  "artifactPattern": "vue3-core-browser-reports-*",
+  "scope": "packaged Vue 3 with isolated Java/Kotlin Reader and generated fixture accounts",
+  "coreSuites": 8,
+  "coreTests": 8,
+  "coreSkipped": 0,
+  "coreFailures": 0,
+  "coreErrors": 0,
+  "loginSuite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+  "loginTest": "registerLogoutLoginReloadAndLoadEmptyBookshelf",
+  "loginDurationSeconds": 2.959,
+  "assertedLoginJourney": [
+    "register and reach empty bookshelf",
+    "logout clears persistent access token",
+    "wrong password returns HTTP 200 and isSuccess=false",
+    "visible Chinese error and usable login form",
+    "retry without page reload using correct fixture password",
+    "remember=false stores token and username only in sessionStorage",
+    "reload retains tab-local token and authenticated empty bookshelf",
+    "logout clears both token stores",
+    "protected root redirects back to login after logout"
+  ],
+  "otherExecutedCoreJourneys": [
+    "Vue3PreviewBackupTest",
+    "Vue3PreviewFileTest",
+    "Vue3PreviewGroupTest",
+    "Vue3PreviewReadingTest",
+    "Vue3PreviewReplaceRuleTest",
+    "Vue3PreviewSearchTest",
+    "Vue3PreviewSourceTest"
+  ],
+  "productionDataUsed": false,
+  "productionAccountUsed": false,
+  "interactiveChromeVerifiedThisTurn": false,
+  "fullProductionUiParityProven": false
+}

@@ -162,7 +162,8 @@ class WebBook(
                 bookSource,
                 book.bookUrl,
                 book.bookUrl,
-                canReName
+                canReName,
+                debugLog = debugger
             )
             return book
         } else {
@@ -184,7 +185,8 @@ class WebBook(
                 bookSource,
                 book.bookUrl,
                 response.url,
-                canReName
+                canReName,
+                debugLog = debugger
             )
             book.tocHtml = null
             return book

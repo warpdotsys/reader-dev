@@ -1,0 +1,86 @@
+{
+  "sourceCommit": "d6655420735053c705969d652a4218f443acba26",
+  "pullRequestMergeCommit": "3b5f2c9a0c1e1cfe8ce1cb2239420a5fa0c51dd7",
+  "runs": [
+    {"id": 37110140802, "name": "Java Kotlin CI", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37110140802"},
+    {"id": 37110140774, "name": "Vue 3 preview build", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37110140774"}
+  ],
+  "imageRun": {"id": 37110140814, "status": "completed", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37110140814"},
+  "executedImageRunnerLabels": ["ubuntu-24.04"],
+  "executedUiRunnerLabels": ["ubuntu-24.04"],
+  "coreJUnit": [
+    {"name": "Backup", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 2.517},
+    {"name": "File", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.35},
+    {"name": "Group", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.661},
+    {"name": "LocalReading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 9.705},
+    {"name": "Login", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.359},
+    {"name": "Reading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.981},
+    {"name": "ReplaceRule", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.267},
+    {"name": "Search", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 5.002},
+    {"name": "ShelfLayout", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 6.639},
+    {"name": "Source", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 15.944}
+  ],
+  "additionalUiSteps": {"secureFile": "success", "subdirectoryBuild": "success", "subdirectoryJourney": "success"},
+  "frontendTests": 150, "protocolPythonTests": 40,
+  "releaseSafetyStaticPassed": true, "releaseSafetyTests": 5,
+  "generatedScreenshots": [
+    {"file": "vue3-local-reading-fragments-synthetic.png", "sha256": "d37ab6e472e2d48c181855c9482112afd6a24652164ae6dbbd36a060197a7191", "visuallyReviewed": true},
+    {"file": "vue3-local-reading-raw-synthetic.png", "sha256": "c635e26882adec2755e3b2ee1173864ac084066b8fb7937a9216bbcc951840bf", "visuallyReviewed": true},
+    {"file": "vue3-local-reading-synthetic.png", "sha256": "218ad18589d815c6826a4f65678a58725cf367b389015915ec94077fb34c21af", "visuallyReviewed": true}
+  ],
+  "generatedFragmentJourney": {
+    "ncxNodes": 2, "sharedXhtmlResources": 1, "legacyApiChapters": 1,
+    "supplementalRawTocButtons": 2, "legacyProgressIndices": [0],
+    "legacyProgressRequestKeys": ["index", "url"],
+    "percentEncodedChineseId": true, "fragmentOnlyLink": true, "fileQualifiedLink": true,
+    "namedAnchor": true, "nonTocAnchorKeepsLegacyIndex": true,
+    "fragmentNavigationAndReloadAsserted": true, "anchorTopTolerancePx": 2,
+    "secondAnchorInnerScrollLowerBoundPx": 1000,
+    "savedPositionPrecedesInitialAnchor": true, "smoothCssRestoresInstantly": true,
+    "missingAnchorVisibleWarningAndTop": true,
+    "scriptsRemoved": true, "sandbox": "allow-same-origin",
+    "existingTxtAndTwoXhtmlEpubAssertionsRetained": true
+  },
+  "baselineDiagnosticLimit": {
+    "earlyInvalidChapterIndex": 1,
+    "apiActuallyHasOneChapter": true,
+    "earlyReportsPreserved": true,
+    "earlyFailureIsNotValidChapterNavigationProof": true
+  },
+  "validIndexBeforeFix": {
+    "jarSha256": "97cb130670cba0a35f31a8b2966f9eb61e489232e7bc8ef6866cbef861a6e065",
+    "chapterIndex": 0, "tests": 1, "skipped": 0, "failures": 1, "seconds": 46.643,
+    "failure": "target locator unavailable after fragment-only link click",
+    "laterFileQualifiedLinkStepExecuted": false,
+    "originalJarResult": false, "reportAndGeneratedDataPreservedOutsideGit": true
+  },
+  "localAfterFix": {"tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 17.341},
+  "localCandidateJarSha256": "9fc21e5b49fbebb23b1f706f206ba86042aad5189b03374cb1363fc140462f5d",
+  "camoufoxJUnit": {"tests": 11, "skipped": 0, "failures": 0, "errors": 0, "seconds": 85.483},
+  "resourceBudget": {
+    "architecture": "x86_64", "cpuPeriod": 100000, "cpuQuota": "200000",
+    "memoryPeakBytes": 832016384, "memoryMaxBytes": 2147483648,
+    "memoryEvents": {"high": 0, "low": 0, "max": 0, "oom": 0, "oom_group_kill": 0, "oom_kill": 0},
+    "pidsCurrent": 37, "pidsPeak": 180, "pidsMax": 256, "pidsEvents": {"max": 0},
+    "swapCurrentBytes": 0, "swapMaxBytes": 1073741824,
+    "scope": "one full Reader image; sequential probes plus four-account burst; not sustained load"
+  },
+  "syntheticImageProbe": {
+    "cookieSequence": ["", "", "session=alpha==", ""],
+    "scriptGet": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+    "post": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1, "body": "q=post", "testHeader": "synthetic"},
+    "fourAccountBurstCounts": [1, 1, 1, 1]
+  },
+  "imageOptionalJobsSkipped": ["Verify archived original JAR provenance", "Probe archived remote WebView reference", "Compare public page observations (not production parity)"],
+  "authorizedBookManualDomObservation": {
+    "bookCount": 1,
+    "chapter806": {"paragraphs": 57, "innerScrollPx": 0, "replacementCharacters": 0, "scriptNodes": 0},
+    "chapter805": {"paragraphs": 64, "innerScrollPx": 0, "replacementCharacters": 0, "scriptNodes": 0},
+    "loadError": false, "incorrectAnchorWarning": false,
+    "fragmentFixture": false,
+    "bookBytesUploaded": false, "bookBodyUploaded": false, "privateScreenshotsUploaded": false
+  },
+  "backendApiChanged": false, "backendChapterRenumbered": false, "backendStorageFormatChanged": false,
+  "knownUnverified": ["original-JAR same-condition synthetic fragment fixture", "EPUB3-nav multi-fragment end-to-end", "nested CSS imports", "oversized EPUB resource boundary", "cross-device raw pixel or anchor progress", "sustained production load", "formal multiarchitecture manifest", "real authenticated-source three-way WebView parity"],
+  "productionChanged": false, "formalRelease": false
+}

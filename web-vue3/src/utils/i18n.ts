@@ -21,6 +21,8 @@ export interface LangDict {
 const zh: LangDict = {
   /* ============ 品牌 / 通用 ============ */
   'brand.name': '夜读',
+  'app.updateReady': '发现新版本。请保存当前输入，再点击更新。',
+  'app.updateNow': '立即更新',
   'common.all': '全部',
   'common.manage': '管理',
   'common.done': '完成',
@@ -454,6 +456,8 @@ const zh: LangDict = {
 }
 
 const en: LangDict = {
+  'app.updateReady': 'A new version is ready. Save your work before updating.',
+  'app.updateNow': 'Update now',
   /* ============ Brand / Common ============ */
   'brand.name': 'Yedu',
   'common.all': 'All',

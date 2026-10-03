@@ -1,36 +1,22 @@
 import { get, post } from './request'
-import type { CacheClearResult, CacheClearType, CacheInfo, ContentSearchHit, ReturnData } from '@/types'
+import type { ContentSearchHit, ReturnData } from '@/types'
 
 /**
- * 缓存管理 + 全书内容搜索 —— 后端契约
+ * 单书缓存 + 全书内容搜索 —— 已验证的后端契约
  *
  * ============================ 后端契约 ============================
- * GET  /reader3/getCacheInfo      → ReturnData<CacheInfo>
- *                                   （缓存统计：tocCacheCount 目录缓存数 / tocCacheSize 目录缓存大小 /
- *                                     chapterCount 章节缓存数 / chapterSize 章节缓存大小 / totalSize 总大小(字节)）
- * POST /reader3/clearCache        body: { type: 'toc' | 'chapters' | 'all' } → ReturnData<{ deletedToc, deletedChapters }>
- *                                   （清理目录缓存 / 章节缓存 / 全部）
+ * GET  /reader3/getShelfBookWithCacheInfo → ReturnData<Book + cacheChapterCount + cacheSize>
+ * POST /reader3/deleteBookCache body: { bookUrl } → ReturnData<"">
  * GET  /reader3/searchBookContent → params { key, bookUrl } → ReturnData<ContentSearchHit[]>
  *                                   hit: { chapterIndex, title, snippet }
  *                                   （全书内容搜索，本地书正文逐章匹配；书源书返回「仅支持本地书内容搜索」）
  * ================================================================
  *
- * 说明：接口以 silent 模式调用（后端未实现/不可用时返回 404，静默失败由调用方降级展示，
- * 不弹全局错误提示）；后端实现后无需改调用方即可自动生效。
+ * 不存在全局 getCacheInfo/clearCache 路由；设置页必须明确提示该限制，不能探测后假定可用。
  */
 
-/** GET /reader3/getCacheInfo（silent 探测；失败时调用方显示「后端待实现」） */
-export function getCacheInfo(): Promise<ReturnData<CacheInfo>> {
-  return get<CacheInfo>('/getCacheInfo', undefined, { silent: true })
-}
-
-/** POST /reader3/clearCache（body { type }；失败时调用方提示「后端待实现」） */
-export function clearCache(type: CacheClearType): Promise<ReturnData<CacheClearResult>> {
-  return post<CacheClearResult>('/clearCache', { type }, { silent: true })
-}
-
 /**
- * GAP 79：GET/POST /reader3/deleteBookCache：删除单书缓存（body { bookUrl }；
+ * POST /reader3/deleteBookCache：删除单书缓存（body { bookUrl }；
  * 书需在本人书架——后端校验归属；legacy 对齐：成功 data=""）。
  * 后端未实现（404）时 silent 降级——调用方提示。
  */
