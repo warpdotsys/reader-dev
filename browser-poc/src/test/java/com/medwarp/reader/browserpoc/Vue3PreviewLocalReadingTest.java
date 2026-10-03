@@ -6,6 +6,9 @@ import com.microsoft.playwright.FileChooser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.Request;
+import com.microsoft.playwright.Route;
+import com.microsoft.playwright.TimeoutError;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -16,6 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -354,9 +360,7 @@ public class Vue3PreviewLocalReadingTest {
         page.locator(".toc-btn").click();
         Response loaded;
         try {
-            loaded = page.waitForResponse(response -> URI.create(response.url()).getPath()
-                .endsWith("/reader3/getBookContent")
-                && URI.create(response.url()).getQuery().contains("index=1"),
+            loaded = readAfterOldProgressSettles(page, bookUrl,
                 () -> page.locator(".epub-toc-list").getByText("NAV 后一文件",
                         new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).click());
         } catch (RuntimeException failure) {
@@ -420,6 +424,42 @@ public class Vue3PreviewLocalReadingTest {
         Path destination = Path.of(directory);
         Files.createDirectories(destination);
         Files.copy(fixture, destination.resolve(name)); // Fail instead of overwriting existing evidence.
+    }
+
+    /** Hold a real old-chapter POST: a new progress-writing GET must not overtake it. */
+    private static Response readAfterOldProgressSettles(Page page, String bookUrl, Runnable navigate) {
+        AtomicReference<Route> held = new AtomicReference<>();
+        AtomicBoolean prematureRead = new AtomicBoolean();
+        Consumer<Request> observer = request -> {
+            URI uri = URI.create(request.url());
+            if (uri.getPath().endsWith("/reader3/getBookContent") && uri.getQuery().contains("index=1")
+                    && held.get() != null) prematureRead.set(true);
+        };
+        Consumer<Route> delayOldWrite = route -> {
+            String body = route.request().postData();
+            if (body != null && body.contains(bookUrl) && body.contains("\"index\":0")
+                    && held.compareAndSet(null, route)) return;
+            route.resume();
+        };
+        page.onRequest(observer);
+        page.route("**/reader3/saveBookProgress**", delayOldWrite);
+        try {
+            page.waitForRequest(request -> URI.create(request.url()).getPath().endsWith("/reader3/saveBookProgress")
+                    && request.postData() != null && request.postData().contains(bookUrl)
+                    && request.postData().contains("\"index\":0"), navigate);
+            page.waitForCondition(() -> held.get() != null);
+            try {
+                page.waitForCondition(prematureRead::get, new Page.WaitForConditionOptions().setTimeout(1000));
+            } catch (TimeoutError expected) { /* The old POST is deliberately held for this bounded interval. */ }
+            assertFalse("New chapter read overtook an unresolved old progress POST", prematureRead.get());
+            return page.waitForResponse(response -> URI.create(response.url()).getPath().endsWith("/reader3/getBookContent")
+                    && URI.create(response.url()).getQuery().contains("index=1"), () -> held.getAndSet(null).resume());
+        } finally {
+            Route leftover = held.getAndSet(null);
+            if (leftover != null) leftover.resume();
+            page.unroute("**/reader3/saveBookProgress**", delayOldWrite);
+            page.offRequest(observer);
+        }
     }
 
     private static double innerScroll(Page page) {

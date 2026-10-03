@@ -17,6 +17,7 @@ import { get, post } from '@/api/request'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
+import { ProgressWriteBarrier } from '@/utils/progressBarrier'
 import { loadEpubDoc, destroyEpubDoc, epubChapterPath, epubFragment, epubNavigationIndex, type EpubDoc } from '@/utils/epubLoader'
 import { getCachedTts, putCachedTts, ttsCacheKey } from '@/utils/ttsCache'
 import { getLocalChapter, listLocalChapterUrls, saveLocalChapter } from '@/utils/readerLocalCache'
@@ -2795,10 +2796,12 @@ function stopDailyTracker() {
 /** 进度服务端同步（POST /reader3/saveBookProgress；失败静默，不影响本地阅读） */
 function syncServerProgress() {
   if (!shelfBook.value || !currentChapter.value) return
-  void saveBookProgress(bookUrl.value, chapterIndex.value).catch(() => {
+  void pendingProgressWrites.track(saveBookProgress(bookUrl.value, chapterIndex.value)).catch(() => {
     /* 静默失败 */
   })
 }
+
+const pendingProgressWrites = new ProgressWriteBarrier()
 
 function restoreProgress(): ReaderProgress | null {
   try {
@@ -2893,6 +2896,8 @@ async function loadContent(chapterUrl: string) {
   let fetchedWordCount: number | null = null
   try {
     if (isEpubBook.value) {
+      // getBookContent 自身写入新章进度，不能被切章前尚未完成的旧 POST 覆盖。
+      await pendingProgressWrites.settle()
       const res = await getBookContent(
         bookUrl.value,
         chapterUrl,
@@ -2910,6 +2915,7 @@ async function loadContent(chapterUrl: string) {
       const local = await getLocalChapter(bookUrl.value, chapterUrl)
       text = local?.content ?? ''
       if (!text) {
+        await pendingProgressWrites.settle()
         const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
           timeout: chapterTimeout.value * 1000,
           index: chapterIndex.value,
@@ -3643,6 +3649,7 @@ async function loadNonTextChapter(chapterUrl: string) {
   comicPage.value = 0
   hlsFailed.value = false
   try {
+    await pendingProgressWrites.settle()
     const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
       timeout: chapterTimeout.value * 1000,
       index: chapterIndex.value,
