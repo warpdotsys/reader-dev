@@ -7,6 +7,8 @@
 - PR #56 仍为候选，目标分支是 `legacy`，生产入口仍使用旧界面。`024da9d7` 的 Java/Kotlin、Vue 3 Chromium 旅程与完整镜像三个托管 workflow 均通过；新增脚本/POST 和资源断言的结果见[当前候选快照](CANDIDATE-2026-09-28.md#当前验收快照2026-10-03)。
 - 2026-09-29 在 Chrome 对 `read.medwarp.cn` 完成退出后从可见表单重新登录，书架恢复为 169 本，刷新后仍显示相同数量和后端已连接。默认“记住登录信息”在提交前已取消。部分封面仍显示加载失败。此结论更新下方 2026-09-28 的中断状态，范围只包含现部署旧界面的这次登录和书架读取；新 Vue 3 候选的生产验收仍待完成。
 
+2026-10-03 登录回归增量（等待对应新提交的托管结果）：原有注册/退出/已有用户登录旅程现增加错误密码的 HTTP 200 + `isSuccess=false` 与可见中文错误断言；不刷新直接输入正确密码，并取消“记住我”，核查令牌只在 `sessionStorage`、刷新后仍能读取当前用户空书架，以及退出后直接进入受保护入口被送回登录页。此测试仍用随机隔离账号，不是生产数据或现有用户登录等价证明。workflow 新增保存核心旅程 JUnit XML，不能只靠作业绿灯省略实际跳过数和执行范围。当前会话尝试打开 Chrome 返回 `Browser is not available: chrome`，因此这轮尚无交互式 Chrome 候选验收结果。
+
 ## 当前状态（2026-09-28）
 
 - Vue 3 仍通过 `-PreaderWebUi=vue3` 打包、`--reader.app.web-ui=vue3` 运行；`read.medwarp.cn` 仍是原版 Vue 2，未切换生产。设置页修正提交 `7710518d` 的 Java/Kotlin CI、Vue 3 Chromium 浏览器旅程和单容器 Camoufox 集成均在 GitHub 托管 runner 通过；详见 [候选验收记录](CANDIDATE-2026-09-28.md)。
