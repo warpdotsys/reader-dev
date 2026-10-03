@@ -49,11 +49,15 @@ public class Vue3PreviewLocalReadingTest {
         Path epub = Files.createTempFile("synthetic-local-", ".epub");
         Path fragments = Files.createTempFile("synthetic-fragments-", ".epub");
         Path navFragments = Files.createTempFile("synthetic-nav-fragments-", ".epub");
+        Path cssFixture = Files.createTempFile("synthetic-nested-css-", ".epub");
+        Path budgetFixture = Files.createTempFile("synthetic-budget-", ".epub");
         Files.writeString(txt, "第一章 起点\n" + TXT_TEXT + "\n第二章 终点\n" + TXT_LAST,
                 StandardCharsets.UTF_8);
         writeEpub(epub);
         writeFragmentEpub(fragments);
         writeNavFragmentEpub(navFragments);
+        writeCssEpub(cssFixture, false);
+        writeCssEpub(budgetFixture, true);
         try (Playwright playwright = Playwright.create(new Playwright.CreateOptions()
                 .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")))) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
@@ -90,6 +94,15 @@ public class Vue3PreviewLocalReadingTest {
                 page.locator(".bookshelf-page").waitFor();
                 String navUrl = importBook(page, navFragments);
                 verifyNavFragmentReading(page, base, navUrl);
+                page.navigate(base);
+                page.locator(".bookshelf-page").waitFor();
+                String cssUrl = importBook(page, cssFixture);
+                verifyNestedCss(page, base, cssUrl);
+                page.navigate(base);
+                page.locator(".bookshelf-page").waitFor();
+                String budgetUrl = importBook(page, budgetFixture);
+                verifyBudgetRejection(page, base, budgetUrl);
+                verifyCancelledDownload(page, base, cssUrl);
             } finally {
                 browser.close();
             }
@@ -98,6 +111,8 @@ public class Vue3PreviewLocalReadingTest {
             Files.deleteIfExists(epub);
             Files.deleteIfExists(fragments);
             Files.deleteIfExists(navFragments);
+            Files.deleteIfExists(cssFixture);
+            Files.deleteIfExists(budgetFixture);
         }
     }
 
@@ -415,6 +430,165 @@ public class Vue3PreviewLocalReadingTest {
         page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
                 System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
                 "vue3-local-reading-nav-fragments-synthetic.png")));
+    }
+
+    private static void verifyNestedCss(Page page, String base, String bookUrl) {
+        AtomicBoolean outsideZipRequest = new AtomicBoolean();
+        Consumer<Request> observer = request -> {
+            if (URI.create(request.url()).getPort() == 18899) outsideZipRequest.set(true);
+        };
+        page.onRequest(observer);
+        try {
+            openGeneratedCssInTextMode(page, base, bookUrl);
+            selectEpubMode(page, "原版排版");
+            page.frameLocator("iframe.epub-frame").locator("#css-proof").waitFor();
+            page.waitForCondition(() -> "rgb(17, 34, 51)".equals(page.frameLocator("iframe.epub-frame")
+                .locator("#css-proof").evaluate("el => getComputedStyle(el).color")));
+            assertEquals("700", page.frameLocator("iframe.epub-frame").locator("#css-proof")
+                .evaluate("el => getComputedStyle(el).fontWeight"));
+            assertEquals("7px", page.frameLocator("iframe.epub-frame").locator("#css-proof")
+                .evaluate("el => getComputedStyle(el).marginLeft"));
+            assertEquals("11px", page.frameLocator("iframe.epub-frame").locator("#css-proof")
+                .evaluate("el => getComputedStyle(el).paddingLeft"));
+            assertTrue(String.valueOf(page.frameLocator("iframe.epub-frame").locator("#css-proof")
+                .evaluate("el => getComputedStyle(el).backgroundImage")).contains("blob:"));
+            assertTrue((Boolean) page.frameLocator("iframe.epub-frame").locator("#inline-proof")
+                .evaluate("el => getComputedStyle(el).backgroundImage.includes('blob:')"));
+            page.waitForCondition(() -> (Boolean) page.frameLocator("iframe.epub-frame").locator("#image-proof")
+                .evaluate("el => el.complete && el.naturalWidth === 12"));
+            assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script,iframe,object,embed").count());
+            assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+            assertFalse("Book CSS must not request the synthetic outside-ZIP endpoint", outsideZipRequest.get());
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                "vue3-local-reading-css-synthetic.png")));
+        } catch (RuntimeException failure) {
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                "vue3-local-reading-css-timeout-synthetic.png")));
+            String observed = page.locator("iframe.epub-frame").count() > 0
+                && page.frameLocator("iframe.epub-frame").locator("#css-proof").count() > 0
+                ? String.valueOf(page.frameLocator("iframe.epub-frame").locator("#css-proof")
+                    .evaluate("el => getComputedStyle(el).color")) : "no CSS proof";
+            String mode = page.locator("button[title^='EPUB 排版模式']").count() > 0
+                ? page.locator("button[title^='EPUB 排版模式']").getAttribute("title") : "no mode button";
+            throw new AssertionError("Generated nested CSS failed; observed color=" + observed
+                + "; mode=" + mode + "; page=" + page.url(), failure);
+        } finally { page.offRequest(observer); }
+    }
+
+    private static void verifyBudgetRejection(Page page, String base, String bookUrl) {
+        openGeneratedCssInTextMode(page, base, bookUrl);
+        selectEpubMode(page, "原版排版");
+        page.locator(".epub-error").getByText("EPUB 单个资源超过原版排版上限",
+            new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).waitFor();
+        assertEquals(0, page.locator("iframe.epub-frame").count());
+        assertEquals("Inline errors must not duplicate a toast over the reading controls",
+            0, page.locator(".el-message__content").getByText("EPUB 单个资源超过原版排版上限",
+                new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).count());
+        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+            System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+            "vue3-local-reading-budget-synthetic.png")));
+        // 原文件/后端没有被截断或改写；原版排版被拒绝仍可主动切到普通模式。
+        page.locator(".epub-error").getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+            new com.microsoft.playwright.Locator.GetByRoleOptions().setName("切换普通阅读").setExact(true)).click();
+        page.locator(".reader-content:not(.epub-html)").getByText("生成预算样本正文仍可普通阅读",
+            new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).waitFor();
+        assertEquals(0, page.locator(".epub-error").count());
+        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+            System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+            "vue3-local-reading-budget-fallback-synthetic.png")));
+    }
+
+    private static void verifyCancelledDownload(Page page, String base, String bookUrl) {
+        openGeneratedCssInTextMode(page, base, bookUrl);
+        AtomicReference<Route> held = new AtomicReference<>();
+        AtomicBoolean aborted = new AtomicBoolean();
+        Consumer<Route> delay = route -> { if (!held.compareAndSet(null, route)) route.resume(); };
+        Consumer<Request> failed = request -> {
+            if (URI.create(request.url()).getPath().endsWith("/reader3/file/download")
+                && String.valueOf(request.failure()).contains("ERR_ABORTED")) aborted.set(true);
+        };
+        page.onRequestFailed(failed);
+        page.route("**/reader3/file/download**", delay);
+        try {
+            selectEpubMode(page, "净化排版");
+            page.locator(".reader-content.epub-html").waitFor();
+            page.waitForRequest(request -> URI.create(request.url()).getPath().endsWith("/reader3/file/download"),
+                () -> page.locator("button[title^='EPUB 排版模式']").click());
+            page.waitForCondition(() -> held.get() != null);
+            page.locator("button[title^='EPUB 排版模式']").click();
+            page.locator(".reader-content:not(.epub-html)").waitFor();
+            // Release the intercepted route so Chromium can report the real fetch cancellation.
+            Route pending = held.getAndSet(null);
+            if (pending != null) pending.resume();
+            page.waitForCondition(aborted::get);
+            assertEquals(0, page.locator("iframe.epub-frame,.epub-error").count());
+        } finally {
+            page.unroute("**/reader3/file/download**", delay);
+            page.offRequestFailed(failed);
+            Route leftover = held.getAndSet(null);
+            if (leftover != null) leftover.resume();
+        }
+    }
+
+    private static void openGeneratedCssInTextMode(Page page, String base, String bookUrl) {
+        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8)
+            .replace("+", "%20");
+        Response toc = page.waitForResponse(response -> URI.create(response.url()).getPath()
+            .endsWith("/reader3/getChapterList"), () -> page.navigate(reader + "?chapter=0"));
+        assertEquals(200, toc.status());
+        assertTrue(toc.text().contains("\"isSuccess\":true"));
+        selectEpubMode(page, "纯文本");
+        page.locator(".reader-content:not(.epub-html)").getByText("生成预算样本正文仍可普通阅读",
+            new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).waitFor();
+    }
+
+    private static void selectEpubMode(Page page, String target) {
+        com.microsoft.playwright.Locator button = page.locator("button[title^='EPUB 排版模式']");
+        button.waitFor();
+        for (int attempt = 0; attempt < 3; attempt++) {
+            String current = button.innerText().trim();
+            if (target.equals(current)) return;
+            button.click();
+            page.waitForCondition(() -> !current.equals(button.innerText().trim()));
+        }
+        assertEquals("Select the actual mode through the user-visible control", target, button.innerText().trim());
+    }
+
+    private static void writeCssEpub(Path path, boolean overBudget) throws Exception {
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(path))) {
+            entry(zip, "mimetype", "application/epub+zip");
+            entry(zip, "META-INF/container.xml", "<container><rootfiles><rootfile full-path='OEBPS/book.opf'/></rootfiles></container>");
+            entry(zip, "OEBPS/book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0' unique-identifier='uid'>"
+                + "<metadata xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:identifier id='uid'>synthetic-css-" + overBudget + "</dc:identifier>"
+                + "<dc:title>" + (overBudget ? "生成原版预算 EPUB" : "生成嵌套 CSS EPUB")
+                + "</dc:title><dc:creator>测试作者</dc:creator></metadata>"
+                + "<manifest><item id='ncx' href='toc.ncx' media-type='application/x-dtbncx+xml'/>"
+                + "<item id='one' href='Text/one.xhtml' media-type='application/xhtml+xml'/>"
+                + "<item id='css' href='Styles/main.css' media-type='text/css'/></manifest>"
+                + "<spine toc='ncx'><itemref idref='one'/></spine></package>");
+            entry(zip, "OEBPS/toc.ncx", "<ncx xmlns='http://www.daisy.org/z3986/2005/ncx/' version='2005-1'>"
+                + "<head><meta name='dtb:uid' content='synthetic-css-" + overBudget + "'/></head><docTitle><text>生成样式</text></docTitle>"
+                + "<navMap><navPoint id='one' playOrder='1'><navLabel><text>生成章节</text></navLabel>"
+                + "<content src='Text/one.xhtml'/></navPoint></navMap></ncx>");
+            entry(zip, "OEBPS/Text/one.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>生成样式</title>"
+                + "<link rel='stylesheet' href='../Styles/main.css' media='screen'/>"
+                + "<style>#inline-proof{background-image:url('../Images/图.svg')}</style></head><body>"
+                + "<p id='css-proof' class='root leaf cycle-a cycle-b'>生成嵌套样式中文正文</p>"
+                + "<p id='inline-proof'>生成行内样式正文</p><img id='image-proof' src='../Images/图.svg' alt='生成图片'/>"
+                + "<p>生成预算样本正文仍可普通阅读</p><script>/* SCRIPT-ONLY */</script></body></html>");
+            entry(zip, "OEBPS/Styles/main.css", overBudget ? "/*" + "x".repeat(4 * 1024 * 1024) + "*/"
+                : "@import 'nested/palette.css' layer(book) supports(display: grid) screen;"
+                + "@import url('cycle.css');@import 'http://127.0.0.1:18899/outside.css';"
+                + ".root{font-weight:700}.cycle-a{margin-left:7px}");
+            if (!overBudget) {
+                entry(zip, "OEBPS/Styles/nested/palette.css", "@import '../leaf/%E4%B8%AD%E6%96%87.css' screen;");
+                entry(zip, "OEBPS/Styles/leaf/中文.css", ".leaf{color:rgb(17,34,51);background-image:url('../../Images/图.svg')}");
+                entry(zip, "OEBPS/Styles/cycle.css", "@import 'main.css';.cycle-b{padding-left:11px}");
+            }
+            entry(zip, "OEBPS/Images/图.svg", "<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><rect width='12' height='12' fill='#193'/></svg>");
+        }
     }
 
     /** Opt-in export of these generated fixtures only; never reads a private book. */

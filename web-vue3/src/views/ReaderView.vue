@@ -194,6 +194,7 @@ const epubRawActive = computed(() => isEpubBook.value && epubMode.value === 'raw
 const epubDoc = shallowRef<EpubDoc | null>(null)
 const epubDocLoading = ref(false)
 const epubDocError = ref('')
+let epubLoadController: AbortController | null = null
 const epubTocEntries = shallowRef<EpubTocEntry[]>([])
 const epubTocError = ref('')
 // 只补充 legacy 合并掉的锚点，不重编号后端目录、不重复没有锚点的普通目录。
@@ -249,24 +250,38 @@ async function ensureEpubDoc(): Promise<void> {
   if (!isEpubBook.value || !shelfBook.value || epubDoc.value || epubDocLoading.value) return
   epubDocLoading.value = true
   epubDocError.value = ''
+  const controller = new AbortController()
+  epubLoadController = controller
   try {
     const systemNamespace = store.isAdmin && store.defaultConfigMode
-    epubDoc.value = await loadEpubDoc(shelfBook.value.originName || bookUrl.value, {
+    const loaded = await loadEpubDoc(shelfBook.value.originName || bookUrl.value, {
       namespace: systemNamespace ? 'default' : store.username || 'default',
       accessToken: store.accessToken,
       systemNamespace,
+      signal: controller.signal,
     })
+    if (controller.signal.aborted || epubLoadController !== controller) { destroyEpubDoc(loaded); return }
+    epubDoc.value = loaded
     try { epubTocEntries.value = readEpubNavigation(epubDoc.value) }
     catch (e) { epubTocError.value = e instanceof Error ? e.message : 'EPUB 书内目录解析失败' }
   } catch (e) {
+    if (controller.signal.aborted || epubLoadController !== controller) return
     epubDocError.value = e instanceof Error ? e.message : 'EPUB 加载失败'
-    ElMessage.error(epubDocError.value)
+    // 页内错误已明确展示；重复 toast 会覆盖排版按钮，悬停时还会阻止自动关闭。
   } finally {
-    epubDocLoading.value = false
+    if (epubLoadController === controller) {
+      epubLoadController = null
+      epubDocLoading.value = false
+    }
   }
 }
 watch([epubRawActive, shelfBook], ([on]) => {
   if (on) void ensureEpubDoc()
+  else {
+    epubLoadController?.abort()
+    epubLoadController = null
+    epubDocLoading.value = false
+  }
 })
 if (epubRawActive.value) void ensureEpubDoc()
 
@@ -4016,6 +4031,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  epubLoadController?.abort()
+  epubLoadController = null
   if (epubDoc.value) destroyEpubDoc(epubDoc.value)
 })
 onBeforeUnmount(() => {
@@ -4280,6 +4297,8 @@ onBeforeUnmount(() => {
           </div>
           <div v-else-if="epubRawActive && epubDocError" class="state epub-error">
             <p class="state-text">{{ epubDocError }}</p>
+            <p class="state-text">原文件未修改，可切换普通阅读继续。</p>
+            <button class="retry-btn" type="button" @click="epubMode = 'text'">切换普通阅读</button>
             <button class="retry-btn" type="button" @click="ensureEpubDoc">{{ t('common.retry') }}</button>
           </div>
 

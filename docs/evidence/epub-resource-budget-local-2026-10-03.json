@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-03",
+  "scope": "Vue 3 client raw EPUB candidate; local generated browser fixtures; not a release or production acceptance",
+  "limits": {
+    "compressedBytes": 67108864,
+    "expandedBytes": 268435456,
+    "entryBytes": 33554432,
+    "textBytes": 4194304,
+    "entries": 8192,
+    "workerTimeoutMs": 15000,
+    "cssDepth": 16,
+    "cssReferencesPerRoot": 128,
+    "cssBlobBytes": 33554432,
+    "blobUrls": 16384
+  },
+  "checks": {
+    "node": {"tests": 173, "passed": 173, "failed": 0, "skipped": 0},
+    "python": {"tests": 45, "passed": 45},
+    "releaseStaticGuard": true,
+    "releaseNegativeTests": {"tests": 5, "passed": 5},
+    "vueTypeCheck": true,
+    "viteBuild": true,
+    "bootJar": true,
+    "workerAsset": "epubArchive.worker-DofPich5.js"
+  },
+  "validCssBaseline": {
+    "jarSha256": "74fbd5a5a4b77a78352b54e82dc446590197eb99ffe2a96495acff7834084306",
+    "junitFile": "build/epub-css-valid-before-fix-20261003.xml",
+    "junitSha256": "034258c41a46b3834557ea04cdce69c6e52b759423a86ac5cf2cda209947d937",
+    "tests": 1,
+    "failures": 1,
+    "skipped": 0,
+    "seconds": 57.353,
+    "correctReaderPathAndRawMode": true,
+    "expectedColor": "rgb(17, 34, 51)",
+    "actualColor": "rgb(0, 0, 0)",
+    "screenshotSha256": "b845b64058e7891e6da032044b35660dd53c6a0900ee5bbb3d9a2030c16bd937"
+  },
+  "toastObstructionBeforeFix": {
+    "jarSha256": "d28e244c82141d1d9c494abade1a99309ae48d476181f7afb0b1c74151514539",
+    "junitFile": "build/epub-budget-toast-obstruction-before-fix-20261003.xml",
+    "junitSha256": "8499e944fdc8af7071e124d91eed104d790fb3deb533820589f34e9b316c434f",
+    "seconds": 57.610,
+    "failures": 1,
+    "cssAssertionsPassedBeforeFailure": true,
+    "failure": "Duplicate EPUB budget error toast intercepted real mode-button clicks; no forced click used"
+  },
+  "finalLocalBrowser": {
+    "jarSha256": "b4f56c38d2851677483be949f98631f2b2b5bf4bf10b2b7e338f837b4e9835f6",
+    "junitFile": "build/epub-budget-valid-after-fix-20261003.xml",
+    "junitSha256": "b622ac6fa5d64fa10c3841d5c80816b2f5657518bc0364b853bea22c53998214",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 19.346,
+    "generatedBooks": 6,
+    "previousProgressOrderingRegression": true,
+    "nestedImportsWithLayerSupportsAndMedia": true,
+    "cycleOwnRulesRetained": true,
+    "inlineAndStylesheetBackgrounds": true,
+    "generatedImageLoaded": true,
+    "outsideZipRequestObserved": false,
+    "rawOversizeRejectedAndNormalReadingRecovered": true,
+    "duplicateObstructingToast": false,
+    "cancelledDownloadFailure": "ERR_ABORTED",
+    "lateIframeOrErrorObserved": false
+  },
+  "visuallyReviewedGeneratedScreenshots": [
+    {"name": "vue3-local-reading-css-synthetic.png", "sha256": "321b8acaa300fb54ee32d34234304f3b84f02ec3b1e995dcc89ade8919594712"},
+    {"name": "vue3-local-reading-budget-synthetic.png", "sha256": "d43c3c5e9cda143c7fef40e179a58244956bffea4727d51bf31afaa10698d790"},
+    {"name": "vue3-local-reading-budget-fallback-synthetic.png", "sha256": "5b5ea5911c3cfc616f9537ba20fa7f753d6b3cdbbdc9f4f0348f89fa61319bc6"}
+  ],
+  "authorizedBookReadOnlyBudgetCheck": {
+    "compressedBytes": 37809796,
+    "entries": 1673,
+    "expandedBytes": 49382784,
+    "largestResourceBytes": 1963103,
+    "spineItems": 1611,
+    "parseMs": 1208,
+    "inputUnchanged": true,
+    "bodyOrEntryNamesPublished": false,
+    "fullNewWorkerUiAcceptance": false
+  },
+  "excludedDiagnostics": "Three earlier wrong /reader?url= routes produced 404; retained in ignored build, not counted as product defect baselines",
+  "originalJarSha256Unchanged": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "newHostedCi": "not yet run for this source snapshot",
+  "productionChanged": false,
+  "limitations": [
+    "Client limits are not backend EPUB import limits or a total browser RSS cap",
+    "No complete CRC or arbitrary ZIP dialect guarantee",
+    "No complete CSS grammar or real font shaping guarantee",
+    "No total download deadline; explicit cancellation and worker deadline tested",
+    "No new original-JAR complex CSS UI differential or real authenticated three-renderer differential"
+  ]
+}

@@ -91,8 +91,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          unzip -Z1 "$READER_JAR" | grep -q 'BOOT-INF/classes/web-vue3/index.html'
-          unzip -Z1 "$READER_JAR" | grep -q 'BOOT-INF/classes/web-vue3/static/index-.*\.js'
+          unzip -Z1 "$READER_JAR" > "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/index.html' "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/static/index-.*\.js' "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/static/epubArchive.worker-.*\.js' "$RUNNER_TEMP/vue3-jar-entries.txt"
       - name: Resolve Chromium on hosted runner
         shell: bash
         run: |
@@ -195,6 +197,10 @@ jobs:
             ${{ runner.temp }}/vue3-local-reading-fragments-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-nav-fragments-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-nav-fragments-timeout-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-css-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-css-timeout-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-budget-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-budget-fallback-synthetic.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve Vue 3 source journey diagnostics

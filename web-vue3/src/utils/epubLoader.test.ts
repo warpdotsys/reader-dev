@@ -4,6 +4,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { zipSync, strToU8 } from 'fflate'
+import { expandEpubArchive } from './epubArchive.ts'
+import type { EpubArchiveWorker } from './epubWorker.ts'
 import {
   parseEpubBytes,
   resolveHref,
@@ -117,6 +119,21 @@ test('legacy EPUB home mapping preserves owner and physical originName', () => {
 for (const directory of [true, false]) {
   test(`legacy EPUB ${directory ? 'directory/index.epub' : 'direct file'} carries token and relative path`, async t => {
     const requests: URL[] = []
+    // 此单元只验证 legacy 下载契约；实际打包 Worker 另由浏览器旅程执行。
+    const workerDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'Worker')
+    class FixtureWorker implements EpubArchiveWorker {
+      onmessage: EpubArchiveWorker['onmessage'] = null
+      onerror: EpubArchiveWorker['onerror'] = null
+      postMessage(data: ArrayBuffer) {
+        queueMicrotask(() => this.onmessage?.({ data: { files: [...expandEpubArchive(new Uint8Array(data))] } } as MessageEvent))
+      }
+      terminate() { this.onmessage = this.onerror = null }
+    }
+    Object.defineProperty(globalThis, 'Worker', { value: FixtureWorker, configurable: true })
+    t.after(() => {
+      if (workerDescriptor) Object.defineProperty(globalThis, 'Worker', workerDescriptor)
+      else Reflect.deleteProperty(globalThis, 'Worker')
+    })
     t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
       const url = new URL(String(input), 'http://localhost')
       requests.push(url)

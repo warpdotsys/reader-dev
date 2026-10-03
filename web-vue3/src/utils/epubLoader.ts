@@ -1,14 +1,16 @@
 /**
  * P0-1 EPUB 原版渲染：.epub 文件加载与结构化解析。
  *
- * 数据流：file/download stream=1 拉取 .epub 字节 → fflate 解压（同步 unzip，
- * 书籍级一次性成本）→ META-INF/container.xml 定位 OPF → manifest/spine
+ * 数据流：file/download stream=1 限流拉取 .epub → 有预算/超时的专用 Worker 解压
+ * → META-INF/container.xml 定位 OPF → manifest/spine
  * 建立章节顺序 → 产出 EpubDoc（资源表 + spine 条目）供 EpubIframe 渲染。
  *
  * 资源引用策略：XHTML/CSS/图片全部以 blob URL 形式注入 iframe srcdoc，
  * 相对路径在生成 srcdoc 时重写为 blob URL；沙箱禁 script，无执行风险。
  */
-import { unzipSync, strFromU8 } from 'fflate'
+import { strFromU8 } from 'fflate'
+import { expandEpubArchive, readEpubResponse } from './epubArchive.ts'
+import { expandEpubInWorker } from './epubWorker.ts'
 
 /** OPF manifest 单项 */
 export interface EpubManifestItem {
@@ -36,6 +38,8 @@ export interface EpubDoc {
   opfDir: string
   /** 已创建的 blob URL（销毁时统一 revoke） */
   blobUrls: Map<string, string>
+  /** 重写后的 CSS blob 总量，随文档回收；不是浏览器进程 RSS 上限。 */
+  cssBytes?: number
 }
 
 /** container.xml → OPF 路径 */
@@ -81,6 +85,7 @@ export interface EpubLoadOptions {
   namespace: string
   accessToken?: string
   systemNamespace?: boolean
+  signal?: AbortSignal
 }
 
 /** 只映射现有文件 home，不使用管理级 __STORAGE__ 或跨用户回退。 */
@@ -109,7 +114,7 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   const params = new URLSearchParams(location)
   if (options.accessToken) params.set('accessToken', options.accessToken)
   if (options.systemNamespace) params.set('ns', 'default')
-  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store' }
+  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store', signal: options.signal }
   // 只查询选中书自身：legacy 导入布局是 xxx.epub/index.epub，书仓则可为单文件。
   const listing = await fetch(`/reader3/file/list?${params}`, init)
   if (!listing.ok) throw new Error(`EPUB 路径检查失败（${listing.status}）`)
@@ -132,9 +137,9 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
     const error = await res.json() as { errorMsg?: string }
     throw new Error(error.errorMsg || 'EPUB 文件获取失败')
   }
-  const buf = new Uint8Array(await res.arrayBuffer())
+  const buf = await readEpubResponse(res)
   if (buf[0] !== 0x50 || buf[1] !== 0x4b) throw new Error('返回内容不是 EPUB ZIP 文件')
-  return parseEpubBytes(buf)
+  return parseEpubFiles(await expandEpubInWorker(buf, options.signal))
 }
 
 /** legacy TOC 是 OPF 相对 href，不保证其下标等于 spine（卷名/封面/非线性页）。 */
@@ -180,12 +185,10 @@ export function epubNavigationIndex(doc: EpubDoc, chapterUrls: readonly string[]
 
 /** 从字节解析 EPUB（测试可直接喂内存数据） */
 export function parseEpubBytes(bytes: Uint8Array): EpubDoc {
-  const raw = unzipSync(bytes)
-  const files = new Map<string, Uint8Array>()
-  for (const [name, data] of Object.entries(raw)) {
-    if (name.endsWith('/')) continue
-    files.set(normalizeZipName(name), data)
-  }
+  return parseEpubFiles(expandEpubArchive(bytes))
+}
+
+function parseEpubFiles(files: Map<string, Uint8Array>): EpubDoc {
 
   const opfPath = findOpfPath(files)
   const opfDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')) : ''
@@ -236,6 +239,7 @@ export function epubResourceUrl(doc: EpubDoc, zipPath: string): string | null {
   if (cached) return cached
   const data = doc.files.get(zipPath)
   if (!data) return null
+  if (doc.blobUrls.size >= 16384) throw new Error('EPUB 原版排版资源 URL 数量超过上限')
   const item = [...doc.manifest.values()].find((i) => i.href === zipPath)
   const type = mimeOf(zipPath, item?.mediaType)
   const url = URL.createObjectURL(new Blob([data as BlobPart], { type }))
@@ -263,4 +267,5 @@ function mimeOf(path: string, declared?: string): string {
 export function destroyEpubDoc(doc: EpubDoc): void {
   for (const url of doc.blobUrls.values()) URL.revokeObjectURL(url)
   doc.blobUrls.clear()
+  doc.cssBytes = 0
 }

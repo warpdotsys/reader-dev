@@ -7,7 +7,8 @@
  * - 进度：本机内滚动恢复；后端仍使用既有章节索引契约
  */
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { type EpubDoc, epubResourceUrl, resolveHref, resolveEpubLink } from '@/utils/epubLoader'
+import { type EpubDoc, resolveEpubLink } from '@/utils/epubLoader'
+import { epubAssetUrl, epubStylesheetUrl, rewriteEpubCss } from '@/utils/epubCss'
 
 const props = defineProps<{
   doc: EpubDoc | null
@@ -28,51 +29,29 @@ const srcdoc = ref('')
 const loading = ref(false)
 const restoring = ref(true)
 const anchorMissing = ref(false)
+const renderError = ref('')
 let frameEpoch = 0
 
-/** zip 路径 → blob URL；未知资源返回 '#' 占位 */
-function rewriteUrl(doc: EpubDoc, baseDir: string, raw: string): string {
-  const clean = raw.trim()
-  if (/^data:image\//i.test(clean)) return clean
-  if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(clean)) return '#'
-  // 去掉锚点后解析真实路径，锚点转交宿主
-  const hashIdx = clean.indexOf('#')
-  const pathPart = hashIdx >= 0 ? clean.slice(0, hashIdx) : clean
-  const frag = hashIdx >= 0 ? clean.slice(hashIdx + 1) : ''
-  const target = resolveHref(baseDir, pathPart)
-  const url = doc.files.has(target) ? epubResourceUrl(doc, target) : null
-  if (!url) return '#'
-  return frag ? `${url}#${frag}` : url
-}
-
-/** XHTML → srcdoc：重写外链引用并内联原书 CSS */
+/** XHTML → srcdoc：CSS 依赖树和图片/字体重写成离线 blob URL。 */
 function buildSrcdoc(doc: EpubDoc, itemPath: string): string {
   const data = doc.files.get(itemPath)
   if (!data) return '<!doctype html><html><body><p>章节缺失</p></body></html>'
   const dec = new TextDecoder('utf-8')
   let html = dec.decode(data)
-  const baseDir = itemPath.includes('/') ? itemPath.slice(0, itemPath.lastIndexOf('/')) : ''
 
   // <img src> / <image xlink:href>（SVG 封面）
   html = html.replace(/\b(src|xlink:href)\s*=\s*(["'])(.*?)\2/gi, (m, attr, _q, val) => {
     if (attr.toLowerCase() === 'src' && /\.(x?html?)($|#)/i.test(val)) return m
-    return `${attr}="${rewriteUrl(doc, baseDir, val)}"`
+    return `${attr}="${epubAssetUrl(doc, itemPath, val)}"`
   })
 
-  // <link rel=stylesheet href>
+  // 保留 link 的 media 等属性；CSS 不拼进 HTML，避免 </style> 成为注入节点。
   html = html.replace(/<link\b([^>]*)>/gi, (m, attrs: string) => {
     if (!/rel\s*=\s*["']stylesheet["']/i.test(attrs)) return m
     const hrefM = /\bhref\s*=\s*"([^"]+)"/i.exec(attrs) ?? /\bhref\s*=\s*'([^']+)'/i.exec(attrs)
     if (!hrefM) return m
-    const cssPath = resolveHref(baseDir, hrefM[1])
-    const cssData = doc.files.get(cssPath)
-    if (!cssData) return ''
-    let css = new TextDecoder('utf-8').decode(cssData)
-    const cssDir = cssPath.includes('/') ? cssPath.slice(0, cssPath.lastIndexOf('/')) : ''
-    // CSS 内的相对引用（背景图/字体）→ blob URL
-    css = css.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/gi, (_mm, q, v: string) =>
-      `url(${q}${rewriteUrl(doc, cssDir, v)}${q})`)
-    return `<style>${css}</style>`
+    const url = epubStylesheetUrl(doc, itemPath, hrefM[1])
+    return url ? m.replace(hrefM[0], `href="${url}"`) : ''
   })
 
   // 阅读基础样式：视口约束 + 图片不溢出（原书样式优先级更高，仅在缺省时生效）
@@ -83,7 +62,12 @@ function buildSrcdoc(doc: EpubDoc, itemPath: string): string {
   // 离线书不能外连、提交表单、刷新跳转或执行脚本；保留原 CSS、图片与字体。
   const parsed = new DOMParser().parseFromString(html, 'text/html')
   parsed.querySelectorAll('script,iframe,object,embed,form,base,meta[http-equiv]').forEach(el => el.remove())
+  for (const style of parsed.querySelectorAll('style')) {
+    style.textContent = rewriteEpubCss(doc, style.textContent ?? '', itemPath)
+  }
   for (const el of parsed.querySelectorAll('*')) {
+    const inlineStyle = el.getAttribute('style')
+    if (inlineStyle) el.setAttribute('style', rewriteEpubCss(doc, inlineStyle, itemPath))
     for (const attr of [...el.attributes]) {
       if (/^on/i.test(attr.name) || ['srcset', 'action', 'formaction'].includes(attr.name)
         || (/^(src|href|xlink:href)$/i.test(attr.name) && /^(https?:|javascript:|\/\/)/i.test(attr.value.trim()))) {
@@ -110,6 +94,7 @@ async function renderCurrent(): Promise<void> {
   clearFrameListeners?.()
   restoring.value = true
   anchorMissing.value = false
+  renderError.value = ''
   const doc = props.doc
   if (!doc || !props.path) {
     srcdoc.value = ''
@@ -118,6 +103,10 @@ async function renderCurrent(): Promise<void> {
   loading.value = true
   try {
     srcdoc.value = buildSrcdoc(doc, props.path)
+  } catch (error) {
+    srcdoc.value = ''
+    restoring.value = false
+    renderError.value = error instanceof Error ? error.message : 'EPUB 原版排版失败'
   } finally {
     loading.value = false
   }
@@ -197,7 +186,9 @@ onBeforeUnmount(() => {
   <div class="epub-iframe-wrap">
     <div v-if="loading" class="epub-loading">加载中…</div>
     <p v-if="anchorMissing" class="epub-anchor-warning" role="status">目录锚点不存在，已回到本页顶部</p>
+    <p v-if="renderError" class="epub-render-error" role="alert">{{ renderError }}；可切换普通排版继续阅读</p>
     <iframe
+      v-else
       ref="frameRef"
       class="epub-frame"
       sandbox="allow-same-origin"
@@ -232,6 +223,11 @@ onBeforeUnmount(() => {
   font-size: var(--font-size-sm);
   color: var(--text-3);
   pointer-events: none;
+}
+.epub-render-error {
+  margin: 0;
+  padding: 1em;
+  color: var(--text-2, #555);
 }
 .epub-anchor-warning {
   position: absolute;
