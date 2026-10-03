@@ -85,7 +85,7 @@
   },
   "excludedDiagnostics": "Three earlier wrong /reader?url= routes produced 404; retained in ignored build, not counted as product defect baselines",
   "originalJarSha256Unchanged": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
-  "newHostedCi": "not yet run for this source snapshot",
+  "newHostedCi": "Completed separately for source c2892805; see epub-resource-budget-ci-c2892805-2026-10-03.json",
   "productionChanged": false,
   "limitations": [
     "Client limits are not backend EPUB import limits or a total browser RSS cap",

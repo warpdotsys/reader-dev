@@ -41,13 +41,23 @@ CSS、超限提示和普通阅读恢复三张**生成样本**截图已目视核�
 
 原 JAR `b26fb476...030c8c` 和该授权副本 `bd8c6819...f3ced31` 的 SHA-256 复核不变。用户此前授权的服务器隔离差分已实际完成，[两本 NCX/nav 生成样本的原 JAR 与恢复 JAR 对照](EPUB3-NAV-ACCEPTANCE-2026-10-03.md#原-jar-同条件对照入口与当前状态)相同；那次恢复 JAR 为 `74fbd5a5...084306`，不能拼接为本轮新 JAR、原 UI 或复杂 CSS 同条件差分。
 
+## 新源码的实际 GitHub 托管验收
+
+功能提交 `c2892805cdd59d887aea89697122fce3cfb4e0d4` 三道门禁已全部成功；实际 runner 标签 `ubuntu-24.04`、名称 GitHub Actions，不是自托管：
+
+- [Java/Kotlin 37120476610](https://github.com/warpdotsys/reader-dev/actions/runs/37120476610)：日志核验 173 项前端、45 项 Python、发布结构检查和 5 项负向检查；JAR 构建与测试通过。
+- [Vue 3 37120476612](https://github.com/warpdotsys/reader-dev/actions/runs/37120476612)：已下载核心 JUnit 10 项，0 跳过/失败/错误，六本生成阅读完整旅程 18.490 秒。三张新增生成截图下载后再次目视核验。经理密钥文件与构建后的 `/reader/` 子目录通用旅程也实际执行并通过非跳过检查；后者不冒充子目录下的 EPUB Worker 阅读验收。
+- [完整镜像 37120476657](https://github.com/warpdotsys/reader-dev/actions/runs/37120476657)：已下载实际 Camoufox JUnit 11 项、0 跳过/失败/错误，74.332 秒；合成脚本/POST、Cookie 序列和四账号请求通过。可选原件、旧引擎与公开页配对 jobs 没有启用，不记为通过。
+
+源码 SHA 与制品使用的 PR 合并快照 `0ed5a430ceff37ceb8e586e045c00c08f2241374` 分别记录，见[制品摘要](evidence/epub-resource-budget-ci-c2892805-2026-10-03.json)。[原始资源 JSON](evidence/c2892805-browser-resource-budget-2026-10-03.json)与[合成结果](evidence/c2892805-browser-synthetic-2026-10-03.json)保留下载字节：2 CPU / 2 GiB / 256 PIDs，短时内存峰值 814,772,224 字节（约 777 MiB）、179 任务，OOM/限额事件为 0。采样属于镜像内 Camoufox 的顺序用例加四账号突发，不是前端 EPUB 解压的浏览器 RSS、长期负载保证或原 JAR 的资源峰值。
+
 ## 尚未验证与已知限制
 
 - 当前是客户端原版排版预算；**后端 EPUB 导入/解析还没有同等级资源预算**，浏览器总 RSS 也不是 256 MiB。仍需独立服务端限额与真实峰值验收。
 - ZIP 大小/路径检查不等于完整 CRC、所有 ZIP 方言或内容完整性校验。未证明所有 CSS 转义语法、字体整形、复杂媒体或任意大书兼容。
 - 解压 Worker 有 15 秒上限；下载可以被用户取消，但尚无总下载时限，不能宣称网络挂起已全部覆盖。
 - 本轮未重新运行原 JAR 的复杂样式界面，也未完成原 JAR/历史 renderer/内置引擎的真实登录书源同条件三方差分。
-- 新源码的 GitHub 托管 runner 结果须在提交后单独验收；之前提交的绿灯不代表此次改动通过。没有发布 Release、推送候选镜像或切换生产。
+- 本轮三道托管门禁已实际通过，但没有发布 Release、推送候选镜像或切换生产；原生 ARM64 的历史候选记录也不冒充此次新增界面功能的 ARM64 验收。
 
 ## 重建与回滚
 

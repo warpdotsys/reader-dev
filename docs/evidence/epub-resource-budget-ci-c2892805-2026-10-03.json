@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-03",
+  "sourceCommit": "c2892805cdd59d887aea89697122fce3cfb4e0d4",
+  "pullRequestMergeSnapshot": "0ed5a430ceff37ceb8e586e045c00c08f2241374",
+  "scope": "Hosted candidate acceptance; generated books and isolated accounts only; no release or production change",
+  "runs": [
+    {"id": 37120476610, "name": "Java Kotlin CI", "conclusion": "success", "runner": "GitHub Actions 1000003383", "labels": ["ubuntu-24.04"], "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37120476610"},
+    {"id": 37120476612, "name": "Vue 3 preview build", "conclusion": "success", "runner": "GitHub Actions 1000003384", "labels": ["ubuntu-24.04"], "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37120476612"},
+    {"id": 37120476657, "name": "Browser image integration", "conclusion": "success", "runner": "GitHub Actions 1000003385", "labels": ["ubuntu-24.04"], "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37120476657"}
+  ],
+  "javaCiLogCounts": {"frontendTests": 173, "frontendPassed": 173, "pythonTests": 45, "releaseNegativeTests": 5, "releaseNegativePassed": 5},
+  "coreUiDownloaded": {
+    "artifactId": 11272728756,
+    "artifactName": "vue3-core-browser-reports-0ed5a430ceff37ceb8e586e045c00c08f2241374",
+    "tests": 10,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "journeys": ["Login", "Reading", "LocalReading", "ShelfLayout", "Search", "Source", "Group", "ReplaceRule", "File", "Backup"],
+    "localReadingSeconds": 18.490,
+    "localReadingJUnitSha256": "8f0e6ee1826c40c65d4173ee7f59953dbbf2206b0835a37c54d2b17513709593",
+    "generatedBooks": 6,
+    "cssBudgetFallbackCancellationAndPriorProgressAssertions": true
+  },
+  "additionalUiSteps": {
+    "secureFileWriteAndRetry": "success; actual separate Gradle/JUnit non-skip guard executed",
+    "builtSubdirectoryUi": "success; actual separate Gradle/JUnit non-skip guard executed",
+    "epubWorkerIncludedInRootJar": true,
+    "doesNotClaimRawEpubWorkerJourneyInSubdirectory": true
+  },
+  "generatedScreenshotsDownloadedAndVisuallyReviewed": {
+    "artifactId": 11272649015,
+    "artifactName": "vue3-local-reading-0ed5a430ceff37ceb8e586e045c00c08f2241374",
+    "files": [
+      {"name": "vue3-local-reading-css-synthetic.png", "sha256": "4592157be053313a5608dd9df81ccb4517f5c3d4e12a024508298ff63dc0798f"},
+      {"name": "vue3-local-reading-budget-synthetic.png", "sha256": "342667223fe9aa994e11a7dc8772813b6b81a8e709cfa03d747aff92f7b41ac1"},
+      {"name": "vue3-local-reading-budget-fallback-synthetic.png", "sha256": "dd40ed0dea68b11f0bce02211ef8ca801159b388396c6cbf3d78607ce29dcbf9"}
+    ],
+    "chineseGlyphsAndControlsVisible": true,
+    "containsPrivateBookOrScreenshot": false
+  },
+  "camoufoxContractDownloaded": {
+    "artifactId": 11273172872,
+    "artifactName": "camoufox-contract-report",
+    "junitSha256": "e3dffc8173c7c196808be0642aa0abc94be9b868714f4548013bf296027ce376",
+    "tests": 11,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 74.332
+  },
+  "fullImageResourceArtifact": {
+    "id": 11273331109,
+    "name": "bundled-browser-synthetic-and-resources",
+    "resourceReport": "c2892805-browser-resource-budget-2026-10-03.json",
+    "resourceSha256": "d89a0d97c5d401e2178eb7a73e94a204d0365dfc9d4730c4db589f9f8e1971a6",
+    "syntheticReport": "c2892805-browser-synthetic-2026-10-03.json",
+    "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b",
+    "cpuQuotaCores": 2,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 814772224,
+    "pidsMax": 256,
+    "pidsPeak": 179,
+    "memoryLimitAndOomEvents": 0,
+    "pidsLimitEvents": 0,
+    "scope": "Short sequential Camoufox probes plus four-account burst; not client EPUB browser RSS, long-term load, or original-JAR resource measurement"
+  },
+  "optionalJobsSkippedNotPassed": ["Verify archived original JAR provenance", "Probe archived remote WebView reference", "Compare public page observations (not production parity)"],
+  "releasePublished": false,
+  "productionChanged": false
+}
