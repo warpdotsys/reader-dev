@@ -3863,7 +3863,9 @@ onMounted(() => {
   transform: translateX(-50%);
   z-index: 1000;
   width: max-content;
-  max-width: min(280px, calc(100vw - 24px));
+  /* 隐藏的绝对定位浮层也会扩大滚动区域；以卡片为边界而不是只限视口宽。 */
+  max-width: min(280px, 100%);
+  overflow-wrap: anywhere;
   padding: 12px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
