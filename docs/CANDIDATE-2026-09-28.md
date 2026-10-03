@@ -2,6 +2,16 @@
 
 此记录跟踪候选分支 `ci/full-reader-20260926`，确切功能代码以该分支 Git HEAD 为准，不是正式发布说明。`legacy` 默认分支、`read.medwarp.cn` 生产容器和 `storage/data` 均未因该候选改变；原始 `reader-pro-3.2.14.jar` 继续保留作只读对照。下列本机 JAR 散列对应较早的 `0fd3a082` 验证点，不能冒充当前提交的制品散列。
 
+## 当前验收快照（2026-10-03）
+
+`024da9d7` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/37090043938)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/37090044015)与[完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/37090043943)均由 GitHub 托管 runner 执行成功。新镜像烟测通过了与本地历史 WebKit 双 JAR 样本使用相同脚本标记和 POST 字段的两个用例：脚本结果被 Reader 解析为固定书名；目标端实际收到 `POST /search-post`、`q=post` 与 `X-Fixture=synthetic`。4 个隔离用户的同时搜索全部返回 1 本书，Cookie 未串用户。
+
+[下载制品的 JSON 证据](evidence/bundled-browser-024da9d7-2026-10-03.json)记录容器从启动到完成这些探针的 cgroup 峰值：内存 `809115648` 字节（约 772 MiB），PIDs 任务数（含线程）177；上限分别为 2 GiB、256 个任务和 2 CPU，OOM/PIDs 限额触发计数均为 0，最终 swap 使用为 0。浏览器渲染仍经单渲染队列，4 用户同时请求不等于 4 个浏览器同时执行；该短样本不证明生产长期吞吐、ARM64 或全部真实书源负载。下载的真实 Camoufox JUnit XML 为 11 项、0 跳过/失败/错误，其中未命中资源超时、主导航卡住后失败和随后恢复的用例均实际执行。
+
+同日只读测量部署主机得到可用磁盘 `47269437440` 字节（约 44 GiB）、4 CPU、约 2024 MiB available 内存；现有旧 Reader 与恢复版服务分别占约 1.57 GiB 与 308 MiB。此时旧服务已使用部分 swap。没有因测量停止容器或修改数据；实际拉取耗时、新旧镜像切换和灰度资源仍须在部署阶段验证。PR 保持草稿，候选尚未发布或部署。
+
+同一提交的[公开书源配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/37090342192)也成功；旧参考与内置 Camoufox 均返回 10 项、相同书名/URL 投影摘要，采样相隔 416.662 秒。该轮含公开页的完整镜像内存峰值约 794 MiB、PIDs（含线程）峰值 199，OOM 与限额事件均为 0。[下载制品与范围](REAL-SOURCE-DIFF-2026-09-28.md#2026-10-03-当前候选公开页复验)已保存；原 JAR、原生产远程实例与真实登录书源仍未加入本轮公开配对。
+
 ## 已成功重建与本机验证
 
 - JDK 11、Gradle 6.1.1 执行 `./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon` 成功。JUnit 结果为 82 项、0 失败、0 错误、12 跳过；跳过项包含 3 项本机缺少 Camoufox 的真实浏览器测试与 9 项本机缺少 Chromium 的测试，不能写成 82 项全部执行成功。
@@ -59,7 +69,7 @@
 
 ## 已知问题与尚未验证
 
-- 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；目标服务器的可用磁盘、镜像拉取耗时和升级时新旧镜像共存空间尚未验收。发布前必须核对这些条件；若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
+- 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；2026-10-03 主机只读测量可用磁盘约 44 GiB，实际镜像拉取耗时和升级切换仍未验收。若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
 - 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。
 - `041d0b76` 的[真实 Camoufox 合约作业](https://github.com/warpdotsys/reader-dev/actions/runs/36524697676)上传的 JUnit XML 为 9 项、0 跳过、0 失败、0 错误：同一响应 `Set-Cookie` 后由书源 `webJs` 删除、页面内联脚本在 DOM 就绪前删除既有及新建普通 Cookie，下一请求均未复活；同场景的 `HttpOnly` Cookie 保留。worker 只对 host-only `HttpOnly` 设值和明确删除响应头使用回退值，普通 Cookie 的最终状态以浏览器快照为准。
 - 后续带引号与分号的 `HttpOnly` Cookie 合成测试在 [`b3ad9860` 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36526434506)中实际失败：同次页面子资源带 Cookie，下一次 Reader 回放却为空。`31a88778` 改为浏览器快照可见时优先采用其值，响应头仅补缺失快照或明确删除；[真实 Camoufox 复验](https://github.com/warpdotsys/reader-dev/actions/runs/36527044078)的 JUnit XML 为 11 项、0 跳过、0 失败、0 错误，失败用例及既有 `HttpOnly` 刷新用例均执行通过。此结论只覆盖一个合成引号/分号值及一个 Expires 日期；其他复杂格式、跨站 SameSite、真实需登录书源和原生产远程 WebView 同条件行为仍未验证。
@@ -71,7 +81,7 @@
 - 2026-09-28 与 2026-09-29 使用真实 Chrome 表单对当前线上原版完成登录；后一次退出旧会话再登录，读取到 169 本书；见[线上登录核验](PRODUCTION-CHROME-LOGIN-2026-09-28.md)。这仅证实现部署的 Chrome 路径在这两次测试成功，Edge 与本候选的线上 UI 登录仍未验证。
 - 2026-09-29 后续在仅回环网卡的 Linux 网络命名空间里实际运行本地原始 JAR 与当前恢复 JAR，对同一合成 `/render.html` 夹具完成四次 Cookie／`js_source` 差分；原 JAR 与恢复版的搜索状态及脚本字段相同，恢复版的 Cookie 回放是有意差异。该[原始证据与复现说明](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md)补强了上面的较早历史观测，但夹具不执行 JavaScript，也不代表原生产远程 WebView；不能据此关闭真实书源三方差分或发布门槛。
 - 同日新增显式 `--exercise-post` 的第 5 次合成搜索，原 JAR 与恢复版均把 `POST`、`q=post`、合成请求头和 `document.title` 脚本字段传给 `/render.html`，搜索均成功；[新原始 JSON 与限制](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加post-请求形态实测)已入库。夹具没有向目标站实际发 POST，故不能替代旧服务或内置浏览器的真正网络请求验收。
-- 2026-10-03 入库的[实际历史 WebKit 双 JAR 样本](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加实际历史-webkit-服务的双-jar-差分)已在私有仅回环网络中由目标端观测到 4 次 GET 和 1 次 POST；方法、请求体、测试头和搜索结果两侧一致，脚本改写书名的结果断言也通过。目标 Cookie 两侧全为空。该样本运行于 2026-09-29，只覆盖固定历史镜像与合成书源，未加入 Camoufox 或证明原生产实例同版。完整镜像烟测现新增相同脚本标记和 POST 字段的断言，并保存 cgroup 资源报告；新增门禁须在对应新提交的托管作业中执行通过后才能记为镜像证据。
+- 2026-10-03 入库的[实际历史 WebKit 双 JAR 样本](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加实际历史-webkit-服务的双-jar-差分)已在私有仅回环网络中由目标端观测到 4 次 GET 和 1 次 POST；方法、请求体、测试头和搜索结果两侧一致，脚本改写书名的结果断言也通过。目标 Cookie 两侧全为空。该样本运行于 2026-09-29，只覆盖固定历史镜像与合成书源，未加入 Camoufox 或证明原生产实例同版。完整镜像的同类脚本/POST 断言与资源门禁现已由 `024da9d7` 托管作业通过，见文首快照；不同运行环境的这些样本不等于真实书源同条件三方验收。
 - 本机缺少完整 Linux Camoufox 环境；hosted image 作业已确认真实浏览器与受限容器启动、合成请求和资源预算，但真实书源超时、生产负载、并发资源预算和 ARM64 尚未验收。
 - GitHub 托管 runner 当前将旧 Node.js 20 action 强制运行于 Node.js 24，并提示 `setup-java@v4` 维护期结束。现有门禁通过，但后续应升级并锁定新版本 action，避免未来平台迁移导致 CI 失效。
 - 单页正文 UTF-8 超过 4 MiB 会显式失败；这是一条安全/内存预算限制，可能影响超大章节或页面，需要用真实书源样本验证后决定是否调整。不能静默截断正文。

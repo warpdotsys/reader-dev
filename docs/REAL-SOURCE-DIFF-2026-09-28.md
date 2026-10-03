@@ -35,6 +35,14 @@ python -B scripts/compare-real-public-explore.py
 
 `52d30125` 的[首次数组投影作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531083960)在两个子作业中均得到 10 本及相同的书名/URL 投影摘要，但参考镜像额外的纯数字脚本偶发不可解析，导致整次比较作业失败。该失败是探针形式不稳定，不能写成产品解析失败或整轮验收通过。移除纯数字步骤后，`a53cc7be` 的[修正配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531865466)全部通过：参考镜像 JavaScript 返回的 10 个 `[name, bookUrl]` 与 Reader `webView=true` 搜索结果的相同投影 SHA-256 均为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`；Reader HTTP 200、`isSuccess=true`、`errorMsg=""`；采样相隔 237.914 秒。制品明确标注 `projectionEqual=true`、`fullResponseParityProven=false`、`originalJarCompared=false`、`referenceProvenProduction=false`。这是比“都是 10 本”更强的公开样本证据，但仍缺原 JAR、原生产远程实例、真实登录书源和同一 HTTP 响应内容控制，不能称三方兼容验收完成。
 
+## 2026-10-03 当前候选公开页复验
+
+提交 `024da9d7` 的[手动配对作业 37090342192](https://github.com/warpdotsys/reader-dev/actions/runs/37090342192)已完成旧参考镜像、完整 Reader/Camoufox 镜像及比较作业。下载的[独立 JSON 证据](evidence/public-webview-024da9d7-2026-10-03.json)记录两侧均为 HTTP 200、10 项书目，书名/URL 投影 SHA-256 均为 `66b358fd579636fea1922725c1c228e318a554f98a989c3e881e80619a9beec4`；Reader 为 `isSuccess=true`、空错误信息。两侧观测相隔 `416.662` 秒，旧参考原始页面摘要为 `018b3d6351518a8744b047eb487a461426d888275d8da2d3f89a959b8bd3e1bd`。
+
+同一完整镜像还通过合成 Cookie 隔离、脚本书名改写、目标 POST 和四用户同时请求。cgroup 内存峰值 `832761856` 字节（约 794 MiB），PIDs 任务数（含线程）峰值 199；2 GiB / 256 PIDs / 2 CPU 限制下，OOM 和 PIDs 限额事件均为 0，最终 swap 使用为 0。这只是短时合成加公开页负载，不代表真实登录站点或生产长期吞吐。
+
+当前投影摘要与 2026-09-29 的摘要不同，说明公开列表随时间变化；本轮只以两侧同一时段的相同投影作有限比较。原 JAR 没有加入本次托管公开页配对，固定旧镜像也未证明是原生产实例；完整响应等价继续标记为未证明。此前本地原 JAR 的静态目录结果不能成为本轮的第三侧。
+
 ## 尚未验证
 
 - 原 JAR／恢复版的一致性样本是公开静态目录的真实 HTTP/规则解析，未启用 `webView`；另一个容器内样本启用了内置 Camoufox，但没有同条件运行原 JAR 和旧远程 WebView。两项证据不能拼接成三方等价，且站点本身不是依赖 JavaScript 或登录态的样本。
