@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-03",
+  "sourceSha": "cc2e0832be1d917b30e0d1983224f2f5fd4e3845",
+  "artifactMergeSnapshotSha": "f597ef8b59588ce67880937a2da59af2c4062e43",
+  "workflows": [
+    {
+      "name": "Java Kotlin CI",
+      "runId": 37127026232,
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000003393",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "frontendTests": 173,
+      "frontendFailures": 0,
+      "frontendSkipped": 0,
+      "pythonTests": 45,
+      "releaseNegativeTests": 5
+    },
+    {
+      "name": "Vue 3 preview build",
+      "runId": 37127026118,
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000003390",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "coreTests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "secureManagerFileStep": "success",
+      "subdirectoryStep": "success",
+      "subdirectoryWorkerJourneyVerified": false
+    },
+    {
+      "name": "Browser image integration",
+      "runId": 37127026147,
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000003392",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "originalProvenanceJob": "skipped",
+      "archivedWebviewJob": "skipped",
+      "publicComparisonJob": "skipped"
+    }
+  ],
+  "ui": [
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 2.481,
+      "sha256": "e4baae0d49e44df5f57b74a83486ee0cdc1aa8ecee849880d978787cb273ad23"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 6.926,
+      "sha256": "b0ddf95006e12d80fd893dbc9bc0b287674a1d216c38a0d1a9ed9a611c72d339"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 3.222,
+      "sha256": "80112a688f9009f0bcca8bdde2b6f516d3d0774cd24f6bc4b673d15ab2e6c650"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.581,
+      "sha256": "9f8f6e17b43a1b105ed21484c324cb4ec303c15d1f0aa1cb9263f22f0112458d"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 17.078,
+      "sha256": "1bcd17522479e767aed6f884075b7b0e18fa2d4a231bd1161c777134a99330f5"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 2.774,
+      "sha256": "da72e99f829cc597b9b61e4891510f42c876e5a7f998186f3dd0c3e0c5c4d1ea"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 3.87,
+      "sha256": "b774e92e2b4b565a3d77aaa43c8d45a181901e91aabbc96aa8d20c8527331689"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.778,
+      "sha256": "dbe267995ac325e57d41741ec79dc2362f2fdacd7be40366ffda91efa01ed700"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.663,
+      "sha256": "2d8b5a2a660fef1275bc7fc712240d6079709a5b6c526233ff4a6114c7ea13c6"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 6.486,
+      "sha256": "f596ec384a1ac69474dfe8d885409c3205aacdc816df2b355d3f8c7783810353"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 6.506,
+      "sha256": "60aa36a1e578602e9bca82c0dca34238e5bdbb96d69fa6b05016728bdea57606"
+    }
+  ],
+  "camoufox": {
+    "tests": 11,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 86.986,
+    "sha256": "9d58a3d6ba589089253df0dc5406a544cd3bd41809838abf8a314fe128f54450"
+  },
+  "resource": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 797704192,
+    "pidsCurrent": 38,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 179,
+    "scope": "one full Reader image; sequential probes plus four-account burst",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  },
+  "resourceSha256": "2a94350a298aa18f5cc0068970bebf208b91ff4a1c0dc7411f316816fc776454",
+  "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b",
+  "screens": [
+    {
+      "name": "vue3-epub-safety-mobile-synthetic.png",
+      "sha256": "04451138efb38c74df4420f5390b0eb529f73b78cb1c63567b3a1143f8c20518"
+    },
+    {
+      "name": "vue3-epub-safety-synthetic.png",
+      "sha256": "2ce86d398958bab618b521b0da2b2d8a1ad2385a8a2e7425fab7cb2bcc0c70e5"
+    }
+  ],
+  "hostedScreenshots": {
+    "desktopSettledAndViewed": true,
+    "mobileTransitionFrame": true,
+    "mobileNotCountedAsSettledVisualEvidence": true,
+    "followupTestWaitsForRealCssTransition": true,
+    "localSettledMobileViewed": true
+  },
+  "serverDifferential": {
+    "originalExecuted": true,
+    "equal": true,
+    "generatedFixtures": 2,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredJarSha256": "0687b5a83b910166256ea1235429a5008686a0551c3971ed24ff3325e7d8069b",
+    "rawReportPath": "generated-fragment-server-budget-diff-2026-10-03.json",
+    "rawReportSha256": "9e2343a15dc39a83403e4e4a65340d37404d27049e4954466d1c689173e3621e",
+    "privateBookRead": false,
+    "inputsUnchanged": true,
+    "uid": 65534,
+    "privateNetwork": true,
+    "cpuQuotaPercent": 200,
+    "memoryMaxBytes": 2147483648,
+    "memorySwapMaxBytes": 0,
+    "pidsMax": 256,
+    "runtimeMaxSeconds": 240,
+    "unit": "reader-epub-budget-diff-0687-b-20261003",
+    "firstStartupAttemptFailed": true,
+    "firstStartupFailureRootCauseNotConfirmed": true,
+    "retrySetsJavaTmpAndUserHomeWithinOwnedRoot": true,
+    "invalidServiceMemoryPeakNotUsed": true
+  },
+  "productionChanged": false,
+  "formalReleasePublished": false,
+  "limitations": [
+    "Downloaded reports prove the named source/merge snapshot, not a later follow-up commit",
+    "Image resource peak is not frontend EPUB RSS or original-JAR peak",
+    "Optional three-way real authenticated source parity remains unverified",
+    "Local 20 renderer skips not counted as passes"
+  ]
+}

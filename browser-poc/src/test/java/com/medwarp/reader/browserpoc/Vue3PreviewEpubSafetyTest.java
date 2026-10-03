@@ -83,6 +83,13 @@ public class Vue3PreviewEpubSafetyTest {
                     assertTrue(page.locator("[aria-label='导入本地书籍'] .dlg-close").isEnabled());
                     assertPreviewUnchanged(page, username, valid);
                     if (bytes == invalid.get(0) || bytes == invalid.get(invalid.size() - 1)) {
+                        // Fast hosted uploads can finish during the dialog's real CSS transition.
+                        // Wait for the user-visible settled state, not an arbitrary sleep or disabled animation.
+                        page.waitForFunction("()=>{const overlay=document.querySelector('.dlg-overlay');"
+                                + "const dialog=document.querySelector('[aria-label=\"导入本地书籍\"]');"
+                                + "return overlay&&dialog&&[overlay,dialog].every(element=>"
+                                + "getComputedStyle(element).opacity==='1'&&element.getAnimations()"
+                                + ".every(animation=>animation.playState!=='running'&&animation.playState!=='pending'));}");
                         page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(System.getenv()
                                 .getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
                                 bytes == invalid.get(0) ? "vue3-epub-safety-synthetic.png"
