@@ -48,6 +48,8 @@ digest 构建；发布时不会重新从浮动 tag 解析 digest。Dockerfile �
 
 1. 在 GitHub 托管 runner 上重新运行 Vue 3、Java/Kotlin 测试，构建可校验 JAR；
 2. 构建包含 Camoufox 的唯一完整镜像并在镜像内进行健康和浏览器运行时烟测；
+   烟测服务必须仅监听回环，临时目录限额 256 MiB，并在推送镜像之前检查
+   2 GiB / 256 PIDs / 2 CPU 的 cgroup 限额及 OOM/PIDs 事件；
 3. 将同一镜像按版本标签推送到 GHCR 和 Docker Hub，读取并比对两个 registry digest；
 4. 创建正式 GitHub Release，附 JAR、SHA-256 和镜像 digest 清单；
 5. 由 `cdn.medwarp.cn` 拉取 Docker Hub 的 digest 引用，不从本地 tar 或服务器源码构建；
@@ -60,6 +62,13 @@ digest 构建；发布时不会重新从浮动 tag 解析 digest。Dockerfile �
 ```bash
 node scripts/check-release-pipeline.mjs
 ```
+
+该检查也由普通 Java/Kotlin CI 和正式发布输入检查执行。正式产物目录增加
+`BROWSER_RESOURCE_BUDGET.json`，记录该次完整镜像烟测的原生架构、资源峰值及
+限额事件；它不证明生产长期吞吐。当前 `release.yml` 仍在 amd64 runner 构建和
+推送一个原生镜像，尚未生成 amd64/arm64 多架构 manifest。候选
+[ARM64 原生验收入口](../../docs/NATIVE-ARM64-ACCEPTANCE-2026-10-03.md)与正式多架构
+发布是两个不同门槛，不能只因为 wheel/浏览器锁含 ARM64 就宣称正式标签兼容 ARM64。
 
 以下命令只用于已有 digest 镜像的紧急手动恢复，不作为正常发版流程：
 

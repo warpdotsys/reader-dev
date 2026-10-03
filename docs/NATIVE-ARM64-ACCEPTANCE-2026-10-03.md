@@ -1,6 +1,14 @@
 # 完整 Reader 镜像的原生 ARM64 验收
 
-更新日期：2026-10-03。本文记录候选验收入口；未取得对应作业及制品证据前，不代表 ARM64 产品已经交付。
+更新日期：2026-10-03。本文记录候选原生验收，成功构建和烟测不等于正式多架构发布或生产交付。
+
+## 当前已核验结果
+
+提交 `cf1377bdb74230135424b70c28a56b716361a66f` 的[原生 ARM64 作业 37092623878](https://github.com/warpdotsys/reader-dev/actions/runs/37092623878)成功；API 返回实际 runner 标签 `ubuntu-24.04-arm`，日志断言 `expected=arm64 runner=ARM64 kernel=aarch64`，构建镜像 `Architecture=arm64`。同提交的[默认 amd64 作业](https://github.com/warpdotsys/reader-dev/actions/runs/37092621807)、Java/Kotlin CI 与 Vue 3 旅程也全部成功。
+
+下载的 [JSON/JUnit 摘要](evidence/native-arm64-cf1377bd-2026-10-03.json)核实真实 Camoufox 11 项、0 跳过/失败/错误，耗时 77.699 秒；完整 ARM64 镜像的四次 Cookie 序列、脚本书名改写、目标 POST 与四用户请求通过。容器报告架构 `aarch64`、内存峰值 `773627904` 字节（约 738 MiB）、PIDs 任务峰值 176，2 GiB / 256 PIDs / 2 CPU 下 OOM/PIDs 限额事件为 0，最终 swap 为 0。中文字体检查得到文泉驿正黑字体族；它只证明字体覆盖存在，不代替界面截图验收。
+
+该次未压缩镜像大小 `4054868538` 字节（约 3.78 GiB），JAR SHA-256 为 `d7fd220df90888f47b92b1cdf29538bae53d103515cf875fb8688896f72de09c`；这是单次构建标识，不宣称与 amd64 或本地 JAR 字节相同。本次没有公开实站或生产用户数据，也没有推送正式多架构 manifest。
 
 ## 验收入口
 
@@ -25,6 +33,6 @@ ARM runner 额外安装 Chromium/Firefox 的主机端测试依赖，仅用于 re
 
 ## 边界和当前状态
 
-截至本入口写入时，尚未执行新增 ARM64 作业。现有 amd64 托管验收已经通过，但不能证明 ARM64。正式多架构发布、生产出口策略、长期资源预算、真实登录书源与升级回滚继续单独验收；不因为有 ARM64 选项就创建 Release 或切换生产。
+本入口最初写入时尚未运行，随后上述原生 ARM64 样本已取得作业和制品证据。正式多架构发布、生产出口策略、长期资源预算、真实登录书源与升级回滚继续单独验收。当前正式 `release.yml` 只在 amd64 runner 构建并推送原生镜像，没有多架构 manifest；不因候选 ARM64 烟测成功就宣称正式标签已支持双架构，也不创建 Release 或切换生产。
 
 资源报告新增原生架构字段，6 项无浏览器单测验证正常 ARM 报告、缺少可选 PIDs 峰值不编造数据、OOM、PIDs 限额事件、未限制内存和错误 CPU 配额的拒绝行为；全套 Python 32 项本机通过。测试用临时 cgroup 文本，不是 ARM64 浏览器执行证据。

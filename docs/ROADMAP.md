@@ -33,6 +33,8 @@
 
 **同日登录边界增量**：`c5879535` 的三道托管门禁全部通过；[Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/37092091245)下载的核心 JUnit 为 8 项、0 跳过/失败/错误。新增错误密码拒绝后直接重试、取消“记住我”、tab-local token 刷新及退出后拒绝受保护入口的断言，见[原始制品摘要](evidence/vue3-login-c5879535-2026-10-03.json)。仍为隔离测试账号，不是现有生产用户验收。新增[原生 ARM64 托管验收入口](NATIVE-ARM64-ACCEPTANCE-2026-10-03.md)，在实际运行通过前不把 ARM64 列为已交付。
 
+**同日 ARM64 实跑**：`cf1377bd` 的[原生 ARM64 完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/37092623878)和默认 amd64、Java/Kotlin、Vue 3 三道门禁全部成功。ARM64 真实 Camoufox 11 项无跳过/失败/错误，合成脚本、POST、Cookie 和四用户请求通过；内存峰值约 738 MiB、PIDs 任务峰值 176，限额事件为 0，见[制品证据与边界](NATIVE-ARM64-ACCEPTANCE-2026-10-03.md)。这关闭“ARM64 候选从未原生运行”的缺口，但没有发布多架构 manifest；正式 `release.yml` 当前仍只推送 amd64 镜像。正式发版烟测已补回环监听、临时目录和与 CI 相同的资源断言，结构检查及 5 项负向测试本机通过；新的托管提交和实际稳定标签运行继续分别待验收。
+
 ## 近期主线（2026-09-26 调整）
 
 1. **内置浏览器**：先以固定 WebView 书源样本比较原 JAR、现有远程服务和本地候选引擎，再做单容器 PoC、进程隔离和资源预算。目标是无需另行部署 `remote-webview`；在实测达标前保留远程实现和回滚路径。下文的候选表不是选型结论。

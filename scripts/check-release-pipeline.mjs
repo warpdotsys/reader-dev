@@ -29,6 +29,9 @@ for (const token of [
   "grep -Eq '^##[[:space:]]+已知问题'", 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',
   'reader-anonymous-docker-config',
   'fc-list :lang=zh family',
+  'READER_SERVER_BINDADDRESS=127.0.0.1', '--tmpfs /tmp:size=256m,mode=1777',
+  'reader-release-listener.txt', 'scripts/report-browser-cgroup.py',
+  'dist/BROWSER_RESOURCE_BUDGET.json',
 ]) {
   if (!workflow.includes(token)) throw new Error(`release workflow missing required token: ${token}`)
 }
@@ -89,6 +92,18 @@ if (!browserWorkflow.includes('fc-list :lang=zh family')) {
   throw new Error('browser image smoke test must verify CJK font coverage')
 }
 const ciWorkflow = read('.github/workflows/ci.yml')
+if (!ciWorkflow.includes('node scripts/check-release-pipeline.mjs') ||
+    !workflow.includes('node scripts/check-release-pipeline.mjs')) {
+  throw new Error('CI and formal release must execute release safety checks')
+}
+const browserSmoke = workflow.indexOf('python3 scripts/smoke-local-webview.py')
+const budgetCheck = workflow.indexOf('docker exec -i reader-pro-camoufox-smoke python -')
+const registryLogin = workflow.indexOf('- name: Log in to GitHub Container Registry')
+const registryPush = workflow.indexOf('docker push')
+if (browserSmoke < 0 || budgetCheck < browserSmoke ||
+    registryLogin < budgetCheck || registryPush < budgetCheck) {
+  throw new Error('formal images must pass the in-container resource budget after browser smoke and before registry writes')
+}
 for (const [name, content] of [['release', workflow], ['browser image', browserWorkflow], ['CI', ciWorkflow]]) {
   if (!content.includes("unittest discover -s src/test/python -p '*_test.py'")) {
     throw new Error(`${name} workflow must execute browser and differential CLI safety tests`)
