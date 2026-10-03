@@ -95,6 +95,18 @@ const shelfBook = ref<Book | null>(null)
 const bookName = ref('')
 const chapters = ref<BookChapter[]>([])
 const chapterIndex = ref(0)
+// 目录/搜索入口的显式章节优先于已保存进度；翻章后必须同步这个入口，
+// 否则刷新仍会被旧 ?chapter 拉回。无显式章节的续读不添加参数，保留进度恢复逻辑。
+watch(chapterIndex, (idx) => {
+  if (route.query.chapter === undefined || route.query.chapter === String(idx)) return
+  void router.replace({
+    path: route.path,
+    query: { ...route.query, chapter: String(idx) },
+    hash: route.hash,
+  }).catch(() => {
+    /* 导航失败不阻断正文加载；原有本机/服务端进度仍照常保存。 */
+  })
+})
 const content = ref('')
 const loading = ref(true)
 const loadError = ref(false)
