@@ -41,9 +41,11 @@ public class Vue3PreviewLocalReadingTest {
                 "127.0.0.1".equals(uri.getHost()) || "localhost".equals(uri.getHost()));
         Path txt = Files.createTempFile("synthetic-local-", ".txt");
         Path epub = Files.createTempFile("synthetic-local-", ".epub");
+        Path fragments = Files.createTempFile("synthetic-fragments-", ".epub");
         Files.writeString(txt, "第一章 起点\n" + TXT_TEXT + "\n第二章 终点\n" + TXT_LAST,
                 StandardCharsets.UTF_8);
         writeEpub(epub);
+        writeFragmentEpub(fragments);
         try (Playwright playwright = Playwright.create(new Playwright.CreateOptions()
                 .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")))) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
@@ -67,12 +69,17 @@ public class Vue3PreviewLocalReadingTest {
                 Path screenshot = Path.of(System.getenv().getOrDefault("RUNNER_TEMP",
                         System.getProperty("java.io.tmpdir")), "vue3-local-reading-synthetic.png");
                 page.screenshot(new Page.ScreenshotOptions().setPath(screenshot));
+                page.navigate(base);
+                page.locator(".bookshelf-page").waitFor();
+                String fragmentUrl = importBook(page, fragments);
+                verifyFragmentReading(page, base, fragmentUrl);
             } finally {
                 browser.close();
             }
         } finally {
             Files.deleteIfExists(txt);
             Files.deleteIfExists(epub);
+            Files.deleteIfExists(fragments);
         }
     }
 
@@ -228,6 +235,117 @@ public class Vue3PreviewLocalReadingTest {
         for (int i = 0; i < 50; i++) body.append("<p>合成滚动定位段落 ").append(i)
                 .append("：仅用于验证滚动保存、字体排版及刷新恢复。</p>");
         return body.toString();
+    }
+
+    private static void verifyFragmentReading(Page page, String base, String bookUrl) {
+        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        Response toc = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/getChapterList"), () -> page.navigate(reader + "?chapter=0"));
+        assertEquals("Legacy NCX parser collapses shared resources; never fabricate another backend chapter",
+                Boolean.TRUE, page.evaluate("raw => { const data=JSON.parse(raw).data;"
+                        + "return data.length === 1 && data[0].url === 'Text/shared.xhtml'; }", toc.text()));
+        page.getByText("合成锚点第二节正文", new Page.GetByTextOptions().setExact(true)).waitFor();
+        // The preceding journey finishes in text mode. Keep this generated book's selection explicit.
+        page.locator("button[title^='EPUB 排版模式']").click();
+        page.locator(".reader-content.epub-html").waitFor();
+        page.locator("button[title^='EPUB 排版模式']").click();
+        waitRawReady(page);
+        page.frameLocator("iframe.epub-frame").getByText("同页下一节").click();
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        page.frameLocator("iframe.epub-frame").getByText("同文件返回首节").click();
+        assertAnchorAtTop(page, "h2[id='intro']");
+        page.locator(".toc-btn").click();
+        assertEquals(2, page.locator(".epub-toc-list button").count());
+        page.locator(".epub-toc-list").getByText("第二节锚点", new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).click();
+        page.waitForCondition(() -> page.url().contains("epubAnchor="));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        assertTrue("The second TOC anchor is not the first file's start",
+                innerScroll(page) > 1000);
+        assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script").count());
+        assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+        page.reload();
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        // File-qualified and fragment-only links preserve distinct anchors at the same legacy index.
+        page.frameLocator("iframe.epub-frame").getByText("同文件返回首节").click();
+        page.waitForCondition(() -> page.url().contains("chapter=0"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='intro']");
+        page.frameLocator("iframe.epub-frame").getByText("同页未列目录注记").click();
+        waitRawReady(page);
+        assertAnchorAtTop(page, "a[name='note']");
+        assertTrue("A non-TOC anchor must retain the current legacy chapter", page.url().contains("chapter=0"));
+        page.frameLocator("iframe.epub-frame").getByText("同页下一节").click();
+        page.waitForCondition(() -> page.url().contains("epubAnchor=%E4%B8%AD"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        Response saved = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/saveBookProgress"), () -> page.frameLocator("iframe.epub-frame")
+                .locator("body").evaluate("el => el.ownerDocument.defaultView.scrollBy({top:180,behavior:'instant'})"));
+        assertEquals(200, saved.status());
+        assertTrue(saved.text().contains("\"isSuccess\":true"));
+        assertEquals(Boolean.TRUE, page.evaluate("raw => JSON.parse(raw).index === 0", saved.request().postData()));
+        double savedPosition = innerScroll(page);
+        page.reload();
+        waitRawReady(page);
+        assertEquals("A saved position takes precedence over the chapter's initial anchor",
+                savedPosition, innerScroll(page), 2);
+        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(
+                System.getenv().getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                "vue3-local-reading-fragments-synthetic.png")));
+        page.frameLocator("iframe.epub-frame").getByText("不存在锚点的合成链接").click();
+        page.getByText("目录锚点不存在，已回到本页顶部", new Page.GetByTextOptions().setExact(true)).waitFor();
+        waitRawReady(page);
+        assertEquals(0, innerScroll(page), 2);
+        assertTrue(page.url().contains("chapter=0"));
+    }
+
+    private static void waitRawReady(Page page) {
+        page.locator("iframe.epub-frame").waitFor();
+        page.waitForCondition(() -> "false".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+    }
+
+    private static double innerScroll(Page page) {
+        return ((Number) page.frameLocator("iframe.epub-frame").locator("body")
+                .evaluate("el => el.ownerDocument.defaultView.scrollY")).doubleValue();
+    }
+
+    private static void assertAnchorAtTop(Page page, String selector) {
+        page.waitForCondition(() -> Math.abs(((Number) page.frameLocator("iframe.epub-frame").locator(selector)
+                .evaluate("el => el.getBoundingClientRect().top")).doubleValue()) <= 2);
+        double top = ((Number) page.frameLocator("iframe.epub-frame").locator(selector)
+                .evaluate("el => el.getBoundingClientRect().top")).doubleValue();
+        assertEquals("Exact EPUB anchor must be positioned at the iframe top: " + selector, 0, top, 2);
+    }
+
+    private static void writeFragmentEpub(Path path) throws Exception {
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(path))) {
+            entry(zip, "mimetype", "application/epub+zip");
+            entry(zip, "META-INF/container.xml", "<container><rootfiles><rootfile full-path='OEBPS/book.opf'/></rootfiles></container>");
+            entry(zip, "OEBPS/book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0' unique-identifier='uid'>"
+                    + "<metadata xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:identifier id='uid'>synthetic-fragments</dc:identifier>"
+                    + "<dc:title>合成目录锚点 EPUB</dc:title><dc:creator>测试作者</dc:creator></metadata>"
+                    + "<manifest><item id='ncx' href='toc.ncx' media-type='application/x-dtbncx+xml'/>"
+                    + "<item id='shared' href='Text/shared.xhtml' media-type='application/xhtml+xml'/></manifest>"
+                    + "<spine toc='ncx'><itemref idref='shared'/></spine></package>");
+            entry(zip, "OEBPS/toc.ncx", "<ncx xmlns='http://www.daisy.org/z3986/2005/ncx/' version='2005-1'>"
+                    + "<head><meta name='dtb:uid' content='synthetic-fragments'/></head><docTitle><text>合成目录锚点 EPUB</text></docTitle><navMap>"
+                    + "<navPoint id='intro' playOrder='1'><navLabel><text>首节锚点</text></navLabel><content src='Text/shared.xhtml#intro'/></navPoint>"
+                    + "<navPoint id='second' playOrder='2'><navLabel><text>第二节锚点</text></navLabel><content src='Text/shared.xhtml#中文目标'/></navPoint>"
+                    + "</navMap></ncx>");
+            entry(zip, "OEBPS/Text/shared.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>合成锚点测试</title>"
+                    + "<style>html{scroll-behavior:smooth}</style></head><body>"
+                    + "<h2 id='intro'>首节锚点</h2><p>合成锚点首节正文</p>"
+                    + "<a href='#%E4%B8%AD%E6%96%87%E7%9B%AE%E6%A0%87'>同页下一节</a>"
+                    + "<a href='#note'>同页未列目录注记</a>" + longSyntheticBody()
+                    + "<h2 id='中文目标'>第二节锚点</h2><p>合成锚点第二节正文</p>"
+                    + "<a href='shared.xhtml#intro'>同文件返回首节</a>"
+                    + "<a href='#missing'>不存在锚点的合成链接</a>" + longSyntheticBody()
+                    + "<a name='note'>合成旧式命名锚点</a>" + longSyntheticBody()
+                    + "<script>/* SCRIPT-ONLY */</script></body></html>");
+        }
     }
 
     private static void writeEpub(Path path) throws Exception {

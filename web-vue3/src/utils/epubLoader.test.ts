@@ -12,6 +12,10 @@ import {
   loadEpubDoc,
   epubFileLocation,
   epubChapterPath,
+  epubChapterLocation,
+  epubFragment,
+  resolveEpubLink,
+  epubNavigationIndex,
 } from './epubLoader.ts'
 
 /** Build a minimal EPUB byte stream (one nav-less OPF, two spine chapters) */
@@ -163,4 +167,41 @@ test('TOC paths resolve by href, not spine index; fragments and encoded Chinese 
   const doc = parseEpubBytes(buildMinimalEpub())
   assert.equal(epubChapterPath(doc, 'text/chapter2.xhtml#last'), 'OEBPS/text/chapter2.xhtml')
   assert.equal(epubChapterPath(doc, '%E6%B5%8B%E8%AF%95.xhtml'), 'OEBPS/测试.xhtml')
+})
+
+test('EPUB locations preserve decoded fragments separately from encoded hashes in file names', () => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  assert.deepEqual(epubChapterLocation(doc, 'text/chapter%231.xhtml#%E4%B8%AD%E6%96%87'),
+    { path: 'OEBPS/text/chapter#1.xhtml', fragment: '中文' })
+  assert.equal(epubFragment('chapter.xhtml#%broken'), '%broken')
+  assert.equal(epubFragment('chapter.xhtml'), '')
+})
+
+test('fragment-only and file-qualified EPUB links resolve against the current document', () => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  const current = 'OEBPS/text/chapter1.xhtml'
+  assert.deepEqual(resolveEpubLink(doc, current, '#%E4%B8%AD%E6%96%87'), { path: current, fragment: '中文' })
+  assert.deepEqual(resolveEpubLink(doc, current, './chapter2.xhtml#end'),
+    { path: 'OEBPS/text/chapter2.xhtml', fragment: 'end' })
+  assert.deepEqual(resolveEpubLink(doc, current, '/OEBPS/text/chapter2.xhtml#end'),
+    { path: 'OEBPS/text/chapter2.xhtml', fragment: 'end' })
+})
+
+test('EPUB navigation selects the exact TOC fragment, not the first chapter sharing the file', () => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  const urls = ['text/chapter1.xhtml#intro', 'text/chapter1.xhtml#%E4%B8%AD%E6%96%87', 'text/chapter2.xhtml']
+  const path = 'OEBPS/text/chapter1.xhtml'
+  assert.equal(epubNavigationIndex(doc, urls, { path, fragment: '中文' }, 0), 1)
+  assert.equal(epubNavigationIndex(doc, urls, { path, fragment: 'note' }, 1), 1)
+  assert.equal(epubNavigationIndex(doc, urls, { path, fragment: 'note' }, 2), 0)
+  assert.equal(epubNavigationIndex(doc, urls, { path, fragment: '' }, 1), 0)
+  assert.equal(epubNavigationIndex(doc, urls, { path: 'missing', fragment: 'intro' }, 0), -1)
+})
+
+test('EPUB links cannot escape to external protocols or nonexistent resources', () => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  for (const href of ['https://example.invalid/a.xhtml', '//example.invalid/a.xhtml', 'javascript:alert(1)',
+    'data:text/html,hello', '%6Aavascript:alert(1)', 'missing.xhtml#intro', '']) {
+    assert.equal(resolveEpubLink(doc, 'OEBPS/text/chapter1.xhtml', href), null)
+  }
 })

@@ -142,6 +142,42 @@ export function epubChapterPath(doc: EpubDoc, chapterUrl: string): string {
   return resolveHref(doc.opfDir, normalizeZipName(chapterUrl.split('#')[0]))
 }
 
+export interface EpubLocation { path: string; fragment: string }
+
+/** 在分割后仅解码一次；编码的 # 可属于文件名，不能当作锚点分隔符。 */
+export function epubFragment(href: string): string {
+  const hash = href.indexOf('#')
+  if (hash < 0) return ''
+  const fragment = href.slice(hash + 1)
+  try { return decodeURIComponent(fragment) } catch { return fragment }
+}
+
+export function epubChapterLocation(doc: EpubDoc, chapterUrl: string): EpubLocation {
+  return { path: epubChapterPath(doc, chapterUrl), fragment: epubFragment(chapterUrl) }
+}
+
+/** 书内链接以当前 XHTML 为基准；不允许外连协议或不存在的 ZIP 资源。 */
+export function resolveEpubLink(doc: EpubDoc, currentPath: string, href: string): EpubLocation | null {
+  const raw = href.trim()
+  if (!raw || /^[a-z][a-z0-9+.-]*:|^\/\//i.test(raw)) return null
+  const pathPart = normalizeZipName(raw.split('#')[0]!.split('?')[0]!)
+  if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(pathPart)) return null
+  const dir = currentPath.includes('/') ? currentPath.slice(0, currentPath.lastIndexOf('/')) : ''
+  const path = !pathPart ? currentPath : pathPart.startsWith('/')
+    ? resolveHref('', pathPart.slice(1)) : resolveHref(dir, pathPart)
+  return doc.files.has(path) ? { path, fragment: epubFragment(raw) } : null
+}
+
+/** 优先精确文件+锚点；未列入 TOC 的同页锚点保留当前章节，而非跳回第一项。 */
+export function epubNavigationIndex(doc: EpubDoc, chapterUrls: readonly string[], target: EpubLocation,
+  preferredIndex = -1): number {
+  const locations = chapterUrls.map(url => epubChapterLocation(doc, url))
+  const exact = locations.findIndex(location => location.path === target.path && location.fragment === target.fragment)
+  if (exact >= 0) return exact
+  if (target.fragment && locations[preferredIndex]?.path === target.path) return preferredIndex
+  return locations.findIndex(location => location.path === target.path)
+}
+
 /** 从字节解析 EPUB（测试可直接喂内存数据） */
 export function parseEpubBytes(bytes: Uint8Array): EpubDoc {
   const raw = unzipSync(bytes)

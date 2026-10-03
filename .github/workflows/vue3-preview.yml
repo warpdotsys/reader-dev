@@ -192,6 +192,7 @@ jobs:
           path: |
             ${{ runner.temp }}/vue3-local-reading-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-raw-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-fragments-synthetic.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve Vue 3 source journey diagnostics
