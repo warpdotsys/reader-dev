@@ -17,7 +17,7 @@ import { get, post } from '@/api/request'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
-import { loadEpubDoc, destroyEpubDoc, type EpubDoc } from '@/utils/epubLoader'
+import { loadEpubDoc, destroyEpubDoc, epubChapterPath, type EpubDoc } from '@/utils/epubLoader'
 import { getCachedTts, putCachedTts, ttsCacheKey } from '@/utils/ttsCache'
 import { getLocalChapter, listLocalChapterUrls, saveLocalChapter } from '@/utils/readerLocalCache'
 import {
@@ -188,18 +188,28 @@ const epubRawActive = computed(() => isEpubBook.value && epubMode.value === 'raw
 /** 已加载的 EPUB 文档（懒加载：进入 raw 模式才拉取解析） */
 const epubDoc = shallowRef<EpubDoc | null>(null)
 const epubDocLoading = ref(false)
+const epubDocError = ref('')
+const epubCurrentPath = computed(() => epubDoc.value
+  ? epubChapterPath(epubDoc.value, chapters.value[chapterIndex.value]?.url ?? '') : '')
 async function ensureEpubDoc(): Promise<void> {
-  if (!isEpubBook.value || epubDoc.value || epubDocLoading.value) return
+  if (!isEpubBook.value || !shelfBook.value || epubDoc.value || epubDocLoading.value) return
   epubDocLoading.value = true
+  epubDocError.value = ''
   try {
-    epubDoc.value = await loadEpubDoc(bookUrl.value)
+    const systemNamespace = store.isAdmin && store.defaultConfigMode
+    epubDoc.value = await loadEpubDoc(shelfBook.value.originName || bookUrl.value, {
+      namespace: systemNamespace ? 'default' : store.username || 'default',
+      accessToken: store.accessToken,
+      systemNamespace,
+    })
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : 'EPUB 加载失败')
+    epubDocError.value = e instanceof Error ? e.message : 'EPUB 加载失败'
+    ElMessage.error(epubDocError.value)
   } finally {
     epubDocLoading.value = false
   }
 }
-watch(epubRawActive, (on) => {
+watch([epubRawActive, shelfBook], ([on]) => {
   if (on) void ensureEpubDoc()
 })
 if (epubRawActive.value) void ensureEpubDoc()
@@ -208,7 +218,7 @@ if (epubRawActive.value) void ensureEpubDoc()
 function onEpubNav(zipPath: string): void {
   const doc = epubDoc.value
   if (!doc) return
-  const idx = doc.spine.findIndex((sp) => doc.manifest.get(sp.idref)?.href === zipPath)
+  const idx = chapters.value.findIndex(ch => epubChapterPath(doc, ch.url) === zipPath)
   if (idx >= 0 && idx !== chapterIndex.value) goToChapter(idx)
 }
 
@@ -4170,13 +4180,17 @@ onBeforeUnmount(() => {
           <div v-else-if="epubRawActive && epubDoc" class="epub-wrap">
             <EpubIframe
               :doc="epubDoc"
-              :index="chapterIndex"
+              :path="epubCurrentPath"
               @navigate="onEpubNav"
               @progress="(r) => (scrollFrac = r)"
             />
           </div>
           <div v-else-if="epubRawActive && epubDocLoading" class="state">
             <p class="state-text">EPUB 加载中…</p>
+          </div>
+          <div v-else-if="epubRawActive && epubDocError" class="state epub-error">
+            <p class="state-text">{{ epubDocError }}</p>
+            <button class="retry-btn" type="button" @click="ensureEpubDoc">{{ t('common.retry') }}</button>
           </div>
 
           <!-- EPUB 原书排版：净化后整章 HTML 渲染（getBookContent epubContent=1） -->

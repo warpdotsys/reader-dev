@@ -43,9 +43,9 @@ function findOpfPath(files: Map<string, Uint8Array>): string {
   const container = files.get('META-INF/container.xml')
   if (!container) throw new Error('EPUB 缺少 container.xml')
   const xml = strFromU8(container)
-  const m = /full-path\s*=\s*"([^"]+)"/.exec(xml)
+  const m = /full-path\s*=\s*(["'])(.*?)\1/.exec(xml)
   if (!m) throw new Error('container.xml 无 rootfile')
-  return m[1]
+  return normalizeZipName(m[2])
 }
 
 /** 规范化 zip 路径：解 %XX、反斜杠、去 ./ */
@@ -77,15 +77,69 @@ export function resolveHref(opfDir: string, href: string): string {
  * - bookUrl 为本地书路径 → file/download?path=...&stream=1 直出字节
  * - 返回 EpubDoc；调用方持有并在切换/卸载时调 destroyEpubDoc 回收 blob URL
  */
-export async function loadEpubDoc(bookUrl: string): Promise<EpubDoc> {
-  // file/download 需要 path 参数 + accessToken（request 层自动附带 token）
-  const res = await fetch(
-    `/reader3/file/download?path=${encodeURIComponent(bookUrl)}&stream=1`,
-    { credentials: 'same-origin' },
-  )
+export interface EpubLoadOptions {
+  namespace: string
+  accessToken?: string
+  systemNamespace?: boolean
+}
+
+/** 只映射现有文件 home，不使用管理级 __STORAGE__ 或跨用户回退。 */
+export function epubFileLocation(source: string, namespace: string): { home: string; path: string } {
+  const path = source.replace(/\\/g, '/')
+  if (!namespace || /[\\/]/.test(namespace) || namespace === '.' || namespace === '..'
+    || path.split('/').some(p => !p || p === '.' || p === '..' || p.includes(':'))) {
+    throw new Error('EPUB 文件路径无效')
+  }
+  const userPrefix = `storage/data/${namespace}/`
+  const roots = [
+    [`${userPrefix}webdav/`, '__WEBDAV__'],
+    [userPrefix, '__HOME__'],
+    ['storage/localStore/', '__LOCAL_STORE__'],
+  ]
+  for (const [prefix, home] of roots) {
+    if (path.startsWith(prefix) && path.length > prefix.length) {
+      return { home, path: path.slice(prefix.length) }
+    }
+  }
+  throw new Error('EPUB 不在当前用户可下载目录内；请将该书导入当前用户')
+}
+
+export async function loadEpubDoc(source: string, options: EpubLoadOptions): Promise<EpubDoc> {
+  const location = epubFileLocation(source, options.namespace)
+  const params = new URLSearchParams(location)
+  if (options.accessToken) params.set('accessToken', options.accessToken)
+  if (options.systemNamespace) params.set('ns', 'default')
+  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store' }
+  // 只查询选中书自身：legacy 导入布局是 xxx.epub/index.epub，书仓则可为单文件。
+  const listing = await fetch(`/reader3/file/list?${params}`, init)
+  if (!listing.ok) throw new Error(`EPUB 路径检查失败（${listing.status}）`)
+  const info = await listing.json() as {
+    isSuccess: boolean; errorMsg?: string; data?: { name: string; isDirectory: boolean }[]
+  }
+  if (info.isSuccess) {
+    if (!Array.isArray(info.data) || !info.data.some(f => f.name === 'index.epub' && !f.isDirectory)) {
+      throw new Error('EPUB 目录缺少 index.epub')
+    }
+    params.set('path', `${location.path}/index.epub`)
+  } else if (info.errorMsg !== '路径不是目录') {
+    throw new Error(info.errorMsg || 'EPUB 路径检查失败')
+  }
+  params.set('stream', '1')
+  const res = await fetch(`/reader3/file/download?${params}`, init)
   if (!res.ok) throw new Error(`EPUB 文件获取失败（${res.status}）`)
+  // legacy 的业务错误也可能 HTTP 200，不能交给 unzip 后误报 invalid zip data。
+  if (res.headers.get('content-type')?.includes('json')) {
+    const error = await res.json() as { errorMsg?: string }
+    throw new Error(error.errorMsg || 'EPUB 文件获取失败')
+  }
   const buf = new Uint8Array(await res.arrayBuffer())
+  if (buf[0] !== 0x50 || buf[1] !== 0x4b) throw new Error('返回内容不是 EPUB ZIP 文件')
   return parseEpubBytes(buf)
+}
+
+/** legacy TOC 是 OPF 相对 href，不保证其下标等于 spine（卷名/封面/非线性页）。 */
+export function epubChapterPath(doc: EpubDoc, chapterUrl: string): string {
+  return resolveHref(doc.opfDir, normalizeZipName(chapterUrl.split('#')[0]))
 }
 
 /** 从字节解析 EPUB（测试可直接喂内存数据） */

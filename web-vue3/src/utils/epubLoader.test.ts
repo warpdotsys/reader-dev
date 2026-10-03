@@ -9,6 +9,9 @@ import {
   resolveHref,
   destroyEpubDoc,
   type EpubDoc,
+  loadEpubDoc,
+  epubFileLocation,
+  epubChapterPath,
 } from './epubLoader.ts'
 
 /** Build a minimal EPUB byte stream (one nav-less OPF, two spine chapters) */
@@ -62,7 +65,7 @@ test('C2: parseEpubBytes resolves OPF via container.xml and extracts manifest/sp
 test('C2: parseEpubBytes tolerates single-quoted attributes and percent-encoded hrefs', () => {
   const bytes = zipSync({
     'META-INF/container.xml': strToU8(
-      `<?xml version="1.0"?><rootfiles><rootfile full-path="book.opf"/></rootfiles>`,
+      `<?xml version="1.0"?><rootfiles><rootfile full-path='book.opf'/></rootfiles>`,
     ),
     'book.opf': strToU8(
       `<package><manifest><item id="a" href='%E6%B5%8B%E8%AF%95.xhtml' media-type="application/xhtml+xml"/></manifest><spine><itemref idref="a"/></spine></package>`,
@@ -92,4 +95,72 @@ test('C2: destroyEpubDoc clears blob URL table (no-op without URLs)', () => {
   assert.equal(doc.blobUrls.size, 0)
   destroyEpubDoc(doc)
   assert.equal(doc.blobUrls.size, 0)
+})
+
+test('legacy EPUB home mapping preserves owner and physical originName', () => {
+  assert.deepEqual(epubFileLocation('storage/data/alice/书 EPUB.epub', 'alice'),
+    { home: '__HOME__', path: '书 EPUB.epub' })
+  assert.deepEqual(epubFileLocation('storage\\data\\alice\\webdav\\书.epub', 'alice'),
+    { home: '__WEBDAV__', path: '书.epub' })
+  assert.deepEqual(epubFileLocation('storage/localStore/书.epub', 'alice'),
+    { home: '__LOCAL_STORE__', path: '书.epub' })
+  for (const path of ['storage/data/bob/书.epub', 'storage/data/alice/../bob/a.epub',
+    '/storage/data/alice/a.epub', 'https://other/a.epub', 'storage/data/alice//a.epub']) {
+    assert.throws(() => epubFileLocation(path, 'alice'))
+  }
+})
+
+for (const directory of [true, false]) {
+  test(`legacy EPUB ${directory ? 'directory/index.epub' : 'direct file'} carries token and relative path`, async t => {
+    const requests: URL[] = []
+    t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+      const url = new URL(String(input), 'http://localhost')
+      requests.push(url)
+      assert.equal(init?.credentials, 'same-origin')
+      assert.equal(init?.cache, 'no-store')
+      assert.equal(url.searchParams.get('home'), '__HOME__')
+      assert.equal(url.searchParams.get('accessToken'), 'test-token-not-production')
+      assert.equal(url.searchParams.get('ns'), 'default')
+      if (requests.length === 1) return Response.json(directory
+        ? { isSuccess: true, data: [{ name: 'index.epub', isDirectory: false }] }
+        : { isSuccess: false, errorMsg: '路径不是目录' })
+      assert.equal(url.searchParams.get('path'), `书 EPUB.epub${directory ? '/index.epub' : ''}`)
+      assert.equal(url.searchParams.get('stream'), '1')
+      return new Response(buildMinimalEpub() as BodyInit)
+    })
+    const doc = await loadEpubDoc('storage/data/default/书 EPUB.epub', {
+      namespace: 'default', accessToken: 'test-token-not-production', systemNamespace: true,
+    })
+    assert.equal(doc.spine.length, 2)
+    assert.equal(requests.length, 2)
+    assert.equal(requests[0].pathname, '/reader3/file/list')
+    assert.equal(requests[1].pathname, '/reader3/file/download')
+  })
+}
+
+test('EPUB loader never retries with privileged home or reads another user', async t => {
+  let calls = 0
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls++
+    return Response.json({ isSuccess: false, errorMsg: '请登录后使用', data: 'NEED_LOGIN' })
+  })
+  await assert.rejects(loadEpubDoc('storage/data/bob/a.epub', { namespace: 'alice' }), /当前用户/)
+  assert.equal(calls, 0)
+  await assert.rejects(loadEpubDoc('storage/data/alice/a.epub', { namespace: 'alice' }), /请登录/)
+  assert.equal(calls, 1)
+})
+
+test('HTTP 200 business download failure is not parsed as ZIP', async t => {
+  let calls = 0
+  t.mock.method(globalThis, 'fetch', async () => Response.json(++calls === 1
+    ? { isSuccess: false, errorMsg: '路径不是目录' }
+    : { isSuccess: false, errorMsg: '路径不存在' }))
+  await assert.rejects(loadEpubDoc('storage/data/alice/a.epub', { namespace: 'alice' }), /路径不存在/)
+  assert.equal(calls, 2)
+})
+
+test('TOC paths resolve by href, not spine index; fragments and encoded Chinese are normalized', () => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  assert.equal(epubChapterPath(doc, 'text/chapter2.xhtml#last'), 'OEBPS/text/chapter2.xhtml')
+  assert.equal(epubChapterPath(doc, '%E6%B5%8B%E8%AF%95.xhtml'), 'OEBPS/测试.xhtml')
 })

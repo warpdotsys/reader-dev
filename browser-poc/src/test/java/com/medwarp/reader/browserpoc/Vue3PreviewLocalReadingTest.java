@@ -90,6 +90,16 @@ public class Vue3PreviewLocalReadingTest {
                 () -> page.locator("[aria-label='导入本地书籍'] .accent-btn").click());
         assertEquals(200, saved.status());
         assertTrue(saved.text().contains("\"isSuccess\":true"));
+        if (fixture.toString().endsWith(".epub")) {
+            // Only our generated fixture: explicitly choose NCX order, unlike its reversed spine.
+            Boolean configured = (Boolean) page.evaluate("async raw => {"
+                    + "const book = JSON.parse(raw).data; book.tocUrl = 'toc';"
+                    + "const token = localStorage.getItem('reader_access_token') || sessionStorage.getItem('reader_access_token');"
+                    + "const response = await fetch('/reader3/saveBook?accessToken=' + encodeURIComponent(token || ''),"
+                    + "{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});"
+                    + "return response.ok && (await response.json()).isSuccess === true; }", saved.text());
+            assertEquals(Boolean.TRUE, configured);
+        }
         String url = (String) page.evaluate("raw => JSON.parse(raw).data.bookUrl", saved.text());
         assertTrue(url.startsWith("storage/data/"));
         page.locator(".bookshelf-page").waitFor();
@@ -141,9 +151,27 @@ public class Vue3PreviewLocalReadingTest {
             page.reload();
             page.locator(".reader-content.epub-html").waitFor();
             assertTrue(page.locator(".reader-content.epub-html").innerText().contains(first));
-            // Raw mode's legacy download contract is tracked separately; a
-            // failed raw load must still allow returning to readable text.
-            page.locator("button[title^='EPUB 排版模式']").click();
+            Response downloaded = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                    .endsWith("/reader3/file/download"),
+                    () -> page.locator("button[title^='EPUB 排版模式']").click());
+            assertEquals(200, downloaded.status());
+            assertTrue(URI.create(downloaded.url()).getQuery().contains("index.epub"));
+            page.frameLocator("iframe.epub-frame").getByText(first,
+                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script").count());
+            assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+            assertEquals("rgb(17, 34, 51)", page.frameLocator("iframe.epub-frame").locator("p").first()
+                    .evaluate("el => getComputedStyle(el).color"));
+            page.frameLocator("iframe.epub-frame").getByText("书内下一章").click();
+            page.waitForCondition(() -> page.url().contains("chapter=1"));
+            page.frameLocator("iframe.epub-frame").getByText(last,
+                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            page.reload();
+            page.frameLocator("iframe.epub-frame").getByText(last,
+                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+            page.locator(".chapter-nav button").first().click();
+            page.frameLocator("iframe.epub-frame").getByText(first,
+                    new com.microsoft.playwright.FrameLocator.GetByTextOptions().setExact(true)).waitFor();
             page.locator("button[title^='EPUB 排版模式']").click();
             page.locator(".reader-content:not(.epub-html)").waitFor();
             assertTrue("Switching back to text must not require a refresh",
@@ -164,8 +192,10 @@ public class Vue3PreviewLocalReadingTest {
                     + "<dc:title>合成本地 EPUB</dc:title><dc:creator>测试作者</dc:creator><dc:language>zh-CN</dc:language></metadata>"
                     + "<manifest><item id='ncx' href='toc.ncx' media-type='application/x-dtbncx+xml'/>"
                     + "<item id='one' href='Text/one.xhtml' media-type='application/xhtml+xml'/>"
-                    + "<item id='two' href='Text/two.xhtml' media-type='application/xhtml+xml'/></manifest>"
-                    + "<spine toc='ncx'><itemref idref='one'/><itemref idref='two'/></spine></package>");
+                    + "<item id='two' href='Text/two.xhtml' media-type='application/xhtml+xml'/>"
+                    + "<item id='css' href='Styles/main.css' media-type='text/css'/></manifest>"
+                    // Deliberately different from NCX order: TOC index is not a spine index.
+                    + "<spine toc='ncx'><itemref idref='two'/><itemref idref='one'/></spine></package>");
             entry(zip, "OEBPS/toc.ncx", "<?xml version='1.0' encoding='UTF-8'?>"
                     + "<ncx xmlns='http://www.daisy.org/z3986/2005/ncx/' version='2005-1'>"
                     + "<head><meta name='dtb:uid' content='synthetic'/></head><docTitle><text>合成本地 EPUB</text></docTitle><navMap>"
@@ -173,11 +203,13 @@ public class Vue3PreviewLocalReadingTest {
                     + "<navPoint id='two' playOrder='2'><navLabel><text>第二章</text></navLabel><content src='Text/two.xhtml'/></navPoint>"
                     + "</navMap></ncx>");
             entry(zip, "OEBPS/Text/one.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'>"
-                    + "<head><title>HEAD-ONLY</title></head><body><h1>第一章</h1>"
+                    + "<head><title>HEAD-ONLY</title><link rel='stylesheet' href='../Styles/main.css'/></head><body><h1>第一章</h1>"
                     + "<p>合成 EPUB 第一段，中文 &amp; 标点 &lt;明&gt;。</p>"
+                    + "<a href='two.xhtml'>书内下一章</a>"
                     + "<script>/* SCRIPT-ONLY */</script></body></html>");
             entry(zip, "OEBPS/Text/two.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'>"
                     + "<head><title>HEAD-ONLY</title></head><body><h1>第二章</h1><p>" + EPUB_LAST + "</p></body></html>");
+            entry(zip, "OEBPS/Styles/main.css", "p{color:rgb(17,34,51)}");
         }
     }
 
