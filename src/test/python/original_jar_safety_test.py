@@ -35,9 +35,20 @@ class OriginalJarSafetyTest(unittest.TestCase):
 
     def test_every_legacy_comparison_has_a_guard(self):
         compare_scripts = sorted(SCRIPTS.glob("compare-*.py"))
-        self.assertEqual(26, len(compare_scripts))
+        self.assertEqual(27, len(compare_scripts))
         for path in compare_scripts:
             body = path.read_text(encoding="utf-8")
+            if path.name == "compare-authorized-storage-in-netns.py":
+                # This comparison checks the kernel namespace itself, not an
+                # environment acknowledgment. Its runtime negative tests also
+                # verify that a normal host cannot read inputs or launch a JAR.
+                guard = body.index("isolate_then_drop()  #")
+                self.assertLess(guard, body.index("if digest(args.original)"))
+                self.assertLess(guard, body.index("business = {name:"))
+                self.assertLess(guard, body.index("original, original_facts = run_reader"))
+                self.assertIn('os.stat("/proc/1/ns/net").st_ino', body)
+                self.assertIn('interfaces != ["lo"]', body)
+                continue
             self.assertIn("require_original_jar_isolation()", body, path.name)
             if path.name == "compare-webview-cookie.py":
                 self.assertIn('mode.add_argument("--original-network-isolated"', body)
