@@ -81,9 +81,9 @@ object DirectEpubExtractor {
             File(staging, MARKER).writeText(identity)
             if (destination.exists()) {
                 previous = File(destination.parentFile, destination.name + ".previous-" + UUID.randomUUID()).toPath()
-                Files.move(destination.toPath(), previous)
+                EpubCacheMove.move(destination.toPath(), previous)
             }
-            Files.move(staging.toPath(), destination.toPath())
+            EpubCacheMove.move(staging.toPath(), destination.toPath())
             installed = true
             if (previousOwned && previous != null) {
                 try { deleteOwnedTree(previous!!) }
@@ -92,7 +92,7 @@ object DirectEpubExtractor {
             return true
         } catch (e: Exception) {
             if (!installed && previous != null && !Files.exists(destination.toPath(), LinkOption.NOFOLLOW_LINKS)) {
-                try { Files.move(previous, destination.toPath()) }
+                try { EpubCacheMove.move(previous, destination.toPath()) }
                 catch (rollback: Exception) { logger.warn("Previous EPUB cache retained at its recoverable sibling", rollback) }
             }
             logger.warn("Unable to safely extract EPUB cache", e)

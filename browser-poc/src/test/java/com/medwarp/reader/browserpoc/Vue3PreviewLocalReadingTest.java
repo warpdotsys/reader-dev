@@ -103,6 +103,7 @@ public class Vue3PreviewLocalReadingTest {
                 String budgetUrl = importBook(page, budgetFixture);
                 verifyBudgetRejection(page, base, budgetUrl);
                 verifyCancelledDownload(page, base, cssUrl);
+                verifyDownloadDeadlineAndRetry(page, base, cssUrl);
             } finally {
                 browser.close();
             }
@@ -530,6 +531,53 @@ public class Vue3PreviewLocalReadingTest {
             Route leftover = held.getAndSet(null);
             if (leftover != null) leftover.resume();
         }
+    }
+
+    private static void verifyDownloadDeadlineAndRetry(Page page, String base, String bookUrl) {
+        openGeneratedCssInTextMode(page, base, bookUrl);
+        AtomicReference<Route> held = new AtomicReference<>();
+        AtomicBoolean aborted = new AtomicBoolean();
+        Consumer<Route> delay = route -> { if (!held.compareAndSet(null, route)) route.resume(); };
+        Consumer<Request> failed = request -> {
+            if (URI.create(request.url()).getPath().endsWith("/reader3/file/download")
+                    && String.valueOf(request.failure()).contains("ERR_ABORTED")) aborted.set(true);
+        };
+        // Exercise the real browser timer without sleeping for a minute or adding a production test bypass.
+        page.clock().install();
+        page.onRequestFailed(failed);
+        page.route("**/reader3/file/download**", delay);
+        try {
+            selectEpubMode(page, "净化排版");
+            page.locator(".reader-content.epub-html").waitFor();
+            page.waitForRequest(request -> URI.create(request.url()).getPath().endsWith("/reader3/file/download"),
+                    () -> page.locator("button[title^='EPUB 排版模式']").click());
+            page.waitForCondition(() -> held.get() != null);
+            page.clock().fastForward(60001);
+            page.locator(".epub-error").getByText("EPUB 下载超时（60 秒），已终止原版排版加载",
+                    new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).waitFor();
+            assertEquals(0, page.locator("iframe.epub-frame").count());
+            Route pending = held.getAndSet(null);
+            if (pending != null) pending.resume();
+            page.waitForCondition(aborted::get);
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(System.getenv()
+                    .getOrDefault("RUNNER_TEMP", System.getProperty("java.io.tmpdir")),
+                    "vue3-local-reading-download-deadline-synthetic.png")));
+            page.locator(".epub-error").getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                    new com.microsoft.playwright.Locator.GetByRoleOptions().setName("切换普通阅读").setExact(true)).click();
+            page.locator(".reader-content:not(.epub-html)").getByText("生成预算样本正文仍可普通阅读",
+                    new com.microsoft.playwright.Locator.GetByTextOptions().setExact(true)).waitFor();
+            assertEquals(0, page.locator(".epub-error").count());
+        } finally {
+            page.unroute("**/reader3/file/download**", delay);
+            page.offRequestFailed(failed);
+            Route leftover = held.getAndSet(null);
+            if (leftover != null) leftover.resume();
+        }
+        // Same source can really retry after the aborted response: no poisoned cache or late iframe.
+        selectEpubMode(page, "原版排版");
+        page.frameLocator("iframe.epub-frame").locator("#css-proof").waitFor();
+        assertEquals(0, page.locator(".epub-error").count());
+        System.out.println("Generated EPUB: stalled download aborted at the 60-second browser-clock deadline, ordinary reading and real retry PASS");
     }
 
     private static void openGeneratedCssInTextMode(Page page, String base, String bookUrl) {

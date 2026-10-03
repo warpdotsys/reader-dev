@@ -202,6 +202,7 @@ jobs:
             ${{ runner.temp }}/vue3-local-reading-css-timeout-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-budget-synthetic.png
             ${{ runner.temp }}/vue3-local-reading-budget-fallback-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-download-deadline-synthetic.png
             ${{ runner.temp }}/vue3-epub-safety-synthetic.png
             ${{ runner.temp }}/vue3-epub-safety-mobile-synthetic.png
           if-no-files-found: warn

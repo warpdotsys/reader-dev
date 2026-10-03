@@ -180,6 +180,89 @@ test('HTTP 200 business download failure is not parsed as ZIP', async t => {
   assert.equal(calls, 2)
 })
 
+test('EPUB download deadline includes a hung path check and cancels the real request signal', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const external = new AbortController()
+  let requestSignal: AbortSignal | undefined
+  t.after(() => external.abort())
+  t.mock.method(globalThis, 'fetch', (_input: unknown, init?: RequestInit) => {
+    requestSignal = init?.signal ?? undefined
+    return new Promise<Response>((_resolve, reject) => requestSignal?.addEventListener('abort',
+      () => reject(new DOMException('Generated pending request aborted', 'AbortError')), { once: true }))
+  })
+  const pending = loadEpubDoc('storage/data/alice/generated.epub', { namespace: 'alice', signal: external.signal })
+  void pending.catch(() => {})
+  t.mock.timers.tick(60000)
+  await new Promise<void>(resolve => setImmediate(resolve))
+  assert.equal(requestSignal?.aborted, true, 'Hung listing must be aborted at the total download deadline')
+  await assert.rejects(pending, /EPUB 下载超时/)
+  assert.equal(external.signal.aborted, false, 'Loader must not mutate caller cancellation state')
+})
+
+for (const phase of ['headers', 'body', 'error-json'] as const) {
+  test(`EPUB total download deadline aborts a stalled ${phase} after a successful listing`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const external = new AbortController()
+    t.after(() => external.abort())
+    let calls = 0
+    let requestSignal: AbortSignal | undefined
+    let streamCancelled = false
+    t.mock.method(globalThis, 'fetch', async (_input: unknown, init?: RequestInit) => {
+      requestSignal = init?.signal ?? undefined
+      if (++calls === 1) return Response.json({ isSuccess: false, errorMsg: '路径不是目录' })
+      if (phase === 'headers') return new Promise<Response>((_resolve, reject) =>
+        requestSignal?.addEventListener('abort', () => reject(new DOMException('Generated abort', 'AbortError')),
+          { once: true }))
+      return new Response(new ReadableStream<Uint8Array>({
+        start(controller) {
+          requestSignal?.addEventListener('abort', () => {
+            streamCancelled = true
+            controller.error(new DOMException('Generated body abort', 'AbortError'))
+          }, { once: true })
+          controller.enqueue(new Uint8Array(phase === 'body' ? [0x50, 0x4b] : [0x7b]))
+        },
+      }), { headers: phase === 'error-json' ? { 'content-type': 'application/json' } : {} })
+    })
+    const pending = loadEpubDoc('storage/data/alice/generated.epub', { namespace: 'alice', signal: external.signal })
+    void pending.catch(() => {})
+    await new Promise<void>(resolve => setImmediate(resolve))
+    assert.equal(calls, 2)
+    t.mock.timers.tick(59999)
+    assert.equal(requestSignal?.aborted, false)
+    t.mock.timers.tick(1)
+    await assert.rejects(pending, /EPUB 下载超时（60 秒）/)
+    assert.equal(requestSignal?.aborted, true)
+    assert.equal(external.signal.aborted, false)
+    if (phase !== 'headers') assert.equal(streamCancelled, true)
+  })
+}
+
+test('EPUB caller cancellation stays cancellation rather than a timeout', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const external = new AbortController()
+  let requestSignal: AbortSignal | undefined
+  t.mock.method(globalThis, 'fetch', (_input: unknown, init?: RequestInit) => {
+    requestSignal = init?.signal ?? undefined
+    return new Promise<Response>((_resolve, reject) => requestSignal?.addEventListener('abort',
+      () => reject(new DOMException('Generated user cancel', 'AbortError')), { once: true }))
+  })
+  const pending = loadEpubDoc('storage/data/alice/generated.epub', { namespace: 'alice', signal: external.signal })
+  external.abort()
+  await assert.rejects(pending, { name: 'AbortError' })
+  t.mock.timers.tick(120000)
+  assert.equal(requestSignal?.aborted, true)
+})
+
+test('Already cancelled EPUB load issues no listing or download request', async t => {
+  const external = new AbortController()
+  external.abort()
+  let calls = 0
+  t.mock.method(globalThis, 'fetch', async () => { calls++; throw new Error('Must not fetch') })
+  await assert.rejects(loadEpubDoc('storage/data/alice/generated.epub',
+    { namespace: 'alice', signal: external.signal }), { name: 'AbortError' })
+  assert.equal(calls, 0)
+})
+
 test('TOC paths resolve by href, not spine index; fragments and encoded Chinese are normalized', () => {
   const doc = parseEpubBytes(buildMinimalEpub())
   assert.equal(epubChapterPath(doc, 'text/chapter2.xhtml#last'), 'OEBPS/text/chapter2.xhtml')

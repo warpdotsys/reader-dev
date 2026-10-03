@@ -114,7 +114,31 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   const params = new URLSearchParams(location)
   if (options.accessToken) params.set('accessToken', options.accessToken)
   if (options.systemNamespace) params.set('ns', 'default')
-  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store', signal: options.signal }
+  if (options.signal?.aborted) throw new DOMException('EPUB 加载已取消', 'AbortError')
+  const controller = new AbortController()
+  const cancel = () => controller.abort(options.signal?.reason)
+  options.signal?.addEventListener('abort', cancel, { once: true })
+  let timedOut = false
+  // One deadline covers directory checking, headers, error JSON and the entire streamed body.
+  // Clear it before starting the separately bounded 15-second decompression Worker.
+  const timer = setTimeout(() => { timedOut = true; controller.abort() }, 60000)
+  let buf: Uint8Array
+  try {
+    buf = await downloadEpubBytes(params, location.path, controller.signal)
+  } catch (error) {
+    if (timedOut && !options.signal?.aborted) {
+      throw new Error('EPUB 下载超时（60 秒），已终止原版排版加载')
+    }
+    throw error
+  } finally {
+    clearTimeout(timer)
+    options.signal?.removeEventListener('abort', cancel)
+  }
+  return parseEpubFiles(await expandEpubInWorker(buf, options.signal))
+}
+
+async function downloadEpubBytes(params: URLSearchParams, path: string, signal: AbortSignal): Promise<Uint8Array> {
+  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store', signal }
   // 只查询选中书自身：legacy 导入布局是 xxx.epub/index.epub，书仓则可为单文件。
   const listing = await fetch(`/reader3/file/list?${params}`, init)
   if (!listing.ok) throw new Error(`EPUB 路径检查失败（${listing.status}）`)
@@ -125,7 +149,7 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
     if (!Array.isArray(info.data) || !info.data.some(f => f.name === 'index.epub' && !f.isDirectory)) {
       throw new Error('EPUB 目录缺少 index.epub')
     }
-    params.set('path', `${location.path}/index.epub`)
+    params.set('path', `${path}/index.epub`)
   } else if (info.errorMsg !== '路径不是目录') {
     throw new Error(info.errorMsg || 'EPUB 路径检查失败')
   }
@@ -139,7 +163,7 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   }
   const buf = await readEpubResponse(res)
   if (buf[0] !== 0x50 || buf[1] !== 0x4b) throw new Error('返回内容不是 EPUB ZIP 文件')
-  return parseEpubFiles(await expandEpubInWorker(buf, options.signal))
+  return buf
 }
 
 /** legacy TOC 是 OPF 相对 href，不保证其下标等于 spine（卷名/封面/非线性页）。 */
