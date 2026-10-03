@@ -48,6 +48,18 @@
 
 真实继续操作还定位模式回退问题：在 HTML 模式刷新加载后，切回文本会显示“本章暂无内容”，再次刷新才恢复。修复让一次 XHTML 加载同时生成 HTML 与惰性文本投影，不需要重新下载；新增回归要求经过模式循环返回文本后立即可读。它不证明原版 iframe 下载成功，原版模式的明确失败继续列在下方。
 
+模式修复单独重建 JAR 的 SHA-256 为 `8ccaa3093a3a017aacd12674d7b8c5e5dcf4332309bfc246a269382fa0bcb4b0`，输出位于 `build/epub-mode-candidate`。内部浏览器在第 805 项实际完成文本 → 净化排版 → 刷新 → 原版 → 文本，切回后未刷新即恢复 66 段、3823 个渲染字符。候选只监听回环；此截图不公开。
+
+## 已下载核验的 GitHub 托管制品
+
+修复提交 `2e48cc337611ec5388a77c9920164b2e5b9769e9` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/37102095391)、[Vue 3 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/37102095377)和[完整单容器镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37102095380)全部成功，执行标签均为 `ubuntu-24.04` GitHub 托管 runner。PR 制品对应合并提交 `edf798933f042cb4295e4e053e32b69fe8792cd9`。
+
+下载核心 JUnit 为 10 项，0 跳过/失败/错误，新增 LocalReading 耗时 4.848 秒；生成 TXT/EPUB 均实际完成导入、阅读、翻章、刷新，EPUB 净化排版与返回文本继续通过。Camoufox 11 项无跳过/失败/错误，85.456 秒；镜像内合成 GET/POST、测试头、Cookie 序列及四用户请求通过。内存峰值 779,640,832 字节（约 744 MiB），PIDs 峰值 177，2 GiB / 256 PIDs / 2 CPU 下所有限额事件为 0；不是长期负载保证。
+
+已逐项核验的[汇总证据](evidence/vue3-local-reading-2e48cc33-2026-10-03.json)记录原始 run URL、源提交与 PR 合并提交、JUnit、截图摘要及容器资源。仅下载合成截图，中文正文和实体解码可见；截图顶部保留触发已知原版下载错误的淡出提示，未抹去错误或宣称 raw 模式通过。40 项 Python 安全/协议测试及 136 项前端测试也由该提交的普通 CI 实际执行。
+
+复现生成数据的托管旅程使用 `.github/workflows/vue3-preview.yml`，无需私有 EPUB、原 JAR、用户密码或宿主机浏览器运行时。授权真实 EPUB 的修复后后端差分另见[取样汇总](evidence/authorized-local-epub-restored-2026-10-03.json)。
+
 ## 回滚与尚未验证
 
 恢复旧候选镜像/JAR 或切回保留的 Vue 2 入口，不回写这次临时测试目录到生产。原 EPUB 和原 JAR 保持只读对照。新版阅读逻辑绕过旧 EPUB URL 缓存，无需删除其他用户本机缓存。
