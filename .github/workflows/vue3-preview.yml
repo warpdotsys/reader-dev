@@ -159,6 +159,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
@@ -168,7 +169,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Reading LocalReading EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
+          for name in Login Reading LocalReading LocalCacheIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done

@@ -17,7 +17,8 @@ export interface LocalCachedChapter {
   updatedAt: number
 }
 
-const DB_NAME = 'reader-local-cache'
+/** 旧共享数据库的正文无法确定归属：不读取、不迁移、不删除。 */
+const DB_PREFIX = 'reader-local-cache-v2:'
 const DB_VERSION = 1
 const STORE = 'chapters'
 const KEY_PREFIX = 'ch:'
@@ -26,16 +27,31 @@ function cacheKey(bookUrl: string, chapterUrl: string): string {
   return `${KEY_PREFIX}${bookUrl}\u0000${chapterUrl}`
 }
 
-let dbPromise: Promise<IDBDatabase> | null = null
+export interface LocalCacheUser {
+  accessToken: string
+  username: string
+  isAdmin: boolean
+  defaultConfigMode: boolean
+}
 
-function openDb(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise
-  dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
+/** 身份与配置命名空间均隔离；凭据仅用于判断登录态，绝不写入缓存名称。 */
+export function localChapterCacheScope(user: LocalCacheUser, deployment: string): string | null {
+  if (!user.accessToken || !user.username || !deployment) return null
+  const namespace = user.isAdmin && user.defaultConfigMode ? 'default' : user.username
+  return JSON.stringify([deployment, user.username, namespace])
+}
+
+const dbPromises = new Map<string, Promise<IDBDatabase>>()
+
+function openDb(scope: string): Promise<IDBDatabase> {
+  const existing = dbPromises.get(scope)
+  if (existing) return existing
+  const pending = new Promise<IDBDatabase>((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB 不可用'))
       return
     }
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    const req = indexedDB.open(DB_PREFIX + scope, DB_VERSION)
     req.onupgradeneeded = () => {
       const db = req.result
       if (!db.objectStoreNames.contains(STORE)) {
@@ -43,19 +59,27 @@ function openDb(): Promise<IDBDatabase> {
         store.createIndex('bookUrl', 'bookUrl', { unique: false })
       }
     }
-    req.onsuccess = () => resolve(req.result)
+    req.onsuccess = () => {
+      const db = req.result
+      db.onversionchange = () => { db.close(); dbPromises.delete(scope) }
+      resolve(db)
+    }
     req.onerror = () => reject(req.error ?? new Error('IndexedDB 打开失败'))
   })
-  return dbPromise
+  dbPromises.set(scope, pending)
+  void pending.catch(() => { if (dbPromises.get(scope) === pending) dbPromises.delete(scope) })
+  return pending
 }
 
 /** 读取单章本机缓存；不可用时返回 null（调用方继续走服务器/书源） */
 export async function getLocalChapter(
+  scope: string | null,
   bookUrl: string,
   chapterUrl: string,
 ): Promise<LocalCachedChapter | null> {
+  if (!scope) return null
   try {
-    const db = await openDb()
+    const db = await openDb(scope)
     const key = cacheKey(bookUrl, chapterUrl)
     return await new Promise<LocalCachedChapter | null>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly')
@@ -69,15 +93,16 @@ export async function getLocalChapter(
 }
 
 /** 写入单章本机缓存；返回是否成功（失败静默，不影响阅读） */
-export async function saveLocalChapter(input: {
+export async function saveLocalChapter(scope: string | null, input: {
   bookUrl: string
   chapterUrl: string
   title: string
   index: number
   content: string
 }): Promise<boolean> {
+  if (!scope) return false
   try {
-    const db = await openDb()
+    const db = await openDb(scope)
     const rec: LocalCachedChapter = {
       key: cacheKey(input.bookUrl, input.chapterUrl),
       bookUrl: input.bookUrl,
@@ -92,6 +117,7 @@ export async function saveLocalChapter(input: {
       tx.objectStore(STORE).put(rec)
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
+      tx.onabort = () => reject(tx.error ?? new Error('缓存写入已取消'))
     })
     return true
   } catch {
@@ -101,6 +127,7 @@ export async function saveLocalChapter(input: {
 
 /** 批量写入本机缓存（逐条 put，单事务）；返回成功条数 */
 export async function saveLocalChapters(
+  scope: string | null,
   items: Array<{
     bookUrl: string
     chapterUrl: string
@@ -109,9 +136,9 @@ export async function saveLocalChapters(
     content: string
   }>,
 ): Promise<number> {
-  if (items.length === 0) return 0
+  if (!scope || items.length === 0) return 0
   try {
-    const db = await openDb()
+    const db = await openDb(scope)
     const now = Date.now()
     const recs: LocalCachedChapter[] = items.map((item) => ({
       key: cacheKey(item.bookUrl, item.chapterUrl),
@@ -132,6 +159,7 @@ export async function saveLocalChapters(
       }
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
+      tx.onabort = () => reject(tx.error ?? new Error('缓存写入已取消'))
     })
     return saved
   } catch {
@@ -140,9 +168,10 @@ export async function saveLocalChapters(
 }
 
 /** 清空某书本机缓存；返回删除条数 */
-export async function clearLocalBook(bookUrl: string): Promise<number> {
+export async function clearLocalBook(scope: string | null, bookUrl: string): Promise<number> {
+  if (!scope) return 0
   try {
-    const db = await openDb()
+    const db = await openDb(scope)
     return await new Promise<number>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite')
       const store = tx.objectStore(STORE)
@@ -159,6 +188,7 @@ export async function clearLocalBook(bookUrl: string): Promise<number> {
       req.onerror = () => reject(req.error)
       tx.oncomplete = () => resolve(deleted)
       tx.onerror = () => reject(tx.error)
+      tx.onabort = () => reject(tx.error ?? new Error('缓存清除已取消'))
     })
   } catch {
     return 0
@@ -166,9 +196,10 @@ export async function clearLocalBook(bookUrl: string): Promise<number> {
 }
 
 /** 列出某书本机已缓存章节 URL（目录缓存标记用；失败返回空数组） */
-export async function listLocalChapterUrls(bookUrl: string): Promise<string[]> {
+export async function listLocalChapterUrls(scope: string | null, bookUrl: string): Promise<string[]> {
+  if (!scope) return []
   try {
-    const db = await openDb()
+    const db = await openDb(scope)
     return await new Promise<string[]>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly')
       const store = tx.objectStore(STORE)

@@ -1,4 +1,4 @@
-import { get } from './request'
+import { get, post } from './request'
 import { useUserStore } from '@/stores/user'
 import { openSSEPost } from './sse'
 import type { BookChapter, BookContent, BookInfo, ReturnData, SearchBook } from '@/types'
@@ -92,4 +92,10 @@ export async function getBookContent(
     // the Rust UI expected { content }. EPUB HTML mode already returns a map.
     data: typeof response.data === 'string' ? { content: response.data } : response.data,
   }
+}
+
+/** Persist custom text using the legacy chapter index, not the Rust URL-shaped payload. */
+export function saveBookContent(bookUrl: string, index: number, content: string): Promise<ReturnData<string>> {
+  if (!bookUrl || !Number.isInteger(index) || index < 0) return Promise.reject(new Error('书籍或章节编号无效'))
+  return post<string>('/saveBookContent', { url: bookUrl, index, content })
 }

@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch 
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getBookshelf, deleteBook, saveBookProgress } from '@/api/bookshelf'
-import { getBookInfo, getBookToc, getBookContent, searchBookSource, searchBookSourceSSE } from '@/api/books'
+import { getBookInfo, getBookToc, getBookContent, saveBookContent, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import {
   deleteBookmarks,
   parseBookmarksJson,
@@ -20,7 +20,7 @@ import EpubIframe from '@/components/EpubIframe.vue'
 import { ProgressWriteBarrier } from '@/utils/progressBarrier'
 import { loadEpubDoc, destroyEpubDoc, epubChapterPath, epubFragment, epubNavigationIndex, type EpubDoc } from '@/utils/epubLoader'
 import { getCachedTts, putCachedTts, ttsCacheKey } from '@/utils/ttsCache'
-import { getLocalChapter, listLocalChapterUrls, saveLocalChapter } from '@/utils/readerLocalCache'
+import { getLocalChapter, listLocalChapterUrls, localChapterCacheScope, saveLocalChapter } from '@/utils/readerLocalCache'
 import {
   loadCustomFont,
   removeCustomFont,
@@ -64,6 +64,11 @@ import type { Book, BookChapter, BookInfo, Bookmark, HttpTts, ReplaceRule, Searc
 const route = useRoute()
 const router = useRouter()
 const store = useUserStore()
+const localCacheScope = computed(() => localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL))
+let contentRequestGeneration = 0
+let readerDisposed = false
+let displayedContentScope: string | null = null
+let displayedContentToken = ''
 
 /** /reader/:bookUrl —— vue-router 已自动解码 encodeURIComponent 参数 */
 const bookUrl = computed(() => String(route.params.bookUrl ?? ''))
@@ -72,7 +77,7 @@ const MIN_FONT = 14
 const MAX_FONT = 22
 const FONT_KEY = 'reader_font_size'
 
-/** 阅读进度：章节索引 + 滚动位置（localStorage: reader-progress-{bookUrl}） */
+/** 阅读进度：按已验证的账号/命名空间隔离；旧共享进度不自动归属。 */
 interface ReaderProgress {
   chapterIndex: number
   scrollY: number
@@ -1182,21 +1187,25 @@ async function saveEditChapter() {
     ElMessage.warning('正文不能为空')
     return
   }
+  const scope = localCacheScope.value
+  const token = store.accessToken
+  const url = bookUrl.value
+  const index = chapterIndex.value
+  const localIndex = flatIndex.value
+  const stillCurrent = () => !readerDisposed && scope === localCacheScope.value
+    && token === store.accessToken && url === bookUrl.value && index === chapterIndex.value
   editSaving.value = true
   try {
-    await post('/saveBookContent', {
-      bookUrl: bookUrl.value,
+    await saveBookContent(url, index, newContent)
+    if (!stillCurrent()) return
+    await saveLocalChapter(scope, {
+      bookUrl: url,
       chapterUrl: ch.url,
       title: ch.title,
+      index: localIndex,
       content: newContent,
     })
-    await saveLocalChapter({
-      bookUrl: bookUrl.value,
-      chapterUrl: ch.url,
-      title: ch.title,
-      index: flatIndex.value,
-      content: newContent,
-    })
+    if (!stillCurrent()) return
     content.value = newContent
     resetSegments()
     editOpen.value = false
@@ -2694,9 +2703,13 @@ const drawerChapters = computed(() => {
  * Java/Kotlin 后端未提供已缓存章节列表路由，不能据此推断服务端单章状态。 */
 const cachedChapterIndexes = ref<Set<number>>(new Set())
 async function loadCacheMarkers() {
+  const scope = localCacheScope.value
+  const token = store.accessToken
+  const url = bookUrl.value
   const set = new Set<number>()
   try {
-    const urls = await listLocalChapterUrls(bookUrl.value)
+    const urls = await listLocalChapterUrls(scope, url)
+    if (readerDisposed || scope !== localCacheScope.value || token !== store.accessToken || url !== bookUrl.value) return
     const byUrl = new Map<string, number>()
     chapters.value.forEach((c, idx) => {
       if (!c.isVolume) byUrl.set(c.url, idx)
@@ -2753,7 +2766,7 @@ let saveTimer: number | undefined
 /* ---------------- 进度存取 ---------------- */
 
 function progressKey(): string {
-  return `reader-progress-${bookUrl.value}`
+  return `reader-progress-v2:${localCacheScope.value ?? 'unauthenticated'}:${bookUrl.value}`
 }
 
 /** 当前阅读位置（纵向滚动 px；仿真翻页为列轴 px；非文本书为媒体秒数/漫画页索引） */
@@ -2764,7 +2777,8 @@ function currentPos(): number {
 }
 
 function saveProgress() {
-  if (!currentChapter.value) return
+  if (!currentChapter.value || !localCacheScope.value || displayedContentScope !== localCacheScope.value
+    || displayedContentToken !== store.accessToken) return
   try {
     localStorage.setItem(
       progressKey(),
@@ -2810,7 +2824,8 @@ function stopDailyTracker() {
 
 /** 进度服务端同步（POST /reader3/saveBookProgress；失败静默，不影响本地阅读） */
 function syncServerProgress() {
-  if (!shelfBook.value || !currentChapter.value) return
+  if (!shelfBook.value || !currentChapter.value || !localCacheScope.value || displayedContentScope !== localCacheScope.value
+    || displayedContentToken !== store.accessToken) return
   void pendingProgressWrites.track(saveBookProgress(bookUrl.value, chapterIndex.value)).catch(() => {
     /* 静默失败 */
   })
@@ -2819,6 +2834,7 @@ function syncServerProgress() {
 const pendingProgressWrites = new ProgressWriteBarrier()
 
 function restoreProgress(): ReaderProgress | null {
+  if (!localCacheScope.value) return null
   try {
     const raw = localStorage.getItem(progressKey())
     if (!raw) return null
@@ -2901,6 +2917,17 @@ async function applyRestoreScroll() {
 
 async function loadContent(chapterUrl: string) {
   if (!shelfBook.value?.origin) return
+  const generation = ++contentRequestGeneration
+  const scope = localCacheScope.value
+  const token = store.accessToken
+  const url = bookUrl.value
+  const origin = shelfBook.value.origin
+  const index = chapterIndex.value
+  const localIndex = flatIndex.value
+  const ch = currentChapter.value
+  const stillCurrent = () => !readerDisposed && generation === contentRequestGeneration
+    && scope === localCacheScope.value && token === store.accessToken
+    && url === bookUrl.value && index === chapterIndex.value
   loading.value = true
   loadError.value = false
   content.value = ''
@@ -2913,13 +2940,15 @@ async function loadContent(chapterUrl: string) {
     if (isEpubBook.value) {
       // getBookContent 自身写入新章进度，不能被切章前尚未完成的旧 POST 覆盖。
       await pendingProgressWrites.settle()
+      if (!stillCurrent()) return
       const res = await getBookContent(
-        bookUrl.value,
+        url,
         chapterUrl,
-        shelfBook.value.origin,
-        { timeout: chapterTimeout.value * 1000, index: chapterIndex.value },
+        origin,
+        { timeout: chapterTimeout.value * 1000, index },
         1,
       )
+      if (!stillCurrent()) return
       chapterHtml.value = res.data?.content ?? ''
       // Keep both projections ready: switching HTML -> raw -> text must not
       // leave an empty text view until the user refreshes or changes chapter.
@@ -2927,32 +2956,36 @@ async function loadContent(chapterUrl: string) {
       content.value = text
     } else {
       // 本机缓存优先；未命中再走服务器缓存/书源（getBookContent 命中服务器缓存，未命中自动抓取并写回）
-      const local = await getLocalChapter(bookUrl.value, chapterUrl)
+      const local = await getLocalChapter(scope, url, chapterUrl)
+      if (!stillCurrent()) return
       text = local?.content ?? ''
       if (!text) {
         await pendingProgressWrites.settle()
-        const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
+        if (!stillCurrent()) return
+        const res = await getBookContent(url, chapterUrl, origin, {
           timeout: chapterTimeout.value * 1000,
-          index: chapterIndex.value,
+          index,
         })
+        if (!stillCurrent()) return
         text = res.data?.content ?? ''
         if (typeof res.data?.chapterWordCount === 'number') {
           fetchedWordCount = res.data.chapterWordCount
         }
-        const fi = flatIndex.value
-        const ch = currentChapter.value
         if (ch && text) {
-          void saveLocalChapter({
-            bookUrl: bookUrl.value,
+          await saveLocalChapter(scope, {
+            bookUrl: url,
             chapterUrl,
             title: ch.title,
-            index: fi >= 0 ? fi : 0,
+            index: localIndex >= 0 ? localIndex : 0,
             content: text,
           })
+          if (!stillCurrent()) return
         }
       }
       content.value = text
     }
+    displayedContentScope = scope
+    displayedContentToken = token
     // 章节字数：后端 chapterWordCount（本地书正文接口附带）优先；缺失用已缓存正文估算
     chapterWordCounts.value = {
       ...chapterWordCounts.value,
@@ -2964,14 +2997,16 @@ async function loadContent(chapterUrl: string) {
       void startTts()
     }
   } catch {
+    if (!stillCurrent()) return
     ttsAutoNext = false
     loadError.value = true
     return
   } finally {
-    loading.value = false
+    if (stillCurrent()) loading.value = false
   }
   // 等正文真正渲染（loading 置 false 后）再滚动，避免被加载态高度钳制
   await nextTick()
+  if (!stillCurrent()) return
   if (isFlipMode()) measureFlipColumns()
   if (epubRawActive.value) {
     // 原版的恢复位置由 iframe 应用，不能拿 iframe 像素去滚动宿主页面。
@@ -3002,6 +3037,18 @@ async function loadContent(chapterUrl: string) {
   // 切章后清除朗读高亮（连播/手动切章后由 startTts 重新跟踪）
   ttsReadingPara.value = -1
 }
+
+// 登出、切账号或切配置层立即丢弃在途正文；旧响应只能写入捕获的旧作用域。
+watch([localCacheScope, () => store.accessToken], () => {
+  contentRequestGeneration++
+  displayedContentScope = null
+  displayedContentToken = ''
+  content.value = ''
+  chapterHtml.value = ''
+  cachedChapterIndexes.value = new Set()
+  chapterWordCounts.value = {}
+  stopTts()
+}, { flush: 'sync' })
 
 function cancelRetention() {
   if (retentionBusy.value) return
@@ -4031,6 +4078,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  readerDisposed = true
+  contentRequestGeneration++
   epubLoadController?.abort()
   epubLoadController = null
   if (epubDoc.value) destroyEpubDoc(epubDoc.value)

@@ -13,7 +13,7 @@ import { uploadFile, mkdir } from '@/api/file'
 import { downloadBlob } from '@/utils/download'
 import { relocateChapterIndex } from '@/utils/progressRelocate'
 import { buildTocEntries } from '@/utils/tocPreview'
-import { clearLocalBook } from '@/utils/readerLocalCache'
+import { clearLocalBook, localChapterCacheScope } from '@/utils/readerLocalCache'
 import ChapterCacheDialog from '@/components/ChapterCacheDialog.vue'
 import { useUserStore } from '@/stores/user'
 import { isNotImplemented } from '@/utils/errors'
@@ -911,6 +911,11 @@ const cacheClearBusy = ref(false)
 async function clearBookCache() {
   const b = shelfBook.value
   if (!b || cacheClearBusy.value) return
+  const scope = localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL)
+  const token = store.accessToken
+  const stillCurrent = () => scope === localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL)
+    && token === store.accessToken && b.bookUrl === shelfBook.value?.bookUrl
+  if (!scope) return
   try {
     await ElMessageBox.confirm('清除本书服务器与本机缓存后，正文/目录将重新从书源拉取。确定清除？', '清除缓存', {
       confirmButtonText: '清除',
@@ -920,12 +925,15 @@ async function clearBookCache() {
   } catch {
     return // 用户取消
   }
+  if (!stillCurrent()) return
   cacheClearBusy.value = true
   try {
     const res = await deleteBookCache(b.bookUrl)
+    if (!stillCurrent()) return
     // legacy 对齐：deleteBookCache 成功返回 data=""（无删除计数）
     void res
-    const localDeleted = await clearLocalBook(b.bookUrl)
+    const localDeleted = await clearLocalBook(scope, b.bookUrl)
+    if (!stillCurrent()) return
     ElMessage.success(`已清除本书缓存（本机 ${localDeleted} 条）`)
     // GAP 82：清除后刷新单书缓存状态
     void loadShelfCacheInfo()
