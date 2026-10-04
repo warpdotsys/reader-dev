@@ -56,7 +56,7 @@ class BrowserCgroupReportTest(unittest.TestCase):
 
     def test_oom_is_failure_even_when_final_memory_is_within_budget(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):
-            self.run_report({"memory.events": "oom 1\noom_kill 1\noom_group_kill 0"})
+            self.run_report({"memory.events": "max 0\noom 1\noom_kill 1\noom_group_kill 0"})
 
     def test_pids_limit_event_is_failure(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):

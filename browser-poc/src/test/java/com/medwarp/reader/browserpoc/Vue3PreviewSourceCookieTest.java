@@ -2,12 +2,14 @@ package com.medwarp.reader.browserpoc;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import org.junit.Assume;
 import org.junit.Test;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -96,9 +98,14 @@ public class Vue3PreviewSourceCookieTest {
                 assertEquals("An obsolete local marker is not server authentication", 0,
                         owner.locator(".source-badge.logged").count());
 
-                owner.locator(".source-row").filter(new com.microsoft.playwright.Locator.FilterOptions()
-                        .setHasText("Cookie A")).locator("button[title^='登录书源']").click();
+                Locator loginOpener = owner.locator(".source-row").filter(new Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='登录书源']");
+                loginOpener.click();
                 owner.locator("[aria-label='书源登录'] .manual-box textarea").waitFor();
+                exerciseDialogKeyboard(owner, "书源登录", loginOpener);
+                loginOpener.click();
+                assertEquals("Reopening a login must not retain an unsaved cookie", "",
+                        owner.locator("[aria-label='书源登录'] .manual-box textarea").inputValue());
                 // The last empty value deliberately has no final newline: trimming
                 // TABs would destroy its seventh Netscape field before submission.
                 String generatedCredential = "# Netscape HTTP Cookie File\n" +
@@ -132,12 +139,16 @@ public class Vue3PreviewSourceCookieTest {
                 owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
                 assertTrue(owner.locator(".source-badge.logged").first().innerText().contains("Cookie 已保存"));
 
-                owner.locator(".source-row").filter(new com.microsoft.playwright.Locator.FilterOptions()
-                        .setHasText("Cookie A")).locator("button[title^='编辑书源']").click();
+                Locator editOpener = owner.locator(".source-row").filter(new Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='编辑书源']");
+                editOpener.click();
+                exerciseDialogKeyboard(owner, "编辑书源", editOpener);
+                editOpener.click();
                 com.microsoft.playwright.Locator editorCookie = owner.locator(
                         "[aria-label='编辑书源'] [placeholder^='粘贴普通 Cookie 头或 Netscape 导出']");
                 assertEquals("A single-line input would silently discard Netscape line breaks",
                         "TEXTAREA", editorCookie.evaluate("element => element.tagName"));
+                assertEquals("Closing the editor must discard an unsaved cookie", "", editorCookie.inputValue());
                 editorCookie.fill(generatedCredential);
                 assertEquals("Both editor lines and final empty field must survive", generatedCredential,
                         editorCookie.inputValue());
@@ -201,13 +212,82 @@ public class Vue3PreviewSourceCookieTest {
                 owner.locator(".source-row").first().waitFor();
                 assertEquals("Account switching must not inherit a source cookie badge", 0,
                         owner.locator(".source-badge.logged").count());
-                owner.locator("button[title^='Cookie 管理']").click();
+                // The same keyboard contract must hold at a narrow viewport.
+                owner.setViewportSize(375, 812);
+                Locator cookieOpener = owner.locator("button[title^='Cookie 管理']");
+                cookieOpener.click();
                 owner.waitForFunction("document.querySelector('.cookie-mgr-note')?.textContent.includes('0 个')");
                 assertEquals(0, owner.locator(".cookie-list .cookie-row").count());
+                exerciseDialogKeyboard(owner, "Cookie 管理", cookieOpener);
+
+                Locator addOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("新增书源").setExact(true));
+                addOpener.click();
+                exerciseDialogKeyboard(owner, "新增书源", addOpener);
+                Locator importOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("远程导入").setExact(true));
+                importOpener.click();
+                exerciseDialogKeyboard(owner, "远程导入书源", importOpener);
+                Locator sourceRow = owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("Cookie A"));
+                Locator debugOpener = sourceRow.locator("button[title^='调试书源']");
+                debugOpener.click();
+                exerciseDialogKeyboard(owner, "书源调试", debugOpener);
+                Locator deleteOpener = sourceRow.locator("button[title='删除书源']");
+                deleteOpener.click();
+                exerciseDialogKeyboard(owner, "删除书源", deleteOpener); // Cancel only; do not delete even generated sources.
+
+                Locator localImportOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("本地导入").setExact(true));
+                com.microsoft.playwright.FileChooser chooser = owner.waitForFileChooser(localImportOpener::click);
+                chooser.setFiles(new com.microsoft.playwright.options.FilePayload("keyboard-generated.json", "application/json",
+                        "[{\"bookSourceUrl\":\"https://keyboard-preview.example\",\"bookSourceName\":\"生成键盘预览\"}]"
+                                .getBytes(StandardCharsets.UTF_8)));
+                exerciseDialogKeyboard(owner, "导入本地书源", localImportOpener);
+                assertEquals("Cancelling a preview must not import a source", 0,
+                        owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("生成键盘预览")).count());
             } finally {
                 browser.close();
             }
         }
+    }
+
+    private static void exerciseDialogKeyboard(Page page, String label, Locator opener) {
+        Locator dialog = page.getByRole("删除书源".equals(label)
+                        ? com.microsoft.playwright.options.AriaRole.ALERTDIALOG : com.microsoft.playwright.options.AriaRole.DIALOG,
+                new Page.GetByRoleOptions().setName(label).setExact(true));
+        dialog.waitFor();
+        assertTrue("Opening " + label + " must move focus into the dialog",
+                (Boolean) dialog.evaluate("element => element.contains(document.activeElement)"));
+        if ("书源登录".equals(label)) {
+            dialog.locator(".manual-box textarea").fill("unsaved=generated-keyboard-only");
+        } else if ("编辑书源".equals(label)) {
+            dialog.locator("[placeholder^='粘贴普通 Cookie 头或 Netscape 导出']")
+                    .fill("unsaved=generated-keyboard-only");
+        }
+        int controls = ((Number) dialog.evaluate("element => Array.from(element.querySelectorAll(" +
+                "'button, input, textarea, select, a[href], [tabindex]'))" +
+                ".filter(item => item.tabIndex >= 0 && !item.matches(':disabled') &&" +
+                "item.getClientRects().length > 0).length")).intValue();
+        assertTrue("A dialog should offer usable keyboard controls", controls > 0);
+        for (String key : new String[]{"Tab", "Shift+Tab"}) {
+            for (int index = 0; index <= controls; index++) {
+                page.keyboard().press(key);
+                assertTrue(label + " must keep " + key + " focus within its modal",
+                        (Boolean) dialog.evaluate("element => element.contains(document.activeElement)"));
+            }
+        }
+        String screenshotRoot = System.getenv("RUNNER_TEMP");
+        if (screenshotRoot != null && !screenshotRoot.isEmpty()) {
+            String imageName = "书源登录".equals(label) ? "login" : "编辑书源".equals(label) ? "editor"
+                    : "Cookie 管理".equals(label) ? "cookie-mobile" : null;
+            if (imageName != null) page.screenshot(new Page.ScreenshotOptions()
+                    .setPath(Path.of(screenshotRoot).resolve("vue3-source-dialog-" + imageName + ".png")));
+        }
+        page.keyboard().press("Escape");
+        page.waitForFunction("label => !Array.from(document.querySelectorAll('[role=dialog], [role=alertdialog]'))" +
+                ".some(element => element.getAttribute('aria-label') === label)", label);
+        assertTrue("Closing " + label + " must restore focus to its opener",
+                (Boolean) opener.evaluate("element => element === document.activeElement"));
     }
 
     private static void register(Page page, String previewUrl) {

@@ -1,0 +1,63 @@
+{
+  "scope": "offline generated workload; one complete native Reader image; no production data or real credentials",
+  "workflowRun": 37198490100,
+  "workflowUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37198490100",
+  "jobId": 111425142019,
+  "runner": "GitHub Actions 1000003484",
+  "runnerLabels": ["ubuntu-24.04"],
+  "conclusion": "success",
+  "probeSourceRevision": "868654e44513b67eb76b97f3d71ed25849738357",
+  "sourceImageRun": 37195595659,
+  "sourceImageCodeRevision": "2cca1143a795537b3a26e293588e5cd59aaaa28b",
+  "actualImageRevision": "a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5",
+  "jarSha256": "f9f1ad0aaca9e0f16c21d5279187456c9da9db6d832f2c9f922b035dd744cd0d",
+  "imageId": "sha256:8bafd7224b9393b8152e36cbbf5c660d2be79aa5b4e0cc36f669f7f1d5f055a0",
+  "runtimeReleaseIdentity": {"version": "4.0.7", "buildRevision": "a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5"},
+  "downloadedArtifact": {"id": 11302249489, "name": "offline-soak-amd64-37198490100", "sizeBytes": 5809},
+  "network": "none",
+  "passed": true,
+  "accounts": 4,
+  "requestedContinuousSeconds": 1800,
+  "actualContinuousSeconds": 1815.609,
+  "totalProbeSeconds": 1877.308,
+  "rounds": 135,
+  "successfulSearches": 548,
+  "targetRequests": {"GET": 283, "POST": 268},
+  "targetCookieOrShapeErrors": 0,
+  "coldRequestSeconds": 3.931452041,
+  "maxRequestSecondsAcrossContinuousRounds": 18.254,
+  "faults": [
+    {"kind": "navigationTimeout", "seconds": 7.52, "failedReturnDataVerified": true, "healthyRecoveryVerified": true, "ownedWorkerKilled": false},
+    {"kind": "scriptWatchdog", "seconds": 25.028, "failedReturnDataVerified": true, "healthyRecoveryVerified": true, "ownedWorkerKilled": false},
+    {"kind": "workerExit", "seconds": 2.131, "failedReturnDataVerified": true, "healthyRecoveryVerified": true, "ownedWorkerKilled": true}
+  ],
+  "resources": {
+    "architecture": "x86_64", "cpuQuota": 200000, "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648, "memoryPeakBytes": 952418304, "finalMemoryCurrentBytes": 447291392,
+    "memoryEvents": {"low": 0, "high": 0, "max": 0, "oom": 0, "oom_kill": 0, "oom_group_kill": 0},
+    "swapMaxBytes": 0, "swapCurrentBytes": 0,
+    "pidsMax": 256, "pidsPeak": 195, "finalPidsCurrent": 42, "pidsEvents": {"max": 0}
+  },
+  "downloadAudit": {
+    "preloadLoadedRunningJarIdentitiesAgree": true,
+    "traceRows": 135, "roundSequenceAndMethodAlternationVerified": true,
+    "elapsedTimesMonotonic": true, "traceFinalTimeMatchesReport": true,
+    "browserWorkerDriverCountsZeroAfterEveryRound": true,
+    "browserWorkerDriverCountsZeroAfterColdWarmAndEveryRecovery": true,
+    "sourceReportSha256": "58658b77292d12eea5bb70ce5cd3454d8e212ae920ca3bcb8c85007b3e3fe906",
+    "sourceTraceSha256": "ce4dcbba8d3852c88d422d1a4ea2bef8542b80dcac81571ea74bd7aea9472305",
+    "sourcePreloadSha256": "fa74ea95b1c89627a8af2740dc9f8a44348371f8288ec81093c079652d2083c0",
+    "sourceLoadedSha256": "79d24594a9bb24b3873802383d5c5e3ab4984bc83b80598b6256c5bdf2c80bba",
+    "sourceRunningJarSha256": "2e604a8c8a2b58f9030468d1f995d2c809aae49b91964ba6d8d0e9272e8eaad7",
+    "sourceRunSummarySha256": "9133f5d8a144be2eb393b2f719d16bb4f13ff3e4b8d07b4cbfa7256f9d865e74",
+    "sourceContainerStateSha256": "6e6deb22984d4dda72ac2cf0d9858951187d3774e9e261574ab6a3837985b412"
+  },
+  "limitations": [
+    "AMD64 only; ARM64 short runs are separate evidence, not this continuous test",
+    "Four user bursts traverse one browser render queue, not four simultaneous renderers",
+    "A new JVM/browser is not a reset of the host disk cache",
+    "Generated small pages only; not days of load, large real pages, all sources or production network security",
+    "No real Qidian Cookie, original JAR, old remote WebView or production data in this run",
+    "Does not prove subsequent UI changes, formal release, registry publication or deployment"
+  ]
+}

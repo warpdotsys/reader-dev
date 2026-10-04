@@ -39,6 +39,7 @@ import { useUserStore } from '@/stores/user'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { isNotImplemented } from '@/utils/errors'
 import { savedSourceCookieRows, sourceCookieInputForSubmit } from '@/utils/sourceCookieState'
+import { dialogFocus as vDialogFocus } from '@/directives/dialogFocus'
 import type { BookSource, CookieRow, SourceSub } from '@/types'
 
 const router = useRouter()
@@ -951,6 +952,7 @@ function openEdit(s: BookSource) {
 function closeEdit() {
   if (editBusy.value) return
   editOpen.value = false
+  editCookie.value = ''
   document.body.style.overflow = ''
 }
 
@@ -1434,9 +1436,11 @@ async function doExportGroup() {
 
 /* ================= 本地文件导入（input file → 解析 JSON → saveBookSources） ================= */
 const localFileInput = ref<HTMLInputElement | null>(null)
+const localImportOpener = ref<HTMLElement | null>(null)
 const localImportBusy = ref(false)
 
-function openLocalImport() {
+function openLocalImport(event: MouseEvent) {
+  localImportOpener.value = event.currentTarget as HTMLElement
   localFileInput.value?.click()
 }
 
@@ -1866,6 +1870,7 @@ onBeforeUnmount(() => {
   cookieRequestGeneration++
   loginForm.value = { username: '', password: '' }
   manualCookie.value = ''
+  editCookie.value = ''
   window.clearTimeout(groupLongPressTimer)
   groupLongPressTimer = undefined
 })
@@ -1873,7 +1878,9 @@ onBeforeUnmount(() => {
 watch(() => [store.accessToken, store.defaultConfigMode], () => {
   cookieRequestGeneration++
   cookieRows.value = []
-  if (loginOpen.value || cookieMgrOpen.value) document.body.style.overflow = ''
+  if (loginOpen.value || cookieMgrOpen.value || editOpen.value) document.body.style.overflow = ''
+  editOpen.value = false
+  editCookie.value = ''
   loginOpen.value = false
   cookieMgrOpen.value = false
   loginForm.value = { username: '', password: '' }
@@ -2296,7 +2303,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="addOpen" class="dlg-overlay" @click.self="closeAdd">
-          <div class="dlg" role="dialog" aria-modal="true" aria-label="新增书源" tabindex="-1" @keydown.esc="closeAdd">
+          <div v-dialog-focus class="dlg" role="dialog" aria-modal="true" aria-label="新增书源" tabindex="-1" @keydown.esc="closeAdd">
             <div class="dlg-head">
               <h2 class="dlg-title">新增书源</h2>
               <button class="dlg-close" type="button" title="关闭" :disabled="addBusy" @click="closeAdd">
@@ -2334,7 +2341,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="importOpen" class="dlg-overlay" @click.self="closeImport">
-          <div class="dlg" role="dialog" aria-modal="true" aria-label="远程导入书源" tabindex="-1" @keydown.esc="closeImport">
+          <div v-dialog-focus class="dlg" role="dialog" aria-modal="true" aria-label="远程导入书源" tabindex="-1" @keydown.esc="closeImport">
             <div class="dlg-head">
               <h2 class="dlg-title">远程导入书源</h2>
               <button class="dlg-close" type="button" title="关闭" :disabled="importBusy" @click="closeImport">
@@ -2368,6 +2375,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
         <div v-if="previewOpen" class="dlg-overlay" @click.self="closePreview">
           <div
             class="dlg preview-dlg"
+            v-dialog-focus="previewMode === 'local' ? localImportOpener : undefined"
             role="dialog"
             aria-modal="true"
             :aria-label="previewTitle"
@@ -2442,7 +2450,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="deleting" class="dlg-overlay" @click.self="closeDelete">
-          <div class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除书源" tabindex="-1" @keydown.esc="closeDelete">
+          <div v-dialog-focus class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除书源" tabindex="-1" @keydown.esc="closeDelete">
             <div class="dlg-head">
               <h2 class="dlg-title">删除书源</h2>
             </div>
@@ -2464,7 +2472,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="deletingSub || deletingSubs.length" class="dlg-overlay" @click.self="closeDeleteSub">
-          <div class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除订阅" tabindex="-1" @keydown.esc="closeDeleteSub">
+          <div v-dialog-focus class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除订阅" tabindex="-1" @keydown.esc="closeDeleteSub">
             <div class="dlg-head">
               <h2 class="dlg-title">删除订阅</h2>
             </div>
@@ -2530,6 +2538,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
         <div v-if="debugOpen" class="dlg-overlay" @click.self="closeDebug">
           <div
             class="dlg dlg-debug"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="书源调试"
@@ -2591,6 +2600,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
         <div v-if="editOpen" class="dlg-overlay" @click.self="closeEdit">
           <div
             class="dlg dlg-edit"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="编辑书源"
@@ -2731,6 +2741,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
         <div v-if="loginOpen" class="dlg-overlay" @click.self="closeLogin">
           <div
             class="dlg dlg-login"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="书源登录"
@@ -2860,6 +2871,7 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
         <div v-if="cookieMgrOpen" class="dlg-overlay" @click.self="closeCookieMgr">
           <div
             class="dlg dlg-cookie"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="Cookie 管理"

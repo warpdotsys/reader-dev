@@ -180,12 +180,16 @@ jobs:
           path: browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview*Test.xml
           if-no-files-found: warn
           retention-days: 14
-      - name: Preserve generated source-cookie state screenshot
+      - name: Preserve generated source-cookie and keyboard screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-source-cookie-state-${{ github.sha }}
-          path: ${{ runner.temp }}/vue3-source-cookie-stored.png
+          path: |
+            ${{ runner.temp }}/vue3-source-cookie-stored.png
+            ${{ runner.temp }}/vue3-source-dialog-login.png
+            ${{ runner.temp }}/vue3-source-dialog-editor.png
+            ${{ runner.temp }}/vue3-source-dialog-cookie-mobile.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve synthetic bookshelf layout screenshot
