@@ -38,6 +38,7 @@ import TopNav from '@/components/TopNav.vue'
 import { useUserStore } from '@/stores/user'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { isNotImplemented } from '@/utils/errors'
+import { savedSourceCookieRows } from '@/utils/sourceCookieState'
 import type { BookSource, CookieRow, SourceSub } from '@/types'
 
 const router = useRouter()
@@ -954,34 +955,12 @@ function closeEdit() {
 }
 
 /** 校验 + 保存：JSON 字段逐个 parse（失败定位到具体字段），合并进原书源后 saveBookSource 整源覆盖，刷新列表 */
-/* ================= 书源登录（POST /reader3/loginBookSource 等；登录态 localStorage 持久 reader_src_login_{url}） ================= */
+/* ================= 书源凭据状态：服务端按用户命名空间隔离；不读取旧的无用户本地标记 ================= */
 
-const LOGIN_KEY_PREFIX = 'reader_src_login_'
-const LOGIN_KEY = (url: string) => `${LOGIN_KEY_PREFIX}${url}`
-
-/** 已登录书源 URL 集合（localStorage 缓存 reader_src_login_{url}，刷新页面后仍显示「已登录」） */
-const loggedUrls = ref<Set<string>>(new Set())
-
-function syncLoggedUrls() {
-  const set = new Set<string>()
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i)
-    if (k && k.startsWith(LOGIN_KEY_PREFIX) && localStorage.getItem(k) === '1') {
-      set.add(k.slice(LOGIN_KEY_PREFIX.length))
-    }
-  }
-  loggedUrls.value = set
-}
-
-function markLoggedIn(url: string) {
-  localStorage.setItem(LOGIN_KEY(url), '1')
-  syncLoggedUrls()
-}
+const loggedUrls = computed(() => new Set(cookieRows.value.map(row => row.sourceUrl)))
 
 function markSourcesLoggedOut(urls: string[]) {
   const affected = new Set(urls)
-  for (const url of affected) localStorage.removeItem(LOGIN_KEY(url))
-  syncLoggedUrls()
   cookieRows.value = cookieRows.value.filter((row) => !affected.has(row.sourceUrl))
 }
 
@@ -989,12 +968,12 @@ const loginOpen = ref(false)
 const loginSource = ref<BookSource | null>(null)
 const loginBusy = ref(false)
 const loginForm = ref({ username: '', password: '' })
-/** 登录态：unknown=登录态未知（探测中/未探测） logged=已登录 not=登录失败 */
-const loginState = ref<'unknown' | 'logged' | 'not'>('unknown')
+/** Cookie 已保存不等于目标站验证通过。 */
+const loginState = ref<'unknown' | 'stored' | 'not'>('unknown')
 const loginProbe = ref('') // 状态区探测提示（getCaptcha 结果）
 const loginMsg = ref('') // 操作结果提示
 const loginMsgError = ref(false)
-const cookieSummary = ref('') // 登录成功后的 cookie 摘要（前 20 字符）
+const cookieSummary = ref('') // 仅固定隐藏提示；不回显用户输入的凭据
 const captcha = ref<{ captchaId: string; captchaUrl: string; message: string } | null>(null)
 const captchaFrom = ref<'probe' | 'login'>('probe') // 验证码来源（登录返回的验证码不被探测覆盖）
 const captchaText = ref('')
@@ -1017,17 +996,22 @@ function openLogin(s: BookSource) {
   manualCookie.value = ''
   loginOpen.value = true
   document.body.style.overflow = 'hidden'
-  if (loggedUrls.value.has(s.bookSourceUrl)) {
-    loginState.value = 'logged'
-    loginProbe.value = '本地缓存：该书源已登录（Cookie 存于服务端）'
-  } else {
-    void probeCaptcha() // 登录态未知 → getCaptcha 探测
-  }
+  void refreshCookieRows().then(() => {
+    if (loginSource.value?.bookSourceUrl !== s.bookSourceUrl || !loginOpen.value) return
+    if (loggedUrls.value.has(s.bookSourceUrl)) {
+      loginState.value = 'stored'
+      cookieSummary.value = '内容已隐藏'
+    }
+  })
+  void probeCaptcha()
 }
 
 function closeLogin() {
   if (loginBusy.value) return
   loginOpen.value = false
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
+  captchaText.value = ''
   document.body.style.overflow = ''
 }
 
@@ -1053,7 +1037,8 @@ async function probeCaptcha(force = false) {
       }
       loginProbe.value = '检测到图片验证码——填写用户名/密码后可提交'
     } else if (kind === 'slider') {
-      loginProbe.value = d?.message || '检测到滑块验证码——点击「登录」由浏览器自动处理'
+      loginProbe.value = d?.message || '需要在目标站手动完成滑块验证码；当前未提供交互式浏览器会话'
+      showManual.value = true
     } else if (kind === 'click') {
       showManual.value = true
       loginProbe.value = d?.message || '检测到点选类验证码——请在浏览器登录后粘贴 Cookie'
@@ -1071,14 +1056,15 @@ async function probeCaptcha(force = false) {
 }
 
 /** 登录结果统一处理（loginBookSource 的 success / submitCaptcha 的 isLogin 两套标记） */
-function applyLoginResult(d: BookSourceLoginResult | null | undefined) {
+async function applyLoginResult(d: BookSourceLoginResult | null | undefined) {
   const url = loginSource.value?.bookSourceUrl
   if (!d || !url) return
   if (d.isLogin === true || d.success === true) {
-    markLoggedIn(url)
-    loginState.value = 'logged'
-    cookieSummary.value = d.cookie ? d.cookie.slice(0, 20) : ''
-    loginMsg.value = '登录成功'
+    await refreshCookieRows()
+    if (loginSource.value?.bookSourceUrl !== url || !loginOpen.value) return
+    loginState.value = loggedUrls.value.has(url) ? 'stored' : 'unknown'
+    cookieSummary.value = loggedUrls.value.has(url) ? '内容已隐藏' : ''
+    loginMsg.value = loggedUrls.value.has(url) ? 'Cookie 已保存（未验证）' : '规则已执行；尚无法确认服务端 Cookie 状态'
     loginMsgError.value = false
     captcha.value = null
     captchaFrom.value = 'probe'
@@ -1124,7 +1110,7 @@ async function doLogin() {
       username: loginForm.value.username,
       password: loginForm.value.password,
     })
-    applyLoginResult(res.data)
+    await applyLoginResult(res.data)
   } catch {
     // 硬错误（ReturnData::err / 网络）已由拦截器提示
   } finally {
@@ -1149,7 +1135,7 @@ async function doSubmitCaptcha() {
       username: loginForm.value.username,
       password: loginForm.value.password,
     })
-    applyLoginResult(res.data)
+    await applyLoginResult(res.data)
   } catch {
     // 拦截器已提示
   } finally {
@@ -1168,12 +1154,13 @@ async function saveManualCookie() {
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, cookie)
     if (res.data?.success) {
-      markLoggedIn(s.bookSourceUrl)
-      loginState.value = 'logged'
-      cookieSummary.value = cookie.slice(0, 20)
       showManual.value = false
       manualCookie.value = ''
-      loginMsg.value = 'Cookie 已保存'
+      await refreshCookieRows()
+      if (loginSource.value?.bookSourceUrl !== s.bookSourceUrl || !loginOpen.value) return
+      loginState.value = loggedUrls.value.has(s.bookSourceUrl) ? 'stored' : 'unknown'
+      cookieSummary.value = loggedUrls.value.has(s.bookSourceUrl) ? '内容已隐藏' : ''
+      loginMsg.value = loggedUrls.value.has(s.bookSourceUrl) ? 'Cookie 已保存（未验证）' : 'Cookie 已提交；服务端状态尚未确认'
       loginMsgError.value = false
     }
   } catch {
@@ -1211,17 +1198,38 @@ async function clearLoginCookie() {
   }
 }
 
-/* ================= 书源 Cookie 管理（GAP 196：已登录书源列表 + 摘要 + 清除；后端 getBookSourceCookie 读取登录态） ================= */
+/* ================= 书源 Cookie 管理：仅显示当前用户服务端存在的凭据，不声称目标站已认证 ================= */
 
 const cookieMgrOpen = ref(false)
 const cookieMgrBusy = ref<Set<string>>(new Set())
 /** 服务端登录态行（getBookSourceCookie：仅返回脱敏摘要） */
 const cookieRows = ref<CookieRow[]>([])
 const cookieRowsMsg = ref('')
+let cookieRequestGeneration = 0
 
-/** 已登录书源列表：服务端登录态优先，补充本地登录态标记（无服务端 cookie 行的书源） */
+async function refreshCookieRows(): Promise<boolean> {
+  const generation = ++cookieRequestGeneration
+  const token = store.accessToken
+  const defaultMode = store.defaultConfigMode
+  const current = () => generation === cookieRequestGeneration && token === store.accessToken && defaultMode === store.defaultConfigMode
+  try {
+    const res = await getBookSourceCookie()
+    if (!current()) return false
+    if (res.isSuccess !== true) throw new Error('服务端未确认 Cookie 状态')
+    cookieRows.value = savedSourceCookieRows(res.data)
+    cookieRowsMsg.value = ''
+    return true
+  } catch {
+    if (current()) {
+      cookieRows.value = []
+      cookieRowsMsg.value = '服务端 Cookie 状态读取失败，不能确认已保存的凭据'
+    }
+    return false
+  }
+}
+
+/** 当前用户服务端存在 Cookie 的书源列表。 */
 const loggedSources = computed(() => {
-  const server = new Set(cookieRows.value.map((r) => r.sourceUrl))
   const merged = new Map<string, BookSource>()
   for (const r of cookieRows.value) {
     const s = sources.value.find((x) => x.bookSourceUrl === r.sourceUrl)
@@ -1238,11 +1246,6 @@ const loggedSources = computed(() => {
         weight: 0,
         lastUpdateTime: 0,
       } as BookSource)
-    }
-  }
-  for (const s of sources.value) {
-    if (loggedUrls.value.has(s.bookSourceUrl) && !server.has(s.bookSourceUrl)) {
-      merged.set(s.bookSourceUrl, s)
     }
   }
   return Array.from(merged.values())
@@ -1263,16 +1266,9 @@ function hostOf(url: string): string {
 }
 
 function openCookieMgr() {
-  syncLoggedUrls() // 打开时重扫 localStorage，避免其他标签页变更未同步
   cookieRows.value = []
   cookieRowsMsg.value = ''
-  void getBookSourceCookie()
-    .then((res) => {
-      cookieRows.value = res.data ?? []
-    })
-    .catch(() => {
-      cookieRowsMsg.value = '服务端登录态读取失败，仅显示本地标记'
-    })
+  void refreshCookieRows()
   cookieMgrOpen.value = true
   document.body.style.overflow = 'hidden'
 }
@@ -1282,7 +1278,7 @@ function closeCookieMgr() {
   document.body.style.overflow = ''
 }
 
-/** 清除 Cookie：POST /reader3/setBookSourceCookie（空 cookie = 清除）→ 同步移除本地登录态 */
+/** 清除 Cookie：POST /reader3/setBookSourceCookie（空 cookie = 清除）→ 同步移除服务端状态行 */
 async function clearSourceCookie(s: BookSource) {
   if (cookieMgrBusy.value.has(s.bookSourceUrl)) return
   cookieMgrBusy.value = new Set(cookieMgrBusy.value).add(s.bookSourceUrl)
@@ -1859,7 +1855,7 @@ async function loadSubs() {
 }
 
 onMounted(() => {
-  syncLoggedUrls()
+  void refreshCookieRows()
   load()
   void loadSubs()
   // 简繁模式可能在其他页面改动 → 挂载时同步全站状态（书源名展示随其响应）
@@ -1867,8 +1863,25 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  cookieRequestGeneration++
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
   window.clearTimeout(groupLongPressTimer)
   groupLongPressTimer = undefined
+})
+
+watch(() => [store.accessToken, store.defaultConfigMode], () => {
+  cookieRequestGeneration++
+  cookieRows.value = []
+  if (loginOpen.value || cookieMgrOpen.value) document.body.style.overflow = ''
+  loginOpen.value = false
+  cookieMgrOpen.value = false
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
+  captchaText.value = ''
+  loginState.value = 'unknown'
+  cookieSummary.value = ''
+  void refreshCookieRows()
 })
 </script>
 
@@ -1925,7 +1938,7 @@ onBeforeUnmount(() => {
           <button
             class="ghost-btn"
             type="button"
-            title="Cookie 管理：已登录书源列表 + 清除登录态（POST /reader3/setBookSourceCookie）"
+            title="Cookie 管理：服务端已保存凭据 + 清除（不代表目标站认证通过）"
             @click="openCookieMgr"
           >
             Cookie 管理
@@ -2213,7 +2226,7 @@ onBeforeUnmount(() => {
             {{ s.bookSourceGroup }}
           </span>
           <span v-if="invalidSources.has(s.bookSourceUrl)" class="source-badge invalid">失效</span>
-          <span v-if="loggedUrls.has(s.bookSourceUrl)" class="source-badge logged" title="已登录（Cookie 存于服务端，本地缓存）">已登录</span>
+          <span v-if="loggedUrls.has(s.bookSourceUrl)" class="source-badge logged" title="当前用户服务端存在 Cookie；是否有效仍需目标站验证">Cookie 已保存</span>
           <button
             v-if="defaultField"
             class="default-btn"
@@ -2712,7 +2725,7 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
-    <!-- 书源登录弹窗（POST /reader3/loginBookSource：状态区 + 用户名/密码表单 + 图片验证码 + 手动 Cookie；登录态 localStorage 持久） -->
+    <!-- 书源登录弹窗：当前用户服务端 Cookie 状态，不使用无用户的本地登录标记 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="loginOpen" class="dlg-overlay" @click.self="closeLogin">
@@ -2733,14 +2746,14 @@ onBeforeUnmount(() => {
               </button>
             </div>
 
-            <!-- 状态区：已登录（本地缓存） / 未登录 / 登录态未知（getCaptcha 探测） -->
-            <div class="login-status" :class="{ logged: loginState === 'logged', not: loginState === 'not' }">
+            <!-- 状态区：凭据存在不等于目标站认证通过。 -->
+            <div class="login-status" :class="{ logged: loginState === 'stored', not: loginState === 'not' }">
               <span class="login-state-dot"></span>
               <span class="login-state-text">
-                {{ loginState === 'logged' ? '已登录' : loginState === 'not' ? '未登录' : '登录态未知' }}
+                {{ loginState === 'stored' ? 'Cookie 已保存（未验证）' : loginState === 'not' ? '未登录' : '登录态未知' }}
               </span>
-              <span v-if="loginState === 'logged' && cookieSummary" class="login-cookie-sum" :title="cookieSummary + '…'">
-                Cookie {{ cookieSummary }}…
+              <span v-if="loginState === 'stored' && cookieSummary" class="login-cookie-sum">
+                {{ cookieSummary }}
               </span>
               <span v-else-if="loginState === 'unknown' && loginProbe" class="login-probe">{{ loginProbe }}</span>
             </div>
@@ -2811,7 +2824,7 @@ onBeforeUnmount(() => {
 
             <!-- 手动 Cookie 区：needManualCaptcha=true → 提示 + 明文粘贴框 + 保存 -->
             <div v-if="showManual" class="manual-box">
-              <p class="field-tip">需手动验证码：请在浏览器登录该书源后，在下方粘贴 Cookie（明文显示，便于核对）</p>
+              <p class="field-tip">当前不支持交互式站点登录或验证码。请自行在目标站登录后粘贴 Cookie；不要发到聊天。输入区为明文，保存后隐藏；保存不代表 Cookie 有效。</p>
               <textarea
                 v-model="manualCookie"
                 class="cookie-textarea"
@@ -2841,7 +2854,7 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
-    <!-- 书源 Cookie 管理弹窗（GAP 196：服务端登录态 + 本地标记；摘要来自 getBookSourceCookie；清除走 setBookSourceCookie 空 cookie） -->
+    <!-- 书源 Cookie 管理弹窗：仅当前用户服务端存在状态与脱敏摘要 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="cookieMgrOpen" class="dlg-overlay" @click.self="closeCookieMgr">
@@ -2863,7 +2876,7 @@ onBeforeUnmount(() => {
             </div>
 
             <p class="cookie-mgr-note">
-              已登录书源 {{ loggedSources.length }} 个。服务端保存 Cookie/UA/登录头，摘要来自 getBookSourceCookie；清除后该书源登录态失效。
+              已保存 Cookie 的书源 {{ loggedSources.length }} 个，均来自当前用户的服务端状态。是否有效仍需目标站验证；清除会撤销同域书源的凭据。
               <span v-if="cookieRowsMsg" class="cookie-mgr-warn">{{ cookieRowsMsg }}</span>
             </p>
 
@@ -2901,7 +2914,7 @@ onBeforeUnmount(() => {
               </li>
             </ul>
             <div v-else class="state-row">
-              <span class="state-text">暂无已登录书源——书源行「登录」成功或粘贴 Cookie 后会出现在这里</span>
+              <span class="state-text">暂无已保存 Cookie 的书源；本地旧标记不会作为登录成功依据</span>
             </div>
 
             <div class="dlg-actions dlg-foot">

@@ -1,0 +1,53 @@
+{
+  "sourceCommit": "b3b0e88986bd022c35f07c28b28179210a4448de",
+  "testedMergeCommit": "68c9a842ffcaf49444ff90abe42a3f17afbbf68b",
+  "workflowRun": "https://github.com/warpdotsys/reader-dev/actions/runs/37184933190",
+  "workflowConclusion": "success",
+  "successfulJobs": 6,
+  "artifact": "reader-publisher-import-68c9a842ffcaf49444ff90abe42a3f17afbbf68b",
+  "artifactId": 11296967168,
+  "artifactDownloadBytes": 7034,
+  "jsonReportsLocallyChecked": 20,
+  "version": "4.0.7",
+  "sharedJarSha256": "2d6172a95a8c7bedf6f3903c7a54730abc4f9d2df6adcd9a162975cbc0e32593",
+  "actualRuntimeReleaseObjectsChecked": 4,
+  "actualRuntimeJarIdentitiesChecked": 4,
+  "checks": [
+    "both architecture provenance metadata match the tested merge revision",
+    "both imported image IDs match their native build metadata",
+    "four runtime release identities are actual objects, not booleans",
+    "four runtime JAR identities share one SHA-256",
+    "four cookie sequences are empty, empty, session=alpha==, empty",
+    "four browser reports include successful script GET and q=post POST with synthetic header",
+    "four browser reports include four-account bursts returning one book per request",
+    "four resource reports confirm native architecture and 2 CPU, 2 GiB, 256-task limits",
+    "four resource reports show no OOM or pids limit events"
+  ],
+  "nativeImages": [
+    {
+      "architecture": "amd64",
+      "imageId": "sha256:1667eed46b428354e0f10f98e1369d4f81fe8a90093c274d5f1b47cf6e37db7e",
+      "archiveSha256RecordedOnRunner": "ea68cc6b91c4a6d1ab087f74f0197c4d0318b52f6897a26a88a6d0967e61fd20",
+      "builtMemoryPeakBytes": 838750208,
+      "reloadedMemoryPeakBytes": 820375552,
+      "builtPidsPeak": 190,
+      "reloadedPidsPeak": 192
+    },
+    {
+      "architecture": "arm64",
+      "imageId": "sha256:c290ca6ec3a66540de20fbdda0e29c02626872ad82ae38a3bf04535a2a9bb189",
+      "archiveSha256RecordedOnRunner": "fe8750090dfabe30699f2fdfa853d9e3de5a47ef76421e370928ebe8689578fb",
+      "builtMemoryPeakBytes": 804544512,
+      "reloadedMemoryPeakBytes": 837013504,
+      "builtPidsPeak": 179,
+      "reloadedPidsPeak": 176
+    }
+  ],
+  "limits": [
+    "local verification consumed small JSON reports, not full image archives",
+    "short synthetic probes are not long-duration production load tests",
+    "this is not an original-JAR or authenticated Qidian three-way comparison",
+    "no registry publishing or production deployment occurred in this rehearsal",
+    "later source commits require their own runtime verification"
+  ]
+}

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /** New Vue 3 cookie-management API: real JSON array, persistence and user isolation. */
@@ -86,6 +87,88 @@ public class Vue3PreviewSourceCookieTest {
                         "!listed.data.some(row=>row.sourceUrl===sources.a||row.sourceUrl===sources.b);" +
                         "}", sources);
                 assertEquals(true, cleared);
+
+                // Old versions wrote this unscoped flag. It must not override the
+                // current account's server state, including after cookie revocation.
+                owner.evaluate("url => localStorage.setItem('reader_src_login_'+url,'1')", sourceA);
+                owner.navigate(previewUrl + "/sources");
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("An obsolete local marker is not server authentication", 0,
+                        owner.locator(".source-badge.logged").count());
+
+                owner.locator(".source-row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='登录书源']").click();
+                owner.locator("[aria-label='书源登录'] .manual-box textarea").waitFor();
+                String generatedCredential = "credentialProbe=NotReal-Qidian-12345";
+                owner.locator("[aria-label='书源登录'] .manual-box textarea").fill(generatedCredential);
+                owner.locator("[aria-label='书源登录'] .manual-box .accent-btn").click();
+                owner.waitForFunction("document.querySelector('.login-msg')?.textContent.includes('未验证')");
+                assertEquals("Saving a cookie is not proof of a successful site login",
+                        "Cookie 已保存（未验证）", owner.locator(".login-state-text").innerText());
+                assertFalse("Do not expose even a prefix of the submitted credential",
+                        owner.locator("body").innerText().contains("NotReal-Qidian"));
+                String runnerTemp = System.getenv("RUNNER_TEMP");
+                if (runnerTemp != null && !runnerTemp.isEmpty()) {
+                    owner.screenshot(new Page.ScreenshotOptions()
+                            .setPath(Path.of(runnerTemp).resolve("vue3-source-cookie-stored.png")));
+                }
+                owner.locator("[aria-label='书源登录'] .dlg-close").click();
+                owner.reload();
+                owner.locator(".source-row").first().waitFor();
+                owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
+                assertTrue(owner.locator(".source-badge.logged").first().innerText().contains("Cookie 已保存"));
+
+                assertEquals(true, owner.evaluate("async url => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const result=await (await fetch('/reader3/setBookSourceCookie?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookSource:url,cookie:''})})).json();" +
+                        "return result.isSuccess&&result.data.cleared===true;}", sourceB));
+                owner.waitForResponse(response -> URI.create(response.url()).getPath().endsWith("/reader3/getBookSourceCookie"),
+                        owner::reload);
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Server revocation must win over any surviving local flag", 0,
+                        owner.locator(".source-badge.logged").count());
+                // Restore only generated credentials to make the account-switch
+                // check meaningful: the first account has cookies, the second does not.
+                assertEquals(true, owner.evaluate("async url => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const result=await (await fetch('/reader3/setBookSourceCookie?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookSource:url,cookie:'session=generated-switch-test'})})).json();" +
+                        "return result.isSuccess&&result.data.success===true;}", sourceA));
+                owner.reload();
+                owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
+
+                // Same browser origin, different authenticated account. No old UI
+                // marker may carry authentication over to the second namespace.
+                assertEquals(true, stranger.evaluate("async (sources) => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const post=async(source)=>(await fetch('/reader3/saveBookSource?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify(source)})).json();" +
+                        "return (await post({bookSourceUrl:sources.a,bookSourceName:'Cookie A'})).isSuccess&&" +
+                        "(await post({bookSourceUrl:sources.b,bookSourceName:'Cookie B'})).isSuccess;}", sources));
+                String otherUsername = (String) stranger.evaluate("() => localStorage.getItem('reader_username')");
+                // The legacy backend prefers its session cookie to a query token.
+                // Exercise an actual logout/login, not an artificial token swap
+                // while keeping the previous account's authenticated session.
+                owner.navigate(previewUrl + "/");
+                owner.locator(".bookshelf-page").waitFor();
+                owner.locator(".logout-btn").click();
+                owner.locator(".login-page").waitFor();
+                owner.locator("input[autocomplete=username]").fill(otherUsername);
+                owner.locator("input[autocomplete=current-password]").fill("CookieProbe-2026");
+                owner.locator(".submit-btn").click();
+                owner.locator(".bookshelf-page").waitFor();
+                owner.waitForResponse(response -> URI.create(response.url()).getPath().endsWith("/reader3/getBookSourceCookie"),
+                        () -> owner.navigate(previewUrl + "/sources"));
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Account switching must not inherit a source cookie badge", 0,
+                        owner.locator(".source-badge.logged").count());
+                owner.locator("button[title^='Cookie 管理']").click();
+                owner.waitForFunction("document.querySelector('.cookie-mgr-note')?.textContent.includes('0 个')");
+                assertEquals(0, owner.locator(".cookie-list .cookie-row").count());
             } finally {
                 browser.close();
             }
