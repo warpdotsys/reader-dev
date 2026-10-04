@@ -31,6 +31,15 @@ def invoke(*arguments):
 
 
 class WebviewCookieCliSafetyTest(unittest.TestCase):
+    def test_phase_handoff_cannot_be_used_without_three_way_mode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            result = invoke("--restored-only", "--report", directory / "report.json",
+                            "--phase-handoff-dir", directory / "phases")
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Phase handoff requires", result.stderr)
+            self.assertFalse((directory / "phases").exists())
+
     def test_three_way_requires_every_explicit_mode_before_inputs(self):
         required = ["--original-network-isolated", "--archived-renderer-base",
                     "http://127.0.0.1:8050", "--exercise-script", "--exercise-post"]
@@ -99,6 +108,74 @@ def executed_results(cookie_headers):
         "renderRequestFields": [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 +
                                [{"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}],
     })
+
+
+class HistoricalRendererHandoffTest(unittest.TestCase):
+    """Generated rendezvous only; no real Reader or browser is launched."""
+
+    def setUp(self):
+        self.original = executed_results([""] * 5)
+        self.remote = executed_results([""] * 5)
+
+    def test_handoff_requires_private_namespace_before_creating_markers(self):
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.dict(os.environ, {}, clear=True):
+            directory = Path(temporary) / "phases"
+            with self.assertRaisesRegex(SystemExit, "root-verified private"):
+                PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote)
+            self.assertFalse(directory.exists())
+
+    def test_invalid_actual_remote_pair_never_signals_completion(self):
+        self.remote["searches"][0]["returnData"]["unexpected"] = None
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "require_verified_private_loopback"):
+            directory = Path(temporary) / "phases"
+            with self.assertRaisesRegex(RuntimeError, "full Reader JSON differs"):
+                PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote)
+            self.assertFalse(directory.exists())
+
+    def test_missing_host_acknowledgement_times_out_without_camoufox(self):
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                mock.patch.object(PROBE.socket, "create_connection") as connection:
+            directory = Path(temporary) / "phases"
+            with self.assertRaisesRegex(TimeoutError, "not acknowledged"):
+                PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote, timeout=0)
+            self.assertEqual(b"", (directory / "remote-complete").read_bytes())
+            connection.assert_not_called()
+
+    def test_acknowledgement_rechecks_namespace_and_requires_port_refused(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "phases"
+            with mock.patch.object(PROBE, "require_verified_private_loopback") as guard, \
+                    mock.patch.object(PROBE.time, "sleep", side_effect=lambda _:
+                                      (directory / "camoufox-permitted").touch()), \
+                    mock.patch.object(PROBE.socket, "create_connection",
+                                      side_effect=ConnectionRefusedError) as connection:
+                PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote)
+                self.assertEqual(2, guard.call_count)
+                connection.assert_called_once_with(("127.0.0.1", 8050), timeout=2)
+
+    def test_live_historical_port_cannot_be_misreported_as_stopped(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "phases"
+            with mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.time, "sleep", side_effect=lambda _:
+                                      (directory / "camoufox-permitted").touch()), \
+                    mock.patch.object(PROBE.socket, "create_connection", return_value=mock.MagicMock()):
+                with self.assertRaisesRegex(RuntimeError, "still running"):
+                    PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote)
+
+    def test_nonempty_acknowledgement_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "phases"
+            with mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.time, "sleep", side_effect=lambda _:
+                                      (directory / "camoufox-permitted").write_text("unexpected")), \
+                    mock.patch.object(PROBE.socket, "create_connection") as connection:
+                with self.assertRaisesRegex(RuntimeError, "Invalid historical"):
+                    PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote)
+                connection.assert_not_called()
 
 
 class ThreeWayReportValidationTest(unittest.TestCase):

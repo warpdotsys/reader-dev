@@ -62,6 +62,62 @@ def require_unpressured_budget(report):
         raise RuntimeError("The generated test triggered an aggregate resource limit")
 
 
+def resource_sample(group, phase, started):
+    memory = {key: int(value) for key, value in
+              (line.split() for line in (group / "memory.stat").read_text().splitlines())}
+    events = {key: int(value) for key, value in
+              (line.split() for line in (group / "memory.events").read_text().splitlines())}
+    return {"phase": phase, "elapsedMs": round((time.monotonic() - started) * 1000),
+            "memoryCurrentBytes": int((group / "memory.current").read_text()),
+            "memoryAnonBytes": memory["anon"], "memoryFileBytes": memory["file"],
+            "memoryShmemBytes": memory["shmem"], "memoryEvents": events,
+            "pidsCurrent": int((group / "pids.current").read_text())}
+
+
+def owned_container(cid, token):
+    state = json.loads(command("docker", "inspect", cid).stdout)[0]
+    if state["Config"]["Labels"].get("com.medwarp.reader.generated-test") != token:
+        raise RuntimeError("Refusing to act on a container without this run's ownership label")
+    return state
+
+
+def run_probe_with_handoff(probe, log_path, phases, handoff, sample, timeout=360):
+    """Only permit Camoufox after the actual historical pair completed and stopped."""
+    handed_off = False
+    next_sample = 0
+    with log_path.open("x", encoding="utf-8") as log:
+        process = subprocess.Popen(probe, stdout=log, stderr=subprocess.STDOUT)
+        try:
+            deadline = time.monotonic() + timeout
+            while process.poll() is None:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Three-way probe exceeded its bounded runtime")
+                ready = phases / "remote-complete"
+                if not handed_off and (ready.exists() or ready.is_symlink()):
+                    if ready.is_symlink() or not ready.is_file() or ready.stat().st_size != 0:
+                        raise RuntimeError("Invalid completed historical pair marker")
+                    handoff()
+                    with (phases / "camoufox-permitted").open("xb"):
+                        pass
+                    handed_off = True
+                now = time.monotonic()
+                if now >= next_sample:
+                    sample("camoufox" if handed_off else "historical-pair")
+                    next_sample = now + 1
+                time.sleep(0.1)
+            if process.returncode == 0 and not handed_off:
+                raise RuntimeError("Probe claimed success without the renderer handoff")
+            return process.returncode
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=5)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--original", type=Path, required=True)
@@ -101,7 +157,9 @@ def main():
                   "archivedRenderer": ARCHIVED, "realAuthenticatedSourceTested": False,
                   "originalProductionRendererVersionProven": False, "slice": parent,
                   "containerCgroups": [], "probeCompleted": False,
-                  "budgetAccepted": False, "overallAccepted": False}
+                  "budgetAccepted": False, "overallAccepted": False,
+                  "executionLayout": "serial-renderers-shared-fixture",
+                  "historicalRendererStoppedBeforeCamoufox": False, "resourceSamples": []}
     try:
         command("systemd-run", "--unit=" + anchor, "--slice=" + parent,
                 "--property=Type=oneshot", "--property=RemainAfterExit=yes", "/bin/true")
@@ -165,13 +223,37 @@ def main():
                  "--restored", "/inputs/restored.jar", "--report", "/results/three-way.json",
                  "--original-network-isolated", "--exercise-script", "--exercise-post",
                  "--archived-renderer-base", "http://127.0.0.1:8050",
-                 "--camoufox-python", "/usr/bin/python3"]
-        with (output / "probe.log").open("x", encoding="utf-8") as log:
-            result = subprocess.run(probe, stdout=log, stderr=subprocess.STDOUT, timeout=360, check=False)
-        provenance["probeExitCode"] = result.returncode
-        provenance["probeCompleted"] = result.returncode == 0
+                 "--camoufox-python", "/usr/bin/python3", "--phase-handoff-dir", "/results/phases"]
+        started = time.monotonic()
+
+        def sample(phase):
+            provenance["resourceSamples"].append(resource_sample(group, phase, started))
+
+        def handoff():
+            sample("historical-pair-complete")
+            # Never reset cumulative memory.peak/events or increase the shared budget.
+            require_unpressured_budget(budget_snapshot(group))
+            owned_container(legacy, token)
+            command("docker", "stop", "--time=10", legacy, timeout=30)
+            state = owned_container(legacy, token)
+            if state["State"]["Running"]:
+                raise RuntimeError("Owned historical renderer did not stop before Camoufox")
+            # The runtime holds the same netns after the historical renderer exits.
+            guarded = command("nsenter", "--target", runtime_pid, "--net", "--", "python3", "-c",
+                              verify, guard_path).stdout.strip()
+            if guarded != inode:
+                raise RuntimeError("Private network changed during the renderer handoff")
+            provenance["historicalRendererStoppedBeforeCamoufox"] = True
+            sample("historical-renderer-stopped")
+
+        sample("probe-start")
+        exit_code = run_probe_with_handoff(probe, output / "probe.log", results / "phases",
+                                          handoff, sample)
+        sample("probe-finished")
+        provenance["probeExitCode"] = exit_code
+        provenance["probeCompleted"] = exit_code == 0
         provenance["aggregateBudget"] = budget_snapshot(group)
-        if result.returncode != 0:
+        if exit_code != 0:
             raise RuntimeError("Three-way probe failed; preserved generated report and diagnostics")
         events = provenance["aggregateBudget"]
         require_unpressured_budget(events)
@@ -186,9 +268,7 @@ def main():
                 provenance["aggregateBudgetUnavailable"] = True
         stopped = []
         for cid in reversed(containers):
-            state = json.loads(command("docker", "inspect", cid).stdout)[0]
-            if state["Config"]["Labels"].get("com.medwarp.reader.generated-test") != token:
-                raise RuntimeError("Refusing to clean up a container without this run's ownership label")
+            owned_container(cid, token)
             command("docker", "rm", "--force", cid)
             stopped.append(cid)
         provenance["removedOwnedTestContainers"] = stopped

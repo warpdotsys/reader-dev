@@ -333,34 +333,69 @@ def write_report(path, report):
         output.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
-def validate_three_way(original, remote, camoufox):
-    """Compare actual target requests and full generated Reader JSON results."""
+def validate_generated_searches(result):
+    """Reject missing or normalized-away actual generated Reader responses."""
     expected_fields = [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 + [
         {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}]
-    for result in (original, remote, camoufox):
-        if not isinstance(result, dict) or not isinstance(result.get("searches"), list) or \
-                len(result["searches"]) != 5:
-            raise RuntimeError("Missing executed three-way search results")
-        for search in result["searches"]:
-            if not isinstance(search, dict) or type(search.get("status")) is not int or \
-                    search["status"] != 200 or search.get("isSuccess") is not True or \
-                    search.get("errorMsg") != "" or search.get("count") != 1 or \
-                    type(search.get("count")) is not int or \
-                    not isinstance(search.get("data"), list) or len(search["data"]) != 1:
-                raise RuntimeError("Missing actual Reader JSON in three-way report")
-            raw = search.get("returnData")
-            if not isinstance(raw, dict) or raw.get("isSuccess") is not True or \
-                    raw.get("errorMsg") != "" or not same_json(raw.get("data"), search["data"]):
-                raise RuntimeError("Missing exact ReturnData response in three-way report")
-        if result.get("renderRequestFields") != expected_fields:
-            raise RuntimeError("Three-way target GET/POST request fields differ")
-    if not same_json(original["searches"], remote["searches"]) or \
-            not same_json(original["searches"], camoufox["searches"]):
+    if not isinstance(result, dict) or not isinstance(result.get("searches"), list) or \
+            len(result["searches"]) != 5:
+        raise RuntimeError("Missing executed three-way search results")
+    for search in result["searches"]:
+        if not isinstance(search, dict) or type(search.get("status")) is not int or \
+                search["status"] != 200 or search.get("isSuccess") is not True or \
+                search.get("errorMsg") != "" or search.get("count") != 1 or \
+                type(search.get("count")) is not int or \
+                not isinstance(search.get("data"), list) or len(search["data"]) != 1:
+            raise RuntimeError("Missing actual Reader JSON in three-way report")
+        raw = search.get("returnData")
+        if not isinstance(raw, dict) or raw.get("isSuccess") is not True or \
+                raw.get("errorMsg") != "" or not same_json(raw.get("data"), search["data"]):
+            raise RuntimeError("Missing exact ReturnData response in three-way report")
+    if result.get("renderRequestFields") != expected_fields:
+        raise RuntimeError("Three-way target GET/POST request fields differ")
+
+
+def validate_remote_pair(original, remote):
+    for result in (original, remote):
+        validate_generated_searches(result)
+    if not same_json(original["searches"], remote["searches"]):
         raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
     if original.get("renderCookieHeaders") != [""] * 5 or remote.get("renderCookieHeaders") != [""] * 5:
         raise RuntimeError("Unreviewed historical renderer target Cookie behavior")
+
+
+def validate_three_way(original, remote, camoufox):
+    """Compare actual target requests and full generated Reader JSON results."""
+    validate_remote_pair(original, remote)
+    validate_generated_searches(camoufox)
+    if not same_json(original["searches"], camoufox["searches"]):
+        raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
     if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", ""]:
         raise RuntimeError("Camoufox target Cookie replay/deletion differs")
+
+
+def wait_for_camoufox_handoff(directory, original, remote, timeout=60):
+    """Keep this fixture alive while the host stops its owned historical renderer."""
+    require_verified_private_loopback()
+    validate_remote_pair(original, remote)
+    directory.mkdir()
+    with (directory / "remote-complete").open("xb"):
+        pass
+    permit = directory / "camoufox-permitted"
+    deadline = time.monotonic() + timeout
+    while not permit.exists() and not permit.is_symlink():
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Historical renderer handoff was not acknowledged")
+        time.sleep(0.1)
+    if permit.is_symlink() or not permit.is_file() or permit.stat().st_size != 0:
+        raise RuntimeError("Invalid historical renderer handoff acknowledgement")
+    require_verified_private_loopback()
+    try:
+        with socket.create_connection(("127.0.0.1", 8050), timeout=2):
+            pass
+    except ConnectionRefusedError:
+        return
+    raise RuntimeError("Historical renderer is still running before Camoufox")
 
 
 def main():
@@ -385,12 +420,19 @@ def main():
                         help="Use the actual archived renderer on private loopback, not a synthetic /render.html")
     parser.add_argument("--camoufox-python", type=Path,
                         help="Additionally run the same restored JAR with real Camoufox in the same private netns")
+    parser.add_argument("--phase-handoff-dir", type=Path,
+                        help="New directory next to the report for host-coordinated renderer shutdown")
     args = parser.parse_args()
     if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
     if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
                                     and args.exercise_script and args.exercise_post):
         parser.error("Three-way Camoufox mode requires isolated original-JAR mode, actual archived renderer, script and POST probes")
+    if args.phase_handoff_dir and (not args.camoufox_python or
+            not args.phase_handoff_dir.is_absolute() or args.phase_handoff_dir.exists() or
+            args.phase_handoff_dir.is_symlink() or
+            args.phase_handoff_dir.parent.resolve() != args.report.parent.resolve()):
+        parser.error("Phase handoff requires three-way mode and a new absolute directory next to the report")
     if args.original_network_isolated:
         from original_jar_safety import require_original_jar_isolation
 
@@ -439,6 +481,8 @@ def main():
                                args.archived_renderer_base,
                                include_data=bool(args.camoufox_python))
             if args.camoufox_python:
+                if args.phase_handoff_dir:
+                    wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored)
                 fixture.reset()
                 camoufox = run_jar(args.java, args.restored, root / "camoufox",
                                    free_port(), fixture_base, fixture, True, True,
@@ -482,6 +526,7 @@ def main():
                        "camoufoxJarSha256": report["restoredJarSha256"],
                        "expectedCamoufoxCookieSequence": ["", "session=alpha==", "", "", ""],
                        "fullGeneratedReaderJsonRecorded": True,
+                       "historicalRendererStoppedBeforeCamoufox": bool(args.phase_handoff_dir),
                        "originalProductionRendererVersionProven": False,
                        "realAuthenticatedSourceTested": False})
     write_report(args.report, report)
