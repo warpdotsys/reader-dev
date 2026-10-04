@@ -5,6 +5,8 @@ import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.IDN
 import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.Locale
 
 /** Application-layer guard for browser navigations and HTTP(S) subresources. */
@@ -16,7 +18,7 @@ internal open class BrowserNetworkPolicy(
         val uri = parse(value)
         val scheme = uri.scheme?.lowercase(Locale.ROOT)
         if (scheme != "http" && scheme != "https") {
-            throw BrowserNetworkPolicyViolation("本地 WebView 仅允许 HTTP/HTTPS 页面")
+            throw BrowserNetworkPolicyViolation("本地 WebView 仅允许 HTTP/HTTPS 页面", BrowserNetworkBlockReason.UNSUPPORTED_SCHEME)
         }
         resolveRequestTarget(value)
     }
@@ -32,19 +34,19 @@ internal open class BrowserNetworkPolicy(
             "http", "https", "ws", "wss" -> return requireNetworkTarget(uri)
             // These schemes do not open a network connection. Do not allow file:, ftp:, or custom schemes.
             "about", "blob", "data" -> return null
-            else -> throw BrowserNetworkPolicyViolation("本地 WebView 已阻止不支持的资源协议")
+            else -> throw BrowserNetworkPolicyViolation("本地 WebView 已阻止不支持的资源协议", BrowserNetworkBlockReason.UNSUPPORTED_SCHEME)
         }
     }
 
     private fun requireNetworkTarget(uri: URI): BrowserNetworkTarget {
         if (uri.rawUserInfo != null) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 不接受包含账号信息的 URL")
+            throw BrowserNetworkPolicyViolation("本地 WebView 不接受包含账号信息的 URL", BrowserNetworkBlockReason.URL_CREDENTIALS)
         }
         if (uri.port == 0 || uri.port > 65535) {
-            throw BrowserNetworkPolicyViolation("本地 WebView URL 端口无效")
+            throw BrowserNetworkPolicyViolation("本地 WebView URL 端口无效", BrowserNetworkBlockReason.INVALID_PORT)
         }
         val authority = uri.rawAuthority
-            ?: throw BrowserNetworkPolicyViolation("本地 WebView URL 缺少有效主机名")
+            ?: throw BrowserNetworkPolicyViolation("本地 WebView URL 缺少有效主机名", BrowserNetworkBlockReason.INVALID_HOST)
         val rawHost = uri.host?.removePrefix("[")?.removeSuffix("]") ?: run {
             val withoutUserInfo = authority.substringAfterLast('@')
             if (withoutUserInfo.startsWith("[")) {
@@ -60,26 +62,39 @@ internal open class BrowserNetworkPolicy(
             if (rawHost.contains(':')) rawHost.trimEnd('.').lowercase(Locale.ROOT)
             else IDN.toASCII(rawHost.trimEnd('.'), IDN.USE_STD3_ASCII_RULES).lowercase(Locale.ROOT)
         } catch (_: IllegalArgumentException) {
-            throw BrowserNetworkPolicyViolation("本地 WebView URL 主机名无效")
+            throw BrowserNetworkPolicyViolation("本地 WebView URL 主机名无效", BrowserNetworkBlockReason.INVALID_HOST)
         }
         val host = normalizedHost.takeIf { it.isNotBlank() }
-            ?: throw BrowserNetworkPolicyViolation("本地 WebView URL 缺少有效主机名")
+            ?: throw BrowserNetworkPolicyViolation("本地 WebView URL 缺少有效主机名", BrowserNetworkBlockReason.INVALID_HOST)
         if (host.contains('%')) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 不接受带区域标识的 IP 地址")
+            throw BrowserNetworkPolicyViolation.forHost("本地 WebView 不接受带区域标识的 IP 地址", BrowserNetworkBlockReason.SCOPED_IP, host)
         }
         if (!allowPrivateNetworks && (host == "localhost" || host.endsWith(".localhost") ||
             host == "local" || host.endsWith(".local") ||
             host.endsWith(".internal") || host.endsWith(".home.arpa"))) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 已阻止本机或内网主机名")
+            throw BrowserNetworkPolicyViolation.forHost("本地 WebView 已阻止本机或内网主机名", BrowserNetworkBlockReason.LOCAL_HOST, host)
         }
 
         val addresses = try {
             resolve(host)
         } catch (_: Exception) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 无法验证目标主机地址")
+            throw BrowserNetworkPolicyViolation.forHost("本地 WebView 无法验证目标主机地址", BrowserNetworkBlockReason.DNS_FAILURE, host)
         }
-        if (addresses.isEmpty() || (!allowPrivateNetworks && addresses.any { !isPublicInternetAddress(it) })) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 已阻止本机、内网或保留地址")
+        if (addresses.isEmpty()) {
+            throw BrowserNetworkPolicyViolation.forHost("本地 WebView 无法验证空 DNS 结果", BrowserNetworkBlockReason.EMPTY_DNS, host)
+        }
+        if (!allowPrivateNetworks) {
+            val denied = addresses.filter { !isPublicInternetAddress(it) }
+            if (denied.isNotEmpty()) {
+                // 198.18.0.0/15 can be a proxy's Fake-IP answer, but is still a
+                // reserved benchmark range. Report it; never turn it into an allow rule.
+                val reason = if (denied.all { address ->
+                    val bytes = address.address
+                    address is Inet4Address && (bytes[0].toInt() and 0xff) == 198 &&
+                        (bytes[1].toInt() and 0xff) in 18..19
+                }) BrowserNetworkBlockReason.BENCHMARK_RANGE else BrowserNetworkBlockReason.NON_PUBLIC_ADDRESS
+                throw BrowserNetworkPolicyViolation.forHost("本地 WebView 已阻止本机、内网或保留地址", reason, host)
+            }
         }
         val port = uri.port.takeIf { it > 0 } ?: when (uri.scheme.lowercase(Locale.ROOT)) {
             "https", "wss" -> 443
@@ -91,7 +106,7 @@ internal open class BrowserNetworkPolicy(
     private fun parse(value: String): URI = try {
         URI(value)
     } catch (_: Exception) {
-        throw BrowserNetworkPolicyViolation("本地 WebView 收到无效 URL")
+        throw BrowserNetworkPolicyViolation("本地 WebView 收到无效 URL", BrowserNetworkBlockReason.MALFORMED_URL)
     }
 
     private fun isPublicInternetAddress(address: InetAddress): Boolean {
@@ -142,4 +157,26 @@ internal data class BrowserNetworkTarget(
     val addresses: List<InetAddress>
 )
 
-internal class BrowserNetworkPolicyViolation(message: String) : IllegalArgumentException(message)
+internal enum class BrowserNetworkBlockReason {
+    UNKNOWN, MALFORMED_URL, UNSUPPORTED_SCHEME, URL_CREDENTIALS, INVALID_PORT, INVALID_HOST,
+    SCOPED_IP, LOCAL_HOST, DNS_FAILURE, EMPTY_DNS, BENCHMARK_RANGE, NON_PUBLIC_ADDRESS
+}
+
+/** Diagnostic fields deliberately contain neither a URL nor even its raw hostname. */
+internal class BrowserNetworkPolicyViolation(
+    message: String,
+    val reason: BrowserNetworkBlockReason = BrowserNetworkBlockReason.UNKNOWN,
+    val hostFingerprint: String? = null
+) : IllegalArgumentException(message + if (reason == BrowserNetworkBlockReason.UNKNOWN) "" else
+    " [reason=${reason.name}${hostFingerprint?.let { "; hostSha256=$it" }.orEmpty()}]") {
+    fun withRenderContext(message: String) = BrowserNetworkPolicyViolation(message, reason, hostFingerprint)
+
+    companion object {
+        fun forHost(message: String, reason: BrowserNetworkBlockReason, normalizedHost: String): BrowserNetworkPolicyViolation {
+            val fingerprint = MessageDigest.getInstance("SHA-256")
+                .digest(normalizedHost.toByteArray(StandardCharsets.UTF_8)).take(8)
+                .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+            return BrowserNetworkPolicyViolation(message, reason, fingerprint)
+        }
+    }
+}

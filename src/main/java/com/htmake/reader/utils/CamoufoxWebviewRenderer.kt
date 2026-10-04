@@ -19,8 +19,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Camoufox is managed as a short-lived Python child process inside the Reader container.
@@ -70,11 +70,11 @@ class CamoufoxWebviewRenderer(
         if (timeoutMs <= 0) throw IllegalArgumentException("browserTimeoutMs must be positive")
 
         val upstreamProxy = request.proxy?.takeIf { it.isNotBlank() }?.let(BrowserUpstreamProxy::parse)
-        val blockedNetworkRequest = AtomicBoolean(false)
+        val blockedNetworkRequest = AtomicReference<BrowserNetworkPolicyViolation?>(null)
         val egressProxy = BrowserEgressProxy(
             networkPolicy,
             timeoutMs,
-            { blockedNetworkRequest.set(true) },
+            { blockedNetworkRequest.compareAndSet(null, it) },
             upstreamProxy
         )
         try {
@@ -115,8 +115,8 @@ class CamoufoxWebviewRenderer(
                 "browserVersion" to browserVersion
             )
             val response = invokeWorker(gson.toJson(payload))
-            if (blockedNetworkRequest.get()) {
-                throw BrowserNetworkPolicyViolation("Camoufox 渲染触及了本机或非公网网络资源，已中止")
+            blockedNetworkRequest.get()?.let {
+                throw it.withRenderContext("Camoufox 渲染触及了本机或非公网网络资源，已中止")
             }
 
             // Do not flatten browser cookies into CookieStore's legacy domain key.
@@ -124,6 +124,13 @@ class CamoufoxWebviewRenderer(
             // disclose a scoped cookie and recreate one that a response deleted.
             BrowserCookieJar.merge(cookieStore, url, response.cookies.orEmpty().map(WorkerCookie::toStoredCookie))
             return StrResponse(url, response.body ?: "")
+        } catch (failure: Exception) {
+            // A denied subresource commonly makes the worker report a navigation
+            // error first. Keep the parent's sanitized denial, not that secondary symptom.
+            blockedNetworkRequest.get()?.let {
+                throw it.withRenderContext("Camoufox 渲染触及了本机或非公网网络资源，已中止")
+            }
+            throw failure
         } finally {
             egressProxy.close()
         }

@@ -19,6 +19,7 @@ import java.nio.file.Paths
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Opt-in browser capability baseline. No production default or fingerprint claim.
@@ -77,10 +78,10 @@ class LocalWebviewRenderer private constructor(
         val upstreamProxy = request.proxy?.takeIf { it.isNotBlank() }?.let(BrowserUpstreamProxy::parse)
 
         val activeBrowser = getBrowser()
-        val blockedNetworkRequest = AtomicBoolean(false)
+        val blockedNetworkRequest = AtomicReference<BrowserNetworkPolicyViolation?>(null)
         val matchedSourceUrl = java.util.concurrent.atomic.AtomicReference<String?>(null)
         val egressProxy = BrowserEgressProxy(networkPolicy, timeoutMs,
-            { blockedNetworkRequest.set(true) }, upstreamProxy)
+            { blockedNetworkRequest.compareAndSet(null, it) }, upstreamProxy)
         try {
             val proxyEndpoint = egressProxy.start()
             val contextOptions = Browser.NewContextOptions()
@@ -114,8 +115,8 @@ class LocalWebviewRenderer private constructor(
                 context.route("**/*") { route ->
                     try {
                         networkPolicy.requireRequestUrl(route.request().url())
-                    } catch (_: BrowserNetworkPolicyViolation) {
-                        blockedNetworkRequest.set(true)
+                    } catch (failure: BrowserNetworkPolicyViolation) {
+                        blockedNetworkRequest.compareAndSet(null, failure)
                         route.abort()
                         return@route
                     }
@@ -169,9 +170,7 @@ class LocalWebviewRenderer private constructor(
                     failIfNetworkRequestBlocked(blockedNetworkRequest)
                     result
                 } catch (e: RuntimeException) {
-                    if (blockedNetworkRequest.get()) {
-                        throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
-                    }
+                    failIfNetworkRequestBlocked(blockedNetworkRequest)
                     matchedSourceUrl.get()?.let { return@renderOnWorker StrResponse(url, it) }
                     throw e
                 }
@@ -190,9 +189,9 @@ class LocalWebviewRenderer private constructor(
         }
     }
 
-    private fun failIfNetworkRequestBlocked(blocked: AtomicBoolean) {
-        if (blocked.get()) {
-            throw BrowserNetworkPolicyViolation("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
+    private fun failIfNetworkRequestBlocked(blocked: AtomicReference<BrowserNetworkPolicyViolation?>) {
+        blocked.get()?.let {
+            throw it.withRenderContext("本地 WebView 渲染触及了本机或非公网网络资源，已中止")
         }
     }
 

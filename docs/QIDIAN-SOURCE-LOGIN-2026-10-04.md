@@ -73,3 +73,5 @@
 另从源码确认，旧 `LocalWebviewRenderer` 基线只读取扁平 legacy Cookie，并不等同当前 Camoufox 的结构化 Netscape 回放。此处没有在源站观测到真实会话字段或认证状态，因此即使保存成功，也不能以这一 Chrome 诊断宣称真实 Cookie 已成功传输。最终内置 Camoufox、动态资源解析与真实 Reader 认证须后续独立验证；不能改成依赖宿主 Chrome 的正式方案。
 
 脱敏截图仅在本机 `build/qidian-reader-isolated-20261004-a/`，不含真实账号栏、Cookie 值或正文；[首轮证据](evidence/qidian-reader-isolated-2026-10-04.json)只记录状态与散列。真实 Reader 搜索和免费正文尚未通过，认证三方依然未完成；原 JAR、旧远程服务与服务器均未接收本轮凭据。
+
+后续没有再次导入真实会话。新增[脱敏诊断与匿名复测](BROWSER-NETWORK-DIAGNOSTICS-2026-10-04.md#已实跑的匿名公开页诊断)：只用生成账号和原样官方书源，搜索实际失败，保留 `DNS_FAILURE`/主机指纹；它不匹配此前九个公开主机，具体动态资源尚未确认。专用 DNS 快照有覆盖/时效限制，不能把这一匿名结果套回认证两轮或称为起点公网 DNS 故障。端口和自有进程树已关闭、Cookie 列表 0；Reader 真实认证/正文问题仍未修好。
