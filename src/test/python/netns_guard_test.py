@@ -12,7 +12,8 @@ SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "run-webview-cookie-i
 
 class NetnsGuardTest(unittest.TestCase):
     def test_regular_host_cannot_acknowledge_isolation(self):
-        for extra in ([], ["--archived-renderer"]):
+        for extra in ([], ["--archived-renderer"],
+                      ["--archived-renderer", "--camoufox-python", sys.executable]):
             with self.subTest(extra=extra):
                 self.check_host_refused(extra)
 

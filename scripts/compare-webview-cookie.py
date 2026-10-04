@@ -162,29 +162,59 @@ def request(opener, base, path, body=None):
         return response.status, json.loads(response.read().decode("utf-8"))
 
 
-def require_success(opener, base, path, body=None):
+def require_success(opener, base, path, body=None, include_return_data=False):
     status, value = request(opener, base, path, body)
     if status != 200 or value.get("isSuccess") is not True:
         raise RuntimeError(f"{path}: HTTP {status}, {value.get('errorMsg')}")
     return {"status": status, "isSuccess": True,
-            "errorMsg": value.get("errorMsg", ""), "data": value.get("data")}
+            "errorMsg": value.get("errorMsg", ""), "data": value.get("data"),
+            **({"returnData": value} if include_return_data else {})}
+
+
+def require_verified_private_loopback():
+    """Recheck the root guard's namespace after dropping privileges."""
+    try:
+        verified = (os.name == "posix" and
+                    str(os.stat("/proc/self/ns/net").st_ino) ==
+                    os.environ.get("READER_PRIVATE_NETNS_INODE") and
+                    [name for _, name in socket.if_nameindex()] == ["lo"])
+    except OSError:
+        verified = False
+    if not verified:
+        raise SystemExit("Archived/Camoufox probe requires a root-verified private loopback-only namespace")
 
 
 def run_jar(java, jar, workdir, port, fixture_base, fixture,
-            exercise_script=False, exercise_post=False, renderer_base=None):
+            exercise_script=False, exercise_post=False, renderer_base=None,
+            camoufox_python=None, include_data=False):
+    if renderer_base is not None or camoufox_python is not None:
+        require_verified_private_loopback()
     base = f"http://127.0.0.1:{port}"
     workdir.mkdir(parents=True, exist_ok=True)
     launch = [str(java), "-Xms128m", "-Xmx768m", "-jar", str(jar),
               f"--reader.app.workDir={workdir}", f"--reader.server.port={port}",
               "--reader.server.bindAddress=127.0.0.1",
+              "--reader.app.webviewRenderer=" + ("camoufox" if camoufox_python else "remote"),
               f"--reader.app.remote-webview-api={renderer_base or fixture_base}",
               "--reader.app.secure=true", "--reader.app.licenseCheckEnabled=false",
               "--spring.profiles.active=prod"]
+    environment = os.environ.copy()
+    environment.pop("READER_BROWSER_ALLOW_PRIVATE_NETWORKS", None)
+    if camoufox_python is not None:
+        launch.append(f"--reader.app.camoufoxPythonExecutable={camoufox_python}")
+        # Only enabled inside the independently verified loopback-only netns.
+        # The generated target must be reachable; no external interface exists.
+        environment["READER_BROWSER_ALLOW_PRIVATE_NETWORKS"] = "true"
     flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
     log_path = workdir / "reader.log"
     log_output = log_path.open("wb")
-    process = subprocess.Popen(launch, cwd=workdir, stdout=log_output,
-                               stderr=subprocess.STDOUT, creationflags=flags)
+    try:
+        process = subprocess.Popen(launch, cwd=workdir, stdout=log_output,
+                                   stderr=subprocess.STDOUT, creationflags=flags,
+                                   env=environment)
+    except BaseException:
+        log_output.close()
+        raise
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     try:
@@ -226,14 +256,15 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         for key in ("first", "second", "third"):
             result = require_success(opener, base, "/reader3/searchBook",
                                      {"key": key, "page": 1,
-                                      "bookSourceUrl": fixture_base})
+                                      "bookSourceUrl": fixture_base}, include_return_data=include_data)
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 names = [book.get("name") for book in books] if isinstance(books, list) else None
                 raise RuntimeError(f"Unexpected search result for {key}: "
                                    f"names={names}, renderCalls={len(fixture.snapshot())}")
             probes.append({"status": result["status"], "isSuccess": True,
-                           "errorMsg": result["errorMsg"], "count": len(books)})
+                           "errorMsg": result["errorMsg"], "count": len(books),
+                           **({"data": books, "returnData": result["returnData"]} if include_data else {})})
         if exercise_script:
             scripted_source = dict(source)
             script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if renderer_base
@@ -243,12 +274,14 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             )
             require_success(opener, base, "/reader3/saveBookSource", scripted_source)
             result = require_success(opener, base, "/reader3/searchBook", {
-                "key": "script", "page": 1, "bookSourceUrl": fixture_base})
+                "key": "script", "page": 1, "bookSourceUrl": fixture_base},
+                include_return_data=include_data)
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 raise RuntimeError("Script-bearing synthetic source did not parse one book")
             probes.append({"status": result["status"], "isSuccess": True,
-                           "errorMsg": result["errorMsg"], "count": len(books)})
+                           "errorMsg": result["errorMsg"], "count": len(books),
+                           **({"data": books, "returnData": result["returnData"]} if include_data else {})})
         if exercise_post:
             post_source = dict(source)
             script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if renderer_base
@@ -260,12 +293,14 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             )
             require_success(opener, base, "/reader3/saveBookSource", post_source)
             result = require_success(opener, base, "/reader3/searchBook", {
-                "key": "post", "page": 1, "bookSourceUrl": fixture_base})
+                "key": "post", "page": 1, "bookSourceUrl": fixture_base},
+                include_return_data=include_data)
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 raise RuntimeError("POST-bearing synthetic source did not parse one book")
             probes.append({"status": result["status"], "isSuccess": True,
-                           "errorMsg": result["errorMsg"], "count": len(books)})
+                           "errorMsg": result["errorMsg"], "count": len(books),
+                           **({"data": books, "returnData": result["returnData"]} if include_data else {})})
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
                 "renderScriptSources": fixture.script_snapshot(),
                 "renderRequestFields": fixture.request_snapshot()}
@@ -282,6 +317,50 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             process.kill()
             process.wait(timeout=5)
         log_output.close()
+
+
+def same_json(left, right):
+    # Python considers False == 0 and True == 1. JSON types must not collapse.
+    def encoded(value):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True,
+                          separators=(",", ":"), allow_nan=False)
+    return encoded(left) == encoded(right)
+
+
+def write_report(path, report):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as output:
+        output.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+
+
+def validate_three_way(original, remote, camoufox):
+    """Compare actual target requests and full generated Reader JSON results."""
+    expected_fields = [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 + [
+        {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}]
+    for result in (original, remote, camoufox):
+        if not isinstance(result, dict) or not isinstance(result.get("searches"), list) or \
+                len(result["searches"]) != 5:
+            raise RuntimeError("Missing executed three-way search results")
+        for search in result["searches"]:
+            if not isinstance(search, dict) or type(search.get("status")) is not int or \
+                    search["status"] != 200 or search.get("isSuccess") is not True or \
+                    search.get("errorMsg") != "" or search.get("count") != 1 or \
+                    type(search.get("count")) is not int or \
+                    not isinstance(search.get("data"), list) or len(search["data"]) != 1:
+                raise RuntimeError("Missing actual Reader JSON in three-way report")
+            raw = search.get("returnData")
+            if not isinstance(raw, dict) or raw.get("isSuccess") is not True or \
+                    raw.get("errorMsg") != "" or not same_json(raw.get("data"), search["data"]):
+                raise RuntimeError("Missing exact ReturnData response in three-way report")
+        if result.get("renderRequestFields") != expected_fields:
+            raise RuntimeError("Three-way target GET/POST request fields differ")
+    if not same_json(original["searches"], remote["searches"]) or \
+            not same_json(original["searches"], camoufox["searches"]):
+        raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
+    if original.get("renderCookieHeaders") != [""] * 5 or remote.get("renderCookieHeaders") != [""] * 5:
+        raise RuntimeError("Unreviewed historical renderer target Cookie behavior")
+    if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", ""]:
+        raise RuntimeError("Camoufox target Cookie replay/deletion differs")
 
 
 def main():
@@ -304,9 +383,14 @@ def main():
                         help="Also verify a synthetic WebView POST method, body, and header")
     parser.add_argument("--archived-renderer-base",
                         help="Use the actual archived renderer on private loopback, not a synthetic /render.html")
+    parser.add_argument("--camoufox-python", type=Path,
+                        help="Additionally run the same restored JAR with real Camoufox in the same private netns")
     args = parser.parse_args()
-    if args.report.exists():
+    if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
+                                    and args.exercise_script and args.exercise_post):
+        parser.error("Three-way Camoufox mode requires isolated original-JAR mode, actual archived renderer, script and POST probes")
     if args.original_network_isolated:
         from original_jar_safety import require_original_jar_isolation
 
@@ -314,14 +398,22 @@ def main():
     if args.archived_renderer_base:
         if not args.original_network_isolated or args.archived_renderer_base != "http://127.0.0.1:8050":
             parser.error("Archived renderer requires isolated original-JAR mode and private 127.0.0.1:8050")
-        if (os.name != "posix" or
-                str(os.stat("/proc/self/ns/net").st_ino) !=
-                os.environ.get("READER_PRIVATE_NETNS_INODE") or
-                [name for _, name in socket.if_nameindex()] != ["lo"]):
-            parser.error("Archived renderer probe requires a root-verified private loopback-only namespace")
+        require_verified_private_loopback()
     for path in (args.java, args.original, args.restored):
         if not path.is_file():
             parser.error(f"Required file not found: {path}")
+    if args.camoufox_python:
+        if not args.camoufox_python.is_absolute() or not args.camoufox_python.is_file() or \
+                not os.access(args.camoufox_python, os.X_OK):
+            parser.error("Camoufox Python must be an existing absolute executable path")
+        try:
+            preflight = subprocess.run([str(args.camoufox_python), "-c",
+                                        "import camoufox.sync_api; import playwright.sync_api"],
+                                       capture_output=True, timeout=15, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            parser.error("Camoufox Python preflight failed; refusing to start any JAR")
+        if preflight.returncode != 0:
+            parser.error("Camoufox/Playwright imports unavailable; refusing to start any JAR")
     fixture_port = free_port()
     fixture = Fixture(("127.0.0.1", fixture_port),
                       archived_renderer=bool(args.archived_renderer_base))
@@ -332,17 +424,26 @@ def main():
         with tempfile.TemporaryDirectory(prefix="reader-webview-diff-") as directory:
             root = Path(directory)
             original = None
+            camoufox = None
             if args.original_network_isolated:
                 fixture.reset()
                 original = run_jar(args.java, args.original, root / "original",
                                    free_port(), fixture_base, fixture,
                                    args.exercise_script, args.exercise_post,
-                                   args.archived_renderer_base)
+                                   args.archived_renderer_base,
+                                   include_data=bool(args.camoufox_python))
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture,
                                args.exercise_script, args.exercise_post,
-                               args.archived_renderer_base)
+                               args.archived_renderer_base,
+                               include_data=bool(args.camoufox_python))
+            if args.camoufox_python:
+                fixture.reset()
+                camoufox = run_jar(args.java, args.restored, root / "camoufox",
+                                   free_port(), fixture_base, fixture, True, True,
+                                   args.archived_renderer_base, args.camoufox_python,
+                                   include_data=True)
     finally:
         fixture.shutdown()
         fixture.server_close()
@@ -375,9 +476,15 @@ def main():
     }
     if args.exercise_post:
         report["expectedPostRequestFields"] = expected_post
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
-                           encoding="utf-8")
+    if args.camoufox_python:
+        report.update({"comparisonMode": "same-run-original-remote-camoufox",
+                       "camoufox": camoufox,
+                       "camoufoxJarSha256": report["restoredJarSha256"],
+                       "expectedCamoufoxCookieSequence": ["", "session=alpha==", "", "", ""],
+                       "fullGeneratedReaderJsonRecorded": True,
+                       "originalProductionRendererVersionProven": False,
+                       "realAuthenticatedSourceTested": False})
+    write_report(args.report, report)
     endpoint = "target" if args.archived_renderer_base else "render"
     if original is not None:
         print(f"Original {endpoint} Cookie sequence: {original['renderCookieHeaders']}")
@@ -393,6 +500,8 @@ def main():
             print(f"Original POST request fields: {original['renderRequestFields'][-1]}")
         print(f"Restored POST request fields: {restored['renderRequestFields'][-1]}")
     print(f"Report: {args.report}")
+    if args.camoufox_python:
+        validate_three_way(original, restored, camoufox)
     expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *
                        (3 + int(args.exercise_script)) +
                        ([expected_post] if args.exercise_post else []))

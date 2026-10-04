@@ -54,7 +54,11 @@ def main():
                         help="Include the synthetic POST request-shape comparison")
     parser.add_argument("--archived-renderer", action="store_true",
                         help="Use the archived WebKit service at private-loopback port 8050")
+    parser.add_argument("--camoufox-python", type=Path,
+                        help="Add a real Camoufox side using the same restored JAR and fixture")
     args = parser.parse_args()
+    if args.camoufox_python and not (args.archived_renderer and args.exercise_post):
+        parser.error("Three-way mode requires --archived-renderer and --exercise-post")
 
     # Isolation is checked before reading any JAR or granting the comparison
     # script's acknowledgment. A bare environment variable cannot bypass it.
@@ -65,7 +69,7 @@ def main():
     if sha256(args.original) != ORIGINAL_SHA256:
         parser.error("Original JAR SHA-256 does not match the read-only baseline")
     report = args.report.resolve()
-    if not report.is_relative_to(Path("/var/tmp")) or report.exists():
+    if args.report.is_symlink() or not report.is_relative_to(Path("/var/tmp")) or report.exists():
         parser.error("Report must be a new file beneath /var/tmp")
     # No child needs to administer its namespace. Drop root and capabilities
     # before Java starts; /tmp remains writable for disposable probe data.
@@ -90,6 +94,11 @@ def main():
     ]
     if args.exercise_post:
         probe.append("--exercise-post")
+    if args.camoufox_python:
+        if not args.camoufox_python.is_absolute() or not args.camoufox_python.is_file() or \
+                not os.access(args.camoufox_python, os.X_OK):
+            parser.error("Unprivileged probe user cannot execute the absolute Camoufox Python path")
+        probe.extend(["--camoufox-python", str(args.camoufox_python)])
     if args.archived_renderer:
         with socket.create_connection(("127.0.0.1", 8050), timeout=3):
             pass
