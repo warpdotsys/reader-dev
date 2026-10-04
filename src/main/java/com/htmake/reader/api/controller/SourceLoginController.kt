@@ -69,6 +69,18 @@ class SourceLoginController(coroutineContext: CoroutineContext) : BaseController
         val source = findSource(namespace, requested)
             ?: return result.setErrorMsg("书源不存在（请先导入书源）")
         val cookie = body.getString("cookie", "")
+        if (BrowserCookieJar.isNetscapeInput(cookie)) {
+            // Validate the entire export before changing any saved credential.
+            val records = try {
+                BrowserCookieJar.parseNetscapeCookies(source.bookSourceUrl, cookie)
+            } catch (error: IllegalArgumentException) {
+                return result.setErrorMsg(error.message ?: "Netscape Cookie 格式无效")
+            }
+            val count = BrowserCookieJar.replaceImportedCookies(CookieStore(namespace), source.bookSourceUrl, records)
+            val index = cookieIndex(namespace).put(source.bookSourceUrl, System.currentTimeMillis())
+            saveCookieIndex(namespace, index)
+            return result.setData(mapOf("success" to true, "format" to "netscape", "imported" to count))
+        }
         validateCookie(cookie)?.let { return result.setErrorMsg(it) }
 
         val store = CookieStore(namespace)
@@ -127,15 +139,18 @@ class SourceLoginController(coroutineContext: CoroutineContext) : BaseController
         val cleanedIndex = JsonObject(index.encode())
         known.forEach { sourceUrl ->
             val cookie = store.getCookie(sourceUrl)
-            val browserCookies = BrowserCookieJar.cookiesForRequest(store, sourceUrl)
+            // Path/Secure may prevent a cookie from matching the source base URL;
+            // that does not mean the credential was not saved for later requests.
+            val browserCookies = BrowserCookieJar.savedCookiesForSource(store, sourceUrl)
             if (cookie.isBlank() && browserCookies.isEmpty()) {
                 cleanedIndex.remove(sourceUrl)
                 return@forEach
             }
             // Do not evaluate a source's dynamic header JS in a listing endpoint, and do
             // not return credentials. The UI only needs a non-empty safe summary/status.
-            val preview = if (cookie.isNotBlank()) SourceLoginSupport.redactCookie(cookie)
-            else browserCookies.joinToString("; ") { "${it.name}=***" }.ifBlank { "已保存" }.take(256)
+            val preview = if (browserCookies.isNotEmpty())
+                browserCookies.joinToString("; ") { "${it.name}=***" }.take(256)
+            else SourceLoginSupport.redactCookie(cookie)
             rows.add(mapOf(
                 "sourceUrl" to sourceUrl,
                 // Compatibility field: intentionally a redacted preview, never the raw value.

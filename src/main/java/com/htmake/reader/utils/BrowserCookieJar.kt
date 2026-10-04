@@ -68,7 +68,8 @@ object BrowserCookieJar {
             .sortedByDescending { it.path.length }
             .toMutableList()
         val overrides = linkedMapOf<String, Cookie>()
-        val legacyScopeManaged = legacyScope(url)?.let(jar.managedLegacyScopes::contains) ?: false
+        val legacyScopeManaged = request.host in jar.managedHosts ||
+            (legacyScope(url)?.let(jar.managedLegacyScopes::contains) ?: false)
         if (!legacyScopeManaged) {
             // Existing book-source cookies remain usable during migration. They are
             // treated as host-only session cookies and never written back as a raw
@@ -119,6 +120,7 @@ object BrowserCookieJar {
     fun migrateLegacyCookies(store: CookieStore, url: String, legacyCookieHeader: String = "") {
         val request = request(url) ?: return
         val jar = load(store)
+        if (request.host in jar.managedHosts) return
         val legacyScope = legacyScope(url)
         if (legacyScope != null && legacyScope !in jar.managedLegacyScopes) {
             val merged = LinkedHashMap<String, Cookie>()
@@ -190,6 +192,93 @@ object BrowserCookieJar {
 
     /** Test-only view. Callers receive only non-expired persisted browser cookies. */
     fun storedCookies(store: CookieStore): List<Cookie> = load(store).cookies.filterNot(::isExpired)
+
+    /** Saved credentials, not proof that a particular URL or website is authenticated. */
+    fun savedCookiesForSource(store: CookieStore, sourceUrl: String): List<Cookie> {
+        val target = request(sourceUrl) ?: return emptyList()
+        return storedCookies(store).filter {
+            if (it.hostOnly) it.domain == target.host else domainMatches(target.host, it.domain)
+        }
+    }
+
+    fun isNetscapeInput(text: String): Boolean = '\t' in text ||
+        text.trimStart('\uFEFF', ' ', '\r', '\n').startsWith("# Netscape HTTP Cookie File")
+
+    /** Seven TAB fields, including HttpOnly comments and empty values; never flatten metadata. */
+    fun parseNetscapeCookies(sourceUrl: String, text: String): List<Cookie> {
+        require(text.length <= 64 * 1024) { "Cookie 过长" }
+        val target = request(sourceUrl) ?: throw IllegalArgumentException("书源地址无效")
+        val records = mutableListOf<Cookie>()
+        text.removePrefix("\uFEFF").lineSequence().forEachIndexed { index, raw ->
+            if (raw.isBlank() || raw.startsWith('#') && !raw.startsWith("#HttpOnly_")) return@forEachIndexed
+            fun invalid(detail: String): Nothing =
+                throw IllegalArgumentException("Netscape Cookie 第 ${index + 1} 行：$detail")
+            if (records.size >= 512) invalid("记录过多")
+            val httpOnly = raw.startsWith("#HttpOnly_")
+            val fields = raw.removePrefix("#HttpOnly_").split('\t')
+            if (fields.size != 7) invalid("需要 7 个制表符分隔字段")
+            fun flag(value: String): Boolean = when (value) {
+                "TRUE" -> true
+                "FALSE" -> false
+                else -> invalid("布尔字段必须为 TRUE 或 FALSE")
+            }
+            val domain = normalizeDomain(fields[0]) ?: invalid("域名无效")
+            val hostOnly = !flag(fields[1])
+            val secure = flag(fields[3])
+            val expires = fields[4].toLongOrNull()?.takeIf { it >= 0 }
+                ?: invalid("有效期必须为非负整数")
+            val path = fields[2]
+            val name = fields[5]
+            val value = fields[6]
+            if (!path.startsWith('/') || path.any { it <= ' ' || it == ';' || it == '\u007f' }) invalid("路径无效")
+            if (name.isEmpty() || name.any { it !in '!'..'~' || it in "()<>@,;:\\\"/[]?={} " }) invalid("名称无效")
+            if (value.any { it < ' ' || it == ';' || it == '\u007f' }) invalid("值包含非法字符")
+            val cookie = Cookie(name, value, domain, path, hostOnly, secure, httpOnly,
+                expires = if (expires == 0L) -1.0 else expires.toDouble())
+            // A user-imported Secure cookie may originate from an HTTP source URL,
+            // but it must only be sent over HTTPS later. All other browser scope
+            // and prefix rules remain the same; no network request occurs here.
+            if (!responseCanSet(cookie, target.copy(scheme = "https"))) invalid("域名或安全属性与书源不匹配")
+            records.add(cookie)
+        }
+        require(records.isNotEmpty()) { "Netscape Cookie 没有可导入记录" }
+        return records
+    }
+
+    /** Replace credentials applicable to this source host, without a flat-cookie copy. */
+    fun replaceImportedCookies(store: CookieStore, sourceUrl: String, records: List<Cookie>): Int {
+        val target = request(sourceUrl) ?: throw IllegalArgumentException("书源地址无效")
+        require(records.isNotEmpty() && records.size <= 512) { "Cookie 记录数量无效" }
+        val validated = records.map { raw ->
+            val cookie = normalize(raw) ?: throw IllegalArgumentException("Cookie 记录无效")
+            require(cookie == raw && responseCanSet(cookie, target.copy(scheme = "https")) &&
+                cookie.value.none { it < ' ' || it == ';' || it == '\u007f' }) { "Cookie 安全属性无效" }
+            cookie
+        }
+        val jar = load(store)
+        jar.cookies.removeAll {
+            if (it.hostOnly) it.domain == target.host else domainMatches(target.host, it.domain)
+        }
+        jar.manualCookies.keys.removeAll { domainMatches(target.host, it) }
+        jar.managedHosts.add(target.host)
+        // Legacy URL parsing can collapse example.co.uk to the public suffix
+        // co.uk. Make only this host authoritative in that case, rather than
+        // suppressing unrelated sites' legacy cookies in the same namespace.
+        legacyScope(sourceUrl)?.takeIf(::isRegistrableDomain)?.let(jar.managedLegacyScopes::add)
+        val merged = linkedMapOf<String, Cookie>()
+        jar.cookies.filterNot(::isExpired).forEach { put(merged, it) }
+        validated.forEach { if (isExpired(it)) merged.remove(identity(it)) else put(merged, it) }
+        jar.cookies.clear()
+        jar.cookies.addAll(merged.values)
+        store.setCookie(STORAGE_KEY, gson.toJson(jar))
+        // Old flat credentials must not override or revive the imported records.
+        // Never remove a public-suffix legacy key shared by unrelated domains.
+        legacyScope(sourceUrl)?.takeIf(::isRegistrableDomain)?.let { scope ->
+            store.removeCookie(scope)
+            store.removeCookie("${scope}_cookieJar")
+        }
+        return validated.map(::identity).toSet().count { key -> merged.containsKey(key) }
+    }
 
     /**
      * Revokes browser cookies for a legacy Reader cookie scope (for example

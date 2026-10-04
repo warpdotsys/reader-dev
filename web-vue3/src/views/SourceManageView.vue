@@ -38,7 +38,7 @@ import TopNav from '@/components/TopNav.vue'
 import { useUserStore } from '@/stores/user'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { isNotImplemented } from '@/utils/errors'
-import { savedSourceCookieRows } from '@/utils/sourceCookieState'
+import { savedSourceCookieRows, sourceCookieInputForSubmit } from '@/utils/sourceCookieState'
 import type { BookSource, CookieRow, SourceSub } from '@/types'
 
 const router = useRouter()
@@ -1147,8 +1147,8 @@ async function doSubmitCaptcha() {
 async function saveManualCookie() {
   const s = loginSource.value
   if (!s || loginBusy.value) return
-  const cookie = manualCookie.value.trim()
-  if (!cookie) return
+  const cookie = sourceCookieInputForSubmit(manualCookie.value)
+  if (!cookie.trim()) return
   loginBusy.value = true
   loginMsg.value = ''
   try {
@@ -1361,7 +1361,7 @@ async function confirmEdit() {
     // GAP 107：cookie 非空 → 单独走 setBookSourceCookie（后端书源模型无 cookie 字段，cookie 存服务端 cookie 表）
     if (editCookie.value.trim()) {
       try {
-        await setBookSourceCookie(merged.bookSourceUrl, editCookie.value.trim())
+        await setBookSourceCookie(merged.bookSourceUrl, sourceCookieInputForSubmit(editCookie.value))
       } catch {
         ElMessage.warning('书源已保存，但 Cookie 写入失败')
       }
@@ -2672,14 +2672,14 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
               </label>
               <label class="field">
                 <span class="field-label">Cookie</span>
-                <input
+                <textarea
                   v-model="editCookie"
-                  class="field-input"
-                  type="text"
-                  placeholder="粘贴 Cookie（保存时写入服务端）"
+                  class="cookie-textarea"
+                  rows="3"
+                  placeholder="粘贴普通 Cookie 头或 Netscape 导出（保存时写入服务端）"
                   spellcheck="false"
                   :disabled="editBusy"
-                />
+                ></textarea>
                 <span class="field-tip">非空时保存后调 setBookSourceCookie 写入（清除请用登录弹窗「清除 Cookie」）</span>
               </label>
               <div class="rules-head">
@@ -2824,11 +2824,11 @@ watch(() => [store.accessToken, store.defaultConfigMode], () => {
 
             <!-- 手动 Cookie 区：needManualCaptcha=true → 提示 + 明文粘贴框 + 保存 -->
             <div v-if="showManual" class="manual-box">
-              <p class="field-tip">当前不支持交互式站点登录或验证码。请自行在目标站登录后粘贴 Cookie；不要发到聊天。输入区为明文，保存后隐藏；保存不代表 Cookie 有效。</p>
+              <p class="field-tip">当前不支持交互式站点登录或验证码。请自行在目标站登录后粘贴普通 Cookie 头或 Netscape 导出；不要发到聊天。导入保留域名、路径和 HTTPS 限制，替换适用于该书源主机的已保存凭据。输入区为明文，保存后隐藏；保存不代表 Cookie 有效。</p>
               <textarea
                 v-model="manualCookie"
                 class="cookie-textarea"
-                placeholder="粘贴 Cookie，如 a=1; b=2"
+                placeholder="粘贴 Cookie，如 a=1; b=2，或 Netscape 七列导出文本"
                 spellcheck="false"
                 :disabled="loginBusy"
               ></textarea>

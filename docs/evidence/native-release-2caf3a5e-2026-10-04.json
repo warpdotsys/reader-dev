@@ -1,0 +1,41 @@
+{
+  "sourceCommit": "2caf3a5ec1e61bd1922dcddf79ad291f53b61cfc",
+  "testedMergeCommit": "2252cfa955622245d3568df70741f6eb5a4c2fcc",
+  "workflowRun": "https://github.com/warpdotsys/reader-dev/actions/runs/37192597616",
+  "workflowConclusion": "success",
+  "artifact": "reader-publisher-import-2252cfa955622245d3568df70741f6eb5a4c2fcc",
+  "artifactId": 11299837002,
+  "artifactDownloadBytes": 7036,
+  "jsonReportsLocallyChecked": 20,
+  "coreUiTests": 12,
+  "sharedJarSha256": "645b0b84d901cf91cabb1112ce6ff04eb8d595db59174794a319e202fa0fce4d",
+  "actualRuntimeReleaseObjectsChecked": 4,
+  "actualRuntimeJarIdentitiesChecked": 4,
+  "nativeImages": [
+    {
+      "architecture": "amd64",
+      "imageId": "sha256:e2924e07d1b85d6823c8bd321df4a9df8f9a3fbb757eeffe9e6ba471b0f5dd1e",
+      "archiveSha256RecordedOnRunner": "8b4334085d67dfd86c21e161e8b203b875ec327de5d049bdda5df4354a557198",
+      "builtMemoryPeakBytes": 813457408,
+      "reloadedMemoryPeakBytes": 833024000,
+      "builtPidsPeak": 179,
+      "reloadedPidsPeak": 179
+    },
+    {
+      "architecture": "arm64",
+      "imageId": "sha256:d185676f1a29eb18d8fc54eddf734c17f1230bb50166b30b1eea44344af6a57a",
+      "archiveSha256RecordedOnRunner": "e0918427270ae2c55d9a835bdb211f34bedd0b2de8a2e072728ede2dad86d5f2",
+      "builtMemoryPeakBytes": 780283904,
+      "reloadedMemoryPeakBytes": 779689984,
+      "builtPidsPeak": 180,
+      "reloadedPidsPeak": 177
+    }
+  ],
+  "limits": [
+    "small JSON and core JUnit reports checked locally; no full image archive downloaded",
+    "not an authenticated Qidian or original-JAR three-way run",
+    "does not contain the later uncommitted Netscape import changes",
+    "short synthetic tests do not prove sustained load",
+    "no registry publishing or production deployment"
+  ]
+}

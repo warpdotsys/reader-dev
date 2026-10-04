@@ -99,9 +99,23 @@ public class Vue3PreviewSourceCookieTest {
                 owner.locator(".source-row").filter(new com.microsoft.playwright.Locator.FilterOptions()
                         .setHasText("Cookie A")).locator("button[title^='登录书源']").click();
                 owner.locator("[aria-label='书源登录'] .manual-box textarea").waitFor();
-                String generatedCredential = "credentialProbe=NotReal-Qidian-12345";
+                // The last empty value deliberately has no final newline: trimming
+                // TABs would destroy its seventh Netscape field before submission.
+                String generatedCredential = "# Netscape HTTP Cookie File\n" +
+                        "#HttpOnly_." + domain + "\tTRUE\t/auth\tTRUE\t0\tcredentialProbe\tNotReal-Qidian-12345\n" +
+                        "." + domain + "\tTRUE\t/\tFALSE\t0\temptyProbe\t";
                 owner.locator("[aria-label='书源登录'] .manual-box textarea").fill(generatedCredential);
-                owner.locator("[aria-label='书源登录'] .manual-box .accent-btn").click();
+                com.microsoft.playwright.Response importResponse = owner.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/setBookSourceCookie"),
+                        () -> owner.locator("[aria-label='书源登录'] .manual-box .accent-btn").click());
+                assertEquals(200, importResponse.status());
+                Map<?, ?> importedResult = (Map<?, ?>) owner.evaluate("text => JSON.parse(text)", importResponse.text());
+                assertEquals("Netscape import must succeed", true, importedResult.get("isSuccess"));
+                Map<?, ?> importedData = (Map<?, ?>) importedResult.get("data");
+                assertEquals("Netscape metadata must reach the backend unchanged",
+                        "netscape", importedData.get("format"));
+                assertEquals("Both Secure/path-scoped and empty-value records must survive",
+                        2, ((Number) importedData.get("imported")).intValue());
                 owner.waitForFunction("document.querySelector('.login-msg')?.textContent.includes('未验证')");
                 assertEquals("Saving a cookie is not proof of a successful site login",
                         "Cookie 已保存（未验证）", owner.locator(".login-state-text").innerText());
@@ -117,6 +131,27 @@ public class Vue3PreviewSourceCookieTest {
                 owner.locator(".source-row").first().waitFor();
                 owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
                 assertTrue(owner.locator(".source-badge.logged").first().innerText().contains("Cookie 已保存"));
+
+                owner.locator(".source-row").filter(new com.microsoft.playwright.Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='编辑书源']").click();
+                com.microsoft.playwright.Locator editorCookie = owner.locator(
+                        "[aria-label='编辑书源'] [placeholder^='粘贴普通 Cookie 头或 Netscape 导出']");
+                assertEquals("A single-line input would silently discard Netscape line breaks",
+                        "TEXTAREA", editorCookie.evaluate("element => element.tagName"));
+                editorCookie.fill(generatedCredential);
+                assertEquals("Both editor lines and final empty field must survive", generatedCredential,
+                        editorCookie.inputValue());
+                com.microsoft.playwright.Response editedImport = owner.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/setBookSourceCookie"),
+                        () -> owner.locator("[aria-label='编辑书源'] .accent-btn[type=submit]").click());
+                assertEquals(200, editedImport.status());
+                Map<?, ?> editedResult = (Map<?, ?>) owner.evaluate("text => JSON.parse(text)", editedImport.text());
+                assertEquals(true, editedResult.get("isSuccess"));
+                Map<?, ?> editedData = (Map<?, ?>) editedResult.get("data");
+                assertEquals("netscape", editedData.get("format"));
+                assertEquals(2, ((Number) editedData.get("imported")).intValue());
+                owner.waitForFunction("!document.querySelector('[aria-label=\"编辑书源\"]')");
+                assertFalse(owner.locator("body").innerText().contains("NotReal-Qidian"));
 
                 assertEquals(true, owner.evaluate("async url => {" +
                         "const token=localStorage.getItem('reader_access_token');" +

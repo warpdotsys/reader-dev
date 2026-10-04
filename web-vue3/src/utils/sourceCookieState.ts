@@ -1,5 +1,10 @@
 import type { CookieRow } from '../types'
 
+/** A trailing TAB is the seventh, empty Netscape field, not disposable whitespace. */
+export function sourceCookieInputForSubmit(raw: string): string {
+  return raw.includes('\t') || raw.trimStart().startsWith('# Netscape HTTP Cookie File') ? raw : raw.trim()
+}
+
 /** Never display any credential value, including a prefix of a manual cookie. */
 export function redactSourceCookiePreview(raw: unknown): string {
   if (typeof raw !== 'string' || !raw.trim()) return '内容已隐藏'

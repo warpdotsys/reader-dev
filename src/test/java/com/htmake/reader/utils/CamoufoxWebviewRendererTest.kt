@@ -201,6 +201,41 @@ class CamoufoxWebviewRendererTest {
     }
 
     @Test
+    fun importedNetscapeCookiesRetainScopeInRealBrowserRequests() = runBlocking {
+        val user = "netscape-browser"
+        val export = "# Netscape HTTP Cookie File\r\n" +
+            "#HttpOnly_127.0.0.1\tFALSE\t/scoped\tFALSE\t0\timportedScope\tgenerated-alpha==\r\n" +
+            "127.0.0.1\tFALSE\t/\tTRUE\t0\tsecureImport\tgenerated-secure\r\n" +
+            "127.0.0.1\tFALSE\t/\tFALSE\t0\temptyImport\t"
+        val store = CookieStore(user)
+        val records = BrowserCookieJar.parseNetscapeCookies(baseUrl, export)
+        assertEquals(3, BrowserCookieJar.replaceImportedCookies(store, baseUrl, records))
+
+        val page = renderer.render(request("/scoped/resource-page", user))
+        assertTrue(page.body?.contains("importedScope=generated-alpha==") == true)
+        assertTrue(page.body?.contains("emptyImport=") == true)
+        assertFalse("Secure cookie must not accompany an HTTP request",
+            page.body?.contains("generated-secure") == true)
+        assertTrue("The generated unscoped script must actually be requested", unscopedProbeHits.get() > 0)
+        assertFalse("Path-scoped cookie must not escape through a subresource",
+            unscopedProbeCookie.get().contains("importedScope="))
+        assertFalse(unscopedProbeCookie.get().contains("secureImport="))
+        assertTrue(unscopedProbeCookie.get().contains("emptyImport="))
+
+        val visible = renderer.render(request("/scoped/resource-page", user, javaScript = "document.cookie"))
+        assertFalse("HttpOnly must remain invisible to page JavaScript",
+            visible.body?.contains("importedScope=") == true)
+        val outside = renderer.render(request("/echo", user))
+        assertFalse(outside.body?.contains("importedScope=") == true)
+        assertFalse(outside.body?.contains("secureImport=") == true)
+        assertTrue(outside.body?.contains("emptyImport=") == true)
+        val stranger = renderer.render(request("/scoped/resource-page", "netscape-stranger"))
+        assertFalse(stranger.body?.contains("importedScope=") == true)
+        assertFalse(stranger.body?.contains("emptyImport=") == true)
+        assertEquals(3, BrowserCookieJar.savedCookiesForSource(store, baseUrl).size)
+    }
+
+    @Test
     fun cookiesArePersistedPerReaderNamespace() = runBlocking {
         renderer.render(request("/seed", "alice"))
         val aliceJar = BrowserCookieJar.storedCookies(CookieStore("alice"))

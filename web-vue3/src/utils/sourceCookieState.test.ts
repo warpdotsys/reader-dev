@@ -1,6 +1,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { redactSourceCookiePreview, savedSourceCookieRows } from './sourceCookieState.ts'
+import { redactSourceCookiePreview, savedSourceCookieRows, sourceCookieInputForSubmit } from './sourceCookieState.ts'
+
+test('Netscape 导出保持末尾空值制表符、CRLF 和元数据，不展平成普通 Cookie', () => {
+  const raw = '# Netscape HTTP Cookie File\r\n#HttpOnly_.example.test\tTRUE\t/auth\tTRUE\t0\tsid\talpha==\r\nexample.test\tFALSE\t/\tFALSE\t0\tempty\t'
+  assert.equal(sourceCookieInputForSubmit(raw), raw)
+  assert.equal(sourceCookieInputForSubmit('example.test\tFALSE\t/\tFALSE\t0\tempty\t'), 'example.test\tFALSE\t/\tFALSE\t0\tempty\t')
+  assert.equal(sourceCookieInputForSubmit('  sid=value; other=two  '), 'sid=value; other=two')
+  assert.equal(sourceCookieInputForSubmit('   '), '')
+})
 
 test('Cookie 摘要隐藏完整值和前缀，保持带等号的值不可见', () => {
   assert.equal(redactSourceCookiePreview('session=private==; token=another-private'), 'session=***; token=***')

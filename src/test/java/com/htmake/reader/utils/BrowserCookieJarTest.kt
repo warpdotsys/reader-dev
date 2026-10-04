@@ -44,6 +44,153 @@ class BrowserCookieJarTest {
     }
 
     @Test
+    fun netscapeKeepsDomainPathSecureHttpOnlySessionAndEmptyValue() {
+        val records = BrowserCookieJar.parseNetscapeCookies("http://books.example.test",
+            "\uFEFF# Netscape HTTP Cookie File\r\n" +
+                "#HttpOnly_.example.test\tTRUE\t/account\tTRUE\t0\tsession\talpha==\r\n" +
+                "books.example.test\tFALSE\t/\tFALSE\t0\tempty\t")
+        assertEquals(2, records.size)
+        val session = records[0]
+        assertEquals("example.test", session.domain)
+        assertEquals("/account", session.path)
+        assertEquals("alpha==", session.value)
+        assertTrue(session.secure)
+        assertTrue(session.httpOnly)
+        assertFalse(session.hostOnly)
+        assertEquals(-1.0, session.expires, 0.0)
+        assertEquals("", records[1].value)
+        assertTrue(records[1].hostOnly)
+    }
+
+    @Test
+    fun importedCookiesReplaceApplicableCredentialsWithoutFlatteningOrCrossUserLeak() {
+        val store = CookieStore("importer")
+        store.setCookie("https://books.example.test", "session=old-flat")
+        BrowserCookieJar.setManualCookies(store, "example.test", "session=old-manual")
+        BrowserCookieJar.merge(store, "https://other.test", listOf(cookie("unrelated", "keep", "other.test")))
+        val records = BrowserCookieJar.parseNetscapeCookies("http://books.example.test",
+            "#HttpOnly_.example.test\tTRUE\t/account\tTRUE\t0\tsession\tfresh==\n" +
+                "books.example.test\tFALSE\t/\tFALSE\t0\tempty\t")
+        assertEquals(2, BrowserCookieJar.replaceImportedCookies(store, "http://books.example.test", records))
+        assertTrue(store.getCookie("https://books.example.test").isEmpty())
+        assertEquals(listOf("empty"), names("importer", "http://books.example.test/account"))
+        assertEquals(listOf("empty"), names("importer", "https://books.example.test/accounting"))
+        assertEquals(listOf("session", "empty"), names("importer", "https://books.example.test/account/chapter"))
+        assertEquals(listOf("session"), names("importer", "https://cdn.books.example.test/account"))
+        assertEquals(listOf("unrelated"), names("importer", "https://other.test"))
+        assertTrue(names("stranger", "https://books.example.test/account").isEmpty())
+        val browser = BrowserCookieJar.cookiesForBrowserRequest(store, "https://books.example.test/account")
+        assertEquals("fresh==", browser.first { it.name == "session" }.value)
+        assertTrue(browser.first { it.name == "session" }.httpOnly)
+        assertFalse(browser.any { it.value.contains("old-") })
+        // Base URL does not match /account or Secure, but saved state is still visible.
+        assertEquals(2, BrowserCookieJar.savedCookiesForSource(store, "http://books.example.test").size)
+    }
+
+    @Test
+    fun netscapeImportDoesNotManageOrDeleteAnUnrelatedPublicSuffixLegacyKey() {
+        val store = CookieStore("public-suffix-import")
+        val source = "https://example.co.uk"
+        val unrelated = "https://unrelated.co.uk"
+        store.setCookie(unrelated, "legacyOther=keep")
+        val before = store.getCookie(unrelated)
+        assertEquals("legacyOther=keep", before)
+        val records = BrowserCookieJar.parseNetscapeCookies(source,
+            "example.co.uk\tFALSE\t/\tTRUE\t0\timported\tnew")
+        assertEquals(1, BrowserCookieJar.replaceImportedCookies(store, source, records))
+        assertEquals(before, store.getCookie(unrelated))
+        assertEquals(listOf("imported"), names("public-suffix-import", source))
+        assertEquals(listOf("imported"), BrowserCookieJar.cookiesForBrowserRequest(store, source).map { it.name })
+        assertEquals(listOf("legacyOther"), names("public-suffix-import", unrelated))
+    }
+
+    @Test
+    fun expiredNetscapeRecordsCannotReviveOlderValuesAndLastDuplicateWins() {
+        val store = CookieStore("expired-import")
+        val records = BrowserCookieJar.parseNetscapeCookies("https://books.example.test",
+            "books.example.test\tFALSE\t/\tFALSE\t0\tsid\tfirst\n" +
+                "books.example.test\tFALSE\t/\tFALSE\t1\tsid\told\n" +
+                "books.example.test\tFALSE\t/\tFALSE\t0\tother\tfirst\n" +
+                "books.example.test\tFALSE\t/\tFALSE\t0\tother\tlast")
+        assertEquals(1, BrowserCookieJar.replaceImportedCookies(store, "https://books.example.test", records))
+        assertEquals(listOf("other"), names("expired-import", "https://books.example.test"))
+        assertEquals("last", BrowserCookieJar.storedCookies(store).single().value)
+    }
+
+    @Test
+    fun invalidNetscapeInputIsRejectedWithoutCredentialValuesInErrors() {
+        val secret = "generated-private-value"
+        val inputs = listOf(
+            ".other.test\tTRUE\t/\tFALSE\t0\tsid\t$secret",
+            ".co.uk\tTRUE\t/\tFALSE\t0\tsid\t$secret",
+            ".com\tTRUE\t/\tFALSE\t0\tsid\t$secret",
+            "books.example.test\tMAYBE\t/\tFALSE\t0\tsid\t$secret",
+            "books.example.test\tFALSE\t/\tFALSE\t-1\tsid\t$secret",
+            "books.example.test\tFALSE\tbadpath\tFALSE\t0\tsid\t$secret",
+            "books.example.test\tFALSE\t/\tFALSE\t0\tbad=name\t$secret",
+            "books.example.test\tFALSE\t/\tFALSE\t0\tsid\t$secret;injected=x",
+            "books.example.test\tFALSE\t/\tFALSE\t0\t__Secure-sid\t$secret",
+            ".example.test\tTRUE\t/\tTRUE\t0\t__Host-sid\t$secret",
+            "books.example.test\tFALSE\t/auth\tTRUE\t0\t__Host-sid\t$secret",
+            "books.example.test\tFALSE\t/\tFALSE\t0\tsid\t$secret\textra",
+            "# Netscape HTTP Cookie File\n# comments only"
+        )
+        inputs.forEach { input ->
+            try {
+                BrowserCookieJar.parseNetscapeCookies("https://books.example.test", input)
+                throw AssertionError("Malformed generated export was accepted")
+            } catch (error: IllegalArgumentException) {
+                assertFalse(error.message.orEmpty().contains(secret))
+            }
+        }
+    }
+
+    @Test
+    fun netscapeCannotSetHostOnlyCookiesForASiblingOrSpoofedDomain() {
+        listOf("api.example.test", "example.test", "books.example.test.attacker.test").forEach { domain ->
+            try {
+                BrowserCookieJar.parseNetscapeCookies("https://books.example.test",
+                    "$domain\tFALSE\t/\tFALSE\t0\tsid\tx")
+                throw AssertionError("Wrong host was accepted")
+            } catch (_: IllegalArgumentException) { }
+        }
+        // Public suffix rejection must also hold when that suffix is a parent of the source.
+        try {
+            BrowserCookieJar.parseNetscapeCookies("https://books.example.co.uk",
+                ".co.uk\tTRUE\t/\tTRUE\t0\tsid\tx")
+            throw AssertionError("Public suffix was accepted")
+        } catch (_: IllegalArgumentException) { }
+    }
+
+    @Test
+    fun invalidImportListCannotPartiallyReplaceAnExistingJar() {
+        val store = CookieStore("atomic-import")
+        BrowserCookieJar.merge(store, "https://books.example.test", listOf(cookie("existing", "keep", "books.example.test")))
+        val before = store.getCookie(BrowserCookieJar.STORAGE_KEY)
+        try {
+            BrowserCookieJar.replaceImportedCookies(store, "https://books.example.test", listOf(
+                cookie("valid", "new", "books.example.test"), cookie("invalid", "bad", "other.test")))
+            throw AssertionError("Invalid list was accepted")
+        } catch (_: IllegalArgumentException) { }
+        assertEquals(before, store.getCookie(BrowserCookieJar.STORAGE_KEY))
+    }
+
+    @Test
+    fun netscapeInputHasLengthAndRecordBudgetsAndDoesNotMisclassifyPlainHeaders() {
+        assertTrue(BrowserCookieJar.isNetscapeInput("# Netscape HTTP Cookie File\n"))
+        assertTrue(BrowserCookieJar.isNetscapeInput("books.example.test\tFALSE\t/\tFALSE\t0\tsid\tx"))
+        assertFalse(BrowserCookieJar.isNetscapeInput("sid=value; other=two"))
+        listOf("x".repeat(65537), (1..513).joinToString("\n") {
+            "books.example.test\tFALSE\t/\tFALSE\t0\tsid$it\tx"
+        }).forEach { input ->
+            try {
+                BrowserCookieJar.parseNetscapeCookies("https://books.example.test", input)
+                throw AssertionError("Unbounded input was accepted")
+            } catch (_: IllegalArgumentException) { }
+        }
+    }
+
+    @Test
     fun pathAndSecureCookiesAreSentOnlyWhereTheyMatch() {
         val store = CookieStore("reader")
         BrowserCookieJar.merge(store, "https://books.example.test/account/login", listOf(

@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-04",
+  "generatedOnly": true,
+  "baseline": {
+    "generatedOnly": true,
+    "baselineJarSha256": "BA1E3ACB91F04BD6A3A10C7406A76E11CB82C1BF3D41212D22D14BEF6953085C",
+    "actualIsSuccess": false,
+    "actualErrorMsg": "Cookie 包含非法控制字符",
+    "netscapeRejectionReproduced": true,
+    "realQidianCredentialUsed": false,
+    "chromeFailureXmlSha256": "D35F5C5F64744618CF9595294DD2793D4F0235E66D1FCF20F200E29F4BD54BEC"
+  },
+  "singleLineEditorBaseline": {
+    "actualTag": "INPUT",
+    "requiredTag": "TEXTAREA",
+    "actualChromeFailureReproduced": true,
+    "xmlSha256": "D17ABAA28705D8EBC102C55861C78B61013DAE15FCE71C3DC7B233FC8B689777"
+  },
+  "finalApi": {
+    "generatedOnly": true,
+    "candidateJarSha256": "60C42281C7B12296C30DD4791750200E8CEAEAB520A1A3A547F48802DB7CDA41",
+    "importStatus": 200,
+    "importReturnData": {
+      "isSuccess": true,
+      "errorMsg": "",
+      "data": {
+        "success": true,
+        "format": "netscape",
+        "imported": 2
+      }
+    },
+    "persistedMetadataVerified": [
+      "domain",
+      "path",
+      "hostOnly",
+      "Secure",
+      "HttpOnly",
+      "sessionExpiry",
+      "emptyValue"
+    ],
+    "cookieValuesRedacted": true,
+    "invalidImportStatus": 200,
+    "invalidImportIsSuccess": false,
+    "invalidImportErrorMsg": "Netscape Cookie 第 4 行：域名或安全属性与书源不匹配",
+    "invalidInputPreservesExistingSummary": true,
+    "invalidInputPreservesExactJarBytes": true,
+    "realQidianCredentialUsed": false
+  },
+  "finalChrome": {
+    "generatedOnly": true,
+    "previewServerUsed": false,
+    "actualUiServedFromFinalJar": true,
+    "finalJarSha256": "60C42281C7B12296C30DD4791750200E8CEAEAB520A1A3A547F48802DB7CDA41",
+    "tests": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "xmlSha256": "788697CAD19CE1A915C5F7CC9CA0DF90E3C37E519CEEC78592A814F28220059E",
+    "screenshotSha256": "22847CB01ED49EF060BE6A317FF0DAE4FFB5D0AC5BF57299FFEF22390A84BE83",
+    "sourceViewAsset": "BOOT-INF/classes/web-vue3/static/SourceManageView-D9GH_R3f.js",
+    "sourceViewAssetSha256": "0D81A470D117FC286F382F71A578D6F43CE1C1FACBA4D0E28904F52281A0EBF8"
+  },
+  "localBackend": {
+    "suites": 36,
+    "tests": 123,
+    "skipped": 21,
+    "failures": 0,
+    "errors": 0,
+    "browserCookieJarTests": 20,
+    "sourceLoginSecurityTests": 3,
+    "camoufoxNetscapeCase": "compiled; skipped locally because the pinned Camoufox runtime is not installed"
+  },
+  "frontend": {
+    "tests": 183,
+    "skipped": 0,
+    "failures": 0,
+    "typeCheckSucceeded": true,
+    "productionBuildSucceeded": true
+  },
+  "limits": [
+    "generated credentials only; this is not real Qidian authentication or reading proof",
+    "the Netscape format does not encode SameSite; none is invented",
+    "manual import replaces applicable credentials; invalid input is rejected before modification",
+    "not a power-loss transaction across cache and index files",
+    "CI must run again for the new source commit; earlier 2caf3a5e success is not evidence for this change",
+    "no production deployment, registry push, or stable release"
+  ]
+}
