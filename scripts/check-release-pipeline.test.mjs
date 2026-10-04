@@ -10,6 +10,7 @@ const sourceRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const fixtureFiles = [
   'scripts/check-release-pipeline.mjs',
   '.github/workflows/release.yml', '.github/workflows/ci.yml',
+  '.github/workflows/release-native.yml', 'scripts/smoke-native-release.sh',
   '.github/workflows/browser-image.yml', '.github/workflows/vue3-preview.yml',
   'deploy/reader-pro/compose.production.yaml', 'deploy/reader-pro/Dockerfile',
   'deploy/reader-pro/base-images.lock',
@@ -51,7 +52,7 @@ test('current release and CI satisfy the structural guard', (t) => {
 
 test('removing the loopback bind is rejected', (t) => {
   const current = fixture(t)
-  current.change('.github/workflows/release.yml', (text) =>
+  current.change('scripts/smoke-native-release.sh', (text) =>
     text.replace('-e READER_SERVER_BINDADDRESS=127.0.0.1', ''))
   const result = current.check()
   assert.notEqual(result.status, 0)
@@ -60,30 +61,22 @@ test('removing the loopback bind is rejected', (t) => {
 
 test('removing the release resource assertion is rejected', (t) => {
   const current = fixture(t)
-  current.change('.github/workflows/release.yml', (text) =>
+  current.change('scripts/smoke-native-release.sh', (text) =>
     text.replace('scripts/report-browser-cgroup.py', 'scripts/omitted-budget.py'))
   const result = current.check()
   assert.notEqual(result.status, 0)
   assert.match(result.stderr, /report-browser-cgroup/)
 })
 
-test('checking resource budgets only after registry login is rejected', (t) => {
+test('exporting the native image before the browser and resource checks is rejected', (t) => {
   const current = fixture(t)
-  current.change('.github/workflows/release.yml', (text) => {
-    const start = text.indexOf('              docker exec -i reader-pro-camoufox-smoke python -')
-    const end = text.indexOf('              exit 0', start)
-    assert.ok(start >= 0 && end > start)
-    const budget = text.slice(start, end)
-    const withoutBudget = text.replace(budget, '')
-    const position = withoutBudget.indexOf('      - name: Log in to Docker Hub')
-    assert.ok(position >= 0)
-    const lateStep = '      - name: Incorrectly late resource check\n        run: |\n' +
-      budget.split(/\r?\n/).filter(Boolean).map((line) => '          ' + line.trim()).join('\n') + '\n'
-    return withoutBudget.slice(0, position) + lateStep + withoutBudget.slice(position)
-  })
+  current.change('.github/workflows/release-native.yml', (text) =>
+    text.replace('          docker image inspect "reader-pro:camoufox-smoke-$arch" > exported/image-inspect.json', '')
+      .replace('      - name: Run generated browser contracts under the release resource budget',
+        '      - name: Incorrect early export\n        run: docker save untested-image\n      - name: Run generated browser contracts under the release resource budget'))
   const result = current.check()
   assert.notEqual(result.status, 0)
-  assert.match(result.stderr, /before registry writes/)
+  assert.match(result.stderr, /before exporting an image/)
 })
 
 test('not running the release guard in ordinary CI is rejected', (t) => {
@@ -94,3 +87,22 @@ test('not running the release guard in ordinary CI is rejected', (t) => {
   assert.notEqual(result.status, 0)
   assert.match(result.stderr, /CI and formal release/)
 })
+
+for (const [name, file, mutate, expected] of [
+  ['missing hash comparison for the JAR actually running inside the image', 'scripts/smoke-native-release.sh', text => text.replace('test "$actual_jar" = "$expected_jar"', 'echo unchecked'), /actual_jar/],
+  ['missing native ARM64 runner', '.github/workflows/release-native.yml', text => text.replaceAll('runner: ubuntu-24.04-arm', 'runner: ubuntu-24.04'), /both native hosted runners/],
+  ['missing all-native completion dependency', '.github/workflows/release.yml', text => text.replace('needs: [verify-release-inputs, verify-vue3-e2e, build-native-images]', 'needs: [verify-release-inputs, verify-vue3-e2e]'), /both native builds/],
+  ['post-smoke image rebuild', '.github/workflows/release.yml', text => text.replace('          for arch in amd64 arm64; do', '          docker build -t replacement .\n          for arch in amd64 arm64; do'), /never rebuild/],
+  ['missing loaded-image identity check', '.github/workflows/release.yml', text => text.replace('node scripts/release-native-artifacts.mjs loaded ', 'node scripts/omitted-loaded.mjs loaded '), /before registry login/],
+  ['missing Docker Hub manifest check', '.github/workflows/release.yml', text => text.replace('node scripts/verify-release-manifest.mjs dist/DOCKERHUB_IMAGE_INDEX.json', 'node scripts/omitted-manifest.mjs dist/DOCKERHUB_IMAGE_INDEX.json'), /both registry manifests/],
+  ['registry login in the rehearsal', '.github/workflows/release-native.yml', text => text + '\n# docker/login-action is an invalid rehearsal dependency\n', /must not use registry credentials/],
+  ['round-trip check without actually running the reloaded image', '.github/workflows/release-native.yml', text => text.replace('      - name: Actually run the reloaded image with fresh generated accounts and storage\n        run: bash scripts/smoke-native-release.sh', '      - name: Incorrectly omit the reloaded runtime check\n        run: echo skipped'), /actually run the same image/],
+]) {
+  test('rejects ' + name, (t) => {
+    const current = fixture(t)
+    current.change(file, mutate)
+    const result = current.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, expected)
+  })
+}

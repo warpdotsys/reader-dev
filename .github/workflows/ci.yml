@@ -42,6 +42,7 @@ jobs:
         run: |
           node scripts/check-release-pipeline.mjs
           node --test scripts/check-release-pipeline.test.mjs
+          node --test scripts/release-native-artifacts.test.mjs scripts/verify-release-manifest.test.mjs
       - name: Verify browser protocol and differential CLI safety without a browser download
         run: python3 -m unittest discover -s src/test/python -p '*_test.py'
       - name: Build and test

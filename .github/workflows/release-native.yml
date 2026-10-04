@@ -1,0 +1,222 @@
+name: Native release artifact rehearsal
+
+# No registry credentials, registry writes, real books, or production access.
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches: [legacy]
+    paths:
+      - '.github/workflows/release.yml'
+      - '.github/workflows/release-native.yml'
+      - 'scripts/check-release-pipeline*'
+      - 'scripts/release-native-artifacts*'
+      - 'scripts/verify-release-manifest*'
+      - 'scripts/smoke-native-release.sh'
+      - 'deploy/reader-pro/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-jar:
+    name: Build one shared Java Kotlin JAR
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    outputs:
+      version: ${{ steps.jar.outputs.version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
+      - name: Verify release contracts and build the shared JAR once
+        id: jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/check-release-pipeline.mjs
+          node --test scripts/check-release-pipeline.test.mjs scripts/release-native-artifacts.test.mjs scripts/verify-release-manifest.test.mjs
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
+          npm ci --prefix web-vue3
+          npm --prefix web-vue3 test
+          npm --prefix web-vue3 run build
+          chmod +x gradlew
+          ./gradlew -PreaderWebUi=vue3 clean test bootJar --max-workers=2 --no-daemon --stacktrace
+          version=$(sed -nE 's/^version = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' build.gradle.kts)
+          [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          test "$(node -p "require('./web/package.json').version")" = "$version"
+          test "$(node -p "require('./web-vue3/package.json').version")" = "$version"
+          test -s "build/libs/reader-${version}.jar"
+          install -d dist
+          install -m 0644 "build/libs/reader-${version}.jar" "dist/reader-pro-v${version}.jar"
+          (cd dist && sha256sum "reader-pro-v${version}.jar") > dist/SHA256SUMS
+          unzip -Z1 "dist/reader-pro-v${version}.jar" > "$RUNNER_TEMP/reader-jar-entries.txt"
+          grep -Fx 'BOOT-INF/classes/camoufox/worker.py' "$RUNNER_TEMP/reader-jar-entries.txt"
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-release-jar-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 3
+
+  native-images:
+    name: Build and test native ${{ matrix.arch }} image
+    needs: build-jar
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Require a genuinely native hosted runner
+        shell: bash
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          kernel=$(uname -m)
+          printf 'native architecture=%s runner=%s kernel=%s\n' "$EXPECTED_ARCH" "$RUNNER_ARCH" "$kernel"
+          case "$EXPECTED_ARCH:$RUNNER_ARCH:$kernel" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) exit 1 ;;
+          esac
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-release-jar-${{ github.sha }}
+          path: dist
+      - name: Read and validate locked base image digests
+        id: bases
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum -c SHA256SUMS)
+          python3 scripts/verify_camoufox_wheel_lock.py deploy/reader-pro/requirements-camoufox.lock
+          temurin=$(sed -n 's/^TEMURIN_JRE_IMAGE=//p' deploy/reader-pro/base-images.lock)
+          playwright=$(sed -n 's/^PLAYWRIGHT_PYTHON_IMAGE=//p' deploy/reader-pro/base-images.lock)
+          [[ "$temurin" =~ ^eclipse-temurin@sha256:[0-9a-f]{64}$ ]]
+          [[ "$playwright" =~ ^mcr\.microsoft\.com/playwright/python@sha256:[0-9a-f]{64}$ ]]
+          install -d exported image-context
+          printf 'temurin=%s\nplaywright=%s\nwheel_hashes=enforced\n' "$temurin" "$playwright" > exported/BASE_IMAGE_DIGESTS
+          printf 'temurin=%s\nplaywright=%s\n' "$temurin" "$playwright" >> "$GITHUB_OUTPUT"
+      - name: Build the complete native Reader image from the shared JAR
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ needs.build-jar.outputs.version }}
+        run: |
+          set -euo pipefail
+          install -m 0644 "dist/reader-pro-v${VERSION}.jar" "image-context/reader-${VERSION}.jar"
+          cp deploy/reader-pro/Dockerfile deploy/reader-pro/requirements-camoufox.lock \
+            deploy/reader-pro/camoufox-browser.lock deploy/reader-pro/install_camoufox_pinned.py \
+            deploy/reader-pro/docker-entrypoint.sh image-context/
+          docker build --pull --platform "linux/$ARCH" -f image-context/Dockerfile \
+            --build-arg "READER_JAR=reader-${VERSION}.jar" --build-arg "READER_VERSION=$VERSION" \
+            --build-arg "READER_BUILD_REVISION=${GITHUB_SHA}" --build-arg REQUIRE_WHEEL_HASHES=true \
+            --build-arg 'TEMURIN_JRE_IMAGE=${{ steps.bases.outputs.temurin }}' \
+            --build-arg 'PLAYWRIGHT_PYTHON_IMAGE=${{ steps.bases.outputs.playwright }}' \
+            -t "reader-pro:camoufox-smoke-$ARCH" image-context
+          docker image inspect --format 'Complete image size={{.Size}} bytes architecture={{.Architecture}}' "reader-pro:camoufox-smoke-$ARCH"
+      - name: Run generated browser contracts under the release resource budget
+        run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" built exported
+      - name: Export only the smoke-tested native image and record its byte provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          arch='${{ matrix.arch }}'
+          docker image inspect "reader-pro:camoufox-smoke-$arch" > exported/image-inspect.json
+          docker save "reader-pro:camoufox-smoke-$arch" | gzip -1 > exported/reader-image.tar.gz
+          node scripts/release-native-artifacts.mjs record "$arch" '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist exported
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-tested-native-${{ matrix.arch }}-${{ github.sha }}
+          path: |
+            exported/reader-image.tar.gz
+            exported/metadata.json
+            exported/BASE_IMAGE_DIGESTS
+            exported/BROWSER_SYNTHETIC.json
+            exported/BROWSER_RESOURCE_BUDGET.json
+            exported/RELEASE_IDENTITY.json
+            exported/JAR_IDENTITY.json
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 3
+
+  verify-transferred-images:
+    name: Reload and run tested ${{ matrix.arch }} image
+    needs: [build-jar, native-images]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-release-jar-${{ github.sha }}
+          path: dist
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-tested-native-${{ matrix.arch }}-${{ github.sha }}
+          path: imported
+      - name: Verify transferred bytes and the actually loaded image without rebuilding
+        shell: bash
+        run: |
+          set -euo pipefail
+          arch='${{ matrix.arch }}'
+          case "$arch:$RUNNER_ARCH:$(uname -m)" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) exit 1 ;;
+          esac
+          (cd dist && sha256sum -c SHA256SUMS)
+          node scripts/release-native-artifacts.mjs check "$arch" '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist imported
+          docker load --input imported/reader-image.tar.gz
+          docker image inspect "reader-pro:camoufox-smoke-$arch" > imported/image-inspect.json
+          install -d transferred
+          node scripts/release-native-artifacts.mjs loaded "$arch" '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist imported \
+            | tee transferred/IMAGE_IDENTITY.json
+      - name: Actually run the reloaded image with fresh generated accounts and storage
+        run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" transferred transferred
+      - name: Preserve small round-trip evidence, not the image or private content
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-native-transfer-${{ matrix.arch }}-${{ github.sha }}
+          path: |
+            imported/metadata.json
+            transferred/BROWSER_SYNTHETIC.json
+            transferred/BROWSER_RESOURCE_BUDGET.json
+            transferred/RELEASE_IDENTITY.json
+            transferred/IMAGE_IDENTITY.json
+            transferred/JAR_IDENTITY.json
+          if-no-files-found: error
+          retention-days: 14
