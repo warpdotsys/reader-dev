@@ -9,10 +9,11 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
-const read = (path) => readFileSync(resolve(root, path), 'utf8')
+const read = (path) => readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g, '\n')
 const workflow = read('.github/workflows/release.yml')
 const nativeWorkflow = read('.github/workflows/release-native.yml')
 const nativeSmoke = read('scripts/smoke-native-release.sh')
+const nativeImporter = read('scripts/import-native-release.sh')
 const buildContract = nativeWorkflow + '\n' + nativeSmoke
 const compose = read('deploy/reader-pro/compose.production.yaml')
 const dockerfile = read('deploy/reader-pro/Dockerfile')
@@ -111,7 +112,8 @@ const section = (text, start, end) => {
   return text.slice(begin, finish)
 }
 const nativeBuild = section(nativeWorkflow, 'native-images', 'verify-transferred-images')
-const nativeTransfer = section(nativeWorkflow, 'verify-transferred-images')
+const nativeTransfer = section(nativeWorkflow, 'verify-transferred-images', 'verify-publisher-imports')
+const publisherRehearsal = section(nativeWorkflow, 'verify-publisher-imports')
 const publisher = section(workflow, 'build-and-publish-images', 'deploy-production')
 for (const token of [
   'workflow_call:', 'reader-release-jar-${{ github.sha }}',
@@ -149,18 +151,34 @@ const transferredRun = nativeTransfer.indexOf('bash scripts/smoke-native-release
 if (transferredCheck < 0 || transferredLoad < transferredCheck || transferredIdentity < transferredLoad || transferredRun < transferredIdentity) {
   throw new Error('fresh native runners must verify archive bytes, load image identity, and actually run the same image')
 }
+if (!nativeTransfer.includes('cp imported/metadata.json transferred/metadata.json') ||
+    !nativeTransfer.includes('path: transferred/\n')) {
+  throw new Error('round-trip evidence must have a single flat artifact root matching the formal publisher')
+}
 const registryLogin = publisher.indexOf('- name: Log in to GitHub Container Registry')
 const registryPush = publisher.indexOf('docker push ')
 for (const token of ['reader-tested-native-amd64-${{ github.sha }}', 'reader-tested-native-arm64-${{ github.sha }}']) {
   if (!publisher.includes(token)) throw new Error(`publisher must consume same-commit tested native artifacts: ${token}`)
 }
-for (const command of ['check', 'loaded']) {
-  const checks = [...publisher.matchAll(new RegExp('node scripts/release-native-artifacts\\.mjs ' + command + ' ', 'g'))]
-  if (checks.length !== 2 || checks.some(value => value.index >= registryLogin) || registryPush < registryLogin) {
+for (const arch of ['amd64', 'arm64']) {
+  const call = 'bash scripts/import-native-release.sh ' + arch + ' '
+  const calls = [...publisher.matchAll(new RegExp(call.replaceAll('.', '\\.'), 'g'))]
+  if (calls.length !== 1 || calls[0].index >= registryLogin || registryPush < registryLogin) {
     throw new Error('both native artifact checks and loaded identities must pass before registry login and push')
   }
+  if (!publisherRehearsal.includes(call)) throw new Error('publisher import rehearsal must exercise both same-commit native artifacts')
 }
-if (/^\s*docker (?:build|buildx build)\b/m.test(publisher)) {
+const importCheck = nativeImporter.indexOf('node scripts/release-native-artifacts.mjs check ')
+const importLoad = nativeImporter.indexOf('docker load --input ')
+const importIdentity = nativeImporter.indexOf('node scripts/release-native-artifacts.mjs loaded ')
+if (importCheck < 0 || importLoad < importCheck || importIdentity < importLoad) {
+  throw new Error('both native artifact checks and loaded identities must pass before registry login and push')
+}
+if (!publisherRehearsal.includes('needs: [build-jar, native-images, verify-transferred-images]') ||
+    !nativeImporter.includes('cmp "$evidence/metadata.json" "$directory/metadata.json"')) {
+  throw new Error('publisher import rehearsal must consume both real fresh-runner evidence artifacts')
+}
+if (/^\s*docker (?:build|buildx build)\b/m.test(publisher + '\n' + nativeImporter)) {
   throw new Error('publisher must never rebuild an image after native smoke tests')
 }
 for (const token of [

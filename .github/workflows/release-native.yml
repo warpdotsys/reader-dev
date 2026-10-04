@@ -13,6 +13,7 @@ on:
       - 'scripts/release-native-artifacts*'
       - 'scripts/verify-release-manifest*'
       - 'scripts/smoke-native-release.sh'
+      - 'scripts/import-native-release.sh'
       - 'deploy/reader-pro/**'
 
 permissions:
@@ -205,18 +206,57 @@ jobs:
           install -d transferred
           node scripts/release-native-artifacts.mjs loaded "$arch" '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist imported \
             | tee transferred/IMAGE_IDENTITY.json
+          cp imported/metadata.json transferred/metadata.json
       - name: Actually run the reloaded image with fresh generated accounts and storage
         run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" transferred transferred
       - name: Preserve small round-trip evidence, not the image or private content
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: reader-native-transfer-${{ matrix.arch }}-${{ github.sha }}
+          # A single directory is deliberate: upload-artifact flattens its
+          # root, matching the paths consumed by the formal publisher.
+          path: transferred/
+          if-no-files-found: error
+          retention-days: 14
+
+  verify-publisher-imports:
+    name: Exercise both publisher imports without registry credentials
+    needs: [build-jar, native-images, verify-transferred-images]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-release-jar-${{ github.sha }}
+          path: dist
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: reader-native-transfer-*-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-native-transfers
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-tested-native-amd64-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-native-import/amd64
+      - name: Consume amd64 through the same importer used by the formal publisher
+        run: bash scripts/import-native-release.sh amd64 '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-tested-native-arm64-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-native-import/arm64
+      - name: Consume arm64 on the same publisher runner without rebuilding it
+        run: bash scripts/import-native-release.sh arm64 '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist
+      - name: Preserve the real publisher artifact-layout and image-import proofs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-publisher-import-${{ github.sha }}
           path: |
-            imported/metadata.json
-            transferred/BROWSER_SYNTHETIC.json
-            transferred/BROWSER_RESOURCE_BUDGET.json
-            transferred/RELEASE_IDENTITY.json
-            transferred/IMAGE_IDENTITY.json
-            transferred/JAR_IDENTITY.json
+            dist/*-metadata.json
+            dist/*_IDENTITY.json
+            dist/*-BROWSER_SYNTHETIC.json
+            dist/*-BROWSER_RESOURCE_BUDGET.json
           if-no-files-found: error
           retention-days: 14

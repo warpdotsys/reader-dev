@@ -118,59 +118,20 @@ jobs:
           path: dist
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
+          pattern: reader-native-transfer-*-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-native-transfers
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
           name: reader-tested-native-amd64-${{ github.sha }}
           path: ${{ runner.temp }}/reader-native-import/amd64
       - name: Verify and load the smoke-tested amd64 image before any registry login
-        shell: bash
-        run: |
-          set -euo pipefail
-          (cd dist && sha256sum -c SHA256SUMS)
-          arch=amd64
-          version='${{ needs.verify-release-inputs.outputs.version }}'
-          directory="$RUNNER_TEMP/reader-native-import/$arch"
-          node scripts/release-native-artifacts.mjs check "$arch" "$version" "$GITHUB_SHA" dist "$directory"
-          docker load --input "$directory/reader-image.tar.gz"
-          docker image inspect "reader-pro:camoufox-smoke-$arch" > "$directory/image-inspect.json"
-          node scripts/release-native-artifacts.mjs loaded "$arch" "$version" "$GITHUB_SHA" dist "$directory"
-          for report in metadata.json BASE_IMAGE_DIGESTS BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
-            cp "$directory/$report" "dist/${arch}-${report}"
-          done
-          # Only this validated archive in this ephemeral runner is removed.
-          rm -- "$RUNNER_TEMP/reader-native-import/amd64/reader-image.tar.gz"
+        run: bash scripts/import-native-release.sh amd64 '${{ needs.verify-release-inputs.outputs.version }}' "$GITHUB_SHA" dist
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: reader-tested-native-arm64-${{ github.sha }}
           path: ${{ runner.temp }}/reader-native-import/arm64
       - name: Verify and load the smoke-tested arm64 image before any registry login
-        shell: bash
-        run: |
-          set -euo pipefail
-          arch=arm64
-          version='${{ needs.verify-release-inputs.outputs.version }}'
-          directory="$RUNNER_TEMP/reader-native-import/$arch"
-          node scripts/release-native-artifacts.mjs check "$arch" "$version" "$GITHUB_SHA" dist "$directory"
-          docker load --input "$directory/reader-image.tar.gz"
-          docker image inspect "reader-pro:camoufox-smoke-$arch" > "$directory/image-inspect.json"
-          node scripts/release-native-artifacts.mjs loaded "$arch" "$version" "$GITHUB_SHA" dist "$directory"
-          for report in metadata.json BASE_IMAGE_DIGESTS BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
-            cp "$directory/$report" "dist/${arch}-${report}"
-          done
-          rm -- "$RUNNER_TEMP/reader-native-import/arm64/reader-image.tar.gz"
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          pattern: reader-native-transfer-*-${{ github.sha }}
-          path: ${{ runner.temp }}/reader-native-transfers
-      - name: Include both fresh-runner runtime proofs in the release artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          for arch in amd64 arm64; do
-            directory="$RUNNER_TEMP/reader-native-transfers/reader-native-transfer-$arch-$GITHUB_SHA"
-            cmp "$directory/metadata.json" "dist/${arch}-metadata.json"
-            for report in IMAGE_IDENTITY.json BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
-              cp "$directory/$report" "dist/${arch}-transfer-${report}"
-            done
-          done
+        run: bash scripts/import-native-release.sh arm64 '${{ needs.verify-release-inputs.outputs.version }}' "$GITHUB_SHA" dist
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
