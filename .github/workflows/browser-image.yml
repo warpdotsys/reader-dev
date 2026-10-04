@@ -124,6 +124,22 @@ on:
         required: false
         type: boolean
         default: false
+      soak_native_run:
+        description: 'Successful native-release run containing the tested image to soak; empty keeps normal integration'
+        required: false
+        type: string
+        default: ''
+      soak_revision:
+        description: 'Exact tested merge/source SHA embedded in that native artifact, not the probe script SHA'
+        required: false
+        type: string
+        default: ''
+      soak_seconds:
+        description: 'Offline generated-data continuous duration; no real accounts or production'
+        required: false
+        type: choice
+        options: ['600', '1800', '3600']
+        default: '1800'
 
 permissions:
   contents: read
@@ -131,7 +147,7 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
   cancel-in-progress: true
 
 jobs:
@@ -213,7 +229,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true }}
+    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run }}
     name: Build and smoke-test the full Reader image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 45
@@ -408,6 +424,76 @@ jobs:
           ' || true
           docker logs --tail=200 reader-browser-smoke || true
           docker rm -f reader-browser-smoke || true
+
+  offline-soak:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run }}
+    name: Soak an already-tested native image offline
+    runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 80
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Validate the completed native rehearsal and probe-only inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_RUN: ${{ inputs.soak_native_run }}
+          NATIVE_REVISION: ${{ inputs.soak_revision }}
+          SOAK_SECONDS: ${{ inputs.soak_seconds }}
+          EXPECTED_ARCH: ${{ inputs.native_arch }}
+          OTHER_MODES: ${{ inputs.real_public_source || inputs.probe_original_jar || inputs.probe_remote_webview }}
+        run: |
+          set -euo pipefail
+          [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
+          [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SOAK_SECONDS" = 600 || "$SOAK_SECONDS" = 1800 || "$SOAK_SECONDS" = 3600 ]]
+          [[ "$EXPECTED_ARCH" = amd64 || "$EXPECTED_ARCH" = arm64 ]]
+          test "$OTHER_MODES" != true
+          command -v setfacl
+          case "$EXPECTED_ARCH:$RUNNER_ARCH:$(uname -m)" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) exit 1 ;;
+          esac
+          install -d "$RUNNER_TEMP/reader-soak-report"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN" \
+            | jq -e --arg repo "$GITHUB_REPOSITORY" \
+              'select(.status == "completed" and .conclusion == "success" and
+                .name == "Native release artifact rehearsal" and
+                .path == ".github/workflows/release-native.yml" and
+                .head_repository.full_name == $repo) |
+                {id, name, path, head_sha, event, conclusion, html_url}' \
+            > "$RUNNER_TEMP/reader-soak-report/SOURCE_RUN.json"
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-release-jar-${{ inputs.soak_revision }}
+          path: dist
+          run-id: ${{ inputs.soak_native_run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-tested-native-${{ inputs.native_arch }}-${{ inputs.soak_revision }}
+          path: imported
+          run-id: ${{ inputs.soak_native_run }}
+          github-token: ${{ github.token }}
+      - name: Verify bytes and run the whole single image without external network
+        env:
+          EXPECTED_ARCH: ${{ inputs.native_arch }}
+          NATIVE_REVISION: ${{ inputs.soak_revision }}
+          SOAK_SECONDS: ${{ inputs.soak_seconds }}
+        run: bash scripts/soak-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$SOAK_SECONDS" "$RUNNER_TEMP/reader-soak-report"
+      - name: Preserve only small generated soak observations, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: offline-soak-${{ inputs.native_arch }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/reader-soak-report/
+          if-no-files-found: error
+          retention-days: 7
 
   compare-public-webview:
     if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true }}

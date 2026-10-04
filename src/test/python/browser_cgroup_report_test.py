@@ -24,7 +24,7 @@ class BrowserCgroupReportTest(unittest.TestCase):
             "cpu.max": "200000 100000",
             "memory.peak": "832761856",
             "memory.max": "2147483648",
-            "memory.events": "oom 0\noom_kill 0\noom_group_kill 0",
+            "memory.events": "max 0\noom 0\noom_kill 0\noom_group_kill 0",
             "memory.swap.current": "0",
             "memory.swap.max": "1073741824",
             "pids.peak": "199",
@@ -61,6 +61,24 @@ class BrowserCgroupReportTest(unittest.TestCase):
     def test_pids_limit_event_is_failure(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):
             self.run_report({"pids.events": "max 1"})
+
+    def test_memory_limit_pressure_is_failure_without_an_oom(self):
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            self.run_report({"memory.events": "max 7\noom 0\noom_kill 0\noom_group_kill 0"})
+
+    def test_missing_memory_pressure_counter_fails_closed(self):
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            self.run_report({"memory.events": "oom 0\noom_kill 0"})
+
+    def test_soak_must_enforce_zero_swap_not_only_observe_it(self):
+        report = self.run_report()
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            REPORT.verify_report(report, require_no_swap=True)
+        report["swapMaxBytes"] = 0
+        REPORT.verify_report(report, require_no_swap=True)
+        report["swapCurrentBytes"] = 1
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            REPORT.verify_report(report, require_no_swap=True)
 
     def test_unbounded_memory_is_failure(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):
