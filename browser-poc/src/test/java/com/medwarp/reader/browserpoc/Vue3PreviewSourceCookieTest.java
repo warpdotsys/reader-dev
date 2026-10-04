@@ -245,6 +245,58 @@ public class Vue3PreviewSourceCookieTest {
                 exerciseDialogKeyboard(owner, "导入本地书源", localImportOpener);
                 assertEquals("Cancelling a preview must not import a source", 0,
                         owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("生成键盘预览")).count());
+
+                // Real scrolling, not an artificial DOM spacer: save only generated
+                // book metadata against the second account's existing test source.
+                owner.setViewportSize(1280, 720);
+                assertEquals(32, ((Number) owner.evaluate("async source => {" +
+                        "for(let index=0;index<32;index++){" +
+                        "const response=await fetch('/reader3/saveBook',{method:'POST'," +
+                        "credentials:'same-origin',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookUrl:source+'/book-'+index,origin:source,tocUrl:source+'/toc'," +
+                        "name:'生成滚动测试 '+index,author:'生成作者',canUpdate:false})});" +
+                        "const result=await response.json();" +
+                        "if(response.status!==200||!result.isSuccess)throw new Error('Generated shelf setup failed');}" +
+                        "const shelf=await(await fetch('/reader3/getBookshelf',{credentials:'same-origin'})).json();" +
+                        "if(!shelf.isSuccess)throw new Error('Generated shelf read failed');" +
+                        "return shelf.data.length;}", sourceA)).intValue());
+                owner.navigate(previewUrl + "/");
+                owner.getByText("共 32 本", new Page.GetByTextOptions().setExact(false)).waitFor();
+                owner.locator(".book-card").first().waitFor();
+                owner.mouse().move(80, 650);
+                owner.mouse().wheel(0, 600);
+                owner.waitForFunction("window.scrollY > 100");
+                owner.evaluate("window.scrollTo(0, 0)");
+                owner.waitForFunction("window.scrollY === 0");
+                // A full page reload replaces body and conceals this lifecycle bug.
+                // Use the visible Vue router control and prove the document survived.
+                owner.evaluate("window.__readerLifecycleProbe='generated-same-document'");
+                owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("书源").setExact(true)).click();
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Source navigation must not replace the document", "generated-same-document",
+                        owner.evaluate("window.__readerLifecycleProbe"));
+                owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("Cookie A"))
+                        .locator("button[title^='登录书源']").click();
+                owner.locator("[aria-label='书源登录']").waitFor();
+                assertEquals("An open source modal should lock background scroll", "hidden",
+                        owner.evaluate("document.body.style.overflow"));
+                owner.goBack();
+                owner.locator(".bookshelf-page").waitFor();
+                assertEquals("History navigation must not replace the document", "generated-same-document",
+                        owner.evaluate("window.__readerLifecycleProbe"));
+                owner.locator(".book-card").first().waitFor();
+                owner.mouse().move(80, 650);
+                owner.mouse().wheel(0, 600);
+                try {
+                    owner.waitForFunction("window.scrollY > 100", null,
+                            new Page.WaitForFunctionOptions().setTimeout(2500));
+                } catch (RuntimeException failure) {
+                    throw new AssertionError("History navigation from source modal must restore actual shelf scrolling; overflow="
+                            + owner.evaluate("document.body.style.overflow"), failure);
+                }
+                assertEquals("Leaving sources must release its modal scroll lock", "",
+                        owner.evaluate("document.body.style.overflow"));
             } finally {
                 browser.close();
             }
@@ -280,8 +332,16 @@ public class Vue3PreviewSourceCookieTest {
         if (screenshotRoot != null && !screenshotRoot.isEmpty()) {
             String imageName = "书源登录".equals(label) ? "login" : "编辑书源".equals(label) ? "editor"
                     : "Cookie 管理".equals(label) ? "cookie-mobile" : null;
-            if (imageName != null) page.screenshot(new Page.ScreenshotOptions()
-                    .setPath(Path.of(screenshotRoot).resolve("vue3-source-dialog-" + imageName + ".png")));
+            if (imageName != null) {
+                // Hosted Chromium is fast enough to finish keyboard checks during
+                // the legitimate enter animation; capture only its settled state.
+                page.waitForCondition(() -> (Boolean) dialog.evaluate("element => {" +
+                        "const overlay=element.closest('.dlg-overlay');" +
+                        "return overlay && !overlay.matches('.dlg-enter-active, .dlg-enter-from, .dlg-leave-active')" +
+                        "&& getComputedStyle(overlay).opacity==='1' && getComputedStyle(element).opacity==='1';}"));
+                page.screenshot(new Page.ScreenshotOptions()
+                        .setPath(Path.of(screenshotRoot).resolve("vue3-source-dialog-" + imageName + ".png")));
+            }
         }
         page.keyboard().press("Escape");
         page.waitForFunction("label => !Array.from(document.querySelectorAll('[role=dialog], [role=alertdialog]'))" +

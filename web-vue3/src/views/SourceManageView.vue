@@ -1868,6 +1868,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   cookieRequestGeneration++
+  // 浏览器后退仍可离开打开中的弹窗。只释放本页仍持有的锁，
+  // 不把整页刷新（body 被重建）误当成 Vue 卸载已经清理。
+  if (document.body.style.overflow === 'hidden' && (
+    addOpen.value || importOpen.value || previewOpen.value || deleting.value
+    || deletingSub.value || deletingSubs.value.length || debugOpen.value
+    || editOpen.value || loginOpen.value || cookieMgrOpen.value
+  )) document.body.style.overflow = ''
   loginForm.value = { username: '', password: '' }
   manualCookie.value = ''
   editCookie.value = ''
