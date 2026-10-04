@@ -23,6 +23,16 @@ docker load --input "$archive"
 docker image inspect "reader-pro:camoufox-smoke-$arch" > "$directory/image-inspect.json"
 node scripts/release-native-artifacts.mjs loaded "$arch" "$version" "$revision" "$dist" "$directory"
 cmp "$evidence/metadata.json" "$directory/metadata.json"
+for report_directory in "$directory" "$evidence"; do
+  # Retain and require the actual identity object, not only a boolean assertion.
+  jq -e --arg version "$version" --arg revision "$revision" \
+    'type == "object" and .version == $version and .buildRevision == $revision' \
+    "$report_directory/RELEASE_IDENTITY.json" >/dev/null
+  jar_sha=$(jq -er '.jarSha256' "$directory/metadata.json")
+  jq -e --arg arch "$arch" --arg revision "$revision" --arg jar_sha "$jar_sha" \
+    'type == "object" and .architecture == $arch and .revision == $revision and .jarSha256 == $jar_sha' \
+    "$report_directory/JAR_IDENTITY.json" >/dev/null
+done
 for report in metadata.json BASE_IMAGE_DIGESTS BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
   cp "$directory/$report" "$dist/${arch}-${report}"
 done

@@ -66,7 +66,7 @@ grep -Eq "(^|[[:space:]])(127\\.0\\.0\\.1|\\[::ffff:127\\.0\\.0\\.1\\]):$port([[
   "$output/reader-release-listener.txt"
 curl -fsS --max-time 10 "http://127.0.0.1:$port/assets/reader-release.json" \
   | jq -e --arg version "$version" --arg revision "$revision" \
-    '.version == $version and .buildRevision == $revision' > "$output/RELEASE_IDENTITY.json"
+    'select(.version == $version and .buildRevision == $revision)' > "$output/RELEASE_IDENTITY.json"
 docker exec "$container_id" python -m camoufox version
 docker exec "$container_id" sh -ec '
   family=$(fc-list :lang=zh family | sed -n "1p")

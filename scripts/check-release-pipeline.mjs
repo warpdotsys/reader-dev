@@ -178,6 +178,12 @@ if (!publisherRehearsal.includes('needs: [build-jar, native-images, verify-trans
     !nativeImporter.includes('cmp "$evidence/metadata.json" "$directory/metadata.json"')) {
   throw new Error('publisher import rehearsal must consume both real fresh-runner evidence artifacts')
 }
+if (!nativeSmoke.includes('select(.version == $version and .buildRevision == $revision)') ||
+    !nativeImporter.includes('for report_directory in "$directory" "$evidence"; do') ||
+    !nativeImporter.includes('type == "object" and .version == $version and .buildRevision == $revision') ||
+    !nativeImporter.includes('type == "object" and .architecture == $arch and .revision == $revision and .jarSha256 == $jar_sha')) {
+  throw new Error('publisher artifact identity validation must retain and check actual runtime objects, not boolean placeholders')
+}
 if (/^\s*docker (?:build|buildx build)\b/m.test(publisher + '\n' + nativeImporter)) {
   throw new Error('publisher must never rebuild an image after native smoke tests')
 }
