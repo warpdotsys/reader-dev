@@ -77,12 +77,18 @@
     "typeCheckSucceeded": true,
     "productionBuildSucceeded": true
   },
+  "subsequentCiVerification": {
+    "sourceCommit": "2cca1143a795537b3a26e293588e5cd59aaaa28b",
+    "summary": "netscape-cookie-ci-2cca1143-2026-10-04.json",
+    "allFourWorkflowsSucceeded": true,
+    "camoufoxNetscapeCaseActuallyExecuted": true
+  },
   "limits": [
     "generated credentials only; this is not real Qidian authentication or reading proof",
     "the Netscape format does not encode SameSite; none is invented",
     "manual import replaces applicable credentials; invalid input is rejected before modification",
     "not a power-loss transaction across cache and index files",
-    "CI must run again for the new source commit; earlier 2caf3a5e success is not evidence for this change",
+    "current 2cca1143 CI checked separately; earlier 2caf3a5e success is not evidence for this change",
     "no production deployment, registry push, or stable release"
   ]
 }

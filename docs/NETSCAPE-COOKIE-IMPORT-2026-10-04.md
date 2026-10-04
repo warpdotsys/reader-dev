@@ -31,6 +31,16 @@
 
 精简、无凭据的实际结果见[证据摘要](evidence/netscape-cookie-import-2026-10-04.json)。本机产物不是 GitHub 正式发版产物，不能与其他提交或服务器 JAR 的哈希互换。
 
+## 本次源码的托管实跑：2cca1143
+
+提交 `2cca1143a795537b3a26e293588e5cd59aaaa28b` 的 [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/37195595626)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37195595637)、[完整浏览器镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37195595791)及[六作业原生传递演练](https://github.com/warpdotsys/reader-dev/actions/runs/37195595659)均已完成且成功。实际 PR 合并快照为 `a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5`，不是已经合并到默认分支。
+
+- 已下载的真实 Camoufox JUnit 为 12 项、0 跳过/失败/错误。新增 `importedNetscapeCookiesRetainScopeInRealBrowserRequests` 实际执行 7.727 秒：生成 Netscape Cookie 经过主请求与不同路径子资源；HttpOnly 对页面脚本不可见，HTTP 不发送 Secure，空值保留，其他用户不继承。不是仅编译或检查测试名称。
+- 已下载的核心界面 JUnit 为 12 项、0 跳过/失败/错误，包含两个 Netscape 导入入口与实际界面退出/换账号隔离。此处为托管 Chromium，不是起点认证用例。
+- 消费端 7,033 B 小型制品内的 20 份实际 JSON 已逐项核对：两架构共享同一 JAR，构建和新 runner 重载后的镜像、版本、请求、Cookie、四用户及资源字段符合预期。四次短时峰值 800,141,312–806,432,768 B，限额事件均为 0；swap 实际为 0，但允许上限为 1 GiB，不能描述成强制禁用 swap。完整镜像仍只在 GitHub runner 传递。
+
+原始 JUnit 哈希、具体作业及边界见[本提交 Cookie 门禁摘要](evidence/netscape-cookie-ci-2cca1143-2026-10-04.json)和[双架构交付摘要](evidence/native-release-2cca1143-2026-10-04.json)。此前 `2caf3a5e` 的证据保持历史含义，不拿来证明此修改。
+
 ## 重复验证
 
 安装仓库要求的 JDK 11、Node 24 后，在根目录：
@@ -55,8 +65,8 @@ $env:READER_VUE3_ISOLATED = '1'
 
 ## 尚未验证与已知限制
 
-- 新增真实 Camoufox 导入用例已编译，但本机未安装锁定运行时，因此该项被环境门控跳过；托管 `browser-image.yml` 会实际测试主请求、子资源、HttpOnly 页面不可见、HTTP 不发送 Secure、空值与用户隔离。通过之前不写成浏览器传输已修复。
-- 真实起点 Reader 搜索、章节、认证三方尚未完成；本轮不重用真实会话值证明生成用例，也不把之前 `2caf3a5e` 的绿灯当成本轮源码的 CI 结果。
+- 本机未安装锁定 Camoufox 运行时，相关用例仍为本机门控跳过；上述 GitHub 托管实跑已补齐本提交的浏览器传输验收。两种运行环境不混淆。
+- 真实起点 Reader 搜索、章节、认证三方尚未完成。已实际完成起点网站本身的认证、搜书和免费第一章显示，见[真实网站记录](QIDIAN-SOURCE-LOGIN-2026-10-04.md#同日真实网站搜书与免费章节验证)；不能拿它代替 Reader 或三方验收。
 - 手动导入会替换相应已保存凭据；清空仍遵守 legacy 同域撤销语义。缓存和索引不是跨文件断电事务；文件系统写入失败及同时修改的并发语义未新增专项验收。
 - 输入框粘贴阶段仍为明文。源站 Cookie 可能过期，验证码/扫码和收费权限不在本次修复范围；不绕过它们。
 - 当前不合并、不升稳定版本、不发 Release、不推 registry、不改生产。旧 JAR、Vue 2 回退和用户未提交文件保持不变。

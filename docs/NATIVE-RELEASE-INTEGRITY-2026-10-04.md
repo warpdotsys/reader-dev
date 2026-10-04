@@ -31,6 +31,8 @@
 
 ## 实际发布路径
 
+2026-10-04 Netscape 修复后的复验：`2cca1143` 的[六作业演练 37195595659](https://github.com/warpdotsys/reader-dev/actions/runs/37195595659)及 Java/Kotlin、Vue 3、完整浏览器镜像工作流均成功，实际 PR 合并快照 `a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5`。所有六作业使用 GitHub 托管 `ubuntu-24.04` / `ubuntu-24.04-arm`，没有自托管 runner。本机只下载 7,033 B 消费端制品，20 份 JSON 的实际字段与身份核对通过，两架构共享 JAR SHA-256 `f9f1ad0aaca9e0f16c21d5279187456c9da9db6d832f2c9f922b035dd744cd0d`。四次构建/重载测试峰值约 763–769 MiB、任务峰值 177–180，限额事件为 0；是短时生成样本，不是长期负载或真实起点验收。具体镜像、归档和预算见[本提交摘要](evidence/native-release-2cca1143-2026-10-04.json)。未下载完整镜像、未推 registry、未发正式 Release 或部署。
+
 2026-10-04 后续核对：`2caf3a5e` 的[六作业演练 37192597616](https://github.com/warpdotsys/reader-dev/actions/runs/37192597616)及三道常规托管门禁全部成功，实际合并快照 `2252cfa955622245d3568df70741f6eb5a4c2fcc`。只下载 7,036 B 消费端制品和小型核心 JUnit，逐项核对 20 份实际 JSON、四份版本对象、四个运行时 JAR 哈希、两种导入镜像身份、GET/POST/脚本/Cookie/四用户及资源数据；12 项核心浏览器测试无跳过或失败。两侧共享 JAR 为 `645b0b84d901cf91cabb1112ce6ff04eb8d595db59174794a319e202fa0fce4d`，详见[验收摘要](evidence/native-release-2caf3a5e-2026-10-04.json)。这不是后续 Netscape 导入修改的 CI 证据，不是正式发布或生产部署；本机未下载完整镜像。
 
 1. `release-native.yml` 的 `build-jar` 使用 JDK 11、Node 24、锁定依赖构建一次 Vue 3 + Java/Kotlin JAR，执行 Python、前端和后端测试。保存源码 SHA 对应的 JAR 与使用文件名而非工作区路径的 `SHA256SUMS`。
