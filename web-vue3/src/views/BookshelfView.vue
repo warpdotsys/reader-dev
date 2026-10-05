@@ -35,6 +35,9 @@ import { moveGroupTo } from '@/utils/groupOrder'
 import { decodeGroupMask, encodeGroupMask, isInLegacyBookGroup } from '@/utils/groupContract'
 import { parseShelfView, shelfViewMetrics, type ShelfViewMode } from '@/utils/shelfView'
 import { proxyImageUrl } from '@/utils/imageProxy'
+import { localChapterCacheScope } from '@/utils/readerLocalCache'
+import { canUseOfflineShelf, loadOfflineShelf, saveOfflineShelf } from '@/utils/shelfOfflineCache'
+import { captureRequestSession, isRequestSessionCurrent } from '@/api/requestSession'
 import { useUserStore } from '@/stores/user'
 import { probeSecureMode } from '@/api/users'
 import TopNav from '@/components/TopNav.vue'
@@ -139,40 +142,12 @@ function hoverPreview(book: Book): string | null {
 const books = ref<Book[]>([])
 const loading = ref(true)
 const refreshing = ref(false)
-/** 离线书架缓存（legacy helper.js 本地书架缓存：服务端不可达时展示最近一次数据） */
-const OFFLINE_SHELF_KEY = 'reader_shelf_offline'
+/** 元数据与章节缓存使用同一部署/账号/实际配置空间隔离规则。 */
+const offlineShelfScope = computed(() => localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL))
 const offlineShelf = ref(false)
-
-interface ShelfOfflineCache {
-  books: Book[]
-  groups: BookGroup[]
-  ts: number
-}
-
-function saveOfflineShelf() {
-  try {
-    const data: ShelfOfflineCache = {
-      books: books.value,
-      groups: groups.value,
-      ts: Date.now(),
-    }
-    localStorage.setItem(OFFLINE_SHELF_KEY, JSON.stringify(data))
-  } catch {
-    /* ignore */
-  }
-}
-
-function loadOfflineShelf(): ShelfOfflineCache | null {
-  try {
-    const raw = JSON.parse(localStorage.getItem(OFFLINE_SHELF_KEY) ?? '') as unknown
-    if (!raw || typeof raw !== 'object') return null
-    const o = raw as Partial<ShelfOfflineCache>
-    if (!Array.isArray(o.books) || !Array.isArray(o.groups)) return null
-    return { books: o.books, groups: o.groups, ts: typeof o.ts === 'number' ? o.ts : 0 }
-  } catch {
-    return null
-  }
-}
+let shelfLoadVersion = 0
+let shelfMounted = false
+let shelfDisposed = false
 const keyword = ref('')
 watch(keyword, (k) => {
   if (searchMode.value === 'full') triggerContentSearch(k)
@@ -700,6 +675,8 @@ async function copyOpdsUrl() {
 }
 
 onBeforeUnmount(() => {
+  shelfDisposed = true
+  shelfLoadVersion++
   if (longPressTimer) clearTimeout(longPressTimer)
   wrapObserver?.disconnect()
   window.removeEventListener('scroll', onWindowScroll)
@@ -1373,18 +1350,41 @@ watch([keyword, activeGroup, sortMode], () => {
   window.scrollTo({ top: Math.max(0, wrap.getBoundingClientRect().top + window.scrollY - 96) })
 })
 
+// 身份变化同步隐藏上一空间；等待 store 一次更新完成再加载最终空间。
+watch([offlineShelfScope, () => store.sessionRevision], () => {
+  const version = ++shelfLoadVersion
+  books.value = []
+  groups.value = []
+  selected.value = new Set()
+  activeGroup.value = null
+  offlineShelf.value = false
+  loading.value = false
+  refreshing.value = false
+  void nextTick(() => {
+    if (shelfMounted && !shelfDisposed && version === shelfLoadVersion && store.accessToken) void load()
+  })
+}, { flush: 'sync' })
+
 async function load(silent = false) {
-  if (!silent) loading.value = true
-  else refreshing.value = true
+  const version = ++shelfLoadVersion
+  const session = captureRequestSession(store)
+  const scope = offlineShelfScope.value
+  const current = () => !shelfDisposed && version === shelfLoadVersion &&
+    scope === offlineShelfScope.value && isRequestSessionCurrent(session, store)
+  loading.value = !silent
+  refreshing.value = silent
+  offlineShelf.value = false
   try {
     const [res, gRes] = await Promise.all([
       getBookshelf(silent),
-      getBookGroups().catch(() => ({ isSuccess: false, errorMsg: '', data: [] as BookGroup[] })),
+      getBookGroups().catch(() => null),
     ])
+    if (!current()) return
     books.value = res.data ?? []
-    groups.value = gRes.data ?? []
+    groups.value = gRes?.data ?? []
     offlineShelf.value = false
-    saveOfflineShelf()
+    // 分组失败可以展示本次在线书架，但不能用伪空分组覆盖完整的离线快照。
+    if (res.isSuccess && gRes?.isSuccess) saveOfflineShelf(scope, { books: books.value, groups: groups.value, ts: Date.now() })
     // 数据刷新后清理已失效的选中项
     if (selected.value.size) {
       const valid = new Set(books.value.map((b) => b.bookUrl))
@@ -1394,9 +1394,10 @@ async function load(silent = false) {
     if (activeGroup.value !== null && !groups.value.some((g) => g.id === activeGroup.value)) {
       activeGroup.value = null
     }
-  } catch {
+  } catch (error) {
+    if (!current() || !canUseOfflineShelf(error)) return
     // 错误提示已由拦截器统一处理；服务端不可达时降级最近一次本地缓存（离线书架）
-    const cached = loadOfflineShelf()
+    const cached = loadOfflineShelf(scope)
     if (cached) {
       books.value = cached.books
       groups.value = cached.groups
@@ -1404,8 +1405,10 @@ async function load(silent = false) {
       if (!silent) ElMessage.warning('服务端暂不可用，已展示离线书架缓存')
     }
   } finally {
-    loading.value = false
-    refreshing.value = false
+    if (current()) {
+      loading.value = false
+      refreshing.value = false
+    }
   }
 }
 
@@ -2090,6 +2093,7 @@ async function doRemoveFromShelf() {
 }
 
 onMounted(() => {
+  shelfMounted = true
   // 旧会话可能未带 isAdmin 标记：后台探测一次，管理员入口/系统配置按钮据此恢复显示
   void probeSecureMode().catch(() => false)
   wrapObserver = new ResizeObserver(() => {

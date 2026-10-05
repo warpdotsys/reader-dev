@@ -164,6 +164,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
@@ -173,7 +174,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Reading LocalReading LocalCacheIsolation SessionRace EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
+          for name in Login Reading LocalReading LocalCacheIsolation SessionRace ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
@@ -211,6 +212,14 @@ jobs:
         with:
           name: vue3-session-race-${{ github.sha }}
           path: ${{ runner.temp }}/vue3-session-race-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated offline shelf isolation screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-shelf-offline-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-shelf-offline-generated-*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve generated local reading screenshot (no private books)

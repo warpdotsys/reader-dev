@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-05",
+  "scope": "generated accounts and metadata only; no private bodies, production writes, or original-JAR differential",
+  "baseline": {
+    "jarSha256": "33ef0f63b8973f162b1dc50e05c993e5a5b745e9f539ede6e7501f63ca6ee0f1",
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0, "seconds": 11.352,
+    "xmlSha256": "8ee99f0554fe55cbf51a18fd92fa77985f6289b1c00eba94333df83202b6559b",
+    "observed": "B real login succeeds, direct backend HTTP 200/isSuccess=true/empty shelf, failed UI shelf transport displays A metadata",
+    "screenshotVisuallyInspected": true
+  },
+  "candidateJarSha256": "6f78f28a2661f736f1a96709c458e4ec224c0c398ed7c9a6e6453b94bdc193d6",
+  "packagedCurrentUiFilesCheckedBySha256": 81,
+  "frontend": { "tests": 205, "skipped": 0, "failures": 0, "typecheck": "passed", "build": "passed", "staticRegisteredApiRoutes": 92 },
+  "initialCandidateTestWaitFailure": {
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0, "seconds": 13.257,
+    "xmlSha256": "e783e243a89cd41f125afe412ee40c8fedf6202c0d580cc5a950aa4359130fb5",
+    "reason": "counted a retained leaving banner before the existing 150ms Vue transition detached it; same JAR passed after bounded DOM wait"
+  },
+  "standalone": {
+    "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 13.326,
+    "xmlSha256": "2152e6270d0bfdf99023cfa8ca808d2ba971b2d32cb93c2af47b03c7e7cce5da",
+    "testSourceSha256": "dbc7e0d89159b9ae546b498a0a02926641be58c777f77aba6b84caeca1456b47",
+    "screenshotVisuallyInspected": true
+  },
+  "core": {
+    "tests": 15, "skipped": 0, "failures": 0, "errors": 0,
+    "reportsIndividuallyChecked": true,
+    "shelfOfflineSeconds": 8.925,
+    "shelfOfflineXmlSha256": "db893671e6b8af8cb5e5067f1ef450c06f88a896d2e272f157406915b25e0d18",
+    "journeys": ["Login", "Reading", "LocalReading", "LocalCacheIsolation", "SessionRace", "ShelfOfflineIsolation", "EpubSafety", "ShelfLayout", "Search", "Source", "SourceCookie", "Group", "ReplaceRule", "File", "Backup"]
+  },
+  "completedShelfChecks": ["cross-account hidden", "own-account restored", "business rejection not offline", "503 restored", "real online recovery", "legacy untouched", "no credential in cache key", "late same-session refresh discarded", "partial group failure preserves complete cache"],
+  "deploymentAndDefaultNamespace": "pure-function coverage only; real administrator cross-space journey pending",
+  "cleanup": { "ownedReaderAndFixtureStopped": true, "remainingRelevantListener": "127.0.0.1:18931/PID 61244 user Reader; untouched", "userPid4056ConfirmedExited": true },
+  "hostedStatusAtSourceCommit": "pending; no previous green run reused as proof",
+  "knownUnverified": ["cross-tab session synchronization", "all dialogs/native fetch/SSE identity lifecycle", "real Qidian authenticated three-way comparison", "all media formats", "long load", "local final full-image runtime", "production acceptance"]
+}
