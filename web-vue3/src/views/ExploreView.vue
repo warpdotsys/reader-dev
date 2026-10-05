@@ -251,7 +251,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { applyHan } from '@/utils/chinese'
 import { useHanMode, setGlobalHanMode, syncHanMode } from '@/utils/hanMode'
 import { useRouter } from 'vue-router'

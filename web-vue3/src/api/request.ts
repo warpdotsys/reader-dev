@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import { notifyBackendReachable } from './backendFlag'

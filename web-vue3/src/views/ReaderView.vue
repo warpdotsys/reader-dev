@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { getBookshelf, deleteBook, saveBookProgress } from '@/api/bookshelf'
 import { getBookInfo, getBookToc, getBookContent, saveBookContent, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import {

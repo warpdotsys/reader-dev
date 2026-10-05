@@ -125,7 +125,7 @@ const visibleLinks = computed(() => {
 
     <slot />
 
-    <div v-if="variant === 'nav'" class="user-area">
+    <div v-if="variant === 'nav'" class="user-area" role="navigation" aria-label="全局导航" tabindex="0">
       <button
         v-for="link in visibleLinks"
         :key="link.to"
@@ -342,5 +342,19 @@ const visibleLinks = computed(() => {
   .user-area .default-config-btn {
     flex-shrink: 0;
   }
+}
+/* Short landscape/keyboard viewports keep navigation on one scrollable line.
+   Do not shrink labels or cover the remaining content with a multi-row sticky bar. */
+@media (max-width: 720px) and (max-height: 400px) {
+  .user-area {
+    flex-wrap: nowrap;
+    width: 100%;
+    margin-left: 0;
+    overscroll-behavior-x: contain;
+  }
+}
+.user-area:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 </style>

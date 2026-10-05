@@ -65,6 +65,32 @@ public class Vue3PreviewManagerNamespaceTest {
         settled(page);
     }
 
+    private static void noticesLeaveNavigationUsable(Page page) {
+        settled(page);
+        assertEquals("Visible notices must not cover navigation or the shelf search controls", false,
+                page.evaluate("() => {const targets=Array.from(document.querySelectorAll('.topbar,.search-box'))"
+                        + ".map(el=>el.getBoundingClientRect());return Array.from(document.querySelectorAll('.el-message'))"
+                        + ".some(el=>{if(getComputedStyle(el).display==='none')return false;"
+                        + "const b=el.getBoundingClientRect();const clip=el.closest('.reader-message-stack')?.getBoundingClientRect();"
+                        + "const r={left:b.left,right:b.right,top:clip?Math.max(b.top,clip.top):b.top,"
+                        + "bottom:clip?Math.min(b.bottom,clip.bottom):b.bottom};"
+                        + "return r.bottom>r.top&&targets.some(t=>r.left<t.right&&r.right>t.left&&r.top<t.bottom&&r.bottom>t.top);});}"));
+        Locator region = page.locator("#reader-message-region");
+        assertEquals("1", String.valueOf(region.count()));
+        assertTrue("Notice geometry must be measured while notices are actually present", region.isVisible());
+        assertEquals("region", region.getAttribute("role"));
+        assertEquals("操作消息，可滚动查看或关闭", region.getAttribute("aria-label"));
+        assertEquals("Every notice stays inside the viewport with existing lower controls left clear", true,
+                region.evaluate("el=>{const r=el.getBoundingClientRect();"
+                        + "const lower=Array.from(document.querySelectorAll('.manage-bar,.reader-page .progress-bar,.update-banner'))"
+                        + ".map(el=>el.getBoundingClientRect()).filter(b=>b.width>0&&b.height>0&&b.bottom>0&&b.top<innerHeight);"
+                        + "return r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight-8"
+                        + "&&lower.every(b=>r.bottom<=b.top-8);}"));
+        page.locator(".search-input").click();
+        assertEquals("Notifications must not steal or block real search-input focus", true,
+                page.locator(".search-input").evaluate("el=>document.activeElement===el"));
+    }
+
     private static void key(Page page, String key, boolean success) {
         Locator dialog = page.locator("[role=dialog][aria-label='输入管理密码']");
         dialog.waitFor();
@@ -199,6 +225,55 @@ public class Vue3PreviewManagerNamespaceTest {
                             + "!message.textContent.includes('Network Error'))"
                             + "&&messages.some(message=>message.textContent.includes('网络连接失败，请检查连接后重试'))"));
             screenshot(page, "own-offline");
+            noticesLeaveNavigationUsable(page);
+            // Namespace changes trigger non-silent loads; a manual refresh intentionally stays silent.
+            // Preserve all resulting notices instead of discarding them with a message-count limit.
+            for (int round = 0; round < 4; round++) {
+                page.locator(".default-config-btn:visible").click(); settled(page);
+            }
+            assertTrue("Real offline namespace changes must retain several warning notices",
+                    page.locator(".el-message--warning:visible").count() >= 3);
+            page.locator(".manage-btn").click(); settled(page);
+            noticesLeaveNavigationUsable(page);
+            screenshot(page, "notices-manage-footer");
+            page.locator(".manage-btn").click(); settled(page);
+            page.locator(".manage-bar").waitFor(new Locator.WaitForOptions()
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+            page.setViewportSize(640, 360);
+            noticesLeaveNavigationUsable(page);
+            screenshot(page, "notices-short");
+            page.setViewportSize(375, 320);
+            noticesLeaveNavigationUsable(page);
+            Locator stack = page.locator(".reader-message-stack");
+            screenshot(page, "notices-narrow-short-before-scroll");
+            System.out.println("NOTICE_VIEWPORT " + stack.evaluate("el=>JSON.stringify({"
+                    + "width:innerWidth,height:innerHeight,clientHeight:el.clientHeight,scrollHeight:el.scrollHeight,"
+                    + "regionHeight:el.parentElement.getBoundingClientRect().height,"
+                    + "safeTop:el.parentElement.style.getPropertyValue('--reader-message-safe-top'),"
+                    + "bottom:el.parentElement.style.getPropertyValue('--reader-message-bottom')})"));
+            assertEquals("0", stack.getAttribute("tabindex"));
+            assertEquals("A short viewport must still expose a readable notification line", true,
+                    stack.evaluate("el=>el.clientHeight>=40"));
+            assertEquals("All retained notices must remain scrollable on a short narrow screen", true,
+                    stack.evaluate("el=>el.scrollHeight>el.clientHeight"));
+            Locator navigation = page.locator(".user-area");
+            assertEquals("Short-screen navigation keeps readable labels and its own scroll area", true,
+                    navigation.evaluate("el=>el.scrollWidth>el.clientWidth"));
+            assertEquals("0", navigation.getAttribute("tabindex"));
+            navigation.focus();
+            Number navigationBefore = (Number) navigation.evaluate("el=>el.scrollLeft");
+            navigation.press(navigationBefore.doubleValue() > 0 ? "ArrowLeft" : "ArrowRight");
+            page.waitForCondition(() -> ((Number) navigation.evaluate("el=>el.scrollLeft")).doubleValue()
+                    != navigationBefore.doubleValue());
+            stack.focus(); stack.press("End");
+            page.waitForCondition(() -> Boolean.TRUE.equals(stack.evaluate("el=>el.scrollTop>0")));
+            // Focusing/scanning scroll regions may also move the document: recheck actual geometry.
+            noticesLeaveNavigationUsable(page);
+            screenshot(page, "notices-narrow-short");
+            page.locator(".reader-message-dismiss").click();
+            page.waitForCondition(() -> page.locator(".el-message:visible").count() == 0
+                    && !page.locator("#reader-message-region").isVisible());
+            page.setViewportSize(1280, 720);
             offline.set(false);
             page.locator(".logout-btn").click(); page.locator(".login-page").waitFor();
             signIn(page, second, true);

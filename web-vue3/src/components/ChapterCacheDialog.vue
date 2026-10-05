@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { getBookContent } from '@/api/books'
 import { cacheBookSSE } from '@/api/cacheBook'
 import { localChapterCacheScope, saveLocalChapter } from '@/utils/readerLocalCache'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { login as loginApi } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { t } from '@/utils/i18n'
