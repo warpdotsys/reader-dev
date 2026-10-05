@@ -39,6 +39,86 @@ class ResponseTooLarge(Exception):
     pass
 
 
+class BlockedScheme(Exception):
+    pass
+
+
+class MainDocumentSnapshot:
+    """Observe finite main-frame navigation without replaying requests or scripts.
+
+    DOMContentLoaded belongs to one document, not to a chain of client redirects.
+    A bounded quiet window covers pending main-document requests and commits;
+    subresources/SSE never reset it. It is not an arbitrary delayed-script oracle.
+    """
+
+    QUIET_SECONDS = 0.2
+
+    def __init__(self, page, monotonic=time.monotonic):
+        self.page = page
+        self.monotonic = monotonic
+        self.pending = set()
+        self.generation = 0
+        self.last_change = monotonic()
+        page.on("request", self.request_started)
+        page.on("requestfinished", self.request_finished)
+        page.on("requestfailed", self.request_finished)
+        page.on("framenavigated", self.frame_navigated)
+
+    def changed(self):
+        self.generation += 1
+        self.last_change = self.monotonic()
+
+    def request_started(self, request):
+        if request.is_navigation_request() and request.frame == self.page.main_frame:
+            self.pending.add(request)
+            self.changed()
+
+    def request_finished(self, request):
+        if request in self.pending:
+            self.pending.remove(request)
+            self.changed()
+
+    def frame_navigated(self, frame):
+        if frame == self.page.main_frame:
+            self.changed()
+
+    def read(self, timeout_ms, check_allowed):
+        if timeout_ms <= 0:
+            raise ValueError("timeoutMs must be positive")
+        # One snapshot budget, not a fresh timeout for each document in a chain.
+        deadline = self.monotonic() + timeout_ms / 1000.0
+
+        def remaining_ms():
+            remaining = (deadline - self.monotonic()) * 1000.0
+            if remaining <= 0:
+                raise TimeoutError("Main document did not settle within snapshot budget")
+            return remaining
+
+        while True:
+            check_allowed()
+            # Pump the sync driver's event loop; time.sleep would hide commits.
+            self.page.wait_for_timeout(min(50, remaining_ms()))
+            check_allowed()
+            remaining_ms()
+            if self.pending or self.monotonic() - self.last_change < self.QUIET_SECONDS:
+                continue
+            generation = self.generation
+            self.page.wait_for_load_state("domcontentloaded", timeout=remaining_ms())
+            check_allowed()
+            remaining_ms()
+            if self.pending or self.generation != generation:
+                continue
+            # Unknown browser, closed-page and transport exceptions stay fatal;
+            # never treat them as transient or replay the original POST/goto.
+            body = self.page.content()
+            require_utf8_limit(body, MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
+            self.page.wait_for_timeout(min(50, remaining_ms()))
+            check_allowed()
+            remaining_ms()
+            if not self.pending and self.generation == generation:
+                return body
+
+
 def utf8_length_at_most(value, maximum):
     """Count UTF-8 bytes without allocating a second full copy of an untrusted body."""
     if not isinstance(value, str):
@@ -456,6 +536,8 @@ def render(payload):
 
                 context.route("**/*", route_request)
                 page = context.new_page()
+                snapshot = (MainDocumentSnapshot(page) if not source_pattern
+                            and not payload.get("javaScript") else None)
                 try:
                     page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
                 except Exception:
@@ -503,7 +585,11 @@ def render(payload):
                     )
                     body = str(value or "")
                 else:
-                    body = page.content()
+                    def check_allowed():
+                        if state["blocked"]:
+                            raise BlockedScheme()
+
+                    body = snapshot.read(timeout_ms, check_allowed)
 
                 require_utf8_limit(body, MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
 

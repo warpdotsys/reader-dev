@@ -6,6 +6,7 @@ import types
 import unittest
 from pathlib import Path
 from urllib.parse import urlsplit
+from unittest.mock import patch
 
 
 def load_worker():
@@ -24,6 +25,152 @@ def load_worker():
 
 
 worker = load_worker()
+
+
+class GeneratedPage:
+    """Deterministic event-loop double, not a real browser acceptance claim."""
+
+    def __init__(self):
+        self.now = 0.0
+        self.main_frame = object()
+        self.events = []
+        self.handlers = {}
+        self.body = "generated-old"
+        self.content_calls = 0
+        self.on_content = None
+        self.on_load_state = None
+
+    def on(self, name, callback):
+        self.handlers[name] = callback
+
+    def emit(self, name, item):
+        self.handlers[name](item)
+
+    def request(self, main=True, navigation=True):
+        return types.SimpleNamespace(is_navigation_request=lambda: navigation,
+                                     frame=self.main_frame if main else object())
+
+    def schedule(self, when, callback):
+        self.events.append((when, callback))
+        self.events.sort(key=lambda event: event[0])
+
+    def wait_for_timeout(self, milliseconds):
+        end = self.now + milliseconds / 1000.0
+        while self.events and self.events[0][0] <= end:
+            self.now, callback = self.events.pop(0)
+            callback()
+        self.now = end
+
+    def wait_for_load_state(self, state, timeout):
+        assert state == "domcontentloaded" and timeout > 0
+        if self.on_load_state:
+            callback, self.on_load_state = self.on_load_state, None
+            callback()
+
+    def content(self):
+        self.content_calls += 1
+        value = self.body
+        if self.on_content:
+            callback, self.on_content = self.on_content, None
+            callback()
+        return value
+
+
+class WorkerDocumentSnapshotTest(unittest.TestCase):
+    def snapshot(self, page):
+        return worker.MainDocumentSnapshot(page, monotonic=lambda: page.now)
+
+    def test_pending_main_navigation_cannot_return_the_old_document(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        request = page.request()
+        # SimpleNamespace is unhashable; real Playwright Request is identity-hashable.
+        request = type("GeneratedRequest", (), {"frame": request.frame,
+                       "is_navigation_request": lambda self: True})()
+        page.emit("request", request)
+        def complete():
+            page.body = "generated-final"
+            page.emit("framenavigated", page.main_frame)
+            page.emit("requestfinished", request)
+        page.schedule(0.4, complete)
+        self.assertEqual("generated-final", snapshot.read(2000, lambda: None))
+        self.assertGreaterEqual(page.now, 0.6)
+        self.assertEqual(1, page.content_calls)
+
+    def test_commit_during_snapshot_discards_only_the_obsolete_html(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def commit():
+            page.body = "generated-final"
+            page.emit("framenavigated", page.main_frame)
+        page.on_content = commit
+        self.assertEqual("generated-final", snapshot.read(2000, lambda: None))
+        self.assertEqual(2, page.content_calls)
+
+    def test_commit_during_load_state_check_prevents_an_obsolete_snapshot(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        page.on_load_state = lambda: page.emit("framenavigated", page.main_frame)
+        self.assertEqual("generated-old", snapshot.read(2000, lambda: None))
+        self.assertGreaterEqual(page.now, 0.4)
+        self.assertEqual(1, page.content_calls)
+
+    def test_iframe_and_non_navigation_streams_do_not_reset_main_quiet_window(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        page.emit("request", page.request(main=False))
+        page.emit("request", page.request(navigation=False))
+        page.emit("framenavigated", object())
+        self.assertEqual("generated-old", snapshot.read(2000, lambda: None))
+        self.assertLess(page.now, 0.4)
+        self.assertFalse(snapshot.pending)
+
+    def test_endless_main_navigation_has_one_monotonic_budget(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        for step in range(1, 20):
+            page.schedule(step / 20, lambda: page.emit("framenavigated", page.main_frame))
+        with self.assertRaises(TimeoutError):
+            snapshot.read(500, lambda: None)
+        self.assertLessEqual(page.now, 0.500001)
+        self.assertEqual(0, page.content_calls)
+
+    def test_network_rejection_during_event_pump_is_fatal_before_snapshot(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        denied = []
+        page.schedule(0.05, lambda: denied.append(True))
+        def check_allowed():
+            if denied:
+                raise worker.BlockedScheme()
+        with self.assertRaises(worker.BlockedScheme):
+            snapshot.read(2000, check_allowed)
+        self.assertEqual(0, page.content_calls)
+
+    def test_unknown_content_failure_is_not_hidden_or_retried(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def fail():
+            raise RuntimeError("generated-closed-page")
+        page.on_content = fail
+        with self.assertRaisesRegex(RuntimeError, "generated-closed-page"):
+            snapshot.read(2000, lambda: None)
+        self.assertEqual(1, page.content_calls)
+
+    def test_utf8_body_limit_is_enforced_before_accepting_a_snapshot(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        page.body = "生成"
+        with patch.object(worker, "MAX_BODY_UTF8_BYTES", 4):
+            with self.assertRaises(worker.ResponseBodyTooLarge):
+                snapshot.read(2000, lambda: None)
+
+    def test_non_positive_snapshot_budget_is_rejected(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        with self.assertRaises(ValueError):
+            snapshot.read(0, lambda: None)
+        self.assertEqual(0, page.content_calls)
 
 
 class WorkerCookieProtocolTest(unittest.TestCase):

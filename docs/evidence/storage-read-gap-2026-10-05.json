@@ -1,0 +1,54 @@
+{
+  "status": "generated replacement-gap defect reproduced and source fixed; full local build passed; own hosted UI acceptance pending",
+  "sourceHashes": {
+    "VertExt": "8c046086ff6ebf4c79318b08933602add9f8b1a709390bfef2e6ddfb908cfd24",
+    "StorageReadConsistencyTest": "c942d00cdd423802cfed99c8f11e347cdc8f010657e0d10610baf53e169123f2"
+  },
+  "generatedBaseline": {
+    "actualProductionFileLockUsed": true,
+    "replacementWindowControlledWithLatches": true,
+    "tests": 3,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.423,
+    "xmlSha256": "1da6e7c180ad30a743205de373495f8696b8fe09c0798c377186c55e411594ae",
+    "reflectionHarnessNameErrorCorrectedBeforeActualBaseline": true
+  },
+  "generatedVerified": {
+    "sameTestsExecuted": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.715,
+    "xmlSha256": "9fd3fc01c74e1a5ce9867dc9b9d953da714e55782db20341293d76fa26377297",
+    "replacementGapNoLongerMissing": true,
+    "genuinelyMissingStillNull": true,
+    "userRegistryIntegrityStillEnforced": true
+  },
+  "fullLocalBuild": {
+    "suites": 41,
+    "tests": 147,
+    "executed": 134,
+    "skipped": 13,
+    "skippedSuite": "CamoufoxWebviewRendererTest; runtime not configured",
+    "failures": 0,
+    "errors": 0,
+    "storageTestsExecuted": 3,
+    "storageSeconds": 0.325,
+    "storageXmlSha256": "8f6d5dee64e5d135810e6df7bff28bce5c840c28d9fef1a11ebed0de3cc197df",
+    "jarSha256": "8a8b6bf2d6d8c7e403b6c336a364f686916f3e207252d499f158a3d8bfeca96e",
+    "packagedUiFilesByteCompared": 81,
+    "allPackagedUiBytesMatchDist": true
+  },
+  "boundaries": {
+    "crossTabFailureUniqueCauseNotProven": true,
+    "controllerReadModifyWriteTransactionsNotReworked": true,
+    "mongoAndCrashRecoveryNotTested": true,
+    "realUserRegistryOrBooksRead": false,
+    "productionModified": false,
+    "originalJarOverwrittenOrRerun": false,
+    "ownHostedAcceptancePending": true,
+    "formalReleaseOrDeploymentPerformed": false
+  }
+}
