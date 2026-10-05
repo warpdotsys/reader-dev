@@ -28,11 +28,21 @@
 - 静态 API 映射：92/92 已注册；这不代表所有参数、权限和媒体格式已实测。
 - 完整 Java/Kotlin JAR 重建成功；SHA-256 为 `4efb5598e505ddb8fbc316e4944b2a331ce39a524be6c7c83a7c8f36970d848e`。当前 81 个界面文件与包内逐字节一致；发布安全 47 项及工作流语法检查通过。
 - 首轮候选 `cross-after`：1 项/0 跳过/1 失败/0 错误，53.096 秒。实际账号归属、读写、历史 token、缺/错 token、旧 Cookie 兼容及旧缓存拒读已通过；失败点为测试误把旧退出 `isSuccess` 预期成 false。报告 SHA-256 为 `0c92dea2b25033132b8e73c95a68909d7d662aa229c5e8abb97c490b7989f451`，目录冻结、不覆盖。
-- **已从原 JAR 字节码验证**：`ReturnData.setData` 会设 `isSuccess=true`、默认 `errorMsg=""`；原 `UserController.logout` 在偏移 843/846 先设置错误，再在 849/855 设置 `NEED_LOGIN` 数据。因此正常退出契约是 HTTP 200 / true / 空错误 / `NEED_LOGIN`，不能为了满足错误断言修改业务实现。用固定 JDK 的 `javap` 只读检查原 JAR 两个类；这不是新黑盒或三方差分。
+- **已从原 JAR 字节码验证**：`ReturnData.setData` 会设 `isSuccess=true`、默认 `errorMsg=""`；原 `UserController.logout` 在偏移 843/846 先设置错误，再在 849/855 设置 `NEED_LOGIN` 数据。已核对正常退出的三个 ReturnData 字段；候选的实际 HTTP 状态为 200，原 JAR 的 HTTP 状态本轮未重新黑盒探测。不能为了满足错误断言修改业务实现。用固定 JDK 的 `javap` 只读检查原 JAR 两个类；这不是新黑盒或三方差分。
 - 已修正该断言并保持精确的四字段检查，使用同一候选 JAR 在新目录 `cross-after-b` 重测：**1 项、0 跳过/失败/错误，55.550 秒，全程终点完成**。XML SHA-256 为 `71635397078ed7fdb4f406b94f421d902a4a07ced0ff39396b478b9870df6c76`。实际甲 namespace、甲的页面/缓存、分组只写甲、缺/错 token 拒绝、旧 Cookie 仍认乙、历史 token 可用、旧错归属缓存拒读且原值保留、真实后端撤销甲历史 token 而乙继续使用，均通过。三个生成截图及首次候选的甲书架截图已目视核对；隔离进程正常清理。
-- 最终核心 16 项真实浏览器全回归、管理空间/文件密钥 2 项及本源码托管复验尚进行中，不能沿用 `295dce83` 的旧 CI 结果。
+- 同一候选 JAR 的核心 16 项真实浏览器全回归和管理空间/文件密钥 2 项已逐份 XML 核对通过：0 跳过/失败/错误。核心跨标签 41.443 秒、管理空间 22.533 秒、文件密码 7.426 秒；管理旅程完成 `credentialUrl=absent` 终点。目录分别为 `build/cross-tab-isolation-20261005-a/cross-core/`、`build/legacy-manager-20261005-a/cross-manager/`。
 
 [本机结构化证据](evidence/vue3-cross-tab-local-2026-10-05.json)记录两份失败、最终候选 JAR/测试源码/报告身份与验证范围。
+
+## 首轮托管结果及观察时序加强
+
+源码 `386d9505fba8adbfc6c7c266bc43e12ced1793e6` 的 [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/37271310542) 和 [浏览器单镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37271310538) 已成功；后者下载的 Camoufox 12 项 XML 无跳过/失败/错误，2 份实际单镜像 JSON 独立核对通过（2 CPU / 2 GiB / 256 PID，实测峰值 813273088 字节，实际 swap 0、配置允许 1 GiB swap）。[原生双架构演练](https://github.com/warpdotsys/reader-dev/actions/runs/37271310528) 六作业全部成功，20 份实际 JSON 的 JAR/镜像/归档身份、GET/POST、ReturnData、Cookie 顺序/隔离、并发和预算独立核对通过；源码对应 PR 合并修订 `64583f26037671cb2dd33f5d7f8790fa1d8e79f3`，共用托管 JAR `3251ea81c45e359dc42a48d1b255f2b769a02351afa95597ed9912293300bb74`。全部原生托管 runner，无自托管；最高实测内存 881381376 字节，无越限/OOM/PID 事件或实际 swap，但配置允许 swap。没有下载多 GiB 镜像到本机、发布 registry 或替换生产。上述成功不抵消下面的界面失败。
+
+[Vue 3 首轮托管](https://github.com/warpdotsys/reader-dev/actions/runs/37271310498) **失败，不算整体验收**：核心 16 项中仅跨标签测试在断网恢复后立即检查书卡处失败（行 208，13.559 秒）。初始账号/响应/缓存隔离通过，但还未走完退出终点。下载的 XML 冻结于 `build/cross-tab-hosted-20261005-a/failed-core/`，报告 SHA-256 为 `301e885fea7378c7605b52bce84a2c1efee2177b6607d3e36fceacbce1c41438`。
+
+旧测试以“当前没有 spinner”与两次绘制帧作为完成依据，不能证明随后请求及虚拟书卡渲染已完成。现保留所有业务断言，另要求恢复请求的实际状态码、ReturnData、namespace、书名及对应可见书卡，并在失败/成功时保存恢复截图；甲退出后的乙刷新也要求新的实际响应。**业务/前端代码和 JAR 未更改**，不以重试次数、固定等待或空实现掩盖失败。
+
+加强后的 `cross-after-c` 本机 1 项/0 跳过/失败/错误，53.981 秒；真实恢复响应与实际书卡、甲退出后的乙新请求均达到终点，两个新截图已目视。同源码/同 JAR 在新目录 `cross-after-d` 独立再过：50.755 秒，0 跳过/失败/错误，终点完整（XML SHA-256 `c2b57a271ee98a6035bd459da26209d1c3d022736dfd3dc407c8206f3e7f7373`）。仍需新源码的托管复验来确定该观察时序修正是否足够，不能把旧失败改标成功。
 
 ## 已知限制与回滚
 

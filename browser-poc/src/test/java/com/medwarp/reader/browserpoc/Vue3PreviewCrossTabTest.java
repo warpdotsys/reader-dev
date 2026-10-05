@@ -63,6 +63,27 @@ public class Vue3PreviewCrossTabTest {
                 .setPath(Path.of(dir, "vue3-cross-tab-generated-" + name + ".png")));
     }
 
+    private static Response refresh(Page page) {
+        return page.waitForResponse(r -> r.url().contains("/reader3/getBookshelf")
+                        && "GET".equals(r.request().method()), () -> page.locator(".refresh-btn").click());
+    }
+
+    private static void verifyRefreshedShelf(Page page, Response response, String account, String name, String evidence) {
+        assertEquals(200, response.status());
+        assertEquals(account, response.headers().get("x-reader-namespace"));
+        assertEquals(true, page.evaluate("({body,name})=>{const b=JSON.parse(body);return b.isSuccess===true"
+                        + "&&b.errorMsg===''&&Array.isArray(b.data)&&b.data.some(book=>book.name===name);}",
+                Map.of("body", response.text(), "name", name)));
+        // A request completion is not a DOM completion; zero spinners before Vue's next update is not a latch.
+        try {
+            page.locator(".book-card").filter(new Locator.FilterOptions().setHasText(name)).waitFor();
+            settled(page);
+        } finally {
+            screenshot(page, evidence);
+        }
+        System.out.println("CROSS_TAB_REFRESH " + evidence + " actual-status/ReturnData/namespace/book-card verified");
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Object> read(Page page, String path, boolean explicit, String token) {
         Map<String, Object> args = new java.util.HashMap<>();
@@ -203,8 +224,7 @@ public class Vue3PreviewCrossTabTest {
             assertEquals(oldCacheValue, firstPage.evaluate("key=>localStorage.getItem(key)", oldCache));
             screenshot(firstPage, "old-cookie-cache-refused");
             firstPage.unroute("**/reader3/getBookshelf?*");
-            firstPage.locator(".refresh-btn").click();
-            settled(firstPage);
+            verifyRefreshedShelf(firstPage, refresh(firstPage), first, FIRST_BOOK, "first-reconnected");
             assertTrue(firstPage.locator("body").innerText().contains(FIRST_BOOK));
 
             // Actual backend logout revokes A, not the shared B Cookie or B's token.
@@ -220,8 +240,7 @@ public class Vue3PreviewCrossTabTest {
             assertEquals(second, infoUsername(read(secondPage, "getUserInfo", false, null)));
             firstPage.locator(".logout-btn").click();
             firstPage.locator(".login-page").waitFor();
-            secondPage.locator(".refresh-btn").click();
-            settled(secondPage);
+            verifyRefreshedShelf(secondPage, refresh(secondPage), second, SECOND_BOOK, "second-after-first-logout");
             assertTrue(secondPage.locator("body").innerText().contains(SECOND_BOOK));
             assertEquals(second, secondPage.locator(".user-chip").innerText());
             assertEquals(oldCacheValue, secondPage.evaluate("key=>localStorage.getItem(key)", oldCache));
