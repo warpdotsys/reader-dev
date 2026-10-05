@@ -42,7 +42,17 @@
 
 旧测试以“当前没有 spinner”与两次绘制帧作为完成依据，不能证明随后请求及虚拟书卡渲染已完成。现保留所有业务断言，另要求恢复请求的实际状态码、ReturnData、namespace、书名及对应可见书卡，并在失败/成功时保存恢复截图；甲退出后的乙刷新也要求新的实际响应。**业务/前端代码和 JAR 未更改**，不以重试次数、固定等待或空实现掩盖失败。
 
-加强后的 `cross-after-c` 本机 1 项/0 跳过/失败/错误，53.981 秒；真实恢复响应与实际书卡、甲退出后的乙新请求均达到终点，两个新截图已目视。同源码/同 JAR 在新目录 `cross-after-d` 独立再过：50.755 秒，0 跳过/失败/错误，终点完整（XML SHA-256 `c2b57a271ee98a6035bd459da26209d1c3d022736dfd3dc407c8206f3e7f7373`）。仍需新源码的托管复验来确定该观察时序修正是否足够，不能把旧失败改标成功。
+加强后的 `cross-after-c` 本机 1 项/0 跳过/失败/错误，53.981 秒；真实恢复响应与实际书卡、甲退出后的乙新请求均达到终点，两个新截图已目视。同源码/同 JAR 在新目录 `cross-after-d` 独立再过：50.755 秒，0 跳过/失败/错误，终点完整（XML SHA-256 `c2b57a271ee98a6035bd459da26209d1c3d022736dfd3dc407c8206f3e7f7373`）。旧失败始终保留，不改标成功。
+
+## 加强后的源码已托管验收
+
+源码 `15d0186e2dc0b9954ebf896667eecf9b64ab43ce`、实际 PR 合并修订 `9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0` 的四条工作流全部成功：[Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/37272784257)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37272784265)、[浏览器单镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37272784270)、[原生双架构六作业演练](https://github.com/warpdotsys/reader-dev/actions/runs/37272784271)。全部 GitHub 原生托管 runner，不使用自托管。
+
+下载后逐份检查核心 16、管理/文件 2、子目录 1 个实际 XML，共 19 项，0 跳过/失败/错误。跨标签 15.572 秒，XML SHA-256 为 `81c1f7ca48cb2122ccc1c92dff6b2ae42434f7f911f9d8de26d4142b430fc785`，两个实际刷新响应/书卡和全程终点均达到。五份生成截图已目视，甲/乙各自书架、旧缓存拒读通过；恢复截图仍可见先前 Network Error 提示，不宣称提示问题全修。
+
+Camoufox 12 项实际 XML 无跳过/失败/错误；2 份单镜像和 20 份原生/重新导入 JSON 独立核对 GET/POST、ReturnData、Cookie 顺序/隔离、JAR/归档/镜像身份与资源预算。双架构共用托管 JAR SHA-256 为 `a720f596e7f67020b042099ba39005459a827076699a3f65e667369d72521e7b`，最高实测内存 833818624 字节（约 795 MiB），2 CPU / 2 GiB / 256 PID，无触限/OOM/PID 事件、实际 swap 0；配置仍允许 1 GiB swap。没有下载多 GiB 镜像到本机、发布 registry、合并 PR、创建 Release 或替换生产。
+
+[结构化托管证据](evidence/vue3-cross-tab-hosted-15d0186e-2026-10-05.json)绑定源码、合并修订、实际报告散列和制品 ID。这是该提交的短时生成测试，不验证随后源码变更、真实认证三方或长期/生产范围。该提交的退出仍是单独调用后端后再清本地；按钮本身服务端撤销及混合“记住我”的后续工作必须另验。
 
 ## 已知限制与回滚
 

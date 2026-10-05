@@ -32,7 +32,7 @@ import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/a
 import { getSystemInfo } from '@/api/system'
 import { deleteTxtTocRule, getTxtTocRules, importDefaultTxtTocRules, saveTxtTocRule } from '@/api/txtTocRules'
 import { getBookshelf } from '@/api/bookshelf'
-import { login as loginApi } from '@/api/auth'
+import { login as loginApi, logout as logoutApi } from '@/api/auth'
 import { resetUserPassword } from '@/api/users'
 import { getUserConfig, saveUserConfig } from '@/api/userConfig'
 import { getReadingStats } from '@/api/stats'
@@ -81,19 +81,26 @@ function maskToken(t: string): string {
   return `${t.slice(0, 8)}…${t.slice(-4)}`
 }
 
+const logoutBusy = ref(false)
 async function logout() {
+  if (logoutBusy.value) return
+  logoutBusy.value = true
   try {
     await ElMessageBox.confirm('确定退出登录吗？', '退出登录', {
       confirmButtonText: '退出',
       cancelButtonText: '取消',
       type: 'warning',
     })
+    const outcome = await logoutApi()
+    if (outcome === 'superseded') return
+    if (outcome === 'local-only') ElMessage.warning('已退出本机；服务端令牌尚未确认撤销')
+    else ElMessage.success('已退出登录')
+    await router.replace('/login')
   } catch {
-    return // 用户取消
+    // 用户取消：不发送退出请求、不清会话。
+  } finally {
+    logoutBusy.value = false
   }
-  store.clear() // 清空 localStorage（reader_access_token / reader_username）
-  ElMessage.success('已退出登录')
-  void router.replace('/login')
 }
 
 /* ================= GAP 87：修改密码（旧密码校验 → POST /reader3/resetUserPassword → 强制重新登录） ================= */
@@ -1285,7 +1292,7 @@ async function runExportData() {
         </div>
         <div class="card-foot">
           <button class="ghost-btn" type="button" @click="openPwd">修改密码</button>
-          <button class="danger-btn" type="button" @click="logout">退出登录</button>
+          <button class="danger-btn" type="button" :disabled="logoutBusy" @click="logout">退出登录</button>
         </div>
       </section>
 

@@ -1,0 +1,291 @@
+{
+  "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+  "testedPrMergeRevision": "9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+  "scope": "generated isolated accounts and metadata; not original JAR blackbox, real credentials, sustained production or subsequent logout fix",
+  "allFourHostedWorkflowsSuccessful": true,
+  "javaRunId": 37272784257,
+  "uniqueUiTests": 19,
+  "skipped": 0,
+  "failures": 0,
+  "errors": 0,
+  "proofs": {
+    "core": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784265,
+      "artifactId": 11328832911,
+      "artifactName": "vue3-core-browser-reports-9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+      "artifactBytes": 8748,
+      "result": {
+        "tests": 16,
+        "skipped": 0,
+        "reports": [
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+            "tests": 1,
+            "sha256": "e6acb9cf1dda74a932c50392c78e68a0b1c6553c9caa66783346d0cca78bce66",
+            "time": "2.563"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+            "tests": 1,
+            "sha256": "81c1f7ca48cb2122ccc1c92dff6b2ae42434f7f911f9d8de26d4142b430fc785",
+            "time": "15.572"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+            "tests": 1,
+            "sha256": "a7cc04534be787a4fa977318c4473f3c3e55e492301a38a20ba5ed93ef6e6fe0",
+            "time": "7.108"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+            "tests": 1,
+            "sha256": "4138f0f91d6281010652c94873eb6f3decaf460fbb88aafce0b25d6660d0b185",
+            "time": "3.174"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+            "tests": 1,
+            "sha256": "11e4721e7af76108967e8ae46fb1c0450336889b708da124dce37b5675889bf8",
+            "time": "4.584"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+            "tests": 1,
+            "sha256": "16deb1eba450469ee3a7505acb68c7a2904353995fe993a21ffa3ccfb0ffdb29",
+            "time": "5.323"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+            "tests": 1,
+            "sha256": "8a4966cc847750eb0209bca3215994af179ba45c277b674beba9510f266781b4",
+            "time": "18.78"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+            "tests": 1,
+            "sha256": "7c5efe8b1972445e4278d4524884641d73c47bf0cb4396c501352d5b512fe0c7",
+            "time": "2.793"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+            "tests": 1,
+            "sha256": "2d78fc38d03e4ba3cd0a718532497e180d7a049d91dbe125eb6504eb1e157090",
+            "time": "4.109"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+            "tests": 1,
+            "sha256": "dbf39c92b11d445c6e06f943c3b2b1a40d04bebd77635a4979a623e47cc87112",
+            "time": "4.593"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+            "tests": 1,
+            "sha256": "1202a3ca1042bba03714debeb5055c48cd4231de5166009f53075b65aa01e445",
+            "time": "4.095"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+            "tests": 1,
+            "sha256": "89a6ba6b77dfbf6c572c94197661dc6efecc795dcf8bc8af412cc4ccdb8b5fa4",
+            "time": "10.858"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+            "tests": 1,
+            "sha256": "e5fc9a8ce03fd6c69950a821a4b5b009518cbc6ec8be6823e28a210f03628180",
+            "time": "7.191"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+            "tests": 1,
+            "sha256": "ff340a53a3521ae32e037baff0379cb7916ebe653745a4910158625db70b1f71",
+            "time": "4.745"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+            "tests": 1,
+            "sha256": "6e6a26e9f0ef19db919ed3117da2ffb77b95f1a5cfbf73a787a2f7dd16f95dba",
+            "time": "10.25"
+          },
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+            "tests": 1,
+            "sha256": "7f4f278c7f6451eef1c252d886d882ea11fc67393188918eb13e294769bf6d09",
+            "time": "6.488"
+          }
+        ],
+        "xmlReportsIndividuallyAudited": 16,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    "manager": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784265,
+      "artifactId": 11329361887,
+      "artifactName": "vue3-manager-namespace-9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+      "artifactBytes": 158747,
+      "result": {
+        "xmlReportsIndividuallyAudited": 2,
+        "skipped": 0,
+        "failures": 0,
+        "reports": [
+          {
+            "time": "5.724",
+            "tests": 1,
+            "sha256": "a3e2cc8deeba6b713f737b2aa5010d32173a705cd0a9c830bd63ff4ca65f87ca",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml"
+          },
+          {
+            "time": "3.739",
+            "tests": 1,
+            "sha256": "9e3a14d2e3e17055afc7b99a96952e5bac2c6a838b1576406dd4c50bdafafa1d",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml"
+          }
+        ],
+        "errors": 0,
+        "tests": 2
+      }
+    },
+    "subdir": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784265,
+      "artifactId": 11329032391,
+      "artifactName": "vue3-subdir-browser-reports-9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+      "artifactBytes": 530,
+      "result": {
+        "failures": 0,
+        "xmlReportsIndividuallyAudited": 1,
+        "errors": 0,
+        "skipped": 0,
+        "tests": 1,
+        "reports": [
+          {
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+            "tests": 1,
+            "sha256": "a235d179b2702886f0e5209145f28ad02b7b48c6fe5fe7cf9ec703acae269bd8",
+            "time": "3.199"
+          }
+        ]
+      }
+    },
+    "cam": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784270,
+      "artifactId": 11329545744,
+      "artifactName": "camoufox-contract-report",
+      "artifactBytes": 921,
+      "result": {
+        "errors": 0,
+        "reports": [
+          {
+            "time": "70.568",
+            "sha256": "140f457cb4d355b39b7d57429151a6ae2b9a0c8183afb215ea5d370d1b53daab",
+            "tests": 12,
+            "name": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml"
+          }
+        ],
+        "failures": 0,
+        "xmlReportsIndividuallyAudited": 1,
+        "skipped": 0,
+        "tests": 12
+      }
+    },
+    "smoke": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784270,
+      "artifactId": 11328916799,
+      "artifactName": "bundled-browser-synthetic-and-resources",
+      "artifactBytes": 895,
+      "result": {
+        "scope": "one complete hosted Reader image; generated short sequential and four-account burst",
+        "actualJsonReportsAudited": 2,
+        "identityCookieRequestResourceFieldsPassed": true,
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "pidsMax": 256,
+        "observations": {
+          "actualSwapBytes": 0,
+          "configuredSwapMaxBytes": 1073741824,
+          "memoryPeakBytes": 794521600,
+          "pidsPeak": 183
+        },
+        "budgetSha256": "f6268da5107d0fc1119050a84d8be5133f8fe33792cfd6bc23d230c48ca2babd",
+        "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      }
+    },
+    "native": {
+      "source": "15d0186e2dc0b9954ebf896667eecf9b64ab43ce",
+      "runId": 37272784271,
+      "artifactId": 11329398168,
+      "artifactName": "reader-publisher-import-9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+      "artifactBytes": 7072,
+      "result": {
+        "actualJsonReportsAudited": 20,
+        "testedPrMergeRevision": "9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0",
+        "sharedJarSha256": "a720f596e7f67020b042099ba39005459a827076699a3f65e667369d72521e7b",
+        "identityCookieRequestResourceFieldsPassed": true,
+        "architectures": {
+          "arm64": {
+            "imageId": "sha256:01ff9f37abf64a7bf9517eae573096864976cffd579a3cf51cd8d11c3e5cf3bb",
+            "archiveSha256": "a74d0e4f79a90f237c65297278016706b71b19ad802de9ac3aca4849426a0de3",
+            "budgets": {
+              "arm64": {
+                "configuredSwapMaxBytes": 1073741824,
+                "pidsPeak": 179,
+                "actualSwapBytes": 0,
+                "memoryPeakBytes": 786440192
+              },
+              "arm64-transfer": {
+                "configuredSwapMaxBytes": 1073741824,
+                "pidsPeak": 176,
+                "actualSwapBytes": 0,
+                "memoryPeakBytes": 799481856
+              }
+            }
+          },
+          "amd64": {
+            "imageId": "sha256:fd22d2d47dbcea0a9e4858e0891622f406233b133fa6b5fb5c05506ee4ee355e",
+            "archiveSha256": "ef6790d58a75cce6e8306cb199c744f4453dd79baab51f363233425a8cb5db0e",
+            "budgets": {
+              "amd64": {
+                "configuredSwapMaxBytes": 1073741824,
+                "pidsPeak": 180,
+                "actualSwapBytes": 0,
+                "memoryPeakBytes": 815693824
+              },
+              "amd64-transfer": {
+                "configuredSwapMaxBytes": 1073741824,
+                "pidsPeak": 182,
+                "actualSwapBytes": 0,
+                "memoryPeakBytes": 833818624
+              }
+            }
+          }
+        },
+        "limits": [
+          "generated short samples, not real authentication or sustained load",
+          "configured swap remains permitted although actual use was zero",
+          "consumer import proof is not registry publication"
+        ]
+      }
+    }
+  },
+  "allFiveCrossTabScreenshotsViewed": true,
+  "screenshotArtifact": {
+    "id": 11329740810,
+    "bytes": 213351,
+    "name": "vue3-cross-tab-9ef38a3ca32629b138e7c5205d8bb1cb4a4475e0"
+  },
+  "knownLimits": [
+    "UI logout is local-only in this source; backend logout was separately invoked in the test",
+    "mixed remembered/tab-local restoration remains untested in this source",
+    "reconnected screenshot still shows preceding network warning; notifications not fully fixed",
+    "no registry publication, Release, PR merge, production update or multi-GiB local download",
+    "swap configured allowed 1GiB although actual zero",
+    "optional soak/provenance/remote comparisons skipped, not accepted"
+  ]
+}

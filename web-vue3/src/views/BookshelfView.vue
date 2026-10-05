@@ -39,6 +39,7 @@ import { authenticatedReaderUrl } from '@/utils/tokenAuthentication'
 import { localChapterCacheScope } from '@/utils/readerLocalCache'
 import { canUseOfflineShelf, loadOfflineShelf, saveOfflineShelf } from '@/utils/shelfOfflineCache'
 import { captureRequestSession, isRequestSessionCurrent } from '@/api/requestSession'
+import { logout as logoutApi } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { probeSecureMode } from '@/api/users'
 import TopNav from '@/components/TopNav.vue'
@@ -1421,9 +1422,17 @@ async function load(silent = false) {
   }
 }
 
-function logout() {
-  store.clear()
-  void router.replace('/login')
+const logoutBusy = ref(false)
+async function logout() {
+  if (logoutBusy.value) return
+  logoutBusy.value = true
+  try {
+    const outcome = await logoutApi()
+    if (outcome === 'superseded') return
+    if (outcome === 'local-only') ElMessage.warning('已退出本机；服务端令牌尚未确认撤销')
+    else ElMessage.success('已退出登录')
+    await router.replace('/login')
+  } finally { logoutBusy.value = false }
 }
 
 

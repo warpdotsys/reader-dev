@@ -228,7 +228,10 @@ public class Vue3PreviewCrossTabTest {
             assertTrue(firstPage.locator("body").innerText().contains(FIRST_BOOK));
 
             // Actual backend logout revokes A, not the shared B Cookie or B's token.
-            Map<String, Object> logout = body(read(firstPage, "logout", true, firstToken));
+            Response logoutResponse = firstPage.waitForResponse(r -> r.url().contains("/reader3/logout")
+                    && "POST".equals(r.request().method()), () -> firstPage.locator(".logout-btn").click());
+            assertEquals(200, logoutResponse.status());
+            Map<String, Object> logout = (Map<String, Object>) firstPage.evaluate("body=>JSON.parse(body)", logoutResponse.text());
             // Preserve the legacy chained ReturnData contract, not an assumed conventional logout shape.
             System.out.printf("CROSS_TAB_LOGOUT isSuccess=%s errorMsg=%s data=%s%n",
                     logout.get("isSuccess"), logout.get("errorMsg"), logout.get("data"));
@@ -238,7 +241,6 @@ public class Vue3PreviewCrossTabTest {
             assertEquals("NEED_LOGIN", body(read(firstPage, "getBookshelf", true, firstToken)).get("data"));
             assertEquals(second, infoUsername(read(secondPage, "getUserInfo", true, secondToken)));
             assertEquals(second, infoUsername(read(secondPage, "getUserInfo", false, null)));
-            firstPage.locator(".logout-btn").click();
             firstPage.locator(".login-page").waitFor();
             verifyRefreshedShelf(secondPage, refresh(secondPage), second, SECOND_BOOK, "second-after-first-logout");
             assertTrue(secondPage.locator("body").innerText().contains(SECOND_BOOK));
