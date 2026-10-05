@@ -258,8 +258,8 @@ body {
   flex-direction: column;
   align-items: stretch;
   width: min(420px, calc(100vw - 32px));
-  max-height: max(0px, calc(100vh - var(--reader-message-safe-top, 28px) - var(--reader-message-bottom, 16px) - env(safe-area-inset-bottom) - 12px));
-  max-height: max(0px, calc(100dvh - var(--reader-message-safe-top, 28px) - var(--reader-message-bottom, 16px) - env(safe-area-inset-bottom) - 12px));
+  max-height: max(0px, calc(100vh - var(--reader-message-safe-top, 28px) - var(--reader-message-bottom, 16px) - env(safe-area-inset-bottom)));
+  max-height: max(0px, calc(100dvh - var(--reader-message-safe-top, 28px) - var(--reader-message-bottom, 16px) - env(safe-area-inset-bottom)));
   pointer-events: none;
 }
 .reader-message-region:not(:has(.el-message)) { display: none; }
@@ -307,6 +307,11 @@ body {
   overflow-wrap: anywhere;
   white-space: normal;
   line-height: 1.5;
+}
+@media (max-width: 720px) and (max-height: 400px) {
+  /* Preserve a complete text line after reserving the real offline-retry bar. */
+  .reader-message-stack { padding-block: 2px; }
+  .reader-message-stack .reader-message { padding-block: 6px; }
 }
 
 /* 确认弹窗：极简面板 + 项目强调色按钮（替换 Element 默认蓝） */

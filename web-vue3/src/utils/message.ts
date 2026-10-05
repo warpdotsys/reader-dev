@@ -6,7 +6,7 @@ function installMessageRegionLayout(region: HTMLElement) {
   let queued = false
   let watched: Element[] = []
   const refresh = () => {
-    const top = Array.from(document.querySelectorAll('.topbar,.search-box'))
+    const top = Array.from(document.querySelectorAll('.topbar,.search-box,.offline-shelf-banner'))
     const lower = Array.from(document.querySelectorAll('.manage-bar,.reader-page .progress-bar,.update-banner'))
     const visibleRect = (element: Element) => {
       const rect = element.getBoundingClientRect()
@@ -47,6 +47,7 @@ function installMessageRegionLayout(region: HTMLElement) {
     app.addEventListener('transitionend', schedule)
   }
   window.addEventListener('resize', schedule)
+  window.addEventListener('scroll', schedule, { passive: true })
   refresh()
 }
 

@@ -91,6 +91,25 @@ public class Vue3PreviewManagerNamespaceTest {
                 page.locator(".search-input").evaluate("el=>document.activeElement===el"));
     }
 
+    private static void offlineRetryIsUsable(Page page) {
+        Locator retry = page.locator(".offline-shelf-banner button");
+        assertTrue("Generated offline recovery must expose its real retry button", retry.isVisible());
+        assertEquals("Notification region, including dismiss control, must leave offline retry clear", true,
+                retry.evaluate("el=>{const b=el.getBoundingClientRect();"
+                        + "const r=document.querySelector('#reader-message-region').getBoundingClientRect();"
+                        + "return !(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top);}"));
+        assertEquals("The actual retry center must receive pointer input, not a notice", true,
+                retry.evaluate("el=>{const b=el.getBoundingClientRect();"
+                        + "const hit=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);"
+                        + "return hit===el||el.contains(hit);}"));
+        Request request = page.waitForRequest(r -> r.url().contains("/reader3/getBookshelf")
+                        && "GET".equals(r.method()), retry::click);
+        assertEquals("GET", request.method());
+        settled(page);
+        assertTrue("Failed retry must retain only this user's generated offline shelf", page.locator("body").innerText().contains(OWN));
+        assertFalse(page.locator("body").innerText().contains(SYSTEM));
+    }
+
     private static void key(Page page, String key, boolean success) {
         Locator dialog = page.locator("[role=dialog][aria-label='输入管理密码']");
         dialog.waitFor();
@@ -246,6 +265,7 @@ public class Vue3PreviewManagerNamespaceTest {
             noticesLeaveNavigationUsable(page);
             Locator stack = page.locator(".reader-message-stack");
             screenshot(page, "notices-narrow-short-before-scroll");
+            offlineRetryIsUsable(page);
             System.out.println("NOTICE_VIEWPORT " + stack.evaluate("el=>JSON.stringify({"
                     + "width:innerWidth,height:innerHeight,clientHeight:el.clientHeight,scrollHeight:el.scrollHeight,"
                     + "regionHeight:el.parentElement.getBoundingClientRect().height,"
@@ -254,6 +274,11 @@ public class Vue3PreviewManagerNamespaceTest {
             assertEquals("0", stack.getAttribute("tabindex"));
             assertEquals("A short viewport must still expose a readable notification line", true,
                     stack.evaluate("el=>el.clientHeight>=40"));
+            assertEquals("At least one full text line, not merely padded height, must remain readable", true,
+                    stack.evaluate("el=>{const clip=el.getBoundingClientRect();"
+                            + "return Array.from(el.querySelectorAll('.el-message__content')).some(content=>{"
+                            + "const range=document.createRange();range.selectNodeContents(content);"
+                            + "return Array.from(range.getClientRects()).some(r=>r.height>0&&r.top>=clip.top&&r.bottom<=clip.bottom);});}"));
             assertEquals("All retained notices must remain scrollable on a short narrow screen", true,
                     stack.evaluate("el=>el.scrollHeight>el.clientHeight"));
             Locator navigation = page.locator(".user-area");
@@ -270,6 +295,7 @@ public class Vue3PreviewManagerNamespaceTest {
             // Focusing/scanning scroll regions may also move the document: recheck actual geometry.
             noticesLeaveNavigationUsable(page);
             screenshot(page, "notices-narrow-short");
+            offlineRetryIsUsable(page);
             page.locator(".reader-message-dismiss").click();
             page.waitForCondition(() -> page.locator(".el-message:visible").count() == 0
                     && !page.locator("#reader-message-region").isVisible());
