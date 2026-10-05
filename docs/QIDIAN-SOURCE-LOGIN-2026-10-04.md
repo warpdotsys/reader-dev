@@ -85,3 +85,23 @@
 当前公开结构可作为隔离测试源候选：书名 `#bookName`、作者 `.book-info-top .book-meta .author`（`#authorId` 实际是“白金”徽章）、封面 `#bookImg img`，目录 `#allCatalog .catalog-volume .volume-chapters li.chapter-item a.chapter-name`；正文 `#c-403440812 p .content-text`，旁边 `.review` 是段评计数。仅观测 DOM，没有改用户书源、复制 HTML/正文/CSRF 链接或上传截图。尚未用这些新选择器完成 Reader API/界面验收，不将网页可读写成起点书源已修好。
 
 [无凭据、无正文的本轮观测](evidence/qidian-public-browser-2026-10-05.json)。默认 Camoufox 在该真实站点的解析、精确搜索及真实认证三方仍待验；GitHub 的公开列表配对是另一站点，不能替代此项。
+
+## 2026-10-05 新选择器的 Reader 实测与动态 DNS 定位
+
+只用全新生成账号、隔离目录及候选本机 JAR `c1cb602ad956930af97744fbc9a20df5821b32281fde37809ff01e6adac3f8cb`，未复用历史真实 Cookie、读取浏览器凭据或本地正文。JAR 来自 `c9603db4` 上的 UI 工作快照，相关产品源码现为 `6a14781f`；不是托管共享 JAR `4a910ddd...`。本轮 `local` 是已安装 Chrome 的诊断基线，不改默认 Camoufox，更不作为正式宿主浏览器方案。
+
+| 实际请求 | 结果 | 验收判定 |
+| --- | --- | --- |
+| 新选择器，普通详情 | 0.701 秒；HTTP 200、`isSuccess=true`，书名/作者不匹配且无封面 | 失败；成功壳不能算有效元数据 |
+| 新选择器，Chrome 渲染详情 | 6.592 秒；HTTP 200、`isSuccess=false`、`DNS_FAILURE`，主机指纹 `ad4a9c600a0e9679` | 失败；具体域名随后独立观测 |
+| 加入刚验证的公网域名快照，再用独立目录渲染 | 7.622 秒；HTTP 200、`isSuccess=true`，上述 DNS 错误消失，但元数据仍为空 | 仍失败；不得称起点已修好 |
+
+临时 Java 观察器使用同一产品网络策略且 `allowPrivateNetworks=false`，只记录请求域名、解析失败域名及指纹，不返回地址、完整 URL、原异常、HTML、Cookie 或正文。实际请求有 `www.qidian.com`、`ssl.captcha.qq.com`、`captcha.gtimg.com`，其中后者解析失败；它的指纹精确匹配 Reader 错误。它未出现在此前从页面静态资源/本次内置浏览器网络事件收集的域名集合中，不能靠相似指纹猜域名并放行。
+
+HTTPS DNS 的公网 A 记录核查后，只把该主机放入本次 JVM 的专用解析快照；系统 DNS、hosts、代理和 SSRF 防护均未改变。此前一次 Google 多域名请求出现 SERVFAIL，不计为成功快照；后续 Cloudflare 记录确认。最后核查时该主机 TTL 为 60 秒，这不是持久 DNS 修复或全部动态资源覆盖证明，也不意味着起点权威 DNS 故障。
+
+进一步匹配源码默认的 Chrome 75 User-Agent，只读页面脚本观察先因 `Execution context was destroyed` 失败；不重放有副作用脚本、不拿 Gradle 任务成功当产品通过。改走已有稳定 HTML 快照并仅在内存解析后，确实没有书名、作者、封面、目录节点，标题也不含期望书名；只有页面 body 存在，未导出原 HTML。这证明诊断 renderer 没有拿到内置浏览器所见的正常书籍 DOM；**还不能唯一归因于中间页、安全页、加载时序、UA 或选择器**。HTML 观察没有测实际验证码可见性，不能再次仅因域名/节点存在要求用户解滑块。
+
+三轮 Reader 均在详情验收失败时停止，未进入目录或免费正文请求；列表 Cookie 前后均为 0。三个自有 JVM 58808 / 64400 / 66984 已由持有的原生句柄关闭，18944/18945/18946 均不监听，用户 18931 / PID 61244 保留。临时 renderer 均 finally 关闭；自建元数据浏览器标签关闭，用户 Reader 和免费首章接手标签保留。临时观察器不加入产品源码；观察后的网络策略、拒绝类型及 Chrome renderer 三个 class 与冻结本机 JAR 逐字节一致。
+
+[无凭据结果、准确范围、观测器散列与清理核验](evidence/qidian-public-selectors-2026-10-05.json)。本轮没有绕过验证码、关闭私网防护、购买章节、向服务器传凭据、发版或部署。Reader 精确搜索/正文与默认 Camoufox 的真实认证三方仍未完成。

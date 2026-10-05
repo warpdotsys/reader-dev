@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-05",
+  "scope": "public Qidian selectors and process-local DNS diagnosis; not real-authentication or default-engine parity",
+  "productSourceHead": "6a14781f4d76ab7c3555bd426b194c7520aa9302",
+  "localJarBuiltOnBaseHead": "c9603db49d2ef0a80c2c3ba49415c2415c713dbc",
+  "frozenLocalJarSha256": "c1cb602ad956930af97744fbc9a20df5821b32281fde37809ff01e6adac3f8cb",
+  "publicBookUrl": "https://www.qidian.com/book/1010400217/",
+  "allowedFreeChapterUrl": "https://www.qidian.com/chapter/1010400217/403440812/",
+  "observedIabPublicSelectors": {
+    "name": "#bookName",
+    "author": ".book-info-top .book-meta .author",
+    "cover": "#bookImg img",
+    "catalog": "#allCatalog .catalog-volume .volume-chapters li.chapter-item a.chapter-name",
+    "content": "#c-403440812 p .content-text",
+    "catalogNodeCount": 1600,
+    "freeChapterIndexInObservedCatalog": 1,
+    "contentNodeCount": 64,
+    "selectedTextCharacters": 3344,
+    "noAutomaticCaptchaActions": true,
+    "hiddenPreloadedCaptchaNotAnObservedReadingBlock": true,
+    "bodyOrHtmlNotSavedOrUploaded": true
+  },
+  "rendererScope": {
+    "diagnostic": "installed Chrome legacy local renderer only",
+    "defaultCamoufoxTested": false,
+    "originalJarOrArchivedRemoteCompared": false,
+    "realAuthenticationProven": false,
+    "realCredentialsReadOrImported": false,
+    "realLocalBooksRead": false,
+    "privateNetworksAllowed": false,
+    "systemDnsHostsOrProxyChanged": false,
+    "onlyPerJvmPublicDnsSnapshot": true,
+    "jarReaderHeapMaxBytes": 536870912,
+    "activeProcessorCount": 2,
+    "noTotalChromeProcessCgroupClaim": true
+  },
+  "readerAttempts": [
+    {
+      "mode": "plain-http",
+      "testPid": 58808,
+      "requests": [
+        {
+          "step": "bookInfo",
+          "httpStatus": 200,
+          "isSuccess": true,
+          "errorMsgEmpty": true,
+          "dataIsNull": false,
+          "nameMatches": false,
+          "authorMatches": false,
+          "coverUsesHttps": false,
+          "seconds": 0.701
+        }
+      ],
+      "cookieRowsBefore": 0,
+      "cookieRowsAfter": 0,
+      "processStopped": true,
+      "testPortClosed": true,
+      "capturedLogCharacters": 1044,
+      "publicParserJourneyPassed": false,
+      "chapterBodyRequested": false
+    },
+    {
+      "mode": "chromium-rendered",
+      "testPid": 64400,
+      "requests": [
+        {
+          "step": "bookInfo",
+          "httpStatus": 200,
+          "isSuccess": false,
+          "errorMessageLength": 135,
+          "dataIsNull": true,
+          "policyReason": "DNS_FAILURE",
+          "hostFingerprint": "ad4a9c600a0e9679",
+          "seconds": 6.592
+        }
+      ],
+      "cookieRowsBefore": 0,
+      "cookieRowsAfter": 0,
+      "processStopped": true,
+      "testPortClosed": true,
+      "capturedLogCharacters": 1214,
+      "publicParserJourneyPassed": false,
+      "chapterBodyRequested": false
+    },
+    {
+      "scope": "public credential-free Qidian selectors, isolated generated Reader account",
+      "mode": "chromium-dns-b",
+      "productSourceHead": "6a14781f4d76ab7c3555bd426b194c7520aa9302",
+      "localJarBuiltOnBaseHead": "c9603db49d2ef0a80c2c3ba49415c2415c713dbc",
+      "jarSha256": "c1cb602ad956930af97744fbc9a20df5821b32281fde37809ff01e6adac3f8cb",
+      "defaultCamoufoxTested": false,
+      "originalJarOrArchivedParity": false,
+      "realAuthenticationProven": false,
+      "source": {
+        "infoSelectors": {
+          "name": "#bookName@text",
+          "author": ".book-info-top .book-meta .author@text",
+          "coverUrl": "#bookImg img@src"
+        },
+        "tocSelectors": {
+          "chapterUrl": "@href@js:result + \", {\\\"webView\\\":true}\"",
+          "chapterList": "#allCatalog .catalog-volume .volume-chapters li.chapter-item a.chapter-name",
+          "chapterName": "@text"
+        },
+        "contentSelector": "#c-403440812 p .content-text@text"
+      },
+      "bookUrl": "https://www.qidian.com/book/1010400217/",
+      "onlyAllowedFreeChapter": "https://www.qidian.com/chapter/1010400217/403440812/",
+      "realCredentialsImported": false,
+      "realLocalBookRead": false,
+      "appLoggingDisabled": true,
+      "debugRuleLoggingDisabled": true,
+      "chapterCacheDisabled": true,
+      "privateNetworkGuardEnabled": true,
+      "processStopped": true,
+      "requests": [
+        {
+          "step": "bookInfo",
+          "httpStatus": 200,
+          "isSuccess": true,
+          "errorMsgEmpty": true,
+          "errorMessageLength": 0,
+          "dataIsNull": false,
+          "policyReason": "",
+          "hostFingerprint": "",
+          "seconds": 7.622,
+          "rawErrorBodyOrHtmlNotPersisted": true,
+          "nameMatches": false,
+          "authorMatches": false,
+          "coverUsesHttps": false,
+          "fields": [
+            "bookUrl",
+            "tocUrl",
+            "origin",
+            "originName",
+            "name",
+            "author",
+            "type",
+            "group",
+            "latestChapterTime",
+            "lastCheckTime",
+            "lastCheckCount",
+            "totalChapterNum",
+            "durChapterIndex",
+            "durChapterPos",
+            "durChapterTime",
+            "canUpdate",
+            "order",
+            "originOrder",
+            "useReplaceRule",
+            "isInShelf"
+          ]
+        }
+      ],
+      "chapterBodyRequested": false,
+      "testPid": 66984,
+      "cookieRowsBefore": 0,
+      "publicParserJourneyPassed": false,
+      "probeFailureType": "System.Management.Automation.RuntimeException",
+      "cookieRowsAfter": 0,
+      "capturedLogCharacters": 1211,
+      "testPortClosed": true,
+      "userReaderListenerPreserved": true
+    }
+  ],
+  "exactDnsObservation": {
+    "privatePolicyUnchanged": true,
+    "temporaryObserverNotProductSource": true,
+    "observedPublicRequestHosts": [
+      "captcha.gtimg.com",
+      "ssl.captcha.qq.com",
+      "www.qidian.com"
+    ],
+    "unresolvedHost": "captcha.gtimg.com",
+    "hostFingerprint": "ad4a9c600a0e9679",
+    "fingerprintEqualsReaderFailure": true,
+    "classification": "missing process-local public DNS snapshot entry for this attempt, not proof of authoritative DNS outage",
+    "afterPublicSnapshotEntryAdded": {
+      "dnsFailureNoLongerObserved": true,
+      "readerMetadataStillEmpty": true
+    },
+    "cloudflarePublicAObservationUtc": "2026-10-05T13:46:35Z",
+    "lastCaptchaTtlSeconds": 60,
+    "dnsSnapshotsAreTimeBoundAndNotAProductionFix": true,
+    "earlierGoogleBatchServfailNotCountedAsSuccessfulSnapshot": true
+  },
+  "subsequentDomDiagnosis": {
+    "defaultSourceUserAgentMatched": "Chrome/75.0.3770.142",
+    "readOnlyScriptAttempts": [
+      {
+        "result": "PlaywrightException; initial category not recorded",
+        "domObtained": false
+      },
+      {
+        "result": "PlaywrightException",
+        "fixedCategory": "Execution context was destroyed",
+        "domObtained": false
+      }
+    ],
+    "finalStableHtmlSnapshot": {
+      "result": "metadata DOM absent",
+      "nameSelectorExists": false,
+      "nameMatches": false,
+      "authorSelectorExists": false,
+      "authorMatches": false,
+      "coverSelectorExists": false,
+      "titleHasKnownBookName": false,
+      "titleIsSecurityValidation": false,
+      "captchaWrapperExists": false,
+      "captchaFrameCount": 0,
+      "catalogSelectorCount": 0,
+      "documentHasBody": true
+    },
+    "snapshotCaptchaVisibilityNotMeasured": true,
+    "pageTypeNotUniquelyIdentified": true,
+    "bodyOrHtmlOnlyTransientInMemory": true,
+    "fullTextHtmlHeadersCookiesAndUrlsWithQueriesNotPersisted": true,
+    "gradleSuccessIsNotAReaderJourneyPass": true,
+    "rendererClosedInFinally": true,
+    "previousScriptFailuresNotRepresentedByFinalObserverSourceHash": true
+  },
+  "compiledProductClassesComparedWithFrozenJar": [
+    {
+      "class": "LocalWebviewRenderer",
+      "sha256": "2a6d8742e1cfade384db84619a456b98f87cffdaf66d5993d429bd666e0418c8",
+      "matchesFrozenJar": true
+    },
+    {
+      "class": "BrowserNetworkPolicy",
+      "sha256": "a501f82c1763459f7a653bea9834bc3ca0e6eaf52d6646610b74e0dc0aa89a70",
+      "matchesFrozenJar": true
+    },
+    {
+      "class": "BrowserNetworkPolicyViolation",
+      "sha256": "a9be1c00850414f4387aaed8ddbbfc48d16047b36f58a9993297771ce49cc6d2",
+      "matchesFrozenJar": true
+    }
+  ],
+  "localDiagnosticFiles": [
+    {
+      "file": "probe.ps1",
+      "sha256": "52e564878a34ababf734f9a80b6ab8ae04a4a89dc9b4d3c55d1272dc94d9afa0"
+    },
+    {
+      "file": "PublicDnsObservation.java",
+      "sha256": "f7a4037eaffd650f7e078cfa699ffa554058decab574b24c79e53245e56878e3"
+    },
+    {
+      "file": "observer.init.gradle",
+      "sha256": "be5c136d2d8ff839f2a4de495a9578cade37516d2535ca156b0b902b7c46941b"
+    },
+    {
+      "file": "PublicDomObservation.java",
+      "sha256": "c438310a2bc0548e231ef486d46dce836b369e14abd663e0c95469f1167bdd12"
+    },
+    {
+      "file": "observer-dom.init.gradle",
+      "sha256": "4cf41373ebde65484fe2cbeed2e835a63fe0925e522b5966bd975e3ac0f2fdf9"
+    },
+    {
+      "file": "public-dns.hosts",
+      "sha256": "d585b5d7372f848e018b1c73f5801abff5b977c6dc52e10d3c1bdc5ba92957e5"
+    }
+  ],
+  "cleanup": {
+    "newMetadataBrowserTabId": "7",
+    "newMetadataBrowserTabClosed": true,
+    "freeChapterHandoffTabId": "6",
+    "userBrowserTabNotModified": true,
+    "ownReaderPortsClosed": [
+      18944,
+      18945,
+      18946
+    ],
+    "userReaderPreserved": {
+      "address": "127.0.0.1",
+      "port": 18931,
+      "pid": 61244
+    },
+    "realCredentialCleanupNotNeededBecauseNoImport": true
+  },
+  "limits": [
+    "Book metadata checks failed before any Reader directory/body request; no generated empty implementation or success waiver.",
+    "No actual CAPTCHA visibility conclusion from the final HTML-only Chrome snapshot.",
+    "No automatic CAPTCHA action, purchase, subscription, source modification in user Reader, global Fake-IP exception, credential replay, GitHub upload of body/HTML or production change.",
+    "Website public reading, Chrome diagnosis, current packaged Camoufox and real-authentication three-way verification are distinct scopes."
+  ]
+}
