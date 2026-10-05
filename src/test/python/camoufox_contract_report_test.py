@@ -29,12 +29,13 @@ class CamoufoxContractReportTest(unittest.TestCase):
 
     def test_complete_synthetic_report_exercises_only_the_guard(self):
         result = self.verify()
-        self.assertEqual(13, result["tests"])
+        self.assertEqual(14, result["tests"])
         self.assertTrue(result["navigationContractPresent"])
+        self.assertTrue(result["endlessNavigationContractPresent"])
         self.assertEqual(64, len(result["xmlSha256"]))
 
     def test_all_environment_gated_cases_are_rejected(self):
-        self.suite.set("skipped", "13")
+        self.suite.set("skipped", "14")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 
@@ -45,7 +46,14 @@ class CamoufoxContractReportTest(unittest.TestCase):
 
     def test_old_twelve_contracts_cannot_replace_navigation_acceptance(self):
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NAVIGATION_CONTRACT))
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.ENDLESS_NAVIGATION_CONTRACT))
         self.suite.set("tests", "12")
+        with self.assertRaises(GUARD.ContractReportError):
+            self.verify()
+
+    def test_previous_thirteen_contracts_do_not_prove_endless_navigation(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.ENDLESS_NAVIGATION_CONTRACT))
+        self.suite.set("tests", "13")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 

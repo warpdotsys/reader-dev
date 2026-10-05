@@ -49,6 +49,8 @@ class CamoufoxWebviewRendererTest {
     private val navigationPostStarts = AtomicInteger()
     private val navigationMaximumStep = AtomicInteger(-1)
     private val navigationFinalVisits = AtomicInteger()
+    private val infiniteNavigationHits = AtomicInteger()
+    private val infiniteNavigationPostStarts = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -71,6 +73,19 @@ class CamoufoxWebviewRendererTest {
         server.createContext("/") { exchange ->
             val requestBody = exchange.requestBody.use { it.readBytes().toString(StandardCharsets.UTF_8) }
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
+            if (exchange.requestURI.path.startsWith("/navigation-infinite/")) {
+                val step = exchange.requestURI.path.substringAfterLast('/').toInt()
+                infiniteNavigationHits.incrementAndGet()
+                if (step == 0 && exchange.requestMethod == "POST" && requestBody == "seed=generated") {
+                    infiniteNavigationPostStarts.incrementAndGet()
+                }
+                respond(exchange,
+                    "<html><body><div id='result'>generated-infinite-intermediate</div>" +
+                        "<script>document.addEventListener('DOMContentLoaded', () => " +
+                        "location.replace('/navigation-infinite/${step + 1}'));</script></body></html>",
+                    "text/html; charset=utf-8")
+                return@createContext
+            }
             if (exchange.requestURI.path.startsWith("/navigation-chain/")) {
                 val step = exchange.requestURI.path.substringAfterLast('/').toInt()
                 navigationMaximumStep.updateAndGet { maxOf(it, step) }
@@ -233,6 +248,41 @@ class CamoufoxWebviewRendererTest {
         }
         assertEquals("HTML snapshot handling must not replay the original navigation", 3, navigationStarts.get())
         assertEquals("Each generated form must be submitted only once", 3, navigationPostStarts.get())
+    }
+
+    @Test
+    fun endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val started = System.nanoTime()
+            val outcome = runCatching {
+                limited.render(request("/navigation-infinite/0", "endless-navigation-user",
+                    post = true, body = "seed=generated"))
+            }
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+            val failure = outcome.exceptionOrNull()
+            assertTrue("An endless generated chain must actually navigate through multiple documents",
+                infiniteNavigationHits.get() >= 5)
+            assertEquals("Timeout handling must not replay the initial generated form",
+                1, infiniteNavigationPostStarts.get())
+            assertTrue("An endless chain must fail rather than return an intermediate document",
+                failure is IllegalStateException)
+            // Require the real worker timeout, not the 21-second emergency parent
+            // watchdog: endlessly renewing a per-document deadline must fail here.
+            assertTrue("An endless chain must fail with the worker timeout, not an unrelated error",
+                failure?.message?.contains("(TimeoutError)") == true)
+            assertTrue("Each redirect must not renew the total budget: ${elapsedMs}ms", elapsedMs < 20_000)
+            val stoppedHits = infiniteNavigationHits.get()
+            val healthy = limited.render(request("/echo", "endless-navigation-user"))
+            assertTrue("The next actual browser render must recover after endless navigation",
+                healthy.body?.contains("GET|||") == true)
+            assertEquals("The timed-out browser must stop hitting the generated navigation fixture",
+                stoppedHits, infiniteNavigationHits.get())
+        } finally {
+            limited.close()
+        }
     }
 
     @Test
