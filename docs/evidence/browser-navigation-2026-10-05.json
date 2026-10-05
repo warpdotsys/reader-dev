@@ -1,0 +1,183 @@
+{
+  "sourceBase": "6f56c99092c969f097332cafd13c529384430760",
+  "status": "navigation snapshot candidate locally verified; own hosted acceptance pending",
+  "privacy": {
+    "realCredentialsImported": false,
+    "chapterBodyRequested": false,
+    "otherLocalBookBodiesRead": false,
+    "originalJarOverwritten": false,
+    "productionModified": false
+  },
+  "generatedBaseline": {
+    "probeRounds": 12,
+    "contentNavigationRaces": 12,
+    "navigationFailures": 0,
+    "otherFailures": 0,
+    "networkDenials": 0,
+    "generatedDocumentRequests": 25,
+    "probeSourceSha256": "4162b577cf278e542b5c5c058dca5115c107d6da78de4bcaba703767c86e6470",
+    "junitTests": 1,
+    "junitFailures": 1,
+    "junitSkipped": 0,
+    "junitSeconds": 11.425,
+    "junitXmlSha256": "18932913d107e9acdc9f34fe3dfb6979a1a0ca3960f1f87c2d428ba17a96c7c4"
+  },
+  "implementation": {
+    "onlyHtmlSnapshotRetried": true,
+    "onlyPinnedPlaywrightNavigationRaceRetried": true,
+    "networkDenialFatal": true,
+    "navigationAndPostNotReplayed": true,
+    "sourceScriptsNotReexecuted": true,
+    "snapshotRetryBudgetMonotonic": true,
+    "waitUsesDomContentLoadedNotNetworkIdle": true,
+    "defaultCamoufoxUnmodified": true,
+    "notHardOsWallClockPreemption": true
+  },
+  "sourceHashes": {
+    "BrowserDocumentSnapshot": "17b684785c418770248ac4713737c1bcb75d14b5c88f385e027f4a9181b774d8",
+    "BrowserDocumentSnapshotTest": "a95995c89665856f2a8bdf014afa140eda181579165d0dc77805f36ef18a0e1b",
+    "LocalWebviewRenderer": "f8e3e8945137886dff885060e24f99b599c82e2744d88b28e8092d3f82585237",
+    "LocalWebviewRendererTest": "06efb7995018a8afc099bb1ec0936069279774ba6f675b2b1753d5d5b4e117fa"
+  },
+  "targeted": {
+    "totalTests": 23,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "generatedNavigationRounds": 3,
+    "originalPostCount": 3,
+    "originalNavigationStartCount": 3,
+    "xml": [
+      {
+        "name": "BrowserDocumentSnapshotTest",
+        "tests": 11,
+        "seconds": 0.738,
+        "sha256": "e3754ac2ed295019375afbb21f6cfe9911dea1d4b2d5977d995e4e68f4cbb56a"
+      },
+      {
+        "name": "ChromiumLaunchPolicyTest",
+        "tests": 1,
+        "seconds": 0.318,
+        "sha256": "3a8cef585ea599f2571b60ffad90a41dbf097a16802dfcc49283aeebb3481f41"
+      },
+      {
+        "name": "LocalWebviewRendererTest",
+        "tests": 11,
+        "seconds": 57.843,
+        "sha256": "9fc24391874c0f10d15be77267efa446cac0c786b464c2522134fc257a55fa3d"
+      }
+    ]
+  },
+  "fullBuild": {
+    "suites": 40,
+    "totalTests": 143,
+    "executedTests": 131,
+    "skippedTests": 12,
+    "skippedSuite": "CamoufoxWebviewRendererTest; runtime not configured on this local host",
+    "failures": 0,
+    "errors": 0,
+    "generatedNavigationCaseSeconds": 9.467,
+    "localChromiumSuiteSeconds": 55.333,
+    "jarSha256": "3ac63d9c126663d536a0a7a67cbca91fc4f6243699345a1a1b4d1e299e1ac597",
+    "uiEntriesByteCompared": 81,
+    "allUiEntriesMatchDist": true,
+    "snapshotClassActuallyPackaged": true,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "originalJarNotRunThisRound": true,
+    "releasePipelineTests": 47,
+    "releasePipelineSkipped": 0,
+    "actionlintPassed": true,
+    "shellcheckAndPyflakesNotRun": true
+  },
+  "anonymousReader": {
+    "approvedSourceSha256": "b213d09c979f8ed90c01b303b5896bc2998b21453c9ababca267e936234873d4",
+    "approvedSourceActualShape": "singleton JSON array, unwrapped by the existing PowerShell harness",
+    "privateNetworkGuardEnabled": true,
+    "initialNineHostSnapshot": {
+      "testPid": 59112,
+      "cookieRowsBefore": 0,
+      "cookieRowsAfter": 0,
+      "searches": [
+        {
+          "round": 1,
+          "seconds": 9.154,
+          "httpStatus": 200,
+          "isSuccess": false,
+          "data": null,
+          "errorMsgEmpty": false,
+          "policyReason": "DNS_FAILURE",
+          "hostFingerprint": "5fdb41b4266676bf",
+          "contentNavigationRace": false,
+          "exactTitleMatches": 0
+        },
+        {
+          "round": 2,
+          "seconds": 2.279,
+          "httpStatus": 200,
+          "isSuccess": false,
+          "data": null,
+          "errorMsgEmpty": false,
+          "policyReason": "DNS_FAILURE",
+          "hostFingerprint": "5fdb41b4266676bf",
+          "contentNavigationRace": false,
+          "exactTitleMatches": 0
+        }
+      ]
+    },
+    "additionalTestOnlyPublicDns": {
+      "matchedHost": "ssl.captcha.qq.com",
+      "offlineCandidateCount": 47,
+      "verifiedResolver": "https://dns.google/resolve",
+      "status": 0,
+      "recordType": 1,
+      "answer": "157.255.220.168",
+      "ttlSeconds": 300,
+      "otherProviderDidNotYieldExpectedSchema": true,
+      "snapshotSha256": "fd7d3eef60352a59ad7ab295f190ea35818008f22420a8552f999a80995851ef",
+      "systemDnsOrProductionPolicyChanged": false,
+      "testPid": 49588,
+      "cookieRowsBefore": 0,
+      "cookieRowsAfter": 0,
+      "search": {
+        "seconds": 8.209,
+        "httpStatus": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "data": [],
+        "exactTitleMatches": 0,
+        "contentNavigationRace": false,
+        "policyReason": "",
+        "hostFingerprint": ""
+      },
+      "notSuccessfulBookSearchAcceptance": true
+    },
+    "anonymousMetadataProbe": {
+      "initialSchemaErrorWasHarnessNotProduct": true,
+      "initialBrowserCookies": 0,
+      "htmlSnapshotReturned": false,
+      "failureClass": "com.htmake.reader.utils.BrowserNetworkPolicyViolation",
+      "policyReason": "DNS_FAILURE",
+      "hostFingerprint": "ad4a9c600a0e9679",
+      "contentNavigationRace": false,
+      "rawHtmlAndCookiesNotPersisted": true,
+      "captchaSolvedOrModified": false
+    },
+    "bothReaderProcessesStopped": true,
+    "test18944ClosedAfterBoth": true,
+    "userReader18931Pid61244Preserved": true,
+    "independentAllDescendantPidAuditNotPerformed": true,
+    "zeroResultsCauseNotYetVerified": true
+  },
+  "errorsNotHidden": [
+    "Initial PowerShell argument quoting error prevented baseline Gradle tests; corrected before actual failed baseline",
+    "Public metadata harness initially assumed object; actual singleton-array shape now handled, failure not called a website regression"
+  ],
+  "remaining": [
+    "This source increment needs its own GitHub hosted runs and reports",
+    "Anonymous Qidian returns zero exact-title matches; empty response is not a successful search",
+    "No authenticated three-way or chapter reading acceptance",
+    "Camoufox content-navigation race not independently reproduced or patched",
+    "Not local final non-root container, sustained new-source, or production acceptance",
+    "No default-branch merge, formal release, registry publish or deployment"
+  ]
+}

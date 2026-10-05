@@ -225,5 +225,173 @@
     "knownRemainingFailure": "Unable to retrieve content because the page is navigating and changing the content",
     "notAuthenticatedAcceptance": true
   },
-  "hostedAcceptance": "pending new source push/run; prior 6d CI/soak cannot prove this change"
+  "hostedAcceptance": {
+    "sourceHead": "6f56c99092c969f097332cafd13c529384430760",
+    "testedPrMergeRevision": "dec57d6f7f3bd014ca0b0d6cecde7208c689b446",
+    "workflows": [
+      {
+        "name": "Java Kotlin CI",
+        "id": 37289917286,
+        "conclusion": "success"
+      },
+      {
+        "name": "Vue 3 preview build",
+        "id": 37289917305,
+        "conclusion": "success"
+      },
+      {
+        "name": "Browser image integration",
+        "id": 37289917331,
+        "conclusion": "success"
+      },
+      {
+        "name": "Native release artifact rehearsal",
+        "id": 37289917289,
+        "conclusion": "success"
+      }
+    ],
+    "hostedRunnerGroup": "GitHub Actions",
+    "browserJob": {
+      "id": 111697642722,
+      "runner": "GitHub Actions 1000003630",
+      "label": "ubuntu-24.04"
+    },
+    "actualXmlReports": 3,
+    "xmlTests": {
+      "localChromium": 10,
+      "launchPolicy": 1,
+      "camoufox": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "nativeJsonReportsIndividuallyAudited": 20,
+    "completeImageJsonReportsIndividuallyAudited": 2,
+    "sharedNativeJarSha256": "1765176435df000da52e90b20230fb732bf1b7be434ec96acec858d69e166270",
+    "resourceConstraints": {
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "pidsMax": 256,
+      "configuredSwapMaxBytes": 1073741824,
+      "allObservedSwapCurrentBytes": 0,
+      "allObservedLimitAndOomEvents": 0
+    },
+    "memoryPeakBytes": {
+      "completeImage": 834359296,
+      "amd64": 804257792,
+      "amd64Reloaded": 810156032,
+      "arm64": 797454336,
+      "arm64Reloaded": 813776896
+    },
+    "onlySmallProofsDownloaded": true,
+    "proofHashes": [
+      {
+        "relativePath": "camoufox-contract-report/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "66a1b749b9ac30089633e427a24a016d69b9ce4e1ef88edd7b12227ef6612327"
+      },
+      {
+        "relativePath": "local-chromium-contract-report/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "dc9009f6d4036f7723c716cf222f62a4f5fee371101439bc51ce97391bf45ecb"
+      },
+      {
+        "relativePath": "local-chromium-contract-report/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "1ca879abc6210e34b0c10d0a79b55c2a962972f0bfbe71867c6aff65728f0408"
+      },
+      {
+        "relativePath": "native/amd64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "6f18b3933f6c2b4251fb26a02c8f558fe02474aa044d133f09c76bb21885e8c7"
+      },
+      {
+        "relativePath": "native/amd64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/amd64-JAR_IDENTITY.json",
+        "sha256": "ce13b2767d38a85f19ae10e845e297d3b196c28a604504151fef4e65514b175b"
+      },
+      {
+        "relativePath": "native/amd64-metadata.json",
+        "sha256": "98215a582d14e2fa6e35040a15e09d8eefc1eb8e20b68f241e85b608d60756f9"
+      },
+      {
+        "relativePath": "native/amd64-RELEASE_IDENTITY.json",
+        "sha256": "ebb232829bc3dee624c40b06a33f8bbce12a3a816975c8263df1157c029d608d"
+      },
+      {
+        "relativePath": "native/amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "eb919c047c8c9e436ed20c5e17e9052f1ce0f3be5d16c677fbba51fce5768e61"
+      },
+      {
+        "relativePath": "native/amd64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/amd64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "a4100184c5e3b520fd1547b72a56293c6c4178cf79e93756cbb5cd0e0fe380a6"
+      },
+      {
+        "relativePath": "native/amd64-transfer-JAR_IDENTITY.json",
+        "sha256": "ce13b2767d38a85f19ae10e845e297d3b196c28a604504151fef4e65514b175b"
+      },
+      {
+        "relativePath": "native/amd64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "ebb232829bc3dee624c40b06a33f8bbce12a3a816975c8263df1157c029d608d"
+      },
+      {
+        "relativePath": "native/arm64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "9f03383a9d255f0cab32d13fc8cda73d7987a5780abfb51c9a37034a82c9f952"
+      },
+      {
+        "relativePath": "native/arm64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/arm64-JAR_IDENTITY.json",
+        "sha256": "e8caa5e77cce310826a188c6669b1cd1d093560c709faa501442be3ac4bbf099"
+      },
+      {
+        "relativePath": "native/arm64-metadata.json",
+        "sha256": "344d42f5e21db376034e89b9479b1c18f2527c6777f386178587d7382a105b97"
+      },
+      {
+        "relativePath": "native/arm64-RELEASE_IDENTITY.json",
+        "sha256": "ebb232829bc3dee624c40b06a33f8bbce12a3a816975c8263df1157c029d608d"
+      },
+      {
+        "relativePath": "native/arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "b0d93eb5b2904bdcda6212555569eab3b4ce6388d28ae10e7b92789b788c3600"
+      },
+      {
+        "relativePath": "native/arm64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/arm64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "a403d4d08950b5d7bc9501378d5447f49b76c63a3de482e2e0685c070ac407b5"
+      },
+      {
+        "relativePath": "native/arm64-transfer-JAR_IDENTITY.json",
+        "sha256": "e8caa5e77cce310826a188c6669b1cd1d093560c709faa501442be3ac4bbf099"
+      },
+      {
+        "relativePath": "native/arm64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "ebb232829bc3dee624c40b06a33f8bbce12a3a816975c8263df1157c029d608d"
+      },
+      {
+        "relativePath": "smoke/bundled-browser-resource-budget.json",
+        "sha256": "a34456f05501984c65746e159d4d1766319dd510da47f78ab934af6794761180"
+      },
+      {
+        "relativePath": "smoke/bundled-browser-synthetic.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      }
+    ],
+    "limits": [
+      "Generated short fixtures and hosted checks; not authenticated Qidian or production",
+      "Node action deprecation warnings remain",
+      "Does not verify subsequent navigation snapshot source changes",
+      "No formal release, registry publication, default branch merge or production deployment"
+    ]
+  }
 }

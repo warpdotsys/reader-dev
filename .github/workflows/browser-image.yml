@@ -28,6 +28,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserCookieJar.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserDocumentSnapshot.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
@@ -38,6 +39,7 @@ on:
       - 'src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt'
       - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserDocumentSnapshotTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserNetworkPolicyDiagnosticTest.kt'
       - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererNetworkDiagnosticTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserCookieJarTest.kt'
@@ -82,6 +84,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/controller/SourceLoginController.kt'
       - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserCookieJar.kt'
+      - 'src/main/java/com/htmake/reader/utils/BrowserDocumentSnapshot.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserEgressProxy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserNetworkPolicy.kt'
       - 'src/main/java/com/htmake/reader/utils/BrowserUpstreamProxy.kt'
@@ -92,6 +95,7 @@ on:
       - 'src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt'
       - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/BrowserEgressProxyTest.kt'
+      - 'src/test/java/com/htmake/reader/utils/BrowserDocumentSnapshotTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserNetworkPolicyDiagnosticTest.kt'
       - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererNetworkDiagnosticTest.kt'
       - 'src/test/java/com/htmake/reader/utils/BrowserCookieJarTest.kt'
@@ -311,11 +315,13 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: |
           ./gradlew test --tests 'com.htmake.reader.utils.LocalWebviewRendererTest' \
-            --tests 'com.htmake.reader.utils.ChromiumLaunchPolicyTest' --no-daemon
+            --tests 'com.htmake.reader.utils.ChromiumLaunchPolicyTest' \
+            --tests 'com.htmake.reader.utils.BrowserDocumentSnapshotTest' --no-daemon
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           from pathlib import Path
-          for name, count in (("LocalWebviewRendererTest", 10), ("ChromiumLaunchPolicyTest", 1)):
+          for name, count in (("LocalWebviewRendererTest", 11), ("ChromiumLaunchPolicyTest", 1),
+                              ("BrowserDocumentSnapshotTest", 11)):
               path = Path("build/test-results/test") / f"TEST-com.htmake.reader.utils.{name}.xml"
               suite = ET.parse(path).getroot()
               assert int(suite.attrib["tests"]) == count, (name, "missing tests")
@@ -325,7 +331,7 @@ jobs:
         if: always()
         run: |
           install -d "$RUNNER_TEMP/local-chromium-contract-report"
-          for name in LocalWebviewRendererTest ChromiumLaunchPolicyTest; do
+          for name in LocalWebviewRendererTest ChromiumLaunchPolicyTest BrowserDocumentSnapshotTest; do
             report="build/test-results/test/TEST-com.htmake.reader.utils.$name.xml"
             if test -f "$report"; then cp "$report" "$RUNNER_TEMP/local-chromium-contract-report/"; fi
           done

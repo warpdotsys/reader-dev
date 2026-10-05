@@ -165,7 +165,8 @@ class LocalWebviewRenderer private constructor(
                         }
                         matchedSourceUrl.get()
                             ?: throw IllegalStateException("本地 WebView 在 ${timeoutMs}ms 内未找到匹配 sourceRegex 的资源")
-                    } else if (request.javaScript.isNullOrBlank()) page.content()
+                    } else if (request.javaScript.isNullOrBlank()) BrowserDocumentSnapshot.read(page, timeoutMs,
+                        { failIfNetworkRequestBlocked(blockedNetworkRequest) })
                         else page.evaluate(request.javaScript)?.toString() ?: ""
                     failIfNetworkRequestBlocked(blockedNetworkRequest)
                     result

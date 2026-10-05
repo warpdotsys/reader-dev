@@ -32,8 +32,23 @@ gradlew.bat -PreaderWebUi=vue3 test --tests com.htmake.reader.utils.LocalWebview
 
 `--tests` 属于 `test`，必须放在下一 `bootJar` 任务之前。真实 Chromium 合约需要 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` 和 `READER_BROWSER_EXECUTABLE`；只运行 Gradle 不配置环境会门控跳过，不等于通过。
 
+## 后台服务修复已托管复验（源码 6f56c990）
+
+源码 `6f56c99092c969f097332cafd13c529384430760` / 测试合并快照 `dec57d6f7f3bd014ca0b0d6cecde7208c689b446` 的四条工作流已全部成功：
+
+- [Java/Kotlin CI 37289917286](https://github.com/warpdotsys/reader-dev/actions/runs/37289917286)。
+- [Vue 3 preview 37289917305](https://github.com/warpdotsys/reader-dev/actions/runs/37289917305)。
+- [Browser image 37289917331](https://github.com/warpdotsys/reader-dev/actions/runs/37289917331)。
+- [Native release rehearsal 37289917289](https://github.com/warpdotsys/reader-dev/actions/runs/37289917289)。
+
+实际下载并逐份检查 Chromium 10 项、launch policy 1 项及 Camoufox 12 项 XML：全部 0 失败/错误/跳过。Browser 作业为 GitHub Actions `1000003630` / `ubuntu-24.04`；原生六作业同属 GitHub 托管组，ARM 构建和重新加载使用 `ubuntu-24.04-arm`，没有自托管 runner。
+
+另独立核对 20 份原生及 2 份完整镜像 JSON：同一共享 JAR、版本/合并快照、加载前后图像身份、实际运行 JAR 散列、四账号 Cookie 顺序与 GET/POST/脚本请求、真实资源计数均通过。资源硬上限为 2 CPU / 2 GiB / 256 PID；短时最高观测 `834359296` 字节（约 796 MiB），触限/OOM 与实际 swap 使用均 0，但该短测允许最多 1 GiB swap，不能冒充无 swap 持续运行。25 份证据散列及小型 artifact 身份已写入[证据文件](evidence/chromium-background-2026-10-05.json)，未下载两个约 2 GiB 的镜像副本。
+
+这只验收后台服务隔离及既有生成契约。Node action 废弃警告尚在；后续导航快照修复需要自己的新提交/托管作业，真实起点认证和生产仍未验收。没有正式发版、注册表上传或默认分支合并。
+
 ## 尚未验证、CI 与回滚
 
-GitHub 托管集成新增两份实际 XML 的强校验：Chromium 10 项、launch policy 1 项，全部必须 0 跳过/错误/失败，并在下一次 Gradle 前冻结、上传小型证据。新增源码/单元路径也进入两类触发器。新提交仍需自己的托管验收；此前 `6d398926` 的四条工作流及双架构持续测试不能用于证明本修改。
+上述提交的 GitHub 托管集成新增两份实际 XML 的强校验：Chromium 10 项、launch policy 1 项，全部必须 0 跳过/错误/失败，并在下一次 Gradle 前冻结、上传小型证据。新增源码/单元路径也进入两类触发器。本提交的托管结果现已独立核对；此前 `6d398926` 的四条工作流及双架构持续测试仍不能用于证明本修改或后续导航增量。
 
 页面导航竞争、Reader 起点搜索/正文、真实认证三方、最终本机非 root 镜像及生产验收仍待完成。当前没有正式发版、合并默认分支或部署候选。回滚可在独立干净工作树撤回本次可读源码增量并重建；恢复旧 Chrome 基线也会恢复此已知误判。不得对用户脏目录 reset/checkout，没有字节码补丁或数据迁移。
