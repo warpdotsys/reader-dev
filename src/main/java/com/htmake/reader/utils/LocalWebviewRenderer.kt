@@ -220,6 +220,10 @@ class LocalWebviewRenderer private constructor(
                 .setHeadless(true)
                 .setArgs(listOf(
                     "--disable-quic",
+                    // Omnibox AI eligibility and default-search preconnects run outside
+                    // page routes, including fresh contexts. They must not poison a render's
+                    // guarded egress result or depend on unrelated public domains.
+                    ChromiumLaunchPolicy.disabledFeaturesArgument(),
                     "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
                     "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"
                 ))

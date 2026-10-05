@@ -1,0 +1,229 @@
+{
+  "scope": "precommit local Chromium baseline defect and generated regressions; no real credentials, original-JAR runtime comparison, authenticated source acceptance or new hosted verdict",
+  "baselineRuntimeSource": "6d39892607e7cc0ced216cf24f79fc7c4313c170",
+  "browserVersion": "154.0.8037.58",
+  "jarSha256": "ef8cd41cd5844d2b6993104ec42dad5ce0a637bd1d04295b65174e495883ccae",
+  "originalJarSha256Unchanged": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "baseline": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 11.53,
+    "reason": "DNS_FAILURE",
+    "fingerprint": "191347bfe55d0ca9",
+    "offlinePublicHostnameMatch": "www.google.com",
+    "xmlSha256": "5b43ff3f7d9ded3c960e4aafed09e114b68a027722aac05afcf705e6f9eb9873"
+  },
+  "firstCandidate": {
+    "disabledOnlyPreconnect": true,
+    "tests": 31,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "stillSameFingerprint": true
+  },
+  "candidate": {
+    "targetedTests": 31,
+    "targetedSkipped": 0,
+    "targetedFailures": 0,
+    "targetedErrors": 0,
+    "fullSuites": 39,
+    "fullTests": 131,
+    "fullFailures": 0,
+    "fullErrors": 0,
+    "fullSkipped": 12,
+    "skippedScope": "Only CamoufoxWebviewRendererTest; real Camoufox runtime not configured locally",
+    "jarUiAssetsIndividuallyMatched": 81,
+    "releasePipelineTests": 47,
+    "releasePipelineFailures": 0,
+    "actionlintPassed": true,
+    "shellcheckAndPyflakesNotRun": true
+  },
+  "targetedReports": [
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+      "tests": 5,
+      "sha256": "f903f979cd5581b1d090fcf254830c6a62c92289206acf47979f857b8bdea4e1",
+      "time": 0.128,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+      "tests": 4,
+      "sha256": "7d5b91fa955560327efd24dd35f7a15ad4864210ed60dbf5f8ea4da6052ac299",
+      "time": 0.05,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+      "tests": 5,
+      "sha256": "445470f5406258aff55da787b01686684f42c1f0cf56fd1d7035e36d7928e1a0",
+      "time": 0.066,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+      "tests": 3,
+      "sha256": "ff1f2a85dc24d08f47dc4dd71fc5a5891d311e1b1a08cd7f90c207ec9023dea9",
+      "time": 0.003,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+      "tests": 1,
+      "sha256": "000b0fdb75b6a443cae0f1dfe63553b1f5d97d8fce049e5a1f82334e7a9b1c4b",
+      "time": 1.064,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+      "tests": 1,
+      "sha256": "3f3a36b3d3da4f18b8cd4132cb4dc63565e749634b49a72928f71470a27b9bbb",
+      "time": 1.908,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "tests": 1,
+      "sha256": "0c68eba146d41490f9a3e0f3e865a2a5407b92de285d0d850c60007b4a1fe8d7",
+      "time": 0.133,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+      "tests": 1,
+      "sha256": "ded6befe89d29e4d1c819daadc7bfbef7bc4c84c89f196eaf421ad79b09d58f9",
+      "time": 0.005,
+      "skipped": 0,
+      "failures": 0
+    },
+    {
+      "errors": 0,
+      "name": "TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "tests": 10,
+      "sha256": "44e4485b827e9dee106a1629d62957afb4e4cc800b40499ac3e40f37d8fa2e6a",
+      "time": 38.17,
+      "skipped": 0,
+      "failures": 0
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": "src/main/java/com/htmake/reader/utils/ChromiumLaunchPolicy.kt",
+      "sha256": "63ed82070cc4f832432b4f3e0dda110988d688897ba1762b54b3d8e6b01ddc89"
+    },
+    {
+      "path": "src/main/java/com/htmake/reader/utils/LocalWebviewRenderer.kt",
+      "sha256": "cd75d9350a8a81c64f8f20595aeca1479e4a8ef2e1ed06a2b4220e6d3356c42e"
+    },
+    {
+      "path": "src/test/java/com/htmake/reader/utils/ChromiumLaunchPolicyTest.kt",
+      "sha256": "63fdbd87822187831ceda92d0e976caf02d526fd91445792823e5781bb88c709"
+    },
+    {
+      "path": "src/test/java/com/htmake/reader/utils/LocalWebviewRendererTest.kt",
+      "sha256": "eb832c7d9059daecd06fe92afede2c7855dd7f4cbe5074bc0a0df9f29a9d36d0"
+    }
+  ],
+  "generatedNetlogs": [
+    {
+      "sha256": "ed47a554bd3d092c4efa8fb64625ed253397dd5adcbe5bd279004da0a5edb9b5",
+      "googleRequestStarts": 2,
+      "googlePreconnectJobs": 0,
+      "name": "features"
+    },
+    {
+      "sha256": "3b34d661d0abd5aef56e67000dbb1a5ad07b0ee178a85a9e4ed649ee75c50a9d",
+      "googleRequestStarts": 2,
+      "googlePreconnectJobs": 4,
+      "name": "automation"
+    },
+    {
+      "sha256": "3cba51e7e0aa20690e8d7a29f2e471bd37207756b9aaa41e6fe34fc716badcac",
+      "googleRequestStarts": 0,
+      "googlePreconnectJobs": 4,
+      "name": "aim"
+    },
+    {
+      "sha256": "2eb539cb8a10e738eb46432d3491f851b75379056d23a921f2a1d9220faafeeb",
+      "googleRequestStarts": 0,
+      "googlePreconnectJobs": 0,
+      "name": "combined"
+    }
+  ],
+  "anonymousProbes": {
+    "scope": "same approved credential-free official desktop source, process-only unchanged nine-host DNS snapshot, fresh generated Reader accounts, no chapter requests",
+    "sourceSha256": "b213d09c979f8ed90c01b303b5896bc2998b21453c9ababca267e936234873d4",
+    "runs": [
+      {
+        "name": "a",
+        "pid": 65104,
+        "seconds": [
+          10.1,
+          1.812
+        ],
+        "httpStatus": 200,
+        "isSuccess": false,
+        "data": null,
+        "exactTitleMatches": 0,
+        "policyReason": "",
+        "fingerprint": ""
+      },
+      {
+        "name": "b",
+        "pid": 66528,
+        "seconds": [
+          11.482,
+          1.644
+        ],
+        "httpStatus": 200,
+        "isSuccess": false,
+        "data": null,
+        "exactTitleMatches": 0,
+        "policyReason": "",
+        "fingerprint": "",
+        "errorClass": "com.microsoft.playwright.PlaywrightException"
+      },
+      {
+        "name": "c",
+        "pid": 30972,
+        "seconds": [
+          12.139
+        ],
+        "httpStatus": 200,
+        "isSuccess": false,
+        "data": null,
+        "exactTitleMatches": 0,
+        "policyReason": "",
+        "fingerprint": "",
+        "errorClass": "com.microsoft.playwright.PlaywrightException",
+        "contentNavigationRace": true,
+        "executionContextDestroyed": false,
+        "targetClosed": false
+      }
+    ],
+    "cookieRowsBeforeAndAfterAllZero": true,
+    "processesStoppedAndTestPortClosedAll": true,
+    "userReader18931PreservedAll": true,
+    "rawErrorHtmlHeadersCookiesNotPersisted": true,
+    "knownRemainingFailure": "Unable to retrieve content because the page is navigating and changing the content",
+    "notAuthenticatedAcceptance": true
+  },
+  "hostedAcceptance": "pending new source push/run; prior 6d CI/soak cannot prove this change"
+}

@@ -138,6 +138,33 @@ class LocalWebviewRendererTest {
     }
 
     @Test
+    fun generatedPageDoesNotTriggerBrowserBackgroundNetworkRequests() = runBlocking {
+        // Only the generated origin can resolve in this test. Unexpected browser
+        // service requests are rejected before DNS or any external connection.
+        val unexpectedHosts = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        val policy = BrowserNetworkPolicy(allowPrivateNetworks = true, resolve = { host ->
+            if (host != "127.0.0.1") {
+                unexpectedHosts.add(host)
+                throw java.net.UnknownHostException("Generated resolver denies non-fixture hosts")
+            }
+            arrayOf(InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)))
+        })
+        val isolatedRenderer = LocalWebviewRenderer(
+            System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, policy)
+        try {
+            repeat(3) { round ->
+                val response = isolatedRenderer.render(request("/echo", "background-probe-$round",
+                    script = "new Promise(resolve => setTimeout(() => " +
+                        "resolve(document.querySelector('#result').textContent), 1500))"))
+                assertEquals("GET||", response.body)
+            }
+            assertTrue("A generated page must not cause non-fixture DNS requests", unexpectedHosts.isEmpty())
+        } finally {
+            isolatedRenderer.close()
+        }
+    }
+
+    @Test
     fun chunkedEventStreamsReachThePageBeforeTheOriginCloses() = runBlocking {
         val response = renderer.render(request("/resource-page", "reader-a", script =
             "new Promise(resolve => { const events = []; const source = new EventSource('/events'); " +
