@@ -357,14 +357,25 @@ jobs:
           READER_BROWSER_ALLOW_PRIVATE_NETWORKS: 'true'
           READER_CAMOUFOX_PYTHON: ${{ runner.temp }}/reader-camoufox/bin/python
           READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'
-        run: ./gradlew test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --no-daemon
+        run: |
+          ./gradlew test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --no-daemon
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path("build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml")
+          suite = ET.parse(path).getroot()
+          assert int(suite.attrib["tests"]) == 13, "Missing Camoufox contracts"
+          assert all(int(suite.attrib[key]) == 0 for key in ("failures", "errors", "skipped")), "Camoufox contracts not executed successfully"
+          names = {case.attrib["name"] for case in suite.findall("testcase")}
+          assert "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost" in names, "Missing generated navigation contract"
+          PY
       - name: Preserve Camoufox contract report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: camoufox-contract-report
           path: build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
-          if-no-files-found: warn
+          if-no-files-found: error
       - name: Build one-container image
         shell: bash
         run: |

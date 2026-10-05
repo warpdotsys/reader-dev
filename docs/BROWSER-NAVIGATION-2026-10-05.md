@@ -1,6 +1,6 @@
 # Chromium 内容导航竞争修复候选
 
-更新日期：2026-10-05。源码基线 `6f56c990`；本增量已本机验证，自己的 GitHub 托管结果尚待。仅 opt-in `LocalWebviewRenderer`，不宣称默认 Camoufox 或真实起点已经修好。
+更新日期：2026-10-05。源码 `3315d9cf` 已完成本机及自己的 GitHub 托管复验。仅 opt-in `LocalWebviewRenderer`，不宣称默认 Camoufox 或真实起点已经修好。
 
 ## 已实际复现，不是近似源码推断
 
@@ -44,8 +44,18 @@ $env:READER_BROWSER_EXECUTABLE='C:\Program Files\Google\Chrome\Application\chrom
 
 两个 Reader Cookie 前后均 0，自有 PID 59112 / 49588 持有句柄关闭、18944 无监听，用户 18931/PID 61244 保留。没有重用已清除真实 Cookie，没有读取其他本地正文，没有上传正文/凭据；未逐 PID 独立审计所有 Windows 后代，不冒充完整回收证明。[失败、散列、测试、匿名结果及限制](evidence/browser-navigation-2026-10-05.json)。
 
+## 本提交托管复验已完成（3315d9cf）
+
+源码 `3315d9cfd2f800bff9b2e0ae11730ae2f8dfa2d1` / 测试合并快照 `40ad366d8de63a29c068fe0fa9daed80687841e9` 的 [Java 37294389488](https://github.com/warpdotsys/reader-dev/actions/runs/37294389488)、[Vue 37294389568](https://github.com/warpdotsys/reader-dev/actions/runs/37294389568)、[Browser 37294389490](https://github.com/warpdotsys/reader-dev/actions/runs/37294389490)、[Native 37294389494](https://github.com/warpdotsys/reader-dev/actions/runs/37294389494) 全部成功。
+
+已实际下载/逐份核对四份 XML 共 35 项（Chromium 11 / 快照单元 11 / launch policy 1 / 旧 Camoufox 12），全部 0 跳过/失败/错误，明确包含生成 Chromium 导航用例。20 份原生及 2 份完整镜像 JSON 的版本/合并快照、实际运行 JAR、加载图像、请求/四账号 Cookie/资源已独立核对。原生六作业全属 GitHub 托管组，ARM 构建/重新加载为原生 `ubuntu-24.04-arm`，无自托管或 QEMU。
+
+同一共享 JAR 为 `c24b815ce251e0b08881e531fa159a79e9afda5731521b8f2a6fa0b13eb0f7e8`，资源硬限制 2 CPU / 2 GiB / 256 PID。短时最高 `847216640` 字节（约 808 MiB），已检查触限/OOM/PID max 与实际 swap 均 0；仍配置允许 1 GiB swap，不是无 swap 持续运行。只下载约 10 KiB 的小型证明，26 份原文件散列已记录在[证据文件](evidence/browser-navigation-2026-10-05.json)，未下载两份大型图像。
+
+该提交 Camoufox 的 12 项没有生成导航回归；后续新增[默认引擎导航门禁](CAMOUFOX-NAVIGATION-2026-10-05.md)需要自己的作业。Node action 废弃警告仍在，旧持续运行不证明此新源码；不是真实起点、认证三方/正文或生产验收。
+
 ## 托管门禁、尚未验证和回滚
 
 托管 Chromium 步骤新增快照单元，强制三套实际 XML 计数 11/1/11 且 0 失败/错误/跳过，在下一 Gradle 调用前冻结并保留失败证据。前一后台服务修复 `6f56c990` 已完成四工作流、23 项真实浏览器/策略报告及 22 份原生/完整镜像 JSON 审核，详见[对应报告](CHROMIUM-BACKGROUND-NETWORK-2026-10-05.md#后台服务修复已托管复验源码-6f56c990)；它们不证明本次后续源码。
 
-本增量仍待自己的托管验证，起点准确搜索、认证三方、正文、默认引擎导航竞争、最终本机非 root 镜像和生产验收均未完成。没有合并默认分支、正式发版、上传注册表或部署。回滚在新的独立干净工作树撤回本源码增量后重建；旧内容读取错误会恢复。不要 reset/checkout 覆盖用户脏目录；无字节码补丁或数据迁移。
+本增量的托管验证现已完成，但起点准确搜索、认证三方、正文、默认引擎导航竞争、最终本机非 root 镜像和生产验收均未完成。没有合并默认分支、正式发版、上传注册表或部署。回滚在新的独立干净工作树撤回本源码增量后重建；旧内容读取错误会恢复。不要 reset/checkout 覆盖用户脏目录；无字节码补丁或数据迁移。

@@ -1,6 +1,6 @@
 {
   "sourceBase": "6f56c99092c969f097332cafd13c529384430760",
-  "status": "navigation snapshot candidate locally verified; own hosted acceptance pending",
+  "status": "3315d9cf local and hosted generated contracts verified; real Qidian and subsequent default navigation acceptance pending",
   "privacy": {
     "realCredentialsImported": false,
     "chapterBodyRequested": false,
@@ -168,12 +168,188 @@
     "independentAllDescendantPidAuditNotPerformed": true,
     "zeroResultsCauseNotYetVerified": true
   },
+  "hostedAcceptance": {
+    "sourceHead": "3315d9cfd2f800bff9b2e0ae11730ae2f8dfa2d1",
+    "testedPrMergeRevision": "40ad366d8de63a29c068fe0fa9daed80687841e9",
+    "workflows": [
+      {
+        "id": 37294389488,
+        "name": "Java Kotlin CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 37294389568,
+        "name": "Vue 3 preview build",
+        "conclusion": "success"
+      },
+      {
+        "id": 37294389490,
+        "name": "Browser image integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 37294389494,
+        "name": "Native release artifact rehearsal",
+        "conclusion": "success"
+      }
+    ],
+    "hostedRunnerGroup": "GitHub Actions",
+    "browserRunner": "GitHub Actions 1000003638",
+    "nativeRunnerNames": [
+      "GitHub Actions 1000003640",
+      "GitHub Actions 1000003643",
+      "GitHub Actions 1000003644",
+      "GitHub Actions 1000003645",
+      "GitHub Actions 1000003646",
+      "GitHub Actions 1000003647"
+    ],
+    "actualXmlReports": 4,
+    "totalXmlTests": 35,
+    "xmlTests": {
+      "localChromium": 11,
+      "snapshotUnit": 11,
+      "launchPolicy": 1,
+      "camoufoxExisting": 12,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "nativeJsonReportsIndividuallyAudited": 20,
+    "completeImageJsonReportsIndividuallyAudited": 2,
+    "sharedNativeJarSha256": "c24b815ce251e0b08881e531fa159a79e9afda5731521b8f2a6fa0b13eb0f7e8",
+    "resourceConstraints": {
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "pidsMax": 256,
+      "configuredSwapMaxBytes": 1073741824,
+      "observedSwapAllZero": true,
+      "observedMaxOomOomKillAndPidMaxAllZero": true
+    },
+    "memoryPeakBytes": {
+      "completeImage": 811606016,
+      "amd64": 821362688,
+      "amd64Reloaded": 847216640,
+      "arm64": 770617344,
+      "arm64Reloaded": 792391680
+    },
+    "onlySmallProofsDownloaded": true,
+    "proofHashes": [
+      {
+        "relativePath": "native/amd64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "e2ec87d61d61fdec5e4ba4d569b5c07c7b39d4e51cb972d2a19c4a63d0ca3068"
+      },
+      {
+        "relativePath": "native/amd64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/amd64-JAR_IDENTITY.json",
+        "sha256": "8e2471e47c4805a1e672c8eafa013b6b968c14934ec87d047fc745f2c2ede22f"
+      },
+      {
+        "relativePath": "native/amd64-metadata.json",
+        "sha256": "57e907c5aaa9858b0174ccabff65d394fce901e17ce0853a081ac045a3f343f5"
+      },
+      {
+        "relativePath": "native/amd64-RELEASE_IDENTITY.json",
+        "sha256": "ce90b85588f746e5824e3723955359df00f00fec1ad18c798cc0363c102c31c9"
+      },
+      {
+        "relativePath": "native/amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "0d1b4024baa5bbed5a5b6aa64d5d63478b73fe24bacce98f830ead29ab006315"
+      },
+      {
+        "relativePath": "native/amd64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/amd64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "76795c8a05100367748079c73a904d88097d62ca2d8f48d62279e5f2bd7da572"
+      },
+      {
+        "relativePath": "native/amd64-transfer-JAR_IDENTITY.json",
+        "sha256": "8e2471e47c4805a1e672c8eafa013b6b968c14934ec87d047fc745f2c2ede22f"
+      },
+      {
+        "relativePath": "native/amd64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "ce90b85588f746e5824e3723955359df00f00fec1ad18c798cc0363c102c31c9"
+      },
+      {
+        "relativePath": "native/arm64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "18b2476d82fa5f85ff48df569d57fac3b8e56982348f7c48a092e87ff8de1e22"
+      },
+      {
+        "relativePath": "native/arm64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/arm64-JAR_IDENTITY.json",
+        "sha256": "ff14fadedef3da4c890180b25c4173fd94aa77f94d113d50e532ff9a72893b13"
+      },
+      {
+        "relativePath": "native/arm64-metadata.json",
+        "sha256": "43e8e20497c4522b71860962788dda41d1189ac58d699b4a4d536ee3e09ca621"
+      },
+      {
+        "relativePath": "native/arm64-RELEASE_IDENTITY.json",
+        "sha256": "ce90b85588f746e5824e3723955359df00f00fec1ad18c798cc0363c102c31c9"
+      },
+      {
+        "relativePath": "native/arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "28674a3fe46bc3354b72943b294eda3767eae6d63c04e50f72dd7461f3b10544"
+      },
+      {
+        "relativePath": "native/arm64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "native/arm64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "4b908aa0d5849554369cdb537b42d35737f2d6cbc5de2fa45a2ad11af0968fd9"
+      },
+      {
+        "relativePath": "native/arm64-transfer-JAR_IDENTITY.json",
+        "sha256": "ff14fadedef3da4c890180b25c4173fd94aa77f94d113d50e532ff9a72893b13"
+      },
+      {
+        "relativePath": "native/arm64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "ce90b85588f746e5824e3723955359df00f00fec1ad18c798cc0363c102c31c9"
+      },
+      {
+        "relativePath": "smoke/bundled-browser-resource-budget.json",
+        "sha256": "a96bf1273bce3c446b2514bf7fdc60e68c29130ef0808d2422a129e30e7d2ba6"
+      },
+      {
+        "relativePath": "smoke/bundled-browser-synthetic.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "relativePath": "xml/camoufox-contract-report/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "5fa267b11db4830ab46723f712ad0c528534d4f03526dcdd700123b16be686b2"
+      },
+      {
+        "relativePath": "xml/local-chromium-contract-report/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "sha256": "3aea50021eef554f2e87462d8dc7f2555d6b025bd77605278a101cdd56b20263"
+      },
+      {
+        "relativePath": "xml/local-chromium-contract-report/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "88ea2d50bf6ad9d88900d5d19792a0f192fba534a457d0b0c5fa42ae80d436c9"
+      },
+      {
+        "relativePath": "xml/local-chromium-contract-report/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "43924e87c0ef011130f5154985acda9705fad36a92db4320b3dec7419f8336de"
+      }
+    ],
+    "doesNotProveSubsequentCamoufoxNavigationCase": true,
+    "notRealQidianOrProductionAcceptance": true,
+    "noReleaseRegistryOrProductionMutation": true
+  },
   "errorsNotHidden": [
     "Initial PowerShell argument quoting error prevented baseline Gradle tests; corrected before actual failed baseline",
     "Public metadata harness initially assumed object; actual singleton-array shape now handled, failure not called a website regression"
   ],
   "remaining": [
-    "This source increment needs its own GitHub hosted runs and reports",
+    "Subsequent default Camoufox navigation case needs its own GitHub hosted reports",
     "Anonymous Qidian returns zero exact-title matches; empty response is not a successful search",
     "No authenticated three-way or chapter reading acceptance",
     "Camoufox content-navigation race not independently reproduced or patched",
