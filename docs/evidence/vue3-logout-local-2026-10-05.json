@@ -218,6 +218,15 @@
   ],
   "scope": "generated local Chromium journeys; not hosted, private bodies or full production acceptance"
 },
-  "hostedVerification": "pending for this modification; 15d0186e proof belongs to its previous source",
+  "hostedVerification": {
+    "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+    "receipt": "vue3-logout-hosted-db7f0a6b-2026-10-05.json",
+    "allFourWorkflowsPassed": true,
+    "actualUiTestsIndividuallyAudited": 20,
+    "actualCamoufoxTestsAudited": 12,
+    "actualNativeJsonReportsAudited": 20,
+    "actualSingleImageJsonReportsAudited": 2,
+    "note": "15d0186e proof still belongs only to its previous source"
+  },
   "limits": ["no all-device logout", "offline token may remain valid", "late logout UI race only unit-covered", "footer overlap and stacked notices observed", "no full production or real authenticated three-way acceptance"]
 }
