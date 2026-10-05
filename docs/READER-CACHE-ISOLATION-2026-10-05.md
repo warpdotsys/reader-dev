@@ -72,3 +72,15 @@ npm --prefix web-vue3 run build
 - 在新隔离目录复制**仅生成**的 15 用户测试数据、使用同一份本机 JAR 与同一 `/reader/` 构建，直接复现 HTTP 200、`isSuccess=false`、`errorMsg=超过用户数上限`，用户数仍 15。失败 XML SHA-256 `9424a193b7cf0e95358fd13c74dabf35c913eb402986cdf4005dbe29a06166af`。随后全新副本仅把测试 CLI `--reader.app.userLimit=100`，第 16 用户注册、SW/字体/manifest、根 API 代理、搜索及刷新路由全部通过，实际旅程 5.418 秒、0 跳过/失败/错误，XML SHA-256 `30d669866d00ea1a6bb3aa55c463684dbaf3114bf29f2c937da43432171653db`。
 - 修正仅给 GitHub 的有限生成夹具预留容量，不改源码/生产上限，不删除测试账号绕过，不伪造登录、不绕过认证。子目录用例新增真实 HTTP/ReturnData 断言，失败仅记录 errorMsg、不记录 token；工作流新增独立子目录 XML 保留。默认 15 用户的拒绝证据保留，未降低必跑测试或允许跳过。
 - **当前边界**：该 CI 修正本机已验证，尚待新提交托管复验。首轮失败仍按失败记录，不把旧三条绿灯或 13 项核心通过当成新提交全部成功。两轮 Reader/Vite 已关闭，用户 18931 未改；已知真实书源、晚到认证错误和生产验收缺口仍按前节保留。
+
+## CI 容量修正已托管复验（最新状态）
+
+`fc7318692831f807c8a979303f6b7bf2e7943851` 的实际合并快照为 `1e53e3df75650321cbd39b95740922961eb5e53c`。四条工作流均已实际成功：[Java/Kotlin 37250614495](https://github.com/warpdotsys/reader-dev/actions/runs/37250614495)、[完整 Vue 3 37250614468](https://github.com/warpdotsys/reader-dev/actions/runs/37250614468)、[完整镜像 37250614412](https://github.com/warpdotsys/reader-dev/actions/runs/37250614412)、[六作业原生演练 37250614426](https://github.com/warpdotsys/reader-dev/actions/runs/37250614426)。界面 job 的实际 runner 为 `GitHub Actions 1000003536` / `ubuntu-24.04`。
+
+- 核心 UI 制品 `11321110526`（6,725 B）已下载，13 份 XML 各 1 项、0 跳过/失败/错误。隔离旅程 5.769 秒，XML SHA-256 `9e7710407871a75f2e287ca77b32624b1351eca048d5e8b14a6af910d46a1171`。
+- 新独立子目录制品 `11320183443`（530 B）已下载，实际 3.012 秒、1 项、0 跳过/失败/错误，XML SHA-256 `d6d4a67013689b3005a0a5504aa5412d1a30d1766f5edbbbe6bbaaf3bceaca28`。不是只等首页 HTTP 200；覆盖真实注册 ReturnData、书架、路由与资源。
+- Camoufox 制品 `11320458032`（926 B）实际 12 项、0 跳过/失败/错误、103.964 秒，XML SHA-256 `52c4b4bb4cb00d25cc997d58903b9280ddf3c793214a6babf5d0e349f7da7843`。
+- 原生消费端制品 `11320898811`（7,080 B）的 20 份 JSON 已下载，两个架构构建/导入的 JAR、image ID、版本/修订、真实 GET/POST、ReturnData、四用户 Cookie 与并发、资源原始计数逐项核对通过。共享 JAR 为 `75e83fb4d0c5a9dd886b1858b2f79392eff53108579d40d064e609cfc02dc4e6`；四个短样本峰值约 729–782 MiB，无触限/OOM、实际 swap=0，但配置仍允许 1 GiB swap。完整镜像烟测峰值 789,336,064 B，原始 JSON 已保留并散列核对。详见[独立最终证据](evidence/reader-cache-isolation-ci-fc731869-2026-10-05.json)。
+- 前述 `378fe92b` Vue 工作流失败及本机负例仍保留，不重标通过。生产默认上限未改，原 JAR/用户 Reader/真实书籍未动，旧共享缓存未删。新完整镜像没有下载到本机；这些生成/短时证据仍不替代真实登录三方、本机 UID 10001、所有格式/跨标签页/晚到认证错误和生产验收。未合并、正式发布或部署。
+
+本节是对已测试源码 `fc731869` 的事后文档归档；文档提交不冒充经过同一源码 CI 的新的业务修复，也不重复触发相同源码的大镜像构建。
