@@ -35,6 +35,7 @@ import { moveGroupTo } from '@/utils/groupOrder'
 import { decodeGroupMask, encodeGroupMask, isInLegacyBookGroup } from '@/utils/groupContract'
 import { parseShelfView, shelfViewMetrics, type ShelfViewMode } from '@/utils/shelfView'
 import { proxyImageUrl } from '@/utils/imageProxy'
+import { authenticatedReaderUrl } from '@/utils/tokenAuthentication'
 import { localChapterCacheScope } from '@/utils/readerLocalCache'
 import { canUseOfflineShelf, loadOfflineShelf, saveOfflineShelf } from '@/utils/shelfOfflineCache'
 import { captureRequestSession, isRequestSessionCurrent } from '@/api/requestSession'
@@ -721,9 +722,7 @@ function coverSrc(book: Book): string | null {
 /** 自定义封面走 file/download 内联流（GAP 19）：展示时补当前 accessToken（重新登录后仍可显示） */
 function resolveCoverUrl(url: string): string {
   if (!url.startsWith('/reader3/file/')) return url
-  const token = store.accessToken
-  if (!token || url.includes('accessToken=')) return url
-  return `${url}${url.includes('?') ? '&' : '?'}accessToken=${encodeURIComponent(token)}`
+  return authenticatedReaderUrl(url, store.accessToken)
 }
 
 function hasCover(book: Book): boolean {

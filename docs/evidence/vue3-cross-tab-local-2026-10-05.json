@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-05",
+  "scope": "Fresh loopback Reader and two Chromium pages with generated accounts, metadata and groups; no private books or production changes",
+  "baselineIsOriginalProJar": false,
+  "baseline": {
+    "directory": "build/cross-tab-isolation-20261005-a/cross-before",
+    "jarSha256": "7cd93beef1af6b0cfd1cc8759059cc48ffe01e8266507acfc3b2534ed581774f",
+    "xmlSha256": "ded31172f94e091ae04fbeb45a2be62837edada73454ff80a27e9308331e8670",
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0, "seconds": 34.761,
+    "observed": "Account A token and UI identity returned account B namespace/shelf and cached B under A"
+  },
+  "firstCandidate": {
+    "directory": "build/cross-tab-isolation-20261005-a/cross-after",
+    "xmlSha256": "0c92dea2b25033132b8e73c95a68909d7d662aa229c5e8abb97c490b7989f451",
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0, "seconds": 53.096,
+    "failure": "Incorrect test expectation of legacy successful logout isSuccess; business implementation not changed to satisfy it"
+  },
+  "verifiedCandidate": {
+    "directory": "build/cross-tab-isolation-20261005-a/cross-after-b",
+    "jarSha256": "4efb5598e505ddb8fbc316e4944b2a331ce39a524be6c7c83a7c8f36970d848e",
+    "testSourceSha256": "7aef2fe10831545be45dab189fb7635ed46b1d861b07cfd6e0bb8bd483e0ecdf",
+    "xmlSha256": "71635397078ed7fdb4f406b94f421d902a4a07ced0ff39396b478b9870df6c76",
+    "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 55.55,
+    "actualNamespaceMatchesToken": true,
+    "visibleAndCachedOtherAccount": false,
+    "writesOnlyOwnNamespace": true,
+    "missingAndInvalidTokenCannotUseSharedCookie": true,
+    "legacyCookieFirstRetained": true,
+    "historicalTokensStillUsable": true,
+    "oldCachePreservedAndRefused": true,
+    "backendLogoutRevokesOnlySuppliedHistoricalToken": true,
+    "otherAccountCookieAndTokenSurvive": true,
+    "uiLogoutItselfRevokesBackendToken": false
+  },
+  "checks": { "frontendTests": 217, "frontendFailures": 0, "frontendSkipped": 0, "typecheck": "passed", "viteBuild": "passed", "registeredLiteralApiRoutes": 92, "packagedUiFilesByteCompared": 81, "releaseSafetyTests": 47, "workflowSyntax": "passed" },
+  "originalJarBytecodeOnly": { "jarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c", "classes": ["ReturnData", "UserController.logout"], "logoutContract": { "status": 200, "isSuccess": true, "errorMsg": "", "data": "NEED_LOGIN" }, "freshBlackBoxDifferential": false },
+  "pending": ["core16", "manager2", "hostedSourceBoundCI", "mixedRememberSessions", "realAuthenticatedThreeWay", "allMedia", "longSoak", "production"],
+  "sourceBinding": "Local candidate JAR, test source and exact reports are hash-bound here; hosted source commit/run proof is not yet claimed"
+}

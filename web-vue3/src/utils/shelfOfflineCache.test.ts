@@ -40,6 +40,16 @@ test('匿名、旧共享键和不一致封套不可读；不自动迁移或删�
   assert.equal(local.records.get('reader_shelf_offline'), 'unknown legacy untouched')
 })
 
+test('旧同账号封套可能装有另一 Cookie 用户的数据：保留但不读、不迁移', () => {
+  const local = storage()
+  const oldScope = JSON.stringify([deployment, user.username, user.username])
+  const oldValue = JSON.stringify({ version: 2, scope: oldScope, ...shelf })
+  local.records.set(prefix + oldScope, oldValue)
+  assert.equal(loadOfflineShelf(scope, local), null)
+  assert.equal(saveOfflineShelf(scope, shelf, local), true)
+  assert.equal(local.records.get(prefix + oldScope), oldValue)
+})
+
 test('损坏或不完整元数据失败关闭，不补造字段；配额错误不报告保存成功', () => {
   const local = storage()
   for (const bad of [null, {}, { ...shelf, books: [null] }, { ...shelf, books: [{ name: '无链接' }] },

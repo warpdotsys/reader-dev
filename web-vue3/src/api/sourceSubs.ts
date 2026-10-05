@@ -1,5 +1,7 @@
 import { get, post } from './request'
 import { onBackendReachable } from './backendFlag'
+import { useUserStore } from '@/stores/user'
+import { captureRequestSession, isRequestSessionCurrent } from './requestSession'
 import type { BookSource, ReturnData, SourceSub } from '@/types'
 
 /**
@@ -18,28 +20,22 @@ import type { BookSource, ReturnData, SourceSub } from '@/types'
  * POST /reader3/deleteSourceSubs   body: string[] | { urls: [] } → ReturnData<{ deleted }>
  * POST /reader3/setSourceSubEnabled body: { url, enabled } → ReturnData<{ enabled }>
  * ================================================================
- * localStorage key: reader_source_subs:<username>:<scope>（值为 SourceSub[] 的 JSON）。
- * 旧全局键不迁移：它无法证明属于哪个用户，读取会造成跨账号泄露。
+ * localStorage key: reader_source_subs_v2:<username>:<scope>（值为 SourceSub[] 的 JSON）。
+ * 旧全局及按账号键均不迁移：Cookie 优先时期的账号归属不可信。
  * 订阅只记录远程书源地址与名称；书源数据由后端 saveSourceSub/refreshSourceSub 导入，
  * 不在服务端业务拒绝或网络断开时切换到浏览器抓取。
  * 订阅支持「禁用」：禁用后停止自动刷新，保留订阅记录与已导入书源；删除则移除订阅。
  */
 
-const STORAGE_KEY = 'reader_source_subs'
+const STORAGE_KEY = 'reader_source_subs_v2'
 
 function scopedStorageKey(): string | null {
   try {
-    const localToken = localStorage.getItem('reader_access_token')
-    const sessionToken = sessionStorage.getItem('reader_access_token')
-    const username = localToken
-      ? localStorage.getItem('reader_username')
-      : sessionToken
-        ? sessionStorage.getItem('reader_username')
-        : null
-    if (!username) return null
-    const defaultScope =
-      localStorage.getItem('reader_default_config_mode') === '1' ||
-      sessionStorage.getItem('reader_default_config_mode') === '1'
+    // 与发出请求的标签页内存身份一致，不能跟随另一页改写的 localStorage。
+    const store = useUserStore()
+    const username = store.username
+    if (!store.accessToken || !username) return null
+    const defaultScope = store.isAdmin && store.defaultConfigMode
     // 旧 default 镜像来自错误 ns 请求，归属不可信；系统空间暂仅在线读写，不假装离线成功。
     if (defaultScope) return null
     return `${STORAGE_KEY}:${encodeURIComponent(username)}:${defaultScope ? 'default' : 'user'}`
@@ -91,13 +87,14 @@ function errMsg(err: unknown, fallback: string): { msg: string; down: boolean } 
 
 /** GET /reader3/getSourceSubs（后端优先；失败降级 localStorage 并镜像缓存） */
 export async function getSourceSubs(): Promise<ReturnData<SourceSub[]>> {
+  const session = captureRequestSession(useUserStore())
   try {
     const res = await get<SourceSub[]>('/getSourceSubs', undefined, { silent: true })
-    if (res.isSuccess) persistSourceSubs(res.data ?? [])
+    if (res.isSuccess && isRequestSessionCurrent(session, useUserStore())) persistSourceSubs(res.data ?? [])
     return res
   } catch (err) {
     const { msg } = errMsg(err, '获取订阅列表失败')
-    return { isSuccess: false, errorMsg: msg, data: loadSourceSubs() }
+    return { isSuccess: false, errorMsg: msg, data: isRequestSessionCurrent(session, useUserStore()) ? loadSourceSubs() : [] }
   }
 }
 
@@ -110,6 +107,7 @@ export async function saveSourceSub(
   name: string,
   selectedUrls?: string[],
 ): Promise<ReturnData<{ count: number; name?: string } | null>> {
+  const session = captureRequestSession(useUserStore())
   try {
     const res = await post<{ count: number; name?: string }>(
       '/saveSourceSub',
@@ -119,7 +117,7 @@ export async function saveSourceSub(
     // A reachable backend can reject SSRF, invalid payloads, limits, or permissions.
     // That is a real business failure, not an offline condition: do not create a
     // local-only subscription or make the UI appear to have saved it.
-    if (!res.isSuccess) return res
+    if (!res.isSuccess || !isRequestSessionCurrent(session, useUserStore())) return res
     const list = loadSourceSubs()
     const existing = list.find((s) => s.url === url)
     if (existing) {
@@ -156,9 +154,10 @@ export async function previewSourceSub(
 
 /** POST /reader3/deleteSourceSub（服务端确认成功后才更新本地镜像） */
 export async function deleteSourceSub(url: string): Promise<ReturnData<null>> {
+  const session = captureRequestSession(useUserStore())
   try {
     const res = await post<null>('/deleteSourceSub', { url }, { silent: true })
-    if (res.isSuccess) persistSourceSubs(loadSourceSubs().filter((s) => s.url !== url))
+    if (res.isSuccess && isRequestSessionCurrent(session, useUserStore())) persistSourceSubs(loadSourceSubs().filter((s) => s.url !== url))
     return res
   } catch (err) {
     const { msg } = errMsg(err, '删除订阅失败')
@@ -170,6 +169,7 @@ export async function deleteSourceSub(url: string): Promise<ReturnData<null>> {
  * POST /reader3/deleteSourceSubs（批量；服务端失败时保留本地镜像，避免伪报已删除）。
  */
 export async function deleteSourceSubs(urls: string[]): Promise<ReturnData<{ deleted: number }>> {
+  const session = captureRequestSession(useUserStore())
   if (urls.length === 0) return { isSuccess: false, errorMsg: '参数错误', data: { deleted: 0 } }
   try {
     const res = await post<{ deleted: number }>(
@@ -177,7 +177,7 @@ export async function deleteSourceSubs(urls: string[]): Promise<ReturnData<{ del
       { urls },
       { silent: true },
     )
-    if (res.isSuccess) {
+    if (res.isSuccess && isRequestSessionCurrent(session, useUserStore())) {
       const keep = new Set(urls)
       persistSourceSubs(loadSourceSubs().filter((s) => !keep.has(s.url)))
     }
@@ -196,13 +196,14 @@ export async function setSourceSubEnabled(
   url: string,
   enabled: boolean,
 ): Promise<ReturnData<{ enabled: boolean }>> {
+  const session = captureRequestSession(useUserStore())
   try {
     const res = await post<{ enabled: boolean }>(
       '/setSourceSubEnabled',
       { url, enabled },
       { silent: true },
     )
-    if (!res.isSuccess) return res
+    if (!res.isSuccess || !isRequestSessionCurrent(session, useUserStore())) return res
     const list = loadSourceSubs()
     const sub = list.find((s) => s.url === url)
     if (sub) sub.enabled = enabled

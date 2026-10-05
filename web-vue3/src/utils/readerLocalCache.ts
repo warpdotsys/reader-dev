@@ -1,3 +1,5 @@
+import { TOKEN_AUTH_CACHE_SCOPE } from './tokenAuthentication.ts'
+
 /**
  * 本机章节缓存（IndexedDB）——阅读页离线/快速回读用。
  *
@@ -40,8 +42,8 @@ export function localChapterCacheScope(user: LocalCacheUser, deployment: string)
   const namespace = user.isAdmin && user.defaultConfigMode ? 'default' : user.username
   // 旧 default 缓存曾使用错误的 ns 参数，不能认定来自真实系统空间。
   return JSON.stringify(namespace === 'default'
-    ? [deployment, user.username, namespace, 'legacy-userNS-v1']
-    : [deployment, user.username, namespace])
+    ? [deployment, user.username, namespace, 'legacy-userNS-v1', TOKEN_AUTH_CACHE_SCOPE]
+    : [deployment, user.username, namespace, TOKEN_AUTH_CACHE_SCOPE])
 }
 
 const dbPromises = new Map<string, Promise<IDBDatabase>>()

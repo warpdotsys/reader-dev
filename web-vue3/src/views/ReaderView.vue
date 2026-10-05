@@ -15,6 +15,7 @@ import { saveBook } from '@/api/bookshelf'
 import { getHttpTtsList } from '@/api/httpTts'
 import { get, post } from '@/api/request'
 import { readerRequestContext } from '@/api/requestContext'
+import { tokenAuthenticationParams } from '@/utils/tokenAuthentication'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
@@ -155,7 +156,7 @@ function openOriginalPdf(): void {
     return
   }
   const params = new URLSearchParams({ path: bookUrl.value, stream: '1' })
-  if (store.accessToken) params.set('accessToken', store.accessToken)
+  for (const [name, value] of Object.entries(tokenAuthenticationParams(store.accessToken))) params.set(name, value)
   window.open(`/reader3/file/download?${params.toString()}`, '_blank', 'noopener')
 }
 const isNonTextBook = computed(() => bookType.value !== 0)

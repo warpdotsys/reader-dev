@@ -1,4 +1,5 @@
 import type { LocalCacheUser } from './readerLocalCache'
+import { tokenAuthenticationParams } from './tokenAuthentication.ts'
 
 export class NamespaceProofError extends Error {
   readonly code = 'READER_NAMESPACE_UNVERIFIED'
@@ -19,7 +20,7 @@ export interface LegacyNamespaceContext {
 
 /** ns 是部分配置接口的配置键；实际管理空间必须走 legacy userNS + 请求头密钥。 */
 export function legacyNamespaceContext(user: LocalCacheUser, key: string): LegacyNamespaceContext {
-  const params: Record<string, string> = user.accessToken ? { accessToken: user.accessToken } : {}
+  const params = tokenAuthenticationParams(user.accessToken)
   const headers: Record<string, string> = {}
   const systemNamespace = user.isAdmin && user.defaultConfigMode
   if (systemNamespace) {

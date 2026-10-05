@@ -12,6 +12,7 @@ import { strFromU8 } from 'fflate'
 import { expandEpubArchive, readEpubResponse } from './epubArchive.ts'
 import { expandEpubInWorker } from './epubWorker.ts'
 import { assertLegacyNamespace, NamespaceProofError } from './legacyNamespace.ts'
+import { tokenAuthenticationParams } from './tokenAuthentication.ts'
 
 /** OPF manifest 单项 */
 export interface EpubManifestItem {
@@ -114,7 +115,7 @@ export function epubFileLocation(source: string, namespace: string): { home: str
 export async function loadEpubDoc(source: string, options: EpubLoadOptions): Promise<EpubDoc> {
   const location = epubFileLocation(source, options.namespace)
   const params = new URLSearchParams(location)
-  if (options.accessToken) params.set('accessToken', options.accessToken)
+  for (const [name, value] of Object.entries(tokenAuthenticationParams(options.accessToken))) params.set(name, value)
   if (options.systemNamespace) {
     if (!options.managerKey) throw new NamespaceProofError()
     params.set('userNS', 'default')

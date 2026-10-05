@@ -1,4 +1,5 @@
 import type { ReturnData, SearchBook } from '../types'
+import { tokenAuthenticationParams } from '../utils/tokenAuthentication.ts'
 
 /**
  * SSE 事件流通用解析/分发（searchBookMultiSSE / searchBookSourceSSE / bookSourceDebugSSE 共用）。
@@ -137,7 +138,7 @@ export function openSSEPost(
     isCurrent: () => boolean; assertResponse: (response: Response, path: string) => void },
 ): Promise<{ abort: () => void }> {
   const controller = new AbortController()
-  const params = new URLSearchParams(context?.params ?? (accessToken ? { accessToken } : {}))
+  const params = new URLSearchParams(context?.params ?? tokenAuthenticationParams(accessToken))
   const query = params.size ? `?${params}` : ''
   return fetch(`${path}${query}`, {
     method: 'POST',

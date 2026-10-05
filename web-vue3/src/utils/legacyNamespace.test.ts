@@ -7,7 +7,7 @@ const user = { accessToken: 'generated-token', username: 'generated-a', isAdmin:
 
 test('管理空间只发送 legacy userNS 和密钥请求头，不占用配置 ns 或把密钥写入 URL', () => {
   const context = legacyNamespaceContext(user, 'generated-secret')
-  assert.deepEqual(context.params, { accessToken: 'generated-token', userNS: 'default' })
+  assert.deepEqual(context.params, { accessToken: 'generated-token', readerAuth: 'access-token', userNS: 'default' })
   assert.deepEqual(context.headers, { 'X-Reader-Secure-Key': 'generated-secret' })
   assert.equal(new URLSearchParams(context.params).toString().includes('generated-secret'), false)
   assert.throws(() => legacyNamespaceContext(user, ''), NamespaceProofError)
@@ -25,9 +25,9 @@ test('系统空间拒绝缺失/错误的后端空间确认；全局用户管理�
   assert.doesNotThrow(() => assertLegacyNamespace({ systemNamespace: false }, '/getBookshelf', null))
 })
 
-test('错误旧 ns 实现留下的 default 缓存不复用；本人缓存名称不改变', () => {
+test('旧 Cookie 归属及错误 ns 缓存均不复用，新缓存明确记录 token 鉴权版本', () => {
   assert.equal(localChapterCacheScope(user, 'https://generated/'),
-    JSON.stringify(['https://generated/', 'generated-a', 'default', 'legacy-userNS-v1']))
+    JSON.stringify(['https://generated/', 'generated-a', 'default', 'legacy-userNS-v1', 'token-auth-v1']))
   assert.equal(localChapterCacheScope({ ...user, defaultConfigMode: false }, 'https://generated/'),
-    JSON.stringify(['https://generated/', 'generated-a', 'generated-a']))
+    JSON.stringify(['https://generated/', 'generated-a', 'generated-a', 'token-auth-v1']))
 })

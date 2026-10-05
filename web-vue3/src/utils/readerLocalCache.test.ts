@@ -11,6 +11,7 @@ const deployment = 'http://127.0.0.1:18895/'
 test('章节缓存隔离账号、部署路径和实际命名空间，但不持久化 accessToken', () => {
   const scope = localChapterCacheScope(user, deployment)
   assert.ok(scope)
+  assert.notEqual(scope, JSON.stringify([deployment, user.username, user.username]))
   assert.doesNotMatch(scope, /generated-session-one/)
   assert.equal(localChapterCacheScope({ ...user, accessToken: 'generated-session-two' }, deployment), scope)
   assert.notEqual(localChapterCacheScope({ ...user, username: 'generated-b' }, deployment), scope)

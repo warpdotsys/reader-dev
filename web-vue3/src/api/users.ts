@@ -3,6 +3,7 @@ import type { RequestOptions } from './request'
 import { useUserStore } from '@/stores/user'
 import type { ReaderUser, ReturnData, UserUpdatePayload } from '@/types'
 import { captureRequestSession, isRequestSessionCurrent } from './requestSession'
+import { tokenAuthenticationParams } from '@/utils/tokenAuthentication'
 import { managerCredentialScope, readManagerCredential, readerDeployment, saveManagerCredential } from '@/utils/managerCredential'
 
 /**
@@ -123,8 +124,7 @@ export async function probeSecureMode(): Promise<boolean> {
   const session = captureRequestSession(store)
   const key = getStoredSecureKey()
   try {
-    const params = new URLSearchParams()
-    if (store.accessToken) params.set('accessToken', store.accessToken)
+    const params = new URLSearchParams(tokenAuthenticationParams(store.accessToken))
     params.set('_t', String(Date.now())) // 防 GET 缓存
     const res = await fetch(`/reader3/getUserList?${params.toString()}`, {
       method: 'GET',

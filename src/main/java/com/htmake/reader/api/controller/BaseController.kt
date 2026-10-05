@@ -87,7 +87,8 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
         env = SpringContextUtils.getBean(Environment::class.java)
     }
 
-    suspend fun saveUserSession(context: RoutingContext, user: User, regenerateToken: Boolean = true): Map<String, Any> {
+    suspend fun saveUserSession(context: RoutingContext, user: User, regenerateToken: Boolean = true,
+                                attachCookieSession: Boolean = true): Map<String, Any> {
         return userMutex.withLock {
             var userMap = mutableMapOf<String, Map<String, Any>>()
             var userMapJson: JsonObject? = asJsonObject(getStorage("data", "users"))
@@ -116,23 +117,31 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
 
             val loginData = formatUser(user)
 
-            context.session().put("username", user.username)
+            if (attachCookieSession) context.session().put("username", user.username)
             context.put("username", user.username)
 
             loginData
         }
     }
 
+    /** 新界面显式选择标签页 token；无此标记的旧客户端继续 Cookie 优先。 */
+    fun usesTokenAuthentication(context: RoutingContext): Boolean {
+        return appConfig.secure && context.queryParam("readerAuth").firstOrNull() == "access-token"
+    }
+
     suspend fun checkAuth(context: RoutingContext): Boolean {
         if (!appConfig.secure) {
             return true
         }
-        var username = context.session().get("username") as String? ?: ""
-        var userInfo = getUserInfoClass(username)
-        if (userInfo != null) {
-            context.put("username", userInfo.username)
-            context.put("userInfo", userInfo)
-            return true
+        val tokenOnly = usesTokenAuthentication(context)
+        if (!tokenOnly) {
+            var username = context.session().get("username") as String? ?: ""
+            var userInfo = getUserInfoClass(username)
+            if (userInfo != null) {
+                context.put("username", userInfo.username)
+                context.put("userInfo", userInfo)
+                return true
+            }
         }
         // 自动登录
         var accessToken = context.queryParam("accessToken").firstOrNull() ?: ""
@@ -149,6 +158,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                 var existedUser: User? = userMap.getOrDefault(_username, null)?.toDataClass()
                 if (existedUser != null && token.isNotEmpty()) {
                     var isLogin = false
+                    var historicalToken = false
                     if (existedUser.token.isNotEmpty() && existedUser.token.equals(token)) {
                         isLogin = true
                     }
@@ -159,6 +169,7 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                             tokenMap.containsKey(token)) {
                             if (tokenMap.getOrDefault(token, 0L) > System.currentTimeMillis()) {
                                 isLogin = true
+                                historicalToken = true
                                 // 延长有效期
                                 tokenMap.put(token, System.currentTimeMillis() + loginExpireDays * 86400 * 1000)
                             } else {
@@ -169,8 +180,11 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
                         }
                     }
                     if (isLogin) {
-                        // 保存用户session
-                        saveUserSession(context, existedUser, false)
+                        // 旧自动登录保持原 Cookie 行为；新模式不把另一标签页的 Cookie 改绑。
+                        // 历史 token 仍按原算法续期并保存；当前 token 的普通读取不增加磁盘写入。
+                        if (!tokenOnly || historicalToken) {
+                            saveUserSession(context, existedUser, false, !tokenOnly)
+                        }
                         context.put("username", existedUser.username)
                         context.put("userInfo", existedUser)
                     }

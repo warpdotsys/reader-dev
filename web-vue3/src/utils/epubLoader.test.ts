@@ -141,6 +141,7 @@ for (const directory of [true, false]) {
       assert.equal(init?.cache, 'no-store')
       assert.equal(url.searchParams.get('home'), '__HOME__')
       assert.equal(url.searchParams.get('accessToken'), 'test-token-not-production')
+      assert.equal(url.searchParams.get('readerAuth'), 'access-token')
       assert.equal(url.searchParams.get('ns'), null)
       assert.equal(url.searchParams.get('userNS'), 'default')
       assert.equal(new Headers(init?.headers).get('X-Reader-Secure-Key'), 'generated-manager-key')

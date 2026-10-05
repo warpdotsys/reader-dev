@@ -9,6 +9,7 @@ import { deleteBookCache, getShelfBookWithCacheInfo, searchBookContent } from '@
 import { exportBook, type ExportFormat } from '@/api/export'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { proxyImageUrl } from '@/utils/imageProxy'
+import { authenticatedReaderUrl } from '@/utils/tokenAuthentication'
 import { uploadFile, mkdir } from '@/api/file'
 import { downloadBlob } from '@/utils/download'
 import { relocateChapterIndex } from '@/utils/progressRelocate'
@@ -95,9 +96,7 @@ const displayTags = computed<string[]>(() => {
 /** 自定义封面走 file/download 内联流：展示时补当前 accessToken（重新登录后仍可显示） */
 function resolveCoverUrl(url: string): string {
   if (!url.startsWith('/reader3/file/')) return url
-  const token = store.accessToken
-  if (!token || url.includes('accessToken=')) return url
-  return `${url}${url.includes('?') ? '&' : '?'}accessToken=${encodeURIComponent(token)}`
+  return authenticatedReaderUrl(url, store.accessToken)
 }
 
 function coverInitial(name: string): string {
@@ -317,9 +316,8 @@ const COVER_MAX_MB = 10
 /** 上传的封面经 file/download（stream=1 内联）展示，URL 存 customCoverUrl */
 function coverDownloadUrl(name: string): string {
   const base = `/reader3/file/download?path=covers/${encodeURIComponent(name)}&home=__HOME__&stream=1`
-  return store.accessToken
-    ? `${base}&accessToken=${encodeURIComponent(store.accessToken)}`
-    : base
+  // 存储只含资源路径，凭据在显示/下载时补入，避免把会话 token 写入书籍元数据。
+  return base
 }
 
 function openCoverPicker() {
