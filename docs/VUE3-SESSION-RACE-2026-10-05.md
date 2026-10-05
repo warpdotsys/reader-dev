@@ -49,3 +49,15 @@
 回滚使用前一完整 JAR/镜像及配套 UI；不清站点存储，不回写/删除服务端用户数据。前一候选仍有晚到错误清新会话的缺陷，所以回滚不是该缺陷的安全修复。会话代数和请求快照均未持久化，无数据格式迁移。无字节码热补丁，正式实现保持可读 TypeScript 与 Java/Kotlin 后端。
 
 重建沿用项目命令：先前端锁文件安装/构建，再 `gradlew.bat -PreaderWebUi=vue3 bootJar --no-daemon`。隔离实际运行记录保留在忽略目录 `build/session-race-20261005-a/`，不上传测试 storage。
+
+## 已完成本提交托管复验
+
+源码 `94bfc4aceff0dcbe6712eda3955b87b796f74453`，实际 PR 测试合并快照 `d7b0cf768cb7abc3081df30922544e0f8d56116f`。以上“托管待验证”是源码提交时的状态，当前四条均已实际完成且成功：[Java/Kotlin 37253759106](https://github.com/warpdotsys/reader-dev/actions/runs/37253759106)、[Vue 3 37253759138](https://github.com/warpdotsys/reader-dev/actions/runs/37253759138)、[完整浏览器镜像 37253759143](https://github.com/warpdotsys/reader-dev/actions/runs/37253759143)、[六作业原生演练 37253759108](https://github.com/warpdotsys/reader-dev/actions/runs/37253759108)。实际 UI runner 为 `GitHub Actions 1000003548` / `ubuntu-24.04`；AMD64/ARM64 构建和重导入均为原生托管 runner，不是自托管或 QEMU。
+
+- 核心制品 `11321773510`（7,319 B）下载后逐份核对：14 份 XML 各 1 项，0 跳过/失败/错误。会话竞争实际 11.004 秒、三模式全完成，XML SHA-256 `af0513800d605dcf1bdcb9f970a0510306f85c874e03331319ec04784262711f`。子目录制品 `11322212487`（530 B）实际 1 项通过、2.704 秒，XML SHA-256 `a0195c5682aeba72c552d1135f7a6521db91a0521724cb52cc3783549bc933dc`。经理密钥文件旅程也实际通过，但不额外算入已下载的核心 14 项。
+- Camoufox 制品 `11321359752`（921 B）实际 12 项、0 跳过/失败/错误、102.858 秒，XML SHA-256 `6681051ed94c3d979521adb97bdeb0383f6950b4a207fb5af59c18ce0ee05991`。包含真实浏览器 GET/POST/脚本/子资源、Netscape/HttpOnly/删除/续期 Cookie、sourceRegex 和超时恢复；不是起点真实认证对照。
+- 完整单镜像制品 `11321769099`（893 B）的两份 JSON 已独立核对；实际请求方法/正文/头、ReturnData、四账号 Cookie 与并发正确。CPU 配额 2、内存 2 GiB、PID 256，短样本峰值 769,712,128 B / 177 PID，限额/OOM 事件均为 0；实际 swap=0，但配置仍允许 1 GiB swap，不宣称无 swap 配置或长期负载验收。
+- 原生消费端制品 `11321758087`（7,072 B）20 份真实 JSON 已逐项核对身份、两个架构构建/消费 image ID、共享 JAR、版本/修订、GET/POST 与 Cookie/并发及四次资源原始计数。共享 JAR 为 `ac7f7e97af60f64e6d8996f3e2cfc1f86107f09e66748707d019727ffd479155`，不冒充本机 JAR 同字节。四次短样本峰值约 741–803 MiB，未触限/OOM、实际 swap=0。完整散列、runner 和实际字段见[独立托管证据](evidence/vue3-session-race-ci-94bfc4ac-2026-10-05.json)。
+- 只下载小型报告，没有下载新完整镜像或共享 JAR。原始 `D:\Download\reader-pro-3.2.14.jar` 本轮只读 SHA-256 仍为 `b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c`；最后相关监听仍仅用户 `18931/PID 61244`，自有服务/构建/等待进程已结束。用户未提交 reports、旧缓存、其他工程和生产服务均保留。
+
+可选的原 JAR 来源核查、远程 WebView 和长期 soak 分支没有在这次普通集成中运行。真实认证三方、全格式/跨标签页、共享离线书架元数据、最终镜像本机运行和正式发布/生产验收继续待办，未合并 PR、创建 Release、推送 registry 或部署。本节是对已测试源码 `94bfc4ac` 的事后文档归档，不冒充另一个新业务提交的构建证明。
