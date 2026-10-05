@@ -174,6 +174,7 @@ const visibleLinks = computed(() => {
   top: 0;
   z-index: 20;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 24px;
   padding: 14px 32px;
@@ -233,12 +234,17 @@ const visibleLinks = computed(() => {
 }
 .user-area {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 14px;
   margin-left: auto;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
 }
 .nav-link {
+  flex-shrink: 0;
+  white-space: nowrap;
   padding: 5px 2px;
   border: none;
   background: none;
@@ -258,11 +264,14 @@ const visibleLinks = computed(() => {
   font-weight: 400;
 }
 .user-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   font-size: 13px;
   font-weight: 400;
   color: var(--text-2);
 }
 .logout-btn {
+  flex-shrink: 0;
   padding: 6px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--border);

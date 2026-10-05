@@ -3398,7 +3398,8 @@ onMounted(() => {
 
 /* 搜索框（细边框圆角 8px）：输入行 + 范围切换行 */
 .search-box {
-  flex: 1;
+  flex: 1 1 260px;
+  min-width: min(240px, 100%);
   max-width: 420px;
   margin: 0 auto;
 }

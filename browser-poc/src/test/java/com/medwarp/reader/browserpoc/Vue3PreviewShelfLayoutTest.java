@@ -32,7 +32,12 @@ public class Vue3PreviewShelfLayoutTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> bounds = (Map<String, Object>) page.evaluate("() => ({"
                 + "viewport: document.documentElement.clientWidth,"
-                + "document: document.documentElement.scrollWidth})");
+                + "document: document.documentElement.scrollWidth,"
+                + "overflow: [...document.querySelectorAll('body *')].map(el => {"
+                + "const r=el.getBoundingClientRect(); return {tag:el.tagName,"
+                + "class:el.className,left:r.left,right:r.right};})"
+                + ".filter(r => r.right > document.documentElement.clientWidth + 1"
+                + " || r.left < -1).slice(0,12)})");
         assertTrue(scenario + ": " + bounds,
                 ((Number) bounds.get("document")).doubleValue()
                         <= ((Number) bounds.get("viewport")).doubleValue());
@@ -68,7 +73,7 @@ public class Vue3PreviewShelfLayoutTest {
                 page.navigate(previewUrl + "/login");
                 page.locator(".mode-switch button").nth(1).click();
                 page.locator("input[autocomplete=username]").fill("layout" +
-                        UUID.randomUUID().toString().replace("-", "").substring(0, 10));
+                        UUID.randomUUID().toString().replace("-", "").substring(0, 26));
                 page.locator("input[autocomplete=current-password]").fill("LayoutFixture-2026");
                 page.locator(".submit-btn").click();
                 page.locator(".bookshelf-page").waitFor();
@@ -89,6 +94,11 @@ public class Vue3PreviewShelfLayoutTest {
                         page.evaluate("window.scrollTo(0, 0)");
                         String scenario = "width=" + width + " density=" + density;
                         assertNoHorizontalOverflow(page, "hidden " + scenario);
+                        assertEquals("Navigation must retain all real links", 12,
+                                page.locator(".user-area .nav-link").count());
+                        assertTrue("Search must not be crushed to make navigation fit",
+                                ((Number) page.locator(".search-box").evaluate(
+                                        "el => el.getBoundingClientRect().width")).doubleValue() >= 240);
 
                         @SuppressWarnings("unchecked")
                         List<String> edgeNames = (List<String>) page.locator(".book-card")
