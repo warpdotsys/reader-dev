@@ -160,7 +160,9 @@ async function submit() {
 <style scoped>
 .login-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
@@ -169,6 +171,7 @@ async function submit() {
 
 .login-panel {
   width: min(340px, 100%);
+  flex-shrink: 0;
   padding: 56px 8px 40px;
 }
 
@@ -357,10 +360,8 @@ async function submit() {
 }
 
 .login-footer {
-  position: fixed;
-  bottom: 20px;
-  left: 0;
-  right: 0;
+  /* 页脚随表单进入文档流：矮屏允许滚动，不能覆盖注册/提交控件。 */
+  flex-shrink: 0;
   text-align: center;
   font-size: 11px;
   font-weight: 300;

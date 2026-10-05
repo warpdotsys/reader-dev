@@ -1,0 +1,183 @@
+{
+  "candidate": {
+    "skipped": 0,
+    "testSourceSha256": "bc45db2984562393b0671650426c05dc5023737cc3b011559e30322a31ae5275",
+    "pngFiles": 42,
+    "tests": 1,
+    "directory": "build/login-layout-isolation-20261005-a/login-layout-after",
+    "geometrySha256": "240ac4a19e380e58cff08f3bb0f0c1d01cb5681dc5a65fd6280826a2d8e9ce45",
+    "jarSha256": "fb27a6d3ee9223f986256794f50f829ad4dc58bee8533f312365d70352390245",
+    "seconds": 19.021,
+    "errors": 0,
+    "failures": 0,
+    "xmlSha256": "fdf71cff6ed2d3749abd605097ceea37c78db6357a3c416902c740e46dbd5b81",
+    "viewedScreenshots": [
+      "1280x720-login-top",
+      "360x640-login-bottom",
+      "320x568-register-bottom",
+      "360x320-register-bottom"
+    ],
+    "geometryScenarios": 14,
+    "actualNativeHitAndScroll": "passed",
+    "footerGapPixels": 40,
+    "keyboard": "passed",
+    "generatedRegistrationAndExistingLogin": "passed",
+    "packagedUiFilesByteAudited": 81
+  },
+  "core": {
+    "failures": 0,
+    "directory": "build/login-layout-isolation-20261005-a/login-layout-core",
+    "tests": 18,
+    "reports": [
+      {
+        "sha256": "3325a057ec9d1de64927f004fc9cc5e596d512ff52aca65b2905111e45897b0b",
+        "seconds": 12.201,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml"
+      },
+      {
+        "sha256": "dd758e2b907b7d656ee7fbd4c1a6193e92d924c5bedc2045100fd86d3afe7106",
+        "seconds": 23.899,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml"
+      },
+      {
+        "sha256": "0d77c05ddad980694ebccc4bf3c672b1c7b85f7248827cccbb7d3deac9a46920",
+        "seconds": 13.513,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml"
+      },
+      {
+        "sha256": "e877a3bb3af12668abd245a45718e684a0f96017984b9fa3a15c0ebf7a905143",
+        "seconds": 8.16,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml"
+      },
+      {
+        "sha256": "604314edcf4f0085927f79ab3fd87b8c743ccded65c65cb998476fb81bd93539",
+        "seconds": 8.933,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml"
+      },
+      {
+        "sha256": "2692c68e3a9d4c08380d08380def1913260706f6343319dbb34e03935dec62bd",
+        "seconds": 9.192,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml"
+      },
+      {
+        "sha256": "45d8c198ad4f4db5191892f8b65390c47d3e0d320489472e09e69805077ba37d",
+        "seconds": 28.325,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml"
+      },
+      {
+        "sha256": "69be18836360de0384a0f28ff8c6a9155e675eda427aff037f79621687c7ef8e",
+        "seconds": 13.484,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml"
+      },
+      {
+        "sha256": "9953b7cbe14db03a2640d31a365a492f6a136708cdcb37d83fc44eb2fdc57aa1",
+        "seconds": 5.074,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml"
+      },
+      {
+        "sha256": "9102464e6c4a49d8aa2f354404825ee5df06e8658c3fde8f058d648469af8e69",
+        "seconds": 32.738,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml"
+      },
+      {
+        "sha256": "8747f72fdafb83418e468cb0ddb93b1f43ffba8a38b581774d5e3c8ef5b01156",
+        "seconds": 6.719,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml"
+      },
+      {
+        "sha256": "d837fddabdbb0f2d33f45a0a0c2ef4ff7ca248ec1383cb22d3d5fa4bca4dcdbf",
+        "seconds": 7.264,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml"
+      },
+      {
+        "sha256": "5f5d26b7464eebb726f804e424f318d00b21c260ce0f293a2558db7a972dce3f",
+        "seconds": 7.442,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml"
+      },
+      {
+        "sha256": "948b103bb669c752ef2aac4c188630fddf93def91c9333c14e3e027dd7b4c776",
+        "seconds": 17.262,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml"
+      },
+      {
+        "sha256": "ac51d8424cb385f6d492c1900c0ca4888ad0bc7c372276934b608fea2cd3216c",
+        "seconds": 12.348,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml"
+      },
+      {
+        "sha256": "627c710c51208479a0d139ca851f2d513d93fffec9f52656c6624c53bfadff5a",
+        "seconds": 8.686,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml"
+      },
+      {
+        "sha256": "b407bf0bdfc8e60abe12a4cd6e9f310635c91abc4095ca5d02b6df6fd3f7d6db",
+        "seconds": 17.482,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml"
+      },
+      {
+        "sha256": "bdf7e83597c9ab668f4f0e780dc9802cd8031ca126cf7fb5ce870e8e49a35a0d",
+        "seconds": 6.327,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml"
+      }
+    ],
+    "skipped": 0,
+    "errors": 0
+  },
+  "originalJarSha256Rechecked": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "manager": {
+    "failures": 0,
+    "directory": "build/legacy-manager-20261005-a/login-layout-manager",
+    "tests": 2,
+    "reports": [
+      {
+        "sha256": "d0de0e4bd0bb98140dc34494e2cddb0a2ce41bbcb39b013c1b2def1c7b0f4bb3",
+        "seconds": 28.975,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml"
+      },
+      {
+        "sha256": "addd4cab30d58ba1298ee9d4f47146f5aadc9b22f0923ac827580b669e4284cc",
+        "seconds": 8.461,
+        "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml"
+      }
+    ],
+    "skipped": 0,
+    "errors": 0
+  },
+  "baseline": {
+    "skipped": 0,
+    "testSourceSha256": "bc45db2984562393b0671650426c05dc5023737cc3b011559e30322a31ae5275",
+    "pngFiles": 42,
+    "tests": 1,
+    "directory": "build/login-layout-isolation-20261005-a/login-layout-before-b",
+    "geometrySha256": "0cbfbf3aa0351ea72f7ee6e54c178fb81a2d1221664bd2967f8007fb7391c2cc",
+    "jarSha256": "2e7ba6f499b4f9cc17d0aec2e150048e17b912d5e83bc168ddc523af62414742",
+    "seconds": 16.689,
+    "errors": 0,
+    "failures": 1,
+    "xmlSha256": "e1b9691bce7ddf7e97c5b40898506473349a2af538fa8f8125e19d752244edb7",
+    "footerOverlapCases": 11,
+    "obstructedControlCenters": 4,
+    "viewedScreenshots": [
+      "1280x720-login-top",
+      "360x640-login-top"
+    ]
+  },
+  "scope": "generated local accounts, viewport geometry, keyboard and login only; no private bodies, website cookies, original HTTP three-way, production or release mutation",
+  "frontendTests": {
+    "tests": 225,
+    "skipped": 0,
+    "failures": 0,
+    "cancelled": 0
+  },
+  "releaseSafetyTests": {
+    "tests": 47,
+    "skipped": 0,
+    "failures": 0,
+    "cancelled": 0
+  },
+  "typecheck": "passed",
+  "viteBuild": "passed",
+  "literalRouteAudit": "92/92",
+  "actionlint": "passed",
+  "localCpuMemoryScope": "two build workers; build heap1536MiB, Reader heap512MiB and two visible JVM processors; not Windows hard CPU/RSS quota"
+}

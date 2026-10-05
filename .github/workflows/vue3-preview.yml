@@ -164,6 +164,7 @@ jobs:
         run: |
           ./gradlew -p browser-poc test \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
@@ -180,7 +181,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Logout Reading LocalReading LocalCacheIsolation SessionRace CrossTab ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
+          for name in Login LoginLayout Logout Reading LocalReading LocalCacheIsolation SessionRace CrossTab ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
@@ -242,6 +243,16 @@ jobs:
         with:
           name: vue3-logout-${{ github.sha }}
           path: ${{ runner.temp }}/vue3-logout-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated login layout geometry and viewport screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-login-layout-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-login-layout-generated-*.png
+            ${{ runner.temp }}/vue3-login-layout-generated-geometry.json
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve generated local reading screenshot (no private books)
