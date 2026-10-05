@@ -1,0 +1,71 @@
+{
+  "status": "real hosted navigation failure retained; generated-only diagnostics compiled but real diagnostic runtime pending",
+  "failedSourceHead": "26255c06732dd05fb519b7a9943a96490bc53266",
+  "failedRuntime": {
+    "workflowRun": 37296514243,
+    "conclusion": "failure",
+    "runtimeInstallationSucceeded": true,
+    "artifactId": 11339482304,
+    "artifactZipBytes": 2116,
+    "xmlSha256": "34ffe21a78340bb317b2e2567f1bc9179ad3d155d8988cbc10f033b1b61770e3",
+    "tests": 13,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "suiteSeconds": 100.622,
+    "existingContractsPassed": 12,
+    "failedCase": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+    "failedCaseSeconds": 3.016,
+    "failureClass": "java.lang.AssertionError",
+    "failureMessage": "A finite generated navigation must return the final document",
+    "onlyProvesFinalMarkerMissing": true,
+    "doesNotProveIntermediateBodyOrEmptyBody": true,
+    "laterCookieAndFinalPostAssertionsNotReached": true
+  },
+  "diagnosticIncrement": {
+    "testSourceSha256": "7ceb5311ada67fabfa43439ff04097000bc30b7c67aa18e7b440b945e96dccd9",
+    "metadata": ["generatedOnly", "round", "snapshotChars", "intermediate", "maxStep", "finalVisits", "starts", "posts"],
+    "rawHtmlOrCredentialsLogged": false,
+    "assertionsWeakened": false,
+    "compiled": true,
+    "localTests": 13,
+    "localSkipped": 13,
+    "localFailures": 0,
+    "localErrors": 0,
+    "localXmlSha256": "71c425756c14b923d0c7c0738ac672d0cb74248351cf8e5d9c9d5039a28d7079",
+    "realRuntimeAcceptancePending": true,
+    "workerUnmodifiedSha256": "0df1aef07ea72e2ac07434bb9d997411f78717a136d8613cd8b45535fe96c4bd",
+    "rendererUnmodifiedSha256": "1b9e443fa6bae773d01d35ea7e818290a3e4adb543614955351213c8566e5d54"
+  },
+  "otherWorkflowEvidenceForFailedSource": {
+    "java": {"run": 37296514242, "conclusion": "success"},
+    "native": {"run": 37296514255, "conclusion": "success", "artifactsNotIndividuallyAuditedThisRound": true},
+    "vue": {
+      "run": 37296514253,
+      "conclusion": "failure",
+      "testedMergeRevision": "1ed46198814176f33f4743e008002d675d2d2a26",
+      "artifactId": 11340765241,
+      "artifactZipBytes": 10330,
+      "crossTabXmlSha256": "9ea17a3521791f0747d183ceff82ff3e8e02cf9a97aa9b15a829fd2cd08c46cf",
+      "crossTabTests": 1,
+      "crossTabFailures": 1,
+      "crossTabSkipped": 0,
+      "crossTabSeconds": 12.61,
+      "failedCallLine": 242,
+      "failedCall": "getUserInfo with second tab token after first tab logout",
+      "failure": "isSuccess expected true but was false",
+      "causeNotEstablished": true
+    }
+  },
+  "scope": {
+    "allNavigationPagesGenerated": true,
+    "realCredentialsReused": false,
+    "realBookBodiesRead": false,
+    "productionModified": false,
+    "originalJarOverwritten": false,
+    "userReader18931Pid61244Preserved": true,
+    "isolated18944Closed": true,
+    "defaultBranchMerged": false,
+    "formalReleaseOrDeploymentPerformed": false
+  }
+}

@@ -47,6 +47,8 @@ class CamoufoxWebviewRendererTest {
     private val echoCookie = AtomicReference("")
     private val navigationStarts = AtomicInteger()
     private val navigationPostStarts = AtomicInteger()
+    private val navigationMaximumStep = AtomicInteger(-1)
+    private val navigationFinalVisits = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -71,6 +73,7 @@ class CamoufoxWebviewRendererTest {
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
             if (exchange.requestURI.path.startsWith("/navigation-chain/")) {
                 val step = exchange.requestURI.path.substringAfterLast('/').toInt()
+                navigationMaximumStep.updateAndGet { maxOf(it, step) }
                 if (step == 0) {
                     navigationStarts.incrementAndGet()
                     if (exchange.requestMethod == "POST" && requestBody == "seed=generated") {
@@ -86,9 +89,12 @@ class CamoufoxWebviewRendererTest {
                 return@createContext
             }
             when (exchange.requestURI.path) {
-                "/navigation-final" -> respond(exchange,
-                    "<html><body><div id='result'>generated-navigation-complete</div></body></html>",
-                    "text/html; charset=utf-8")
+                "/navigation-final" -> {
+                    navigationFinalVisits.incrementAndGet()
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-navigation-complete</div></body></html>",
+                        "text/html; charset=utf-8")
+                }
                 "/resource-page" -> {
                     val html = "<html><body><div id='resource-result'></div>" +
                         "<script src='/asset.js'></script><img src='/media'></body></html>"
@@ -214,7 +220,11 @@ class CamoufoxWebviewRendererTest {
             val user = "navigation-probe-$round"
             val result = renderer.render(request("/navigation-chain/0", user,
                 post = true, body = "seed=generated"))
-            assertTrue("A finite generated navigation must return the final document",
+            val diagnostic = "generatedOnly=true round=$round snapshotChars=${result.body?.length ?: 0} " +
+                "intermediate=${result.body?.contains("generated-navigation-intermediate") == true} " +
+                "maxStep=${navigationMaximumStep.get()} finalVisits=${navigationFinalVisits.get()} " +
+                "starts=${navigationStarts.get()} posts=${navigationPostStarts.get()}"
+            assertTrue("A finite generated navigation must return the final document: $diagnostic",
                 result.body?.contains("generated-navigation-complete") == true)
             assertFalse(result.body?.contains("generated-navigation-intermediate") == true)
             assertEquals("A redirect must not discard the generated HttpOnly response Cookie",
