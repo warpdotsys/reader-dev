@@ -38,3 +38,15 @@
 离线快照是只读展示入口，并非服务端授权或离线修改能力；仍需服务器完成业务操作。旧键与不同账号的 v2 快照原样留在本机，不清除站点存储。回滚应使用前一完整 JAR/镜像和配套 UI，不回写服务端数据；前一 Vue 3 候选存在已复现的共享离线书架串号风险，不能将回滚称为隐私修复。
 
 正式发布、registry 推送、PR 合并与生产部署均未由本机生成测试代替；发布时需继续列出上述未验收项。
+
+## 本提交托管复验已完成
+
+源码 `aa7910105549e0c1074871a736a454f4ca72258e`，实际 PR 合并测试快照 `eec87995f5fc1a160064b2d7cdeeea5b3df7e0f9`。以上“托管待验证”是源码提交时的状态；现已实际完成：[Java/Kotlin 37256815284](https://github.com/warpdotsys/reader-dev/actions/runs/37256815284)、[Vue 3 37256815266](https://github.com/warpdotsys/reader-dev/actions/runs/37256815266)、[完整浏览器镜像 37256815264](https://github.com/warpdotsys/reader-dev/actions/runs/37256815264)、[六作业原生演练 37256815262](https://github.com/warpdotsys/reader-dev/actions/runs/37256815262)全部成功。实际 UI runner 为 `GitHub Actions 1000003556` / `ubuntu-24.04`；两个架构构建/重导入均在对应原生 GitHub 托管 runner 完成，没有自托管或 QEMU。
+
+- 核心制品 `11323435829`（7,984 B）15 份 XML 逐份核对，各 1 项、0 跳过/失败/错误。新增离线书架 4.717 秒，全部断言完成，XML SHA-256 `eeff61a56d3897326ed1d7d5a8d1f84dded7479f33911afd1b43d8303700f50b`。子目录制品 `11323222336`（530 B）实际 1 项通过，3.152 秒，SHA-256 `efd59c49ca336d1e6d7eda393d0b6b9101a8d5864992ba27d6418579a90984eb`。
+- Camoufox 制品 `11323236275`（919 B）实际 12 项、0 跳过/失败/错误、95.986 秒，XML SHA-256 `37e0fee762c15bc3ffaec04e069059ebedabfc2c3368bb09591679a8e29540a2`。这些是真实浏览器生成夹具契约检查，不冒充起点真实登录对照。
+- 完整单镜像制品 `11323181676`（896 B）两份 JSON 独立核对请求/ReturnData、四账号 Cookie、并发与原始资源计数。2 CPU / 2 GiB / PID 256，短样本峰值 793,559,040 B、175 PID；触限/OOM 事件 0、实际 swap 0，但配置仍允许 1 GiB swap，不宣称完全禁用 swap 或长期负载验收。
+- 发布演练制品 `11323471280`（7,065 B）20 份真实 JSON 已逐项核对，两架构共享 JAR `1e92ca1ec29f071e71f95c7740faa3ba9fc6251ae25cfbcd51e0d41e3c59db20`，不冒充与本机 JAR 同字节。构建与消费端 image ID、JAR、修订、实际版本、原生 kernel 架构、GET/POST/正文/头、Cookie/并发及四次资源计数均通过。四次短样本内存峰值约 726–779 MiB，均未触限/OOM、实际 swap=0；完整 image/归档 SHA、runner 与原始数值见[独立托管小型证据](evidence/vue3-shelf-offline-ci-aa791010-2026-10-05.json)。
+- 本轮只下载小型报告，没有下载新完整镜像或共享 JAR；原始 JAR 本轮只读 SHA-256 仍为 `b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c`。用户未提交 reports、其他工程、旧站点缓存和生产服务均保留；自有测试/构建/等待进程已结束，最后相关端口仅用户 `18931/PID 61244` 监听。
+
+原 JAR 来源核查、远程 WebView、公共页面比较和长期 soak 可选分支未运行。上面的已知限制继续有效，尤其真实认证三方、管理员跨空间实测、跨标签页、全格式与最终镜像本机实际运行；未合并 PR、创建 Release、推送 registry 或部署。本节归档已测试源码 `aa791010` 的结果，不冒充新文档提交的另一份业务构建。
