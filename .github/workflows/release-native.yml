@@ -14,6 +14,10 @@ on:
       - 'scripts/verify-release-manifest*'
       - 'scripts/smoke-native-release.sh'
       - 'scripts/import-native-release.sh'
+      - 'scripts/verify-camoufox-contracts.py'
+      - 'src/main/resources/camoufox/worker.py'
+      - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererTest.kt'
+      - 'src/test/python/camoufox_contract_report_test.py'
       - 'deploy/reader-pro/**'
 
 permissions:
@@ -42,6 +46,10 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: web-vue3/package-lock.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          # Match the hashed production wheels, not the runner's Python default.
+          python-version: '3.10'
       - name: Verify release contracts and build the shared JAR once
         id: jar
         shell: bash
@@ -66,6 +74,46 @@ jobs:
           unzip -Z1 "dist/reader-pro-v${version}.jar" > "$RUNNER_TEMP/reader-jar-entries.txt"
           grep -Fx 'BOOT-INF/classes/camoufox/worker.py' "$RUNNER_TEMP/reader-jar-entries.txt"
           printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - name: Preserve full shared-JAR unit reports before the targeted browser run
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-release-java-contracts-${{ github.sha }}
+          path: build/test-results/test/TEST-*.xml
+          if-no-files-found: error
+          retention-days: 14
+      - name: Install the pinned default-engine runtime for release contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/reader-release-camoufox"
+          "$RUNNER_TEMP/reader-release-camoufox/bin/pip" install --no-cache-dir --require-hashes \
+            --requirement deploy/reader-pro/requirements-camoufox.lock
+          READER_CAMOUFOX_PYTHON="$RUNNER_TEMP/reader-release-camoufox/bin/python" \
+            "$RUNNER_TEMP/reader-release-camoufox/bin/python" deploy/reader-pro/install_camoufox_pinned.py
+      - name: Verify packaged default engine contracts before exporting the shared JAR
+        shell: bash
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_BROWSER_ALLOW_PRIVATE_NETWORKS: 'true'
+          READER_CAMOUFOX_PYTHON: ${{ runner.temp }}/reader-release-camoufox/bin/python
+          READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'
+        run: |
+          set -euo pipefail
+          ./gradlew -PreaderWebUi=vue3 test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --max-workers=2 --no-daemon
+          python3 scripts/verify-camoufox-contracts.py build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          # A source-tree test is not enough if another worker was put in the JAR.
+          version='${{ steps.jar.outputs.version }}'
+          cmp <(unzip -p "dist/reader-pro-v${version}.jar" BOOT-INF/classes/camoufox/worker.py) src/main/resources/camoufox/worker.py
+          (cd dist && sha256sum -c SHA256SUMS)
+      - name: Preserve actual default-engine release contracts including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-release-camoufox-contract-${{ github.sha }}
+          path: build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: reader-release-jar-${{ github.sha }}

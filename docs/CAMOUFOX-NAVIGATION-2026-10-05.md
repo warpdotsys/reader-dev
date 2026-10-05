@@ -29,11 +29,23 @@
 
 根据 [Playwright 的加载状态契约](https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state)，当前文档已达到状态时等待会立即完成；因此单次 DOMContentLoaded 不能证明整条客户端导航结束。观察使用官方 [frame 导航事件](https://playwright.dev/python/docs/api/class-page#page-on-framenavigated) 和[导航请求标记](https://playwright.dev/python/docs/api/class-request#request-is-navigation-request)，未改网站指纹、网络策略或私网允许条件。
 
-**已本机单元验证**：新增 9 项确定性生成事件测试覆盖待完成主请求、快照/加载状态中的新提交、子 frame/非导航流不阻塞、无限提交的单预算、网络拒绝、未知异常、UTF-8 限额和非法预算；Python 共 97 项，96 执行、1 环境跳过，无失败。事件替身不是实际浏览器证明。真实 13 项与完整镜像/双架构必须等待修复候选自己的托管报告。
+**已本机单元验证**：新增 9 项确定性生成事件测试覆盖待完成主请求、快照/加载状态中的新提交、子 frame/非导航流不阻塞、无限提交的单预算、网络拒绝、未知异常、UTF-8 限额和非法预算；Python 共 97 项，96 执行、1 环境跳过，无失败。事件替身不是实际浏览器证明。修复候选随后取得自己的真实托管结果，见下节。
 
 **已成功重建候选**：本机完整 Java/Kotlin 测试为 41 套/147 项，实际执行 134、无失败/错误；13 项默认 Camoufox 仍因运行时缺失跳过，不能计为浏览器通过。Vue 3 JAR SHA-256 `8a8b6bf2d6d8c7e403b6c336a364f686916f3e207252d499f158a3d8bfeca96e`；81 个包内 UI 文件与 dist 逐字节一致，新 worker 确实打入包且与源码一致。完整 XML 冻结在 `build/camoufox-navigation-20261005-a/candidate-local-full/`。不以本机成功替代托管实际浏览器。
 
 已知限制：200 毫秒安静窗口不是任意未来定时脚本的最终页保证；原有父进程预算不是每个浏览器同步 API 的操作系统硬抢占。没有新验证无限真实页面导航、原 JAR/远程引擎对该用例的三方差分、真实起点认证/精确搜索/正文或生产。
+
+## 修复源码已托管复验
+
+源码 `755bb7d9af74ca6d9f634f0ffa39349f290295b4` 的四条工作流均成功：Java [37300753571](https://github.com/warpdotsys/reader-dev/actions/runs/37300753571)、Vue [37300753570](https://github.com/warpdotsys/reader-dev/actions/runs/37300753570)、Browser [37300753613](https://github.com/warpdotsys/reader-dev/actions/runs/37300753613)、Native [37300753580](https://github.com/warpdotsys/reader-dev/actions/runs/37300753580)。实际受测 PR 合并修订 `0001a6d088bb6fe641c5c951ae1811695aa5248b`；不是后续发版门禁增量的验收。
+
+下载的真实 Camoufox XML 为 13 项、0 跳过/失败/错误，105.221 秒；新增连续导航 10.902 秒，完成三轮最终文档、不混入中间页、HttpOnly Cookie 回写与初始导航/POST 各三次断言。制品 `11341603458`，XML SHA-256 `61d25c4dd0ce0287792f1df15f3667955299ef18ce12571b665bc1f06495588d`。新严格报告校验器也实际接受它，拒绝已冻结的跳过、诊断失败和旧 12 项 XML。
+
+另 3 份 Chromium/快照 XML 共 23 项与 21 份实际 Vue XML 均逐份核对、无跳过/失败/错误；跨标签 13.733 秒、退出 22.904 秒均到完整终点。共 25 份 XML/57 项，不代表 JVM 全套 147 项均在真实浏览器执行。管理截图虽随小制品下载，本轮未重新目视，不能宣称新视觉验收。
+
+20 份原生/重新载入 JSON 与 2 份完整镜像 JSON 逐字段独立核对：同一托管 JAR `4298e35c03f8d4b420b5de96927014094c9bf633f0df6217adaaf27cb5fce44e`、两架构的归档/镜像/实际运行 JAR 身份、GET/POST/脚本和四账号 Cookie/并发均通过。六个原生作业及 Browser 均为 GitHub 原生 runner。2 CPU/2 GiB/256 PID 下短时最高内存 `889196544` 字节（约 848 MiB），触限/OOM/PID 事件与实际 swap 为 0，但仍配置允许 1 GiB swap。不是新源码持续负载保证，也不是 registry 发布。
+
+[完整身份、47 份小证据散列与限制](evidence/camoufox-hosted-755bb7d9-2026-10-05.json)。没有下载多 GiB 镜像到本机、合并默认分支、创建 Release、动生产或复用已清除凭据。下一发版门禁增量见 [默认引擎发版门禁](DEFAULT-ENGINE-RELEASE-GATE-2026-10-05.md)，仍需自己的托管结果。
 
 不触及用户脏 reports、原始 JAR、已有三个工程、系统 hosts、用户浏览器会话或生产；不导入已清除凭据、不处理验证码、不购买、不请求章节正文。起点精确书名搜索/真实认证三方和完整产品验收仍未完成。没有合并默认分支、正式发版或生产部署。
 

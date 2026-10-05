@@ -34,7 +34,7 @@ function fixture(t) {
   return {
     change(file, mutate) {
       const target = join(root, file)
-      writeFileSync(target, mutate(readFileSync(target, 'utf8')), 'utf8')
+      writeFileSync(target, mutate(readFileSync(target, 'utf8').replace(/\r\n/g, '\n')), 'utf8')
     },
     check() {
       const result = spawnSync(process.execPath, [join(root, 'scripts/check-release-pipeline.mjs')],
@@ -102,6 +102,13 @@ for (const [name, file, mutate, expected] of [
   ['missing Docker Hub manifest check', '.github/workflows/release.yml', text => text.replace('node scripts/verify-release-manifest.mjs dist/DOCKERHUB_IMAGE_INDEX.json', 'node scripts/omitted-manifest.mjs dist/DOCKERHUB_IMAGE_INDEX.json'), /both registry manifests/],
   ['registry login in the rehearsal', '.github/workflows/release-native.yml', text => text + '\n# docker/login-action is an invalid rehearsal dependency\n', /must not use registry credentials/],
   ['round-trip check without actually running the reloaded image', '.github/workflows/release-native.yml', text => text.replace('      - name: Actually run the reloaded image with fresh generated accounts and storage\n        run: bash scripts/smoke-native-release.sh', '      - name: Incorrectly omit the reloaded runtime check\n        run: echo skipped'), /actually run the same image/],
+  ['default-engine runtime contracts omitted before JAR export', '.github/workflows/release-native.yml', text => text.replace("./gradlew -PreaderWebUi=vue3 test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest'", 'echo omitted-real-default-contracts'), /before actual default-engine contracts/],
+  ['default-engine XML verifier omitted', '.github/workflows/release-native.yml', text => text.replace('python3 scripts/verify-camoufox-contracts.py', 'echo omitted-report-verifier'), /before actual default-engine contracts/],
+  ['packaged worker identity omitted after runtime tests', '.github/workflows/release-native.yml', text => text.replace('cmp <(unzip -p', 'echo omitted-worker-check <(unzip -p'), /before actual default-engine contracts/],
+  ['unlocked default-engine Python inputs', '.github/workflows/release-native.yml', text => text.replace('--require-hashes', ''), /default-engine gate missing required token/],
+  ['browser integration using a different report guard', '.github/workflows/browser-image.yml', text => text.replace('python3 scripts/verify-camoufox-contracts.py', 'echo omitted-browser-report-guard'), /share the strict default-engine report verifier/],
+  ['default-engine gate treating failures as optional', '.github/workflows/release-native.yml', text => text.replace('      - name: Verify packaged default engine contracts before exporting the shared JAR\n', '      - name: Verify packaged default engine contracts before exporting the shared JAR\n        continue-on-error: true\n'), /must fail closed/],
+  ['default-engine gate silently skipped', '.github/workflows/release-native.yml', text => text.replace('      - name: Verify packaged default engine contracts before exporting the shared JAR\n', '      - name: Verify packaged default engine contracts before exporting the shared JAR\n        if: false\n'), /must fail closed/],
 ]) {
   test('rejects ' + name, (t) => {
     const current = fixture(t)

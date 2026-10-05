@@ -1,5 +1,5 @@
 {
-  "status": "two real hosted navigation failures retained; premature intermediate snapshot confirmed; source candidate unit-tested but real runtime acceptance pending",
+  "status": "two real hosted failures retained; premature intermediate snapshot fixed; own 755bb7d9 hosted runtime/UI/native acceptance verified; subsequent release gate pending",
   "failedSourceHead": "26255c06732dd05fb519b7a9943a96490bc53266",
   "failedRuntime": {
     "workflowRun": 37296514243,
@@ -88,7 +88,8 @@
       "packagedUiBytesMatchDist": true,
       "packagedWorkerBytesMatchSource": true
     },
-    "realRuntimeAcceptancePending": true,
+    "realRuntimeAcceptancePending": false,
+    "hostedAcceptanceReference": "camoufox-hosted-755bb7d9-2026-10-05.json",
     "browserBinaryAndDependenciesUnmodified": true
   },
   "otherWorkflowEvidenceForFailedSource": {

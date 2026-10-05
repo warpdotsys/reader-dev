@@ -62,3 +62,11 @@ jobs:
           sha256sum "$jar" | tee build/libs/SHA256SUMS
       # The JAR alone does not contain Chromium. Only the complete image is a
       # distributable product; release.yml publishes it with the JAR.
+      - name: Preserve actual Java Kotlin contracts including failures and skips
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-java-kotlin-contracts-${{ github.sha }}
+          path: build/test-results/test/TEST-*.xml
+          if-no-files-found: error
+          retention-days: 14

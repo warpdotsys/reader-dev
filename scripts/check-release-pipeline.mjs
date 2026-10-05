@@ -58,6 +58,7 @@ const approvedActions = new Map([
   ['actions/checkout', '11bd71901bbe5b1630ceea73d27597364c9af683'],
   ['actions/setup-node', '49933ea5288caeca8642d1e84afbd3f7d6820020'],
   ['actions/setup-java', 'cf277c60eb25467037889841efdb72551f06f6c3'],
+  ['actions/setup-python', 'ece7cb06caefa5fff74198d8649806c4678c61a1'],
   ['docker/setup-buildx-action', '8d2750c68a42422c14e847fe6c8ac0403b4cbd6f'],
   ['docker/login-action', 'c94ce9fb468520275223c153574b00df6fe4bcc9'],
   ['actions/upload-artifact', 'ea165f8d65b6e75b540449e92b4886f43607fa02'],
@@ -112,9 +113,36 @@ const section = (text, start, end) => {
   return text.slice(begin, finish)
 }
 const nativeBuild = section(nativeWorkflow, 'native-images', 'verify-transferred-images')
+const sharedJar = section(nativeWorkflow, 'build-jar', 'native-images')
 const nativeTransfer = section(nativeWorkflow, 'verify-transferred-images', 'verify-publisher-imports')
 const publisherRehearsal = section(nativeWorkflow, 'verify-publisher-imports')
 const publisher = section(workflow, 'build-and-publish-images', 'deploy-production')
+const defaultGate = sharedJar.indexOf('- name: Verify packaged default engine contracts before exporting the shared JAR')
+const realDefaultRun = sharedJar.indexOf("./gradlew -PreaderWebUi=vue3 test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest'")
+const defaultReportCheck = sharedJar.indexOf('python3 scripts/verify-camoufox-contracts.py')
+const defaultWorkerCompare = sharedJar.indexOf('cmp <(unzip -p')
+const jarExport = sharedJar.indexOf('name: reader-release-jar-${{ github.sha }}')
+if (defaultGate < 0 || realDefaultRun < defaultGate || defaultReportCheck < realDefaultRun ||
+    defaultWorkerCompare < defaultReportCheck || jarExport < defaultWorkerCompare) {
+  throw new Error('shared release JAR must not be exported before actual default-engine contracts and packaged worker identity pass')
+}
+const defaultStepEnd = sharedJar.indexOf('\n      - name:', defaultGate + 1)
+const defaultStep = sharedJar.slice(defaultGate, defaultStepEnd)
+if (!defaultStep.includes('set -euo pipefail') ||
+    /^\s*(?:if:|continue-on-error:)/m.test(defaultStep) || /\|\|\s*(?:true|:)/.test(defaultStep)) {
+  throw new Error('default-engine release gate must fail closed without skip conditions or ignored errors')
+}
+for (const token of [
+  'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1', "python-version: '3.10'",
+  '--require-hashes', 'deploy/reader-pro/install_camoufox_pinned.py',
+  "READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'", 'READER_CAMOUFOX_PYTHON:',
+  'name: reader-release-camoufox-contract-${{ github.sha }}', 'if: always()', 'if-no-files-found: error',
+]) {
+  if (!sharedJar.includes(token)) throw new Error(`release default-engine gate missing required token: ${token}`)
+}
+if (!browserWorkflow.includes('python3 scripts/verify-camoufox-contracts.py')) {
+  throw new Error('browser integration and native release must share the strict default-engine report verifier')
+}
 for (const token of [
   'workflow_call:', 'reader-release-jar-${{ github.sha }}',
   'reader-tested-native-${{ matrix.arch }}-${{ github.sha }}',

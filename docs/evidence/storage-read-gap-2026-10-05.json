@@ -1,5 +1,5 @@
 {
-  "status": "generated replacement-gap defect reproduced and source fixed; full local build passed; own hosted UI acceptance pending",
+  "status": "generated replacement-gap defect reproduced and fixed; local full build and own 755bb7d9 hosted UI accepted; separate hosted storage XML not retained for this source",
   "sourceHashes": {
     "VertExt": "8c046086ff6ebf4c79318b08933602add9f8b1a709390bfef2e6ddfb908cfd24",
     "StorageReadConsistencyTest": "c942d00cdd423802cfed99c8f11e347cdc8f010657e0d10610baf53e169123f2"
@@ -48,7 +48,9 @@
     "realUserRegistryOrBooksRead": false,
     "productionModified": false,
     "originalJarOverwrittenOrRerun": false,
-    "ownHostedAcceptancePending": true,
+    "ownHostedUiAcceptancePending": false,
+    "hostedAcceptanceReference": "camoufox-hosted-755bb7d9-2026-10-05.json",
+    "independentHostedStorageXmlNotRetainedForThisSource": true,
     "formalReleaseOrDeploymentPerformed": false
   }
 }

@@ -17,6 +17,7 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/verify-camoufox-contracts.py'
       - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
@@ -53,6 +54,7 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/camoufox_contract_report_test.py'
       - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
@@ -73,6 +75,7 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/verify-camoufox-contracts.py'
       - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
@@ -109,6 +112,7 @@ on:
       - 'src/test/java/com/htmake/reader/api/controller/SourceLoginSecurityTest.kt'
       - 'src/test/java/io/legado/app/model/analyzeRule/**'
       - 'src/test/python/camoufox_worker_test.py'
+      - 'src/test/python/camoufox_contract_report_test.py'
       - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
@@ -359,16 +363,7 @@ jobs:
           READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'
         run: |
           ./gradlew test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --no-daemon
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-          path = Path("build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml")
-          suite = ET.parse(path).getroot()
-          assert int(suite.attrib["tests"]) == 13, "Missing Camoufox contracts"
-          assert all(int(suite.attrib[key]) == 0 for key in ("failures", "errors", "skipped")), "Camoufox contracts not executed successfully"
-          names = {case.attrib["name"] for case in suite.findall("testcase")}
-          assert "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost" in names, "Missing generated navigation contract"
-          PY
+          python3 scripts/verify-camoufox-contracts.py build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
       - name: Preserve Camoufox contract report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
