@@ -208,20 +208,20 @@ open class BaseController(override val coroutineContext: CoroutineContext): Coro
     }
 
     fun getUserNameSpace(context: RoutingContext): String {
-        if (!appConfig.secure) {
-            return "default"
+        val namespace = if (!appConfig.secure) {
+            "default"
+        } else {
+            // 保留原授权/回退规则；新 UI 只接受实际空间确认，避免把回退数据误存到 default。
+            checkManagerAuth(context)
+            val userNS = context.get("userNameSpace") as String?
+            if (!userNS.isNullOrEmpty()) userNS else context.get<String>("username") ?: "default"
         }
-        // 管理权限，可以修改 userNameSpace 来获取任意用户信息
-        checkManagerAuth(context)
-        var userNS = context.get("userNameSpace") as String?
-        if (userNS != null && userNS.isNotEmpty()) {
-            return userNS
+        // 空间为元数据而非凭据；编码避免管理接口自定义空间形成响应头注入。
+        // 流式正文开始后可能再次读取配置；不能在已发送的响应头上重复写入。
+        if (!context.response().headWritten()) {
+            context.response().putHeader("X-Reader-Namespace", java.net.URLEncoder.encode(namespace, "UTF-8"))
         }
-        var username = context.get("username") as String?
-        if (username != null) {
-            return username;
-        }
-        return "default"
+        return namespace
     }
 
     fun getUserStorage(context: Any, vararg path: String): String? {

@@ -38,7 +38,10 @@ export interface LocalCacheUser {
 export function localChapterCacheScope(user: LocalCacheUser, deployment: string): string | null {
   if (!user.accessToken || !user.username || !deployment) return null
   const namespace = user.isAdmin && user.defaultConfigMode ? 'default' : user.username
-  return JSON.stringify([deployment, user.username, namespace])
+  // 旧 default 缓存曾使用错误的 ns 参数，不能认定来自真实系统空间。
+  return JSON.stringify(namespace === 'default'
+    ? [deployment, user.username, namespace, 'legacy-userNS-v1']
+    : [deployment, user.username, namespace])
 }
 
 const dbPromises = new Map<string, Promise<IDBDatabase>>()

@@ -1,4 +1,5 @@
-import { useUserStore } from '@/stores/user'
+import { readerRequestContext } from './requestContext'
+import { StaleSessionResponseError } from './requestSession'
 import type { ReturnData } from '@/types'
 
 /**
@@ -66,15 +67,14 @@ function toLegacyPitch(value: string): string {
 
 /** POST /reader3/book/tts：合成整章音频 → Blob（业务失败抛 Error） */
 export async function synthesizeTts(p: TtsSynthesizeParams): Promise<Blob> {
-  const store = useUserStore()
-  const params = new URLSearchParams()
-  if (store.accessToken) params.set('accessToken', store.accessToken)
+  const context = readerRequestContext()
+  const params = new URLSearchParams(context.params)
   const qs = params.toString()
   // engine=http → legacy type=api 契约：voice={HttpTTS名称} 按名分派 + base64=1 JSON 包裹响应
   const useApi = p.engine === 'http' && !!p.httpName
   const res = await fetch(`/reader3/book/tts${qs ? `?${qs}` : ''}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...context.headers },
     body: JSON.stringify({
       text: p.text,
       voice: useApi ? p.httpName : p.voice,
@@ -85,6 +85,9 @@ export async function synthesizeTts(p: TtsSynthesizeParams): Promise<Blob> {
       base64: useApi ? '1' : undefined,
     }),
   })
+  // 只有 HTTP 听书源按账号加载配置；内置声音不读取命名空间数据。
+  if (useApi) context.assertResponse(res, '/book/tts')
+  else if (!context.isCurrent()) throw new StaleSessionResponseError()
   const ct = res.headers.get('Content-Type') ?? ''
   // JSON 响应：base64=1 的成功结果（ReturnData 包 base64 音频），或失败（ReturnData.errorMsg）
   if (ct.includes('application/json')) {
@@ -95,10 +98,13 @@ export async function synthesizeTts(p: TtsSynthesizeParams): Promise<Blob> {
       /* 非 JSON 错误体，保留默认文案 */
     }
     if (res.ok && j && j.isSuccess && typeof j.data === 'string' && j.data) {
+      if (!context.isCurrent()) throw new StaleSessionResponseError()
       return base64ToBlob(j.data)
     }
     throw new Error(j?.errorMsg || '语音合成失败')
   }
   if (!res.ok) throw new Error('语音合成失败')
-  return res.blob()
+  const audio = await res.blob()
+  if (!context.isCurrent()) throw new StaleSessionResponseError()
+  return audio
 }

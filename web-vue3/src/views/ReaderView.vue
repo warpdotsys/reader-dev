@@ -14,6 +14,7 @@ import { getInvalidBookSources } from '@/api/sources'
 import { saveBook } from '@/api/bookshelf'
 import { getHttpTtsList } from '@/api/httpTts'
 import { get, post } from '@/api/request'
+import { readerRequestContext } from '@/api/requestContext'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
@@ -149,7 +150,10 @@ const isVideoBook = computed(() => bookType.value === 4)
 const isPdfBook = computed(() => (bookUrl.value || '').toLowerCase().endsWith('.pdf'))
 /** 读原书：file/download stream=1 新标签直开（对齐 Pro readOriginal） */
 function openOriginalPdf(): void {
-  const store = useUserStore()
+  if (store.isAdmin && store.defaultConfigMode) {
+    ElMessage.warning('系统配置空间暂不支持直开 PDF；请退出系统配置后使用本人账号的原书入口')
+    return
+  }
   const params = new URLSearchParams({ path: bookUrl.value, stream: '1' })
   if (store.accessToken) params.set('accessToken', store.accessToken)
   window.open(`/reader3/file/download?${params.toString()}`, '_blank', 'noopener')
@@ -259,13 +263,15 @@ async function ensureEpubDoc(): Promise<void> {
   epubLoadController = controller
   try {
     const systemNamespace = store.isAdmin && store.defaultConfigMode
+    const requestContext = readerRequestContext()
     const loaded = await loadEpubDoc(shelfBook.value.originName || bookUrl.value, {
       namespace: systemNamespace ? 'default' : store.username || 'default',
       accessToken: store.accessToken,
       systemNamespace,
+      managerKey: requestContext.headers['X-Reader-Secure-Key'],
       signal: controller.signal,
     })
-    if (controller.signal.aborted || epubLoadController !== controller) { destroyEpubDoc(loaded); return }
+    if (controller.signal.aborted || epubLoadController !== controller || !requestContext.isCurrent()) { destroyEpubDoc(loaded); return }
     epubDoc.value = loaded
     try { epubTocEntries.value = readEpubNavigation(epubDoc.value) }
     catch (e) { epubTocError.value = e instanceof Error ? e.message : 'EPUB 书内目录解析失败' }

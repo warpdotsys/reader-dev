@@ -22,14 +22,13 @@ import type { ReaderUser, UserUpdatePayload } from '@/types'
 
 const store = useUserStore()
 
-type PermField = 'enableWebdav' | 'enableLocalStore' | 'enableBookSource' | 'enableRssSource' | 'isAdmin'
+type PermField = 'enableWebdav' | 'enableLocalStore' | 'enableBookSource' | 'enableRssSource'
 
 const PERM_LABEL: Record<PermField, string> = {
   enableWebdav: 'WebDAV',
   enableLocalStore: '本地书仓',
   enableBookSource: '书源',
   enableRssSource: 'RSS',
-  isAdmin: '管理员',
 }
 
 /* ================= 列表 ================= */
@@ -95,7 +94,11 @@ async function confirmKey() {
     ElMessage.warning('请输入管理密码')
     return
   }
-  storeSecureKey(key)
+  try { storeSecureKey(key) }
+  catch (error) {
+    keyError.value = error instanceof Error ? error.message : '无法保存本标签页管理密码'
+    return
+  }
   keyDialogOpen.value = false
   document.body.style.overflow = ''
   const op = pendingOp
@@ -166,7 +169,6 @@ const addForm = ref<{
   enableLocalStore: boolean
   enableBookSource: boolean
   enableRssSource: boolean
-  isAdmin: boolean
   bookSourceLimit: number
   bookLimit: number
 }>({
@@ -176,7 +178,6 @@ const addForm = ref<{
   enableLocalStore: true,
   enableBookSource: true,
   enableRssSource: true,
-  isAdmin: false,
   bookSourceLimit: 80000,
   bookLimit: 5000,
 })
@@ -189,7 +190,6 @@ function openAdd() {
     enableLocalStore: true,
     enableBookSource: true,
     enableRssSource: true,
-    isAdmin: false,
     bookSourceLimit: 80000,
     bookLimit: 5000,
   }
@@ -226,7 +226,6 @@ async function confirmAdd() {
       enableLocalStore: addForm.value.enableLocalStore,
       enableBookSource: addForm.value.enableBookSource,
       enableRssSource: addForm.value.enableRssSource,
-      isAdmin: addForm.value.isAdmin,
       bookSourceLimit: Math.max(0, Number(addForm.value.bookSourceLimit) || 0),
       bookLimit: Math.max(0, Number(addForm.value.bookLimit) || 0),
     })
@@ -265,17 +264,12 @@ function permPayload(u: ReaderUser, field: PermField, value: boolean): UserUpdat
     enableRssSource: u.enableRssSource,
     bookSourceLimit: u.bookSourceLimit,
     bookLimit: u.bookLimit,
-    isAdmin: u.isAdmin,
     [field]: value,
   }
 }
 
 async function togglePerm(u: ReaderUser, field: PermField) {
   if (toggling.value.has(u.username)) return
-  if (field === 'isAdmin' && u.isAdmin && u.username === store.username) {
-    ElMessage.warning('不能撤销自己的管理员权限')
-    return
-  }
   toggling.value.add(u.username)
   const prev = Boolean(u[field])
   u[field] = !prev // 乐观切换，失败回滚
@@ -297,10 +291,9 @@ const editForm = ref<{
   enableLocalStore: boolean
   enableBookSource: boolean
   enableRssSource: boolean
-  isAdmin: boolean
   bookSourceLimit: number
   bookLimit: number
-}>({ enableWebdav: true, enableLocalStore: true, enableBookSource: true, enableRssSource: true, isAdmin: false, bookSourceLimit: 80000, bookLimit: 5000 })
+}>({ enableWebdav: true, enableLocalStore: true, enableBookSource: true, enableRssSource: true, bookSourceLimit: 80000, bookLimit: 5000 })
 
 function openEdit(u: ReaderUser) {
   editing.value = u
@@ -309,7 +302,6 @@ function openEdit(u: ReaderUser) {
     enableLocalStore: u.enableLocalStore,
     enableBookSource: u.enableBookSource,
     enableRssSource: u.enableRssSource,
-    isAdmin: u.isAdmin ?? false,
     bookSourceLimit: u.bookSourceLimit ?? 0,
     bookLimit: u.bookLimit ?? 0,
   }
@@ -333,7 +325,6 @@ async function saveEdit() {
     enableLocalStore: f.enableLocalStore,
     enableBookSource: f.enableBookSource,
     enableRssSource: f.enableRssSource,
-    isAdmin: f.isAdmin,
     bookSourceLimit: Math.max(0, Number(f.bookSourceLimit) || 0),
     bookLimit: Math.max(0, Number(f.bookLimit) || 0),
   }
@@ -657,7 +648,6 @@ onBeforeUnmount(() => {
               <td class="col-user">
                 <span class="uname" :title="u.username">{{ u.username }}</span>
                 <span v-if="u.username === store.username" class="self-tag" title="当前登录账号">我</span>
-                <span v-if="u.isAdmin" class="admin-tag" title="管理员（可操作系统 default 配置）">管理员</span>
               </td>
               <td class="col-perm">
                 <div class="perm-cell">

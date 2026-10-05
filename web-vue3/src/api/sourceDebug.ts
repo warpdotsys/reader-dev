@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/user'
+import { readerRequestContext } from './requestContext'
 import { parseSSEBlock, consumeSSEStreamBlocks } from './sse'
 
 /**
@@ -117,20 +117,21 @@ export function bookSourceDebugSSE(
   cbs: DebugSSECallbacks,
 ): Promise<DebugSSEHandle> {
   const controller = new AbortController()
-  const token = useUserStore().accessToken
+  const context = readerRequestContext()
   const query = new URLSearchParams({ bookSource: params.bookSourceUrl, action: params.action })
   if (params.key) query.set('key', params.key)
   if (params.chapterUrl) query.set('chapterUrl', params.chapterUrl)
-  if (token) query.set('accessToken', token)
+  for (const [name, value] of Object.entries(context.params)) query.set(name, value)
 
   return fetch(`/reader3/bookSourceDebugSSE?${query.toString()}`, {
     method: 'GET',
-    headers: { Accept: 'text/event-stream' },
+    headers: { Accept: 'text/event-stream', ...context.headers },
     signal: controller.signal,
   }).then(async (response) => {
+    context.assertResponse(response, '/bookSourceDebugSSE')
     if (!response.ok) throw new Error(`调试服务异常（HTTP ${response.status}）`)
     if (!response.body) throw new Error('调试服务未返回数据流')
-    void consumeSSEStream(response.body, cbs, () => controller.signal.aborted)
+    void consumeSSEStream(response.body, cbs, () => controller.signal.aborted || !context.isCurrent())
     return { close: () => controller.abort() } satisfies DebugSSEHandle
   })
 }

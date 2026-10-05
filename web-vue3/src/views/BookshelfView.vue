@@ -1395,7 +1395,17 @@ async function load(silent = false) {
       activeGroup.value = null
     }
   } catch (error) {
-    if (!current() || !canUseOfflineShelf(error)) return
+    if (!current()) return
+    if ((error as { code?: string })?.code === 'READER_NAMESPACE_UNVERIFIED') {
+      // 管理密钥可能被服务端撤销/替换；不要把旧成功界面伪装成本次空间核对通过。
+      books.value = []
+      groups.value = []
+      selected.value = new Set()
+      activeGroup.value = null
+      ElMessage.warning(error instanceof Error ? error.message : '请重新验证管理密码')
+      return
+    }
+    if (!canUseOfflineShelf(error)) return
     // 错误提示已由拦截器统一处理；服务端不可达时降级最近一次本地缓存（离线书架）
     const cached = loadOfflineShelf(scope)
     if (cached) {
@@ -2094,7 +2104,7 @@ async function doRemoveFromShelf() {
 
 onMounted(() => {
   shelfMounted = true
-  // 旧会话可能未带 isAdmin 标记：后台探测一次，管理员入口/系统配置按钮据此恢复显示
+  // 刷新后真实验证本标签页管理密码；不能信任旧角色/空间标志。
   void probeSecureMode().catch(() => false)
   wrapObserver = new ResizeObserver(() => {
     const w = gridWrapRef.value?.clientWidth ?? 0

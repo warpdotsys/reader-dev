@@ -1,5 +1,5 @@
 import { get, post } from './request'
-import { useUserStore } from '@/stores/user'
+import { readerRequestContext } from './requestContext'
 import { openSSEPost } from './sse'
 import type { BookChapter, BookContent, BookInfo, ReturnData, SearchBook } from '@/types'
 
@@ -53,12 +53,13 @@ export function searchBookSourceSSE(
   bookSource: string,
   cbs: SourceSSECallbacks,
 ): Promise<{ abort: () => void }> {
-  const token = useUserStore().accessToken
+  const context = readerRequestContext()
   return openSSEPost(
     '/reader3/searchBookSourceSSE',
     { url, bookSource },
     { onBooks: cbs.onBooks, onEnd: cbs.onEnd, onErrorEvent: cbs.onErrorEvent, onStreamError: cbs.onStreamError },
-    token,
+    context.params.accessToken ?? null,
+    context,
   )
 }
 

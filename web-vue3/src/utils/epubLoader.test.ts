@@ -141,16 +141,19 @@ for (const directory of [true, false]) {
       assert.equal(init?.cache, 'no-store')
       assert.equal(url.searchParams.get('home'), '__HOME__')
       assert.equal(url.searchParams.get('accessToken'), 'test-token-not-production')
-      assert.equal(url.searchParams.get('ns'), 'default')
+      assert.equal(url.searchParams.get('ns'), null)
+      assert.equal(url.searchParams.get('userNS'), 'default')
+      assert.equal(new Headers(init?.headers).get('X-Reader-Secure-Key'), 'generated-manager-key')
+      assert.equal(String(input).includes('generated-manager-key'), false)
       if (requests.length === 1) return Response.json(directory
         ? { isSuccess: true, data: [{ name: 'index.epub', isDirectory: false }] }
-        : { isSuccess: false, errorMsg: '路径不是目录' })
+        : { isSuccess: false, errorMsg: '路径不是目录' }, { headers: { 'X-Reader-Namespace': 'default' } })
       assert.equal(url.searchParams.get('path'), `书 EPUB.epub${directory ? '/index.epub' : ''}`)
       assert.equal(url.searchParams.get('stream'), '1')
-      return new Response(buildMinimalEpub() as BodyInit)
+      return new Response(buildMinimalEpub() as BodyInit, { headers: { 'X-Reader-Namespace': 'default' } })
     })
     const doc = await loadEpubDoc('storage/data/default/书 EPUB.epub', {
-      namespace: 'default', accessToken: 'test-token-not-production', systemNamespace: true,
+      namespace: 'default', accessToken: 'test-token-not-production', systemNamespace: true, managerKey: 'generated-manager-key',
     })
     assert.equal(doc.spine.length, 2)
     assert.equal(requests.length, 2)
@@ -168,6 +171,19 @@ test('EPUB loader never retries with privileged home or reads another user', asy
   await assert.rejects(loadEpubDoc('storage/data/bob/a.epub', { namespace: 'alice' }), /当前用户/)
   assert.equal(calls, 0)
   await assert.rejects(loadEpubDoc('storage/data/alice/a.epub', { namespace: 'alice' }), /请登录/)
+  assert.equal(calls, 1)
+})
+
+test('系统 EPUB 不允许缺密钥或静默回退本人空间', async t => {
+  let calls = 0
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls++
+    return Response.json({ isSuccess: true, data: [] }, { headers: { 'X-Reader-Namespace': 'generated-a' } })
+  })
+  const options = { namespace: 'default', systemNamespace: true }
+  await assert.rejects(loadEpubDoc('storage/data/default/a.epub', options), /未确认系统配置空间/)
+  assert.equal(calls, 0)
+  await assert.rejects(loadEpubDoc('storage/data/default/a.epub', { ...options, managerKey: 'generated-key' }), /未确认系统配置空间/)
   assert.equal(calls, 1)
 })
 

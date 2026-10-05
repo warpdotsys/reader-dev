@@ -151,7 +151,7 @@ async function submitPwd() {
       password: oldPassword,
       isLogin: true,
     })
-    store.setSession(loginRes.data.accessToken, loginRes.data.username, true, loginRes.data.isAdmin === true)
+    store.setSession(loginRes.data.accessToken, loginRes.data.username, true)
     // ② 重置密码（后端重置后旧 token 失效）
     await resetUserPassword(store.username, newPassword)
     // ③ 强制重新登录

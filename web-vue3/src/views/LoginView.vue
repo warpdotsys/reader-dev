@@ -44,7 +44,7 @@ async function submit() {
       // GAP 90：注册模式携带邀请码（后端 register 校验 code 参数）
       code: mode.value === 'register' && form.code.trim() ? form.code.trim() : undefined,
     })
-    store.setSession(res.data.accessToken, res.data.username, remember.value, res.data.isAdmin === true)
+    store.setSession(res.data.accessToken, res.data.username, remember.value)
     ElMessage.success(mode.value === 'login' ? t('login.welcomeBack') : t('login.registered'))
     // GAP 127：登录成功回跳 redirect query（仅限站内路径，防开放重定向）
     const q = route.query.redirect

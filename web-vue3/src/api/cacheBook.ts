@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/user'
+import { readerRequestContext } from './requestContext'
 import { post } from './request'
 import { parseSSEBlock, consumeSSEStreamBlocks } from './sse'
 import type { ReturnData } from '@/types'
@@ -89,19 +89,20 @@ export function cacheBookSSE(
   options: { refresh?: number; concurrentCount?: number } = {},
 ): Promise<CacheProgressHandle> {
   const controller = new AbortController()
-  const token = useUserStore().accessToken
+  const context = readerRequestContext()
   const params = new URLSearchParams({ url: bookUrl })
   if (typeof options.refresh === 'number') params.set('refresh', String(options.refresh))
   if (typeof options.concurrentCount === 'number') params.set('concurrentCount', String(options.concurrentCount))
-  if (token) params.set('accessToken', token)
+  for (const [name, value] of Object.entries(context.params)) params.set(name, value)
   return fetch(`/reader3/cacheBookSSE?${params.toString()}`, {
     method: 'GET',
-    headers: { Accept: 'text/event-stream' },
+    headers: { Accept: 'text/event-stream', ...context.headers },
     signal: controller.signal,
   }).then(async (response) => {
+    context.assertResponse(response, '/cacheBookSSE')
     if (!response.ok) throw new Error(`缓存进度服务异常（HTTP ${response.status}）`)
     if (!response.body) throw new Error('缓存进度服务未返回数据流')
-    void consumeSSEStream(response.body, cbs, () => controller.signal.aborted)
+    void consumeSSEStream(response.body, cbs, () => controller.signal.aborted || !context.isCurrent())
     return { close: () => controller.abort() } satisfies CacheProgressHandle
   })
 }

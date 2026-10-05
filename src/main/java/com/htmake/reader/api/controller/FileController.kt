@@ -72,6 +72,8 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
     suspend fun checkAccess(context: RoutingContext, isSave: Boolean = false, isDelete: Boolean = false): ReturnData? {
         val returnData = ReturnData()
         if (!checkAuth(context)) return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        // 包含共享书仓 home 时也确认本次请求的实际账号空间；不改变 home 或授权规则。
+        val userNameSpace = getUserNameSpace(context)
         context.put("__FILE_HOME__", null)
         val directory = when (requestedHome(context)) {
             "__WEBDAV__" -> {
@@ -93,7 +95,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
                 }
                 File(getWorkDir("storage", "localStore"))
             }
-            "__HOME__" -> File(getWorkDir("storage", "data", getUserNameSpace(context)))
+            "__HOME__" -> File(getWorkDir("storage", "data", userNameSpace))
             "__STORAGE__" -> {
                 if (!checkManagerAuth(context)) return returnData.setData("NEED_SECURE_KEY").setErrorMsg("请输入管理密码")
                 File(getWorkDir("storage"))
@@ -102,7 +104,7 @@ class FileController(coroutineContext: CoroutineContext) : BaseController(corout
                 // 空 home 回退用户数据目录（JAR 继承 bug：home= 空值误报"非法访问"，
                 // 兼容旧客户端/手动构造 URL 的 file/list 等请求）
                 if (requestedHome(context).isEmpty()) {
-                    File(getWorkDir("storage", "data", getUserNameSpace(context)))
+                    File(getWorkDir("storage", "data", userNameSpace))
                 } else {
                     return returnData.setErrorMsg("非法访问")
                 }

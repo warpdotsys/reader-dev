@@ -3,6 +3,7 @@ import type { RequestOptions } from './request'
 import { useUserStore } from '@/stores/user'
 import type { ReaderUser, ReturnData, UserUpdatePayload } from '@/types'
 import { captureRequestSession, isRequestSessionCurrent } from './requestSession'
+import { managerCredentialScope, readManagerCredential, readerDeployment, saveManagerCredential } from '@/utils/managerCredential'
 
 /**
  * 用户管理 API（与 Java/Kotlin legacy 的 UserController 对齐）
@@ -17,16 +18,18 @@ import { captureRequestSession, isRequestSessionCurrent } from './requestSession
  * { isSuccess:false, errorMsg:'请输入管理密码', data:'NEED_SECURE_KEY' }。
  */
 
-const SECURE_KEY_STORAGE = 'reader_secure_key'
-
-/** 读取已保存的 secureKey（sessionStorage：刷新页面仍可用，关闭标签页失效） */
+/** 待验证管理密码绑定部署/账号；归属未知的旧共享键不读取。 */
 export function getStoredSecureKey(): string {
-  return sessionStorage.getItem(SECURE_KEY_STORAGE) || ''
+  return readManagerCredential(managerCredentialScope(useUserStore(), readerDeployment()))
 }
 
 /** 保存 secureKey 到 sessionStorage */
 export function storeSecureKey(key: string): void {
-  sessionStorage.setItem(SECURE_KEY_STORAGE, key)
+  const store = useUserStore()
+  store.updateAdminStatus(false)
+  if (!saveManagerCredential(managerCredentialScope(store, readerDeployment()), key)) {
+    throw new Error('无法保存本标签页管理密码，请检查浏览器存储设置')
+  }
 }
 
 /** 管理密钥走请求头；legacy query 参数只供旧客户端兼容，避免密钥进入 URL/访问日志。 */
@@ -37,8 +40,22 @@ function managerOptions(): RequestOptions | undefined {
 }
 
 /** GET /reader3/getUserList：用户列表（secure 模式缺 secureKey 时 reject，错误 data = 'NEED_SECURE_KEY'） */
-export function getUsers(): Promise<ReturnData<ReaderUser[]>> {
-  return get<ReaderUser[]>('/getUserList', undefined, managerOptions())
+export async function getUsers(): Promise<ReturnData<ReaderUser[]>> {
+  const store = useUserStore()
+  const session = captureRequestSession(store)
+  const key = getStoredSecureKey()
+  try {
+    const result = await get<ReaderUser[]>('/getUserList', undefined, managerOptions())
+    if (isRequestSessionCurrent(session, store) && key === getStoredSecureKey()) {
+      store.updateAdminStatus(!!key && result.isSuccess === true && Array.isArray(result.data))
+    }
+    return result
+  } catch (error) {
+    if (isNeedSecureKey(error) && isRequestSessionCurrent(session, store) && key === getStoredSecureKey()) {
+      store.updateAdminStatus(false)
+    }
+    throw error
+  }
 }
 
 /** POST /reader3/updateUser：更新用户权限/上限，返回完整用户列表。 */
@@ -82,7 +99,6 @@ export interface AddUserPayload {
   enableRssSource?: boolean
   bookSourceLimit?: number
   bookLimit?: number
-  isAdmin?: boolean
 }
 
 /**
@@ -99,16 +115,16 @@ export { isNotImplemented } from '@/utils/errors'
 /**
  * 探测后端是否处于 secure 模式（决定书架导航「用户」入口是否显示）。
  * getUserList 无 secureKey 返回 NEED_SECURE_KEY ⇒ secure；其余（成功/404/网络错误）视为非 secure。
- * 已保存 secureKey 时顺带刷新当前用户的 isAdmin（管理员才显示入口）。
+ * 管理密码真实验证成功后授予当前标签页能力；legacy 没有每用户 isAdmin 字段。
  * 走 fetch 而非 axios 实例，避免 404/业务错误触发全局 toast。
  */
 export async function probeSecureMode(): Promise<boolean> {
   const store = useUserStore()
   const session = captureRequestSession(store)
+  const key = getStoredSecureKey()
   try {
     const params = new URLSearchParams()
     if (store.accessToken) params.set('accessToken', store.accessToken)
-    const key = getStoredSecureKey()
     params.set('_t', String(Date.now())) // 防 GET 缓存
     const res = await fetch(`/reader3/getUserList?${params.toString()}`, {
       method: 'GET',
@@ -116,15 +132,9 @@ export async function probeSecureMode(): Promise<boolean> {
     })
     if (!res.ok) return false
     const json = (await res.json()) as { isSuccess?: boolean; data?: unknown }
-    if (!isRequestSessionCurrent(session, store)) return false
-    if (json.data === 'NEED_SECURE_KEY') return true
-    if (Array.isArray(json.data) && store.username) {
-      const me = json.data.find((u) => (u as { username?: string })?.username === store.username)
-      if (me) {
-        store.updateAdminStatus((me as { isAdmin?: boolean }).isAdmin === true)
-      }
-    }
-    return false
+    if (!isRequestSessionCurrent(session, store) || key !== getStoredSecureKey()) return false
+    store.updateAdminStatus(!!key && json.isSuccess === true && Array.isArray(json.data))
+    return json.data === 'NEED_SECURE_KEY' || (!!key && json.isSuccess === true && Array.isArray(json.data))
   } catch {
     return false
   }

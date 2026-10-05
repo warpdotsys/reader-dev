@@ -87,21 +87,27 @@ export async function consumeSSEStreamBlocks(
   let buffer = ''
   try {
     for (;;) {
+      if (isAborted()) return
       const { done, value } = await reader.read()
+      if (isAborted()) return
       if (done) break
       buffer += decoder.decode(value, { stream: true })
       buffer = buffer.replace(/\r\n?/g, '\n')
       let sep: number
       while ((sep = buffer.indexOf('\n\n')) !== -1) {
+        if (isAborted()) return
         const block = buffer.slice(0, sep)
         buffer = buffer.slice(sep + 2)
         onBlock(block)
       }
     }
-    if (buffer.trim()) onBlock(buffer)
+    if (!isAborted() && buffer.trim()) onBlock(buffer)
   } catch {
     if (isAborted()) return // 用户主动取消
     onStreamError?.('连接中断，请重试')
+  } finally {
+    if (isAborted()) await reader.cancel().catch(() => {})
+    reader.releaseLock()
   }
 }
 
@@ -127,15 +133,19 @@ export function openSSEPost(
   body: Record<string, unknown>,
   cbs: SSEStreamCallbacks,
   accessToken: string | null,
+  context?: { params: Record<string, string>; headers: Record<string, string>;
+    isCurrent: () => boolean; assertResponse: (response: Response, path: string) => void },
 ): Promise<{ abort: () => void }> {
   const controller = new AbortController()
-  const query = accessToken ? `?accessToken=${encodeURIComponent(accessToken)}` : ''
+  const params = new URLSearchParams(context?.params ?? (accessToken ? { accessToken } : {}))
+  const query = params.size ? `?${params}` : ''
   return fetch(`${path}${query}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...context?.headers },
     body: JSON.stringify(body),
     signal: controller.signal,
   }).then(async (response) => {
+    context?.assertResponse(response, path)
     if (!response.ok) throw new Error(`服务异常（HTTP ${response.status}）`)
     const contentType = response.headers.get('content-type') ?? ''
     if (contentType && !contentType.includes('text/event-stream')) {
@@ -143,7 +153,7 @@ export function openSSEPost(
     }
     if (!response.body) throw new Error('当前服务不支持流式输出')
     let aborted = false
-    void consumeSSEStream(response.body, cbs, () => aborted)
+    void consumeSSEStream(response.body, cbs, () => aborted || (context != null && !context.isCurrent()))
     return {
       abort: () => {
         aborted = true

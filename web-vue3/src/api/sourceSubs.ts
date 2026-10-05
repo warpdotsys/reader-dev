@@ -40,6 +40,8 @@ function scopedStorageKey(): string | null {
     const defaultScope =
       localStorage.getItem('reader_default_config_mode') === '1' ||
       sessionStorage.getItem('reader_default_config_mode') === '1'
+    // 旧 default 镜像来自错误 ns 请求，归属不可信；系统空间暂仅在线读写，不假装离线成功。
+    if (defaultScope) return null
     return `${STORAGE_KEY}:${encodeURIComponent(username)}:${defaultScope ? 'default' : 'user'}`
   } catch {
     return null

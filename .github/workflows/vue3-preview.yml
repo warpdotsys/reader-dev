@@ -13,6 +13,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BaseController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   pull_request:
@@ -27,6 +28,7 @@ on:
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
       - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BaseController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   workflow_dispatch:
@@ -278,7 +280,7 @@ jobs:
           grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18896([[:space:]]|$)' \
             "$RUNNER_TEMP/vue3-secure-listener.txt"
           curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null
-      - name: Verify secure file write and retry in Chromium
+      - name: Verify secure file retry and real manager namespace isolation in Chromium
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           READER_VUE3_ISOLATED: '1'
@@ -286,9 +288,23 @@ jobs:
           READER_TEST_MANAGER_KEY: Vue3ProbeManagerKey-2026
         run: |
           ./gradlew -p browser-poc test \
-            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest' --no-daemon
-          grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest' --no-daemon
+          for name in SecureFile ManagerNamespace; do
+            grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+              "browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
+          done
+      - name: Preserve generated manager namespace evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-manager-namespace-${{ github.sha }}
+          path: |
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml
+            ${{ runner.temp }}/vue3-manager-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Build and serve the Vue 3 artifact at /reader/
         shell: bash
         run: |

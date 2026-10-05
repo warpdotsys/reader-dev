@@ -11,7 +11,6 @@ export interface UserInfo {
   lastLoginAt: number
   accessToken: string
   /** 管理员（secure 模式可操作系统 default 配置与用户管理） */
-  isAdmin?: boolean
   [key: string]: unknown
 }
 
@@ -257,7 +256,7 @@ export interface TxtTocRule {
   [key: string]: unknown
 }
 
-/** 用户管理（GET /reader3/getUsers → ReaderUser；secure 模式需 secure+secureKey query，缺/错返回 NEED_SECURE_KEY） */
+/** 用户管理（GET /reader3/getUserList；管理密码通过请求头验证，legacy 无每用户管理员角色） */
 export interface ReaderUser {
   username: string
   enableWebdav: boolean
@@ -266,7 +265,6 @@ export interface ReaderUser {
   enableRssSource: boolean
   bookSourceLimit: number
   bookLimit: number
-  isAdmin?: boolean
   lastLoginAt: number
   /** 注册时间（毫秒时间戳；legacy createdAt） */
   createdAt?: number
@@ -282,7 +280,6 @@ export interface UserUpdatePayload {
   enableRssSource?: boolean
   bookSourceLimit?: number
   bookLimit?: number
-  isAdmin?: boolean
 }
 
 /** Java/Kotlin 的 /reader3/getSystemInfo：JVM 内存与近期用户统计。 */

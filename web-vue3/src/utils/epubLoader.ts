@@ -11,6 +11,7 @@
 import { strFromU8 } from 'fflate'
 import { expandEpubArchive, readEpubResponse } from './epubArchive.ts'
 import { expandEpubInWorker } from './epubWorker.ts'
+import { assertLegacyNamespace, NamespaceProofError } from './legacyNamespace.ts'
 
 /** OPF manifest 单项 */
 export interface EpubManifestItem {
@@ -85,6 +86,7 @@ export interface EpubLoadOptions {
   namespace: string
   accessToken?: string
   systemNamespace?: boolean
+  managerKey?: string
   signal?: AbortSignal
 }
 
@@ -113,7 +115,10 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   const location = epubFileLocation(source, options.namespace)
   const params = new URLSearchParams(location)
   if (options.accessToken) params.set('accessToken', options.accessToken)
-  if (options.systemNamespace) params.set('ns', 'default')
+  if (options.systemNamespace) {
+    if (!options.managerKey) throw new NamespaceProofError()
+    params.set('userNS', 'default')
+  }
   if (options.signal?.aborted) throw new DOMException('EPUB 加载已取消', 'AbortError')
   const controller = new AbortController()
   const cancel = () => controller.abort(options.signal?.reason)
@@ -124,8 +129,9 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   const timer = setTimeout(() => { timedOut = true; controller.abort() }, 60000)
   let buf: Uint8Array
   try {
-    buf = await downloadEpubBytes(params, location.path, controller.signal)
+    buf = await downloadEpubBytes(params, location.path, controller.signal, options)
   } catch (error) {
+    controller.abort()
     if (timedOut && !options.signal?.aborted) {
       throw new Error('EPUB 下载超时（60 秒），已终止原版排版加载')
     }
@@ -137,10 +143,12 @@ export async function loadEpubDoc(source: string, options: EpubLoadOptions): Pro
   return parseEpubFiles(await expandEpubInWorker(buf, options.signal))
 }
 
-async function downloadEpubBytes(params: URLSearchParams, path: string, signal: AbortSignal): Promise<Uint8Array> {
-  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store', signal }
+async function downloadEpubBytes(params: URLSearchParams, path: string, signal: AbortSignal, options: EpubLoadOptions): Promise<Uint8Array> {
+  const init: RequestInit = { credentials: 'same-origin', cache: 'no-store', signal,
+    headers: options.systemNamespace ? { 'X-Reader-Secure-Key': options.managerKey! } : undefined }
   // 只查询选中书自身：legacy 导入布局是 xxx.epub/index.epub，书仓则可为单文件。
   const listing = await fetch(`/reader3/file/list?${params}`, init)
+  assertLegacyNamespace({ systemNamespace: options.systemNamespace === true }, '/file/list', listing.headers.get('X-Reader-Namespace'))
   if (!listing.ok) throw new Error(`EPUB 路径检查失败（${listing.status}）`)
   const info = await listing.json() as {
     isSuccess: boolean; errorMsg?: string; data?: { name: string; isDirectory: boolean }[]
@@ -155,6 +163,7 @@ async function downloadEpubBytes(params: URLSearchParams, path: string, signal: 
   }
   params.set('stream', '1')
   const res = await fetch(`/reader3/file/download?${params}`, init)
+  assertLegacyNamespace({ systemNamespace: options.systemNamespace === true }, '/file/download', res.headers.get('X-Reader-Namespace'))
   if (!res.ok) throw new Error(`EPUB 文件获取失败（${res.status}）`)
   // legacy 的业务错误也可能 HTTP 200，不能交给 unzip 后误报 invalid zip data。
   if (res.headers.get('content-type')?.includes('json')) {

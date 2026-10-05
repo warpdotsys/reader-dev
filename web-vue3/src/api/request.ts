@@ -6,6 +6,8 @@ import { notifyBackendReachable } from './backendFlag'
 import { canExpireRequestSession, captureRequestSession, isRequestSessionCurrent, StaleSessionResponseError } from './requestSession'
 import type { RequestSessionSnapshot } from './requestSession'
 import type { ReturnData } from '@/types'
+import { readerRequestContext } from './requestContext'
+import { assertLegacyNamespace } from '@/utils/legacyNamespace'
 
 /** 自定义请求配置：silent=true 时失败不弹全局错误提示（探测待实现后端契约接口等场景，调用方自行降级处理） */
 declare module 'axios' {
@@ -39,16 +41,9 @@ const request = axios.create({
 request.interceptors.request.use((config) => {
   const store = useUserStore()
   config.readerSession = captureRequestSession(store)
-  if (store.accessToken) {
-    config.params = { ...config.params, accessToken: store.accessToken }
-  }
-  // 管理员手动进入系统配置层：请求带 ns=default（后端仅管理员放行）。
-  // getUserConfig/saveUserConfig 的 ns 是配置键而非命名空间，不能覆盖。
-  const path = (config.url ?? '').split('?')[0]
-  const isUserConfigApi = path.endsWith('/getUserConfig') || path.endsWith('/saveUserConfig')
-  if (store.isAdmin && store.defaultConfigMode && !isUserConfigApi) {
-    config.params = { ...config.params, ns: 'default' }
-  }
+  const context = readerRequestContext()
+  config.params = { ...config.params, ...context.params }
+  for (const [name, value] of Object.entries(context.headers)) config.headers.set(name, value)
   return config
 })
 
@@ -83,8 +78,10 @@ request.interceptors.response.use(
         }
         return Promise.reject(err)
       }
-      return response
     }
+    const proof = response.headers['x-reader-namespace']
+    assertLegacyNamespace({ systemNamespace: response.config.readerSession?.namespace === 'default' },
+      response.config.url ?? '', typeof proof === 'string' ? proof : undefined)
     return response
   },
   (error) => {
