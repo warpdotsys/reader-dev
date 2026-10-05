@@ -123,11 +123,14 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vue3-reader-data"
           python3 scripts/mock-book-source.py --port 18894 > "$RUNNER_TEMP/vue3-source.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-source.pid"
+          # Generated journeys now create 15 accounts before the subdirectory test.
+          # Reserve bounded fixture capacity only; do not change production's limit.
           java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
             --reader.server.port=18895 --reader.server.bindAddress=127.0.0.1 \
             --reader.app.secure=true \
             --reader.app.web-ui=vue3 \
+            --reader.app.userLimit=100 \
             --reader.app.defaultUserEnableWebdav=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-reader.log" 2>&1 &
@@ -294,6 +297,14 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest' --no-daemon
           grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml
+      - name: Preserve subdirectory authentication and routing report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-subdir-browser-reports-${{ github.sha }}
+          path: browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve diagnostics and stop isolated services
         if: always()
         shell: bash
