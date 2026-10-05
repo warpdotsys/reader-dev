@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { createPinia, setActivePinia } from 'pinia'
+import { useUserStore } from './user.ts'
+import { captureRequestSession, isRequestSessionCurrent } from '../api/requestSession.ts'
+
+function freshStore() {
+  const storage = () => {
+    const values = new Map<string, string>()
+    return { getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => { values.set(key, value) },
+      removeItem: (key: string) => { values.delete(key) } }
+  }
+  Object.defineProperty(globalThis, 'localStorage', { value: storage(), configurable: true })
+  Object.defineProperty(globalThis, 'sessionStorage', { value: storage(), configurable: true })
+  setActivePinia(createPinia())
+  return useUserStore()
+}
+
+test('实际用户 store 的退出/同 token 重登会使旧快照失效，并清除管理员状态', () => {
+  const store = freshStore()
+  store.setSession('generated-token', 'generated-user', true, true)
+  const snapshot = captureRequestSession(store)
+  store.clear()
+  assert.equal(store.isAdmin, false)
+  assert.equal(store.defaultConfigMode, false)
+  store.setSession('generated-token', 'generated-user', true, true)
+  assert.equal(isRequestSessionCurrent(snapshot, store), false)
+})
+
+test('管理员探测更新保留标签页登录和命名空间，不无故更新会话代数', () => {
+  const store = freshStore()
+  store.setSession('generated-token', 'generated-user', false)
+  const snapshot = captureRequestSession(store)
+  store.updateAdminStatus(false)
+  assert.ok(isRequestSessionCurrent(snapshot, store))
+  store.updateAdminStatus(true)
+  assert.ok(isRequestSessionCurrent(snapshot, store))
+  store.toggleDefaultConfigMode()
+  const configured = captureRequestSession(store)
+  store.updateAdminStatus(true)
+  assert.ok(isRequestSessionCurrent(configured, store))
+  assert.equal(store.defaultConfigMode, true)
+  assert.equal(localStorage.getItem('reader_access_token'), null)
+  assert.equal(sessionStorage.getItem('reader_access_token'), 'generated-token')
+  assert.equal(sessionStorage.getItem('reader_is_admin'), '1')
+  assert.equal(localStorage.getItem('reader_remember'), '0')
+  assert.equal(sessionStorage.getItem('reader_default_config_mode'), '1')
+  store.updateAdminStatus(false)
+  assert.equal(isRequestSessionCurrent(configured, store), false)
+})

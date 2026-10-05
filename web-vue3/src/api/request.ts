@@ -3,12 +3,16 @@ import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import { notifyBackendReachable } from './backendFlag'
+import { canExpireRequestSession, captureRequestSession, isRequestSessionCurrent, StaleSessionResponseError } from './requestSession'
+import type { RequestSessionSnapshot } from './requestSession'
 import type { ReturnData } from '@/types'
 
 /** 自定义请求配置：silent=true 时失败不弹全局错误提示（探测待实现后端契约接口等场景，调用方自行降级处理） */
 declare module 'axios' {
   export interface AxiosRequestConfig {
     silent?: boolean
+    /** 内部身份快照，只在 axios 配置内存中存活，不发送到服务端。 */
+    readerSession?: RequestSessionSnapshot
   }
 }
 
@@ -34,6 +38,7 @@ const request = axios.create({
 
 request.interceptors.request.use((config) => {
   const store = useUserStore()
+  config.readerSession = captureRequestSession(store)
   if (store.accessToken) {
     config.params = { ...config.params, accessToken: store.accessToken }
   }
@@ -49,6 +54,11 @@ request.interceptors.request.use((config) => {
 
 request.interceptors.response.use(
   (response) => {
+    // 必须在清会话、路由跳转、通知及返回业务数据之前检查。
+    // 也拒绝旧成功响应，避免调用方把旧账号数据写入当前页面。
+    if (!isRequestSessionCurrent(response.config.readerSession, useUserStore())) {
+      return Promise.reject(new StaleSessionResponseError())
+    }
     // 任一后端响应（含业务失败）都证明后端可达 → 复位降级模块的 backendDown 短路标志
     // （P2：backendDown 永不重置修复——网络恢复/重新登录后自动回到后端优先）
     notifyBackendReachable()
@@ -58,8 +68,10 @@ request.interceptors.response.use(
       if (!res.isSuccess) {
         if (res.data === 'NEED_LOGIN' || (res.errorMsg || '').includes('请登录')) {
           const store = useUserStore()
-          store.clear()
-          void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+          if (canExpireRequestSession(response.config.readerSession, store)) {
+            store.clear()
+            void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+          }
           return Promise.reject(new Error(res.errorMsg || '请登录后使用'))
         }
         const err = new Error(res.errorMsg || '请求失败') as Error & { data?: unknown }
@@ -76,11 +88,14 @@ request.interceptors.response.use(
     return response
   },
   (error) => {
+    const store = useUserStore()
+    if (error.config?.readerSession && !isRequestSessionCurrent(error.config.readerSession, store)) {
+      return Promise.reject(new StaleSessionResponseError())
+    }
     // 有 HTTP 响应（4xx/5xx）说明后端可达；纯网络错误不算
     if (error.response) notifyBackendReachable()
     const silent = !!(error.config as { silent?: boolean } | undefined)?.silent
-    if (error.response?.status === 401) {
-      const store = useUserStore()
+    if (error.response?.status === 401 && canExpireRequestSession(error.config?.readerSession, store)) {
       store.clear()
       void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
     }

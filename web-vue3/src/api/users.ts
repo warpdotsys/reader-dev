@@ -2,6 +2,7 @@ import { get, post } from './request'
 import type { RequestOptions } from './request'
 import { useUserStore } from '@/stores/user'
 import type { ReaderUser, ReturnData, UserUpdatePayload } from '@/types'
+import { captureRequestSession, isRequestSessionCurrent } from './requestSession'
 
 /**
  * 用户管理 API（与 Java/Kotlin legacy 的 UserController 对齐）
@@ -103,6 +104,7 @@ export { isNotImplemented } from '@/utils/errors'
  */
 export async function probeSecureMode(): Promise<boolean> {
   const store = useUserStore()
+  const session = captureRequestSession(store)
   try {
     const params = new URLSearchParams()
     if (store.accessToken) params.set('accessToken', store.accessToken)
@@ -114,16 +116,12 @@ export async function probeSecureMode(): Promise<boolean> {
     })
     if (!res.ok) return false
     const json = (await res.json()) as { isSuccess?: boolean; data?: unknown }
+    if (!isRequestSessionCurrent(session, store)) return false
     if (json.data === 'NEED_SECURE_KEY') return true
     if (Array.isArray(json.data) && store.username) {
       const me = json.data.find((u) => (u as { username?: string })?.username === store.username)
       if (me) {
-        store.setSession(
-          store.accessToken,
-          store.username,
-          true,
-          (me as { isAdmin?: boolean }).isAdmin === true,
-        )
+        store.updateAdminStatus((me as { isAdmin?: boolean }).isAdmin === true)
       }
     }
     return false

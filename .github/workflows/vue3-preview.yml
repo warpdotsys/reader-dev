@@ -123,7 +123,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vue3-reader-data"
           python3 scripts/mock-book-source.py --port 18894 > "$RUNNER_TEMP/vue3-source.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-source.pid"
-          # Generated journeys now create 15 accounts before the subdirectory test.
+          # Generated journeys exceed the production default of 15 accounts.
           # Reserve bounded fixture capacity only; do not change production's limit.
           java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
@@ -163,6 +163,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
@@ -172,7 +173,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Reading LocalReading LocalCacheIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
+          for name in Login Reading LocalReading LocalCacheIsolation SessionRace EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
@@ -202,6 +203,14 @@ jobs:
         with:
           name: vue3-shelf-layout-${{ github.sha }}
           path: ${{ runner.temp }}/vue3-shelf-layout-1135.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated late-session response screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-session-race-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-session-race-generated-*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve generated local reading screenshot (no private books)

@@ -20,6 +20,8 @@ export const useUserStore = defineStore('user', () => {
   const accessToken = ref(init.token)
   const username = ref(init.username)
   const isAdmin = ref(init.isAdmin)
+  // 仅内存中的代数，区分同账号/同 token 退出后重新登录的 ABA 竞争。
+  const sessionRevision = ref(0)
   /** 管理员手动进入 default（系统配置层）：请求统一带 ns=default */
   const defaultConfigMode = ref(
     localStorage.getItem(DEFAULT_CONFIG_MODE_KEY) === '1' ||
@@ -28,6 +30,7 @@ export const useUserStore = defineStore('user', () => {
 
   /** GAP 150：remember=false 时 token 只写 sessionStorage（关闭标签页即登出） */
   function setSession(token: string, name: string, remember = true, admin = false) {
+    sessionRevision.value++
     accessToken.value = token
     username.value = name
     isAdmin.value = admin
@@ -52,8 +55,10 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function clear() {
+    sessionRevision.value++
     accessToken.value = ''
     username.value = ''
+    isAdmin.value = false
     defaultConfigMode.value = false
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USERNAME_KEY)
@@ -66,6 +71,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function toggleDefaultConfigMode() {
+    sessionRevision.value++
     defaultConfigMode.value = !defaultConfigMode.value
     localStorage.removeItem(DEFAULT_CONFIG_MODE_KEY)
     sessionStorage.removeItem(DEFAULT_CONFIG_MODE_KEY)
@@ -77,5 +83,21 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  return { accessToken, username, isAdmin, defaultConfigMode, setSession, clear, toggleDefaultConfigMode }
+  /** 更新已核对的管理员标记，不把标签页会话变成“记住我”，不重置命名空间。 */
+  function updateAdminStatus(admin: boolean) {
+    if (isAdmin.value === admin) return
+    // 普通账号空间里的角色元数据刷新不应取消同时进行的书架请求。
+    // default 配置层被撤销时，实际请求空间确实发生变化，旧请求才失效。
+    if (defaultConfigMode.value) sessionRevision.value++
+    isAdmin.value = admin
+    const store = localStorage.getItem(TOKEN_KEY) ? localStorage : sessionStorage
+    try {
+      store.setItem(ADMIN_KEY, admin ? '1' : '0')
+    } catch {
+      /* 存储不可用时仅内存会话 */
+    }
+  }
+
+  return { accessToken, username, isAdmin, defaultConfigMode, sessionRevision,
+    setSession, clear, toggleDefaultConfigMode, updateAdminStatus }
 })
