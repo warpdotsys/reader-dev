@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-05",
+  "scope": "credential-free in-app-browser public DOM and visual observations only",
+  "bookUrl": "https://www.qidian.com/book/1010400217/",
+  "chapterUrl": "https://www.qidian.com/chapter/1010400217/403440812/",
+  "bookTitle": "黎明之剑",
+  "chapterTitle": "第一章 穿越成一个视角是什么鬼",
+  "bookDom": {
+    "nameSelector": "#bookName",
+    "authorSelector": ".book-info-top .book-meta .author",
+    "authorIdIsBadgeNotAuthor": true,
+    "coverSelector": "#bookImg img",
+    "freeReadLink": "#readBtn",
+    "catalogContainer": "#allCatalog",
+    "chapterLinkSelector": ".catalog-volume .volume-chapters li.chapter-item a.chapter-name"
+  },
+  "chapterDom": {
+    "contentContainer": "#c-403440812",
+    "directParagraphs": 64,
+    "contentTextSelector": "#c-403440812 p .content-text",
+    "reviewSelector": "#c-403440812 p .review",
+    "containerTextCharactersIncludingReviews": 3501,
+    "siteDeclaredWords": 3193,
+    "visibleChapterScreenshotReviewed": true
+  },
+  "captcha": {
+    "iframeExists": true,
+    "iframeHasNonzeroDimensions": true,
+    "ancestorOpacity": "0",
+    "frameTopPx": -1000000,
+    "intersectsViewport": false,
+    "visuallyBlocking": false,
+    "manuallyOrAutomaticallySolved": false,
+    "priorInferenceCorrected": "AX text and nonzero iframe dimensions alone incorrectly suggested a blocking challenge; screenshot and ancestor visibility/geometry show an offscreen transparent preloaded component."
+  },
+  "credentials": {
+    "oldCookiesReused": false,
+    "cookiesImported": false,
+    "credentialsRead": false,
+    "authStateNotProven": true
+  },
+  "notProven": {
+    "readerSearch": true,
+    "readerChapterParsing": true,
+    "currentCamoufoxSiteRendering": true,
+    "originalJarComparison": true,
+    "realAuthentication": true
+  },
+  "privacy": {
+    "pageHtmlSaved": false,
+    "bodyTextSaved": false,
+    "csrfUrlSaved": false,
+    "privateLocalBookRead": false,
+    "accountMutation": false,
+    "purchase": false
+  },
+  "nextStep": "Use these currently observed public selectors only as an isolated test-source candidate; verify the actual Reader API and UI before changing any user source."
+}

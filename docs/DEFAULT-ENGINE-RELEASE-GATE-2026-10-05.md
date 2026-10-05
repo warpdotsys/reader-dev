@@ -41,11 +41,21 @@ Browser 集成改用同一报告校验器，避免两套断言漂移。失败默
 
 共享 JAR SHA-256 `c0a8547518dc0e7be865c3f28c9d953aaefb4cb923a48566963c321a52cf0cb2`；两架构短时最高内存 `859873280` 字节（约 820 MiB），2 CPU / 2 GiB / 256 PID 下触限事件与实际 swap 为 0，但配置仍允许 1 GiB swap。另一个完整镜像独立烟测 2 份 JSON 也通过。[完整身份、130 份报告散列与限制](evidence/default-engine-release-gate-6039-2026-10-05.json)。未执行标签、正式 Release、registry 登录/推送、默认分支合并或生产部署。
 
-## 后续第 14 项契约（真实运行待验）
+## 后续第 14 项契约（`bbfcda53` 已真实运行）
 
 在 `6039a7f2` 之后追加纯生成持续客户端跳转：必须实际请求至少五个主文档、初始 POST 仅一次，不能返回中间 HTML；要求 worker 报 `TimeoutError`，不接受 21 秒外层兜底作为通过，随后同一 renderer 的新请求恢复，旧页面不再命中夹具。只使用回环生成页面和临时命名空间，不读账号/正文；这不是第三方无限跳转或真实认证证明。
 
-严格守卫现要求精确 14 项，新增负向检查拒绝旧 13 项代替。107 项 Python（106 执行 / 1 环境跳过）与 54 项发布检查本机通过；目标 Kotlin 类已编译，14 项全部环境门控跳过，XML `93a56bfd9472a2cd0e175ac72c43e19a0718986a168acd6654d6d70fe4fff9a2` 冻结。共同守卫实际拒绝这个跳过报告及上方已经通过的旧 13 项真实报告；本机编译或旧绿灯不能证明新增用例成功，须等待自己的托管运行。
+严格守卫现要求精确 14 项，新增负向检查拒绝旧 13 项代替。107 项 Python（106 执行 / 1 环境跳过）与 54 项发布检查本机通过；目标 Kotlin 类已编译，14 项全部环境门控跳过，XML `93a56bfd9472a2cd0e175ac72c43e19a0718986a168acd6654d6d70fe4fff9a2` 冻结。共同守卫实际拒绝这个跳过报告及上方已经通过的旧 13 项真实报告；本机编译或旧绿灯不能证明新增用例成功。随后取得自己的真实结果如下。
+
+源码 `bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6` 的 Java [37306484682](https://github.com/warpdotsys/reader-dev/actions/runs/37306484682)、Vue [37306484636](https://github.com/warpdotsys/reader-dev/actions/runs/37306484636)、Browser [37306484640](https://github.com/warpdotsys/reader-dev/actions/runs/37306484640)、Native [37306484645](https://github.com/warpdotsys/reader-dev/actions/runs/37306484645) 全部成功，受测 PR 合并快照为 `645aa6a30f94565e756039d7d7132b4f4adbf5d6`。再次独立下载并核对 108 份 XML / 22 份小 JSON，不用 `6039a7f2` 的旧报告替代：
+
+- Native 共享 JAR 门禁与独立 Browser 默认引擎各 **14 实际执行 / 0 跳过/失败/错误**；持续导航 / worker `TimeoutError` / 下一请求恢复分别 9.878、8.195 秒，有限连续导航分别 11.263、8.895 秒。默认报告 SHA 分别 `63f49f55d71042c3a64480a93b795d5bb173b8cc4d2ca4c90eb5e9f6f8a61cf6`、`81434df685bce048793588dbb4d9d93876d3c35f82c98cc25a44b8229df938f3`，共同严格守卫实际接受。
+- 普通 Java 与共享 JAR 初轮各 41 套 / 148 项，123 实际执行、25 环境跳过（Camoufox 14 + Chromium 11），不是 148 项均已通过。存储回归各 3 实际执行 / 0 跳过，0.262、0.265 秒。Chromium/快照/启动策略独立 23 项和 Vue 独立 21 项均无跳过或失败；随后目视三张管理 PNG，发现权限标签过度换行和离线英文错误提示，列入[界面已知问题](UI-VISUAL-REVIEW-2026-10-05.md)，不将其算视觉全验收。
+- Native 第 9 步于 `12:05:29 UTC` 完成实际默认契约、守卫与包内 worker 核对，第 11 步才于 `12:05:30 UTC` 开始上传共享 JAR；成功路径满足依赖顺序，失败留存仍未做故障注入实跑。
+- 同一共享 JAR SHA-256 `c9173923c51fdbc91f892f38221410b859d982d14d37ea20559e5341d4051fb5` 的两架构构建、重载与 publisher 导入 20 份 JSON 核对通过，六个原生作业都使用 GitHub hosted runner。短时最高 `854081536` 字节（约 815 MiB）；2 CPU / 2 GiB / 256 PID 下触限事件与实际 swap 为 0，配置仍允许 1 GiB swap。独立完整镜像 2 份 JSON 也通过。
+- 同源码公开列表参考配对 [37309242432](https://github.com/warpdotsys/reader-dev/actions/runs/37309242432)随后成功，四份小报告已独立核对：两侧 10 项书名/URL 投影摘要相同，相隔 425.668 秒；同作业 14 项真实默认契约零跳过，短时峰值约 819 MiB。它不是原 JAR、起点或真实认证三方，详见[当前公开配对](REAL-SOURCE-DIFF-2026-09-28.md#2026-10-05-当前导航修复源码的同轮公开配对)。复用已受测镜像的 AMD64 [37309421294](https://github.com/warpdotsys/reader-dev/actions/runs/37309421294) / ARM64 [37309421310](https://github.com/warpdotsys/reader-dev/actions/runs/37309421310) 各 1800 秒无外网持续测试仍在运行，未计为通过。
+
+[本提交完整身份、130 份报告散列及边界](evidence/endless-navigation-bbfcda53-2026-10-05.json)。重复执行分别列出，不相加当作独立覆盖；没有下载多 GiB 镜像到本机，没有正式发版、registry 推送、默认分支合并或生产更改。
 
 新契约增加时必须同步维护校验器名单与负向测试，不能用自动计数或允许未知用例绕过缺失。结构检查并非完整 YAML 语义证明，实际托管作业和发布依赖仍是必要证据。真实起点精确搜索/认证三方、当前源码持续测试、完整产品/生产验收仍待完成。
 

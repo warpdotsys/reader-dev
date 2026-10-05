@@ -43,6 +43,14 @@ python -B scripts/compare-real-public-explore.py
 
 当前投影摘要与 2026-09-29 的摘要不同，说明公开列表随时间变化；本轮只以两侧同一时段的相同投影作有限比较。原 JAR 没有加入本次托管公开页配对，固定旧镜像也未证明是原生产实例；完整响应等价继续标记为未证明。此前本地原 JAR 的静态目录结果不能成为本轮的第三侧。
 
+## 2026-10-05 当前导航修复源码的同轮公开配对
+
+源码 `bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6` 的[手动配对 37309242432](https://github.com/warpdotsys/reader-dev/actions/runs/37309242432)已全部完成，三条实际运行作业均为 GitHub hosted runner。下载的[独立四份小报告与散列](evidence/public-webview-bbfcda53-2026-10-05.json)核对通过：固定历史参考镜像直接页面/投影 HTTP 均 200，内置默认引擎经隔离 Reader 为 HTTP 200、`isSuccess=true`、空 `errorMsg`；两侧各 10 本、书名/URL 投影 SHA-256 均 `3b131db566c96a9a06bd0d7f576a10321344da8e49221f4b2ef975d9c9ed91d8`，采样相隔 425.668 秒。不是相同上游响应控制，原 JAR 未加入、参考镜像未证明是原生产实例，完整响应等价仍为 false。
+
+同作业的默认浏览器 14 项也实际零跳过/失败/错误，严格守卫接受，XML SHA-256 `5f8889869c49791d5287fefb68d893ebf413937f070cecb57e4339dd5076378e`；合成 GET/POST/脚本、Cookie 隔离及四账号并发样本通过。公开负载后的单镜像短时内存峰值 `858886144` 字节（约 819 MiB）、PID 峰值 200；2 CPU / 2 GiB / 256 PID 下触限/OOM 事件和实际 swap 为 0，仍配置允许 1 GiB swap。这不是持续负载容量保证。
+
+未向 GitHub 传起点凭据、原始 JAR、私人正文或生产存储，也没有改生产。起点网站公开首章可见是另一个仅浏览器 UI 观察，不代替此处 Reader 列表解析；反过来此配对也不能关闭起点精确搜索/认证/免费正文与真实三方缺口。
+
 ## 尚未验证
 
 - 原 JAR／恢复版的一致性样本是公开静态目录的真实 HTTP/规则解析，未启用 `webView`；另一个容器内样本启用了内置 Camoufox，但没有同条件运行原 JAR 和旧远程 WebView。两项证据不能拼接成三方等价，且站点本身不是依赖 JavaScript 或登录态的样本。
