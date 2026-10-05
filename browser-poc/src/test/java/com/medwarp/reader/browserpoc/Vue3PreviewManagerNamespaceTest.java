@@ -34,6 +34,24 @@ public class Vue3PreviewManagerNamespaceTest {
                 .setPath(Path.of(directory, "vue3-manager-generated-" + suffix + ".png")));
     }
 
+    private static void permissionLabelsAreReadable(Page page) {
+        Locator labels = page.locator(".user-table tbody .perm-label");
+        assertTrue("Generated manager list must have all four permission labels", labels.count() >= 4);
+        for (int index = 0; index < labels.count(); index++) {
+            Locator label = labels.nth(index);
+            Number lines = (Number) label.evaluate("el => {const r=document.createRange();"
+                    + "r.selectNodeContents(el);return Array.from(r.getClientRects())"
+                    + ".filter(b=>b.width>0&&b.height>0).length;}");
+            assertEquals("Manager permission label must not fragment into vertical characters: " + label.innerText(),
+                    1, lines.intValue());
+        }
+        assertEquals("Each permission switch must keep its adjacent full label and accessible name", true,
+                page.locator(".user-table tbody .perm-label").evaluateAll("labels => labels.every(label => {"
+                        + "const button=label.previousElementSibling;"
+                        + "return button?.getAttribute('role')==='switch'"
+                        + "&&button.getAttribute('aria-label')===label.textContent.trim();})"));
+    }
+
     private static void signIn(Page page, String account, boolean register) {
         page.locator(".mode-switch button").nth(register ? 1 : 0).click();
         page.locator("input[autocomplete=username]").fill(account);
@@ -76,7 +94,7 @@ public class Vue3PreviewManagerNamespaceTest {
                 .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
              Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
                      .setExecutablePath(Path.of(executable)).setHeadless(true));
-             BrowserContext context = browser.newContext()) {
+             BrowserContext context = browser.newContext(new Browser.NewContextOptions().setViewportSize(1280, 720))) {
             Page page = context.newPage();
             page.setDefaultTimeout(10000);
             String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
@@ -127,6 +145,19 @@ public class Vue3PreviewManagerNamespaceTest {
             assertEquals(0, page.locator(".default-config-btn:visible").count());
             key(page, managerKey, true);
             screenshot(page, "authorized");
+            permissionLabelsAreReadable(page);
+            page.setViewportSize(375, 812);
+            permissionLabelsAreReadable(page);
+            assertEquals("Narrow user list must scroll inside its table region, not the whole page", true,
+                    page.evaluate("() => document.documentElement.scrollWidth <= innerWidth+1"));
+            Locator table = page.locator(".table-wrap");
+            assertEquals("0", table.getAttribute("tabindex"));
+            assertEquals(true, table.evaluate("el => el.scrollWidth > el.clientWidth"));
+            table.focus();
+            table.press("ArrowRight");
+            page.waitForCondition(() -> Boolean.TRUE.equals(table.evaluate("el => el.scrollLeft>0")));
+            screenshot(page, "permissions-narrow");
+            page.setViewportSize(1280, 720);
             assertTrue("Real manager-password success must expose the system-configuration button, without fake isAdmin",
                     page.locator(".default-config-btn:visible").count() > 0);
             assertFalse("Legacy user management cannot pretend to persist administrator roles",
@@ -160,6 +191,13 @@ public class Vue3PreviewManagerNamespaceTest {
             page.locator(".default-config-btn:visible").click(); settled(page);
             assertTrue(page.locator("body").innerText().contains(OWN));
             assertFalse(page.locator("body").innerText().contains(SYSTEM));
+            page.waitForCondition(() -> page.locator(".el-message--error:visible").count() > 0);
+            assertEquals("Repeated identical transport errors must share one visible notice", 1,
+                    page.locator(".el-message--error:visible").count());
+            assertEquals("Transport failures must be displayed in Chinese without changing namespace rejection", true,
+                    page.locator(".el-message--error:visible").evaluateAll("messages => messages.every(message => "
+                            + "!message.textContent.includes('Network Error'))"
+                            + "&&messages.some(message=>message.textContent.includes('网络连接失败，请检查连接后重试'))"));
             screenshot(page, "own-offline");
             offline.set(false);
             page.locator(".logout-btn").click(); page.locator(".login-page").waitFor();

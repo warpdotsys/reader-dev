@@ -8,6 +8,7 @@ import type { RequestSessionSnapshot } from './requestSession'
 import type { ReturnData } from '@/types'
 import { readerRequestContext } from './requestContext'
 import { assertLegacyNamespace } from '@/utils/legacyNamespace'
+import { requestErrorMessage } from './requestErrorMessage'
 
 /** 自定义请求配置：silent=true 时失败不弹全局错误提示（探测待实现后端契约接口等场景，调用方自行降级处理） */
 declare module 'axios' {
@@ -96,7 +97,7 @@ request.interceptors.response.use(
       store.clear()
       void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
     }
-    if (!silent) ElMessage.error(error.response?.data?.errorMsg || error.message || '网络错误')
+    if (!silent) ElMessage.error({ message: requestErrorMessage(error), grouping: true })
     return Promise.reject(error)
   },
 )

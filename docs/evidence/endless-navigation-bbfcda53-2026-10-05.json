@@ -2014,7 +2014,8 @@
         "nativeRun": 37306484645,
         "testedRevision": "645aa6a30f94565e756039d7d7132b4f4adbf5d6",
         "seconds": 1800,
-        "resultAudited": false
+        "resultAudited": true,
+        "independentReceipt": "browser-soak-bbfcda53-2026-10-05.json"
       },
       {
         "runId": 37309421310,
@@ -2022,7 +2023,8 @@
         "nativeRun": 37306484645,
         "testedRevision": "645aa6a30f94565e756039d7d7132b4f4adbf5d6",
         "seconds": 1800,
-        "resultAudited": false
+        "resultAudited": true,
+        "independentReceipt": "browser-soak-bbfcda53-2026-10-05.json"
       }
     ]
   },
@@ -2032,7 +2034,7 @@
     "Endless navigation is generated loopback HTML: worker TimeoutError and recovery are asserted, not arbitrary website navigation or a full process-tree/soak guarantee.",
     "Native identities, image reloads and publisher imports are tested; no registry credentials or publication were performed.",
     "Configured swap allowance is 1 GiB; zero measured usage is not swap disabled.",
-    "Public reference pairing is accepted in its independent receipt; current-image soak reports are not yet accepted.",
+    "Public reference pairing and both bbfcda53-image soaks are accepted in their independent receipts; this does not accept later UI rebuild bytes.",
     "Real Qidian Reader exact search, free chapter parsing, authentication and original-JAR/archived-reference/default-engine authentication parity remain incomplete.",
     "Three downloaded manager UI PNGs were subsequently visually reviewed; permission-label wrapping and English offline-error presentation remain known UI issues, recorded in UI-VISUAL-REVIEW-2026-10-05.md.",
     "No original-JAR network isolation change, production mutation, default-branch merge, release tag or formal release."

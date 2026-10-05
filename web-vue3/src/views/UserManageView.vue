@@ -599,7 +599,7 @@ onBeforeUnmount(() => {
       <div v-else-if="filteredUsers.length === 0" class="state-line">无匹配「{{ searchKey.trim() }}」的用户</div>
 
       <!-- 细字用户表格 -->
-      <div v-else class="table-wrap">
+      <div v-else class="table-wrap" role="region" aria-label="用户列表，可横向滚动" tabindex="0">
         <table class="user-table">
           <thead>
             <tr>
@@ -651,13 +651,14 @@ onBeforeUnmount(() => {
               </td>
               <td class="col-perm">
                 <div class="perm-cell">
-                  <template v-for="(label, field) in PERM_LABEL" :key="field">
+                  <div v-for="(label, field) in PERM_LABEL" :key="field" class="perm-toggle">
                     <button
                       class="switch"
                       :class="{ on: u[field as PermField] }"
                       :disabled="toggling.has(u.username)"
                       type="button"
                       role="switch"
+                      :aria-label="label"
                       :aria-checked="u[field as PermField]"
                       :title="`${label}：${u[field as PermField] ? '开' : '关'}`"
                       @click="togglePerm(u, field as PermField)"
@@ -665,7 +666,7 @@ onBeforeUnmount(() => {
                       <span class="switch-knob"></span>
                     </button>
                     <span class="perm-label">{{ label }}</span>
-                  </template>
+                  </div>
                 </div>
               </td>
               <td class="col-num">{{ u.bookSourceLimit ?? 0 }}</td>
@@ -1265,12 +1266,20 @@ onBeforeUnmount(() => {
 
 /* 权限开关组：极简圆角开关 + 细字标签 */
 .perm-cell {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  align-items: center;
+  gap: 8px 14px;
+}
+.perm-toggle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 .perm-label {
-  margin-right: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 11.5px;
   font-weight: 300;
   color: var(--text-3);

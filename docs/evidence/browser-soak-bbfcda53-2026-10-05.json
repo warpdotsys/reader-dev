@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-05",
+  "scope": "two native GitHub-hosted offline full-image soaks; generated accounts, requests, scripts and cookies only",
+  "sourceHead": "bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6",
+  "testedPrMergeRevision": "645aa6a30f94565e756039d7d7132b4f4adbf5d6",
+  "nativeSourceRun": 37306484645,
+  "jarSha256": "c9173923c51fdbc91f892f38221410b859d982d14d37ea20559e5341d4051fb5",
+  "amd64": {
+    "source": "bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6",
+    "testedPrMergeRevision": "645aa6a30f94565e756039d7d7132b4f4adbf5d6",
+    "runId": 37309421294,
+    "architecture": "amd64",
+    "runner": "GitHub Actions 1000003700",
+    "runnerLabels": [
+      "ubuntu-24.04"
+    ],
+    "jobId": 111760902378,
+    "artifactId": 11346945143,
+    "artifactBytes": 6098,
+    "imageId": "sha256:03d7d167bae84db58bb0221a44472aa7e7471153288ab15b1e236269f092296f",
+    "jarSha256": "c9173923c51fdbc91f892f38221410b859d982d14d37ea20559e5341d4051fb5",
+    "continuousSeconds": 1804.182,
+    "rounds": 150,
+    "successfulSearches": 608,
+    "allTraceRowsAudited": 150,
+    "faults": [
+      {
+        "kind": "navigationTimeout",
+        "failedReturnDataVerified": true,
+        "seconds": 7.027,
+        "ownedWorkerKilled": false,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 346243072,
+          "memoryPeakBytes": 905281536,
+          "pidsCurrent": 41,
+          "pidsPeak": 196,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      },
+      {
+        "kind": "scriptWatchdog",
+        "failedReturnDataVerified": true,
+        "seconds": 25.023,
+        "ownedWorkerKilled": false,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 372514816,
+          "memoryPeakBytes": 935219200,
+          "pidsCurrent": 41,
+          "pidsPeak": 196,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      },
+      {
+        "kind": "workerExit",
+        "failedReturnDataVerified": true,
+        "seconds": 1.729,
+        "ownedWorkerKilled": true,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 372703232,
+          "memoryPeakBytes": 935219200,
+          "pidsCurrent": 42,
+          "pidsPeak": 196,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      }
+    ],
+    "resources": {
+      "scope": "one offline native full Reader image; generated data only",
+      "kernel": "6.17.0-1022-azure",
+      "architecture": "x86_64",
+      "memoryPeakBytes": 976183296,
+      "memoryCurrentBytes": 438456320,
+      "memoryMaxBytes": 2147483648,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0,
+      "pidsPeak": 220,
+      "pidsCurrent": 42,
+      "pidsMax": 256,
+      "pidsEvents": {
+        "max": 0
+      },
+      "cpuQuota": "200000",
+      "cpuPeriod": 100000
+    },
+    "firstQuietMemory": 373444608,
+    "lastQuietMemory": 438456320,
+    "targetMethods": {
+      "GET": 311,
+      "POST": 300
+    },
+    "targetCookieOrShapeErrors": 0,
+    "containerBeforeCleanup": {
+      "Status": "running",
+      "Running": true,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 2995,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-05T12:27:14.839081565Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "files": [
+      {
+        "sha256": "5c559d46f4e98e9e6fdab4319527df14dd0003fa0f02cbe983d2af510cf5d010",
+        "name": "CONTAINER_STATE.json",
+        "bytes": 217
+      },
+      {
+        "sha256": "db3fb9d5072b229c86dc895e9cee911615e3648f62d5f0376053c76633937eb2",
+        "name": "LOADED_IDENTITY.json",
+        "bytes": 259
+      },
+      {
+        "sha256": "09cc81d8e5a136e6aed3a5a8df06a1c79d6371e6ac9b3c58f5801f925c86a188",
+        "name": "PRELOAD_IDENTITY.json",
+        "bytes": 258
+      },
+      {
+        "sha256": "273f3c154e960ebe279cd3d9da81d0e363a5f84e64ee515e2d21934a15594f5c",
+        "name": "RUNNING_JAR_IDENTITY.json",
+        "bytes": 165
+      },
+      {
+        "sha256": "63cf91c8ee4c9dd8f44eb5150e29e3af58ea2a7e8aff564b4aa41f0df3180eb2",
+        "name": "SOAK_REPORT.json",
+        "bytes": 5005
+      },
+      {
+        "sha256": "6c14c7d881ba2f1936ab70d8acd781735b86ff3c61db7a4a08e0ecfc69331e2a",
+        "name": "SOAK_TRACE.jsonl",
+        "bytes": 37312
+      },
+      {
+        "sha256": "33305cb54d06a119a7c86b6d1c2d21374c9d8f43bf5f7155a50b0344419ea026",
+        "name": "SOURCE_RUN.json",
+        "bytes": 316
+      }
+    ]
+  },
+  "arm64": {
+    "source": "bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6",
+    "testedPrMergeRevision": "645aa6a30f94565e756039d7d7132b4f4adbf5d6",
+    "runId": 37309421310,
+    "architecture": "arm64",
+    "runner": "GitHub Actions 1000003701",
+    "runnerLabels": [
+      "ubuntu-24.04-arm"
+    ],
+    "jobId": 111760903972,
+    "artifactId": 11345579778,
+    "artifactBytes": 5723,
+    "imageId": "sha256:5a83cccd56609861e09574ed4391a6df904fd70ddf1b33693bd4c9b82e5e967e",
+    "jarSha256": "c9173923c51fdbc91f892f38221410b859d982d14d37ea20559e5341d4051fb5",
+    "continuousSeconds": 1806.563,
+    "rounds": 128,
+    "successfulSearches": 520,
+    "allTraceRowsAudited": 128,
+    "faults": [
+      {
+        "kind": "navigationTimeout",
+        "failedReturnDataVerified": true,
+        "seconds": 7.563,
+        "ownedWorkerKilled": false,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 349769728,
+          "memoryPeakBytes": 878563328,
+          "pidsCurrent": 42,
+          "pidsPeak": 202,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      },
+      {
+        "kind": "scriptWatchdog",
+        "failedReturnDataVerified": true,
+        "seconds": 25.026,
+        "ownedWorkerKilled": false,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 375492608,
+          "memoryPeakBytes": 878563328,
+          "pidsCurrent": 42,
+          "pidsPeak": 202,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      },
+      {
+        "kind": "workerExit",
+        "failedReturnDataVerified": true,
+        "seconds": 2.165,
+        "ownedWorkerKilled": true,
+        "healthyRecoveryVerified": true,
+        "afterRecovery": {
+          "memoryCurrentBytes": 375898112,
+          "memoryPeakBytes": 878563328,
+          "pidsCurrent": 39,
+          "pidsPeak": 202,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        }
+      }
+    ],
+    "resources": {
+      "scope": "one offline native full Reader image; generated data only",
+      "kernel": "6.17.0-1022-azure",
+      "architecture": "aarch64",
+      "memoryPeakBytes": 967782400,
+      "memoryCurrentBytes": 437612544,
+      "memoryMaxBytes": 2147483648,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0,
+      "pidsPeak": 215,
+      "pidsCurrent": 42,
+      "pidsMax": 256,
+      "pidsEvents": {
+        "max": 0
+      },
+      "cpuQuota": "200000",
+      "cpuPeriod": 100000
+    },
+    "firstQuietMemory": 376602624,
+    "lastQuietMemory": 437878784,
+    "targetMethods": {
+      "GET": 267,
+      "POST": 256
+    },
+    "targetCookieOrShapeErrors": 0,
+    "containerBeforeCleanup": {
+      "Status": "running",
+      "Running": true,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 2445,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-05T12:26:52.113053104Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "files": [
+      {
+        "bytes": 217,
+        "name": "CONTAINER_STATE.json",
+        "sha256": "bed5c0314146f25a71762e02c8d2c9971524f1bff8507352fe469ab808d5dfc6"
+      },
+      {
+        "bytes": 259,
+        "name": "LOADED_IDENTITY.json",
+        "sha256": "fab97acf1539da4bdbeb5118b3430768b30393807bed255b62fb0715961cf7be"
+      },
+      {
+        "bytes": 258,
+        "name": "PRELOAD_IDENTITY.json",
+        "sha256": "01233f4ab26c55b48fb2fcdcdc62f8b0cbb6e6d34f2404275f186533701e5f14"
+      },
+      {
+        "bytes": 165,
+        "name": "RUNNING_JAR_IDENTITY.json",
+        "sha256": "273f3c154e960ebe279cd3d9da81d0e363a5f84e64ee515e2d21934a15594f5c"
+      },
+      {
+        "bytes": 5012,
+        "name": "SOAK_REPORT.json",
+        "sha256": "4a603d6722c0dd16ad36860a49af997d498bacb2673ade29d1ad508fa6379452"
+      },
+      {
+        "bytes": 31842,
+        "name": "SOAK_TRACE.jsonl",
+        "sha256": "08828d47fb189b5617fb805faa4325397053e3dc1144361d288420795fea0f8a"
+      },
+      {
+        "bytes": 316,
+        "name": "SOURCE_RUN.json",
+        "sha256": "33305cb54d06a119a7c86b6d1c2d21374c9d8f43bf5f7155a50b0344419ea026"
+      }
+    ]
+  },
+  "quietMemoryGrowthBytes": {
+    "amd64": 65011712,
+    "arm64": 61276160
+  },
+  "audit": {
+    "allFourteenProofFilesAnd268TraceRowsChecked": true,
+    "realRunningIdentityChecked": true,
+    "allFaultFailureAndRecoveryFlagsChecked": true,
+    "allQuiescentBrowserWorkerDriverCountsZero": true,
+    "cgroupSwapDisabled": true,
+    "limitsTriggered": false
+  },
+  "limits": [
+    "Exactly the bbfcda53 images and shared JAR above, not the later working-tree UI rebuild.",
+    "Finite generated 30-minute samples, not production throughput, cold-load saturation, real authentication, or proof of zero memory leaks.",
+    "Quiet memory increased by the recorded amount; no attribution to leak versus JVM/cache growth is established.",
+    "CONTAINER_STATE.json records the healthy pre-cleanup container state; it is not an independent post-cleanup inventory.",
+    "No original JAR, Qidian credentials, private book body, production service or registry publish is part of this run."
+  ]
+}
