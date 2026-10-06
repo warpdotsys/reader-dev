@@ -1,0 +1,35 @@
+{
+  "recordedDate": "2026-10-06",
+  "scope": "read-only bounded public pinned-image layer inspection; not runtime execution",
+  "repository": "hectorqin/remote-webview",
+  "indexDigestIndependentlyVerified": "sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "amd64ManifestDigestIndependentlyVerified": "sha256:88c250043bd33715ca372b749c1dca055c14e4550882caf968bd7af933d53573",
+  "applicationLayerDigestIndependentlyVerified": "sha256:08e37febbba989aa04d288827b53857fc80368a5451c4bb0fbd07c2b58aa8505",
+  "applicationLayerCompressedBytes": 2431,
+  "sourcePath": "app/index.js",
+  "sourceSha256": "963b7365504cc19a0345aa9cd83b3ea52583da11cbc5ae44d9b64d48512af030",
+  "observedLoadOptionsDeclarationWaitUntil": "load",
+  "awaitedNavigationCalls": [
+    {"line": 112, "method": "setContent", "options": "loadOptions"},
+    {"line": 114, "method": "goto", "options": "loadOptions"},
+    {"line": 121, "method": "setContent", "options": "loadOptions"},
+    {"line": 123, "method": "goto", "options": "loadOptions"}
+  ],
+  "subsequentAwaitedSourceEvaluationCalls": [
+    {"line": 117, "method": "evaluate", "singleArgument": "js_source"},
+    {"line": 128, "method": "evaluate", "singleArgument": "js_source"}
+  ],
+  "packagePath": "app/package.json",
+  "packageSha256": "ee2d26756296263f921892d33908e6b62d80c914515b3abc6ad2cee5fd003d9d",
+  "declaredPlaywrightRange": "^1.25.1",
+  "installedPlaywrightVersionProven": false,
+  "imageCodeExecuted": false,
+  "imageExtractedToFilesystem": false,
+  "originalJarExecutedOrModified": false,
+  "rawSourceOrCredentialsPersisted": false,
+  "notProven": [
+    "Actual same-input original-JAR or historical-engine public HTTP results",
+    "That switching the candidate rule path to load fixes Qidian",
+    "A unique cause of the observed source state disappearance"
+  ]
+}

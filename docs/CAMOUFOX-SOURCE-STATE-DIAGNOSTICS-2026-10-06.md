@@ -29,9 +29,25 @@ NDJSON 仍为 `{"error":"SourceScriptStateLost"}`，公开 JVM 包装／ReturnDa
 
 新增真实默认引擎契约 `generatedSourceStateDeletionFailsWithoutReplayingSideEffectsAndRecovers`：纯生成页面的源脚本先执行一次生成 POST，再明确删除自己页面的随机临时状态，返回未完成 Promise。要求得到原 `SourceScriptStateLost`，初始导航／原 POST／源脚本 POST 均恰好一次，随后独立新浏览器上下文实际恢复。它证明状态丢失可以不经过导航，不是实站故障复现或实站修复。
 
-默认引擎门禁从 16 增至精确 17 个具名契约，旧 16 项 XML 不能充当此新增验收；全环境跳过、重复项、伪零计数和失败照常拒绝。本机没有最终 UID 10001 引擎环境，不以局部编译或 Python double 冒充真实 Camoufox。新的 17 项必须由 GitHub 托管工作流实际执行并消费自己的 XML。
+默认引擎门禁从 16 增至精确 17 个具名契约，旧 16 项 XML 不能充当此新增验收；全环境跳过、重复项、伪零计数和失败照常拒绝。本机没有最终 UID 10001 引擎环境，不以局部编译或 Python double 冒充真实 Camoufox。
+
+`2f5b2289` 已推送并由自己的 GitHub 托管原生共享 JAR 作业实际执行 17 项全部通过，0 跳过／失败／错误；下载 1,059 B XML 制品并运行新精确 17 项原守卫通过，XML SHA-256 `8401f763...`。新增状态删除契约实际 4.19 秒。该提交 Java/Kotlin 和 Vue 3 正常工作流均终态成功，独立下载的详情／源转换 JVM 9 项也实际通过。[本增量自己的 XML 与精确覆盖](evidence/source-state-diagnostics-contracts-hosted-2026-10-06.json)。
+
+完整镜像工作流 `37449429998` 也已终态成功，自己的第二份真实 Camoufox 17 项 XML 经同一精确守卫通过、0 跳过／失败／错误（SHA-256 `74a6155b...`）。单镜像生成异步 GET／POST 及 Cookie 删除两份 JSON 已下载并实际运行原守卫，峰值 847,650,816 B、PID 189；配置允许 1 GiB swap、实际用量 0，不能写成零 swap 配置。Vue 3 核心 18 个不同真实界面旅程、子目录 1 项 XML 已逐项读取并核对无跳过／失败／错误，涵盖生成账号登录、注销、晚到错误／跨标签页、书架／离线与章节缓存隔离、搜索／阅读、TXT／EPUB、文件／分组／规则、备份及书源 Cookie；专用书源诊断制品重复同一核心 XML，不再多计一项。不是全部用户／格式／生产或实站认证验收。
+
+本候选原生演练 `37449430278` 最终六个作业已全部成功，独立消费 7,629 B 发布导入制品：精确 20 JSON 散列、四次生成异步原守卫、四次预算原守卫、两架构运行 JAR／版本／迁移身份均通过。实际共享 JAR `226227f6...`、merge revision `788bf8b0...`，并非分支 HEAD；AMD64 镜像 `sha256:00c5682f...`、ARM64 镜像 `sha256:ee6a36cd...`。这是无 registry 凭据的导入演练，不是正式 Release、生产部署、长期运行或实站成功。
+
+## 新镜像的首轮实站有限诊断
+
+[专项 `37451304316`](https://github.com/warpdotsys/reader-dev/actions/runs/37451304316) 只消费上述已验证 AMD64 镜像，分支脚本／产品源同为 `2f5b2289`，实际内嵌 revision 仍为 `788bf8b0...`；不重新构建或替换产品。一次匿名详情 7.387 秒得到 HTTP 200／`isSuccess=false`／data null／`SourceScriptStateLost`，尚未拿到页面快照。HTTP 书源六项读回完整。
+
+新的第九份 `WORKER_DIAGNOSTICS.json` 首次实际记录 `sourceScriptRead / sourceStateMissing / SourceScriptStateLost / mainFrameNavigationObserved=true`，没有截断、没有原日志。这证明本次规则等待期间观察到主框架导航，并且读回临时状态为 null；不是唯一因果、新文档替换、可见 CAPTCHA、页面文字或原 HTML 为空的证明。同文档事件也可能存在，生成测试还证明无导航时主动删除状态会产生相同类别，因此不能直接重试源脚本。
+
+3,637 B 制品的精确九 JSON／散列、源工作流与导入／运行身份、UID 10001／私网防护／零发布端口、生成 Cookie 0→0／退出及新容器移除均独立核对。原 `require_no_swap=true` 守卫实际通过：2 CPU／2 GiB／256 PID，峰值 847,601,664 B、PID 190、触限／OOM 0、配置及实际 swap 均 0。五个互斥跳过不计通过。业务门禁仍红、未读章节或导入真实凭据，[实际结果与不可推出的结论](evidence/public-metadata-source-state-diagnostics-hosted-2026-10-06.json)。下一步是生成主文档变化的可追溯复现与执行时机评估，不增加脚本重放、POST 重发或成功壳空值。
 
 本机 Python 192 项，191 实际／1 个 Windows 环境跳过，0 失败／错误；其中 worker 43、采集器 6，覆盖四原因、主／子框架区分、监听清理、原错误及 NDJSON 身份、日志拒绝和界限。Node 发布守卫 57 项无跳过／失败／错误，Bash 语法通过。JDK 11 离线 `compileTestKotlin` 实际成功（2 个活动处理器、512 MiB、单 Gradle worker），只是编译，不是执行新增真实引擎契约。它们不证明实站／认证／原件三方／长期或生产。
+
+另用仅生成日志实跑采集器 CLI：只保留一条有效有限标签，生成正文／令牌丢弃；第二次 exclusive-create 实际 exit 1、已有报告散列不变。当前本机详情／源转换 JVM 9 项独立重跑通过，0 跳过／失败／错误；未启动用户 Reader 或原 JAR、未读取真实正文。
 
 ## 现有候选与新候选不要混写
 

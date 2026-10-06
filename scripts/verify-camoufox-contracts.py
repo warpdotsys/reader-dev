@@ -18,6 +18,7 @@ EARLY_NAVIGATION_CONTRACT = "generatedNavigationBeforeDomReadyReturnsFinalDocume
 ENDLESS_NAVIGATION_CONTRACT = "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers"
 PROMISE_CONTRACT = "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers"
 STATE_DELETION_CONTRACT = "generatedSourceStateDeletionFailsWithoutReplayingSideEffectsAndRecovers"
+SOURCE_NAVIGATION_CONTRACT = "generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad"
 CONTRACTS = frozenset((
     "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
     "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
@@ -31,6 +32,7 @@ CONTRACTS = frozenset((
     ENDLESS_NAVIGATION_CONTRACT,
     PROMISE_CONTRACT,
     STATE_DELETION_CONTRACT,
+    SOURCE_NAVIGATION_CONTRACT,
     "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
     "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
     "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
@@ -79,6 +81,7 @@ def verify_report(path):
         "endlessNavigationContractPresent": True,
         "promiseContractPresent": True,
         "stateDeletionContractPresent": True,
+        "sourceNavigationContractPresent": True,
         "xmlSha256": hashlib.sha256(raw).hexdigest(),
     }
 

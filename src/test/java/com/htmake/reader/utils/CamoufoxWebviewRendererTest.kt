@@ -66,6 +66,17 @@ class CamoufoxWebviewRendererTest {
     private val sourceScriptPageHits = AtomicInteger()
     private val sourceScriptPostStarts = AtomicInteger()
     private val sourceScriptMarkPosts = AtomicInteger()
+    private val sourceNavigationStarts = AtomicInteger()
+    private val sourceNavigationOriginalPosts = AtomicInteger()
+    private val sourceNavigationFinalVisits = AtomicInteger()
+    private val sourceNavigationBlockerHits = AtomicInteger()
+    private val sourceNavigationFixtureTimeouts = AtomicInteger()
+    private val sourceNavigationInteractiveAtFinal = AtomicInteger()
+    private val sourceNavigationRulePosts = AtomicInteger()
+    private val sourceNavigationRuleBody = AtomicReference("")
+    private val sourceNavigationBlockerStarted = CountDownLatch(1)
+    private val sourceNavigationDomReady = CountDownLatch(1)
+    private val sourceNavigationFinalRequested = CountDownLatch(1)
 
     @Before
     fun setUp() {
@@ -186,6 +197,66 @@ class CamoufoxWebviewRendererTest {
                         sourceScriptMarkPosts.incrementAndGet()
                     }
                     respond(exchange, "generated-mark", "text/plain; charset=utf-8")
+                }
+                "/source-navigation-start" -> {
+                    sourceNavigationStarts.incrementAndGet()
+                    if (exchange.requestMethod == "POST" && requestBody == "seed=generated") {
+                        sourceNavigationOriginalPosts.incrementAndGet()
+                    }
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-source-navigation-intermediate</div><script>" +
+                            "document.addEventListener('DOMContentLoaded', () => { " +
+                            "navigator.sendBeacon('/source-navigation-ready','generated'); " +
+                            "fetch('/source-navigation-arm').then(() => " +
+                            "location.replace('/source-navigation-final?initialReady=' + document.readyState)); " +
+                            "});</script><img src='/source-navigation-blocker'></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/source-navigation-ready" -> {
+                    sourceNavigationDomReady.countDown()
+                    respond(exchange, "generated-ready", "text/plain; charset=utf-8")
+                }
+                "/source-navigation-arm" -> {
+                    if (!sourceNavigationBlockerStarted.await(5, TimeUnit.SECONDS) ||
+                        !sourceNavigationDomReady.await(5, TimeUnit.SECONDS)) {
+                        sourceNavigationFixtureTimeouts.incrementAndGet()
+                    }
+                    // Leave time for the old DOMContentLoaded-only path to run
+                    // its rule. Actual readiness and blocked load are asserted
+                    // via the handshake and the document's readyState below.
+                    Thread.sleep(300)
+                    respond(exchange, "generated-armed", "text/plain; charset=utf-8")
+                }
+                "/source-navigation-blocker" -> {
+                    sourceNavigationBlockerHits.incrementAndGet()
+                    sourceNavigationBlockerStarted.countDown()
+                    try {
+                        if (!sourceNavigationFinalRequested.await(5, TimeUnit.SECONDS)) {
+                            sourceNavigationFixtureTimeouts.incrementAndGet()
+                        }
+                        respond(exchange, "generated-image-finished", "text/plain; charset=utf-8")
+                    } catch (_: IOException) {
+                        exchange.close()
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        exchange.close()
+                    }
+                }
+                "/source-navigation-final" -> {
+                    sourceNavigationInteractiveAtFinal.set(
+                        if (exchange.requestURI.rawQuery == "initialReady=interactive") 1 else 0)
+                    sourceNavigationFinalVisits.incrementAndGet()
+                    sourceNavigationFinalRequested.countDown()
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-source-navigation-final</div></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/source-navigation-rule-mark" -> {
+                    if (exchange.requestMethod == "POST") {
+                        sourceNavigationRulePosts.incrementAndGet()
+                        sourceNavigationRuleBody.set(requestBody)
+                    }
+                    respond(exchange, "generated-rule-marked", "text/plain; charset=utf-8")
                 }
                 "/navigation-final" -> {
                     navigationFinalVisits.incrementAndGet()
@@ -457,6 +528,37 @@ class CamoufoxWebviewRendererTest {
         assertEquals("A lost state must not replay the source's side effect", 1, sourceScriptMarkPosts.get())
         val healthy = renderer.render(request("/echo", "generated-state-deletion"))
         assertTrue("The next browser context must recover after state deletion", healthy.body?.contains("GET|||") == true)
+    }
+
+    @Test
+    fun generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad() = runBlocking {
+        val result = try {
+            renderer.render(request("/source-navigation-start", "generated-source-load-navigation",
+                post = true, body = "seed=generated",
+                javaScript = "fetch('/source-navigation-rule-mark', {method:'POST', " +
+                    "body:document.querySelector('#result').textContent}).then(() => " +
+                    "new Promise(resolve => setTimeout(() => " +
+                    "resolve(document.querySelector('#result').textContent),800)))"))
+        } catch (error: Exception) {
+            throw AssertionError("Generated source load navigation failed: generatedOnly=true " +
+                "starts=${sourceNavigationStarts.get()} posts=${sourceNavigationOriginalPosts.get()} " +
+                "blockerHits=${sourceNavigationBlockerHits.get()} finalVisits=${sourceNavigationFinalVisits.get()} " +
+                "interactiveAtFinal=${sourceNavigationInteractiveAtFinal.get()} " +
+                "rulePosts=${sourceNavigationRulePosts.get()} fixtureTimeouts=${sourceNavigationFixtureTimeouts.get()}", error)
+        }
+        assertEquals("The generated fixture handshake must not silently expire", 0, sourceNavigationFixtureTimeouts.get())
+        assertEquals("A real subresource must hold the initial load event", 1, sourceNavigationBlockerHits.get())
+        assertEquals("Navigation must occur after DOMContentLoaded but before load", 1, sourceNavigationInteractiveAtFinal.get())
+        assertEquals("The generated destination must actually be visited once", 1, sourceNavigationFinalVisits.get())
+        assertEquals("The rule must return the actual document that completes load",
+            "generated-source-navigation-final", result.body)
+        assertEquals("The original navigation must not be replayed", 1, sourceNavigationStarts.get())
+        assertEquals("The original POST must not be replayed", 1, sourceNavigationOriginalPosts.get())
+        assertEquals("The source rule's side effect must execute exactly once", 1, sourceNavigationRulePosts.get())
+        assertEquals("The source rule must not execute in the discarded intermediate document",
+            "generated-source-navigation-final", sourceNavigationRuleBody.get())
+        val healthy = renderer.render(request("/echo", "generated-source-load-navigation"))
+        assertTrue("The next independent context must remain healthy", healthy.body?.contains("GET|||") == true)
     }
 
     @Test
