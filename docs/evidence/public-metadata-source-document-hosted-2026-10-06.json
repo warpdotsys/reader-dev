@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "08cccfca0cbd94d415205a9ed354bed5f673a5df",
+  "testedImageRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+  "runId": 37470900095,
+  "jobId": 112293801315,
+  "runConclusion": "failure",
+  "sourceNativeRunId": 37467111120,
+  "sourceNativeRunConclusion": "success",
+  "artifact": {
+    "id": 11416478125,
+    "name": "public-metadata-amd64-37470900095",
+    "sizeBytes": 3599,
+    "declaredZipDigest": "sha256:da1fc08c7bef6059f99bf8e4cbf9af7bb1a94c6845e0e627923204416f35b171",
+    "expired": false
+  },
+  "scope": "one anonymous metadata request in the exact tested amd64 image; no chapter or credentials",
+  "source": "https://www.qidian.com/book/1010400217/",
+  "identities": {
+    "preloadLoadedAndRunningIndependentlyMatched": true,
+    "imageId": "sha256:6839f1ff58797f1f0a215ceb31612ee55235d43a2662a8b9a57238ea2f1ffe5a",
+    "sharedJarSha256": "bc9c3c3a16004d54e2236732887a09813a823ef01d449f0198c58c0f9df3713f",
+    "localImageArchiveBytesRehashed": false
+  },
+  "metadataObservation": {
+    "bookInfoApiCalls": 1,
+    "requestSeconds": 8.14,
+    "authorHasText": false,
+    "authorMatches": false,
+    "coverHasExpectedPublicOrigin": false,
+    "coverHasText": false,
+    "dataIsNull": true,
+    "dataIsObject": false,
+    "errorMessageLength": 54,
+    "errorMsgEmpty": false,
+    "errorMsgIsString": true,
+    "hostFingerprint": null,
+    "httpStatus": 200,
+    "isSuccess": false,
+    "isSuccessIsBoolean": true,
+    "knownFieldsPresent": {
+      "author": false,
+      "bookUrl": false,
+      "canUpdate": false,
+      "coverUrl": false,
+      "durChapterIndex": false,
+      "durChapterPos": false,
+      "group": false,
+      "name": false,
+      "tocUrl": false,
+      "totalChapterNum": false,
+      "type": false
+    },
+    "nameHasText": false,
+    "nameMatches": false,
+    "pageDiagnostics": null,
+    "passed": false,
+    "policyReason": null,
+    "workerErrorCategory": "Error",
+    "pageCaptureMode": "bounded-dom",
+    "sourceScriptMode": "boundedMetadataDom",
+    "metadataDomWaitBudgetMs": 8000,
+    "sourceScriptSynthesizesMetadata": false,
+    "rawErrorOrMetadataValuesPersisted": false,
+    "sourceDefinitionRoundtrip": {
+      "cookieJarDisabled": true,
+      "dataIsObject": true,
+      "metadataRulesMatch": true,
+      "modernTocMarkerPresent": true,
+      "passed": true,
+      "sourceUrlMatches": true
+    }
+  },
+  "workerDiagnostics": {
+    "originalFiniteDiagnosticParserIndependentlyPassed": true,
+    "rawLogsPersisted": false,
+    "records": [
+      {
+        "errorClass": "Error",
+        "kind": "executionContextDestroyed",
+        "operation": "sourceScriptRead"
+      }
+    ],
+    "schemaVersion": 1,
+    "scope": "finite worker stderr labels; not raw logs or page content",
+    "truncated": false
+  },
+  "resourceBudget": {
+    "originalBudgetGuardIndependentlyPassed": true,
+    "budgetGuardRequireNoSwap": true,
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 344416256,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 913510400,
+    "pidsCurrent": 35,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 191,
+    "scope": "one anonymous default-Camoufox metadata request",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "maximumObservedProcesses": {
+      "browser": 7,
+      "driver": 1,
+      "worker": 1
+    },
+    "processMonitorPassed": true,
+    "runtimeUid": 10001,
+    "privateNetworkGuardEnabled": true,
+    "publishedPorts": 0,
+    "containerOomKilled": false
+  },
+  "cleanup": {
+    "cookieRowsBefore": 0,
+    "cookieRowsAfter": 0,
+    "generatedCookieSessionRevokedVerified": true,
+    "logoutObservation": {
+      "dataIsNeedLogin": true,
+      "errorMsgEmpty": true,
+      "httpStatus": 200,
+      "isSuccess": true
+    },
+    "postLogoutProtectedObservation": {
+      "dataIsNeedLogin": true,
+      "errorMsgEmpty": false,
+      "httpStatus": 200,
+      "isSuccess": false
+    },
+    "allDeviceTokenRevocationProven": false,
+    "ownedContainerRemoved": true,
+    "probeExit": 1
+  },
+  "exactNineJsonFilesIndependentlyVerified": true,
+  "independentlyRecomputedFileSha256": {
+    "CLEANUP.json": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+    "CONTAINER_STATE.json": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+    "LOADED_IDENTITY.json": "ba95543d26328fa0edd612f036ec080b3ed79c814ed7d0c2cdd790d5707b37db",
+    "PRELOAD_IDENTITY.json": "2269c9622c1a07f8614452ecf8ce2da3cff1660bf11da8cd35d9d95d3a49b6ab",
+    "PUBLIC_METADATA_REPORT.json": "ec12fe90dacfa44a506da9e0c23a1acf8ad4ea16e6e1f045e21d32acdd32ce2c",
+    "RUNNING_JAR_IDENTITY.json": "e81c95791e42611a504fca967f90f8318c5a79bdbcd37fdb3977ba8f8694168a",
+    "RUNTIME_RESOURCE_BUDGET.json": "f1db60597b3cf1e296c7f886053a6d210f22bef3d1cef5a7220ea36055d86071",
+    "SOURCE_RUN.json": "ed26a5cdd63bae2c978d989f2df5f7d5bf593e6daa88aa15552a8f379773de8c",
+    "WORKER_DIAGNOSTICS.json": "405dafaf32da910e4b2cd7187ba3d25fc8f33fbffd510c57cf1c4b467a8c05ae"
+  },
+  "evidenceBoundaries": {
+    "sourceDocumentObservationPresent": false,
+    "sourceStateLostBranchReached": false,
+    "executionContextDestroyedLabelIsFiniteErrorClassificationNotUniqueSiteCause": true,
+    "noExtraDocumentReadOnGenericDriverFailure": true,
+    "missingOptionalLabelMustNotBeFilledAsUnavailable": true,
+    "missingSnapshotDoesNotProveEmptyDom": true,
+    "captchaOrUniqueRootCauseProven": false,
+    "realCredentialsImported": false,
+    "chapterBodyRequested": false,
+    "browserSessionExported": false,
+    "originalJarOrArchivedParityProven": false,
+    "realAuthenticationProven": false,
+    "productionChanged": false,
+    "humanBrowserObservation": "current user-opened free first chapter readable without a CAPTCHA overlay; AX CAPTCHA iframe retained; no reload, CAPTCHA action, session export or page-content persistence; not Reader backend or real authentication proof"
+  }
+}
