@@ -156,6 +156,16 @@ on:
         type: choice
         options: ['600', '1800', '3600']
         default: '1800'
+      public_metadata_native_run:
+        description: 'Successful native rehearsal to consume for ONE anonymous Qidian metadata request; no Cookie or chapters'
+        required: false
+        type: string
+        default: ''
+      public_metadata_revision:
+        description: 'Exact revision embedded in that tested image; probe scripts are a separate checkout'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -163,12 +173,12 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}
   cancel-in-progress: true
 
 jobs:
   archived-remote-webview:
-    if: ${{ inputs.probe_remote_webview == true }}
+    if: ${{ inputs.probe_remote_webview == true && !inputs.public_metadata_native_run }}
     name: Probe archived remote WebView reference
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -213,7 +223,7 @@ jobs:
           docker rm -f reader-archived-webview >/dev/null 2>&1 || true
 
   original-jar-provenance:
-    if: ${{ inputs.probe_original_jar == true }}
+    if: ${{ inputs.probe_original_jar == true && !inputs.public_metadata_native_run }}
     name: Verify archived original JAR provenance
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -245,7 +255,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run }}
+    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run && !inputs.public_metadata_native_run }}
     name: Build and smoke-test the full Reader image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 45
@@ -472,7 +482,7 @@ jobs:
           docker rm -f reader-browser-smoke || true
 
   offline-soak:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run && !inputs.public_metadata_native_run }}
     name: Soak an already-tested native image offline
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 80
@@ -541,8 +551,75 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  public-metadata:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.public_metadata_native_run }}
+    name: Probe anonymous metadata in the exact tested native image
+    runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Validate the completed source run and metadata-only inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_RUN: ${{ inputs.public_metadata_native_run }}
+          NATIVE_REVISION: ${{ inputs.public_metadata_revision }}
+          EXPECTED_ARCH: ${{ inputs.native_arch }}
+          OTHER_MODES: ${{ inputs.real_public_source || inputs.probe_original_jar || inputs.probe_remote_webview || inputs.soak_native_run != '' }}
+        run: |
+          set -euo pipefail
+          [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
+          [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_ARCH" = amd64 || "$EXPECTED_ARCH" = arm64 ]]
+          test "$OTHER_MODES" != true
+          command -v setfacl
+          case "$EXPECTED_ARCH:$RUNNER_ARCH:$(uname -m)" in
+            amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
+            *) exit 1 ;;
+          esac
+          install -d "$RUNNER_TEMP/reader-public-metadata-report"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN" \
+            | jq -e --arg repo "$GITHUB_REPOSITORY" \
+              'select(.status == "completed" and .conclusion == "success" and
+                .name == "Native release artifact rehearsal" and
+                .path == ".github/workflows/release-native.yml" and
+                .head_repository.full_name == $repo) |
+                {id, name, path, head_sha, event, conclusion, html_url}' \
+            > "$RUNNER_TEMP/reader-public-metadata-report/SOURCE_RUN.json"
+          python3 -m unittest discover -s src/test/python -p '*_test.py'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-release-jar-${{ inputs.public_metadata_revision }}
+          path: dist
+          run-id: ${{ inputs.public_metadata_native_run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: reader-tested-native-${{ inputs.native_arch }}-${{ inputs.public_metadata_revision }}
+          path: imported
+          run-id: ${{ inputs.public_metadata_native_run }}
+          github-token: ${{ github.token }}
+      - name: Verify unchanged bytes and probe public metadata with guards intact
+        env:
+          EXPECTED_ARCH: ${{ inputs.native_arch }}
+          NATIVE_REVISION: ${{ inputs.public_metadata_revision }}
+        run: bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report"
+      - name: Preserve only bounded anonymous observations including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-metadata-${{ inputs.native_arch }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/reader-public-metadata-report/
+          if-no-files-found: error
+          retention-days: 7
+
   compare-public-webview:
-    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true }}
+    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true && !inputs.public_metadata_native_run }}
     needs: [archived-remote-webview, integration]
     name: Compare public page observations (not production parity)
     runs-on: ubuntu-24.04

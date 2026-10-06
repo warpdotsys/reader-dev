@@ -1,0 +1,3113 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-06",
+  "scope": "generated-data hosted acceptance of offline-retry clearance and complete readable text line; not production",
+  "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+  "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+  "pullRequest": "https://github.com/warpdotsys/reader-dev/pull/56",
+  "releaseVersion": "4.0.7",
+  "sharedJarSha256": "0491a8324137baddbe482975fa3b2988ad0330d24f570c8f9a1287ba25f8fd8d",
+  "localJarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+  "githubHostedOnly": true,
+  "actualCompletedJobs": 10,
+  "optionalSkippedJobs": [
+    {
+      "id": 111861047528,
+      "name": "Verify archived original JAR provenance",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 111861047724,
+      "name": "Probe archived remote WebView reference",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 111861048240,
+      "name": "Soak an already-tested native image offline",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 111864811784,
+      "name": "Compare public page observations (not production parity)",
+      "conclusion": "skipped"
+    }
+  ],
+  "runs": [
+    {
+      "id": 37339021777,
+      "name": "Java Kotlin CI",
+      "event": "pull_request",
+      "headSha": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37339021777",
+      "jobs": [
+        {
+          "id": 111861048582,
+          "name": "Test and build JAR",
+          "runner": "GitHub Actions 1000003748",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:09Z",
+              "completedAt": "2026-10-05T16:13:11Z"
+            },
+            {
+              "number": 2,
+              "name": "Checkout source",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:11Z",
+              "completedAt": "2026-10-05T16:13:14Z"
+            },
+            {
+              "number": 3,
+              "name": "Set up Temurin JDK 11",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:14Z",
+              "completedAt": "2026-10-05T16:13:22Z"
+            },
+            {
+              "number": 4,
+              "name": "Set up Node.js 24",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:22Z",
+              "completedAt": "2026-10-05T16:13:24Z"
+            },
+            {
+              "number": 5,
+              "name": "Verify simple-web compatibility",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:24Z",
+              "completedAt": "2026-10-05T16:13:25Z"
+            },
+            {
+              "number": 6,
+              "name": "Verify formal release safety invariants without publishing",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:25Z",
+              "completedAt": "2026-10-05T16:13:26Z"
+            },
+            {
+              "number": 7,
+              "name": "Verify browser protocol and differential CLI safety without a browser download",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:26Z",
+              "completedAt": "2026-10-05T16:13:28Z"
+            },
+            {
+              "number": 8,
+              "name": "Build and test",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:28Z",
+              "completedAt": "2026-10-05T16:15:28Z"
+            },
+            {
+              "number": 9,
+              "name": "Verify artifact",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:28Z",
+              "completedAt": "2026-10-05T16:15:28Z"
+            },
+            {
+              "number": 10,
+              "name": "Preserve actual Java Kotlin contracts including failures and skips",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:28Z",
+              "completedAt": "2026-10-05T16:15:29Z"
+            },
+            {
+              "number": 18,
+              "name": "Post Set up Node.js 24",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:29Z",
+              "completedAt": "2026-10-05T16:15:29Z"
+            },
+            {
+              "number": 19,
+              "name": "Post Set up Temurin JDK 11",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:29Z",
+              "completedAt": "2026-10-05T16:15:30Z"
+            },
+            {
+              "number": 20,
+              "name": "Post Checkout source",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:30Z",
+              "completedAt": "2026-10-05T16:15:30Z"
+            },
+            {
+              "number": 21,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:30Z",
+              "completedAt": "2026-10-05T16:15:30Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 37339021756,
+      "name": "Vue 3 preview build",
+      "event": "pull_request",
+      "headSha": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37339021756",
+      "jobs": [
+        {
+          "id": 111861045226,
+          "name": "build",
+          "runner": "GitHub Actions 1000003744",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:32Z",
+              "completedAt": "2026-10-05T16:12:33Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:33Z",
+              "completedAt": "2026-10-05T16:12:36Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:36Z",
+              "completedAt": "2026-10-05T16:12:38Z"
+            },
+            {
+              "number": 4,
+              "name": "Install locked dependencies and compile preview",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:38Z",
+              "completedAt": "2026-10-05T16:13:04Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:04Z",
+              "completedAt": "2026-10-05T16:13:05Z"
+            },
+            {
+              "number": 9,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:05Z",
+              "completedAt": "2026-10-05T16:13:05Z"
+            },
+            {
+              "number": 10,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:05Z",
+              "completedAt": "2026-10-05T16:13:06Z"
+            },
+            {
+              "number": 11,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:13:06Z",
+              "completedAt": "2026-10-05T16:13:06Z"
+            }
+          ]
+        },
+        {
+          "id": 111861045558,
+          "name": "Isolated Vue 3 browser journeys in Chromium",
+          "runner": "GitHub Actions 1000003747",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:33Z",
+              "completedAt": "2026-10-05T16:12:34Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:34Z",
+              "completedAt": "2026-10-05T16:12:36Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:36Z",
+              "completedAt": "2026-10-05T16:12:40Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:40Z",
+              "completedAt": "2026-10-05T16:12:42Z"
+            },
+            {
+              "number": 5,
+              "name": "Build Reader and install preview dependencies",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:42Z",
+              "completedAt": "2026-10-05T16:14:42Z"
+            },
+            {
+              "number": 6,
+              "name": "Assert Vue 3 assets are packaged in the Reader JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:42Z",
+              "completedAt": "2026-10-05T16:14:43Z"
+            },
+            {
+              "number": 7,
+              "name": "Resolve Chromium on hosted runner",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:43Z",
+              "completedAt": "2026-10-05T16:14:43Z"
+            },
+            {
+              "number": 8,
+              "name": "Require Chinese glyph coverage for visual browser checks",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:43Z",
+              "completedAt": "2026-10-05T16:14:55Z"
+            },
+            {
+              "number": 9,
+              "name": "Run isolated backend, book source, and Vite preview",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:55Z",
+              "completedAt": "2026-10-05T16:15:00Z"
+            },
+            {
+              "number": 10,
+              "name": "Exercise Vue 3 pages with isolated accounts",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:00Z",
+              "completedAt": "2026-10-05T16:17:33Z"
+            },
+            {
+              "number": 11,
+              "name": "Preserve core Vue 3 browser journey reports",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:33Z",
+              "completedAt": "2026-10-05T16:17:34Z"
+            },
+            {
+              "number": 12,
+              "name": "Preserve generated source-cookie and keyboard screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:34Z",
+              "completedAt": "2026-10-05T16:17:35Z"
+            },
+            {
+              "number": 13,
+              "name": "Preserve synthetic bookshelf layout screenshot",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:35Z",
+              "completedAt": "2026-10-05T16:17:35Z"
+            },
+            {
+              "number": 14,
+              "name": "Preserve generated late-session response screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:35Z",
+              "completedAt": "2026-10-05T16:17:36Z"
+            },
+            {
+              "number": 15,
+              "name": "Preserve generated offline shelf isolation screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:36Z",
+              "completedAt": "2026-10-05T16:17:37Z"
+            },
+            {
+              "number": 16,
+              "name": "Preserve generated cross-tab authentication screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:37Z",
+              "completedAt": "2026-10-05T16:17:37Z"
+            },
+            {
+              "number": 17,
+              "name": "Preserve generated real logout screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:37Z",
+              "completedAt": "2026-10-05T16:17:38Z"
+            },
+            {
+              "number": 18,
+              "name": "Preserve generated login layout geometry and viewport screenshots",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:38Z",
+              "completedAt": "2026-10-05T16:17:39Z"
+            },
+            {
+              "number": 19,
+              "name": "Preserve generated local reading screenshot (no private books)",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:39Z",
+              "completedAt": "2026-10-05T16:17:40Z"
+            },
+            {
+              "number": 20,
+              "name": "Preserve Vue 3 source journey diagnostics",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:40Z",
+              "completedAt": "2026-10-05T16:17:41Z"
+            },
+            {
+              "number": 21,
+              "name": "Start a separate Reader with manager-key protection",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:41Z",
+              "completedAt": "2026-10-05T16:17:45Z"
+            },
+            {
+              "number": 22,
+              "name": "Verify secure file retry and real manager namespace isolation in Chromium",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:17:45Z",
+              "completedAt": "2026-10-05T16:18:01Z"
+            },
+            {
+              "number": 23,
+              "name": "Preserve generated manager namespace evidence",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:01Z",
+              "completedAt": "2026-10-05T16:18:02Z"
+            },
+            {
+              "number": 24,
+              "name": "Build and serve the Vue 3 artifact at /reader/",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:02Z",
+              "completedAt": "2026-10-05T16:18:22Z"
+            },
+            {
+              "number": 25,
+              "name": "Verify the built subdirectory UI in Chromium",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:22Z",
+              "completedAt": "2026-10-05T16:18:30Z"
+            },
+            {
+              "number": 26,
+              "name": "Preserve subdirectory authentication and routing report",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:30Z",
+              "completedAt": "2026-10-05T16:18:31Z"
+            },
+            {
+              "number": 27,
+              "name": "Preserve diagnostics and stop isolated services",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:31Z",
+              "completedAt": "2026-10-05T16:18:31Z"
+            },
+            {
+              "number": 52,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:31Z",
+              "completedAt": "2026-10-05T16:18:31Z"
+            },
+            {
+              "number": 53,
+              "name": "Post Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:31Z",
+              "completedAt": "2026-10-05T16:18:32Z"
+            },
+            {
+              "number": 54,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:32Z",
+              "completedAt": "2026-10-05T16:18:32Z"
+            },
+            {
+              "number": 55,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:32Z",
+              "completedAt": "2026-10-05T16:18:32Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 37339021760,
+      "name": "Browser image integration",
+      "event": "pull_request",
+      "headSha": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37339021760",
+      "jobs": [
+        {
+          "id": 111861046228,
+          "name": "Build and smoke-test the full Reader image",
+          "runner": "GitHub Actions 1000003746",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:33Z",
+              "completedAt": "2026-10-05T16:12:35Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:35Z",
+              "completedAt": "2026-10-05T16:12:38Z"
+            },
+            {
+              "number": 3,
+              "name": "Verify native hosted runner architecture",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:38Z",
+              "completedAt": "2026-10-05T16:12:38Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:38Z",
+              "completedAt": "2026-10-05T16:12:43Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:43Z",
+              "completedAt": "2026-10-05T16:12:43Z"
+            },
+            {
+              "number": 6,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:43Z",
+              "completedAt": "2026-10-05T16:12:45Z"
+            },
+            {
+              "number": 7,
+              "name": "Test and build the full JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:45Z",
+              "completedAt": "2026-10-05T16:14:33Z"
+            },
+            {
+              "number": 8,
+              "name": "Verify browser runtime in the only JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:33Z",
+              "completedAt": "2026-10-05T16:14:33Z"
+            },
+            {
+              "number": 9,
+              "name": "Resolve Chromium for the local renderer regression",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:33Z",
+              "completedAt": "2026-10-05T16:14:33Z"
+            },
+            {
+              "number": 10,
+              "name": "Verify redirect, resources, and streaming in Chromium",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:33Z",
+              "completedAt": "2026-10-05T16:15:45Z"
+            },
+            {
+              "number": 11,
+              "name": "Collect Chromium results before subsequent Gradle invocations",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:45Z",
+              "completedAt": "2026-10-05T16:15:45Z"
+            },
+            {
+              "number": 12,
+              "name": "Preserve actual Chromium baseline and launch-policy contracts",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:45Z",
+              "completedAt": "2026-10-05T16:15:46Z"
+            },
+            {
+              "number": 13,
+              "name": "Install the pinned Camoufox runtime for renderer contract tests",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:46Z",
+              "completedAt": "2026-10-05T16:16:08Z"
+            },
+            {
+              "number": 14,
+              "name": "Verify Camoufox GET/POST, scripts, cookies, and sourceRegex",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:16:08Z",
+              "completedAt": "2026-10-05T16:18:54Z"
+            },
+            {
+              "number": 15,
+              "name": "Preserve Camoufox contract report",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:54Z",
+              "completedAt": "2026-10-05T16:18:55Z"
+            },
+            {
+              "number": 16,
+              "name": "Build one-container image",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:55Z",
+              "completedAt": "2026-10-05T16:20:14Z"
+            },
+            {
+              "number": 17,
+              "name": "Run Reader API and WebView fixture inside the image",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:14Z",
+              "completedAt": "2026-10-05T16:20:50Z"
+            },
+            {
+              "number": 18,
+              "name": "Preserve synthetic browser and resource observations",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:50Z",
+              "completedAt": "2026-10-05T16:20:51Z"
+            },
+            {
+              "number": 19,
+              "name": "Preserve bounded bundled-browser observations",
+              "conclusion": "skipped",
+              "startedAt": "2026-10-05T16:20:51Z",
+              "completedAt": "2026-10-05T16:20:51Z"
+            },
+            {
+              "number": 20,
+              "name": "Print container diagnostics and stop it",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:51Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            },
+            {
+              "number": 37,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:53Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            },
+            {
+              "number": 38,
+              "name": "Post Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:53Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            },
+            {
+              "number": 39,
+              "name": "Post Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:53Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            },
+            {
+              "number": 40,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:53Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            },
+            {
+              "number": 41,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:53Z",
+              "completedAt": "2026-10-05T16:20:53Z"
+            }
+          ]
+        },
+        {
+          "id": 111861047528,
+          "name": "Verify archived original JAR provenance",
+          "runner": null,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "skipped",
+          "steps": []
+        },
+        {
+          "id": 111861047724,
+          "name": "Probe archived remote WebView reference",
+          "runner": null,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "skipped",
+          "steps": []
+        },
+        {
+          "id": 111861048240,
+          "name": "Soak an already-tested native image offline",
+          "runner": null,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "skipped",
+          "steps": []
+        },
+        {
+          "id": 111864811784,
+          "name": "Compare public page observations (not production parity)",
+          "runner": null,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": 37339021759,
+      "name": "Native release artifact rehearsal",
+      "event": "pull_request",
+      "headSha": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37339021759",
+      "jobs": [
+        {
+          "id": 111861049263,
+          "name": "Build one shared Java Kotlin JAR",
+          "runner": "GitHub Actions 1000003745",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:32Z",
+              "completedAt": "2026-10-05T16:12:33Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:33Z",
+              "completedAt": "2026-10-05T16:12:36Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:36Z",
+              "completedAt": "2026-10-05T16:12:40Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:40Z",
+              "completedAt": "2026-10-05T16:12:42Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:42Z",
+              "completedAt": "2026-10-05T16:12:43Z"
+            },
+            {
+              "number": 6,
+              "name": "Verify release contracts and build the shared JAR once",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:12:43Z",
+              "completedAt": "2026-10-05T16:14:57Z"
+            },
+            {
+              "number": 7,
+              "name": "Preserve full shared-JAR unit reports before the targeted browser run",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:57Z",
+              "completedAt": "2026-10-05T16:14:58Z"
+            },
+            {
+              "number": 8,
+              "name": "Install the pinned default-engine runtime for release contracts",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:14:58Z",
+              "completedAt": "2026-10-05T16:15:23Z"
+            },
+            {
+              "number": 9,
+              "name": "Verify packaged default engine contracts before exporting the shared JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:15:23Z",
+              "completedAt": "2026-10-05T16:18:54Z"
+            },
+            {
+              "number": 10,
+              "name": "Preserve actual default-engine release contracts including failures",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:54Z",
+              "completedAt": "2026-10-05T16:18:54Z"
+            },
+            {
+              "number": 11,
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:18:54Z",
+              "completedAt": "2026-10-05T16:19:04Z"
+            },
+            {
+              "number": 19,
+              "name": "Post Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:04Z",
+              "completedAt": "2026-10-05T16:19:04Z"
+            },
+            {
+              "number": 20,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:04Z",
+              "completedAt": "2026-10-05T16:19:04Z"
+            },
+            {
+              "number": 21,
+              "name": "Post Run actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:04Z",
+              "completedAt": "2026-10-05T16:19:05Z"
+            },
+            {
+              "number": 22,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:05Z",
+              "completedAt": "2026-10-05T16:19:05Z"
+            },
+            {
+              "number": 23,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:05Z",
+              "completedAt": "2026-10-05T16:19:05Z"
+            }
+          ]
+        },
+        {
+          "id": 111863999947,
+          "name": "Build and test native amd64 image",
+          "runner": "GitHub Actions 1000003750",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:10Z",
+              "completedAt": "2026-10-05T16:19:12Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:12Z",
+              "completedAt": "2026-10-05T16:19:15Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:15Z",
+              "completedAt": "2026-10-05T16:19:18Z"
+            },
+            {
+              "number": 4,
+              "name": "Require a genuinely native hosted runner",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:18Z",
+              "completedAt": "2026-10-05T16:19:18Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:18Z",
+              "completedAt": "2026-10-05T16:19:23Z"
+            },
+            {
+              "number": 6,
+              "name": "Read and validate locked base image digests",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:23Z",
+              "completedAt": "2026-10-05T16:19:24Z"
+            },
+            {
+              "number": 7,
+              "name": "Build the complete native Reader image from the shared JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:24Z",
+              "completedAt": "2026-10-05T16:20:46Z"
+            },
+            {
+              "number": 8,
+              "name": "Run generated browser contracts under the release resource budget",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:46Z",
+              "completedAt": "2026-10-05T16:21:32Z"
+            },
+            {
+              "number": 9,
+              "name": "Export only the smoke-tested native image and record its byte provenance",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:21:32Z",
+              "completedAt": "2026-10-05T16:23:25Z"
+            },
+            {
+              "number": 10,
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:25Z",
+              "completedAt": "2026-10-05T16:23:43Z"
+            },
+            {
+              "number": 19,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:43Z",
+              "completedAt": "2026-10-05T16:23:43Z"
+            },
+            {
+              "number": 20,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:43Z",
+              "completedAt": "2026-10-05T16:23:43Z"
+            },
+            {
+              "number": 21,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:43Z",
+              "completedAt": "2026-10-05T16:23:43Z"
+            }
+          ]
+        },
+        {
+          "id": 111863999951,
+          "name": "Build and test native arm64 image",
+          "runner": "GitHub Actions 1000003749",
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:13Z",
+              "completedAt": "2026-10-05T16:19:14Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:14Z",
+              "completedAt": "2026-10-05T16:19:17Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:17Z",
+              "completedAt": "2026-10-05T16:19:17Z"
+            },
+            {
+              "number": 4,
+              "name": "Require a genuinely native hosted runner",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:17Z",
+              "completedAt": "2026-10-05T16:19:17Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:17Z",
+              "completedAt": "2026-10-05T16:19:22Z"
+            },
+            {
+              "number": 6,
+              "name": "Read and validate locked base image digests",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:22Z",
+              "completedAt": "2026-10-05T16:19:22Z"
+            },
+            {
+              "number": 7,
+              "name": "Build the complete native Reader image from the shared JAR",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:19:22Z",
+              "completedAt": "2026-10-05T16:20:14Z"
+            },
+            {
+              "number": 8,
+              "name": "Run generated browser contracts under the release resource budget",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:14Z",
+              "completedAt": "2026-10-05T16:20:54Z"
+            },
+            {
+              "number": 9,
+              "name": "Export only the smoke-tested native image and record its byte provenance",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:20:54Z",
+              "completedAt": "2026-10-05T16:22:12Z"
+            },
+            {
+              "number": 10,
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:22:12Z",
+              "completedAt": "2026-10-05T16:22:28Z"
+            },
+            {
+              "number": 19,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:22:28Z",
+              "completedAt": "2026-10-05T16:22:28Z"
+            },
+            {
+              "number": 20,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:22:28Z",
+              "completedAt": "2026-10-05T16:22:28Z"
+            },
+            {
+              "number": 21,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:22:28Z",
+              "completedAt": "2026-10-05T16:22:28Z"
+            }
+          ]
+        },
+        {
+          "id": 111866048678,
+          "name": "Reload and run tested amd64 image",
+          "runner": "GitHub Actions 1000003752",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:49Z",
+              "completedAt": "2026-10-05T16:23:51Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:51Z",
+              "completedAt": "2026-10-05T16:23:54Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:54Z",
+              "completedAt": "2026-10-05T16:23:55Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:55Z",
+              "completedAt": "2026-10-05T16:24:00Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:24:00Z",
+              "completedAt": "2026-10-05T16:24:44Z"
+            },
+            {
+              "number": 6,
+              "name": "Verify transferred bytes and the actually loaded image without rebuilding",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:24:44Z",
+              "completedAt": "2026-10-05T16:25:35Z"
+            },
+            {
+              "number": 7,
+              "name": "Actually run the reloaded image with fresh generated accounts and storage",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:35Z",
+              "completedAt": "2026-10-05T16:26:23Z"
+            },
+            {
+              "number": 8,
+              "name": "Preserve small round-trip evidence, not the image or private content",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:23Z",
+              "completedAt": "2026-10-05T16:26:24Z"
+            },
+            {
+              "number": 15,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:24Z",
+              "completedAt": "2026-10-05T16:26:24Z"
+            },
+            {
+              "number": 16,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:24Z",
+              "completedAt": "2026-10-05T16:26:25Z"
+            },
+            {
+              "number": 17,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:25Z",
+              "completedAt": "2026-10-05T16:26:25Z"
+            }
+          ]
+        },
+        {
+          "id": 111866048825,
+          "name": "Reload and run tested arm64 image",
+          "runner": "GitHub Actions 1000003751",
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:51Z",
+              "completedAt": "2026-10-05T16:23:51Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:51Z",
+              "completedAt": "2026-10-05T16:23:54Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:54Z",
+              "completedAt": "2026-10-05T16:23:54Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:54Z",
+              "completedAt": "2026-10-05T16:23:59Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:23:59Z",
+              "completedAt": "2026-10-05T16:24:21Z"
+            },
+            {
+              "number": 6,
+              "name": "Verify transferred bytes and the actually loaded image without rebuilding",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:24:21Z",
+              "completedAt": "2026-10-05T16:25:09Z"
+            },
+            {
+              "number": 7,
+              "name": "Actually run the reloaded image with fresh generated accounts and storage",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:09Z",
+              "completedAt": "2026-10-05T16:25:50Z"
+            },
+            {
+              "number": 8,
+              "name": "Preserve small round-trip evidence, not the image or private content",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:50Z",
+              "completedAt": "2026-10-05T16:25:51Z"
+            },
+            {
+              "number": 15,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:51Z",
+              "completedAt": "2026-10-05T16:25:51Z"
+            },
+            {
+              "number": 16,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:51Z",
+              "completedAt": "2026-10-05T16:25:51Z"
+            },
+            {
+              "number": 17,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:25:51Z",
+              "completedAt": "2026-10-05T16:25:51Z"
+            }
+          ]
+        },
+        {
+          "id": 111867225683,
+          "name": "Exercise both publisher imports without registry credentials",
+          "runner": "GitHub Actions 1000003753",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:30Z",
+              "completedAt": "2026-10-05T16:26:31Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:31Z",
+              "completedAt": "2026-10-05T16:26:34Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:34Z",
+              "completedAt": "2026-10-05T16:26:34Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:34Z",
+              "completedAt": "2026-10-05T16:26:38Z"
+            },
+            {
+              "number": 5,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:38Z",
+              "completedAt": "2026-10-05T16:26:39Z"
+            },
+            {
+              "number": 6,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:26:39Z",
+              "completedAt": "2026-10-05T16:27:03Z"
+            },
+            {
+              "number": 7,
+              "name": "Consume amd64 through the same importer used by the formal publisher",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:27:03Z",
+              "completedAt": "2026-10-05T16:27:56Z"
+            },
+            {
+              "number": 8,
+              "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:27:56Z",
+              "completedAt": "2026-10-05T16:28:19Z"
+            },
+            {
+              "number": 9,
+              "name": "Consume arm64 on the same publisher runner without rebuilding it",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:28:19Z",
+              "completedAt": "2026-10-05T16:29:12Z"
+            },
+            {
+              "number": 10,
+              "name": "Preserve the real publisher artifact-layout and image-import proofs",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:29:12Z",
+              "completedAt": "2026-10-05T16:29:13Z"
+            },
+            {
+              "number": 19,
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:29:13Z",
+              "completedAt": "2026-10-05T16:29:13Z"
+            },
+            {
+              "number": 20,
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:29:13Z",
+              "completedAt": "2026-10-05T16:29:13Z"
+            },
+            {
+              "number": 21,
+              "name": "Complete job",
+              "conclusion": "success",
+              "startedAt": "2026-10-05T16:29:13Z",
+              "completedAt": "2026-10-05T16:29:13Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaultEngineExportOrdering": {
+    "gateCompletedAt": "2026-10-05T16:18:54Z",
+    "jarUploadStartedAt": "2026-10-05T16:18:54Z",
+    "passed": true
+  },
+  "actualProofCounts": {
+    "xml": 108,
+    "json": 22,
+    "png": 8
+  },
+  "audits": {
+    "java": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "runId": 37339021777,
+      "artifact": {
+        "id": 11357243466,
+        "name": "reader-java-kotlin-contracts-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+        "zipBytes": 30623
+      },
+      "actualSuites": 41,
+      "tests": 148,
+      "actualExecuted": 123,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 25,
+      "verified": {
+        "storageCasesActual": 3,
+        "storageSeconds": 0.263,
+        "storageXmlSha256": "c9fe0fa8edba7e4337796ac684c647d4777b73d45ef162610755bfda4db64f41"
+      },
+      "reports": [
+        {
+          "name": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+          "tests": 6,
+          "skipped": 0,
+          "seconds": 0.036,
+          "sha256": "d10ce52b1dc42acd65ebc9a169441f96f44611dd26901e5bbbaf85069b49954b"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.01,
+          "sha256": "d79cf3da5c08925c96cb519038835043f1cdfbe1ba342c54f276f252b266da1a"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.FileControllerPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.011,
+          "sha256": "5df9db65a9ec974f592b4c60ac08e16b7fc347d5dd38481287634b843d54edd9"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+          "tests": 4,
+          "skipped": 0,
+          "seconds": 0.004,
+          "sha256": "457178b8a15fb552b556ba9b349457dacdd7db5799b24df29697e1f31b6e4dbb"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.049,
+          "sha256": "7470bb7cf3b0518786c22fcb0c09a06732a9230faed683d50b18a3f34b07e3dd"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceScanCursorTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "9ac0be24f6b2169da5097911d19f23f24c27f85f755d78f06aeee14141c58352"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.361,
+          "sha256": "cb7d52a6d959998f0d57007b6396d17aa2a92e90b6d4cf3b887723b903d75d65"
+        },
+        {
+          "name": "com.htmake.reader.entity.LicenseTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.028,
+          "sha256": "ca61c4102afea688fe30852b2db3bde9662c84af5781cc7795e9e77ae117f2e3"
+        },
+        {
+          "name": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "60562c27694c273bb8835068c5d3117ddb8303f2ea69a6fb849571302d6e6e1d"
+        },
+        {
+          "name": "com.htmake.reader.ReaderApplicationTests",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.249,
+          "sha256": "d38000e572068ec44d9fb941190222e367ca3b8abd42be56b824cd92eb0f25af"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserCookieJarTest",
+          "tests": 20,
+          "skipped": 0,
+          "seconds": 0.188,
+          "sha256": "d33a39597dc438adff57b5528c8f016ca689b3c04f0fca053e34b9fc63c132f0"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+          "tests": 11,
+          "skipped": 0,
+          "seconds": 0.056,
+          "sha256": "c677c52f58d4b6a0863761fdd0866b18a668de9606157b6789357aac1a5d817f"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserEgressProxyTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.125,
+          "sha256": "95691d5000147fdc4960e03681e05067dcd265aeca016454a3f804ee72f01ee1"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+          "tests": 4,
+          "skipped": 0,
+          "seconds": 0.054,
+          "sha256": "6b6fc254cf7245258e733a494db07f47683898c8f7ddf8d8caa4b2a958359b82"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.067,
+          "sha256": "29d2312830606e0e998f88a0dd22c995da2de8bc478bddcf0298eb1f7029dbff"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "a6b0153389a7e9baaf1470f6fc473e7ca60c37ed67590f0544805f9614f5d8a5"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.587,
+          "sha256": "5e1eddae1cdaa4c293dca6cd3e160ddda34b863cb799fc882088d530db26c1f3"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 1.133,
+          "sha256": "3c0bee5987353860e97e19eafa707b09145f24e581908d68e5bb30e2d9c4aa50"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+          "tests": 14,
+          "skipped": 14,
+          "seconds": 0.009,
+          "sha256": "9d4be7c5892a3b6f44432a2eb0bdf76dee5571ac072166a982e87c0a73f673f0"
+        },
+        {
+          "name": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.05,
+          "sha256": "8d03a3c010886be64554285b87e2f92598bf2d2852b6b5328bd9d896e84e915b"
+        },
+        {
+          "name": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.004,
+          "sha256": "1ffc0db1adf5924800da06ff4bdfa1f3cb283bf4d67cc4ad54110ec529d23327"
+        },
+        {
+          "name": "com.htmake.reader.utils.LocalWebviewRendererTest",
+          "tests": 11,
+          "skipped": 11,
+          "seconds": 0.004,
+          "sha256": "e5a031cc9bc264da6cf2a0c1814d8ae796ce0e0daf2e15d52746748ed1468f02"
+        },
+        {
+          "name": "com.htmake.reader.utils.RemoteWebviewContractTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.37,
+          "sha256": "b65ec86eedc610ad8353f7c69eb5c5935ccd41f388fe6ac4766261ca268367b1"
+        },
+        {
+          "name": "com.htmake.reader.utils.StorageReadConsistencyTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.263,
+          "sha256": "c9fe0fa8edba7e4337796ac684c647d4777b73d45ef162610755bfda4db64f41"
+        },
+        {
+          "name": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.206,
+          "sha256": "7ed43310421f2df32fc7452e00bc7905845b89ed38f02731b5448f226d376292"
+        },
+        {
+          "name": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.044,
+          "sha256": "67313ff301bf539319dc0082b3504359a416659c97b53b7fc04c1dcc01dbad1c"
+        },
+        {
+          "name": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.009,
+          "sha256": "7962397907d68efa577864c5c37ca2cc5aa4ea51a07c072d1028ecc786f3676b"
+        },
+        {
+          "name": "com.htmake.reader.WebResourceEncodingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.006,
+          "sha256": "55cfbd7cd22e6ea206de0c83daee4eb141d2d2b054375f75ee8b06ca3e7d4b52"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookChapterSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "7c10ae438996cd73463309e398610dc54b6d898a12c3f48dcc96799a14eb850f"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookLocalEpubPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.004,
+          "sha256": "21024220600484c08b15a8a9595a50fcdf0f7e9940c0a29acffbed6e8a46275c"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookLocalPdfPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.002,
+          "sha256": "27782f997af8aaa689d8cb3e8bce75d8f13dd1bb5a807a6c18da9be4ad03b07f"
+        },
+        {
+          "name": "io.legado.app.data.entities.RssArticleSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0,
+          "sha256": "5d9d62ee4dc03d83df5f48bda09e755e4508c5563e2ddb20f1550ff004859211"
+        },
+        {
+          "name": "io.legado.app.data.entities.RssSourceSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.049,
+          "sha256": "c0d174764270973bf1dcb9c1f1f59d222a48a3f8adecb832682e909b9f68dda7"
+        },
+        {
+          "name": "io.legado.app.data.entities.SearchBookSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.008,
+          "sha256": "6d414fcf362d72fc914f19ca9c8a64c5f69aacd76ebbfc98450292eb17a92a73"
+        },
+        {
+          "name": "io.legado.app.model.localBook.TextFileContentTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.007,
+          "sha256": "0f8e9a7a26c8f2d5925d35795c8b2deea09e74448e2de4f96f189b7775b9e64c"
+        },
+        {
+          "name": "io.legado.app.model.rss.RssParserDefaultTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.005,
+          "sha256": "0650e25af844cf454e2f64b55c981845b37ae6c35b804b6c7a180fe6e79e35d0"
+        },
+        {
+          "name": "io.legado.app.utils.EncoderUtilsTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.509,
+          "sha256": "7041e7aeb55df4480b4e7332c5b37957caa871ed22ceca2fca336473f9ab0e5d"
+        },
+        {
+          "name": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.013,
+          "sha256": "4f8af352782ee7e61d870e0a0c58a9b5d6ec1f9e36a9767e9c89bce3ed450fa6"
+        },
+        {
+          "name": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.002,
+          "sha256": "14993e8e564171aa732dabc00d8ce0e8a3a4312889dd0065d8432d1a09b9cbbb"
+        },
+        {
+          "name": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+          "tests": 10,
+          "skipped": 0,
+          "seconds": 0.02,
+          "sha256": "5f6cd3ab62d845c6b886bc89eb86c9c85c3bb4246407a9ca48ffa3282722cc35"
+        },
+        {
+          "name": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0,
+          "sha256": "17c35acec26ff79e9a66d813ec66b7dd9548f6ce3711c3f97ec67c7cf45efabc"
+        }
+      ]
+    },
+    "release-java": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "runId": 37339021759,
+      "artifact": {
+        "id": 11356619691,
+        "name": "reader-release-java-contracts-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+        "zipBytes": 30623
+      },
+      "actualSuites": 41,
+      "tests": 148,
+      "actualExecuted": 123,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 25,
+      "verified": {
+        "storageCasesActual": 3,
+        "storageSeconds": 0.264,
+        "storageXmlSha256": "98d3712ef625c1306210842eadc7146526d73f58ae9d6a96f2bb761955fd760b"
+      },
+      "reports": [
+        {
+          "name": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+          "tests": 6,
+          "skipped": 0,
+          "seconds": 0.048,
+          "sha256": "4119b1e4fc6d0c95857217c3369f03b52569a75423f65c7ec71a5508a6ab9d06"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.016,
+          "sha256": "a40719eeedd52d11437ea2fa009cfdf0ef424fbb92c2a03fd8c3ae9a75d68558"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.FileControllerPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.018,
+          "sha256": "e69945dba2ec8f0d02a96519df804cb562c115585222beeb8db524966a52a99a"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+          "tests": 4,
+          "skipped": 0,
+          "seconds": 0.003,
+          "sha256": "5aea908dd6f44fa244facbbb8af8c07f9d6a30bba28f58ffa0b2ff34ae5a4888"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.04,
+          "sha256": "bd889ac42f278847b072c5260eb684ac4362fa19b23a187ae3ac7c12b6225cec"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceScanCursorTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "32e4b31f34de2322cefaf165047a7cf648ec2a24d459082475ed5b39a11beb9c"
+        },
+        {
+          "name": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.378,
+          "sha256": "c3b4b34dd640e46ad91c5db192e5d6bc0112e5bfa09f2d052eb7fd9eb349f59b"
+        },
+        {
+          "name": "com.htmake.reader.entity.LicenseTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.023,
+          "sha256": "562c3c88d3416cf1831c9bd7614526e99b4019b769bd289cd08fb8e0063fc61e"
+        },
+        {
+          "name": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.002,
+          "sha256": "e281572f799aa01525a5d14eb8c28857f6cd6f75c6901075f24e5331a37a60ef"
+        },
+        {
+          "name": "com.htmake.reader.ReaderApplicationTests",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.296,
+          "sha256": "1fb92a6f2c5facf3237c9568faf95ec697383a2f0ac44ff4bdb558bbc02eeb68"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserCookieJarTest",
+          "tests": 20,
+          "skipped": 0,
+          "seconds": 0.199,
+          "sha256": "7533d86e9e18ab5f49fd6280d6df5f7ae9312e7270a9a20d70ed604320f4093b"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+          "tests": 11,
+          "skipped": 0,
+          "seconds": 0.046,
+          "sha256": "3642ed32488fea5f16565e0ba089d7d2f22784e9efe88bfd679e9b4e6e802a3a"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserEgressProxyTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.116,
+          "sha256": "2a292f3b5868e6c10ebb3e34ebbeb12383b8541994078bc89d45e92600a292e3"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+          "tests": 4,
+          "skipped": 0,
+          "seconds": 0.055,
+          "sha256": "3744cc87d59558c8c39ef2ac19fcc9b5cf274016208eca85902e6947024e8295"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+          "tests": 5,
+          "skipped": 0,
+          "seconds": 0.063,
+          "sha256": "3e3ddfe1ceccc510bd0ecf928e9f9208a3080679d86800e91b94500d807b8b14"
+        },
+        {
+          "name": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "adf04aeb46601db98e13ed7bbd1ad95a7b31c9f7fe454cd77becfc92e4b3ac73"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.626,
+          "sha256": "ce4e835817b9067fa7c6440d355547e695ba0678e47cf72704649ff71b896310"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 1.214,
+          "sha256": "dd790420e5ca2e4ac8e36f732f4ebea2a354493f269a8a3d9ec9e0a6c983446b"
+        },
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+          "tests": 14,
+          "skipped": 14,
+          "seconds": 0.009,
+          "sha256": "26d826de5ba9f2ab409e1c7d0861a7f31ba3318623fa2003452dba8816f613b0"
+        },
+        {
+          "name": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.048,
+          "sha256": "60f4030971d01edff26d3ab74182cf95ad5cb7830a8f8ed3683a0b08f5d73993"
+        },
+        {
+          "name": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.004,
+          "sha256": "6c527b112189e0e7a1f9a6dec08b6a3871322698ddbfbc2e4e98e40d1c27ae9f"
+        },
+        {
+          "name": "com.htmake.reader.utils.LocalWebviewRendererTest",
+          "tests": 11,
+          "skipped": 11,
+          "seconds": 0.004,
+          "sha256": "acbe194c5c21cb2f5a778a6e4e2423033025cdff8ec423d43bfe5ba6167cbd68"
+        },
+        {
+          "name": "com.htmake.reader.utils.RemoteWebviewContractTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.354,
+          "sha256": "85d5963ead225f3e43ebfe342b951af5d630c296694e8fb1e4b89bcf0e2a2a66"
+        },
+        {
+          "name": "com.htmake.reader.utils.StorageReadConsistencyTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.264,
+          "sha256": "98d3712ef625c1306210842eadc7146526d73f58ae9d6a96f2bb761955fd760b"
+        },
+        {
+          "name": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+          "tests": 3,
+          "skipped": 0,
+          "seconds": 0.212,
+          "sha256": "0a90da36f4715b036485799287de7bfe605294353a09d57a58f1fa49ca0e3e8e"
+        },
+        {
+          "name": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.038,
+          "sha256": "577c5c5d69d48f8935e86a00575585357933878b9e89f7d6fbad59358602d5bc"
+        },
+        {
+          "name": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.015,
+          "sha256": "096e3101809e178e784e762f41605c8532cbd167626094ac98dd9b75e285d1a6"
+        },
+        {
+          "name": "com.htmake.reader.WebResourceEncodingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.01,
+          "sha256": "47e0751eaa57229a6a90a59e5bb6d51ca1abda87d8a6b53a86719557873344e6"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookChapterSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.002,
+          "sha256": "ee15b031638dfe33e277d88b5531e10efe316afb39bf89950d31fa2b532ee6f4"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookLocalEpubPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.005,
+          "sha256": "5aa76082e50af1a5dbd9c081412da1b857758b5836fb6687f745dfe792c1dcb9"
+        },
+        {
+          "name": "io.legado.app.data.entities.BookLocalPdfPathTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.002,
+          "sha256": "40b2361d3c88f5f41fbbd6acf96824652cd260eac4c805b102bd203e98f5f456"
+        },
+        {
+          "name": "io.legado.app.data.entities.RssArticleSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "f78ed9767bf6c41a498af3eb566aefab78f64670ca6be74cd4ab751de72f6388"
+        },
+        {
+          "name": "io.legado.app.data.entities.RssSourceSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.047,
+          "sha256": "64e691cf0f3fe67733abd9797fa652fc3099465d6baaa8d8496cab5120c23a74"
+        },
+        {
+          "name": "io.legado.app.data.entities.SearchBookSerializationTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.01,
+          "sha256": "8d009d96e39e12b4d611ddde17fa7d48007dc77c717d2c58ec451a2a262697ea"
+        },
+        {
+          "name": "io.legado.app.model.localBook.TextFileContentTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.007,
+          "sha256": "1e0c2e4bd1b7a571abbbbd638d151ec73359ca78b6b6124b6ceb4d088261e730"
+        },
+        {
+          "name": "io.legado.app.model.rss.RssParserDefaultTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.006,
+          "sha256": "1ff6a211c5f8c450563d48ce49e91de23031c9a33616cb7147a1233a23d538c0"
+        },
+        {
+          "name": "io.legado.app.utils.EncoderUtilsTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.703,
+          "sha256": "05f56ced84ce2847f0da01de5bd38151090c0fccc689faf367a39b2784abc6b4"
+        },
+        {
+          "name": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.016,
+          "sha256": "7b1ddefa56b5d940f421845bab978b52dfd13c66634be037f2b52fc7ccfec6ca"
+        },
+        {
+          "name": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+          "tests": 1,
+          "skipped": 0,
+          "seconds": 0.003,
+          "sha256": "b5c849210c66eb565ff288fc8adb732c1314e299705cbc98a8a0790bdb00d853"
+        },
+        {
+          "name": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+          "tests": 10,
+          "skipped": 0,
+          "seconds": 0.02,
+          "sha256": "b4b860af4a9a8330d686b844aef55e09257e6f95f8d20237e5334477f7c12bf9"
+        },
+        {
+          "name": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+          "tests": 2,
+          "skipped": 0,
+          "seconds": 0.001,
+          "sha256": "33dc11c7a5e10b50fcaf0b749fb3353377de5f8114ebd877dd65912a014368d8"
+        }
+      ]
+    },
+    "release-cam": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "runId": 37339021759,
+      "artifact": {
+        "id": 11358420226,
+        "name": "reader-release-camoufox-contract-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+        "zipBytes": 977
+      },
+      "actualSuites": 1,
+      "tests": 14,
+      "actualExecuted": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "verified": {
+        "endlessNavigationContractPresent": true,
+        "errors": 0,
+        "failures": 0,
+        "navigationContractPresent": true,
+        "skipped": 0,
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 14,
+        "xmlSha256": "110d697bfc60bc372c077e7b32c12ab8f0a1ffad45e4f797e81c0ebb19c6385b"
+      },
+      "reports": [
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+          "tests": 14,
+          "skipped": 0,
+          "seconds": 128.599,
+          "sha256": "110d697bfc60bc372c077e7b32c12ab8f0a1ffad45e4f797e81c0ebb19c6385b"
+        }
+      ]
+    },
+    "browser-cam": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "runId": 37339021760,
+      "artifact": {
+        "id": 11357049413,
+        "name": "camoufox-contract-report",
+        "zipBytes": 978
+      },
+      "actualSuites": 1,
+      "tests": 14,
+      "actualExecuted": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "verified": {
+        "endlessNavigationContractPresent": true,
+        "errors": 0,
+        "failures": 0,
+        "navigationContractPresent": true,
+        "skipped": 0,
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 14,
+        "xmlSha256": "9d0e7f0cb476664d8d7afa19cd87d1bbac2c8abcb2a681e1d0ac61f55621a9b9"
+      },
+      "reports": [
+        {
+          "name": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+          "tests": 14,
+          "skipped": 0,
+          "seconds": 104.348,
+          "sha256": "9d0e7f0cb476664d8d7afa19cd87d1bbac2c8abcb2a681e1d0ac61f55621a9b9"
+        }
+      ]
+    },
+    "xml": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "runId": 37339021760,
+      "artifacts": [
+        {
+          "id": 11356809422,
+          "name": "local-chromium-contract-report",
+          "zipBytes": 2131
+        }
+      ],
+      "result": {
+        "actualXmlReportsAudited": 3,
+        "tests": 23,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "reports": [
+          {
+            "name": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+            "tests": 11,
+            "seconds": 0.073,
+            "sha256": "1543b5bbe11f2886c9500a783c4788cc81fb632d8cc7168dc68629dea4bc2237"
+          },
+          {
+            "name": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+            "tests": 1,
+            "seconds": 0.067,
+            "sha256": "f7e866bf22bc7cb7126f01d86d0bc3c14e939e8bee429509a044783fb04f71be"
+          },
+          {
+            "name": "com.htmake.reader.utils.LocalWebviewRendererTest",
+            "tests": 11,
+            "seconds": 14.193,
+            "sha256": "bf27924433b51bae9b2604510cc21fefce00aa228a1bbcccc649af541e9381df"
+          }
+        ]
+      }
+    },
+    "vue": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "runId": 37339021756,
+      "artifacts": [
+        {
+          "id": 11358196119,
+          "name": "vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+          "zipBytes": 9986
+        },
+        {
+          "id": 11357643248,
+          "name": "vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+          "zipBytes": 392402
+        },
+        {
+          "id": 11358385084,
+          "name": "vue3-subdir-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+          "zipBytes": 530
+        }
+      ],
+      "result": {
+        "actualXmlReportsAudited": 21,
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "reports": [
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+            "tests": 1,
+            "seconds": 2.429,
+            "sha256": "bf8bd6c01ae29e43ae594e4c87a8f65e502abf37eadf9a3e33130cdf24135eb8"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+            "tests": 1,
+            "seconds": 13.699,
+            "sha256": "5a0ab43a99c5158de9b7cb62b8e14315d5f8fa61efcaebb848981446b37c0a6c"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+            "tests": 1,
+            "seconds": 7.536,
+            "sha256": "d22d5f18944ff5789bb2e07438f4cafa61c8d86442a14b178f75a3528c22e3d7"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+            "tests": 1,
+            "seconds": 3.13,
+            "sha256": "25d2007e77060827a0ddf7a2281e2a34a57f2bec03199c08a3e966dca5a2b0a3"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+            "tests": 1,
+            "seconds": 4.497,
+            "sha256": "7daf86ad9d1562c2b1ba94e4908465254c8b06e5ee00f8606fb1cc6266f0ef03"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+            "tests": 1,
+            "seconds": 5.198,
+            "sha256": "971fa16da86ee13dcfab028e41a3297fbc72d03db3c807b111156006b162eb5b"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+            "tests": 1,
+            "seconds": 18.384,
+            "sha256": "01c8db69c02b8cff51e1fefdc583a259d486988ad1e6ed01bf361fa32c7c5cc7"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+            "tests": 1,
+            "seconds": 11.537,
+            "sha256": "8623a241b062e1603019c1b5c71f453c94a9c6624a7a1a8ddf89a78d431660a1"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+            "tests": 1,
+            "seconds": 3.275,
+            "sha256": "8ab8f9cb4bb090c512d6aa034eecfeee07e4f4a871a9229887914aeefe932f88"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+            "tests": 1,
+            "seconds": 21.809,
+            "sha256": "317acac8d150a70204b1b1f9734e7aec81996889009c4e2a6b462471822de288"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+            "tests": 1,
+            "seconds": 3.57,
+            "sha256": "e0e5cdd55c9a8a07e0c78792770986fca9b6e070a6e5bb77c34f4505d2c3e938"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+            "tests": 1,
+            "seconds": 4.287,
+            "sha256": "1927fd4557a6b48a10ef0362abaca8af6a0e3a0bfecf971f209b219f4ebbf972"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+            "tests": 1,
+            "seconds": 3.478,
+            "sha256": "a8464c1b2aa66bfe59d06d16b0a9d796143ebe24cd5a839d80f32d0ff0a9093c"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+            "tests": 1,
+            "seconds": 10.718,
+            "sha256": "ba7faf581965d8c881e2cfb018aed90d9cae7cc8c55840129349d65fb04cd31c"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+            "tests": 1,
+            "seconds": 6.95,
+            "sha256": "22d9591f6d2b298ac822b65719fdb2bdd9af17b6929e525f379fc044ec19dd8c"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+            "tests": 1,
+            "seconds": 4.597,
+            "sha256": "11437fd1a2a587a3cfa27b6bf9564794157e9327a8d09e8550fadec7f33d875c"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+            "tests": 1,
+            "seconds": 10.145,
+            "sha256": "90ee73efaa6eb59ffd7379949f05bb9c8c3e9a835edeb5f3b9712181841064d4"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+            "tests": 1,
+            "seconds": 9.001,
+            "sha256": "68137e7d40040eb8b8326218d315caa82627d1664f2b2888211d9b156dea5885"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+            "tests": 1,
+            "seconds": 7.895,
+            "sha256": "2c2d3f224ea6f60206202582c421d563f103ff3a7c1adb599201aa821694e1f9"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+            "tests": 1,
+            "seconds": 3.576,
+            "sha256": "70261d53133e85cda2b4db0704db8731555e418f3e8f6dec1dd40ef0c01d4ad5"
+          },
+          {
+            "name": "com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest",
+            "tests": 1,
+            "seconds": 2.986,
+            "sha256": "dae5dc1e444897b97f9f42ac26082a3bb1bb7a18710941a4d9cfd6365d0880e8"
+          }
+        ]
+      }
+    },
+    "smoke": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "runId": 37339021760,
+      "artifacts": [
+        {
+          "id": 11357692664,
+          "name": "bundled-browser-synthetic-and-resources",
+          "zipBytes": 894
+        }
+      ],
+      "result": {
+        "scope": "one complete hosted Reader image; generated short sequential and four-account burst",
+        "actualJsonReportsAudited": 2,
+        "identityCookieRequestResourceFieldsPassed": true,
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "pidsMax": 256,
+        "observations": {
+          "memoryPeakBytes": 839774208,
+          "pidsPeak": 193,
+          "actualSwapBytes": 0,
+          "configuredSwapMaxBytes": 1073741824
+        },
+        "budgetSha256": "3f32687b7b248057631475075200c3a03defd6b1ceb492ce774d45b6a77de36b",
+        "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      }
+    },
+    "native": {
+      "sourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "runId": 37339021759,
+      "artifacts": [
+        {
+          "id": 11358173309,
+          "name": "reader-publisher-import-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+          "zipBytes": 7079
+        }
+      ],
+      "result": {
+        "actualJsonReportsAudited": 20,
+        "testedPrMergeRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+        "sharedJarSha256": "0491a8324137baddbe482975fa3b2988ad0330d24f570c8f9a1287ba25f8fd8d",
+        "identityCookieRequestResourceFieldsPassed": true,
+        "architectures": {
+          "arm64": {
+            "archiveSha256": "0b7d6be618a95d1f98f7f63ef39db69b5b0bd43c24192bf3cce2278511d49121",
+            "imageId": "sha256:2cd4a0476be21d5912457ba8151fb213dda7db297d4ab998ce66946dd2389ec0",
+            "budgets": {
+              "arm64": {
+                "actualSwapBytes": 0,
+                "configuredSwapMaxBytes": 1073741824,
+                "memoryPeakBytes": 866136064,
+                "pidsPeak": 197
+              },
+              "arm64-transfer": {
+                "actualSwapBytes": 0,
+                "configuredSwapMaxBytes": 1073741824,
+                "memoryPeakBytes": 851386368,
+                "pidsPeak": 189
+              }
+            }
+          },
+          "amd64": {
+            "archiveSha256": "84eeb0dfcf1130fb94616134eb9601bc4c14724c1aa313ff79bbeb2f8e9b5177",
+            "imageId": "sha256:229a96a16d33edf5828d8e528023fa85c048efd703056b8c9c32ee0849038c9b",
+            "budgets": {
+              "amd64": {
+                "actualSwapBytes": 0,
+                "configuredSwapMaxBytes": 1073741824,
+                "memoryPeakBytes": 844300288,
+                "pidsPeak": 196
+              },
+              "amd64-transfer": {
+                "actualSwapBytes": 0,
+                "configuredSwapMaxBytes": 1073741824,
+                "memoryPeakBytes": 849719296,
+                "pidsPeak": 196
+              }
+            }
+          }
+        },
+        "limits": [
+          "generated short samples, not real authentication or sustained load",
+          "configured swap remains permitted although actual use was zero",
+          "consumer import proof is not registry publication"
+        ]
+      }
+    }
+  },
+  "uiObservation": {
+    "managerSeconds": 7.895,
+    "shortViewport": {
+      "width": 375,
+      "height": 320,
+      "clientHeight": 45,
+      "scrollHeight": 287,
+      "regionHeight": 72,
+      "safeTopPixels": 232,
+      "bottomPixels": 16
+    },
+    "actualChecks": [
+      "offline retry rectangle clear of entire notification region and dismiss control",
+      "actual retry center hit target and click sends GET getBookshelf before and after keyboard message scroll",
+      "complete visible text-line rectangle, not padded height only",
+      "navigation/search/footer, all warnings retained and clear-all",
+      "manager credentials, namespace proof, reload and next-account isolation retained"
+    ],
+    "screenshotsActuallyViewed": [
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-authorized.png",
+        "sha256": "9f80efd76a186e80d7c7f9ca790e9e6750aa1775b78cb87ebd39c6c0d148eb78"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-manage-footer.png",
+        "sha256": "1394173634fb2c7fbd5c3173a11daf44798eb0997ed3a77a7f3f465ba3f79747"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-narrow-short-before-scroll.png",
+        "sha256": "7fccdbae2ae816b5dd5c415e69d9fe8f635f268eee20de0f042acd96eca83585"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-narrow-short.png",
+        "sha256": "9f231802349b9478342e1e19c86e7bc3317dcf01f99a19f0353f6e302b1c2188"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-short.png",
+        "sha256": "4d455fd9b69a2eec92d7066cbbb353254644ace5a86e07acb5c6211a4a63d590"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-own-offline.png",
+        "sha256": "cfb4b13c1f528c83906a43a15b4894d799c07fccf1bc76c8a4bcdf981ebe71a0"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-permissions-narrow.png",
+        "sha256": "ff37a99e86c776b2a105bbea755c14a779dde0cc2f07f9ee83c1da06eddfb744"
+      },
+      {
+        "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-wrong-space-rejected.png",
+        "sha256": "9245f057e4f294d678fa91185b7618cddd0309b9f8ec0fc4642e2591a6a10b3e"
+      }
+    ],
+    "visualSummary": [
+      "Desktop permission labels and narrow table scrolling retained",
+      "Own generated offline book and rejected manager namespace remain isolated",
+      "Navigation/search/desktop manager footer and short-screen offline retry remain clear",
+      "Short-screen text line readable and notices scrollable before/after keyboard navigation",
+      "Temporary content-area overlay still present; not all content controls accepted"
+    ]
+  },
+  "supplementaryLocalStableLogoutVisual": {
+    "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+    "xmlSha256": "aefe3750c93917990ba7c7dba75ad842d31bfb58daf2ee0a14399c86d4ec7c9e",
+    "tests": 1,
+    "actualCases": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 52.81,
+    "stdout": "STABLE_VISUAL first-button {\"loginPages\":1,\"shelfPages\":0,\"width\":1280,\"height\":720}\nSTABLE_VISUAL offline-local-only {\"loginPages\":1,\"shelfPages\":0,\"width\":1280,\"height\":720}\nSTABLE_VISUAL remembered-survives {\"loginPages\":0,\"shelfPages\":1,\"width\":1280,\"height\":720}\nLOGOUT_COMPLETE bookshelf/settings/cancel/mixed-reload/signed-out/offline-warning/other-token preserved; generated accounts only\n",
+    "pictures": [
+      {
+        "file": "vue3-logout-generated-first-button.png",
+        "sha256": "729c8187e3003449228c7d3835af2ae01f3a935b02f7d87f1fea5f7134f7e6d9"
+      },
+      {
+        "file": "vue3-logout-generated-offline-local-only.png",
+        "sha256": "b1784772e4b797a887bb82dc2c61b8f2377dcb078fb74fe0775c3ea858b40a74"
+      },
+      {
+        "file": "vue3-logout-generated-remembered-survives.png",
+        "sha256": "455712d92d294d54e827875d536ea8cfb5c67c12e3037c096f907008e8306f11"
+      }
+    ],
+    "probeSourceSha256": "ae7b0c150513c7b8cf4411cbd65db35835e09900bb3bf15c8ea005cdc1442b66",
+    "scope": "extra local generated-account probe against the same frozen local JAR; not a hosted test and not counted in hosted 21",
+    "productSourceModified": false,
+    "animationsDisabled": false,
+    "screenshotsActuallyViewed": 3,
+    "interpretation": "Original local logout PNG showed blank page. After waiting for actual page opacity 1, login form and retained second-account shelf visibly present. Original PNG not used as final-page visual proof."
+  },
+  "preservation": {
+    "noOriginalJarOverwrite": true,
+    "noPrivateBodiesOrCredentialsDownloaded": true,
+    "noMultiGiBImagesDownloaded": true,
+    "noProductionDeploymentOrDataImport": true,
+    "noRegistryOrFormalRelease": true
+  },
+  "limitations": [
+    "Ordinary/shared JVM suites each 123 actual plus 25 environment-gated skips; default/browser suites independently actually execute",
+    "Generated authentication/request/Cookie fixtures are not real production login or Qidian authenticated three-way parity",
+    "Configured 1 GiB swap allowed although actual usage zero",
+    "Short samples and four-account burst are not long-term leak or real load proof",
+    "Other content controls can be temporarily overlaid; real phone keyboard/visual viewport, extreme sizes/messages/accounts and reading/PWA footer visuals remain open",
+    "Candidate PR only; no merge to legacy, tag, registry publish, formal Release, deployment or private data import"
+  ],
+  "rollback": "Revert only offline-banner/scroll tracking, repeated-top-margin removal, short-screen padding and retry/text-line tests; retain prior notification wrapper and permission/Chinese errors, rebuild locked readable sources without data migration or worktree reset",
+  "files": [
+    {
+      "path": "browser-cam/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2455,
+      "sha256": "9d0e7f0cb476664d8d7afa19cd87d1bbac2c8abcb2a681e1d0ac61f55621a9b9"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+      "bytes": 16853,
+      "sha256": "d10ce52b1dc42acd65ebc9a169441f96f44611dd26901e5bbbaf85069b49954b"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+      "bytes": 1037,
+      "sha256": "d79cf3da5c08925c96cb519038835043f1cdfbe1ba342c54f276f252b266da1a"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+      "bytes": 3882,
+      "sha256": "5df9db65a9ec974f592b4c60ac08e16b7fc347d5dd38481287634b843d54edd9"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+      "bytes": 864,
+      "sha256": "457178b8a15fb552b556ba9b349457dacdd7db5799b24df29697e1f31b6e4dbb"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+      "bytes": 815,
+      "sha256": "7470bb7cf3b0518786c22fcb0c09a06732a9230faed683d50b18a3f34b07e3dd"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+      "bytes": 609,
+      "sha256": "9ac0be24f6b2169da5097911d19f23f24c27f85f755d78f06aeee14141c58352"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+      "bytes": 1165,
+      "sha256": "cb7d52a6d959998f0d57007b6396d17aa2a92e90b6d4cf3b887723b903d75d65"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.entity.LicenseTest.xml",
+      "bytes": 565,
+      "sha256": "ca61c4102afea688fe30852b2db3bde9662c84af5781cc7795e9e77ae117f2e3"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+      "bytes": 620,
+      "sha256": "60562c27694c273bb8835068c5d3117ddb8303f2ea69a6fb849571302d6e6e1d"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.ReaderApplicationTests.xml",
+      "bytes": 14357,
+      "sha256": "d38000e572068ec44d9fb941190222e367ca3b8abd42be56b824cd92eb0f25af"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+      "bytes": 3290,
+      "sha256": "d33a39597dc438adff57b5528c8f016ca689b3c04f0fca053e34b9fc63c132f0"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1901,
+      "sha256": "c677c52f58d4b6a0863761fdd0866b18a668de9606157b6789357aac1a5d817f"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+      "bytes": 1096,
+      "sha256": "95691d5000147fdc4960e03681e05067dcd265aeca016454a3f804ee72f01ee1"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+      "bytes": 985,
+      "sha256": "6b6fc254cf7245258e733a494db07f47683898c8f7ddf8d8caa4b2a958359b82"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+      "bytes": 1086,
+      "sha256": "29d2312830606e0e998f88a0dd22c995da2de8bc478bddcf0298eb1f7029dbff"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+      "bytes": 736,
+      "sha256": "a6b0153389a7e9baaf1470f6fc473e7ca60c37ed67590f0544805f9614f5d8a5"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+      "bytes": 522,
+      "sha256": "5e1eddae1cdaa4c293dca6cd3e160ddda34b863cb799fc882088d530db26c1f3"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+      "bytes": 510,
+      "sha256": "3c0bee5987353860e97e19eafa707b09145f24e581908d68e5bb30e2d9c4aa50"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2826,
+      "sha256": "9d4be7c5892a3b6f44432a2eb0bdf76dee5571ac072166a982e87c0a73f673f0"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 484,
+      "sha256": "8d03a3c010886be64554285b87e2f92598bf2d2852b6b5328bd9d896e84e915b"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+      "bytes": 477,
+      "sha256": "1ffc0db1adf5924800da06ff4bdfa1f3cb283bf4d67cc4ad54110ec529d23327"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 2195,
+      "sha256": "e5a031cc9bc264da6cf2a0c1814d8ae796ce0e0daf2e15d52746748ed1468f02"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+      "bytes": 472,
+      "sha256": "b65ec86eedc610ad8353f7c69eb5c5935ccd41f388fe6ac4766261ca268367b1"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+      "bytes": 6852,
+      "sha256": "c9fe0fa8edba7e4337796ac684c647d4777b73d45ef162610755bfda4db64f41"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+      "bytes": 803,
+      "sha256": "7ed43310421f2df32fc7452e00bc7905845b89ed38f02731b5448f226d376292"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+      "bytes": 10456,
+      "sha256": "67313ff301bf539319dc0082b3504359a416659c97b53b7fc04c1dcc01dbad1c"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+      "bytes": 614,
+      "sha256": "7962397907d68efa577864c5c37ca2cc5aa4ea51a07c072d1028ecc786f3676b"
+    },
+    {
+      "path": "java/TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+      "bytes": 603,
+      "sha256": "55cfbd7cd22e6ea206de0c83daee4eb141d2d2b054375f75ee8b06ca3e7d4b52"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+      "bytes": 482,
+      "sha256": "7c10ae438996cd73463309e398610dc54b6d898a12c3f48dcc96799a14eb850f"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+      "bytes": 1262,
+      "sha256": "21024220600484c08b15a8a9595a50fcdf0f7e9940c0a29acffbed6e8a46275c"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+      "bytes": 903,
+      "sha256": "27782f997af8aaa689d8cb3e8bce75d8f13dd1bb5a807a6c18da9be4ad03b07f"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+      "bytes": 480,
+      "sha256": "5d9d62ee4dc03d83df5f48bda09e755e4508c5563e2ddb20f1550ff004859211"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+      "bytes": 494,
+      "sha256": "c0d174764270973bf1dcb9c1f1f59d222a48a3f8adecb832682e909b9f68dda7"
+    },
+    {
+      "path": "java/TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+      "bytes": 485,
+      "sha256": "6d414fcf362d72fc914f19ca9c8a64c5f69aacd76ebbfc98450292eb17a92a73"
+    },
+    {
+      "path": "java/TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+      "bytes": 634,
+      "sha256": "0f8e9a7a26c8f2d5925d35795c8b2deea09e74448e2de4f96f189b7775b9e64c"
+    },
+    {
+      "path": "java/TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+      "bytes": 458,
+      "sha256": "0650e25af844cf454e2f64b55c981845b37ae6c35b804b6c7a180fe6e79e35d0"
+    },
+    {
+      "path": "java/TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+      "bytes": 444,
+      "sha256": "7041e7aeb55df4480b4e7332c5b37957caa871ed22ceca2fca336473f9ab0e5d"
+    },
+    {
+      "path": "java/TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+      "bytes": 575,
+      "sha256": "4f8af352782ee7e61d870e0a0c58a9b5d6ec1f9e36a9767e9c89bce3ed450fa6"
+    },
+    {
+      "path": "java/TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+      "bytes": 501,
+      "sha256": "14993e8e564171aa732dabc00d8ce0e8a3a4312889dd0065d8432d1a09b9cbbb"
+    },
+    {
+      "path": "java/TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+      "bytes": 1711,
+      "sha256": "5f6cd3ab62d845c6b886bc89eb86c9c85c3bb4246407a9ca48ffa3282722cc35"
+    },
+    {
+      "path": "java/TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+      "bytes": 586,
+      "sha256": "17c35acec26ff79e9a66d813ec66b7dd9548f6ce3711c3f97ec67c7cf45efabc"
+    },
+    {
+      "path": "native/amd64-BROWSER_RESOURCE_BUDGET.json",
+      "bytes": 495,
+      "sha256": "059221727f5c3fe1c7ad12438da41b8f208087e141d6f70dd4a044aea9d13033"
+    },
+    {
+      "path": "native/amd64-BROWSER_SYNTHETIC.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "native/amd64-JAR_IDENTITY.json",
+      "bytes": 171,
+      "sha256": "5f85f44479e9f3ae839aea3aff7dba362a5654c37f285e27f2480afea49c5ed8"
+    },
+    {
+      "path": "native/amd64-metadata.json",
+      "bytes": 390,
+      "sha256": "689646fdd462ef90b544be5927ac9c668d2cc2d4765cd4742560fcd0d8255887"
+    },
+    {
+      "path": "native/amd64-RELEASE_IDENTITY.json",
+      "bytes": 88,
+      "sha256": "815c15cf1ffcfca89ea1e6e89415f964f09e086c8bc2712f4ab449e996e9a609"
+    },
+    {
+      "path": "native/amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "bytes": 495,
+      "sha256": "a9096d1c765fd4a7ee02fa32831c4b9a89272fc6389de6d9b3aabfc72fe38eec"
+    },
+    {
+      "path": "native/amd64-transfer-BROWSER_SYNTHETIC.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "native/amd64-transfer-IMAGE_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "d6b557beeb0fb341788ffa19aeefd48fa123e78a82c7e2434587d40fead9c50b"
+    },
+    {
+      "path": "native/amd64-transfer-JAR_IDENTITY.json",
+      "bytes": 171,
+      "sha256": "5f85f44479e9f3ae839aea3aff7dba362a5654c37f285e27f2480afea49c5ed8"
+    },
+    {
+      "path": "native/amd64-transfer-RELEASE_IDENTITY.json",
+      "bytes": 88,
+      "sha256": "815c15cf1ffcfca89ea1e6e89415f964f09e086c8bc2712f4ab449e996e9a609"
+    },
+    {
+      "path": "native/arm64-BROWSER_RESOURCE_BUDGET.json",
+      "bytes": 496,
+      "sha256": "4c6cb32e6f5d6b1f894911d6a9ad720140e6c0a4bdb5c6210cff43aaf350f9c7"
+    },
+    {
+      "path": "native/arm64-BROWSER_SYNTHETIC.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "native/arm64-JAR_IDENTITY.json",
+      "bytes": 171,
+      "sha256": "41c539e6daf21e7c48ca8d901f41af689629fd9558685f25fa7e4d32a618ce51"
+    },
+    {
+      "path": "native/arm64-metadata.json",
+      "bytes": 390,
+      "sha256": "288e236ebfe6093851ea8a656c67eb387598fd96a678dce554445eeefdcb0057"
+    },
+    {
+      "path": "native/arm64-RELEASE_IDENTITY.json",
+      "bytes": 88,
+      "sha256": "815c15cf1ffcfca89ea1e6e89415f964f09e086c8bc2712f4ab449e996e9a609"
+    },
+    {
+      "path": "native/arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "bytes": 496,
+      "sha256": "3ec9dde05ae2dccb31bcd6207a0b7ed831affbdcd996b75a440bbbdba3356f3a"
+    },
+    {
+      "path": "native/arm64-transfer-BROWSER_SYNTHETIC.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "native/arm64-transfer-IMAGE_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "ee5f239e58a0eaed914361dc210e28112565009004adf2322fcdfefd6fe61b75"
+    },
+    {
+      "path": "native/arm64-transfer-JAR_IDENTITY.json",
+      "bytes": 171,
+      "sha256": "41c539e6daf21e7c48ca8d901f41af689629fd9558685f25fa7e4d32a618ce51"
+    },
+    {
+      "path": "native/arm64-transfer-RELEASE_IDENTITY.json",
+      "bytes": 88,
+      "sha256": "815c15cf1ffcfca89ea1e6e89415f964f09e086c8bc2712f4ab449e996e9a609"
+    },
+    {
+      "path": "release-cam/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2457,
+      "sha256": "110d697bfc60bc372c077e7b32c12ab8f0a1ffad45e4f797e81c0ebb19c6385b"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+      "bytes": 16853,
+      "sha256": "4119b1e4fc6d0c95857217c3369f03b52569a75423f65c7ec71a5508a6ab9d06"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+      "bytes": 1038,
+      "sha256": "a40719eeedd52d11437ea2fa009cfdf0ef424fbb92c2a03fd8c3ae9a75d68558"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+      "bytes": 3882,
+      "sha256": "e69945dba2ec8f0d02a96519df804cb562c115585222beeb8db524966a52a99a"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+      "bytes": 862,
+      "sha256": "5aea908dd6f44fa244facbbb8af8c07f9d6a30bba28f58ffa0b2ff34ae5a4888"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+      "bytes": 814,
+      "sha256": "bd889ac42f278847b072c5260eb684ac4362fa19b23a187ae3ac7c12b6225cec"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+      "bytes": 609,
+      "sha256": "32e4b31f34de2322cefaf165047a7cf648ec2a24d459082475ed5b39a11beb9c"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+      "bytes": 1165,
+      "sha256": "c3b4b34dd640e46ad91c5db192e5d6bc0112e5bfa09f2d052eb7fd9eb349f59b"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.entity.LicenseTest.xml",
+      "bytes": 563,
+      "sha256": "562c3c88d3416cf1831c9bd7614526e99b4019b769bd289cd08fb8e0063fc61e"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+      "bytes": 622,
+      "sha256": "e281572f799aa01525a5d14eb8c28857f6cd6f75c6901075f24e5331a37a60ef"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.ReaderApplicationTests.xml",
+      "bytes": 14356,
+      "sha256": "1fb92a6f2c5facf3237c9568faf95ec697383a2f0ac44ff4bdb558bbc02eeb68"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+      "bytes": 3287,
+      "sha256": "7533d86e9e18ab5f49fd6280d6df5f7ae9312e7270a9a20d70ed604320f4093b"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1903,
+      "sha256": "3642ed32488fea5f16565e0ba089d7d2f22784e9efe88bfd679e9b4e6e802a3a"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+      "bytes": 1096,
+      "sha256": "2a292f3b5868e6c10ebb3e34ebbeb12383b8541994078bc89d45e92600a292e3"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+      "bytes": 985,
+      "sha256": "3744cc87d59558c8c39ef2ac19fcc9b5cf274016208eca85902e6947024e8295"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+      "bytes": 1089,
+      "sha256": "3e3ddfe1ceccc510bd0ecf928e9f9208a3080679d86800e91b94500d807b8b14"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+      "bytes": 736,
+      "sha256": "adf04aeb46601db98e13ed7bbd1ad95a7b31c9f7fe454cd77becfc92e4b3ac73"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+      "bytes": 522,
+      "sha256": "ce4e835817b9067fa7c6440d355547e695ba0678e47cf72704649ff71b896310"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+      "bytes": 510,
+      "sha256": "dd790420e5ca2e4ac8e36f732f4ebea2a354493f269a8a3d9ec9e0a6c983446b"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2826,
+      "sha256": "26d826de5ba9f2ab409e1c7d0861a7f31ba3318623fa2003452dba8816f613b0"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 486,
+      "sha256": "60f4030971d01edff26d3ab74182cf95ad5cb7830a8f8ed3683a0b08f5d73993"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+      "bytes": 477,
+      "sha256": "6c527b112189e0e7a1f9a6dec08b6a3871322698ddbfbc2e4e98e40d1c27ae9f"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 2191,
+      "sha256": "acbe194c5c21cb2f5a778a6e4e2423033025cdff8ec423d43bfe5ba6167cbd68"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+      "bytes": 474,
+      "sha256": "85d5963ead225f3e43ebfe342b951af5d630c296694e8fb1e4b89bcf0e2a2a66"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+      "bytes": 6849,
+      "sha256": "98d3712ef625c1306210842eadc7146526d73f58ae9d6a96f2bb761955fd760b"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+      "bytes": 803,
+      "sha256": "0a90da36f4715b036485799287de7bfe605294353a09d57a58f1fa49ca0e3e8e"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+      "bytes": 10455,
+      "sha256": "577c5c5d69d48f8935e86a00575585357933878b9e89f7d6fbad59358602d5bc"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+      "bytes": 614,
+      "sha256": "096e3101809e178e784e762f41605c8532cbd167626094ac98dd9b75e285d1a6"
+    },
+    {
+      "path": "release-java/TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+      "bytes": 604,
+      "sha256": "47e0751eaa57229a6a90a59e5bb6d51ca1abda87d8a6b53a86719557873344e6"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+      "bytes": 482,
+      "sha256": "ee15b031638dfe33e277d88b5531e10efe316afb39bf89950d31fa2b532ee6f4"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+      "bytes": 1262,
+      "sha256": "5aa76082e50af1a5dbd9c081412da1b857758b5836fb6687f745dfe792c1dcb9"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+      "bytes": 903,
+      "sha256": "40b2361d3c88f5f41fbbd6acf96824652cd260eac4c805b102bd203e98f5f456"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+      "bytes": 484,
+      "sha256": "f78ed9767bf6c41a498af3eb566aefab78f64670ca6be74cd4ab751de72f6388"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+      "bytes": 494,
+      "sha256": "64e691cf0f3fe67733abd9797fa652fc3099465d6baaa8d8496cab5120c23a74"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+      "bytes": 483,
+      "sha256": "8d009d96e39e12b4d611ddde17fa7d48007dc77c717d2c58ec451a2a262697ea"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+      "bytes": 634,
+      "sha256": "1e0c2e4bd1b7a571abbbbd638d151ec73359ca78b6b6124b6ceb4d088261e730"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+      "bytes": 458,
+      "sha256": "1ff6a211c5f8c450563d48ce49e91de23031c9a33616cb7147a1233a23d538c0"
+    },
+    {
+      "path": "release-java/TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+      "bytes": 444,
+      "sha256": "05f56ced84ce2847f0da01de5bd38151090c0fccc689faf367a39b2784abc6b4"
+    },
+    {
+      "path": "release-java/TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+      "bytes": 576,
+      "sha256": "7b1ddefa56b5d940f421845bab978b52dfd13c66634be037f2b52fc7ccfec6ca"
+    },
+    {
+      "path": "release-java/TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+      "bytes": 501,
+      "sha256": "b5c849210c66eb565ff288fc8adb732c1314e299705cbc98a8a0790bdb00d853"
+    },
+    {
+      "path": "release-java/TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+      "bytes": 1711,
+      "sha256": "b4b860af4a9a8330d686b844aef55e09257e6f95f8d20237e5334477f7c12bf9"
+    },
+    {
+      "path": "release-java/TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+      "bytes": 590,
+      "sha256": "33dc11c7a5e10b50fcaf0b749fb3353377de5f8114ebd877dd65912a014368d8"
+    },
+    {
+      "path": "smoke/bundled-browser-resource-budget.json",
+      "bytes": 495,
+      "sha256": "3f32687b7b248057631475075200c3a03defd6b1ceb492ce774d45b6a77de36b"
+    },
+    {
+      "path": "smoke/bundled-browser-synthetic.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+      "bytes": 487,
+      "sha256": "bf8bd6c01ae29e43ae594e4c87a8f65e502abf37eadf9a3e33130cdf24135eb8"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+      "bytes": 1009,
+      "sha256": "5a0ab43a99c5158de9b7cb62b8e14315d5f8fa61efcaebb848981446b37c0a6c"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+      "bytes": 656,
+      "sha256": "d22d5f18944ff5789bb2e07438f4cafa61c8d86442a14b178f75a3528c22e3d7"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+      "bytes": 461,
+      "sha256": "25d2007e77060827a0ddf7a2281e2a34a57f2bec03199c08a3e966dca5a2b0a3"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+      "bytes": 483,
+      "sha256": "7daf86ad9d1562c2b1ba94e4908465254c8b06e5ee00f8606fb1cc6266f0ef03"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+      "bytes": 518,
+      "sha256": "971fa16da86ee13dcfab028e41a3297fbc72d03db3c807b111156006b162eb5b"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+      "bytes": 614,
+      "sha256": "01c8db69c02b8cff51e1fefdc583a259d486988ad1e6ed01bf361fa32c7c5cc7"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+      "bytes": 690,
+      "sha256": "8623a241b062e1603019c1b5c71f453c94a9c6624a7a1a8ddf89a78d431660a1"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+      "bytes": 478,
+      "sha256": "8ab8f9cb4bb090c512d6aa034eecfeee07e4f4a871a9229887914aeefe932f88"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+      "bytes": 635,
+      "sha256": "317acac8d150a70204b1b1f9734e7aec81996889009c4e2a6b462471822de288"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+      "bytes": 476,
+      "sha256": "e0e5cdd55c9a8a07e0c78792770986fca9b6e070a6e5bb77c34f4505d2c3e938"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+      "bytes": 496,
+      "sha256": "1927fd4557a6b48a10ef0362abaca8af6a0e3a0bfecf971f209b219f4ebbf972"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+      "bytes": 469,
+      "sha256": "a8464c1b2aa66bfe59d06d16b0a9d796143ebe24cd5a839d80f32d0ff0a9093c"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+      "bytes": 849,
+      "sha256": "ba7faf581965d8c881e2cfb018aed90d9cae7cc8c55840129349d65fb04cd31c"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+      "bytes": 495,
+      "sha256": "22d9591f6d2b298ac822b65719fdb2bdd9af17b6929e525f379fc044ec19dd8c"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+      "bytes": 733,
+      "sha256": "11437fd1a2a587a3cfa27b6bf9564794157e9327a8d09e8550fadec7f33d875c"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+      "bytes": 482,
+      "sha256": "90ee73efaa6eb59ffd7379949f05bb9c8c3e9a835edeb5f3b9712181841064d4"
+    },
+    {
+      "path": "vue/vue3-core-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+      "bytes": 481,
+      "sha256": "68137e7d40040eb8b8326218d315caa82627d1664f2b2888211d9b156dea5885"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/reader-dev/reader-dev/browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+      "bytes": 868,
+      "sha256": "2c2d3f224ea6f60206202582c421d563f103ff3a7c1adb599201aa821694e1f9"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/reader-dev/reader-dev/browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+      "bytes": 482,
+      "sha256": "70261d53133e85cda2b4db0704db8731555e418f3e8f6dec1dd40ef0c01d4ad5"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-authorized.png",
+      "bytes": 61528,
+      "sha256": "9f80efd76a186e80d7c7f9ca790e9e6750aa1775b78cb87ebd39c6c0d148eb78"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-manage-footer.png",
+      "bytes": 98996,
+      "sha256": "1394173634fb2c7fbd5c3173a11daf44798eb0997ed3a77a7f3f465ba3f79747"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-narrow-short-before-scroll.png",
+      "bytes": 24861,
+      "sha256": "7fccdbae2ae816b5dd5c415e69d9fe8f635f268eee20de0f042acd96eca83585"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-narrow-short.png",
+      "bytes": 26440,
+      "sha256": "9f231802349b9478342e1e19c86e7bc3317dcf01f99a19f0353f6e302b1c2188"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-notices-short.png",
+      "bytes": 37943,
+      "sha256": "4d455fd9b69a2eec92d7066cbbb353254644ace5a86e07acb5c6211a4a63d590"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-own-offline.png",
+      "bytes": 67646,
+      "sha256": "cfb4b13c1f528c83906a43a15b4894d799c07fccf1bc76c8a4bcdf981ebe71a0"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-permissions-narrow.png",
+      "bytes": 41055,
+      "sha256": "ff37a99e86c776b2a105bbea755c14a779dde0cc2f07f9ee83c1da06eddfb744"
+    },
+    {
+      "path": "vue/vue3-manager-namespace-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/_temp/vue3-manager-generated-wrong-space-rejected.png",
+      "bytes": 50796,
+      "sha256": "9245f057e4f294d678fa91185b7618cddd0309b9f8ec0fc4642e2591a6a10b3e"
+    },
+    {
+      "path": "vue/vue3-subdir-browser-reports-a82f08945a50c1520170fb6e8b3fb3c7a0b296fb/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+      "bytes": 487,
+      "sha256": "dae5dc1e444897b97f9f42ac26082a3bb1bb7a18710941a4d9cfd6365d0880e8"
+    },
+    {
+      "path": "xml/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1894,
+      "sha256": "1543b5bbe11f2886c9500a783c4788cc81fb632d8cc7168dc68629dea4bc2237"
+    },
+    {
+      "path": "xml/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 486,
+      "sha256": "f7e866bf22bc7cb7126f01d86d0bc3c14e939e8bee429509a044783fb04f71be"
+    },
+    {
+      "path": "xml/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 1901,
+      "sha256": "bf27924433b51bae9b2604510cc21fefce00aa228a1bbcccc649af541e9381df"
+    }
+  ]
+}
