@@ -227,6 +227,90 @@ class WorkerDocumentSnapshotTest(unittest.TestCase):
     def snapshot(self, page):
         return worker.MainDocumentSnapshot(page, monotonic=lambda: page.now)
 
+    def changing_content_error(self):
+        Error = type("Error", (Exception,), {})
+        return Error("Page.content: Unable to retrieve content because the page is navigating and changing the content.")
+
+    def test_known_read_only_content_race_waits_again_and_returns_only_the_new_document(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def race():
+            page.body = "generated-final"
+            raise self.changing_content_error()
+        page.on_content = race
+        self.assertEqual("generated-final", snapshot.read(2000, lambda: None))
+        self.assertEqual(2, page.content_calls)
+        self.assertGreaterEqual(page.now, 0.4)
+
+    def test_endless_content_races_cannot_renew_the_snapshot_deadline(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def race():
+            page.on_content = race
+            raise self.changing_content_error()
+        page.on_content = race
+        with self.assertRaises(TimeoutError):
+            snapshot.read(500, lambda: None)
+        self.assertGreaterEqual(page.content_calls, 2)
+        self.assertLessEqual(page.now, 0.500001)
+
+    def test_content_race_after_deadline_cannot_start_another_read(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def race():
+            page.now = 1.0
+            raise self.changing_content_error()
+        page.on_content = race
+        with self.assertRaises(TimeoutError):
+            snapshot.read(500, lambda: None)
+        self.assertEqual(1, page.content_calls)
+
+    def test_network_rejection_during_content_race_stays_fatal_before_another_read(self):
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        denied = []
+        def race():
+            denied.append(True)
+            raise self.changing_content_error()
+        def check_allowed():
+            if denied:
+                raise worker.BlockedScheme()
+        page.on_content = race
+        with self.assertRaises(worker.BlockedScheme):
+            snapshot.read(2000, check_allowed)
+        self.assertEqual(1, page.content_calls)
+
+    def test_lookalike_and_other_browser_errors_are_not_hidden_or_retried(self):
+        Error = type("Error", (Exception,), {})
+        errors = [RuntimeError(str(self.changing_content_error())),
+                  Error("Execution context was destroyed"), Error("Target page has been closed")]
+        for error in errors:
+            with self.subTest(kind=type(error).__name__):
+                page = GeneratedPage()
+                snapshot = self.snapshot(page)
+                def fail():
+                    raise error
+                page.on_content = fail
+                with self.assertRaises(type(error)) as raised:
+                    snapshot.read(2000, lambda: None)
+                self.assertIs(error, raised.exception)
+                self.assertEqual(1, page.content_calls)
+
+    def test_unprintable_browser_failure_keeps_the_original_exception(self):
+        def unprintable(_):
+            raise RuntimeError("generated-message-access-failure")
+        Error = type("Error", (Exception,), {"__str__": unprintable})
+        error = Error()
+        page = GeneratedPage()
+        snapshot = self.snapshot(page)
+        def fail():
+            raise error
+        page.on_content = fail
+        with self.assertRaises(Error) as raised:
+            snapshot.read(2000, lambda: None)
+        self.assertIs(error, raised.exception)
+        self.assertEqual(1, page.content_calls)
+
     def test_pending_main_navigation_cannot_return_the_old_document(self):
         page = GeneratedPage()
         snapshot = self.snapshot(page)

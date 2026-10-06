@@ -230,6 +230,21 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
             pass
 
 
+def is_read_only_content_navigation_race(error):
+    """Only the known Page.content navigation race may be read again.
+
+    This is not permission to repeat goto, POST or source rules. Other browser
+    errors, including destroyed execution contexts, remain fatal.
+    """
+    if type(error).__name__ != "Error":
+        return False
+    try:
+        message = str(error)
+    except Exception:
+        return False
+    return "Unable to retrieve content because the page is navigating and changing the content." in message
+
+
 class MainDocumentSnapshot:
     """Observe finite main-frame navigation without replaying requests or scripts.
 
@@ -297,10 +312,19 @@ class MainDocumentSnapshot:
             remaining_ms()
             if self.pending or self.generation != generation:
                 continue
-            # Unknown browser, closed-page and transport exceptions stay fatal;
-            # never treat them as transient or replay the original POST/goto.
-            with browser_operation("snapshotContent"):
-                body = self.page.content()
+            # A driver can report a content/navigation race before its main-frame
+            # event reaches this observer. Read-only snapshotting may wait again
+            # under the same deadline; unknown/closed/transport errors stay fatal.
+            try:
+                with browser_operation("snapshotContent"):
+                    body = self.page.content()
+            except Exception as error:
+                if not is_read_only_content_navigation_race(error):
+                    raise
+                check_allowed()
+                remaining_ms()
+                self.changed()
+                continue
             require_utf8_limit(body, MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
             with browser_operation("snapshotStabilityPump"):
                 self.page.wait_for_timeout(min(50, remaining_ms()))
