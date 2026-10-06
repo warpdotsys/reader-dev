@@ -90,6 +90,9 @@ test('not running the release guard in ordinary CI is rejected', (t) => {
 })
 
 for (const [name, file, mutate, expected] of [
+  ['native async Reader guard omitted', 'scripts/smoke-native-release.sh', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-native-async-reader'), /actual async Reader API/],
+  ['publisher async Reader guard omitted', 'scripts/import-native-release.sh', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-publisher-async-reader'), /actual async Reader API/],
+  ['full image async Reader guard omitted', '.github/workflows/browser-image.yml', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-image-async-reader'), /actual async Reader API/],
   ['boolean release assertion instead of the observed identity object', 'scripts/smoke-native-release.sh', text => text.replace('select(.version == $version and .buildRevision == $revision)', '.version == $version and .buildRevision == $revision'), /publisher artifact identity validation/],
   ['publisher omitting the runtime identity report validation', 'scripts/import-native-release.sh', text => text.replace('type == "object" and .version == $version and .buildRevision == $revision', 'true'), /publisher artifact identity validation/],
   ['publisher rehearsal without the real transferred evidence dependency', '.github/workflows/release-native.yml', text => text.replace('needs: [build-jar, native-images, verify-transferred-images]', 'needs: [build-jar, native-images]'), /real fresh-runner evidence/],

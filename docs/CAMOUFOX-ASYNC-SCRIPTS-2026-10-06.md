@@ -48,6 +48,46 @@ CI 使用已固定的 Node 24、JDK 11、Camoufox 依赖和原生 runner；构�
 
 [完整本机计数、41 份 XML 摘要及拒绝的中间包](evidence/camoufox-async-script-local-build-2026-10-06.json)分别保留，不追认旧包，不计算环境跳过为执行成功。此次没有启动原始 JAR、用户 Reader、真实 Cookie／正文或生产服务。
 
+本机最终源码的重复构建命令（项目根目录，保留既有 build 数据，不执行 clean）：
+
+```powershell
+$readerProject = (Get-Location).Path
+$env:JAVA_HOME = Join-Path $readerProject '.tools\jdk-11.0.8'
+$env:GRADLE_USER_HOME = Join-Path $readerProject '.gradle-user-home'
+$env:PATH = "$env:JAVA_HOME\bin;C:\Users\chong\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;" + $env:PATH
+& .\gradlew.bat -PreaderWebUi=vue3 test bootJar --max-workers=2 --no-daemon
+```
+
+### 已发起 GitHub 托管 runner 复验（当时状态）
+
+源码提交 `0664dc7ba31e52a97a604cb7df386840cb256b82` 已推送；PR 56 仍未合并。GitHub API 独立确认被测合并快照 `2b94a11b49c049f4a762a624860b33e0adab018a`，它不是默认分支提交。实际运行：
+
+- [Java/Kotlin 37422265010](https://github.com/warpdotsys/reader-dev/actions/runs/37422265010)已成功；下载 30,646 B 小制品，41 份 XML 的计数与 testcase 一一核对，149 项中 123 执行／26 跳过、零失败／错误。15 项默认 Camoufox 在这条普通 CI 全部跳过，不算浏览器通过。
+- [默认浏览器／完整镜像 37422265049](https://github.com/warpdotsys/reader-dev/actions/runs/37422265049)、[原生发布演练 37422265057](https://github.com/warpdotsys/reader-dev/actions/runs/37422265057)、[Vue 3 37422265116](https://github.com/warpdotsys/reader-dev/actions/runs/37422265116)已实际发起，尚未据此验收终态。默认引擎的真实 15 项 XML、包内身份和双架构后续结果仍须独立核对。
+- 本机真实生成的“15 项全部环境跳过”XML 也实际被共同发布守卫拒绝，退出码 1；不只是合成 XML 的负向单测。
+
+只有小型证据下载到本机，没有下载新镜像／共享 JAR。上一个 `929d518d` 的四条成功仍是旧源码结果，不能替代本次异步修复。
+
+### 新增真实默认引擎已独立核对（消费端完成前）
+
+本修改的两份实际 Camoufox XML 已下载并再次通过共同守卫：普通完整镜像与共享发布 JAR 两次各 15 项／零跳过、失败、错误。新增拒绝／永久 pending／下一渲染恢复契约分别实际用时 13.018／14.553 秒；结构结果／延迟 DOM／生成 Cookie／单次 POST 用例分别 22.416／28.488 秒。这是两次独立托管执行，不是把本机 15 项跳过改成通过。
+
+Java/Kotlin、Vue 3、完整镜像三条工作流已成功；Native 的共享 JAR、两架构原生生产者也成功，但消费者重载／导入和最终汇总仍待完成。当前核对 108 份 XML 和两份完整镜像 JSON：普通 JVM 两套各 149 项中 123 执行／26 环境跳过；实际 Camoufox 各 15、Chromium／快照 23、Vue 3 21 均零跳过／失败／错误。未把五个手动专项作业的 skip 算作成功，未宣称本次截图目视验收。
+
+完整镜像生成请求、四用户 Cookie 与资源预算通过；短时峰值 `825356288 B`（约 787 MiB），PID 峰值 207，2 CPU／2 GiB，触限、OOM 和实际 swap 为 0，**但仍允许 1 GiB swap**，不是长期无泄漏保证。这里只下载小型报告，不下载新共享 JAR 或多 GiB 镜像。
+
+[108 份实际 XML、两份 JSON、准确制品元数据和剩余范围](evidence/camoufox-async-script-hosted-2026-10-06.json)保留逐文件哈希。归档 ZIP 摘要是 GitHub 声明值，下载解压后的文件哈希才是在本机重新计算的；两者不混写。这一后端增量不等于原 JAR／旧远程 Promise 三方、起点真实登录／正文或生产交付。
+
+### 双架构消费端完成后的最终核对
+
+`37422265057` 最终全部六作业成功。实际 GitHub 托管 runner 分别完成共享 JAR、原生 AMD64／ARM64、两个新 runner 上的重载运行、以及同一发布导入器消费两份已测试镜像；没有 registry 登录／推送或生产访问。此前“消费端尚待完成”是历史中间状态，现已由本次自己的实际证据关闭。
+
+下载的 7,072 B 消费端制品含 20 份 JSON，逐文件哈希及严格类型／字段独立核对：两架构原生与重载的实际运行 JAR SHA-256 均为 `32db24dac1dcf4b56dd13ccea1d75dafd1f5450f918873ec1a33bfb8d7bd40bd`；版本对象都是 `4.0.7`／合并快照 `2b94a11b...`，不是 `true` 占位。重载 image ID 分别与自己的原生 metadata 相同；完整 HTTP／ReturnData、GET／POST、四用户 Cookie、并发生成搜索及原始资源字段通过。
+
+四次原生／重载的最高短时内存为 `864952320 B`（约 825 MiB），最高 PID 202，全部 2 CPU／2 GiB／256 PID，触限／OOM／实际 swap 为 0；**仍允许 1 GiB swap**。加上完整镜像的两份 JSON，目前共核对 108 份 XML／22 份 JSON。多 GiB 镜像和共享 JAR 只由 GitHub runner 下载；本机只下载小型证据与生成截图，不把未目视的八张管理图作为新视觉验收。
+
+本阶段的四条 GitHub 托管工作流／10 个实际作业已通过，不代表 PR 合并、正式标签、registry 发布、认证三方或生产上线。新 JSON 已补在[同一实际托管证据](evidence/camoufox-async-script-hosted-2026-10-06.json)，旧局部状态和首次打包不匹配证据保留。运行后补充文档与后续真实 Reader API 验收提交一起保存，避免只为文档更新重复触发大镜像构建。
+
 ## 已知问题／尚未验证
 
 1. 原 JAR／旧远程／新默认引擎的 Promise 同条件三方尚未运行。既有三方的同步脚本结果不自动证明新增异步结果。

@@ -17,6 +17,8 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/verify-reader-async-smoke.py'
+      - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/verify-camoufox-contracts.py'
       - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
@@ -77,6 +79,8 @@ on:
       - 'deploy/reader-pro/install_camoufox_pinned.py'
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
+      - 'scripts/verify-reader-async-smoke.py'
+      - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/verify-camoufox-contracts.py'
       - 'scripts/report-browser-cgroup.py'
       - 'scripts/smoke-public-webview.py'
@@ -450,6 +454,7 @@ jobs:
           '
           python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890 \
             | tee "$RUNNER_TEMP/bundled-browser-synthetic.json"
+          python3 scripts/verify-reader-async-smoke.py "$RUNNER_TEMP/bundled-browser-synthetic.json"
           if [[ "${{ inputs.real_public_source }}" == "true" ]]; then
             python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890 \
               | tee "$RUNNER_TEMP/camoufox-public-webview.log"

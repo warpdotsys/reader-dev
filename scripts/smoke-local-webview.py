@@ -21,6 +21,7 @@ class Fixture(ThreadingHTTPServer):
         super().__init__(address, FixtureHandler)
         self.cookies = []
         self.requests = []
+        self.async_marks = []
         self.lock = threading.Lock()
 
 
@@ -32,7 +33,23 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.serve_search("GET", None)
 
     def do_POST(self):
-        if self.path != "/search-post":
+        if self.path == "/async-mark":
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 <= length <= 1024:
+                self.send_error(400)
+                return
+            body = self.rfile.read(length).decode("utf-8")
+            if body not in ("phase=get", "phase=post"):
+                self.send_error(400)
+                return
+            with self.server.lock:
+                self.server.async_marks.append({"body": body,
+                    "cookie": self.headers.get("Cookie", "")})
+            self.send_response(200)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if self.path not in ("/search-post", "/search-async-post"):
             self.send_error(404)
             return
         length = int(self.headers.get("Content-Length", "0"))
@@ -48,11 +65,19 @@ class FixtureHandler(BaseHTTPRequestHandler):
             self.server.requests.append({"httpMethod": method, "body": body,
                                          "testHeader": self.headers.get("X-Fixture")})
             number = len(self.server.cookies)
-        name = ("WebView脚本原始书" if self.path in ("/search-script", "/search-post")
+        name = ("WebView脚本原始书" if self.path in ("/search-script", "/search-post", "/search-async", "/search-async-post")
                 else "本地浏览器测试书")
         html = ("<html><div class='book'><a href='/book'>"
                 f"<span class='name'>{name}</span></a>"
                 "<span class='author'>测试作者</span></div></html>")
+        if self.path in ("/search-async", "/search-async-post"):
+            # A genuine DOM delay, not a server response containing the expected
+            # book name. Only the source Promise can produce the accepted name.
+            fragment = ("<div class='book'><a href='/book'><span class='name'>"
+                        "WebView脚本原始书</span></a><span class='author'>测试作者</span></div>")
+            html = ("<html><body><main id='generated-result'></main><script>"
+                    "setTimeout(() => { document.querySelector('#generated-result').innerHTML = "
+                    + json.dumps(fragment, ensure_ascii=False) + "; }, 300);</script></body></html>")
         data = html.encode("utf-8")
         self.send_response(200)
         if number == 1:
@@ -88,6 +113,69 @@ def get_json(opener, base, path):
         return value
 
 
+def async_source_script(phase):
+    if phase not in ("get", "post"):
+        raise ValueError("Unexpected generated async phase")
+    cookie = ("asyncOnly=generated; Path=/" if phase == "get" else
+              "asyncOnly=; Max-Age=0; Path=/")
+    return ("new Promise((resolve, reject) => { const started = performance.now(); "
+            "const read = () => { const node = document.querySelector('.book .name'); "
+            "if (!node) { if (performance.now() - started > 5000) { "
+            "reject(new Error('GeneratedDomWaitTimedOut')); return; } "
+            "setTimeout(read, 25); return; } "
+            "node.textContent = 'WebView异步书'; document.cookie = " + json.dumps(cookie) + "; "
+            "fetch('/async-mark', {method:'POST', body:" + json.dumps("phase=" + phase) + "})"
+            ".then(response => { if (!response.ok) throw new Error('GeneratedMarkerFailed'); "
+            "resolve(document.documentElement.outerHTML); }).catch(reject); }; "
+            "setTimeout(read, 75); })")
+
+
+def exercise_async_reader(opener, reader_base, fixture, source):
+    """Actual Reader API calls; generated target/marker counts detect replays."""
+    fixture_base = source["bookSourceUrl"]
+    cases = []
+    start = len(fixture.requests)
+    for phase, path, method, body, header, cookie in (
+            ("get", "/search-async", "GET", None, None, ""),
+            ("post", "/search-async-post", "POST", "q=async", "async", "asyncOnly=generated")):
+        options = {"webView": True, "webJs": async_source_script(phase)}
+        if method == "POST":
+            options.update(method=method, body=body, headers={"X-Fixture": header})
+        updated = dict(source)
+        updated["searchUrl"] = fixture_base + path + ", " + json.dumps(options)
+        call(opener, reader_base, "/reader3/saveBookSource", updated)
+        value = call(opener, reader_base, "/reader3/searchBook", {
+            "key": "async-" + phase, "page": 1, "bookSourceUrl": fixture_base})
+        books = value.get("data")
+        if (value.get("isSuccess") is not True or not isinstance(books, list) or len(books) != 1 or
+                books[0].get("name") != "WebView异步书" or books[0].get("author") != "测试作者" or
+                books[0].get("bookUrl") != fixture_base + "/book" or value.get("errorMsg") != ""):
+            raise RuntimeError("Reader did not parse the generated async result")
+        target = {"httpMethod": method, "body": body, "testHeader": header}
+        expected_requests = start + len(cases) + 1
+        marks = [mark for mark in fixture.async_marks if mark["body"] == "phase=" + phase]
+        mark_cookie = "asyncOnly=generated" if phase == "get" else ""
+        if (len(fixture.requests) != expected_requests or fixture.requests[-1] != target or
+                fixture.cookies[-1] != cookie or len(marks) != 1 or marks[0]["cookie"] != mark_cookie):
+            raise RuntimeError("Async target/script replay or generated Cookie mismatch")
+        cases.append({"case": phase, "status": 200, "isSuccess": value["isSuccess"],
+            "errorMsg": value["errorMsg"], "count": len(books), "nameMatches": True,
+            "authorMatches": True, "bookUrlMatches": True, "targetRequest": target,
+            "targetCookie": fixture.cookies[-1], "scriptMarkCount": len(marks),
+            "scriptMarkCookie": marks[0]["cookie"]})
+    call(opener, reader_base, "/reader3/saveBookSource", source)
+    value = call(opener, reader_base, "/reader3/searchBook", {
+        "key": "async-cleanup-followup", "page": 1, "bookSourceUrl": fixture_base})
+    books = value.get("data")
+    if (value.get("isSuccess") is not True or value.get("errorMsg") != "" or
+            not isinstance(books, list) or len(books) != 1 or
+            books[0].get("name") != "本地浏览器测试书" or
+            len(fixture.requests) != start + 3 or fixture.cookies[-1] != ""):
+        raise RuntimeError("Async Cookie deletion did not persist into the same user's next Reader call")
+    return cases, {"sameUserNextRequestCookie": fixture.cookies[-1],
+                   "sameUserNextRequestCount": len(books), "deletedVerified": True}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reader-base", default="http://127.0.0.1:18890")
@@ -95,9 +183,8 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.concurrent_requests <= 8:
         parser.error("Concurrent request count must stay between 1 and 8")
-    parsed = urllib.parse.urlparse(args.reader_base)
-    if parsed.scheme != "http" or parsed.hostname not in ("127.0.0.1", "localhost"):
-        parser.error("Reader must be a loopback HTTP endpoint in an isolated work directory")
+    if args.reader_base not in ("http://127.0.0.1:18890", "http://127.0.0.1:18891"):
+        parser.error("Reader must use an isolated CI smoke endpoint, never the user's Reader")
 
     fixture = Fixture(("127.0.0.1", 0))
     fixture_base = f"http://127.0.0.1:{fixture.server_port}"
@@ -172,6 +259,11 @@ def main():
         if fixture.requests[4:] != expected_reference_requests or fixture.cookies != expected + ["", ""]:
             raise RuntimeError("Bundled-browser reference method, body, header, or Cookie mismatch")
 
+        async_cases, async_cleanup = exercise_async_reader(alice, args.reader_base, fixture, source)
+        expected_before_burst = expected + ["", "", "", "asyncOnly=generated", ""]
+        if fixture.cookies != expected_before_burst:
+            raise RuntimeError("Generated async Cookie lifecycle or initial reference sequence changed")
+
         # A small simultaneous burst exercises the Reader queue and isolated
         # browser contexts under the image's 2 GiB / 256 PID budget. Each
         # account owns a separate HTTP cookie jar and saved source.
@@ -189,10 +281,11 @@ def main():
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.concurrent_requests) as pool:
             burst_counts = list(pool.map(burst_search, range(args.concurrent_requests)))
-        if fixture.cookies != expected + ["", ""] + [""] * args.concurrent_requests:
+        if fixture.cookies != expected_before_burst + [""] * args.concurrent_requests:
             raise RuntimeError("Concurrent WebView requests leaked or changed a user Cookie")
         print(json.dumps({"searches": searches, "cookieSequence": expected,
                           "legacyReferenceCases": reference_cases,
+                          "asyncReaderCases": async_cases, "asyncCookieCleanup": async_cleanup,
                           "concurrentRequests": args.concurrent_requests,
                           "concurrentBookCounts": burst_counts},
                          ensure_ascii=False))

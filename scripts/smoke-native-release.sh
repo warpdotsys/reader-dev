@@ -75,5 +75,6 @@ docker exec "$container_id" sh -ec '
 '
 python3 scripts/smoke-local-webview.py --reader-base "http://127.0.0.1:$port" \
   | tee "$output/BROWSER_SYNTHETIC.json"
+python3 scripts/verify-reader-async-smoke.py "$output/BROWSER_SYNTHETIC.json"
 docker exec -i "$container_id" python - < scripts/report-browser-cgroup.py \
   | tee "$output/BROWSER_RESOURCE_BUDGET.json"

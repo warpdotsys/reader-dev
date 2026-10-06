@@ -168,6 +168,12 @@ const smokeCall = nativeBuild.indexOf('bash scripts/smoke-native-release.sh')
 const archiveExport = nativeBuild.indexOf('docker save ')
 const browserSmoke = nativeSmoke.indexOf('python3 scripts/smoke-local-webview.py')
 const budgetCheck = nativeSmoke.indexOf('scripts/report-browser-cgroup.py')
+const asyncReaderCheck = nativeSmoke.indexOf('python3 scripts/verify-reader-async-smoke.py')
+if (asyncReaderCheck < browserSmoke || asyncReaderCheck >= budgetCheck ||
+    !browserWorkflow.includes('python3 scripts/verify-reader-async-smoke.py') ||
+    !nativeImporter.includes('python3 scripts/verify-reader-async-smoke.py "$report_directory/BROWSER_SYNTHETIC.json"')) {
+  throw new Error('native, full-image, and publisher stages must verify actual async Reader API observations')
+}
 if (smokeCall < 0 || archiveExport < smokeCall || browserSmoke < 0 || budgetCheck < browserSmoke ||
     !nativeBuild.includes('node scripts/release-native-artifacts.mjs record ')) {
   throw new Error('native browser and resource checks must finish before exporting an image for registry writes')

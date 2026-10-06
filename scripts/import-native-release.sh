@@ -24,6 +24,7 @@ docker image inspect "reader-pro:camoufox-smoke-$arch" > "$directory/image-inspe
 node scripts/release-native-artifacts.mjs loaded "$arch" "$version" "$revision" "$dist" "$directory"
 cmp "$evidence/metadata.json" "$directory/metadata.json"
 for report_directory in "$directory" "$evidence"; do
+  python3 scripts/verify-reader-async-smoke.py "$report_directory/BROWSER_SYNTHETIC.json"
   # Retain and require the actual identity object, not only a boolean assertion.
   jq -e --arg version "$version" --arg revision "$revision" \
     'type == "object" and .version == $version and .buildRevision == $revision' \
