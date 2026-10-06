@@ -57,6 +57,7 @@ class CamoufoxWebviewRendererTest {
     private val earlyNavigationBlockerHits = AtomicInteger()
     private val earlyNavigationDomReadyHits = AtomicInteger()
     private val earlyNavigationDomReadyAtFinal = AtomicInteger(-1)
+    private val earlyNavigationDomReadyAtNavigation = AtomicInteger(-1)
     private val earlyNavigationLoadingAtFinal = AtomicInteger(-1)
     private val earlyNavigationFixtureTimeouts = AtomicInteger()
     private val earlyNavigationBlockerStarted = CountDownLatch(1)
@@ -141,10 +142,13 @@ class CamoufoxWebviewRendererTest {
                     // until the final navigation arrives: no timer-only inference.
                     respond(exchange,
                         "<html><body><div id='result'>generated-early-intermediate</div><script>" +
-                            "document.addEventListener('DOMContentLoaded', () => " +
-                            "navigator.sendBeacon('/early-navigation-dom-ready', 'generated'));" +
+                            "let initialDomReadyCount = 0; " +
+                            "document.addEventListener('DOMContentLoaded', () => { " +
+                            "initialDomReadyCount++; " +
+                            "navigator.sendBeacon('/early-navigation-dom-ready', 'generated'); });" +
                             "fetch('/early-navigation-arm').then(() => " +
-                            "location.replace('/early-navigation-final?initialReady=' + document.readyState));</script>" +
+                            "location.replace('/early-navigation-final?initialReady=' + document.readyState + " +
+                            "'&initialDomReady=' + initialDomReadyCount));</script>" +
                             "<script src='/early-navigation-blocker.js'></script></body></html>",
                         "text/html; charset=utf-8")
                 }
@@ -175,8 +179,14 @@ class CamoufoxWebviewRendererTest {
                     respond(exchange, "generated-ready", "text/plain; charset=utf-8")
                 }
                 "/early-navigation-final" -> {
+                    // Two different HTTP requests can reach the server out of order.
+                    // Measure the event count in the same JS turn as location.replace,
+                    // not from arrival ordering of the cancelled document's beacon.
+                    val query = exchange.requestURI.rawQuery.orEmpty().split('&')
+                        .associate { it.substringBefore('=') to it.substringAfter('=', "") }
                     earlyNavigationDomReadyAtFinal.set(earlyNavigationDomReadyHits.get())
-                    earlyNavigationLoadingAtFinal.set(if (exchange.requestURI.rawQuery == "initialReady=loading") 1 else 0)
+                    earlyNavigationDomReadyAtNavigation.set(query["initialDomReady"]?.toIntOrNull() ?: -1)
+                    earlyNavigationLoadingAtFinal.set(if (query["initialReady"] == "loading") 1 else 0)
                     earlyNavigationFinalVisits.incrementAndGet()
                     earlyNavigationFinalRequested.countDown()
                     respond(exchange,
@@ -423,14 +433,15 @@ class CamoufoxWebviewRendererTest {
                 "starts=${earlyNavigationStarts.get()} posts=${earlyNavigationPostStarts.get()} " +
                 "blockerHits=${earlyNavigationBlockerHits.get()} finalVisits=${earlyNavigationFinalVisits.get()} " +
                 "domReadyAtFinal=${earlyNavigationDomReadyAtFinal.get()} " +
+                "domReadyAtNavigation=${earlyNavigationDomReadyAtNavigation.get()} " +
                 "loadingAtFinal=${earlyNavigationLoadingAtFinal.get()} " +
                 "fixtureTimeouts=${earlyNavigationFixtureTimeouts.get()}", error)
         }
         assertEquals("The fixture handshake must not silently expire", 0, earlyNavigationFixtureTimeouts.get())
         assertEquals("The original parser must actually be blocked", 1, earlyNavigationBlockerHits.get())
         assertEquals("The generated destination must actually be visited", 1, earlyNavigationFinalVisits.get())
-        assertEquals("The final request must precede the original DOMContentLoaded", 0,
-            earlyNavigationDomReadyAtFinal.get())
+        assertEquals("Navigation must start before the original DOMContentLoaded", 0,
+            earlyNavigationDomReadyAtNavigation.get())
         assertEquals("The source document must actually still be loading when it navigates", 1,
             earlyNavigationLoadingAtFinal.get())
         assertTrue("An early navigation must return its actual final document",

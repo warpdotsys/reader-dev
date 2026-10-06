@@ -8,7 +8,7 @@ import types
 import unittest
 from pathlib import Path
 from urllib.parse import urlsplit
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 def load_worker():
@@ -27,6 +27,65 @@ def load_worker():
 
 
 worker = load_worker()
+
+
+class WorkerInitialNavigationPolicyTest(unittest.TestCase):
+    def test_empty_source_keeps_the_existing_dom_ready_snapshot_policy(self):
+        for source in (None, ""):
+            self.assertEqual("domcontentloaded", worker.initial_navigation_wait_until(source, None))
+
+    def test_source_regex_keeps_its_dom_ready_resource_sniffing_policy(self):
+        pattern = worker.re.compile("generated-resource")
+        for source in (None, "", "generated-rule"):
+            self.assertEqual("domcontentloaded", worker.initial_navigation_wait_until(source, pattern))
+
+    def fixture(self):
+        browser = MagicMock()
+        context = MagicMock()
+        context.cookies.return_value = []
+        page = context.new_page.return_value
+        payload = {"url": "https://generated.invalid/start", "timeoutMs": 1234,
+                   "proxy": "http://127.0.0.1:1", "javaScript": "'generated-source'"}
+        return browser, context, page, payload
+
+    def test_render_uses_load_for_both_existing_goto_and_html_calls_then_runs_the_rule_once(self):
+        # Mock protocol integration only. Actual browser navigation is accepted
+        # separately by the mandatory generated HTTP contract on hosted runners.
+        for html in (None, "<p>generated-only</p>"):
+            with self.subTest(html_present=html is not None):
+                browser, context, page, payload = self.fixture()
+                if html is not None:
+                    payload["html"] = html
+                with patch.object(worker, "Camoufox", return_value=browser), \
+                        patch.object(worker, "NewContext", return_value=context), \
+                        patch.object(worker, "MainDocumentSnapshot") as snapshot, \
+                        patch.object(worker, "evaluate_source_script", return_value="generated-result") as rule:
+                    result = worker.render(payload)
+                page.goto.assert_called_once_with(payload["url"], wait_until="load", timeout=1234)
+                if html is None:
+                    page.set_content.assert_not_called()
+                else:
+                    page.set_content.assert_called_once_with(html, wait_until="load", timeout=1234)
+                snapshot.assert_not_called()
+                rule.assert_called_once()
+                self.assertEqual((page, payload["javaScript"], 1234), rule.call_args.args[:3])
+                self.assertEqual({"body": "generated-result", "cookies": []}, result)
+                context.close.assert_called_once()
+
+    def test_initial_navigation_failure_is_fatal_without_rule_execution_or_request_replay(self):
+        browser, context, page, payload = self.fixture()
+        failure = TimeoutError("generated-load-timeout")
+        page.goto.side_effect = failure
+        with patch.object(worker, "Camoufox", return_value=browser), \
+                patch.object(worker, "NewContext", return_value=context), \
+                patch.object(worker, "evaluate_source_script") as rule:
+            with self.assertRaises(TimeoutError) as raised:
+                worker.render(payload)
+        self.assertIs(failure, raised.exception)
+        page.goto.assert_called_once_with(payload["url"], wait_until="load", timeout=1234)
+        page.set_content.assert_not_called()
+        rule.assert_not_called()
+        context.close.assert_called_once()
 
 
 class WorkerBrowserDiagnosticTest(unittest.TestCase):

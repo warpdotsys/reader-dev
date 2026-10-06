@@ -599,10 +599,21 @@ def merge_response_cookie_fallbacks(cookie_values, final_visible, response_cooki
     return cookie_values
 
 
+def initial_navigation_wait_until(source, source_pattern):
+    """Match the archived rule's load gate, without changing snapshot/sniffing paths.
+
+    Load follows a pre-load client redirect; it is not an oracle for arbitrary
+    later dynamic work. A rule still runs once and later state loss stays fatal.
+    """
+    return "load" if source and source_pattern is None else "domcontentloaded"
+
+
 def render(payload):
     url = payload["url"]
     timeout_ms = int(payload["timeoutMs"])
     source_pattern = re.compile(payload["sourceRegex"]) if payload.get("sourceRegex") else None
+    source = payload.get("javaScript")
+    navigation_wait_until = initial_navigation_wait_until(source, source_pattern)
     state = {"matched_url": None, "post_sent": False, "blocked": False}
     document_origin = urlsplit(url)
     response_cookies = {}
@@ -727,20 +738,17 @@ def render(payload):
 
                 context.route("**/*", route_request)
                 page = context.new_page()
-                snapshot = (MainDocumentSnapshot(page) if not source_pattern
-                            and not payload.get("javaScript") else None)
+                snapshot = (MainDocumentSnapshot(page) if not source_pattern and not source else None)
                 try:
                     with browser_operation("initialNavigation"):
-                        page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+                        page.goto(url, wait_until=navigation_wait_until, timeout=timeout_ms)
                 except Exception:
                     if state["matched_url"] is None:
                         raise
 
                 html = payload.get("html")
                 if html is not None and state["matched_url"] is None:
-                    page.set_content(html, wait_until="domcontentloaded", timeout=timeout_ms)
-
-                source = payload.get("javaScript")
+                    page.set_content(html, wait_until=navigation_wait_until, timeout=timeout_ms)
 
                 def check_allowed():
                     if state["blocked"]:

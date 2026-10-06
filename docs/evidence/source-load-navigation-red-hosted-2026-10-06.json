@@ -1,0 +1,74 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "993d5ef6daf06663bfc258fdab01a6b88bd29c28",
+  "testedMergeRevision": "d0f88b9bc4538c46854c1065a70334a7463b34f1",
+  "productWorkerChangedInBaseline": false,
+  "native": {
+    "runId": 37454361359,
+    "jobId": 112238207859,
+    "runConclusion": "failure",
+    "artifactId": 11409541113,
+    "artifactName": "reader-release-camoufox-contract-d0f88b9bc4538c46854c1065a70334a7463b34f1",
+    "artifactSizeBytes": 2645,
+    "githubDeclaredArchiveSha256": "18078f151101617bbc0d9fa65a97bf2569fc62eb278a90daf5f2f94503d05e7a",
+    "xmlSha256": "46b22b40749b531a977fbcf6b63a3048a33cc41d7b5457b15a9dd2a5291ff262",
+    "tests": 18,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "exact18GuardIndependentlyRejected": true,
+    "guardExitCode": 1,
+    "failedCases": [
+      "generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost",
+      "generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad"
+    ],
+    "earlyNavigationFailure": {
+      "assertion": "serverReceivedDomReadyBeaconCountAtFinalRequest",
+      "expected": 0,
+      "actual": 1,
+      "browserReadyStateAtNavigationAssertionReached": false,
+      "uniqueCauseProven": false
+    }
+  },
+  "fullImage": {
+    "runId": 37454361323,
+    "jobId": 112238208033,
+    "runConclusion": "failure",
+    "artifactId": 11408962551,
+    "artifactName": "camoufox-contract-report",
+    "artifactSizeBytes": 2445,
+    "githubDeclaredArchiveSha256": "dccf3bddf0314f365baf4bf0df39347b9cf4adff1a4ed0c43bc3b293d1ab05a8",
+    "xmlSha256": "f8b85103028dda8367a6d0a74aedac5a6ea502f00843e066d51352070d0e8d61",
+    "tests": 18,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "exact18GuardIndependentlyRejected": true,
+    "guardExitCode": 1,
+    "failedCases": ["generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad"],
+    "earlyNavigationCasePassedInThisRunOnly": true
+  },
+  "newSourceNavigationFailureObservedInBothReports": {
+    "errorClass": "SourceScriptStateLost",
+    "generatedOnly": true,
+    "originalNavigationStarts": 1,
+    "originalPostStarts": 1,
+    "loadBlockingResourceHits": 1,
+    "finalDocumentVisits": 1,
+    "originalDocumentInteractiveAtFinalNavigation": 1,
+    "sourceRulePostCount": 1,
+    "fixtureTimeouts": 0,
+    "testPassed": false,
+    "originalPostReplayed": false,
+    "sourceRuleReplayed": false
+  },
+  "scope": {
+    "generatedHttpFixturesOnly": true,
+    "realSiteCauseProven": false,
+    "originalJarExecuted": false,
+    "userCredentialsUsed": false,
+    "privateBookBodiesRead": false,
+    "candidatePublishedOrDeployed": false,
+    "rawXmlCommitted": false
+  }
+}
