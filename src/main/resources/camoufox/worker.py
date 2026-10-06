@@ -63,6 +63,7 @@ BROWSER_OPERATION_PHASES = frozenset({
 SOURCE_STATE_FAILURE_KINDS = frozenset({
     "sourceStateMissing", "sourceStateTypeInvalid", "sourceStateBodyInvalid", "sourceStateStatusInvalid",
 })
+SOURCE_DOCUMENT_OBSERVATIONS = frozenset({"sameDocument", "differentDocument", "unavailable"})
 
 
 @contextlib.contextmanager
@@ -102,8 +103,12 @@ def browser_failure_diagnostic(error):
         observed = getattr(error, "_reader_main_frame_navigation_observed", None)
         if (phase == "sourceScriptRead" and isinstance(reason, str) and
                 reason in SOURCE_STATE_FAILURE_KINDS and type(observed) is bool):
-            return {"operation": phase, "kind": reason, "errorClass": "SourceScriptStateLost",
-                    "mainFrameNavigationObserved": observed}
+            diagnostic = {"operation": phase, "kind": reason, "errorClass": "SourceScriptStateLost",
+                          "mainFrameNavigationObserved": observed}
+            document = getattr(error, "_reader_source_document_observation", None)
+            if isinstance(document, str) and document in SOURCE_DOCUMENT_OBSERVATIONS:
+                diagnostic["sourceDocumentObservation"] = document
+            return diagnostic
     if name == "Error":
         try:
             message = str(error)
@@ -124,6 +129,10 @@ def browser_failure_diagnostic(error):
 # cannot bound a Promise that never settles. Only serialized results cross IPC;
 # rejected values/messages may contain credentials and must remain in the page.
 SOURCE_SCRIPT_START = """({source, key}) => {
+    // Keep an opaque reference, not HTML or a second page-global marker. A null
+    // prototype prevents the rule from turning this holder into a thenable by
+    // modifying Object.prototype; START must return even for a pending rule.
+    const holder = {__proto__: null, originDocument: document};
     const state = {status: 'pending'};
     Object.defineProperty(globalThis, key, {value: state, configurable: true});
     const stringify = JSON.stringify;
@@ -143,6 +152,7 @@ SOURCE_SCRIPT_START = """({source, key}) => {
         // nested Promises. Do not inspect value.then before Promise.resolve.
         resolve(value).then(finish, reject);
     } catch (_) { reject(); }
+    return holder;
 } """
 
 SOURCE_SCRIPT_READ = """(key) => {
@@ -153,6 +163,30 @@ SOURCE_SCRIPT_READ = """(key) => {
 } """
 
 SOURCE_SCRIPT_CLEAR = """(key) => { delete globalThis[key]; } """
+SOURCE_SCRIPT_DOCUMENT = """(holder) => holder.originDocument === document """
+
+
+def source_document_observation(page, holder, deadline, check_allowed, monotonic):
+    """One optional read, within the original budget; unavailable is not a cause.
+
+    A disposed/foreign handle, closed context, policy denial, expired budget or
+    non-boolean result cannot replace the existing fatal state-loss exception.
+    Never copy or classify the untrusted error text. The parent watchdog still
+    bounds a blocked browser operation, as for all existing evaluate calls.
+    """
+    try:
+        check_allowed()
+        if holder is None or monotonic() >= deadline:
+            return "unavailable"
+        same = page.evaluate(SOURCE_SCRIPT_DOCUMENT, holder)
+        check_allowed()
+        if monotonic() >= deadline:
+            return "unavailable"
+        if type(same) is bool:
+            return "sameDocument" if same else "differentDocument"
+    except Exception:
+        pass
+    return "unavailable"
 
 
 def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=time.monotonic):
@@ -168,6 +202,7 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
     deadline = monotonic() + timeout_ms / 1000.0
     key = "__reader_source_" + secrets.token_hex(16)
     navigation_observed = False
+    document_holder = None
 
     def frame_navigated(frame):
         nonlocal navigation_observed
@@ -181,6 +216,8 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
         # An event is not proof of a replacement document (same-document
         # navigation can also emit it). Never claim a unique cause from this bit.
         error._reader_main_frame_navigation_observed = navigation_observed
+        error._reader_source_document_observation = source_document_observation(
+            page, document_holder, deadline, check_allowed, monotonic)
         return error
 
     def remaining_ms():
@@ -193,7 +230,7 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
         page.on("framenavigated", frame_navigated)
         check_allowed()
         with browser_operation("sourceScriptStart"):
-            page.evaluate(SOURCE_SCRIPT_START, {"source": source, "key": key})
+            document_holder = page.evaluate_handle(SOURCE_SCRIPT_START, {"source": source, "key": key})
         while True:
             check_allowed()
             remaining_ms()
@@ -218,6 +255,11 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
             # Pump actual browser events; sleeping Python would hide completion.
             page.wait_for_timeout(min(50, remaining_ms()))
     finally:
+        if document_holder is not None:
+            try:
+                document_holder.dispose()
+            except Exception:
+                pass
         try:
             page.remove_listener("framenavigated", frame_navigated)
         except Exception:

@@ -14,18 +14,21 @@ function helper(name) {
   assert.ok(end > start);
   return worker.slice(start, end);
 }
-const scripts = Object.fromEntries(['START', 'READ', 'CLEAR'].map(operation =>
+const scripts = Object.fromEntries(['START', 'READ', 'CLEAR', 'DOCUMENT'].map(operation =>
   [operation, helper(`SOURCE_SCRIPT_${operation}`)]));
 
 function page(source, key = '__generated_test_state') {
-  const context = vm.createContext({ setTimeout, clearTimeout });
+  const context = vm.createContext({ setTimeout, clearTimeout, document: { generated: true } });
   const functions = Object.fromEntries(Object.entries(scripts).map(([operation, script]) =>
     [operation, vm.runInContext(`(${script})`, context)]));
-  assert.equal(functions.START({ source, key }), undefined, 'Start must not return a pending Promise');
+  const holder = functions.START({ source, key });
+  assert.equal(Object.getPrototypeOf(holder), null, 'Opaque holder must not adopt a page thenable');
+  assert.equal(holder.then, undefined, 'Start must not return a pending Promise');
   return {
     context,
     read: () => JSON.parse(JSON.stringify(functions.READ(key))),
     clear: () => functions.CLEAR(key),
+    documentObservation: () => functions.DOCUMENT(holder),
   };
 }
 
@@ -120,4 +123,22 @@ test('native adoption reads a mutating then getter only once', async () => {
   const subject = page("({get then(){globalThis.generatedGetterReads = (globalThis.generatedGetterReads || 0) + 1; return resolve => resolve('once');}})");
   assert.deepEqual(await settled(subject), { status: 'done', body: 'once' });
   assert.equal(subject.context.generatedGetterReads, 1);
+});
+
+test('document holder captures the reference before source execution', async () => {
+  // A VM global swap is not browser navigation; this checks helper semantics only.
+  const subject = page("globalThis.document = {generated:'replacement'}; 'generated-result'");
+  assert.equal(subject.documentObservation(), false);
+  assert.deepEqual(await settled(subject), { status: 'done', body: 'generated-result' });
+});
+test('state deletion leaves document identity without another page-global marker', () => {
+  const subject = page("delete globalThis.__generated_test_state; new Promise(()=>{})");
+  assert.equal(subject.read(), null);
+  assert.equal(subject.documentObservation(), true);
+  assert.deepEqual(Object.keys(subject.context).sort(), ['clearTimeout', 'document', 'setTimeout']);
+});
+test('hostile prototype then does not make the document holder await a rule', async () => {
+  const subject = page("Object.prototype.then = () => {}; 'generated-result'");
+  assert.equal(subject.documentObservation(), true);
+  assert.deepEqual(await settled(subject), { status: 'done', body: 'generated-result' });
 });

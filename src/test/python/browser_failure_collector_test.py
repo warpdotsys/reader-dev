@@ -40,6 +40,20 @@ class BrowserFailureCollectorTest(unittest.TestCase):
         self.assertEqual([], report["records"])
         self.assertNotIn("PRIVATE", json.dumps(report))
 
+    def test_accepts_only_three_optional_document_observation_labels(self):
+        for label in ("sameDocument", "differentDocument", "unavailable"):
+            value = dict(self.state(), sourceDocumentObservation=label)
+            self.assertEqual([value], COLLECTOR.collect(io.BytesIO(self.line(value)))["records"])
+        for label in ("PRIVATE_COOKIE", "https://private.invalid", None, 1, True, [], {}):
+            value = dict(self.state(), sourceDocumentObservation=label)
+            self.assertEqual([], COLLECTOR.collect(io.BytesIO(self.line(value)))["records"])
+
+    def test_optional_document_label_rejects_unknown_and_duplicate_fields(self):
+        value = dict(self.state(), sourceDocumentObservation="sameDocument")
+        self.assertEqual([], COLLECTOR.collect(io.BytesIO(self.line(dict(value, rawDocument="PRIVATE_BODY"))))["records"])
+        duplicate = self.line(value).rstrip()[:-1] + b',"sourceDocumentObservation":"unavailable"}\n'
+        self.assertEqual([], COLLECTOR.collect(io.BytesIO(duplicate))["records"])
+
     def test_duplicate_fields_invalid_utf8_and_trailing_raw_text_are_rejected(self):
         line = self.line(self.state()).rstrip()
         for raw in (line[:-1] + b',"kind":"sourceStateMissing"}\n',

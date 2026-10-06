@@ -18,6 +18,8 @@ on:
       - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/import-native-release.sh'
       - 'scripts/verify-camoufox-contracts.py'
+      - 'scripts/verify-source-document-observation.py'
+      - 'src/test/python/source_document_observation_report_test.py'
       - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererTest.kt'
       - 'src/test/python/camoufox_contract_report_test.py'
@@ -111,12 +113,22 @@ jobs:
           version='${{ steps.jar.outputs.version }}'
           cmp <(unzip -p "dist/reader-pro-v${version}.jar" BOOT-INF/classes/camoufox/worker.py) src/main/resources/camoufox/worker.py
           (cd dist && sha256sum -c SHA256SUMS)
+          timeout 60s "$READER_CAMOUFOX_PYTHON" scripts/verify-source-document-observation.py \
+            --browser-version "$READER_CAMOUFOX_BROWSER_VERSION" > build/source-document-observation.json
       - name: Preserve actual default-engine release contracts including failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: reader-release-camoufox-contract-${{ github.sha }}
           path: build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve actual source document observations including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-release-source-document-${{ github.sha }}
+          path: build/source-document-observation.json
           if-no-files-found: error
           retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -14,6 +14,7 @@ PHASES = frozenset(("initialNavigation", "snapshotEventPump", "snapshotLoadState
 KINDS = frozenset(("unclassified", "navigationInterrupted", "executionContextDestroyed", "documentChanging"))
 STATE_KINDS = frozenset(("sourceStateMissing", "sourceStateTypeInvalid",
                          "sourceStateBodyInvalid", "sourceStateStatusInvalid"))
+DOCUMENT_OBSERVATIONS = frozenset(("sameDocument", "differentDocument", "unavailable"))
 
 
 def unique_fields(pairs):
@@ -40,10 +41,15 @@ def diagnostic(line):
     if set(value) == {"operation", "kind", "errorClass"}:
         return value if value["kind"] in KINDS and value["errorClass"] in {
             "Error", "TimeoutError", "TargetClosedError", "Other"} else None
-    if (set(value) == {"operation", "kind", "errorClass", "mainFrameNavigationObserved"} and
+    state_fields = {"operation", "kind", "errorClass", "mainFrameNavigationObserved"}
+    if (set(value) in (state_fields, state_fields | {"sourceDocumentObservation"}) and
             value["operation"] == "sourceScriptRead" and value["kind"] in STATE_KINDS and
             value["errorClass"] == "SourceScriptStateLost" and
             type(value["mainFrameNavigationObserved"]) is bool):
+        if "sourceDocumentObservation" in value and (
+                type(value["sourceDocumentObservation"]) is not str or
+                value["sourceDocumentObservation"] not in DOCUMENT_OBSERVATIONS):
+            return None
         return value
     return None
 

@@ -17,7 +17,7 @@ class CamoufoxSourceScriptJavaScriptTest(unittest.TestCase):
                                    text=True, encoding="utf-8", timeout=15)
         self.assertEqual(0, completed.returncode,
                          "Generated-only worker JS tests failed; run the Node fixture for diagnostics")
-        self.assertRegex(completed.stdout, re.compile(r"^# tests 26$", re.MULTILINE))
+        self.assertRegex(completed.stdout, re.compile(r"^# tests 29$", re.MULTILINE))
         for counter in ("fail", "cancelled", "skipped", "todo"):
             self.assertRegex(completed.stdout, re.compile(r"^# " + counter + r" 0$", re.MULTILINE))
 

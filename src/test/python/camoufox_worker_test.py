@@ -404,6 +404,16 @@ class WorkerDocumentSnapshotTest(unittest.TestCase):
         self.assertEqual(0, page.content_calls)
 
 
+class GeneratedDocumentHandle:
+    def __init__(self, page):
+        self.page = page
+
+    def dispose(self):
+        self.page.handles_disposed += 1
+        if self.page.on_dispose:
+            self.page.on_dispose()
+
+
 class GeneratedScriptPage(GeneratedPage):
     """Controlled IPC/event-loop double; does not execute JavaScript."""
 
@@ -417,6 +427,16 @@ class GeneratedScriptPage(GeneratedPage):
         self.on_start = None
         self.on_read = None
         self.on_clear = None
+        self.document_observation = True
+        self.document_reads = 0
+        self.handles_disposed = 0
+        self.on_document_read = None
+        self.on_dispose = None
+
+    def evaluate_handle(self, script, argument):
+        assert script == worker.SOURCE_SCRIPT_START
+        self.evaluate(script, argument)
+        return GeneratedDocumentHandle(self)
 
     def evaluate(self, script, argument):
         if script == worker.SOURCE_SCRIPT_START:
@@ -436,6 +456,12 @@ class GeneratedScriptPage(GeneratedPage):
             if self.on_clear:
                 self.on_clear()
             self.key = None
+        elif script == worker.SOURCE_SCRIPT_DOCUMENT:
+            assert isinstance(argument, GeneratedDocumentHandle)
+            self.document_reads += 1
+            if self.on_document_read:
+                self.on_document_read()
+            return self.document_observation
         else:
             raise AssertionError("Unexpected generated script operation")
 
@@ -504,6 +530,86 @@ class WorkerSourceScriptBudgetTest(unittest.TestCase):
         self.assertEqual(1, page.started)
         self.assertEqual(1, page.cleared)
 
+    def test_lost_state_document_observation_is_finite_and_reads_once(self):
+        for observed, expected in ((True, "sameDocument"), (False, "differentDocument"),
+                                   (None, "unavailable"), ("PRIVATE_BODY", "unavailable"),
+                                   (1, "unavailable")):
+            page = GeneratedScriptPage()
+            page.result = None
+            page.document_observation = observed
+            with self.assertRaises(worker.SourceScriptStateLost) as raised:
+                self.evaluate(page)
+            diagnostic = worker.browser_failure_diagnostic(raised.exception)
+            self.assertEqual(expected, diagnostic["sourceDocumentObservation"])
+            self.assertNotIn("PRIVATE", json.dumps(diagnostic))
+            self.assertEqual(1, page.document_reads)
+            self.assertEqual(1, page.handles_disposed)
+            self.assertEqual(1, page.started)
+            self.assertEqual(1, page.reads)
+
+    def test_document_read_or_dispose_failure_never_replaces_lost_state(self):
+        page = GeneratedScriptPage()
+        page.result = None
+        def fail():
+            raise RuntimeError("PRIVATE_CLOSED_CONTEXT")
+        page.on_document_read = fail
+        page.on_dispose = fail
+        with self.assertRaises(worker.SourceScriptStateLost) as raised:
+            self.evaluate(page)
+        diagnostic = worker.browser_failure_diagnostic(raised.exception)
+        self.assertEqual("unavailable", diagnostic["sourceDocumentObservation"])
+        self.assertEqual("", str(raised.exception))
+        self.assertNotIn("PRIVATE", json.dumps(diagnostic))
+        self.assertEqual(1, page.document_reads)
+        self.assertEqual(1, page.handles_disposed)
+
+    def test_document_observation_does_not_extend_budget_or_accept_late_boolean(self):
+        page = GeneratedScriptPage()
+        page.result = None
+        page.on_document_read = lambda: setattr(page, "now", 0.6)
+        with self.assertRaises(worker.SourceScriptStateLost) as raised:
+            self.evaluate(page, timeout=500)
+        self.assertEqual("unavailable", worker.browser_failure_diagnostic(raised.exception)["sourceDocumentObservation"])
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.document_reads)
+        self.assertEqual(1, page.handles_disposed)
+
+    def test_document_handle_is_disposed_without_extra_read_for_success_or_timeout(self):
+        for pending in (False, True):
+            page = GeneratedScriptPage()
+            if pending:
+                with self.assertRaises(worker.SourceScriptTimeout):
+                    self.evaluate(page, timeout=100)
+            else:
+                page.result = {"status": "done", "body": "generated"}
+                self.assertEqual("generated", self.evaluate(page))
+            self.assertEqual(0, page.document_reads)
+            self.assertEqual(1, page.handles_disposed)
+            self.assertEqual(1, page.started)
+
+    def test_expired_or_denied_document_observation_does_not_read_page(self):
+        for denied in (False, True):
+            page = GeneratedScriptPage()
+            holder = GeneratedDocumentHandle(page)
+            def check_allowed():
+                if denied:
+                    raise worker.BlockedScheme()
+            observed = worker.source_document_observation(page, holder, 0 if not denied else 1,
+                                                          check_allowed, lambda: 0)
+            self.assertEqual("unavailable", observed)
+            self.assertEqual(0, page.document_reads)
+
+    def test_unknown_document_observation_attribute_never_echoes_page_data(self):
+        error = worker.SourceScriptStateLost()
+        error._reader_browser_operation = "sourceScriptRead"
+        error._reader_source_state_kind = "sourceStateMissing"
+        error._reader_main_frame_navigation_observed = False
+        for value in ("PRIVATE_BODY", {"PRIVATE_COOKIE": True}, 1, True):
+            error._reader_source_document_observation = value
+            diagnostic = worker.browser_failure_diagnostic(error)
+            self.assertNotIn("sourceDocumentObservation", diagnostic)
+            self.assertNotIn("PRIVATE", json.dumps(diagnostic))
+
     def test_four_lost_state_reasons_are_finite_and_do_not_echo_state_values(self):
         for result, reason in ((None, "sourceStateMissing"),
                                ("PRIVATE_BODY", "sourceStateTypeInvalid"),
@@ -516,7 +622,8 @@ class WorkerSourceScriptBudgetTest(unittest.TestCase):
             self.assertEqual("", str(raised.exception))
             diagnostic = worker.browser_failure_diagnostic(raised.exception)
             self.assertEqual({"operation": "sourceScriptRead", "kind": reason,
-                              "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False}, diagnostic)
+                              "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False,
+                              "sourceDocumentObservation": "sameDocument"}, diagnostic)
             self.assertNotIn("PRIVATE", json.dumps(diagnostic))
             self.assertEqual(1, page.started)
             self.assertEqual(1, page.cleared)
@@ -560,7 +667,8 @@ class WorkerSourceScriptBudgetTest(unittest.TestCase):
         self.assertEqual({"error": "SourceScriptStateLost"}, json.loads(output.getvalue()))
         text = diagnostic_output.getvalue().removeprefix("READER_BROWSER_FAILURE ")
         self.assertEqual({"operation": "sourceScriptRead", "kind": "sourceStateMissing",
-                          "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False}, json.loads(text))
+                          "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False,
+                          "sourceDocumentObservation": "sameDocument"}, json.loads(text))
 
     def test_unknown_transport_failure_is_not_hidden_or_retried(self):
         page = GeneratedScriptPage()
@@ -571,6 +679,8 @@ class WorkerSourceScriptBudgetTest(unittest.TestCase):
             self.evaluate(page)
         self.assertEqual(1, page.reads)
         self.assertEqual(1, page.started)
+        self.assertEqual(0, page.document_reads)
+        self.assertEqual(1, page.handles_disposed)
 
     def test_cleanup_failure_does_not_replace_the_original_timeout(self):
         page = GeneratedScriptPage()
