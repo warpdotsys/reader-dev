@@ -18,6 +18,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/verify-reader-async-smoke.py'
+      - 'scripts/verify-reader-default-ui.py'
+      - 'src/test/python/reader_default_ui_test.py'
       - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/probe-public-metadata.py'
       - 'scripts/collect-browser-failure.py'
@@ -88,6 +90,8 @@ on:
       - 'deploy/reader-pro/requirements-camoufox.lock'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/verify-reader-async-smoke.py'
+      - 'scripts/verify-reader-default-ui.py'
+      - 'src/test/python/reader_default_ui_test.py'
       - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/probe-public-metadata.py'
       - 'scripts/collect-browser-failure.py'
@@ -483,6 +487,16 @@ jobs:
             test -n "$family"
             printf "CJK font family: %s\n" "$family"
           '
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          expected_jar=$(sha256sum "$jar" | awk '{print $1}')
+          actual_jar=$(docker exec reader-browser-smoke sha256sum /app/reader.jar | awk '{print $1}')
+          test "$actual_jar" = "$expected_jar"
+          # Deliberately no web-ui override: this must observe the image default.
+          python3 scripts/verify-reader-default-ui.py probe --reader-base http://127.0.0.1:18890 \
+            --jar "$jar" | tee "$RUNNER_TEMP/bundled-default-ui.json"
+          python3 scripts/verify-reader-default-ui.py check "$RUNNER_TEMP/bundled-default-ui.json" \
+            --expected-jar-sha "$expected_jar"
           python3 scripts/smoke-local-webview.py --reader-base http://127.0.0.1:18890 \
             | tee "$RUNNER_TEMP/bundled-browser-synthetic.json"
           python3 scripts/verify-reader-async-smoke.py "$RUNNER_TEMP/bundled-browser-synthetic.json"
@@ -499,6 +513,7 @@ jobs:
           path: |
             ${{ runner.temp }}/bundled-browser-synthetic.json
             ${{ runner.temp }}/bundled-browser-resource-budget.json
+            ${{ runner.temp }}/bundled-default-ui.json
           if-no-files-found: error
       - name: Preserve bounded bundled-browser observations
         if: ${{ inputs.real_public_source == true }}

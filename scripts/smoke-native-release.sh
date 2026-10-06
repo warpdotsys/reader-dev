@@ -67,6 +67,11 @@ grep -Eq "(^|[[:space:]])(127\\.0\\.0\\.1|\\[::ffff:127\\.0\\.0\\.1\\]):$port([[
 curl -fsS --max-time 10 "http://127.0.0.1:$port/assets/reader-release.json" \
   | jq -e --arg version "$version" --arg revision "$revision" \
     'select(.version == $version and .buildRevision == $revision)' > "$output/RELEASE_IDENTITY.json"
+# No web-ui override: verify the image default, not a smoke-only selection.
+python3 scripts/verify-reader-default-ui.py probe --reader-base "http://127.0.0.1:$port" \
+  --jar "dist/reader-pro-v${version}.jar" | tee "$output/DEFAULT_UI.json"
+python3 scripts/verify-reader-default-ui.py check "$output/DEFAULT_UI.json" \
+  --expected-jar-sha "$expected_jar"
 docker exec "$container_id" python -m camoufox version
 docker exec "$container_id" sh -ec '
   family=$(fc-list :lang=zh family | sed -n "1p")

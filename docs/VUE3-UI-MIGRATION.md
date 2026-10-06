@@ -4,8 +4,9 @@
 
 ## 当前状态（2026-10-06）
 
+- 默认入口交付增量：完整 Docker 镜像源码默认选择 Vue 3，Compose 用 `${READER_APP_WEBUI:-vue3}` 保留 Vue 2 回退；普通 JAR 的默认值不变。新增实际入口／JS／CSS 包内字节比对，贯穿原生构建、重载及导入；新制品自己的门禁尚待验收，不能以此前显式选 Vue 3 的绿灯证明默认入口已生效。[本次实现、重建、已知故障和回退](DEFAULT-VUE3-IMAGE-2026-10-06.md)。
 - 当前候选 `08cccfca`／测试快照 `d5c00919...` 的托管 Vue 3 旅程实际 18＋1 项通过，四张生成账号／数据的中文截图已目视核对，登录在三种视口下 14 组几何断言通过。它们不证明所有页面、真实手机或生产登录均可用；较早真实数据副本与唯一授权 EPUB 的验收仍按各自版本和范围保留。[本候选自身门禁和剩余故障](CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)。
-- Java/Kotlin 默认 `webUi=vue2`；`-PreaderWebUi=vue3` 只额外包入新静态资源，运行时仍需 `--reader.app.web-ui=vue3` 或 `READER_APP_WEBUI=vue3`。当前 Dockerfile／Compose 未默认选择 Vue 3，不把成功构建资源当作默认入口已切换。PR #56 仍为候选，生产切换尚未验收。
+- Java/Kotlin 普通 JAR 默认 `webUi=vue2`；`-PreaderWebUi=vue3` 只额外包入新静态资源，直接运行 JAR 时仍需显式选择。此前 `08cccfca` 的 Dockerfile／Compose 未默认选择 Vue 3，其历史绿灯不证明后续默认入口变更已验收。PR #56 仍为候选，生产切换尚未验收。
 - 同制品双架构离线长测已通过，但观察到静止内存增长和突发延迟；[准确持续测试边界](BROWSER-SOAK-2026-10-06.md)不是 UI 全量、真实起点解析、认证三方或发布证明。不得复用已经清除的真实会话。
 
 ## 当前状态（2026-10-03）

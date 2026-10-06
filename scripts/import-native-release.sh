@@ -30,14 +30,16 @@ for report_directory in "$directory" "$evidence"; do
     'type == "object" and .version == $version and .buildRevision == $revision' \
     "$report_directory/RELEASE_IDENTITY.json" >/dev/null
   jar_sha=$(jq -er '.jarSha256' "$directory/metadata.json")
+  python3 scripts/verify-reader-default-ui.py check "$report_directory/DEFAULT_UI.json" \
+    --expected-jar-sha "$jar_sha"
   jq -e --arg arch "$arch" --arg revision "$revision" --arg jar_sha "$jar_sha" \
     'type == "object" and .architecture == $arch and .revision == $revision and .jarSha256 == $jar_sha' \
     "$report_directory/JAR_IDENTITY.json" >/dev/null
 done
-for report in metadata.json BASE_IMAGE_DIGESTS BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
+for report in metadata.json BASE_IMAGE_DIGESTS BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json DEFAULT_UI.json; do
   cp "$directory/$report" "$dist/${arch}-${report}"
 done
-for report in IMAGE_IDENTITY.json BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json; do
+for report in IMAGE_IDENTITY.json BROWSER_SYNTHETIC.json BROWSER_RESOURCE_BUDGET.json RELEASE_IDENTITY.json JAR_IDENTITY.json DEFAULT_UI.json; do
   cp "$evidence/$report" "$dist/${arch}-transfer-${report}"
 done
 # Free only the validated archive in the exact, resolved CI import directory.

@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-06",
+  "sourceBase": "f4f47c70a2279c1aa914bc7897f894817beeddfc",
+  "scope": "current-source candidate image defaults and local generated startup attempt; not complete image or rendered acceptance",
+  "implementation": {
+    "imageDefault": "vue3",
+    "ordinaryJarDefaultUnchanged": "vue2",
+    "composeSelector": "${READER_APP_WEBUI:-vue3}",
+    "rollbackBundleRetained": true,
+    "staticGateSourceSha256": "7a67b05f9dbc05163a68ebdc6b9a4754c58e9f5d2239fbc7bac28a5c36c86144"
+  },
+  "localBuild": {
+    "jarSha256": "1986ce336f9c9cc8012a5d6bb8c5618ac42b519545491b1dcaa6a62898faf0ff",
+    "offlineBootJarSuccessful": true,
+    "maxGradleWorkers": 2,
+    "packagedWorkerSha256": "2bc9fe2f69c9b546f9380503af7248527994579fa3e7097e4e5bcfb62b706722",
+    "packagedWorkerMatchesCurrent": true,
+    "vue3DistFileCountCompared": 81,
+    "vue3ByteMismatches": 0,
+    "typeCheckPassed": true,
+    "productionFrontendBuildPassed": true
+  },
+  "localTests": {
+    "httpGeneratedAndNegative": 9,
+    "pipelineAndNativeIdentityAndManifest": 69,
+    "vueStatic": 239,
+    "pythonTotal": 225,
+    "pythonSkipped": 1,
+    "pythonSkipReason": "Windows POSIX symlink fixture",
+    "failures": 0,
+    "noClaimOfRenderedUi": true
+  },
+  "startup": {
+    "reportHashes": {
+      "first": "216664e757895620005d41a411fa8b891de5253ebbc2060996fed8b7f7d98d84",
+      "second": "af01947b24165d078bbf5ea547486d349190de42f31e421f03429281c4c9b836",
+      "third": "11f4d8044c513e2e43ab51c3311dc32bc4b7ec210a387765c31e598493d080e2"
+    },
+    "scratchProbeSha256": "c31f3b38babceb6bfc284356156087cffa0fb83edce5dbe8e7544822a75c7c4f",
+    "notes": [
+      "first attempt failed before current JAR identity and Java startup; no unique cause recorded",
+      "second emitted only runtime identity; source inspection found verifier mount hidden by a later tmpfs; raw stderr not persisted",
+      "third started owned Java but no successful readiness/default UI/rollback observations; RuntimeError is not a unique product diagnosis"
+    ],
+    "finalAttempt": {
+      "actualDockerImageExecuted": false,
+      "currentJarSha256": "1986ce336f9c9cc8012a5d6bb8c5618ac42b519545491b1dcaa6a62898faf0ff",
+      "exactCurrentReaderImage": false,
+      "failureType": "RuntimeError",
+      "finalOriginalBudgetGuardPassed": true,
+      "finalResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 91971584,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 427876352,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 44,
+        "scope": "old locked read-only runtime plus rebuilt current JAR; generated static UI only",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "freshTopWithReadOnlyChildMounts": true,
+      "helperSha256": "7a67b05f9dbc05163a68ebdc6b9a4754c58e9f5d2239fbc7bac28a5c36c86144",
+      "oldExtractedFilesystemModified": false,
+      "oldJarSha256NotExecuted": "1c1c24bd90a7d08f48ef016d1b2578650d4aba0574aa3b53662d5b1ea2bf302f",
+      "oldRootfsPrivateTopMode": "0o700",
+      "oldRuntimeRevision": "a85410ce71da7679f5ceffb9e306b19bace4026d",
+      "ownedHostPidBudgetMembershipIndependentlyVerified": true,
+      "ownedRuntimeStateAbsent": true,
+      "packagedWorkerMatchesCurrent": true,
+      "passed": false,
+      "phase": "generatedReaderDefaultUi",
+      "preflightOriginalBudgetGuardPassed": true,
+      "preflightResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 11272192,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 11272192,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 1,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "probeBundle": "/home/chong/.cache/reader-default-ui-20261006-ahhr27tg/bundle",
+      "readerObservation": {
+        "failureClass": "RuntimeError",
+        "ownedJavaHandleStopped": true,
+        "passed": false,
+        "readerStarted": true,
+        "scope": "rebuilt JAR with UI setting read from candidate Dockerfile; not exact Docker image"
+      },
+      "readerStarted": true,
+      "realCredentialsImported": false,
+      "runtimeExitCode": 1,
+      "runtimeIdentity": {
+        "effectiveCapabilitiesZero": true,
+        "interfaces": [
+          "lo"
+        ],
+        "noNewPrivileges": true,
+        "runtimeGid": 10001,
+        "runtimeUid": 10001,
+        "supplementaryGroups": [
+          65534,
+          65534,
+          65534,
+          65534,
+          65534,
+          65534,
+          0
+        ],
+        "withinBudgetCgroup": true
+      },
+      "runtimeStdoutRecordCount": 2,
+      "scope": "old locked read-only runtime plus rebuilt current JAR; generated static UI only",
+      "stderrBytesNotPersisted": 0,
+      "totalSeconds": 38.174,
+      "uiSelectionFromCandidateDockerfile": "vue3",
+      "workerSha256": "2bc9fe2f69c9b546f9380503af7248527994579fa3e7097e4e5bcfb62b706722"
+    },
+    "userSystemdAfterProbe": {
+      "loadState": "not-found",
+      "activeState": "inactive",
+      "subState": "dead"
+    },
+    "defaultUiAccepted": false,
+    "legacyRollbackAccepted": false
+  },
+  "boundaries": {
+    "actualNewDockerImageAccepted": false,
+    "hostedSourceRunAccepted": false,
+    "productionChanged": false,
+    "realCredentialsImported": false,
+    "privateBookBodyRead": false,
+    "originalJarExecuted": false,
+    "realQidianProblemFixed": false,
+    "tagOrRegistryWritten": false
+  }
+}

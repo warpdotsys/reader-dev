@@ -17,6 +17,8 @@ services:
       # The complete production image carries Camoufox itself.  Do not silently
       # fall back to a host-installed Chromium or a second WebView container.
       READER_APP_WEBVIEWRENDERER: camoufox
+      # Keep the packaged Vue 2 rollback selectable without rebuilding or data migration.
+      READER_APP_WEBUI: ${READER_APP_WEBUI:-vue3}
     volumes:
       - ./storage:/storage
       - ./logs:/logs

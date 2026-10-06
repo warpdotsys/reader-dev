@@ -15,6 +15,8 @@ on:
       - 'scripts/smoke-native-release.sh'
       - 'scripts/smoke-local-webview.py'
       - 'scripts/verify-reader-async-smoke.py'
+      - 'scripts/verify-reader-default-ui.py'
+      - 'src/test/python/reader_default_ui_test.py'
       - 'src/test/python/reader_async_smoke_test.py'
       - 'scripts/import-native-release.sh'
       - 'scripts/verify-camoufox-contracts.py'
@@ -223,6 +225,7 @@ jobs:
             exported/BASE_IMAGE_DIGESTS
             exported/BROWSER_SYNTHETIC.json
             exported/BROWSER_RESOURCE_BUDGET.json
+            exported/DEFAULT_UI.json
             exported/RELEASE_IDENTITY.json
             exported/JAR_IDENTITY.json
           compression-level: 0
@@ -323,5 +326,6 @@ jobs:
             dist/*_IDENTITY.json
             dist/*-BROWSER_SYNTHETIC.json
             dist/*-BROWSER_RESOURCE_BUDGET.json
+            dist/*-DEFAULT_UI.json
           if-no-files-found: error
           retention-days: 14

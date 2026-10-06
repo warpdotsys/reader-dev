@@ -98,6 +98,30 @@ for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_PYTHON_IMAGE']) {
   }
 }
 const browserWorkflow = read('.github/workflows/browser-image.yml')
+const imageUiSelections = [...dockerfile.matchAll(/^\s+READER_APP_WEBUI=(\w+)\s*\\\s*$/gm)].map(match => match[1])
+if (JSON.stringify(imageUiSelections) !== JSON.stringify(['vue3']) ||
+    !compose.includes('READER_APP_WEBUI: ${READER_APP_WEBUI:-vue3}')) {
+  throw new Error('complete image must default to Vue 3 with an explicit Vue 2 rollback selector')
+}
+const defaultUiProbe = 'python3 scripts/verify-reader-default-ui.py probe'
+const defaultUiCheck = 'python3 scripts/verify-reader-default-ui.py check'
+for (const [label, content] of [['native', nativeSmoke], ['full image', browserWorkflow]]) {
+  const probe = content.indexOf(defaultUiProbe)
+  const check = content.indexOf(defaultUiCheck)
+  const browser = content.indexOf('python3 scripts/smoke-local-webview.py', probe)
+  if (probe < 0 || check <= probe || browser <= check ||
+      /-e\s+["']?READER_APP_WEBUI=/.test(content) ||
+      /\|\|\s*(?:true|:)/.test(content.slice(probe, browser))) {
+    throw new Error(`${label} must fail closed on actual default Vue 3 static bytes without a smoke-only UI override`)
+  }
+}
+if (!nativeImporter.includes(defaultUiCheck + ' "$report_directory/DEFAULT_UI.json"') ||
+    !nativeImporter.includes('--expected-jar-sha "$jar_sha"') ||
+    !nativeWorkflow.includes('exported/DEFAULT_UI.json') ||
+    !nativeWorkflow.includes('dist/*-DEFAULT_UI.json') ||
+    !browserWorkflow.includes('${{ runner.temp }}/bundled-default-ui.json')) {
+  throw new Error('default UI observations must survive native transfer and bind publisher checks to the shared JAR')
+}
 if (!browserWorkflow.includes('fc-list :lang=zh family')) {
   throw new Error('browser image smoke test must verify CJK font coverage')
 }

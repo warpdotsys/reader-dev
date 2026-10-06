@@ -90,6 +90,15 @@ test('not running the release guard in ordinary CI is rejected', (t) => {
 })
 
 for (const [name, file, mutate, expected] of [
+  ['old Vue 2 image default', 'deploy/reader-pro/Dockerfile', text => text.replace('READER_APP_WEBUI=vue3', 'READER_APP_WEBUI=vue2'), /default to Vue 3/],
+  ['a comment cannot impersonate default Vue 3', 'deploy/reader-pro/Dockerfile', text => text.replace('READER_APP_WEBUI=vue3', 'READER_APP_WEBUI=vue2') + '\n# READER_APP_WEBUI=vue3\n', /default to Vue 3/],
+  ['Compose without explicit legacy UI rollback', 'deploy/reader-pro/compose.production.yaml', text => text.replace('READER_APP_WEBUI: ${READER_APP_WEBUI:-vue3}', 'READER_APP_WEBUI: vue3'), /Vue 2 rollback/],
+  ['native default UI observation omitted', 'scripts/smoke-native-release.sh', text => text.replace('python3 scripts/verify-reader-default-ui.py probe', 'echo omitted-default-ui-probe'), /actual default Vue 3/],
+  ['full image default UI guard omitted', '.github/workflows/browser-image.yml', text => text.replace('python3 scripts/verify-reader-default-ui.py check', 'echo omitted-default-ui-check'), /actual default Vue 3/],
+  ['smoke-only Vue 3 override hides old image default', 'scripts/smoke-native-release.sh', text => text.replace('-e READER_APP_WORKDIR=/', '-e READER_APP_WEBUI=vue3 -e READER_APP_WORKDIR=/'), /without a smoke-only UI override/],
+  ['default UI failures ignored', 'scripts/smoke-native-release.sh', text => text.replace('--expected-jar-sha "$expected_jar"', '--expected-jar-sha "$expected_jar" || true'), /fail closed/],
+  ['publisher default UI evidence omitted', 'scripts/import-native-release.sh', text => text.replace('python3 scripts/verify-reader-default-ui.py check', 'echo omitted-publisher-default-ui'), /survive native transfer/],
+  ['default UI observations missing from export', '.github/workflows/release-native.yml', text => text.replace('exported/DEFAULT_UI.json', 'exported/omitted-default-ui.json'), /survive native transfer/],
   ['native async Reader guard omitted', 'scripts/smoke-native-release.sh', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-native-async-reader'), /actual async Reader API/],
   ['publisher async Reader guard omitted', 'scripts/import-native-release.sh', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-publisher-async-reader'), /actual async Reader API/],
   ['full image async Reader guard omitted', '.github/workflows/browser-image.yml', text => text.replace('python3 scripts/verify-reader-async-smoke.py', 'echo omitted-image-async-reader'), /actual async Reader API/],

@@ -12,7 +12,7 @@ const digest = 'sha256:' + 'b'.repeat(64)
 const expected = {arch: 'arm64', version: '4.0.7', revision, jarSha256: 'c'.repeat(64), archiveSha256: 'd'.repeat(64)}
 const image = () => ({Id: digest, Architecture: 'arm64', Os: 'linux', Config: {
   User: '10001:10001', Entrypoint: ['/usr/local/bin/reader-entrypoint'],
-  Env: ['READER_RELEASE_VERSION=4.0.7', 'READER_BUILD_REVISION=' + revision, 'READER_APP_WEBVIEWRENDERER=camoufox'],
+  Env: ['READER_RELEASE_VERSION=4.0.7', 'READER_BUILD_REVISION=' + revision, 'READER_APP_WEBVIEWRENDERER=camoufox', 'READER_APP_WEBUI=vue3'],
 }})
 const metadata = () => ({schemaVersion: 1, architecture: 'arm64', version: '4.0.7', revision,
   imageId: digest, jarSha256: expected.jarSha256, archiveSha256: expected.archiveSha256})
@@ -35,6 +35,9 @@ for (const [label, change] of [
   ['different entrypoint', value => {value.Config.Entrypoint = ['sh']}],
   ['wrong release environment', value => {value.Config.Env[0] = 'READER_RELEASE_VERSION=4.0.8'}],
   ['duplicate identity environment', value => {value.Config.Env.push('READER_BUILD_REVISION=' + revision)}],
+  ['missing default Vue 3 selection', value => {value.Config.Env.pop()}],
+  ['old Vue 2 default', value => {value.Config.Env[value.Config.Env.length - 1] = 'READER_APP_WEBUI=vue2'}],
+  ['duplicate default UI environment', value => {value.Config.Env.push('READER_APP_WEBUI=vue3')}],
 ]) {
   test('rejects ' + label, () => {const value = image(); change(value); assert.throws(() => validateImage(value, expected.arch, expected.version, expected.revision))})
 }

@@ -18,6 +18,7 @@ export function validateImage(image, arch, version, revision) {
   for (const entry of [
     'READER_RELEASE_VERSION=' + version, 'READER_BUILD_REVISION=' + revision,
     'READER_APP_WEBVIEWRENDERER=camoufox',
+    'READER_APP_WEBUI=vue3',
   ]) {
     if (!Array.isArray(image.Config?.Env) || image.Config.Env.filter(value => typeof value === 'string' && value.startsWith(entry.split('=')[0] + '=')).length !== 1 ||
         !image.Config.Env.includes(entry)) throw new Error('Loaded image release identity or renderer mismatch')
