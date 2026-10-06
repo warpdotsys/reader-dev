@@ -18,6 +18,8 @@ on:
       - 'src/main/resources/camoufox/worker.py'
       - 'src/test/java/com/htmake/reader/utils/CamoufoxWebviewRendererTest.kt'
       - 'src/test/python/camoufox_contract_report_test.py'
+      - 'src/test/python/camoufox_script_javascript_test.py'
+      - 'src/test/javascript/camoufox-source-script.test.mjs'
       - 'deploy/reader-pro/**'
 
 permissions:

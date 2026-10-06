@@ -173,6 +173,175 @@ class WorkerDocumentSnapshotTest(unittest.TestCase):
         self.assertEqual(0, page.content_calls)
 
 
+class GeneratedScriptPage(GeneratedPage):
+    """Controlled IPC/event-loop double; does not execute JavaScript."""
+
+    def __init__(self):
+        super().__init__()
+        self.result = {"status": "pending"}
+        self.started = 0
+        self.reads = 0
+        self.cleared = 0
+        self.key = None
+        self.on_start = None
+        self.on_read = None
+        self.on_clear = None
+
+    def evaluate(self, script, argument):
+        if script == worker.SOURCE_SCRIPT_START:
+            self.started += 1
+            self.key = argument["key"]
+            if self.on_start:
+                self.on_start()
+        elif script == worker.SOURCE_SCRIPT_READ:
+            assert argument == self.key
+            self.reads += 1
+            if self.on_read:
+                self.on_read()
+            return self.result
+        elif script == worker.SOURCE_SCRIPT_CLEAR:
+            assert argument == self.key
+            self.cleared += 1
+            if self.on_clear:
+                self.on_clear()
+            self.key = None
+        else:
+            raise AssertionError("Unexpected generated script operation")
+
+
+class WorkerSourceScriptBudgetTest(unittest.TestCase):
+    def evaluate(self, page, timeout=1000, check_allowed=lambda: None):
+        return worker.evaluate_source_script(page, "generated-source", timeout,
+                                             check_allowed, monotonic=lambda: page.now)
+
+    def test_delayed_completion_is_read_without_replaying_the_rule(self):
+        page = GeneratedScriptPage()
+        page.schedule(0.12, lambda: setattr(page, "result", {"status": "done", "body": "generated"}))
+        self.assertEqual("generated", self.evaluate(page))
+        self.assertGreaterEqual(page.reads, 3)
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.cleared)
+        self.assertIsNone(page.key)
+
+    def test_sync_and_empty_strings_are_preserved(self):
+        for body in ("", "0", "[]", "{\"generated\":true}", "生成"):
+            with self.subTest(body=body):
+                page = GeneratedScriptPage()
+                page.result = {"status": "done", "body": body}
+                self.assertEqual(body, self.evaluate(page))
+                self.assertEqual(1, page.reads)
+                self.assertEqual(1, page.started)
+
+    def test_pending_result_has_one_monotonic_budget_and_is_cleaned_up(self):
+        page = GeneratedScriptPage()
+        with self.assertRaises(worker.SourceScriptTimeout):
+            self.evaluate(page, timeout=500)
+        self.assertLessEqual(page.now, 0.500001)
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.cleared)
+
+    def test_start_operation_time_is_part_of_the_same_budget(self):
+        page = GeneratedScriptPage()
+        page.on_start = lambda: setattr(page, "now", 0.6)
+        with self.assertRaises(worker.SourceScriptTimeout):
+            self.evaluate(page, timeout=500)
+        self.assertEqual(0, page.reads)
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.cleared)
+
+    def test_result_read_cannot_accept_completion_after_the_deadline(self):
+        page = GeneratedScriptPage()
+        page.result = {"status": "done", "body": "late"}
+        page.on_read = lambda: setattr(page, "now", 0.6)
+        with self.assertRaises(worker.SourceScriptTimeout):
+            self.evaluate(page, timeout=500)
+        self.assertEqual(1, page.started)
+
+    def test_rejection_returns_only_a_sanitized_exception_class(self):
+        page = GeneratedScriptPage()
+        page.result = {"status": "rejected"}
+        with self.assertRaises(worker.SourceScriptRejected) as caught:
+            self.evaluate(page)
+        self.assertEqual("", str(caught.exception))
+        self.assertEqual(1, page.cleared)
+
+    def test_replaced_document_fails_instead_of_reexecuting_the_rule(self):
+        page = GeneratedScriptPage()
+        page.schedule(0.05, lambda: setattr(page, "result", None))
+        with self.assertRaises(worker.SourceScriptStateLost):
+            self.evaluate(page)
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.cleared)
+
+    def test_unknown_transport_failure_is_not_hidden_or_retried(self):
+        page = GeneratedScriptPage()
+        def fail():
+            raise RuntimeError("generated-transport")
+        page.on_read = fail
+        with self.assertRaisesRegex(RuntimeError, "generated-transport"):
+            self.evaluate(page)
+        self.assertEqual(1, page.reads)
+        self.assertEqual(1, page.started)
+
+    def test_cleanup_failure_does_not_replace_the_original_timeout(self):
+        page = GeneratedScriptPage()
+        def fail():
+            raise RuntimeError("generated-closed-page")
+        page.on_clear = fail
+        with self.assertRaises(worker.SourceScriptTimeout):
+            self.evaluate(page, timeout=100)
+        self.assertEqual(1, page.cleared)
+
+    def test_network_rejection_while_waiting_is_fatal(self):
+        page = GeneratedScriptPage()
+        blocked = []
+        page.schedule(0.05, lambda: blocked.append(True))
+        def check_allowed():
+            if blocked:
+                raise worker.BlockedScheme()
+        with self.assertRaises(worker.BlockedScheme):
+            self.evaluate(page, check_allowed=check_allowed)
+        self.assertEqual(1, page.started)
+        self.assertEqual(1, page.cleared)
+
+    def test_invalid_ipc_state_and_non_string_body_are_rejected(self):
+        for result in ([], {}, {"status": "unknown"}, {"status": "done", "body": 42},
+                       {"status": "pending", "body": "unexpected"},
+                       {"status": "rejected", "message": "generated-secret"}):
+            with self.subTest(result=result):
+                page = GeneratedScriptPage()
+                page.result = result
+                with self.assertRaises(worker.SourceScriptStateLost):
+                    self.evaluate(page)
+                self.assertEqual(1, page.cleared)
+
+    def test_utf8_result_limit_is_enforced_before_accepting_a_value(self):
+        page = GeneratedScriptPage()
+        page.result = {"status": "done", "body": "生成"}
+        with patch.object(worker, "MAX_BODY_UTF8_BYTES", 4):
+            with self.assertRaises(worker.ResponseBodyTooLarge):
+                self.evaluate(page)
+        self.assertEqual(1, page.cleared)
+
+    def test_non_positive_budget_never_executes_a_rule(self):
+        page = GeneratedScriptPage()
+        for timeout in (0, -1):
+            with self.assertRaises(ValueError):
+                self.evaluate(page, timeout=timeout)
+        self.assertEqual(0, page.started)
+        self.assertEqual(0, page.cleared)
+
+    def test_each_call_uses_distinct_nonpersistent_random_state(self):
+        keys = []
+        for _ in range(2):
+            page = GeneratedScriptPage()
+            page.result = {"status": "done", "body": ""}
+            page.on_start = lambda: keys.append(page.key)
+            self.evaluate(page)
+        self.assertNotEqual(keys[0], keys[1])
+        self.assertTrue(all(key.startswith("__reader_source_") and len(key) == 48 for key in keys))
+
+
 class WorkerCookieProtocolTest(unittest.TestCase):
     def test_visible_browser_cookie_wins_over_header_fallback(self):
         snapshot = {"name": "quoted", "value": '"alpha', "deleted": False}

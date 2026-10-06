@@ -3,6 +3,7 @@
 import contextlib
 import json
 import re
+import secrets
 import sys
 import time
 from email.utils import parsedate_to_datetime
@@ -41,6 +42,107 @@ class ResponseTooLarge(Exception):
 
 class BlockedScheme(Exception):
     pass
+
+
+class SourceScriptTimeout(Exception):
+    pass
+
+
+class SourceScriptRejected(Exception):
+    pass
+
+
+class SourceScriptStateLost(Exception):
+    pass
+
+
+# Evaluate a rule once and return immediately, even when it yields a Promise.
+# Python owns the monotonic budget: a page timer or Playwright's evaluate call
+# cannot bound a Promise that never settles. Only serialized results cross IPC;
+# rejected values/messages may contain credentials and must remain in the page.
+SOURCE_SCRIPT_START = """({source, key}) => {
+    const state = {status: 'pending'};
+    Object.defineProperty(globalThis, key, {value: state, configurable: true});
+    const stringify = JSON.stringify;
+    const resolve = Promise.resolve.bind(Promise);
+    const reject = () => { state.status = 'rejected'; };
+    const finish = (value) => {
+        try {
+            const body = value == null ? '' :
+                typeof value === 'string' ? value : stringify(value);
+            state.body = body == null ? '' : body;
+            state.status = 'done';
+        } catch (_) { reject(); }
+    };
+    try {
+        const value = (0, eval)(source);
+        // Native adoption reads a thenable's getter only once and follows
+        // nested Promises. Do not inspect value.then before Promise.resolve.
+        resolve(value).then(finish, reject);
+    } catch (_) { reject(); }
+} """
+
+SOURCE_SCRIPT_READ = """(key) => {
+    const state = globalThis[key];
+    if (!state) return null;
+    return state.status === 'done' ? {status: 'done', body: state.body} :
+        {status: state.status};
+} """
+
+SOURCE_SCRIPT_CLEAR = """(key) => { delete globalThis[key]; } """
+
+
+def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=time.monotonic):
+    """Wait for one rule result without replaying the rule, goto, or original POST.
+
+    Navigation/transport failures stay fatal. A replacement document loses the
+    random transient state and must not silently rerun a potentially mutating
+    rule. Context teardown remains the final cleanup authority. Synchronous JS
+    that blocks Firefox's event loop is still bounded by the parent watchdog.
+    """
+    if timeout_ms <= 0:
+        raise ValueError("timeoutMs must be positive")
+    deadline = monotonic() + timeout_ms / 1000.0
+    key = "__reader_source_" + secrets.token_hex(16)
+
+    def remaining_ms():
+        remaining = (deadline - monotonic()) * 1000.0
+        if remaining <= 0:
+            raise SourceScriptTimeout()
+        return remaining
+
+    try:
+        check_allowed()
+        page.evaluate(SOURCE_SCRIPT_START, {"source": source, "key": key})
+        while True:
+            check_allowed()
+            remaining_ms()
+            result = page.evaluate(SOURCE_SCRIPT_READ, key)
+            check_allowed()
+            remaining_ms()
+            if result is None:
+                raise SourceScriptStateLost()
+            if not isinstance(result, dict):
+                raise SourceScriptStateLost()
+            status = result.get("status")
+            if status == "done" and set(result) == {"status", "body"}:
+                if not isinstance(result["body"], str):
+                    raise SourceScriptStateLost()
+                require_utf8_limit(result["body"], MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
+                return result["body"]
+            if status == "rejected" and set(result) == {"status"}:
+                raise SourceScriptRejected()
+            if status != "pending" or set(result) != {"status"}:
+                raise SourceScriptStateLost()
+            # Pump actual browser events; sleeping Python would hide completion.
+            page.wait_for_timeout(min(50, remaining_ms()))
+    finally:
+        try:
+            page.evaluate(SOURCE_SCRIPT_CLEAR, key)
+        except Exception:
+            # Preserve the original failure. render() always closes this fresh
+            # context; a closed or replaced document need not accept cleanup JS.
+            pass
 
 
 class MainDocumentSnapshot:
@@ -549,6 +651,11 @@ def render(payload):
                     page.set_content(html, wait_until="domcontentloaded", timeout=timeout_ms)
 
                 source = payload.get("javaScript")
+
+                def check_allowed():
+                    if state["blocked"]:
+                        raise BlockedScheme()
+
                 # A source rule may delete a non-HttpOnly cookie created during
                 # navigation. Capture browser-accepted state before the rule runs:
                 # the pre-navigation snapshot cannot observe that cookie.
@@ -575,20 +682,10 @@ def render(payload):
                         raise TimeoutError("sourceRegex resource was not observed before timeout")
                 elif source:
                     # The archived /render.html reference returns strings as-is
-                    # and JSON-serializes non-string page.evaluate results. In
-                    # particular, Object.toString() would lose source-rule data.
-                    value = page.evaluate(
-                        "(source) => { const value = (0, eval)(source); "
-                        "if (value == null) return ''; "
-                        "return typeof value === 'string' ? value : JSON.stringify(value); }",
-                        source,
-                    )
-                    body = str(value or "")
+                    # and JSON-serializes non-string results. Serialize after a
+                    # returned Promise settles, not the Promise object itself.
+                    body = evaluate_source_script(page, source, timeout_ms, check_allowed)
                 else:
-                    def check_allowed():
-                        if state["blocked"]:
-                            raise BlockedScheme()
-
                     body = snapshot.read(timeout_ms, check_allowed)
 
                 require_utf8_limit(body, MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)

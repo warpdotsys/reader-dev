@@ -51,6 +51,9 @@ class CamoufoxWebviewRendererTest {
     private val navigationFinalVisits = AtomicInteger()
     private val infiniteNavigationHits = AtomicInteger()
     private val infiniteNavigationPostStarts = AtomicInteger()
+    private val sourceScriptPageHits = AtomicInteger()
+    private val sourceScriptPostStarts = AtomicInteger()
+    private val sourceScriptMarkPosts = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -104,6 +107,21 @@ class CamoufoxWebviewRendererTest {
                 return@createContext
             }
             when (exchange.requestURI.path) {
+                "/source-script-page" -> {
+                    sourceScriptPageHits.incrementAndGet()
+                    if (exchange.requestMethod == "POST" && requestBody == "seed=generated") {
+                        sourceScriptPostStarts.incrementAndGet()
+                    }
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-before-script</div></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/source-script-mark" -> {
+                    if (exchange.requestMethod == "POST" && requestBody == "mark=generated") {
+                        sourceScriptMarkPosts.incrementAndGet()
+                    }
+                    respond(exchange, "generated-mark", "text/plain; charset=utf-8")
+                }
                 "/navigation-final" -> {
                     navigationFinalVisits.incrementAndGet()
                     respond(exchange,
@@ -290,11 +308,70 @@ class CamoufoxWebviewRendererTest {
         val cases = listOf(
             "({answer: 42, ready: true})" to "{\"answer\":42,\"ready\":true}",
             "['alpha', 7]" to "[\"alpha\",7]",
-            "42" to "42"
+            "42" to "42",
+            "Promise.resolve('generated-string')" to "generated-string",
+            "Promise.resolve({answer: 42, ready: true})" to "{\"answer\":42,\"ready\":true}",
+            "Promise.resolve(['alpha', 7])" to "[\"alpha\",7]",
+            "Promise.resolve(42)" to "42",
+            "Promise.resolve(null)" to ""
         )
         for ((expression, expected) in cases) {
             val result = renderer.render(request("/resource-page", "script-types", javaScript = expression))
             assertEquals("JavaScript expression $expression", expected, result.body)
+        }
+        val user = "async-script-generated"
+        val delayed = renderer.render(request("/source-script-page", user,
+            post = true, body = "seed=generated",
+            javaScript = "(()=>{ globalThis.generatedRuns = (globalThis.generatedRuns || 0) + 1; " +
+                "return new Promise(resolve => setTimeout(() => { " +
+                "document.querySelector('#result').textContent = 'async-ready'; " +
+                "document.cookie = 'asyncOnly=generated; Path=/'; " +
+                "resolve({runs:globalThis.generatedRuns, dom:document.querySelector('#result').textContent, " +
+                "cookie:document.cookie.includes('asyncOnly=generated')}); }, 150)); })()"))
+        assertEquals("{\"runs\":1,\"dom\":\"async-ready\",\"cookie\":true}", delayed.body)
+        assertEquals("A delayed result must not replay the original generated navigation", 1, sourceScriptPageHits.get())
+        assertEquals("A delayed result must not replay the original generated POST", 1, sourceScriptPostStarts.get())
+        assertEquals("Async Cookie mutation must be captured after result completion", "generated",
+            BrowserCookieJar.storedCookies(CookieStore(user)).single { it.name == "asyncOnly" }.value)
+        assertTrue("An async mutation must stay isolated to its generated namespace",
+            BrowserCookieJar.storedCookies(CookieStore("async-script-stranger")).isEmpty())
+    }
+
+    @Test
+    fun scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers() = runBlocking {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
+        val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"
+        val limited = CamoufoxWebviewRenderer(python, version, 3_000, allowPrivateNetworks = true)
+        try {
+            val scripts = listOf(
+                "fetch('/source-script-mark', {method:'POST', body:'mark=generated'}).then(() => " +
+                    "Promise.reject(new Error('generated-secret-do-not-log')))" to "SourceScriptRejected",
+                "fetch('/source-script-mark', {method:'POST', body:'mark=generated'}).then(() => " +
+                    "new Promise(()=>{}))" to "SourceScriptTimeout"
+            )
+            for ((script, expectedError) in scripts) {
+                val started = System.nanoTime()
+                val failure = runCatching {
+                    limited.render(request("/source-script-page", "async-failure-generated",
+                        post = true, body = "seed=generated", javaScript = script))
+                }.exceptionOrNull()
+                val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+                assertTrue("A generated Promise failure must not be returned as apparent success",
+                    failure is IllegalStateException)
+                assertTrue("Require the worker error, not emergency parent termination",
+                    failure?.message?.contains("($expectedError)") == true)
+                assertFalse("Source rejection must not leak its message into the parent protocol",
+                    failure?.message?.contains("generated-secret-do-not-log") == true)
+                assertTrue("A Promise must not renew its single budget: ${elapsedMs}ms", elapsedMs < 20_000)
+                val healthy = limited.render(request("/echo", "async-failure-generated"))
+                assertTrue("The next actual browser render must recover after $expectedError",
+                    healthy.body?.contains("GET|||") == true)
+            }
+            assertEquals("Each failing generated navigation runs only once", 2, sourceScriptPageHits.get())
+            assertEquals("Each failing generated form is posted only once", 2, sourceScriptPostStarts.get())
+            assertEquals("Each failing source script issues its generated POST only once", 2, sourceScriptMarkPosts.get())
+        } finally {
+            limited.close()
         }
     }
 

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "actual-JavaScript-language-execution-not-browser-or-original-JAR",
+  "sourceHeadBeforeModification": "929d518d6f90e80ac1f6c87446e0cbd59a7bca18",
+  "extraction": "Python AST selected the unique actual page.evaluate argument containing JSON.stringify(value)",
+  "workerSha256BeforeModification": "64ee8363aeb767b4b7da2f038fe4ab96a2387fa2e7b2eb9ba7b32da2f601c7fe",
+  "actualWrapperSha256": "32a117f78619391a5f16e52aeeeeb8e59aafeadc3264cfca34eb6bf2ede3d74e",
+  "node": "v24.19.0",
+  "generatedInput": "Promise.resolve({answer:42,ready:true})",
+  "observed": "{}",
+  "expected": "{\"answer\":42,\"ready\":true}",
+  "reproduced": true,
+  "originalJarExecuted": false,
+  "archivedRemoteExecuted": false,
+  "realBrowserExecuted": false,
+  "realCookieUsed": false,
+  "realBodyRead": false,
+  "doesNotProve": [
+    "Original JAR or archived remote Promise semantics",
+    "Root cause of Qidian empty anonymous metadata",
+    "Authenticated three-way compatibility",
+    "Fixed source real Camoufox runtime acceptance",
+    "Production deployment"
+  ]
+}

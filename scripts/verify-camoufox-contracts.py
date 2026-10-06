@@ -15,6 +15,7 @@ SUITE = "com.htmake.reader.utils.CamoufoxWebviewRendererTest"
 MAX_REPORT_BYTES = 256 * 1024
 NAVIGATION_CONTRACT = "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost"
 ENDLESS_NAVIGATION_CONTRACT = "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers"
+PROMISE_CONTRACT = "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers"
 CONTRACTS = frozenset((
     "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
     "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
@@ -25,6 +26,7 @@ CONTRACTS = frozenset((
     "existingHttpOnlyCookieCanBeRenewed",
     NAVIGATION_CONTRACT,
     ENDLESS_NAVIGATION_CONTRACT,
+    PROMISE_CONTRACT,
     "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
     "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
     "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
@@ -70,6 +72,7 @@ def verify_report(path):
         **counters,
         "navigationContractPresent": True,
         "endlessNavigationContractPresent": True,
+        "promiseContractPresent": True,
         "xmlSha256": hashlib.sha256(raw).hexdigest(),
     }
 
