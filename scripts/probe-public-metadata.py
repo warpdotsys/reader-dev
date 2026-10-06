@@ -27,6 +27,27 @@ MAX_RESPONSE_BYTES = 64 * 1024
 FIELDS = ("bookUrl", "tocUrl", "name", "author", "coverUrl", "type", "group",
           "totalChapterNum", "durChapterIndex", "durChapterPos", "canUpdate")
 METADATA_DOM_WAIT_MS = 8000
+PAGE_DIAGNOSTIC_KEYS = frozenset((
+    "nameSelectorPresent", "authorSelectorPresent", "coverSelectorPresent",
+    "bodyHasText", "bodyHasExpectedBookTitle", "bodyHasExpectedAuthor",
+    "bodyHasSafetyPhrase", "captchaContainerPresent"))
+# Parse only the already-returned snapshot. This Reader rule does not execute
+# page scripts, make requests, inspect Cookie or change the metadata selectors.
+# Structural hints are not a visibility/CAPTCHA/authentication verdict.
+PAGE_DIAGNOSTIC_RULE = """@js:(function () {
+  var doc = Packages.org.jsoup.Jsoup.parse(String(result));
+  var text = String(doc.body().text());
+  return JSON.stringify({
+    nameSelectorPresent: doc.select('#bookName').size() > 0,
+    authorSelectorPresent: doc.select('.book-info-top .book-meta .author').size() > 0,
+    coverSelectorPresent: doc.select('#bookImg img').size() > 0,
+    bodyHasText: text.trim().length > 0,
+    bodyHasExpectedBookTitle: text.indexOf('黎明之剑') >= 0,
+    bodyHasExpectedAuthor: text.indexOf('远瞳') >= 0,
+    bodyHasSafetyPhrase: /拖动滑块|完成拼图|安全验证|访问验证|请完成验证/.test(text),
+    captchaContainerPresent: doc.select('.geetest_panel,#nc_1_wrapper,#tcaptcha_transform_dy').size() > 0
+  });
+})()"""
 # Return only the page's own HTML. No inserted metadata, request replay, Cookie
 # access, external fetch, navigation, chapter operation or CAPTCHA interaction.
 METADATA_DOM_SCRIPT = """new Promise(resolve => {
@@ -117,6 +138,33 @@ def require_success(result):
     return value
 
 
+def page_diagnostics(raw):
+    if not isinstance(raw, str):
+        return None
+    try:
+        if len(raw.encode("utf-8")) > 1024:
+            return None
+    except UnicodeError:
+        return None
+
+    def unique_fields(pairs):
+        fields = {}
+        for key, value in pairs:
+            if key in fields:
+                raise ValueError("Duplicate diagnostic key")
+            fields[key] = value
+        return fields
+
+    try:
+        fields = json.loads(raw, object_pairs_hook=unique_fields)
+    except (ValueError, TypeError):
+        return None
+    if (not isinstance(fields, dict) or set(fields) != PAGE_DIAGNOSTIC_KEYS or
+            any(type(value) is not bool for value in fields.values())):
+        return None
+    return fields
+
+
 def summarize(status, value):
     success = value.get("isSuccess")
     error = value.get("errorMsg")
@@ -154,6 +202,10 @@ def summarize(status, value):
         "workerErrorCategory": worker_error.group(1) if worker_error else None,
         "dataIsNull": data is None, "dataIsObject": isinstance(data, dict),
         "knownFieldsPresent": {key: key in book for key in FIELDS},
+        "nameHasText": isinstance(name, str) and bool(name.strip()),
+        "authorHasText": isinstance(author, str) and bool(author.strip()),
+        "coverHasText": isinstance(cover, str) and bool(cover.strip()),
+        "pageDiagnostics": page_diagnostics(book.get("intro")),
         "nameMatches": name_ok, "authorMatches": author_ok,
         "coverHasExpectedPublicOrigin": cover_ok,
         "passed": status == 200 and success is True and error == "" and
@@ -166,7 +218,8 @@ def source_definition():
             "enabledCookieJar": False,
             "ruleBookInfo": {"name": "#bookName@text",
                              "author": ".book-info-top .book-meta .author@text",
-                             "coverUrl": "#bookImg img@src"}}
+                             "coverUrl": "#bookImg img@src",
+                             "intro": PAGE_DIAGNOSTIC_RULE}}
 
 
 def book_info_request(wait_dom=False):
@@ -233,6 +286,8 @@ def main():
               "sourceScriptMode": "boundedMetadataDom" if args.wait_dom else "domContentLoadedOnly",
               "metadataDomWaitBudgetMs": METADATA_DOM_WAIT_MS if args.wait_dom else 0,
               "sourceScriptSynthesizesMetadata": False,
+              "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",
+              "pageDiagnosticRuleRequested": True,
               "rawErrorHtmlCookieAndMetadataValuesNotPersisted": True, "passed": False}
     opener = urllib.request.build_opener(
         urllib.request.ProxyHandler({}), NoRedirect(),
@@ -305,6 +360,7 @@ def main():
         except (Exception, SystemExit):
             report["resourceGuardPassed"] = False
         report["passed"] = bool(report.get("metadata", {}).get("passed") and
+            report.get("metadata", {}).get("pageDiagnostics") is not None and
             report["resourceGuardPassed"] and report["defaultBrowserProcessObserved"] and
             report["processMonitorPassed"] and report.get("cookieRowsAfter") == 0 and
             report.get("generatedCookieSessionRevokedVerified") and not report.get("failureCategory"))

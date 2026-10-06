@@ -25,6 +25,7 @@ class MetadataSummaryTest(unittest.TestCase):
     def value(self):
         return {"isSuccess": True, "errorMsg": "", "data": {
             "name": "黎明之剑", "author": "远瞳",
+            "intro": json.dumps({key: False for key in PROBE.PAGE_DIAGNOSTIC_KEYS}),
             "coverUrl": "https://bookcover.yuewen.com/qdbimg/349573/1010400217/180"}}
 
     def test_expected_metadata_is_required_beyond_success_envelope(self):
@@ -87,6 +88,38 @@ class MetadataSummaryTest(unittest.TestCase):
 
     def test_successful_metadata_does_not_gain_an_inferred_worker_error(self):
         self.assertIsNone(PROBE.summarize(200, self.value())["workerErrorCategory"])
+
+    def test_nonempty_mismatch_is_distinct_from_empty_metadata_without_echo(self):
+        value = self.value()
+        value["data"].update(name="PRIVATE_NAME", author="PRIVATE_AUTHOR", coverUrl="PRIVATE_COVER")
+        result = PROBE.summarize(200, value)
+        for key in ("nameHasText", "authorHasText", "coverHasText"):
+            self.assertIs(result[key], True)
+        for key in ("nameMatches", "authorMatches", "coverHasExpectedPublicOrigin"):
+            self.assertIs(result[key], False)
+        self.assertNotIn("PRIVATE", json.dumps(result))
+        for blank in (None, 1, [], " \n "):
+            value["data"].update(name=blank, author=blank, coverUrl=blank)
+            result = PROBE.summarize(200, value)
+            self.assertFalse(any(result[key] for key in ("nameHasText", "authorHasText", "coverHasText")))
+
+    def test_diagnostics_accept_only_exact_fixed_boolean_fields(self):
+        fields = {key: False for key in PROBE.PAGE_DIAGNOSTIC_KEYS}
+        self.assertEqual(fields, PROBE.page_diagnostics(json.dumps(fields)))
+        for invalid in (None, {}, "PRIVATE_HTML", "[]", "x" * 1025, "\ud800",
+                        json.dumps({**fields, "PRIVATE_BODY": "PRIVATE_VALUE"}),
+                        json.dumps({key: 0 for key in fields}),
+                        json.dumps({key: "true" for key in fields}),
+                        json.dumps({key: value for key, value in fields.items() if key != "bodyHasText"}),
+                        json.dumps(fields)[:-1] + ',"bodyHasText":true}'):
+            self.assertIsNone(PROBE.page_diagnostics(invalid))
+
+    def test_safety_hints_never_turn_invalid_metadata_into_success(self):
+        fields = {key: True for key in PROBE.PAGE_DIAGNOSTIC_KEYS}
+        result = PROBE.summarize(200, {"isSuccess": True, "errorMsg": "", "data": {
+            "intro": json.dumps(fields)}})
+        self.assertEqual(fields, result["pageDiagnostics"])
+        self.assertFalse(result["passed"])
 
 
 class MetadataWaitJavaScriptTest(unittest.TestCase):
@@ -182,6 +215,13 @@ class RequestBoundaryTest(unittest.TestCase):
         self.assertFalse(source["enabledCookieJar"])
         for key in ("ruleContent", "ruleToc", "header", "loginUrl", "loginInfo", "searchUrl"):
             self.assertNotIn(key, source)
+        rules = source["ruleBookInfo"]
+        self.assertEqual("#bookName@text", rules["name"])
+        self.assertEqual(".book-info-top .book-meta .author@text", rules["author"])
+        self.assertEqual("#bookImg img@src", rules["coverUrl"])
+        self.assertEqual(PROBE.PAGE_DIAGNOSTIC_RULE, rules["intro"])
+        for unsafe in ("ajax(", "fetch(", "cookie", "location", "eval(", "outerHTML", "innerHTML"):
+            self.assertNotIn(unsafe, rules["intro"])
 
     def test_only_exact_loopback_endpoint_and_revision_are_accepted(self):
         for base, revision in (("https://read.medwarp.cn", "a" * 40),
@@ -283,6 +323,16 @@ class LifecycleTest(unittest.TestCase):
         self.assertEqual(0, result)
         self.assertTrue(report["passed"])
         self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_metadata_match_does_not_hide_missing_or_raw_page_diagnostics(self):
+        for raw in (None, "PRIVATE_HTML"):
+            value = MetadataSummaryTest().value()
+            value["data"]["intro"] = raw
+            result, report = self.run_generated_probe(value)
+            self.assertEqual(1, result)
+            self.assertTrue(report["metadata"]["passed"])
+            self.assertFalse(report["passed"])
+            self.assertTrue(report["generatedCookieSessionRevokedVerified"])
 
     def test_bounded_wait_still_rejects_empty_metadata_and_cleans_up(self):
         result, report = self.run_generated_probe({"isSuccess": True, "errorMsg": "", "data": {}}, wait_dom=True)
