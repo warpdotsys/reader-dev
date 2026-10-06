@@ -6,8 +6,12 @@ import io.legado.app.adapters.DefaultAdpater
 import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.adapters.ReaderAdapterInterface
 import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookSource
 import io.legado.app.model.analyzeRule.AnalyzeRule
+import io.legado.app.model.webBook.WebBook
 import io.legado.app.utils.htmlFormat
+import io.vertx.core.json.JsonObject as VertxJsonObject
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -24,6 +28,7 @@ class PublicMetadataPageDiagnosticTest {
     private lateinit var originalUserDir: String
     private lateinit var originalAdapter: ReaderAdapterInterface
     private lateinit var rule: String
+    private lateinit var sourceTemplate: JsonObject
     private val keys = setOf("nameSelectorPresent", "authorSelectorPresent", "coverSelectorPresent",
         "bodyHasText", "bodyHasExpectedBookTitle", "bodyHasExpectedAuthor",
         "bodyHasSafetyPhrase", "captchaContainerPresent")
@@ -34,6 +39,10 @@ class PublicMetadataPageDiagnosticTest {
         val marker = "PAGE_DIAGNOSTIC_RULE = \"\"\""
         assertEquals(2, probe.split(marker).size)
         rule = probe.substringAfter(marker).substringBefore("\"\"\"")
+        val sourceMarker = "PUBLIC_SOURCE_TEMPLATE = \"\"\""
+        assertEquals(2, probe.split(sourceMarker).size)
+        sourceTemplate = Gson().fromJson(probe.substringAfter(sourceMarker).substringBefore("\"\"\""), JsonObject::class.java)
+        sourceTemplate.getAsJsonObject("ruleBookInfo").addProperty("intro", rule)
         originalUserDir = System.getProperty("user.dir")
         originalAdapter = ReaderAdapterHelper.getAdapter()
         System.setProperty("user.dir", temp.root.absolutePath)
@@ -54,6 +63,66 @@ class PublicMetadataPageDiagnosticTest {
         assertEquals(keys, value.entrySet().map { it.key }.toSet())
         value.entrySet().forEach { assertTrue(it.value.isJsonPrimitive && it.value.asJsonPrimitive.isBoolean) }
         return value
+    }
+
+    // Same conversion and Jackson serialization used by saveBookSource, then
+    // the same deserialization used by WebBook. Generated source and HTML only.
+    private fun savedSource(): String = VertxJsonObject.mapFrom(
+        BookSource.fromJson(sourceTemplate.toString()).getOrThrow()).encode()
+
+    @Test
+    fun exactProbeSourceRetainsRulesThroughSaveAndReaderDeserialization() {
+        val source = BookSource.fromJson(savedSource()).getOrThrow()
+        assertEquals("https://www.qidian.com", source.bookSourceUrl)
+        assertEquals(false, source.enabledCookieJar)
+        assertEquals("#bookName@text", source.getBookInfoRule().name)
+        assertEquals(".book-info-top .book-meta .author@text", source.getBookInfoRule().author)
+        assertEquals("#bookImg img@src", source.getBookInfoRule().coverUrl)
+        assertEquals(rule, source.getBookInfoRule().intro)
+    }
+
+    @Test
+    fun missingTocMarkerCharacterizesExistingLegacyConversionWithoutChangingIt() {
+        sourceTemplate.remove("ruleToc")
+        val source = BookSource.fromJson(sourceTemplate.toString()).getOrThrow()
+        assertTrue(source.getBookInfoRule().name.isNullOrEmpty())
+        assertTrue(source.getBookInfoRule().author.isNullOrEmpty())
+        assertTrue(source.getBookInfoRule().intro.isNullOrEmpty())
+        assertTrue(source.getBookInfoRule().coverUrl.isNullOrEmpty())
+    }
+
+    @Test
+    fun savedProbeSourceParsesGeneratedMetadataAndDiagnosticViaWebBook() = runBlocking {
+        val book = Book().also {
+            it.bookUrl = "https://example.org/generated/"
+            it.infoHtml = """<h1 id="bookName">黎明之剑</h1>
+                <section class="book-info-top"><span class="book-meta"><a class="author">远瞳</a></span></section>
+                <div id="bookImg"><img src="https://example.org/generated-cover"></div>"""
+        }
+        WebBook(savedSource(), debugLog = false, userNameSpace = "generated-only").getBookInfo(book)
+        assertEquals("黎明之剑", book.name)
+        assertEquals("远瞳", book.author)
+        assertEquals("https://example.org/generated-cover", book.coverUrl)
+        val value = Gson().fromJson(book.intro, JsonObject::class.java)
+        assertEquals(keys, value.entrySet().map { it.key }.toSet())
+        keys.filterNot { it == "bodyHasSafetyPhrase" || it == "captchaContainerPresent" }
+            .forEach { assertTrue(value[it].asBoolean) }
+        assertFalse(value["bodyHasSafetyPhrase"].asBoolean)
+        assertFalse(value["captchaContainerPresent"].asBoolean)
+    }
+
+    @Test
+    fun savedSourceKeepsDiagnosticForAnEmptyGeneratedDocument() = runBlocking {
+        val book = Book().also {
+            it.bookUrl = "https://example.org/generated-empty/"
+            it.infoHtml = "<html><body></body></html>"
+        }
+        WebBook(savedSource(), debugLog = false, userNameSpace = "generated-only").getBookInfo(book)
+        assertEquals("", book.name)
+        assertEquals("", book.author)
+        val value = Gson().fromJson(book.intro, JsonObject::class.java)
+        assertEquals(keys, value.entrySet().map { it.key }.toSet())
+        keys.forEach { assertFalse(value[it].asBoolean) }
     }
 
     @Test

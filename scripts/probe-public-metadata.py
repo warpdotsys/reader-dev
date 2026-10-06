@@ -31,6 +31,17 @@ PAGE_DIAGNOSTIC_KEYS = frozenset((
     "nameSelectorPresent", "authorSelectorPresent", "coverSelectorPresent",
     "bodyHasText", "bodyHasExpectedBookTitle", "bodyHasExpectedAuthor",
     "bodyHasSafetyPhrase", "captchaContainerPresent"))
+PUBLIC_SOURCE_TEMPLATE = """{
+  "bookSourceUrl": "https://www.qidian.com",
+  "bookSourceName": "Anonymous metadata-only probe",
+  "enabledCookieJar": false,
+  "ruleToc": {},
+  "ruleBookInfo": {
+    "name": "#bookName@text",
+    "author": ".book-info-top .book-meta .author@text",
+    "coverUrl": "#bookImg img@src"
+  }
+}"""
 # Parse only the already-returned snapshot. This Reader rule does not execute
 # page scripts, make requests, inspect Cookie or change the metadata selectors.
 # Structural hints are not a visibility/CAPTCHA/authentication verdict.
@@ -115,7 +126,7 @@ def read_response(response):
 
 def request_json(opener, path, body=None):
     # The only source operation is one getBookInfo. No chapter/source-login API.
-    if path not in ("/getSystemInfo", "/login", "/saveBookSource", "/getBookInfo",
+    if path not in ("/getSystemInfo", "/login", "/saveBookSource", "/getBookSource", "/getBookInfo",
                     "/getBookSourceCookie", "/setBookSourceCookie", "/logout"):
         raise ProbeFailure("UnexpectedReaderEndpoint")
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
@@ -214,12 +225,28 @@ def summarize(status, value):
 
 
 def source_definition():
-    return {"bookSourceUrl": SOURCE, "bookSourceName": "Anonymous metadata-only probe",
-            "enabledCookieJar": False,
-            "ruleBookInfo": {"name": "#bookName@text",
-                             "author": ".book-info-top .book-meta .author@text",
-                             "coverUrl": "#bookImg img@src",
-                             "intro": PAGE_DIAGNOSTIC_RULE}}
+    # Existing SourceAnalyzer recognizes the nested format only when ruleToc
+    # is non-null. This empty format marker does not enable a chapter operation.
+    source = json.loads(PUBLIC_SOURCE_TEMPLATE)
+    source["ruleBookInfo"]["intro"] = PAGE_DIAGNOSTIC_RULE
+    return source
+
+
+def source_roundtrip(result):
+    saved = require_success(result).get("data")
+    source = saved if isinstance(saved, dict) else {}
+    rules = source.get("ruleBookInfo")
+    expected = source_definition()
+    observation = {
+        "dataIsObject": isinstance(saved, dict),
+        "sourceUrlMatches": source.get("bookSourceUrl") == SOURCE,
+        "cookieJarDisabled": source.get("enabledCookieJar") is False,
+        "modernTocMarkerPresent": isinstance(source.get("ruleToc"), dict),
+        "metadataRulesMatch": isinstance(rules, dict) and all(
+            rules.get(key) == value for key, value in expected["ruleBookInfo"].items()),
+    }
+    observation["passed"] = all(observation.values())
+    return observation
 
 
 def book_info_request(wait_dom=False):
@@ -321,6 +348,10 @@ def main():
         if report["cookieRowsBefore"] != 0:
             raise ProbeFailure("NonemptyFreshCookieIndex")
         require_success(request_json(opener, "/saveBookSource", source_definition()))
+        report["sourceDefinitionRoundtrip"] = source_roundtrip(request_json(
+            opener, "/getBookSource", {"bookSourceUrl": SOURCE}))
+        if not report["sourceDefinitionRoundtrip"]["passed"]:
+            raise ProbeFailure("ProbeSourceRulesNotRetained")
         watcher.start()
         started = time.monotonic()
         report["bookInfoApiCalls"] += 1
@@ -361,6 +392,7 @@ def main():
         except (Exception, SystemExit):
             report["resourceGuardPassed"] = False
         report["passed"] = bool(report.get("metadata", {}).get("passed") and
+            report.get("sourceDefinitionRoundtrip", {}).get("passed") and
             report.get("metadata", {}).get("pageDiagnostics") is not None and
             report["resourceGuardPassed"] and report["defaultBrowserProcessObserved"] and
             report["processMonitorPassed"] and report.get("cookieRowsAfter") == 0 and

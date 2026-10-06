@@ -2,6 +2,8 @@
 
 ## 范围和当前状态
 
+**更正先前空元数据的解释**：已用真实 `BookSource.fromJson → JsonObject.mapFrom → WebBook` 路径在生成数据上复现测试书源格式错误：省略 `ruleToc` 时，现有 `SourceAnalyzer` 把嵌套格式当成旧格式，导致详情规则丢失。此前所有该夹具的成功外壳／空或不匹配元数据，只能证明那些实际响应，不能证明起点页面字段为空、选择器错误或验证码。原失败及 worker 错误分类保留，不将夹具修正写成产品修复。详见下文“测试书源格式与保存读回门禁”。
+
 本机仍缺 `uidmap`，不能用宿主 Chrome 或 root 运行冒充最终 UID 10001 的 Camoufox 验收。另建一个明确的托管消费模式：只加载已成功原生演练的完整镜像，不重新构建、替换 JAR、推 registry 或部署。探针源码提交和被测镜像内的修订分开记录，不把旧镜像写成新源码构建。
 
 已完成可读验收入口和两轮实际托管匿名详情：元数据均失败。初版清理断言误读了 legacy 的 setter 顺序，纠正后的独立复跑已验证生成 Cookie 会话失效与容器移除，解析失败仍判红。不能由安全检查、清理通过或成功外壳宣布起点已修好。目标仍包括真实认证、原 JAR / 历史远程 / 默认 Camoufox 的同条件三方、关键 Vue 3 业务和生产用户可见验收。
@@ -12,6 +14,7 @@
 - Reader 及浏览器仍在同一镜像内，UID 10001；新生成存储和账号，只有容器内部回环监听，没有发布 HTTP 端口。容器允许访问公开站点，但产品的私网拒绝保持开启，未设公网 DNS 替代或修改宿主代理。
 - 2 CPU / 2 GiB / 256 PID / 零 swap，权限收紧；采集真实 cgroup 计数。预算只约束 Reader 容器，不把 runner 的镜像下载、Docker daemon 或硬盘用量算成该预算。归档在 GitHub runner 消费，不下载多 GiB 到用户电脑。
 - 仅一次 `/getBookInfo`，使用已观测的新详情选择器；不调用搜索、目录、正文、真实账号或 Cookie 导入接口。要求 HTTP、严格布尔 `isSuccess`、`errorMsg` 和期望书名/作者/公开封面一起匹配；成功外壳但空元数据明确失败。
+- 新探针在外部详情前用 `/getBookSource` 读回本次生成书源，仅记录来源匹配、CookieJar 关闭、新格式标记和四份详情规则完全一致的布尔值。失败立即停止，外部详情调用为 0，仍执行退出／容器清理。读回操作只针对生成账号自己的生成书源，不导出实际规则、其他书源或凭据。
 - 只保留字段存在性/匹配布尔值、错误长度/固定原因/域名指纹、请求耗时和进程类别计数；不保存原错误、跳转 URL、HTML、元数据值、正文、匿名站点 Cookie 或 Reader 日志。Reader API 跳转不跟随，响应限 64 KiB。
 - 清除生成空间 Cookie，按 legacy 的退出 `isSuccess=true / NEED_LOGIN / 空 errorMsg` 和随后受保护接口 `isSuccess=false / NEED_LOGIN` 两个不同契约核对 Cookie 会话失效。不是全设备令牌撤销。finally 移除本次新容器及其进程；只上传小报告，存储目录和镜像不上传为该探针输出。
 
@@ -77,7 +80,7 @@ worker／driver 各 1，browser 类最高 7；真实 cgroup 峰值 811,593,728 B
 
 模式在下载／加载／启动前严格限定，经过环境变量和引用参数传给 Shell，不把输入作为命令执行。消费脚本旧三参数调用仍默认 `bounded-dom`；第四参数只接受两个固定值。Python 记录 `pageCaptureMode` 与原 `sourceScriptMode`，方便核对究竟有没有浏览器脚本。工作流 `choice` 输入依据 [GitHub 官方语法](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs)，本增量没有给任意 URL、Cookie、脚本或故障重试开放入口。
 
-本机 34 项探针检查、全量 Python 179 项中 178 实际／1 个 Windows 环境跳过、57 项发布守卫和 Bash 语法检查通过。这些是请求参数／流程夹具，不是真实快照结果。新的快照专项待自己的托管执行；必须消费与前次相同的已验收镜像原字节，不将探针新源码当作被测产品修订。
+本机 34 项探针检查、全量 Python 179 项中 178 实际／1 个 Windows 环境跳过、57 项发布守卫和 Bash 语法检查通过。这些是该提交的请求参数／流程夹具，不是真实快照结果。快照专项已终态，结果及其夹具缺陷见下文；必须消费与前次相同的已验收镜像原字节，不将探针新源码当作被测产品修订。
 
 ```powershell
 gh workflow run browser-image.yml --repo warpdotsys/reader-dev `
@@ -88,6 +91,22 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev `
 ```
 
 上述输入对应已验收的实际原镜像，不可填任意源码 SHA。单独专项不会构建新镜像、部署或使用真实 Cookie。回滚新增选择输入及第四参数即可恢复旧有限等待入口；旧失败记录必须保留。
+
+### 无脚本快照的实际结果及解释限制
+
+提交 `0e7432d2` 的[专项 37444184170](https://github.com/warpdotsys/reader-dev/actions/runs/37444184170)终态失败，只消费同一个 `c89d6623`／`5eeeb4d5` 原镜像。一次请求 5.587 秒，HTTP 200、严格 `isSuccess=true`、空错误和 data 对象；书名、作者、封面均无非空文本，固定诊断 JSON 仍为 null，没有再次观测到脚本状态丢失。八份 JSON、运行 JAR `e589818d...`、镜像 ID `7dea2494...`、UID／私网拒绝／零外部端口、生成 Cookie 会话及容器清理已独立核对；原 `require_no_swap=true` 资源守卫实际通过。峰值 940,343,296 B（约 896.78 MiB）、PID 187，2 CPU／2 GiB／256 PID／零 swap，触限／OOM 0。[原样响应、具体散列和未验证规则的限制](evidence/public-metadata-snapshot-only-hosted-2026-10-06.json)。
+
+本轮没有保存读回规则证明；后续本地复现确认旧测试定义缺新格式标记。不能把其空元数据归因于页面、导航、验证码或字段等待，不能用这次无错误响应关闭上一轮实际 `SourceScriptStateLost`。同一镜像字节不等于旧夹具有效；正确夹具必须独立重测。
+
+### 测试书源格式与保存读回门禁
+
+已从恢复源码验证：`src/main/java/io/legado/app/utils/SourceAnalyzer.kt` 的 `jsonToBookSource` 以 `sourceAny?.ruleToc == null` 选择旧规则转换。旧探针只有嵌套 `ruleBookInfo` 而未提供 `ruleToc`，因此嵌套规则被忽略。原先 5 个 JVM 测试仅直接调用规则解析器，没有覆盖书源转换；本轮新增完整链路后，7 项实际测试有 2 项失败／0 跳过／0 错误，旧失败 XML SHA-256 `3712c3c804b24005fdd843bc8ebf88c50d62b4db807cd0057be596f25377337e` 已保留于本机隔离证据目录。
+
+正式增量只修测试定义：共享精确 JSON 模板加入 `ruleToc: {}` 作为现有新格式的识别标记，不添加章节规则、不请求章节，也不是业务空实现。原元数据 CSS、诊断脚本、浏览器等待、私网防护及严格失败门禁不变。新增 `/getBookSource` 读回门禁要求原四条详情规则完整保留；否则 `ProbeSourceRulesNotRetained`，外部调用 0 次，原清理照常执行。没有修改产品转换器、原 JAR 或用户书源。
+
+修正后真实 JVM 9 项全部实际通过、0 跳过／失败／错误，实际 XML SHA-256 `d333583a9a3959f2d0622a88795afb51fdacb701d50f5ca8fdce87ebaa676bba`；同一精确模板经真实转换／保存序列化／WebBook 再读与正常、空文档均保留固定诊断 JSON。JDK 11、本地离线、2 个活动处理器／512 MiB JVM 预算；未启动 HTTP Reader 或原 JAR，未联网。[本地红绿证据与精确覆盖边界](evidence/public-metadata-source-roundtrip-local-2026-10-06.json)。36 项探针及全量 Python 181 项（180 实际／1 Windows 环境跳过）无失败／错误；涵盖规则变更／标记缺失／CookieJar 错误／数据类型错误的拒绝与未导航时的清理。修正夹具的实站结果另记，不能用这些生成测试替代 HTTP 保存读回、默认浏览器或起点认证。
+
+已知产品限制仍存在：缺少 `ruleToc` 的嵌套详情-only书源目前可能被按旧格式转换、静默丢规则。尚未与原 JAR 同输入核验，也未修改现有兼容行为；不把测试增加格式标记写成解决了所有用户书源。回滚仅移除共享模板／读回门禁及新测试，但必须继续保留旧结果解释限制，不恢复“空响应即页面为空”的错误结论。
 
 ### 固定分类的独立专项实际结果
 

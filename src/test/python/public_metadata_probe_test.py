@@ -213,7 +213,8 @@ class RequestBoundaryTest(unittest.TestCase):
         source = PROBE.source_definition()
         self.assertEqual("https://www.qidian.com", source["bookSourceUrl"])
         self.assertFalse(source["enabledCookieJar"])
-        for key in ("ruleContent", "ruleToc", "header", "loginUrl", "loginInfo", "searchUrl"):
+        self.assertEqual({}, source["ruleToc"])
+        for key in ("ruleContent", "header", "loginUrl", "loginInfo", "searchUrl"):
             self.assertNotIn(key, source)
         rules = source["ruleBookInfo"]
         self.assertEqual("#bookName@text", rules["name"])
@@ -230,6 +231,29 @@ class RequestBoundaryTest(unittest.TestCase):
             with self.assertRaisesRegex(PROBE.ProbeFailure, "InvalidProbeInput"):
                 PROBE.require_environment(base, revision, Path("/verification-output"))
 
+    def test_source_roundtrip_requires_the_exact_rules_and_modern_marker(self):
+        value = {"isSuccess": True, "data": PROBE.source_definition()}
+        self.assertTrue(PROBE.source_roundtrip((200, value))["passed"])
+        for key in ("name", "author", "coverUrl", "intro"):
+            source = PROBE.source_definition()
+            source["ruleBookInfo"][key] = "PRIVATE_DIFFERENT_RULE"
+            report = PROBE.source_roundtrip((200, {"isSuccess": True, "data": source}))
+            self.assertFalse(report["passed"])
+            self.assertFalse(report["metadataRulesMatch"])
+            self.assertNotIn("PRIVATE", json.dumps(report))
+        for patch_value in ({"ruleToc": None}, {"ruleToc": "{}"},
+                            {"enabledCookieJar": 0}, {"enabledCookieJar": True},
+                            {"bookSourceUrl": "https://PRIVATE_URL"}, {"ruleBookInfo": None}):
+            source = PROBE.source_definition()
+            source.update(patch_value)
+            report = PROBE.source_roundtrip((200, {"isSuccess": True, "data": source}))
+            self.assertFalse(report["passed"])
+            self.assertNotIn("PRIVATE", json.dumps(report))
+        for data in (None, "PRIVATE_RESPONSE", [], {}):
+            report = PROBE.source_roundtrip((200, {"isSuccess": True, "data": data}))
+            self.assertFalse(report["passed"])
+            self.assertNotIn("PRIVATE", json.dumps(report))
+
     def test_runtime_does_not_fall_back_to_root_or_private_network_access(self):
         env = {"READER_BUILD_REVISION": "a" * 40, "READER_APP_WEBVIEWRENDERER": "camoufox",
                "READER_BROWSER_ALLOW_PRIVATE_NETWORKS": "false", "READER_SERVER_BINDADDRESS": "127.0.0.1",
@@ -244,7 +268,8 @@ class RequestBoundaryTest(unittest.TestCase):
 
 
 class LifecycleTest(unittest.TestCase):
-    def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False, wait_dom=False):
+    def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False, wait_dom=False,
+                            source_retained=True):
         observed = threading.Event()
         paths = []
         logged_out = False
@@ -256,6 +281,9 @@ class LifecycleTest(unittest.TestCase):
         def request(opener, path, body=None):
             nonlocal logged_out
             paths.append(path)
+            if path == "/getBookSource":
+                self.assertEqual({"bookSourceUrl": PROBE.SOURCE}, body)
+                return 200, {"isSuccess": True, "data": PROBE.source_definition() if source_retained else {}}
             if path == "/getBookInfo":
                 self.assertEqual(PROBE.book_info_request(wait_dom), body)
                 self.assertTrue(observed.wait(1), "Generated process observer did not run")
@@ -288,8 +316,9 @@ class LifecycleTest(unittest.TestCase):
             report = json.loads((Path(directory) / "PUBLIC_METADATA_REPORT.json").read_text(encoding="utf-8"))
             encoded = stdout.getvalue() + json.dumps(report, ensure_ascii=False)
             self.assertNotIn("PRIVATE", encoded)
-            self.assertEqual(1, report["bookInfoApiCalls"])
-            self.assertEqual(1, paths.count("/getBookInfo"))
+            self.assertEqual(1 if source_retained else 0, report["bookInfoApiCalls"])
+            self.assertEqual(1 if source_retained else 0, paths.count("/getBookInfo"))
+            self.assertEqual(1, paths.count("/getBookSource"))
             self.assertFalse(report["chapterBodyRequested"])
             self.assertFalse(report["realAuthenticationProven"])
             self.assertFalse(report["sourceScriptSynthesizesMetadata"])
@@ -300,6 +329,15 @@ class LifecycleTest(unittest.TestCase):
             self.assertEqual(0, report["cookieRowsAfter"])
             self.assertIn("/logout", paths)
             return result, report
+
+    def test_rule_loss_is_a_red_setup_gate_before_any_public_navigation(self):
+        result, report = self.run_generated_probe(MetadataSummaryTest().value(), source_retained=False)
+        self.assertEqual(1, result)
+        self.assertEqual("ProbeSourceRulesNotRetained", report["failureCategory"])
+        self.assertFalse(report["sourceDefinitionRoundtrip"]["passed"])
+        self.assertNotIn("metadata", report)
+        self.assertFalse(report["defaultBrowserProcessObserved"])
+        self.assertTrue(report["generatedCookieSessionRevokedVerified"])
 
     def test_success_shell_without_metadata_is_a_red_gate_after_cleanup(self):
         result, report = self.run_generated_probe({"isSuccess": True, "errorMsg": "", "data": {}})

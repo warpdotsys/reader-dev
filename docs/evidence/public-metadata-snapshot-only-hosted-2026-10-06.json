@@ -1,0 +1,203 @@
+{
+  "recordedDate": "2026-10-06",
+  "probeSourceCommit": "0e7432d2a779b5a64b5d17cb753620310827a30b",
+  "testedImageSourceCommit": "c89d6623f0d870f6b8ea53ea0bdb3bcc26d2b4a8",
+  "testedImageRevision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+  "run": {
+    "id": 37444184170,
+    "status": "completed",
+    "conclusion": "failure",
+    "actualJob": 112204912123,
+    "mutuallyExclusiveSkippedJobs": 5
+  },
+  "artifact": {
+    "id": 11402153243,
+    "name": "public-metadata-amd64-37444184170",
+    "sizeBytes": 3210,
+    "githubDeclaredArchiveSha256": "7dbc6fbb0814b9bd380f342571da766a873e9f30037102ef4e8fa6b76e6f73cc"
+  },
+  "scopeIdentityAndCleanupVerified": true,
+  "originalNoSwapGuardExecutedAndPassed": true,
+  "sourceRuleRoundtripNotObserved": true,
+  "pageStructureAndCaptchaCannotBeInferred": true,
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+      "value": {
+        "ownedContainerRemoved": true,
+        "probeExit": 1
+      }
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+      "value": {
+        "Running": true,
+        "OOMKilled": false,
+        "ExitCode": 0
+      }
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "sha256": "1e6901a0d18b495f3f2fb0a7954420ea25767ae10497cfc66765a76de60588c6",
+      "value": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "jarSha256": "e589818dcafcbd230aa5973dd2e9492677533023c09bffa0860b524146a9c2ea",
+        "imageId": "sha256:7dea2494cb99a9b78d8b4b343cdfc0a227afef574bb532665c3d961d7d403428"
+      }
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "sha256": "743f42a109b2d11c0abc3861e44ac0a9d7bd009d6c57ba79523ea730c31b084a",
+      "value": {
+        "phase": "check",
+        "architecture": "amd64",
+        "revision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "jarSha256": "e589818dcafcbd230aa5973dd2e9492677533023c09bffa0860b524146a9c2ea",
+        "imageId": "sha256:7dea2494cb99a9b78d8b4b343cdfc0a227afef574bb532665c3d961d7d403428"
+      }
+    },
+    {
+      "name": "PUBLIC_METADATA_REPORT.json",
+      "sha256": "af4dfb81c488fd65f13b1729d4eccef754bdb38b3ae2b6c6040d90757e8bd185",
+      "value": {
+        "allDeviceTokenRevocationProven": false,
+        "bookInfoApiCalls": 1,
+        "chapterBodyRequested": false,
+        "configuredRenderer": "camoufox",
+        "cookieRowsAfter": 0,
+        "cookieRowsBefore": 0,
+        "defaultBrowserProcessObserved": true,
+        "expectedImageRevision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "generatedCookieSessionRevokedVerified": true,
+        "logoutObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": true,
+          "httpStatus": 200,
+          "isSuccess": true
+        },
+        "maximumObservedProcesses": {
+          "browser": 7,
+          "driver": 1,
+          "worker": 1
+        },
+        "metadata": {
+          "authorHasText": false,
+          "authorMatches": false,
+          "coverHasExpectedPublicOrigin": false,
+          "coverHasText": false,
+          "dataIsNull": false,
+          "dataIsObject": true,
+          "errorMessageLength": 0,
+          "errorMsgEmpty": true,
+          "errorMsgIsString": true,
+          "hostFingerprint": null,
+          "httpStatus": 200,
+          "isSuccess": true,
+          "isSuccessIsBoolean": true,
+          "knownFieldsPresent": {
+            "author": true,
+            "bookUrl": true,
+            "canUpdate": true,
+            "coverUrl": false,
+            "durChapterIndex": true,
+            "durChapterPos": true,
+            "group": true,
+            "name": true,
+            "tocUrl": true,
+            "totalChapterNum": true,
+            "type": true
+          },
+          "nameHasText": false,
+          "nameMatches": false,
+          "pageDiagnostics": null,
+          "passed": false,
+          "policyReason": null,
+          "workerErrorCategory": null
+        },
+        "metadataDomWaitBudgetMs": 0,
+        "observedAt": "2026-10-06T17:38:41.652235+08:00",
+        "originalJarOrArchivedParity": false,
+        "pageCaptureMode": "snapshot-only",
+        "pageDiagnosticRuleRequested": true,
+        "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",
+        "passed": false,
+        "postLogoutProtectedObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": false,
+          "httpStatus": 200,
+          "isSuccess": false
+        },
+        "privateNetworkGuardEnabled": true,
+        "processMonitorPassed": true,
+        "rawErrorHtmlCookieAndMetadataValuesNotPersisted": true,
+        "realAuthenticationProven": false,
+        "realCredentialsImported": false,
+        "requestSeconds": 5.587,
+        "resourceGuardPassed": true,
+        "runtimeUid": 10001,
+        "schemaVersion": 1,
+        "scope": "anonymous single-image public metadata only",
+        "source": "https://www.qidian.com/book/1010400217/",
+        "sourceScriptMode": "domContentLoadedOnly",
+        "sourceScriptSynthesizesMetadata": false
+      }
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "sha256": "c22b216bfd3132cbdf214c8f6cc0ba3aa35f26b10fcfbbe16a7cdaef377a0b5d",
+      "value": {
+        "revision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "jarSha256": "e589818dcafcbd230aa5973dd2e9492677533023c09bffa0860b524146a9c2ea",
+        "network": "bridge",
+        "publishedPorts": 0
+      }
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "sha256": "443e6d2d52387a18a82339890ead501454e72d66ea25f339a2db1e1d98328245",
+      "value": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 420626432,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 940343296,
+        "pidsCurrent": 35,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 187,
+        "scope": "one anonymous default-Camoufox metadata request",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      }
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "sha256": "b3fbe257e735f77bef4efa7eb6ed50820287d5bce67fa2714168d3a68de34a97",
+      "value": {
+        "id": 37436316345,
+        "name": "Native release artifact rehearsal",
+        "path": ".github/workflows/release-native.yml",
+        "head_sha": "c89d6623f0d870f6b8ea53ea0bdb3bcc26d2b4a8",
+        "event": "pull_request",
+        "conclusion": "success",
+        "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37436316345"
+      }
+    }
+  ]
+}
