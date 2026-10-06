@@ -65,6 +65,29 @@ class MetadataSummaryTest(unittest.TestCase):
             self.assertFalse(result["passed"])
             self.assertNotIn("PRIVATE_RESPONSE", json.dumps(result))
 
+    def test_fixed_worker_error_classes_are_classified_without_copying_the_wrapper(self):
+        for category in ("SourceScriptStateLost", "SourceScriptTimeout", "SourceScriptRejected",
+                         "TimeoutError", "ResponseBodyTooLarge", "ResponseTooLarge",
+                         "CookieLimitExceeded", "Error"):
+            for prefix in ("", "java.lang.IllegalStateException: "):
+                value = {"isSuccess": False, "errorMsg": prefix + "Camoufox 渲染失败 (" + category + ")", "data": None}
+                result = PROBE.summarize(200, value)
+                self.assertEqual(category, result["workerErrorCategory"])
+                self.assertFalse(result["passed"])
+                self.assertNotIn("Camoufox 渲染失败", json.dumps(result, ensure_ascii=False))
+
+    def test_unknown_or_credential_bearing_error_text_is_not_classified_or_echoed(self):
+        for error in ("Camoufox 渲染失败 (PRIVATE_CLASS)",
+                      "https://example.org/?ticket=PRIVATE Camoufox 渲染失败 (SourceScriptStateLost)",
+                      "Camoufox 渲染失败 (SourceScriptRejected) PRIVATE_COOKIE",
+                      "Camoufox 渲染失败 (SourceScriptTimeout)\nPRIVATE_BODY"):
+            result = PROBE.summarize(200, {"isSuccess": False, "errorMsg": error, "data": None})
+            self.assertIsNone(result["workerErrorCategory"])
+            self.assertNotIn("PRIVATE", json.dumps(result))
+
+    def test_successful_metadata_does_not_gain_an_inferred_worker_error(self):
+        self.assertIsNone(PROBE.summarize(200, self.value())["workerErrorCategory"])
+
 
 class MetadataWaitJavaScriptTest(unittest.TestCase):
     def test_exact_wait_script_with_generated_dom_and_clock_is_not_a_browser_proof(self):

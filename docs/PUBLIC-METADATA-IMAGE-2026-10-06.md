@@ -15,7 +15,7 @@
 - 只保留字段存在性/匹配布尔值、错误长度/固定原因/域名指纹、请求耗时和进程类别计数；不保存原错误、跳转 URL、HTML、元数据值、正文、匿名站点 Cookie 或 Reader 日志。Reader API 跳转不跟随，响应限 64 KiB。
 - 清除生成空间 Cookie，按 legacy 的退出 `isSuccess=true / NEED_LOGIN / 空 errorMsg` 和随后受保护接口 `isSuccess=false / NEED_LOGIN` 两个不同契约核对 Cookie 会话失效。不是全设备令牌撤销。finally 移除本次新容器及其进程；只上传小报告，存储目录和镜像不上传为该探针输出。
 
-## 后续诊断：有限等待动态元数据（尚未实际联网验收）
+## 后续诊断：有限等待动态元数据
 
 旧两轮探针只传 `webView=true`，并未用书源脚本等待动态字段。因此它们证明空元数据，但不能排除返回时机过早；上一轮 Promise 修复也不能自动关闭这一缺口。
 
@@ -24,6 +24,26 @@
 本机 Python 162 项中 161 执行／1 个 Windows 符号链接环境跳过，零失败／错误；其中元数据安全／生命周期与新增 JS 驱动共 24 项。Node 实际执行从 Python 源码提取的同一脚本，8 个生成 DOM／时钟检查无跳过，覆盖立即就绪、延迟字段、每个缺失字段、空文本／封面和准确期限。这些是语言／控制夹具，不是真实 Camoufox、起点认证或正文证明。发布结构 57 项通过，未改产品 worker、默认私网拒绝、UID 或零 swap 配置。
 
 新的托管专项必须消费已完成的精确镜像修订，实际结果另记。不能用旧无脚本失败、新生成搜索成功或本机 8 项 JS 来宣称起点已修好。先前实际失败报告原样保留。回滚仅去掉消费脚本的 `--wait-dom` 并保留基线报告；无需改产品或用户数据。
+
+### 第一次有限等待专项仍失败，错误类别尚未确认
+
+探针提交 `c2679e7b69217bd7d869028fa86907c59a6926dd` 的[专项 37430404938](https://github.com/warpdotsys/reader-dev/actions/runs/37430404938)已实际终态失败。只消费已成功演练 `37428262965` 的原镜像修订 `53bf73d680045744ece5db080b0710bb9004a228`，不是新探针的产品构建；实际加载／运行 JAR `12334f82...`、镜像 ID `sha256:e268ce3b...` 与自己的输入一致。
+
+一次详情在 6.175 秒返回 HTTP 200、严格 `isSuccess=false`、非空错误（仅保存长度 70）和 `data=null`，期望字段不匹配。它不同于旧两次成功外壳／空对象；不能写成“等满 8 秒仍无 DOM”，也不能仅由错误长度或较短耗时推断状态丢失、导航错误或唯一根因。实际观察 worker 1／driver 1／browser 类最高 7，UID 10001，私网拒绝、零外部端口保持开启。峰值 `847728640 B`（约 808 MiB）、PID 191，2 CPU／2 GiB／256 PID／零 swap，触限／OOM 0。Cookie 列表前后 0、两个退出契约与自有容器移除均通过；不证明全设备 token 撤销。
+
+3,106 B 小制品的八份 JSON 已下载、逐文件重算哈希，并严格核对身份／范围／预算／清理；失败判红。[完整脱敏结果及未确认的错误类别](evidence/public-metadata-domwait-hosted-first-2026-10-06.json)保留，不保存原始错误、HTML、站点 Cookie 或正文，不借其他普通 CI 绿灯抵消专项红灯。
+
+后续诊断补了固定 worker 错误类别白名单：只识别可读 JVM 包装中的已知类别，未知类、附加 URL／Cookie／正文全部不识别、不回显。27 项本机元数据检查通过；真实分类专项尚未复跑，不能回填首轮未观测的类别。
+
+### 同一源码的原生契约失败：不能当作已通过发版验收
+
+`c2679e7b` 的[完整镜像工作流 37430408844](https://github.com/warpdotsys/reader-dev/actions/runs/37430408844)终态成功，但[原生演练 37430408602](https://github.com/warpdotsys/reader-dev/actions/runs/37430408602)在共享 JAR 的默认引擎契约阶段失败；后续原生、重载及导入作业跳过，不能计作成功。两条结果分别保留，不用完整镜像绿灯抵消发布红灯，也不先归因为偶发。
+
+下载的实际 Camoufox XML 为 15 项／0 跳过／1 失败／0 错误；失败的是 `generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost`，8.671 秒，通用 `Error`，不足以区分初始导航中断、快照竞态或其他故障。XML SHA-256 为 `4d675d9721c0c9867807ec581cdbf78374e159ac430d89ad269eeef3c1118cd8`；原严格校验实际以 exit 1 拒绝。[失败来源及边界](evidence/camoufox-navigation-failure-c267-2026-10-06.json)。
+
+新增可读 worker 诊断只在异常发生时向 stderr 发出固定操作和类别标签，NDJSON 的原错误类及公开 ReturnData 不变；JVM 测试异常时补生成跳转次数／POST 次数。该契约加强为 12 个独立生成命名空间，每次原 POST 必须恰好一次，首次失败仍立即失败，绝不是失败重试。不会记录异常原文、URL、Cookie、正文或请求内容，不重放 goto／POST／脚本，不吞掉 transport／关闭页面故障，不改变期限／私网防护／成功断言。错误文字匹配仅是诊断提示，不是重试授权或唯一根因证明。相关导航行为可参考 [Playwright 官方导航测试](https://github.com/microsoft/playwright/blob/main/tests/page/page-goto.spec.ts)，但该参考不能代替本项目实际失败定位。
+
+本机全量 Python 171 项，170 执行／1 Windows 环境跳过，零失败／错误；新增 6 项诊断检查确认异常身份／原协议类保留、不泄漏凭据、未知分类保持未知、不重试。它们是无浏览器夹具，不是真实默认引擎验收。新的诊断需要自己的 GitHub 托管真实测试，不改写旧红灯；本机未构建或执行新的 JAR，生产未变。
 
 ## 可重复命令
 

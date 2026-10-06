@@ -124,6 +124,12 @@ def summarize(status, value):
     text = error if isinstance(error, str) else ""
     reason = re.search(r"reason=(DNS_FAILURE|ADDRESS_NOT_PUBLIC|INVALID_HOST|INVALID_URL|UNSUPPORTED_SCHEME)\b", text)
     fingerprint = re.search(r"hostSha256=([0-9a-f]{16})\b", text)
+    # Only the exact readable JVM wrapper around a fixed worker exception is
+    # classified. Never preserve arbitrary exception names, messages or URLs.
+    worker_error = re.fullmatch(
+        r"(?:java\.lang\.IllegalStateException: )?Camoufox 渲染失败 "
+        r"\((SourceScriptStateLost|SourceScriptTimeout|SourceScriptRejected|TimeoutError|"
+        r"ResponseBodyTooLarge|ResponseTooLarge|CookieLimitExceeded|Error)\)", text)
     book = data if isinstance(data, dict) else {}
     name = book.get("name")
     author = book.get("author")
@@ -145,6 +151,7 @@ def summarize(status, value):
         "errorMessageLength": len(text),
         "policyReason": reason.group(1) if reason else None,
         "hostFingerprint": fingerprint.group(1) if fingerprint else None,
+        "workerErrorCategory": worker_error.group(1) if worker_error else None,
         "dataIsNull": data is None, "dataIsObject": isinstance(data, dict),
         "knownFieldsPresent": {key: key in book for key in FIELDS},
         "nameMatches": name_ok, "authorMatches": author_ok,

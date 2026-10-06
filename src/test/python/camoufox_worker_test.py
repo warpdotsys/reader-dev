@@ -1,6 +1,8 @@
 """Pure parser/snapshot tests; no Camoufox binary or browser download is required."""
 
 import importlib.util
+import io
+import json
 import sys
 import types
 import unittest
@@ -25,6 +27,88 @@ def load_worker():
 
 
 worker = load_worker()
+
+
+class WorkerBrowserDiagnosticTest(unittest.TestCase):
+    def test_annotating_a_failure_preserves_the_original_exception_and_protocol_class(self):
+        error = RuntimeError("PRIVATE_BODY https://generated.invalid/?cookie=PRIVATE_COOKIE")
+        with self.assertRaises(RuntimeError) as raised:
+            with worker.browser_operation("snapshotContent"):
+                raise error
+        self.assertIs(error, raised.exception)
+        self.assertEqual("RuntimeError", type(raised.exception).__name__)
+        self.assertEqual({"operation": "snapshotContent", "kind": "unclassified", "errorClass": "Other"},
+                         worker.browser_failure_diagnostic(error))
+
+    def test_fixed_error_kinds_never_echo_the_message_or_credentials(self):
+        Error = type("Error", (Exception,), {})
+        cases = {
+            "NS_BINDING_ABORTED": "navigationInterrupted",
+            "is interrupted by another navigation": "navigationInterrupted",
+            "Execution context was destroyed": "executionContextDestroyed",
+            "Unable to retrieve content because the page is navigating and changing the content": "documentChanging",
+            "unknown browser transport": "unclassified",
+        }
+        for message, expected in cases.items():
+            error = Error(message + " PRIVATE_BODY https://generated.invalid/?ticket=PRIVATE_COOKIE")
+            with self.assertRaises(Error):
+                with worker.browser_operation("initialNavigation"):
+                    raise error
+            diagnostic = worker.browser_failure_diagnostic(error)
+            self.assertEqual(expected, diagnostic["kind"])
+            self.assertEqual("Error", diagnostic["errorClass"])
+            self.assertNotIn("PRIVATE", str(diagnostic))
+            self.assertNotIn("generated.invalid", str(diagnostic))
+
+    def test_unknown_or_missing_phase_does_not_emit_a_diagnostic(self):
+        error = RuntimeError("PRIVATE_BODY")
+        self.assertIsNone(worker.browser_failure_diagnostic(error))
+        error._reader_browser_operation = "PRIVATE_COOKIE"
+        self.assertIsNone(worker.browser_failure_diagnostic(error))
+        error._reader_browser_operation = {"PRIVATE_COOKIE": "PRIVATE_BODY"}
+        self.assertIsNone(worker.browser_failure_diagnostic(error))
+        with self.assertRaises(ValueError):
+            with worker.browser_operation("PRIVATE_COOKIE"):
+                self.fail("An untrusted operation must not run")
+
+    def test_nested_operations_keep_the_innermost_failure_without_retrying(self):
+        error = RuntimeError("generated-fatal")
+        calls = []
+        with self.assertRaises(RuntimeError):
+            with worker.browser_operation("initialNavigation"):
+                with worker.browser_operation("snapshotContent"):
+                    calls.append(1)
+                    raise error
+        self.assertEqual([1], calls)
+        self.assertEqual("snapshotContent", worker.browser_failure_diagnostic(error)["operation"])
+
+
+    def test_diagnostics_cannot_replace_an_unprintable_failure(self):
+        class Error(Exception):
+            def __str__(self):
+                raise RuntimeError("PRIVATE_BODY")
+        error = Error()
+        with self.assertRaises(Error) as raised:
+            with worker.browser_operation("snapshotLoadState"):
+                raise error
+        self.assertIs(error, raised.exception)
+        self.assertEqual("unclassified", worker.browser_failure_diagnostic(error)["kind"])
+
+    def test_main_keeps_the_wire_error_class_and_emits_only_fixed_stderr_labels(self):
+        Error = type("Error", (Exception,), {})
+        error = Error("NS_BINDING_ABORTED PRIVATE_BODY https://generated.invalid/?cookie=PRIVATE_COOKIE")
+        error._reader_browser_operation = "initialNavigation"
+        output, diagnostic_output = io.StringIO(), io.StringIO()
+        with patch.object(worker, "render", side_effect=error), \
+                patch.object(worker, "protocol_out", output), \
+                patch.object(worker.sys, "stdin", io.StringIO("{}\n")), \
+                patch.object(worker.sys, "stderr", diagnostic_output):
+            worker.main()
+        self.assertEqual({"error": "Error"}, json.loads(output.getvalue()))
+        self.assertEqual(1, len(diagnostic_output.getvalue().splitlines()))
+        self.assertEqual('READER_BROWSER_FAILURE {"operation":"initialNavigation","kind":"navigationInterrupted","errorClass":"Error"}\n',
+                         diagnostic_output.getvalue())
+        self.assertNotIn("PRIVATE", output.getvalue() + diagnostic_output.getvalue())
 
 
 class GeneratedPage:

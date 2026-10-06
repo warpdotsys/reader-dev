@@ -249,10 +249,19 @@ class CamoufoxWebviewRendererTest {
 
     @Test
     fun generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost() = runBlocking {
-        repeat(3) { round ->
+        // Independent generated namespaces, never retries of a failed request.
+        val rounds = 12
+        repeat(rounds) { round ->
             val user = "navigation-probe-$round"
-            val result = renderer.render(request("/navigation-chain/0", user,
-                post = true, body = "seed=generated"))
+            val result = try {
+                renderer.render(request("/navigation-chain/0", user,
+                    post = true, body = "seed=generated"))
+            } catch (error: Exception) {
+                // Generated counters only; no URL, Cookie, headers or page body.
+                throw AssertionError("Finite generated navigation failed: generatedOnly=true round=$round " +
+                    "maxStep=${navigationMaximumStep.get()} finalVisits=${navigationFinalVisits.get()} " +
+                    "starts=${navigationStarts.get()} posts=${navigationPostStarts.get()}", error)
+            }
             val diagnostic = "generatedOnly=true round=$round snapshotChars=${result.body?.length ?: 0} " +
                 "intermediate=${result.body?.contains("generated-navigation-intermediate") == true} " +
                 "maxStep=${navigationMaximumStep.get()} finalVisits=${navigationFinalVisits.get()} " +
@@ -264,8 +273,8 @@ class CamoufoxWebviewRendererTest {
                 "generated", BrowserCookieJar.storedCookies(CookieStore(user))
                     .single { it.name == "navigation" }.value)
         }
-        assertEquals("HTML snapshot handling must not replay the original navigation", 3, navigationStarts.get())
-        assertEquals("Each generated form must be submitted only once", 3, navigationPostStarts.get())
+        assertEquals("HTML snapshot handling must not replay the original navigation", rounds, navigationStarts.get())
+        assertEquals("Each generated form must be submitted only once", rounds, navigationPostStarts.get())
     }
 
     @Test

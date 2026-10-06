@@ -56,6 +56,59 @@ class SourceScriptStateLost(Exception):
     pass
 
 
+BROWSER_OPERATION_PHASES = frozenset({
+    "initialNavigation", "snapshotEventPump", "snapshotLoadState",
+    "snapshotContent", "snapshotStabilityPump", "sourceScriptStart", "sourceScriptRead",
+})
+
+
+@contextlib.contextmanager
+def browser_operation(phase):
+    """Annotate the original exception, without swallowing, retrying or replaying.
+
+    Only a fixed operation label survives. The existing NDJSON error class and
+    public ReturnData stay unchanged; diagnostic text never includes page data.
+    """
+    if not isinstance(phase, str) or phase not in BROWSER_OPERATION_PHASES:
+        raise ValueError("Unknown browser operation")
+    try:
+        yield
+    except Exception as error:
+        try:
+            if getattr(error, "_reader_browser_operation", None) is None:
+                error._reader_browser_operation = phase
+        except Exception:
+            # Diagnostics must not replace a fatal exception lacking writable attributes.
+            pass
+        raise
+
+
+def browser_failure_diagnostic(error):
+    """Return finite diagnostic labels, never an exception's untrusted message.
+
+    Message matching is a diagnostic hint, not authority to retry a request or
+    relax network policy. Unknown failures remain fatal and explicitly unknown.
+    """
+    phase = getattr(error, "_reader_browser_operation", None)
+    if not isinstance(phase, str) or phase not in BROWSER_OPERATION_PHASES:
+        return None
+    name = type(error).__name__
+    kind = "unclassified"
+    if name == "Error":
+        try:
+            message = str(error)
+        except Exception:
+            message = ""
+        if "NS_BINDING_ABORTED" in message or "is interrupted by another navigation" in message:
+            kind = "navigationInterrupted"
+        elif "Execution context was destroyed" in message:
+            kind = "executionContextDestroyed"
+        elif "Unable to retrieve content because the page is navigating" in message:
+            kind = "documentChanging"
+    return {"operation": phase, "kind": kind,
+            "errorClass": name if name in {"Error", "TimeoutError", "TargetClosedError"} else "Other"}
+
+
 # Evaluate a rule once and return immediately, even when it yields a Promise.
 # Python owns the monotonic budget: a page timer or Playwright's evaluate call
 # cannot bound a Promise that never settles. Only serialized results cross IPC;
@@ -113,11 +166,13 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
 
     try:
         check_allowed()
-        page.evaluate(SOURCE_SCRIPT_START, {"source": source, "key": key})
+        with browser_operation("sourceScriptStart"):
+            page.evaluate(SOURCE_SCRIPT_START, {"source": source, "key": key})
         while True:
             check_allowed()
             remaining_ms()
-            result = page.evaluate(SOURCE_SCRIPT_READ, key)
+            with browser_operation("sourceScriptRead"):
+                result = page.evaluate(SOURCE_SCRIPT_READ, key)
             check_allowed()
             remaining_ms()
             if result is None:
@@ -199,22 +254,26 @@ class MainDocumentSnapshot:
         while True:
             check_allowed()
             # Pump the sync driver's event loop; time.sleep would hide commits.
-            self.page.wait_for_timeout(min(50, remaining_ms()))
+            with browser_operation("snapshotEventPump"):
+                self.page.wait_for_timeout(min(50, remaining_ms()))
             check_allowed()
             remaining_ms()
             if self.pending or self.monotonic() - self.last_change < self.QUIET_SECONDS:
                 continue
             generation = self.generation
-            self.page.wait_for_load_state("domcontentloaded", timeout=remaining_ms())
+            with browser_operation("snapshotLoadState"):
+                self.page.wait_for_load_state("domcontentloaded", timeout=remaining_ms())
             check_allowed()
             remaining_ms()
             if self.pending or self.generation != generation:
                 continue
             # Unknown browser, closed-page and transport exceptions stay fatal;
             # never treat them as transient or replay the original POST/goto.
-            body = self.page.content()
+            with browser_operation("snapshotContent"):
+                body = self.page.content()
             require_utf8_limit(body, MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
-            self.page.wait_for_timeout(min(50, remaining_ms()))
+            with browser_operation("snapshotStabilityPump"):
+                self.page.wait_for_timeout(min(50, remaining_ms()))
             check_allowed()
             remaining_ms()
             if not self.pending and self.generation == generation:
@@ -641,7 +700,8 @@ def render(payload):
                 snapshot = (MainDocumentSnapshot(page) if not source_pattern
                             and not payload.get("javaScript") else None)
                 try:
-                    page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+                    with browser_operation("initialNavigation"):
+                        page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
                 except Exception:
                     if state["matched_url"] is None:
                         raise
@@ -743,6 +803,9 @@ def main():
             # Return only the exception class; URLs, headers, and proxy credentials
             # can be present in Playwright exception text and must not be logged here.
             response = {"error": type(error).__name__}
+            diagnostic = browser_failure_diagnostic(error)
+            if diagnostic is not None:
+                print("READER_BROWSER_FAILURE " + json.dumps(diagnostic, separators=(",", ":")), file=sys.stderr)
         encoded = json.dumps(response, ensure_ascii=False, separators=(",", ":"))
         if not utf8_length_at_most(encoded, MAX_PROTOCOL_UTF8_BYTES - 1):
             # Do not emit a partial JSON record or a huge response in diagnostics.
