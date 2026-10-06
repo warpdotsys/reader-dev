@@ -60,6 +60,9 @@ BROWSER_OPERATION_PHASES = frozenset({
     "initialNavigation", "snapshotEventPump", "snapshotLoadState",
     "snapshotContent", "snapshotStabilityPump", "sourceScriptStart", "sourceScriptRead",
 })
+SOURCE_STATE_FAILURE_KINDS = frozenset({
+    "sourceStateMissing", "sourceStateTypeInvalid", "sourceStateBodyInvalid", "sourceStateStatusInvalid",
+})
 
 
 @contextlib.contextmanager
@@ -94,6 +97,13 @@ def browser_failure_diagnostic(error):
         return None
     name = type(error).__name__
     kind = "unclassified"
+    if isinstance(error, SourceScriptStateLost):
+        reason = getattr(error, "_reader_source_state_kind", None)
+        observed = getattr(error, "_reader_main_frame_navigation_observed", None)
+        if (phase == "sourceScriptRead" and isinstance(reason, str) and
+                reason in SOURCE_STATE_FAILURE_KINDS and type(observed) is bool):
+            return {"operation": phase, "kind": reason, "errorClass": "SourceScriptStateLost",
+                    "mainFrameNavigationObserved": observed}
     if name == "Error":
         try:
             message = str(error)
@@ -157,6 +167,21 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
         raise ValueError("timeoutMs must be positive")
     deadline = monotonic() + timeout_ms / 1000.0
     key = "__reader_source_" + secrets.token_hex(16)
+    navigation_observed = False
+
+    def frame_navigated(frame):
+        nonlocal navigation_observed
+        if frame == page.main_frame:
+            navigation_observed = True
+
+    def state_lost(kind):
+        error = SourceScriptStateLost()
+        error._reader_browser_operation = "sourceScriptRead"
+        error._reader_source_state_kind = kind
+        # An event is not proof of a replacement document (same-document
+        # navigation can also emit it). Never claim a unique cause from this bit.
+        error._reader_main_frame_navigation_observed = navigation_observed
+        return error
 
     def remaining_ms():
         remaining = (deadline - monotonic()) * 1000.0
@@ -165,6 +190,7 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
         return remaining
 
     try:
+        page.on("framenavigated", frame_navigated)
         check_allowed()
         with browser_operation("sourceScriptStart"):
             page.evaluate(SOURCE_SCRIPT_START, {"source": source, "key": key})
@@ -176,22 +202,26 @@ def evaluate_source_script(page, source, timeout_ms, check_allowed, monotonic=ti
             check_allowed()
             remaining_ms()
             if result is None:
-                raise SourceScriptStateLost()
+                raise state_lost("sourceStateMissing")
             if not isinstance(result, dict):
-                raise SourceScriptStateLost()
+                raise state_lost("sourceStateTypeInvalid")
             status = result.get("status")
             if status == "done" and set(result) == {"status", "body"}:
                 if not isinstance(result["body"], str):
-                    raise SourceScriptStateLost()
+                    raise state_lost("sourceStateBodyInvalid")
                 require_utf8_limit(result["body"], MAX_BODY_UTF8_BYTES, ResponseBodyTooLarge)
                 return result["body"]
             if status == "rejected" and set(result) == {"status"}:
                 raise SourceScriptRejected()
             if status != "pending" or set(result) != {"status"}:
-                raise SourceScriptStateLost()
+                raise state_lost("sourceStateStatusInvalid")
             # Pump actual browser events; sleeping Python would hide completion.
             page.wait_for_timeout(min(50, remaining_ms()))
     finally:
+        try:
+            page.remove_listener("framenavigated", frame_navigated)
+        except Exception:
+            pass
         try:
             page.evaluate(SOURCE_SCRIPT_CLEAR, key)
         except Exception:

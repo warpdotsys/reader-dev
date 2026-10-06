@@ -19,7 +19,7 @@ case "$arch:$RUNNER_ARCH:$(uname -m)" in
   amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
   *) exit 1 ;;
 esac
-for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json PUBLIC_METADATA_REPORT.json; do
+for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json PUBLIC_METADATA_REPORT.json WORKER_DIAGNOSTICS.json; do
   test ! -e "$output/$report"
 done
 version=$(jq -er '.version' imported/metadata.json)
@@ -44,7 +44,14 @@ cleanup() {
   result=$?
   trap - EXIT
   if [[ -n "$container_id" ]]; then
-    # Never dump Reader logs: source responses may contain anonymous WAF tokens.
+    # Never dump/persist Reader logs. Only finite worker labels survive this
+    # bounded streaming filter; page text, URLs and anonymous WAF tokens do not.
+    if docker logs --tail 200 "$container_id" 2>&1 |
+        python3 scripts/collect-browser-failure.py "$output/WORKER_DIAGNOSTICS.json"; then
+      :
+    else
+      echo 'Finite worker diagnostic collection incomplete' >&2
+    fi
     docker inspect --format '{{json .State}}' "$container_id" \
       | jq '{Running, OOMKilled, ExitCode}' > "$output/CONTAINER_STATE.json" || true
     removed=false

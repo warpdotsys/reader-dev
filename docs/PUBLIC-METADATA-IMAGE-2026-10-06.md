@@ -106,7 +106,18 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev `
 
 修正后真实 JVM 9 项全部实际通过、0 跳过／失败／错误，实际 XML SHA-256 `d333583a9a3959f2d0622a88795afb51fdacb701d50f5ca8fdce87ebaa676bba`；同一精确模板经真实转换／保存序列化／WebBook 再读与正常、空文档均保留固定诊断 JSON。JDK 11、本地离线、2 个活动处理器／512 MiB JVM 预算；未启动 HTTP Reader 或原 JAR，未联网。[本地红绿证据与精确覆盖边界](evidence/public-metadata-source-roundtrip-local-2026-10-06.json)。36 项探针及全量 Python 181 项（180 实际／1 Windows 环境跳过）无失败／错误；涵盖规则变更／标记缺失／CookieJar 错误／数据类型错误的拒绝与未导航时的清理。修正夹具的实站结果另记，不能用这些生成测试替代 HTTP 保存读回、默认浏览器或起点认证。
 
-已知产品限制仍存在：缺少 `ruleToc` 的嵌套详情-only书源目前可能被按旧格式转换、静默丢规则。尚未与原 JAR 同输入核验，也未修改现有兼容行为；不把测试增加格式标记写成解决了所有用户书源。回滚仅移除共享模板／读回门禁及新测试，但必须继续保留旧结果解释限制，不恢复“空响应即页面为空”的错误结论。
+已知产品限制仍存在：缺少 `ruleToc` 的嵌套详情-only书源目前可能被按旧格式转换、静默丢规则。原 JAR 只读提取的 `SourceAnalyzer.class` 经 `javap -c -p` 已验证相同的 `getRuleToc / ifnonnull` 分支（字节码偏移 282／285），原 JAR SHA-256 `b26fb476...`、类 SHA-256 `5658f010...`；未运行或修改原应用，[静态证据和不能证明的内容](evidence/public-metadata-original-format-static-2026-10-06.json)。这不是完整同输入 HTTP 差分，也未修改现有兼容行为；不把测试增加格式标记写成解决了所有用户书源。回滚仅移除共享模板／读回门禁及新测试，但必须继续保留旧结果解释限制，不恢复“空响应即页面为空”的错误结论。
+
+### 修正书源后的同镜像独立配对复验
+
+提交 `11c9595d` 的两个专项均已实际终态失败，仍只消费同一个 `c89d6623`／`5eeeb4d5` 原镜像，不构建或替换产品。两次生成账号 `/saveBookSource → /getBookSource` HTTP 读回均确认原四条详情规则完全保留、新格式标记有效及 CookieJar 关闭。每个独立新容器只有一次外部详情，不是同一失败的重试；五个互斥跳过作业不计通过。[两份实际八文件制品、散列、身份、读回、预算与清理](evidence/public-metadata-source-fixed-pair-hosted-2026-10-06.json)。
+
+- [无脚本 37446328434](https://github.com/warpdotsys/reader-dev/actions/runs/37446328434)：4.665 秒，HTTP 200／`isSuccess=true`／空错误／data 对象，元数据仍空；首次返回有效八布尔诊断，全部 false：既无元数据选择器，也无 body 文本、期望文字、安全短语或固定验证码容器。不能推出原 HTML 字符串为空、排除 script-only／早期文档，或认定可见验证码。峰值 820,801,536 B（约 782.78 MiB）、PID 191。
+- [8 秒等待 37446333775](https://github.com/warpdotsys/reader-dev/actions/runs/37446333775)：4.375 秒，HTTP 200／`isSuccess=false`／data null，固定 `SourceScriptStateLost`，没有获得页面诊断。早于 8 秒的异常不能写成“等满仍为空”，类别仍不能唯一归因于导航、状态格式、验证码或 Promise。峰值 789,069,824 B（约 752.52 MiB）、PID 189。
+
+两个原资源守卫 `require_no_swap=true` 均独立实际通过：2 CPU／2 GiB／256 PID／零 swap，触限／OOM 0；UID 10001、私网拒绝、零发布端口、生成 Cookie 前后 0、退出／随后保护请求及新容器移除核对。3,338／3,285 B 制品均逐文件重算哈希，远程 ZIP digest 只记录 GitHub 声明。旧无读回结果不改写成成功，新结果仍判红，认证／章节／三方／生产继续未验证。
+
+另在用户已打开的内置浏览器里只读核验详情及由可见链接打开的免费首章：当前截图中正文可读、没有可见滑块；未操作 CAPTCHA、输入凭据、购买或导出 Cookie。该浏览器可能已有站点会话，不能与匿名容器混写条件、宣称 Reader 可读／真实认证通过。未保存或上传该浏览器的截图、正文、账号信息或 Cookie 到仓库或服务器。
 
 ### 固定分类的独立专项实际结果
 

@@ -441,6 +441,25 @@ class CamoufoxWebviewRendererTest {
     }
 
     @Test
+    fun generatedSourceStateDeletionFailsWithoutReplayingSideEffectsAndRecovers() = runBlocking {
+        val failure = runCatching {
+            renderer.render(request("/source-script-page", "generated-state-deletion",
+                post = true, body = "seed=generated",
+                javaScript = "fetch('/source-script-mark', {method:'POST', body:'mark=generated'}).then(() => { " +
+                    "Object.getOwnPropertyNames(globalThis).filter(k => k.startsWith('__reader_source_'))" +
+                    ".forEach(k => { delete globalThis[k]; }); return new Promise(()=>{}); })"))
+        }.exceptionOrNull()
+        assertTrue("Explicit generated state deletion must fail, not invent a result", failure is IllegalStateException)
+        assertTrue("Require the original specific worker category, not generic transport or timeout",
+            failure?.message?.contains("(SourceScriptStateLost)") == true)
+        assertEquals("A lost state must not replay the original navigation", 1, sourceScriptPageHits.get())
+        assertEquals("A lost state must not replay the original POST", 1, sourceScriptPostStarts.get())
+        assertEquals("A lost state must not replay the source's side effect", 1, sourceScriptMarkPosts.get())
+        val healthy = renderer.render(request("/echo", "generated-state-deletion"))
+        assertTrue("The next browser context must recover after state deletion", healthy.body?.contains("GET|||") == true)
+    }
+
+    @Test
     fun scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers() = runBlocking {
         val python = System.getenv("READER_CAMOUFOX_PYTHON") ?: error("Camoufox Python is required")
         val version = System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30"

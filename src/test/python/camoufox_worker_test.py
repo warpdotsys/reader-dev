@@ -127,6 +127,10 @@ class GeneratedPage:
     def on(self, name, callback):
         self.handlers[name] = callback
 
+    def remove_listener(self, name, callback):
+        if self.handlers.get(name) is callback:
+            del self.handlers[name]
+
     def emit(self, name, item):
         self.handlers[name](item)
 
@@ -356,6 +360,64 @@ class WorkerSourceScriptBudgetTest(unittest.TestCase):
             self.evaluate(page)
         self.assertEqual(1, page.started)
         self.assertEqual(1, page.cleared)
+
+    def test_four_lost_state_reasons_are_finite_and_do_not_echo_state_values(self):
+        for result, reason in ((None, "sourceStateMissing"),
+                               ("PRIVATE_BODY", "sourceStateTypeInvalid"),
+                               ({"status": "done", "body": 42}, "sourceStateBodyInvalid"),
+                               ({"status": "PRIVATE_COOKIE"}, "sourceStateStatusInvalid")):
+            page = GeneratedScriptPage()
+            page.result = result
+            with self.assertRaises(worker.SourceScriptStateLost) as raised:
+                self.evaluate(page)
+            self.assertEqual("", str(raised.exception))
+            diagnostic = worker.browser_failure_diagnostic(raised.exception)
+            self.assertEqual({"operation": "sourceScriptRead", "kind": reason,
+                              "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False}, diagnostic)
+            self.assertNotIn("PRIVATE", json.dumps(diagnostic))
+            self.assertEqual(1, page.started)
+            self.assertEqual(1, page.cleared)
+            self.assertNotIn("framenavigated", page.handlers)
+
+    def test_navigation_bit_observes_only_main_frame_events_during_this_rule(self):
+        for main in (False, True):
+            page = GeneratedScriptPage()
+            def navigate():
+                page.emit("framenavigated", page.main_frame if main else object())
+                page.result = None
+            page.schedule(0.05, navigate)
+            with self.assertRaises(worker.SourceScriptStateLost) as raised:
+                self.evaluate(page)
+            diagnostic = worker.browser_failure_diagnostic(raised.exception)
+            self.assertEqual("sourceStateMissing", diagnostic["kind"])
+            self.assertIs(main, diagnostic["mainFrameNavigationObserved"])
+            self.assertNotIn("framenavigated", page.handlers)
+
+    def test_state_diagnostic_rejects_unknown_labels_and_non_boolean_navigation(self):
+        error = worker.SourceScriptStateLost()
+        error._reader_browser_operation = "sourceScriptRead"
+        for reason, observed in (("PRIVATE_COOKIE", True), ({"PRIVATE": "BODY"}, True),
+                                 ("sourceStateMissing", "PRIVATE_COOKIE"), ("sourceStateMissing", 1)):
+            error._reader_source_state_kind = reason
+            error._reader_main_frame_navigation_observed = observed
+            self.assertEqual({"operation": "sourceScriptRead", "kind": "unclassified", "errorClass": "Other"},
+                             worker.browser_failure_diagnostic(error))
+
+    def test_main_preserves_lost_state_wire_class_and_only_finite_stderr_diagnostic(self):
+        page = GeneratedScriptPage()
+        page.result = None
+        with self.assertRaises(worker.SourceScriptStateLost) as raised:
+            self.evaluate(page)
+        output, diagnostic_output = io.StringIO(), io.StringIO()
+        with patch.object(worker, "render", side_effect=raised.exception), \
+                patch.object(worker, "protocol_out", output), \
+                patch.object(worker.sys, "stdin", io.StringIO("{}\n")), \
+                patch.object(worker.sys, "stderr", diagnostic_output):
+            worker.main()
+        self.assertEqual({"error": "SourceScriptStateLost"}, json.loads(output.getvalue()))
+        text = diagnostic_output.getvalue().removeprefix("READER_BROWSER_FAILURE ")
+        self.assertEqual({"operation": "sourceScriptRead", "kind": "sourceStateMissing",
+                          "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": False}, json.loads(text))
 
     def test_unknown_transport_failure_is_not_hidden_or_retried(self):
         page = GeneratedScriptPage()
