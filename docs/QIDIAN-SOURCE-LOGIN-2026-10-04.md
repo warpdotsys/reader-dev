@@ -126,3 +126,13 @@ HTTPS DNS 的公网 A 记录核查后，只把该主机放入本次 JVM 的专�
 换 UA 在这一无凭据配对中不足以恢复正常元数据，不能据此唯一归因于 UA、安全页、认证、加载时序或选择器。两侧均在详情不匹配时停止，没有进入目录或免费正文请求；Cookie 列表前后为 0。自有 JVM `56352` / `18792` 通过原生句柄关闭，18944/18945/18946 无监听，用户 18931 / PID 61244 保留。系统 hosts、代理和公网防护未变；DNS 是 `2026-10-06T05:12:24Z` 观测后的固定配对输入，不宣称动态域名全部覆盖或长期有效。
 
 [脱敏观测、两个实际请求、固定 JAR/DNS/探针身份与清理](evidence/qidian-ua-comparison-2026-10-06.json)。未改产品源码、发版、部署或运行原 JAR；默认 Camoufox/历史远程/原 JAR 的真实认证三方仍待验。本机最终镜像仍缺 `newuidmap/newgidmap`，已询问仅安装 Ubuntu 官方 `uidmap`；未获明确答复前不安装，不用 root 或宿主 Chrome 绕过 UID 10001 的最终运行验收。
+
+## 2026-10-06 授权安装 uidmap 后的本机增量
+
+用户明确批准后，仅从 WSL Ubuntu 官方 `resolute/main` 安装 `uidmap` 与必需的 `libsubid5`，均为 `1:4.17.4-2ubuntu3`；无升级／删除，未改系统代理、生产服务或 subordinate UID/GID 范围。`/etc/subuid` 和 `/etc/subgid` 的前后 SHA-256 相同。本段更新上面的“仍待安装答复”历史快照，不改变早先失败记录。
+
+本机空 rootless 映射先通过，随后有限生成页面 helper 的实际首轮仍失败、用例为空；有限异常观测取得 `OSError / errno 30`。核查锁定运行时的 Camoufox `_generate_fontconfig` 后，确认探针将整个新缓存挂成只读，无法生成字体配置。只修正隔离探针挂载：新临时缓存用受限 tmpfs 可写，已安装浏览器资产与配置保持只读，不 chmod/chown 或覆盖旧解包树，不改产品 worker。
+
+修正后 UID／GID 10001、能力集为空、`noNewPrivileges`、仅 loopback，且自有运行 PID 的宿主 cgroup 归属独立核对后才运行浏览器。三个真实固定 Camoufox 生成用例实际通过：同文档状态删除、同文档 hash 导航后状态删除、替换文档后的旧引用 unavailable；每个源脚本仅执行一次。原三用例守卫及开跑前／最终零 swap 预算守卫再次独立通过，峰值 1,511,292,928 B、PID 221，2 CPU／2 GiB／PID 256，swap／触限／OOM 0。自有 OCI 状态已清除，user-systemd unit 实际 inactive／dead。
+
+这是旧锁定镜像运行时 `a85410ce...` 搭载当前 worker 的 helper 验收，**未启动 Reader JAR，不是当前完整镜像验收**；HOME／字体缓存及 rootless supplemental groups 与最终 Docker 配置仍有差异。保留前轮红灯，不将内部捕获异常都当作致命错误。未读取正文、复制浏览器会话或复用／导入真实凭据，网络 namespace 没有外网。起点 Reader 解析、真实认证三方与生产仍未完成。[安装、映射散列、前轮失败、成功用例、实际资源与清理](evidence/local-uidmap-runtime-2026-10-06.json)。

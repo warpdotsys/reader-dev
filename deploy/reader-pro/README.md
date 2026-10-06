@@ -108,19 +108,27 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -PreaderWebUi=vue3 clean test bootJ
 Cookie 用户命名空间和 `sourceRegex` 资源捕获测试，再构建镜像并在隔离数据目录下运行
 合成书源搜索及 Cookie 回归；生产部署仍需另行验证和发布。
 
-已知限制：Camoufox 仍处于候选接入阶段。[207711f6 的 GitHub 托管作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)
+历史短测快照：Camoufox 仍处于候选接入阶段。[207711f6 的 GitHub 托管作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)
 已通过 Linux 真实 Camoufox 合约、无 apt 单镜像构建及受限容器内四账号合成书源烟测；
 未压缩镜像约 3.93 GiB，短时 cgroup 内存峰值约 737 MiB。该结果不是生产镜像发布或
 真实站点容量承诺。[7daacc72 的镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513674140)
-还证实容器内存在支持中文的文泉驿正黑字体。尚未完成原 JAR 与远程
-WebView 的完整语义差分、真实书源差分、ARM64、生产网络隔离、长期并发与资源预算验证。
+还证实容器内存在支持中文的文泉驿正黑字体。上述大小与短测资源只属于这些历史制品。
+
+2026-10-06 当前候选 `08cccfca`／受测镜像 `d5c00919...` 已完成自身双架构
+构建、重载／导入、真实 Camoufox 18 项与生成数据门禁，详见[本轮验收](../../docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)。
+同一制品的 AMD64／ARM64 离线四账号长测实际持续 1800／1813 秒，2 CPU／2 GiB／PID 256、
+零 swap 下峰值约 930／931 MiB，触限／OOM 为 0，三类故障后恢复通过。
+静止内存仍增约 68／67 MiB，突发最长请求约 23.79／20.04 秒；不是无泄漏或容量承诺，
+也没有证明真实代理／书源、原 JAR 与历史远程服务的完整三方兼容或生产网络隔离。
+详见[准确长测范围和风险](../../docs/BROWSER-SOAK-2026-10-06.md)。同镜像起点匿名解析仍失败，
+真实认证及生产切换未完成。当前 Dockerfile／Compose 并未默认选择 Vue 3；如显式选择
+`READER_APP_WEBUI=vue3`，须使用已经包入 `web-vue3` 的制品并单独验收界面与回滚。
 HTTP 和 SOCKS4/5 上游代理由本地出口代理支持，并有固定 IP、认证和凭据隔离单元测试；
 尚未用真实第三方代理或真实书源验证兼容率。
 
 GitHub runner [36131976893](https://github.com/warpdotsys/reader-dev/actions/runs/36131976893)
 记录的是旧 Chromium 实现的功能基线：重定向内网拦截、JS 子资源、分块 SSE、GET/POST 与
-Cookie 隔离，以及单个 Reader 镜像内的合成书源烟测。Camoufox 的对应候选验证见上述
-`browser-image.yml` 作业；二者都不等于原生产远程 WebView 三方差分。应用层出口代理不能替代主机或容器防火墙；公网不可信
+Cookie 隔离，以及单个 Reader 镜像内的合成书源烟测。Camoufox 的对应候选验证见上述历史作业及当前候选验收；二者都不等于原生产远程 WebView 三方差分。应用层出口代理不能替代主机或容器防火墙；公网不可信
 书源部署仍应在网络层拦截云元数据、loopback、RFC1918 与 IPv6 ULA。workflow 的 loopback
 烟测显式启用了 `READER_BROWSER_ALLOW_PRIVATE_NETWORKS=true`，只用于固定合成夹具，
 不应照搬到不可信书源可写入的生产实例。若后续兼容性回归要求回退，可在同一完整镜像中设置

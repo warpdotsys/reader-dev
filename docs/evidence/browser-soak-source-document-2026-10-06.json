@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "08cccfca0cbd94d415205a9ed354bed5f673a5df",
+  "testedImageRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+  "sharedJarSha256": "bc9c3c3a16004d54e2236732887a09813a823ef01d449f0198c58c0f9df3713f",
+  "sourceNativeRunId": 37467111120,
+  "scope": "same own tested native images; offline generated four-account continuous checks only",
+  "runs": [
+    {
+      "runId": 37470912124,
+      "jobId": 112293852308,
+      "runConclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37470912124",
+      "artifact": {
+        "id": 11418537337,
+        "name": "offline-soak-amd64-37470912124",
+        "sizeBytes": 5438,
+        "declaredZipDigest": "sha256:f2ecab2313edb94eafdf367c0c6dde7c653179a32dd74e5792a56ecb7afcbff8",
+        "expired": false
+      },
+      "allTraceAndQuiescentProcessChecksPassed": true,
+      "architecture": "amd64",
+      "containerStateIsBeforeCleanupOnly": true,
+      "exactSevenFilesVerified": true,
+      "finalFiveSamplesMatchActualTrace": true,
+      "identitiesIndependentlyMatched": true,
+      "independentlyRecomputedFileSha256": {
+        "CONTAINER_STATE.json": "1ca55229135a5594f8d41a1af3019cee737315a0e86e503da01fc1bb2cb4e0d3",
+        "LOADED_IDENTITY.json": "ba95543d26328fa0edd612f036ec080b3ed79c814ed7d0c2cdd790d5707b37db",
+        "PRELOAD_IDENTITY.json": "2269c9622c1a07f8614452ecf8ce2da3cff1660bf11da8cd35d9d95d3a49b6ab",
+        "RUNNING_JAR_IDENTITY.json": "19cd74f89855059bb96bc277b5ed922a0214c76ecdc658dc89b0aafd8e0c9220",
+        "SOAK_REPORT.json": "f478368b2c781b217012a23dc4328dcbbfdfb81e6d6fd0349b3834959fa94542",
+        "SOAK_TRACE.jsonl": "96af07f0ec7fd18c405e6ccadf9aebb2280a3d5e15fc2b05b435380bdcfc2504",
+        "SOURCE_RUN.json": "ed26a5cdd63bae2c978d989f2df5f7d5bf593e6daa88aa15552a8f379773de8c"
+      },
+      "maxObservedRequestSeconds": 23.79,
+      "originalZeroSwapBudgetGuardPassed": true,
+      "quiescentGrowthFromColdBytes": 102391808,
+      "quiescentGrowthFromFirstTraceBytes": 71512064,
+      "report": {
+        "accounts": 4,
+        "coldQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 336097280,
+          "memoryPeakBytes": 837939200,
+          "pidsCurrent": 38,
+          "pidsPeak": 188
+        },
+        "coldRequestSeconds": 7.690571218000002,
+        "continuousSeconds": 1800.354,
+        "expectedImageRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+        "faults": [
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 340164608,
+              "memoryPeakBytes": 857972736,
+              "pidsCurrent": 42,
+              "pidsPeak": 207
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "navigationTimeout",
+            "ownedWorkerKilled": false,
+            "seconds": 7.589
+          },
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 365658112,
+              "memoryPeakBytes": 875536384,
+              "pidsCurrent": 42,
+              "pidsPeak": 207
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "scriptWatchdog",
+            "ownedWorkerKilled": false,
+            "seconds": 25.027
+          },
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 365760512,
+              "memoryPeakBytes": 875536384,
+              "pidsCurrent": 38,
+              "pidsPeak": 207
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "workerExit",
+            "ownedWorkerKilled": true,
+            "seconds": 2.271
+          }
+        ],
+        "finalQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 438489088,
+          "memoryPeakBytes": 975339520,
+          "pidsCurrent": 42,
+          "pidsPeak": 216
+        },
+        "passed": true,
+        "releaseIdentity": {
+          "buildRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+          "version": "4.0.7"
+        },
+        "requestedSeconds": 1800,
+        "resources": {
+          "architecture": "x86_64",
+          "cpuPeriod": 100000,
+          "cpuQuota": "200000",
+          "kernel": "6.17.0-1022-azure",
+          "memoryCurrentBytes": 438489088,
+          "memoryEvents": {
+            "high": 0,
+            "low": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_group_kill": 0,
+            "oom_kill": 0
+          },
+          "memoryMaxBytes": 2147483648,
+          "memoryPeakBytes": 975339520,
+          "pidsCurrent": 42,
+          "pidsEvents": {
+            "max": 0
+          },
+          "pidsMax": 256,
+          "pidsPeak": 216,
+          "scope": "one offline native full Reader image; generated data only",
+          "swapCurrentBytes": 0,
+          "swapMaxBytes": 0
+        },
+        "rounds": 113,
+        "samples": [
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1723.993,
+            "maxRequestSeconds": 12.516,
+            "memoryCurrentBytes": 438407168,
+            "memoryPeakBytes": 975339520,
+            "method": "GET",
+            "pidsCurrent": 42,
+            "pidsPeak": 216,
+            "round": 109
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1743.592,
+            "maxRequestSeconds": 19.586,
+            "memoryCurrentBytes": 438468608,
+            "memoryPeakBytes": 975339520,
+            "method": "POST",
+            "pidsCurrent": 42,
+            "pidsPeak": 216,
+            "round": 110
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1761.887,
+            "maxRequestSeconds": 18.278,
+            "memoryCurrentBytes": 438562816,
+            "memoryPeakBytes": 975339520,
+            "method": "GET",
+            "pidsCurrent": 42,
+            "pidsPeak": 216,
+            "round": 111
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1778.744,
+            "maxRequestSeconds": 16.842,
+            "memoryCurrentBytes": 438767616,
+            "memoryPeakBytes": 975339520,
+            "method": "POST",
+            "pidsCurrent": 42,
+            "pidsPeak": 216,
+            "round": 112
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1800.354,
+            "maxRequestSeconds": 21.597,
+            "memoryCurrentBytes": 438755328,
+            "memoryPeakBytes": 975339520,
+            "method": "GET",
+            "pidsCurrent": 42,
+            "pidsPeak": 216,
+            "round": 113
+          }
+        ],
+        "scope": "one offline native full Reader image; generated data only",
+        "successfulSearches": 460,
+        "targetCookieOrShapeErrors": 0,
+        "targetMethods": {
+          "GET": 239,
+          "POST": 224
+        },
+        "totalSeconds": 1871.693,
+        "warmQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 338812928,
+          "memoryPeakBytes": 857972736,
+          "pidsCurrent": 42,
+          "pidsPeak": 207
+        }
+      },
+      "traceRows": 113
+    },
+    {
+      "runId": 37470923889,
+      "jobId": 112293882727,
+      "runConclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37470923889",
+      "artifact": {
+        "id": 11417614900,
+        "name": "offline-soak-arm64-37470923889",
+        "sizeBytes": 5930,
+        "declaredZipDigest": "sha256:adcd75b3ae173f92463fed8398655043509ef7204b993c7c21406dc9e89bc9eb",
+        "expired": false
+      },
+      "allTraceAndQuiescentProcessChecksPassed": true,
+      "architecture": "arm64",
+      "containerStateIsBeforeCleanupOnly": true,
+      "exactSevenFilesVerified": true,
+      "finalFiveSamplesMatchActualTrace": true,
+      "identitiesIndependentlyMatched": true,
+      "independentlyRecomputedFileSha256": {
+        "CONTAINER_STATE.json": "093a3b54945b14c363fb6ec87d12f9124f242d473f82519565fedcd9bd283469",
+        "LOADED_IDENTITY.json": "ff8a6c9822db56c6642b3a0df1b7c95d290a4df714f23833d7e7a6cd2fd0934c",
+        "PRELOAD_IDENTITY.json": "9fc946012d335d07a3a4bc3f68585d577e5e9900b2423b9fa273d6bedc801618",
+        "RUNNING_JAR_IDENTITY.json": "19cd74f89855059bb96bc277b5ed922a0214c76ecdc658dc89b0aafd8e0c9220",
+        "SOAK_REPORT.json": "fdc36157d4cc69df1e7b932073c73ad36032624a05f721b1cb4c10d6efaf2fea",
+        "SOAK_TRACE.jsonl": "1574510e0c0493a1b5c859bc73214d177f75fbd955f69d56d3c1d8eca2965ca5",
+        "SOURCE_RUN.json": "ed26a5cdd63bae2c978d989f2df5f7d5bf593e6daa88aa15552a8f379773de8c"
+      },
+      "maxObservedRequestSeconds": 20.043,
+      "originalZeroSwapBudgetGuardPassed": true,
+      "quiescentGrowthFromColdBytes": 101126144,
+      "quiescentGrowthFromFirstTraceBytes": 69869568,
+      "report": {
+        "accounts": 4,
+        "coldQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 340656128,
+          "memoryPeakBytes": 807620608,
+          "pidsCurrent": 38,
+          "pidsPeak": 185
+        },
+        "coldRequestSeconds": 3.5271036649999985,
+        "continuousSeconds": 1813.234,
+        "expectedImageRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+        "faults": [
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 344674304,
+              "memoryPeakBytes": 834387968,
+              "pidsCurrent": 41,
+              "pidsPeak": 199
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "navigationTimeout",
+            "ownedWorkerKilled": false,
+            "seconds": 7.244
+          },
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 370733056,
+              "memoryPeakBytes": 863145984,
+              "pidsCurrent": 41,
+              "pidsPeak": 199
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "scriptWatchdog",
+            "ownedWorkerKilled": false,
+            "seconds": 25.025
+          },
+          {
+            "afterRecovery": {
+              "browserProcesses": {
+                "browser": 0,
+                "driver": 0,
+                "worker": 0
+              },
+              "memoryCurrentBytes": 371200000,
+              "memoryPeakBytes": 863145984,
+              "pidsCurrent": 42,
+              "pidsPeak": 199
+            },
+            "failedReturnDataVerified": true,
+            "healthyRecoveryVerified": true,
+            "kind": "workerExit",
+            "ownedWorkerKilled": true,
+            "seconds": 1.939
+          }
+        ],
+        "finalQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 441782272,
+          "memoryPeakBytes": 976482304,
+          "pidsCurrent": 42,
+          "pidsPeak": 219
+        },
+        "passed": true,
+        "releaseIdentity": {
+          "buildRevision": "d5c00919cf6416d9f013e575622d2fb11e31f513",
+          "version": "4.0.7"
+        },
+        "requestedSeconds": 1800,
+        "resources": {
+          "architecture": "aarch64",
+          "cpuPeriod": 100000,
+          "cpuQuota": "200000",
+          "kernel": "6.17.0-1022-azure",
+          "memoryCurrentBytes": 441782272,
+          "memoryEvents": {
+            "high": 0,
+            "low": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_group_kill": 0,
+            "oom_kill": 0
+          },
+          "memoryMaxBytes": 2147483648,
+          "memoryPeakBytes": 976482304,
+          "pidsCurrent": 42,
+          "pidsEvents": {
+            "max": 0
+          },
+          "pidsMax": 256,
+          "pidsPeak": 219,
+          "scope": "one offline native full Reader image; generated data only",
+          "swapCurrentBytes": 0,
+          "swapMaxBytes": 0
+        },
+        "rounds": 138,
+        "samples": [
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1762.548,
+            "maxRequestSeconds": 14.482,
+            "memoryCurrentBytes": 442081280,
+            "memoryPeakBytes": 976482304,
+            "method": "POST",
+            "pidsCurrent": 42,
+            "pidsPeak": 219,
+            "round": 134
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1773.008,
+            "maxRequestSeconds": 10.448,
+            "memoryCurrentBytes": 441864192,
+            "memoryPeakBytes": 976482304,
+            "method": "GET",
+            "pidsCurrent": 43,
+            "pidsPeak": 219,
+            "round": 135
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1787.367,
+            "maxRequestSeconds": 14.348,
+            "memoryCurrentBytes": 441843712,
+            "memoryPeakBytes": 976482304,
+            "method": "POST",
+            "pidsCurrent": 42,
+            "pidsPeak": 219,
+            "round": 136
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1797.889,
+            "maxRequestSeconds": 10.509,
+            "memoryCurrentBytes": 442195968,
+            "memoryPeakBytes": 976482304,
+            "method": "GET",
+            "pidsCurrent": 44,
+            "pidsPeak": 219,
+            "round": 137
+          },
+          {
+            "browserProcesses": {
+              "browser": 0,
+              "driver": 0,
+              "worker": 0
+            },
+            "elapsedSeconds": 1813.234,
+            "maxRequestSeconds": 15.332,
+            "memoryCurrentBytes": 441782272,
+            "memoryPeakBytes": 976482304,
+            "method": "POST",
+            "pidsCurrent": 42,
+            "pidsPeak": 219,
+            "round": 138
+          }
+        ],
+        "scope": "one offline native full Reader image; generated data only",
+        "successfulSearches": 560,
+        "targetCookieOrShapeErrors": 0,
+        "targetMethods": {
+          "GET": 287,
+          "POST": 276
+        },
+        "totalSeconds": 1874.334,
+        "warmQuiescent": {
+          "browserProcesses": {
+            "browser": 0,
+            "driver": 0,
+            "worker": 0
+          },
+          "memoryCurrentBytes": 342777856,
+          "memoryPeakBytes": 834387968,
+          "pidsCurrent": 40,
+          "pidsPeak": 193
+        }
+      },
+      "traceRows": 138
+    }
+  ],
+  "independentlyVerifiedSmallFiles": 14,
+  "independentlyVerifiedTraceRows": 251,
+  "largeArchivesDownloadedOnWindows": false,
+  "newImageRebuiltForSoak": false,
+  "realCredentialsImported": false,
+  "realBookBodyRead": false,
+  "originalJarParityOrRealAuthenticationProven": false,
+  "productionChanged": false,
+  "limits": {
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "pids": 256,
+    "swapMaxBytes": 0,
+    "swapObservedBytes": 0
+  },
+  "interpretation": {
+    "fourAccountsAreGenerated": true,
+    "allColdWarmFinalFaultRecoveryAndRoundSnapshotsHaveZeroWorkerBrowserDriverProcesses": true,
+    "increasingQuiescentMemoryRemainsObserved": true,
+    "finiteSamplesDoNotProveNoLeak": true,
+    "burstLatencyNotAProductionCapacityPromise": true,
+    "containerStateRecordsAreBeforeCleanupNotIndependentPostRemovalProof": true,
+    "notRealSourceOrProductionAcceptance": true
+  }
+}
