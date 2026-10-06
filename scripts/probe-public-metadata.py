@@ -26,6 +26,24 @@ BASE = "http://127.0.0.1:18893"
 MAX_RESPONSE_BYTES = 64 * 1024
 FIELDS = ("bookUrl", "tocUrl", "name", "author", "coverUrl", "type", "group",
           "totalChapterNum", "durChapterIndex", "durChapterPos", "canUpdate")
+METADATA_DOM_WAIT_MS = 8000
+# Return only the page's own HTML. No inserted metadata, request replay, Cookie
+# access, external fetch, navigation, chapter operation or CAPTCHA interaction.
+METADATA_DOM_SCRIPT = """new Promise(resolve => {
+  const started = performance.now();
+  const read = () => {
+    const name = document.querySelector('#bookName');
+    const author = document.querySelector('.book-info-top .book-meta .author');
+    const cover = document.querySelector('#bookImg img');
+    if ((name && name.textContent.trim() && author && author.textContent.trim()
+         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {
+      resolve(document.documentElement.outerHTML);
+      return;
+    }
+    setTimeout(read, 100);
+  };
+  read();
+})"""
 
 
 class ProbeFailure(Exception):
@@ -144,6 +162,15 @@ def source_definition():
                              "coverUrl": "#bookImg img@src"}}
 
 
+def book_info_request(wait_dom=False):
+    if type(wait_dom) is not bool:
+        raise ProbeFailure("InvalidMetadataWaitMode")
+    options = {"webView": True}
+    if wait_dom:
+        options["webJs"] = METADATA_DOM_SCRIPT
+    return {"url": BOOK + ", " + json.dumps(options), "bookSourceUrl": SOURCE}
+
+
 def cookie_count(result):
     data = require_success(result).get("data")
     if not isinstance(data, list):
@@ -182,6 +209,8 @@ def main():
     parser.add_argument("--reader-base", default=BASE)
     parser.add_argument("--expected-revision", required=True)
     parser.add_argument("--output", type=Path, default=Path("/verification-output"))
+    parser.add_argument("--wait-dom", action="store_true",
+                        help="Wait at most 8 seconds for fixed public metadata selectors, without altering the page")
     args = parser.parse_args()
     require_environment(args.reader_base, args.expected_revision, args.output)
     cgroup = load_helper("public_metadata_cgroup", "report-browser-cgroup.py")
@@ -194,6 +223,9 @@ def main():
               "allDeviceTokenRevocationProven": False,
               "configuredRenderer": "camoufox", "runtimeUid": os.getuid(),
               "privateNetworkGuardEnabled": True, "bookInfoApiCalls": 0,
+              "sourceScriptMode": "boundedMetadataDom" if args.wait_dom else "domContentLoadedOnly",
+              "metadataDomWaitBudgetMs": METADATA_DOM_WAIT_MS if args.wait_dom else 0,
+              "sourceScriptSynthesizesMetadata": False,
               "rawErrorHtmlCookieAndMetadataValuesNotPersisted": True, "passed": False}
     opener = urllib.request.build_opener(
         urllib.request.ProxyHandler({}), NoRedirect(),
@@ -229,8 +261,7 @@ def main():
         watcher.start()
         started = time.monotonic()
         report["bookInfoApiCalls"] += 1
-        result = request_json(opener, "/getBookInfo", {
-            "url": BOOK + ', {"webView":true}', "bookSourceUrl": SOURCE})
+        result = request_json(opener, "/getBookInfo", book_info_request(args.wait_dom))
         report["metadata"] = summarize(*result)
         report["requestSeconds"] = round(time.monotonic() - started, 3)
         result = None

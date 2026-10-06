@@ -88,4 +88,4 @@ jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
   '{revision: $revision, jarSha256: $jarSha256, network: "bridge", publishedPorts: 0}' \
   > "$output/RUNNING_JAR_IDENTITY.json"
 docker exec "$container_id" python /verification-scripts/probe-public-metadata.py \
-  --expected-revision "$revision"
+  --expected-revision "$revision" --wait-dom

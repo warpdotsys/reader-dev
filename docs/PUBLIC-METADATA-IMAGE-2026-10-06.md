@@ -15,12 +15,22 @@
 - 只保留字段存在性/匹配布尔值、错误长度/固定原因/域名指纹、请求耗时和进程类别计数；不保存原错误、跳转 URL、HTML、元数据值、正文、匿名站点 Cookie 或 Reader 日志。Reader API 跳转不跟随，响应限 64 KiB。
 - 清除生成空间 Cookie，按 legacy 的退出 `isSuccess=true / NEED_LOGIN / 空 errorMsg` 和随后受保护接口 `isSuccess=false / NEED_LOGIN` 两个不同契约核对 Cookie 会话失效。不是全设备令牌撤销。finally 移除本次新容器及其进程；只上传小报告，存储目录和镜像不上传为该探针输出。
 
+## 后续诊断：有限等待动态元数据（尚未实际联网验收）
+
+旧两轮探针只传 `webView=true`，并未用书源脚本等待动态字段。因此它们证明空元数据，但不能排除返回时机过早；上一轮 Promise 修复也不能自动关闭这一缺口。
+
+新增固定 `--wait-dom`：最多 8 秒、每 100 毫秒只检查原来三个元数据选择器是否已有非空字段。无论字段就绪或达到期限，都返回页面自身的 `document.documentElement.outerHTML`；不插入期望书名／作者，不读写 Cookie、不额外 fetch／导航／重放，也不操作验证码。期限后仍为空则继续由原有严格元数据门禁判红。直接运行不带该标志仍保留旧 `DOMContentLoaded` 基线；托管消费脚本明确带此标志，报告记录 `sourceScriptMode`、预算和“不合成元数据”，不混写两个模式。
+
+本机 Python 162 项中 161 执行／1 个 Windows 符号链接环境跳过，零失败／错误；其中元数据安全／生命周期与新增 JS 驱动共 24 项。Node 实际执行从 Python 源码提取的同一脚本，8 个生成 DOM／时钟检查无跳过，覆盖立即就绪、延迟字段、每个缺失字段、空文本／封面和准确期限。这些是语言／控制夹具，不是真实 Camoufox、起点认证或正文证明。发布结构 57 项通过，未改产品 worker、默认私网拒绝、UID 或零 swap 配置。
+
+新的托管专项必须消费已完成的精确镜像修订，实际结果另记。不能用旧无脚本失败、新生成搜索成功或本机 8 项 JS 来宣称起点已修好。先前实际失败报告原样保留。回滚仅去掉消费脚本的 `--wait-dom` 并保留基线报告；无需改产品或用户数据。
+
 ## 可重复命令
 
 在已提交的候选分支上，复用已核实的镜像修订而不是探针提交 SHA：
 
 ```powershell
-gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-reader-20260926 -f native_arch=amd64 -f public_metadata_native_run=37339021759 -f public_metadata_revision=a82f08945a50c1520170fb6e8b3fb3c7a0b296fb
+gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-reader-20260926 -f native_arch=amd64 -f public_metadata_native_run=37428262965 -f public_metadata_revision=53bf73d680045744ece5db080b0710bb9004a228
 ```
 
 该模式与原件检查、旧远程、离线长测及通常镜像集成互斥，单独的并发组不会取消其他验收。不能填真实账号、Cookie、任意 URL 或正文参数；未来输入制品过期时须选新的已验收演练并重新核对其准确修订，不能静默换镜像。

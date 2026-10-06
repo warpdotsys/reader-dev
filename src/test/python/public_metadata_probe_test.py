@@ -3,7 +3,11 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import re
+import shutil
+import subprocess
 from types import SimpleNamespace
 import tempfile
 import threading
@@ -62,7 +66,50 @@ class MetadataSummaryTest(unittest.TestCase):
             self.assertNotIn("PRIVATE_RESPONSE", json.dumps(result))
 
 
+class MetadataWaitJavaScriptTest(unittest.TestCase):
+    def test_exact_wait_script_with_generated_dom_and_clock_is_not_a_browser_proof(self):
+        node = os.environ.get("READER_TEST_NODE") or shutil.which("node")
+        self.assertTrue(node, "Node is required; exact probe JS must not be skipped")
+        fixture = ROOT / "src/test/javascript/public-metadata-wait.test.mjs"
+        completed = subprocess.run([node, "--test", "--test-reporter=tap", str(fixture)],
+                                   capture_output=True, text=True, encoding="utf-8", timeout=10)
+        self.assertEqual(0, completed.returncode, "Generated-only metadata JS checks failed")
+        self.assertRegex(completed.stdout, re.compile(r"^# tests 8$", re.MULTILINE))
+        for counter in ("fail", "cancelled", "skipped", "todo"):
+            self.assertRegex(completed.stdout, re.compile(r"^# " + counter + r" 0$", re.MULTILINE))
+
+
 class RequestBoundaryTest(unittest.TestCase):
+    def test_baseline_still_uses_the_same_fixed_page_without_a_source_script(self):
+        request = PROBE.book_info_request()
+        url, raw = request["url"].split(", ", 1)
+        self.assertEqual(PROBE.BOOK, url)
+        self.assertEqual(PROBE.SOURCE, request["bookSourceUrl"])
+        self.assertEqual({"webView": True}, json.loads(raw))
+
+    def test_bounded_dom_wait_returns_unmodified_page_html_without_extra_requests(self):
+        request = PROBE.book_info_request(True)
+        url, raw = request["url"].split(", ", 1)
+        options = json.loads(raw)
+        self.assertEqual(PROBE.BOOK, url)
+        self.assertEqual({"webView", "webJs"}, set(options))
+        self.assertIs(options["webView"], True)
+        self.assertEqual(PROBE.METADATA_DOM_SCRIPT, options["webJs"])
+        script = options["webJs"]
+        self.assertIn("new Promise", script)
+        self.assertIn("performance.now() - started >= 8000", script)
+        self.assertIn("resolve(document.documentElement.outerHTML)", script)
+        self.assertIn("setTimeout(read, 100)", script)
+        for unsafe in ("fetch(", "document.cookie", "location.", "innerHTML =", "textContent =",
+                       "黎明之剑", "远瞳", "captcha", "geetest"):
+            self.assertNotIn(unsafe, script)
+        self.assertEqual(8000, PROBE.METADATA_DOM_WAIT_MS)
+
+    def test_wait_mode_does_not_coerce_credentials_or_arbitrary_script_input(self):
+        for value in (1, "true", "PRIVATE_COOKIE", {"webJs": "PRIVATE_SCRIPT"}, None):
+            with self.assertRaisesRegex(PROBE.ProbeFailure, "^InvalidMetadataWaitMode$"):
+                PROBE.book_info_request(value)
+
     def response(self, raw, status=200):
         response = io.BytesIO(raw)
         response.status = status
@@ -134,7 +181,7 @@ class RequestBoundaryTest(unittest.TestCase):
 
 
 class LifecycleTest(unittest.TestCase):
-    def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False):
+    def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False, wait_dom=False):
         observed = threading.Event()
         paths = []
         logged_out = False
@@ -147,6 +194,7 @@ class LifecycleTest(unittest.TestCase):
             nonlocal logged_out
             paths.append(path)
             if path == "/getBookInfo":
+                self.assertEqual(PROBE.book_info_request(wait_dom), body)
                 self.assertTrue(observed.wait(1), "Generated process observer did not run")
                 if transport_failure:
                     raise RuntimeError("PRIVATE_TRANSPORT_BODY https://x/?ticket=PRIVATE_TICKET")
@@ -170,7 +218,8 @@ class LifecycleTest(unittest.TestCase):
                     patch.object(PROBE, "load_helper", side_effect=helpers), \
                     patch.object(PROBE, "request_json", side_effect=request), \
                     patch.object(PROBE.os, "getuid", return_value=10001, create=True), \
-                    patch("sys.argv", ["probe", "--expected-revision", "a" * 40, "--output", directory]), \
+                    patch("sys.argv", ["probe", "--expected-revision", "a" * 40, "--output", directory]
+                          + (["--wait-dom"] if wait_dom else [])), \
                     patch("sys.stdout", new_callable=io.StringIO) as stdout:
                 result = PROBE.main()
             report = json.loads((Path(directory) / "PUBLIC_METADATA_REPORT.json").read_text(encoding="utf-8"))
@@ -180,6 +229,9 @@ class LifecycleTest(unittest.TestCase):
             self.assertEqual(1, paths.count("/getBookInfo"))
             self.assertFalse(report["chapterBodyRequested"])
             self.assertFalse(report["realAuthenticationProven"])
+            self.assertFalse(report["sourceScriptSynthesizesMetadata"])
+            self.assertEqual(8000 if wait_dom else 0, report["metadataDomWaitBudgetMs"])
+            self.assertEqual("boundedMetadataDom" if wait_dom else "domContentLoadedOnly", report["sourceScriptMode"])
             self.assertEqual(0, report["cookieRowsBefore"])
             self.assertEqual(0, report["cookieRowsAfter"])
             self.assertIn("/logout", paths)
@@ -207,6 +259,12 @@ class LifecycleTest(unittest.TestCase):
         result, report = self.run_generated_probe(MetadataSummaryTest().value())
         self.assertEqual(0, result)
         self.assertTrue(report["passed"])
+        self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_bounded_wait_still_rejects_empty_metadata_and_cleans_up(self):
+        result, report = self.run_generated_probe({"isSuccess": True, "errorMsg": "", "data": {}}, wait_dom=True)
+        self.assertEqual(1, result)
+        self.assertFalse(report["passed"])
         self.assertTrue(report["generatedCookieSessionRevokedVerified"])
 
 

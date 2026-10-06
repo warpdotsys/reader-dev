@@ -28,9 +28,17 @@ CLI 只允许隔离 smoke 使用的 `127.0.0.1:18890/18891`；拒绝用户 Reade
 - 两个工作流 YAML 解析和逐文件格式检查通过。58 份用户报告与既有保护快照逐一哈希相同，不提交或覆盖它们。
 - 没有为本次夹具变化重建 Windows JAR，生产源码／包内 worker 没有变化。不能把上一轮 JAR 当作新增真实 API 验收结果。
 
-## 本轮 GitHub 托管 runner 验收尚待执行
+## 本轮 GitHub 托管 runner 实际验收
 
-将本修改提交到现有候选分支后，通过 GitHub 托管 runner 对完整镜像、两架构原生／重载、同一发布导入器实际运行。下载新的小型 JSON，核对 `asyncReaderCases`、`asyncCookieCleanup`、运行 JAR／镜像／版本身份与预算；旧 15 项引擎 XML 或旧同步 JSON 不能替代。
+源码提交 `0d6843419eeaef27aca00b0044a95aa4962c73e4` 已推送。实际 PR 被测合并快照为 `53bf73d680045744ece5db080b0710bb9004a228`，不是已合并到默认分支。四条工作流均由 GitHub 托管 runner 运行，不使用自托管 runner。
+
+- [Java/Kotlin 37428262849](https://github.com/warpdotsys/reader-dev/actions/runs/37428262849)、[Vue 3 37428262826](https://github.com/warpdotsys/reader-dev/actions/runs/37428262826)、[完整镜像 37428262830](https://github.com/warpdotsys/reader-dev/actions/runs/37428262830)已成功。108 份 XML 独立核对 suite／testcase／计数及文件哈希；普通 JVM 两套各 149 中 123 执行／26 跳过，真实 Camoufox 各 15、Chromium 23、Vue 3 21 均全执行且零失败／错误。
+- 完整镜像的真实 `asyncReaderCases` GET／POST 均通过严格门禁：解析字段匹配、原 POST body／header 保留、目标和脚本标记各一次、生成 Cookie 跨请求及删除后同一用户后续请求均匹配。报告 SHA-256 为 `c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868`；不是使用本机 double 或旧同步 JSON 冒充。
+- 完整镜像资源短测峰值 `848875520 B`（约 810 MiB），PID 197；实际 2 CPU／2 GiB／256 PID，触限／OOM／实际 swap 为 0，仍允许 1 GiB swap。不能拿短测证明长期负载无泄漏。
+- [原生演练 37428262965](https://github.com/warpdotsys/reader-dev/actions/runs/37428262965)最终六个作业全部成功：共享 JAR、两个原生生产者、两个新 runner 的重载运行、同一发布导入器消费两架构。下载 7,631 B 小制品、20 JSON，四份真实异步报告再次通过新门禁，原同步 GET／POST／四用户 Cookie 与并发也核对。实际运行 JAR 均为 `12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10`；版本对象准确为 `4.0.7`／`53bf73d6...`，重载镜像 ID 与各自 metadata 一致。四次原生／重载最高内存 `842461184 B`（约 803 MiB），最高 PID 211；2 CPU／2 GiB／256 PID，触限／OOM／实际 swap 0，仍允许 1 GiB swap。没有 registry 写入或部署。
+- 下载的新生成截图共 64 张，目视检查其中 16 张：登录短屏及底部、生成 EPUB 中文／非法归档拒绝、书架悬停、三种退出状态、八张管理／命名空间／提示截图。所查中文可读，其余 48 张未目视；不证明真实用户数据、全部主题／视口或线上界面。书架悬停图有内容从半透明 sticky 顶栏下滚过，现有测试 hover 会自动滚动；缺少初始几何／滚动位置记录，不能仅凭这张图宣布布局根因。
+
+本机只下载小型 XML／JSON／生成 PNG；四条工作流／10 个实际 GitHub 托管作业全部成功。108 XML／22 个业务及身份 JSON 已核对，另有一份截图几何 JSON 不拿作浏览器业务证明。准确运行元数据、逐文件哈希、原始小型消费结果与目视范围见[正式实际证据](evidence/reader-async-api-hosted-2026-10-06.json)。归档 ZIP 摘要是 GitHub 声明值，解压后的逐文件哈希才是在本机重算的。消费端制品是扁平架构前缀文件；首次本机精确 basename 查找误判了文件数，纠正查找后四份真实门禁全部通过，不曾据此宣称产品失败。旧 15 项 XML 或旧同步 JSON 不能替代新增 API 用例。
 
 不在本机下载多 GiB 镜像。上一异步引擎的准确四条成功、108 XML／22 JSON 记录继续保留在[默认引擎自身验收](CAMOUFOX-ASYNC-SCRIPTS-2026-10-06.md)。
 
