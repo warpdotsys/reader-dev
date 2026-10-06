@@ -95,13 +95,16 @@ class RequestBoundaryTest(unittest.TestCase):
             PROBE.cookie_count((200, {"isSuccess": True, "data": {}}))
 
     def test_legacy_logout_need_login_contract_and_actual_followup_are_required(self):
-        logged_out = (200, {"isSuccess": False, "data": "NEED_LOGIN", "errorMsg": "请重新登录"})
-        PROBE.verify_cookie_session_logged_out(logged_out, logged_out)
+        logged_out = (200, {"isSuccess": True, "data": "NEED_LOGIN", "errorMsg": ""})
+        protected_denied = (200, {"isSuccess": False, "data": "NEED_LOGIN", "errorMsg": "请登录后使用"})
+        PROBE.verify_cookie_session_logged_out(logged_out, protected_denied)
         still_logged_in = (200, {"isSuccess": True, "data": []})
         with self.assertRaises(PROBE.ProbeFailure):
             PROBE.verify_cookie_session_logged_out(logged_out, still_logged_in)
         with self.assertRaises(PROBE.ProbeFailure):
-            PROBE.verify_cookie_session_logged_out(still_logged_in, logged_out)
+            PROBE.verify_cookie_session_logged_out(still_logged_in, protected_denied)
+        with self.assertRaises(PROBE.ProbeFailure):
+            PROBE.verify_cookie_session_logged_out(protected_denied, protected_denied)
 
     def test_source_is_fixed_metadata_only_without_credentials_or_chapter_rules(self):
         source = PROBE.source_definition()
@@ -156,7 +159,7 @@ class LifecycleTest(unittest.TestCase):
                 if fail_logout:
                     return 200, {"isSuccess": False, "errorMsg": "PRIVATE_CLEANUP_BODY"}
                 logged_out = True
-                return 200, {"isSuccess": False, "data": "NEED_LOGIN"}
+                return 200, {"isSuccess": True, "data": "NEED_LOGIN", "errorMsg": ""}
             return 200, {"isSuccess": True, "data": {}}
 
         cgroup = SimpleNamespace(collect_report=lambda *args: {"scope": "generated unit fixture"},

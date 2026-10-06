@@ -152,11 +152,23 @@ def cookie_count(result):
 
 
 def verify_cookie_session_logged_out(logout, protected_followup):
-    # Legacy logout intentionally returns isSuccess=false / NEED_LOGIN after
-    # destroying the session. Do not misclassify that contract as cleanup failure.
-    for status, value in (logout, protected_followup):
-        if status != 200 or value.get("isSuccess") is not False or value.get("data") != "NEED_LOGIN":
-            raise ProbeFailure("GeneratedCookieSessionNotRevoked")
+    # UserController chains setErrorMsg(...).setData(NEED_LOGIN); setData resets
+    # success=true and errorMsg="". The protected followup chains them in the
+    # opposite order and must be false. Preserve both actual legacy contracts.
+    status, value = logout
+    if status != 200 or value.get("isSuccess") is not True or value.get("data") != "NEED_LOGIN" or value.get("errorMsg") != "":
+        raise ProbeFailure("UnexpectedLegacyLogoutContract")
+    status, value = protected_followup
+    if status != 200 or value.get("isSuccess") is not False or value.get("data") != "NEED_LOGIN":
+        raise ProbeFailure("GeneratedCookieSessionNotRevoked")
+
+
+def auth_observation(result):
+    status, value = result
+    return {"httpStatus": status,
+            "isSuccess": value.get("isSuccess") if isinstance(value.get("isSuccess"), bool) else None,
+            "dataIsNeedLogin": value.get("data") == "NEED_LOGIN",
+            "errorMsgEmpty": value.get("errorMsg") == ""}
 
 
 def write_new(path, value):
@@ -241,6 +253,8 @@ def main():
                 report["cookieRowsAfter"] = cookie_count(request_json(opener, "/getBookSourceCookie"))
                 logout = request_json(opener, "/logout", {})
                 followup = request_json(opener, "/getBookSourceCookie")
+                report["logoutObservation"] = auth_observation(logout)
+                report["postLogoutProtectedObservation"] = auth_observation(followup)
                 verify_cookie_session_logged_out(logout, followup)
                 report["generatedCookieSessionRevokedVerified"] = True
             except Exception:
