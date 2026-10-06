@@ -29,14 +29,15 @@ class CamoufoxContractReportTest(unittest.TestCase):
 
     def test_complete_synthetic_report_exercises_only_the_guard(self):
         result = self.verify()
-        self.assertEqual(15, result["tests"])
+        self.assertEqual(16, result["tests"])
         self.assertTrue(result["navigationContractPresent"])
+        self.assertTrue(result["earlyNavigationContractPresent"])
         self.assertTrue(result["endlessNavigationContractPresent"])
         self.assertTrue(result["promiseContractPresent"])
         self.assertEqual(64, len(result["xmlSha256"]))
 
     def test_all_environment_gated_cases_are_rejected(self):
-        self.suite.set("skipped", "15")
+        self.suite.set("skipped", "16")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 
@@ -46,6 +47,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_old_twelve_contracts_cannot_replace_navigation_acceptance(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.ENDLESS_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.PROMISE_CONTRACT))
@@ -54,6 +56,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_thirteen_contracts_do_not_prove_endless_navigation(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.ENDLESS_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.PROMISE_CONTRACT))
         self.suite.set("tests", "13")
@@ -61,8 +64,15 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_fourteen_contracts_do_not_prove_promise_budget_or_recovery(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.PROMISE_CONTRACT))
         self.suite.set("tests", "14")
+        with self.assertRaises(GUARD.ContractReportError):
+            self.verify()
+
+    def test_previous_fifteen_contracts_do_not_prove_navigation_before_dom_ready(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
+        self.suite.set("tests", "15")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 

@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 SUITE = "com.htmake.reader.utils.CamoufoxWebviewRendererTest"
 MAX_REPORT_BYTES = 256 * 1024
 NAVIGATION_CONTRACT = "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost"
+EARLY_NAVIGATION_CONTRACT = "generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost"
 ENDLESS_NAVIGATION_CONTRACT = "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers"
 PROMISE_CONTRACT = "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers"
 CONTRACTS = frozenset((
@@ -25,6 +26,7 @@ CONTRACTS = frozenset((
     "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
     "existingHttpOnlyCookieCanBeRenewed",
     NAVIGATION_CONTRACT,
+    EARLY_NAVIGATION_CONTRACT,
     ENDLESS_NAVIGATION_CONTRACT,
     PROMISE_CONTRACT,
     "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
@@ -71,6 +73,7 @@ def verify_report(path):
         "suite": SUITE,
         **counters,
         "navigationContractPresent": True,
+        "earlyNavigationContractPresent": True,
         "endlessNavigationContractPresent": True,
         "promiseContractPresent": True,
         "xmlSha256": hashlib.sha256(raw).hexdigest(),

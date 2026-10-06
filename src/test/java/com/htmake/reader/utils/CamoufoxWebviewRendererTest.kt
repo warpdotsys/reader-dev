@@ -16,10 +16,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.net.InetSocketAddress
+import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -49,6 +51,16 @@ class CamoufoxWebviewRendererTest {
     private val navigationPostStarts = AtomicInteger()
     private val navigationMaximumStep = AtomicInteger(-1)
     private val navigationFinalVisits = AtomicInteger()
+    private val earlyNavigationStarts = AtomicInteger()
+    private val earlyNavigationPostStarts = AtomicInteger()
+    private val earlyNavigationFinalVisits = AtomicInteger()
+    private val earlyNavigationBlockerHits = AtomicInteger()
+    private val earlyNavigationDomReadyHits = AtomicInteger()
+    private val earlyNavigationDomReadyAtFinal = AtomicInteger(-1)
+    private val earlyNavigationLoadingAtFinal = AtomicInteger(-1)
+    private val earlyNavigationFixtureTimeouts = AtomicInteger()
+    private val earlyNavigationBlockerStarted = CountDownLatch(1)
+    private val earlyNavigationFinalRequested = CountDownLatch(1)
     private val infiniteNavigationHits = AtomicInteger()
     private val infiniteNavigationPostStarts = AtomicInteger()
     private val sourceScriptPageHits = AtomicInteger()
@@ -107,6 +119,59 @@ class CamoufoxWebviewRendererTest {
                 return@createContext
             }
             when (exchange.requestURI.path) {
+                "/early-navigation-start" -> {
+                    earlyNavigationStarts.incrementAndGet()
+                    if (exchange.requestMethod == "POST" && requestBody == "seed=generated") {
+                        earlyNavigationPostStarts.incrementAndGet()
+                    }
+                    exchange.responseHeaders.add("Set-Cookie", "earlyNavigation=generated; Path=/; HttpOnly")
+                    // The arm response waits until the parser-blocking resource
+                    // is actually requested. Its response in turn stays blocked
+                    // until the final navigation arrives: no timer-only inference.
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-early-intermediate</div><script>" +
+                            "document.addEventListener('DOMContentLoaded', () => " +
+                            "navigator.sendBeacon('/early-navigation-dom-ready', 'generated'));" +
+                            "fetch('/early-navigation-arm').then(() => " +
+                            "location.replace('/early-navigation-final?initialReady=' + document.readyState));</script>" +
+                            "<script src='/early-navigation-blocker.js'></script></body></html>",
+                        "text/html; charset=utf-8")
+                }
+                "/early-navigation-arm" -> {
+                    if (!earlyNavigationBlockerStarted.await(5, TimeUnit.SECONDS)) {
+                        earlyNavigationFixtureTimeouts.incrementAndGet()
+                    }
+                    respond(exchange, "generated-armed", "text/plain; charset=utf-8")
+                }
+                "/early-navigation-blocker.js" -> {
+                    earlyNavigationBlockerHits.incrementAndGet()
+                    earlyNavigationBlockerStarted.countDown()
+                    try {
+                        if (!earlyNavigationFinalRequested.await(5, TimeUnit.SECONDS)) {
+                            earlyNavigationFixtureTimeouts.incrementAndGet()
+                        }
+                        respond(exchange, "/* generated blocking resource released */", "application/javascript")
+                    } catch (_: IOException) {
+                        // A genuine navigation cancels the obsolete subresource.
+                        exchange.close()
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        exchange.close()
+                    }
+                }
+                "/early-navigation-dom-ready" -> {
+                    earlyNavigationDomReadyHits.incrementAndGet()
+                    respond(exchange, "generated-ready", "text/plain; charset=utf-8")
+                }
+                "/early-navigation-final" -> {
+                    earlyNavigationDomReadyAtFinal.set(earlyNavigationDomReadyHits.get())
+                    earlyNavigationLoadingAtFinal.set(if (exchange.requestURI.rawQuery == "initialReady=loading") 1 else 0)
+                    earlyNavigationFinalVisits.incrementAndGet()
+                    earlyNavigationFinalRequested.countDown()
+                    respond(exchange,
+                        "<html><body><div id='result'>generated-early-complete</div></body></html>",
+                        "text/html; charset=utf-8")
+                }
                 "/source-script-page" -> {
                     sourceScriptPageHits.incrementAndGet()
                     if (exchange.requestMethod == "POST" && requestBody == "seed=generated") {
@@ -275,6 +340,35 @@ class CamoufoxWebviewRendererTest {
         }
         assertEquals("HTML snapshot handling must not replay the original navigation", rounds, navigationStarts.get())
         assertEquals("Each generated form must be submitted only once", rounds, navigationPostStarts.get())
+    }
+
+    @Test
+    fun generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost() = runBlocking {
+        val user = "generated-before-dom-navigation"
+        val result = try {
+            renderer.render(request("/early-navigation-start", user, post = true, body = "seed=generated"))
+        } catch (error: Exception) {
+            throw AssertionError("Early generated navigation failed: generatedOnly=true " +
+                "starts=${earlyNavigationStarts.get()} posts=${earlyNavigationPostStarts.get()} " +
+                "blockerHits=${earlyNavigationBlockerHits.get()} finalVisits=${earlyNavigationFinalVisits.get()} " +
+                "domReadyAtFinal=${earlyNavigationDomReadyAtFinal.get()} " +
+                "loadingAtFinal=${earlyNavigationLoadingAtFinal.get()} " +
+                "fixtureTimeouts=${earlyNavigationFixtureTimeouts.get()}", error)
+        }
+        assertEquals("The fixture handshake must not silently expire", 0, earlyNavigationFixtureTimeouts.get())
+        assertEquals("The original parser must actually be blocked", 1, earlyNavigationBlockerHits.get())
+        assertEquals("The generated destination must actually be visited", 1, earlyNavigationFinalVisits.get())
+        assertEquals("The final request must precede the original DOMContentLoaded", 0,
+            earlyNavigationDomReadyAtFinal.get())
+        assertEquals("The source document must actually still be loading when it navigates", 1,
+            earlyNavigationLoadingAtFinal.get())
+        assertTrue("An early navigation must return its actual final document",
+            result.body?.contains("generated-early-complete") == true)
+        assertFalse(result.body?.contains("generated-early-intermediate") == true)
+        assertEquals("The generated initial request must not be replayed", 1, earlyNavigationStarts.get())
+        assertEquals("The generated original form must be submitted exactly once", 1, earlyNavigationPostStarts.get())
+        assertEquals("An early navigation must retain its generated HttpOnly response Cookie", "generated",
+            BrowserCookieJar.storedCookies(CookieStore(user)).single { it.name == "earlyNavigation" }.value)
     }
 
     @Test
