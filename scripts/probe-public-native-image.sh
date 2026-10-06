@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # Reuse the exact tested artifact. No registry write, rebuild or production data.
 set -euo pipefail
-test "$#" = 3
+test "$#" = 3 || test "$#" = 4
 arch="$1"
 revision="$2"
 output="$3"
+capture_mode="${4:-bounded-dom}"
 [[ "$arch" = amd64 || "$arch" = arm64 ]]
 [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
+case "$capture_mode" in
+  bounded-dom|snapshot-only) ;;
+  *) exit 1 ;;
+esac
 : "${RUNNER_TEMP:?Expected a fresh GitHub-hosted runner}"
 test "${GITHUB_ACTIONS:-}" = true
 test "$output" = "$RUNNER_TEMP/reader-public-metadata-report"
@@ -87,5 +92,6 @@ test "$actual_jar" = "$expected_jar"
 jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
   '{revision: $revision, jarSha256: $jarSha256, network: "bridge", publishedPorts: 0}' \
   > "$output/RUNNING_JAR_IDENTITY.json"
-docker exec "$container_id" python /verification-scripts/probe-public-metadata.py \
-  --expected-revision "$revision" --wait-dom
+probe_args=(--expected-revision "$revision")
+if [[ "$capture_mode" = bounded-dom ]]; then probe_args+=(--wait-dom); fi
+docker exec "$container_id" python /verification-scripts/probe-public-metadata.py "${probe_args[@]}"

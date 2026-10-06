@@ -284,6 +284,7 @@ def main():
               "configuredRenderer": "camoufox", "runtimeUid": os.getuid(),
               "privateNetworkGuardEnabled": True, "bookInfoApiCalls": 0,
               "sourceScriptMode": "boundedMetadataDom" if args.wait_dom else "domContentLoadedOnly",
+              "pageCaptureMode": "bounded-dom" if args.wait_dom else "snapshot-only",
               "metadataDomWaitBudgetMs": METADATA_DOM_WAIT_MS if args.wait_dom else 0,
               "sourceScriptSynthesizesMetadata": False,
               "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",

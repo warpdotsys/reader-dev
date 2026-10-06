@@ -295,6 +295,7 @@ class LifecycleTest(unittest.TestCase):
             self.assertFalse(report["sourceScriptSynthesizesMetadata"])
             self.assertEqual(8000 if wait_dom else 0, report["metadataDomWaitBudgetMs"])
             self.assertEqual("boundedMetadataDom" if wait_dom else "domContentLoadedOnly", report["sourceScriptMode"])
+            self.assertEqual("bounded-dom" if wait_dom else "snapshot-only", report["pageCaptureMode"])
             self.assertEqual(0, report["cookieRowsBefore"])
             self.assertEqual(0, report["cookieRowsAfter"])
             self.assertIn("/logout", paths)
@@ -339,6 +340,37 @@ class LifecycleTest(unittest.TestCase):
         self.assertEqual(1, result)
         self.assertFalse(report["passed"])
         self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+
+class HostedCaptureModeTest(unittest.TestCase):
+    def test_capture_enum_is_validated_before_any_container_or_artifact_action(self):
+        wrapper = (ROOT / "scripts/probe-public-native-image.sh").read_text(encoding="utf-8")
+        validation = 'case "$capture_mode" in\n  bounded-dom|snapshot-only) ;;\n  *) exit 1 ;;\nesac'
+        self.assertIn(validation, wrapper)
+        self.assertLess(wrapper.index(validation), wrapper.index("version=$(jq"))
+        self.assertLess(wrapper.index(validation), wrapper.index("docker load"))
+        self.assertIn('capture_mode="${4:-bounded-dom}"', wrapper)
+        self.assertIn('test "$#" = 3 || test "$#" = 4', wrapper)
+
+    def test_snapshot_mode_does_not_add_webjs_and_bounded_mode_keeps_its_budget(self):
+        wrapper = (ROOT / "scripts/probe-public-native-image.sh").read_text(encoding="utf-8")
+        self.assertIn('probe_args=(--expected-revision "$revision")', wrapper)
+        self.assertIn('if [[ "$capture_mode" = bounded-dom ]]; then probe_args+=(--wait-dom); fi', wrapper)
+        self.assertIn('"${probe_args[@]}"', wrapper)
+        _, baseline = PROBE.book_info_request(False)["url"].split(", ", 1)
+        _, bounded = PROBE.book_info_request(True)["url"].split(", ", 1)
+        self.assertEqual({"webView": True}, json.loads(baseline))
+        self.assertEqual(PROBE.METADATA_DOM_SCRIPT, json.loads(bounded)["webJs"])
+
+    def test_workflow_passes_the_fixed_mode_without_shell_interpolation(self):
+        workflow = (ROOT / ".github/workflows/browser-image.yml").read_text(encoding="utf-8")
+        self.assertIn("options: [bounded-dom, snapshot-only]", workflow)
+        self.assertIn("default: bounded-dom", workflow)
+        self.assertEqual(2, workflow.count("CAPTURE_MODE: ${{ inputs.public_metadata_capture }}"))
+        self.assertIn('[[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only ]]', workflow)
+        self.assertIn('"$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE"', workflow)
+        self.assertIn("${{ inputs.public_metadata_capture || 'bounded-dom' }}", workflow)
+        self.assertNotIn('run: ${{ inputs.public_metadata_capture', workflow)
 
 
 if __name__ == "__main__":

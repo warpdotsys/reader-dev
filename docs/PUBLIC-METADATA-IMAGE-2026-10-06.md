@@ -55,7 +55,39 @@
 
 回滚只去掉诊断 `intro` 规则及其完整性门禁／配套检查，保留原元数据规则、有限等待和已存在的失败报告；不改产品 worker、用户数据或生产。
 
+### 新专项实际返回脚本状态丢失，未取得页面快照
+
+诊断提交 `6664b63597e5c3d400f65c888a7ed23de438c792` 的[专项 37440328741](https://github.com/warpdotsys/reader-dev/actions/runs/37440328741)已实际终态失败；只消费此前 `c89d6623`／快照 `5eeeb4d5` 的原字节镜像，不把探针提交当作被测镜像修订。八份小 JSON 已独立核对并逐文件重算 SHA-256：实际 JAR `e589818d...`、image ID `sha256:7dea2494...`、UID 10001、私网拒绝、桥接／零发布端口均一致。
+
+这一次仅一个详情请求在 5.426 秒返回 HTTP 200／`isSuccess=false`／`data=null`，严格固定白名单确实记录 `SourceScriptStateLost`，不是按错误长度 70 推断。`pageDiagnostics=null` 表示尚未取得返回快照；`nameHasText=false` 等由无 data 得到，不证明实际页面字段为空。此次可定位到脚本状态丢失这一类别，但尚不能唯一认定导航、脚本干预或具体可见验证码；也不能回填更早的 70 字符错误。没有改产品 worker、重放脚本／POST、吞掉错误或降低元数据门禁。
+
+worker／driver 各 1，browser 类最高 7；真实 cgroup 峰值 811,593,728 B（约 774 MiB）、PID 189，2 CPU／2 GiB／256 PID／配置及实际零 swap、触限／OOM 0，原资源守卫带 `require_no_swap=true` 通过。Cookie 列表前后 0，退出与随后受保护请求、生成 Cookie 会话失效及自有容器移除通过；不是全设备令牌撤销，也没有真实账号／Cookie／目录／正文。3,203 B 制品的[实际身份、观测、八份文件及限制](evidence/public-metadata-page-structure-hosted-2026-10-06.json)保留。其他普通 CI 绿灯不能抵消这一次实站红灯；用户打开的浏览器当前未在工具库存中返回，不能宣称其验证码或正文状态已复核。
+
+### 诊断源码自身的正常托管验收已完成
+
+`6664b635`／被测合并快照 `a5638bea` 的 Java/Kotlin、Vue 3、完整镜像和[原生演练 37440292003](https://github.com/warpdotsys/reader-dev/actions/runs/37440292003)四条正常工作流均终态成功。两份下载的真实 Camoufox XML 各 16 项无跳过／失败／错误；共享 JAR 的真实 JVM 页面诊断 XML 为 5 项无跳过／失败／错误，原脚本在实际 Rhino／Jsoup／`htmlFormat` 路径通过，不是只跑 Python 伪造值。
+
+7,621 B 发布导入制品的 20 份 JSON 已逐文件重算散列并核对共同实际运行 JAR `8d232e90...`、版本／修订对象、原生及重载 image ID、生成基线与四份异步 Reader API；原预算守卫均通过。原生／重载最高峰值 850,243,584 B（约 810.9 MiB）、PID 198，触限／OOM／报告时实际 swap 0，仍允许 1 GiB swap，不能混作零 swap 专项。[实际终态、XML 和消费记录](evidence/public-metadata-diagnostics-normal-hosted-2026-10-06.json)。这个正常结果不消除前述实站 `SourceScriptStateLost`，也不证明真实认证／三方／生产或本机最终镜像运行。
+
 ## 可重复命令
+
+### 用无浏览器脚本的同镜像快照基线区分问题
+
+新专项记录 `SourceScriptStateLost` 后，不能假定继续增加等待或重放脚本能修复。新增显式 `public_metadata_capture` 选择输入：`bounded-dom` 保留原来的 8 秒浏览器 Promise，`snapshot-only` 只传 `webView=true`，不传 `webJs`，从正常快照做同一组 JVM 结构诊断。每次仍是新账号／新容器／一次详情，两个模式独立记录并有独立并发组；不是失败重试或把失败请求改成成功。产品 worker、原元数据 CSS、UID／私网防护／预算／清理不变；基线空字段也继续判红，不能关闭认证三方缺口。
+
+模式在下载／加载／启动前严格限定，经过环境变量和引用参数传给 Shell，不把输入作为命令执行。消费脚本旧三参数调用仍默认 `bounded-dom`；第四参数只接受两个固定值。Python 记录 `pageCaptureMode` 与原 `sourceScriptMode`，方便核对究竟有没有浏览器脚本。工作流 `choice` 输入依据 [GitHub 官方语法](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs)，本增量没有给任意 URL、Cookie、脚本或故障重试开放入口。
+
+本机 34 项探针检查、全量 Python 179 项中 178 实际／1 个 Windows 环境跳过、57 项发布守卫和 Bash 语法检查通过。这些是请求参数／流程夹具，不是真实快照结果。新的快照专项待自己的托管执行；必须消费与前次相同的已验收镜像原字节，不将探针新源码当作被测产品修订。
+
+```powershell
+gh workflow run browser-image.yml --repo warpdotsys/reader-dev `
+  --ref ci/full-reader-20260926 -f native_arch=amd64 `
+  -f public_metadata_native_run=37436316345 `
+  -f public_metadata_revision=5eeeb4d597836695f27044c91360fbee8aceee3f `
+  -f public_metadata_capture=snapshot-only
+```
+
+上述输入对应已验收的实际原镜像，不可填任意源码 SHA。单独专项不会构建新镜像、部署或使用真实 Cookie。回滚新增选择输入及第四参数即可恢复旧有限等待入口；旧失败记录必须保留。
 
 ### 固定分类的独立专项实际结果
 
