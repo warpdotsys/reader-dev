@@ -41,6 +41,17 @@ def expected_request_fields(exercise_encoding=False):
             [encoding_request_fields()] if exercise_encoding else [])
 
 
+def historical_utf8_truncation_fields():
+    """Characterization only: the pinned archived engine sends JS string length bytes.
+
+    This exact 44-byte prefix was independently observed at the target. Never use
+    it as a correct request expectation or rewrite a recorded response to match it.
+    """
+    raw = ENCODING_BODY.encode("utf-8")[:44]
+    return {"httpMethod": "POST", "body": raw.decode("utf-8"), "testHeader": "synthetic-utf8",
+            "bodyByteCount": len(raw), "bodySha256": hashlib.sha256(raw).hexdigest()}
+
+
 def free_port():
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -396,7 +407,11 @@ def write_report(path, report):
 
 def validate_generated_searches(result, exercise_encoding=False):
     """Reject missing or normalized-away actual generated Reader responses."""
-    expected_fields = expected_request_fields(exercise_encoding)
+    _validate_generated_searches(result, exercise_encoding, expected_request_fields(exercise_encoding))
+
+
+def _validate_generated_searches(result, exercise_encoding, expected_fields):
+    # Shared response checks, not a public switch to weaken strict acceptance.
     if not isinstance(result, dict) or not isinstance(result.get("searches"), list) or \
             len(result["searches"]) != 5 + int(exercise_encoding):
         raise RuntimeError("Missing executed three-way search results")
@@ -438,10 +453,46 @@ def validate_three_way(original, remote, camoufox, exercise_encoding=False):
         raise RuntimeError("Camoufox target Cookie replay/deletion differs")
 
 
-def wait_for_camoufox_handoff(directory, original, remote, timeout=60, exercise_encoding=False):
+def validate_historical_utf8_characterization_pair(original, remote):
+    """Only the independently observed truncation is allowed for a diagnostic handoff.
+
+    The first five requests, all six full JSON responses and target Cookies keep
+    their original checks. Unknown differences still refuse Camoufox permission.
+    """
+    fields = expected_request_fields() + [historical_utf8_truncation_fields()]
+    for result in (original, remote):
+        _validate_generated_searches(result, True, fields)
+    if not same_json(original["searches"], remote["searches"]):
+        raise RuntimeError("Characterization full Reader JSON differs")
+    if original.get("renderCookieHeaders") != [""] * 6 or remote.get("renderCookieHeaders") != [""] * 6:
+        raise RuntimeError("Unreviewed historical renderer target Cookie behavior")
+
+
+def validate_utf8_characterization(original, remote, camoufox):
+    """Complete generated observations, explicitly NOT strict six-case parity."""
+    validate_historical_utf8_characterization_pair(original, remote)
+    validate_generated_searches(camoufox, True)
+    if not same_json(original["searches"], camoufox["searches"]):
+        raise RuntimeError("Characterization full Reader JSON differs")
+    if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", "", ""]:
+        raise RuntimeError("Camoufox target Cookie replay/deletion differs")
+    return {"scope": "known historical UTF-8 truncation characterization, not compatibility acceptance",
+            "observationsComplete": True, "strictSixCaseParityAccepted": False,
+            "historicalUtf8BodyCorrect": False, "camoufoxUtf8BodyCorrect": True,
+            "historicalExpectedDefectFields": historical_utf8_truncation_fields(),
+            "correctUtf8Fields": encoding_request_fields()}
+
+
+def wait_for_camoufox_handoff(directory, original, remote, timeout=60, exercise_encoding=False,
+                             characterize_historical_utf8=False):
     """Keep this fixture alive while the host stops its owned historical renderer."""
     require_verified_private_loopback()
-    validate_remote_pair(original, remote, exercise_encoding)
+    if characterize_historical_utf8:
+        if not exercise_encoding:
+            raise RuntimeError("Historical UTF-8 characterization requires all six probes")
+        validate_historical_utf8_characterization_pair(original, remote)
+    else:
+        validate_remote_pair(original, remote, exercise_encoding)
     directory.mkdir()
     with (directory / "remote-complete").open("xb"):
         pass
@@ -482,6 +533,8 @@ def main():
                         help="Also verify a synthetic WebView POST method, body, and header")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="In actual three-way mode also compare raw UTF-8 POST bytes and supplementary characters")
+    parser.add_argument("--characterize-historical-utf8", action="store_true",
+                        help="Diagnostic only: record the exact known archived 44-byte truncation; always exits nonzero")
     parser.add_argument("--archived-renderer-base",
                         help="Use the actual archived renderer on private loopback, not a synthetic /render.html")
     parser.add_argument("--camoufox-python", type=Path,
@@ -491,6 +544,8 @@ def main():
     args = parser.parse_args()
     if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.characterize_historical_utf8 and not (args.exercise_encoding and args.phase_handoff_dir):
+        parser.error("Historical UTF-8 characterization requires six-case mode and guarded renderer handoff")
     if args.exercise_encoding and not (args.camoufox_python and args.original_network_isolated and
             args.archived_renderer_base and args.exercise_script and args.exercise_post):
         parser.error("Encoding probe requires actual isolated three-way mode with script and POST probes")
@@ -574,7 +629,9 @@ def main():
             if args.camoufox_python:
                 if args.phase_handoff_dir:
                     wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored,
-                                              exercise_encoding=args.exercise_encoding)
+                                              exercise_encoding=args.exercise_encoding,
+                                              **({"characterize_historical_utf8": True}
+                                                 if args.characterize_historical_utf8 else {}))
                 fixture.reset()
                 camoufox = run_jar(args.java, args.restored, root / "camoufox",
                                    free_port(), fixture_base, fixture, True, True,
@@ -627,6 +684,8 @@ def main():
                        "historicalRendererStoppedBeforeCamoufox": bool(args.phase_handoff_dir),
                        "originalProductionRendererVersionProven": False,
                        "realAuthenticatedSourceTested": False})
+    if args.characterize_historical_utf8:
+        report["characterization"] = validate_utf8_characterization(original, restored, camoufox)
     write_report(args.report, report)
     endpoint = "target" if args.archived_renderer_base else "render"
     if original is not None:
@@ -644,6 +703,8 @@ def main():
             print(f"Original POST request fields: {original['renderRequestFields'][post_index]}")
         print(f"Restored POST request fields: {restored['renderRequestFields'][post_index]}")
     print(f"Report: {args.report}")
+    if args.characterize_historical_utf8:
+        raise RuntimeError("Historical UTF-8 characterization complete; strict six-case parity NOT accepted")
     if args.camoufox_python:
         validate_three_way(original, restored, camoufox, args.exercise_encoding)
     expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *

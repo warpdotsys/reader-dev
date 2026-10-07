@@ -64,6 +64,15 @@ def require_unpressured_budget(report):
         raise RuntimeError("The generated test triggered an aggregate resource limit")
 
 
+def require_probe_acceptance(exit_code, characterize_historical_utf8=False):
+    if type(exit_code) is not int or exit_code != 0:
+        raise RuntimeError("Three-way probe failed; preserved generated report and diagnostics")
+    if characterize_historical_utf8:
+        # A diagnostic must never turn either a known defect or an unexpected
+        # zero exit into overallAccepted=true in this strict acceptance harness.
+        raise RuntimeError("Historical UTF-8 characterization is not strict acceptance")
+
+
 def cpu_observation(group):
     """Optional actual counters, never a substitute for the mandatory budget."""
     stat = group / "cpu.stat"
@@ -189,7 +198,11 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="New directory under /var/tmp")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="Also execute the sixth generated UTF-8 POST/script/response comparison")
+    parser.add_argument("--characterize-historical-utf8", action="store_true",
+                        help="Diagnostic only: preserve all sides of the known UTF-8 defect, never overall acceptance")
     args = parser.parse_args()
+    if args.characterize_historical_utf8 and not args.exercise_encoding:
+        parser.error("Historical UTF-8 characterization requires --exercise-encoding")
     if sys.platform != "linux" or os.geteuid() != 0:
         parser.error("A root-owned Linux Docker/systemd host is required")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.runtime_image):
@@ -228,6 +241,8 @@ def main():
                   "historicalRendererStoppedBeforeCamoufox": False, "resourceSamples": []}
     if args.exercise_encoding:
         provenance["encodingProbeRequested"] = True
+    if args.characterize_historical_utf8:
+        provenance["historicalUtf8CharacterizationRequested"] = True
     try:
         command("systemd-run", "--unit=" + anchor, "--slice=" + parent,
                 "--property=Type=oneshot", "--property=RemainAfterExit=yes", "/bin/true")
@@ -294,6 +309,8 @@ def main():
                  "--camoufox-python", "/usr/bin/python3", "--phase-handoff-dir", "/results/phases"]
         if args.exercise_encoding:
             probe.append("--exercise-encoding")
+        if args.characterize_historical_utf8:
+            probe.append("--characterize-historical-utf8")
         started = time.monotonic()
 
         def sample(phase):
@@ -323,8 +340,7 @@ def main():
         provenance["probeExitCode"] = exit_code
         provenance["probeCompleted"] = exit_code == 0
         provenance["aggregateBudget"] = budget_snapshot(group)
-        if exit_code != 0:
-            raise RuntimeError("Three-way probe failed; preserved generated report and diagnostics")
+        require_probe_acceptance(exit_code, args.characterize_historical_utf8)
         events = provenance["aggregateBudget"]
         require_unpressured_budget(events)
         provenance["budgetAccepted"] = True

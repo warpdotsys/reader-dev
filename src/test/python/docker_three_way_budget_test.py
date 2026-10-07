@@ -15,6 +15,26 @@ SPEC.loader.exec_module(PROBE)
 
 
 class DockerThreeWayBudgetTest(unittest.TestCase):
+    def test_characterization_never_accepts_any_exit_code_even_unexpected_zero(self):
+        for code in (0, 1, 2, 137, None, False):
+            with self.subTest(code=code), self.assertRaises(RuntimeError):
+                PROBE.require_probe_acceptance(code, characterize_historical_utf8=True)
+        PROBE.require_probe_acceptance(0)
+        for code in (1, 2, 137, None, False):
+            with self.subTest(code=code), self.assertRaises(RuntimeError):
+                PROBE.require_probe_acceptance(code)
+
+    def test_characterization_without_encoding_refuses_before_host_and_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "absent"
+            result = subprocess.run([sys.executable, "-B", str(SCRIPT), "--original", "absent",
+                                     "--restored", "absent", "--runtime-image", "sha256:" + "a" * 64,
+                                     "--output", str(output), "--characterize-historical-utf8"],
+                                    capture_output=True, text=True, timeout=10, check=False)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("requires --exercise-encoding", result.stderr)
+            self.assertFalse(output.exists())
+
     def test_optional_cpu_files_are_unknown_not_zero_and_do_not_relax_budget(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

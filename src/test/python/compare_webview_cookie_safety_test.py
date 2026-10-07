@@ -315,6 +315,154 @@ class EncodingReportValidationTest(unittest.TestCase):
             self.assertFalse(phases.exists())
 
 
+class HistoricalUtf8CharacterizationTest(unittest.TestCase):
+    """Generated report fixtures only; no Reader or browser execution claims."""
+
+    def setUp(self):
+        self.original = encoding_results([""] * 6)
+        self.remote = encoding_results([""] * 6)
+        self.camoufox = encoding_results(["", "session=alpha==", "", "", "", ""])
+        for side in (self.original, self.remote):
+            side["renderRequestFields"][-1] = PROBE.historical_utf8_truncation_fields()
+
+    def test_exact_observed_defect_has_distinct_false_parity_and_does_not_rewrite_data(self):
+        before = json.dumps([self.original, self.remote, self.camoufox])
+        observation = PROBE.validate_utf8_characterization(self.original, self.remote, self.camoufox)
+        self.assertIs(True, observation["observationsComplete"])
+        self.assertIs(False, observation["strictSixCaseParityAccepted"])
+        self.assertIs(False, observation["historicalUtf8BodyCorrect"])
+        self.assertIs(True, observation["camoufoxUtf8BodyCorrect"])
+        self.assertEqual(44, observation["historicalExpectedDefectFields"]["bodyByteCount"])
+        self.assertEqual("c61ca3e561f770d4fc8551da0bddb98afd0be801801502504a73221ed11ec5d9",
+                         observation["historicalExpectedDefectFields"]["bodySha256"])
+        with self.assertRaises(json.JSONDecodeError):
+            json.loads(observation["historicalExpectedDefectFields"]["body"])
+        self.assertEqual(60, observation["correctUtf8Fields"]["bodyByteCount"])
+        self.assertEqual(before, json.dumps([self.original, self.remote, self.camoufox]))
+
+    def test_default_strict_validator_still_rejects_the_observed_defect(self):
+        with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+            PROBE.validate_three_way(self.original, self.remote, self.camoufox, True)
+
+    def test_fixed_or_unknown_historical_fields_cannot_be_called_the_known_defect(self):
+        for fields in (PROBE.encoding_request_fields(), {},
+                       {**PROBE.historical_utf8_truncation_fields(), "bodyByteCount": True},
+                       {**PROBE.historical_utf8_truncation_fields(), "bodyByteCount": 43},
+                       {**PROBE.historical_utf8_truncation_fields(), "bodySha256": "0" * 64},
+                       {**PROBE.historical_utf8_truncation_fields(), "body": ""},
+                       {**PROBE.historical_utf8_truncation_fields(), "testHeader": "other"}):
+            with self.subTest(fields=fields):
+                side = copy.deepcopy(self.remote)
+                side["renderRequestFields"][-1] = fields
+                with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+                    PROBE.validate_utf8_characterization(self.original, side, self.camoufox)
+
+    def test_first_five_requests_and_all_response_fields_remain_required(self):
+        for key, value in (("body", "other"), ("httpMethod", "GET")):
+            with self.subTest(key=key):
+                side = copy.deepcopy(self.remote)
+                side["renderRequestFields"][4][key] = value
+                with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+                    PROBE.validate_utf8_characterization(self.original, side, self.camoufox)
+        for side in (self.remote, self.camoufox):
+            for index in range(6):
+                with self.subTest(side="camoufox" if side is self.camoufox else "remote", index=index):
+                    changed = copy.deepcopy(side)
+                    changed["searches"][index]["returnData"]["extra"] = None
+                    pair = (self.original, changed, self.camoufox) if side is self.remote else \
+                           (self.original, self.remote, changed)
+                    with self.assertRaisesRegex(RuntimeError, "full Reader JSON differs"):
+                        PROBE.validate_utf8_characterization(*pair)
+
+    def test_current_engine_must_send_all_sixty_bytes_not_follow_the_defect(self):
+        self.camoufox["renderRequestFields"][-1] = PROBE.historical_utf8_truncation_fields()
+        with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+            PROBE.validate_utf8_characterization(self.original, self.remote, self.camoufox)
+
+    def test_cookie_sequences_and_six_real_response_shapes_are_not_relaxed(self):
+        for original, remote, camoufox in (
+                (executed_results([""] * 5), self.remote, self.camoufox),
+                (self.original, self.remote, executed_results([""] * 5))):
+            with self.assertRaisesRegex(RuntimeError, "Missing executed"):
+                PROBE.validate_utf8_characterization(original, remote, camoufox)
+        self.remote["renderCookieHeaders"][5] = "session=unexpected"
+        with self.assertRaisesRegex(RuntimeError, "historical renderer"):
+            PROBE.validate_utf8_characterization(self.original, self.remote, self.camoufox)
+        self.setUp()
+        self.camoufox["renderCookieHeaders"][2] = "session=alpha=="
+        with self.assertRaisesRegex(RuntimeError, "replay/deletion"):
+            PROBE.validate_utf8_characterization(self.original, self.remote, self.camoufox)
+
+    def test_characterization_handoff_still_checks_namespace_and_port_refused(self):
+        for connection_error in (ConnectionRefusedError, None):
+            with self.subTest(connection_error=connection_error), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary) / "phases"
+                with mock.patch.object(PROBE, "require_verified_private_loopback") as guard, \
+                        mock.patch.object(PROBE.time, "sleep", side_effect=lambda _: \
+                                          (directory / "camoufox-permitted").touch()), \
+                        mock.patch.object(PROBE.socket, "create_connection", side_effect=connection_error,
+                                          return_value=mock.MagicMock()):
+                    if connection_error is None:
+                        with self.assertRaisesRegex(RuntimeError, "still running"):
+                            PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote,
+                                exercise_encoding=True, characterize_historical_utf8=True)
+                    else:
+                        PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote,
+                            exercise_encoding=True, characterize_historical_utf8=True)
+                    self.assertEqual(2, guard.call_count)
+
+    def test_characterization_cannot_create_markers_without_six_cases(self):
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "require_verified_private_loopback"):
+            directory = Path(temporary) / "phases"
+            with self.assertRaisesRegex(RuntimeError, "all six probes"):
+                PROBE.wait_for_camoufox_handoff(directory, self.original, self.remote,
+                                               characterize_historical_utf8=True)
+            self.assertFalse(directory.exists())
+
+    def test_cli_requires_explicit_six_case_mode_and_guarded_handoff_before_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "report.json"
+            for extra in ([], ["--exercise-encoding"], ["--phase-handoff-dir", Path(temporary) / "phases"]):
+                with self.subTest(extra=extra):
+                    result = invoke("--restored-only", "--report", report,
+                                    "--characterize-historical-utf8", *extra)
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("requires six-case mode and guarded renderer handoff", result.stderr)
+                    self.assertFalse(report.exists())
+
+    def test_completed_cli_preserves_all_raw_sides_but_cannot_exit_success(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "report.json"
+            phases = Path(temporary) / "phases"
+            arguments = [str(SCRIPT), "--java", sys.executable, "--original", SCRIPT,
+                         "--restored", SCRIPT, "--report", report,
+                         "--original-network-isolated", "--archived-renderer-base",
+                         "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                         "--camoufox-python", sys.executable, "--exercise-encoding",
+                         "--phase-handoff-dir", phases, "--characterize-historical-utf8"]
+            with mock.patch.object(sys, "argv", list(map(str, arguments))), \
+                    mock.patch.dict(sys.modules, {"original_jar_safety": mock.Mock()}), \
+                    mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    mock.patch.object(PROBE, "Fixture"), mock.patch.object(PROBE, "free_port", return_value=9), \
+                    mock.patch.object(PROBE.threading, "Thread"), \
+                    mock.patch.object(PROBE, "wait_for_camoufox_handoff") as handoff, \
+                    mock.patch.object(PROBE, "run_jar", side_effect=[self.original, self.remote, self.camoufox]) as run, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, "strict six-case parity NOT accepted"):
+                    PROBE.main()
+            self.assertEqual(3, run.call_count)
+            handoff.assert_called_once_with(phases, self.original, self.remote,
+                                           exercise_encoding=True, characterize_historical_utf8=True)
+            value = json.loads(report.read_text(encoding="utf-8"))
+            self.assertEqual(self.original, value["original"])
+            self.assertEqual(self.remote, value["restored"])
+            self.assertEqual(self.camoufox, value["camoufox"])
+            self.assertIs(False, value["characterization"]["strictSixCaseParityAccepted"])
+            self.assertIs(False, value["characterization"]["historicalUtf8BodyCorrect"])
+
+
 class HistoricalRendererHandoffTest(unittest.TestCase):
     """Generated rendezvous only; no real Reader or browser is launched."""
 

@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "scope": "Generated-only actual six-search three-way characterization of a known historical UTF-8 defect; NOT strict compatibility acceptance",
+  "sourceBeforeDiagnosticIncrement": "93b6c0a87cc620445f9201952e9ec56aca8a686d",
+  "unit": "reader-threeway-utf8-characterization-20261007-g.service",
+  "invocationIdAtStart": "370c33b64a6544cfb1a63749ba3f47bf",
+  "terminalExecMainStatus": 1,
+  "mainPid": 0,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+  "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+  "runtimeIsCurrentFinalImage": false,
+  "archivedImage": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "archivedSourceOrImageModified": false,
+  "browserApiMethodsWrapped": false,
+  "nativeDebugLoggingAdded": false,
+  "originalProductionRendererVersionProven": false,
+  "realAuthenticatedSourceTested": false,
+  "generatedOnly": true,
+  "actualSearchCounts": {
+    "original": 6,
+    "restored": 6,
+    "camoufox": 6
+  },
+  "actualTargetCounts": {
+    "original": 6,
+    "restored": 6,
+    "camoufox": 6
+  },
+  "fullGeneratedReturnDataEqual": true,
+  "returnDataSha256BySearch": [
+    "f302353deb6aafc6f2b9057c16f3e296457038d653da1c97834ed58203a48477",
+    "f302353deb6aafc6f2b9057c16f3e296457038d653da1c97834ed58203a48477",
+    "f302353deb6aafc6f2b9057c16f3e296457038d653da1c97834ed58203a48477",
+    "f302353deb6aafc6f2b9057c16f3e296457038d653da1c97834ed58203a48477",
+    "f302353deb6aafc6f2b9057c16f3e296457038d653da1c97834ed58203a48477",
+    "73e937e900d0dda8b4f1edb09e637aa7bc2e1d59a3d2d6ae3ad8b358a26a6f72"
+  ],
+  "observedTargetCookieSequences": {
+    "original": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "restored": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "camoufox": [
+      "",
+      "session=alpha==",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "utf8Post": {
+    "historicalActualBytes": 44,
+    "historicalActualSha256": "c61ca3e561f770d4fc8551da0bddb98afd0be801801502504a73221ed11ec5d9",
+    "camoufoxActualBytes": 60,
+    "camoufoxActualSha256": "8d0383070028f4f457194a194e8e9133df2487261e341c1da121171d59eeeef1",
+    "historicalUtf8BodyCorrect": false,
+    "camoufoxUtf8BodyCorrect": true,
+    "observationsComplete": true,
+    "strictSixCaseParityAccepted": false,
+    "noRecordedDataNormalizedOrRewritten": true
+  },
+  "historicalRendererStoppedBeforeCamoufox": true,
+  "probeExitCode": 1,
+  "probeCompleted": false,
+  "overallAccepted": false,
+  "budgetAcceptedByStrictHarness": false,
+  "aggregateBudgetIndependentlyChecked": true,
+  "cpuCount": 2,
+  "memoryMaxBytes": 2147483648,
+  "swapMaxBytes": 0,
+  "aggregatePidsMax": 512,
+  "leafPidsMax": 256,
+  "memoryPeakBytes": 1674854400,
+  "sampledPidsPeak": 237,
+  "resourceSamples": 91,
+  "lastSampleElapsedMs": 97341,
+  "memoryMaxEvents": 0,
+  "oomEvents": 0,
+  "oomKillEvents": 0,
+  "pidsMaxEvents": 0,
+  "socketThrottledEvents": 4,
+  "socketThrottlingCauseProven": false,
+  "removedOwnedTestContainers": 2,
+  "independentlyObservedOwnedContainersRemaining": 0,
+  "inputJarsUnchanged": true,
+  "userReportsUnchanged": 58,
+  "rawLogsPublished": false,
+  "runtimeScriptSha256": {
+    "compare-webview-cookie.py": "656edf6bd70d91187cd5dc6423bf6091cf5ff7b995a0dd11c8b4e56919ef7d08",
+    "run-three-way-webview-in-docker.py": "ddbb8138a1fc8cd2297721048bd2e24bed8e7a968dcb760d59489ffd3affd22d",
+    "original_jar_safety.py": "a105f70c313f05ad8df2ee778e94861442a90710269b9ef324d536beb692bc7c",
+    "run-webview-cookie-in-linux-netns.py": "e3a5bcaba6a014250909b9b95c029941739f049c8feda525b771079d23baba81"
+  },
+  "privateRawFiles": [
+    {
+      "name": "provenance.json",
+      "bytes": 87745,
+      "sha256": "cd1d10d2a138f0a3efda389857e0deaef40045e32473a0835cf1a09a02e1b701"
+    },
+    {
+      "name": "probe.log",
+      "bytes": 716,
+      "sha256": "8416a72305e3b8eb909a7c6f3b8317bade6148647f22c68cd088b7663a494004"
+    },
+    {
+      "name": "results/three-way.json",
+      "bytes": 29666,
+      "sha256": "031c3df1fa5b1776d99f14d94754737b0b090a24ef6cab0617931f11234da262"
+    },
+    {
+      "name": "results/three-way.historical-observation.json",
+      "bytes": 18706,
+      "sha256": "79571e11b57c1a42db04a6d1b689d55634c129b837d4eaa57f97580b46277900"
+    },
+    {
+      "name": "archived-renderer-stdout.log",
+      "bytes": 3211,
+      "sha256": "2baaefb371dff84da9284235cae3ca489b9c98bea2788baa96ebb956cbba23a9"
+    },
+    {
+      "name": "archived-renderer-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "independentAuditSha256": "e02086c8e9d626ce6be829e63d5f3a94364043552d6c068a13d68dace3ca1468"
+}
