@@ -35,6 +35,19 @@ def invoke(*arguments):
 
 
 class WebviewCookieCliSafetyTest(unittest.TestCase):
+    def test_existing_historical_observation_is_preserved_before_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "new-report.json"
+            observation = Path(directory) / "new-report.historical-observation.json"
+            observation.write_bytes(b"preserve completed observations")
+            result = invoke("--original-network-isolated", "--archived-renderer-base",
+                            "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                            "--camoufox-python", sys.executable, "--exercise-encoding", "--report", report)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Historical observation already exists", result.stderr)
+            self.assertEqual(b"preserve completed observations", observation.read_bytes())
+            self.assertFalse(report.exists())
+
     def test_existing_encoding_failure_evidence_is_preserved_before_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "new-report.json"
@@ -264,6 +277,42 @@ class EncodingReportValidationTest(unittest.TestCase):
             value = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(PROBE.encoding_request_fields(), value["encodingProbe"]["expectedRequestFields"])
             self.assertEqual(6, len(value["expectedCamoufoxCookieSequence"]))
+            observation = json.loads(report.with_name("three-way.historical-observation.json").read_text(encoding="utf-8"))
+            self.assertEqual(self.original, observation["original"])
+            self.assertEqual(self.remote, observation["restored"])
+            self.assertIs(False, observation["acceptanceEvaluatedAtCapture"])
+            self.assertIs(False, observation["camoufoxExecutedAtCapture"])
+
+    def test_failed_historical_handoff_preserves_raw_observation_without_running_camoufox(self):
+        self.original["renderRequestFields"][-1]["bodyByteCount"] = 44
+        self.remote["renderRequestFields"][-1]["bodyByteCount"] = 44
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "three-way.json"
+            phases = Path(temporary) / "phases"
+            arguments = [str(SCRIPT), "--java", sys.executable, "--original", SCRIPT,
+                         "--restored", SCRIPT, "--report", report,
+                         "--original-network-isolated", "--archived-renderer-base",
+                         "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                         "--camoufox-python", sys.executable, "--exercise-encoding",
+                         "--phase-handoff-dir", phases]
+            with mock.patch.object(sys, "argv", list(map(str, arguments))), \
+                    mock.patch.dict(sys.modules, {"original_jar_safety": mock.Mock()}), \
+                    mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    mock.patch.object(PROBE, "Fixture"), mock.patch.object(PROBE, "free_port", return_value=9), \
+                    mock.patch.object(PROBE.threading, "Thread"), \
+                    mock.patch.object(PROBE, "run_jar", side_effect=[self.original, self.remote]) as run, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+                    PROBE.main()
+            self.assertEqual(2, run.call_count)
+            observation = json.loads(report.with_name("three-way.historical-observation.json").read_text(encoding="utf-8"))
+            self.assertEqual(self.original, observation["original"])
+            self.assertEqual(self.remote, observation["restored"])
+            self.assertIs(False, observation["acceptanceEvaluatedAtCapture"])
+            self.assertIs(False, observation["camoufoxExecutedAtCapture"])
+            self.assertFalse(report.exists())
+            self.assertFalse(phases.exists())
 
 
 class HistoricalRendererHandoffTest(unittest.TestCase):

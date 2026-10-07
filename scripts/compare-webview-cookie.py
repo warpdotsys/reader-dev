@@ -498,6 +498,10 @@ def main():
                        for side in ("original", "restored", "camoufox")} if args.exercise_encoding else {}
     if any(path.exists() or path.is_symlink() for path in failure_reports.values()):
         parser.error("Encoding failure report already exists; choose a new report path")
+    historical_observation = (args.report.with_name(args.report.stem + ".historical-observation.json")
+                              if args.exercise_encoding else None)
+    if historical_observation is not None and (historical_observation.exists() or historical_observation.is_symlink()):
+        parser.error("Historical observation already exists; choose a new report path")
     if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
                                     and args.exercise_script and args.exercise_post):
         parser.error("Three-way Camoufox mode requires isolated original-JAR mode, actual archived renderer, script and POST probes")
@@ -555,6 +559,18 @@ def main():
                                args.archived_renderer_base,
                                include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
                                failure_report=failure_reports.get("restored"))
+            if historical_observation is not None:
+                # Capture completed observations BEFORE the strict handoff validator.
+                # A failed pair must not lose its actual byte fields or Reader JSON;
+                # this file does not acknowledge handoff or grant Camoufox permission.
+                write_report(historical_observation, {
+                    "generatedOnly": True, "scope": "historical pair observation before acceptance",
+                    "acceptanceEvaluatedAtCapture": False, "camoufoxExecutedAtCapture": False,
+                    "originalJarSha256": sha256(args.original), "restoredJarSha256": sha256(args.restored),
+                    "original": original, "restored": restored,
+                    "encodingProbe": {"expectedRequestFields": encoding_request_fields(),
+                                      "expectedBookName": ENCODING_BOOK},
+                })
             if args.camoufox_python:
                 if args.phase_handoff_dir:
                     wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored,

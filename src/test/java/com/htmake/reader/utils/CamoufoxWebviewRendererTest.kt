@@ -9,6 +9,7 @@ import io.legado.app.adapters.ReaderAdapterInterface
 import io.legado.app.help.http.CookieStore
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -97,6 +98,11 @@ class CamoufoxWebviewRendererTest {
     private val complexProbeHits = AtomicInteger()
     private val complexProbeCookie = AtomicReference("")
     private val echoCookie = AtomicReference("")
+    private val utf8PostHits = AtomicInteger()
+    private val utf8PostBytes = AtomicReference(ByteArray(0))
+    private val utf8PostMethod = AtomicReference("")
+    private val utf8PostContentType = AtomicReference("")
+    private val utf8PostContentLength = AtomicReference("")
     private val navigationStarts = AtomicInteger()
     private val navigationPostStarts = AtomicInteger()
     private val navigationMaximumStep = AtomicInteger(-1)
@@ -148,7 +154,8 @@ class CamoufoxWebviewRendererTest {
         }
         server.executor = serverWorkers
         server.createContext("/") { exchange ->
-            val requestBody = exchange.requestBody.use { it.readBytes().toString(StandardCharsets.UTF_8) }
+            val rawRequestBody = exchange.requestBody.use { it.readBytes() }
+            val requestBody = rawRequestBody.toString(StandardCharsets.UTF_8)
             val cookie = exchange.requestHeaders.getFirst("Cookie") ?: ""
             if (exchange.requestURI.path.startsWith("/navigation-infinite/")) {
                 val step = exchange.requestURI.path.substringAfterLast('/').toInt()
@@ -411,6 +418,17 @@ class CamoufoxWebviewRendererTest {
                         "${exchange.requestMethod}|$requestBody|$cookie|${exchange.requestHeaders.getFirst("X-Reader-Probe") ?: ""}",
                         "text/plain; charset=utf-8")
                 }
+                "/utf8-post" -> {
+                    // Preserve bytes before decoding; re-encoding a summary would hide truncation.
+                    utf8PostBytes.set(rawRequestBody)
+                    utf8PostMethod.set(exchange.requestMethod)
+                    utf8PostContentType.set(exchange.requestHeaders.getFirst("Content-Type") ?: "")
+                    utf8PostContentLength.set(exchange.requestHeaders.getFirst("Content-Length") ?: "")
+                    utf8PostHits.incrementAndGet()
+                    respond(exchange,
+                        "<html><body><div id='result'>WebView编码原始书</div></body></html>",
+                        "text/html; charset=utf-8")
+                }
                 else -> respond(exchange, "<html><body>empty</body></html>", "text/html; charset=utf-8")
             }
         }
@@ -441,6 +459,31 @@ class CamoufoxWebviewRendererTest {
             javaScript = "document.querySelector('#resource-result').textContent"
         ))
         assertEquals("asset-loaded", script.body)
+    }
+
+    @Test(timeout = 30000)
+    fun generatedUtf8PostPreservesRawBytesAndSourceScriptResult() = runBlocking {
+        // Generated-only input shared with the historical-engine characterization, never a real book.
+        val body = """{"query":"黎明之剑𠮷😀 + & %","note":"中文 UTF-8"}"""
+        val expectedBytes = body.toByteArray(StandardCharsets.UTF_8)
+        assertEquals("The sample distinguishes UTF-16 character count from wire bytes", 44, body.length)
+        assertEquals(60, expectedBytes.size)
+        val expectedResult = "WebView编码书𠮷😀 + & %"
+        val result = renderer.render(request("/utf8-post", "generated-utf8-post",
+            headers = mapOf("Content-Type" to "application/json; charset=utf-8"),
+            post = true, body = body,
+            javaScript = "document.querySelector('#result').textContent = '$expectedResult'; " +
+                "document.querySelector('#result').textContent"))
+
+        assertEquals("A generated POST must not be replayed", 1, utf8PostHits.get())
+        assertEquals("POST", utf8PostMethod.get())
+        assertEquals("application/json; charset=utf-8", utf8PostContentType.get())
+        assertEquals("60", utf8PostContentLength.get())
+        assertArrayEquals("Compare the actual target bytes, not a reconstructed request", expectedBytes, utf8PostBytes.get())
+        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(utf8PostBytes.get())
+            .joinToString("") { "%02x".format(it) }
+        assertEquals("8d0383070028f4f457194a194e8e9133df2487261e341c1da121171d59eeeef1", digest)
+        assertEquals("The source rule must return the full Unicode marker, not the original HTML", expectedResult, result.body)
     }
 
     @Test
