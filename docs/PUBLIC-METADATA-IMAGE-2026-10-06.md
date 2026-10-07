@@ -24,6 +24,16 @@
 
 ## 实际验收内容
 
+### 2026-10-07 数值线程修复后，一次匿名详情仍失败
+
+探针 `f88fdd81` 的[专项 37607391579](https://github.com/warpdotsys/reader-dev/actions/runs/37607391579)终态 failure，仅实际执行一个匿名详情作业；五个互斥作业均未执行。它消费已成功原生演练 `37598990910` 的 `d94eb587`／镜像修订 `a25cd623...`，共享 JAR `3816fd69...`／镜像 `3fccf95f...`。载入前、载入后、运行中身份独立匹配，没有重建、替换 JAR 或将服务器 221 输入混入。
+
+书源保存读回六项严格布尔均 true；唯一详情 13.077 秒／HTTP 200／`isSuccess=true`／空 errorMsg，data 是对象，但书名、作者无文本，公开封面缺失，严格元数据门禁仍红灯。返回快照八个固定结构标志全部 false；这不是可见性或认证观测，也不能唯一归因为验证码、页面尚未加载、选择器或 worker 错误。有限 worker 记录为空／类别 null，本轮没有复现前一轮 `SourceScriptStateLost`，但不能宣称其已修复。
+
+精确九份报告共 5,115 B（制品压缩 3,754 B）和每文件散列独立核对；原 `require_no_swap=true` 资源守卫重新执行通过：2 CPU／2 GiB／256 PID，峰值 856,649,728 B／PID 185，配置及实际 swap 0、内存 max／OOM／PID max 0。只证明本次 GitHub runner 样本不触这些限额，不关闭 WSL 高核数容量风险或总体内存问题。
+
+UID 10001、私网拒绝／零发布端口不变，生成 Cookie 0→0，legacy 退出与退出后受保护接口两个契约成立，自有容器移除被报告。没有独立宿主剩余计数，不能与服务器 G 的剩余 0 观测混用。没有真实凭据、目录、章节正文、原始 HTML／错误／元数据值保存、验证码操作或生产改动；58 份用户报告未变。[精确字节、实测红灯与资源](evidence/public-metadata-numerical-threads-d94eb587-2026-10-07.json)。不连续重试取绿灯，不由资源通过宣称起点解析通过。
+
 - 输入限制为同仓库已成功的 `Native release artifact rehearsal`、精确 40 位镜像修订和原生架构。使用现有共享 JAR / 归档 SHA / Docker config / UID / renderer 的守卫，实际加载后再次核对镜像内 JAR。
 - Reader 及浏览器仍在同一镜像内，UID 10001；新生成存储和账号，只有容器内部回环监听，没有发布 HTTP 端口。容器允许访问公开站点，但产品的私网拒绝保持开启，未设公网 DNS 替代或修改宿主代理。
 - 2 CPU / 2 GiB / 256 PID / 零 swap，权限收紧；采集真实 cgroup 计数。预算只约束 Reader 容器，不把 runner 的镜像下载、Docker daemon 或硬盘用量算成该预算。归档在 GitHub runner 消费，不下载多 GiB 到用户电脑。

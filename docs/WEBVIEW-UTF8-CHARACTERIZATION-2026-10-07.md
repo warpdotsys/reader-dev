@@ -44,7 +44,17 @@ python3 -B scripts/run-three-way-webview-in-docker.py \
 
 去掉最后的诊断开关即恢复原严格六例模式；它仍会拒绝历史截断。两个原 JAR 的服务器输入位置及可用镜像必须先独立核对，不应在其他机器照抄旧产物身份。
 
-本增量纯测试：Windows Python 271 项中 270 通过／1 POSIX 专用跳过、0 失败；WSL 定向 45＋20 项无跳过／失败。WSL 全量 271 项另有 2 项因缺少 Node 失败，不是全量通过，不跳过或安装额外系统包取绿灯。Windows 固定 Node 执行发布结构／身份／manifest 共 69 项通过。以上均不作为真实浏览器证据；本节真实三方来自 G 实际报告。新提交自身 GitHub 托管结果在运行结束前继续待验收，前一提交绿灯不替代。
+本增量纯测试：Windows Python 271 项中 270 通过／1 POSIX 专用跳过、0 失败；WSL 定向 45＋20 项无跳过／失败。WSL 全量 271 项另有 2 项因缺少 Node 失败，不是全量通过，不跳过或安装额外系统包取绿灯。Windows 固定 Node 执行发布结构／身份／manifest 共 69 项通过。以上均不作为真实浏览器证据；本节真实三方来自 G 实际报告。本提交自身托管结果已独立验收，见下一节；前一提交绿灯不替代。
+
+## 本诊断增量自身的常规托管验收
+
+源码 `f88fdd819c029f4e794bcc5c8e059aece0fcd2b5`／受测 `39248993ee1104ed8faa43b099d044d744d246e8` 的 [Java](https://github.com/warpdotsys/reader-dev/actions/runs/37607041030)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37607040979)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37607040978)、[原生演练](https://github.com/warpdotsys/reader-dev/actions/runs/37607040997)均终态 success，原生六个实际作业全部成功。Linux 自带 Node 的全量 Python 271／8.742 秒，零失败／错误／跳过；它不抹去 WSL 缺 Node 的失败。
+
+常规 Full 的五个可选专项未执行，不算实站／原件／长期接受；两套 20 项来自 Full 与共享 JAR 的真实合约任务，不声称 ARM64 镜像各跑了全部 20 项。两架构镜像的实际生成 UI／异步／资源及转移后重载接受分别来自上述原生作业。
+
+下载小报告独立重跑当前门禁，两套真实 Camoufox 各 20／零跳过／失败／错误，第 20 项实际 3.078／2.967 秒，helper 各 3。publisher 精确 24 JSON，五份生成 UI／异步／预算的 15 次原守卫通过，最高 901,910,528 B／PID 199、内存 max／OOM／PID max 和实际 swap 0；常规配置允许 1 GiB swap，与 G／匿名专项的零 swap 不混。原生 JAR `99a83f8c...`、Full `18d8c275...` 不混作 G 的 221 或匿名专项的 3816 输入；未将巨型镜像归档下载到本机重新验字节，未额外目视本提交的新截图。[自己的报告散列和范围](evidence/webview-utf8-characterization-hosted-f88fdd81-2026-10-07.json)。
+
+这不是实站成功：[另外的一次匿名起点专项](PUBLIC-METADATA-IMAGE-2026-10-06.md)消费此前已验收、产品源码相同的 `d94eb587` 原镜像，元数据业务仍失败。常规绿灯、G 的完整生成观察和这一实站红灯分别保留，不拼接为真实认证或生产验收。
 
 ## 已知问题与回退
 
