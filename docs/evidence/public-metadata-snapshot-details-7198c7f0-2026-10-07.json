@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "workflowRun": 37621716112,
+  "probeSourceHead": "7198c7f0fe461fe41d229e50b33d6cea1e0e2cd2",
+  "scope": "one anonymous attempt to inspect returned snapshot structure; no snapshot obtained; not visibility, authentication, parity or unique cause",
+  "nativeSourceRun": {
+    "id": 37617038662,
+    "name": "Native release artifact rehearsal",
+    "path": ".github/workflows/release-native.yml",
+    "head_sha": "5a4c6b9e17146cfda8c826e1ed78aebe3ede1248",
+    "event": "pull_request",
+    "conclusion": "success",
+    "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37617038662"
+  },
+  "imageRevision": "95525b8c8bde54f74f7df85f04489e9a181ef6dd",
+  "jarSha256": "c3b7e572ba351e224778087d3c0afac35986cd152e0abd53d7b53a5fe9511f35",
+  "imageId": "sha256:f4a6c442d2ff4505effc785fb560fb48f934ca3f8ee846f33bb925bf9c8ca8cd",
+  "publicMetadataAccepted": false,
+  "sourceDefinitionRoundtripPassed": true,
+  "snapshotStructureRuleSha256": "064b02c65bb5450c981d171b9de7eb58a7b287ac9bdfb055e90fe8c456b3521f",
+  "bookInfoApiCalls": 1,
+  "requestSeconds": 6.502,
+  "observedAt": "2026-10-07T12:35:44.668559+00:00",
+  "metadata": {
+    "authorHasText": false,
+    "authorMatches": false,
+    "coverHasExpectedPublicOrigin": false,
+    "coverHasText": false,
+    "dataIsNull": true,
+    "dataIsObject": false,
+    "errorMessageLength": 70,
+    "errorMsgEmpty": false,
+    "errorMsgIsString": true,
+    "hostFingerprint": null,
+    "httpStatus": 200,
+    "isSuccess": false,
+    "isSuccessIsBoolean": true,
+    "knownFieldsPresent": {
+      "author": false,
+      "bookUrl": false,
+      "canUpdate": false,
+      "coverUrl": false,
+      "durChapterIndex": false,
+      "durChapterPos": false,
+      "group": false,
+      "name": false,
+      "tocUrl": false,
+      "totalChapterNum": false,
+      "type": false
+    },
+    "nameHasText": false,
+    "nameMatches": false,
+    "pageDiagnostics": null,
+    "passed": false,
+    "policyReason": null,
+    "snapshotStructure": null,
+    "workerErrorCategory": "SourceScriptStateLost"
+  },
+  "workerDiagnostics": {
+    "rawLogsPersisted": false,
+    "records": [
+      {
+        "errorClass": "SourceScriptStateLost",
+        "kind": "sourceStateMissing",
+        "mainFrameNavigationObserved": true,
+        "operation": "sourceScriptRead",
+        "sourceDocumentObservation": "unavailable"
+      }
+    ],
+    "schemaVersion": 1,
+    "scope": "finite worker stderr labels; not raw logs or page content",
+    "truncated": false
+  },
+  "resourceGuardPassedWithNoSwap": true,
+  "resource": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 340459520,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 872595456,
+    "memoryStatBytes": {
+      "active_file": 12197888,
+      "anon": 315375616,
+      "file": 18636800,
+      "file_dirty": 5742592,
+      "file_mapped": 5775360,
+      "file_writeback": 0,
+      "inactive_file": 6365184,
+      "kernel": 5709824,
+      "kernel_stack": 573440,
+      "pagetables": 1171456,
+      "shmem": 73728,
+      "slab_reclaimable": 3154920,
+      "slab_unreclaimable": 750776,
+      "sock": 4096
+    },
+    "pidsCurrent": 35,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 186,
+    "scope": "one anonymous default-Camoufox metadata request",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "cookieRowsBefore": 0,
+  "cookieRowsAfter": 0,
+  "generatedCookieSessionRevokedVerified": true,
+  "ownedContainerRemovalReported": true,
+  "independentHostRemainingContainerCountUnavailable": true,
+  "probeExitCode": 1,
+  "realCredentialsImported": false,
+  "chapterBodyRequested": false,
+  "userReportsUnchanged": 58,
+  "artifactContentBytes": 5263,
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "834bc79c59f185e59812384270ea489d5ce204ad0131f14b64ceaf84cf82023c"
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "bytes": 258,
+      "sha256": "b2d85fba7e90a2254362ea73bb6695808cade3405c41523dc91d61a4c2df3bd2"
+    },
+    {
+      "name": "PUBLIC_METADATA_REPORT.json",
+      "bytes": 2802,
+      "sha256": "de61abdb82eb40e40b786d9af341c4ef456f03534013ec08b374584939b5ef0b"
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "bytes": 190,
+      "sha256": "2709c85eb4a26d18e6275e4945387c95d02d60b5dd5536bcc0d36dfda6247eea"
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "bytes": 931,
+      "sha256": "4b10d42cf8a3d60fd3e30ffa6e8d86704bdf4c259bf59f71c101931a8990a030"
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "bytes": 316,
+      "sha256": "70fd5e563acb9d8351c9ed6f2ba8e0698b6d87fbfe36598676a52704eb4c85ab"
+    },
+    {
+      "name": "WORKER_DIAGNOSTICS.json",
+      "bytes": 392,
+      "sha256": "ce9c3f01e477d7297e3fb4f33a2c06d565c313410b02a3f93f3032a30a4f7985"
+    }
+  ],
+  "workflowConclusion": "failure",
+  "workflowJob": 112793349345,
+  "artifactId": 11481829629,
+  "artifactZipBytes": 3896,
+  "remoteZipDigestDeclaredByGitHub": "sha256:f91d388b0807ce1a013462428b2b1fb4e43b0a45069b314669ae20e0a3c39c45",
+  "remoteZipDigestLocallyRecomputed": false,
+  "independentAuditSha256": "139f4758b353feed1e267a83cb672ec5ddc981c498df2ac16b1e158079f65cba",
+  "snapshotObservationsReceived": false,
+  "snapshotDetailsRuleBrowserExecutionProven": false,
+  "uniqueRootCauseProven": false,
+  "rawErrorHtmlCookieAndMetadataValuesPersisted": false
+}

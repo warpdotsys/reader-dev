@@ -53,6 +53,18 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-rea
 
 ## 已知问题
 
+### 本次独立托管专项仍失败，未获得结构
+
+探针提交 `7198c7f0fe461fe41d229e50b33d6cea1e0e2cd2` 的[专项 37621716112](https://github.com/warpdotsys/reader-dev/actions/runs/37621716112)终态失败，唯一实际作业 112793349345；六个互斥任务跳过，不计通过。只消费上述 `5a4c6b9e` / `95525b8c` 的原 Native 镜像，不以新探针提交冒充产品修订。
+
+生成书源的精确规则读回通过，但唯一 `/getBookInfo` 在 6.502 秒后返回 HTTP 200 / 严格 `isSuccess=false` / 非空错误 / data null，固定类别 `SourceScriptStateLost`。`pageDiagnostics` 和 `snapshotStructure` 均 null，没有实际执行新 intro 规则的浏览器证据，不能填 false 或称“等满 8 秒仍空”。有限 worker 记录为 `sourceScriptRead / sourceStateMissing / mainFrameNavigationObserved=true / sourceDocumentObservation=unavailable`；这证明读取阶段状态缺失且期间观测过主框架导航，不证明相同/不同文档、验证码、认证、导航就是唯一原因，也不解释上一轮不同响应的空元数据。
+
+九份小 JSON / 两次镜像及运行 JAR 身份已独立核对，原 `require_no_swap=true` 资源守卫通过：峰值 872,595,456 B / PID 186，2 CPU / 2 GiB / 256 PID / 零 swap，触限 / OOM / PID max 为 0。Cookie 列表 0→0，生成会话退出及随后保护接口验证成立，自有容器移除报告 true；没有独立宿主剩余容器计数，不能扩大清理证据。原 58 用户报告未改变。
+
+[完整有限证据与逐文件散列](evidence/public-metadata-snapshot-details-7198c7f0-2026-10-07.json)记录 3,896 B 远程 ZIP 声明、身份、失败、资源与清理；仅重算实际下载解压的文件散列，不冒充本机重算远程 ZIP digest。独立回执 SHA-256 `139f4758b353feed1e267a83cb672ec5ddc981c498df2ac16b1e158079f65cba`。旧红灯保留，不自动重放可能有副作用的书源脚本、不重试同条件、不吞错或放宽门禁。结果文档待下一个有意义的源码增量一起提交，不为纯结果回填重启全量构建。
+
+本结果随[生成详情三方门禁增量](GENERATED-METADATA-THREE-WAY-2026-10-07.md)一起提交，不单独触发纯结果文档构建。该增量的历史两侧已实际观察，不代表真实会话或内置侧已通过。
+
 匿名起点空元数据、真实认证及原 JAR / 旧远程 / 内置的真实会话三方仍未完成；正文、生产和长期高核数容量没有新增接受证据。结构分类最多缩小排查范围，不会自动修复业务、放宽防护或绕过验证码。原红灯和旧 UTF-8 请求差异保留。
 
 回滚仅撤销可选 `bounded-dom-details` 枚举、`--snapshot-details` 规则及配套测试；原 `bounded-dom` / `snapshot-only`、默认八布尔值、8 秒脚本、生成详情门禁和下载修复均保留。没有数据迁移，不删除用户文件或原 JAR，也不重置工作区。

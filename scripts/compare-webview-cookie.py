@@ -7,6 +7,7 @@ isolation. The safe mode launches only the restored JAR.
 
 import argparse
 import hashlib
+import importlib.util
 import http.cookiejar
 import json
 import os
@@ -27,6 +28,14 @@ ENCODING_BODY = '{"query":"黎明之剑𠮷😀 + & %","note":"中文 UTF-8"}'
 ENCODING_BOOK = "WebView编码书𠮷😀 + & %"
 ENCODING_SCRIPT = ("document.documentElement.outerHTML.replace('WebView编码原始书','" +
                    ENCODING_BOOK + "')")
+
+
+def metadata_helper():
+    spec = importlib.util.spec_from_file_location("three_way_metadata",
+        Path(__file__).with_name("reader_metadata_differential.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def encoding_request_fields():
@@ -67,10 +76,12 @@ def sha256(path):
 
 
 class Fixture(ThreadingHTTPServer):
-    def __init__(self, address, archived_renderer=False, exercise_encoding=False):
+    def __init__(self, address, archived_renderer=False, exercise_encoding=False, exercise_metadata=False):
         super().__init__(address, FixtureHandler)
         self.archived_renderer = archived_renderer
         self.exercise_encoding = exercise_encoding
+        self.metadata = metadata_helper() if exercise_metadata else None
+        self.metadata_requests = []
         self.calls = []
         self.script_sources = []
         self.request_fields = []
@@ -81,6 +92,7 @@ class Fixture(ThreadingHTTPServer):
             self.calls.clear()
             self.script_sources.clear()
             self.request_fields.clear()
+            self.metadata_requests.clear()
 
     def snapshot(self):
         with self.lock:
@@ -97,6 +109,8 @@ class Fixture(ThreadingHTTPServer):
 
 class FixtureHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.server.metadata is not None and self.server.metadata.serve(self):
+            return
         if not self.server.archived_renderer or not self.path.startswith("/search"):
             self.send_error(404)
             return
@@ -226,9 +240,14 @@ def require_verified_private_loopback():
 
 def run_jar(java, jar, workdir, port, fixture_base, fixture,
             exercise_script=False, exercise_post=False, renderer_base=None,
-            camoufox_python=None, include_data=False, exercise_encoding=False, failure_report=None):
+            camoufox_python=None, include_data=False, exercise_encoding=False, failure_report=None,
+            exercise_metadata=False, metadata_clock_contract=False):
     if exercise_encoding and not (renderer_base and exercise_script and exercise_post and include_data):
         raise SystemExit("Encoding probe requires actual isolated renderer and full script/POST results")
+    if exercise_metadata and not (renderer_base and exercise_script and exercise_post and include_data):
+        raise SystemExit("Metadata probe requires actual isolated renderer and full script/POST results")
+    if metadata_clock_contract and not exercise_metadata:
+        raise SystemExit("Metadata clock contract requires actual metadata execution")
     if renderer_base is not None or camoufox_python is not None:
         require_verified_private_loopback()
     base = f"http://127.0.0.1:{port}"
@@ -261,6 +280,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     probes = []
     last_search_response = None
+    metadata = None
+    metadata_calls = 0
     try:
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
@@ -367,14 +388,38 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             probes.append({"status": result["status"], "isSuccess": True,
                            "errorMsg": result["errorMsg"], "count": len(books),
                            "data": books, "returnData": result["returnData"]})
+        if exercise_metadata:
+            helper = fixture.metadata
+            definition = helper.source_definition(fixture_base)
+            require_success(opener, base, "/reader3/saveBookSource", definition)
+            saved = require_success(opener, base, "/reader3/getBookSource",
+                {"bookSourceUrl": definition["bookSourceUrl"]})["data"]
+            roundtrip = helper.source_roundtrip(saved, fixture_base)
+            if not roundtrip["passed"]:
+                raise RuntimeError("Generated metadata source rules were not retained")
+            metadata_calls += 1
+            started_ms = time.time_ns() // 1000000
+            status, value = request(opener, base, "/reader3/getBookInfo", helper.book_info_request(fixture_base))
+            completed_ms = time.time_ns() // 1000000
+            with fixture.lock:
+                targets = list(fixture.metadata_requests)
+            metadata = {"status": status, "returnData": value, "fixtureBase": fixture_base,
+                "sourceDefinitionRoundtrip": roundtrip, "targetRequests": targets,
+                "sourceScriptSha256": helper.SCRIPT_HASH, "diagnosticRuleSha256": helper.RULE_HASH,
+                "bookInfoApiCalls": metadata_calls}
+            if metadata_clock_contract:
+                metadata["requestWindowMs"] = {"started": started_ms, "completed": completed_ms}
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
                 "renderScriptSources": fixture.script_snapshot(),
-                "renderRequestFields": fixture.request_snapshot()}
+                "renderRequestFields": fixture.request_snapshot(),
+                **({"metadata": metadata} if exercise_metadata else {})}
     except Exception as failure:
         if failure_report is not None:
             write_report(failure_report, {"generatedOnly": True, "probeCompleted": False,
                 "failureType": type(failure).__name__, "completedSearches": probes,
                 "lastObservedSearchResponse": last_search_response,
+                **({"metadataBookInfoApiCalls": metadata_calls, "lastObservedMetadata": metadata}
+                   if exercise_metadata else {}),
                 "renderCookieHeaders": fixture.snapshot(),
                 "renderRequestFields": fixture.request_snapshot()})
         log_output.flush()
@@ -432,7 +477,7 @@ def _validate_generated_searches(result, exercise_encoding, expected_fields):
         raise RuntimeError("Three-way UTF-8 response or script encoding differs")
 
 
-def validate_remote_pair(original, remote, exercise_encoding=False):
+def validate_remote_pair(original, remote, exercise_encoding=False, exercise_metadata=False, metadata_clock_contract=False):
     for result in (original, remote):
         validate_generated_searches(result, exercise_encoding)
     if not same_json(original["searches"], remote["searches"]):
@@ -440,17 +485,23 @@ def validate_remote_pair(original, remote, exercise_encoding=False):
     if original.get("renderCookieHeaders") != [""] * (5 + int(exercise_encoding)) or \
             remote.get("renderCookieHeaders") != [""] * (5 + int(exercise_encoding)):
         raise RuntimeError("Unreviewed historical renderer target Cookie behavior")
+    if exercise_metadata:
+        metadata_helper().compare(original.get("metadata"), remote.get("metadata"), metadata_clock_contract)
+    elif metadata_clock_contract:
+        raise RuntimeError("Metadata clock contract requires metadata execution")
 
 
-def validate_three_way(original, remote, camoufox, exercise_encoding=False):
+def validate_three_way(original, remote, camoufox, exercise_encoding=False, exercise_metadata=False, metadata_clock_contract=False):
     """Compare actual target requests and full generated Reader JSON results."""
-    validate_remote_pair(original, remote, exercise_encoding)
+    validate_remote_pair(original, remote, exercise_encoding, exercise_metadata, metadata_clock_contract)
     validate_generated_searches(camoufox, exercise_encoding)
     if not same_json(original["searches"], camoufox["searches"]):
         raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
     if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", ""] + \
             ([""] if exercise_encoding else []):
         raise RuntimeError("Camoufox target Cookie replay/deletion differs")
+    if exercise_metadata:
+        metadata_helper().compare(original.get("metadata"), camoufox.get("metadata"), metadata_clock_contract)
 
 
 def validate_historical_utf8_characterization_pair(original, remote):
@@ -484,7 +535,7 @@ def validate_utf8_characterization(original, remote, camoufox):
 
 
 def wait_for_camoufox_handoff(directory, original, remote, timeout=60, exercise_encoding=False,
-                             characterize_historical_utf8=False):
+                             characterize_historical_utf8=False, exercise_metadata=False, metadata_clock_contract=False):
     """Keep this fixture alive while the host stops its owned historical renderer."""
     require_verified_private_loopback()
     if characterize_historical_utf8:
@@ -492,7 +543,7 @@ def wait_for_camoufox_handoff(directory, original, remote, timeout=60, exercise_
             raise RuntimeError("Historical UTF-8 characterization requires all six probes")
         validate_historical_utf8_characterization_pair(original, remote)
     else:
-        validate_remote_pair(original, remote, exercise_encoding)
+        validate_remote_pair(original, remote, exercise_encoding, exercise_metadata, metadata_clock_contract)
     directory.mkdir()
     with (directory / "remote-complete").open("xb"):
         pass
@@ -533,6 +584,10 @@ def main():
                         help="Also verify a synthetic WebView POST method, body, and header")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="In actual three-way mode also compare raw UTF-8 POST bytes and supplementary characters")
+    parser.add_argument("--exercise-metadata", action="store_true",
+                        help="After all five baseline cases, compare real getBookInfo using a delayed generated DOM")
+    parser.add_argument("--metadata-clock-contract", action="store_true",
+                        help="Explicit metadata mode: default clock values must be fresh in each actual API window; not literal parity")
     parser.add_argument("--characterize-historical-utf8", action="store_true",
                         help="Diagnostic only: record the exact known archived 44-byte truncation; always exits nonzero")
     parser.add_argument("--archived-renderer-base",
@@ -544,17 +599,25 @@ def main():
     args = parser.parse_args()
     if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.exercise_metadata and not (args.camoufox_python and args.original_network_isolated and
+            args.archived_renderer_base and args.exercise_script and args.exercise_post and args.phase_handoff_dir):
+        parser.error("Metadata probe requires actual isolated three-way mode and guarded handoff")
+    if args.exercise_metadata and (args.exercise_encoding or args.characterize_historical_utf8):
+        parser.error("Metadata addition does not replace or relax the separate strict UTF-8 gate")
+    if args.metadata_clock_contract and not args.exercise_metadata:
+        parser.error("Metadata clock contract requires --exercise-metadata")
     if args.characterize_historical_utf8 and not (args.exercise_encoding and args.phase_handoff_dir):
         parser.error("Historical UTF-8 characterization requires six-case mode and guarded renderer handoff")
     if args.exercise_encoding and not (args.camoufox_python and args.original_network_isolated and
             args.archived_renderer_base and args.exercise_script and args.exercise_post):
         parser.error("Encoding probe requires actual isolated three-way mode with script and POST probes")
     failure_reports = {side: args.report.with_name(args.report.stem + "." + side + "-failed.json")
-                       for side in ("original", "restored", "camoufox")} if args.exercise_encoding else {}
+                       for side in ("original", "restored", "camoufox")} if args.exercise_encoding or args.exercise_metadata else {}
     if any(path.exists() or path.is_symlink() for path in failure_reports.values()):
-        parser.error("Encoding failure report already exists; choose a new report path")
+        parser.error(("Metadata" if args.exercise_metadata else "Encoding") +
+                     " failure report already exists; choose a new report path")
     historical_observation = (args.report.with_name(args.report.stem + ".historical-observation.json")
-                              if args.exercise_encoding else None)
+                              if args.exercise_encoding or args.exercise_metadata else None)
     if historical_observation is not None and (historical_observation.exists() or historical_observation.is_symlink()):
         parser.error("Historical observation already exists; choose a new report path")
     if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
@@ -590,7 +653,8 @@ def main():
             parser.error("Camoufox/Playwright imports unavailable; refusing to start any JAR")
     fixture_port = free_port()
     fixture = Fixture(("127.0.0.1", fixture_port),
-                      archived_renderer=bool(args.archived_renderer_base), exercise_encoding=args.exercise_encoding)
+                      archived_renderer=bool(args.archived_renderer_base), exercise_encoding=args.exercise_encoding,
+                      **({"exercise_metadata": True} if args.exercise_metadata else {}))
     fixture_base = f"http://127.0.0.1:{fixture_port}"
     worker = threading.Thread(target=fixture.serve_forever, daemon=True)
     worker.start()
@@ -606,14 +670,18 @@ def main():
                                    args.exercise_script, args.exercise_post,
                                    args.archived_renderer_base,
                                    include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
-                                   failure_report=failure_reports.get("original"))
+                                   failure_report=failure_reports.get("original"),
+                                   **({"exercise_metadata": True} if args.exercise_metadata else {}),
+                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture,
                                args.exercise_script, args.exercise_post,
                                args.archived_renderer_base,
                                include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
-                               failure_report=failure_reports.get("restored"))
+                               failure_report=failure_reports.get("restored"),
+                               **({"exercise_metadata": True} if args.exercise_metadata else {}),
+                               **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
             if historical_observation is not None:
                 # Capture completed observations BEFORE the strict handoff validator.
                 # A failed pair must not lose its actual byte fields or Reader JSON;
@@ -623,21 +691,27 @@ def main():
                     "acceptanceEvaluatedAtCapture": False, "camoufoxExecutedAtCapture": False,
                     "originalJarSha256": sha256(args.original), "restoredJarSha256": sha256(args.restored),
                     "original": original, "restored": restored,
-                    "encodingProbe": {"expectedRequestFields": encoding_request_fields(),
-                                      "expectedBookName": ENCODING_BOOK},
+                    **({"encodingProbe": {"expectedRequestFields": encoding_request_fields(),
+                                          "expectedBookName": ENCODING_BOOK}} if args.exercise_encoding else {}),
+                    **({"metadataProbe": {"generatedDelayedDom": True, "actualGetBookInfo": True}}
+                       if args.exercise_metadata else {}),
                 })
             if args.camoufox_python:
                 if args.phase_handoff_dir:
                     wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored,
                                               exercise_encoding=args.exercise_encoding,
                                               **({"characterize_historical_utf8": True}
-                                                 if args.characterize_historical_utf8 else {}))
+                                                 if args.characterize_historical_utf8 else {}),
+                                              **({"exercise_metadata": True} if args.exercise_metadata else {}),
+                                              **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
                 fixture.reset()
                 camoufox = run_jar(args.java, args.restored, root / "camoufox",
                                    free_port(), fixture_base, fixture, True, True,
                                    args.archived_renderer_base, args.camoufox_python,
                                    include_data=True, exercise_encoding=args.exercise_encoding,
-                                   failure_report=failure_reports.get("camoufox"))
+                                   failure_report=failure_reports.get("camoufox"),
+                                   **({"exercise_metadata": True} if args.exercise_metadata else {}),
+                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
     finally:
         fixture.shutdown()
         fixture.server_close()
@@ -674,6 +748,12 @@ def main():
     if args.exercise_encoding:
         report["encodingProbe"] = {"charset": "UTF-8", "expectedRequestFields": encoding_request_fields(),
                                    "expectedBookName": ENCODING_BOOK, "rawTargetBodyRecorded": True}
+    if args.exercise_metadata:
+        report["metadataProbe"] = {"generatedDelayedDom": True, "actualGetBookInfo": True,
+            "sourceScriptSha256": metadata_helper().SCRIPT_HASH, "diagnosticRuleSha256": metadata_helper().RULE_HASH,
+            "realSiteMetadataOrAuthenticationProven": False,
+            "clockContractRequested": args.metadata_clock_contract,
+            "comparisonScope": "exact-static-json-and-bounded-default-clocks" if args.metadata_clock_contract else "literal-full-json"}
     if args.camoufox_python:
         report.update({"comparisonMode": "same-run-original-remote-camoufox",
                        "camoufox": camoufox,
@@ -706,7 +786,9 @@ def main():
     if args.characterize_historical_utf8:
         raise RuntimeError("Historical UTF-8 characterization complete; strict six-case parity NOT accepted")
     if args.camoufox_python:
-        validate_three_way(original, restored, camoufox, args.exercise_encoding)
+        validate_three_way(original, restored, camoufox, args.exercise_encoding,
+                           **({"exercise_metadata": True} if args.exercise_metadata else {}),
+                           **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
     expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *
                        (3 + int(args.exercise_script)) +
                        ([expected_post] if args.exercise_post else []) +

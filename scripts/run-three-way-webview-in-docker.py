@@ -198,11 +198,19 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="New directory under /var/tmp")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="Also execute the sixth generated UTF-8 POST/script/response comparison")
+    parser.add_argument("--exercise-metadata", action="store_true",
+                        help="Add generated delayed-DOM getBookInfo parity after the unchanged five baseline cases")
+    parser.add_argument("--metadata-clock-contract", action="store_true",
+                        help="Explicit metadata default-clock freshness contract; not literal timestamp equality")
     parser.add_argument("--characterize-historical-utf8", action="store_true",
                         help="Diagnostic only: preserve all sides of the known UTF-8 defect, never overall acceptance")
     args = parser.parse_args()
     if args.characterize_historical_utf8 and not args.exercise_encoding:
         parser.error("Historical UTF-8 characterization requires --exercise-encoding")
+    if args.exercise_metadata and (args.exercise_encoding or args.characterize_historical_utf8):
+        parser.error("Metadata addition does not replace or relax the separate strict UTF-8 gate")
+    if args.metadata_clock_contract and not args.exercise_metadata:
+        parser.error("Metadata clock contract requires --exercise-metadata")
     if sys.platform != "linux" or os.geteuid() != 0:
         parser.error("A root-owned Linux Docker/systemd host is required")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.runtime_image):
@@ -241,6 +249,11 @@ def main():
                   "historicalRendererStoppedBeforeCamoufox": False, "resourceSamples": []}
     if args.exercise_encoding:
         provenance["encodingProbeRequested"] = True
+    if args.exercise_metadata:
+        provenance["metadataProbeRequested"] = True
+        provenance["metadataComparisonScope"] = "exact-static-json-and-bounded-default-clocks" if args.metadata_clock_contract else "literal-full-json"
+    if args.metadata_clock_contract:
+        provenance["metadataClockContractRequested"] = True
     if args.characterize_historical_utf8:
         provenance["historicalUtf8CharacterizationRequested"] = True
     try:
@@ -309,6 +322,10 @@ def main():
                  "--camoufox-python", "/usr/bin/python3", "--phase-handoff-dir", "/results/phases"]
         if args.exercise_encoding:
             probe.append("--exercise-encoding")
+        if args.exercise_metadata:
+            probe.append("--exercise-metadata")
+        if args.metadata_clock_contract:
+            probe.append("--metadata-clock-contract")
         if args.characterize_historical_utf8:
             probe.append("--characterize-historical-utf8")
         started = time.monotonic()
