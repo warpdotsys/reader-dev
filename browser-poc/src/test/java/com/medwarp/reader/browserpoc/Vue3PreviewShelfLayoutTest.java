@@ -101,6 +101,86 @@ public class Vue3PreviewShelfLayoutTest {
         assertEquals(scenario + " group filter covered", true, geometry.get("groupTabsUncovered"));
     }
 
+    private static void verifyScrollableCustomGroups(Page page, Path directory) throws Exception {
+        page.setViewportSize(1135, 865);
+        page.mouse().move(0, 0);
+        page.evaluate("window.scrollTo(0, 0)");
+        page.locator(".group-manage").first().click();
+        List<String> names = List.of(
+                "生成分组甲用于检查横向滚动与管理按钮可达性",
+                "生成分组乙用于检查横向滚动与管理按钮可达性",
+                "生成分组丙用于检查横向滚动与管理按钮可达性",
+                "生成分组丁用于检查横向滚动与管理按钮可达性");
+        for (String name : names) {
+            // Stay within the UI's real 20-character group-name limit.
+            String allowedName = name.substring(0, 20);
+            page.locator(".group-create input.group-input").fill(allowedName);
+            page.locator(".group-create .accent-btn").click();
+            page.locator(".group-row").filter(new Locator.FilterOptions().setHasText(allowedName)).waitFor();
+        }
+        page.locator("[aria-label='分组管理'] button[title='关闭']").click();
+        page.locator("[aria-label='分组管理']").waitFor(new Locator.WaitForOptions()
+                .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
+        page.reload();
+        page.locator(".book-card").first().waitFor();
+        List<Map<String, Object>> observations = new ArrayList<>();
+        String lastName = names.get(3).substring(0, 20);
+        for (int width : new int[]{1135, 360, 320}) {
+            page.setViewportSize(width, 865);
+            page.evaluate("window.scrollTo(0, 0)");
+            Locator last = page.locator(".group-tabs .group-tab")
+                    .filter(new Locator.FilterOptions().setHasText(lastName));
+            assertEquals("Custom group persisted after reload", 1, last.count());
+            last.click();
+            assertTrue("Scrolled custom filter receives an actual click",
+                    last.getAttribute("class").contains("active"));
+            page.locator(".empty-state").waitFor();
+            // Locator.click may vertically center a legitimate scrolled tab.
+            // Keep the evidence at the page top, not underneath the sticky header.
+            page.mouse().move(0, 0);
+            page.evaluate("window.scrollTo(0, 0)");
+            page.waitForFunction("() => scrollY === 0 && document.fonts.status === 'loaded'"
+                    + " && getComputedStyle(document.querySelector('.bookshelf-page')).opacity === '1'");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> geometry = (Map<String, Object>) last.evaluate("(el,width) => {"
+                    + "const tabs=el.closest('.group-tabs'),r=el.getBoundingClientRect(),"
+                    + "t=tabs.getBoundingClientRect();"
+                    + "const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);"
+                    + "const controls=[...document.querySelectorAll('.group-manage')];"
+                    + "const uncovered=c => {const b=c.getBoundingClientRect(),"
+                    + "h=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);"
+                    + "return b.top>=0 && b.bottom<=innerHeight && (h===c || c.contains(h));};"
+                    + "return {width,scrollY,tabCount:tabs.children.length,scrollable:tabs.scrollWidth>tabs.clientWidth,"
+                    + "scrolled:tabs.scrollLeft>0,lastTabInsidePane:r.left>=t.left-1 && r.right<=t.right+1,"
+                    + "lastTabUncovered:hit===el || el.contains(hit),controlsUncovered:controls.every(uncovered),"
+                    + "documentFits:document.documentElement.scrollWidth<=document.documentElement.clientWidth};}", width);
+            observations.add(geometry);
+            Files.writeString(directory.resolve("vue3-shelf-layout-generated-custom-groups.json"),
+                    (String) page.evaluate("values => JSON.stringify({schemaVersion:1,"
+                            + "scope:'generated persisted custom group scrolling; not production groups',"
+                            + "observations:values})", observations), StandardCharsets.UTF_8);
+            page.screenshot(new Page.ScreenshotOptions().setPath(directory.resolve(
+                    "vue3-shelf-layout-generated-custom-groups-" + width + ".png")));
+            assertEquals(9, ((Number) geometry.get("tabCount")).intValue());
+            assertEquals(0, ((Number) geometry.get("scrollY")).intValue());
+            for (String key : List.of("scrollable", "scrolled", "lastTabInsidePane",
+                    "lastTabUncovered", "controlsUncovered", "documentFits")) {
+                assertEquals("Custom groups width=" + width + " " + key + ": " + geometry,
+                        true, geometry.get(key));
+            }
+            // A scrolled filter pane must not interfere with the adjacent action.
+            page.locator(".group-manage").first().click();
+            page.locator(".group-row").filter(new Locator.FilterOptions().setHasText(lastName)).waitFor();
+            page.locator("[aria-label='分组管理'] button[title='关闭']").click();
+            page.locator("[aria-label='分组管理']").waitFor(new Locator.WaitForOptions()
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.DETACHED));
+            page.locator(".group-tabs .group-tab").first().click();
+            page.locator(".book-card").first().waitFor();
+            assertTrue("All restores generated books after scrolling back",
+                    page.locator(".group-tabs .group-tab").first().getAttribute("class").contains("active"));
+        }
+    }
+
     @Test(timeout = 180000)
     public void hiddenAndHoveredPreviewsStayInsideShelfAtAllDensities() throws Exception {
         String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
@@ -208,6 +288,7 @@ public class Vue3PreviewShelfLayoutTest {
                         }
                     }
                 }
+                verifyScrollableCustomGroups(page, evidence);
             } finally {
                 browser.close();
             }

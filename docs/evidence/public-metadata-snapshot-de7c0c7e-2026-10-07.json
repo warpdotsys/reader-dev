@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "scope": "anonymous snapshot-only real metadata failure; guards passing is not site acceptance",
+  "probeSourceHead": "e5cc2ba84fd396cd3ca88f69bc5a3c204058d318",
+  "run": {"id": 37574905299, "status": "completed", "conclusion": "failure"},
+  "artifactId": 11462746116,
+  "sourceNativeRun": 37484590448,
+  "sourceNativeHead": "de7c0c7ece2d6d2535b44e4e33caef85826eab3e",
+  "testedImageRevision": "bed59dc85d0315fb657c9060968d503606a62de6",
+  "testedImageId": "sha256:2805f85f5ea96cdd831ffed410dfeb7066860ab15dfebdd55ac2f904781f971d",
+  "testedJarSha256": "7848cc5e367e0872c2ac07b520698a1b7ec0a486d3219ec8df1e09f07af17d33",
+  "captureMode": "snapshot-only",
+  "metadataDomWaitBudgetMs": 0,
+  "bookInfoApiCalls": 1,
+  "requestSeconds": 6.012,
+  "httpStatus": 200, "isSuccess": true, "errorMsgEmpty": true,
+  "dataIsObject": true, "nameMatches": false, "authorMatches": false,
+  "coverHasExpectedPublicOrigin": false, "metadataPassed": false,
+  "sourceSaveReadbackAllSixFieldsPassed": true,
+  "snapshotDiagnostics": {
+    "authorSelectorPresent": false, "bodyHasExpectedAuthor": false,
+    "bodyHasExpectedBookTitle": false, "bodyHasSafetyPhrase": false,
+    "bodyHasText": false, "captchaContainerPresent": false,
+    "coverSelectorPresent": false, "nameSelectorPresent": false
+  },
+  "workerFailureDiagnosticRecords": 0,
+  "workerDiagnosticTruncated": false,
+  "privateNetworkGuardEnabled": true, "runtimeUid": 10001, "publishedPorts": 0,
+  "processMonitorPassed": true, "defaultBrowserProcessObserved": true,
+  "originalResourceGuardIndependentlyPassed": true,
+  "budget": {
+    "cpuCount": 2, "memoryMaxBytes": 2147483648, "pidsMax": 256,
+    "swapMaxBytes": 0, "swapCurrentBytes": 0,
+    "memoryPeakBytes": 910913536, "pidsPeak": 187, "memoryOomAndPidLimitEvents": 0
+  },
+  "cookieRowsBefore": 0, "cookieRowsAfter": 0,
+  "generatedCookieSessionRevokedVerified": true,
+  "legacyLogout": {"httpStatus": 200, "isSuccess": true, "dataIsNeedLogin": true, "errorMsgEmpty": true},
+  "protectedFollowup": {"httpStatus": 200, "isSuccess": false, "dataIsNeedLogin": true, "errorMsgEmpty": false},
+  "cleanup": {"ownedContainerRemoved": true, "probeExit": 1},
+  "strictJsonFilesChecked": 9,
+  "publicReportSha256": "190118a902957323aa4ffee5c77c14c182b00ee6591b2314e43fdaf960bbdca4",
+  "reportManifest": {
+    "algorithm": "SHA256 of case-sensitive sorted relative/path + space + SHA256(file) + newline; UTF-8 slash paths",
+    "files": 9, "bytes": 4729, "sha256": "ddc8f98b479a07aa77b4c5f46be32f7895795527cca06012d6d8f0382b4f7484"
+  },
+  "boundaries": {
+    "rawErrorHtmlCookieMetadataValuesPersisted": false,
+    "originalHtmlEmptyProven": false, "visibleCaptchaProven": false,
+    "uniqueRootCauseProven": false, "realCredentialsImported": false,
+    "realAuthenticationProven": false, "allDeviceTokenRevocationProven": false,
+    "chapterBodyRequested": false, "originalJarOrArchivedParity": false,
+    "newE5ccImageAcceptedByThisProbe": false, "productionChanged": false
+  }
+}

@@ -24,6 +24,8 @@
 
 浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。完整镜像默认界面为 Vue 3，保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变。`de7c0c7e` 自己的镜像构建、重载、发布导入和默认入口已独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)，不覆盖随后新增的手机布局修复。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
 
+2026-10-07 后续手机分组遮挡修复 `e5cc2ba8` 的四条托管工作流／双架构六作业及小报告也已独立验收；新增长自定义组滚动／点击仅本机验收，新断言 hosted 待验，见[自己的界面证据与回退](docs/SHELF-MOBILE-CONTROLS-2026-10-07.md)。[起点 snapshot-only 实站专项](docs/PUBLIC-METADATA-IMAGE-2026-10-06.md)仍为成功壳／空元数据红灯，不能以普通 CI 成功发“已修好”的版本；本轮没有切换生产。
+
 隔离本机测试可加 `--reader.server.bindAddress=127.0.0.1`，让 HTTP 服务仅监听回环地址；默认值仍为 `0.0.0.0`，不改变现有容器反向代理的连通性。仅改监听地址不会隔离 `storage/data`，仍须另设全新 `reader.app.workDir`。
 
 ## 新许可证中心

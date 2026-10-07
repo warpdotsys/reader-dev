@@ -214,6 +214,8 @@ jobs:
             ${{ runner.temp }}/vue3-shelf-layout-1135.png
             ${{ runner.temp }}/vue3-shelf-layout-generated-page-top-*.png
             ${{ runner.temp }}/vue3-shelf-layout-generated-geometry.json
+            ${{ runner.temp }}/vue3-shelf-layout-generated-custom-groups.json
+            ${{ runner.temp }}/vue3-shelf-layout-generated-custom-groups-*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve generated late-session response screenshots

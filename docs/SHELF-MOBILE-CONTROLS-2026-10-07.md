@@ -23,8 +23,16 @@
 
 可重复构建：在 JDK 11 和锁定 Node 依赖的干净检出上，先 `npm ci --prefix web-vue3`、`npm run build --prefix web-vue3`，再 `./gradlew -PreaderWebUi=vue3 bootJar --max-workers=2 --no-daemon`；Windows 用 `gradlew.bat`。浏览器回归用全新回环 Reader／夹具和显式隔离变量，执行 `./gradlew -p browser-poc test --tests com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest --no-daemon --max-workers=2`；必须检查 XML 无跳过及 18 组几何，不能指向生产或 18931。
 
+## 本修改自己的托管验收与长分组增量
+
+源码 `e5cc2ba8`、PR 受测合并快照 `ea3d709f...` 的 [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/37574666793)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37574666764)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37574666765)、[双架构原生构建／重载／发布导入](https://github.com/warpdotsys/reader-dev/actions/runs/37574666745)已全部完成成功，原生六作业均实际执行。18 组页首几何逐项复查通过，360px 托管截图已目视。19 份 Vue 核心／子路径 XML 无失败／错误／跳过；两份默认 Camoufox 各 18 项、文档 helper 各 3 项及 Chromium 23 项通过原守卫。Java 161 项中 132 实际通过、29 门控跳过，不算全部引擎实际执行。
+
+24 份 publisher JSON 精确文件集合、严格 JSON、四组身份、两架构共享 JAR、5 份默认 UI／异步 API／资源报告已独立验证。最高短时峰值 847,716,352 B、PID 205，触限／OOM／实际 swap 均为 0，但配置允许 1 GiB swap。原生共享 JAR 为 `bbd52660...`，普通完整镜像独立构建 JAR 为 `9752bdb2...`，不宣称跨 workflow 字节一致。没有下载本机多 GiB 镜像，归档散列由 CI 记录。
+
+随后补上此前缺失的长自定义分组回归，只改测试和制品保存，不改已验收 CSS。新随机账号通过界面创建四个 20 字分组，重载后共 9 个标签；1135／360／320px 实际滚动并点击最后一项、打开管理、再切回全部恢复 15 本生成书籍，三组无横向文档溢出／操作遮挡。页首 `scrollY=0` 的最终回归 24.084 秒、1 项、0 失败／错误／跳过，320px 图已目视；原 18 组及悬浮检查仍通过。Java／夹具自有句柄停止，测试端口消失。新长分组断言自身的 hosted 执行仍待后续提交验收，不倒填为 `e5cc2ba8` 已执行此新增断言。[准确制品、守卫、散列与后续本机范围](evidence/shelf-mobile-hosted-e5cc2ba8-2026-10-07.json)。历史失败／通过报告原样保留。
+
 ## 尚未验证、已知问题与回退
 
-此修复自己的托管构建／镜像待验收；`de7c0c7e` 的默认入口证据不验收本次 CSS。865px 高度和鼠标点击不是实体手机、触摸／软键盘或全部短视口验收；长自定义分组实际滚动未专项测试。真实起点解析／认证三方、原 JAR 新样本差分及生产发布未由本次修复完成。
+此修复自己的托管构建／镜像已按上节验收，不借用 `de7c0c7e` 的绿灯。865px 高度和鼠标点击不是实体手机、触摸／软键盘或全部短视口验收；长分组只证明四个生成的 20 字分组／三个视口，不证明所有组数和所有名称。真实起点解析仍失败，认证三方、原 JAR 新样本差分及生产发布未由本次修复完成。
 
 无数据迁移、无字节码补丁。需要回退时，在干净维护检出撤回这组响应式 CSS 并重建，保留失败回归和证据；不要在用户脏工作区 reset／checkout。保留 Vue 2 的候选镜像可显式选择 `READER_APP_WEBUI=vue2`；本轮不修改生产环境，不把回退写成已执行生产切换。
