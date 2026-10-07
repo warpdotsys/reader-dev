@@ -16,6 +16,14 @@ const nativeSmoke = read('scripts/smoke-native-release.sh')
 const nativeImporter = read('scripts/import-native-release.sh')
 const browserWorkflow = read('.github/workflows/browser-image.yml')
 const artifactRegression = read('.github/workflows/artifact-download-regression.yml')
+if (!artifactRegression.includes('run: bash scripts/smoke-native-release.sh amd64 4.0.7 "$ORIGINAL_REVISION" transferred download-regression-reports')) {
+  throw new Error('existing large artifact regression must execute the accepted transferred smoke stage')
+}
+if (!artifactRegression.includes('test ! -e download-regression-reports') ||
+    !artifactRegression.includes('path: download-regression-reports/*.json') ||
+    /(?:tee|cp|install -d|path:)\s+reports\//.test(artifactRegression)) {
+  throw new Error('existing artifact regression must use fresh isolated receipts, never repository reports')
+}
 const buildContract = nativeWorkflow + '\n' + nativeSmoke
 const compose = read('deploy/reader-pro/compose.production.yaml')
 const dockerfile = read('deploy/reader-pro/Dockerfile')

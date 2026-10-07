@@ -40,7 +40,8 @@ jobs:
             jq -e '[.jobs[] | select(.name == "Build and test native amd64 image" and .conclusion == "success")] | length == 1' >/dev/null
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11479257168" |
             jq -e --arg revision "$ORIGINAL_REVISION" '(.expired == false) and (.size_in_bytes == 2174844316) and (.name == "reader-tested-native-amd64-" + $revision)' >/dev/null
-          install -d reports
+          test ! -e download-regression-reports
+          install -d download-regression-reports
       - name: Download original shared JAR without rebuilding
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
@@ -63,19 +64,19 @@ jobs:
           test "$(sha256sum imported/metadata.json | awk '{print $1}')" = 'c51a877c587ca61943ccafe6c3493a75292638d76fad7b1113cecdf58eb86337'
           (cd dist && sha256sum -c SHA256SUMS)
           node scripts/release-native-artifacts.mjs check amd64 4.0.7 "$ORIGINAL_REVISION" dist imported |
-            tee reports/PRELOAD_IDENTITY.json
+            tee download-regression-reports/PRELOAD_IDENTITY.json
           docker load --input imported/reader-image.tar.gz
           docker image inspect reader-pro:camoufox-smoke-amd64 > imported/image-inspect.json
           node scripts/release-native-artifacts.mjs loaded amd64 4.0.7 "$ORIGINAL_REVISION" dist imported |
-            tee reports/IMAGE_IDENTITY.json
-          cp imported/metadata.json reports/metadata.json
+            tee download-regression-reports/IMAGE_IDENTITY.json
+          cp imported/metadata.json download-regression-reports/metadata.json
       - name: Actually run the unchanged image with generated accounts under the original budget
-        run: bash scripts/smoke-native-release.sh amd64 4.0.7 "$ORIGINAL_REVISION" artifact-regression reports
+        run: bash scripts/smoke-native-release.sh amd64 4.0.7 "$ORIGINAL_REVISION" transferred download-regression-reports
       - name: Preserve only finite generated receipts, not archives or book bodies
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: existing-amd64-download-regression-${{ github.sha }}
-          path: reports/*.json
+          path: download-regression-reports/*.json
           if-no-files-found: warn
           retention-days: 14
