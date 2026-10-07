@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-07",
+  "baseCommit": "6e4ad4897a9b52c5893d082373b6fa9231cb5d35",
+  "scope": "new Vue3 sources on historical isolated restored backend; not a new all-in-one release acceptance",
+  "backendJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+  "browser": { "name": "Chromium via fresh installed Chrome headless context", "version": "154.0.8037.93", "usesUserProfile": false, "productCamoufoxAccepted": false },
+  "input": { "generatedOnly": true, "paragraphCharacters": 5001, "changedLastCharacter": true, "syntheticWaveBytes": 128044, "interceptsTtsHttp": true, "externalVoiceProviderAccepted": false },
+  "frontend": { "tests": 256, "pass": 256, "skip": 0, "fail": 0, "typecheckPassed": true, "viteBuildPassed": true, "ttsCacheUnitTests": 14, "numericSettingUnitTests": 6, "staticRoutesRegistered": 92 },
+  "releaseContracts": { "staticGuardTests": 49, "allThreeSuitesTests": 82, "pass": 82, "skip": 0 },
+  "localUi": { "fixture": "build/tts-cache-ui-20261007-c", "tests": 1, "skip": 0, "fail": 0, "errors": 0, "seconds": 25.101, "screenshotsViewed": 4, "viewport": [1280,720], "allViewportsAccepted": false },
+  "assertedJourney": { "aFirstRequests": 1, "aRepeatRequests": 1, "aChangedTailRequests": 2, "bSameTextRequests": 3, "bBeforeClearEntries": 1, "bAfterClearEntries": 0, "aAfterBClearEntries": 2, "aReturnedRequests": 3, "legacyV1Preserved": true, "defaultVolumeDisplay": "+0%" },
+  "priorResults": [
+    { "path": "build/tts-cache-ui-20261007-a/first-browser-failure.xml", "sha256": "723bf1b41b912fa6227b2ef040ad50212b18f0c0ba3b97f58c32ba64c088ab95", "accepted": false, "reason": "test did not close the real TTS overlay before editing" },
+    { "path": "build/tts-cache-ui-20261007-a/second-browser-failure.xml", "sha256": "1cb1612c4ecb902c93db8ff59528129f08aa4f1cca2f176d0f02d77d6f0b7b64", "accepted": false, "reason": "test selected non-existent pop-close" },
+    { "path": "build/tts-cache-ui-20261007-a/third-browser-failure.xml", "sha256": "5f14fd0f053172e5e48432705716cd7d5db1fee21aa757cb92c91e4708d99536", "accepted": false, "reason": "test incorrectly required cache name deletion instead of scoped zero entries" },
+    { "path": "build/tts-cache-ui-20261007-b/browser-passed.xml", "sha256": "e8c5d322cac73b0cdcfabbb1a792a6a92c68a68c27440145bb34207764710326", "accepted": false, "tests": 1, "skip": 1, "reason": "misnamed original skipped report; wrong browser configuration; prior success claim withdrawn" }
+  ],
+  "artifacts": [
+    { "path": "build/tts-cache-ui-20261007-c/browser-result.xml", "sha256": "7ffa029f289b93c3a85ef96c7a739b251c517ba7279b24bc31a1c036eb115d62", "bytes": 519 },
+    { "path": "build/tts-cache-ui-20261007-c/frontend-tests.tap", "sha256": "be9057117e98eb0971b765c6bdb8a1c258364ebe8e96d77fc0f945e0a464dc68" },
+    { "path": "build/tts-cache-ui-20261007-b/dist/index.html", "sha256": "6f33c602e5b67658d5e8bac45424f281d02d16d3b6040cfc16e142130a31b886", "bytes": 634 },
+    { "path": "build/tts-cache-ui-20261007-b/dist/static/ReaderView-CyJNL6Od.js", "sha256": "11fd0940a4dacc1330f518c7082bb6ee30a045b1c3dafa2e5c39a30254fe0281", "bytes": 139220 },
+    { "path": "build/tts-cache-ui-20261007-b/dist/static/SettingsView-DtHWBfRD.js", "sha256": "5c2648539c6aa1cfb12ff91fef3e7a6019e4057e7ca46a422fa735ea843c52e4", "bytes": 63176 },
+    { "path": "build/tts-cache-ui-20261007-c/tts-cache-generated-a-playing.png", "sha256": "aadf09a8c9aebfe1306f556ec374ab82d31de80cd12b93da2c72133e9720e0f1", "bytes": 67286 },
+    { "path": "build/tts-cache-ui-20261007-c/tts-cache-generated-b-settings.png", "sha256": "a6aa42e30f0238b0e2d4c0ab8d380ae1b5de721d9a81d681887cde27cb17d0f5", "bytes": 99413 },
+    { "path": "build/tts-cache-ui-20261007-c/tts-cache-generated-b-cleared.png", "sha256": "dde93ef1e8398f75167a8114b8882abea4d62688ad22cd91464a97e5088fe009", "bytes": 102275 },
+    { "path": "build/tts-cache-ui-20261007-c/tts-cache-generated-a-returned.png", "sha256": "451a33d99c9b94c4da20a0f85223f579a5dc84745a735ad66dc387a0934a557e", "bytes": 68062 }
+  ],
+  "sourceFiles": [
+    { "path": ".github/workflows/vue3-preview.yml", "sha256": "77a714545c798d1fe49da5348470da78fcf3ab97b49c02622afb449f32ecbd6a" },
+    { "path": "browser-poc/src/test/java/com/medwarp/reader/browserpoc/Vue3PreviewTtsCacheIsolationTest.java", "sha256": "b52a3093432104c821ab373c15648c04899914841ab80d6f470c61c8ee1e98f7" },
+    { "path": "web-vue3/src/utils/ttsCache.ts", "sha256": "3d9ed3da4c1943e4a9d6e2dc7f502086d66aecea050e900d9a0e057964a70217" },
+    { "path": "web-vue3/src/utils/ttsCache.test.ts", "sha256": "d8b69d8f19c6be1a935356f1aae8bf31e0e059c5a58bd6370f5090f95da45daf" },
+    { "path": "web-vue3/src/utils/readerNumericSetting.ts", "sha256": "758f0d6d36cd81e7dcc13c5312d7ebc4c2085f3bc45a45a6cf1f060fad3d7741" },
+    { "path": "web-vue3/src/utils/readerNumericSetting.test.ts", "sha256": "2ac2b3edcc73b7b5d4103b585f04d8b131154836b8cf6f35f3f7a789724c83d4" },
+    { "path": "web-vue3/src/views/ReaderView.vue", "sha256": "0fb4274078a5c069243c175399a83fae9e77b69235b564806a59c9d1671e572e" },
+    { "path": "web-vue3/src/views/SettingsView.vue", "sha256": "e6d7490f3a05ee94a873eb6f0a8fac8929bf94d9004c5f0b8883e680a6f23886" }
+  ],
+  "cleanup": { "ownedProcessesExited": [[4632,68108,60680],[89828,84212,79476],[78048,86792,79736]], "ownedListenPortsRemaining": [], "userReaderPort": 18931, "userReaderPid": 61244, "userReaderUntouched": true, "userReportsUnchanged": 58 },
+  "hostedOwnIncrementAccepted": false,
+  "productionChanged": false,
+  "released": false,
+  "fullGoalComplete": false
+}

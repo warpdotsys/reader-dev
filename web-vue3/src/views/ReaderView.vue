@@ -16,6 +16,7 @@ import { saveBook } from '@/api/bookshelf'
 import { getHttpTtsList } from '@/api/httpTts'
 import { get, post } from '@/api/request'
 import { readerRequestContext } from '@/api/requestContext'
+import { StaleSessionResponseError } from '@/api/requestSession'
 import { tokenAuthenticationParams } from '@/utils/tokenAuthentication'
 import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
@@ -23,6 +24,7 @@ import EpubIframe from '@/components/EpubIframe.vue'
 import { ProgressWriteBarrier } from '@/utils/progressBarrier'
 import { loadEpubDoc, destroyEpubDoc, epubChapterPath, epubFragment, epubNavigationIndex, type EpubDoc } from '@/utils/epubLoader'
 import { getCachedTts, putCachedTts, ttsCacheKey } from '@/utils/ttsCache'
+import { parseReaderNumericSetting } from '@/utils/readerNumericSetting'
 import { getLocalChapter, listLocalChapterUrls, localChapterCacheScope, saveLocalChapter } from '@/utils/readerLocalCache'
 import {
   loadCustomFont,
@@ -90,9 +92,11 @@ interface ReaderProgress {
 /* ---------------- 设置读取/持久化小工具 ---------------- */
 
 function loadSetting(key: string, min: number, max: number, fallback: number, step = 1): number {
-  const raw = Number(localStorage.getItem(key))
-  if (Number.isNaN(raw) || raw < min || raw > max) return fallback
-  return Math.round(raw / step) * step
+  try {
+    return parseReaderNumericSetting(localStorage.getItem(key), min, max, fallback, step)
+  } catch {
+    return fallback
+  }
 }
 function persist(key: string, value: unknown) {
   try {
@@ -1957,12 +1961,15 @@ const ttsLocaleGroups = computed(() => {
 
 /** 首次打开面板时加载语音列表 + HttpTTS 列表（记忆值失效时回退默认） */
 async function loadTtsOptions() {
+  const context = readerRequestContext()
   if (!ttsVoicesLoaded.value) {
     ttsVoicesLoaded.value = true
     try {
       const res = await getTtsVoices()
+      if (!context.isCurrent()) return
       ttsVoices.value = res.data ?? []
     } catch {
+      if (!context.isCurrent()) return
       ttsVoices.value = []
     }
     if (ttsVoices.value.length > 0 && !ttsVoices.value.some((v) => v.value === ttsVoice.value)) {
@@ -1973,8 +1980,10 @@ async function loadTtsOptions() {
     ttsHttpLoaded.value = true
     try {
       const res = await getHttpTtsList()
+      if (!context.isCurrent()) return
       ttsHttpList.value = res.data ?? []
     } catch {
+      if (!context.isCurrent()) return
       ttsHttpList.value = []
     }
     if (ttsHttpList.value.length > 0) {
@@ -2006,14 +2015,16 @@ async function startTts() {
     ElMessage.info('本章暂无内容可朗读')
     return
   }
+  const context = readerRequestContext()
+  const seq = ++ttsLoadSeq
   await loadTtsOptions()
+  if (readerDisposed || seq !== ttsLoadSeq || !context.isCurrent()) return
   const audio = ttsAudioRef.value
   if (!audio) return
   if (ttsEngine.value === 'http' && !ttsHttpName.value) {
     ElMessage.info('请先在设置页添加 HttpTTS 源')
     return
   }
-  const seq = ++ttsLoadSeq
   ttsState.value = 'loading'
   let blob: Blob
   try {
@@ -2165,9 +2176,15 @@ function onTtsError() {
 
 /**
  * P0-3b 边听边缓存合成：先查 Cache API，命中直接返回；
- * 未命中走网络合成并后台写入缓存（键含 engine/voice/rate/pitch/text 哈希）。
+ * 未命中走网络合成并后台写入捕获的账号作用域（全文与全部参数摘要）。
  */
 async function synthWithCache(text: string): Promise<Blob> {
+  const context = readerRequestContext()
+  const scope = localCacheScope.value
+  const seq = ttsLoadSeq
+  const isCurrent = () => !readerDisposed && seq === ttsLoadSeq && context.isCurrent()
+    && scope === localCacheScope.value
+  const assertCurrent = () => { if (!isCurrent()) throw new StaleSessionResponseError() }
   const params = {
     engine: ttsEngine.value,
     voice: ttsEngine.value === 'http' ? (ttsHttpName.value || '') : ttsVoice.value,
@@ -2176,8 +2193,10 @@ async function synthWithCache(text: string): Promise<Blob> {
     volume: ttsVolumeParam.value,
     style: ttsStyle.value || undefined,
   }
-  const key = ttsCacheKey(text, params)
-  const cached = await getCachedTts(key)
+  const key = await ttsCacheKey(scope, text, params)
+  assertCurrent()
+  const cached = await getCachedTts(key, isCurrent)
+  assertCurrent()
   if (cached && cached.size > 0) return cached
   const blob = await synthesizeTts({
     text,
@@ -2186,10 +2205,11 @@ async function synthWithCache(text: string): Promise<Blob> {
     pitch: params.pitch,
     volume: params.volume,
     style: params.style,
-    engine: ttsEngine.value as 'edge' | 'http',
-    httpName: ttsEngine.value === 'http' ? ttsHttpName.value : undefined,
+    engine: params.engine as 'edge' | 'http',
+    httpName: params.engine === 'http' ? params.voice : undefined,
   })
-  if (blob.size > 0) putCachedTts(key, blob)
+  assertCurrent()
+  if (blob.size > 0) void putCachedTts(key, blob, isCurrent)
   return blob
 }
 
@@ -2202,14 +2222,16 @@ let ttsSelectionMode = false
 async function speakText(text: string) {
   const clipped = text.slice(0, TTS_MAX_CHARS)
   if (!clipped.trim()) return
+  const context = readerRequestContext()
+  const seq = ++ttsLoadSeq
   await loadTtsOptions()
+  if (readerDisposed || seq !== ttsLoadSeq || !context.isCurrent()) return
   const audio = ttsAudioRef.value
   if (!audio) return
   if (ttsEngine.value === 'http' && !ttsHttpName.value) {
     ElMessage.info('请先在设置页添加 HttpTTS 源')
     return
   }
-  const seq = ++ttsLoadSeq
   ttsState.value = 'loading'
   let blob: Blob
   try {
@@ -3055,6 +3077,8 @@ watch([localCacheScope, () => store.accessToken], () => {
   chapterHtml.value = ''
   cachedChapterIndexes.value = new Set()
   chapterWordCounts.value = {}
+  ttsHttpLoaded.value = false
+  ttsHttpList.value = []
   stopTts()
 }, { flush: 'sync' })
 

@@ -29,6 +29,8 @@ import {
   type BgMode,
 } from '@/utils/readerBg'
 import { clearTtsCache, ttsCacheStats } from '@/utils/ttsCache'
+import { localChapterCacheScope } from '@/utils/readerLocalCache'
+import { readerRequestContext } from '@/api/requestContext'
 import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/api/backup'
 import { getSystemInfo } from '@/api/system'
 import { deleteTxtTocRule, getTxtTocRules, importDefaultTxtTocRules, saveTxtTocRule } from '@/api/txtTocRules'
@@ -61,6 +63,7 @@ import type { HttpTts, SystemInfo, TxtTocRule } from '@/types'
 
 const router = useRouter()
 const store = useUserStore()
+const ttsCacheScope = computed(() => localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL))
 
 /** Java/Kotlin 的 getSystemInfo 不提供版本号，前端版本来自 package.json。 */
 const sysInfo = ref<SystemInfo | null>(null)
@@ -1025,15 +1028,28 @@ const ttsCacheCount = ref(0)
 const ttsCacheBytes = ref(0)
 
 async function loadTtsCacheInfo() {
-  const st = await ttsCacheStats()
+  const context = readerRequestContext()
+  const st = await ttsCacheStats(ttsCacheScope.value, context.isCurrent)
+  if (!context.isCurrent()) return
   ttsCacheCount.value = st.count
   ttsCacheBytes.value = st.bytes
 }
-void loadTtsCacheInfo()
+watch([ttsCacheScope, () => store.accessToken], () => {
+  ttsCacheCount.value = 0
+  ttsCacheBytes.value = 0
+  void loadTtsCacheInfo()
+}, { immediate: true, flush: 'sync' })
 
 async function runClearTtsCache() {
-  await clearTtsCache()
+  const context = readerRequestContext()
+  const cleared = await clearTtsCache(ttsCacheScope.value, context.isCurrent)
+  if (!context.isCurrent()) return
+  if (!cleared) {
+    ElMessage.warning('当前听书缓存不可用，未清理缓存')
+    return
+  }
   await loadTtsCacheInfo()
+  if (!context.isCurrent()) return
   ElMessage.success('已清理听书音频缓存')
 }
 
