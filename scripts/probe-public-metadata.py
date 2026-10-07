@@ -6,6 +6,7 @@ or emitted. A success envelope without the expected metadata is a failed probe.
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import http.cookiejar
 import importlib.util
 import json
@@ -31,6 +32,10 @@ PAGE_DIAGNOSTIC_KEYS = frozenset((
     "nameSelectorPresent", "authorSelectorPresent", "coverSelectorPresent",
     "bodyHasText", "bodyHasExpectedBookTitle", "bodyHasExpectedAuthor",
     "bodyHasSafetyPhrase", "captchaContainerPresent"))
+SNAPSHOT_STRUCTURE_KEYS = frozenset((
+    "rawEmpty", "rawWhitespaceOnly", "rawHtmlTagHint", "rawHeadTagHint",
+    "rawBodyTagHint", "headTitleElementPresent", "headScriptElementPresent",
+    "bodyHasChildElements", "frameElementPresent"))
 PUBLIC_SOURCE_TEMPLATE = """{
   "bookSourceUrl": "https://www.qidian.com",
   "bookSourceName": "Anonymous metadata-only probe",
@@ -57,6 +62,38 @@ PAGE_DIAGNOSTIC_RULE = """@js:(function () {
     bodyHasExpectedAuthor: text.indexOf('远瞳') >= 0,
     bodyHasSafetyPhrase: /拖动滑块|完成拼图|安全验证|访问验证|请完成验证/.test(text),
     captchaContainerPresent: doc.select('.geetest_panel,#nc_1_wrapper,#tcaptcha_transform_dy').size() > 0
+  });
+})()"""
+# Optional finite observations of the same returned string, not another browser
+# request. Raw tag regexes are hints only (comments/script text can contain them).
+# Jsoup synthesizes html/head/body nodes, so their presence in the parsed tree
+# must not be used to claim that the original response contained those tags.
+SNAPSHOT_STRUCTURE_RULE = r"""@js:(function () {
+  var raw = String(result);
+  var doc = Packages.org.jsoup.Jsoup.parse(raw);
+  var text = String(doc.body().text());
+  return JSON.stringify({
+    pageDiagnostics: {
+      nameSelectorPresent: doc.select('#bookName').size() > 0,
+      authorSelectorPresent: doc.select('.book-info-top .book-meta .author').size() > 0,
+      coverSelectorPresent: doc.select('#bookImg img').size() > 0,
+      bodyHasText: text.trim().length > 0,
+      bodyHasExpectedBookTitle: text.indexOf('黎明之剑') >= 0,
+      bodyHasExpectedAuthor: text.indexOf('远瞳') >= 0,
+      bodyHasSafetyPhrase: /拖动滑块|完成拼图|安全验证|访问验证|请完成验证/.test(text),
+      captchaContainerPresent: doc.select('.geetest_panel,#nc_1_wrapper,#tcaptcha_transform_dy').size() > 0
+    },
+    snapshotStructure: {
+      rawEmpty: raw.length === 0,
+      rawWhitespaceOnly: raw.length > 0 && raw.trim().length === 0,
+      rawHtmlTagHint: /<html\b/i.test(raw),
+      rawHeadTagHint: /<head\b/i.test(raw),
+      rawBodyTagHint: /<body\b/i.test(raw),
+      headTitleElementPresent: doc.select('head title').size() > 0,
+      headScriptElementPresent: doc.select('head script').size() > 0,
+      bodyHasChildElements: doc.body().children().size() > 0,
+      frameElementPresent: doc.select('iframe,frame').size() > 0
+    }
   });
 })()"""
 # Return only the page's own HTML. No inserted metadata, request replay, Cookie
@@ -149,7 +186,7 @@ def require_success(result):
     return value
 
 
-def page_diagnostics(raw):
+def diagnostic_json(raw):
     if not isinstance(raw, str):
         return None
     try:
@@ -170,13 +207,38 @@ def page_diagnostics(raw):
         fields = json.loads(raw, object_pairs_hook=unique_fields)
     except (ValueError, TypeError):
         return None
-    if (not isinstance(fields, dict) or set(fields) != PAGE_DIAGNOSTIC_KEYS or
-            any(type(value) is not bool for value in fields.values())):
-        return None
     return fields
 
 
-def summarize(status, value):
+def boolean_fields(value, expected):
+    if (not isinstance(value, dict) or set(value) != expected or
+            any(type(field) is not bool for field in value.values())):
+        return None
+    return value
+
+
+def page_diagnostics(raw):
+    return boolean_fields(diagnostic_json(raw), PAGE_DIAGNOSTIC_KEYS)
+
+
+def snapshot_observations(raw):
+    value = diagnostic_json(raw)
+    if not isinstance(value, dict) or set(value) != {"pageDiagnostics", "snapshotStructure"}:
+        return None, None
+    page = boolean_fields(value["pageDiagnostics"], PAGE_DIAGNOSTIC_KEYS)
+    structure = boolean_fields(value["snapshotStructure"], SNAPSHOT_STRUCTURE_KEYS)
+    if page is None or structure is None:
+        return None, None
+    return page, structure
+
+
+def validate_snapshot_mode(snapshot_details):
+    if type(snapshot_details) is not bool:
+        raise ProbeFailure("InvalidSnapshotDetailsMode")
+
+
+def summarize(status, value, snapshot_details=False):
+    validate_snapshot_mode(snapshot_details)
     success = value.get("isSuccess")
     error = value.get("errorMsg")
     data = value.get("data")
@@ -202,7 +264,7 @@ def summarize(status, value):
         cover_ok = False
     name_ok = isinstance(name, str) and name.strip() == "黎明之剑"
     author_ok = isinstance(author, str) and author.strip() == "远瞳"
-    return {
+    observation = {
         "httpStatus": status,
         "isSuccess": success if isinstance(success, bool) else None,
         "isSuccessIsBoolean": isinstance(success, bool),
@@ -222,21 +284,28 @@ def summarize(status, value):
         "passed": status == 200 and success is True and error == "" and
                   name_ok and author_ok and cover_ok,
     }
+    if snapshot_details:
+        page, structure = snapshot_observations(book.get("intro"))
+        observation["pageDiagnostics"] = page
+        observation["snapshotStructure"] = structure
+    return observation
 
 
-def source_definition():
+def source_definition(snapshot_details=False):
+    validate_snapshot_mode(snapshot_details)
     # Existing SourceAnalyzer recognizes the nested format only when ruleToc
     # is non-null. This empty format marker does not enable a chapter operation.
     source = json.loads(PUBLIC_SOURCE_TEMPLATE)
-    source["ruleBookInfo"]["intro"] = PAGE_DIAGNOSTIC_RULE
+    source["ruleBookInfo"]["intro"] = SNAPSHOT_STRUCTURE_RULE if snapshot_details else PAGE_DIAGNOSTIC_RULE
     return source
 
 
-def source_roundtrip(result):
+def source_roundtrip(result, snapshot_details=False):
+    validate_snapshot_mode(snapshot_details)
     saved = require_success(result).get("data")
     source = saved if isinstance(saved, dict) else {}
     rules = source.get("ruleBookInfo")
-    expected = source_definition()
+    expected = source_definition(snapshot_details)
     observation = {
         "dataIsObject": isinstance(saved, dict),
         "sourceUrlMatches": source.get("bookSourceUrl") == SOURCE,
@@ -298,7 +367,11 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("/verification-output"))
     parser.add_argument("--wait-dom", action="store_true",
                         help="Wait at most 8 seconds for fixed public metadata selectors, without altering the page")
+    parser.add_argument("--snapshot-details", action="store_true",
+                        help="Persist only finite structural booleans from the returned snapshot; requires --wait-dom")
     args = parser.parse_args()
+    if args.snapshot_details and not args.wait_dom:
+        raise ProbeFailure("SnapshotDetailsRequireBoundedWait")
     require_environment(args.reader_base, args.expected_revision, args.output)
     cgroup = load_helper("public_metadata_cgroup", "report-browser-cgroup.py")
     process_helper = load_helper("public_metadata_processes", "soak-bundled-browser.py")
@@ -317,6 +390,10 @@ def main():
               "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",
               "pageDiagnosticRuleRequested": True,
               "rawErrorHtmlCookieAndMetadataValuesNotPersisted": True, "passed": False}
+    if args.snapshot_details:
+        report["pageCaptureMode"] = "bounded-dom-details"
+        report["snapshotStructureRequested"] = True
+        report["snapshotStructureRuleSha256"] = hashlib.sha256(SNAPSHOT_STRUCTURE_RULE.encode("utf-8")).hexdigest()
     opener = urllib.request.build_opener(
         urllib.request.ProxyHandler({}), NoRedirect(),
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
@@ -347,16 +424,16 @@ def main():
         report["cookieRowsBefore"] = cookie_count(request_json(opener, "/getBookSourceCookie"))
         if report["cookieRowsBefore"] != 0:
             raise ProbeFailure("NonemptyFreshCookieIndex")
-        require_success(request_json(opener, "/saveBookSource", source_definition()))
+        require_success(request_json(opener, "/saveBookSource", source_definition(args.snapshot_details)))
         report["sourceDefinitionRoundtrip"] = source_roundtrip(request_json(
-            opener, "/getBookSource", {"bookSourceUrl": SOURCE}))
+            opener, "/getBookSource", {"bookSourceUrl": SOURCE}), args.snapshot_details)
         if not report["sourceDefinitionRoundtrip"]["passed"]:
             raise ProbeFailure("ProbeSourceRulesNotRetained")
         watcher.start()
         started = time.monotonic()
         report["bookInfoApiCalls"] += 1
         result = request_json(opener, "/getBookInfo", book_info_request(args.wait_dom))
-        report["metadata"] = summarize(*result)
+        report["metadata"] = summarize(*result, snapshot_details=args.snapshot_details)
         report["requestSeconds"] = round(time.monotonic() - started, 3)
         result = None
     except ProbeFailure as failure:
@@ -394,6 +471,7 @@ def main():
         report["passed"] = bool(report.get("metadata", {}).get("passed") and
             report.get("sourceDefinitionRoundtrip", {}).get("passed") and
             report.get("metadata", {}).get("pageDiagnostics") is not None and
+            (not args.snapshot_details or report.get("metadata", {}).get("snapshotStructure") is not None) and
             report["resourceGuardPassed"] and report["defaultBrowserProcessObserved"] and
             report["processMonitorPassed"] and report.get("cookieRowsAfter") == 0 and
             report.get("generatedCookieSessionRevokedVerified") and not report.get("failureCategory"))

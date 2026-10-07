@@ -28,10 +28,13 @@ class PublicMetadataPageDiagnosticTest {
     private lateinit var originalUserDir: String
     private lateinit var originalAdapter: ReaderAdapterInterface
     private lateinit var rule: String
+    private lateinit var snapshotRule: String
     private lateinit var sourceTemplate: JsonObject
     private val keys = setOf("nameSelectorPresent", "authorSelectorPresent", "coverSelectorPresent",
         "bodyHasText", "bodyHasExpectedBookTitle", "bodyHasExpectedAuthor",
         "bodyHasSafetyPhrase", "captchaContainerPresent")
+    private val snapshotKeys = setOf("rawEmpty", "rawWhitespaceOnly", "rawHtmlTagHint", "rawHeadTagHint",
+        "rawBodyTagHint", "headTitleElementPresent", "headScriptElementPresent", "bodyHasChildElements", "frameElementPresent")
 
     @Before
     fun setUp() {
@@ -39,6 +42,9 @@ class PublicMetadataPageDiagnosticTest {
         val marker = "PAGE_DIAGNOSTIC_RULE = \"\"\""
         assertEquals(2, probe.split(marker).size)
         rule = probe.substringAfter(marker).substringBefore("\"\"\"")
+        val snapshotMarker = "SNAPSHOT_STRUCTURE_RULE = r\"\"\""
+        assertEquals(2, probe.split(snapshotMarker).size)
+        snapshotRule = probe.substringAfter(snapshotMarker).substringBefore("\"\"\"")
         val sourceMarker = "PUBLIC_SOURCE_TEMPLATE = \"\"\""
         assertEquals(2, probe.split(sourceMarker).size)
         sourceTemplate = Gson().fromJson(probe.substringAfter(sourceMarker).substringBefore("\"\"\""), JsonObject::class.java)
@@ -62,6 +68,20 @@ class PublicMetadataPageDiagnosticTest {
         val value = Gson().fromJson(raw, JsonObject::class.java)
         assertEquals(keys, value.entrySet().map { it.key }.toSet())
         value.entrySet().forEach { assertTrue(it.value.isJsonPrimitive && it.value.asJsonPrimitive.isBoolean) }
+        return value
+    }
+
+    private fun observeSnapshot(html: String): JsonObject {
+        val raw = AnalyzeRule(Book()).setContent(html, "https://example.org/generated/")
+            .getString(snapshotRule).htmlFormat()
+        assertFalse(raw.contains("PRIVATE"))
+        val value = Gson().fromJson(raw, JsonObject::class.java)
+        assertEquals(setOf("pageDiagnostics", "snapshotStructure"), value.entrySet().map { it.key }.toSet())
+        for ((group, expected) in listOf("pageDiagnostics" to keys, "snapshotStructure" to snapshotKeys)) {
+            val fields = value.getAsJsonObject(group)
+            assertEquals(expected, fields.entrySet().map { it.key }.toSet())
+            fields.entrySet().forEach { assertTrue(it.value.isJsonPrimitive && it.value.asJsonPrimitive.isBoolean) }
+        }
         return value
     }
 
@@ -164,5 +184,82 @@ class PublicMetadataPageDiagnosticTest {
         assertTrue(value["captchaContainerPresent"].asBoolean)
         assertFalse(value.has("visibleCaptcha"))
         assertFalse(value.has("authenticated"))
+    }
+
+    @Test
+    fun emptyRawStringIsDistinctFromJsoupSynthesizedDocumentNodes() {
+        val value = observeSnapshot("")
+        val structure = value.getAsJsonObject("snapshotStructure")
+        assertTrue(structure["rawEmpty"].asBoolean)
+        snapshotKeys.filterNot { it == "rawEmpty" }.forEach { assertFalse(structure[it].asBoolean) }
+        keys.forEach { assertFalse(value.getAsJsonObject("pageDiagnostics")[it].asBoolean) }
+    }
+
+    @Test
+    fun whitespaceOnlyRawStringIsNotReportedAsZeroLength() {
+        val structure = observeSnapshot(" \n\t ").getAsJsonObject("snapshotStructure")
+        assertTrue(structure["rawWhitespaceOnly"].asBoolean)
+        snapshotKeys.filterNot { it == "rawWhitespaceOnly" }.forEach { assertFalse(structure[it].asBoolean) }
+    }
+
+    @Test
+    fun explicitBlankDocumentIsDistinctFromEmptyRawString() {
+        val structure = observeSnapshot("<html><head></head><body></body></html>").getAsJsonObject("snapshotStructure")
+        val present = setOf("rawHtmlTagHint", "rawHeadTagHint", "rawBodyTagHint")
+        snapshotKeys.forEach { assertEquals(present.contains(it), structure[it].asBoolean) }
+    }
+
+    @Test
+    fun headOnlyScriptAndTitleAreObservedWithoutLeakingOrExecutingContent() {
+        val value = observeSnapshot("<head><title>PRIVATE_TITLE</title><script>throw 'PRIVATE_SCRIPT';</script></head>")
+        val structure = value.getAsJsonObject("snapshotStructure")
+        val present = setOf("rawHeadTagHint", "headTitleElementPresent", "headScriptElementPresent")
+        snapshotKeys.forEach { assertEquals(present.contains(it), structure[it].asBoolean) }
+        keys.forEach { assertFalse(value.getAsJsonObject("pageDiagnostics")[it].asBoolean) }
+    }
+
+    @Test
+    fun frameAndElementStructureDoesNotRevealUrlsOrClaimAuthentication() {
+        val value = observeSnapshot("<body><iframe src='https://example.org/?ticket=PRIVATE'></iframe></body>")
+        val structure = value.getAsJsonObject("snapshotStructure")
+        assertTrue(structure["frameElementPresent"].asBoolean)
+        assertTrue(structure["bodyHasChildElements"].asBoolean)
+        assertTrue(structure["rawBodyTagHint"].asBoolean)
+        assertFalse(value.has("authenticated"))
+        assertFalse(value.getAsJsonObject("pageDiagnostics")["bodyHasText"].asBoolean)
+    }
+
+    @Test
+    fun rawTagHintsCanComeFromCommentsAndAreNotAParsedPageVerdict() {
+        val structure = observeSnapshot("<!-- <html><head><body> PRIVATE_COMMENT -->").getAsJsonObject("snapshotStructure")
+        for (key in setOf("rawHtmlTagHint", "rawHeadTagHint", "rawBodyTagHint")) assertTrue(structure[key].asBoolean)
+        assertFalse(structure["bodyHasChildElements"].asBoolean)
+        assertFalse(structure["headScriptElementPresent"].asBoolean)
+    }
+
+    @Test
+    fun detailsSourceRoundtripsAndParsesGeneratedMetadataViaRealWebBook() = runBlocking {
+        sourceTemplate.getAsJsonObject("ruleBookInfo").addProperty("intro", snapshotRule)
+        val saved = savedSource()
+        assertEquals(snapshotRule, BookSource.fromJson(saved).getOrThrow().getBookInfoRule().intro)
+        val book = Book().also {
+            it.bookUrl = "https://example.org/generated-details/"
+            it.infoHtml = """<html><head><script>throw 'PRIVATE_SCRIPT';</script></head><body>
+                <h1 id="bookName">黎明之剑</h1>
+                <section class="book-info-top"><span class="book-meta"><a class="author">远瞳</a></span></section>
+                <div id="bookImg"><img src="https://example.org/generated-cover"></div></body></html>"""
+        }
+        WebBook(saved, debugLog = false, userNameSpace = "generated-only").getBookInfo(book)
+        assertEquals("黎明之剑", book.name)
+        assertEquals("远瞳", book.author)
+        assertEquals("https://example.org/generated-cover", book.coverUrl)
+        val intro = requireNotNull(book.intro)
+        assertFalse(intro.contains("PRIVATE"))
+        val value = Gson().fromJson(intro, JsonObject::class.java)
+        assertEquals(keys, value.getAsJsonObject("pageDiagnostics").entrySet().map { it.key }.toSet())
+        assertEquals(snapshotKeys, value.getAsJsonObject("snapshotStructure").entrySet().map { it.key }.toSet())
+        assertTrue(value.getAsJsonObject("snapshotStructure")["headScriptElementPresent"].asBoolean)
+        assertTrue(value.getAsJsonObject("pageDiagnostics")["bodyHasExpectedBookTitle"].asBoolean)
+        assertTrue(value.getAsJsonObject("pageDiagnostics")["bodyHasExpectedAuthor"].asBoolean)
     }
 }

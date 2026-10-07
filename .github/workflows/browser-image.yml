@@ -199,10 +199,10 @@ on:
         type: string
         default: ''
       public_metadata_capture:
-        description: 'Public metadata: bounded browser script wait or snapshot-only baseline; no request retry'
+        description: 'Public metadata: bounded wait, snapshot-only, or finite returned-string details; no retry or HTML output'
         required: false
         type: choice
-        options: [bounded-dom, snapshot-only]
+        options: [bounded-dom, snapshot-only, bounded-dom-details]
         default: bounded-dom
       artifact_download_regression:
         description: 'Consume the exact failed large AMD64 artifact with the new downloader; no rebuild or production'
@@ -652,7 +652,7 @@ jobs:
           [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
           [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
           [[ "$EXPECTED_ARCH" = amd64 || "$EXPECTED_ARCH" = arm64 ]]
-          [[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only ]]
+          [[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details ]]
           test "$OTHER_MODES" != true
           command -v setfacl
           case "$EXPECTED_ARCH:$RUNNER_ARCH:$(uname -m)" in
