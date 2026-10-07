@@ -8,12 +8,27 @@ independent users. It refuses non-loopback Reader addresses.
 import argparse
 import concurrent.futures
 import http.cookiejar
+import hashlib
+import importlib.util
 import json
+from pathlib import Path
 import secrets
 import threading
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+def metadata_probe():
+    # Import definitions only; never invoke the public network probe here.
+    spec = importlib.util.spec_from_file_location(
+        "generated_metadata_definitions", Path(__file__).with_name("probe-public-metadata.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+METADATA = metadata_probe()
 
 
 class Fixture(ThreadingHTTPServer):
@@ -22,15 +37,44 @@ class Fixture(ThreadingHTTPServer):
         self.cookies = []
         self.requests = []
         self.async_marks = []
+        self.metadata_requests = []
         self.lock = threading.Lock()
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path == "/book-info":
+            self.serve_metadata()
+            return
+        if self.path == "/generated-cover.svg":
+            self.send_bytes(b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>',
+                            "image/svg+xml")
+            return
         if not self.path.startswith("/search"):
             self.send_error(404)
             return
         self.serve_search("GET", None)
+
+    def send_bytes(self, data, content_type):
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def serve_metadata(self):
+        with self.server.lock:
+            self.server.metadata_requests.append({"httpMethod": "GET", "body": None,
+                "testHeader": self.headers.get("X-Fixture"), "cookie": self.headers.get("Cookie", "")})
+        # Generated metadata only, no chapter body. The initial DOM contains
+        # none of the selectors: browser execution must append them after 300ms.
+        fragment = ('<h1 id="bookName">黎明之剑</h1><div class="book-info-top">'
+                    '<div class="book-meta"><span class="author">远瞳</span></div></div>'
+                    '<div id="bookImg"><img src="/generated-cover.svg"></div>')
+        html = ('<html><body><main id="generated-metadata"></main><script>'
+                'setTimeout(() => { document.querySelector("#generated-metadata").innerHTML = '
+                + json.dumps(fragment, ensure_ascii=False) + '; }, 300);</script></body></html>')
+        self.send_bytes(html.encode("utf-8"), "text/html; charset=utf-8")
 
     def do_POST(self):
         if self.path == "/async-mark":
@@ -176,6 +220,53 @@ def exercise_async_reader(opener, reader_base, fixture, source):
                    "sameUserNextRequestCount": len(books), "deletedVerified": True}
 
 
+def exercise_metadata_reader(opener, reader_base, fixture):
+    """Saved source -> real browser Promise -> Reader detail parser, not infoHtml."""
+    fixture_base = f"http://127.0.0.1:{fixture.server_port}"
+    source_url = fixture_base + "/metadata-source"
+    source = METADATA.source_definition()
+    source["bookSourceUrl"] = source_url
+    source["bookSourceName"] = "Generated delayed metadata only"
+    call(opener, reader_base, "/reader3/saveBookSource", source)
+    saved = call(opener, reader_base, "/reader3/getBookSource", {"bookSourceUrl": source_url}).get("data")
+    rules = saved.get("ruleBookInfo") if isinstance(saved, dict) else None
+    roundtrip = {"dataIsObject": isinstance(saved, dict),
+        "sourceUrlMatches": isinstance(saved, dict) and saved.get("bookSourceUrl") == source_url,
+        "cookieJarDisabled": isinstance(saved, dict) and saved.get("enabledCookieJar") is False,
+        "modernTocMarkerPresent": isinstance(saved, dict) and isinstance(saved.get("ruleToc"), dict),
+        "metadataRulesMatch": isinstance(rules, dict) and all(
+            rules.get(key) == value for key, value in source["ruleBookInfo"].items())}
+    roundtrip["passed"] = all(roundtrip.values())
+    if not roundtrip["passed"] or fixture.metadata_requests:
+        raise RuntimeError("Generated metadata source was not preserved or target was requested early")
+    # Exact, unmodified bounded public probe script; it only returns the page's
+    # own HTML. No infoHtml injection, replay, source-script DOM mutation or fetch.
+    options = {"webView": True, "webJs": METADATA.METADATA_DOM_SCRIPT}
+    value = call(opener, reader_base, "/reader3/getBookInfo", {
+        "url": fixture_base + "/book-info, " + json.dumps(options), "bookSourceUrl": source_url})
+    data = value.get("data")
+    book = data if isinstance(data, dict) else {}
+    diagnostic = METADATA.page_diagnostics(book.get("intro"))
+    observation = {"schemaVersion": 1, "scope": "generated-delayed-dom", "bookInfoApiCalls": 1,
+        "status": 200, "isSuccess": value.get("isSuccess"), "errorMsg": value.get("errorMsg"),
+        "dataIsObject": isinstance(data, dict), "nameMatches": book.get("name") == "黎明之剑",
+        "authorMatches": book.get("author") == "远瞳",
+        "coverMatches": book.get("coverUrl") == fixture_base + "/generated-cover.svg",
+        "pageDiagnostics": diagnostic, "sourceDefinitionRoundtrip": roundtrip,
+        "sourceScriptSha256": hashlib.sha256(METADATA.METADATA_DOM_SCRIPT.encode("utf-8")).hexdigest(),
+        "diagnosticRuleSha256": hashlib.sha256(METADATA.PAGE_DIAGNOSTIC_RULE.encode("utf-8")).hexdigest(),
+        "targetRequestCount": len(fixture.metadata_requests),
+        "targetRequest": fixture.metadata_requests[0] if len(fixture.metadata_requests) == 1 else None}
+    # The same finite report guard is mandatory at the producer and each
+    # image/transfer/publisher consumer; successful empty shells fail here.
+    spec = importlib.util.spec_from_file_location(
+        "generated_metadata_guard", Path(__file__).with_name("verify-reader-metadata-smoke.py"))
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+    guard.verify({"metadataReader": observation})
+    return observation
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reader-base", default="http://127.0.0.1:18890")
@@ -283,9 +374,11 @@ def main():
             burst_counts = list(pool.map(burst_search, range(args.concurrent_requests)))
         if fixture.cookies != expected_before_burst + [""] * args.concurrent_requests:
             raise RuntimeError("Concurrent WebView requests leaked or changed a user Cookie")
+        metadata_observation = exercise_metadata_reader(create_account(), args.reader_base, fixture)
         print(json.dumps({"searches": searches, "cookieSequence": expected,
                           "legacyReferenceCases": reference_cases,
                           "asyncReaderCases": async_cases, "asyncCookieCleanup": async_cleanup,
+                          "metadataReader": metadata_observation,
                           "concurrentRequests": args.concurrent_requests,
                           "concurrentBookCounts": burst_counts},
                          ensure_ascii=False))

@@ -198,6 +198,18 @@ if (asyncReaderCheck < browserSmoke || asyncReaderCheck >= budgetCheck ||
     !nativeImporter.includes('python3 scripts/verify-reader-async-smoke.py "$report_directory/BROWSER_SYNTHETIC.json"')) {
   throw new Error('native, full-image, and publisher stages must verify actual async Reader API observations')
 }
+for (const [label, content, invocation] of [
+  ['native', nativeSmoke, 'python3 scripts/verify-reader-metadata-smoke.py "$output/BROWSER_SYNTHETIC.json"'],
+  ['full image', browserWorkflow, 'python3 scripts/verify-reader-metadata-smoke.py "$RUNNER_TEMP/bundled-browser-synthetic.json"'],
+  ['publisher', nativeImporter, 'python3 scripts/verify-reader-metadata-smoke.py "$report_directory/BROWSER_SYNTHETIC.json"'],
+]) {
+  const exact = content.split('\n').filter(line => line.trim() === invocation)
+  if (exact.length !== 1) throw new Error(`${label} must fail closed on actual browser-backed metadata Reader API observations`)
+}
+const metadataReaderCheck = nativeSmoke.indexOf('python3 scripts/verify-reader-metadata-smoke.py')
+if (metadataReaderCheck <= asyncReaderCheck || metadataReaderCheck >= budgetCheck) {
+  throw new Error('actual browser-backed metadata Reader API observations must precede resource checks and image export')
+}
 if (smokeCall < 0 || archiveExport < smokeCall || browserSmoke < 0 || budgetCheck < browserSmoke ||
     !nativeBuild.includes('node scripts/release-native-artifacts.mjs record ')) {
   throw new Error('native browser and resource checks must finish before exporting an image for registry writes')
