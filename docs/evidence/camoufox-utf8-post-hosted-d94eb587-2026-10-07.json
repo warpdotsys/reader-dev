@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual hosted twenty-contract, generated UI and native import acceptance; not original six-case parity, real authentication or production",
+  "sourceHead": "d94eb5874c9a28ff0b052ea6ba52a9bd97c18dbb",
+  "testedMergeRevision": "a25cd623029269fd40d593126b9d093b45a73899",
+  "observedTerminalRuns": [
+    {"id": 37598990905, "workflow": "Java Kotlin CI", "conclusion": "success"},
+    {"id": 37598991081, "workflow": "Vue 3 preview build", "conclusion": "success"},
+    {"id": 37598991058, "workflow": "Browser image integration", "conclusion": "success", "actualNormalJobs": 1, "optionalJobsSkipped": 5},
+    {"id": 37598990910, "workflow": "Native release artifact rehearsal", "conclusion": "success", "actualJobs": 6}
+  ],
+  "actualTwentiethContract": {
+    "name": "generatedUtf8PostPreservesRawBytesAndSourceScriptResult",
+    "nativeSharedJarJobSeconds": "2.947",
+    "fullJobSeconds": "2.879",
+    "nativeSuiteActualTests": 20,
+    "fullSuiteActualTests": 20,
+    "failuresErrorsSkipped": 0,
+    "actualTargetByteCount": 60,
+    "actualTargetSha256": "8d0383070028f4f457194a194e8e9133df2487261e341c1da121171d59eeeef1",
+    "rawBytesMethodHeadersSinglePostAndUnicodeScriptAssertionsPassed": true,
+    "contractAuditSha256": "a3ca813a4cc28871cb369f74a5835e0b9ec8969edf9eea344ad98cc4da3706d4"
+  },
+  "independentAudit": {
+    "path": "build/hosted-utf8-post-d94eb587-20261007-a/independent-acceptance.json",
+    "sha256": "b97551f78e9a0daf4e66946434335bb86aff9d448be4ed1bab529d1a4479c9c0",
+    "nativeHelperDocumentCases": 3,
+    "fullHelperDocumentCases": 3,
+    "sharedJavaTests": 163,
+    "sharedJavaSkipped": 31,
+    "sharedJavaFailuresErrors": 0,
+    "vueCoreActualTests": 18,
+    "vueSubdirectoryActualTests": 1,
+    "vueFailuresErrorsSkipped": 0,
+    "shelfGeometryObservations": 18,
+    "customGroupObservations": 3,
+    "publisherExactFileCount": 24,
+    "existingUiAsyncBudgetGuardsReexecuted": 15,
+    "actualMemoryStatReports": 5,
+    "maxMemoryPeakBytes": 921059328,
+    "maxPidsPeak": 208,
+    "memoryMaxOomAndPidsLimitEvents": 0,
+    "actualSwapBytes": 0,
+    "configuredSwapMaxBytes": 1073741824,
+    "userReportHashesChecked": 58,
+    "userReportHashesChanged": 0
+  },
+  "loginGeometryAudit": {"cases": 14, "sha256": "01fbb12e58e4cfeba2b78a8e8199b2ee170ef15e66fd7862c66b19502e766b6d"},
+  "visualReview": {
+    "generatedImagesViewed": 3,
+    "allScreenshotsViewed": false,
+    "images": [
+      {"name": "vue3-login-layout-generated-320x568-login-full.png", "sha256": "abdcc94a3932f960224e1f4a54445ef73f144fa3750e00fcca13e7bf37713fd8"},
+      {"name": "vue3-login-layout-generated-360x320-register-bottom.png", "sha256": "ea1b59740c6e31489f37feed60fb87031b1269427aeb88e967159fcb26951b99"},
+      {"name": "vue3-shelf-layout-generated-custom-groups-320.png", "sha256": "ccbf5968fe9e06aa259cfae757bb3116e9e047f377f6d7e64fa8da7a8bf22d4f"}
+    ]
+  },
+  "hostedPurePythonLog": {"tests": 259, "seconds": 8.239, "result": "OK", "browserExecutedByThesePureTests": false},
+  "localWslTargetedPureTests": {"contractGuard": 18, "differentialTool": 35, "failuresErrorsSkipped": 0},
+  "nativeSharedJarSha256": "3816fd6980cf745c3b5eac010968a33dd6f15dbc0f22ac87038d62da7a8ad50f",
+  "fullIndependentlyBuiltJarSha256": "af674e7ca4fea7ddf73a9a3751317a721bcc2c3a3c0f39cc4ee3b152fa026a48",
+  "nativeImages": {
+    "amd64": "sha256:3fccf95fb3f29f341bbbcd876b26815622ce529f4e0e96f5104782bc5532896c",
+    "arm64": "sha256:5358378efe85ff11f88b013b771b4d5dec98a2bf2cd027671db68ea49968c1d1"
+  },
+  "limitations": [
+    "Two twenty-case JUnit suites are not a claim that all twenty cases were separately run on ARM64",
+    "Normal hosted runs do not execute optional original, public-source, historical-reference or soak probes",
+    "Short resource acceptance allows 1 GiB swap, unlike the server zero-swap differential",
+    "The server still uses the separately identified 221d41ef input, not these independently built JARs",
+    "No new large JAR/image downloaded, registry publication, formal release or production deployment"
+  ]
+}

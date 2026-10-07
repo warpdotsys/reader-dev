@@ -86,3 +86,13 @@ sudo python3 -B scripts/run-three-way-webview-in-docker.py \
 随后 c 轮真正去掉 wrapper，保留原严格六例及同输入／限额。两侧搜索循环完成后，**在历史配对 `validate_generated_searches` 的目标 GET／POST 字段比较处失败**，不是再次首次搜索超时；Camoufox 尚未获准执行，overallAccepted false。峰值 1,192,341,504 B、44 采样／触限 0、两个 JAR 不变、两容器清理／独立剩余 0。原 API 完整响应未在 handoff 前保存，不能根据控制流重建原数据或声称完整六例通过。
 
 因此新增只读观察保留：六例历史两侧完成后、严格验证前，将完整生成返回及目标原字节字段独占写入 observation 文件；旧文件／符号链接在启动前拒绝。这个文件明确不代表接受，不放行 handoff，不伪填 Camoufox 结果；后续可精确区分旧截断与其他差异。[控制诊断及 c 失败哈希](evidence/webview-generated-controls-2026-10-07.json)、[第 20 契约与观察保留](CAMOUFOX-UTF8-POST-2026-10-07.md)。
+
+## 原生 API 日志定位与不同前置失败
+
+观察保留的 d 轮使用新只读 compare 输入 SHA-256 `47c2ebf4...`，三个隔离／预算脚本保持原字节身份；仍为同原件／221 JAR／190 运行时／原共同限额。d 轮原件首次搜索读取超时、完成搜索及目标请求 0，未到达观察保存，峰值 724,553,728 B、34 采样／触限 0，两 JAR 不变、两容器清理并独立剩余 0。不能将新增保存代码的纯测试或未到达的保存点说成实际六例通过。
+
+e 轮只给历史容器添加 `DEBUG=pw:api`，直接执行固定镜像原入口，不包装 Playwright 方法或修改源码。真实 188 B stderr 顺序为 **browserType.launch started → succeeded → browser.newContext started**，没有该 newContext 的 succeeded／failed；原件首次搜索响应仍超时、目标 0。因此卡住位置已从 launch 之后缩小到 newContext，但没有唯一根因，不能以更多日志宣称修复。峰值 543,961,088 B、触限 0、两 JAR 不变、两自有容器清理／独立剩余 0。[原日志哈希与严格范围](evidence/webview-api-context-2026-10-07.json)。
+
+f 轮只增加原生 `pw:browser` 日志和精确自有 cgroup／进程状态观测，不读 argv、环境、用户文件或真实账号。它停在 **原件 readiness／getSystemInfo 前置等待**：Java 已执行，有 Starting args 行，但没有证明启动完成；没有浏览器 API 调用、搜索或目标请求，不是“原 JAR 无法启动”的证明。峰值 259,117,056 B、触限 0、两容器清理／独立剩余 0。probe 退出后、清理前 runtime 只剩两进程／两线程，历史服务一进程／七线程；该次两个 leaf pids.max 事件均 0。**这是 f 的非浏览器样本，Java 此时已退出，不能用它解释或排除 e 的 newContext 原因。**
+
+SSH 间歇 banner／连接错误没有被当成 unit 终止，也没有重复启动 e／f；恢复后核对 f MainPID 0、终态 exit 1 及独立 ownership 剩余 0。通过单个只读复制会话取回自有生成 stage 的小报告，再核对字节哈希；不复制真实数据、JAR 新副本或生产文件。a／b／d 首次搜索、c 历史字段拒绝、e newContext 定位、f readiness 前置分别保留，不能合并原因或拼接成三方成功。
