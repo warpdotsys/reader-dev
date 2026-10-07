@@ -22,7 +22,7 @@
 
 内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。候选单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，线上也尚未切换。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
 
-浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。最新源码将完整镜像默认界面改为 Vue 3，并保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变，新的镜像门禁仍须独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
+浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。完整镜像默认界面为 Vue 3，保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变。`de7c0c7e` 自己的镜像构建、重载、发布导入和默认入口已独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)，不覆盖随后新增的手机布局修复。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
 
 隔离本机测试可加 `--reader.server.bindAddress=127.0.0.1`，让 HTTP 服务仅监听回环地址；默认值仍为 `0.0.0.0`，不改变现有容器反向代理的连通性。仅改监听地址不会隔离 `storage/data`，仍须另设全新 `reader.app.workDir`。
 

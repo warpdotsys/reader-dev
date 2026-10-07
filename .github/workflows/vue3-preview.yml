@@ -210,7 +210,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-shelf-layout-${{ github.sha }}
-          path: ${{ runner.temp }}/vue3-shelf-layout-1135.png
+          path: |
+            ${{ runner.temp }}/vue3-shelf-layout-1135.png
+            ${{ runner.temp }}/vue3-shelf-layout-generated-page-top-*.png
+            ${{ runner.temp }}/vue3-shelf-layout-generated-geometry.json
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve generated late-session response screenshots

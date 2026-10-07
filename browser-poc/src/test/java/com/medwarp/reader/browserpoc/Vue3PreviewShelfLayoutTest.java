@@ -12,6 +12,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +52,56 @@ public class Vue3PreviewShelfLayoutTest {
         }
     }
 
-    @Test
+    private static void observeUncoveredPageTop(Page page, int width, int density,
+                                               List<Map<String, Object>> observations,
+                                               Path directory) throws Exception {
+        page.mouse().move(0, 0);
+        page.evaluate("window.scrollTo(0, 0)");
+        page.waitForFunction("() => scrollY === 0 && document.fonts.status === 'loaded'"
+                + " && getComputedStyle(document.querySelector('.bookshelf-page')).opacity === '1'");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> geometry = (Map<String, Object>) page.evaluate("values => {"
+                + "const header=document.querySelector('.topbar').getBoundingClientRect();"
+                + "const heading=document.querySelector('.section-title');"
+                + "const uncovered=el => { const r=el.getBoundingClientRect();"
+                + "const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);"
+                + "return r.width>0 && r.height>0 && r.top>=0 && r.bottom<=innerHeight"
+                + " && (hit===el || el.contains(hit)); };"
+                + "return {width:values[0],density:values[1],scrollY,headerBottom:header.bottom,"
+                + "headingTop:heading.getBoundingClientRect().top,"
+                + "allNavInsideHeader:[...document.querySelectorAll('.user-area .nav-link')].every(el => {"
+                + "const r=el.getBoundingClientRect();return r.top>=header.top && r.bottom<=header.bottom;}),"
+                + "headingUncovered:uncovered(heading),"
+                + "importUncovered:uncovered(document.querySelector('.import-btn')),"
+                + "groupControlsOverlapTabs:[...document.querySelectorAll('.group-tab')].some(tab => {"
+                + "const t=tab.getBoundingClientRect();return [...document.querySelectorAll('.group-manage')]"
+                + ".some(control => {const c=control.getBoundingClientRect();"
+                + "return Math.min(t.right,c.right)>Math.max(t.left,c.left)+1"
+                + " && Math.min(t.bottom,c.bottom)>Math.max(t.top,c.top)+1;});}),"
+                + "groupTabsUncovered:[...document.querySelectorAll('.group-tab')].every(uncovered)}; }",
+                List.of(width, density));
+        observations.add(geometry);
+        Files.createDirectories(directory);
+        Files.writeString(directory.resolve("vue3-shelf-layout-generated-geometry.json"),
+                (String) page.evaluate("values => JSON.stringify({schemaVersion:1,"
+                        + "scope:'generated page-top geometry; not production or real books',"
+                        + "observations:values})", observations), StandardCharsets.UTF_8);
+        if (density == 0 && (width == 1135 || width == 360)) {
+            page.screenshot(new Page.ScreenshotOptions().setPath(directory.resolve(
+                    "vue3-shelf-layout-generated-page-top-" + width + ".png")));
+        }
+        String scenario = "page top width=" + width + " density=" + density;
+        assertTrue(scenario + ": " + geometry,
+                ((Number) geometry.get("headingTop")).doubleValue()
+                        >= ((Number) geometry.get("headerBottom")).doubleValue());
+        assertEquals(scenario + " navigation outside header", true, geometry.get("allNavInsideHeader"));
+        assertEquals(scenario + " heading covered", true, geometry.get("headingUncovered"));
+        assertEquals(scenario + " import covered", true, geometry.get("importUncovered"));
+        assertEquals(scenario + " group controls overlap filters", false, geometry.get("groupControlsOverlapTabs"));
+        assertEquals(scenario + " group filter covered", true, geometry.get("groupTabsUncovered"));
+    }
+
+    @Test(timeout = 180000)
     public void hiddenAndHoveredPreviewsStayInsideShelfAtAllDensities() throws Exception {
         String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
         String fixtureUrl = System.getenv("READER_BOOK_FIXTURE_URL");
@@ -85,7 +135,9 @@ public class Vue3PreviewShelfLayoutTest {
                 page.getByText("共 15 本", new Page.GetByTextOptions().setExact(false)).waitFor();
                 page.locator(".book-card").first().waitFor();
 
-                for (int width : new int[]{1135, 1024, 768}) {
+                Path evidence = Path.of(System.getenv().getOrDefault("RUNNER_TEMP", "build"));
+                List<Map<String, Object>> observations = new ArrayList<>();
+                for (int width : new int[]{1135, 1024, 768, 720, 360, 320}) {
                     page.setViewportSize(width, 865);
                     for (int density = 0; density < 3; density++) {
                         page.locator(".view-bar .sort-capsule").nth(density).click();
@@ -93,12 +145,23 @@ public class Vue3PreviewShelfLayoutTest {
                                 .nth(density).getAttribute("class").contains("active"));
                         page.evaluate("window.scrollTo(0, 0)");
                         String scenario = "width=" + width + " density=" + density;
+                        observeUncoveredPageTop(page, width, density, observations, evidence);
                         assertNoHorizontalOverflow(page, "hidden " + scenario);
                         assertEquals("Navigation must retain all real links", 12,
                                 page.locator(".user-area .nav-link").count());
                         assertTrue("Search must not be crushed to make navigation fit",
                                 ((Number) page.locator(".search-box").evaluate(
                                         "el => el.getBoundingClientRect().width")).doubleValue() >= 240);
+                        if (width == 360 && density == 0) {
+                            // The formerly covered last filter must accept a real click,
+                            // then restoring All must bring the generated books back.
+                            Locator lastFilter = page.locator(".group-tabs .group-tab").last();
+                            lastFilter.click();
+                            assertTrue(lastFilter.getAttribute("class").contains("active"));
+                            page.locator(".empty-state").waitFor();
+                            page.locator(".group-tabs .group-tab").first().click();
+                            page.locator(".book-card").first().waitFor();
+                        }
 
                         @SuppressWarnings("unchecked")
                         List<String> edgeNames = (List<String>) page.locator(".book-card")

@@ -4728,6 +4728,12 @@ onMounted(() => {
   gap: 22px;
   flex: 1;
   min-width: 0;
+  /* Long user-defined tabs must scroll inside their own area, not paint over actions. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.group-tabs::-webkit-scrollbar {
+  display: none;
 }
 .group-tab {
   position: relative;
@@ -5801,6 +5807,32 @@ onMounted(() => {
 
 /* 小屏手机：书架列数继续加密 + 底部操作栏避开手势区 */
 @media (max-width: 480px) {
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 8px 10px;
+  }
+  .section-title {
+    grid-column: 1 / -1;
+  }
+  .section-head .count,
+  .section-head .manage-btn {
+    white-space: nowrap;
+  }
+  .section-head .import-btn {
+    margin-left: 0;
+  }
+  .group-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .group-tabs {
+    flex-basis: 100%;
+  }
+  .group-tabs + .group-manage {
+    margin-left: auto;
+  }
   .book-grid {
     grid-template-columns: repeat(auto-fill, minmax(var(--card-w, 104px), 1fr));
     gap: 20px 12px;
