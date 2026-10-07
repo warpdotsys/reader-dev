@@ -38,7 +38,40 @@ sudo python3 -B scripts/run-three-way-webview-in-docker.py \
 
 新工具纯测试全量 249 项：248 实际通过、1 Windows POSIX symlink 环境跳过，0 失败／错误；定向 33 项中 32 通过、1 同一环境跳过，包含新增 11 项。发布结构及 69 项 pipeline／身份／manifest 纯测试通过。纯 fixture／mock 验证不等于真实浏览器执行。
 
-服务器已成功启动 `reader-threeway-utf8-20261007-a.service`，invocation `15dfdadf8378416895272a7681308b9e`。间歇 SSH banner 超时后，一次只读查询已确认终态 failed／Result exit-code／ExecMainStatus 1／MainPID 0；run 内保留 `three-way.original-failed.json`（211 B）、`probe.log`（2,994 B）、`provenance.json`（9,949 B），无完整 `three-way.json`。**该轮在原件阶段失败，尚未读到具体原因、原资源报告或自有容器清理确认，不能算新的六用例兼容验收**。后续复制报告再次在 SSH 握手超时，没有重启测试、改代理或升预算。下一次只读取此 run 的生成报告，不重复启动第二份。
+服务器已成功启动 `reader-threeway-utf8-20261007-a.service`，invocation `15dfdadf8378416895272a7681308b9e`。间歇 SSH banner 超时后，一次只读查询先确认终态 failed／Result exit-code／ExecMainStatus 1／MainPID 0。当时尚未读到具体原因；随后连接恢复，三个原报告已逐字节复制并核对 SHA-256，原报告保留，没有覆盖或重复启动该 unit。[原件失败与清理证据](evidence/webview-utf8-original-failure-2026-10-07.json)。
+
+**准确失败位置是原件第一次 `/reader3/searchBook` 读取响应超时，不是原 JAR 无法启动，也不是第六个 UTF-8 用例失败。** 日志有 `ReaderApplication Started`，结合实际执行脚本的栈位置，之前的 getSystemInfo、生成账号注册／登录、书源保存及逐字符读回守卫已通过；这些 API 的完整原返回没有单独保存，不能补造。已完成搜索 0、目标实际请求 0、最后搜索返回 null；恢复及 Camoufox 侧尚未完成，无完整 `three-way.json`。
+
+共同 2 CPU／2 GiB／零 swap／PID 512 实际上限成立，累计峰值 562,421,760 B，内存 max／OOM／oom_kill、PID 触限均为 0。业务失败，三个接受标志仍为 false，不因无触限改成整体通过。两只自有容器已记录移除，随后宿主按本轮标签独立查询剩余 0；两个 JAR 哈希不变。采样存在较长间隔，但旧报告没有 CPU 计数或历史引擎日志，不能唯一归因为宿主负载、渲染器或 Reader。
+
+本机另三次原件 readiness 启动器尝试在 systemd `217/USER` 或 `setresuid EPERM` 前置步骤停止，三个 unit 均 MainPID 0，**Java 没有执行**；不是原 JAR 缺陷，未新增系统用户／改映射或放松权限。官方 uidmap 和映射工具已实际确认安装，旧受限浏览器 helper 的成功也不等于这三个启动器或当前完整 Reader 镜像验收。服务器原件已实际启动，因此不重复本机原件启动诊断。
+
+## 本增量自身的托管验收
+
+源码 `86c5047d`／受测合并快照 `3250682951e22698e992c3a835aba6370288ce95` 的 [Java](https://github.com/warpdotsys/reader-dev/actions/runs/37586778326)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37586778116)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37586778218)、[双架构演练](https://github.com/warpdotsys/reader-dev/actions/runs/37586778072)均终态 success；演练六项实际作业全部成功。仅下载小制品，在本机重新执行原身份／UI／异步／资源守卫，未下载新大镜像或上传新的 7c55 JAR。[独立托管证据](evidence/webview-utf8-hosted-86c5047d-2026-10-07.json)。
+
+- Linux 日志 `Ran 249 tests in 8.793s`，随后 `OK`；这是纯 Python 测试，不能替代服务器六用例。
+- 两份真实 Camoufox 各 19 项无跳过／失败／错误；两个 helper 各 3 项。共同 Java 162 项中 132 执行、30 门控跳过；Vue 18 核心＋1 子目录实际执行，书架几何 18 组和长分组 3 组通过；只目视本轮 320px 长分组生成图，不称全部截图检查。
+- 24 份 publisher JSON 精确核对、5 组 UI／异步／资源通过；短时最高 940,109,824 B／PID 195，触限／OOM／实际 swap 0，正常 CI 仍允许 1 GiB swap，与服务器零 swap 不混用。
+- 原生共同 JAR 为 `7c55ba75...`，Full 独立构建 JAR 为 `2c34ee04...`；两者不是服务器本轮输入 `221d41ef...`。58 份用户已有报告散列不变，无发布、registry 写入或生产部署。
+
+## 保持原门禁的诊断增量
+
+只改三方测试工具：每次采样可保存 slice 实际 `cpu.stat`／有限 `cpu.pressure`，不存在时为 null；不从当前内存分类扣缓存，不改原预算或接受条件。清理前先核对随机 ownership label，再保存该次历史引擎状态及各最多 32 KiB 的 stdout／stderr 尾部（每流最多 80 行，0600、新文件独占创建）。原始生成日志只保留授权临时 run 与本机 ignored 隔离证据目录，不上传正文／账号或将日志内容提交 GitHub；诊断失败不跳过容器 ownership 核对及清理。
+
+新增 6 项纯测试，本机全量 255 中 254 通过、1 Windows POSIX symlink 环境跳过；WSL 定向 18 项全部通过。69 项发布结构／原生身份／manifest 纯测试通过。新日志、CPU 字段只提供定位材料，不把失败诊断当兼容成功，也不能追补 a 轮缺失数据。诊断后的 b 轮在全新 `webview-threeway-utf8-20261007-b/run`、相同 221 JAR／原件／运行时、原共同限额下执行；unit `reader-threeway-utf8-20261007-b.service`，invocation `183b062ef0794bcc9af9fbb7dd896c46`。启动时先确认 a 的 MainPID 0、原标签容器剩余 0；不与前一份重叠。
+
+**b 轮仍在原件首次搜索超时**，48.097 秒最后采样，累计峰值 755,159,040 B、触限／OOM 0，两个 JAR 不变，两只自有容器已移除并独立查询剩余 0。32 份实际 CPU 观测保留；末次累计使用 22,553,350 us、节流 59 次／630,607 us，不据此唯一判断超时原因。历史服务已收到正确的生成 GET URL，并输出 contextOptions，清理前 Running true／OOMKilled false；目标请求仍为 0。固定镜像内真实源码在 `webkit.launch` 返回后才打印 contextOptions，说明这一处浏览器启动已完成；不能由日志猜测 newContext／newPage 哪一步卡住。[本次准确诊断和字节哈希](evidence/webview-utf8-diagnostics-2026-10-07.json)。
+
+## 单独历史引擎诊断及已确认旧缺陷
+
+只从未启动的专用 reference 容器读取固定镜像的 `/app/index.js`／`package.json`，文件共约 5.5 KiB，读取后按精确标签移除容器，未改原镜像。声明的 Playwright 范围是 `^1.25.1`，实际固定镜像安装的是 **1.36.0**；不把范围当准确运行版本。源码记录 POST `Content-Length: body.length`，这是 UTF-8 长度风险，先作为推断而非 Reader 故障结论。
+
+在同授权目录、独立 only-lo netns／原 2 CPU 2 GiB 零 swap／能力全部为 0／NNP 下，单独 WebKit 的 launch、newContext、newPage、生成页 goto/content/close **实际 6.898 秒成功**，目标请求 1，峰值 780,365,824 B、触限 0、自有容器剩余 0。它只使用历史镜像既有 root UID／零 capabilities，**不是最终非 root Reader 验收**，没有启动任何 JAR。只能排除这一份 standalone 样本无法启动，不能替代跨容器／Reader 集成复验或解释先前超时。
+
+随后另一个新隔离容器直接执行固定镜像原 `index.js`，发送同一生成 JSON 至真实 `/render.html`；不改其 POST 实现，不用伪响应冒充旧引擎。目标实际收到 **44 B／应有 60 B**，原字节 SHA-256 为 `c61ca3e5...`／应有 `8d038307...`，JSON 解析失败，而历史渲染 HTTP 仍返回 200；2.493 秒完成观测，峰值 726,691,840 B、触限 0、容器清理。**此为已实测的旧历史引擎 UTF-8 请求截断缺陷，不是六用例 Reader 三方通过**。诊断脚本退出 0／原报告 passed 只表示观测完成，明确 `postBodyLengthCorrect=false`；业务正确性仍红灯。没有将正确请求故意截断以追随旧缺陷，也没有修改三方守卫制造绿灯。
+
+当前完整三方仍未完成：原件首次搜索超时需要继续定位；即使它恢复，新六用例必须明确记录历史旧缺陷与内置引擎的实际差异，不能预先声称所有侧正确或用旧五用例拼接第六结果。上述生成协议观测没有走 Reader，不能推测原件／恢复版 searchBook 的具体 ReturnData；新 diagnostic 工具自己的 hosted 状态与原先 86 提交分开。
 
 即使该轮生成对照通过，仍不代表非 UTF-8 全部编码、真实网站认证／章节、当前完整镜像、长期容量或生产验收。此前本机起点解析／旧 worker 资源红灯仍保留。`594cec9c` collector 自己的 [hosted 分类验收](BROWSER-MEMORY-CATEGORIES-2026-10-07.md)单独记录，不拿它代替此业务差分。
 

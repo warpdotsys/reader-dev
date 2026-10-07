@@ -15,6 +15,82 @@ SPEC.loader.exec_module(PROBE)
 
 
 class DockerThreeWayBudgetTest(unittest.TestCase):
+    def test_optional_cpu_files_are_unknown_not_zero_and_do_not_relax_budget(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            self.files(directory)
+            self.assertEqual({"cpuStat": None, "cpuPressure": None}, PROBE.cpu_observation(directory))
+            (directory / "memory.max").write_text("4294967296")
+            with self.assertRaisesRegex(RuntimeError, "aggregate resource budget"):
+                PROBE.budget_snapshot(directory)
+
+    def test_cpu_observation_preserves_actual_counters_and_finite_pressure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / "cpu.stat").write_text("usage_usec 123\nnr_throttled 7\nthrottled_usec 456\nfuture_counter 999\n")
+            (directory / "cpu.pressure").write_text("some avg10=1.25 avg60=2.5 avg300=3.75 total=987\nfull avg10=0.0 avg60=0.0 avg300=0.0 total=0\n")
+            value = PROBE.cpu_observation(directory)
+            self.assertEqual(123, value["cpuStat"]["usage_usec"])
+            self.assertEqual(7, value["cpuStat"]["nr_throttled"])
+            self.assertIsNone(value["cpuStat"]["user_usec"])
+            self.assertNotIn("future_counter", value["cpuStat"])
+            self.assertEqual(987, value["cpuPressure"]["some"]["total"])
+            self.assertEqual(1.25, value["cpuPressure"]["some"]["avg10"])
+
+    def test_invalid_cpu_pressure_is_not_normalized_to_a_valid_observation(self):
+        for content in ("some avg10=nan avg60=0 avg300=0 total=0", "some avg10=101 avg60=0 avg300=0 total=0",
+                        "some avg10=0 avg60=0 avg300=0 total=-1", "some avg10=0 total=0",
+                        "some avg10=0 avg10=1 avg60=0 avg300=0 total=0", "unknown avg10=0 avg60=0 avg300=0 total=0"):
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                (directory / "cpu.pressure").write_text(content)
+                with self.assertRaises(ValueError):
+                    PROBE.cpu_observation(directory)
+
+    def test_renderer_log_read_requires_exact_ownership_before_read_or_write(self):
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "owned_container", side_effect=RuntimeError("ownership label")), \
+                mock.patch.object(PROBE.subprocess, "run") as command:
+            with self.assertRaisesRegex(RuntimeError, "ownership label"):
+                PROBE.preserve_owned_renderer_diagnostics("generated-cid", "generated-token", Path(temporary))
+            command.assert_not_called()
+            self.assertEqual([], list(Path(temporary).iterdir()))
+
+    def test_renderer_diagnostics_are_bounded_private_and_do_not_accept_a_failed_engine(self):
+        state = {"State": {"Running": False, "Paused": False, "Restarting": False,
+                           "OOMKilled": True, "ExitCode": 137, "Pid": 0, "Error": "not persisted"}}
+        logs = subprocess.CompletedProcess([], 0, b"generated" * 5000, b"generated error")
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "owned_container", return_value=state), \
+                mock.patch.object(PROBE.subprocess, "run", return_value=logs) as command:
+            directory = Path(temporary)
+            value = PROBE.preserve_owned_renderer_diagnostics("generated-cid", "generated-token", directory)
+            command.assert_called_once_with(["docker", "logs", "--tail=80", "generated-cid"],
+                                           capture_output=True, timeout=10, check=False)
+            self.assertEqual(137, value["state"]["ExitCode"])
+            self.assertIs(True, value["state"]["OOMKilled"])
+            self.assertNotIn("Error", value["state"])
+            self.assertNotIn("overallAccepted", value)
+            self.assertIs(True, value["logs"]["stdout"]["truncated"])
+            self.assertEqual(32768, value["logs"]["stdout"]["storedBytes"])
+            self.assertEqual(logs.stdout[-32768:], (directory / "archived-renderer-stdout.log").read_bytes())
+            self.assertEqual(logs.stderr, (directory / "archived-renderer-stderr.log").read_bytes())
+            if sys.platform == "linux":
+                self.assertEqual(0o600, (directory / "archived-renderer-stdout.log").stat().st_mode & 0o777)
+
+    def test_renderer_diagnostics_refuse_to_overwrite_existing_log(self):
+        state = {"State": {"Running": True, "Paused": False, "Restarting": False,
+                           "OOMKilled": False, "ExitCode": 0, "Pid": 123}}
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(PROBE, "owned_container", return_value=state), \
+                mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, b"new", b"")):
+            directory = Path(temporary)
+            path = directory / "archived-renderer-stdout.log"
+            path.write_bytes(b"old evidence")
+            with self.assertRaises(FileExistsError):
+                PROBE.preserve_owned_renderer_diagnostics("generated-cid", "generated-token", directory)
+            self.assertEqual(b"old evidence", path.read_bytes())
+
     def files(self, directory):
         values = {"cpu.max": "200000 100000", "memory.max": "2147483648",
                   "memory.peak": "1000000000", "memory.events": "max 0\noom 0\noom_kill 0\n",

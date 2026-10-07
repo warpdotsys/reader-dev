@@ -8,6 +8,7 @@ and archived renderer to have been downloaded before this offline run.
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -19,6 +20,7 @@ import time
 ARCHIVED = "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a"
 ORIGINAL_SHA = "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c"
 SCRIPTS = Path(__file__).resolve().parent
+CPU_STAT_FIELDS = ("usage_usec", "user_usec", "system_usec", "nr_periods", "nr_throttled", "throttled_usec")
 
 
 def command(*args, timeout=30, check=True):
@@ -62,6 +64,46 @@ def require_unpressured_budget(report):
         raise RuntimeError("The generated test triggered an aggregate resource limit")
 
 
+def cpu_observation(group):
+    """Optional actual counters, never a substitute for the mandatory budget."""
+    stat = group / "cpu.stat"
+    pressure = group / "cpu.pressure"
+    counters = None
+    if stat.exists():
+        counters = {name: None for name in CPU_STAT_FIELDS}
+        for line in stat.read_text().splitlines():
+            key, value = line.split()
+            if key in counters:
+                if counters[key] is not None or not value.isdigit():
+                    raise ValueError("Invalid CPU counter")
+                counters[key] = int(value)
+    observations = None
+    if pressure.exists():
+        observations = {}
+        for line in pressure.read_text().splitlines():
+            parts = line.split()
+            if not parts or parts[0] not in ("some", "full") or parts[0] in observations:
+                raise ValueError("Invalid CPU pressure kind")
+            values = {}
+            for entry in parts[1:]:
+                key, value = entry.split("=")
+                if key in values or key not in ("avg10", "avg60", "avg300", "total"):
+                    raise ValueError("Invalid CPU pressure field")
+                if key == "total":
+                    if not value.isdigit():
+                        raise ValueError("Invalid CPU pressure total")
+                    values[key] = int(value)
+                else:
+                    value = float(value)
+                    if not math.isfinite(value) or not 0 <= value <= 100:
+                        raise ValueError("Invalid CPU pressure average")
+                    values[key] = value
+            if set(values) != {"avg10", "avg60", "avg300", "total"}:
+                raise ValueError("Incomplete CPU pressure observation")
+            observations[parts[0]] = values
+    return {"cpuStat": counters, "cpuPressure": observations}
+
+
 def resource_sample(group, phase, started):
     memory = {key: int(value) for key, value in
               (line.split() for line in (group / "memory.stat").read_text().splitlines())}
@@ -71,7 +113,7 @@ def resource_sample(group, phase, started):
             "memoryCurrentBytes": int((group / "memory.current").read_text()),
             "memoryAnonBytes": memory["anon"], "memoryFileBytes": memory["file"],
             "memoryShmemBytes": memory["shmem"], "memoryEvents": events,
-            "pidsCurrent": int((group / "pids.current").read_text())}
+            "pidsCurrent": int((group / "pids.current").read_text()), **cpu_observation(group)}
 
 
 def owned_container(cid, token):
@@ -79,6 +121,27 @@ def owned_container(cid, token):
     if state["Config"]["Labels"].get("com.medwarp.reader.generated-test") != token:
         raise RuntimeError("Refusing to act on a container without this run's ownership label")
     return state
+
+
+def preserve_owned_renderer_diagnostics(cid, token, output):
+    """Private bounded generated-only logs, captured before removing this owned container."""
+    state = owned_container(cid, token)["State"]
+    observed = {key: state[key] for key in ("Running", "Paused", "Restarting", "OOMKilled", "ExitCode", "Pid")}
+    if any(type(observed[key]) is not bool for key in ("Running", "Paused", "Restarting", "OOMKilled")) or \
+            any(type(observed[key]) is not int for key in ("ExitCode", "Pid")):
+        raise ValueError("Invalid owned renderer state")
+    logs = subprocess.run(["docker", "logs", "--tail=80", cid], capture_output=True, timeout=10, check=False)
+    evidence = {"generatedOnly": True, "capturedBeforeOwnedCleanup": True, "state": observed,
+                "logCaptureExitCode": logs.returncode, "logs": {}}
+    for name, raw in (("stdout", logs.stdout), ("stderr", logs.stderr)):
+        stored = raw[-32768:]
+        path = output / ("archived-renderer-" + name + ".log")
+        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(stored)
+        evidence["logs"][name] = {"path": path.name, "capturedBytes": len(raw), "storedBytes": len(stored),
+            "truncated": len(stored) != len(raw), "storedSha256": hashlib.sha256(stored).hexdigest()}
+    return evidence
 
 
 def run_probe_with_handoff(probe, log_path, phases, handoff, sample, timeout=360):
@@ -149,6 +212,7 @@ def main():
     parent, anchor = token + ".slice", token + "-anchor.service"
     group = Path("/sys/fs/cgroup") / parent
     containers = []
+    legacy = None
     slice_started = False
     output.mkdir(mode=0o755)
     results = output / "results"
@@ -272,6 +336,13 @@ def main():
                 provenance["aggregateBudget"] = budget_snapshot(group)
             except (OSError, ValueError, RuntimeError):
                 provenance["aggregateBudgetUnavailable"] = True
+        # Preserve only this run's generated engine logs. Diagnostic failure must
+        # not skip exact ownership checks, mandatory cleanup or change acceptance.
+        if legacy is not None:
+            try:
+                provenance["archivedRendererDiagnostics"] = preserve_owned_renderer_diagnostics(legacy, token, output)
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+                provenance["archivedRendererDiagnosticFailureType"] = type(error).__name__
         stopped = []
         for cid in reversed(containers):
             owned_container(cid, token)
