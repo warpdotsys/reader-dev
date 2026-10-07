@@ -29,17 +29,18 @@ class CamoufoxContractReportTest(unittest.TestCase):
 
     def test_complete_synthetic_report_exercises_only_the_guard(self):
         result = self.verify()
-        self.assertEqual(18, result["tests"])
+        self.assertEqual(19, result["tests"])
         self.assertTrue(result["navigationContractPresent"])
         self.assertTrue(result["earlyNavigationContractPresent"])
         self.assertTrue(result["endlessNavigationContractPresent"])
         self.assertTrue(result["promiseContractPresent"])
         self.assertTrue(result["stateDeletionContractPresent"])
         self.assertTrue(result["sourceNavigationContractPresent"])
+        self.assertTrue(result["numericalThreadContractPresent"])
         self.assertEqual(64, len(result["xmlSha256"]))
 
     def test_all_environment_gated_cases_are_rejected(self):
-        self.suite.set("skipped", "18")
+        self.suite.set("skipped", str(len(GUARD.CONTRACTS)))
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 
@@ -49,6 +50,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_old_twelve_contracts_cannot_replace_navigation_acceptance(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.STATE_DELETION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
@@ -60,6 +62,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_thirteen_contracts_do_not_prove_endless_navigation(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.STATE_DELETION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
@@ -70,6 +73,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_fourteen_contracts_do_not_prove_promise_budget_or_recovery(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.STATE_DELETION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
@@ -79,6 +83,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_fifteen_contracts_do_not_prove_navigation_before_dom_ready(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.STATE_DELETION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.EARLY_NAVIGATION_CONTRACT))
@@ -87,6 +92,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_sixteen_contracts_do_not_prove_state_loss_non_replay_and_recovery(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.STATE_DELETION_CONTRACT))
         self.suite.set("tests", "16")
@@ -94,8 +100,22 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_seventeen_contracts_do_not_prove_source_rule_load_document_timing(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
         self.suite.set("tests", "17")
+        with self.assertRaises(GUARD.ContractReportError):
+            self.verify()
+
+    def test_previous_eighteen_contracts_do_not_prove_native_numerical_thread_budget(self):
+        self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
+        self.suite.set("tests", "18")
+        self.assertEqual(18, len(self.suite.findall("testcase")))
+        with self.assertRaises(GUARD.ContractReportError):
+            self.verify()
+
+    def test_skipped_numerical_import_is_rejected_even_with_forged_zero_counters(self):
+        case = next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT)
+        ET.SubElement(case, "skipped")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
 

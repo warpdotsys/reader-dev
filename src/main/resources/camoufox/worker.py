@@ -2,12 +2,30 @@
 
 import contextlib
 import json
+import os
 import re
 import secrets
 import sys
 import time
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlsplit
+
+
+# Camoufox's locked NumPy dependency otherwise sizes its numerical thread pool
+# from host CPUs, not Reader's container quota. This one-request worker is not
+# a numerical-compute service. Set these before importing Camoufox/NumPy; do
+# not reduce Firefox's site isolation, JavaScript features or resource guards.
+NUMERICAL_THREAD_ENV = (
+    "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS",
+)
+
+
+def prepare_numerical_runtime(environment):
+    for name in NUMERICAL_THREAD_ENV:
+        environment[name] = "1"
+
+
+prepare_numerical_runtime(os.environ)
 
 # Stdout is a machine protocol. Keep all package/browser diagnostics on stderr.
 protocol_out = sys.stdout

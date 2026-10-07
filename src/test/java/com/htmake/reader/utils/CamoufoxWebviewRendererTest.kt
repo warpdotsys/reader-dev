@@ -1,6 +1,8 @@
 package com.htmake.reader.utils
 
 import com.sun.net.httpserver.HttpServer
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import io.legado.app.adapters.DefaultAdpater
 import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.adapters.ReaderAdapterInterface
@@ -33,6 +35,54 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class CamoufoxWebviewRendererTest {
     @get:Rule val temp = TemporaryFolder()
+
+    @Test(timeout = 30000)
+    fun numericalLibraryImportsDoNotAllocateTheHostCpuThreadPool() {
+        val python = System.getenv("READER_CAMOUFOX_PYTHON")
+        assumeTrue(Files.isRegularFile(Paths.get("/proc/self/status")))
+        val workerFile = temp.newFile("generated-packaged-worker.py")
+        val bytes = javaClass.getResourceAsStream("/camoufox/worker.py")!!.use { it.readBytes() }
+        assertTrue("Packaged worker must be bounded", bytes.size <= 128 * 1024)
+        Files.write(workerFile.toPath(), bytes)
+        val script = """
+            import importlib.util,importlib.metadata,json,os,pathlib,sys
+            original_stdout=sys.stdout
+            spec=importlib.util.spec_from_file_location('generated_packaged_worker',sys.argv[1])
+            module=importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            sys.stdout=original_stdout
+            import numpy
+            threads=int(next(line.split(':')[1] for line in pathlib.Path('/proc/self/status').read_text().splitlines() if line.startswith('Threads:')))
+            print(json.dumps({'threadCount':threads,'numpyVersion':numpy.__version__,
+                'camoufoxVersion':importlib.metadata.version('camoufox'),
+                'numericalFlagsAllOne':all(os.environ.get(name)=='1' for name in module.NUMERICAL_THREAD_ENV)}))
+        """.trimIndent()
+        val builder = ProcessBuilder(python, "-c", script, workerFile.absolutePath)
+            .redirectError(ProcessBuilder.Redirect.DISCARD)
+        builder.environment()["PYTHONDONTWRITEBYTECODE"] = "1"
+        // Force the problematic inherited values even on a small hosted runner.
+        for (name in listOf("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")) {
+            builder.environment()[name] = "32"
+        }
+        val process = builder.start()
+        try {
+            assertTrue("Native import must finish under its own deadline", process.waitFor(20, TimeUnit.SECONDS))
+            assertEquals("Native import failed; no raw diagnostics are echoed", 0, process.exitValue())
+            val output = process.inputStream.use { it.readNBytes(4097) }
+            assertTrue("Native import report must be bounded", output.size <= 4096)
+            val value = Gson().fromJson(String(output, StandardCharsets.UTF_8), JsonObject::class.java)
+            assertEquals(setOf("threadCount", "numpyVersion", "camoufoxVersion", "numericalFlagsAllOne"), value.keySet())
+            assertEquals(1, value.get("threadCount").asInt)
+            assertEquals("2.2.6", value.get("numpyVersion").asString)
+            assertEquals("0.5.6", value.get("camoufoxVersion").asString)
+            assertTrue(value.get("numericalFlagsAllOne").asBoolean)
+        } finally {
+            if (process.isAlive) {
+                process.destroyForcibly()
+                assertTrue("Owned native import process stopped", process.waitFor(5, TimeUnit.SECONDS))
+            }
+        }
+    }
 
     private lateinit var renderer: CamoufoxWebviewRenderer
     private lateinit var server: HttpServer

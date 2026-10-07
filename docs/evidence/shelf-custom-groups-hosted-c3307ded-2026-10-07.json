@@ -1,0 +1,311 @@
+{
+  "schemaVersion": 1,
+  "scope": "own hosted generated shelf groups; no production or new worker acceptance",
+  "sourceHead": "c3307ded7922a84067080afef5d84fd934806356",
+  "testedMergeRevision": "69a222de219dcbcb780b74caa4dbf4c90228f8ae",
+  "liveRunsConfirmed": [
+    {
+      "id": 37576894576,
+      "workflow": "Java Kotlin CI",
+      "conclusion": "success",
+      "actualJobs": 1
+    },
+    {
+      "id": 37576894560,
+      "workflow": "Vue 3 preview build",
+      "conclusion": "success",
+      "actualJobs": 2
+    },
+    {
+      "id": 37576894595,
+      "workflow": "Browser image integration",
+      "conclusion": "success",
+      "actualJobs": 1,
+      "conditionalJobsSkipped": 5
+    },
+    {
+      "id": 37576894578,
+      "workflow": "Native release artifact rehearsal",
+      "conclusion": "success",
+      "actualJobs": 6
+    }
+  ],
+  "coreJUnit": [
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+      "sha256": "ea2d9b56a738dbaff308eb16b66d1e3652dbed889aaca4609d0cac19a60b357f",
+      "bytes": 487,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+      "sha256": "2824855ab2ff8e373a485e25f97ec377a7988c1ba44b8866a7748eca9509e5ec",
+      "bytes": 1009,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+      "sha256": "ee6b8a701c427b0c3c12ccb06275c94db479753a3360f74e751b2add47b4eed5",
+      "bytes": 656,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+      "sha256": "2b05dbb4c59bdc0092bcb7a154cdcbcc7b55c0c2474bd71826223c23a733eb07",
+      "bytes": 463,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+      "sha256": "636f386c53db597293c48b4d08501227b90e9b3cedf5eaf252d525a6923a5ba0",
+      "bytes": 483,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+      "sha256": "2e8e7c524a134836102ff720f93fe295ca646b6272aa19546df9a19fd8f77bd0",
+      "bytes": 518,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+      "sha256": "979c4acb0bc5098ed98adf3af54a7ba5c0ab664b93169401ac2aad87a0c1ca11",
+      "bytes": 614,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+      "sha256": "eabfb0608a8ec0ed814d580c4083508b37b334afed4f4088b0dea42409081ada",
+      "bytes": 690,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+      "sha256": "34ddb6e4d0c5a193971ffb8c8eed87f2eb6a28fc79dfa20143f9dfbd175f7316",
+      "bytes": 478,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+      "sha256": "421ccfc0cb6d3184ea20ea3c865f0ccaec1c93ace8bdf9fe28aa2d2d021f93c7",
+      "bytes": 635,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+      "sha256": "a42a0d79d2967de25acc3f6aeef61ac7c7120f2037570e20c07064dbb653c8ca",
+      "bytes": 478,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+      "sha256": "b45937d333c69dd3215ba80e613f21a5b2de2c4d5aebd4910dffb41e0e697872",
+      "bytes": 496,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+      "sha256": "97edfaa39735f214064ea9c49ce3503c1a8e5dbf7daae78004c5dd28209d3d91",
+      "bytes": 469,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+      "sha256": "d82524d46c0081f8269bf4870e19e53f491c918333ccd08c10d74bd5fb3638ba",
+      "bytes": 847,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+      "sha256": "fb438acb3e8882b03386aedcfd16914a348b87e0b9cfeb8f48cf7eff8aa58a18",
+      "bytes": 497,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+      "sha256": "43236651b86dd131c2239de9951aae3a23fc2d0a399f51c92d887b1028236043",
+      "bytes": 733,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+      "sha256": "2e07d69f54cfd5ece18a62b6c38e427c329736b77010bbfbb15a3d22c6d69ea6",
+      "bytes": 480,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+      "sha256": "7bb04a0317dccd5564a0b02e210a4591659923875840389b86ef682dfc0fd0b4",
+      "bytes": 483,
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "customGroups": {
+    "schemaVersion": 1,
+    "scope": "generated persisted custom group scrolling; not production groups",
+    "observations": [
+      {
+        "width": 1135,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      },
+      {
+        "width": 360,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      },
+      {
+        "width": 320,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      }
+    ]
+  },
+  "customGroupsSource": {
+    "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-custom-groups.json",
+    "sha256": "077700cc5c2fe5879e939b3df1b4b5ed34864fb31b58083e1846d90fd6ed89d9",
+    "bytes": 614
+  },
+  "downloadedShelfFiles": [
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-1135.png",
+      "sha256": "b186b7f13ba121cdb789ea15ec7e115cdee6f26016f48ab267e20ca922a00c67",
+      "bytes": 82446
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-custom-groups-1135.png",
+      "sha256": "aaf9c2eeb27a8a383ba5a9fb4aacc35cd4bbd86f16a69bb42ceea391bde8ba84",
+      "bytes": 50848
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-custom-groups-320.png",
+      "sha256": "df5236a092efda20f12899af10429236867be8163f212b91d0bf7d7259abd981",
+      "bytes": 41317
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-custom-groups-360.png",
+      "sha256": "c3eb3b945f6b1fa436a65d565b88c563c8431f1a082d88ab007b1c18eeee7244",
+      "bytes": 42020
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-custom-groups.json",
+      "sha256": "077700cc5c2fe5879e939b3df1b4b5ed34864fb31b58083e1846d90fd6ed89d9",
+      "bytes": 614
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-geometry.json",
+      "sha256": "b5b24af832c5b6ff7a43c90ada771d031fa1d5f137fa0cac6fab0dffad017599",
+      "bytes": 3818
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-page-top-1135.png",
+      "sha256": "55ba189100991daf724ea08cf4cc787289febce8e4735d2599ccd77e895bdcf4",
+      "bytes": 53833
+    },
+    {
+      "path": "build/shelf-custom-groups-hosted-c330-20261007-a/vue3-shelf-layout-generated-page-top-360.png",
+      "sha256": "17a56e50f51eddc4004dd75f781e5945e4ec50012253b7b22d29271e43094d25",
+      "bytes": 47471
+    }
+  ],
+  "artifactIds": {
+    "shelf": 11463341165,
+    "core": 11463301327
+  },
+  "limitations": [
+    "Only generated groups and UI XML independently consumed here",
+    "This audit does not independently validate c330 full/native small resource/identity reports",
+    "Earlier 18-case Camoufox reports cannot accept the new mandatory 19th contract",
+    "Not physical touch/keyboard, all short screens, source authentication, registry release or production"
+  ]
+}

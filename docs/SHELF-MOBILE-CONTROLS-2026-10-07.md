@@ -33,6 +33,8 @@
 
 ## 尚未验证、已知问题与回退
 
+上节待验的长分组增量现已由自己的源码 `c3307ded`／受测合并快照 `69a222de...` 完成：[Java](https://github.com/warpdotsys/reader-dev/actions/runs/37576894576)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37576894560)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37576894595)、[原生六作业](https://github.com/warpdotsys/reader-dev/actions/runs/37576894578)均成功；五个互斥专项跳过不算通过。下载的核心 18 份 XML 全部实际执行，三组长分组 JSON 的滚动／遮挡／页首及 9 标签逐项核对通过，320px 生成截图已目视。该 UI 审计没有独立消费 c330 的全镜像／原生小身份和预算报告，不宣称所有制品已独立验收，也不能验收随后新增的第 19 个数值线程契约。[本增量自己的散列、指标及范围](evidence/shelf-custom-groups-hosted-c3307ded-2026-10-07.json)。
+
 此修复自己的托管构建／镜像已按上节验收，不借用 `de7c0c7e` 的绿灯。865px 高度和鼠标点击不是实体手机、触摸／软键盘或全部短视口验收；长分组只证明四个生成的 20 字分组／三个视口，不证明所有组数和所有名称。真实起点解析仍失败，认证三方、原 JAR 新样本差分及生产发布未由本次修复完成。
 
 无数据迁移、无字节码补丁。需要回退时，在干净维护检出撤回这组响应式 CSS 并重建，保留失败回归和证据；不要在用户脏工作区 reset／checkout。保留 Vue 2 的候选镜像可显式选择 `READER_APP_WEBUI=vue2`；本轮不修改生产环境，不把回退写成已执行生产切换。

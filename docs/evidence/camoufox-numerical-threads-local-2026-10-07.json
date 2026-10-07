@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "scope": "local numerical import and generated helper; not full Reader image acceptance",
+  "workerSha256": "01863dcd45eab836bc0e76e2f0512d97656112a43c8f7dd1ffa3e3e8845087be",
+  "rebuiltJarSha256": "f9c9082a352d0d609f3a82497f4d4b0ed2907da72bec833a962ce5948a184f2b",
+  "packagedWorkerMatches": true,
+  "originalJarSha256Unchanged": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "userReportsChecked": 58,
+  "userReportsChanged": 0,
+  "importProfile": {
+    "source": {
+      "path": "build/local-public-metadata-20261007-a/import-profile.json",
+      "sha256": "e395b65737bfc85c68eb4508aa29e78b6fcfecea19de85fa626432b9db4b07f6",
+      "bytes": 2455
+    },
+    "probeSourceSha256": "3a7d39961d3e5952068fbd05c060ff2c22ac0af9387f25d36e334bb2c8772b9f",
+    "observations": [
+      {
+        "camoufoxVersion": "0.5.6",
+        "maxRssKiB": 100792,
+        "mode": "default",
+        "numpyVersion": "2.2.6",
+        "threadsAfterCamoufox": 32,
+        "threadsAfterNumpy": 32,
+        "threadsBefore": 1
+      },
+      {
+        "camoufoxVersion": "0.5.6",
+        "maxRssKiB": 100720,
+        "mode": "numerical-single-thread",
+        "numpyVersion": "2.2.6",
+        "threadsAfterCamoufox": 1,
+        "threadsAfterNumpy": 1,
+        "threadsBefore": 1
+      }
+    ],
+    "resources": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.18.33.2-microsoft-standard-WSL2",
+      "memoryCurrentBytes": 102895616,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 198729728,
+      "pidsCurrent": 1,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 46,
+      "scope": "generated native Python library imports only; not browser, Reader or parity",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0
+    },
+    "runtimeIdentity": {
+      "effectiveCapabilitiesZero": true,
+      "noNewPrivileges": true,
+      "runtimeGid": 10001,
+      "runtimeUid": 10001
+    },
+    "ownBudgetMembershipVerified": true,
+    "originalBudgetGuardReexecuted": true,
+    "ownedRuntimeStateAbsent": true,
+    "totalSeconds": 2.922,
+    "readerStarted": false,
+    "pageRequested": false
+  },
+  "generatedBrowserHelper": {
+    "source": {
+      "path": "build/local-camoufox-image-20261004-a/evidence/local-bounded-runtime-20261007-a.json",
+      "sha256": "f9cf57d9d6a79226b69ef685b01beea3d30ee861d73ab543a6bdcf113893fa87",
+      "bytes": 6696
+    },
+    "helperSha256": "6e210b3d7d296cb5b9179e809a30b8dc36ecdfb918178220b23d0d5177a038ac",
+    "runtimeIdentity": {
+      "effectiveCapabilitiesZero": true,
+      "interfaces": [
+        "lo"
+      ],
+      "noNewPrivileges": true,
+      "runtimeGid": 10001,
+      "runtimeUid": 10001,
+      "supplementaryGroups": [
+        65534,
+        65534,
+        65534,
+        65534,
+        65534,
+        65534,
+        0
+      ],
+      "withinBudgetCgroup": true
+    },
+    "documentObservation": {
+      "cases": [
+        {
+          "case": "deletedStateSameDocument",
+          "documentObservation": "sameDocument",
+          "mainFrameNavigationObserved": false,
+          "passed": true,
+          "sourceRuns": 1
+        },
+        {
+          "case": "deletedStateSameDocumentAfterHashNavigation",
+          "documentObservation": "sameDocument",
+          "mainFrameNavigationObserved": true,
+          "passed": true,
+          "sourceRuns": 1
+        },
+        {
+          "case": "replacedDocumentReferenceUnavailable",
+          "documentObservation": "unavailable",
+          "mainFrameNavigationObserved": true,
+          "passed": true,
+          "sourceRuns": 1
+        }
+      ],
+      "networkDenials": 0,
+      "passed": true,
+      "schemaVersion": 1,
+      "scope": "generated helper-level pinned browser; not Reader parity"
+    },
+    "resources": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.18.33.2-microsoft-standard-WSL2",
+      "memoryCurrentBytes": 1594040320,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 2123980800,
+      "pidsCurrent": 1,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 200,
+      "scope": "old locked read-only image runtime plus current worker; generated helper only",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0
+    },
+    "finalResources": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.18.33.2-microsoft-standard-WSL2",
+      "memoryCurrentBytes": 1594150912,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 2123980800,
+      "pidsCurrent": 1,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 200,
+      "scope": "old locked read-only image runtime plus current worker; generated helper only",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0
+    },
+    "originalDocumentGuardReexecuted": true,
+    "originalBudgetGuardsReexecuted": 3,
+    "ownedRuntimeStateAbsent": true,
+    "totalSeconds": 15.177,
+    "readerStarted": false
+  },
+  "completedLocalChecks": {
+    "python": {
+      "tests": 231,
+      "passed": 230,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 13.579,
+      "command": "python -m unittest discover -s src/test/python -p '*_test.py'"
+    },
+    "bootJarSucceeded": true,
+    "compileTestKotlinSucceeded": true,
+    "nativeJvmContractExecutedLocally": false
+  },
+  "mandatoryNativeGate": {
+    "contracts": 19,
+    "numericalContract": "numericalLibraryImportsDoNotAllocateTheHostCpuThreadPool",
+    "hostedOwnRevisionAcceptance": "pending",
+    "previousEighteenCaseReportsNotAccepted": true
+  },
+  "limitations": [
+    "Not a final Docker image or Reader API test",
+    "No real credential or chapter body",
+    "Import RSS was almost unchanged; no whole-page memory reduction claim",
+    "Helper peak is near 2 GiB; not proof that full Reader fits",
+    "No controlled full-page before/after comparison",
+    "No new hosted acceptance, original/archived parity, long soak, registry release or production deployment"
+  ]
+}

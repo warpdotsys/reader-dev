@@ -1,5 +1,11 @@
 # 内置浏览器的匿名起点详情验收
 
+## 后续本机诊断（2026-10-07）：旧 worker 请求失败且触限
+
+下面托管镜像专项的原结果不变。之后在旧只读运行时＋恢复 JAR `eaa34cc9...`／worker `2bc9fe2f...` 做了一次本机匿名详情：完整规则读回、唯一自有回环监听、UID 10001 及独立 cgroup 成员确认后，6.747 秒／HTTP 200／`isSuccess=false`／data null，错误类别及页面诊断均 null。同时内存峰值 2 GiB／`max=2549`、PID 256／`max=2`，原零 swap 守卫仍拒绝，不能用无 OOM 或清理成功改成绿灯。三轮此前探针准备失败不多计为产品请求，报告全部保留。
+
+只有生成 Reader 账号和公开元数据，无网站凭据／章节正文；WSL 网络共享及显式 JVM 公网 hosts 快照，不等于当前完整镜像、原 JAR／旧远程三方或生产。生成 Cookie 会话撤销和自有 Java／运行状态清除均确认。随后只做离线数值导入对照，32→1 线程；源码限制已构建并增加第 19 个强制原生契约，新 worker 仅在无外网生成 helper 中运行。**尚未拿新 JAR 重测实站，不能说触限或起点已解决**。[本机红灯及精确字节](evidence/public-metadata-local-resource-failure-2026-10-07.json)、[修复范围与剩余资源风险](CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)。
+
 ## 最新实际结果（2026-10-07）：无等待脚本仍是成功壳／空元数据
 
 探针源码 `e5cc2ba8` 的[专项 37574905299](https://github.com/warpdotsys/reader-dev/actions/runs/37574905299)消费 `de7c0c7e` 原生演练的已验收 AMD64 镜像，准确受测修订仍是 `bed59dc8...`，不是 `e5cc2ba8` 新镜像。只请求一次匿名公开详情，`snapshot-only` 不注入源等待脚本、不请求目录／正文、不导入 Cookie。现代书源标记和规则保存读回的六项均通过。

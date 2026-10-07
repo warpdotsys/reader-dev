@@ -13,6 +13,8 @@ Required server-side files that are deliberately not committed:
 
 ## 正式发布
 
+2026-10-07 最新未发布源码只修复 Camoufox 数值库导入线程池（离线实测 32→1），新增第 19 个必执行原生契约，自己的托管验收待运行。修复前本机匿名请求实际触及 2 GiB／256 PID，新 worker 的无外网生成 helper 也仍近内存上限；不代表起点已修好或生产容量足够。[完整已知风险与回滚](../../docs/CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)。不借旧 18 项报告发版、不升预算取绿灯，也没有在服务器安装新浏览器或切换产物。
+
 正式版本通过 `.github/workflows/release.yml` 发布。全部验收完成后，准备与标签同名的
 `docs/releases/<tag>.md`，并从 `legacy` 上创建稳定 SemVer 标签（例如 `v4.1.0`）。
 触发前必须同步提升 `build.gradle.kts`、`web/package.json` 与

@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import json
+import os
 import sys
 import types
 import unittest
@@ -27,6 +28,50 @@ def load_worker():
 
 
 worker = load_worker()
+
+
+class WorkerNumericalThreadPolicyTest(unittest.TestCase):
+    def test_missing_library_options_are_single_threaded(self):
+        environment = {}
+        worker.prepare_numerical_runtime(environment)
+        self.assertEqual({name: "1" for name in worker.NUMERICAL_THREAD_ENV}, environment)
+
+    def test_inherited_host_sized_or_invalid_options_are_not_kept(self):
+        for value in ("32", "64", "0", "invalid", ""):
+            with self.subTest(value=value):
+                environment = {name: value for name in worker.NUMERICAL_THREAD_ENV}
+                worker.prepare_numerical_runtime(environment)
+                self.assertTrue(all(value == "1" for value in environment.values()))
+
+    def test_unrelated_runtime_network_and_account_options_are_unchanged(self):
+        unrelated = {"HOME": "/generated/home", "PATH": "/generated/bin",
+                     "READER_BROWSER_ALLOW_PRIVATE_NETWORKS": "false",
+                     "READER_PROBE_NAMESPACE": "generated"}
+        environment = dict(unrelated)
+        worker.prepare_numerical_runtime(environment)
+        worker.prepare_numerical_runtime(environment)
+        self.assertEqual(unrelated, {key: environment[key] for key in unrelated})
+
+    def test_policy_runs_before_the_first_camoufox_import(self):
+        observed = []
+        dependency = types.ModuleType("camoufox")
+
+        def imported_attribute(name):
+            if name not in ("Camoufox", "DefaultAddons", "NewContext"):
+                raise AttributeError(name)
+            observed.append({key: os.environ.get(key) for key in worker.NUMERICAL_THREAD_ENV})
+            return types.SimpleNamespace(UBO="generated") if name == "DefaultAddons" else object
+
+        dependency.__getattr__ = imported_attribute
+        path = Path(__file__).parents[2] / "main" / "resources" / "camoufox" / "worker.py"
+        spec = importlib.util.spec_from_file_location("generated_worker_import_order", path)
+        module = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, {"camoufox": dependency}), \
+                patch.dict(os.environ, {name: "32" for name in worker.NUMERICAL_THREAD_ENV}), \
+                patch.object(sys, "stdout", io.StringIO()), patch.object(sys, "stderr", io.StringIO()):
+            spec.loader.exec_module(module)
+        self.assertGreaterEqual(len(observed), 3)
+        self.assertTrue(all(all(value == "1" for value in record.values()) for record in observed))
 
 
 class WorkerInitialNavigationPolicyTest(unittest.TestCase):
