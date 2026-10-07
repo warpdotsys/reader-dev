@@ -124,6 +124,8 @@ def main():
     parser.add_argument("--restored", type=Path, required=True)
     parser.add_argument("--runtime-image", required=True, help="Already verified sha256 image ID")
     parser.add_argument("--output", type=Path, required=True, help="New directory under /var/tmp")
+    parser.add_argument("--exercise-encoding", action="store_true",
+                        help="Also execute the sixth generated UTF-8 POST/script/response comparison")
     args = parser.parse_args()
     if sys.platform != "linux" or os.geteuid() != 0:
         parser.error("A root-owned Linux Docker/systemd host is required")
@@ -160,6 +162,8 @@ def main():
                   "budgetAccepted": False, "overallAccepted": False,
                   "executionLayout": "serial-renderers-shared-fixture",
                   "historicalRendererStoppedBeforeCamoufox": False, "resourceSamples": []}
+    if args.exercise_encoding:
+        provenance["encodingProbeRequested"] = True
     try:
         command("systemd-run", "--unit=" + anchor, "--slice=" + parent,
                 "--property=Type=oneshot", "--property=RemainAfterExit=yes", "/bin/true")
@@ -224,6 +228,8 @@ def main():
                  "--original-network-isolated", "--exercise-script", "--exercise-post",
                  "--archived-renderer-base", "http://127.0.0.1:8050",
                  "--camoufox-python", "/usr/bin/python3", "--phase-handoff-dir", "/results/phases"]
+        if args.exercise_encoding:
+            probe.append("--exercise-encoding")
         started = time.monotonic()
 
         def sample(phase):

@@ -8,6 +8,10 @@ import sys
 import tempfile
 import unittest
 import os
+import hashlib
+import io
+import threading
+import contextlib
 from pathlib import Path
 from unittest import mock
 
@@ -31,6 +35,37 @@ def invoke(*arguments):
 
 
 class WebviewCookieCliSafetyTest(unittest.TestCase):
+    def test_existing_encoding_failure_evidence_is_preserved_before_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "new-report.json"
+            failure = Path(directory) / "new-report.original-failed.json"
+            failure.write_bytes(b"preserve prior evidence")
+            result = invoke("--original-network-isolated", "--archived-renderer-base",
+                            "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                            "--camoufox-python", sys.executable, "--exercise-encoding", "--report", report)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Encoding failure report already exists", result.stderr)
+            self.assertEqual(b"preserve prior evidence", failure.read_bytes())
+            self.assertFalse(report.exists())
+
+    def test_encoding_requires_actual_three_way_mode_before_inputs_or_listener(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "new-report.json"
+            for mode in (["--restored-only"], ["--original-network-isolated"],
+                         ["--original-network-isolated", "--archived-renderer-base",
+                          "http://127.0.0.1:8050", "--exercise-script", "--exercise-post"]):
+                with self.subTest(mode=mode):
+                    result = invoke(*mode, "--exercise-encoding", "--report", report)
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("Encoding probe requires actual isolated three-way", result.stderr)
+                    self.assertFalse(report.exists())
+
+    def test_direct_encoding_launch_cannot_fall_back_to_a_fake_renderer(self):
+        with mock.patch.object(PROBE.subprocess, "Popen") as process:
+            with self.assertRaisesRegex(SystemExit, "actual isolated renderer"):
+                PROBE.run_jar(None, None, None, 1, None, None, exercise_encoding=True)
+            process.assert_not_called()
+
     def test_phase_handoff_cannot_be_used_without_three_way_mode(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
@@ -108,6 +143,127 @@ def executed_results(cookie_headers):
         "renderRequestFields": [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 +
                                [{"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}],
     })
+
+
+def encoding_results(cookie_headers):
+    result = executed_results(cookie_headers[:5])
+    search = copy.deepcopy(result["searches"][0])
+    search["data"][0]["name"] = PROBE.ENCODING_BOOK
+    result["searches"].append(search)
+    result["renderCookieHeaders"] = list(cookie_headers)
+    result["renderRequestFields"].append(PROBE.encoding_request_fields())
+    return result
+
+
+class EncodingReportValidationTest(unittest.TestCase):
+    """Generated fixture validation, not actual Reader/browser observations."""
+
+    def setUp(self):
+        self.original = encoding_results([""] * 6)
+        self.remote = encoding_results([""] * 6)
+        self.camoufox = encoding_results(["", "session=alpha==", "", "", "", ""])
+
+    def validate(self):
+        PROBE.validate_three_way(self.original, self.remote, self.camoufox, exercise_encoding=True)
+
+    def test_six_actual_shapes_are_accepted_without_normalization(self):
+        before = json.dumps([self.original, self.remote, self.camoufox])
+        self.validate()
+        self.assertEqual(before, json.dumps([self.original, self.remote, self.camoufox]))
+
+    def test_five_case_report_cannot_claim_six_case_encoding_acceptance(self):
+        with self.assertRaisesRegex(RuntimeError, "Missing executed"):
+            PROBE.validate_three_way(executed_results([""] * 5), self.remote, self.camoufox, True)
+        with self.assertRaisesRegex(RuntimeError, "Missing executed"):
+            PROBE.validate_three_way(self.original, self.remote, self.camoufox)
+
+    def test_body_bytes_digest_count_text_and_type_are_independently_required(self):
+        for key, value in (("bodySha256", "0" * 64), ("bodyByteCount", True),
+                           ("bodyByteCount", len(PROBE.ENCODING_BODY)),
+                           ("body", PROBE.ENCODING_BODY.replace("𠮷", "?")),
+                           ("testHeader", "synthetic")):
+            with self.subTest(key=key, value=value):
+                changed = copy.deepcopy(self.camoufox)
+                changed["renderRequestFields"][-1][key] = value
+                with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+                    PROBE.validate_three_way(self.original, self.remote, changed, True)
+        changed = copy.deepcopy(self.camoufox)
+        del changed["renderRequestFields"][-1]["bodySha256"]
+        with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+            PROBE.validate_three_way(self.original, self.remote, changed, True)
+
+    def test_matching_corruption_on_all_sides_is_not_an_encoding_pass(self):
+        for result in (self.original, self.remote, self.camoufox):
+            result["searches"][-1]["data"][0]["name"] = "WebView编码原始书"
+        with self.assertRaisesRegex(RuntimeError, "UTF-8 response or script"):
+            self.validate()
+
+    def test_sixth_case_does_not_replace_old_post_or_cookie_assertions(self):
+        self.camoufox["renderRequestFields"][4]["body"] = "q=unexpected"
+        with self.assertRaisesRegex(RuntimeError, "GET/POST"):
+            self.validate()
+        self.setUp()
+        self.camoufox["renderCookieHeaders"][5] = "session=alpha=="
+        with self.assertRaisesRegex(RuntimeError, "replay/deletion"):
+            self.validate()
+
+    def handler(self, raw):
+        handler = object.__new__(PROBE.FixtureHandler)
+        handler.server = mock.Mock(archived_renderer=True, exercise_encoding=True,
+                                   calls=[], script_sources=[], request_fields=[], lock=threading.Lock())
+        handler.path = "/search-utf8"
+        handler.headers = {"Content-Length": str(len(raw)), "X-Fixture": "synthetic-utf8"}
+        handler.rfile = io.BytesIO(raw)
+        handler.send_search_html = mock.Mock()
+        handler.send_error = mock.Mock()
+        return handler
+
+    def test_target_handler_hashes_original_bytes_not_reencoded_summary(self):
+        raw = PROBE.ENCODING_BODY.encode("utf-8")
+        handler = self.handler(raw)
+        handler.do_POST()
+        self.assertEqual([{"httpMethod": "POST", "body": PROBE.ENCODING_BODY,
+                           "testHeader": "synthetic-utf8", "bodyByteCount": len(raw),
+                           "bodySha256": hashlib.sha256(raw).hexdigest()}], handler.server.request_fields)
+        self.assertGreater(len(raw), len(PROBE.ENCODING_BODY))
+        handler.send_error.assert_not_called()
+
+    def test_target_handler_rejects_invalid_utf8_without_replacement(self):
+        handler = self.handler(b'{"query":"\xff"}')
+        handler.do_POST()
+        handler.send_error.assert_called_once_with(400)
+        self.assertEqual([], handler.server.request_fields)
+        handler.send_search_html.assert_not_called()
+
+    def test_actual_mode_forwards_encoding_to_all_three_sides_and_handoff(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "three-way.json"
+            phases = Path(temporary) / "phases"
+            arguments = [str(SCRIPT), "--java", sys.executable, "--original", SCRIPT,
+                         "--restored", SCRIPT, "--report", report,
+                         "--original-network-isolated", "--archived-renderer-base",
+                         "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                         "--camoufox-python", sys.executable, "--exercise-encoding",
+                         "--phase-handoff-dir", phases]
+            with mock.patch.object(sys, "argv", list(map(str, arguments))), \
+                    mock.patch.dict(sys.modules, {"original_jar_safety": mock.Mock()}), \
+                    mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    mock.patch.object(PROBE, "Fixture"), mock.patch.object(PROBE, "free_port", return_value=9), \
+                    mock.patch.object(PROBE.threading, "Thread"), \
+                    mock.patch.object(PROBE, "wait_for_camoufox_handoff") as handoff, \
+                    mock.patch.object(PROBE, "run_jar", side_effect=[self.original, self.remote, self.camoufox]) as run, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                PROBE.main()
+            self.assertEqual(3, run.call_count)
+            for call, side in zip(run.call_args_list, ("original", "restored", "camoufox")):
+                self.assertIs(True, call.kwargs["exercise_encoding"])
+                self.assertIs(True, call.kwargs["include_data"])
+                self.assertEqual(report.with_name("three-way." + side + "-failed.json"), call.kwargs["failure_report"])
+            handoff.assert_called_once_with(phases, self.original, self.remote, exercise_encoding=True)
+            value = json.loads(report.read_text(encoding="utf-8"))
+            self.assertEqual(PROBE.encoding_request_fields(), value["encodingProbe"]["expectedRequestFields"])
+            self.assertEqual(6, len(value["expectedCamoufoxCookieSequence"]))
 
 
 class HistoricalRendererHandoffTest(unittest.TestCase):

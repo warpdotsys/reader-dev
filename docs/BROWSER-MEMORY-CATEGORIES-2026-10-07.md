@@ -28,6 +28,8 @@
 
 这些报告由旧 collector 生成，没有 `memory.stat`，不能倒填分类。正常镜像短测最高 842,723,328 B／PID 204，触限／OOM／实际 swap 0，但允许 1 GiB swap；不是上述本机零 swap 预算，也不是起点、认证三方、长期或生产证明。完整镜像和原生共享 JAR 独立构建，哈希分别为 `c7f9fc5b...`／`221d41ef...`，不声称不同 workflow 字节相同。
 
-新 collector 自己的托管集成仍待本次提交验收；它只是补齐可维护的观测，不是根因修复或新的业务兼容证明。实站解析、真实认证和原件／历史 WebView 同条件三方仍未完成。不发布／部署，不修改用户数据或映射范围。58 个用户报告哈希重新核对无变化。
+新 collector 自己的托管集成现已完成：`594cec9c`／受测 `fc5e2446...` 的 [Java](https://github.com/warpdotsys/reader-dev/actions/runs/37582943952)、[Vue](https://github.com/warpdotsys/reader-dev/actions/runs/37582943921)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37582943956)、[原生六作业](https://github.com/warpdotsys/reader-dev/actions/runs/37582943967)全部终态成功。独立下载 3 份小制品，核对 19 项真实引擎契约（0 跳过／失败／错误）、24 份 publisher 身份集合、共享 JAR／重载 ImageId 和 15 次原 UI／异步／资源守卫。5 份真实 Linux 报告均含 14 个有限分类；短时最高 844,652,544 B／PID 197，触限／OOM／实际 swap 0，仍配置允许 1 GiB swap。[该 collector 自己的证据与限制](evidence/browser-memory-categories-hosted-594cec9c-2026-10-07.json)。
+
+这些分类是采集时的 current，不是 peak 分解，也不与本机 helper 强行横比；不扣除文件页、清缓存或升预算。它只是补齐可维护观测，不是根因修复或新的业务兼容证明。实站解析、真实认证和当前原件／历史 WebView 三方仍未完成。不发布／部署，不修改用户数据或映射范围。58 个用户报告哈希重新核对无变化。
 
 回滚在干净维护检出撤销可选分类采集和其测试即可；保留原总资源守卫、原红灯及观测证据。不得通过删触限计数、扣除缓存、加额度或 reset 用户工作区回退。

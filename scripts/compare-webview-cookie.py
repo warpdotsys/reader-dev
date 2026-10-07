@@ -23,6 +23,22 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
+ENCODING_BODY = '{"query":"黎明之剑𠮷😀 + & %","note":"中文 UTF-8"}'
+ENCODING_BOOK = "WebView编码书𠮷😀 + & %"
+ENCODING_SCRIPT = ("document.documentElement.outerHTML.replace('WebView编码原始书','" +
+                   ENCODING_BOOK + "')")
+
+
+def encoding_request_fields():
+    raw = ENCODING_BODY.encode("utf-8")
+    return {"httpMethod": "POST", "body": ENCODING_BODY, "testHeader": "synthetic-utf8",
+            "bodyByteCount": len(raw), "bodySha256": hashlib.sha256(raw).hexdigest()}
+
+
+def expected_request_fields(exercise_encoding=False):
+    return [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 + [
+        {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}] + (
+            [encoding_request_fields()] if exercise_encoding else [])
 
 
 def free_port():
@@ -40,9 +56,10 @@ def sha256(path):
 
 
 class Fixture(ThreadingHTTPServer):
-    def __init__(self, address, archived_renderer=False):
+    def __init__(self, address, archived_renderer=False, exercise_encoding=False):
         super().__init__(address, FixtureHandler)
         self.archived_renderer = archived_renderer
+        self.exercise_encoding = exercise_encoding
         self.calls = []
         self.script_sources = []
         self.request_fields = []
@@ -80,7 +97,13 @@ class FixtureHandler(BaseHTTPRequestHandler):
             if length > 65536:
                 self.send_error(400)
                 return
-            self.serve_search("POST", self.rfile.read(length).decode("utf-8"))
+            raw = self.rfile.read(length)
+            try:
+                body = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                self.send_error(400)
+                return
+            self.serve_search("POST", body, raw)
             return
         if self.path != "/render.html":
             self.send_error(404)
@@ -113,15 +136,19 @@ class FixtureHandler(BaseHTTPRequestHandler):
             return
         self.send_search_html(call_number)
 
-    def serve_search(self, method, body):
+    def serve_search(self, method, body, raw=None):
         with self.server.lock:
             self.server.calls.append(self.headers.get("Cookie", ""))
             self.server.script_sources.append(None)
-            self.server.request_fields.append({
+            fields = {
                 "httpMethod": method,
                 "body": body,
                 "testHeader": self.headers.get("X-Fixture"),
-            })
+            }
+            if self.server.exercise_encoding and self.path == "/search-utf8":
+                fields.update({"bodyByteCount": len(raw) if raw is not None else None,
+                               "bodySha256": hashlib.sha256(raw).hexdigest() if raw is not None else None})
+            self.server.request_fields.append(fields)
             call_number = len(self.server.calls)
         self.send_search_html(call_number)
 
@@ -130,6 +157,8 @@ class FixtureHandler(BaseHTTPRequestHandler):
             # The later probes require webJs to rewrite this marker. Parsing
             # the unmodified target HTML cannot accidentally count as success.
             name = "WebView脚本原始书" if call_number >= 4 else "WebView差分书"
+            if self.server.exercise_encoding and self.path == "/search-utf8":
+                name = "WebView编码原始书"
             html = ("<html><head><title>WebView差分页</title></head>"
                     "<body><div class='book'><a href='/book'>"
                     f"<span class='name'>{name}</span></a>"
@@ -186,7 +215,9 @@ def require_verified_private_loopback():
 
 def run_jar(java, jar, workdir, port, fixture_base, fixture,
             exercise_script=False, exercise_post=False, renderer_base=None,
-            camoufox_python=None, include_data=False):
+            camoufox_python=None, include_data=False, exercise_encoding=False, failure_report=None):
+    if exercise_encoding and not (renderer_base and exercise_script and exercise_post and include_data):
+        raise SystemExit("Encoding probe requires actual isolated renderer and full script/POST results")
     if renderer_base is not None or camoufox_python is not None:
         require_verified_private_loopback()
     base = f"http://127.0.0.1:{port}"
@@ -217,6 +248,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         raise
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    probes = []
+    last_search_response = None
     try:
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
@@ -252,11 +285,11 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         if saved.get("searchUrl") != source["searchUrl"]:
             raise RuntimeError(f"Saved source changed WebView rule: keys={list(saved.keys())}, "
                                f"value={saved.get('searchUrl')!r}")
-        probes = []
         for key in ("first", "second", "third"):
             result = require_success(opener, base, "/reader3/searchBook",
                                      {"key": key, "page": 1,
                                       "bookSourceUrl": fixture_base}, include_return_data=include_data)
+            last_search_response = result
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 names = [book.get("name") for book in books] if isinstance(books, list) else None
@@ -276,6 +309,7 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             result = require_success(opener, base, "/reader3/searchBook", {
                 "key": "script", "page": 1, "bookSourceUrl": fixture_base},
                 include_return_data=include_data)
+            last_search_response = result
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 raise RuntimeError("Script-bearing synthetic source did not parse one book")
@@ -295,16 +329,43 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             result = require_success(opener, base, "/reader3/searchBook", {
                 "key": "post", "page": 1, "bookSourceUrl": fixture_base},
                 include_return_data=include_data)
+            last_search_response = result
             books = result["data"]
             if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != "WebView差分书":
                 raise RuntimeError("POST-bearing synthetic source did not parse one book")
             probes.append({"status": result["status"], "isSuccess": True,
                            "errorMsg": result["errorMsg"], "count": len(books),
                            **({"data": books, "returnData": result["returnData"]} if include_data else {})})
+        if exercise_encoding:
+            encoding_source = dict(source)
+            encoding_source["searchUrl"] = fixture_base + "/search-utf8, " + json.dumps({
+                "webView": True, "method": "POST", "charset": "UTF-8", "body": ENCODING_BODY,
+                "headers": {"Content-Type": "application/json; charset=utf-8",
+                            "X-Fixture": "synthetic-utf8"}, "webJs": ENCODING_SCRIPT}, ensure_ascii=False)
+            require_success(opener, base, "/reader3/saveBookSource", encoding_source)
+            saved = require_success(opener, base, "/reader3/getBookSource",
+                                    {"bookSourceUrl": fixture_base})["data"]
+            if saved.get("searchUrl") != encoding_source["searchUrl"]:
+                raise RuntimeError("Saved source changed the explicit UTF-8 rule")
+            result = require_success(opener, base, "/reader3/searchBook", {
+                "key": "encoding", "page": 1, "bookSourceUrl": fixture_base}, include_return_data=True)
+            last_search_response = result
+            books = result["data"]
+            if not isinstance(books, list) or len(books) != 1 or books[0].get("name") != ENCODING_BOOK:
+                raise RuntimeError("UTF-8 script/response did not preserve the exact generated book name")
+            probes.append({"status": result["status"], "isSuccess": True,
+                           "errorMsg": result["errorMsg"], "count": len(books),
+                           "data": books, "returnData": result["returnData"]})
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
                 "renderScriptSources": fixture.script_snapshot(),
                 "renderRequestFields": fixture.request_snapshot()}
-    except Exception:
+    except Exception as failure:
+        if failure_report is not None:
+            write_report(failure_report, {"generatedOnly": True, "probeCompleted": False,
+                "failureType": type(failure).__name__, "completedSearches": probes,
+                "lastObservedSearchResponse": last_search_response,
+                "renderCookieHeaders": fixture.snapshot(),
+                "renderRequestFields": fixture.request_snapshot()})
         log_output.flush()
         log_lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
         print("Reader diagnostics (local fixture only):", *log_lines[-40:], sep="\n")
@@ -333,12 +394,11 @@ def write_report(path, report):
         output.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
-def validate_generated_searches(result):
+def validate_generated_searches(result, exercise_encoding=False):
     """Reject missing or normalized-away actual generated Reader responses."""
-    expected_fields = [{"httpMethod": "GET", "body": None, "testHeader": None}] * 4 + [
-        {"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}]
+    expected_fields = expected_request_fields(exercise_encoding)
     if not isinstance(result, dict) or not isinstance(result.get("searches"), list) or \
-            len(result["searches"]) != 5:
+            len(result["searches"]) != 5 + int(exercise_encoding):
         raise RuntimeError("Missing executed three-way search results")
     for search in result["searches"]:
         if not isinstance(search, dict) or type(search.get("status")) is not int or \
@@ -351,33 +411,37 @@ def validate_generated_searches(result):
         if not isinstance(raw, dict) or raw.get("isSuccess") is not True or \
                 raw.get("errorMsg") != "" or not same_json(raw.get("data"), search["data"]):
             raise RuntimeError("Missing exact ReturnData response in three-way report")
-    if result.get("renderRequestFields") != expected_fields:
+    if not same_json(result.get("renderRequestFields"), expected_fields):
         raise RuntimeError("Three-way target GET/POST request fields differ")
+    if exercise_encoding and result["searches"][-1]["data"][0].get("name") != ENCODING_BOOK:
+        raise RuntimeError("Three-way UTF-8 response or script encoding differs")
 
 
-def validate_remote_pair(original, remote):
+def validate_remote_pair(original, remote, exercise_encoding=False):
     for result in (original, remote):
-        validate_generated_searches(result)
+        validate_generated_searches(result, exercise_encoding)
     if not same_json(original["searches"], remote["searches"]):
         raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
-    if original.get("renderCookieHeaders") != [""] * 5 or remote.get("renderCookieHeaders") != [""] * 5:
+    if original.get("renderCookieHeaders") != [""] * (5 + int(exercise_encoding)) or \
+            remote.get("renderCookieHeaders") != [""] * (5 + int(exercise_encoding)):
         raise RuntimeError("Unreviewed historical renderer target Cookie behavior")
 
 
-def validate_three_way(original, remote, camoufox):
+def validate_three_way(original, remote, camoufox, exercise_encoding=False):
     """Compare actual target requests and full generated Reader JSON results."""
-    validate_remote_pair(original, remote)
-    validate_generated_searches(camoufox)
+    validate_remote_pair(original, remote, exercise_encoding)
+    validate_generated_searches(camoufox, exercise_encoding)
     if not same_json(original["searches"], camoufox["searches"]):
         raise RuntimeError("Three-way full Reader JSON differs; inspect the preserved report")
-    if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", ""]:
+    if camoufox.get("renderCookieHeaders") != ["", "session=alpha==", "", "", ""] + \
+            ([""] if exercise_encoding else []):
         raise RuntimeError("Camoufox target Cookie replay/deletion differs")
 
 
-def wait_for_camoufox_handoff(directory, original, remote, timeout=60):
+def wait_for_camoufox_handoff(directory, original, remote, timeout=60, exercise_encoding=False):
     """Keep this fixture alive while the host stops its owned historical renderer."""
     require_verified_private_loopback()
-    validate_remote_pair(original, remote)
+    validate_remote_pair(original, remote, exercise_encoding)
     directory.mkdir()
     with (directory / "remote-complete").open("xb"):
         pass
@@ -416,6 +480,8 @@ def main():
                         help="Also verify a synthetic webJs rule is sent as js_source")
     parser.add_argument("--exercise-post", action="store_true",
                         help="Also verify a synthetic WebView POST method, body, and header")
+    parser.add_argument("--exercise-encoding", action="store_true",
+                        help="In actual three-way mode also compare raw UTF-8 POST bytes and supplementary characters")
     parser.add_argument("--archived-renderer-base",
                         help="Use the actual archived renderer on private loopback, not a synthetic /render.html")
     parser.add_argument("--camoufox-python", type=Path,
@@ -425,6 +491,13 @@ def main():
     args = parser.parse_args()
     if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.exercise_encoding and not (args.camoufox_python and args.original_network_isolated and
+            args.archived_renderer_base and args.exercise_script and args.exercise_post):
+        parser.error("Encoding probe requires actual isolated three-way mode with script and POST probes")
+    failure_reports = {side: args.report.with_name(args.report.stem + "." + side + "-failed.json")
+                       for side in ("original", "restored", "camoufox")} if args.exercise_encoding else {}
+    if any(path.exists() or path.is_symlink() for path in failure_reports.values()):
+        parser.error("Encoding failure report already exists; choose a new report path")
     if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
                                     and args.exercise_script and args.exercise_post):
         parser.error("Three-way Camoufox mode requires isolated original-JAR mode, actual archived renderer, script and POST probes")
@@ -458,7 +531,7 @@ def main():
             parser.error("Camoufox/Playwright imports unavailable; refusing to start any JAR")
     fixture_port = free_port()
     fixture = Fixture(("127.0.0.1", fixture_port),
-                      archived_renderer=bool(args.archived_renderer_base))
+                      archived_renderer=bool(args.archived_renderer_base), exercise_encoding=args.exercise_encoding)
     fixture_base = f"http://127.0.0.1:{fixture_port}"
     worker = threading.Thread(target=fixture.serve_forever, daemon=True)
     worker.start()
@@ -473,31 +546,36 @@ def main():
                                    free_port(), fixture_base, fixture,
                                    args.exercise_script, args.exercise_post,
                                    args.archived_renderer_base,
-                                   include_data=bool(args.camoufox_python))
+                                   include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
+                                   failure_report=failure_reports.get("original"))
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture,
                                args.exercise_script, args.exercise_post,
                                args.archived_renderer_base,
-                               include_data=bool(args.camoufox_python))
+                               include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
+                               failure_report=failure_reports.get("restored"))
             if args.camoufox_python:
                 if args.phase_handoff_dir:
-                    wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored)
+                    wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored,
+                                              exercise_encoding=args.exercise_encoding)
                 fixture.reset()
                 camoufox = run_jar(args.java, args.restored, root / "camoufox",
                                    free_port(), fixture_base, fixture, True, True,
                                    args.archived_renderer_base, args.camoufox_python,
-                                   include_data=True)
+                                   include_data=True, exercise_encoding=args.exercise_encoding,
+                                   failure_report=failure_reports.get("camoufox"))
     finally:
         fixture.shutdown()
         fixture.server_close()
         worker.join(timeout=5)
 
     expected_original = ["", "", ""] + ([""] if args.exercise_script else []) + \
-                        ([""] if args.exercise_post else [])
+                        ([""] if args.exercise_post else []) + ([""] if args.exercise_encoding else [])
     expected_restored = (["", "", ""] if args.archived_renderer_base else
                          ["", "session=alpha==", ""]) + \
-                        ([""] if args.exercise_script else []) + ([""] if args.exercise_post else [])
+                        ([""] if args.exercise_script else []) + ([""] if args.exercise_post else []) + \
+                        ([""] if args.exercise_encoding else [])
     script = ("document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')" if args.archived_renderer_base
               else "document.title")
     expected_scripts = [None, None, None] + \
@@ -520,11 +598,15 @@ def main():
     }
     if args.exercise_post:
         report["expectedPostRequestFields"] = expected_post
+    if args.exercise_encoding:
+        report["encodingProbe"] = {"charset": "UTF-8", "expectedRequestFields": encoding_request_fields(),
+                                   "expectedBookName": ENCODING_BOOK, "rawTargetBodyRecorded": True}
     if args.camoufox_python:
         report.update({"comparisonMode": "same-run-original-remote-camoufox",
                        "camoufox": camoufox,
                        "camoufoxJarSha256": report["restoredJarSha256"],
-                       "expectedCamoufoxCookieSequence": ["", "session=alpha==", "", "", ""],
+                       "expectedCamoufoxCookieSequence": ["", "session=alpha==", "", "", ""] +
+                                                          ([""] if args.exercise_encoding else []),
                        "fullGeneratedReaderJsonRecorded": True,
                        "historicalRendererStoppedBeforeCamoufox": bool(args.phase_handoff_dir),
                        "originalProductionRendererVersionProven": False,
@@ -541,26 +623,28 @@ def main():
     if not args.archived_renderer_base:
         print(f"Restored render script sequence: {restored['renderScriptSources']}")
     if args.exercise_post:
+        post_index = 3 + int(args.exercise_script)
         if original is not None:
-            print(f"Original POST request fields: {original['renderRequestFields'][-1]}")
-        print(f"Restored POST request fields: {restored['renderRequestFields'][-1]}")
+            print(f"Original POST request fields: {original['renderRequestFields'][post_index]}")
+        print(f"Restored POST request fields: {restored['renderRequestFields'][post_index]}")
     print(f"Report: {args.report}")
     if args.camoufox_python:
-        validate_three_way(original, restored, camoufox)
+        validate_three_way(original, restored, camoufox, args.exercise_encoding)
     expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *
                        (3 + int(args.exercise_script)) +
-                       ([expected_post] if args.exercise_post else []))
+                       ([expected_post] if args.exercise_post else []) +
+                       ([encoding_request_fields()] if args.exercise_encoding else []))
     if restored["renderCookieHeaders"] != expected_restored or \
             (args.archived_renderer_base and restored["renderRequestFields"] != expected_fields) or \
             (not args.archived_renderer_base and restored["renderScriptSources"] != expected_scripts) or \
-            (args.exercise_post and restored["renderRequestFields"][-1] != expected_post) or \
+            (args.exercise_post and restored["renderRequestFields"][post_index] != expected_post) or \
             (original is not None and (
                 original["renderCookieHeaders"] != expected_original or
                 original["searches"] != restored["searches"] or
                 (args.archived_renderer_base and original["renderRequestFields"] != expected_fields) or
                 (not args.archived_renderer_base and original["renderScriptSources"] != expected_scripts) or
                 (args.exercise_post and (
-                    original["renderRequestFields"][-1] != expected_post or
+                    original["renderRequestFields"][post_index] != expected_post or
                     original["renderRequestFields"] != restored["renderRequestFields"])))):
         raise RuntimeError("Unreviewed WebView Cookie differential")
 
