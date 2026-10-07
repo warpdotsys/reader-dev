@@ -25,6 +25,8 @@ class BrowserCgroupReportTest(unittest.TestCase):
             "memory.peak": "832761856",
             "memory.max": "2147483648",
             "memory.events": "max 0\noom 0\noom_kill 0\noom_group_kill 0",
+            "memory.stat": "anon 300000000\nfile 450000000\nshmem 12000000\n"
+                           "kernel_stack 1048576\npagetables 2097152\nfuture_counter 987654\n",
             "memory.swap.current": "0",
             "memory.swap.max": "1073741824",
             "pids.peak": "199",
@@ -53,6 +55,54 @@ class BrowserCgroupReportTest(unittest.TestCase):
 
     def test_missing_optional_pids_peak_is_not_invented(self):
         self.assertIsNone(self.run_report({"pids.peak": None})["pidsPeak"])
+
+    def test_memory_categories_are_current_raw_bytes_with_a_finite_allowlist(self):
+        report = self.run_report()
+        self.assertEqual(set(REPORT.MEMORY_STAT_FIELDS), set(report["memoryStatBytes"]))
+        self.assertEqual(300000000, report["memoryStatBytes"]["anon"])
+        self.assertEqual(450000000, report["memoryStatBytes"]["file"])
+        self.assertEqual(12000000, report["memoryStatBytes"]["shmem"])
+        self.assertEqual(1048576, report["memoryStatBytes"]["kernel_stack"])
+        self.assertEqual(2097152, report["memoryStatBytes"]["pagetables"])
+        self.assertNotIn("future_counter", report["memoryStatBytes"])
+        self.assertIsNone(report["memoryStatBytes"]["kernel"])
+
+    def test_missing_category_file_is_unknown_not_zero_or_an_invented_breakdown(self):
+        self.assertIsNone(self.run_report({"memory.stat": None})["memoryStatBytes"])
+
+    def test_optional_categories_do_not_retroactively_reject_historical_reports(self):
+        report = self.run_report()
+        del report["memoryStatBytes"]
+        REPORT.verify_report(report)
+
+    def test_cache_categories_never_subtract_from_the_total_resource_guard(self):
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            self.run_report({"memory.peak": "2147483649",
+                "memory.stat": "anon 1\nfile 2147483648\nshmem 0\n"})
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            self.run_report({"memory.events": "max 1\noom 0\noom_kill 0\n",
+                "memory.stat": "anon 1\nfile 2147483647\nshmem 0\n"})
+
+    def test_invalid_or_duplicate_known_categories_are_rejected_without_raw_values(self):
+        for raw in ("anon -1", "anon 1.0", "anon invalid", "anon 1\nanon 2",
+                    "anon 1 extra", "anon " + "9" * 21):
+            with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "Invalid memory category observation"):
+                self.run_report({"memory.stat": raw})
+
+    def test_oversized_category_file_is_rejected_before_json_output(self):
+        with self.assertRaisesRegex(ValueError, "byte limit"):
+            self.run_report({"memory.stat": "x" * (REPORT.MAX_MEMORY_STAT_BYTES + 1)})
+
+    def test_invalid_observed_category_types_cannot_be_forged_as_raw_bytes(self):
+        report = self.run_report()
+        for value in (True, -1, "0", 1.0):
+            with self.subTest(value=value):
+                report["memoryStatBytes"]["anon"] = value
+                with self.assertRaisesRegex(SystemExit, "memory category report"):
+                    REPORT.verify_report(report)
+        report["memoryStatBytes"] = {"unexpected": 0}
+        with self.assertRaisesRegex(SystemExit, "memory category report"):
+            REPORT.verify_report(report)
 
     def test_oom_is_failure_even_when_final_memory_is_within_budget(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):

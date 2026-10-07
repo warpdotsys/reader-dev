@@ -44,6 +44,8 @@ WSL 向进程暴露 32 个 CPU。锁定的 NumPy 2.2.6 使用 OpenBLAS；只导�
 
 ## 尚未验证和回滚
 
-本次提交自己的 19 项托管原生运行、完整新镜像高核数资源、真实起点认证及正文、同条件三方、长期并发和生产仍待验收。当前 PR 保持草稿，不创建正式标签、不推 registry、不部署。58 个用户报告哈希全部不变，原 JAR 哈希不变，未覆盖其他工程。
+本修改自己的托管运行现已完成：`09163efe`／受测 `3aec4f9e...` 的 [Java](https://github.com/warpdotsys/reader-dev/actions/runs/37580306827)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37580306818)、[完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/37580306816)、[双架构原生六作业](https://github.com/warpdotsys/reader-dev/actions/runs/37580306817)均终态成功。两份真实 Camoufox XML 各 19 项无跳过／失败／错误，新导入契约 0.616／0.615 秒，文档 helper 各 3 项的原守卫通过。24 份 publisher JSON 的身份／共享 JAR／重载 image ID 及 5 组 UI／异步／资源报告独立核对，短时最高 842,723,328 B／PID 204、触限／OOM／实际 swap 0，配置仍允许 1 GiB swap。Java 162 中 132 通过／30 门控跳过，Vue 18＋1、页首 18 组及长分组 3 组通过；不借此前 18 项绿灯。[自己的验收范围和散列](evidence/camoufox-numerical-threads-hosted-09163efe-2026-10-07.json)。
+
+之后单独补了有限 `memory.stat` 观测并跑新生成 helper，停止后约 13.6 MiB 匿名／1496.4 MiB 文件页；不是上节旧报告的事后分类、完整 Reader 峰值分解或无泄漏证明。新 collector 自己的 hosted 尚待验收，详见[观测范围及原预算不变](BROWSER-MEMORY-CATEGORIES-2026-10-07.md)。完整新镜像本机高核数资源、真实起点认证及正文、同条件三方、长期并发和生产仍待验收。当前 PR 保持草稿，不创建正式标签、不推 registry、不部署。58 个用户报告哈希全部不变，原 JAR 哈希不变，未覆盖其他工程。
 
 回滚在干净维护检出撤销这次数值线程策略并重新构建；保留新测试、原失败证据和 19 项门禁，让旧行为被回归明确检出。没有数据迁移或字节码补丁，不能在用户脏工作区 reset／checkout，也不能为接受旧报告删除新增契约。
