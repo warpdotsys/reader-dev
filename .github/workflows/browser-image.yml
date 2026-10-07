@@ -204,6 +204,11 @@ on:
         type: choice
         options: [bounded-dom, snapshot-only]
         default: bounded-dom
+      artifact_download_regression:
+        description: 'Consume the exact failed large AMD64 artifact with the new downloader; no rebuild or production'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -211,12 +216,20 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}
   cancel-in-progress: true
 
 jobs:
+  existing-artifact-regression:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_download_regression == true }}
+    name: Recheck the unchanged failed large AMD64 artifact
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/artifact-download-regression.yml
+
   archived-remote-webview:
-    if: ${{ inputs.probe_remote_webview == true && !inputs.public_metadata_native_run }}
+    if: ${{ inputs.probe_remote_webview == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     name: Probe archived remote WebView reference
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -261,7 +274,7 @@ jobs:
           docker rm -f reader-archived-webview >/dev/null 2>&1 || true
 
   original-jar-provenance:
-    if: ${{ inputs.probe_original_jar == true && !inputs.public_metadata_native_run }}
+    if: ${{ inputs.probe_original_jar == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     name: Verify archived original JAR provenance
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -293,7 +306,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run && !inputs.public_metadata_native_run }}
+    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     name: Build and smoke-test the full Reader image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 45
@@ -542,7 +555,7 @@ jobs:
           docker rm -f reader-browser-smoke || true
 
   offline-soak:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run && !inputs.public_metadata_native_run }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     name: Soak an already-tested native image offline
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 80
@@ -584,14 +597,16 @@ jobs:
                 {id, name, path, head_sha, event, conclusion, html_url}' \
             > "$RUNNER_TEMP/reader-soak-report/SOURCE_RUN.json"
           python3 -m unittest discover -s src/test/python -p '*_test.py'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-release-jar-${{ inputs.soak_revision }}
           path: dist
           run-id: ${{ inputs.soak_native_run }}
           github-token: ${{ github.token }}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-tested-native-${{ inputs.native_arch }}-${{ inputs.soak_revision }}
           path: imported
           run-id: ${{ inputs.soak_native_run }}
@@ -612,7 +627,7 @@ jobs:
           retention-days: 7
 
   public-metadata:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.public_metadata_native_run }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     name: Probe anonymous metadata in the exact tested native image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 25
@@ -654,14 +669,16 @@ jobs:
                 {id, name, path, head_sha, event, conclusion, html_url}' \
             > "$RUNNER_TEMP/reader-public-metadata-report/SOURCE_RUN.json"
           python3 -m unittest discover -s src/test/python -p '*_test.py'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-release-jar-${{ inputs.public_metadata_revision }}
           path: dist
           run-id: ${{ inputs.public_metadata_native_run }}
           github-token: ${{ github.token }}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-tested-native-${{ inputs.native_arch }}-${{ inputs.public_metadata_revision }}
           path: imported
           run-id: ${{ inputs.public_metadata_native_run }}
@@ -682,19 +699,21 @@ jobs:
           retention-days: 7
 
   compare-public-webview:
-    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true && !inputs.public_metadata_native_run }}
+    if: ${{ inputs.probe_remote_webview == true && inputs.real_public_source == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
     needs: [archived-remote-webview, integration]
     name: Compare public page observations (not production parity)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: archived-public-webview
           path: ${{ runner.temp }}/public/archived
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: camoufox-public-webview
           path: ${{ runner.temp }}/public/camoufox
       - name: Compare public statuses and book projections

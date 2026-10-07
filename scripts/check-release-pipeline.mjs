@@ -14,6 +14,8 @@ const workflow = read('.github/workflows/release.yml')
 const nativeWorkflow = read('.github/workflows/release-native.yml')
 const nativeSmoke = read('scripts/smoke-native-release.sh')
 const nativeImporter = read('scripts/import-native-release.sh')
+const browserWorkflow = read('.github/workflows/browser-image.yml')
+const artifactRegression = read('.github/workflows/artifact-download-regression.yml')
 const buildContract = nativeWorkflow + '\n' + nativeSmoke
 const compose = read('deploy/reader-pro/compose.production.yaml')
 const dockerfile = read('deploy/reader-pro/Dockerfile')
@@ -62,12 +64,20 @@ const approvedActions = new Map([
   ['docker/setup-buildx-action', '8d2750c68a42422c14e847fe6c8ac0403b4cbd6f'],
   ['docker/login-action', 'c94ce9fb468520275223c153574b00df6fe4bcc9'],
   ['actions/upload-artifact', 'ea165f8d65b6e75b540449e92b4886f43607fa02'],
-  ['actions/download-artifact', 'd3f86a106a0bac45b974a628896c90dbdf5c8093'],
+  ['actions/download-artifact', '9000827ccba6bdab643e8b6fd33ac0654aef8333'],
 ])
-for (const [, action, ref] of (workflow + nativeWorkflow).matchAll(/^\s*(?:-\s+)?uses:\s+([^@\s]+)@([^\s#]+)/gm)) {
+for (const [, action, ref] of (workflow + nativeWorkflow + browserWorkflow + artifactRegression).matchAll(/^\s*(?:-\s+)?uses:\s+([^@\s]+)@([^\s#]+)/gm)) {
   const expected = approvedActions.get(action)
   if (!expected || ref !== expected || !/^[0-9a-f]{40}$/.test(ref)) {
     throw new Error(`release workflow action is not an approved full SHA: ${action}@${ref}`)
+  }
+}
+for (const content of [workflow, nativeWorkflow, browserWorkflow, artifactRegression]) {
+  for (const step of content.split(/(?=^\s+- (?:uses:|name:))/m)) {
+    if (step.includes('uses: actions/download-artifact@') &&
+        (!/^\s+digest-mismatch: error\s*$/m.test(step) || /digest-mismatch:\s*(?:ignore|info|warn)/.test(step))) {
+      throw new Error('artifact downloads must fail closed on ZIP digest mismatch')
+    }
   }
 }
 if (!compose.includes('image: ${READER_IMAGE:?READER_IMAGE must be an immutable image reference}')) {
@@ -97,7 +107,6 @@ for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_PYTHON_IMAGE']) {
     throw new Error(`base image lock missing immutable ${name}`)
   }
 }
-const browserWorkflow = read('.github/workflows/browser-image.yml')
 const imageUiSelections = [...dockerfile.matchAll(/^\s+READER_APP_WEBUI=(\w+)\s*\\\s*$/gm)].map(match => match[1])
 if (JSON.stringify(imageUiSelections) !== JSON.stringify(['vue3']) ||
     !compose.includes('READER_APP_WEBUI: ${READER_APP_WEBUI:-vue3}')) {

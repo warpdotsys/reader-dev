@@ -13,6 +13,7 @@ const fixtureFiles = [
   '.github/workflows/release-native.yml', 'scripts/smoke-native-release.sh',
   'scripts/import-native-release.sh',
   '.github/workflows/browser-image.yml', '.github/workflows/vue3-preview.yml',
+  '.github/workflows/artifact-download-regression.yml',
   'deploy/reader-pro/compose.production.yaml', 'deploy/reader-pro/Dockerfile',
   'deploy/reader-pro/base-images.lock',
 ]
@@ -90,6 +91,10 @@ test('not running the release guard in ordinary CI is rejected', (t) => {
 })
 
 for (const [name, file, mutate, expected] of [
+  ['deprecated download component', '.github/workflows/release-native.yml', text => text.replace('actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333', 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093'), /approved full SHA/],
+  ['artifact digest mismatch only warned', '.github/workflows/release-native.yml', text => text.replace('digest-mismatch: error', 'digest-mismatch: warn'), /artifact downloads must fail closed/],
+  ['full image artifact digest mismatch guard omitted', '.github/workflows/browser-image.yml', text => text.replace('digest-mismatch: error', ''), /artifact downloads must fail closed/],
+  ['large artifact regression ignoring digest mismatch', '.github/workflows/artifact-download-regression.yml', text => text.replace('digest-mismatch: error', 'digest-mismatch: ignore'), /artifact downloads must fail closed/],
   ['old Vue 2 image default', 'deploy/reader-pro/Dockerfile', text => text.replace('READER_APP_WEBUI=vue3', 'READER_APP_WEBUI=vue2'), /default to Vue 3/],
   ['a comment cannot impersonate default Vue 3', 'deploy/reader-pro/Dockerfile', text => text.replace('READER_APP_WEBUI=vue3', 'READER_APP_WEBUI=vue2') + '\n# READER_APP_WEBUI=vue3\n', /default to Vue 3/],
   ['Compose without explicit legacy UI rollback', 'deploy/reader-pro/compose.production.yaml', text => text.replace('READER_APP_WEBUI: ${READER_APP_WEBUI:-vue3}', 'READER_APP_WEBUI: vue3'), /Vue 2 rollback/],

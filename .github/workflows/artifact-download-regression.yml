@@ -1,0 +1,81 @@
+name: Existing large native artifact regression
+
+# Temporary, manual regression for the exact failed transfer. No new image,
+# registry credentials/writes, real books, production or local archive download.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: existing-large-native-artifact-regression
+  cancel-in-progress: false
+
+jobs:
+  verify-existing-amd64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ORIGINAL_RUN: '37612911968'
+      ORIGINAL_HEAD: '3eb418c96ea442473ed318fe50a223d618079e8a'
+      ORIGINAL_REVISION: '15ed874af760345fdba262d487ebb5b736912d5e'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Verify exact failed transfer and successful original image producer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = warpdotsys/reader-dev
+          test "$RUNNER_ARCH:$(uname -m)" = X64:x86_64
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ORIGINAL_RUN" |
+            jq -e --arg head "$ORIGINAL_HEAD" '.head_sha == $head and .conclusion == "failure" and .name == "Native release artifact rehearsal"' >/dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ORIGINAL_RUN/jobs?per_page=100" |
+            jq -e '[.jobs[] | select(.name == "Build and test native amd64 image" and .conclusion == "success")] | length == 1' >/dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/11479257168" |
+            jq -e --arg revision "$ORIGINAL_REVISION" '(.expired == false) and (.size_in_bytes == 2174844316) and (.name == "reader-tested-native-amd64-" + $revision)' >/dev/null
+          install -d reports
+      - name: Download original shared JAR without rebuilding
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
+        with:
+          artifact-ids: '11479596186'
+          run-id: '37612911968'
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: dist
+      - name: Download the unchanged 2174844316-byte artifact with the new downloader
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
+        with:
+          artifact-ids: '11479257168'
+          run-id: '37612911968'
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: imported
+      - name: Require original metadata and complete byte identity before loading
+        run: |
+          set -euo pipefail
+          test "$(sha256sum imported/metadata.json | awk '{print $1}')" = 'c51a877c587ca61943ccafe6c3493a75292638d76fad7b1113cecdf58eb86337'
+          (cd dist && sha256sum -c SHA256SUMS)
+          node scripts/release-native-artifacts.mjs check amd64 4.0.7 "$ORIGINAL_REVISION" dist imported |
+            tee reports/PRELOAD_IDENTITY.json
+          docker load --input imported/reader-image.tar.gz
+          docker image inspect reader-pro:camoufox-smoke-amd64 > imported/image-inspect.json
+          node scripts/release-native-artifacts.mjs loaded amd64 4.0.7 "$ORIGINAL_REVISION" dist imported |
+            tee reports/IMAGE_IDENTITY.json
+          cp imported/metadata.json reports/metadata.json
+      - name: Actually run the unchanged image with generated accounts under the original budget
+        run: bash scripts/smoke-native-release.sh amd64 4.0.7 "$ORIGINAL_REVISION" artifact-regression reports
+      - name: Preserve only finite generated receipts, not archives or book bodies
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: existing-amd64-download-regression-${{ github.sha }}
+          path: reports/*.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -173,8 +173,9 @@ jobs:
             amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
             *) exit 1 ;;
           esac
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-release-jar-${{ github.sha }}
           path: dist
       - name: Read and validate locked base image digests
@@ -253,12 +254,14 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-release-jar-${{ github.sha }}
           path: dist
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-tested-native-${{ matrix.arch }}-${{ github.sha }}
           path: imported
       - name: Verify transferred bytes and the actually loaded image without rebuilding
@@ -300,22 +303,26 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-release-jar-${{ github.sha }}
           path: dist
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           pattern: reader-native-transfer-*-${{ github.sha }}
           path: ${{ runner.temp }}/reader-native-transfers
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-tested-native-amd64-${{ github.sha }}
           path: ${{ runner.temp }}/reader-native-import/amd64
       - name: Consume amd64 through the same importer used by the formal publisher
         run: bash scripts/import-native-release.sh amd64 '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" dist
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
+          digest-mismatch: error
           name: reader-tested-native-arm64-${{ github.sha }}
           path: ${{ runner.temp }}/reader-native-import/arm64
       - name: Consume arm64 on the same publisher runner without rebuilding it

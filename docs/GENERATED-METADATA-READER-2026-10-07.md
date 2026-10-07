@@ -22,7 +22,9 @@
 
 新增 Python 16 项全部通过，仅为守卫／HTTP 夹具／helper double 测试，不是浏览器验收。Windows 全 Python 287 项：286 通过／1 POSIX 环境跳过／零失败。发布结构 42 项，归档身份及 manifest 33 项通过；58 份用户报告散列不变。
 
-实际托管镜像的新增详情结果尚未取得。上一提交 `ed8a3b04` 四条正常托管工作流和原生六实际作业已完成成功；其 smoke 尚无新详情回执，不据此宣称新增测试或起点实站已通过。
+`3eb418c9`／受测 `15ed874a...` 的新详情已在 Full／原生两个架构／ARM64 重载实际通过，Full 与 ARM64 transfer 小回执通过本机原守卫，AMD64 producer 在 Range 取得的 JSON／CRC 和新详情守卫可独立核查。实际默认引擎两套各 20／零跳过、helper 各 3；Linux Python 287 全执行。Full 峰值 899,469,312 B／PID 190，触限及实际 swap 0，但配置允许 1 GiB swap。
+
+Java、Vue 和 Full workflow 成功，Native 总体因 AMD64 下载报 success 后缺 `metadata.json` 而失败：未执行该重载，publisher 跳过。不能宣称全部制品链已验收。只读取约 71 KiB 归档目录／小 JSON，镜像正文 0 B；正在以新官方 Node 24 下载组件对同一个旧大归档做严格回归，未换输入或绕过门禁。[失败、精确回归及回退](BROWSER-ARTIFACT-TRANSFER-2026-10-07.md)。起点真实页面仍红，不由生成链路通过宣称已修复。
 
 ## 已知问题与回退
 
