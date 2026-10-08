@@ -31,9 +31,17 @@
 
 ## 身份优先纠正及哈希表示回归
 
-新入口把原件身份核验放在两个native下载步骤之前：来源合法后才创建不启动的精确所有权提取容器，保存实际JAR大小／SHA／镜像摘要，无论匹配与否都做精确清理及剩余标签观察；错版必须非零退出，并跳过大JAR和镜像下载。后续主步骤再次核验同一次preflight文件与原SHA，不重新下载或换基准。这个新顺序本地生成守卫已通过，托管实跑须另记。
+新入口把原件身份核验放在两个native下载步骤之前：来源合法后才创建不启动的精确所有权提取容器，保存实际JAR大小／SHA／镜像摘要，无论匹配与否都做精确清理及剩余标签观察；错版必须非零退出，并跳过大JAR和镜像下载。后续主步骤再次核验同一次preflight文件与原SHA，不重新下载或换基准。
+
+源码346dad61的[fail-fast实跑37794305558](https://github.com/warpdotsys/reader-dev/actions/runs/37794305558)已独立验收：来源步骤成功、原件身份步骤明确失败，两个大产物下载步骤与业务步骤实际skipped；四份JSON仅来源三文件＋ORIGINAL_ARCHIVE_IDENTITY。真实提取不启动／实际大小SHA／精确标签删除后剩余0已记录，没有加载native镜像或启动JAR。官方结论仍failure，`strictCompatibilityAccepted=false`；这只证明安全拒绝顺序，不包装为三方通过。[自己的逐文件SHA与失败证据](evidence/hosted-three-way-fast-fail-346dad61-2026-10-08.json)。
 
 另外现有比较器把哈希记录成大写，新入口原先按小写字面比较。新增回归先14项／1错误／exit1，再修为只比较严格64位十六进制代表的同32字节；不去空白、不接受前缀／缺位／错误值，也不改写任何原始JSON。这是独立的验证器缺陷，**不是本次7222与b26不一致的原因**。现在17项定向、全套Python399／1平台跳过／24.776秒通过。
+
+## Python 3.10 兼容回归
+
+同一346dad61／tested c4ce5165的[普通Full37794141611](https://github.com/warpdotsys/reader-dev/actions/runs/37794141611)和[Native37794141150](https://github.com/warpdotsys/reader-dev/actions/runs/37794141150)实际失败于新生成单测：它第一次调用digest文件路径，Python3.10.22没有 `hashlib.file_digest`，399项／1错误，在构建前停止。后续上传无JVM报告是此前尚未构建的结果，不能写成业务或引擎失败；两个工作流保持失败。Java和Vue成功也不能抵消这些失败。
+
+修正只改新驱动的哈希实现：1MiB分块流式计算相同SHA-256，固定依赖／Python3.10／原件比较／文件大小／身份及业务门禁不变。新增跨1MiB边界生成样本与禁用新API守卫，先18项／1失败／exit1，修正后18全通过；全套Python400／1平台跳过／23.691秒通过。不安装新Python或扩大本机读取范围。修正自身的Python3.10托管结果另验，不借3.12专项或父版绿灯。
 
 GitHub手动入口为已有 `browser-image.yml`，设置 `three_way_native_run=37783548430`、`three_way_source=2f8b37aa1c786d87e84d9ac6b745105aa35972a4`、`three_way_revision=ba1817b4256bfde0b0019ee8861d99af18c037a0`，另选一种模式；其他公网／probe／soak模式必须为空／false。具体代码checkout与被测镜像revision分开记录。先执行metadata，完成后再按新事实决定下一专项，不并发重复跑旧失败网站条件。
 

@@ -37,8 +37,11 @@ def write_new(path, value):
 
 
 def digest(path):
+    value = hashlib.sha256()
     with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+        for block in iter(lambda: stream.read(1048576), b""):
+            value.update(block)
+    return value.hexdigest()
 
 
 def same_sha(actual, expected):

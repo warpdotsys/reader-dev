@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "probeRunId": 37794305558,
+  "probeCheckoutRevision": "346dad6114b678bce4a5356bfaf2a96a05154855",
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37794305558",
+  "actualJobId": 113369642424,
+  "officialConclusion": "failure",
+  "failFastBehaviorObserved": true,
+  "strictCompatibilityAccepted": false,
+  "nativeArtifactDownloadStepsSkipped": 2,
+  "nativeArchiveLoaded": false,
+  "originalJarExecuted": false,
+  "threeWayBusinessProbeExecuted": false,
+  "aggregateRuntimeBudgetObserved": false,
+  "actualArchiveIdentity": {
+    "probeRunOwnership": "37794305558-1",
+    "archiveReference": "swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader:3.2.14",
+    "archiveImageId": "sha256:68dcf26f62df454e48dac104eb3e8b5e94f50c7d37e9fc48e6a9945bc5d80dff",
+    "archiveRepoDigests": [
+      "swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader@sha256:910043799b510b5796baf99537507a63ca95995cda7de95cbf2ba5eeb9dcb5d1"
+    ],
+    "expectedJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "actualJarSha256": "7222fbd0c55d8b7e6f6bc1bbf5f6637fbee45dfbd65eda0ef59e38b2e24cd43a",
+    "jarBytes": 72914622,
+    "regularJarObserved": true,
+    "originalIdentityAccepted": false,
+    "extractionContainerId": "55d6d747e0a2e55cb05d41738eea20b02a725720567e3980e539d5f3127ff973",
+    "extractionContainerNeverStarted": true,
+    "extractionContainerRemovalObserved": true,
+    "privateJarUploaded": false,
+    "businessProbeStarted": false
+  },
+  "artifact": {
+    "id": 11557902650,
+    "name": "generated-three-way-metadata-37794305558",
+    "size_in_bytes": 7301,
+    "digest": "sha256:07d23cb4f754864888bdcedcb90fcd2e4491a3187f2c18636a89400270517294"
+  },
+  "artifactFileHashes": {
+    "download-identity.json": "3e9deacd1f8fc874a64a00ff7f298e46af4fd73a843b96cc23311f5e6d172056",
+    "ORIGINAL_ARCHIVE_IDENTITY.json": "26255b883ce2d01534c83e541f8250bc5ec2a928adde914dfb6c434e26a5ca86",
+    "SOURCE_COMPARISON.json": "3172a5382e321b586407004b4bf492706e4c632a554f5299676b5a96d5b0edd7",
+    "SOURCE_JOBS.json": "ac96c218b1dd6c68fb232ddafdd84d206755fc54855bfbab65d3c55d5189413c",
+    "SOURCE_RUN.json": "01f617a4a8fd6aad85c0affa33494ad6dba3791db1bdcf4d2a30ee307606ba7f"
+  },
+  "privateJarUploaded": false,
+  "privateBookBodiesRead": 0,
+  "realCredentialsImported": false,
+  "productionChanged": false,
+  "userReportsUnchanged": 58,
+  "fullGoalComplete": false,
+  "localIndependentReceiptSha256": "1bcd8336c7e4e07525755c0625c1620e536e22ddb07e58a35871419c84dd3012",
+  "ordinaryPython310Failure": {
+    "sourceRevision": "346dad6114b678bce4a5356bfaf2a96a05154855",
+    "testedMergeSnapshot": "c4ce5165654ff6a5411f730fbe1e47dd7b6bc421",
+    "fullRunId": 37794141611,
+    "nativeRunId": 37794141150,
+    "actualPythonVersion": "3.10.22",
+    "failureType": "AttributeError",
+    "missingApi": "hashlib.file_digest",
+    "actualPythonTests": 399,
+    "actualErrors": 1,
+    "unitOutcomeAccepted": false,
+    "doesNotExplainPublicJarMismatch": true
+  }
+}

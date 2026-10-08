@@ -172,6 +172,15 @@ class HostedThreeWayTest(unittest.TestCase):
                 PROBE.require_original_preflight(Path(directory))
             command.assert_not_called()
 
+    def test_streaming_digest_keeps_exact_bytes_without_newer_python_api(self):
+        generated = b"Generated SHA boundary fixture\x00" * 40000
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "generated.bin"
+            path.write_bytes(generated)
+            with mock.patch.object(PROBE.hashlib, "file_digest", create=True,
+                                   side_effect=AssertionError("Do not require a newer Python hashing API")):
+                self.assertEqual(hashlib.sha256(generated).hexdigest(), PROBE.digest(path))
+
     def test_source_hash_substitutions_and_budget_pressure_not_accepted(self):
         for key, value in (("originalJarSha256", JAR), ("restoredJarSha256", PROBE.ORIGINAL_SHA), ("runtimeImageId", "mutable-tag"),
                            ("archivedRenderer", "mutable-reference")):
