@@ -248,12 +248,13 @@ async function confirmEditTts() {
       name: t.name.trim() || t.url,
     })
     await loadTtsList()
-    closeEditTts()
   } catch {
     // 已提示
+    return
   } finally {
     ttsSaving.value = false
   }
+  closeEditTts()
 }
 
 function closeAddTts() {
@@ -279,10 +280,13 @@ async function confirmAddTts() {
     })
     if (!result.isSuccess) ElMessage.warning('服务端不可用，听书源已暂存到当前浏览器')
     await loadTtsList()
-    closeAddTts()
+  } catch {
+    // The request layer already reports the failure; retain the form for retry.
+    return
   } finally {
     ttsBusy.value = false
   }
+  closeAddTts()
 }
 
 /* 删除 */
@@ -440,10 +444,14 @@ async function confirmAddToc() {
       serialNumber: customTocRules.value.length,
     })
     await loadTxtTocRules()
-    closeAddToc()
+  } catch {
+    // A rejected save must not escape to ErrorBoundary and discard this form.
+    return
   } finally {
     tocBusy.value = false
   }
+  // Only a successful save reaches this point, after the dismissal guard clears.
+  closeAddToc()
 }
 
 /* 启用开关（默认规则只读，仅自定义规则可切换） */
@@ -1135,12 +1143,15 @@ async function saveOpdsCfg() {
     if (username && password) opdsTestPassword = password
     if (!username) opdsTestPassword = ''
     ElMessage.success(username ? 'OPDS 账号已保存' : '已禁用 OPDS 独立账号')
-    closeOpdsCfg()
-  } catch {
-    // 错误提示已由拦截器处理
+  } catch (error) {
+    // This compatibility adapter rejects locally, outside the request interceptor.
+    opdsCfgMsg.value = error instanceof Error ? error.message : 'OPDS 设置保存失败'
+    opdsCfgMsgError.value = true
+    return
   } finally {
     opdsCfgBusy.value = false
   }
+  closeOpdsCfg()
 }
 
 /** 测试连接：fetch /opds——配置了独立账号且密码在内存 → Basic 认证；否则带 accessToken */

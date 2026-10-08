@@ -168,6 +168,7 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBookshelfImportTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewTtsCacheIsolationTest' \
@@ -181,9 +182,11 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewGroupTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewTxtTocRuleTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSettingsDialogTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login LoginLayout Logout Reading LocalReading LocalCacheIsolation TtsCacheIsolation SessionRace CrossTab ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule File Backup; do
+          for name in Login LoginLayout Logout Reading BookshelfImport LocalReading LocalCacheIsolation TtsCacheIsolation SessionRace CrossTab ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule TxtTocRule SettingsDialog File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
@@ -213,6 +216,16 @@ jobs:
         with:
           name: vue3-tts-cache-${{ github.sha }}
           path: ${{ runner.temp }}/tts-cache-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated TXT rule dialog and persistence screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-settings-dialogs-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-txt-rule-generated-*.png
+            ${{ runner.temp }}/vue3-settings-generated-*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve synthetic bookshelf layout screenshot
