@@ -68,7 +68,13 @@ python3 scripts/verify-reader-jar-reproducibility.py --first /path/to/first.jar 
 
 修正正式 `processResources` 排除 `**/__pycache__/**`、`**/*.pyc`、`**/*.pyo`，不删除磁盘缓存、原 JAR、源码或用户数据；可读 worker、两套前端、类和完整依赖仍打包。比较器同时拒绝带应用资源缓存的输入，即使两份污染 JAR 逐字节相同也不能通过。**不是比较时忽略差异或归一化旧文件**；完整字节／条目／时间／顺序及所有旧预算守卫保留。相似名字的普通文本、读取源码和嵌套依赖 JAR 不被排除，仍比较完整字节。
 
-新增四项定向用例先在旧实现实际出现五个断言失败，21 项修正后在 Windows／WSL 全执行通过。Windows 全套 362 项／361 通过／1 POSIX 跳过／19.581 秒；发布 Node 82 项全执行、原静态门禁通过。本机没有重新编译大 JAR／下载浏览器；正式 KTS 编译和新产物无缓存的真实检查交给本增量自己的托管 runner，结果尚未预填通过。[本机有限证据](evidence/python-resource-cache-exclusion-local-2026-10-08.json)。
+新增四项定向用例先在旧实现实际出现五个断言失败，21 项修正后在 Windows／WSL 全执行通过。Windows 全套 362 项／361 通过／1 POSIX 跳过／19.581 秒；发布 Node 82 项全执行、原静态门禁通过。本机没有重新编译大 JAR／下载浏览器。[本机有限证据](evidence/python-resource-cache-exclusion-local-2026-10-08.json)是提交前快照；后续真实托管构建见下段，不回写旧快照假装此前已通过。
+
+提交 `8d0d03c0c84882e90d16cde4b25dbf03d9ae9954`／同树合并快照 `3fe3777a5988b29e7e7e524d83d11eb733b3044d` 的[Java CI 37730974673](https://github.com/warpdotsys/reader-dev/actions/runs/37730974673)已实际终态成功：正式 KTS 两次干净构建，第二次六任务全部执行／72 秒；新缓存拒绝守卫接受两份 JAR，各 285,649,077 B／1,562 条目，SHA-256 `591ffbce8aba9b3fd36d83c4581f0fdf64848d6a0af0b0860edf82f1e943dcec`，完整 bytes／顺序／注释相同，内容、ZIP 元数据及缺失差异均 0。362 Python 全执行／10.682 秒，42 JVM XML／170 项／31 环境跳过独立保留；43 小文件散列在本机独立回执 `881ab9364e6ab8a0db50d449e831a5fc1cef66ee0bcbd8046a73729fcd3dda86`。本机没有下载／复算大 JAR。
+
+自己的[Vue 37730974671](https://github.com/warpdotsys/reader-dev/actions/runs/37730974671)、[Full 37730974944](https://github.com/warpdotsys/reader-dev/actions/runs/37730974944)及[Native 37730974808](https://github.com/warpdotsys/reader-dev/actions/runs/37730974808)均已终态成功并独立接受小报告：22 实际 UI 用例／零跳过、14 几何、TTS 6.543 秒；两侧实际 Camoufox 各 20／helper 各 3、Chromium 23、六 Native 实际作业及 publisher 24 份／原身份、源详情、异步、默认 UI 和预算守卫成立。本次新截图没有额外目视。Full 和 Native 两架构内的 JAR **也均为同一个 591ff… 散列**，与两次 Java CI 构建相同；这是本快照三条独立流水线的实际相同字节观察，不混用旧源码、旧 JAR 或新镜像 ID。
+
+Full 独立回执 `6dab018806a88ecded9fd436c88ddd196991a1eb794bc40cb29331cfab0da8d0`／峰值 863,166,464 B；Native 回执 `fc577325e59fc7deeac6d400b30305c69d1b2e583020f01523bc6b5b8b5ef40c`／峰值 854,548,480 B／PID 207。实际 swap 0、普通短测配置仍允许 1 GiB，不能冒充最终零 swap 长测。[完整有限机器证据](evidence/jar-cache-exclusion-hosted-8d0d03c0-2026-10-08.json)保留各自身份；不是任意操作系统／JDK／未来依赖下均复建，更不是 Docker 镜像跨架构位级一致。未唯一解释所有旧差异、接受实站或认证，没有发版／部署。这些结果先保留本地，随下一有意义源码增量提交，避免仅回填结果就重建全部镜像。
 
 回退只撤销正式资源排除、缓存拒绝守卫及相关测试，不变更原归档顺序／时间设置、预算或用户文件。回退会重新允许缓存污染，必须保留这项已知风险；旧失败和旧产物不删除。
 

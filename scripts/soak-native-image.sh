@@ -12,7 +12,7 @@ output="$4"
 : "${RUNNER_TEMP:?Expected a fresh GitHub-hosted runner}"
 test "${GITHUB_ACTIONS:-}" = true
 test "$output" = "$RUNNER_TEMP/reader-soak-report"
-for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json SOAK_REPORT.json SOAK_TRACE.jsonl; do
+for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json SOAK_REPORT.json SOAK_TRACE.jsonl VERIFIED_SOAK.json CONTAINER_REMOVAL.json POST_REMOVAL_VERIFIED_SOAK.json; do
   test ! -e "$output/$report"
 done
 case "$arch:$RUNNER_ARCH:$(uname -m)" in
@@ -45,7 +45,29 @@ cleanup() {
     docker stats --no-stream --format 'name={{.Name}} memory={{.MemUsage}} pids={{.PIDs}}' "$container_id" || true
     docker inspect --format '{{json .State}}' "$container_id" > "$output/CONTAINER_STATE.json" || true
     if [[ "$result" != 0 ]]; then docker logs --tail=120 "$container_id" || true; fi
-    docker rm -f "$container_id" || true
+    removed=false
+    inventory_observed=false
+    remaining_count=null
+    if docker rm -f "$container_id"; then removed=true; fi
+    # A successful host inventory query distinguishes removal from a dead or
+    # inaccessible Docker daemon. The full ID belongs only to this fresh run.
+    if remaining=$(docker ps -aq --no-trunc --filter "id=$container_id"); then
+      inventory_observed=true
+      remaining_count=0
+      if [[ -n "$remaining" ]]; then remaining_count=1; fi
+    fi
+    jq -n --arg containerId "$container_id" --argjson removed "$removed" \
+      --argjson inventoryObserved "$inventory_observed" --argjson remaining "$remaining_count" \
+      '{containerId: $containerId, removalSucceeded: $removed,
+        postRemovalInventoryObserved: $inventoryObserved, ownedContainersRemaining: $remaining}' \
+      > "$output/CONTAINER_REMOVAL.json"
+    if [[ "$removed" != true || "$inventory_observed" != true || "$remaining_count" != 0 ]]; then
+      result=1
+    fi
+    if [[ "$result" = 0 ]]; then
+      if ! verify_observations --require-container-state --require-removal \
+        > "$output/POST_REMOVAL_VERIFIED_SOAK.json"; then result=1; fi
+    fi
   fi
   exit "$result"
 }
@@ -75,8 +97,9 @@ test "$ready" = true
 expected_jar=$(jq -er '.jarSha256' imported/metadata.json)
 actual_jar=$(docker exec "$container_id" sha256sum /app/reader.jar | awk '{print $1}')
 test "$actual_jar" = "$expected_jar"
-jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
-  '{revision: $revision, jarSha256: $jarSha256, network: "none"}' > "$output/RUNNING_JAR_IDENTITY.json"
+jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" --arg containerId "$container_id" \
+  '{revision: $revision, jarSha256: $jarSha256, network: "none", containerId: $containerId}' \
+  > "$output/RUNNING_JAR_IDENTITY.json"
 docker exec "$container_id" python /verification-scripts/soak-bundled-browser.py \
   --reader-base http://127.0.0.1:18892 --expected-revision "$revision" --seconds "$seconds"
 jq -e --arg revision "$revision" --argjson seconds "$seconds" \
@@ -85,3 +108,14 @@ jq -e --arg revision "$revision" --argjson seconds "$seconds" \
    .resources.swapMaxBytes == 0 and .resources.memoryEvents.max == 0 and
    .resources.memoryEvents.oom == 0 and .resources.memoryEvents.oom_kill == 0 and
    .resources.pidsEvents.max == 0' "$output/SOAK_REPORT.json" >/dev/null
+# Cross-check every observed round and each identity; the summary alone cannot
+# prove continuous requests, fault recovery, or browser-process reclamation.
+verify_observations() {
+  python3 scripts/verify-bundled-browser-soak.py "$output" \
+    --architecture "$arch" --expected-revision "$revision" \
+    --expected-source-revision "$(jq -er '.head_sha' "$output/SOURCE_RUN.json")" \
+    --expected-native-run "$(jq -er '.id' "$output/SOURCE_RUN.json")" \
+    --expected-jar "$expected_jar" --expected-image "$(jq -er '.imageId' imported/metadata.json)" \
+    --seconds "$seconds" "$@"
+}
+verify_observations | tee "$output/VERIFIED_SOAK.json"
