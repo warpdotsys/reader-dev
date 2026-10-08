@@ -215,6 +215,27 @@ on:
         required: false
         type: boolean
         default: false
+      three_way_native_run:
+        description: 'Completed own native rehearsal to consume for generated original/remote/Camoufox comparisons'
+        required: false
+        type: string
+        default: ''
+      three_way_revision:
+        description: 'Exact tested merge/source snapshot embedded in the native image'
+        required: false
+        type: string
+        default: ''
+      three_way_source:
+        description: 'Exact native run head SHA; must have identical file contents to its tested snapshot'
+        required: false
+        type: string
+        default: ''
+      three_way_mode:
+        description: 'Generated metadata acceptance, or known UTF-8 characterization which must remain non-accepted'
+        required: false
+        type: choice
+        options: [metadata, utf8-characterization]
+        default: metadata
 
 permissions:
   contents: read
@@ -222,12 +243,83 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}-${{ inputs.public_metadata_user_agent || 'reader-default' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.three_way_native_run && 'generated-three-way' || inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}-${{ inputs.public_metadata_user_agent || 'reader-default' }}-${{ inputs.three_way_native_run && inputs.three_way_mode || 'none' }}
   cancel-in-progress: true
 
 jobs:
+  generated-three-way:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.three_way_native_run }}
+    name: Compare generated original remote and bundled browser observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Bind only a completed own native image to its exact source and tested snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_RUN: ${{ inputs.three_way_native_run }}
+          NATIVE_SOURCE: ${{ inputs.three_way_source }}
+          NATIVE_REVISION: ${{ inputs.three_way_revision }}
+          THREE_WAY_MODE: ${{ inputs.three_way_mode }}
+          EXPECTED_ARCH: ${{ inputs.native_arch }}
+          OTHER_MODES: ${{ inputs.artifact_download_regression || inputs.probe_original_jar || inputs.probe_remote_webview || inputs.real_public_source || inputs.soak_native_run || inputs.public_metadata_native_run }}
+        run: |
+          set -euo pipefail
+          [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
+          [[ "$NATIVE_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$THREE_WAY_MODE" = metadata || "$THREE_WAY_MODE" = utf8-characterization ]]
+          test "$EXPECTED_ARCH" = amd64
+          test "$RUNNER_ARCH:$(uname -m)" = X64:x86_64
+          test -z "$OTHER_MODES" || test "$OTHER_MODES" = false
+          install -d "$RUNNER_TEMP/reader-three-way-report"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN" > "$RUNNER_TEMP/reader-three-way-report/SOURCE_RUN.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN/jobs" > "$RUNNER_TEMP/reader-three-way-report/SOURCE_JOBS.json"
+          gh api "repos/$GITHUB_REPOSITORY/compare/$NATIVE_SOURCE...$NATIVE_REVISION" > "$RUNNER_TEMP/reader-three-way-report/SOURCE_COMPARISON.json"
+          python3 -B scripts/run-hosted-three-way.py --native-run "$NATIVE_RUN" \
+            --source "$NATIVE_SOURCE" --revision "$NATIVE_REVISION" --mode "$THREE_WAY_MODE" --validate-source-only
+          python3 -B -m unittest discover -s src/test/python -p '*_test.py'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
+        with:
+          digest-mismatch: error
+          name: reader-release-jar-${{ inputs.three_way_revision }}
+          path: dist
+          run-id: ${{ inputs.three_way_native_run }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
+        with:
+          digest-mismatch: error
+          name: reader-tested-native-amd64-${{ inputs.three_way_revision }}
+          path: imported
+          run-id: ${{ inputs.three_way_native_run }}
+          github-token: ${{ github.token }}
+      - name: Run generated comparisons in private loopback with aggregate CPU memory and no-swap limits
+        env:
+          NATIVE_RUN: ${{ inputs.three_way_native_run }}
+          NATIVE_SOURCE: ${{ inputs.three_way_source }}
+          NATIVE_REVISION: ${{ inputs.three_way_revision }}
+          THREE_WAY_MODE: ${{ inputs.three_way_mode }}
+        run: |
+          python3 -B scripts/run-hosted-three-way.py --native-run "$NATIVE_RUN" \
+            --source "$NATIVE_SOURCE" --revision "$NATIVE_REVISION" --mode "$THREE_WAY_MODE"
+      - name: Preserve only bounded generated JSON including failed comparisons
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: generated-three-way-${{ inputs.three_way_mode }}-${{ github.run_id }}
+          # Never upload original.jar, candidate JAR, image archives or test storage.
+          path: ${{ runner.temp }}/reader-three-way-report/*.json
+          if-no-files-found: error
+          retention-days: 14
+
   existing-artifact-regression:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_download_regression == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_download_regression == true && !inputs.three_way_native_run }}
     name: Recheck the unchanged failed large AMD64 artifact
     permissions:
       contents: read
@@ -235,7 +327,7 @@ jobs:
     uses: ./.github/workflows/artifact-download-regression.yml
 
   archived-remote-webview:
-    if: ${{ inputs.probe_remote_webview == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
+    if: ${{ inputs.probe_remote_webview == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true && !inputs.three_way_native_run }}
     name: Probe archived remote WebView reference
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -280,7 +372,7 @@ jobs:
           docker rm -f reader-archived-webview >/dev/null 2>&1 || true
 
   original-jar-provenance:
-    if: ${{ inputs.probe_original_jar == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
+    if: ${{ inputs.probe_original_jar == true && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true && !inputs.three_way_native_run }}
     name: Verify archived original JAR provenance
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -312,7 +404,7 @@ jobs:
           echo 'It is not uploaded as an Actions artifact or committed to Git.'
 
   integration:
-    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
+    if: ${{ inputs.probe_original_jar != true && !inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true && !inputs.three_way_native_run }}
     name: Build and smoke-test the full Reader image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 45
@@ -561,7 +653,7 @@ jobs:
           docker rm -f reader-browser-smoke || true
 
   offline-soak:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.soak_native_run && !inputs.public_metadata_native_run && inputs.artifact_download_regression != true && !inputs.three_way_native_run }}
     name: Soak an already-tested native image offline
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 80
@@ -633,7 +725,7 @@ jobs:
           retention-days: 7
 
   public-metadata:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.public_metadata_native_run && inputs.artifact_download_regression != true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.public_metadata_native_run && inputs.artifact_download_regression != true && !inputs.three_way_native_run }}
     name: Probe anonymous metadata in the exact tested native image
     runs-on: ${{ inputs.native_arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 25

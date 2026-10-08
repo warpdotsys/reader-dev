@@ -26,3 +26,11 @@
 ## 回滚
 
 仅撤回 `withDisplayType` 的读取适配、相应测试／两处新 UI 断言和路径提示；不撤销前一批保存弹窗修复，不删除失败证据、用户报告或原始 JAR，不 reset 工作区。没有后端数据迁移需要回滚。
+
+## 展示增量自己的托管实跑已完成
+
+提交 `2f8b37aa1c786d87e84d9ac6b745105aa35972a4`、合并快照 `ba1817b4256bfde0b0019ee8861d99af18c037a0` 自己的[Vue37783548723](https://github.com/warpdotsys/reader-dev/actions/runs/37783548723)、[Java37783548662](https://github.com/warpdotsys/reader-dev/actions/runs/37783548662)、[Full37783548970](https://github.com/warpdotsys/reader-dev/actions/runs/37783548970)、[Native37783548430](https://github.com/warpdotsys/reader-dev/actions/runs/37783548430)均完成成功。25实际界面旅程零跳过／失败／错误，包括真实后端新增及刷新后类型显示的新断言；287前端及20截图守卫全执行，类型检查和构建通过。八张新设置图已逐张目视，新增及编辑图均显示“在线合成”，不再是undefined；不能借这八图认定全部页面无缺陷。
+
+两次实际干净新JAR均为 `ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb`，285,649,123 B／1,562条目／字节及元数据差异0，与本次Full及双架构Native摘要一致，不借父a966ce结果。JVM170／31环境跳过保留，Python382全执行；Full Cam20／helper3／Chrom23及原门禁独立接受，峰值858,132,480 B／PID195；Native六实际作业、重载和publisher24小JSON逐项接受，峰值866,938,880 B／PID211。普通短测实际swap0但允许1GiB；未在本机下载、重算这次大镜像归档，也不冒充零swap长测。
+
+58用户报告散列仍匹配。OPDS未实现、真实认证／最终三方／本机精确镜像运行／正式发布与生产部署仍未完成；这些结果没有触碰真实凭据或正文。[自身图摘要、作业身份和准确边界](evidence/http-tts-display-2f8b37aa-2026-10-08.json)与后续托管三方入口另列。
