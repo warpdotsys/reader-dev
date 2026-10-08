@@ -13,6 +13,8 @@ from zipfile import BadZipFile, ZipFile
 MAX_ARCHIVE_BYTES = 512 * 1024 ** 2
 MAX_UNCOMPRESSED_BYTES = 1024 ** 3
 MAX_ENTRY_BYTES = 128 * 1024 ** 2
+PINNED_DRIVER_BUNDLE = 'BOOT-INF/lib/driver-bundle-1.63.0.jar'
+MAX_DRIVER_BUNDLE_BYTES = 256 * 1024 ** 2
 MAX_ENTRIES = 40000
 CHUNK = 1024 * 1024
 REQUIRED_ENTRIES = frozenset((
@@ -32,6 +34,14 @@ def digest(stream):
     return value.hexdigest()
 
 
+def validate_expansion(items):
+    if (sum(item.file_size for item in items) > MAX_UNCOMPRESSED_BYTES or
+            any(not 0 <= item.file_size <= (
+                MAX_DRIVER_BUNDLE_BYTES if item.filename == PINNED_DRIVER_BUNDLE else MAX_ENTRY_BYTES
+            ) or item.flag_bits & 1 for item in items)):
+        raise ValueError('ArchiveExpansionOutOfBounds')
+
+
 def inspect(path):
     path = Path(path)
     size = path.stat().st_size
@@ -49,9 +59,7 @@ def inspect(path):
         if (not REQUIRED_ENTRIES.issubset(names) or
                 not any(name.startswith('BOOT-INF/lib/') and name.endswith('.jar') for name in names)):
             raise ValueError('RequiredBootJarEntryMissing')
-        if (sum(item.file_size for item in items) > MAX_UNCOMPRESSED_BYTES or
-                any(not 0 <= item.file_size <= MAX_ENTRY_BYTES or item.flag_bits & 1 for item in items)):
-            raise ValueError('ArchiveExpansionOutOfBounds')
+        validate_expansion(items)
         entries = {}
         for item in items:
             with jar.open(item) as stream:

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact pinned dependency budget correction; not clean rebuild acceptance",
+  "firstHostedAttempt": {
+    "sourceRevision": "0622447c6f34f4b4b53a214b4383dc85c860db19",
+    "testedMergeSnapshot": "62e4e189d6d857f874b40cdec2a782092378f854",
+    "runId": 37725173365,
+    "jobId": 113141587531,
+    "conclusion": "failure",
+    "firstBuildAndTestsSucceeded": true,
+    "secondCleanBuildSucceeded": true,
+    "secondCleanBuildTasksExecuted": 6,
+    "secondCleanBuildSeconds": 52,
+    "comparisonFailureCategory": "InvalidReproducibilityInput",
+    "differenceCountsObserved": false,
+    "failureJsonSha256": "4a60c84f0d31a23d347522db84a5ebb650985f274e84f9b18757d32f88d68edd"
+  },
+  "existingLocalJar": {
+    "scope": "Existing local build/libs archive, not the hosted artifact or a new rebuild",
+    "jarSha256": "f9c9082a352d0d609f3a82497f4d4b0ed2907da72bec833a962ce5948a184f2b",
+    "archiveBytes": 285688820,
+    "entries": 1565,
+    "declaredTotalUncompressedBytes": 310874253,
+    "largestEntry": "BOOT-INF/lib/driver-bundle-1.63.0.jar",
+    "largestEntryBytes": 203821698,
+    "distinctEntryTimestamps": 30,
+    "encryptedEntries": 0,
+    "initialInputRejected": true,
+    "correctedReadOnlyInspectionPassed": true,
+    "archiveModified": false,
+    "hostedRootCauseUniquelyProven": false
+  },
+  "budgets": {
+    "archiveBytes": 536870912,
+    "totalUncompressedBytes": 1073741824,
+    "maxEntries": 40000,
+    "ordinaryEntryBytes": 134217728,
+    "exactPinnedEntry": "BOOT-INF/lib/driver-bundle-1.63.0.jar",
+    "exactPinnedEntryBytes": 268435456,
+    "otherDriverVersionsGetLargerBudget": false,
+    "exactByteGateUnchanged": true
+  },
+  "generatedTests": {
+    "windowsTargeted": 17,
+    "wslTargeted": 17,
+    "targetedSkipped": 0,
+    "windowsAll": 351,
+    "windowsPassed": 350,
+    "windowsSkipped": 1,
+    "windowsSeconds": 21.046
+  },
+  "cleanRebuildAccepted": false,
+  "newRuntimeBrowserAcceptance": false,
+  "realSiteAccepted": false,
+  "userReportsUnchanged": 58,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

@@ -38,6 +38,18 @@ python3 scripts/verify-reader-jar-reproducibility.py --first /path/to/first.jar 
 
 新增门禁测试最初 11 项中 1 error：旧 CI 不存在第二次构建步骤；这是新流程缺失基线，不叫旧产品回归。实现后最终 14 项在 Windows、WSL 各实际通过。Windows 全套 348 项中 347 通过、1 POSIX 专属跳过；Node 发布契约及现有源脚本／DOM 语言测试共 119 项全执行通过。Shell／YAML及发布静态守卫通过。托管真实构建结果另行回填，未执行的结果不预填通过。
 
+## 首轮真实执行的失败与精确预算修正
+
+源码 `0622447c6f34f4b4b53a214b4383dc85c860db19`／合并快照 `62e4e189d6d857f874b40cdec2a782092378f854` 的 [Java CI 37725173365](https://github.com/warpdotsys/reader-dev/actions/runs/37725173365)实际失败。第一次构建／测试、JVM XML 保存及第二次干净构建均成功；第二次六个 Gradle 任务真实执行、52 秒。比较器报告 `InvalidReproducibilityInput`，失败 JSON 保存成功；还没有条目比较结果，不是“两次字节不一致”的观察，也没有把作业改成可忽略。
+
+本机对现有 `build/libs/reader-4.0.7.jar` 做只读检查，初版比较器同样在展开预算处拒绝。归档 SHA-256 `f9c9082a352d0d609f3a82497f4d4b0ed2907da72bec833a962ce5948a184f2b`，285,688,820 B、1,565 条目，声明展开总量 310,874,253 B，最大条目为 `BOOT-INF/lib/driver-bundle-1.63.0.jar`／203,821,698 B，未加密；有 30 种条目时间戳。该本机归档不冒充上述 CI 的产物，也不唯一证明托管失败原因。
+
+`build.gradle.kts` 实际固定 Playwright 1.63.0。修正仅给精确条目 `BOOT-INF/lib/driver-bundle-1.63.0.jar` 256 MiB 预算；其他条目仍 128 MiB，归档仍 512 MiB、总展开仍 1 GiB、条目数仍 40,000。不是取消大小守卫、允许任意 driver 版本或改字节相等要求。新增三个测试覆盖精确名称、其他版本／应用条目拒绝、专属上限、总预算、加密和真实依赖版本绑定；17 项在 Windows／WSL 全执行通过。修正后同一本机归档通过只读检查，不据此宣布真正两次构建通过。
+
+首轮失败继续保留；修正后的托管执行须用自己的提交和两次真实干净构建另验。其他三条 `0622447c` 的工作流仍按各自状态接受，不能以其中绿灯抵消 Java 复建门禁的失败。
+
+修正后 Windows 全套实际 351 项：350 通过／1 POSIX 跳过／21.046 秒；没有额外浏览器下载或本机 JAR 重建。首轮失败 JSON SHA-256 `4a60c84f0d31a23d347522db84a5ebb650985f274e84f9b18757d32f88d68edd`，准确预算与本机归档身份见[机器证据](evidence/jar-reproducibility-pinned-driver-budget-2026-10-08.json)。58 用户报告散列仍不变。
+
 ## 未解决项与回退
 
 本次没有修复匿名起点空元数据、真实认证、严格 UTF-8 历史差异、最终三方或长期容量。无额外等待脚本的匿名结构专项仍失败，详见[该专项独立结果](PUBLIC-METADATA-SNAPSHOT-STRUCTURE-2026-10-07.md#2026-10-08实际结构观察仍是业务红灯)。不改生产、代理、UID/GID 范围，日常 Reader 和原 JAR 不变；官方 uidmap 已安装也不等于本机最终镜像验收。

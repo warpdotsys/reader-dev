@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import warnings
@@ -120,6 +121,31 @@ class ReaderJarReproducibilityTest(unittest.TestCase):
         for field in ('MAX_ENTRIES', 'MAX_ENTRY_BYTES', 'MAX_UNCOMPRESSED_BYTES'):
             with self.subTest(field=field), patch.object(GATE, field, 1), self.assertRaises(ValueError):
                 GATE.compare(self.first, self.second)
+
+    def test_only_exact_pinned_driver_gets_the_larger_finite_budget(self):
+        observed_bytes = 203821698
+        self.assertEqual('BOOT-INF/lib/driver-bundle-1.63.0.jar', GATE.PINNED_DRIVER_BUNDLE)
+        header = SimpleNamespace(filename=GATE.PINNED_DRIVER_BUNDLE, file_size=observed_bytes, flag_bits=0)
+        GATE.validate_expansion([header])
+        for name in ('BOOT-INF/lib/driver-bundle-1.62.0.jar', 'BOOT-INF/classes/generated.bin'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                GATE.validate_expansion([SimpleNamespace(filename=name, file_size=observed_bytes, flag_bits=0)])
+
+    def test_pinned_driver_limit_and_global_expansion_limit_still_fail_closed(self):
+        header = SimpleNamespace(filename=GATE.PINNED_DRIVER_BUNDLE,
+                                 file_size=GATE.MAX_DRIVER_BUNDLE_BYTES + 1, flag_bits=0)
+        with self.assertRaises(ValueError):
+            GATE.validate_expansion([header])
+        header.file_size = 203821698
+        with patch.object(GATE, 'MAX_UNCOMPRESSED_BYTES', 1), self.assertRaises(ValueError):
+            GATE.validate_expansion([header])
+        header.flag_bits = 1
+        with self.assertRaises(ValueError):
+            GATE.validate_expansion([header])
+
+    def test_driver_budget_is_tied_to_the_real_pinned_dependency(self):
+        build = (ROOT / 'build.gradle.kts').read_text(encoding='utf-8')
+        self.assertIn('implementation("com.microsoft.playwright:playwright:1.63.0")', build)
 
     def test_cli_keeps_exact_difference_red(self):
         self.jar(self.first)
