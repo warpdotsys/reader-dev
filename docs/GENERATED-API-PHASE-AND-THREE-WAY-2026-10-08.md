@@ -31,6 +31,8 @@ python3 -B -m unittest discover -s src/test/python -p 'generated_api_phase_test.
 
 ## 仍未验证与回滚
 
+本增量自己的托管结果已核验：源码 `ba3ce478...`／合并快照 `7e4b9e50...`，Java `37718718309`／Vue `37718718382`／Full `37718718707`／Native `37718718336` 四条均成功，Native 六实际作业完成。自己的 Python 330 全执行／零跳过；Vue 19＋2＋1 实际通过，两份真实 Camoufox各 20／helper各 3 和 24 publisher JSON 原守卫接受。准确两份 JAR及短测资源身份与后续诊断边界见[新观测入口](PUBLIC-METADATA-SNAPSHOT-STRUCTURE-2026-10-07.md#2026-10-08无额外等待脚本的有限结构入口)。这些不是把历史 JAR三方替换成新最终制品或实际起点通过。
+
 早期 a 的字面时钟拒绝、b 权限失败、c 无阶段 timeout 原始记录均保留；新成功不证明旧 timeout 的唯一根因或把旧红灯改绿。严格 UTF-8 旧 44 B／正确 60 B 差异、历史 newContext/readiness 问题、起点匿名详情失败及真实认证三方仍未关闭。本轮没有执行 UTF-8 第六例，不以生成详情契约放宽它。
 
 本轮使用历史 JAR／镜像，不是新 Native `b8cf8c1b...` 或普通 Full `5931436c...` 的实际三方；最终当前源码长期、真实用户关键流和生产验收仍需独立进行。58 份用户报告散列未变，未动日常 Reader。没有合并 draft PR、创建稳定标签、推送 registry 或部署。

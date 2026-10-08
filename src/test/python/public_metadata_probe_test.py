@@ -354,10 +354,11 @@ class RequestBoundaryTest(unittest.TestCase):
 
 class LifecycleTest(unittest.TestCase):
     def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False, wait_dom=False,
-                            source_retained=True, snapshot_details=False):
+                            source_retained=True, snapshot_details=False, snapshot_only_details=False):
         observed = threading.Event()
         paths = []
         logged_out = False
+        details_requested = snapshot_details or snapshot_only_details
 
         def processes():
             observed.set()
@@ -367,10 +368,10 @@ class LifecycleTest(unittest.TestCase):
             nonlocal logged_out
             paths.append(path)
             if path == "/saveBookSource":
-                self.assertEqual(PROBE.source_definition(snapshot_details), body)
+                self.assertEqual(PROBE.source_definition(details_requested), body)
             if path == "/getBookSource":
                 self.assertEqual({"bookSourceUrl": PROBE.SOURCE}, body)
-                return 200, {"isSuccess": True, "data": PROBE.source_definition(snapshot_details) if source_retained else {}}
+                return 200, {"isSuccess": True, "data": PROBE.source_definition(details_requested) if source_retained else {}}
             if path == "/getBookInfo":
                 self.assertEqual(PROBE.book_info_request(wait_dom), body)
                 self.assertTrue(observed.wait(1), "Generated process observer did not run")
@@ -398,7 +399,8 @@ class LifecycleTest(unittest.TestCase):
                     patch.object(PROBE.os, "getuid", return_value=10001, create=True), \
                     patch("sys.argv", ["probe", "--expected-revision", "a" * 40, "--output", directory]
                           + (["--wait-dom"] if wait_dom else [])
-                          + (["--snapshot-details"] if snapshot_details else [])), \
+                          + (["--snapshot-details"] if snapshot_details else [])
+                          + (["--snapshot-only-details"] if snapshot_only_details else [])), \
                     patch("sys.stdout", new_callable=io.StringIO) as stdout:
                 result = PROBE.main()
             report = json.loads((Path(directory) / "PUBLIC_METADATA_REPORT.json").read_text(encoding="utf-8"))
@@ -412,7 +414,7 @@ class LifecycleTest(unittest.TestCase):
             self.assertFalse(report["sourceScriptSynthesizesMetadata"])
             self.assertEqual(8000 if wait_dom else 0, report["metadataDomWaitBudgetMs"])
             self.assertEqual("boundedMetadataDom" if wait_dom else "domContentLoadedOnly", report["sourceScriptMode"])
-            self.assertEqual("bounded-dom-details" if snapshot_details else
+            self.assertEqual("snapshot-only-details" if snapshot_only_details else "bounded-dom-details" if snapshot_details else
                              "bounded-dom" if wait_dom else "snapshot-only", report["pageCaptureMode"])
             self.assertEqual(0, report["cookieRowsBefore"])
             self.assertEqual(0, report["cookieRowsAfter"])
@@ -497,11 +499,54 @@ class LifecycleTest(unittest.TestCase):
         self.assertFalse(report["passed"])
         self.assertTrue(report["generatedCookieSessionRevokedVerified"])
 
+    def test_no_wait_details_preserve_one_request_zero_wait_and_all_original_guards(self):
+        value = MetadataSummaryTest().value()
+        value["data"]["intro"] = json.dumps(SnapshotStructureTest.envelope())
+        result, report = self.run_generated_probe(value, snapshot_only_details=True)
+        self.assertEqual(0, result)
+        self.assertTrue(report["snapshotStructureRequested"])
+        self.assertEqual("snapshot-only-details", report["pageCaptureMode"])
+        self.assertEqual(0, report["metadataDomWaitBudgetMs"])
+        self.assertNotIn("metadataDomScriptSha256", report)
+        self.assertIsNotNone(report["metadata"]["snapshotStructure"])
+        self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_no_wait_details_do_not_forge_empty_metadata_as_passed(self):
+        value = {"isSuccess": True, "errorMsg": "", "data": {
+            "intro": json.dumps(SnapshotStructureTest.envelope())}}
+        result, report = self.run_generated_probe(value, snapshot_only_details=True)
+        self.assertEqual(1, result)
+        self.assertIsNotNone(report["metadata"]["snapshotStructure"])
+        self.assertFalse(report["passed"])
+        self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_no_wait_details_reject_old_missing_or_raw_diagnostics_and_still_cleanup(self):
+        for raw in (MetadataSummaryTest().value()["data"]["intro"], None, "PRIVATE_HTML"):
+            value = MetadataSummaryTest().value()
+            value["data"]["intro"] = raw
+            result, report = self.run_generated_probe(value, snapshot_only_details=True)
+            self.assertEqual(1, result)
+            self.assertTrue(report["metadata"]["passed"])
+            self.assertIsNone(report["metadata"]["snapshotStructure"])
+            self.assertFalse(report["passed"])
+            self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_no_wait_details_refuse_conflicting_flags_before_any_runtime_or_account_action(self):
+        for flags in (["--wait-dom"], ["--snapshot-details"], ["--wait-dom", "--snapshot-details"]):
+            with patch("sys.argv", ["probe", "--expected-revision", "a" * 40,
+                    "--snapshot-only-details"] + flags), \
+                    patch.object(PROBE, "require_environment") as environment, \
+                    patch.object(PROBE, "request_json") as request:
+                with self.assertRaisesRegex(PROBE.ProbeFailure, "ConflictingSnapshotDetailsMode"):
+                    PROBE.main()
+                environment.assert_not_called()
+                request.assert_not_called()
+
 
 class HostedCaptureModeTest(unittest.TestCase):
     def test_capture_enum_is_validated_before_any_container_or_artifact_action(self):
         wrapper = (ROOT / "scripts/probe-public-native-image.sh").read_text(encoding="utf-8")
-        validation = 'case "$capture_mode" in\n  bounded-dom|snapshot-only|bounded-dom-details) ;;\n  *) exit 1 ;;\nesac'
+        validation = 'case "$capture_mode" in\n  bounded-dom|snapshot-only|bounded-dom-details|snapshot-only-details) ;;\n  *) exit 1 ;;\nesac'
         self.assertIn(validation, wrapper)
         self.assertLess(wrapper.index(validation), wrapper.index("version=$(jq"))
         self.assertLess(wrapper.index(validation), wrapper.index("docker load"))
@@ -513,6 +558,7 @@ class HostedCaptureModeTest(unittest.TestCase):
         self.assertIn('probe_args=(--expected-revision "$revision")', wrapper)
         self.assertIn('if [[ "$capture_mode" = bounded-dom ]]; then probe_args+=(--wait-dom); fi', wrapper)
         self.assertIn('if [[ "$capture_mode" = bounded-dom-details ]]; then probe_args+=(--wait-dom --snapshot-details); fi', wrapper)
+        self.assertIn('if [[ "$capture_mode" = snapshot-only-details ]]; then probe_args+=(--snapshot-only-details); fi', wrapper)
         self.assertIn('"${probe_args[@]}"', wrapper)
         _, baseline = PROBE.book_info_request(False)["url"].split(", ", 1)
         _, bounded = PROBE.book_info_request(True)["url"].split(", ", 1)
@@ -521,10 +567,10 @@ class HostedCaptureModeTest(unittest.TestCase):
 
     def test_workflow_passes_the_fixed_mode_without_shell_interpolation(self):
         workflow = (ROOT / ".github/workflows/browser-image.yml").read_text(encoding="utf-8")
-        self.assertIn("options: [bounded-dom, snapshot-only, bounded-dom-details]", workflow)
+        self.assertIn("options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details]", workflow)
         self.assertIn("default: bounded-dom", workflow)
         self.assertEqual(2, workflow.count("CAPTURE_MODE: ${{ inputs.public_metadata_capture }}"))
-        self.assertIn('[[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details ]]', workflow)
+        self.assertIn('[[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details ]]', workflow)
         self.assertIn('"$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE"', workflow)
         self.assertIn("${{ inputs.public_metadata_capture || 'bounded-dom' }}", workflow)
         self.assertNotIn('run: ${{ inputs.public_metadata_capture', workflow)

@@ -369,9 +369,14 @@ def main():
                         help="Wait at most 8 seconds for fixed public metadata selectors, without altering the page")
     parser.add_argument("--snapshot-details", action="store_true",
                         help="Persist only finite structural booleans from the returned snapshot; requires --wait-dom")
+    parser.add_argument("--snapshot-only-details", action="store_true",
+                        help="Finite returned-snapshot booleans without adding a source wait script; exclusive with wait/details flags")
     args = parser.parse_args()
+    if args.snapshot_only_details and (args.wait_dom or args.snapshot_details):
+        raise ProbeFailure("ConflictingSnapshotDetailsMode")
     if args.snapshot_details and not args.wait_dom:
         raise ProbeFailure("SnapshotDetailsRequireBoundedWait")
+    details_requested = args.snapshot_details or args.snapshot_only_details
     require_environment(args.reader_base, args.expected_revision, args.output)
     cgroup = load_helper("public_metadata_cgroup", "report-browser-cgroup.py")
     process_helper = load_helper("public_metadata_processes", "soak-bundled-browser.py")
@@ -390,8 +395,8 @@ def main():
               "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",
               "pageDiagnosticRuleRequested": True,
               "rawErrorHtmlCookieAndMetadataValuesNotPersisted": True, "passed": False}
-    if args.snapshot_details:
-        report["pageCaptureMode"] = "bounded-dom-details"
+    if details_requested:
+        report["pageCaptureMode"] = "snapshot-only-details" if args.snapshot_only_details else "bounded-dom-details"
         report["snapshotStructureRequested"] = True
         report["snapshotStructureRuleSha256"] = hashlib.sha256(SNAPSHOT_STRUCTURE_RULE.encode("utf-8")).hexdigest()
     opener = urllib.request.build_opener(
@@ -424,16 +429,16 @@ def main():
         report["cookieRowsBefore"] = cookie_count(request_json(opener, "/getBookSourceCookie"))
         if report["cookieRowsBefore"] != 0:
             raise ProbeFailure("NonemptyFreshCookieIndex")
-        require_success(request_json(opener, "/saveBookSource", source_definition(args.snapshot_details)))
+        require_success(request_json(opener, "/saveBookSource", source_definition(details_requested)))
         report["sourceDefinitionRoundtrip"] = source_roundtrip(request_json(
-            opener, "/getBookSource", {"bookSourceUrl": SOURCE}), args.snapshot_details)
+            opener, "/getBookSource", {"bookSourceUrl": SOURCE}), details_requested)
         if not report["sourceDefinitionRoundtrip"]["passed"]:
             raise ProbeFailure("ProbeSourceRulesNotRetained")
         watcher.start()
         started = time.monotonic()
         report["bookInfoApiCalls"] += 1
         result = request_json(opener, "/getBookInfo", book_info_request(args.wait_dom))
-        report["metadata"] = summarize(*result, snapshot_details=args.snapshot_details)
+        report["metadata"] = summarize(*result, snapshot_details=details_requested)
         report["requestSeconds"] = round(time.monotonic() - started, 3)
         result = None
     except ProbeFailure as failure:

@@ -9,7 +9,7 @@ capture_mode="${4:-bounded-dom}"
 [[ "$arch" = amd64 || "$arch" = arm64 ]]
 [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
 case "$capture_mode" in
-  bounded-dom|snapshot-only|bounded-dom-details) ;;
+  bounded-dom|snapshot-only|bounded-dom-details|snapshot-only-details) ;;
   *) exit 1 ;;
 esac
 : "${RUNNER_TEMP:?Expected a fresh GitHub-hosted runner}"
@@ -102,4 +102,5 @@ jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
 probe_args=(--expected-revision "$revision")
 if [[ "$capture_mode" = bounded-dom ]]; then probe_args+=(--wait-dom); fi
 if [[ "$capture_mode" = bounded-dom-details ]]; then probe_args+=(--wait-dom --snapshot-details); fi
+if [[ "$capture_mode" = snapshot-only-details ]]; then probe_args+=(--snapshot-only-details); fi
 docker exec "$container_id" python /verification-scripts/probe-public-metadata.py "${probe_args[@]}"

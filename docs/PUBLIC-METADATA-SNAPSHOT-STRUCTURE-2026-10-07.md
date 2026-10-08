@@ -68,3 +68,26 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-rea
 匿名起点空元数据、真实认证及原 JAR / 旧远程 / 内置的真实会话三方仍未完成；正文、生产和长期高核数容量没有新增接受证据。结构分类最多缩小排查范围，不会自动修复业务、放宽防护或绕过验证码。原红灯和旧 UTF-8 请求差异保留。
 
 回滚仅撤销可选 `bounded-dom-details` 枚举、`--snapshot-details` 规则及配套测试；原 `bounded-dom` / `snapshot-only`、默认八布尔值、8 秒脚本、生成详情门禁和下载修复均保留。没有数据迁移，不删除用户文件或原 JAR，也不重置工作区。
+
+## 2026-10-08：无额外等待脚本的有限结构入口
+
+带等待脚本的实站请求此前在取得快照前失败，不能靠补 false 推断结构；旧 `snapshot-only` 虽取得成功外壳／空元数据，却只有八个选择器／文本布尔值。新显式 `snapshot-only-details` 仅组合既有无源等待脚本请求与既有九项有限结构诊断，以取得缺失的观测，不宣称修复站点或规避挑战。
+
+它映射到 `--snapshot-only-details`，与 `--wait-dom`／`--snapshot-details` 冲突时，在环境检查、容器或账号操作前拒绝。原三模式不变，旧 details 仍要求 bounded wait；新模式不含 `webJs`、源等待预算为 0，**不是禁用网站自身 JavaScript，也不是整个请求超时为 0**。现代书源及精确规则必须保存读回，详情仍严格一次；原 8＋9 布尔值、1 KiB 诊断上限、所有元数据／资源／真实浏览器观察／清理门槛均保留。空元数据即使结构完整仍失败，不保存 HTML、Cookie、原异常或真实元数据值。
+
+新增四项测试先在旧 CLI 实际出现 52 项／4 errors（新参数不存在），完整输出保留；这是新入口缺失的基线，不叫产品回归。实现后 52 项全执行通过；Windows 全套 334 项中 333 通过／1 POSIX 跳过，22.804 秒，Node 原发布契约 82＋固定 DOM／时钟语言用例 8 共 90 全通过，Shell／YAML 语法通过。WSL 首次 52 项中 1 项因缺 Node 失败，未掩盖或放宽；仅用固定参数桥调用现有 Windows Node 后 WSL Python 52 项通过，JS 子用例不是原生 Linux Node或浏览器证明，没有安装额外软件。
+
+基于源码 `ba3ce478...`／被测合并快照 `7e4b9e50...` 的四个普通 hosted workflow 此时均已成功，Native 六实际作业／24 publisher JSON 已独立接受；不是拿这些绿灯称新实站模式已执行。两份真实 Camoufox 各 20 项无跳过，helper 各 3 项；Vue 核心 19＋管理安全 2＋子目录 1 实际执行，TTS 7.614 秒、四张生成图已目视，返回 A 的图处于淡出过渡，不冒充稳定最终弹窗。14 组登录几何核对，普通 JVM 170 中 31 环境跳过不计作浏览器。
+
+Full JAR `29d07c04...` 与两架构共同 Native JAR `61fdc23d...` 来自同一测试快照，但散列不同；各自默认 UI、异步／生成详情、预算及 Native 原生／重载身份分别接受，不能混作同一 JAR或称位级可重复构建。差异唯一原因尚未核验，后续检查归档时间／内容；没有仅凭缺少归档选项就唯一判因。短测 Full 峰值 845,168,640 B／PID 193、Native 最高 921,747,456 B／PID 204，实际 swap 0但普通配置允许 1 GiB，仍非零 swap 长测。没有把两份约 2 GiB 归档下载到本机或冒充本机重算归档散列。
+
+准确字节、旧失败、两个 runtime 身份及局部验收见[机器证据](evidence/public-metadata-snapshot-only-details-2026-10-08.json)。提交新模式后仅消费已通过的 `37718718336` / `7e4b9e509822473c6d98d17c8bb0b922fe28a406` Native 归档，受测 JAR与探针提交分别记录：
+
+```sh
+gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-reader-20260926 \
+  -f native_arch=amd64 -f public_metadata_native_run=37718718336 \
+  -f public_metadata_revision=7e4b9e509822473c6d98d17c8bb0b922fe28a406 \
+  -f public_metadata_capture=snapshot-only-details
+```
+
+当前新模式实站仍未执行，结果另行独立接受；不重试同条件请求或操作验证码。原件／旧远程真实认证三方、严格 UTF-8 原缺陷、最终长期及生产仍未完成，58 用户报告未变。回滚只撤销这个第四枚举和独立 CLI flag，保留原三模式、规则散列、失败证据和用户数据；不改产品 worker、业务类或代理防护。
