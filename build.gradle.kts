@@ -175,6 +175,10 @@ application {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClassName = "com.htmake.reader.ReaderApplicationKt"
+    // Gradle 6 keeps source mtimes and filesystem traversal order by default.
+    // Exact-byte CI comparison, not these options alone, proves a rebuild.
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
     // JavaFX is used only by the optional desktop packager. The reference
     // headless Spring Boot JAR does not ship JavaFX modules.
     exclude("**/javafx-*.jar")

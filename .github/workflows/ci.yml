@@ -51,7 +51,7 @@ jobs:
           npm run build --prefix web-vue3
           npm test --prefix web-vue3
           chmod +x gradlew
-          ./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon --stacktrace
+          ./gradlew -PreaderWebUi=vue3 clean test bootJar --max-workers=2 --no-build-cache --no-daemon --stacktrace
       - name: Verify artifact
         shell: bash
         run: |
@@ -60,6 +60,9 @@ jobs:
           test -n "$jar"
           test -s "$jar"
           sha256sum "$jar" | tee build/libs/SHA256SUMS
+          test ! -e "$RUNNER_TEMP/reader-jar-reproducibility"
+          install -d "$RUNNER_TEMP/reader-jar-reproducibility"
+          install -m 0644 "$jar" "$RUNNER_TEMP/reader-jar-reproducibility/first.jar"
       # The JAR alone does not contain Chromium. Only the complete image is a
       # distributable product; release.yml publishes it with the JAR.
       - name: Preserve actual Java Kotlin contracts including failures and skips
@@ -68,5 +71,25 @@ jobs:
         with:
           name: reader-java-kotlin-contracts-${{ github.sha }}
           path: build/test-results/test/TEST-*.xml
+          if-no-files-found: error
+          retention-days: 14
+      # Save the first test XMLs above: a second clean intentionally removes
+      # build/. Dependency caches may be reused, task outputs may not.
+      - name: Verify a second clean build without a task output cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew -PreaderWebUi=vue3 clean bootJar --max-workers=2 --no-build-cache --no-daemon --stacktrace
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          python3 scripts/verify-reader-jar-reproducibility.py \
+            --first "$RUNNER_TEMP/reader-jar-reproducibility/first.jar" \
+            --second "$jar" > "$RUNNER_TEMP/reader-jar-reproducibility/REPRODUCIBILITY.json"
+      - name: Preserve exact-byte rebuild result including a failed comparison
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-jar-reproducibility-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-jar-reproducibility/REPRODUCIBILITY.json
           if-no-files-found: error
           retention-days: 14
