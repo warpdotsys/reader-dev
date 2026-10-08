@@ -33,7 +33,7 @@
 
 新 harness 还按本次自有完整容器 ID 删除并独立查询宿主清单，保留 `CONTAINER_REMOVAL.json`；只有删除成功、清单读取成功且自有容器剩余 0 才能通过最终验收。新 `POST_REMOVAL_VERIFIED_SOAK.json` 与删除前回执分开保存，不覆盖历史观察。
 
-20 项定向测试在 Windows／WSL 全执行通过，Windows 全套 382 项中只有一项平台跳过，发布相关 Node 82 项全通过，shell 语法通过。早期缺少接入的实际断言失败保留；本轮 72 个报告文件哈希核对未变，不覆盖用户未提交数据。上述两次 30 分钟运行使用旧 harness；新比较器是在下载后独立核对，**不伪称当时执行了新增清理门禁**。新清理路径仍须自己的托管实际运行。
+20 项定向测试在 Windows／WSL 全执行通过，Windows 全套 382 项中只有一项平台跳过，发布相关 Node 82 项全通过，shell 语法通过。早期缺少接入的实际断言失败保留；本轮 72 个报告文件哈希核对未变，不覆盖用户未提交数据。上述两次 30 分钟运行使用旧 harness；新比较器是在下载后独立核对，**不伪称当时执行了新增清理门禁**。新清理路径随后在自己的独立运行中实际通过，见下节。
 
 可对 AMD64 原始小报告独立复验：
 
@@ -42,6 +42,26 @@ python scripts/verify-bundled-browser-soak.py build/native-soak-8d0d03c0-2026100
 ```
 
 该旧报告没有删除后观察；不能为它加 `--require-removal` 后编造通过。输入只读，比较器不会启动 Reader 或重放请求。
+
+## 新清理路径的实际托管运行
+
+验收工具源码 `47cc4440c50f494e1c6bee02934b72992a16af23` 的 [AMD64 专项 37762108276](https://github.com/warpdotsys/reader-dev/actions/runs/37762108276) 已终态成功，实际作业 `113260792039`；其余六个互斥作业跳过。**本专项复用前述 8d／3fe／Native37730974808 的原镜像，而不是 47 自己的新镜像。** JAR／image ID／归档来源不替换。
+
+要求 600 秒、实际连续 612.861 秒／39 轮／164 次成功搜索；GET／POST 目标计数 91／76，Cookie／请求形态错误 0。峰值 911,728,640 B（约 869.5 MiB）／211 PID，原 2 CPU／2 GiB／256 PID／零 swap，max／OOM／PID 触限 0。导航超时／脚本 watchdog／自有 worker 异常退出分别 7.512／25.025／2.223 秒，三类失败返回及随后恢复均接受，所有静止样本浏览器进程为 0。
+
+本次取得了删除后的真实观察：`CONTAINER_REMOVAL.json` 与运行身份绑定同一个自有完整容器 ID，删除成功、宿主清单查询成功、自有容器剩余 0。`POST_REMOVAL_VERIFIED_SOAK.json` 与删除前回执各自保留；本机再次只读运行全部逐轮／身份／容器状态／删除后门禁，实际接受。只消费 6,417 B 制品、10 个小文件，没有用这次新观察替换两份旧长测的缺失清理证据。[准确来源与逐文件散列](evidence/browser-soak-cleanup-47cc4440-2026-10-08.json)。
+
+静止内存仍增长 26,341,376 B（约 25.1 MiB），最长完整 API 请求为 25.057 秒；本次不证明无泄漏、真实认证、生产容量或 47 新镜像的长测。
+
+## 验收工具提交自身的普通构建
+
+47 自身、受测合并快照 `63b51c0bda768383842d04eee72560c4b747c4d0` 的四条工作流已终态成功并逐报告接受：[Java](https://github.com/warpdotsys/reader-dev/actions/runs/37762083575)、[Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/37762083669)、[Full image](https://github.com/warpdotsys/reader-dev/actions/runs/37762083946)、[Native](https://github.com/warpdotsys/reader-dev/actions/runs/37762083661)。Native 六项实际作业均成功，不把互斥专项的跳过混作实测。
+
+两次真实干净 Java 构建、Full、Native 两架构 JAR 仍全部为 `591ff…dcec`／285,649,077 B／1,562 条目，完整 bytes／内容／ZIP 元数据／缺失差异 0；第二轮六任务全部执行，69 秒。Linux Python 382 项全执行；JVM 170 项中的 31 项环境跳过继续保留。Vue 实际 22 项／14 组几何、两侧 Camoufox 各 20／helper 各 3、Native publisher 24 个文件及原 UI／异步／元数据／资源守卫均接受。本次新截图未额外目视。
+
+Full／Native 峰值分别 860,372,992／878,145,536 B；Native PID 峰值 201。普通短测实际 swap 0，但允许 1 GiB，不能冒充前述零 swap 持续验收。47 自身新 AMD64 image ID 为 `sha256:d066fc715eaedd9e540fe34fce1501f26d2ab1fec31bc3960b7708a2718fc70f`，ARM64 为 `sha256:3b7b212756e1cf766ad48b5d99099e87b2f1721e30ec2785139821d91241e924`，**不与复用的 8d 镜像混同**。三个独立接受回执散列附在机器记录；未合并、发布或改生产。
+
+本机另一次原归档消费与受阻启动见[本机准备与失败边界](LOCAL-LOCKED-IMAGE-2026-10-08.md)，不能把托管绿灯转记为本机完整运行。
 
 ## 回滚
 

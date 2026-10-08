@@ -3,6 +3,7 @@ package com.medwarp.reader.browserpoc;
 import com.microsoft.playwright.*;
 import org.junit.Assume;
 import org.junit.Test;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -69,7 +70,21 @@ public class Vue3PreviewTtsCacheIsolationTest {
                 + "return a && a.src.startsWith('blob:') && !a.paused && a.currentTime > 0; }")));
     }
 
-    private static void screenshot(Page page, String name) {
+    private static void screenshot(Page page, String name) throws Exception {
+        boolean expectTtsPanel = name.equals("tts-cache-generated-a-playing.png")
+                || name.equals("tts-cache-generated-a-returned.png");
+        String ready;
+        try (InputStream resource = Vue3PreviewTtsCacheIsolationTest.class
+                .getResourceAsStream("/ui-screenshot-readiness.js")) {
+            assertNotNull("Screenshot readiness resource is required", resource);
+            ready = new String(resource.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        // Retain normal transitions. A visible DOM node or playing audio alone
+        // does not prove that its dialog is opaque, in-frame and unobstructed.
+        page.waitForFunction(ready, expectTtsPanel);
+        if (expectTtsPanel) assertEquals("Expected generated playback must still be active", true,
+                page.evaluate("() => { const a=document.querySelector('audio');"
+                        + "return a && a.src.startsWith('blob:') && !a.paused && a.currentTime > 0; }"));
         String root = System.getenv("READER_UI_EVIDENCE_DIR");
         if (root == null) root = System.getenv("RUNNER_TEMP");
         if (root != null) page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(root, name)));

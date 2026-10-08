@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-08",
+  "scope": "manual review of generated hosted screenshot artifacts; new guard acceptance remains separate",
+  "observedSourceRevision": "47cc4440c50f494e1c6bee02934b72992a16af23",
+  "observedMergeSnapshot": "63b51c0bda768383842d04eee72560c4b747c4d0",
+  "observedVueRunId": 37762083669,
+  "screenshots": [
+    {
+      "artifact": "vue3-login-layout-63b51c0bda768383842d04eee72560c4b747c4d0",
+      "file": "vue3-login-layout-generated-1280x720-login-full.png",
+      "sha256": "e11dbb766c8dc38aa4ca80ca1a27abde6a078594b853fd795d759b07f4187c0e",
+      "reviewed": true,
+      "assessment": "observed Chinese labels legible; full document is not a single viewport"
+    },
+    {
+      "artifact": "vue3-login-layout-63b51c0bda768383842d04eee72560c4b747c4d0",
+      "file": "vue3-login-layout-generated-360x320-register-bottom.png",
+      "sha256": "ea1b59740c6e31489f37feed60fb87031b1269427aeb88e967159fcb26951b99",
+      "reviewed": true,
+      "assessment": "observed bottom-of-scroll register action and labels legible"
+    },
+    {
+      "artifact": "vue3-manager-namespace-63b51c0bda768383842d04eee72560c4b747c4d0",
+      "file": "_temp/vue3-manager-generated-permissions-narrow.png",
+      "sha256": "e387ff9ae7a3427522e76a550e4f4b8ae891d713445f0ddfede00483acaabb88",
+      "reviewed": true,
+      "assessment": "observed generated manager permission labels legible"
+    },
+    {
+      "artifact": "vue3-tts-cache-63b51c0bda768383842d04eee72560c4b747c4d0",
+      "file": "tts-cache-generated-a-returned.png",
+      "sha256": "64081d05bb68bb2a9f47724032e84a9542b2524c737acfabb8bacddf03aec1d9",
+      "reviewed": true,
+      "assessment": "dialog appearance is not adequate steady-state visual evidence",
+      "actualAnimationStateRecorded": false,
+      "fadeTimingCauseIsInference": true,
+      "persistentProductRenderingFailureProven": false
+    }
+  ],
+  "newGuard": {
+    "generatedNodeTests": 20,
+    "passed": 20,
+    "skipped": 0,
+    "existingJava11TargetedCompilationPassed": true,
+    "normalUiAnimationsDisabledOrFastForwarded": false,
+    "businessOrRuntimeChanged": false,
+    "actualHostedBrowserAcceptanceProven": false
+  },
+  "currentDirectBrowserConnectionAttempts": 2,
+  "currentDirectBrowserConnectionSucceeded": false,
+  "currentLocalRenderedUiSessionPerformed": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "currentFinalImageFullThreeWayProven": false,
+  "fullGoalComplete": false
+}
