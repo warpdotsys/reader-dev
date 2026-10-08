@@ -225,6 +225,35 @@ def require_success(opener, base, path, body=None, include_return_data=False):
             **({"returnData": value} if include_return_data else {})}
 
 
+class GeneratedApiPhase:
+    """Bounded local-fixture operations only; never stores requests, credentials or exception text."""
+    ALLOWED = frozenset(("startup", "register", "login", "sourceSave", "sourceRead",
+        "searchFirst", "searchSecond", "searchThird", "scriptSourceSave", "scriptSearch",
+        "postSourceSave", "postSearch", "encodingSourceSave", "encodingSourceRead", "encodingSearch",
+        "metadataSourceSave", "metadataSourceRead", "metadataGetBookInfo"))
+
+    def __init__(self):
+        self.active = None
+        self.completed = None
+        self.started_calls = 0
+        self.completed_calls = 0
+
+    def call(self, stage, operation, *args, **kwargs):
+        if type(stage) is not str or stage not in self.ALLOWED:
+            raise ValueError("Unknown generated API phase")
+        self.active = stage
+        self.started_calls += 1
+        value = operation(*args, **kwargs)
+        self.completed = stage
+        self.completed_calls += 1
+        self.active = None
+        return value
+
+    def failure_context(self):
+        return {"activePhase": self.active or "betweenCalls", "lastCompletedPhase": self.completed,
+            "startedCalls": self.started_calls, "completedCalls": self.completed_calls}
+
+
 def require_verified_private_loopback():
     """Recheck the root guard's namespace after dropping privileges."""
     try:
@@ -282,13 +311,14 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
     last_search_response = None
     metadata = None
     metadata_calls = 0
+    api_phase = GeneratedApiPhase()
     try:
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
             if process.poll() is not None:
                 raise RuntimeError(f"Reader exited at startup: {process.returncode}")
             try:
-                if require_success(opener, base, "/reader3/getSystemInfo"):
+                if api_phase.call("startup", require_success, opener, base, "/reader3/getSystemInfo"):
                     break
             except (OSError, ValueError, urllib.error.URLError):
                 time.sleep(0.5)
@@ -298,7 +328,7 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         username = "webviewprobe" + secrets.token_hex(5)
         password = "Probe-" + secrets.token_hex(12)
         for is_login in (False, True):
-            require_success(opener, base, "/reader3/login",
+            api_phase.call("login" if is_login else "register", require_success, opener, base, "/reader3/login",
                             {"username": username, "password": password,
                              "isLogin": is_login})
         source = {
@@ -311,14 +341,15 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             "ruleToc": {"chapterList": ".chapter"},
             "ruleContent": {"content": ".content@html"},
         }
-        require_success(opener, base, "/reader3/saveBookSource", source)
-        saved = require_success(opener, base, "/reader3/getBookSource",
+        api_phase.call("sourceSave", require_success, opener, base, "/reader3/saveBookSource", source)
+        saved = api_phase.call("sourceRead", require_success, opener, base, "/reader3/getBookSource",
                                 {"bookSourceUrl": fixture_base})["data"]
         if saved.get("searchUrl") != source["searchUrl"]:
             raise RuntimeError(f"Saved source changed WebView rule: keys={list(saved.keys())}, "
                                f"value={saved.get('searchUrl')!r}")
         for key in ("first", "second", "third"):
-            result = require_success(opener, base, "/reader3/searchBook",
+            result = api_phase.call({"first": "searchFirst", "second": "searchSecond", "third": "searchThird"}[key],
+                                     require_success, opener, base, "/reader3/searchBook",
                                      {"key": key, "page": 1,
                                       "bookSourceUrl": fixture_base}, include_return_data=include_data)
             last_search_response = result
@@ -337,8 +368,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
             scripted_source["searchUrl"] = (
                 fixture_base + '/search, {"webView": true, "webJs": "' + script + '"}'
             )
-            require_success(opener, base, "/reader3/saveBookSource", scripted_source)
-            result = require_success(opener, base, "/reader3/searchBook", {
+            api_phase.call("scriptSourceSave", require_success, opener, base, "/reader3/saveBookSource", scripted_source)
+            result = api_phase.call("scriptSearch", require_success, opener, base, "/reader3/searchBook", {
                 "key": "script", "page": 1, "bookSourceUrl": fixture_base},
                 include_return_data=include_data)
             last_search_response = result
@@ -357,8 +388,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                 '"body": "q=post", "headers": {"X-Fixture": "synthetic"}, '
                 '"webJs": "' + script + '"}'
             )
-            require_success(opener, base, "/reader3/saveBookSource", post_source)
-            result = require_success(opener, base, "/reader3/searchBook", {
+            api_phase.call("postSourceSave", require_success, opener, base, "/reader3/saveBookSource", post_source)
+            result = api_phase.call("postSearch", require_success, opener, base, "/reader3/searchBook", {
                 "key": "post", "page": 1, "bookSourceUrl": fixture_base},
                 include_return_data=include_data)
             last_search_response = result
@@ -374,12 +405,12 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                 "webView": True, "method": "POST", "charset": "UTF-8", "body": ENCODING_BODY,
                 "headers": {"Content-Type": "application/json; charset=utf-8",
                             "X-Fixture": "synthetic-utf8"}, "webJs": ENCODING_SCRIPT}, ensure_ascii=False)
-            require_success(opener, base, "/reader3/saveBookSource", encoding_source)
-            saved = require_success(opener, base, "/reader3/getBookSource",
+            api_phase.call("encodingSourceSave", require_success, opener, base, "/reader3/saveBookSource", encoding_source)
+            saved = api_phase.call("encodingSourceRead", require_success, opener, base, "/reader3/getBookSource",
                                     {"bookSourceUrl": fixture_base})["data"]
             if saved.get("searchUrl") != encoding_source["searchUrl"]:
                 raise RuntimeError("Saved source changed the explicit UTF-8 rule")
-            result = require_success(opener, base, "/reader3/searchBook", {
+            result = api_phase.call("encodingSearch", require_success, opener, base, "/reader3/searchBook", {
                 "key": "encoding", "page": 1, "bookSourceUrl": fixture_base}, include_return_data=True)
             last_search_response = result
             books = result["data"]
@@ -391,15 +422,16 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         if exercise_metadata:
             helper = fixture.metadata
             definition = helper.source_definition(fixture_base)
-            require_success(opener, base, "/reader3/saveBookSource", definition)
-            saved = require_success(opener, base, "/reader3/getBookSource",
+            api_phase.call("metadataSourceSave", require_success, opener, base, "/reader3/saveBookSource", definition)
+            saved = api_phase.call("metadataSourceRead", require_success, opener, base, "/reader3/getBookSource",
                 {"bookSourceUrl": definition["bookSourceUrl"]})["data"]
             roundtrip = helper.source_roundtrip(saved, fixture_base)
             if not roundtrip["passed"]:
                 raise RuntimeError("Generated metadata source rules were not retained")
             metadata_calls += 1
             started_ms = time.time_ns() // 1000000
-            status, value = request(opener, base, "/reader3/getBookInfo", helper.book_info_request(fixture_base))
+            status, value = api_phase.call("metadataGetBookInfo", request,
+                opener, base, "/reader3/getBookInfo", helper.book_info_request(fixture_base))
             completed_ms = time.time_ns() // 1000000
             with fixture.lock:
                 targets = list(fixture.metadata_requests)
@@ -417,6 +449,7 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         if failure_report is not None:
             write_report(failure_report, {"generatedOnly": True, "probeCompleted": False,
                 "failureType": type(failure).__name__, "completedSearches": probes,
+                "apiFailureContext": api_phase.failure_context(),
                 "lastObservedSearchResponse": last_search_response,
                 **({"metadataBookInfoApiCalls": metadata_calls, "lastObservedMetadata": metadata}
                    if exercise_metadata else {}),

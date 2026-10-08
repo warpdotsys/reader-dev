@@ -1,6 +1,6 @@
 # 听书缓存隔离与缺失音量默认值修复
 
-日期：2026-10-07。源代码基于 `6e4ad4897a9b52c5893d082373b6fa9231cb5d35` 的独立增量；不是正式发行或生产验收。
+日期：2026-10-07，验收记录更新：2026-10-08。源代码基于 `6e4ad4897a9b52c5893d082373b6fa9231cb5d35` 的独立增量；不是正式发行或生产验收。
 
 ## 已验证的问题与修复
 
@@ -36,7 +36,15 @@
 
 ## GitHub 托管验收与复现
 
-`vue3-preview.yml` 核心旅程新增 `Vue3PreviewTtsCacheIsolationTest`，原 18 项不删除；逐份 XML 要求 tests=1/skipped=0/failures=0/errors=0，另保留四张生成 TTS 图。仍使用 GitHub `ubuntu-24.04` runner，不使用自托管。本增量自己的托管执行和下载报告验收在提交后记录；父提交四条绿色不能代替新 UI。
+`vue3-preview.yml` 核心旅程新增 `Vue3PreviewTtsCacheIsolationTest`，原 18 项不删除；逐份 XML 要求 tests=1/skipped=0/failures=0/errors=0，另保留四张生成 TTS 图。仍使用 GitHub `ubuntu-24.04` runner，不使用自托管。下面记录本增量自己的实际托管结果；父提交绿色不代替新 UI。
+
+提交后已独立核对：源提交 `b17109db4e6d73b9dddeef453618e44cacd160ff`，被测合并快照 `fc897d0b52bdce0c11f881206b68359d0de28cc2`。自己的 Java `37641650075`、Vue `37641649969`、完整镜像 `37641650547` 已成功；下载并重算 84 个实际解压文件散列（不冒充本机重算远程 ZIP）。Vue 核心 19＋管理／安全 2＋子路径 1 全实际执行，TTS 7.85 秒／零跳过；四张自己的托管生成图已目视。普通 JVM 42 套件／170 项中 31 环境门控跳过，不能把这些计作真实浏览器；另一个实际 Camoufox 报告 20 项全执行、helper 3 项、Chromium／快照 23 项通过。原 async、生成详情、默认打包 UI、预算守卫独立接受：完整镜像 JAR 为 `5931436c...`，不是本机历史 221；峰值 826,163,200 B／PID 196、触限与实际 swap 0，但正常短测允许 1 GiB swap，不能写成零 swap 长测。独立回执 `build/tts-cache-hosted-b17109db-20261007-a/independent-acceptance.json` SHA-256 `f3bb5bf9b9870290009609bb0e355c22c0a24ecdbcf860f1fdd0f10b6c312fcf`。
+
+Native 原运行 [37641650055](https://github.com/warpdotsys/reader-dev/actions/runs/37641650055) 终态失败。网页确报 `Internal server error`／Correlation ID `c133c6a0-8cbd-4567-8e13-81f90ee005c5`，共享 JAR 作业成功，Native 矩阵作业未生成，后续导入跳过；不是通过发布预演。`--failed` 重试被 GitHub 明确拒绝。已确认原测试合并快照与源提交文件差异为空，再对同一源提交开启 [37715644210](https://github.com/warpdotsys/reader-dev/actions/runs/37715644210)。此具体运行现已 completed/success，六个实际作业全部成功：共享 JAR、原生 AMD64／ARM64、两侧归档重载和不使用 registry 凭据的发布导入。原失败仍保留，不声称原 PR 的 Native 红 check 已消失。
+
+这次 source/tested revision 均为 `b17109db...`，不能混作普通 PR 的合并快照 `fc897d0b...`。独立下载小报告、接受实际 Camoufox 20 项／零跳过、helper 3 项及全部 24 份 publisher JSON；两侧真实原生／重载执行的 UI、异步 Reader API、生成详情、原预算和发布身份全部通过，重载 image ID 与自身 metadata 匹配。共同 JAR SHA-256 `b8cf8c1b04683f8b1a2c8a030b1e56161e5eaf72b41757f262cf852a20c88a3c`，AMD64 image `sha256:387fb8e537fb05109ffc9f7dfebe69a9b298538a536acc6f2a67cdcf6389df40`、ARM64 image `sha256:08e3b314bd3b709624c6e018a4a5fe07e159ff26d5169ac0fe1871af432d2a65`。四份短测最高 898,486,272 B／PID 200，实际 swap 均为 0、配置仍允许 1 GiB。约 2 GiB 的两侧归档没有下载到本机，不能称本机重算其散列；测试／重载／发布导入作业已经在 hosted runner 消费归档。这不是最终零 swap 长测或正式发版。
+
+独立回执 `build/tts-native-b17109db-dispatch-a/independent-acceptance.json` SHA-256 `462437247744e724db2eb7b3b7fead7867a76af651f736bf03bcc4e9be61e592`。此新事实随有意义的生成阶段诊断增量回填；没有 registry 发布、实站认证三方、当前新源码长期或生产验收，goal 未完成。
 
 准备全新的 loopback fixture（明确 `READER_VUE3_ISOLATED=1`，生成书源及用户，`READER_BROWSER_EXECUTABLE` 指向测试浏览器）后：
 
