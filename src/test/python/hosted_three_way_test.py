@@ -1,10 +1,13 @@
 """Generated metadata/guards only; never downloads an image or starts Docker/Java."""
 import copy
 import importlib.util
+import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -104,6 +107,71 @@ class HostedThreeWayTest(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 PROBE.validate_metadata_outcome(provenance, comparison, JAR, IMAGE)
 
+    def test_actual_comparator_uppercase_digests_keep_identity_and_raw_evidence(self):
+        provenance, comparison = actual_shape()
+        for key in ("originalJarSha256", "restoredJarSha256", "camoufoxJarSha256"):
+            comparison[key] = comparison[key].upper()
+        before = copy.deepcopy(comparison)
+        PROBE.validate_metadata_outcome(provenance, comparison, JAR, IMAGE)
+        self.assertEqual(before, comparison, "Never rewrite a recorded comparison")
+        for key in ("originalJarSha256", "restoredJarSha256", "camoufoxJarSha256"):
+            for value in ("E" * 64, " " + before[key], before[key] + " ",
+                          "sha256:" + before[key], before[key][:-1], None, 7):
+                changed = copy.deepcopy(before)
+                changed[key] = value
+                with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                    PROBE.validate_metadata_outcome(provenance, changed, JAR, IMAGE)
+
+    def test_wrong_archive_preserves_actual_hash_and_removes_only_unstarted_owned_container(self):
+        cid = "a" * 64
+        generated = b"Generated wrong baseline, not a user JAR"
+        state = {"Id": cid, "Config": {"Labels": {"com.medwarp.reader.three-way-original": "9-1"}},
+                 "State": {"Running": False, "StartedAt": "0001-01-01T00:00:00Z"}}
+        calls = []
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory)
+
+            def fake_command(*args, **kwargs):
+                calls.append(args)
+                if args[:3] == ("docker", "image", "inspect"):
+                    output = json.dumps([{"Id": IMAGE, "Architecture": "amd64", "RepoDigests": []}])
+                elif args[:2] == ("docker", "create"):
+                    output = cid
+                elif args[:2] == ("docker", "cp"):
+                    Path(args[3]).write_bytes(generated)
+                    output = ""
+                elif args[:2] == ("docker", "inspect"):
+                    output = json.dumps([state])
+                else:
+                    output = ""
+                return subprocess.CompletedProcess(args, 0, output, "")
+
+            with mock.patch.dict(os.environ, {"GITHUB_RUN_ID": "9", "GITHUB_RUN_ATTEMPT": "1"}), \
+                 mock.patch.object(PROBE, "command", side_effect=fake_command), self.assertRaises(ValueError):
+                PROBE.extract_original(report)
+            receipt = json.loads((report / "ORIGINAL_ARCHIVE_IDENTITY.json").read_text())
+            self.assertEqual(hashlib.sha256(generated).hexdigest(), receipt["actualJarSha256"])
+            self.assertEqual(len(generated), receipt["jarBytes"])
+            self.assertIs(False, receipt["originalIdentityAccepted"])
+            self.assertIs(True, receipt["extractionContainerNeverStarted"])
+            self.assertIs(True, receipt["extractionContainerRemovalObserved"])
+            self.assertIn(("docker", "rm", cid), calls)
+            self.assertFalse(any(args[:2] in (("docker", "load"), ("docker", "run"), ("docker", "start")) for args in calls))
+
+    def test_archive_extraction_never_overwrites_existing_file_before_docker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory)
+            (report / "original.jar").write_bytes(b"Generated protected fixture")
+            with mock.patch.object(PROBE, "command") as command, self.assertRaises(ValueError):
+                PROBE.extract_original(report)
+            command.assert_not_called()
+
+    def test_missing_original_preflight_refuses_before_native_commands(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(PROBE, "command") as command:
+            with self.assertRaises(ValueError):
+                PROBE.require_original_preflight(Path(directory))
+            command.assert_not_called()
+
     def test_source_hash_substitutions_and_budget_pressure_not_accepted(self):
         for key, value in (("originalJarSha256", JAR), ("restoredJarSha256", PROBE.ORIGINAL_SHA), ("runtimeImageId", "mutable-tag"),
                            ("archivedRenderer", "mutable-reference")):
@@ -152,6 +220,7 @@ class HostedThreeWayTest(unittest.TestCase):
         self.assertIn("runs-on: ubuntu-24.04", job)
         self.assertIn("--validate-source-only", job)
         self.assertLess(job.index("--validate-source-only"), job.index("actions/download-artifact@"))
+        self.assertLess(job.index("--validate-original-only"), job.index("actions/download-artifact@"))
         self.assertIn("digest-mismatch: error", job)
         self.assertIn("reader-three-way-report/*.json", job)
         self.assertNotIn("gradlew", job)

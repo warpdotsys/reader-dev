@@ -41,6 +41,70 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def same_sha(actual, expected):
+    # The existing differential records upper-case hex; native receipts use
+    # lower-case hex. Compare the same 32 bytes without rewriting raw evidence.
+    return isinstance(actual, str) and re.fullmatch(r"[0-9a-fA-F]{64}", actual) is not None and actual.lower() == expected
+
+
+def extract_original(report):
+    """Reject a different public JAR before downloading the large native artifact."""
+    original = report / "original.jar"
+    if original.exists() or original.is_symlink() or (report / "ORIGINAL_ARCHIVE_IDENTITY.json").exists():
+        raise ValueError("Never overwrite an extraction or reuse its identity receipt")
+    command("docker", "pull", "--platform", "linux/amd64", ORIGINAL_IMAGE, timeout=420)
+    image = json.loads(command("docker", "image", "inspect", ORIGINAL_IMAGE).stdout)[0]
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", image["Id"]) or image["Architecture"] != "amd64":
+        raise ValueError("Invalid actual archive image identity")
+    label = os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
+    cid = command("docker", "create", "--platform", "linux/amd64", "--label",
+        "com.medwarp.reader.three-way-original=" + label, "--entrypoint", "/bin/true", ORIGINAL_IMAGE).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{64}", cid):
+        raise ValueError("Invalid exact extraction-container identity")
+    receipt = {"probeRunOwnership": label, "archiveReference": ORIGINAL_IMAGE, "archiveImageId": image["Id"],
+        "archiveRepoDigests": image.get("RepoDigests", []), "expectedJarSha256": ORIGINAL_SHA,
+        "actualJarSha256": None, "jarBytes": None, "regularJarObserved": False, "originalIdentityAccepted": False,
+        "extractionContainerId": cid, "extractionContainerNeverStarted": False,
+        "extractionContainerRemovalObserved": False, "privateJarUploaded": False, "businessProbeStarted": False}
+    try:
+        command("docker", "cp", cid + ":/app/bin/reader.jar", original, timeout=120)
+        receipt["regularJarObserved"] = original.is_file() and not original.is_symlink()
+        if receipt["regularJarObserved"]:
+            receipt["jarBytes"] = original.stat().st_size
+            if 0 < receipt["jarBytes"] < 536870912:
+                receipt["actualJarSha256"] = digest(original)
+        receipt["originalIdentityAccepted"] = receipt["regularJarObserved"] and receipt["actualJarSha256"] == ORIGINAL_SHA
+        if not receipt["originalIdentityAccepted"]:
+            raise ValueError("Public archive JAR differs from the untouched local baseline; preserved actual identity")
+        original.chmod(0o444)
+    finally:
+        state = json.loads(command("docker", "inspect", cid).stdout)[0]
+        if state["Id"] != cid or state["Config"]["Labels"].get("com.medwarp.reader.three-way-original") != label or \
+                state["State"]["Running"] or state["State"].get("StartedAt") != "0001-01-01T00:00:00Z":
+            raise RuntimeError("Refusing cleanup of an unowned or ever-started extraction container")
+        receipt["extractionContainerNeverStarted"] = True
+        command("docker", "rm", cid)
+        if command("docker", "ps", "-aq", "--no-trunc", "--filter",
+                   "label=com.medwarp.reader.three-way-original=" + label).stdout.split():
+            raise RuntimeError("Owned extraction container remains after cleanup")
+        receipt["extractionContainerRemovalObserved"] = True
+        write_new(report / "ORIGINAL_ARCHIVE_IDENTITY.json", receipt)
+    return receipt
+
+
+def require_original_preflight(report):
+    original = report / "original.jar"
+    receipt = read(report / "ORIGINAL_ARCHIVE_IDENTITY.json")
+    label = os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
+    if receipt.get("probeRunOwnership") != label or receipt.get("archiveReference") != ORIGINAL_IMAGE or \
+            receipt.get("originalIdentityAccepted") is not True or receipt.get("expectedJarSha256") != ORIGINAL_SHA or \
+            receipt.get("actualJarSha256") != ORIGINAL_SHA or receipt.get("extractionContainerNeverStarted") is not True or \
+            receipt.get("extractionContainerRemovalObserved") is not True or not original.is_file() or original.is_symlink() or \
+            not 0 < original.stat().st_size < 536870912 or digest(original) != ORIGINAL_SHA:
+        raise ValueError("Exact original preflight missing; do not download or load a native artifact")
+    return original
+
+
 def validate_source(run, jobs, comparison, run_id, source, revision):
     if not re.fullmatch(r"[0-9a-f]{40}", source) or not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("Exact source and tested snapshot required")
@@ -116,8 +180,8 @@ def validate_metadata_outcome(provenance, comparison, jar, image):
             budget.get("pidsEvents", {}).get("max") != 0:
         raise ValueError("Aggregate no-swap resource gate is not proven")
     if comparison.get("originalExecuted") is not True or comparison.get("comparisonMode") != "same-run-original-remote-camoufox" or \
-            comparison.get("originalJarSha256") != ORIGINAL_SHA or comparison.get("restoredJarSha256") != jar or \
-            comparison.get("camoufoxJarSha256") != jar or comparison.get("fullGeneratedReaderJsonRecorded") is not True or \
+            not same_sha(comparison.get("originalJarSha256"), ORIGINAL_SHA) or not same_sha(comparison.get("restoredJarSha256"), jar) or \
+            not same_sha(comparison.get("camoufoxJarSha256"), jar) or comparison.get("fullGeneratedReaderJsonRecorded") is not True or \
             comparison.get("metadataProbe", {}).get("actualGetBookInfo") is not True:
         raise ValueError("Actual three-way JSON and metadata observations are required")
     for side in ("original", "restored", "camoufox"):
@@ -132,7 +196,9 @@ def main():
     parser.add_argument("--source", required=True)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--mode", choices=("metadata", "utf8-characterization"), required=True)
-    parser.add_argument("--validate-source-only", action="store_true")
+    preflight = parser.add_mutually_exclusive_group()
+    preflight.add_argument("--validate-source-only", action="store_true")
+    preflight.add_argument("--validate-original-only", action="store_true")
     args = parser.parse_args()
     require_hosted(os.environ)  # Before Docker, sudo, any inputs or private filesystem access.
     report = Path(os.environ["RUNNER_TEMP"]) / "reader-three-way-report"
@@ -142,6 +208,10 @@ def main():
         print(json.dumps({"sourceNativeRunId": args.native_run, "sourceRevision": args.source,
                           "testedRuntimeRevision": args.revision, "sourceValidatedBeforeDownload": True}))
         return
+    if args.validate_original_only:
+        print(json.dumps(extract_original(report)))
+        return
+    original = require_original_preflight(report)  # Before metadata, archive reads or any Docker load.
     if shutil.disk_usage(report).free < 10 * 1024 ** 3:
         raise RuntimeError("Insufficient hosted disk; do not prune unowned images")
     if command("docker", "info", "--format", "{{.CgroupDriver}}").stdout.strip() != "systemd":
@@ -161,23 +231,7 @@ def main():
     image = meta["imageId"]
     if loaded.get("imageId") != image or loaded.get("jarSha256") != meta["jarSha256"]:
         raise ValueError("Loaded identity does not match this native artifact")
-    command("docker", "pull", "--platform", "linux/amd64", ORIGINAL_IMAGE, timeout=420)
     label = os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
-    cid = command("docker", "create", "--platform", "linux/amd64", "--label",
-        "com.medwarp.reader.three-way-original=" + label, "--entrypoint", "/bin/true", ORIGINAL_IMAGE).stdout.strip()
-    if not re.fullmatch(r"[0-9a-f]{64}", cid):
-        raise ValueError("Invalid exact extraction-container identity")
-    original = report / "original.jar"
-    try:
-        command("docker", "cp", cid + ":/app/bin/reader.jar", original, timeout=120)
-        if not original.is_file() or original.is_symlink() or not 0 < original.stat().st_size < 536870912 or digest(original) != ORIGINAL_SHA:
-            raise ValueError("Public archive JAR differs from the untouched local baseline")
-        original.chmod(0o444)
-    finally:
-        state = json.loads(command("docker", "inspect", cid).stdout)[0]
-        if state["Config"]["Labels"].get("com.medwarp.reader.three-way-original") != label or state["State"]["Running"]:
-            raise RuntimeError("Refusing cleanup of an unowned or started extraction container")
-        command("docker", "rm", cid)
     command("docker", "pull", "--platform", "linux/amd64", ARCHIVED, timeout=420)
     jars = list((ROOT / "dist").glob("reader-*.jar"))
     if len(jars) != 1 or jars[0].is_symlink() or digest(jars[0]) != meta["jarSha256"]:

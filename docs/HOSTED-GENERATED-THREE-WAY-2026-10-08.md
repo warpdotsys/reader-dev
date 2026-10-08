@@ -4,7 +4,7 @@
 
 本机WSL仍有旧运行器的内核等待，不能反复启动或用root替代UID10001验收。新专项直接消费已经成功验收的AMD64原生镜像，不重建、换JAR、接入宿主Chrome、连接生产或上传用户副本。运行器明确限定为GitHub托管Linux AMD64，检查系统[官方运行器环境字段](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)。
 
-原版JAR从公开3.2.14镜像中只读提取、容器不启动；必须完整SHA匹配未动的本机原件 `b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c`，不能用标签相似认定同版。提取副本与候选JAR均只读挂载。候选源运行必须属于本仓库、六实际Native作业全部成功，source与tested snapshot文件相同；下载前核验，下载后沿用正式发布导入器复核JAR、归档、镜像及UID身份。
+原版身份门禁尝试从公开3.2.14镜像只读提取、容器不启动；必须完整SHA匹配未动的本机原件 `b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c`，不能用标签相似认定同版。**本次实际失败：公开归档不是同一JAR，不能用它执行原件三方；这个来源现已停止重复尝试。**只有获得准确原件且有相应授权后，才可能继续下述业务路径。候选源运行必须属于本仓库、六实际Native作业全部成功，source与tested snapshot文件相同；下载前核验，下载后沿用正式发布导入器复核JAR、归档、镜像及UID身份。
 
 仅运行现有生成样本：原版JAR＋固定历史WebView、恢复JAR＋同历史WebView、恢复JAR＋内置Camoufox。历史renderer版本只作为固定参考，不证明曾是用户生产版本。两个容器共享独立无外网回环命名空间，没有发布端口或生产挂载；历史renderer实际停止后才能运行Camoufox。aggregate slice总限2 CPU／2 GiB／零swap／512 PID，每容器256 PID；不重置累计峰值或放宽旧门禁。最后额外查询精确所有权标签与cgroup后代，剩余必须为0。
 
@@ -19,7 +19,21 @@
 
 ## 本地检查与已验收的来源
 
-13个新的生成守卫实际通过；本机Python395项／1平台跳过／30.364秒，发布安全Node82／零跳过通过，工作流YAML已解析。实际Native37783548430/source2f8b37aa/tested ba1817b4的API前置检查已通过，但专项尚未托管执行。该来源自己的四普通工作流与八设置图已独立验收，见[展示修复](HTTP-TTS-DISPLAY-2026-10-08.md#展示增量自己的托管实跑已完成)。不借它们证明新专项成功。
+初版13个生成守卫、本机Python395项／1平台跳过、发布安全Node82和来源API检查通过；不代表业务三方已执行。实际来源Native37783548430/source2f8b37aa/tested ba1817b4自己的四普通工作流与八设置图已独立验收，见[展示修复](HTTP-TTS-DISPLAY-2026-10-08.md#展示增量自己的托管实跑已完成)。
+
+## 初版专项已执行，原件身份失败
+
+入口源码 `3ab4548de55b1ba47056a78ec521e3746903c179`，实际[metadata专项37790757361](https://github.com/warpdotsys/reader-dev/actions/runs/37790757361)／作业113357213174失败。来源API、v8下载、精确AMD64原归档与JAR／镜像导入通过，但原件身份拒绝：**没有启动原JAR或业务三方，没有观察运行aggregate资源预算，没有继续UTF8诊断，也未上传原件。**保存的五份小JSON只有来源与预载／实际加载身份；没有把缺失的THREE_WAY或PROVENANCE补成成功。
+
+单独[公开身份复核37791961831](https://github.com/warpdotsys/reader-dev/actions/runs/37791961831)再次确认归档：manifest `sha256:910043799b510b5796baf99537507a63ca95995cda7de95cbf2ba5eeb9dcb5d1`，JAR 72,914,622 B／`7222fbd0c55d8b7e6f6bc1bbf5f6637fbee45dfbd65eda0ef59e38b2e24cd43a`；本机原件本次只读复核为72,913,887 B／b26原SHA。这个差异[2026-09-28已记录](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)，本次未先核对旧证据导致不必要的大产物下载，现已纠正，不再把该公开镜像视为“同SHA原件”的可用来源。
+
+同一3ab／tested `fd140e93378c83867dac7aed53791e0be9593d8e`自己的四普通工作流均实际成功，独立下载小回执核验：Vue25真实UI／零跳过、287前端＋20取图守卫及类型构建通过，八设置图已逐张目视；Java Python395全执行、JVM170／31环境跳过，两次干净JAR ce76a5同字节，285,649,123 B／1,562条目；自己的Full和双架构Native同JAR，Cam20／helper3、重载和24publisher JSON通过。Full峰值831,148,032 B／PID196，Native874,291,200 B／PID208；普通短测允许1GiB swap、实际0，不能借作本次未执行的零swap三方。完整身份与失败边界见[逐文件证据](evidence/hosted-three-way-3ab4548d-2026-10-08.json)。
+
+## 身份优先纠正及哈希表示回归
+
+新入口把原件身份核验放在两个native下载步骤之前：来源合法后才创建不启动的精确所有权提取容器，保存实际JAR大小／SHA／镜像摘要，无论匹配与否都做精确清理及剩余标签观察；错版必须非零退出，并跳过大JAR和镜像下载。后续主步骤再次核验同一次preflight文件与原SHA，不重新下载或换基准。这个新顺序本地生成守卫已通过，托管实跑须另记。
+
+另外现有比较器把哈希记录成大写，新入口原先按小写字面比较。新增回归先14项／1错误／exit1，再修为只比较严格64位十六进制代表的同32字节；不去空白、不接受前缀／缺位／错误值，也不改写任何原始JSON。这是独立的验证器缺陷，**不是本次7222与b26不一致的原因**。现在17项定向、全套Python399／1平台跳过／24.776秒通过。
 
 GitHub手动入口为已有 `browser-image.yml`，设置 `three_way_native_run=37783548430`、`three_way_source=2f8b37aa1c786d87e84d9ac6b745105aa35972a4`、`three_way_revision=ba1817b4256bfde0b0019ee8861d99af18c037a0`，另选一种模式；其他公网／probe／soak模式必须为空／false。具体代码checkout与被测镜像revision分开记录。先执行metadata，完成后再按新事实决定下一专项，不并发重复跑旧失败网站条件。
 
