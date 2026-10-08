@@ -30,6 +30,16 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-rea
   -f public_metadata_user_agent=browser-native
 ```
 
-当前新条件实站未执行；只发一次不同条件请求，不自动重试。即使通过，站点状态和时间也是变量，仍不能唯一归因 UA、证明真实登录、原件／旧远程三方或已部署。失败同样完整保留，不能靠已通过的普通构建抵消。
+## 新条件已实际执行，业务仍失败
+
+提交 `ce12b21bd7ca521eb918608896da7b6a7c42979d` 的[单次作业 37728643627](https://github.com/warpdotsys/reader-dev/actions/runs/37728643627)实际失败；只执行了一个匿名详情 job，六个互斥 job 跳过不计通过。继续使用原 Native `37718718336`／runtime `7e4b9e509822473c6d98d17c8bb0b922fe28a406`，不是新构建或原件三方。
+
+实际 5.85 秒／HTTP 200／`isSuccess=true`／空 errorMsg，但书名、作者、封面全空。八项页面布尔值均 false，九项结构和上一默认 UA 对照逐项相同：快照非空、head 有 script、body 无子元素、没有 title／iframe。**这是有限快照结构，不是上游原始 HTML、可见验证码或 JS 错误的证明**。`browserNativeUserAgentRequested=true`、`browserUserAgentActuallyObserved=false` 保留，不能称已采集真实 UA。
+
+九份小 JSON、入场／加载／实际 JAR 身份、生成源读回、Cookie 0→0、生成会话撤销、2 CPU／2 GiB／256 PID／零 swap 和有限 worker 诊断均已独立接受；内存峰值 812,363,776 B／PID 183，触限及 OOM 0。worker 固定错误记录为空只说明该类别没有记录，不说明网页 JS／网络全部正常。自有容器已移除为报告值，没有独立宿主残留容器计数。本机仅下载小报告，未另下载／复算原大归档。
+
+[独立机器证据](evidence/public-metadata-native-ua-hosted-ce12b21b-2026-10-08.json)记录完整有限结果和九文件散列；本机独立回执 SHA-256 `bc147be863a33c3ce8cacb221ecad0c5dd9ae9ba77a282590088b67c72b0c69b`。业务红灯保留，不自动重试、不改 worker 或安全门禁，不导入真实凭据、不请求正文、不操作验证码／生产。网站状态和时间也是变量，既未证明 UA 是唯一原因，也未证明它完全无影响。
+
+该提交自己的四条普通托管工作流及 Native 六实际作业成功，自己的小报告已逐项核对，不能抵消上述红灯或借给后续代码。Java CI 两次 JAR 字节相同仅是同一 runner 范围；Full 与 Native 的 JAR 仍不同。下一项源码增量排除已观察到的本机 Python 缓存污染，结果须另验。
 
 回退只移除这项 UA 输入、CLI flag 和请求选项／相关测试，恢复默认对照不需要改产品、用户配置或数据。no-wait details 的显式结构守卫应保留；原失败和原 JAR不删除。最新 JAR 的[位级复建结果](JAR-REPRODUCIBILITY-GATE-2026-10-08.md#修正后的真实重建已通过范围仍有限)仍仅证明其自身 runner 范围。

@@ -58,7 +58,19 @@ python3 scripts/verify-reader-jar-reproducibility.py --first /path/to/first.jar 
 
 这证明同一 runner／JDK／既有 Vue 3 dist 的两次干净后端构建，不证明重新生成前端、不同主机或完整镜像的位级一致性。首轮 `0622447c` 的 Full JAR `630a4564c4ad64cebf847fe0a81b230c6021f373e1f048051c94d7e99f6f7c45` 与 Native 共享 JAR `50ba765480574d23beb0c8f21ee702b4f5ac2f507f2679efff8aa6353b83bca4` 在归档设置后仍不同，且来自相同 `62e4e189...` 快照；各自身份仅分别接受，跨流水线唯一差异原因未核验，不能把它全部归为时间戳。后续仍检查编译输出／归档元数据和环境差异；不混用产品字节。
 
-当前 `7fea00a6` Vue／Full 工作流状态成功，Native 正在运行，自己的完整镜像及原生结果还须独立接受；不借父结果。原失败保留、58 用户报告不变；匿名详情、真实认证、最终三方与长期容量仍未完成，没有合并候选、发版或改生产。该结果文档先保留本地，随下一有意义源码增量提交，不单独触发纯文档全量镜像重建。
+`7fea00a6` 的 Vue／Full／Native 已全部终态成功，自己的完整镜像／原生小报告也已独立接受：Vue 19＋2＋1 实际用例、14 几何、两侧 Camoufox 各 20、helper 各 3、publisher 24 份及完整身份／异步／详情／预算通过。本次没有目视新 UI 截图。Native 独立回执 `fa99b7c4249d96f18db211e3025f7546ab9c1c013f537f16d346f13f59def7ff`，共同 JAR `0f2c206925c45d27e53cbf338161c903bec1699680d1cf7a1a817de6e649a419`，不是 Full `eeb8b718...` 或 Java CI `e6ae6b4c...`；最高 866,697,216 B／PID 210。实际 swap 0 但普通短测配置允许 1 GiB，不是零 swap 长测。原失败、58 用户报告和未完成目标保留，没有合并／发版／部署。
+
+后续 UA 入口提交 `ce12b21bd7ca521eb918608896da7b6a7c42979d`／同树合并快照 `2cf82193a32fa745db9494d93ad46f61e53076dc` 的[Java CI 37728606632](https://github.com/warpdotsys/reader-dev/actions/runs/37728606632)也实际两次干净后端构建成功：第二次六任务全部执行／43 秒；JAR 285,670,232 B／1,564 条目／SHA `20a8ce2b675cc320c2cec04ecab4573ec7d01785467409c2043d680c0c5a6686`，所有差异计数 0、完整字节一致。358 Python／零跳过／9.196 秒，42 JVM XML 中 170 项／31 环境跳过保留。Full `b002ff09...`／Native `641b9392...` 仍分别绑定身份；四条普通工作流及六 Native 作业／publisher 24 份已独立核对，不证明跨流水线复建或实站通过。[该提交自身证据](evidence/rebuild-ui-native-hosted-ce12b21b-2026-10-08.json)。
+
+## 已确认的 Python 资源缓存污染与针对性修正
+
+本机现有历史 JAR `f9c9082a352d0d609f3a82497f4d4b0ed2907da72bec833a962ce5948a184f2b` 只读检查确实包含 `BOOT-INF/classes/camoufox/__pycache__/` 及两份缓存：`worker.cpython-311.pyc`／25,735 B／SHA `2b24ceeaebc7d554ac0bef24cc8099f4a9e195750e6a1ab2e13f98bb841af9b8`，`worker.cpython-314.pyc`／44,895 B／SHA `99fc67ce93fdb35399467b29e1dd65a2026c898ea43ea64d234fdbacb3c6a69b`。本机资源目录也保留这两文件。测试通过 `importlib` 导入可读 worker，旧 `processResources` 没排除 Python 缓存。这证明本机产物污染，不冒充已下载／比较托管大 JAR，亦不能唯一认定它导致全部跨流水线差异。
+
+修正正式 `processResources` 排除 `**/__pycache__/**`、`**/*.pyc`、`**/*.pyo`，不删除磁盘缓存、原 JAR、源码或用户数据；可读 worker、两套前端、类和完整依赖仍打包。比较器同时拒绝带应用资源缓存的输入，即使两份污染 JAR 逐字节相同也不能通过。**不是比较时忽略差异或归一化旧文件**；完整字节／条目／时间／顺序及所有旧预算守卫保留。相似名字的普通文本、读取源码和嵌套依赖 JAR 不被排除，仍比较完整字节。
+
+新增四项定向用例先在旧实现实际出现五个断言失败，21 项修正后在 Windows／WSL 全执行通过。Windows 全套 362 项／361 通过／1 POSIX 跳过／19.581 秒；发布 Node 82 项全执行、原静态门禁通过。本机没有重新编译大 JAR／下载浏览器；正式 KTS 编译和新产物无缓存的真实检查交给本增量自己的托管 runner，结果尚未预填通过。[本机有限证据](evidence/python-resource-cache-exclusion-local-2026-10-08.json)。
+
+回退只撤销正式资源排除、缓存拒绝守卫及相关测试，不变更原归档顺序／时间设置、预算或用户文件。回退会重新允许缓存污染，必须保留这项已知风险；旧失败和旧产物不删除。
 
 ## 未解决项与回退
 

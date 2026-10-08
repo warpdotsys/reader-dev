@@ -4,6 +4,12 @@
 
 目标是在本机隔离环境运行 GitHub 已验收的同一完整 Reader 镜像，后续真实会话仅进入回环 Reader 并在测试后清除。不能再用宿主 Chrome 的解析基线替代最终 Camoufox，也不把凭据传服务器、CI 或 GitHub。现在没有启动这个 Reader 容器、没有再次导入会话，也没有修改生产服务。
 
+### 2026-10-08 前置条件状态更正
+
+下文“uidmap 尚待授权／缺失”是 10-04 历史观察，不是当前阻塞。用户已明确授权，10-06 仅安装 Ubuntu 官方 `uidmap`／必要 `libsubid5`，同版 `1:4.17.4-2ubuntu3`，无升级／移除包；[原安装和生成非 root 探针证据](evidence/local-uidmap-runtime-2026-10-06.json)保留。10-08 再次只读确认两个映射工具存在、包版正确，`/etc/subuid` 和 `/etc/subgid` SHA 均仍为 `d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd`，没有改映射范围或重复安装。
+
+后续生成 helper 的实际 UID 10001 和资源观察见[线程策略](CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)及[内存分类](BROWSER-MEMORY-CATEGORIES-2026-10-07.md)。这些是旧只读运行库加当时 worker，不是当前最终完整 Reader 镜像、真实认证或生产证明。该区分继续保留；原解包警告和早期失败不删除。
+
 ## 已实际检查与准备
 
 - 新提交 `662df3d3` 的[四条托管验收及制品身份](evidence/network-diagnostic-ci-662df3d3-2026-10-04.json)已核对。待本机消费的是原生 AMD64 制品 `11305669149`，GitHub 制品约 2.17 GB；不是书库压缩或真实正文文件。

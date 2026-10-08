@@ -172,6 +172,47 @@ class ReaderJarReproducibilityTest(unittest.TestCase):
         self.assertIn('isPreserveFileTimestamps = false', task)
         self.assertIn('isReproducibleFileOrder = true', task)
 
+    def test_equal_archives_containing_interpreter_cache_are_not_a_clean_release(self):
+        for name in ('BOOT-INF/classes/camoufox/__pycache__/',
+                     'BOOT-INF/classes/camoufox/__pycache__/worker.cpython-312.pyc',
+                     'BOOT-INF/classes/generated.pyc', 'BOOT-INF/classes/generated.pyo'):
+            with self.subTest(name=name):
+                for path in (self.first, self.second):
+                    self.jar(path)
+                    with ZipFile(path, 'a') as jar:
+                        jar.writestr(name, b'generated-interpreter-cache')
+                with self.assertRaisesRegex(ValueError, 'PythonResourceCachePresent'):
+                    GATE.compare(self.first, self.second)
+
+    def test_process_resources_excludes_caches_instead_of_deleting_or_normalizing(self):
+        build = (ROOT / 'build.gradle.kts').read_text(encoding='utf-8')
+        task = build[build.index('tasks.named<ProcessResources>("processResources")'):]
+        task = task.split('\n}', 1)[0]
+        self.assertIn('exclude("**/__pycache__/**", "**/*.pyc", "**/*.pyo")', task)
+        self.assertNotIn('delete(', task)
+
+    def test_readable_worker_source_change_still_fails_complete_byte_comparison(self):
+        self.jar(self.first)
+        self.jar(self.second, content={'BOOT-INF/classes/camoufox/worker.py': b'different-generated-readable-source'})
+        report = GATE.compare(self.first, self.second)
+        self.assertFalse(report['passed'])
+        self.assertEqual(1, report['contentDifferences'])
+
+    def test_similarly_named_readable_resources_and_dependency_bytes_remain_in_scope(self):
+        names = ('BOOT-INF/classes/generated.pyc.json', 'BOOT-INF/classes/generated.pyo.txt',
+                 'BOOT-INF/classes/generated/__pycache__-note.txt', 'BOOT-INF/lib/generated-python-dependency.jar')
+        for path in (self.first, self.second):
+            self.jar(path)
+            with ZipFile(path, 'a') as jar:
+                for name in names:
+                    jar.writestr(name, b'generated-required-resource')
+        self.assertTrue(GATE.compare(self.first, self.second)['passed'])
+        with ZipFile(self.second, 'a') as jar:
+            jar.writestr('BOOT-INF/classes/generated-new-source.py', b'new-generated-source')
+        report = GATE.compare(self.first, self.second)
+        self.assertFalse(report['passed'])
+        self.assertEqual(1, report['secondOnlyEntries'])
+
 
 if __name__ == '__main__':
     unittest.main()

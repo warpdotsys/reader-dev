@@ -59,6 +59,11 @@ def inspect(path):
         if (not REQUIRED_ENTRIES.issubset(names) or
                 not any(name.startswith('BOOT-INF/lib/') and name.endswith('.jar') for name in names)):
             raise ValueError('RequiredBootJarEntryMissing')
+        # Equal stale caches are still a contaminated release. Reject them;
+        # do not remove them from the comparison or normalize their headers.
+        if any(name.startswith('BOOT-INF/classes/') and (
+                '/__pycache__/' in name or name.endswith(('.pyc', '.pyo'))) for name in names):
+            raise ValueError('PythonResourceCachePresent')
         validate_expansion(items)
         entries = {}
         for item in items:

@@ -197,6 +197,10 @@ val verifyVue3UiDist = tasks.register("verifyVue3UiDist") {
 }
 
 tasks.named<ProcessResources>("processResources") {
+    // Unit tests import the readable worker and can leave interpreter-version
+    // and checkout-time-dependent caches beside it. Keep those local files,
+    // but never package them as application resources.
+    exclude("**/__pycache__/**", "**/*.pyc", "**/*.pyo")
     if (project.findProperty("readerWebUi")?.toString() == "vue3") {
         dependsOn(verifyVue3UiDist)
         from(vue3Dist) {
