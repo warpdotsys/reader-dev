@@ -204,6 +204,12 @@ on:
         type: choice
         options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details]
         default: bounded-dom
+      public_metadata_user_agent:
+        description: 'Only the generated anonymous metadata request: compare inherited Reader UA with the existing browser default'
+        required: false
+        type: choice
+        options: [reader-default, browser-native]
+        default: reader-default
       artifact_download_regression:
         description: 'Consume the exact failed large AMD64 artifact with the new downloader; no rebuild or production'
         required: false
@@ -216,7 +222,7 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}-${{ inputs.public_metadata_user_agent || 'reader-default' }}
   cancel-in-progress: true
 
 jobs:
@@ -647,12 +653,14 @@ jobs:
           EXPECTED_ARCH: ${{ inputs.native_arch }}
           CAPTURE_MODE: ${{ inputs.public_metadata_capture }}
           OTHER_MODES: ${{ inputs.real_public_source || inputs.probe_original_jar || inputs.probe_remote_webview || inputs.soak_native_run != '' }}
+          USER_AGENT_MODE: ${{ inputs.public_metadata_user_agent }}
         run: |
           set -euo pipefail
           [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
           [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
           [[ "$EXPECTED_ARCH" = amd64 || "$EXPECTED_ARCH" = arm64 ]]
           [[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details ]]
+          [[ "$USER_AGENT_MODE" = reader-default || "$USER_AGENT_MODE" = browser-native ]]
           test "$OTHER_MODES" != true
           command -v setfacl
           case "$EXPECTED_ARCH:$RUNNER_ARCH:$(uname -m)" in
@@ -688,7 +696,8 @@ jobs:
           EXPECTED_ARCH: ${{ inputs.native_arch }}
           NATIVE_REVISION: ${{ inputs.public_metadata_revision }}
           CAPTURE_MODE: ${{ inputs.public_metadata_capture }}
-        run: bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE"
+          USER_AGENT_MODE: ${{ inputs.public_metadata_user_agent }}
+        run: bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE" "$USER_AGENT_MODE"
       - name: Preserve only bounded anonymous observations including failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

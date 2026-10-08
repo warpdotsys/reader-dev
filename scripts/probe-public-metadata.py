@@ -318,10 +318,17 @@ def source_roundtrip(result, snapshot_details=False):
     return observation
 
 
-def book_info_request(wait_dom=False):
+def book_info_request(wait_dom=False, browser_native_user_agent=False):
     if type(wait_dom) is not bool:
         raise ProbeFailure("InvalidMetadataWaitMode")
+    if type(browser_native_user_agent) is not bool:
+        raise ProbeFailure("InvalidUserAgentMode")
     options = {"webView": True}
+    if browser_native_user_agent:
+        # A fixed empty override suppresses Reader's inherited Chrome 75 UA.
+        # The existing worker then uses its browser default; no invented UA,
+        # navigator patch, credentials, page script or CAPTCHA interaction.
+        options["headers"] = {"User-Agent": ""}
     if wait_dom:
         options["webJs"] = METADATA_DOM_SCRIPT
     return {"url": BOOK + ", " + json.dumps(options), "bookSourceUrl": SOURCE}
@@ -371,6 +378,8 @@ def main():
                         help="Persist only finite structural booleans from the returned snapshot; requires --wait-dom")
     parser.add_argument("--snapshot-only-details", action="store_true",
                         help="Finite returned-snapshot booleans without adding a source wait script; exclusive with wait/details flags")
+    parser.add_argument("--browser-native-user-agent", action="store_true",
+                        help="Only this generated metadata request: use the existing browser's default UA, not Reader's inherited UA")
     args = parser.parse_args()
     if args.snapshot_only_details and (args.wait_dom or args.snapshot_details):
         raise ProbeFailure("ConflictingSnapshotDetailsMode")
@@ -392,6 +401,9 @@ def main():
               "pageCaptureMode": "bounded-dom" if args.wait_dom else "snapshot-only",
               "metadataDomWaitBudgetMs": METADATA_DOM_WAIT_MS if args.wait_dom else 0,
               "sourceScriptSynthesizesMetadata": False,
+              "userAgentMode": "browser-native" if args.browser_native_user_agent else "reader-default",
+              "browserNativeUserAgentRequested": args.browser_native_user_agent,
+              "browserUserAgentActuallyObserved": False,
               "pageDiagnosticsScope": "returnedSnapshotStructureNotVisibilityOrAuthentication",
               "pageDiagnosticRuleRequested": True,
               "rawErrorHtmlCookieAndMetadataValuesNotPersisted": True, "passed": False}
@@ -437,7 +449,7 @@ def main():
         watcher.start()
         started = time.monotonic()
         report["bookInfoApiCalls"] += 1
-        result = request_json(opener, "/getBookInfo", book_info_request(args.wait_dom))
+        result = request_json(opener, "/getBookInfo", book_info_request(args.wait_dom, args.browser_native_user_agent))
         report["metadata"] = summarize(*result, snapshot_details=details_requested)
         report["requestSeconds"] = round(time.monotonic() - started, 3)
         result = None
@@ -476,7 +488,7 @@ def main():
         report["passed"] = bool(report.get("metadata", {}).get("passed") and
             report.get("sourceDefinitionRoundtrip", {}).get("passed") and
             report.get("metadata", {}).get("pageDiagnostics") is not None and
-            (not args.snapshot_details or report.get("metadata", {}).get("snapshotStructure") is not None) and
+            (not details_requested or report.get("metadata", {}).get("snapshotStructure") is not None) and
             report["resourceGuardPassed"] and report["defaultBrowserProcessObserved"] and
             report["processMonitorPassed"] and report.get("cookieRowsAfter") == 0 and
             report.get("generatedCookieSessionRevokedVerified") and not report.get("failureCategory"))

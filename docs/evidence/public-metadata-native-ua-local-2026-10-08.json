@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "sourceHeadAtLocalTests": "7fea00a601e97a2894a77346fa1a5d4908bbd06e",
+  "scope": "Fixed optional browser-native UA request; source inference, not actual wire UA or real-site acceptance",
+  "defaultRequestUnchanged": true,
+  "arbitraryUaStringAccepted": false,
+  "navigatorModified": false,
+  "sourceWaitScriptAdded": false,
+  "oneMetadataRequestRequired": true,
+  "exactMetadataRequired": true,
+  "explicitStructureGateForBothDetailsModes": true,
+  "browserUserAgentActuallyObserved": false,
+  "realCredentialsImported": false,
+  "chapterEndpointCalled": false,
+  "unsupportedInterfaceBaseline": {
+    "tests": 55,
+    "errors": 3,
+    "classification": "New flag/call interface absent; not a product regression"
+  },
+  "tests": {
+    "windowsTargeted": 59,
+    "wslTargeted": 59,
+    "targetedSkipped": 0,
+    "wslJsEngine": "Existing Windows Node through fixed-argument bridge; not native Linux Node or browser",
+    "windowsAll": 358,
+    "windowsPassed": 357,
+    "windowsSkipped": 1,
+    "windowsSeconds": 19.703,
+    "node": 119,
+    "nodeSkipped": 0,
+    "shellYamlAndReleaseStaticGuardsPassed": true
+  },
+  "sameUnmodifiedBaselineRuntime": {
+    "nativeRunId": 37718718336,
+    "revision": "7e4b9e509822473c6d98d17c8bb0b922fe28a406",
+    "jarSha256": "61fdc23d71c8ad0c68e120500223562f94186190d595fc6ec172657c9dcf2dde",
+    "originalEmptyMetadataRunId": 37722140916
+  },
+  "realSiteObservationExecuted": false,
+  "realSiteAccepted": false,
+  "userReportsUnchanged": 58,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "files": [
+    {
+      "path": "scripts/probe-public-metadata.py",
+      "sha256": "fd34ff9aa9158d0632e946d46c3615173e000a7fd0061278cb32f2e3a5bb816e"
+    },
+    {
+      "path": "scripts/probe-public-native-image.sh",
+      "sha256": "e68e67aa9b3861d9a38aeccb3358359dd95e6f8bee1e23dcf01491d5ce10dc9a"
+    },
+    {
+      "path": "src/test/python/public_metadata_probe_test.py",
+      "sha256": "e90b03b33b2c24e38793875c37df1c48ba5da429c571cf91b3853a9ea6a2eab9"
+    },
+    {
+      "path": ".github/workflows/browser-image.yml",
+      "sha256": "967e11991fc7659c131e5befc390bf4e1e21944219ea305dcb7843d0710f8148"
+    }
+  ]
+}

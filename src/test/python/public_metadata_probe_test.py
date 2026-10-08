@@ -251,6 +251,22 @@ class RequestBoundaryTest(unittest.TestCase):
             with self.assertRaisesRegex(PROBE.ProbeFailure, "^InvalidMetadataWaitMode$"):
                 PROBE.book_info_request(value)
 
+    def test_native_user_agent_is_only_an_empty_fixed_header_not_a_forged_profile(self):
+        request = PROBE.book_info_request(browser_native_user_agent=True)
+        url, raw = request['url'].split(', ', 1)
+        self.assertEqual(PROBE.BOOK, url)
+        self.assertEqual({'webView': True, 'headers': {'User-Agent': ''}}, json.loads(raw))
+        for value in (1, 'Firefox/PRIVATE', {'Cookie': 'PRIVATE'}, None):
+            with self.assertRaisesRegex(PROBE.ProbeFailure, '^InvalidUserAgentMode$'):
+                PROBE.book_info_request(browser_native_user_agent=value)
+
+    def test_native_user_agent_does_not_change_the_existing_bounded_script(self):
+        request = PROBE.book_info_request(True, True)
+        url, raw = request['url'].split(', ', 1)
+        self.assertEqual(PROBE.BOOK, url)
+        self.assertEqual({'webView': True, 'webJs': PROBE.METADATA_DOM_SCRIPT,
+                          'headers': {'User-Agent': ''}}, json.loads(raw))
+
     def response(self, raw, status=200):
         response = io.BytesIO(raw)
         response.status = status
@@ -354,7 +370,8 @@ class RequestBoundaryTest(unittest.TestCase):
 
 class LifecycleTest(unittest.TestCase):
     def run_generated_probe(self, metadata, fail_logout=False, transport_failure=False, wait_dom=False,
-                            source_retained=True, snapshot_details=False, snapshot_only_details=False):
+                            source_retained=True, snapshot_details=False, snapshot_only_details=False,
+                            browser_native_user_agent=False):
         observed = threading.Event()
         paths = []
         logged_out = False
@@ -373,7 +390,9 @@ class LifecycleTest(unittest.TestCase):
                 self.assertEqual({"bookSourceUrl": PROBE.SOURCE}, body)
                 return 200, {"isSuccess": True, "data": PROBE.source_definition(details_requested) if source_retained else {}}
             if path == "/getBookInfo":
-                self.assertEqual(PROBE.book_info_request(wait_dom), body)
+                expected_request = (PROBE.book_info_request(wait_dom, True) if browser_native_user_agent else
+                                    PROBE.book_info_request(wait_dom))
+                self.assertEqual(expected_request, body)
                 self.assertTrue(observed.wait(1), "Generated process observer did not run")
                 if transport_failure:
                     raise RuntimeError("PRIVATE_TRANSPORT_BODY https://x/?ticket=PRIVATE_TICKET")
@@ -400,7 +419,8 @@ class LifecycleTest(unittest.TestCase):
                     patch("sys.argv", ["probe", "--expected-revision", "a" * 40, "--output", directory]
                           + (["--wait-dom"] if wait_dom else [])
                           + (["--snapshot-details"] if snapshot_details else [])
-                          + (["--snapshot-only-details"] if snapshot_only_details else [])), \
+                          + (["--snapshot-only-details"] if snapshot_only_details else [])
+                          + (["--browser-native-user-agent"] if browser_native_user_agent else [])), \
                     patch("sys.stdout", new_callable=io.StringIO) as stdout:
                 result = PROBE.main()
             report = json.loads((Path(directory) / "PUBLIC_METADATA_REPORT.json").read_text(encoding="utf-8"))
@@ -412,6 +432,9 @@ class LifecycleTest(unittest.TestCase):
             self.assertFalse(report["chapterBodyRequested"])
             self.assertFalse(report["realAuthenticationProven"])
             self.assertFalse(report["sourceScriptSynthesizesMetadata"])
+            self.assertEqual('browser-native' if browser_native_user_agent else 'reader-default', report['userAgentMode'])
+            self.assertIs(browser_native_user_agent, report['browserNativeUserAgentRequested'])
+            self.assertFalse(report['browserUserAgentActuallyObserved'])
             self.assertEqual(8000 if wait_dom else 0, report["metadataDomWaitBudgetMs"])
             self.assertEqual("boundedMetadataDom" if wait_dom else "domContentLoadedOnly", report["sourceScriptMode"])
             self.assertEqual("snapshot-only-details" if snapshot_only_details else "bounded-dom-details" if snapshot_details else
@@ -435,6 +458,33 @@ class LifecycleTest(unittest.TestCase):
         self.assertEqual(1, result)
         self.assertFalse(report["passed"])
         self.assertTrue(report["generatedCookieSessionRevokedVerified"])
+
+    def test_native_user_agent_observation_keeps_one_request_and_all_original_guards(self):
+        value = MetadataSummaryTest().value()
+        value['data']['intro'] = json.dumps(SnapshotStructureTest.envelope())
+        result, report = self.run_generated_probe(value, snapshot_only_details=True, browser_native_user_agent=True)
+        self.assertEqual(0, result)
+        self.assertEqual('browser-native', report['userAgentMode'])
+        self.assertTrue(report['browserNativeUserAgentRequested'])
+        self.assertFalse(report['browserUserAgentActuallyObserved'])
+        self.assertEqual(1, report['bookInfoApiCalls'])
+        self.assertEqual(0, report['metadataDomWaitBudgetMs'])
+
+    def test_native_user_agent_does_not_turn_empty_metadata_into_a_pass(self):
+        result, report = self.run_generated_probe({'isSuccess': True, 'errorMsg': '', 'data': {}},
+                                                  snapshot_only_details=True, browser_native_user_agent=True)
+        self.assertEqual(1, result)
+        self.assertFalse(report['passed'])
+        self.assertTrue(report['generatedCookieSessionRevokedVerified'])
+
+    def test_no_wait_details_explicitly_require_structure_even_if_page_summary_is_valid(self):
+        finite = {'passed': True, 'pageDiagnostics': {key: False for key in PROBE.PAGE_DIAGNOSTIC_KEYS},
+                  'snapshotStructure': None}
+        with patch.object(PROBE, 'summarize', return_value=finite):
+            result, report = self.run_generated_probe(MetadataSummaryTest().value(), snapshot_only_details=True)
+        self.assertEqual(1, result)
+        self.assertFalse(report['passed'])
+        self.assertTrue(report['generatedCookieSessionRevokedVerified'])
 
     def test_metadata_success_does_not_hide_session_cleanup_failure(self):
         result, report = self.run_generated_probe(MetadataSummaryTest().value(), fail_logout=True)
@@ -544,6 +594,29 @@ class LifecycleTest(unittest.TestCase):
 
 
 class HostedCaptureModeTest(unittest.TestCase):
+    def test_user_agent_enum_is_fixed_and_rejected_before_artifact_or_container_actions(self):
+        wrapper = (ROOT / 'scripts/probe-public-native-image.sh').read_text(encoding='utf-8')
+        validation = 'case "$user_agent_mode" in\n  reader-default|browser-native) ;;\n  *) exit 1 ;;\nesac'
+        self.assertIn(validation, wrapper)
+        self.assertLess(wrapper.index(validation), wrapper.index('version=$(jq'))
+        self.assertLess(wrapper.index(validation), wrapper.index('docker load'))
+        self.assertIn('user_agent_mode="${5:-reader-default}"', wrapper)
+        self.assertIn('test "$#" = 3 || test "$#" = 4 || test "$#" = 5', wrapper)
+        self.assertIn('if [[ "$user_agent_mode" = browser-native ]]; then probe_args+=(--browser-native-user-agent); fi', wrapper)
+
+    def test_workflow_user_agent_input_is_quoted_and_not_an_arbitrary_header(self):
+        workflow = (ROOT / '.github/workflows/browser-image.yml').read_text(encoding='utf-8')
+        self.assertIn('options: [reader-default, browser-native]', workflow)
+        self.assertIn('default: reader-default', workflow)
+        self.assertEqual(2, workflow.count('USER_AGENT_MODE: ${{ inputs.public_metadata_user_agent }}'))
+        validation = '[[ "$USER_AGENT_MODE" = reader-default || "$USER_AGENT_MODE" = browser-native ]]'
+        self.assertIn(validation, workflow)
+        metadata_job = workflow.split('  public-metadata:\n', 1)[1]
+        self.assertLess(metadata_job.index(validation), metadata_job.index('gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN"'))
+        self.assertIn('"$CAPTURE_MODE" "$USER_AGENT_MODE"', workflow)
+        self.assertIn("${{ inputs.public_metadata_user_agent || 'reader-default' }}", workflow)
+        self.assertNotIn('run: ${{ inputs.public_metadata_user_agent', workflow)
+
     def test_capture_enum_is_validated_before_any_container_or_artifact_action(self):
         wrapper = (ROOT / "scripts/probe-public-native-image.sh").read_text(encoding="utf-8")
         validation = 'case "$capture_mode" in\n  bounded-dom|snapshot-only|bounded-dom-details|snapshot-only-details) ;;\n  *) exit 1 ;;\nesac'

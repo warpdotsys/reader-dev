@@ -50,6 +50,16 @@ python3 scripts/verify-reader-jar-reproducibility.py --first /path/to/first.jar 
 
 修正后 Windows 全套实际 351 项：350 通过／1 POSIX 跳过／21.046 秒；没有额外浏览器下载或本机 JAR 重建。首轮失败 JSON SHA-256 `4a60c84f0d31a23d347522db84a5ebb650985f274e84f9b18757d32f88d68edd`，准确预算与本机归档身份见[机器证据](evidence/jar-reproducibility-pinned-driver-budget-2026-10-08.json)。58 用户报告散列仍不变。
 
+## 修正后的真实重建已通过，范围仍有限
+
+提交 `7fea00a601e97a2894a77346fa1a5d4908bbd06e`／被测合并快照 `1e67b0d85f3a578d085d447cac10a9ed7187ffa5` 的 [Java CI 37726229090](https://github.com/warpdotsys/reader-dev/actions/runs/37726229090)终态成功；compare 显示 ahead 1／changed files 0。第二次干净构建 72 秒、六任务全部执行；Python 351 项全执行／10.588 秒。先保存的 42 个 JVM XML／170 项／31 环境跳过已独立核对，没有把跳过计为真实浏览器。
+
+两份真实 JAR 各 285,670,231 B／1,564 条目，完整 SHA-256 均为 `e6ae6b4cf8ad3917398fa8c1bac3616e6a2432d163455ca60ebe334c35ca8951`；条目缺失、内容和 ZIP 元数据差异均 0，顺序、注释和完整字节相同。原报告 SHA-256 `60e8284f8b1c05c662b6bf9f5f884184e38f912ca258b6237746e9bd27e0f3a0`；本机完整独立回执 `3ff7a1d2f3a9f8b9796f5485dd19a36be9b0e0150dd16cf300ead99d49ff8265`，记录 43 个实际下载文件的散列。[有限机器证据](evidence/jar-reproducibility-hosted-7fea00a6-2026-10-08.json)区分 CI 中重算 JAR 与本机仅重算小报告，不冒充本机下载／复算大 JAR。
+
+这证明同一 runner／JDK／既有 Vue 3 dist 的两次干净后端构建，不证明重新生成前端、不同主机或完整镜像的位级一致性。首轮 `0622447c` 的 Full JAR `630a4564c4ad64cebf847fe0a81b230c6021f373e1f048051c94d7e99f6f7c45` 与 Native 共享 JAR `50ba765480574d23beb0c8f21ee702b4f5ac2f507f2679efff8aa6353b83bca4` 在归档设置后仍不同，且来自相同 `62e4e189...` 快照；各自身份仅分别接受，跨流水线唯一差异原因未核验，不能把它全部归为时间戳。后续仍检查编译输出／归档元数据和环境差异；不混用产品字节。
+
+当前 `7fea00a6` Vue／Full 工作流状态成功，Native 正在运行，自己的完整镜像及原生结果还须独立接受；不借父结果。原失败保留、58 用户报告不变；匿名详情、真实认证、最终三方与长期容量仍未完成，没有合并候选、发版或改生产。该结果文档先保留本地，随下一有意义源码增量提交，不单独触发纯文档全量镜像重建。
+
 ## 未解决项与回退
 
 本次没有修复匿名起点空元数据、真实认证、严格 UTF-8 历史差异、最终三方或长期容量。无额外等待脚本的匿名结构专项仍失败，详见[该专项独立结果](PUBLIC-METADATA-SNAPSHOT-STRUCTURE-2026-10-07.md#2026-10-08实际结构观察仍是业务红灯)。不改生产、代理、UID/GID 范围，日常 Reader 和原 JAR 不变；官方 uidmap 已安装也不等于本机最终镜像验收。
