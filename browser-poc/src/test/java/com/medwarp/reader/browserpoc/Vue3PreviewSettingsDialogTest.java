@@ -100,6 +100,8 @@ public class Vue3PreviewSettingsDialogTest {
                 Locator row = alice.locator(".tts-list .tts-row").filter(new Locator.FilterOptions().setHasText(name));
                 row.waitFor();
                 row.scrollIntoViewIfNeeded();
+                assertEquals("Legacy HTTP sources must not display a missing Vue-only field",
+                        "在线合成", row.locator(".tts-type").textContent());
                 assertEquals(originalUrl, named(list(alice), name).get("url"));
                 assertEquals(0, list(bob).size());
                 screenshot(alice, "tts-added");
@@ -123,6 +125,7 @@ public class Vue3PreviewSettingsDialogTest {
                 alice.locator(".settings-page").waitFor();
                 row.waitFor();
                 assertTrue(row.textContent().contains(editedUrl));
+                assertEquals("在线合成", row.locator(".tts-type").textContent());
                 row.scrollIntoViewIfNeeded();
                 screenshot(alice, "tts-edited");
                 assertEquals("This storage journey must not synthesize or download audio", 0, synthesisRequests.get());

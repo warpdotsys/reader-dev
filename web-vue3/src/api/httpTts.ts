@@ -16,7 +16,7 @@ import type { HttpTts, ReturnData } from '@/types'
  * POST /reader3/httpTTS/deleteMulti body: HttpTTS[]      → ReturnData<string>（data 通常为 ""）
  * ================================================================
  * localStorage key: reader_http_tts_list（值为 HttpTts[] 的 JSON）
- * type 参考 legado HttpTTS：0=在线合成（http 请求音频），1=本地引擎（预留）
+ * type 仅为 Vue 展示字段：0=在线合成，1=本地引擎预留；legacy HttpTTS 实体不保存它。
  */
 
 const STORAGE_KEY = 'reader_http_tts_list'
@@ -54,6 +54,11 @@ function toLegacyHttpTts(tts: HttpTts): Record<string, unknown> {
   }
 }
 
+/** legacy HttpTTS has no type field; online is a UI-only default, never persisted to the server. */
+function withDisplayType(tts: HttpTts): HttpTts {
+  return { ...tts, type: typeof tts.type === 'number' ? tts.type : 0 }
+}
+
 /** 同步读取（localStorage 异常时返回空数组） */
 export function loadHttpTtsList(): HttpTts[] {
   try {
@@ -62,6 +67,7 @@ export function loadHttpTtsList(): HttpTts[] {
     const arr = JSON.parse(raw) as unknown
     if (!Array.isArray(arr)) return []
     return (arr as HttpTts[]).filter((t) => t && typeof t === 'object' && typeof t.url === 'string')
+      .map(withDisplayType)
   } catch {
     return []
   }
@@ -92,8 +98,9 @@ export async function getHttpTtsList(): Promise<ReturnData<HttpTts[]>> {
   }
   try {
     const res = await get<HttpTts[]>('/httpTTS/list')
-    persistHttpTtsList(res.data ?? [])
-    return res
+    const list = (res.data ?? []).map(withDisplayType)
+    persistHttpTtsList(list)
+    return { ...res, data: list }
   } catch (error) {
     if (!isTransportFailure(error)) throw error
     backendDown = true

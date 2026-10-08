@@ -182,7 +182,7 @@ async function submitPwd() {
     pwdBusy.value = false
   }
 }
-/* ================= 听书设置（HttpTTS，localStorage 占位，见 api/httpTts.ts 契约注释） ================= */
+/* ================= 听书设置（legacy HttpTTS，后端为主，浏览器缓存仅作离线降级） ================= */
 
 const TTS_TYPE_LABEL: Record<number, string> = { 0: '在线合成', 1: '本地引擎' }
 const ttsList = ref<HttpTts[]>([])
@@ -2078,7 +2078,7 @@ async function runExportData() {
                   <option :value="1">1 · 本地引擎</option>
                 </select>
               </label>
-              <p class="field-tip">听书源已接入服务端（POST /reader3/saveHttpTTS）；离线时降级本地存储</p>
+              <p class="field-tip">听书源已接入服务端（POST /reader3/httpTTS/save）；离线时降级本地存储</p>
               <div class="dlg-actions">
                 <button class="ghost-btn" type="button" :disabled="ttsBusy" @click="closeAddTts">取消</button>
                 <button class="accent-btn" type="submit" :disabled="ttsBusy || !ttsForm.url.trim()">
@@ -2152,7 +2152,7 @@ async function runExportData() {
                 <input v-model="ttsEditing.enabledCookieJar" type="checkbox" />
                 <span>启用 Cookie Jar</span>
               </label>
-              <p class="field-tip">legacy HttpTTS 完整字段；保存走 POST /reader3/saveHttpTTS</p>
+              <p class="field-tip">legacy HttpTTS 完整字段；保存走 POST /reader3/httpTTS/save</p>
               <div class="dlg-actions">
                 <button class="ghost-btn" type="button" :disabled="ttsSaving" @click="closeEditTts">取消</button>
                 <button class="accent-btn" type="submit" :disabled="ttsSaving || !ttsEditing.url.trim()">

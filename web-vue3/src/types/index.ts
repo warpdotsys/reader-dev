@@ -227,7 +227,7 @@ export interface ReplaceRule {
   [key: string]: unknown
 }
 
-/** HttpTTS 听书源（当前 localStorage: reader_http_tts_list；后端就绪后 ↔ POST /reader3/saveHttpTTS 等，见 api/httpTts.ts 契约注释；type 0=在线合成 / 1=本地引擎预留） */
+/** HttpTTS 听书源（/reader3/httpTTS/*；reader_http_tts_list 为离线镜像缓存；type 是 Vue 展示字段，0=在线合成 / 1=本地引擎预留，不写入 legacy 实体） */
 export interface HttpTts {
   id: string
   name: string
