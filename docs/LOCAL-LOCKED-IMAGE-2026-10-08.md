@@ -5,6 +5,7 @@
 本次只消费 [Native37730974808](https://github.com/warpdotsys/reader-dev/actions/runs/37730974808) 的一个原 AMD64 归档：业务源码 `8d0d03c0…`、镜像合并快照 `3fe3777a…`、JAR `591ff…dcec`、image ID `sha256:401d895c…44`。**不是 47 新镜像，也不是原始 3.2.14 JAR。** 原件、旧工程、日常 Reader 和生产均未修改；未读取真实书籍正文或导入凭据。
 
 - 官方 `uidmap` 已安装，当前版本 `1:4.17.4-2ubuntu3`；未安装 Docker、Podman 或宿主 Java。`/etc/subuid` 与 `/etc/subgid` 散列仍各为 `d796e52b…be9cbd`，现有映射范围未改变。
+- 收到“仅安装官方uidmap”的授权后，于2026-10-08 15:19 UTC只读复核：已装版本和官方 `archive.ubuntu.com/ubuntu resolute/main` 候选版本同为上述版本，无需重复安装；`newuidmap`／`newgidmap` 位于 `/usr/bin`，权限均为官方包的4755／root:root，`dpkg -V uidmap` 无校验差异。两映射文件完整SHA仍为 `d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd`。PID92449仍UID1000／D／`rtnl_lock`，且属于先前自有作业的 `exact-image` cgroup；没有重复启动运行器、修改映射或擅自重启Ubuntu。依赖已就绪不代表完整镜像已启动。
 - WSL 首次下载在取得大文件前因网络不可达失败；没有改变代理或全局网络。之后使用已有 Windows GitHub 客户端，在本次自有进程树的 2 个逻辑 CPU 上限／512 MiB 提交内存限额内下载成功，720.618 秒、峰值提交内存 145,772,544 B（约 139.0 MiB）。这是 Windows 提交内存观测，不是 Linux cgroup 或包含文件缓存的总内存。
 - 一份 `reader-image.tar.gz` 为 2,174,783,444 B，完整流式 SHA-256 实测 `e244742f72f037acf45eb0c2bf3d08edea9fe0bfb1bd7b03c0a25c9e40333518`，七字段 metadata 与锁定来源严格相同。下载的是 Reader／浏览器／依赖镜像，不是书库，也没有重新压缩用户数据。GitHub 客户端的临时 ZIP 已自行清理；**本机未复算外层 ZIP 散列**。
 - 第一轮转换停在准备脚本错误的前端字段预期；真实镜像及 Dockerfile 均为 `READER_APP_WEBUI=vue3`，修正后 13 项生成校验测试通过，仍拒绝缺失、错误或重复配置，没有删掉 UI 门禁取绿。

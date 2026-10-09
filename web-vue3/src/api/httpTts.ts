@@ -11,6 +11,7 @@ import type { HttpTts, ReturnData } from '@/types'
  * ============================ 后端契约 ============================
  * GET  /reader3/httpTTS/list       → ReturnData<HttpTts[]>
  * POST /reader3/httpTTS/save       body: HttpTTS entity  → ReturnData<string>（data 通常为 ""）
+ * POST /reader3/httpTTS/update     body: { original, updated } → ReturnData<string>（恢复版新增，带原记录校验）
  * POST /reader3/httpTTS/saveMulti  body: HttpTTS[]       → ReturnData<string>（data 通常为 ""）
  * POST /reader3/httpTTS/delete     body: HttpTTS entity  → ReturnData<string>（data 通常为 ""）
  * POST /reader3/httpTTS/deleteMulti body: HttpTTS[]      → ReturnData<string>（data 通常为 ""）
@@ -130,6 +131,26 @@ export async function saveHttpTts(tts: HttpTts): Promise<ReturnData<string>> {
   else list.push(tts)
   persistHttpTtsList(list)
   return { isSuccess: false, errorMsg: '服务端暂不可用，已降级本地数据', data: '' }
+}
+
+/** Editing requires an acknowledged server write; never rename via save-then-delete or offline cache. */
+export async function updateHttpTts(original: HttpTts, updated: HttpTts): Promise<ReturnData<string>> {
+  const unavailable = (): ReturnData<string> => ({
+    isSuccess: false, errorMsg: '服务端暂不可用，未确认保存；请恢复连接后重试', data: '',
+  })
+  if (backendDown) return unavailable()
+  const { type: _displayType, ...snapshot } = original
+  const edited = { ...toLegacyHttpTts(updated), id: original.id }
+  try {
+    const result = await post<string>('/httpTTS/update', { original: snapshot, updated: edited })
+    // Refreshing from /list after success supplies the new server timestamp.
+    // Do not install a guessed record or corrupt the optimistic-edit snapshot.
+    return result
+  } catch (error) {
+    if (!isTransportFailure(error)) throw error
+    backendDown = true
+    return unavailable()
+  }
 }
 
 /** POST /reader3/httpTTS/saveMulti（后端 data 为 ""，导入数量由调用方输入列表确定） */

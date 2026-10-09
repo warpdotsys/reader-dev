@@ -27,7 +27,11 @@ function fixture(options = {}) {
       if (options.error) throw options.error
       return response
     },
-    post: async (route, body) => { writes.push({ route, body: { ...body } }); return { isSuccess: true, errorMsg: '', data: '' } },
+    post: async (route, body) => {
+      writes.push({ route, body: JSON.parse(JSON.stringify(body)) })
+      if (options.postError) throw options.postError
+      return options.postResponse ?? { isSuccess: true, errorMsg: '', data: '' }
+    },
     onBackendReachable: () => {},
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
   }
@@ -105,4 +109,71 @@ test('business failure is not converted into successful display data or an offli
   await assert.rejects(f.api.getHttpTtsList(), thrown => thrown === error)
   assert.equal(f.writes.length, 0)
   assert.equal(f.storage.size, 0)
+})
+
+test('editing sends the complete original snapshot and no display field to one additive endpoint', async () => {
+  const item = { id: 1900000000002, name: '生成旧名称', url: 'http://127.0.0.1/old', lastUpdateTime: 7,
+    generatedUnknown: { keep: true }, enabledCookieJar: true, jsLib: 'generated-not-executed' }
+  const f = fixture({ backend: [item] })
+  const original = (await f.api.getHttpTtsList()).data[0]
+  const edited = { ...original, name: '生成新名称', url: 'http://127.0.0.1/new' }
+  const cacheBefore = f.storage.get('reader_http_tts_list')
+  const result = await f.api.updateHttpTts(original, edited)
+  assert.equal(result.isSuccess, true)
+  assert.equal(f.writes.length, 1, 'Never use save then delete for a rename')
+  assert.equal(f.writes[0].route, '/httpTTS/update')
+  assert.deepEqual(f.writes[0].body.original, item)
+  assert.equal(f.writes[0].body.updated.name, '生成新名称')
+  assert.equal(f.writes[0].body.updated.id, item.id)
+  assert.equal(f.writes[0].body.updated.enabledCookieJar, true)
+  assert.equal(f.writes[0].body.updated.jsLib, 'generated-not-executed')
+  assert.equal(Object.hasOwn(f.writes[0].body.updated, 'type'), false)
+  assert.equal(Object.hasOwn(f.writes[0].body.updated, 'lastUpdateTime'), false)
+  assert.equal(Object.hasOwn(f.writes[0].body.updated, 'generatedUnknown'), false)
+  assert.equal(f.storage.get('reader_http_tts_list'), cacheBefore, 'Only a new /list may supply the confirmed timestamp')
+  assert.equal(original.name, item.name)
+})
+
+test('editing preserves a negative numeric legacy id rather than applying the add adapter mapping', async () => {
+  const f = fixture({ backend: [{ id: -4, name: '生成负ID', url: 'http://127.0.0.1/generated' }] })
+  const original = (await f.api.getHttpTtsList()).data[0]
+  await f.api.updateHttpTts(original, { ...original, id: 'different-preview-id', name: '生成新名称' })
+  assert.equal(f.writes[0].body.original.id, -4)
+  assert.equal(f.writes[0].body.updated.id, -4)
+})
+
+test('edit transport failure retains the old cache and reports no confirmed save', async () => {
+  const postError = Object.assign(new Error('Generated unavailable'), { generatedTransportFailure: true })
+  const f = fixture({ postError })
+  const original = (await f.api.getHttpTtsList()).data[0]
+  const before = f.storage.get('reader_http_tts_list')
+  const result = await f.api.updateHttpTts(original, { ...original, name: '未确认的名称' })
+  assert.equal(result.isSuccess, false)
+  assert.match(result.errorMsg, /未确认保存/)
+  assert.equal(f.storage.get('reader_http_tts_list'), before)
+  assert.equal((await f.api.updateHttpTts(original, original)).isSuccess, false)
+  assert.equal(f.writes.length, 1, 'Do not repeat an acknowledged unreachable write')
+})
+
+test('a conflicting edit or unsupported old backend does not mutate cache or fall back to legacy save', async () => {
+  for (const postError of [new Error('生成重名拒绝'), Object.assign(new Error('Generated old backend 404'),
+    { generatedTransportFailure: true, response: { status: 404 } })]) {
+    const f = fixture({ postError })
+    const original = (await f.api.getHttpTtsList()).data[0]
+    const before = f.storage.get('reader_http_tts_list')
+    await assert.rejects(f.api.updateHttpTts(original, { ...original, name: '冲突的名称' }), error => error === postError)
+    assert.equal(f.storage.get('reader_http_tts_list'), before)
+    assert.equal(f.writes.length, 1)
+    assert.equal(f.writes[0].route, '/httpTTS/update')
+  }
+})
+
+test('an unsuccessful edit envelope is preserved and never guessed into local success', async () => {
+  const f = fixture({ postResponse: { isSuccess: false, errorMsg: '生成过期编辑', data: '' } })
+  const original = (await f.api.getHttpTtsList()).data[0]
+  const before = f.storage.get('reader_http_tts_list')
+  const result = await f.api.updateHttpTts(original, original)
+  assert.equal(result.isSuccess, false)
+  assert.equal(result.errorMsg, '生成过期编辑')
+  assert.equal(f.storage.get('reader_http_tts_list'), before)
 })

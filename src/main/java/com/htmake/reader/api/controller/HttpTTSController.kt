@@ -61,6 +61,17 @@ class HttpTTSController(coroutineContext: CoroutineContext): BaseController(coro
         return saveMulti(context)
     }
 
+    suspend fun updateHttpTTS(context: RoutingContext): ReturnData {
+        if (!checkUserAuth(context)) {
+            return ReturnData().setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        val body = context.bodyAsJson ?: return ReturnData().setErrorMsg("参数错误：需要原始听书源记录")
+        val original = body.getValue("original") as? JsonObject
+        val updated = body.getValue("updated") as? JsonObject
+        if (original == null || updated == null) return ReturnData().setErrorMsg("参数错误：需要原始听书源记录")
+        return updateStoredHttpTts(getUserNS(context), original, updated)
+    }
+
     suspend fun deleteHttpTTS(context: RoutingContext): ReturnData {
         return delete(context)
     }

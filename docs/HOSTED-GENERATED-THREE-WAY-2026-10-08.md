@@ -43,6 +43,18 @@
 
 修正只改新驱动的哈希实现：1MiB分块流式计算相同SHA-256，固定依赖／Python3.10／原件比较／文件大小／身份及业务门禁不变。新增跨1MiB边界生成样本与禁用新API守卫，先18项／1失败／exit1，修正后18全通过；全套Python400／1平台跳过／23.691秒通过。不安装新Python或扩大本机读取范围。修正自身的Python3.10托管结果另验，不借3.12专项或父版绿灯。
 
+### 流式修正自身的托管结果已取得
+
+源码62cdc28f／tested `3ff76cdf8ed0b34796a30f5baefd8231ff569635`：Native37795529573共享JAR实际作业113373874374已成功，直接作业日志核对Python3.10.22／400项／9.811秒／OK和两次真实BUILD SUCCESSFUL，新API AttributeError不再出现。完整Native当时仍在双架构重载，不能把该作业成功写成整条工作流成功；本地小回执 `build/hosted-three-way-62cdc28f-a/python310-shared-job-acceptance.json` 明确保留这个边界。
+
+自己的Java37795529981及Vue37795530215完成成功，小报告独立接受：400Python全执行、JVM170／31环境跳过、287前端＋20取图守卫、类型构建和25实际UI／零跳过；两次干净JAR同字节ce76a5，285,649,123 B／1,562条目。自己的Full37795530367完成成功、Cam20／helper3／Chrom23及现有默认UI／异步／详情门禁接受，同JAR，峰值822,599,680 B／PID198；普通短测允许1GiB swap、实际0。UI／Java回执SHA `5a2b2e25a27d913b53c5d74212bde14887f635705cd5df260e46c3265841279e`，Full回执 `3fc4e14953631943c85aeaa5300ae4fb5505df31657b3b4ba899ffadc798019a`；新八图未额外目视，不借父版视觉检查。结果先本地回填，随下一有意义源码增量提交，不为纯文档重复重建。
+
+随后同一源码／tested snapshot 的 [Native37795529573](https://github.com/warpdotsys/reader-dev/actions/runs/37795529573) 六个实际作业全部完成成功：共享JAR、AMD64／ARM64各自原生构建、两种归档重新导入后实际运行、正式publisher导入器的无凭据验收。独立小报告验收通过，Cam20／零跳过、helper3、24份publisher JSON；两架构JAR完整SHA均为 `ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb`，与自身Java／Full一致。AMD64归档SHA `0e0afd37d746c41b612a2f503b7958472764ca5e6b9b6e1db7f46af61b68f9f6`，image ID `sha256:08bf60b159c61067df791b684ddb6eee9895a63bf43ea51018a1490f4e747b02`；ARM64归档SHA `47d97190b20c73bb8035fda3db2e920cbf9782a853e30a606c0f72784fa983d0`，image ID `sha256:fb87e3b0702b740c980ef506aee56d7e4fc562bbb87113a0a0564c725a5d2033`。报告中最大内存峰值861,962,240 B／PID200，普通短测各允许1GiB swap、实际均0，不等于零swap三方或长测验收。本机只下载小报告，未下载这版镜像大归档或共享JAR，未在本机复算归档SHA。
+
+本地独立Native回执为 `build/hosted-three-way-62cdc28f-a/independent-native-acceptance.json`，完整SHA `2846b7eb8214b785b2956efe9293e27f9c7890d6909445243ead9a1f57874a9f`；2026-10-08 15:19 UTC再次只读核对实际GitHub六作业终态和58份受保护报告未变。早先共享作业回执仍保留当时整条Native进行中的状态，不覆写历史观察。当前四普通流水线已完成接受，但没有发布registry、正式发版或生产部署。
+
+这关闭Python3.10新驱动的实际回归缺口，不关闭原件身份、WSL启动、真实认证或最终三方缺口。官方uidmap1:4.17.4-2ubuntu3已实际核对；PID92449仍为D／rtnl_lock，未重启Ubuntu。Ubuntu另有Python／dotnet进程，终止发行版会中断它们，必须另有明确授权；不能把仅安装uidmap的授权扩大为重启许可。
+
 GitHub手动入口为已有 `browser-image.yml`，设置 `three_way_native_run=37783548430`、`three_way_source=2f8b37aa1c786d87e84d9ac6b745105aa35972a4`、`three_way_revision=ba1817b4256bfde0b0019ee8861d99af18c037a0`，另选一种模式；其他公网／probe／soak模式必须为空／false。具体代码checkout与被测镜像revision分开记录。先执行metadata，完成后再按新事实决定下一专项，不并发重复跑旧失败网站条件。
 
 ## 已知风险与回滚

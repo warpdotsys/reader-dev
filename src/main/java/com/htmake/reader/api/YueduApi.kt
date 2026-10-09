@@ -509,6 +509,7 @@ class YueduApi : RestVerticle() {
         /** HttpTTS模块 */
         router.get("/reader3/httpTTS/list").coroutineHandler { httpTTSController.getHttpTTSList(it) }
         router.post("/reader3/httpTTS/save").coroutineHandler { httpTTSController.saveHttpTTS(it) }
+        router.post("/reader3/httpTTS/update").coroutineHandler { httpTTSController.updateHttpTTS(it) }
         router.post("/reader3/httpTTS/saveMulti").coroutineHandler { httpTTSController.saveHttpTTSList(it) }
         router.post("/reader3/httpTTS/delete").coroutineHandler { httpTTSController.deleteHttpTTS(it) }
         router.post("/reader3/httpTTS/deleteMulti").coroutineHandler { httpTTSController.deleteHttpTTSList(it) }

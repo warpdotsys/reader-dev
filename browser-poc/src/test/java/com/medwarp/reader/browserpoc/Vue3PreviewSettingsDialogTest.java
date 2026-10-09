@@ -38,6 +38,8 @@ public class Vue3PreviewSettingsDialogTest {
                 "127.0.0.1".equals(uri.getHost()) || "localhost".equals(uri.getHost()));
 
         String name = "GeneratedTTS-" + UUID.randomUUID().toString().substring(0, 8);
+        String renamed = name + "-renamed";
+        String occupied = name + "-occupied";
         String originalUrl = base + "/generated-speech-only";
         String editedUrl = base + "/generated-speech-revised";
         AtomicInteger synthesisRequests = new AtomicInteger();
@@ -106,21 +108,57 @@ public class Vue3PreviewSettingsDialogTest {
                 assertEquals(0, list(bob).size());
                 screenshot(alice, "tts-added");
 
+                Map<String, Object> firstRecord = named(list(alice), name);
+                assertTrue(post(alice, "/httpTTS/save", Map.of("id", 1900000000002L,
+                        "name", occupied, "url", base + "/generated-other-only")).get("isSuccess").equals(true));
+                Map<String, Object> occupiedRecord = named(list(alice), occupied);
                 row.locator("button[title='编辑听书源（完整字段）']").click();
                 Locator editor = alice.locator("[aria-label='编辑听书源']");
                 editor.waitFor();
                 editor.locator("input").nth(0).fill(editedUrl);
+                editor.locator("input").nth(1).fill(occupied);
                 editor.locator("textarea").nth(0).fill("{\"X-Generated-UI\":\"one\"}");
-                Response edited = alice.waitForResponse(Vue3PreviewSettingsDialogTest::isSave,
+                editor.locator("textarea").nth(1).fill("generated-library-not-executed");
+                editor.locator("input[type=checkbox]").check();
+                Response conflict = alice.waitForResponse(Vue3PreviewSettingsDialogTest::isUpdate,
+                        () -> editor.locator("button[type=submit]").click());
+                assertEquals(200, conflict.status());
+                assertTrue(conflict.text().contains("\"isSuccess\":false"));
+                assertTrue(conflict.text().contains("名称已存在"));
+                alice.waitForFunction("() => !document.querySelector('[aria-label=\"编辑听书源\"] button[type=submit]').disabled");
+                assertTrue(editor.isVisible());
+                assertEquals(occupied, editor.locator("input").nth(1).inputValue());
+                assertEquals(firstRecord, named(list(alice), name));
+                assertEquals(occupiedRecord, named(list(alice), occupied));
+                assertEquals(0, list(bob).size());
+                screenshot(alice, "tts-rename-conflict");
+
+                editor.locator("input").nth(1).fill(renamed);
+                Response edited = alice.waitForResponse(Vue3PreviewSettingsDialogTest::isUpdate,
                         () -> editor.locator("button[type=submit]").click());
                 assertEquals(200, edited.status());
                 assertTrue(edited.text().contains("\"isSuccess\":true"));
                 editor.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
                 assertEquals("", alice.evaluate("() => document.body.style.overflow"));
-                assertEquals(1, list(alice).size());
-                assertEquals(editedUrl, named(list(alice), name).get("url"));
-                assertEquals("{\"X-Generated-UI\":\"one\"}", named(list(alice), name).get("header"));
+                assertEquals(2, list(alice).size());
+                assertFalse(list(alice).stream().anyMatch(value -> name.equals(value.get("name"))));
+                Map<String, Object> renamedRecord = named(list(alice), renamed);
+                assertEquals(firstRecord.get("id"), renamedRecord.get("id"));
+                assertEquals(editedUrl, renamedRecord.get("url"));
+                assertEquals("{\"X-Generated-UI\":\"one\"}", renamedRecord.get("header"));
+                assertEquals("generated-library-not-executed", renamedRecord.get("jsLib"));
+                assertEquals(true, renamedRecord.get("enabledCookieJar"));
+                assertEquals(occupiedRecord, named(list(alice), occupied));
+                assertEquals(false, post(bob, "/httpTTS/update", Map.of("original", renamedRecord,
+                        "updated", Map.of("id", renamedRecord.get("id"), "name", renamed, "url", editedUrl))).get("isSuccess"));
                 assertEquals(0, list(bob).size());
+                Page anonymous = browser.newPage();
+                anonymous.navigate(base + "/login");
+                Map<String, Object> noLogin = post(anonymous, "/httpTTS/update", Map.of("original", renamedRecord,
+                        "updated", Map.of("id", renamedRecord.get("id"), "name", renamed, "url", editedUrl)));
+                assertEquals(false, noLogin.get("isSuccess"));
+                assertEquals("NEED_LOGIN", noLogin.get("data"));
+                anonymous.close();
                 alice.reload();
                 alice.locator(".settings-page").waitFor();
                 row.waitFor();
@@ -128,12 +166,60 @@ public class Vue3PreviewSettingsDialogTest {
                 assertEquals("在线合成", row.locator(".tts-type").textContent());
                 row.scrollIntoViewIfNeeded();
                 screenshot(alice, "tts-edited");
+                verifyStaleAndOfflineEdit(alice, base, renamed, occupiedRecord);
                 assertEquals("This storage journey must not synthesize or download audio", 0, synthesisRequests.get());
                 verifyUnavailableOpds(alice, opdsRequests);
             } finally {
                 browser.close();
             }
         }
+    }
+
+    private static void verifyStaleAndOfflineEdit(Page page, String base, String name,
+                                                  Map<String, Object> occupiedRecord) throws Exception {
+        Locator row = page.locator(".tts-list .tts-row").filter(new Locator.FilterOptions().setHasText(name));
+        row.locator("button[title='编辑听书源（完整字段）']").click();
+        Locator editor = page.locator("[aria-label='编辑听书源']");
+        editor.waitFor();
+        Map<String, Object> original = named(list(page), name);
+        String concurrentUrl = base + "/generated-speech-concurrent";
+        assertEquals(true, post(page, "/httpTTS/update", Map.of("original", original,
+                "updated", Map.of("id", original.get("id"), "name", name, "url", concurrentUrl))).get("isSuccess"));
+        editor.locator("input").nth(0).fill(base + "/generated-speech-stale-must-not-persist");
+        Response stale = page.waitForResponse(Vue3PreviewSettingsDialogTest::isUpdate,
+                () -> editor.locator("button[type=submit]").click());
+        assertEquals(200, stale.status());
+        assertTrue(stale.text().contains("\"isSuccess\":false"));
+        assertTrue(stale.text().contains("已被修改"));
+        page.waitForFunction("() => !document.querySelector('[aria-label=\"编辑听书源\"] button[type=submit]').disabled");
+        assertTrue(editor.isVisible());
+        assertEquals(concurrentUrl, named(list(page), name).get("url"));
+        assertEquals(occupiedRecord, named(list(page), String.valueOf(occupiedRecord.get("name"))));
+        screenshot(page, "tts-edit-stale");
+        editor.locator(".ghost-btn").click();
+        editor.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+        page.reload();
+        row.waitFor();
+        page.waitForFunction("() => JSON.parse(localStorage.getItem('reader_http_tts_list') || '[]')"
+                + ".some(item => item.url.endsWith('/generated-speech-concurrent'))");
+        Object cacheBefore = page.evaluate("() => localStorage.getItem('reader_http_tts_list')");
+        row.locator("button[title='编辑听书源（完整字段）']").click();
+        editor.waitFor();
+        editor.locator("input").nth(1).fill(name + "-offline-must-not-persist");
+        page.route("**/reader3/httpTTS/update?*", Route::abort);
+        page.waitForRequest(request -> "POST".equals(request.method())
+                        && URI.create(request.url()).getPath().equals("/reader3/httpTTS/update"),
+                () -> editor.locator("button[type=submit]").click());
+        page.locator(".el-message").filter(new Locator.FilterOptions().setHasText("未确认保存")).waitFor();
+        assertTrue(editor.isVisible());
+        assertEquals(cacheBefore, page.evaluate("() => localStorage.getItem('reader_http_tts_list')"));
+        assertEquals(concurrentUrl, named(list(page), name).get("url"));
+        assertEquals(2, list(page).size());
+        screenshot(page, "tts-edit-offline");
+        page.unroute("**/reader3/httpTTS/update?*");
+        editor.locator(".ghost-btn").click();
+        editor.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+        assertEquals("", page.evaluate("() => document.body.style.overflow"));
     }
 
     private static void verifyUnavailableOpds(Page page, AtomicInteger requests) throws Exception {
@@ -161,6 +247,21 @@ public class Vue3PreviewSettingsDialogTest {
     private static boolean isSave(Response response) {
         return "POST".equals(response.request().method())
                 && URI.create(response.url()).getPath().equals("/reader3/httpTTS/save");
+    }
+
+    private static boolean isUpdate(Response response) {
+        return "POST".equals(response.request().method())
+                && URI.create(response.url()).getPath().equals("/reader3/httpTTS/update");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> post(Page page, String route, Map<String, Object> body) {
+        return (Map<String, Object>) page.evaluate("async args => {"
+                + "const token = localStorage.getItem('reader_access_token');"
+                + "const response = await fetch('/reader3' + args.route + '?accessToken=' + encodeURIComponent(token),"
+                + "{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(args.body)});"
+                + "if (response.status !== 200) throw new Error('Generated edit status failed');"
+                + "return await response.json(); }", Map.of("route", route, "body", body));
     }
 
     private static void register(Page page, String base, String prefix) {

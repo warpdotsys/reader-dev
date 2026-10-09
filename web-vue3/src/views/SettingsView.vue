@@ -12,6 +12,7 @@ import {
   parseHttpTtsJson,
   saveHttpTts,
   saveHttpTtsMulti,
+  updateHttpTts,
 } from '@/api/httpTts'
 import { uploadFile, mkdir } from '@/api/file'
 import { loadCustomCss, saveCustomCss, applyCustomCss } from '@/utils/customCss'
@@ -187,12 +188,14 @@ async function submitPwd() {
 const TTS_TYPE_LABEL: Record<number, string> = { 0: '在线合成', 1: '本地引擎' }
 const ttsList = ref<HttpTts[]>([])
 
-async function loadTtsList() {
+async function loadTtsList(): Promise<boolean> {
   try {
     const res = await getHttpTtsList()
     ttsList.value = res.data ?? []
+    return res.isSuccess
   } catch {
     ttsList.value = []
+    return false
   }
 }
 
@@ -212,6 +215,7 @@ const ttsForm = ref<{ name: string; url: string; type: number }>({ name: '', url
 const ttsSelected = ref<Set<string>>(new Set())
 /** 听书源编辑弹窗（完整字段 JSON 编辑） */
 const ttsEditing = ref<HttpTts | null>(null)
+const ttsOriginal = ref<HttpTts | null>(null)
 /** 听书源 JSON 导入文件输入 */
 const ttsImportRef = ref<HTMLInputElement | null>(null)
 
@@ -222,6 +226,7 @@ function openAddTts() {
 }
 
 function openEditTts(t: HttpTts) {
+  ttsOriginal.value = { ...t }
   ttsEditing.value = { ...t }
   document.body.style.overflow = 'hidden'
 }
@@ -229,6 +234,7 @@ function openEditTts(t: HttpTts) {
 function closeEditTts() {
   if (ttsSaving.value) return
   ttsEditing.value = null
+  ttsOriginal.value = null
   document.body.style.overflow = ''
 }
 
@@ -236,18 +242,25 @@ const ttsSaving = ref(false)
 
 async function confirmEditTts() {
   const t = ttsEditing.value
-  if (!t || ttsSaving.value) return
+  if (!t || !ttsOriginal.value || ttsSaving.value) return
   if (!t.url.trim()) {
     ElMessage.warning('URL 不能为空')
     return
   }
   ttsSaving.value = true
   try {
-    await saveHttpTts({
+    const result = await updateHttpTts(ttsOriginal.value, {
       ...t,
       name: t.name.trim() || t.url,
     })
-    await loadTtsList()
+    if (!result.isSuccess) {
+      ElMessage.warning(result.errorMsg)
+      return
+    }
+    if (!await loadTtsList()) {
+      ElMessage.warning('修改已保存，但列表未重新读取；请刷新页面确认')
+      return
+    }
   } catch {
     // 已提示
     return
@@ -2152,7 +2165,7 @@ async function runExportData() {
                 <input v-model="ttsEditing.enabledCookieJar" type="checkbox" />
                 <span>启用 Cookie Jar</span>
               </label>
-              <p class="field-tip">legacy HttpTTS 完整字段；保存走 POST /reader3/httpTTS/save</p>
+              <p class="field-tip">保留 legacy HttpTTS 字段；编辑会核对原记录，重名或其他设备已修改时拒绝覆盖。</p>
               <div class="dlg-actions">
                 <button class="ghost-btn" type="button" :disabled="ttsSaving" @click="closeEditTts">取消</button>
                 <button class="accent-btn" type="submit" :disabled="ttsSaving || !ttsEditing.url.trim()">

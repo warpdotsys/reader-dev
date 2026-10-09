@@ -434,6 +434,19 @@ fun getStorageFile(vararg name: String, ext: String = ".json"): File {
     return File(storagePath, relativePath)
 }
 
+/** Hold the same reentrant file lock across a complete read/modify/write operation. */
+fun <T> withStorageWriteLock(vararg name: String, action: () -> T): T {
+    val lock = storageLock(getStorageFile(*name)).writeLock()
+    if (!lock.tryLock(10, TimeUnit.SECONDS)) {
+        throw IllegalStateException("存储修改超时")
+    }
+    try {
+        return action()
+    } finally {
+        lock.unlock()
+    }
+}
+
 private fun storageLock(file: File): ReadWriteLock {
     synchronized(storageLocks) {
         return storageLocks.get(file.absolutePath)

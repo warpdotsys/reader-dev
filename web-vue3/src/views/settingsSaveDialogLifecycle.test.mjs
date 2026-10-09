@@ -139,13 +139,14 @@ const variants = [
 ]
 
 function otherFixture(kind, options = {}) {
-  const calls = { save: [], load: 0, warning: [], success: [] }
+  const calls = { save: [], original: [], load: 0, warning: [], success: [] }
   const context = {
     Error,
     ttsBusy: { value: false }, ttsDialogOpen: { value: true },
     ttsForm: { value: { name: '生成语音', url: 'https://generated.invalid/tts', type: 0 } },
     ttsSaving: { value: false },
     ttsEditing: { value: { id: 'generated-only', name: '生成语音', url: 'https://generated.invalid/tts' } },
+    ttsOriginal: { value: { id: 'generated-only', name: '生成语音', url: 'https://generated.invalid/tts' } },
     opdsCfgBusy: { value: false }, opdsCfgOpen: { value: true },
     opdsCfg: { value: { enabled: false, username: '', passwordSet: false } },
     opdsForm: { value: { username: 'generated-opds', password: 'GeneratedOnly-2026' } },
@@ -154,7 +155,12 @@ function otherFixture(kind, options = {}) {
     newTtsId: () => 'generated-only',
     ElMessage: { warning: value => calls.warning.push(value), success: value => calls.success.push(value) },
     saveHttpTts: async value => { calls.save.push({ ...value }); return await options.save?.() ?? { isSuccess: true, data: '' } },
-    loadTtsList: async () => { calls.load++; return await options.load?.() },
+    updateHttpTts: async (original, value) => {
+      calls.original.push({ ...original })
+      calls.save.push({ ...value })
+      return await options.save?.() ?? { isSuccess: true, data: '' }
+    },
+    loadTtsList: async () => { calls.load++; return await options.load?.() ?? true },
     saveOpdsSettings: async (username, password) => {
       calls.save.push({ username, password })
       return await options.save?.() ?? { isSuccess: true, data: { enabled: true, username } }
@@ -164,6 +170,49 @@ function otherFixture(kind, options = {}) {
   return { calls, context, save: () => context[kind.save](), close: () => context[kind.close](),
     isOpen: () => !!context[kind.open].value, isBusy: () => context[kind.busy].value }
 }
+
+test('TTS edit sends the original snapshot and clears it only after a confirmed save', async () => {
+  const f = otherFixture(variants[1])
+  f.context.ttsEditing.value.name = '  生成改名  '
+  await f.save()
+  assert.equal(f.calls.original[0].name, '生成语音')
+  assert.equal(f.calls.save[0].name, '生成改名')
+  assert.equal(f.calls.load, 1)
+  assert.equal(f.context.ttsOriginal.value, null)
+  assert.equal(f.isOpen(), false)
+})
+
+test('TTS edit explicitly unsuccessful transport retains both snapshot and edited form', async () => {
+  const f = otherFixture(variants[1], { save: () => ({ isSuccess: false, errorMsg: '生成未确认保存', data: '' }) })
+  f.context.ttsEditing.value.name = '生成待保存改名'
+  await f.save()
+  assert.equal(f.isOpen(), true)
+  assert.equal(f.isBusy(), false)
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.context.ttsOriginal.value.name, '生成语音')
+  assert.equal(f.context.ttsEditing.value.name, '生成待保存改名')
+  assert.deepEqual(f.calls.warning, ['生成未确认保存'])
+})
+
+test('TTS edit without a source snapshot never invents an add or sends a deletion', async () => {
+  const f = otherFixture(variants[1])
+  f.context.ttsOriginal.value = null
+  await f.save()
+  assert.equal(f.calls.save.length, 0)
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.isOpen(), true)
+})
+
+test('TTS edit failed confirmed-list refresh does not close or fabricate a new snapshot', async () => {
+  const f = otherFixture(variants[1], { load: () => false })
+  await f.save()
+  assert.equal(f.calls.save.length, 1)
+  assert.equal(f.calls.load, 1)
+  assert.equal(f.isOpen(), true)
+  assert.equal(f.isBusy(), false)
+  assert.equal(f.context.ttsOriginal.value.name, '生成语音')
+  assert.deepEqual(f.calls.warning, ['修改已保存，但列表未重新读取；请刷新页面确认'])
+})
 
 for (const kind of variants) {
   test(`${kind.name}: successful source function closes only after busy guard is released`, async () => {
