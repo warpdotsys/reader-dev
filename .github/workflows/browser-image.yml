@@ -33,6 +33,11 @@ on:
       - 'scripts/verify-source-document-observation.py'
       - 'src/test/python/source_document_observation_report_test.py'
       - 'scripts/report-browser-cgroup.py'
+      - 'scripts/reader-browser-budget-slice.sh'
+      - 'scripts/soak-native-image.sh'
+      - 'scripts/verify-bundled-browser-soak.py'
+      - 'src/test/python/browser_memory_high_soak_test.py'
+      - 'src/test/python/bundled_browser_soak_report_test.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
       - 'scripts/relocate-extracted-ubuntu-jre.py'
@@ -107,6 +112,11 @@ on:
       - 'scripts/verify-source-document-observation.py'
       - 'src/test/python/source_document_observation_report_test.py'
       - 'scripts/report-browser-cgroup.py'
+      - 'scripts/reader-browser-budget-slice.sh'
+      - 'scripts/soak-native-image.sh'
+      - 'scripts/verify-bundled-browser-soak.py'
+      - 'src/test/python/browser_memory_high_soak_test.py'
+      - 'src/test/python/bundled_browser_soak_report_test.py'
       - 'scripts/smoke-public-webview.py'
       - 'scripts/run-webview-cookie-in-linux-netns.py'
       - 'scripts/relocate-extracted-ubuntu-jre.py'
@@ -188,6 +198,12 @@ on:
         type: choice
         options: ['600', '1800', '3600']
         default: '1800'
+      soak_memory_policy:
+        description: 'Explicit offline-soak policy; high-1536m adds early reclaim under unchanged 2 GiB hard/zero-swap limits'
+        required: false
+        type: choice
+        options: [unchanged, high-1536m]
+        default: unchanged
       public_metadata_native_run:
         description: 'Successful native rehearsal to consume for ONE anonymous Qidian metadata request; no Cookie or chapters'
         required: false
@@ -243,7 +259,7 @@ permissions:
 concurrency:
   # A reference probe must not cancel a full-image acceptance run on the same
   # branch. Only supersede another run of the same mode.
-  group: browser-image-${{ github.ref }}-${{ inputs.three_way_native_run && 'generated-three-way' || inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}-${{ inputs.public_metadata_user_agent || 'reader-default' }}-${{ inputs.three_way_native_run && inputs.three_way_mode || 'none' }}
+  group: browser-image-${{ github.ref }}-${{ inputs.three_way_native_run && 'generated-three-way' || inputs.artifact_download_regression == true && 'artifact-regression' || inputs.public_metadata_native_run && 'public-metadata' || inputs.soak_native_run && 'offline-soak' || inputs.probe_remote_webview == true && 'remote-probe' || inputs.probe_original_jar == true && 'original-probe' || 'integration' }}-${{ inputs.native_arch || 'amd64' }}-${{ inputs.public_metadata_capture || 'bounded-dom' }}-${{ inputs.public_metadata_user_agent || 'reader-default' }}-${{ inputs.three_way_native_run && inputs.three_way_mode || 'none' }}-${{ inputs.soak_memory_policy || 'unchanged' }}
   cancel-in-progress: true
 
 jobs:
@@ -723,6 +739,7 @@ jobs:
           EXPECTED_ARCH: ${{ inputs.native_arch }}
           NATIVE_REVISION: ${{ inputs.soak_revision }}
           SOAK_SECONDS: ${{ inputs.soak_seconds }}
+          READER_SOAK_MEMORY_POLICY: ${{ inputs.soak_memory_policy || 'unchanged' }}
         run: bash scripts/soak-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$SOAK_SECONDS" "$RUNNER_TEMP/reader-soak-report"
       - name: Preserve only small generated soak observations, including failures
         if: always()

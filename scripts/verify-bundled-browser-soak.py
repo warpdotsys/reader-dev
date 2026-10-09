@@ -75,8 +75,64 @@ def quiet(value):
             "InvalidQuiescentResources")
 
 
+def verify_memory_policy(policy, running, document, require_removal):
+    """An explicit parent policy needs its own observations, never a leaf proxy."""
+    require(policy in ("unchanged", "high-1536m"), "InvalidMemoryPolicy")
+    require(running.get("memoryPolicy", "unchanged") == policy, "MemoryPolicyMismatch")
+    if policy == "unchanged":
+        return {"selection": policy, "parentEarlyReclaimVerified": False}
+    member = document("MEMORY_HIGH_MEMBERSHIP.json")
+    cid, slice_name = running.get("containerId"), member.get("slice")
+    require(type(cid) is str and re.fullmatch(r"[0-9a-f]{64}", cid) and
+            member.get("containerId") == cid and type(slice_name) is str and
+            re.fullmatch(r"readerhigh[0-9a-f]{16}\.slice", slice_name) and
+            member.get("membership") == f"0::/{slice_name}/docker-{cid}.scope" and
+            integer(member.get("hostPid"), 2) and member.get("verifiedBeforeProbe") is True and
+            member.get("policy") == policy, "ParentBudgetMembershipUnproven")
+    names = ["MEMORY_HIGH_PRESTART.json", "MEMORY_HIGH_AFTER_SOAK.json"]
+    if require_removal:
+        names.append("MEMORY_HIGH_FINAL.json")
+    previous_peak = previous_high = previous_pids = 0
+    final = None
+    for name in names:
+        value = document(name)
+        require(value.get("cgroupRoot") == f"/sys/fs/cgroup/{slice_name}" and
+                all(integer(value.get(key)) for key in
+                    ("memoryMaxBytes", "memoryHighBytes", "memoryPeakBytes", "memoryCurrentBytes",
+                     "swapMaxBytes", "swapCurrentBytes", "pidsMax", "pidsCurrent", "pidsPeak")) and
+                integer(value.get("cpuPeriod"), 1) and type(value.get("cpuQuota")) is str and
+                re.fullmatch(r"[0-9]{1,20}", value["cpuQuota"]) and
+                type(value.get("memoryEvents")) is dict and type(value.get("pidsEvents")) is dict and
+                all(type(value["memoryEvents"].get(key)) is int and value["memoryEvents"][key] == 0
+                    for key in ("max", "oom", "oom_kill")) and
+                type(value["pidsEvents"].get("max")) is int and value["pidsEvents"]["max"] == 0,
+                "InvalidParentBudgetObservation")
+        try:
+            CGROUP.verify_report(value, require_no_swap=True, expected_memory_high=1610612736)
+        except (SystemExit, KeyError, TypeError, ValueError):
+            raise ValueError("ParentResourceBudgetRejected") from None
+        require(value["memoryPeakBytes"] >= previous_peak and value["pidsPeak"] >= previous_pids and
+                value["memoryCurrentBytes"] <= value["memoryPeakBytes"] and
+                value["pidsCurrent"] <= value["pidsPeak"] <= 256 and
+                value["memoryEvents"]["high"] >= previous_high, "ParentCumulativeCountersRegressed")
+        previous_peak, previous_high, previous_pids = (
+            value["memoryPeakBytes"], value["memoryEvents"]["high"], value["pidsPeak"])
+        final = value
+    if require_removal:
+        cleanup = document("MEMORY_HIGH_CLEANUP.json")
+        require(cleanup.get("slice") == slice_name and cleanup.get("anchor") ==
+                slice_name.removesuffix(".slice") + ".service" and
+                type(cleanup.get("populatedAfterContainerRemoval")) is int and
+                cleanup["populatedAfterContainerRemoval"] == 0 and cleanup.get("ownedUnitsInactive") is True and
+                cleanup.get("policy") == policy, "ParentBudgetCleanupUnproven")
+    return {"selection": policy, "parentEarlyReclaimVerified": True, "memoryHighBytes": 1610612736,
+            "parentPeakBytes": final["memoryPeakBytes"], "parentHighEvents": final["memoryEvents"]["high"],
+            "parentCleanupVerified": require_removal, "defaultImageOrProductionPolicyChanged": False}
+
+
 def verify(directory, architecture, revision, source_revision, native_run,
-           expected_jar, expected_image, seconds, require_container_state=False, require_removal=False):
+           expected_jar, expected_image, seconds, require_container_state=False, require_removal=False,
+           memory_policy="unchanged"):
     require(architecture in ("amd64", "arm64") and
             all(type(value) is str and re.fullmatch(r"[0-9a-f]{40}", value)
                 for value in (revision, source_revision)) and
@@ -203,6 +259,7 @@ def verify(directory, architecture, revision, source_revision, native_run,
                 removal.get("postRemovalInventoryObserved") is True and
                 type(removal.get("ownedContainersRemaining")) is int and removal["ownedContainersRemaining"] == 0,
                 "OwnedContainerRemovalUnproven")
+    memory_policy_observation = verify_memory_policy(memory_policy, running, document, require_removal)
     return {"accepted": True, "scope": "bounded offline generated-data soak only",
             "architecture": architecture, "nativeRun": native_run, "sourceRevision": source_revision,
             "imageRevision": revision, "jarSha256": expected_jar, "imageId": expected_image,
@@ -214,6 +271,7 @@ def verify(directory, architecture, revision, source_revision, native_run,
             "quiescentMemoryChangeBytes": report["finalQuiescent"]["memoryCurrentBytes"] - trace[0]["memoryCurrentBytes"],
             "preRemovalContainerStateObserved": observed_state,
             "independentPostRemovalInventoryObserved": observed_removal,
+            "memoryPolicy": memory_policy_observation,
             "productionCapacityOrLeakAbsenceProven": False, "fileSha256": digests}
 
 
@@ -229,11 +287,13 @@ def main():
     parser.add_argument("--seconds", required=True, type=int, choices=(600, 1800, 3600))
     parser.add_argument("--require-container-state", action="store_true")
     parser.add_argument("--require-removal", action="store_true")
+    parser.add_argument("--memory-policy", choices=("unchanged", "high-1536m"), default="unchanged")
     args = parser.parse_args()
     try:
         result = verify(args.directory, args.architecture, args.expected_revision,
                         args.expected_source_revision, args.expected_native_run, args.expected_jar,
-                        args.expected_image, args.seconds, args.require_container_state, args.require_removal)
+                        args.expected_image, args.seconds, args.require_container_state, args.require_removal,
+                        args.memory_policy)
     except (ValueError, OSError, KeyError, TypeError, RecursionError):
         # Do not emit a raw server response, JSON field, path or parser traceback.
         print(json.dumps({"accepted": False, "reason": "OfflineSoakEvidenceRejected"}))

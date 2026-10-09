@@ -24,7 +24,7 @@ class BrowserCgroupReportTest(unittest.TestCase):
             "cpu.max": "200000 100000",
             "memory.peak": "832761856",
             "memory.max": "2147483648",
-            "memory.events": "max 0\noom 0\noom_kill 0\noom_group_kill 0",
+            "memory.events": "high 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
             "memory.stat": "anon 300000000\nfile 450000000\nshmem 12000000\n"
                            "kernel_stack 1048576\npagetables 2097152\nfuture_counter 987654\n",
             "memory.swap.current": "0",
@@ -137,6 +137,45 @@ class BrowserCgroupReportTest(unittest.TestCase):
     def test_wrong_cpu_quota_is_failure(self):
         with self.assertRaisesRegex(SystemExit, "resource budget"):
             self.run_report({"cpu.max": "300000 100000"})
+
+    def test_memory_high_is_observed_not_invented_for_older_reports(self):
+        self.assertIsNone(self.run_report()["memoryHighBytes"])
+        report = self.run_report({"memory.high": "1610612736"})
+        self.assertEqual(1610612736, report["memoryHighBytes"])
+        REPORT.verify_report(report, expected_memory_high=1610612736)
+
+    def test_explicit_high_policy_requires_actual_matching_limit(self):
+        for value in (None, "max", 0, True, "1610612736", 2147483648):
+            with self.subTest(value=value):
+                report = self.run_report()
+                report["memoryHighBytes"] = value
+                with self.assertRaisesRegex(SystemExit, "memory high"):
+                    REPORT.verify_report(report, expected_memory_high=1610612736)
+
+    def test_high_pressure_is_visible_and_cannot_mask_hard_pressure_or_swap(self):
+        report = self.run_report({"memory.high": "1610612736", "memory.swap.max": "0",
+            "memory.events": "high 2893\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"})
+        REPORT.verify_report(report, require_no_swap=True, expected_memory_high=1610612736)
+        self.assertEqual(2893, report["memoryEvents"]["high"])
+        for key in ("max", "oom", "oom_kill", "oom_group_kill"):
+            report["memoryEvents"][key] = 1
+            with self.subTest(key=key), self.assertRaisesRegex(SystemExit, "resource budget"):
+                REPORT.verify_report(report, require_no_swap=True, expected_memory_high=1610612736)
+            report["memoryEvents"][key] = 0
+        report["swapCurrentBytes"] = 1
+        with self.assertRaisesRegex(SystemExit, "resource budget"):
+            REPORT.verify_report(report, require_no_swap=True, expected_memory_high=1610612736)
+
+    def test_invalid_high_values_and_invalid_expectations_are_not_normalized(self):
+        report = self.run_report()
+        for value in (False, -1, 1.5, "0", {}):
+            report["memoryHighBytes"] = value
+            with self.subTest(value=value), self.assertRaisesRegex(SystemExit, "memory high"):
+                REPORT.verify_report(report)
+        report["memoryHighBytes"] = 1610612736
+        for expected in (True, -1, "1610612736", 2147483648):
+            with self.subTest(expected=expected), self.assertRaisesRegex(SystemExit, "memory high"):
+                REPORT.verify_report(report, expected_memory_high=expected)
 
 
 if __name__ == "__main__":

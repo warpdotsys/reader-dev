@@ -1,8 +1,10 @@
 """Record the full-image smoke container's cgroup v2 resource budget."""
 
+import argparse
 import json
 from pathlib import Path
 import platform
+import sys
 
 
 ROOT = Path("/sys/fs/cgroup")
@@ -62,6 +64,7 @@ def collect_report(scope="one full Reader image; sequential probes plus four-acc
         "memoryPeakBytes": number("memory.peak"),
         "memoryCurrentBytes": number("memory.current", optional=True),
         "memoryMaxBytes": number("memory.max"),
+        "memoryHighBytes": number("memory.high", optional=True),
         "memoryEvents": counters("memory.events"),
         "memoryStatBytes": memory_stat_bytes(),
         "swapCurrentBytes": number("memory.swap.current"),
@@ -76,7 +79,7 @@ def collect_report(scope="one full Reader image; sequential probes plus four-acc
     return report
 
 
-def verify_report(report, require_no_swap=False):
+def verify_report(report, require_no_swap=False, expected_memory_high=None):
     quota, period = report["cpuQuota"], report["cpuPeriod"]
     if (report["memoryMaxBytes"] != 2 * 1024 ** 3 or
             report["memoryPeakBytes"] > report["memoryMaxBytes"] or
@@ -86,6 +89,16 @@ def verify_report(report, require_no_swap=False):
             "max" not in report["pidsEvents"] or report["pidsEvents"]["max"] or
             (require_no_swap and (report["swapMaxBytes"] != 0 or report["swapCurrentBytes"] != 0))):
         raise SystemExit("Bundled-browser smoke exceeded or did not use its configured resource budget")
+    high = report.get("memoryHighBytes")
+    if high is not None and high != "max" and (type(high) is not int or high < 0):
+        raise SystemExit("Invalid memory high observation")
+    if expected_memory_high is not None and (
+            type(expected_memory_high) is not int or
+            not 0 < expected_memory_high < report["memoryMaxBytes"] or
+            type(high) is not int or high != expected_memory_high or
+            "high" not in report["memoryEvents"] or
+            type(report["memoryEvents"]["high"]) is not int or report["memoryEvents"]["high"] < 0):
+        raise SystemExit("Configured memory high policy was not actually observed")
     categories = report.get("memoryStatBytes")
     if categories is not None and (not isinstance(categories, dict) or
             set(categories) != set(MEMORY_STAT_FIELDS) or
@@ -94,11 +107,30 @@ def verify_report(report, require_no_swap=False):
         raise SystemExit("Invalid bounded memory category report")
 
 
-def main():
+def main(argv=None):
+    global ROOT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cgroup-root", type=Path, default=ROOT,
+                        help="Read-only cgroup-v2 scope; no controller is modified")
+    parser.add_argument("--require-no-swap", action="store_true")
+    parser.add_argument("--expected-memory-high", type=int, choices=[1610612736])
+    args = parser.parse_args([] if argv is None else argv)
+    # Test callers retain their generated ROOT; the CLI cannot read an unrelated
+    # directory, follow a symlink, create a cgroup or write any kernel counter.
+    if argv is not None:
+        if args.cgroup_root.is_symlink():
+            parser.error("Expected a regular cgroup-v2 directory")
+        root = args.cgroup_root.resolve(strict=True)
+        if not root.is_dir() or not root.is_relative_to(Path("/sys/fs/cgroup")):
+            parser.error("Expected a directory under /sys/fs/cgroup")
+        ROOT = root
     report = collect_report()
+    if argv is not None:
+        report["cgroupRoot"] = str(ROOT)
     print(json.dumps(report, sort_keys=True))
-    verify_report(report)
+    verify_report(report, require_no_swap=args.require_no_swap,
+                  expected_memory_high=args.expected_memory_high)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
