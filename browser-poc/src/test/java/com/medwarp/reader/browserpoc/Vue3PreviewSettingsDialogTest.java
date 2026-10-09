@@ -126,7 +126,7 @@ public class Vue3PreviewSettingsDialogTest {
                         () -> editor.locator("button[type=submit]").click());
                 assertEquals(200, conflict.status());
                 assertTrue(conflict.text().contains("\"isSuccess\":false"));
-                assertTrue(conflict.text().contains("名称已存在"));
+                assertTrue("Generated collision response: " + conflict.text(), conflict.text().contains("名称已存在"));
                 alice.waitForFunction("() => !document.querySelector('[aria-label=\"编辑听书源\"] button[type=submit]').disabled");
                 assertTrue(editor.isVisible());
                 assertEquals(occupied, editor.locator("input").nth(1).inputValue());

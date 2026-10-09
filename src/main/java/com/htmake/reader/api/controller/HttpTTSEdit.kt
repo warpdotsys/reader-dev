@@ -2,6 +2,7 @@ package com.htmake.reader.api.controller
 
 import com.htmake.reader.api.ReturnData
 import com.htmake.reader.utils.getStorage
+import com.htmake.reader.utils.gson
 import com.htmake.reader.utils.saveStorage
 import com.htmake.reader.utils.withStorageWriteLock
 import io.vertx.core.json.JsonArray
@@ -9,6 +10,15 @@ import io.vertx.core.json.JsonObject
 
 private val editableHttpTtsStrings = setOf("name", "url", "contentType", "concurrentRate",
     "loginUrl", "loginUi", "header", "jsLib", "loginCheckJs")
+
+private fun listedHttpTtsSnapshot(record: JsonObject): JsonObject {
+    // CURD.list + RoutingContext.success expose each stored map through Gson,
+    // which omits null-valued map fields (also in nested maps). Compare that
+    // exact wire representation, not the different JsonArray disk encoding.
+    // Never use this projection for writes: preserve the original stored map.
+    val snapshot = record.copy().apply { remove("type") }
+    return JsonObject(gson.toJson(snapshot.map))
+}
 
 /** Additive edit contract. Legacy save/delete remain name-keyed, including their old defaults. */
 internal fun updateStoredHttpTts(userNameSpace: String, original: JsonObject, updated: JsonObject): ReturnData {
@@ -35,8 +45,8 @@ internal fun updateStoredHttpTts(userNameSpace: String, original: JsonObject, up
         val current = all.getJsonObject(index)
         // type belongs to Vue's display adapter, not the legacy entity. Keep all
         // other fields in the snapshot so a concurrent edit cannot be overwritten.
-        val expected = original.copy().apply { remove("type") }
-        val storedSnapshot = current.copy().apply { remove("type") }
+        val expected = listedHttpTtsSnapshot(original)
+        val storedSnapshot = listedHttpTtsSnapshot(current)
         if (storedSnapshot != expected || current.getValue("id") != updated.getValue("id")) {
             return@withStorageWriteLock error.setErrorMsg("听书源已被修改，请重新加载后编辑")
         }

@@ -1,8 +1,10 @@
 package com.htmake.reader.api.controller
 
+import com.htmake.reader.api.ReturnData
 import com.htmake.reader.db.DB
 import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.getStorageFile
+import com.htmake.reader.utils.gson
 import com.htmake.reader.utils.saveStorage
 import com.htmake.reader.utils.storageFinalPath
 import com.htmake.reader.utils.withStorageWriteLock
@@ -38,6 +40,73 @@ class HttpTTSEditTest {
     }
     private fun edit(original: JsonObject, name: String = "生成新名称") = JsonObject()
         .put("id", original.getValue("id")).put("name", name).put("url", "http://127.0.0.1/new")
+
+    // CURD.list returns JsonArray.list; RoutingContext.success serializes that
+    // ReturnData with the application's Gson, not JsonArray.toString().
+    private fun listedSnapshot(): JsonObject = JsonObject(gson.toJson(ReturnData()
+        .setData(DB.table<HttpTTS>("generated-a", "httpTTS").readAll().list)))
+        .getJsonArray("data").getJsonObject(0).copy()
+
+    private fun saveLegacy(entity: HttpTTS) = DB.table<HttpTTS>("generated-a", "httpTTS")
+        .save(entity, checker = { row, value -> row.getString("name") == value.name })
+
+    @Test fun listedWireSnapshotCanRenameDefaultLegacyEntityWithOmittedNullFields() {
+        saveLegacy(HttpTTS(
+            id = 1900000000001L, name = "生成旧名称", url = "http://127.0.0.1/old"))
+        val stored = list().getJsonObject(0).copy()
+        val original = listedSnapshot()
+        assertTrue(stored.containsKey("contentType"))
+        assertNull(stored.getValue("contentType"))
+        assertFalse(original.containsKey("contentType"))
+        val result = updateStoredHttpTts("generated-a", original, edit(original))
+        assertTrue(result.errorMsg, result.isSuccess)
+        val saved = list().getJsonObject(0)
+        assertEquals(1, list().size())
+        assertEquals("生成新名称", saved.getString("name"))
+        assertEquals(stored.getValue("id"), saved.getValue("id"))
+        assertTrue(saved.containsKey("contentType"))
+        assertNull(saved.getValue("contentType"))
+        assertEquals(stored.getValue("tag"), saved.getValue("tag"))
+    }
+
+    @Test fun listedWireSnapshotReportsNameCollisionWithoutChangingStoredBytes() {
+        saveLegacy(HttpTTS(id = 1900000000001L, name = "生成旧名称", url = "http://127.0.0.1/old"))
+        val original = listedSnapshot()
+        saveLegacy(HttpTTS(id = 1900000000002L, name = "生成已占用", url = "http://127.0.0.1/other"))
+        val before = getStorage("data", "generated-a", "httpTTS")
+        val result = updateStoredHttpTts("generated-a", original, edit(original, "生成已占用"))
+        assertFalse(result.isSuccess)
+        assertEquals("听书源名称已存在，请使用不同名称", result.errorMsg)
+        assertEquals(before, getStorage("data", "generated-a", "httpTTS"))
+    }
+
+    @Test fun listedWireSnapshotPreservesNestedNullsFalseZeroAndRejectsUnknownFieldChanges() {
+        val stored = seed().put("enabledCookieJar", false).put("header", "")
+            .put("generatedUnknown", JsonObject().put("keep", false).put("zero", 0)
+                .put("omitted", null as String?))
+        saveStorage("data", "generated-a", "httpTTS", value = JsonArray().add(stored))
+        val original = listedSnapshot()
+        assertFalse(original.getBoolean("enabledCookieJar"))
+        assertEquals("", original.getString("header"))
+        assertEquals(0, original.getJsonObject("generatedUnknown").getInteger("zero").toInt())
+        assertFalse(original.getJsonObject("generatedUnknown").containsKey("omitted"))
+        val changed = stored.copy()
+        changed.getJsonObject("generatedUnknown").put("keep", true)
+        saveStorage("data", "generated-a", "httpTTS", value = JsonArray().add(changed))
+        val before = getStorage("data", "generated-a", "httpTTS")
+        val stale = updateStoredHttpTts("generated-a", original, edit(original))
+        assertFalse(stale.isSuccess)
+        assertEquals("听书源已被修改，请重新加载后编辑", stale.errorMsg)
+        assertEquals(before, getStorage("data", "generated-a", "httpTTS"))
+        val fresh = listedSnapshot()
+        val success = updateStoredHttpTts("generated-a", fresh, edit(fresh))
+        assertTrue(success.errorMsg, success.isSuccess)
+        val saved = list().getJsonObject(0)
+        assertFalse(saved.getBoolean("enabledCookieJar"))
+        assertEquals("", saved.getString("header"))
+        assertEquals(changed.getJsonObject("generatedUnknown"), saved.getJsonObject("generatedUnknown"))
+        assertTrue(saved.getJsonObject("generatedUnknown").containsKey("omitted"))
+    }
 
     @Test fun legacyNameKeyedSaveReallyCreatesTwoRowsWhenTheNameChanges() {
         val table = DB.table<HttpTTS>("generated-a", "httpTTS")
