@@ -39,7 +39,7 @@ public class Vue3PreviewSettingsDialogTest {
 
         String name = "GeneratedTTS-" + UUID.randomUUID().toString().substring(0, 8);
         String renamed = name + "-renamed";
-        String occupied = name + "-occupied";
+        String occupied = "OccupiedTTS-" + UUID.randomUUID().toString().substring(0, 8);
         String originalUrl = base + "/generated-speech-only";
         String editedUrl = base + "/generated-speech-revised";
         AtomicInteger synthesisRequests = new AtomicInteger();
@@ -109,7 +109,9 @@ public class Vue3PreviewSettingsDialogTest {
                 screenshot(alice, "tts-added");
 
                 Map<String, Object> firstRecord = named(list(alice), name);
-                assertTrue(post(alice, "/httpTTS/save", Map.of("id", 1900000000002L,
+                // Playwright Java's browser argument serializer accepts Double,
+                // not Long; this generated integer is exactly representable in JS.
+                assertTrue(post(alice, "/httpTTS/save", Map.of("id", 1900000000002d,
                         "name", occupied, "url", base + "/generated-other-only")).get("isSuccess").equals(true));
                 Map<String, Object> occupiedRecord = named(list(alice), occupied);
                 row.locator("button[title='编辑听书源（完整字段）']").click();
