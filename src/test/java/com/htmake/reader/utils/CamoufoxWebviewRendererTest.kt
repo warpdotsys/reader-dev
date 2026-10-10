@@ -1022,7 +1022,7 @@ class CamoufoxWebviewRendererTest {
         """.trimIndent()
     ).copy(url = fixture.start(case))
 
-    private data class HeaderObservation(val actor: String, val role: String, val method: String,
+    private data class HeaderObservation(val actor: String, val role: String, val method: String, val host: String,
         val authorization: String, val trace: String, val contentType: String, val cookie: String, val body: ByteArray)
 
     private class GeneratedHeaderFixture : AutoCloseable {
@@ -1048,7 +1048,7 @@ class CamoufoxWebviewRendererTest {
                         require(body.size <= 65536)
                         require(rows.size < 128)
                         fun field(name: String) = exchange.requestHeaders.getFirst(name) ?: ""
-                        rows.add(HeaderObservation(actor, role, exchange.requestMethod,
+                        rows.add(HeaderObservation(actor, role, exchange.requestMethod, field("Host"),
                             field("Authorization"), field("X-Generated-Trace"), field("Content-Type"), field("Cookie"), body))
                         when {
                             role == "start" && case == "script-cross-get" -> send(exchange, 200,
@@ -1089,6 +1089,8 @@ class CamoufoxWebviewRendererTest {
         fun assertOriginHeaders(observed: List<HeaderObservation>) {
             assertTrue(observed.any { it.actor == "primary" })
             for (row in observed) {
+                assertEquals("Host must identify the actual target, including after POST redirects",
+                    URI(if (row.actor == "primary") primary else secondary).authority, row.host)
                 assertEquals(if (row.actor == "primary") headers["Authorization"] else "", row.authorization)
                 assertEquals(if (row.actor == "primary") headers["X-Generated-Trace"] else "", row.trace)
             }

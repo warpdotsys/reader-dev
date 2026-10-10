@@ -11,6 +11,12 @@
 
 ## 当前验收快照（2026-10-10，历史轮次各自注明）
 
+- **ac0原生头候选自己的四条托管CI及新JAR有限HTTP三方已接受，后续TLS Host修正另验**：ac0bb598／tested1bf74f4f，Java/Vue/Full/Native全部GitHub托管成功；495 Python Linux零跳过、194 JVM／35原环境跳过，专门Cam24和实际UI25零跳过，双干净构建为同574ec14d／285,670,961B／1,570条目，双架构及转移重导入均一致。新JAR与准确原件的m轮四追加用例12完整ReturnData相同，Cam同源认证保留、跨站为空，旧WebView仍有P1；strict三方安全不是通过。实际57.996秒、2CPU2GiB／256PID零swap、峰值1,611,636,736B／PID245、触限/OOM0和自有清理0。HTTPS逐字段发现表单POST303带旧Host；源码c3ef完全取消Route.headers，原生监听器仅设置初始POST缺省类型，定向TLS证明Host正确。最新完整TLS/JAR/自己的新CI按版本另验，不借ac0绿灯、不发版部署。497 Python本机通过／1原平台跳过。58用户报告和原件/只读备份未变。[本轮版本分层、失败和已知风险](ORIGIN-HEADERS-CANDIDATE-2026-10-10.md#本轮产物与边界)。
+
+以下早期条目保留捕获时的状态，不将后来的验收改写成当时已完成。
+
+- **后续c3ef源码的有限HTTPS组合已独立接受，新JAR/自己的CI仍须另验**：i轮10场景／24实际请求／334字段，Host与CONNECT实际authority逐项一致，生成认证头不跨源，39字节显式POST307/308、Secure Cookie、页面/资源脚本正常；错误域名和未信任CA在HTTP字段发出前分别按准确TLS错误拒绝。102.42秒、同2CPU2GiB／256PID零swap、峰值1,611,321,344B／PID201、触限/OOM0、自有清理0。保留策略未生效、删Host无效、观察器超时及收尾竞态失败；无主机／生产CA修改、不忽略TLS错误。这是worker源级有限证据，不是新的JAR/真实登录/Java CONNECT全链路或生产完成。[独立回执](evidence/origin-header-worker-https-2026-10-10.json)。
+
 - **原生逐跳头策略候选已取得直接worker有限HTTP证据，尚未接受新JAR/HTTPS**：不再设置context全局规则头；每次原生发送前保同源、剥离跨源继承规则值，307/308仍保正文/类型。随机内存bootstrap握手先于Cookie/业务；修正Firefox loopback绕过Java出口，并新增父级私有临时目录清理。j轮冻结可读worker的10场景／24目标请求／310字段独立重验，39字节中文POST、同源HttpOnly Cookie、跨源不传源站Cookie和两种资源/页面跳转均完成；30.285秒、2CPU2GiB／256PID／零swap，峰值1,611,390,976B／PID214，触限/OOM0、自有清理0。保留早期代理/握手/Content-Type失败。495Python／1原平台跳过通过；Cam正式门槛增为24，旧20不接受，父级新增两JVM清理测试待自己的CI。不是新JAR三方、HTTPS/真实认证、最新整镜像或生产接受，PR仍draft、不发版部署。[候选实现、实际证据、已知限制及回退](ORIGIN-HEADERS-CANDIDATE-2026-10-10.md)。
 
 - **新增生成三方认证核查发现P1风险，尚未修复**：准确b26原件／bb6的a873新JAR，固定历史WebKit与Camoufox实际四追加用例、12完整ReturnData均成功/逐字相同，但25目标请求明确显示三侧跨源GET和脚本都带生成Authorization；Cam还跟随历史未跟随的POST303并传出该头。保留诊断退出1／strict安全false，不能把成功JSON当认证安全。56.628秒，aggregate2CPU2GiB／256PID／零swap，峰值约1.5GiB／PID246、触限/OOM0、自有清理0；没有真实凭据/正文/生产操作。10生成守卫、481Python本机通过／1原平台跳过，自己的CI另验；默认主线/PR56 draft不变，当前不发版部署此认证路径。[完整诊断、已知风险、证据与回退](HEADER-SECURITY-CHARACTERIZATION-2026-10-10.md)。

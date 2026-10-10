@@ -79,6 +79,9 @@ def bounded_rule_headers(headers):
 ORIGIN_HEADER_LISTENER = """
 const configured = new Map(Object.entries(policy.headers));
 const origin = new URL(policy.url).origin;
+const initialUrl = new URL(policy.url);
+initialUrl.hash = '';
+let defaultFormPostPending = policy.defaultFormPost === true;
 browser.webRequest.onBeforeSendHeaders.addListener(details => {
   const same = new URL(details.url).origin === origin;
   const headers = details.requestHeaders.filter(header => {
@@ -94,6 +97,16 @@ browser.webRequest.onBeforeSendHeaders.addListener(details => {
   if (same) {
     for (const [name, value] of configured) headers.push({name, value});
   }
+  // Only the initial synthesized form POST needs a default media type. Do
+  // this natively, not with Route.headers, which freezes Host even when Host
+  // is omitted on this pinned Firefox build. Redirects remain browser-owned.
+  if (defaultFormPostPending && details.method === 'POST' && new URL(details.url).href === initialUrl.href) {
+    defaultFormPostPending = false;
+    for (let index = headers.length - 1; index >= 0; index--) {
+      if (headers[index].name.toLowerCase() === 'content-type') headers.splice(index, 1);
+    }
+    headers.push({name: 'Content-Type', value: 'application/x-www-form-urlencoded; charset=UTF-8'});
+  }
   return {requestHeaders: headers};
 }, {urls: ['http://*/*', 'https://*/*']}, ['blocking', 'requestHeaders']);
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -105,10 +118,11 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
 
 @contextlib.contextmanager
-def origin_header_addon(url, headers):
+def origin_header_addon(url, headers, post=False):
     """Private, per-render native listener. No rule code or persistent profile."""
     configured = bounded_rule_headers(headers)
-    if not configured:
+    default_form_post = bool(post) and "content-type" not in configured
+    if not configured and not default_form_post:
         yield None
         return
     nonce = secrets.token_hex(16)
@@ -126,7 +140,8 @@ def origin_header_addon(url, headers):
             "content_scripts": [{"matches": [bootstrap_origin + "/*"],
                                  "js": ["ready.js"], "run_at": "document_start"}],
         }
-        policy = {"url": url, "headers": configured, "bootstrapUrl": bootstrap_url, "nonce": nonce}
+        policy = {"url": url, "headers": configured, "bootstrapUrl": bootstrap_url, "nonce": nonce,
+                  "defaultFormPost": default_form_post}
         ready = """
 browser.runtime.sendMessage(%s).then(nonce => {
   if (nonce === %s && document.documentElement) document.documentElement.dataset.readerHeaderPolicyReady = nonce;
@@ -139,7 +154,8 @@ browser.runtime.sendMessage(%s).then(nonce => {
             with path.open("x", encoding="utf-8") as stream:
                 stream.write(contents)
             path.chmod(0o600)
-        yield {"addons": [str(addon)], "bootstrapUrl": bootstrap_url, "nonce": nonce}
+        yield {"addons": [str(addon)], "bootstrapUrl": bootstrap_url, "nonce": nonce,
+               "defaultFormPost": default_form_post}
 
 
 def await_origin_header_policy(context, policy, timeout_ms):
@@ -841,7 +857,8 @@ def render(payload):
         "server": payload["proxy"],
     }
 
-    with contextlib.redirect_stdout(sys.stderr), origin_header_addon(url, payload.get("headers") or {}) as header_policy:
+    with contextlib.redirect_stdout(sys.stderr), origin_header_addon(
+            url, payload.get("headers") or {}, post=bool(payload.get("post"))) as header_policy:
         with Camoufox(
             headless=True,
             browser=payload.get("browserVersion") or None,
@@ -954,17 +971,9 @@ def render(payload):
                             and route_url == url and not state["post_sent"]):
                         state["post_sent"] = True
                         options = {"method": "POST", "post_data": payload.get("body") or ""}
-                        rule_headers = payload.get("headers") or {}
-                        if not any(name.lower() == "content-type" for name in rule_headers):
-                            # The exact original JAR/historical target sends this
-                            # default for form POSTs. Playwright otherwise chooses
-                            # application/octet-stream when overriding GET to POST.
-                            # Do not change context-wide headers, re-encode the body,
-                            # replace an explicit type, or replay the navigation.
-                            headers = dict(route.request.headers)
-                            if "content-type" not in headers:
-                                headers["content-type"] = "application/x-www-form-urlencoded; charset=UTF-8"
-                                options["headers"] = headers
+                        # Both explicit rule headers and the legacy form default
+                        # are applied by the ready native listener. Never supply
+                        # Route.headers: its redirect inheritance can freeze Host.
                         route.continue_(**options)
                         return
                     route.continue_()

@@ -10,11 +10,12 @@ assert.equal(worker.split(marker).length, 2);
 const start = worker.indexOf(marker) + marker.length;
 const source = worker.slice(start, worker.indexOf('"""', start));
 const origin = 'https://generated.invalid:443/book';
-function listener(url = origin) {
+function listener(url = origin, policyOverrides = {}) {
   let rewrite, ready;
   const policy = { url, bootstrapUrl: 'http://reader-header-generated.invalid/ready', nonce: 'GENERATED_NONCE',
     headers: { authorization: 'Bearer GENERATED', 'x-trace': 'GENERATED_TRACE', accept: 'GENERATED_ACCEPT',
       'content-type': 'application/json; charset=UTF-8' } };
+  Object.assign(policy, policyOverrides);
   const browser = { webRequest: { onBeforeSendHeaders: { addListener(fn, filter, options) {
     assert.deepEqual(Array.from(filter.urls), ['http://*/*', 'https://*/*']);
     assert.deepEqual(Array.from(options), ['blocking', 'requestHeaders']);
@@ -23,6 +24,43 @@ function listener(url = origin) {
   vm.runInNewContext(source, { policy, browser, URL });
   return { rewrite: (url, headers = [], method = 'GET') => JSON.parse(JSON.stringify(rewrite({ url, requestHeaders: headers, method }))), ready, policy };
 }
+
+test('native form default changes only initial POST type without freezing transport headers', () => {
+  const subject = listener(origin + '#generated-fragment', { headers: {}, defaultFormPost: true });
+  const actual = [{ name: 'Host', value: 'generated.invalid' }, { name: 'Cookie', value: 'generated=ONLY' },
+    { name: 'Content-Type', value: 'application/octet-stream' }];
+  assert.deepEqual(subject.rewrite(origin, actual, 'POST').requestHeaders, [
+    actual[0], actual[1], { name: 'Content-Type', value: 'application/x-www-form-urlencoded; charset=UTF-8' }]);
+  assert.equal(actual[2].value, 'application/octet-stream');
+});
+
+test('GET does not consume the pending initial form default', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true });
+  assert.deepEqual(subject.rewrite(origin, [], 'GET').requestHeaders, []);
+  assert.equal(subject.rewrite(origin, [], 'POST').requestHeaders[0].value,
+    'application/x-www-form-urlencoded; charset=UTF-8');
+});
+
+test('unrelated or cross-origin POST does not consume the initial form default', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true });
+  assert.deepEqual(subject.rewrite('https://generated.invalid/other', [], 'POST').requestHeaders, []);
+  assert.deepEqual(subject.rewrite('https://other.invalid/book', [], 'POST').requestHeaders, []);
+  assert.equal(subject.rewrite(origin, [], 'POST').requestHeaders.length, 1);
+});
+
+test('later website POST keeps its own type rather than reapplying form defaults', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true });
+  subject.rewrite(origin, [], 'POST');
+  const website = [{ name: 'Content-Type', value: 'application/json' }];
+  assert.deepEqual(subject.rewrite(origin, website, 'POST').requestHeaders, website);
+});
+
+test('native redirects keep POST metadata and never add it to redirected GET', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true });
+  const initial = subject.rewrite(origin, [], 'POST').requestHeaders;
+  assert.deepEqual(subject.rewrite('https://other.invalid/end', initial, 'POST').requestHeaders, initial);
+  assert.deepEqual(subject.rewrite('https://other.invalid/end', [], 'GET').requestHeaders, []);
+});
 
 for (const [name, url, same] of [
   ['exact origin', 'https://generated.invalid/next', true],

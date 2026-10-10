@@ -134,7 +134,7 @@ class WorkerInitialNavigationPolicyTest(unittest.TestCase):
 
 
 class WorkerPostHeaderPolicyTest(unittest.TestCase):
-    def fixture(self, headers=None, body="q=post", post=True):
+    def fixture(self, headers=None, body="q=post", post=True, browser_headers=None):
         browser, context, page, payload = WorkerInitialNavigationPolicyTest().fixture()
         payload.update(post=post, body=body, headers=headers or {})
         requests = []
@@ -146,7 +146,8 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
                 route = MagicMock()
                 route.request.url = target
                 route.request.is_navigation_request.return_value = navigation
-                route.request.headers = {"accept": "text/html", "user-agent": "generated-agent"}
+                route.request.headers = (browser_headers if browser_headers is not None else
+                                         {"accept": "text/html", "user-agent": "generated-agent"})
                 handle(route)
                 requests.append(route.continue_.call_args.kwargs)
 
@@ -157,8 +158,10 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
                 patch.object(worker, "evaluate_source_script", return_value="generated-result"):
             worker.render(payload)
             readiness.assert_called_once()
-            if payload["headers"]:
+            if payload["headers"] or payload["post"]:
                 self.assertIsNotNone(readiness.call_args.args[1])
+                self.assertEqual(bool(post) and not any(name.lower()=="content-type" for name in payload["headers"]),
+                                 readiness.call_args.args[1]["defaultFormPost"])
         context.set_extra_http_headers.assert_not_called()
         return requests, payload, context
 
@@ -166,10 +169,7 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
         requests, payload, context = self.fixture({"X-Fixture": "synthetic"})
         self.assertEqual("POST", requests[0]["method"])
         self.assertEqual("q=post", requests[0]["post_data"])
-        self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
-                         requests[0].get("headers", {}).get("content-type"))
-        self.assertNotIn("x-fixture", requests[0]["headers"])
-        self.assertEqual("generated-agent", requests[0]["headers"]["user-agent"])
+        self.assertNotIn("headers", requests[0])
         self.assertEqual({}, requests[1])
         self.assertEqual({}, requests[2])
         self.assertEqual({"X-Fixture": "synthetic"}, payload["headers"])
@@ -182,6 +182,16 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
                     requests, _payload, _context = self.fixture({name: value})
                     self.assertEqual({"method": "POST", "post_data": "q=post"}, requests[0])
 
+    def test_default_post_does_not_freeze_cookie_or_transport_headers_across_redirects(self):
+        managed = {"Host": "generated.invalid", "Cookie": "generated_session=NOT_A_REAL_COOKIE",
+                   "Content-Length": "0", "Proxy-Authorization": "GENERATED_PROXY_ONLY",
+                   "proxy-connection": "keep-alive", "CONNECTION": "close"}
+        native = {**managed, "accept": "text/html", "user-agent": "generated-agent"}
+        requests, _payload, _context = self.fixture(browser_headers=native)
+        self.assertEqual({"method": "POST", "post_data": "q=post"}, requests[0])
+        self.assertEqual({**managed, "accept": "text/html", "user-agent": "generated-agent"}, native)
+        self.assertEqual([{}, {}], requests[1:])
+
     def test_get_never_injects_a_form_header_or_changes_the_method(self):
         requests, _payload, _context = self.fixture(post=False)
         self.assertEqual([{}, {}, {}], requests)
@@ -191,12 +201,21 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
             with self.subTest(body=body):
                 requests, _payload, _context = self.fixture(body=body)
                 self.assertEqual("", requests[0]["post_data"])
-                self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
-                                 requests[0].get("headers", {}).get("content-type"))
+                self.assertNotIn("headers", requests[0])
                 self.assertEqual([{}, {}], requests[1:])
 
 
 class WorkerOriginHeaderPolicyTest(unittest.TestCase):
+    def test_form_post_without_rule_headers_still_gets_private_native_policy(self):
+        with worker.origin_header_addon("https://generated.invalid/book", {}, post=True) as policy:
+            self.assertTrue(policy["defaultFormPost"])
+            source=(Path(policy["addons"][0])/"policy.js").read_text(encoding="utf-8")
+            self.assertIn('"defaultFormPost": true',source)
+            self.assertIn('"headers": {}',source)
+        for name in ("Content-Type","CONTENT-TYPE"):
+            with worker.origin_header_addon("https://generated.invalid/book", {name:""}, post=True) as policy:
+                self.assertFalse(policy["defaultFormPost"])
+
     def test_empty_headers_have_no_addon_or_bootstrap(self):
         with patch.object(worker.tempfile, "TemporaryDirectory") as files:
             with worker.origin_header_addon("https://generated.invalid", {}) as policy:

@@ -1,6 +1,39 @@
 # 原生逐跳请求头候选修正
 
-日期：2026-10-10。**源码候选及有限生成 HTTP 子集已验证；新 JAR、HTTPS 和正式发布尚未接受。**
+日期：2026-10-10。**ac0bb598 自己的四条托管 CI、新 JAR 的有限 HTTP 三方已接受；HTTPS 发现另一个 Host 问题，后续可读源码修正须另验。没有正式发布或部署。**
+
+## 本轮产物与边界
+
+不能把两次源码修正混成同一个绿色版本。下表仅记录各自实际执行的内容。
+
+| 对象 | 已执行并独立核验 | 尚不能代表 |
+| --- | --- | --- |
+| ac0bb598／tested 1bf74f4f | 四条 GitHub 托管 CI、双架构构建/重导入、新 JAR 574ec14d、准确原件 HTTP 三方 | 后续 Host 修正、HTTPS 全部安全、真实登录或生产 |
+| 后续 worker c3ef2486 | 取消初始 POST 的 Route.headers；表单缺省类型由原生监听器仅设置一次；497 Python、JS 24 项、10 HTTPS场景／24实际请求及2个证书拒绝控制 | 尚未重新构建的 JAR、自己的新 CI、全业务与正式发布 |
+
+ac0bb598 的 [Java](https://github.com/warpdotsys/reader-dev/actions/runs/38038919034)、[Vue](https://github.com/warpdotsys/reader-dev/actions/runs/38038919055)、[Full](https://github.com/warpdotsys/reader-dev/actions/runs/38038919035)、[Native](https://github.com/warpdotsys/reader-dev/actions/runs/38038919081)全部终态成功，runner明确为GitHub托管ubuntu-24.04／ubuntu-24.04-arm，不是自托管。独立回执分别为[Java](evidence/origin-header-hosted-java-2026-10-10.json)、[UI与重建](evidence/origin-header-hosted-ui-java-2026-10-10.json)、[Full](evidence/origin-header-hosted-full-2026-10-10.json)、[Native](evidence/origin-header-hosted-native-2026-10-10.json)。Java的495 Python在Linux零跳过，194 JVM／35原环境跳过；强制浏览器阶段另行跑满24 Cam契约零跳过。新增父级清理XML的三例实际运行、零跳过／失败／错误，包括杀worker后清理和不跟随符号链接。Vue 25实际流程零跳过、296前端检查和20截图守卫；本轮实际查看了生成手机登录与听书设置截图，中文可读，不等于全UI或线上登录验收。Full的7个可选作业未执行，不能当作准确原件三方或长测证据。
+
+两次干净构建字节相同：SHA `574ec14dc7b35daed93969e670fe6f5ed7a6ef933a32fbfc0e867a0f66bbff18`，285,670,961B／1,570条目；本轮从Native的共享JAR作业仅下载一次并重新计算字节SHA，不另下载整镜像。Native六作业和24个publisher小JSON独立接受，amd64／arm64及转移重导入都是同一个574产物；镜像最大实测897,863,680B／PID201，普通允许swap但实测0，不能冒充本机零swap测试。
+
+新574 JAR的[m轮有限实际三方回执](evidence/origin-header-current-jar-three-way-2026-10-10.json) SHA `3a8aa5344f106e336212fd7f3d227cf000639c20fc0c90dcaa9434b45778d72b`／57,360B：原件b26和固定历史WebView不变，4组／12完整ReturnData均成功且逐字相同；25追加目标请求中原件与历史模式仍泄露跨站认证，当前JAR的Cam同源保留、跨站为空，POST303仍正确跟随并执行脚本。五项旧业务契约也实跑；严格三方安全仍为false，因为不能把旧引擎的危险行为当安全兼容目标。57.996秒／aggregate2CPU2GiB／high1.5GiB／256PID／零swap，峰值1,611,636,736B／PID245，触限/OOM0；参考进程停止PID0后才允许Cam，独立清理0。复用锁定runtime不是最新整个本机镜像验收。仅删除已停止m轮的两个JAR临时输入副本358,584,848B，原件、只读备份及三份已知CI下载均再验SHA并保留，可重新复制恢复。
+
+## HTTPS 新发现与正式源码修正
+
+前两轮临时策略路径没有被实际浏览器加载，连有效证书也因未知颁发者失败，均保留失败。只读检查锁定浏览器内的真实策略实现发现：已存在安装目录策略时，备用路径不是本轮有效的信任入口。依照[Mozilla Certificates策略](https://firefox-admin-docs.mozilla.org/reference/policies/certificates/)，仅在隔离OCI内用私有1MiB tmpfs覆盖安装目录的策略视图，保留原策略并加入临时生成CA。没有更改主机／共享缓存／生产证书库，没有关闭证书验证，也没有替换worker或浏览器二进制。有效证书可访问；错误域名被`SSL_ERROR_BAD_CERT_DOMAIN`拒绝；未安装的第二个正常CA签发证书被`SEC_ERROR_UNKNOWN_ISSUER`拒绝。
+
+d轮10场景／24请求虽完成，独立逐字段检查发现表单POST跨站303的`Host`仍是原站，CONNECT却已到新站。e轮仅从Route.headers字典删除Host/Cookie/传输字段仍复现，故两轮均未写成功验收回执。HTTP Java代理会重新构造Host，原24项HTTP契约未覆盖这个TLS隧道里的原生字段问题；绿灯不能代替验证。[Playwright明确说明](https://playwright.dev/python/docs/api/class-route#route-continue)覆盖头会随重定向传播，本轮以目标实测为准，不凭文档的禁改字段说明假定Host安全。
+
+后续可读worker完全取消POST的Route.headers。已有原生监听器仅对初始准确URL的首次POST设置缺省form类型；GET、其他URL/源、后续网站POST不消费或重用该缺省；显式类型包括空值不覆盖。方法／正文仍由原生浏览器导航，不抓取并伪装响应。无规则GET仍不创建扩展；无规则的合成form POST为保持旧行为也必须建立私有监听器并等待就绪。增加五项准确执行生产JS的守卫、无头POST策略守卫、不传Cookie/传输覆盖守卫和实际HTTP目标Host断言。
+
+f轮观察器超时，保留`TimeoutExpired`，自有容器已经独立停止PID0并清理，不是TLS成功。g轮只做新c3ef worker的定向HTTPS POST303：两个实际目标/CONNECT的Host均准确，同源认证保留、跨源为空；23字节缺省form POST转为无正文无Content-Type的GET，生成DOM脚本正常。h轮已取得12份实际观察，但收尾检查后进程恰好自行退出，TERM命令返回非零，故没有最终成功/资源回执；另行独立确认该准确自有容器stopped/PID0后仅删除它的运行状态，保留原stdout，不事后伪造原报告。i轮收尾观察器只对该准确CID的stopped/PID0确认接受这个竞态，不忽略其他错误、不延长期限或增加预算。
+
+i轮[完整有限HTTPS独立回执](evidence/origin-header-worker-https-2026-10-10.json) SHA `f32fb478f01480e03d7af4a787dbdb3247cc585d8f48c14187f6fb283c285983`／58,020B，原报告SHA `3233a6ba2dd9fe0666d8b48be0b547c12e302b9ea3ac0abadd75a27fe6ab6c25`。直接加载冻结c3ef可读worker，未启动JAR/真实账号。10正向场景／24目标请求／334解析字段：每个实际HTTP Host均对应CONNECT真实目标，目标侧连接源端口也确认属于代理；全部同源认证/规则头保留、跨源为空，User-Agent保留。四组显式JSON同/跨源307/308保留39个UTF-8正文原字节、类型和SHA；同源Secure/HttpOnly/hostOnly/Path Cookie正确重放，跨源不发送；页面和资源跳转实际执行并返回生成中文DOM。缺省form的303保23→0字节、POST→GET，后续GET不补Content-Type。错误域名和未信任第二CA的两负向控制分别返回准确错误码，均在发出任何HTTP字段前拒绝，代理只观测到TLS握手。
+
+102.42秒、aggregate2CPU2GiB／high1.5GiB／256PID／零swap，峰值1,611,321,344B／PID201，max/OOM/PID触限0；主机独立身份／只读输入和私有策略tmpfs检查通过，原共享策略SHA未变，自有容器stopped/PID0并清理、清单0。没有更改系统／生产信任、关闭TLS校验或替换worker启动逻辑。最新Python共497项／80.254秒／失败0／1原Windows POSIX跳过；先前Node守卫仍要求旧19项时明确拒绝，更新为实际新增后的24项后重新完整通过，不把失败回执升级为成功。
+
+这些是直接worker的有限HTTPS源级证据，不是新JAR的TLS黑盒、Java CONNECT出口完整验证、WebSocket、真实认证、最新整镜像本机或生产验收。新修正必须取得自己的JAR/托管CI；仍不合并、发版、推送registry或部署。
+
+以下章节保留a8e612原候选捕获时的历史状态；后续托管/新JAR变化以上方按版本记录为准，不能将其改写成当时已通过。
 
 ## 改动与目的
 
