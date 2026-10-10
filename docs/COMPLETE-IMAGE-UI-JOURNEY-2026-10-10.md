@@ -28,7 +28,7 @@ export READER_NATIVE_UI_ISOLATED=1
 export READER_NATIVE_UI_URL=http://127.0.0.1:18890
 export READER_NATIVE_UI_REVISION="$(git rev-parse --verify HEAD)"
 export READER_NATIVE_UI_EVIDENCE_DIR="$RUNNER_TEMP/native-default-ui"
-./gradlew :browser-poc:cleanTest :browser-poc:test \
+./gradlew -p browser-poc cleanTest test \
   --tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest' --no-daemon
 python3 scripts/verify-native-default-ui-journey.py \
   --xml-directory browser-poc/build/test-results/test \
@@ -40,6 +40,8 @@ python3 scripts/verify-native-default-ui-journey.py \
 服务端继续使用原 2 CPU / 2 GiB / 256 PID 普通短测预算，允许 1 GiB swap 的既有政策不变；最终累计资源回执在 UI 旅程后收集，不重置计数器。**托管 Chromium 只是外部验收客户端，其内存不属于服务端 cgroup，因此不能宣称客户端加服务端合计仍限 2 GiB。** 产品内置 Camoufox 及依赖仍来自锁定镜像，不引入宿主 Chrome 的运行时依赖。
 
 ## 已知问题与未验证项
+
+- 首次增量 `59468f03` / tested merge `438a7963` 的 Full run `38023674991` 实际失败：错误使用根工程 `:browser-poc:*` 任务，Gradle 报 `Project 'browser-poc' not found in root project 'reader'`。独立测试工程应使用 `-p browser-poc`，已修正并增加防回退检查；当时页面旅程尚未执行、无 UI XML/截图、没有最终累计预算，不能冒称登录失败或 UI 通过。该 run 保留红灯与原日志；Java `38023674968` 及 Vue `38023674838` 自己的回执已分别复验，但不代表 Full 通过。
 
 - 准确原 JAR 三方测试中，固定历史 WebView 的中文 POST 请求字节仅 44/应有 60 B；严格 UTF-8 六例仍失败。不能以返回书名一致或本 UI 成功抹去它。
 - OPDS 路由与独立账号仍未实现；前端明确提示不可用，不能伪造实现。

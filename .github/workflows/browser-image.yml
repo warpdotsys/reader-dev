@@ -675,7 +675,7 @@ jobs:
           fi
           test -n "$family"
           test "$(docker inspect --format '{{.State.Running}}' reader-browser-smoke)" = true
-          ./gradlew :browser-poc:cleanTest :browser-poc:test \
+          ./gradlew -p browser-poc cleanTest test \
             --tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest' --no-daemon
           python3 scripts/verify-native-default-ui-journey.py \
             --xml-directory browser-poc/build/test-results/test \

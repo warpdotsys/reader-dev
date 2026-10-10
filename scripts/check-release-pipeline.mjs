@@ -167,7 +167,7 @@ if (imageUiStart < 0 || imageUiEnd <= imageUiStart || imageUiRun < 0 || imageUiV
 for (const token of ["READER_NATIVE_UI_ISOLATED: '1'", 'READER_NATIVE_UI_URL: http://127.0.0.1:18890',
   'READER_NATIVE_UI_EVIDENCE_DIR: ${{ runner.temp }}/native-default-ui',
   'export READER_NATIVE_UI_REVISION="$(git rev-parse --verify HEAD)"',
-  ':browser-poc:cleanTest :browser-poc:test', '--xml-directory browser-poc/build/test-results/test',
+  './gradlew -p browser-poc cleanTest test', '--xml-directory browser-poc/build/test-results/test',
   '--screenshots "$READER_NATIVE_UI_EVIDENCE_DIR" --revision "$READER_NATIVE_UI_REVISION"',
   'native-default-ui/VERIFIED.json']) {
   if (!imageUiStep.includes(token)) throw new Error('complete-image UI journey missing required token: ' + token)
