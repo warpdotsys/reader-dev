@@ -1,6 +1,14 @@
 # 打包浏览器 HTTPS 发版门槛
 
-日期：2026-10-10。**ec20fb74 的四条托管 CI 已独立接受；本次新增门槛是下一提交的候选，尚未取得自己的真实镜像运行结果。未发版、未部署。**
+日期：2026-10-10。**ec20fb74 的四条托管 CI 已独立接受；新增门槛892205bd首轮真实运行失败，字体缓存临时区修订另验。未发版、未部署。**
+
+## 最新实际失败与修订候选
+
+892205bd／tested a78a6d 的 Java 与 Vue 已终态成功，但 [Native](https://github.com/warpdotsys/reader-dev/actions/runs/38044601669) 的两个原生作业与 [Full](https://github.com/warpdotsys/reader-dev/actions/runs/38044601623) 的镜像作业均在新增门槛失败。三个作业／36次调用均为 OSError，实际目标请求／CONNECT隧道为0，不能作为任何HTTPS／证书控制接受。Full的UI报告缺失是TLS前置失败后的收集失败，不是实际UI测试执行后的失败。完整保留[生成失败回执](evidence/packaged-tls-892205bd-failure-2026-10-10.json)，SHA `8a46f7ec8c46f1c308c9a29b79a4a7759228124a03bce5196728bbfd6969db5d`；它来自实际日志内JSON行，不冒称重算了下载ZIP或独立接受清理。
+
+**从缓存的锁定运行时依赖源码推断、尚待实测确认**：Camoufox `utils._generate_fontconfig` 首次启动会在 `INSTALL_DIR/fontconfig` 创建并写入小配置。缓存目录在本候选的只读根目录里且此前未单独挂临时区；此前本机i轮的整体私有缓存临时挂载允许这一写入，因此不能直接借用i轮通过。892版本只记录了异常类别，未记录errno／文件名，不能宣称已确认完整错误原因。
+
+后续候选仅新增 `/home/reader/.cache/camoufox/fontconfig` 的1MiB、UID10001私有tmpfs，宿主信任、只读根目录、只读浏览器包、无外网、2CPU2GiB／256PID／零swap与完整24请求字段／两个证书控制均不放宽。控制器与内部mountinfo均须核验它，报告守卫拒绝缺失挂载；生成错误仅追加errno与有限路径类别，不记录任意路径／URL。27项报告守卫与76项结构守卫通过；完整524Python／32.375秒／失败0／1项原Windows POSIX跳过，脚本Bash语法通过。新的真实镜像运行仍待自己的CI，不把推断称为已修复。下面的523项／26项／75项数字为第一次门槛提交前的历史捕获。
 
 ## 已成功重建：ec20fb74
 
@@ -24,7 +32,7 @@
 - `scripts/smoke-camoufox-tls.py` 校验待发版 JAR 的完整流式 SHA，唯一的 `BOOT-INF/classes/camoufox/worker.py` 及其与可读生产源码的字节 SHA，然后加载这些实际打包字节。
 - 官方浏览器路径和基础策略由准确镜像只读查询；不假定两个架构的安装路径一致。仅在该次离线测试容器的 1MiB 私有 distribution 临时挂载中安装生成 CA。主机／镜像原策略不写入，不用 `ignoreHTTPSerrors`，不覆盖 worker 启动方法。临时挂载遮蔽原文件、不持久化；其内存仍计入容器限额，参见 [Docker 官方说明](https://docs.docker.com/engine/storage/tmpfs/)。
 - 网络只有 `lo`；UID/GID10001、无能力、no-new-privileges、只读根目录；2 CPU／2GiB／256PID、swap 限额及使用均须为0。Reader 正式 smoke 与这项测试顺序执行，不在同一个 runner 上同时启动两份预算。
-- 10 个正例、24 个目标请求：同／跨站303、307/308原始39字节中文 JSON、原生页面脚本跳转、脚本资源跳转、Secure/HttpOnly/hostOnly/Path/SameSite Cookie。逐请求保留字段、正文 SHA 和实际 TCP 源端口，匹配对应 CONNECT 的目标与双向传输，而不只接受“passed=true”。
+- 10 个正例、24 个目标请求：同／跨站303、307/308原始39字节UTF-8正文与声明的application/json媒体类型、原生页面脚本跳转、脚本资源跳转、Secure/HttpOnly/hostOnly/Path/SameSite Cookie。这里核查原始字节与媒体类型，不宣称该表单形状正文是合法JSON对象。逐请求保留字段、正文 SHA 和实际 TCP 源端口，匹配对应 CONNECT 的目标与双向传输，而不只接受“passed=true”。
 - 两个负例必须明确得到 `SSL_ERROR_BAD_CERT_DOMAIN`／`SEC_ERROR_UNKNOWN_ISSUER`，并证明实际完成 TLS 握手尝试、没有发送 HTTP 请求。
 - `scripts/verify-camoufox-tls.py` 在测试结束和 publisher 消费时分别重验原始观察。`BROWSER_TLS.json` 随 built／transferred 两架构产物传递；publisher 的 JSON 数从旧24增加为28，不用旧回执填充缺失报告。
 

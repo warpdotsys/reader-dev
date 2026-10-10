@@ -17,6 +17,7 @@ def generated_report():
     report = {"schemaVersion": 1, "jarSha256": JAR, "workerSha256": WORKER,
         "architecture": "amd64", "revision": REVISION, "generatedOnly": True,
         "fixtureOnlyPrivateDistributionPolicy": True, "httpsTested": True,
+        "fixtureOnlyPrivateFontconfigTmpfs": True,
         "realCredentialsImported": False, "privateBookBodyRead": False, "readerJarStarted": False,
         "hostTrustStoreChanged": False, "ignoreHttpsErrorsUsed": False,
         "workerLaunchOverridden": False, "fullGoalComplete": False,
@@ -132,6 +133,9 @@ class CamoufoxTlsReportTest(unittest.TestCase):
 
     def testRejectsHostTrustMutation(self):
         self.reject(lambda r: r.update(hostTrustStoreChanged=True))
+
+    def testRejectsMissingPrivateFontconfig(self):
+        self.reject(lambda r: r.update(fixtureOnlyPrivateFontconfigTmpfs=False))
 
     def testRejectsOutsideNetwork(self):
         self.reject(lambda r: r["identity"].update(interfaces=["lo", "eth0"]))

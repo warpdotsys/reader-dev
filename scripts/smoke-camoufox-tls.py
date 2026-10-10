@@ -99,6 +99,9 @@ def probe(arguments):
     mounts = [line.split() for line in Path("/proc/self/mountinfo").read_text().splitlines()]
     require(any(parts[4] == str(distribution) and parts[parts.index("-") + 1] == "tmpfs"
                 for parts in mounts), "Certificate fixture is not a private tmpfs")
+    require(any(parts[4] == "/home/reader/.cache/camoufox/fontconfig" and
+                parts[parts.index("-") + 1] == "tmpfs" for parts in mounts),
+            "Runtime fontconfig must use a private tmpfs, never modify the immutable browser")
     policy = distribution / "policies.json"
     require(not policy.exists() and not policy.is_symlink(), "Never overwrite an existing policy")
     seed = json.loads(Path(arguments.seed_policy).read_bytes())["policy"]
@@ -260,7 +263,7 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
                     fixture.reset();fixture.target_connections.clear()
                     with tunnel_lock:tunnels.clear();proxy_outgoing_ports.clear()
                     negative=case in ('wrong-host','untrusted')
-                    result=None;failure=None;codes=[]
+                    result=None;failure=None;codes=[];os_error=None
                     if negative:
                         server=servers[2 if case=='wrong-host' else 3]
                         url='https://127.0.0.1:'+str(server.server_port)+'/generated-negative'
@@ -280,11 +283,18 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
                     try:result=worker.render(payload)
                     except Exception as error:
                         failure=type(error).__name__
+                        if isinstance(error, OSError):
+                            # Only generated diagnostic categories, not arbitrary paths/URLs.
+                            filename = str(error.filename or "")
+                            category = ("fontconfig" if filename.startswith("/home/reader/.cache/camoufox/fontconfig")
+                                        else "profile" if filename.startswith("/home/reader/.camoufox")
+                                        else "temporary" if filename.startswith("/tmp/") else "other")
+                            os_error = {"errno": error.errno, "pathCategory": category}
                         codes=re.findall(r'\b(?:SSL_ERROR_|SEC_ERROR_|MOZILLA_PKIX_ERROR_)[A-Z0-9_]{1,80}\b',str(error))
                         assert len(codes)<=16
                     rows=fixture.snapshot()
                     with tunnel_lock:observed_tunnels=json.loads(json.dumps(tunnels))
-                    results.append({'case':case,'failureType':failure,'tlsErrorCodes':sorted(set(codes)),'workerResult':result,
+                    results.append({'case':case,'failureType':failure,'osErrorDiagnostic':os_error,'tlsErrorCodes':sorted(set(codes)),'workerResult':result,
                         'everyActualTargetConnectionUsedProxy':bool(fixture.target_connections) and all(port in proxy_outgoing_ports for port in fixture.target_connections),
                         'observedTargetSourcePorts':list(fixture.target_connections),'negativeHttpRequests':server.actual_http_count if negative else None,
                         'tunnels':observed_tunnels,**rows})
@@ -305,6 +315,7 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
         'generatedOnly': True, 'realCredentialsImported': False, 'privateBookBodyRead': False,
         'readerJarStarted': False, 'hostTrustStoreChanged': False, 'ignoreHttpsErrorsUsed': False,
         'fixtureOnlyPrivateDistributionPolicy': True, 'workerLaunchOverridden': False,
+        'fixtureOnlyPrivateFontconfigTmpfs': True,
         'httpsTested': True, 'fullGoalComplete': False, 'results': results,
     }
 
