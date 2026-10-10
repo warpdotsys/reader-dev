@@ -7,6 +7,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
 import com.microsoft.playwright.Route;
+import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Assume;
 import org.junit.Test;
@@ -225,6 +226,13 @@ public class Vue3PreviewSettingsDialogTest {
     }
 
     private static void verifyUnavailableOpds(Page page, AtomicInteger requests) throws Exception {
+        // The TTS offline failure was asserted and captured in its own scenario.
+        // Dismiss its notifications through the visible control before collecting
+        // unrelated OPDS evidence; never clear them before the TTS assertions.
+        if (page.locator("#reader-message-stack .el-message").count() > 0) {
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("关闭消息")).click();
+        }
+        page.waitForFunction("() => document.querySelectorAll('#reader-message-stack .el-message').length === 0");
         Locator card = page.locator("section.card").filter(new Locator.FilterOptions().setHasText("OPDS 访问"));
         card.locator("button").filter(new Locator.FilterOptions().setHasText("配置")).click();
         Locator dialog = page.locator("[aria-label='OPDS 账号']");
@@ -238,6 +246,9 @@ public class Vue3PreviewSettingsDialogTest {
         assertTrue(dialog.isVisible());
         assertEquals(0, page.locator(".error-boundary").count());
         assertEquals("The unavailable adapter must not send a substitute credential API call", 0, requests.get());
+        assertEquals("The OPDS screenshot must not inherit the completed TTS offline failure", 0,
+                page.locator("#reader-message-stack .el-message")
+                        .filter(new Locator.FilterOptions().setHasText("网络连接失败")).count());
         assertEquals(false, page.evaluate("() => [localStorage, sessionStorage].some(storage =>"
                 + " Object.values(storage).some(value => value.includes('GeneratedOpds-NoPersist-2026')))"));
         screenshot(page, "opds-unavailable");

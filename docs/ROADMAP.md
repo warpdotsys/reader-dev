@@ -11,6 +11,8 @@
 
 ## 当前验收快照（2026-10-10，历史轮次各自注明）
 
+- **准确原件三方后续取得限定成功，严格 UTF-8 仍失败**：d/e仅修正诊断private PID1收养僵尸回收，原历史服务／产品字节／2CPU、2GiB、256PID、零swap不变；两轮各十五次完整搜索比较及父级预算通过，PID244／241、各实际回收20。f十八次观测完整，但历史POST仅44／正确60B，严格六例仍失败；g十五次搜索及三次生成详情非时钟完整JSON一致，三个默认整数时钟均在各自请求窗口，不声称原始JSON全相等。63搜索＋3详情独立复验／清理0／58用户文件不变；high频繁、PID最高247保留长期风险。新helper十一单测，Windows443／1原跳过、WSL443全执行，自己的新CI待验。11df／6926自己的Java、Vue、Full、Native四托管回执已独立接受（432Python、25实际UI0skip、双clean同e59），不借给新helper。OPDS后端仍未实现，旧截图网络提示实际来自此前TTS断网；新增截图场景通知隔离，不冒称修了OPDS产品实现。最新整镜像本机／长测、全部请求头、真实认证、生产／正式发布待办。[准确结果、已知问题及回退](EXACT-JAR-INIT-AND-UTF8-2026-10-10.md)。
+
 - **准确原件生成三方已经实际执行，但资源总验收仍失败**：b26原件＋固定88c历史WebView、e59当前JAR＋同参考、e59＋内置Camoufox两轮各十五次搜索完整HTTP／ReturnData／JSON字段类型默认值／GET和POST一致；旧目标Cookie丢失与Camoufox重放删除的预期差异明确保留。b/c主探针实际0，但父级256PID触限5／1次，整轮严格失败。c分阶段采样首次触限在历史参考阶段，不能归因Camoufox或盲提高上限；峰值1,611,653,120B／零swap／清理剩余0。已补所有三方模式保存中途观测与三个回归，Windows432／1原跳过、WSL432全执行、发布守卫85通过，自己的新托管结果仍待验。只读8d依赖＋e59 worker的组合诊断不是最新完整Native本机验收；UTF-8／metadata、真实认证／生产／正式发布仍待办。[完整失败证据、已知问题与回退](EXACT-JAR-GENERATED-THREE-WAY-2026-10-10.md)。
 
 - **固定历史 WebView 已实际非root运行，当前 c40 自己的四条托管回执也已独立接受**：共享无外网user/net、其余主要namespace独立的生成验证通过；固定88c manifest、5d85 config、四压缩层及diff-ID独立复算，随后历史WebView六项生成正向用例通过、sourceRegex已取到资源但挂起的旧缺陷仍保留，峰值888,135,680 B／PID217／零swap。没有启动原件/当前Reader组合，不能冒称三方完成。c40源码／116790 merge的Java429 Python0skip、25实际UI0skip、Full及Native六作业/24publisher回执来源独立核对；JAR仍是e59。最新大Native本机/长测、真实认证、正式部署仍待验。[准确阶段、已知缺陷和回退](HISTORICAL-WEBVIEW-LOCAL-PROOF-2026-10-10.md)。
