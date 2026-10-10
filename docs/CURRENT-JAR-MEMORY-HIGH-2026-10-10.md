@@ -26,7 +26,7 @@
 
 0.1 秒采样只读自身 cgroup 的数字；10-c 的一个最高实测样本中 anon 789,127,168 B、file 1,331,785,728 B，支持继续调查文件页压力，但不是精确峰值 RSS 分解或唯一根因。shmem 包含在 file 中，类别不可相加。两次成功只证明有限生成样本；时长差异不支持吞吐、无泄漏或长期稳定承诺。
 
-## 可维护的 GitHub 入口（自己的托管实跑待验证）
+## 可维护的 GitHub 入口与独立托管结果
 
 现有 `browser-image.yml` 的离线 soak 新增 `soak_memory_policy`：默认 `unchanged`，显式 `high-1536m` 才创建本次独有随机 systemd slice，在 Reader 启动前配置 `MemoryHigh=1610612736`，仍硬限 2 CPU／2 GiB／256 PID／零 swap。必须是 GitHub 托管 runner、cgroup v2/systemd Docker 驱动，容器真实宿主归属核对后才进行测试。不安装宿主浏览器或改变镜像。
 
@@ -58,9 +58,28 @@ gh workflow run browser-image.yml --ref ci/full-reader-20260926 -f native_arch=a
 
 最终修正后本机再次执行：Windows全套416项／23.549秒／1项原平台跳过，WSL全套416项全执行／17.481秒；发布相关85项在两系统全执行通过。新Bash谓词/CLI检查确实执行，但没有在这些生成单测里启动systemd或Docker，真实runner的前置/启动/清理仍必须单独验证。初版413结果和全部失败保留，不用测试环境修正覆盖历史。
 
+### 修正工具自己的托管结果已取得
+
+工具源码 `32bb66e587d7e06e43f157a5f7963a49e23049f3` 的 [专项38007262699](https://github.com/warpdotsys/reader-dev/actions/runs/38007262699) 已实际成功，唯一执行作业 `114078808182` 属于 GitHub 托管 `ubuntu-24.04`，其余七项互斥任务跳过。只下载 10,246 B 小报告制品 `11651844540`，逐字段、逐轮和原始文件完整 SHA 独立验收，不在本机重新下载大镜像。工具源码与消费的 c594／0db 完整 AMD64 镜像分开记录；此轮不是新 32／541 Native 镜像的长测。
+
+真实下载前 preflight、启动前父级限额、容器归属、运行后与退出前资源、容器移除及 slice 清理均取得。连续 612.408 秒／51 轮／212 次成功搜索，三类故障后恢复、Cookie／请求形状错误 0；父级峰值 950,427,648 B、叶子峰值 950,411,264 B、PID 峰值 212，保持 2 CPU／2 GiB／256 PID／零 swap，max／OOM／PID 触限为 0。实际 high 计数 **0**：证明配置和门禁确实执行，不证明这轮触发了提前回收，更不能把与本机不同的峰值归因于该政策。宿主独立观察容器移除后剩余 0，slice populated=0、两个自有单元 inactive；不以测试脚本自己退出替代清理。
+
+静止阶段内存仍增加 61,468,672 B，最慢观测请求 16.005 秒；有限生成压力通过不证明没有泄漏、容量或生产长期稳定。上述指标继续作为已知风险保留。[此次托管的有限机器记录](evidence/memory-high-hosted-32bb66e5-2026-10-10.json)。初版 f2 的实际失败和本机前三轮父级触限失败保持原结论。
+
+同一工具源码自己的普通四流水线亦分别核对实际小报告：
+
+- [Java38007232983](https://github.com/warpdotsys/reader-dev/actions/runs/38007232983)：43 个 JVM suite／181 项／31 项原环境跳过，编辑 11 项全执行；Python416项全执行。两次干净构建同 e59 JAR／285,665,012 B／1,569 条目，内容与 ZIP 元数据差异 0。工具变化没有改产品 JAR；不是原始 b26 兼容性证明。
+- [Vue38007232992](https://github.com/warpdotsys/reader-dev/actions/runs/38007232992)：25 项实际 Chromium 页面流程、零跳过，296 前端＋20 截图守卫、类型构建通过；11 图尺寸／散列核对，四张编辑成功／重名／过期／离线图实际目视中文可读，仅此范围，不宣称整个界面无编码缺陷。
+- [Full38007233107](https://github.com/warpdotsys/reader-dev/actions/runs/38007233107)：Camoufox20／Chromium23／helper3及异步、详情、默认UI门禁分别通过，同 e59 JAR，峰值 829,030,400 B／PID195。普通短测实际 swap0，但配置允许1GiB，不能当作零swap长测。
+- [Native38007232999](https://github.com/warpdotsys/reader-dev/actions/runs/38007232999)：共享JAR、原生双架构、重新导入后运行、正式发布导入器六个实际作业全成功；24份publisher JSON、身份及原守卫独立核对，同 e59 JAR，最大峰值875,286,528 B／PID205。受测快照 `541892bde39c2473ac121e743b294e93f3e6825d` 与源码32只多合并提交、文件差异0；AMD64 image `sha256:22063372687203d08cc278f40245da5b71967f04b266991a2f7c19bd222d3430`，ARM64 image `sha256:558f34dc63a838fd242a4464c0595d970e3adbf9de96632d6172fce7cbc41109`。本机未下载两份新大归档，不冒称归档SHA已在本机复算或整镜像本机通过。
+
+三个独立普通验收摘要 SHA：UI/Java `e1a4c948e9b21ac4ee23a3594993034118eb1151470d4f8f0ad92a19a6030f9f`，Full `ba81d057cacc1e5c1a9a6ded1deafd21700cce542acd30292cab40a810f45d5c`，Native `74d5d9cede3d9e834a59d4e246b2ae56b1490e0e0f3ae2c98b20138d6c3367e4`。专项独立摘要 SHA `8976dadb16320cbb1fa46aae4adefdb9f4f5a220f390747e864a436c82f808bb`。摘要不是原始回执或大归档的 SHA。
+
+`uidmap` 只读再验为 `1:4.17.4-2ubuntu3`，包文件校验无差异；subuid/subgid 两份完整散列仍 `d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd`。只读查询前 Ubuntu 显示 Stopped，正常启动查询后自有10-g单元 inactive/MainPID0；本轮没有重复安装、停止或重启WSL、修改映射、访问生产或读取真实凭据/正文。58份用户报告及原始b26 JAR再次完整散列核对未变。
+
 ## 尚未完成与回退
 
-- 最新完整 Native 镜像的本机验收、准确 b26 原件的当前三方、真实认证书源和当前产物长期验收仍未完成。
+- 最新完整 Native 镜像的本机验收、准确 b26 原件的当前三方、真实认证书源，以及新32／541镜像或更长时段的持续验收仍未完成。本次只关闭修正工具消费c594整镜像的有限612秒生成压力门禁。
 - 起点匿名详情、历史 UTF-8 POST 差异及旧编码问题不被本次生成成功消除。Vue3 真实登录/阅读与全界面边界仍需逐项验证。
 - 没有改生产 Compose、Java 堆、字体、指纹平台或浏览器资源；该政策只作显式验收候选，不强制到生产，更不表示 PR 已合并、发版或上线。
 - 不选 `high-1536m` 即保持原 soak 路径。只清理本轮独有随机 slice/容器，保留失败与原字节产物，不回退用户存储。原始 `D:\Download\reader-pro-3.2.14.jar` 本轮只读再验仍为 b26 完整 SHA；58 份用户报告完整散列全匹配，未提交/覆盖它们。
