@@ -35,6 +35,68 @@ def invoke(*arguments):
 
 
 class WebviewCookieCliSafetyTest(unittest.TestCase):
+    def test_five_case_mode_preserves_existing_historical_observation_before_any_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "five-case.json"
+            prior = report.with_name("five-case.historical-observation.json")
+            prior.write_bytes(b"generated prior five-case observation")
+            result = invoke("--original-network-isolated", "--archived-renderer-base",
+                "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                "--camoufox-python", sys.executable, "--report", report)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Historical observation already exists", result.stderr)
+            self.assertEqual(b"generated prior five-case observation", prior.read_bytes())
+            self.assertFalse(report.exists())
+
+    def test_five_case_mode_preserves_each_side_failure_before_any_inputs(self):
+        for side in ("original", "restored", "camoufox"):
+            with self.subTest(side=side), tempfile.TemporaryDirectory() as directory:
+                report = Path(directory) / "five-case.json"
+                prior = report.with_name("five-case." + side + "-failed.json")
+                prior.write_bytes(b"generated prior side failure")
+                result = invoke("--original-network-isolated", "--archived-renderer-base",
+                    "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                    "--camoufox-python", sys.executable, "--report", report)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("Three-way failure report already exists", result.stderr)
+                self.assertEqual(b"generated prior side failure", prior.read_bytes())
+                self.assertFalse(report.exists())
+
+    def test_five_case_failed_handoff_retains_literal_pair_and_never_calls_camoufox(self):
+        book = {"name": "generated book", "unknownNull": None, "enabled": False, "zero": 0}
+        raw = {"isSuccess": True, "errorMsg": "", "data": [book]}
+        observed = {"searches": [{"status": 200, "isSuccess": True, "errorMsg": "", "count": 1,
+            "data": [book], "returnData": raw} for _ in range(5)],
+            "renderCookieHeaders": [""] * 5, "renderRequestFields": PROBE.expected_request_fields()}
+        original, remote = copy.deepcopy(observed), copy.deepcopy(observed)
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "five-case.json"
+            phases = Path(directory) / "phases"
+            arguments = [SCRIPT, "--java", sys.executable, "--original", SCRIPT, "--restored", SCRIPT,
+                "--report", report, "--original-network-isolated", "--archived-renderer-base",
+                "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                "--camoufox-python", sys.executable, "--phase-handoff-dir", phases]
+            with mock.patch.object(sys, "argv", list(map(str, arguments))), \
+                    mock.patch.dict(sys.modules, {"original_jar_safety": mock.Mock()}), \
+                    mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    mock.patch.object(PROBE, "Fixture"), mock.patch.object(PROBE, "free_port", return_value=9), \
+                    mock.patch.object(PROBE.threading, "Thread"), \
+                    mock.patch.object(PROBE, "run_jar", side_effect=[original, remote]) as run, \
+                    mock.patch.object(PROBE, "wait_for_camoufox_handoff", side_effect=RuntimeError("generated refusal")), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, "generated refusal"):
+                    PROBE.main()
+            self.assertEqual(2, run.call_count)
+            for call, side in zip(run.call_args_list, ("original", "restored")):
+                self.assertEqual(report.with_name("five-case." + side + "-failed.json"), call.kwargs["failure_report"])
+            captured = json.loads(report.with_name("five-case.historical-observation.json").read_text(encoding="utf-8"))
+            self.assertEqual(original, captured["original"])
+            self.assertEqual(remote, captured["restored"])
+            self.assertIs(False, captured["acceptanceEvaluatedAtCapture"])
+            self.assertIs(False, captured["camoufoxExecutedAtCapture"])
+            self.assertFalse(report.exists())
+
     def test_existing_historical_observation_is_preserved_before_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "new-report.json"

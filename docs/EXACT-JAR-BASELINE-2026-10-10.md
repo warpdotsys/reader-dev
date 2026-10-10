@@ -47,7 +47,9 @@ python3 /verification-scripts/probe-baseline-api-in-guarded-runtime.py --unit re
 
 ## 下一阶段与回退
 
-固定历史WebView的index b61仍可从官方registry读取，AMD64子manifest为88c250…53573、config5d85fb…4e6bb、四压缩层合计379,489,069B，配置声明Node/index.js、8050与版本3.2.0。只进行了小型元数据读取，没有下载／执行大层、安装Docker、改宿主代理或部署；未独立复算这些远端描述符指向的原始blob SHA。它是可追溯参考，不证明曾是用户生产实例。
+后续生成三方已实际执行：b/c完整业务比较通过但256PID总预算失败，不视作三方整体验收完成；见[实际三轮结果、已知问题与回退](EXACT-JAR-GENERATED-THREE-WAY-2026-10-10.md)。下文保留基础九项结束时的计划与边界，不倒填历史快照。
+
+基础九项完成时，固定历史WebView只读取了小型元数据，未下载／执行大层，机器记录中的metadata-only是当时快照。随后独立阶段完成固定AMD64 manifest/config/四层及diff-ID复算，并以非root实际运行生成接口；六项正向通过、sourceRegex旧挂起仍在。详见[后续独立历史参考记录](HISTORICAL-WEBVIEW-LOCAL-PROOF-2026-10-10.md)，不把后续运行倒填为基础九项或三方验收。它是可追溯参考，不证明曾是用户生产实例。
 
 下一阶段仍要准确原件＋固定历史WebView、当前JAR＋同参考、当前JAR＋Camoufox的生成及真实站点对照。当前基础成功不能替代脚本、POST/Cookie、异步、SSE、下载、用户存储格式全范围、认证书源或生产界面验收，也不宣称全部目标完成。
 

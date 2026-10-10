@@ -644,13 +644,14 @@ def main():
     if args.exercise_encoding and not (args.camoufox_python and args.original_network_isolated and
             args.archived_renderer_base and args.exercise_script and args.exercise_post):
         parser.error("Encoding probe requires actual isolated three-way mode with script and POST probes")
+    preserve_actual_three_way = bool(args.camoufox_python and args.archived_renderer_base)
     failure_reports = {side: args.report.with_name(args.report.stem + "." + side + "-failed.json")
-                       for side in ("original", "restored", "camoufox")} if args.exercise_encoding or args.exercise_metadata else {}
+                       for side in ("original", "restored", "camoufox")} if preserve_actual_three_way else {}
     if any(path.exists() or path.is_symlink() for path in failure_reports.values()):
-        parser.error(("Metadata" if args.exercise_metadata else "Encoding") +
+        parser.error(("Metadata" if args.exercise_metadata else "Encoding" if args.exercise_encoding else "Three-way") +
                      " failure report already exists; choose a new report path")
     historical_observation = (args.report.with_name(args.report.stem + ".historical-observation.json")
-                              if args.exercise_encoding or args.exercise_metadata else None)
+                              if preserve_actual_three_way else None)
     if historical_observation is not None and (historical_observation.exists() or historical_observation.is_symlink()):
         parser.error("Historical observation already exists; choose a new report path")
     if args.camoufox_python and not (args.original_network_isolated and args.archived_renderer_base
