@@ -642,6 +642,14 @@ jobs:
           expected_jar=$(sha256sum "$jar" | awk '{print $1}')
           actual_jar=$(docker exec reader-browser-smoke sha256sum /app/reader.jar | awk '{print $1}')
           test "$actual_jar" = "$expected_jar"
+          docker exec reader-browser-smoke sh -ec '
+            test "$(id -u)" = 10001
+            test ! -w /app
+            test "$(readlink /app/file-uploads)" = /tmp/reader-file-uploads
+            test "$(stat -c %u /tmp/reader-file-uploads)" = 10001
+            test "$(stat -c %a /tmp/reader-file-uploads)" = 700
+            test -w /app/file-uploads
+          '
           # Deliberately no web-ui override: this must observe the image default.
           python3 scripts/verify-reader-default-ui.py probe --reader-base http://127.0.0.1:18890 \
             --jar "$jar" | tee "$RUNNER_TEMP/bundled-default-ui.json"

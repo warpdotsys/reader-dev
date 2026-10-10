@@ -27,6 +27,7 @@ if (!artifactRegression.includes('test ! -e download-regression-reports') ||
 const buildContract = nativeWorkflow + '\n' + nativeSmoke
 const compose = read('deploy/reader-pro/compose.production.yaml')
 const dockerfile = read('deploy/reader-pro/Dockerfile')
+const imageEntrypoint = read('deploy/reader-pro/docker-entrypoint.sh')
 const baseImagesLock = read('deploy/reader-pro/base-images.lock')
 
 for (const token of [
@@ -120,6 +121,24 @@ for (const token of ['docker-entrypoint.sh /usr/local/bin/reader-entrypoint', 'R
 }
 if (dockerfile.includes('apt-get') || dockerfile.includes('COPY apt-sources.list')) {
   throw new Error('Dockerfile must not require live apt repositories during the image build')
+}
+if (!dockerfile.includes('ln -s /tmp/reader-file-uploads /app/file-uploads') ||
+    !dockerfile.includes('USER 10001:10001')) {
+  throw new Error('complete image must retain the legacy upload path with private temporary staging and a non-root runtime')
+}
+for (const token of ['upload_tmp=/tmp/reader-file-uploads', 'test ! -L "$upload_tmp"',
+  'mkdir -p -m 0700 "$upload_tmp"', 'test -d "$upload_tmp"',
+  'test "$(stat -c \'%u\' -- "$upload_tmp")" = "$(id -u)"',
+  'test "$(stat -c \'%a\' -- "$upload_tmp")" = 700', 'test -w "$upload_tmp"']) {
+  if (!imageEntrypoint.includes(token)) throw new Error('private upload staging entrypoint guard missing: ' + token)
+}
+for (const [label, content] of [['full image', browserWorkflow], ['native image', nativeSmoke]]) {
+  for (const token of ['test "$(id -u)" = 10001', 'test ! -w /app',
+    'test "$(readlink /app/file-uploads)" = /tmp/reader-file-uploads',
+    'test "$(stat -c %u /tmp/reader-file-uploads)" = 10001',
+    'test "$(stat -c %a /tmp/reader-file-uploads)" = 700', 'test -w /app/file-uploads']) {
+    if (!content.includes(token)) throw new Error(label + ' must observe the actual private upload staging policy: ' + token)
+  }
 }
 for (const name of ['TEMURIN_JRE_IMAGE', 'PLAYWRIGHT_PYTHON_IMAGE']) {
   if (!new RegExp(`^${name}=.+@sha256:[0-9a-f]{64}$`, 'm').test(baseImagesLock)) {

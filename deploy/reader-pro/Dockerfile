@@ -44,8 +44,12 @@ ENV JAVA_HOME=/opt/java/openjdk \
     LANG=C.UTF-8 \
     JAVA_TOOL_OPTIONS="-Xms256m -Xmx768m -Dfile.encoding=UTF-8"
 
+# Vert.x 3.8.5 hard-codes the legacy relative staging directory.
+# Preserve that path without making the application/JAR root writable.
 RUN test -n "$READER_VERSION" \
-    && test -n "$READER_BUILD_REVISION"
+    && test -n "$READER_BUILD_REVISION" \
+    && test ! -e /app/file-uploads && test ! -L /app/file-uploads \
+    && ln -s /tmp/reader-file-uploads /app/file-uploads
 
 USER 10001:10001
 RUN python /tmp/install_camoufox_pinned.py \

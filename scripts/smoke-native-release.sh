@@ -56,6 +56,14 @@ for attempt in $(seq 1 60); do
   sleep 2
 done
 test "$ready" = true
+docker exec "$container_id" sh -ec '
+  test "$(id -u)" = 10001
+  test ! -w /app
+  test "$(readlink /app/file-uploads)" = /tmp/reader-file-uploads
+  test "$(stat -c %u /tmp/reader-file-uploads)" = 10001
+  test "$(stat -c %a /tmp/reader-file-uploads)" = 700
+  test -w /app/file-uploads
+'
 expected_jar=$(sha256sum "dist/reader-pro-v${version}.jar" | awk '{print $1}')
 actual_jar=$(docker exec "$container_id" sha256sum /app/reader.jar | awk '{print $1}')
 test "$actual_jar" = "$expected_jar"

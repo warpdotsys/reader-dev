@@ -16,6 +16,7 @@ const fixtureFiles = [
   '.github/workflows/artifact-download-regression.yml',
   'deploy/reader-pro/compose.production.yaml', 'deploy/reader-pro/Dockerfile',
   'deploy/reader-pro/base-images.lock',
+  'deploy/reader-pro/docker-entrypoint.sh',
 ]
 
 function fixture(t) {
@@ -51,6 +52,23 @@ test('current release and CI satisfy the structural guard', (t) => {
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /static checks passed/)
 })
+
+for (const [name, file, mutate, expected] of [
+  ['missing legacy upload staging link', 'deploy/reader-pro/Dockerfile', text => text.replace('ln -s /tmp/reader-file-uploads /app/file-uploads', 'echo omitted-link'), /retain the legacy upload path/],
+  ['upload temp symlink substitution not rejected', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test ! -L "$upload_tmp"', ''), /private upload staging entrypoint guard missing/],
+  ['non-private upload directory allowed', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test "$(stat -c \'%a\' -- "$upload_tmp")" = 700', ''), /private upload staging entrypoint guard missing/],
+  ['upload temp wrong owner allowed', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test "$(stat -c \'%u\' -- "$upload_tmp")" = "$(id -u)"', ''), /private upload staging entrypoint guard missing/],
+  ['native application directory writability not checked', 'scripts/smoke-native-release.sh', text => text.replace('test ! -w /app', ''), /actual private upload staging policy/],
+  ['full image temporary upload path not observed', '.github/workflows/browser-image.yml', text => text.replace('test -w /app/file-uploads', ''), /actual private upload staging policy/],
+]) {
+  test('rejects ' + name, t => {
+    const current = fixture(t)
+    current.change(file, mutate)
+    const result = current.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, expected)
+  })
+}
 
 for (const [name, mutate, expected] of [
   ['missing actual image UI journey', text => text.replace("--tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest'", "--tests 'MissingTest'"), /complete-image UI journey must fail closed/],
