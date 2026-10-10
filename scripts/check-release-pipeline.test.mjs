@@ -52,6 +52,26 @@ test('current release and CI satisfy the structural guard', (t) => {
   assert.match(result.stdout, /static checks passed/)
 })
 
+for (const [name, mutate, expected] of [
+  ['missing actual image UI journey', text => text.replace("--tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest'", "--tests 'MissingTest'"), /complete-image UI journey must fail closed/],
+  ['image UI skips ignored', text => text.replace('python3 scripts/verify-native-default-ui-journey.py', 'echo omitted-ui-verifier'), /complete-image UI journey must fail closed/],
+  ['image UI result treated as optional', text => text.replace('- name: Exercise the complete image default UI with generated data\n', '- name: Exercise the complete image default UI with generated data\n        continue-on-error: true\n'), /complete-image UI journey must fail closed/],
+  ['image UI job silently skipped', text => text.replace('- name: Exercise the complete image default UI with generated data\n', '- name: Exercise the complete image default UI with generated data\n        if: false\n'), /complete-image UI journey must fail closed/],
+  ['image UI targets a different endpoint', text => text.replace('READER_NATIVE_UI_URL: http://127.0.0.1:18890', 'READER_NATIVE_UI_URL: https://read.medwarp.cn'), /complete-image UI journey missing required token/],
+  ['image UI not bound to tested revision', text => text.replace('export READER_NATIVE_UI_REVISION="$(git rev-parse --verify HEAD)"', 'export READER_NATIVE_UI_REVISION=unknown'), /complete-image UI journey missing required token/],
+  ['image UI stale reports reused', text => text.replace(':browser-poc:cleanTest :browser-poc:test', ':browser-poc:test'), /complete-image UI journey missing required token/],
+  ['image UI screenshots omitted', text => text.replace('name: native-default-ui-generated-${{ github.sha }}', 'name: omitted-ui-evidence'), /complete-image UI reports/],
+  ['image UI changes missing source trigger', text => text.replace("      - 'browser-poc/**'\n", ''), /complete-image UI reports/],
+]) {
+  test('rejects ' + name, t => {
+    const current = fixture(t)
+    current.change('.github/workflows/browser-image.yml', mutate)
+    const result = current.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, expected)
+  })
+}
+
 test('removing the loopback bind is rejected', (t) => {
   const current = fixture(t)
   current.change('scripts/smoke-native-release.sh', (text) =>

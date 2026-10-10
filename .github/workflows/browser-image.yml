@@ -7,6 +7,9 @@ on:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
+      - 'browser-poc/**'
+      - 'scripts/verify-native-default-ui-journey.py'
+      - 'src/test/python/native_default_ui_journey_test.py'
       - 'web-vue3/**'
       - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
@@ -88,6 +91,9 @@ on:
       - '.github/workflows/browser-image.yml'
       - 'build.gradle.kts'
       - 'cli.gradle'
+      - 'browser-poc/**'
+      - 'scripts/verify-native-default-ui-journey.py'
+      - 'src/test/python/native_default_ui_journey_test.py'
       - 'web-vue3/**'
       - 'web/package.json'
       - 'deploy/reader-pro/Dockerfile'
@@ -649,8 +655,45 @@ jobs:
             python3 scripts/smoke-public-webview.py --reader-base http://127.0.0.1:18890 \
               | tee "$RUNNER_TEMP/camoufox-public-webview.log"
           fi
+      - name: Exercise the complete image default UI with generated data
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          READER_NATIVE_UI_ISOLATED: '1'
+          READER_NATIVE_UI_URL: http://127.0.0.1:18890
+          READER_NATIVE_UI_EVIDENCE_DIR: ${{ runner.temp }}/native-default-ui
+        shell: bash
+        run: |
+          set -euo pipefail
+          export READER_NATIVE_UI_REVISION="$(git rev-parse --verify HEAD)"
+          # Chromium is an external acceptance client, not a product runtime
+          # dependency and not included in the Reader container's 2 GiB budget.
+          family=$(fc-list :lang=zh family | sed -n '1p')
+          if [[ -z "$family" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig
+            family=$(fc-list :lang=zh family | sed -n '1p')
+          fi
+          test -n "$family"
+          test "$(docker inspect --format '{{.State.Running}}' reader-browser-smoke)" = true
+          ./gradlew :browser-poc:cleanTest :browser-poc:test \
+            --tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest' --no-daemon
+          python3 scripts/verify-native-default-ui-journey.py \
+            --xml-directory browser-poc/build/test-results/test \
+            --screenshots "$READER_NATIVE_UI_EVIDENCE_DIR" --revision "$READER_NATIVE_UI_REVISION" \
+            | tee "$RUNNER_TEMP/native-default-ui/VERIFIED.json"
+          # Final cumulative server peak includes the real UI journey. Do not
+          # reset counters or substitute host/client memory for server metrics.
           docker exec -i reader-browser-smoke python - < scripts/report-browser-cgroup.py \
             | tee "$RUNNER_TEMP/bundled-browser-resource-budget.json"
+      - name: Preserve actual complete-image UI reports and generated screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-default-ui-generated-${{ github.sha }}
+          path: |
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.NativeImageDefaultUiTest.xml
+            ${{ runner.temp }}/native-default-ui/
+          if-no-files-found: error
       - name: Preserve synthetic browser and resource observations
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

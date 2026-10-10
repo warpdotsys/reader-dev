@@ -1,5 +1,7 @@
 # 准确原件三方增量：隔离 init 回收、UTF-8 差异及生成详情
 
+后续当前 eb30／58fb 完整AMD64镜像已完成本机归档／14层／JAR核对及43.108秒生成API短测，父级预算通过；不是旧8d依赖组合。见[完整镜像独立结果](LOCAL-CURRENT-NATIVE-2026-10-10.md)。下文原三方的f严格失败与旧阶段范围保持原结论，不借新镜像短测覆盖。
+
 ## 当前结论和证据等级
 
 2026-10-10 后续 d/e 两轮实际完成原件＋固定历史 WebView、当前 JAR＋同参考、当前 JAR＋内置 Camoufox的五例生成比较，完整十五次搜索响应一致，且父级严格资源门禁通过。只在诊断容器 PID1 回收已被收养的僵尸子进程，没有提高资源上限、减少用例、修改历史服务或产品字节码。[a/b/c 原失败](EXACT-JAR-GENERATED-THREE-WAY-2026-10-10.md)保持原结论，不倒填为成功。
@@ -57,7 +59,7 @@ g 独立执行 `--exercise-metadata --metadata-clock-contract`，不与 UTF-8 �
 
 四轮执行比较器 SHA `afe45db938d0abc3be8cf8d18b461bad63288bcadfe6c752c95f0a6f45563daf`。独立 verifier 对四份完整报告 SHA、执行源码、隔离挂载／身份、预算、停止交接、清理、已回收PID、完整业务 JSON及限定 metadata 重新验收：**63份搜索响应＋3份详情**，同时保留 f 严格失败。有限回执 SHA `5c532f3b5e7ac93322bdb2f3ef5f1c462b08eb8649728d0cb5086e943d72145e`；[有限机器记录及原报告 SHA](evidence/exact-jar-init-and-utf8-2026-10-10.json)。完整原报告和执行副本留在本机被忽略的 build 目录，不上传原件／正文／凭据到 GitHub。
 
-新增 init helper 十一项单测验证只回收已收养僵尸、排除直属子进程、拒绝非PID1／root／额外组、非法PID／symlink／超大及损坏status等。首次 Windows mock 六项错误源于 Windows 无 `WNOHANG`；修正的是模拟 Linux 的测试环境，不改生产 Linux常量、不添加跳过，原失败保留。最终 Windows443／1项既有平台跳过、WSL443／0跳过；模块在实际 Python3.8参考容器中也完成 e/f/g 运行。新 helper 和截图隔离增量尚需自己的托管结果，不能借下述11df绿灯。
+新增 init helper 十一项单测验证只回收已收养僵尸、排除直属子进程、拒绝非PID1／root／额外组、非法PID／symlink／超大及损坏status等。首次 Windows mock 六项错误源于 Windows 无 `WNOHANG`；修正的是模拟 Linux 的测试环境，不改生产 Linux常量、不添加跳过，原失败保留。最终 Windows443／1项既有平台跳过、WSL443／0跳过；模块在实际 Python3.8参考容器中也完成 e/f/g 运行。后续 eb30 新增量自己的托管验收已补齐，见下节；不是借下述11df绿灯。
 
 ## 11df 自己的四条托管结果，不代替新增量验收
 
@@ -74,6 +76,17 @@ Full／Native普通短测允许1 GiB swap、实际0，不冒称零swap长测。�
 
 实际查看11df的TTS编辑、OPDS不可用两张截图，所见中文可读不是全界面乱码验收。OPDS配置适配器明确拒绝未实现操作，且请求计数0；截图里的网络错误来自前一段TTS断网测试，**不是OPDS发送网络请求的证据**。Java/Kotlin目前没有OPDS路由或独立账号存储，不能用普通登录假冒实现。
 
-`Vue3PreviewSettingsDialogTest` 新增通过用户可见“关闭消息”按钮清理上一场景通知，然后等待退出并断言OPDS图不含残留网络错误；原TTS失败断言／截图先保存，OPDS不发替代请求及密码不落浏览器存储的断言继续保留。它是证据场景隔离修正，不是已实现OPDS或已修好生产登录；需新runner实跑及新截图确认。
+`Vue3PreviewSettingsDialogTest` 新增通过用户可见“关闭消息”按钮清理上一场景通知，然后等待退出并断言OPDS图不含残留网络错误；原TTS失败断言／截图先保存，OPDS不发替代请求及密码不落浏览器存储的断言继续保留。它是证据场景隔离修正，不是已实现OPDS或已修好生产登录。后续 eb30 自己的实际UI旅程及两张新图已经确认：OPDS图无残留网络错误，TTS断网图仍明确显示网络失败与未确认保存。
 
 仍需最新完整镜像本机／长测、真实认证书源及生产登录／阅读验收，不能发布成全部完成。回退可停用新诊断 helper和截图隔离增量，仅回收精确自有单元；四单元已独立 inactive／MainPID0。保留历史失败、原件、下载缓存和用户dirty文件，不 reset／覆盖三个既有工程，不更改代理、认证语义或生产部署。
+
+## eb30 新增量自己的托管验收
+
+源码 `eb30cb6bfb935bc558d05c1c609293691da7b16a`、实际tested merge `58fb51b1091719b8de8954fb430e82c6cbcf3382`，四条流水线及其实际作业均独立核对为GitHub托管；不是自托管、不是正式发布／生产部署，也不覆盖 f 的严格失败。
+
+- [Java 38019762787](https://github.com/warpdotsys/reader-dev/actions/runs/38019762787)：443 Python全执行／0跳过，181 JVM／31既有跳过、TTS编辑11全执行；两次clean仍完整 e59／285,665,012 B／1,569条目，字节／ZIP元数据差异0。独立回执 SHA `8b19e852a1997f2651bcb3a7aaa13e567b27e95ae058fe617c08b7cd0e63e3f2`。
+- [Vue 38019762779](https://github.com/warpdotsys/reader-dev/actions/runs/38019762779)：25实际页面旅程／0跳过、296前端＋20截图守卫、11 PNG；设置对话框新增断言实际执行。独立回执 SHA `7753adfe3956b90e95f02c30b22455b811dd7a9b880ece2276d86d2894b66f33`。主agent实际查看新OPDS、TTS断网两图，SHA分别 `4bf89ac9ecee9a3a53fe9fcbff03e00343a024d137fccd92b35d62e58943d029`／`cbf9697fea62ba7a92eb854505b68a51b80e46a5bf0de2eb21343c6e0fe71012`；只证明这两个所见场景，不冒称全 UI 无乱码或真实生产登录已修复。
+- [Full 38019762766](https://github.com/warpdotsys/reader-dev/actions/runs/38019762766)：Camoufox20、Chromium23、helper3及默认UI／异步／metadata接受，峰值833,404,928 B／PID191。独立回执 SHA `2fbc7061764af0d9a3c78d24363e6ae63608d8ca5bb65d48159607b814310ecb`。
+- [Native 38019762930](https://github.com/warpdotsys/reader-dev/actions/runs/38019762930)：六实际作业、24publisher JSON、双原生／双重导入和正式导入器路径接受，最高878,927,872 B／PID193。独立回执 SHA `7ccd2b48b5129895f6e0485237bed54618d7d8cf53980616e8b77a6da770499c`。两架构均为同一 e59 JAR；普通短测允许1 GiB swap、实际0，仍不是零swap长测。
+
+当前AMD64镜像 config ID为 `sha256:601f65abd91cee4b8dcb59e8675b696c0284efe61948928849966c600a533468`，完整镜像归档 SHA `9f5a2cbe4f5585f683e8b971a47bec793faba2c859803f2800299dc5e4d9b0aa`。本机最新镜像准备独立目录 `D:\Codex-reader-artifacts\20261010-eb30cb6b-a`，仅锁定本次成功制品11658665042／2,174,866,338 B；GitHub声明ZIP digest为 `sha256:f60c20f12bd68824011fcbb48f95b58fc319677af16c4b513c3817b1c60b81ee`，此ZIP未独立本机复算，不能冒充已验。只下载一份AMD64，独立Windows Job约2逻辑CPU／512 MiB提交内存；不把该提交内存限制当成包含宿主文件缓存的总内存。完整归档／层／JAR散列和UID10001实际启动仍以随后独立观测为准，准备中不等于已执行。

@@ -153,6 +153,31 @@ if (!nativeImporter.includes(defaultUiCheck + ' "$report_directory/DEFAULT_UI.js
 if (!browserWorkflow.includes('fc-list :lang=zh family')) {
   throw new Error('browser image smoke test must verify CJK font coverage')
 }
+const imageUiStart = browserWorkflow.indexOf('- name: Exercise the complete image default UI with generated data')
+const imageUiEnd = browserWorkflow.indexOf('\n      - name:', imageUiStart + 1)
+const imageUiStep = browserWorkflow.slice(imageUiStart, imageUiEnd)
+const imageUiRun = imageUiStep.indexOf("--tests 'com.medwarp.reader.browserpoc.NativeImageDefaultUiTest'")
+const imageUiVerify = imageUiStep.indexOf('python3 scripts/verify-native-default-ui-journey.py')
+const imageUiBudget = imageUiStep.indexOf('scripts/report-browser-cgroup.py')
+if (imageUiStart < 0 || imageUiEnd <= imageUiStart || imageUiRun < 0 || imageUiVerify <= imageUiRun ||
+    imageUiBudget <= imageUiVerify || !imageUiStep.includes('set -euo pipefail') ||
+    /^\s*(?:if:|continue-on-error:)/m.test(imageUiStep) || /\|\|\s*(?:true|:)/.test(imageUiStep)) {
+  throw new Error('complete-image UI journey must fail closed before final cumulative server budget collection')
+}
+for (const token of ["READER_NATIVE_UI_ISOLATED: '1'", 'READER_NATIVE_UI_URL: http://127.0.0.1:18890',
+  'READER_NATIVE_UI_EVIDENCE_DIR: ${{ runner.temp }}/native-default-ui',
+  'export READER_NATIVE_UI_REVISION="$(git rev-parse --verify HEAD)"',
+  ':browser-poc:cleanTest :browser-poc:test', '--xml-directory browser-poc/build/test-results/test',
+  '--screenshots "$READER_NATIVE_UI_EVIDENCE_DIR" --revision "$READER_NATIVE_UI_REVISION"',
+  'native-default-ui/VERIFIED.json']) {
+  if (!imageUiStep.includes(token)) throw new Error('complete-image UI journey missing required token: ' + token)
+}
+if (!browserWorkflow.includes('name: native-default-ui-generated-${{ github.sha }}') ||
+    !browserWorkflow.includes('browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.NativeImageDefaultUiTest.xml') ||
+    !browserWorkflow.includes('${{ runner.temp }}/native-default-ui/') ||
+    (browserWorkflow.match(/- 'browser-poc\/\*\*'/g) || []).length !== 2) {
+  throw new Error('complete-image UI reports, generated screenshots and both source triggers must be retained')
+}
 const ciWorkflow = read('.github/workflows/ci.yml')
 if (!ciWorkflow.includes('node scripts/check-release-pipeline.mjs') ||
     !workflow.includes('node scripts/check-release-pipeline.mjs')) {

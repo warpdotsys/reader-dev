@@ -60,7 +60,21 @@
   "windowsPythonSkipped": 1,
   "wslPythonTests": 443,
   "wslPythonSkipped": 0,
-  "newReaperAndScreenshotIsolationOwnHostedVerified": false,
+  "newReaperAndScreenshotIsolationOwnHostedVerified": true,
+  "acceptedHostedIncrement": {
+    "sourceRevision": "eb30cb6bfb935bc558d05c1c609293691da7b16a",
+    "testedMergeSnapshot": "58fb51b1091719b8de8954fb430e82c6cbcf3382",
+    "java": {"runId": 38019762787, "receiptSha256": "8b19e852a1997f2651bcb3a7aaa13e567b27e95ae058fe617c08b7cd0e63e3f2", "pythonTests": 443, "pythonSkipped": 0, "jvmTests": 181, "jvmSkipped": 31, "ttsEditTests": 11, "exactByteRebuildAccepted": true},
+    "vue": {"runId": 38019762779, "receiptSha256": "7753adfe3956b90e95f02c30b22455b811dd7a9b880ece2276d86d2894b66f33", "actualUiTests": 25, "uiSkipped": 0, "frontendTests": 296, "screenshotGuardTests": 20, "opdsNotificationsIsolatedFromPrecedingTtsScenario": true},
+    "full": {"runId": 38019762766, "receiptSha256": "2fbc7061764af0d9a3c78d24363e6ae63608d8ca5bb65d48159607b814310ecb", "memoryPeakBytes": 833404928, "pidsPeak": 191},
+    "native": {"runId": 38019762930, "receiptSha256": "7ccd2b48b5129895f6e0485237bed54618d7d8cf53980616e8b77a6da770499c", "actualJobs": 6, "publisherFilesAccepted": 24, "memoryPeakBytes": 878927872, "pidsPeak": 193},
+    "ordinarySwapAllowanceBytes": 1073741824,
+    "observedSwapBytes": 0,
+    "newNativeImageConfigId": "sha256:601f65abd91cee4b8dcb59e8675b696c0284efe61948928849966c600a533468",
+    "newNativeArchiveSha256": "9f5a2cbe4f5585f683e8b971a47bec793faba2c859803f2800299dc5e4d9b0aa",
+    "localWholeNativeExecutionAccepted": false,
+    "selfHostedRunnerUsed": false
+  },
   "acceptedHostedBase": {
     "sourceRevision": "11df6be72ec482e51c9847004c1469c1b26d0e41",
     "testedMergeSnapshot": "6926f309278acc74a0d2902597d8efde43a2625e",
