@@ -13,6 +13,10 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.LinkOption
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.FileVisitResult
+import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
@@ -28,15 +32,28 @@ import java.util.concurrent.atomic.AtomicReference
  * persistent profile, or user cookies. All browser traffic is forced through the same
  * SSRF-aware egress proxy used by the Chromium renderer.
  */
-class CamoufoxWebviewRenderer(
-    private val pythonExecutable: String = "python3",
-    private val browserVersion: String = "152.0.4-beta.30",
-    private val timeoutMs: Int = 20_000,
-    allowPrivateNetworks: Boolean = System.getenv("READER_BROWSER_ALLOW_PRIVATE_NETWORKS")
-        ?.equals("true", ignoreCase = true) == true,
-    /** Test-only escape hatch for exercising the parent/worker protocol without Camoufox. */
-    private val workerScriptOverride: Path? = null
+class CamoufoxWebviewRenderer private constructor(
+    private val pythonExecutable: String,
+    private val browserVersion: String,
+    private val timeoutMs: Int,
+    allowPrivateNetworks: Boolean,
+    private val workerScriptOverride: Path?,
+    networkPolicyOverride: BrowserNetworkPolicy?
 ) : WebviewRenderer {
+    constructor(
+        pythonExecutable: String = "python3",
+        browserVersion: String = "152.0.4-beta.30",
+        timeoutMs: Int = 20_000,
+        allowPrivateNetworks: Boolean = System.getenv("READER_BROWSER_ALLOW_PRIVATE_NETWORKS")
+            ?.equals("true", ignoreCase = true) == true,
+        /** Test-only escape hatch for exercising the parent/worker protocol without Camoufox. */
+        workerScriptOverride: Path? = null
+    ) : this(pythonExecutable, browserVersion, timeoutMs, allowPrivateNetworks, workerScriptOverride, null)
+
+    /** Only the test fixture may allow its first origin while denying a redirected local host. */
+    internal constructor(
+        pythonExecutable: String, browserVersion: String, timeoutMs: Int, networkPolicy: BrowserNetworkPolicy
+    ) : this(pythonExecutable, browserVersion, timeoutMs, false, null, networkPolicy)
     override val managesBrowserCookies: Boolean = true
 
     private val pending = AtomicInteger(0)
@@ -47,7 +64,7 @@ class CamoufoxWebviewRenderer(
         Thread(task, "reader-camoufox-stdout").apply { isDaemon = true }
     }
     private val processes = ConcurrentHashMap.newKeySet<Process>()
-    private val networkPolicy = BrowserNetworkPolicy(allowPrivateNetworks)
+    private val networkPolicy = networkPolicyOverride ?: BrowserNetworkPolicy(allowPrivateNetworks)
     private val gson = Gson()
     @Volatile private var workerScript: Path? = null
 
@@ -137,6 +154,41 @@ class CamoufoxWebviewRenderer(
     }
 
     private fun invokeWorker(payload: String): WorkerResponse {
+        // The parent owns this directory so a killed worker cannot leave its
+        // temporary origin-header credentials behind until container shutdown.
+        val directory = Files.createTempDirectory("reader-camoufox-request-").toRealPath()
+        try {
+            if (Files.getFileStore(directory).supportsFileAttributeView("posix")) {
+                Files.setPosixFilePermissions(directory, PosixFilePermissions.fromString("rwx------"))
+            }
+            return invokeWorker(payload, directory)
+        } finally {
+            removeOwnedRequestDirectory(directory)
+        }
+    }
+
+    private fun removeOwnedRequestDirectory(directory: Path) {
+        // Never follow an addon/browser-created symlink to files outside this
+        // exact fresh directory. No environment-expanded or broad deletion root.
+        check(directory.isAbsolute && directory.fileName.toString().startsWith("reader-camoufox-request-"))
+        check(!Files.isSymbolicLink(directory) && Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS))
+        check(directory.toRealPath(LinkOption.NOFOLLOW_LINKS) == directory)
+        Files.walkFileTree(directory, object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attributes: BasicFileAttributes): FileVisitResult {
+                check(file.toAbsolutePath().normalize().startsWith(directory))
+                Files.delete(file)
+                return FileVisitResult.CONTINUE
+            }
+            override fun postVisitDirectory(path: Path, failure: java.io.IOException?): FileVisitResult {
+                if (failure != null) throw failure
+                check(path.toAbsolutePath().normalize().startsWith(directory))
+                Files.delete(path)
+                return FileVisitResult.CONTINUE
+            }
+        })
+    }
+
+    private fun invokeWorker(payload: String, requestDirectory: Path): WorkerResponse {
         val script = getWorkerScript()
         val process = try {
             ProcessBuilder(pythonExecutable, script.toString())
@@ -144,6 +196,7 @@ class CamoufoxWebviewRenderer(
                 .apply {
                     environment()["PYTHONUNBUFFERED"] = "1"
                     environment()["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"
+                    for (name in listOf("TMPDIR", "TEMP", "TMP")) environment()[name] = requestDirectory.toString()
                 }
                 .start()
         } catch (e: Exception) {

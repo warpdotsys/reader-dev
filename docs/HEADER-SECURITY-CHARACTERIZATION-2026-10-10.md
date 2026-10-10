@@ -1,6 +1,8 @@
 # 认证头、重定向与子资源：实际三方诊断
 
-日期：2026-10-10。**已知安全问题，尚未修复；不是发布或认证安全接受报告。**
+日期：2026-10-10。**原件/a873已知安全问题；源码候选已取得有限生成HTTP证据，新JAR/HTTPS尚未接受。不是发布或认证安全接受报告。**
+
+以下三方表格保留改前历史诊断，不能以新增源码把它改成通过。后续[原生逐跳候选修正、实际失败与有限证据](ORIGIN-HEADERS-CANDIDATE-2026-10-10.md)单独记录。
 
 ## 实际结果
 
@@ -57,3 +59,15 @@ python3 scripts/compare-webview-cookie.py \
 新增10项纯生成守卫，本机Python481项／24.432秒通过、原Windows POSIX跳过1；守卫覆盖缺隔离不得bind/start、定义固定凭据、脚本必须执行、缺/重复/越界观测不得转通过、错误API/脚本JSON、快照与有限字段及CLIfail-fast。它们不是实际浏览器证据，自己的托管结果须另验。本轮不改worker，回退只撤销诊断入口/新fixture及测试，不覆盖原件、用户报告或生产数据；回退不会修复上述认证风险。
 
 完成后外部再次确认l unit inactive/MainPID0、runc清单空，按真实路径/所有权/单链接/只读模式/完整SHA，仅删除l临时输入目录中两份JAR副本358,579,951B（约342MiB）。保留原件、只读备份及b/c托管下载，删除前后完整SHA不变，副本可再生成；不删除其他缓存目录。清理回执SHA `92a0fa9d71674909801beba863bc413abea34bd7bd02ddd50d321a8f179dca05`。
+
+## 诊断增量自己的托管结果：四条已接受，均为改前产物
+
+诊断源码 `1ac19cb4d06109fa3975fb776baf76c3b6e0b1c0`／tested merge `3a06bc3f604ec64416f339e7f1c1e1efb5bca090` 已推送，PR56仍draft、默认legacy。没有改生产worker，自己重新构建的JAR仍为同字节a873，不把新的诊断提交冒称安全修复。
+
+- [Java 38034100725](https://github.com/warpdotsys/reader-dev/actions/runs/38034100725) 已独立接受：481 Python／12.516秒／零跳过；43 JVM套件／188例／31既有环境跳过，日志9例与编辑11例全执行；两次干净构建同a873／285,666,064B／1,569条目，完整归档字节、所有条目和ZIP元数据差异0。回执SHA `c8232668c17225a52e1cb0dd4b758f5de88f7edb92409bc0a6b5b5ef18ccedd7`。
+- [Vue 38034100777](https://github.com/warpdotsys/reader-dev/actions/runs/38034100777) 已独立接受：25实际UI／零跳过，296前端＋20截图守卫、类型/构建和11图完整性，回执SHA `d51fa5e17e3c08fb2cfdb34edb1c026baa6b18832de3a1b450945982a5110ed1`；不是全部图都额外目视或生产界面证明。
+- [Full 38034100963](https://github.com/warpdotsys/reader-dev/actions/runs/38034100963) 已独立接受：Cam20／零跳过、Chrom23／helper3、默认UI/async/metadata，实际生成默认UI旅程1例／7.032秒／零失败/跳过。Cam XML SHA `6e318aedd57956db3aec17d73dfc94399b7b49656915e8e1c94b7e09d8323357`，默认旅程XML `43cde2485cc7946e86262d43047b2f33708b30efd0f8901dd8f85c644c8383f1`；当前书架 `da8975fe09f3f7b0d3590d02608d0ec7e24ed9b43cc7e52900f2d08df490a6ee`、阅读 `7723327fbe77709dae5f0ccd0d9f1a2850e0da939d06449748240ee36b03ad11` 主agent已实际查看，生成中文可读。导入完成弹窗仍保持、阅读经直接bookUrl路由，不能冒称所有卡片点击/全UI无缺陷。服务端预算包含默认UI旅程，峰值896,593,920B／PID195，2CPU2GiB／256PID，max/OOM/PID触限0；普通允许swap／实际0，外部UI客户端不计入，不冒充本机零swap三方。回执SHA `fdf227375425997a6c61d6f3f6f463ae4694803e798dc477d951c62f7bffd569`。
+
+第一轮独立Full接受器在自身UI回执还没生成时拒绝，未写成功回执；按顺序等当前UI完成后重验才接受，不修改测试、覆盖旧回执或把该检查错误当CI失败。接受器SHA `686168e17d2c2506952f8734c39c26592ca71d5e698e52db09ea8195496db908`。
+
+[前三条阶段回执](evidence/header-security-hosted-partial-2026-10-10.json) SHA `01c782ff76484dc953625e403a4c9d774d2fd258bd288c3e0b4921d0d7e3c9ce`保留捕获时Native未完成的状态。随后[Native 38034100705](https://github.com/warpdotsys/reader-dev/actions/runs/38034100705)六实际作业全部成功，双架构原生、重导入及24 publisher小JSON已独立接受，峰值865,054,720B／PID200，普通swap允许／实际0。新增[原生独立回执](evidence/header-security-hosted-native-2026-10-10.json)，SHA `d49f4dd634ea0b07dd8012a4ac4e2797074abb42526471542cbc616d3640a3d8`，同旧a873 JAR；不能用该绿色报告接受后续头作用域候选。新追加的准确原件认证三方仅在本机隔离执行，**不是GitHub托管三方实跑**；1ac的CI只是新工具守卫及原有20项浏览器契约通过。改前产物P1仍在；后续候选24项需自己的托管验收。真实认证/HTTPS/最新整镜像本机/长测/OPDS/生产仍未完成，不发布、推送registry或部署。

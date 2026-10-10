@@ -27,9 +27,14 @@ class CamoufoxContractReportTest(unittest.TestCase):
         ET.ElementTree(self.suite).write(self.path, encoding="utf-8", xml_declaration=True)
         return GUARD.verify_report(self.path)
 
+    def discard_new_policy_cases(self):
+        for name in (GUARD.ORIGIN_HEADER_CONTRACT, GUARD.POST_REDIRECT_HEADER_CONTRACT,
+                     GUARD.SCRIPT_REDIRECT_HEADER_CONTRACT, GUARD.LOOPBACK_PROXY_CONTRACT):
+            self.suite.remove(next(case for case in self.suite if case.get("name") == name))
+
     def test_complete_synthetic_report_exercises_only_the_guard(self):
         result = self.verify()
-        self.assertEqual(20, result["tests"])
+        self.assertEqual(24, result["tests"])
         self.assertTrue(result["navigationContractPresent"])
         self.assertTrue(result["earlyNavigationContractPresent"])
         self.assertTrue(result["endlessNavigationContractPresent"])
@@ -38,6 +43,10 @@ class CamoufoxContractReportTest(unittest.TestCase):
         self.assertTrue(result["sourceNavigationContractPresent"])
         self.assertTrue(result["numericalThreadContractPresent"])
         self.assertTrue(result["utf8PostContractPresent"])
+        self.assertTrue(result["originHeaderContractPresent"])
+        self.assertTrue(result["postRedirectHeaderContractPresent"])
+        self.assertTrue(result["scriptRedirectHeaderContractPresent"])
+        self.assertTrue(result["loopbackProxyContractPresent"])
         self.assertEqual(64, len(result["xmlSha256"]))
 
     def test_all_environment_gated_cases_are_rejected(self):
@@ -51,6 +60,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_old_twelve_contracts_cannot_replace_navigation_acceptance(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -64,6 +74,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_thirteen_contracts_do_not_prove_endless_navigation(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -76,6 +87,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_fourteen_contracts_do_not_prove_promise_budget_or_recovery(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -87,6 +99,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_fifteen_contracts_do_not_prove_navigation_before_dom_ready(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -97,6 +110,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_sixteen_contracts_do_not_prove_state_loss_non_replay_and_recovery(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -106,6 +120,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_seventeen_contracts_do_not_prove_source_rule_load_document_timing(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.SOURCE_NAVIGATION_CONTRACT))
@@ -114,6 +129,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_eighteen_contracts_do_not_prove_native_numerical_thread_budget(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT))
         self.suite.set("tests", "18")
@@ -122,6 +138,7 @@ class CamoufoxContractReportTest(unittest.TestCase):
             self.verify()
 
     def test_previous_nineteen_contracts_do_not_prove_raw_utf8_post_or_script_result(self):
+        self.discard_new_policy_cases()
         self.suite.remove(next(case for case in self.suite if case.get("name") == GUARD.UTF8_POST_CONTRACT))
         self.suite.set("tests", "19")
         self.assertEqual(19, len(self.suite.findall("testcase")))
@@ -133,6 +150,24 @@ class CamoufoxContractReportTest(unittest.TestCase):
         ET.SubElement(case, "skipped")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
+
+    def test_previous_twenty_contracts_cannot_prove_native_header_or_loopback_policy(self):
+        for name in (GUARD.ORIGIN_HEADER_CONTRACT, GUARD.POST_REDIRECT_HEADER_CONTRACT,
+                     GUARD.SCRIPT_REDIRECT_HEADER_CONTRACT, GUARD.LOOPBACK_PROXY_CONTRACT):
+            self.suite.remove(next(case for case in self.suite if case.get("name") == name))
+        self.suite.set("tests", "20")
+        self.assertEqual(20, len(self.suite.findall("testcase")))
+        with self.assertRaises(GUARD.ContractReportError):
+            self.verify()
+
+    def test_skipping_any_new_header_or_proxy_contract_is_rejected(self):
+        for name in (GUARD.ORIGIN_HEADER_CONTRACT, GUARD.POST_REDIRECT_HEADER_CONTRACT,
+                     GUARD.SCRIPT_REDIRECT_HEADER_CONTRACT, GUARD.LOOPBACK_PROXY_CONTRACT):
+            case = next(case for case in self.suite if case.get("name") == name)
+            marker = ET.SubElement(case, "skipped")
+            with self.assertRaises(GUARD.ContractReportError):
+                self.verify()
+            case.remove(marker)
 
     def test_skipped_numerical_import_is_rejected_even_with_forged_zero_counters(self):
         case = next(case for case in self.suite if case.get("name") == GUARD.NUMERICAL_THREAD_CONTRACT)

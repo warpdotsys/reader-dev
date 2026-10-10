@@ -21,6 +21,10 @@ STATE_DELETION_CONTRACT = "generatedSourceStateDeletionFailsWithoutReplayingSide
 SOURCE_NAVIGATION_CONTRACT = "generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad"
 NUMERICAL_THREAD_CONTRACT = "numericalLibraryImportsDoNotAllocateTheHostCpuThreadPool"
 UTF8_POST_CONTRACT = "generatedUtf8PostPreservesRawBytesAndSourceScriptResult"
+ORIGIN_HEADER_CONTRACT = "generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts"
+POST_REDIRECT_HEADER_CONTRACT = "generatedPostRedirectsPreserveBodyCookiesAndOriginHeaders"
+SCRIPT_REDIRECT_HEADER_CONTRACT = "generatedScriptAndResourceRedirectsRespectOriginHeaderPolicy"
+LOOPBACK_PROXY_CONTRACT = "generatedLoopbackRedirectCannotBypassTheEgressProxy"
 CONTRACTS = frozenset((
     "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
     "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
@@ -37,6 +41,10 @@ CONTRACTS = frozenset((
     SOURCE_NAVIGATION_CONTRACT,
     NUMERICAL_THREAD_CONTRACT,
     UTF8_POST_CONTRACT,
+    ORIGIN_HEADER_CONTRACT,
+    POST_REDIRECT_HEADER_CONTRACT,
+    SCRIPT_REDIRECT_HEADER_CONTRACT,
+    LOOPBACK_PROXY_CONTRACT,
     "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
     "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
     "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
@@ -88,6 +96,10 @@ def verify_report(path):
         "sourceNavigationContractPresent": True,
         "numericalThreadContractPresent": True,
         "utf8PostContractPresent": True,
+        "originHeaderContractPresent": True,
+        "postRedirectHeaderContractPresent": True,
+        "scriptRedirectHeaderContractPresent": True,
+        "loopbackProxyContractPresent": True,
         "xmlSha256": hashlib.sha256(raw).hexdigest(),
     }
 

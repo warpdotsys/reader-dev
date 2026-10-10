@@ -19,6 +19,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.net.InetSocketAddress
+import java.net.InetAddress
+import java.net.URI
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -29,6 +31,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import java.util.Collections
 
 /**
  * End-to-end contract checks for the packaged fingerprint engine. The hosted browser-image
@@ -903,6 +906,213 @@ class CamoufoxWebviewRendererTest {
             assertTrue("A healthy request after a stalled page failed", healthy.body?.contains("GET|||") == true)
         } finally {
             limited.close()
+        }
+    }
+
+    @Test(timeout = 240000)
+    fun generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts() = runBlocking {
+        GeneratedHeaderFixture().use { fixture ->
+            for (case in listOf("same-get", "cross-get", "cross-post", "resources")) {
+                fixture.reset()
+                val response = renderer.render(headerRequest(fixture, case))
+                fixture.assertDocument(response.body!!, case)
+                assertEquals("Legacy response URL remains the original request URL", fixture.start(case), response.url)
+                val rows = fixture.snapshot()
+                assertEquals(if (case == "resources") 3 else 2, rows.size)
+                fixture.assertOriginHeaders(rows)
+                if (case == "cross-post") {
+                    assertEquals(listOf("POST", "GET"), rows.map { it.method })
+                    assertArrayEquals("q=generated-header-only".toByteArray(StandardCharsets.UTF_8), rows[0].body)
+                    assertTrue(rows[1].body.isEmpty())
+                    assertEquals("application/x-www-form-urlencoded; charset=UTF-8", rows[0].contentType)
+                    assertEquals("", rows[1].contentType)
+                }
+            }
+        }
+    }
+
+    @Test(timeout = 240000)
+    fun generatedPostRedirectsPreserveBodyCookiesAndOriginHeaders() = runBlocking {
+        GeneratedHeaderFixture().use { fixture ->
+            val raw = "q=生成中文&value=保持原始字节"
+            for (case in listOf("same-post-307", "same-post-308", "cross-post-307", "cross-post-308")) {
+                fixture.reset()
+                val response = renderer.render(headerRequest(fixture, case).copy(
+                    post = true, body = raw,
+                    headerMap = fixture.headers + ("Content-Type" to "application/json; charset=UTF-8")))
+                fixture.assertDocument(response.body!!, case)
+                val rows = fixture.snapshot()
+                assertEquals(2, rows.size)
+                assertEquals(listOf("POST", "POST"), rows.map { it.method })
+                for (row in rows) {
+                    assertArrayEquals(raw.toByteArray(StandardCharsets.UTF_8), row.body)
+                    assertEquals("application/json; charset=UTF-8", row.contentType)
+                }
+                fixture.assertOriginHeaders(rows)
+                assertEquals("", rows[0].cookie)
+                assertEquals(if (case.startsWith("same-")) "generated_session=GENERATED_SESSION_ONLY" else "", rows[1].cookie)
+                val persisted = BrowserCookieJar.cookiesForRequest(
+                    CookieStore("generated-header-$case"), fixture.start(case))
+                assertEquals(1, persisted.size)
+                assertTrue(persisted.single().httpOnly)
+                assertEquals("generated_session", persisted.single().name)
+                assertEquals("/probe/", persisted.single().path)
+            }
+        }
+    }
+
+    @Test(timeout = 120000)
+    fun generatedScriptAndResourceRedirectsRespectOriginHeaderPolicy() = runBlocking {
+        GeneratedHeaderFixture().use { fixture ->
+            for (case in listOf("script-cross-get", "resources-redirect")) {
+                fixture.reset()
+                val response = renderer.render(headerRequest(fixture, case))
+                fixture.assertDocument(response.body!!, case)
+                val rows = fixture.snapshot()
+                assertEquals(if (case == "resources-redirect") 5 else 2, rows.size)
+                fixture.assertOriginHeaders(rows)
+                assertEquals(1, rows.count { it.actor == "secondary" })
+            }
+        }
+    }
+
+    @Test(timeout = 120000)
+    fun generatedLoopbackRedirectCannotBypassTheEgressProxy() = runBlocking {
+        GeneratedHeaderFixture().use { fixture ->
+            val policy = object : BrowserNetworkPolicy() {
+                override fun resolveRequestTarget(value: String): BrowserNetworkTarget? {
+                    val uri = URI(value)
+                    // Admit only this test's first host/port; no global private-network switch.
+                    if (uri.host == "127.0.0.1" && uri.port == URI(fixture.primary).port) {
+                        return BrowserNetworkTarget(uri, "127.0.0.1", uri.port,
+                            listOf(InetAddress.getByName("127.0.0.1")))
+                    }
+                    return super.resolveRequestTarget(value)
+                }
+            }
+            val strict = CamoufoxWebviewRenderer(System.getenv("READER_CAMOUFOX_PYTHON"),
+                System.getenv("READER_CAMOUFOX_BROWSER_VERSION") ?: "152.0.4-beta.30", 10_000, policy)
+            try {
+                val failure = runCatching { strict.render(headerRequest(fixture, "cross-get")) }.exceptionOrNull()
+                assertTrue("Denied redirect must propagate the Java network policy", failure is BrowserNetworkPolicyViolation)
+                assertEquals(1, fixture.snapshot().count { it.actor == "primary" })
+                assertEquals("Loopback redirect may not bypass the proxy", 0,
+                    fixture.snapshot().count { it.actor == "secondary" })
+                fixture.reset()
+                fixture.assertDocument(strict.render(headerRequest(fixture, "same-get")).body!!, "same-get")
+                assertEquals(2, fixture.snapshot().size)
+            } finally {
+                strict.close()
+            }
+        }
+    }
+
+    private fun headerRequest(fixture: GeneratedHeaderFixture, case: String) = request(
+        "/unused", "generated-header-$case", fixture.headers,
+        post = case == "cross-post", body = if (case == "cross-post") "q=generated-header-only" else null,
+        javaScript = """
+            (() => {
+              if (${case.startsWith("resources")} &&
+                  (document.documentElement.dataset.generatedSameResource !== 'executed' ||
+                   document.documentElement.dataset.generatedCrossResource !== 'executed')) {
+                throw new Error('GENERATED_RESOURCE_NOT_EXECUTED');
+              }
+              return {href:location.href, title:document.querySelector('.name').textContent};
+            })()
+        """.trimIndent()
+    ).copy(url = fixture.start(case))
+
+    private data class HeaderObservation(val actor: String, val role: String, val method: String,
+        val authorization: String, val trace: String, val contentType: String, val cookie: String, val body: ByteArray)
+
+    private class GeneratedHeaderFixture : AutoCloseable {
+        val headers = mapOf("Authorization" to "Bearer GENERATED_NOT_A_REAL_CREDENTIAL",
+            "X-Generated-Trace" to "GENERATED_HEADER_TRACE_ONLY")
+        private val workers = Executors.newFixedThreadPool(4)
+        private val rows = Collections.synchronizedList(mutableListOf<HeaderObservation>())
+        private val primaryServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        private val secondaryServer = HttpServer.create(InetSocketAddress("127.0.0.2", 0), 0)
+        val primary = "http://127.0.0.1:${primaryServer.address.port}"
+        val secondary = "http://127.0.0.2:${secondaryServer.address.port}"
+
+        init {
+            for ((server, actor) in listOf(primaryServer to "primary", secondaryServer to "secondary")) {
+                server.executor = workers
+                server.createContext("/probe/") { exchange ->
+                    try {
+                        val parts = exchange.requestURI.path.split('/')
+                        require(parts.size == 4)
+                        val case = parts[2]
+                        val role = parts[3]
+                        val body = exchange.requestBody.use { it.readNBytes(65537) }
+                        require(body.size <= 65536)
+                        require(rows.size < 128)
+                        fun field(name: String) = exchange.requestHeaders.getFirst(name) ?: ""
+                        rows.add(HeaderObservation(actor, role, exchange.requestMethod,
+                            field("Authorization"), field("X-Generated-Trace"), field("Content-Type"), field("Cookie"), body))
+                        when {
+                            role == "start" && case == "script-cross-get" -> send(exchange, 200,
+                                "<script>window.location.href='$secondary/probe/$case/end';</script>")
+                            role == "start" && !case.startsWith("resources") -> {
+                                val status = if (case.endsWith("307")) 307 else if (case.endsWith("308")) 308 else 303
+                                exchange.responseHeaders.add("Location", (if (case.startsWith("same-")) primary else secondary) + "/probe/$case/end")
+                                if (status != 303) exchange.responseHeaders.add("Set-Cookie",
+                                    "generated_session=GENERATED_SESSION_ONLY; Path=/probe/; HttpOnly")
+                                send(exchange, status, "")
+                            }
+                            role == "start" -> {
+                                val cross = if (case == "resources") secondary else primary
+                                send(exchange, 200, document(case) +
+                                    "<script src='$primary/probe/$case/same.js'></script><script src='$cross/probe/$case/cross.js'></script>")
+                            }
+                            case == "resources-redirect" && (role == "same.js" || role == "cross.js") -> {
+                                exchange.responseHeaders.add("Location", (if (role == "same.js") primary else secondary) +
+                                    "/probe/$case/" + (if (role == "same.js") "same-end.js" else "cross-end.js"))
+                                send(exchange, if (role == "same.js") 307 else 303, "")
+                            }
+                            role.endsWith(".js") -> send(exchange, 200,
+                                "document.documentElement.dataset." +
+                                    (if (role.startsWith("same")) "generatedSameResource" else "generatedCrossResource") + "='executed';",
+                                "application/javascript")
+                            role == "end" -> send(exchange, 200, document(case))
+                            else -> send(exchange, 404, "GENERATED_UNKNOWN_PATH")
+                        }
+                    } finally { exchange.close() }
+                }
+                server.start()
+            }
+        }
+
+        fun start(case: String) = "$primary/probe/$case/start"
+        fun reset() = rows.clear()
+        fun snapshot(): List<HeaderObservation> = synchronized(rows) { rows.toList() }
+        fun assertOriginHeaders(observed: List<HeaderObservation>) {
+            assertTrue(observed.any { it.actor == "primary" })
+            for (row in observed) {
+                assertEquals(if (row.actor == "primary") headers["Authorization"] else "", row.authorization)
+                assertEquals(if (row.actor == "primary") headers["X-Generated-Trace"] else "", row.trace)
+            }
+        }
+        fun assertDocument(body: String, case: String) {
+            val value = Gson().fromJson(body, JsonObject::class.java)
+            assertEquals("认证头生成书-$case", value.get("title").asString)
+            val host = if (case.startsWith("cross-") || case == "script-cross-get") secondary else primary
+            assertEquals("$host/probe/$case/" + (if (case.startsWith("resources")) "start" else "end"), value.get("href").asString)
+        }
+        private fun document(case: String) = "<!doctype html><meta charset='UTF-8'><span class='name'>认证头生成书-$case</span>"
+        private fun send(exchange: com.sun.net.httpserver.HttpExchange, status: Int, body: String,
+            contentType: String = "text/html; charset=UTF-8") {
+            val bytes = body.toByteArray(StandardCharsets.UTF_8)
+            exchange.responseHeaders.add("Content-Type", contentType)
+            exchange.responseHeaders.add("Cache-Control", "no-store")
+            exchange.sendResponseHeaders(status, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        override fun close() {
+            primaryServer.stop(0)
+            secondaryServer.stop(0)
+            workers.shutdownNow()
+            assertTrue("Generated fixture threads stopped", workers.awaitTermination(5, TimeUnit.SECONDS))
         }
     }
 

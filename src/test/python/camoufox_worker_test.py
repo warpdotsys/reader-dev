@@ -146,16 +146,20 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
                 route = MagicMock()
                 route.request.url = target
                 route.request.is_navigation_request.return_value = navigation
-                route.request.headers = {"accept": "text/html", "user-agent": "generated-agent",
-                                         **{key.lower(): value for key, value in payload["headers"].items()}}
+                route.request.headers = {"accept": "text/html", "user-agent": "generated-agent"}
                 handle(route)
                 requests.append(route.continue_.call_args.kwargs)
 
         page.goto.side_effect = navigate
         with patch.object(worker, "Camoufox", return_value=browser), \
                 patch.object(worker, "NewContext", return_value=context), \
+                patch.object(worker, "await_origin_header_policy") as readiness, \
                 patch.object(worker, "evaluate_source_script", return_value="generated-result"):
             worker.render(payload)
+            readiness.assert_called_once()
+            if payload["headers"]:
+                self.assertIsNotNone(readiness.call_args.args[1])
+        context.set_extra_http_headers.assert_not_called()
         return requests, payload, context
 
     def test_default_post_has_the_observed_legacy_form_type_without_changing_body(self):
@@ -164,12 +168,12 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
         self.assertEqual("q=post", requests[0]["post_data"])
         self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
                          requests[0].get("headers", {}).get("content-type"))
-        self.assertEqual("synthetic", requests[0]["headers"]["x-fixture"])
+        self.assertNotIn("x-fixture", requests[0]["headers"])
         self.assertEqual("generated-agent", requests[0]["headers"]["user-agent"])
         self.assertEqual({}, requests[1])
         self.assertEqual({}, requests[2])
         self.assertEqual({"X-Fixture": "synthetic"}, payload["headers"])
-        context.set_extra_http_headers.assert_called_once_with(payload["headers"])
+        context.set_extra_http_headers.assert_not_called()
 
     def test_explicit_content_type_in_any_case_is_not_overridden_or_rewritten(self):
         for name in ("Content-Type", "content-type", "CONTENT-TYPE"):
@@ -190,6 +194,124 @@ class WorkerPostHeaderPolicyTest(unittest.TestCase):
                 self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
                                  requests[0].get("headers", {}).get("content-type"))
                 self.assertEqual([{}, {}], requests[1:])
+
+
+class WorkerOriginHeaderPolicyTest(unittest.TestCase):
+    def test_empty_headers_have_no_addon_or_bootstrap(self):
+        with patch.object(worker.tempfile, "TemporaryDirectory") as files:
+            with worker.origin_header_addon("https://generated.invalid", {}) as policy:
+                self.assertIsNone(policy)
+            files.assert_not_called()
+        context = MagicMock()
+        worker.await_origin_header_policy(context, None, 1000)
+        context.new_page.assert_not_called()
+
+    def test_normalization_preserves_values_and_does_not_mutate_input(self):
+        headers = {"Authorization": "Bearer GENERATED", "X-Trace": "中文", "Content-Type": ""}
+        self.assertEqual({"authorization": "Bearer GENERATED", "x-trace": "中文", "content-type": ""},
+                         worker.bounded_rule_headers(headers))
+        self.assertEqual(["Authorization", "X-Trace", "Content-Type"], list(headers))
+
+    def test_invalid_headers_fail_before_files_or_browser_launch(self):
+        invalid = [[], "bad", {"A B": "x"}, {"X": "a\rb"}, {"X": "a\nb"},
+                   {"X": "a\x00b"}, {"X": 7}, {7: "x"}, {"X": "a\x7fb"},
+                   {"X": "one", "x": "two"}]
+        for headers in invalid:
+            with self.subTest(kind=type(headers).__name__), \
+                    patch.object(worker.tempfile, "TemporaryDirectory") as files:
+                with self.assertRaises(worker.HeaderPolicyError):
+                    with worker.origin_header_addon("https://generated.invalid", headers):
+                        self.fail("Invalid policy yielded")
+                files.assert_not_called()
+
+    def test_managed_credentials_and_transport_headers_cannot_enter_rule_addon(self):
+        for name in ("Cookie", "User-Agent", "HOST", "Content-Length", "Proxy-Authorization"):
+            with self.subTest(name=name), self.assertRaises(worker.HeaderPolicyError):
+                worker.bounded_rule_headers({name: "GENERATED"})
+
+    def test_header_pair_and_utf8_limits_are_enforced_without_truncation(self):
+        allowed = {"X" + str(index): "v" for index in range(worker.MAX_RULE_HEADERS)}
+        self.assertEqual(64, len(worker.bounded_rule_headers(allowed)))
+        with self.assertRaises(worker.HeaderPolicyError):
+            worker.bounded_rule_headers({**allowed, "Extra": "v"})
+        self.assertEqual("a" * 8191, worker.bounded_rule_headers({"X": "a" * 8191})["x"])
+        for value in ("a" * 8192, "中" * 2731):
+            with self.assertRaises(worker.HeaderPolicyError):
+                worker.bounded_rule_headers({"X": value})
+
+    def test_addon_is_private_not_web_accessible_and_removed_after_success(self):
+        with worker.origin_header_addon("https://generated.invalid/book", {"Authorization": "GENERATED_ONLY"}) as policy:
+            directory = Path(policy["addons"][0])
+            manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+            self.assertNotIn("web_accessible_resources", manifest)
+            self.assertNotIn("GENERATED_ONLY", policy["bootstrapUrl"])
+            self.assertNotIn("GENERATED_ONLY", (directory / "ready.js").read_text(encoding="utf-8"))
+            self.assertIn('"authorization": "GENERATED_ONLY"', (directory / "policy.js").read_text(encoding="utf-8"))
+            self.assertEqual({"policy.js", "manifest.json", "ready.js"}, {file.name for file in directory.iterdir()})
+            if os.name == "posix":
+                self.assertEqual(0o700, directory.stat().st_mode & 0o777)
+                self.assertTrue(all(file.stat().st_mode & 0o777 == 0o600 for file in directory.iterdir()))
+        self.assertFalse(directory.exists())
+
+    def test_addon_files_are_removed_on_browser_failure(self):
+        with self.assertRaises(RuntimeError):
+            with worker.origin_header_addon("https://generated.invalid", {"X": "GENERATED"}) as policy:
+                directory = Path(policy["addons"][0])
+                raise RuntimeError("generated failure")
+        self.assertFalse(directory.exists())
+
+    def test_ready_bootstrap_is_fulfilled_without_headers_and_always_closed(self):
+        context = MagicMock()
+        policy = {"bootstrapUrl": "http://reader-header-generated.invalid/ready", "nonce": "GENERATED_NONCE"}
+        with patch.object(worker.time, "monotonic", side_effect=[0, .1, .2]):
+            worker.await_origin_header_policy(context, policy, 1000)
+        context.route.assert_called_once()
+        self.assertEqual(policy["bootstrapUrl"], context.route.call_args.args[0])
+        route = MagicMock()
+        context.route.call_args.args[1](route)
+        self.assertEqual(200, route.fulfill.call_args.kwargs["status"])
+        self.assertNotIn("headers", route.fulfill.call_args.kwargs)
+        context.unroute.assert_called_once_with(policy["bootstrapUrl"])
+        context.new_page.return_value.close.assert_called_once()
+
+    def test_only_private_bootstrap_can_retry_with_a_decreasing_deadline(self):
+        context = MagicMock()
+        page = context.new_page.return_value
+        page.goto.side_effect = [RuntimeError("generated unavailable"), None]
+        policy = {"bootstrapUrl": "http://reader-header-generated.invalid/ready", "nonce": "GENERATED_NONCE"}
+        with patch.object(worker.time, "monotonic", side_effect=[0, .1, .2, .3, .4]):
+            worker.await_origin_header_policy(context, policy, 1000)
+        self.assertEqual(2, page.goto.call_count)
+        self.assertTrue(all(call.args == (policy["bootstrapUrl"],) for call in page.goto.call_args_list))
+        self.assertGreater(page.goto.call_args_list[0].kwargs["timeout"], page.goto.call_args_list[1].kwargs["timeout"])
+        page.close.assert_called_once()
+
+    def test_readiness_failure_closes_context_before_cookies_or_business_navigation(self):
+        browser, context, page, payload = WorkerInitialNavigationPolicyTest().fixture()
+        payload["headers"] = {"Authorization": "GENERATED_ONLY"}
+        with patch.object(worker, "Camoufox", return_value=browser) as launch, \
+                patch.object(worker, "NewContext", return_value=context), \
+                patch.object(worker, "await_origin_header_policy", side_effect=worker.HeaderPolicyError()), \
+                patch.object(worker, "evaluate_source_script") as rule:
+            with self.assertRaises(worker.HeaderPolicyError):
+                worker.render(payload)
+        page.goto.assert_not_called()
+        context.add_cookies.assert_not_called()
+        context.set_extra_http_headers.assert_not_called()
+        context.close.assert_called_once()
+        self.assertTrue(launch.call_args.kwargs["firefox_user_prefs"]["network.proxy.allow_hijacking_localhost"])
+        self.assertEqual({"server": payload["proxy"]}, launch.call_args.kwargs["proxy"])
+        rule.assert_not_called()
+
+    def test_expired_bootstrap_is_fatal_and_does_not_echo_policy_values(self):
+        context = MagicMock()
+        policy = {"bootstrapUrl": "http://reader-header-generated.invalid/ready", "nonce": "GENERATED_NONCE"}
+        with patch.object(worker.time, "monotonic", side_effect=[0, 1.01]):
+            with self.assertRaises(worker.HeaderPolicyError) as failure:
+                worker.await_origin_header_policy(context, policy, 1000)
+        self.assertEqual("", str(failure.exception))
+        context.new_page.return_value.goto.assert_not_called()
+        context.new_page.return_value.close.assert_called_once()
 
 
 class WorkerBrowserDiagnosticTest(unittest.TestCase):

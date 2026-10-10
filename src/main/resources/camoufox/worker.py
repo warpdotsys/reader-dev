@@ -6,7 +6,9 @@ import os
 import re
 import secrets
 import sys
+import tempfile
 import time
+from pathlib import Path
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlsplit
 
@@ -44,6 +46,139 @@ MAX_COOKIE_VALUE_UTF8_BYTES = 8 * 1024
 MAX_COOKIE_DOMAIN_UTF8_BYTES = 253
 MAX_COOKIE_PATH_UTF8_BYTES = 2 * 1024
 MAX_COOKIE_SAMESITE_UTF8_BYTES = 16
+MAX_RULE_HEADERS = 64
+MAX_RULE_HEADER_UTF8_BYTES = 8192
+
+
+class HeaderPolicyError(Exception):
+    pass
+
+
+def bounded_rule_headers(headers):
+    """Bound the ephemeral policy before writing files or launching Firefox."""
+    if not isinstance(headers, dict) or len(headers) > MAX_RULE_HEADERS:
+        raise HeaderPolicyError()
+    result = {}
+    total = 0
+    for name, value in headers.items():
+        if (not isinstance(name, str) or not isinstance(value, str)
+                or not re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", name)
+                or any(ord(character) < 32 or ord(character) == 127 for character in value)):
+            raise HeaderPolicyError()
+        key = name.lower()
+        # These are managed separately by Reader/the browser, never by the rule addon.
+        if key in ("cookie", "user-agent", "host", "content-length", "proxy-authorization") or key in result:
+            raise HeaderPolicyError()
+        total += len(name.encode("utf-8")) + len(value.encode("utf-8"))
+        if total > MAX_RULE_HEADER_UTF8_BYTES:
+            raise HeaderPolicyError()
+        result[key] = value
+    return result
+
+
+ORIGIN_HEADER_LISTENER = """
+const configured = new Map(Object.entries(policy.headers));
+const origin = new URL(policy.url).origin;
+browser.webRequest.onBeforeSendHeaders.addListener(details => {
+  const same = new URL(details.url).origin === origin;
+  const headers = details.requestHeaders.filter(header => {
+    const name = header.name.toLowerCase();
+    if (!configured.has(name)) return true;
+    // 307/308 preserve the native request body and its media type. Do not
+    // strip body metadata while removing inherited authentication values.
+    if (!same && name === 'content-type' && details.method !== 'GET' && details.method !== 'HEAD') return true;
+    // On other origins, retain native/script headers that are not the rule's value.
+    // Firefox may carry a custom rule header along a redirect; remove that value.
+    return !same && String(header.value).trim() !== configured.get(name).trim();
+  });
+  if (same) {
+    for (const [name, value] of configured) headers.push({name, value});
+  }
+  return {requestHeaders: headers};
+}, {urls: ['http://*/*', 'https://*/*']}, ['blocking', 'requestHeaders']);
+browser.runtime.onMessage.addListener((message, sender) => {
+  if (sender.id === browser.runtime.id && sender.url === policy.bootstrapUrl && message === policy.nonce) {
+    return Promise.resolve(policy.nonce);
+  }
+});
+"""
+
+
+@contextlib.contextmanager
+def origin_header_addon(url, headers):
+    """Private, per-render native listener. No rule code or persistent profile."""
+    configured = bounded_rule_headers(headers)
+    if not configured:
+        yield None
+        return
+    nonce = secrets.token_hex(16)
+    bootstrap_origin = "http://reader-header-" + nonce + ".invalid"
+    bootstrap_url = bootstrap_origin + "/ready"
+    # The production image's /tmp is ephemeral; Python owns the 0700 directory.
+    # No header values enter URLs, diagnostics, HTML, web-accessible resources or Git.
+    with tempfile.TemporaryDirectory(prefix="reader-origin-headers-") as temporary:
+        addon = Path(temporary)
+        manifest = {
+            "manifest_version": 2, "name": "Reader origin header policy", "version": "1.0",
+            "browser_specific_settings": {"gecko": {"id": "reader-origin-headers@medwarp.cn"}},
+            "permissions": ["webRequest", "webRequestBlocking", "http://*/*", "https://*/*"],
+            "background": {"scripts": ["policy.js"]},
+            "content_scripts": [{"matches": [bootstrap_origin + "/*"],
+                                 "js": ["ready.js"], "run_at": "document_start"}],
+        }
+        policy = {"url": url, "headers": configured, "bootstrapUrl": bootstrap_url, "nonce": nonce}
+        ready = """
+browser.runtime.sendMessage(%s).then(nonce => {
+  if (nonce === %s && document.documentElement) document.documentElement.dataset.readerHeaderPolicyReady = nonce;
+});
+""" % (json.dumps(nonce), json.dumps(nonce))
+        for name, contents in (("manifest.json", json.dumps(manifest)),
+                               ("policy.js", "const policy = " + json.dumps(policy) + ";\n" + ORIGIN_HEADER_LISTENER),
+                               ("ready.js", ready)):
+            path = addon / name
+            with path.open("x", encoding="utf-8") as stream:
+                stream.write(contents)
+            path.chmod(0o600)
+        yield {"addons": [str(addon)], "bootstrapUrl": bootstrap_url, "nonce": nonce}
+
+
+def await_origin_header_policy(context, policy, timeout_ms):
+    """Require native listener readiness before any target request or Cookie import.
+
+    The private bootstrap page is fulfilled in memory: it never resolves a host or
+    opens a socket. Only this bootstrap can be retried, never the business navigation.
+    """
+    if policy is None:
+        return
+    bootstrap_url = policy["bootstrapUrl"]
+    deadline = time.monotonic() + timeout_ms / 1000.0
+    page = context.new_page()
+    context.route(bootstrap_url, lambda route: route.fulfill(
+        status=200, content_type="text/html; charset=UTF-8",
+        body="<!doctype html><html><body>Reader policy bootstrap</body></html>",
+    ))
+    try:
+        for _attempt in range(16):
+            remaining = int((deadline - time.monotonic()) * 1000)
+            if remaining <= 0:
+                raise HeaderPolicyError()
+            try:
+                page.goto(bootstrap_url, wait_until="domcontentloaded", timeout=min(remaining, 1000))
+                remaining = int((deadline - time.monotonic()) * 1000)
+                if remaining <= 0:
+                    raise HeaderPolicyError()
+                page.wait_for_function(
+                    "nonce => document.documentElement.dataset.readerHeaderPolicyReady === nonce",
+                    arg=policy["nonce"], timeout=min(remaining, 1000),
+                )
+                return
+            except Exception:
+                if time.monotonic() >= deadline:
+                    raise HeaderPolicyError() from None
+        raise HeaderPolicyError()
+    finally:
+        context.unroute(bootstrap_url)
+        page.close()
 
 
 class ResponseBodyTooLarge(Exception):
@@ -704,15 +839,14 @@ def render(payload):
     response_seen = set()
     proxy = {
         "server": payload["proxy"],
-        # Playwright's special value removes Firefox's implicit loopback bypass.
-        "bypass": "<-loopback>",
     }
 
-    with contextlib.redirect_stdout(sys.stderr):
+    with contextlib.redirect_stdout(sys.stderr), origin_header_addon(url, payload.get("headers") or {}) as header_policy:
         with Camoufox(
             headless=True,
             browser=payload.get("browserVersion") or None,
             proxy=proxy,
+            addons=header_policy["addons"] if header_policy else None,
             # Do not contact a GeoIP provider outside Reader's audited egress path.
             # The application proxy may be a local SSRF gate rather than a geographic exit.
             geoip=False,
@@ -722,6 +856,10 @@ def render(payload):
             # request, including redirects, is sent to Reader's validated local proxy.
             i_know_what_im_doing=True,
             firefox_user_prefs={
+                # <-loopback> is a Chromium option, not a Firefox bypass override.
+                # Send localhost/127.0.0.0/8/::1 to the Java SSRF gate too; this
+                # does NOT grant permission for private targets at that gate.
+                "network.proxy.allow_hijacking_localhost": True,
                 "network.dns.disablePrefetch": True,
                 "network.prefetch-next": False,
                 "network.predictor.enabled": False,
@@ -738,8 +876,7 @@ def render(payload):
             try:
                 context.set_default_timeout(timeout_ms)
                 context.set_default_navigation_timeout(timeout_ms)
-                if payload.get("headers"):
-                    context.set_extra_http_headers(payload["headers"])
+                await_origin_header_policy(context, header_policy, timeout_ms)
                 cookies = payload.get("cookies") or []
                 if len(cookies) > MAX_COOKIES:
                     raise CookieLimitExceeded()
@@ -825,7 +962,6 @@ def render(payload):
                             # Do not change context-wide headers, re-encode the body,
                             # replace an explicit type, or replay the navigation.
                             headers = dict(route.request.headers)
-                            headers.update({name.lower(): value for name, value in rule_headers.items()})
                             if "content-type" not in headers:
                                 headers["content-type"] = "application/x-www-form-urlencoded; charset=UTF-8"
                                 options["headers"] = headers

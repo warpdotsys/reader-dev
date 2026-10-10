@@ -1,0 +1,3278 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated direct readable worker in locked private runtime; no JAR or HTTPS acceptance",
+  "sourceHeadAtStart": "1ac19cb4d06109fa3975fb776baf76c3b6e0b1c0",
+  "workerSha256": "a8e612873a5a46c222ce848d8dfe83b103db3e5a19c638be01a69e99c6f94baf",
+  "workerSourceUncommittedAtCapture": true,
+  "rawReportSha256": "6b889cb7a105366d8a7da62e20bff34613bc04553dca167d81ba51c48067d73f",
+  "verifierSha256": "4b86fa6abb9d1b87ba01c0b5d1c617d3b80acccc4c9ae3c5a905bf91be1573df",
+  "imageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "httpCases": 10,
+  "targetRequests": 24,
+  "parsedHeaderFields": 310,
+  "generatedOnly": true,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "readerJarStarted": false,
+  "allRequestsUsedBoundedFixtureProxy": true,
+  "candidateHttpOriginHeaderSubsetAccepted": true,
+  "headerSecurityBusinessFixAccepted": false,
+  "httpsTested": false,
+  "rebuiltJarTested": false,
+  "githubHostedCandidateAccepted": false,
+  "latestWholeImageLocalAcceptance": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "seconds": 30.285,
+  "budget": {
+    "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 1611390976,
+    "memoryCurrentBytes": 1031450624,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 977,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 10248192,
+      "file": 1011879936,
+      "shmem": 0,
+      "kernel": 8204288,
+      "kernel_stack": 0,
+      "pagetables": 253952,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 61440,
+      "file_writeback": 0,
+      "inactive_file": 579264512,
+      "active_file": 432619520,
+      "slab_reclaimable": 7334000,
+      "slab_unreclaimable": 497024
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 214,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "identity": {
+    "uid": 10001,
+    "gid": 10001,
+    "groups": [],
+    "interfaces": [
+      "lo"
+    ],
+    "cpuSet": [
+      0,
+      1
+    ],
+    "capsZero": true,
+    "noNewPrivileges": true,
+    "namespaces": {
+      "user": 4026532231,
+      "net": 4026532236,
+      "mnt": 4026532232,
+      "pid": 4026532235,
+      "ipc": 4026532234,
+      "uts": 4026532233
+    }
+  },
+  "independentlyStoppedPidZeroAndDeleted": true,
+  "ownedContainersRemaining": 0,
+  "observations": [
+    {
+      "strategy": "actual-readable-worker",
+      "case": "same-get",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/same-get\">书</a><span class=\"name\">认证头差分书-same-get</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/same-get/start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/same-get/end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "same-get",
+          "actor": "primary",
+          "role": "start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "same-get",
+          "actor": "primary",
+          "role": "end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "cross-get",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/cross-get\">书</a><span class=\"name\">认证头差分书-cross-get</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/cross-get/start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/cross-get/end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "cross-get",
+          "actor": "primary",
+          "role": "start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "cross-get",
+          "actor": "secondary",
+          "role": "end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "cross-post",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/cross-post\">书</a><span class=\"name\">认证头差分书-cross-post</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/cross-post/start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "user-agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "accept-language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "upgrade-insecure-requests",
+              "1"
+            ],
+            [
+              "content-type",
+              "application/x-www-form-urlencoded; charset=UTF-8"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Content-Length",
+              "23"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/cross-post/end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "user-agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "accept-language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "upgrade-insecure-requests",
+              "1"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "cross-post",
+          "actor": "primary",
+          "role": "start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "user-agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "accept-language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "upgrade-insecure-requests",
+              "1"
+            ],
+            [
+              "content-type",
+              "application/x-www-form-urlencoded; charset=UTF-8"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Length",
+              "23"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 23,
+          "bodySha256": "1d83d7747f01125a6eb2edd7d260b9dcf04570c1fcd2637a6731fe82f828c47a"
+        },
+        {
+          "case": "cross-post",
+          "actor": "secondary",
+          "role": "end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "user-agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "accept-language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "upgrade-insecure-requests",
+              "1"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "resources",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html data-generated-same-resource=\"executed\" data-generated-cross-resource=\"executed\"><head><meta charset=\"UTF-8\"><script src=\"http://127.0.0.1:40883/probe/resources/same.js\"></script><script src=\"http://127.0.0.2:37507/probe/resources/cross.js\"></script></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/resources\">书</a><span class=\"name\">认证头差分书-resources</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/resources/page",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/resources/same.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources/page"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=2"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/resources/cross.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Sec-Fetch-Storage-Access",
+              "none"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ],
+            [
+              "Priority",
+              "u=2"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "resources",
+          "actor": "primary",
+          "role": "page",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources",
+          "actor": "primary",
+          "role": "same.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources/page"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=2"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources",
+          "actor": "secondary",
+          "role": "cross.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Sec-Fetch-Storage-Access",
+              "none"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ],
+            [
+              "Priority",
+              "u=2"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "same-post-307",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/same-post-307\">书</a><span class=\"name\">认证头差分书-same-post-307</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": [
+          {
+            "name": "generated_session",
+            "value": "GENERATED_SESSION_ONLY",
+            "domain": "127.0.0.1",
+            "path": "/probe/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": true,
+            "sameSite": "None",
+            "expires": -1,
+            "deleted": false
+          }
+        ]
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/same-post-307/start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/same-post-307/end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Cookie",
+              "generated_session=GENERATED_SESSION_ONLY"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "same-post-307",
+          "actor": "primary",
+          "role": "start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        },
+        {
+          "case": "same-post-307",
+          "actor": "primary",
+          "role": "end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Cookie",
+              "generated_session=GENERATED_SESSION_ONLY"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "same-post-308",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/same-post-308\">书</a><span class=\"name\">认证头差分书-same-post-308</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": [
+          {
+            "name": "generated_session",
+            "value": "GENERATED_SESSION_ONLY",
+            "domain": "127.0.0.1",
+            "path": "/probe/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": true,
+            "sameSite": "None",
+            "expires": -1,
+            "deleted": false
+          }
+        ]
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/same-post-308/start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/same-post-308/end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Cookie",
+              "generated_session=GENERATED_SESSION_ONLY"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "same-post-308",
+          "actor": "primary",
+          "role": "start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        },
+        {
+          "case": "same-post-308",
+          "actor": "primary",
+          "role": "end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Cookie",
+              "generated_session=GENERATED_SESSION_ONLY"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "cross-post-307",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/cross-post-307\">书</a><span class=\"name\">认证头差分书-cross-post-307</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": [
+          {
+            "name": "generated_session",
+            "value": "GENERATED_SESSION_ONLY",
+            "domain": "127.0.0.1",
+            "path": "/probe/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": true,
+            "sameSite": "None",
+            "expires": -1,
+            "deleted": false
+          }
+        ]
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/cross-post-307/start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/cross-post-307/end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "cross-post-307",
+          "actor": "primary",
+          "role": "start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        },
+        {
+          "case": "cross-post-307",
+          "actor": "secondary",
+          "role": "end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "cross-post-308",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/cross-post-308\">书</a><span class=\"name\">认证头差分书-cross-post-308</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": [
+          {
+            "name": "generated_session",
+            "value": "GENERATED_SESSION_ONLY",
+            "domain": "127.0.0.1",
+            "path": "/probe/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": true,
+            "sameSite": "None",
+            "expires": -1,
+            "deleted": false
+          }
+        ]
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/cross-post-308/start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/cross-post-308/end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "cross-post-308",
+          "actor": "primary",
+          "role": "start",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        },
+        {
+          "case": "cross-post-308",
+          "actor": "secondary",
+          "role": "end",
+          "method": "POST",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            ],
+            [
+              "Content-Length",
+              "39"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 39,
+          "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "script-cross-get",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/script-cross-get\">书</a><span class=\"name\">认证头差分书-script-cross-get</span><span class=\"author\">生成作者</span></div></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/script-cross-get/start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/script-cross-get/end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "script-cross-get",
+          "actor": "primary",
+          "role": "start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "script-cross-get",
+          "actor": "secondary",
+          "role": "end",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    },
+    {
+      "strategy": "actual-readable-worker",
+      "case": "resources-redirect",
+      "failureType": null,
+      "workerResult": {
+        "body": "<html data-generated-same-resource=\"executed\" data-generated-cross-resource=\"executed\"><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"http://127.0.0.1:40883/book/resources-redirect\">书</a><span class=\"name\">认证头差分书-resources-redirect</span><span class=\"author\">生成作者</span></div><script src=\"http://127.0.0.1:40883/probe/resources-redirect/same.js\"></script><script src=\"http://127.0.0.1:40883/probe/resources-redirect/cross.js\"></script></body></html>",
+        "cookies": []
+      },
+      "proxyRequests": [
+        {
+          "url": "http://127.0.0.1:40883/probe/resources-redirect/start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/resources-redirect/same.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/resources-redirect/cross.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:40883/probe/resources-redirect/same-end.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ]
+        },
+        {
+          "url": "http://127.0.0.2:37507/probe/resources-redirect/cross-end.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Sec-Fetch-Storage-Access",
+              "none"
+            ],
+            [
+              "Connection",
+              "keep-alive"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ]
+          ]
+        }
+      ],
+      "everyActualTargetRequestUsedProxy": true,
+      "allPrimaryRequestsAuthenticated": true,
+      "crossAuthorizationSent": false,
+      "targetRequests": [
+        {
+          "case": "resources-redirect",
+          "actor": "primary",
+          "role": "start",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Upgrade-Insecure-Requests",
+              "1"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "document"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "navigate"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "none"
+            ],
+            [
+              "Sec-Fetch-User",
+              "?1"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ],
+            [
+              "Priority",
+              "u=0, i"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources-redirect",
+          "actor": "primary",
+          "role": "same.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources-redirect",
+          "actor": "primary",
+          "role": "cross.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources-redirect",
+          "actor": "primary",
+          "role": "same-end.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.1:40883"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/probe/resources-redirect/start"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "same-origin"
+            ],
+            [
+              "authorization",
+              "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+            ],
+            [
+              "x-generated-trace",
+              "GENERATED_HEADER_TRACE_ONLY"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "resources-redirect",
+          "actor": "secondary",
+          "role": "cross-end.js",
+          "method": "GET",
+          "headers": [
+            [
+              "Host",
+              "127.0.0.2:37507"
+            ],
+            [
+              "User-Agent",
+              "ReaderGeneratedHeaderProbe/1.0"
+            ],
+            [
+              "Accept",
+              "*/*"
+            ],
+            [
+              "Accept-Language",
+              "en-US,en;q=0.9"
+            ],
+            [
+              "Accept-Encoding",
+              "gzip, deflate, br, zstd"
+            ],
+            [
+              "Referer",
+              "http://127.0.0.1:40883/"
+            ],
+            [
+              "Sec-Fetch-Storage-Access",
+              "none"
+            ],
+            [
+              "Sec-Fetch-Dest",
+              "script"
+            ],
+            [
+              "Sec-Fetch-Mode",
+              "no-cors"
+            ],
+            [
+              "Sec-Fetch-Site",
+              "cross-site"
+            ]
+          ],
+          "bodyByteCount": 0,
+          "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "rejections": 0
+    }
+  ]
+}

@@ -4,11 +4,14 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 /**
  * Parent-side protocol tests deliberately use Java source-file mode as a tiny fake
@@ -54,6 +57,65 @@ class CamoufoxWebviewRendererOutputLimitTest {
             }
         """))
         assertEquals("ok", healthy.render(request()).body)
+    }
+
+    @Test
+    fun ownedCredentialWorkspaceIsRemovedWithoutFollowingSymlinksOnSuccess() = runBlocking {
+        val outside = temp.newFile("generated-outside-target.txt").toPath()
+        Files.writeString(outside, "GENERATED_SENTINEL")
+        val encodedOutside = Base64.getEncoder().encodeToString(outside.toString().toByteArray(StandardCharsets.UTF_8))
+        val fake = renderer(fakeWorker("""
+            import java.nio.file.*;
+            import java.nio.charset.StandardCharsets;
+            import java.util.Base64;
+            public class FakeWorker {
+                public static void main(String[] args) throws Exception {
+                    Path directory=Path.of(System.getenv("TMPDIR"));
+                    if (!directory.toString().equals(System.getenv("TEMP")) || !directory.toString().equals(System.getenv("TMP"))) throw new Exception("Generated temp mismatch");
+                    if (Files.getFileStore(directory).supportsFileAttributeView("posix") && !Files.getPosixFilePermissions(directory).equals(java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"))) throw new Exception("Generated permission mismatch");
+                    Files.writeString(directory.resolve("generated-policy.js"), "GENERATED_NOT_A_CREDENTIAL");
+                    if (!System.getProperty("os.name").startsWith("Windows")) {
+                        Path outside=Path.of(new String(Base64.getDecoder().decode("$encodedOutside"), StandardCharsets.UTF_8));
+                        Files.createSymbolicLink(directory.resolve("outside-link"), outside);
+                    }
+                    String encoded=Base64.getEncoder().encodeToString(directory.toString().getBytes(StandardCharsets.UTF_8));
+                    System.out.print("{\"body\":\""+encoded+"\",\"cookies\":[]}");
+                }
+            }
+        """))
+        val directory = Path.of(String(Base64.getDecoder().decode(fake.render(request()).body), StandardCharsets.UTF_8))
+        assertTrue(directory.fileName.toString().startsWith("reader-camoufox-request-"))
+        assertFalse("Successful child may not retain credential files", Files.exists(directory))
+        assertEquals("GENERATED_SENTINEL", Files.readString(outside))
+    }
+
+    @Test
+    fun ownedCredentialWorkspaceIsRemovedAfterTheOutputLimitKillsWorker() = runBlocking {
+        val marker = temp.newFile("generated-owned-temp-marker.txt").toPath()
+        val encodedMarker = Base64.getEncoder().encodeToString(marker.toString().toByteArray(StandardCharsets.UTF_8))
+        val fake = renderer(fakeWorker("""
+            import java.nio.file.*;
+            import java.nio.charset.StandardCharsets;
+            import java.util.Base64;
+            public class FakeWorker {
+                public static void main(String[] args) throws Exception {
+                    Path directory=Path.of(System.getenv("TMPDIR"));
+                    Path marker=Path.of(new String(Base64.getDecoder().decode("$encodedMarker"), StandardCharsets.UTF_8));
+                    Files.writeString(marker, Base64.getEncoder().encodeToString(directory.toString().getBytes(StandardCharsets.UTF_8)));
+                    Files.writeString(directory.resolve("generated-policy.js"), "GENERATED_NOT_A_CREDENTIAL");
+                    byte[] chunk=new byte[65536];
+                    java.util.Arrays.fill(chunk, (byte)'x');
+                    for (int i=0;i<145;i++) System.out.write(chunk);
+                    System.out.flush();
+                    Thread.sleep(20000);
+                }
+            }
+        """))
+        val failure = runCatching { fake.render(request()) }.exceptionOrNull()
+        assertTrue(failure is IllegalStateException && failure.message?.contains("输出超过 8 MiB 限制") == true)
+        val directory = Path.of(String(Base64.getDecoder().decode(Files.readString(marker)), StandardCharsets.UTF_8))
+        assertTrue(directory.fileName.toString().startsWith("reader-camoufox-request-"))
+        assertFalse("Killed child may not retain credential files", Files.exists(directory))
     }
 
     private fun renderer(script: Path): CamoufoxWebviewRenderer {

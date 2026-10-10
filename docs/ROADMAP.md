@@ -11,7 +11,11 @@
 
 ## 当前验收快照（2026-10-10，历史轮次各自注明）
 
+- **原生逐跳头策略候选已取得直接worker有限HTTP证据，尚未接受新JAR/HTTPS**：不再设置context全局规则头；每次原生发送前保同源、剥离跨源继承规则值，307/308仍保正文/类型。随机内存bootstrap握手先于Cookie/业务；修正Firefox loopback绕过Java出口，并新增父级私有临时目录清理。j轮冻结可读worker的10场景／24目标请求／310字段独立重验，39字节中文POST、同源HttpOnly Cookie、跨源不传源站Cookie和两种资源/页面跳转均完成；30.285秒、2CPU2GiB／256PID／零swap，峰值1,611,390,976B／PID214，触限/OOM0、自有清理0。保留早期代理/握手/Content-Type失败。495Python／1原平台跳过通过；Cam正式门槛增为24，旧20不接受，父级新增两JVM清理测试待自己的CI。不是新JAR三方、HTTPS/真实认证、最新整镜像或生产接受，PR仍draft、不发版部署。[候选实现、实际证据、已知限制及回退](ORIGIN-HEADERS-CANDIDATE-2026-10-10.md)。
+
 - **新增生成三方认证核查发现P1风险，尚未修复**：准确b26原件／bb6的a873新JAR，固定历史WebKit与Camoufox实际四追加用例、12完整ReturnData均成功/逐字相同，但25目标请求明确显示三侧跨源GET和脚本都带生成Authorization；Cam还跟随历史未跟随的POST303并传出该头。保留诊断退出1／strict安全false，不能把成功JSON当认证安全。56.628秒，aggregate2CPU2GiB／256PID／零swap，峰值约1.5GiB／PID246、触限/OOM0、自有清理0；没有真实凭据/正文/生产操作。10生成守卫、481Python本机通过／1原平台跳过，自己的CI另验；默认主线/PR56 draft不变，当前不发版部署此认证路径。[完整诊断、已知风险、证据与回退](HEADER-SECURITY-CHARACTERIZATION-2026-10-10.md)。
+
+  同一诊断增量1ac19cb4／tested3a06自己的四条CI已终态成功并独立接受：481Python全执行、JVM188／31原环境跳过、25实际UI／零跳过、两次同a873，Cam20／Chrom23／helper3及默认UI1例7.032秒；两张新中文生成图已目视，仍不宣称全UI无问题。Full峰值896,593,920B／PID195，普通允许swap但实际0，不冒充本机零swap三方。阶段回执捕获时Native仍运行，随后Native38034100705六作业／双原生及重导入／24publisher均独立接受，峰值865,054,720B／PID200，保留阶段回执并新增终态回执。四条构建仍是改前a873，认证安全false、该JAR中P1未修；新候选24契约必须另验。58用户报告未变。[自己的结果与准确边界](HEADER-SECURITY-CHARACTERIZATION-2026-10-10.md#诊断增量自己的托管结果四条已接受均为改前产物)。
 
 - **普通POST头修正自己的新JAR已实际三方验证，四条CI/Native六作业已独立接受**：bb6afa4e／tested9a86，两次同a873／285,666,064B／1,569条目；与旧da54逐条相比仅可读worker资源改变，Java类/依赖/前端字节不变。自己471Python全执行、JVM188／31原环境跳过、25实际UI和Full Cam20真实目标表单/显式JSON断言通过，默认UI1例8.346秒及新导入/阅读图中文可读。双架构原生/重导入/发布导入器24JSON通过，同a873，最大875,327,488B／PID211；不发布或部署。原件与新产物j/k再取33份实际字段对，三侧普通POST都form；显式JSON60字节保持，历史44字节严格不兼容仍保留；最高PID244／峰值约1.5GiB、2CPU2GiB零swap，触限/OOM0、独立清理0。只删除8个完成测试的JAR临时副本约1.34GiB，可从保留字节再建。真实认证/全头/长测/OPDS/最新整镜像本机/生产未完成，验收回填先保存本机。[修后自己的证据与风险](TARGET-HEADER-DIFFERENTIAL-2026-10-10.md#修正自己的产物和第二轮三方已取得)。
 
