@@ -75,8 +75,10 @@ def validate_packaged(report,jar_sha,worker_sha,revision,architecture,require_ce
     resources.verify_report(budget,require_no_swap=True)
     result=validate_observation(report['observation'],jar_sha,worker_sha)
     if require_certificate_hints:
-        expected={'wrong-host':'Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)',
-                  'untrusted':'Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)'}
+        # Reader search preserves Throwable.toString(), not just renderer.message.
+        # Require the exact public wire value; do not strip arbitrary prefixes.
+        expected={'wrong-host':'java.lang.IllegalStateException: Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)',
+                  'untrusted':'java.lang.IllegalStateException: Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)'}
         for row in report['observation']['results']:
             if row['case'] in expected:
                 require(row['readerApiResult']['returnData']['errorMsg']==expected[row['case']],

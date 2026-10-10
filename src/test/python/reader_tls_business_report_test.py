@@ -212,8 +212,8 @@ class ReaderTlsBusinessReportTest(unittest.TestCase):
         value=self.packaged_double()
         for row in value['observation']['results'][-2:]:
             row['readerApiResult']['returnData']['errorMsg']=(
-                'Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)' if row['case']=='wrong-host'
-                else 'Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)')
+                'java.lang.IllegalStateException: Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)' if row['case']=='wrong-host'
+                else 'java.lang.IllegalStateException: Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)')
         return value
 
     def check_certificate_hints(self,value):
@@ -221,6 +221,42 @@ class ReaderTlsBusinessReportTest(unittest.TestCase):
 
     def test_current_certificate_hint_gate_accepts_only_fixed_messages(self):
         self.assertTrue(self.check_certificate_hints(self.certificate_hints_double())['acceptedCertificateHintMessages'])
+
+    def test_missing_reader_exception_prefix_is_not_the_actual_wire_contract(self):
+        value=self.certificate_hints_double()
+        for row in value['observation']['results'][-2:]:
+            row['readerApiResult']['returnData']['errorMsg']=row['readerApiResult']['returnData']['errorMsg'].removeprefix('java.lang.IllegalStateException: ')
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def test_arbitrary_exception_prefix_is_not_accepted(self):
+        value=self.certificate_hints_double()
+        value['observation']['results'][-1]['readerApiResult']['returnData']['errorMsg']='generated.OtherError: '+value['observation']['results'][-1]['readerApiResult']['returnData']['errorMsg']
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def check_recorded_failed_hosted_job(self,arch,digest):
+        """Read captured log payloads; GitHub masks headers, so NOT full wire acceptance."""
+        path=ROOT / ('docs/evidence/certificate-hints-hosted-native-'+arch+'-failed-raw-fc0860f1-2026-10-10.json')
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),digest)
+        report=json.loads(path.read_bytes())
+        self.assertEqual(report['architecture'],arch)
+        self.assertEqual(report['jarSha256'],'0882fcf42692723381fc20dd746f269df96035c0c2b1c336d0fed027782bdf56')
+        self.assertEqual(report['workerSha256'],'d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5')
+        self.assertEqual(report['revision'],'65d7cd8144f85cb1316d102d26ca6b0604cfe632')
+        rows=report['observation']['results'][-2:]
+        self.assertEqual([row['case'] for row in rows],['wrong-host','untrusted'])
+        self.assertEqual([row['readerApiResult']['returnData'] for row in rows],[
+            {'isSuccess':False,'errorMsg':'java.lang.IllegalStateException: Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)'},
+            {'isSuccess':False,'errorMsg':'java.lang.IllegalStateException: Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)'}])
+        self.assertEqual([row['negativeHttpRequests'] for row in rows],[0,0])
+        self.assertFalse(report['fullGoalComplete'])
+
+    def test_recorded_actual_amd64_api_includes_reader_exception_prefix(self):
+        self.check_recorded_failed_hosted_job('amd64','ac08ee86d873160963250ca8cb094ef1c9640cfc8ab7cecec983aac9dabbff9d')
+
+    def test_recorded_actual_arm64_api_includes_reader_exception_prefix(self):
+        self.check_recorded_failed_hosted_job('arm64','0abb147cb993777001aa6cba643a908a0326688025705055395d2e979e7dff8e')
 
     def test_old_generic_errors_remain_historical_but_fail_new_hint_gate(self):
         value=self.packaged_double()

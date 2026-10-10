@@ -49,13 +49,32 @@ python3 scripts/verify-reader-tls-business.py \
 
 新源码可重复构建仅在干净独立checkout / 托管runner执行：先构建 `web-vue3`，再用JDK11运行 `./gradlew -PreaderWebUi=vue3 clean test bootJar --max-workers=2 --no-build-cache --no-daemon`。不要对当前保留授权书籍/证据的本机build执行clean。
 
-## 本机已成功编译；真实浏览器提示尚未验证
+## 初次提交前：本机已成功编译；当时尚无真实浏览器提示证据
 
 [准确本机回执](evidence/certificate-hints-local-verification-2026-10-10.json) / [实际JVM协议XML](evidence/certificate-hints-local-parent-protocol-2026-10-10.xml)。598 Python / 32.069秒 / 失败0 / 1原Windows平台跳过；86流水线检查 / 零跳过；编译后的Java/worker协议4项 / 零跳过，包括错误码固定中文、未知值/错误类别、成功与网络策略优先级。新增Python6项、业务报告6项、Node2项均为明确生成双桩，不冒充额外真实浏览器执行。worker源码/Gradle资源字节一致，SHA `d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5`；四文件3.10语法、两个Shell语法通过。
 
 首次测试辅助函数把可空body声明为String，compileTestKotlin失败；改为String?后实际编译/4项运行成功。新增flag后，一项忽略错误的删改测试插入点不完整，先触发“缺少flag”检查；修正到完整命令尾后86项全通过。保留这两次准备失败，不把它们当作生产证书失败或抹成首次通过。本机构建只限制该次JVM为2可用CPU/768MiB、最多2worker，不运行clean，不修改用户构建资料。
 
-候选自己的JAR/实际浏览器/两架构及重导入提示尚未取得证据。下一步是提交源码后使用GitHub托管runner的完整8项业务门槛，检查真实错误前缀及完整ReturnData；若未识别就保留失败修正，不为了绿灯放宽TLS或消息校验。
+以上是首次提交前的状态；提交后的实际运行及失败边界如下。不能用该初始状态或以前的绿灯接受本轮产物。
+
+## 已从准确恢复JAR验证：fc真实提示生效，验收前缀断言失败
+
+源码 `fc0860f1f9251a9ad2fa25d649e60f8b44068e3c`，测试快照 `65d7cd8144f85cb1316d102d26ca6b0604cfe632`。自己的 [Java任务](https://github.com/warpdotsys/reader-dev/actions/runs/38062537108) 和 [UI任务](https://github.com/warpdotsys/reader-dev/actions/runs/38062537167) 终态成功，独立核对598 Linux Python / 零跳过，44套201 JVM / 35原环境跳过，25实际生成UI / 零跳过。两次干净复建完整字节一致，新JAR SHA `0882fcf42692723381fc20dd746f269df96035c0c2b1c336d0fed027782bdf56`、285,672,007B / 1,570条目，不借用旧fcd身份。[Java回执](evidence/certificate-hints-hosted-java-fc0860f1-2026-10-10.json) SHA `9354631bbf9cd1e4a153d9aefc77c1b8479091f91f19ff8ff4c7944205f4cb04`；[UI/Java回执](evidence/certificate-hints-hosted-ui-java-fc0860f1-2026-10-10.json) SHA `fcbcac57fe9a58c5e9793adae3ec59db6db2a7210bdcd710e838cabf7a56f6cb`。这些不证明生产UI或真实书完整旅程。
+
+[Full任务](https://github.com/warpdotsys/reader-dev/actions/runs/38062537142) 和 [Native任务](https://github.com/warpdotsys/reader-dev/actions/runs/38062537104) **终态失败**，不得标成成功。Native两架构实际执行8个生成Reader业务场景，两个证书负例的真实ReturnData都是HTTP200 / isSuccess=false / 省略data，提示分别为：
+
+```text
+java.lang.IllegalStateException: Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)
+java.lang.IllegalStateException: Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)
+```
+
+两个负例各自目标HTTP请求为零，并留下对应TLS失败/Java上游连接记录。新生产提示已在自己的准确JAR中真实出现；失败发生在**验收脚本只期待renderer.message、未包含Reader原有Throwable.toString()前缀**。`YueduApi.onHandlerError` 源码也明确保留 `error.toString()`。修复只调整脚本的完整固定wire文字，不修改接口去掉前缀、不做任意strip或后缀匹配、不忽略证书。
+
+保留 [amd64失败日志JSON](evidence/certificate-hints-hosted-native-amd64-failed-raw-fc0860f1-2026-10-10.json) SHA `ac08ee86d873160963250ca8cb094ef1c9640cfc8ab7cecec983aac9dabbff9d`，[arm64失败日志JSON](evidence/certificate-hints-hosted-native-arm64-failed-raw-fc0860f1-2026-10-10.json) SHA `0abb147cb993777001aa6cba643a908a0326688025705055395d2e979e7dff8e`。它们是从对应失败作业日志原样提取的payload，**GitHub已经遮盖Authorization字段，不是未经遮盖的产物报告**。不复原这些星号、不声称用它们独立接受了完整178头字段/8项业务；新增两个记录回归只严格核对准确身份、真实两错误完整文字/形状/零目标HTTP。第一次尝试将遮盖日志投入完整头验证被拒绝，此边界保留。
+
+Full同样停在固定消息断言，后续完整镜像默认UI报告不存在，上传步骤明确失败；Native重导入及publisher作业被跳过。需要用修正后的producer/publisher新任务取得**未遮盖原始产物**并重跑完整门槛，不能把失败作业更名为通过，也不能先拿失败Native任务执行长测。
+
+脚本修正后本机602 Python / 36.825秒 / 零失败 / 1原Windows平台跳过、55业务报告守卫及86流水线守卫通过。4个新增Python用例包括缺失/任意前缀拒绝和两架构真实错误记录回归；记录回归不是新的浏览器执行。生产worker仍为d8 SHA，Java/Kotlin生产源码未再次改变。长测将在新成功准确镜像上进行，保持2CPU / 2GiB / 256PID / 零swap与生成数据隔离。
 
 ## 已知问题与回退
 
