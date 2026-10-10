@@ -62,6 +62,7 @@ for (const [name, file, mutate, expected] of [
   ['TLS container allows swap', 'scripts/smoke-native-tls.sh', text => text.replace('--memory=2g --memory-swap=2g', '--memory=2g --memory-swap=3g'), /offline packaged HTTPS safety/],
   ['TLS certificate policy not isolated', 'scripts/smoke-native-tls.sh', text => text.replace('"$distribution:size=1m,mode=700,uid=10001,gid=10001"', 'omitted-policy'), /offline packaged HTTPS safety/],
   ['TLS fontconfig temporary mount omitted', 'scripts/smoke-native-tls.sh', text => text.replace('--tmpfs /home/reader/.cache/camoufox/fontconfig:size=1m,mode=700,uid=10001,gid=10001', ''), /offline packaged HTTPS safety/],
+  ['TLS application directory temporary mount omitted', 'scripts/smoke-native-tls.sh', text => text.replace('--tmpfs /home/reader/camoufox:size=1m,mode=700,uid=10001,gid=10001', ''), /offline packaged HTTPS safety/],
   ['TLS check failure ignored', 'scripts/import-native-release.sh', text => text.replace('--architecture "$arch"', '--architecture "$arch" || true'), /packaged HTTPS acceptance must not ignore failures/],
   ['missing legacy upload staging link', 'deploy/reader-pro/Dockerfile', text => text.replace('ln -s /tmp/reader-file-uploads /app/file-uploads', 'echo omitted-link'), /retain the legacy upload path/],
   ['upload temp symlink substitution not rejected', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test ! -L "$upload_tmp"', ''), /private upload staging entrypoint guard missing/],

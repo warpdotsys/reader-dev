@@ -45,6 +45,7 @@ for (const token of [
   '--memory=2g --memory-swap=2g --pids-limit=256', '--cpus=2',
   '--security-opt no-new-privileges:true', '"$distribution:size=1m,mode=700,uid=10001,gid=10001"',
   '--tmpfs /home/reader/.cache/camoufox/fontconfig:size=1m,mode=700,uid=10001,gid=10001',
+  '--tmpfs /home/reader/camoufox:size=1m,mode=700,uid=10001,gid=10001',
   '--jar /app/reader.jar --expected-jar-sha "$expected_jar" --expected-worker-sha "$expected_worker"',
   'timeout --signal=TERM 300 docker wait "$container_id"',
   'test "$(cat "$directory/exit-code")" = 0',

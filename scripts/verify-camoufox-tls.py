@@ -29,7 +29,8 @@ def validate(report, jar_sha, worker_sha, revision, architecture):
     require(report.get("schemaVersion") == 1 and report.get("jarSha256") == jar_sha and
             report.get("workerSha256") == worker_sha and report.get("revision") == revision and
             report.get("architecture") == architecture, "TLS artifact identity mismatch")
-    for key in ("generatedOnly", "fixtureOnlyPrivateDistributionPolicy", "fixtureOnlyPrivateFontconfigTmpfs", "httpsTested"):
+    for key in ("generatedOnly", "fixtureOnlyPrivateDistributionPolicy", "fixtureOnlyPrivateFontconfigTmpfs",
+                "fixtureOnlyPrivateAppDataTmpfs", "httpsTested"):
         require(report.get(key) is True, "Missing TLS isolation evidence: " + key)
     for key in ("realCredentialsImported", "privateBookBodyRead", "readerJarStarted",
                 "hostTrustStoreChanged", "ignoreHttpsErrorsUsed", "workerLaunchOverridden",

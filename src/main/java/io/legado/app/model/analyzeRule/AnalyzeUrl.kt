@@ -369,6 +369,7 @@ class AnalyzeUrl(
                     headerMap = headerMap,
                     sourceRegex = sourceRegex,
                     javaScript = webJs ?: jsStr,
+                    proxy = proxy,
                     post = true,
                     body = body,
                     userNameSpace = getUserNameSpace(),
@@ -381,6 +382,7 @@ class AnalyzeUrl(
                     headerMap = headerMap,
                     sourceRegex = sourceRegex,
                     javaScript = webJs ?: jsStr,
+                    proxy = proxy,
                     userNameSpace = getUserNameSpace(),
                     debugLog = debugLog
                 )

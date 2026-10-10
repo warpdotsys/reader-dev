@@ -59,6 +59,7 @@ container_id=$(docker run -d --init --name "$name" --network none --read-only \
   --cpus=2 --memory=2g --memory-swap=2g --pids-limit=256 --shm-size=512m \
   --tmpfs /tmp:size=256m,mode=1777 \
   --tmpfs /home/reader/.camoufox:size=16m,mode=700,uid=10001,gid=10001 \
+  --tmpfs /home/reader/camoufox:size=1m,mode=700,uid=10001,gid=10001 \
   --tmpfs /home/reader/.cache/camoufox/fontconfig:size=1m,mode=700,uid=10001,gid=10001 \
   --tmpfs "$distribution:size=1m,mode=700,uid=10001,gid=10001" \
   --mount "type=bind,source=$directory,target=/verification,readonly" \
@@ -75,6 +76,7 @@ jq -e --arg distribution "$distribution" '
   .[0].HostConfig.Privileged == false and
   (.[0].HostConfig.CapDrop | index("ALL")) != null and
   (.[0].HostConfig.SecurityOpt | index("no-new-privileges:true")) != null and
+  .[0].HostConfig.Tmpfs["/home/reader/camoufox"] == "size=1m,mode=700,uid=10001,gid=10001" and
   .[0].HostConfig.Tmpfs["/home/reader/.cache/camoufox/fontconfig"] == "size=1m,mode=700,uid=10001,gid=10001" and
   .[0].HostConfig.Tmpfs[$distribution] == "size=1m,mode=700,uid=10001,gid=10001"
 ' "$directory/container-inspect.json" >/dev/null

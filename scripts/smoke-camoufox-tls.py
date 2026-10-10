@@ -102,6 +102,12 @@ def probe(arguments):
     require(any(parts[4] == "/home/reader/.cache/camoufox/fontconfig" and
                 parts[parts.index("-") + 1] == "tmpfs" for parts in mounts),
             "Runtime fontconfig must use a private tmpfs, never modify the immutable browser")
+    app_dir = Path("/home/reader/camoufox")
+    require(any(parts[4] == str(app_dir) and parts[parts.index("-") + 1] == "tmpfs"
+                and "rw" in parts[5].split(",") for parts in mounts) and
+            app_dir.stat().st_uid == 10001 and app_dir.stat().st_gid == 10001 and
+            app_dir.stat().st_mode & 0o777 == 0o700,
+            "Camoufox app data must use the exact private UID-owned tmpfs, not writable home")
     policy = distribution / "policies.json"
     require(not policy.exists() and not policy.is_symlink(), "Never overwrite an existing policy")
     seed = json.loads(Path(arguments.seed_policy).read_bytes())["policy"]
@@ -316,6 +322,7 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
         'readerJarStarted': False, 'hostTrustStoreChanged': False, 'ignoreHttpsErrorsUsed': False,
         'fixtureOnlyPrivateDistributionPolicy': True, 'workerLaunchOverridden': False,
         'fixtureOnlyPrivateFontconfigTmpfs': True,
+        'fixtureOnlyPrivateAppDataTmpfs': True,
         'httpsTested': True, 'fullGoalComplete': False, 'results': results,
     }
 

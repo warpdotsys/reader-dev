@@ -1,8 +1,18 @@
 # 打包浏览器 HTTPS 发版门槛
 
-日期：2026-10-10。**ec20fb74 的四条托管 CI 已独立接受；新增门槛892205bd首轮真实运行失败，字体缓存临时区修订另验。未发版、未部署。**
+日期：2026-10-10。**ec20fb74 的四条托管 CI 已独立接受；新增门槛892205bd和字体临时区修订e7236633均真实失败，不能发版。未部署。**
 
 ## 最新实际失败与修订候选
+
+**e7236633自己的实际运行仍失败**：源码 `e7236633474868c6aaa939cfb71e872d483b6a6d`／测试合并 `5881352303f553776fc9867a3bbafcc22cc3c093`，API对比确认文件树一致。Java与Vue终态成功，但[Native](https://github.com/warpdotsys/reader-dev/actions/runs/38046230748)的amd64／arm64与[Full](https://github.com/warpdotsys/reader-dev/actions/runs/38046230859)均外部300秒超时／退出124。三个实际作业都只观察到首个same-get为TimeoutError、目标请求数0，未产生最终完整JSON；后续各例及总请求数未知，不把不完整观察改写成36例全失败或全程无请求。转移重导入与publisher未执行。保留[准确失败回执](evidence/packaged-tls-e7236633-failure-2026-10-10.json)，SHA `a6572723cd59c09c681d983510ae24a7e541cd1767173bd5d91c991c5b54441d`。异常由OSError变为TimeoutError不等于字体修订已完成验收。
+
+本机生成单例j／k以同一冻结worker、只读home及浏览器、2CPU／2GiB／256PID／零swap重现启动超时；分别75.325／75.242秒、峰值1,439,424,512／1,397,673,984B、PID77／76。两次都未发生OOM或触限，精确自有运行时清理后清单0，未运行Reader JAR。j日志有dconf只读警告，但k只增加1MiB私有dconf临时区后仍超时，明确排除它作为单一修复。l的更广私有缓存尝试在浏览器启动前因生成挂载父目录权限失败，不属于HTTPS或浏览器结论。继续定位只读缓存／启动条件，不扩大总资源、不忽略证书或解除rootfs只读。
+
+**本机最小目录对照已取得，托管新候选另验**：j/k/m/o仍超时；dconf、整体缓存、`.config`各自均不足。n/p的私有home可启动；仅查看生成目录的元数据后发现实际新建的是不带点的`/home/reader/camoufox`，而既有`.camoufox`挂载并非同一路径。q只增加这一个1MiB目录即可通过；r回到与j相同的只读home／缓存及既有私有字体配置条件，只增加该目录，11.118秒完成same-get，两实际HTTPS请求、两CONNECT、原生脚本生成标记和同源认证字段存在，峰值1,611,218,944B／PID167。2CPU／2GiB／256PID／零swap未变，hard max／OOM／PID触限0，自有容器清单0；soft `memory.high`事件751真实保留，不冒称全部压力事件为0。[九轮原始结果核查](evidence/readonly-browser-appdir-2026-10-10.json)，SHA `ac05f54a73693bd04013783d6dbb74ff92d830039dc929b05bdf02617bbcc0c5`。
+
+上述是旧缓存运行时中冻结c3ef2486的源码单例，不是新JAR／新托管镜像、12例证书控制或Java API接受。原单例记录没有逐隧道源端口字段，仅内部报告目标端口集合属于代理；回执明确不宣称独立接受了逐隧道关联，也不补造字段。正式打包门槛继续保留更严格的完整逐端口字段核查。
+
+新候选仅在现有TLS测试容器增加`/home/reader/camoufox:size=1m,mode=700,uid=10001,gid=10001`。外部容器属性和内部mountinfo／UID／GID／模式均必须核验，报告及publisher拒绝缺失的app-data隔离字段。没有开放整个home或增加`.config`／整体缓存，没有修改不可变浏览器字节、生产服务、主机信任或权限。28项生成报告守卫、77项结构守卫和完整525项Python／27.636秒／1项原Windows平台跳过通过；Bash语法与Python3.10源码解析通过。新提交自己的托管amd64／arm64及Full仍待实测，不能借r单例或ec20绿灯。
 
 892205bd／tested a78a6d 的 Java 与 Vue 已终态成功，但 [Native](https://github.com/warpdotsys/reader-dev/actions/runs/38044601669) 的两个原生作业与 [Full](https://github.com/warpdotsys/reader-dev/actions/runs/38044601623) 的镜像作业均在新增门槛失败。三个作业／36次调用均为 OSError，实际目标请求／CONNECT隧道为0，不能作为任何HTTPS／证书控制接受。Full的UI报告缺失是TLS前置失败后的收集失败，不是实际UI测试执行后的失败。完整保留[生成失败回执](evidence/packaged-tls-892205bd-failure-2026-10-10.json)，SHA `8a46f7ec8c46f1c308c9a29b79a4a7759228124a03bce5196728bbfd6969db5d`；它来自实际日志内JSON行，不冒称重算了下载ZIP或独立接受清理。
 
