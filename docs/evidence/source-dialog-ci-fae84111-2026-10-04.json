@@ -1,0 +1,26 @@
+{
+  "codeRevision": "fae841111908615a80aec9688f35c576f4b6889c",
+  "testedPrMergeRevision": "4fd89c75e48ef20d550802a2af8ffbc50eac170e",
+  "scope": "GitHub-hosted generated UI/browser and native artifact tests; no real credentials",
+  "workflows": {"java": 37201245139, "vue3": 37201245215, "browser": 37201245219, "native": 37201245117, "allCompletedSuccessfully": true},
+  "coreUi": {"downloadedArtifactId": 11302967004, "sizeBytes": 6187, "xmlSuites": 12, "tests": 12, "failures": 0, "errors": 0, "skipped": 0,
+    "sourceCookieJourneySeconds": 8.986, "sourceCookieXmlSha256": "dfe833660992c1e9707cc63f55f72c5720a05e95fbc328f8ebcbffc7f1f30d91"},
+  "camoufox": {"downloadedArtifactId": 11303126626, "sizeBytes": 918, "tests": 12, "failures": 0, "errors": 0, "skipped": 0, "seconds": 98.244,
+    "xmlSha256": "be0d2bd2163c2b7f470f890f2f3005bf3f0f45de14c2da2c1d9ea3114f3fbb65"},
+  "fullImageShortBudget": {"cpuQuota": 200000, "cpuPeriod": 100000, "memoryMaxBytes": 2147483648, "memoryPeakBytes": 797200384, "pidsMax": 256, "pidsPeak": 174,
+    "memoryMaxEvents": 0, "oomEvents": 0, "pidsMaxEvents": 0, "swapCurrentBytes": 0, "swapMaxBytes": 1073741824,
+    "budgetSha256": "fd8132080c2695bd44c5175288348056570a4e496dfbd929a8dd6a096d5ffbd8",
+    "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"},
+  "native": {
+    "jobs": 6, "allActuallyCompletedSuccessfully": true,
+    "publisherArtifactId": 11303665299, "sizeBytes": 7066, "downloadedJsonReports": 20,
+    "actualReleaseObjectsJarIdentitiesAndRequestCookieBudgetFieldsAudited": true,
+    "sharedJarSha256": "60ce9253033b6374403ab3c27f433892f3b9bd5cf0d020d1fa32a2c23d4fbcad",
+    "amd64": {"imageId": "sha256:d8ca9400372bc67641fd98b15e05f302526f8046437a4d28d59dd4415c4f2da4", "archiveSha256": "4c6cdaf0c21a5ebb51fde107084e790ead702cf6a3ed7fe7639b18de268d7f58", "builtMemoryPeakBytes": 789860352, "reloadedMemoryPeakBytes": 779751424, "builtPidsPeak": 184, "reloadedPidsPeak": 182,
+      "metadataSha256": "3f13192a4dd537ba8ae883070b09c85cfe3265fd45e808b2982ee2556d01e14f"},
+    "arm64": {"imageId": "sha256:06f4ce97339a2eb7fb97ee9573e87ce8039b06a085bb474184459625b0ab2203", "archiveSha256": "954fd7b6cca86d95c6146c3aa65713fa1bc90cd04474bbd1feb8bb1ab4936aae", "builtMemoryPeakBytes": 773582848, "reloadedMemoryPeakBytes": 788484096, "builtPidsPeak": 178, "reloadedPidsPeak": 178,
+      "metadataSha256": "ce7dd5a3d8a88d6cbef5f03c924720303774dd4555f4457928fe558cad70466d"}
+  },
+  "screenshotCaveat": "Hosted narrow cookie screenshot captured an enter-animation frame; not stable rendered-state evidence. Settled-transition capture is a subsequent increment.",
+  "limits": ["not new SPA scroll-cleanup coverage", "not real Qidian authentication or three-way parity", "short budgets permitted 1 GiB swap although actual usage was zero", "not merged to legacy, formally released, published to registries or deployed"]
+}

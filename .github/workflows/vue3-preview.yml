@@ -5,21 +5,36 @@ on:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'build.gradle.kts'
+      - 'web/package.json'
+      - 'deploy/reader-pro/Dockerfile'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BaseController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/UserController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   pull_request:
     branches: [legacy]
     paths:
       - '.github/workflows/vue3-preview.yml'
+      - 'build.gradle.kts'
+      - 'web/package.json'
+      - 'deploy/reader-pro/Dockerfile'
       - 'browser-poc/**'
+      - 'src/main/java/com/htmake/reader/config/AppConfig.kt'
       - 'src/main/java/com/htmake/reader/api/YueduApi.kt'
+      - 'src/main/java/com/htmake/reader/verticle/RestVerticle.kt'
       - 'src/main/java/com/htmake/reader/api/controller/BookSourceController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/BaseController.kt'
+      - 'src/main/java/com/htmake/reader/api/controller/UserController.kt'
       - 'src/main/java/com/htmake/reader/api/controller/FileController.kt'
       - 'web-vue3/**'
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -32,8 +47,8 @@ jobs:
       run:
         working-directory: web-vue3
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
@@ -42,11 +57,10 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test src/utils/groupContract.test.ts
-          node --test src/utils/sw.test.ts
-          node --test src/api/replaceRuleAdapter.test.ts
+          npm test
           npm run audit:api
-      - uses: actions/upload-artifact@v7
+          node --test ../browser-poc/src/test/resources/ui-screenshot-readiness.test.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-preview-${{ github.sha }}
           path: web-vue3/dist/
@@ -58,22 +72,34 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '11'
           cache: gradle
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
           cache-dependency-path: web-vue3/package-lock.json
       - name: Build Reader and install preview dependencies
         run: |
-          chmod +x gradlew
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew test bootJar --no-daemon
           npm ci --prefix web-vue3
+          npm run build --prefix web-vue3
+          chmod +x gradlew
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ./gradlew -PreaderWebUi=vue3 test bootJar --no-daemon
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          echo "READER_JAR=$jar" >> "$GITHUB_ENV"
+      - name: Assert Vue 3 assets are packaged in the Reader JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -Z1 "$READER_JAR" > "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/index.html' "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/static/index-.*\.js' "$RUNNER_TEMP/vue3-jar-entries.txt"
+          grep -q 'BOOT-INF/classes/web-vue3/static/epubArchive.worker-.*\.js' "$RUNNER_TEMP/vue3-jar-entries.txt"
       - name: Resolve Chromium on hosted runner
         shell: bash
         run: |
@@ -85,6 +111,16 @@ jobs:
           fi
           test -n "$chrome" && test -x "$chrome"
           echo "READER_BROWSER_EXECUTABLE=$chrome" >> "$GITHUB_ENV"
+      - name: Require Chinese glyph coverage for visual browser checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends fontconfig fonts-noto-cjk
+          fc-cache -f
+          family=$(fc-list :lang=zh family | sed -n '1p')
+          test -n "$family"
+          printf 'CJK font family for UI tests: %s\n' "$family"
       - name: Run isolated backend, book source, and Vite preview
         shell: bash
         run: |
@@ -92,52 +128,189 @@ jobs:
           mkdir -p "$RUNNER_TEMP/vue3-reader-data"
           python3 scripts/mock-book-source.py --port 18894 > "$RUNNER_TEMP/vue3-source.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-source.pid"
-          java -jar build/libs/reader-4.0.7.jar \
+          # Generated journeys exceed the production default of 15 accounts.
+          # Reserve bounded fixture capacity only; do not change production's limit.
+          java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-reader-data" \
-            --reader.server.port=18895 --reader.app.secure=true \
+            --reader.server.port=18895 --reader.server.bindAddress=127.0.0.1 \
+            --reader.app.secure=true \
+            --reader.app.web-ui=vue3 \
+            --reader.app.userLimit=100 \
             --reader.app.defaultUserEnableWebdav=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-reader.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-reader.pid"
-          READER_BACKEND_URL=http://127.0.0.1:18895 npm --prefix web-vue3 run dev -- --host 127.0.0.1 \
-            > "$RUNNER_TEMP/vue3-vite.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/vue3-vite.pid"
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:18894/health > /dev/null && \
                curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null && \
-               curl -fsS http://127.0.0.1:5173/login > /dev/null; then break; fi
+               curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null; then break; fi
             sleep 2
           done
           curl -fsS http://127.0.0.1:18894/health > /dev/null
           curl -fsS http://127.0.0.1:18895/reader3/getSystemInfo > /dev/null
-          curl -fsS http://127.0.0.1:5173/login > /dev/null
+          ss -lntH | grep ':18895' | tee "$RUNNER_TEMP/vue3-reader-listener.txt"
+          grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18895([[:space:]]|$)' \
+            "$RUNNER_TEMP/vue3-reader-listener.txt"
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > /dev/null
+          curl -fsS http://127.0.0.1:18895/ > "$RUNNER_TEMP/vue3-root.html"
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18895/login > "$RUNNER_TEMP/vue3-login.html"
+          cmp "$RUNNER_TEMP/vue3-root.html" "$RUNNER_TEMP/vue3-login.html"
+          grep -q '/static/index-.*\.js' "$RUNNER_TEMP/vue3-root.html"
       - name: Exercise Vue 3 pages with isolated accounts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           READER_VUE3_ISOLATED: '1'
-          READER_VUE3_PREVIEW_URL: http://127.0.0.1:5173
+          READER_VUE3_PREVIEW_URL: http://127.0.0.1:18895
           READER_BOOK_FIXTURE_URL: http://127.0.0.1:18894
         run: |
           ./gradlew -p browser-poc test \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBookshelfImportTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewTtsCacheIsolationTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSearchTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewGroupTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewTxtTocRuleTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSettingsDialogTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewFileTest' \
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewBackupTest' --no-daemon
-          for name in Login Reading Search Source Group ReplaceRule File Backup; do
+          for name in Login LoginLayout Logout Reading BookshelfImport LocalReading LocalCacheIsolation TtsCacheIsolation SessionRace CrossTab ShelfOfflineIsolation EpubSafety ShelfLayout Search Source SourceCookie Group ReplaceRule TxtTocRule SettingsDialog File Backup; do
             report="browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
             grep -q 'tests="1" skipped="0" failures="0" errors="0"' "$report"
           done
+      - name: Preserve core Vue 3 browser journey reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-core-browser-reports-${{ github.sha }}
+          path: browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview*Test.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated source-cookie and keyboard screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-source-cookie-state-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-source-cookie-stored.png
+            ${{ runner.temp }}/vue3-source-dialog-login.png
+            ${{ runner.temp }}/vue3-source-dialog-editor.png
+            ${{ runner.temp }}/vue3-source-dialog-cookie-mobile.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated scoped TTS cache screenshots (synthetic audio, no private text)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-tts-cache-${{ github.sha }}
+          path: ${{ runner.temp }}/tts-cache-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated TXT rule dialog and persistence screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-settings-dialogs-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-txt-rule-generated-*.png
+            ${{ runner.temp }}/vue3-settings-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve synthetic bookshelf layout screenshot
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-shelf-layout-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-shelf-layout-1135.png
+            ${{ runner.temp }}/vue3-shelf-layout-generated-page-top-*.png
+            ${{ runner.temp }}/vue3-shelf-layout-generated-geometry.json
+            ${{ runner.temp }}/vue3-shelf-layout-generated-custom-groups.json
+            ${{ runner.temp }}/vue3-shelf-layout-generated-custom-groups-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated late-session response screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-session-race-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-session-race-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated offline shelf isolation screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-shelf-offline-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-shelf-offline-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated cross-tab authentication screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-cross-tab-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-cross-tab-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated real logout screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-logout-${{ github.sha }}
+          path: ${{ runner.temp }}/vue3-logout-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated login layout geometry and viewport screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-login-layout-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-login-layout-generated-*.png
+            ${{ runner.temp }}/vue3-login-layout-generated-geometry.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve generated local reading screenshot (no private books)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-local-reading-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/vue3-local-reading-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-raw-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-fragments-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-nav-fragments-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-nav-fragments-timeout-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-css-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-css-timeout-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-budget-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-budget-fallback-synthetic.png
+            ${{ runner.temp }}/vue3-local-reading-download-deadline-synthetic.png
+            ${{ runner.temp }}/vue3-epub-safety-synthetic.png
+            ${{ runner.temp }}/vue3-epub-safety-mobile-synthetic.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve Vue 3 source journey diagnostics
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: vue3-source-browser-diagnostics-${{ github.sha }}
           path: |
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml
+            ${{ runner.temp }}/vue3-source-login-timeout.png
             ${{ runner.temp }}/vue3-source-edit-timeout.png
           if-no-files-found: ignore
           retention-days: 7
@@ -146,36 +319,51 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/vue3-secure-data"
-          java -jar build/libs/reader-4.0.7.jar \
+          java -jar "$READER_JAR" \
             "--reader.app.workDir=$RUNNER_TEMP/vue3-secure-data" \
-            --reader.server.port=18896 --reader.app.secure=true \
+            --reader.server.port=18896 --reader.server.bindAddress=127.0.0.1 \
+            --reader.app.secure=true \
+            --reader.app.web-ui=vue3 \
             --reader.app.secureKey=Vue3ProbeManagerKey-2026 \
             --reader.app.defaultUserEnableLocalStore=true \
             --reader.app.licenseCheckEnabled=false \
             > "$RUNNER_TEMP/vue3-secure.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/vue3-secure.pid"
-          READER_BACKEND_URL=http://127.0.0.1:18896 npm --prefix web-vue3 run dev -- \
-            --host 127.0.0.1 --port 5174 --strictPort \
-            > "$RUNNER_TEMP/vue3-secure-vite.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/vue3-secure-vite.pid"
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null && \
-               curl -fsS http://127.0.0.1:5174/login > /dev/null; then break; fi
+               curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null; then break; fi
             sleep 2
           done
           curl -fsS http://127.0.0.1:18896/reader3/getSystemInfo > /dev/null
-          curl -fsS http://127.0.0.1:5174/login > /dev/null
-      - name: Verify secure file write and retry in Chromium
+          ss -lntH | grep ':18896' | tee "$RUNNER_TEMP/vue3-secure-listener.txt"
+          grep -Eq '(^|[[:space:]])(127\.0\.0\.1|\[::ffff:127\.0\.0\.1\]):18896([[:space:]]|$)' \
+            "$RUNNER_TEMP/vue3-secure-listener.txt"
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:18896/login > /dev/null
+      - name: Verify secure file retry and real manager namespace isolation in Chromium
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           READER_VUE3_ISOLATED: '1'
-          READER_VUE3_SECURE_URL: http://127.0.0.1:5174
+          READER_VUE3_SECURE_URL: http://127.0.0.1:18896
           READER_TEST_MANAGER_KEY: Vue3ProbeManagerKey-2026
         run: |
           ./gradlew -p browser-poc test \
-            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest' --no-daemon
-          grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest' \
+            --tests 'com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest' --no-daemon
+          for name in SecureFile ManagerNamespace; do
+            grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
+              "browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3Preview${name}Test.xml"
+          done
+      - name: Preserve generated manager namespace evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-manager-namespace-${{ github.sha }}
+          path: |
+            browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml
+            ${{ runner.temp }}/vue3-manager-generated-*.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Build and serve the Vue 3 artifact at /reader/
         shell: bash
         run: |
@@ -202,6 +390,14 @@ jobs:
             --tests 'com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest' --no-daemon
           grep -q 'tests="1" skipped="0" failures="0" errors="0"' \
             browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml
+      - name: Preserve subdirectory authentication and routing report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vue3-subdir-browser-reports-${{ github.sha }}
+          path: browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve diagnostics and stop isolated services
         if: always()
         shell: bash

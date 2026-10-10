@@ -1,0 +1,264 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "6664b63597e5c3d400f65c888a7ed23de438c792",
+  "testedMergeRevision": "a5638bea6f04f9ae095304fe9eb7bbedade3effd",
+  "normalRuns": [
+    {
+      "conclusion": "success",
+      "databaseId": 37440292001,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "databaseId": 112192105520,
+          "name": "Test and build JAR",
+          "status": "completed"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37440292108,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "databaseId": 112192105925,
+          "name": "build",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "databaseId": 112192106369,
+          "name": "Isolated Vue 3 browser journeys in Chromium",
+          "status": "completed"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37440292046,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "databaseId": 112192107565,
+          "name": "Build and smoke-test the full Reader image",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "databaseId": 112192108991,
+          "name": "Soak an already-tested native image offline",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "databaseId": 112192109146,
+          "name": "Probe archived remote WebView reference",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "databaseId": 112192109263,
+          "name": "Verify archived original JAR provenance",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "databaseId": 112192109509,
+          "name": "Probe anonymous metadata in the exact tested native image",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "databaseId": 112194651271,
+          "name": "Compare public page observations (not production parity)",
+          "status": "completed"
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "databaseId": 37440292003,
+      "status": "completed",
+      "conclusion": "success",
+      "actualJobs": [
+        112192107143,
+        112195096639,
+        112195096780,
+        112196571007,
+        112196571044,
+        112198295498
+      ]
+    }
+  ],
+  "actualSuccessfulNormalJobs": 10,
+  "mutuallyExclusiveOptionalSkippedJobs": 5,
+  "realDefaultEngineReports": [
+    {
+      "run": 37440292003,
+      "artifact": 11400813752,
+      "sizeBytes": 1020,
+      "githubDeclaredArchiveSha256": "1f3017b51f3abc87d8cd01ad703a581fb7869e56356396d11072709156134f03",
+      "tests": 16,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "xmlSha256": "d24ea2efe2852ac6a85b57c7a39052f91cc72dbce186e7f5cf06b6d477b82e90"
+    },
+    {
+      "run": 37440292046,
+      "artifact": 11400993935,
+      "sizeBytes": 1020,
+      "githubDeclaredArchiveSha256": "9530a0339dff0e08f8b4a834690ca3090cc37b73c6e37abbecb287f9ad335402",
+      "tests": 16,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "xmlSha256": "a80746ea7631d3a8fec44446294d0e2913971ce28be6eb596a5a2f02c701f73d"
+    }
+  ],
+  "realJvmDiagnosticReport": {
+    "sharedJavaArtifact": 11400673058,
+    "tests": 5,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "xmlSha256": "3d1b5f1fd6707c1864a0607c7b58f9320f7ff4e029588f79bbee2bbb74056752",
+    "cases": [
+      "scriptTextIsNotMistakenForBodyOrExecuted",
+      "generatedNormalMetadataIsObservedWithoutChangingItsSelectors",
+      "generatedSafetyPageHasHintsButDoesNotGainMetadata",
+      "hintsDoNotClaimVisibilityOrSuccessfulAuthentication",
+      "generatedEmptySnapshotRemainsEmpty"
+    ]
+  },
+  "publisherArtifact": {
+    "run": 37440292003,
+    "id": 11402226176,
+    "sizeBytes": 7621,
+    "githubDeclaredArchiveSha256": "d534e5990a30aa7c0c5ea65dc5ec4e3c290355c90786bfa4552421fc1ff98ffe"
+  },
+  "publisherReports": {
+    "count": 20,
+    "identityAndGeneratedBaselineVerified": true,
+    "nativeAndReloadMaxPeakBytes": 850243584,
+    "nativeAndReloadMaxPids": 198,
+    "identities": [
+      {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "a5638bea6f04f9ae095304fe9eb7bbedade3effd",
+        "jarSha256": "8d232e90ed2e12b5d01d545b1df4620a2962dc039e5e95efc5623f4b45871ed2",
+        "archiveSha256": "4945fe7ebd31ca31b0ce13b5e198b1c95000b245385377f3512d686fed8c54bf",
+        "imageId": "sha256:0d7594dda90419c8fb3f1fe2e50a238923e14ceedaf892e6dac91d00025aff08"
+      },
+      {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "a5638bea6f04f9ae095304fe9eb7bbedade3effd",
+        "jarSha256": "8d232e90ed2e12b5d01d545b1df4620a2962dc039e5e95efc5623f4b45871ed2",
+        "archiveSha256": "2f82460412cd4e358264f7feba9c36e43f360eb588ed07c8fb2cc75b53fa5570",
+        "imageId": "sha256:1977483010e3e679a2142487da2d4a29afc78a57c6c4c050518bcb48a6dfdd24"
+      }
+    ],
+    "receipts": [
+      {
+        "name": "amd64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "0f221f8bef3a6ce507eae6c71eb54c338cf8004721fce0b1c5c23748d1b966eb"
+      },
+      {
+        "name": "amd64-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "amd64-JAR_IDENTITY.json",
+        "sha256": "dce88cd1a2d8a46bc81026f3571bd4356dfc4f6611132f7a4af9bfe880e68d18"
+      },
+      {
+        "name": "amd64-metadata.json",
+        "sha256": "8f5222b901b100f3edcd6c5d33cab1df21dcb99567f577c7f296a6dc8839cdcd"
+      },
+      {
+        "name": "amd64-RELEASE_IDENTITY.json",
+        "sha256": "3e5ffebb6af5a778c404193267504d4af887b367ed83f293295c3000de1f7b37"
+      },
+      {
+        "name": "amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "e5433cfd3184498289627054e0e35ca846c43915253eb680226255d7c20c92d0"
+      },
+      {
+        "name": "amd64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "amd64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "020cca8e99c481e996c05be81a1f10ed9187d1afcca069fd4d707231f4a90e8d"
+      },
+      {
+        "name": "amd64-transfer-JAR_IDENTITY.json",
+        "sha256": "dce88cd1a2d8a46bc81026f3571bd4356dfc4f6611132f7a4af9bfe880e68d18"
+      },
+      {
+        "name": "amd64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "3e5ffebb6af5a778c404193267504d4af887b367ed83f293295c3000de1f7b37"
+      },
+      {
+        "name": "arm64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "3594812dea2f2b45f6e14cd5f09d29d59321ddfef7e086c848854edfc35ea1ae"
+      },
+      {
+        "name": "arm64-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "arm64-JAR_IDENTITY.json",
+        "sha256": "ad82ba2bb9107eb64c57b91a413356449b132329213703dc315294473268c8f9"
+      },
+      {
+        "name": "arm64-metadata.json",
+        "sha256": "b6a768730b039e33b56af6ea168261af3f221b7b806d4e4aabe0dfdeb50ce449"
+      },
+      {
+        "name": "arm64-RELEASE_IDENTITY.json",
+        "sha256": "3e5ffebb6af5a778c404193267504d4af887b367ed83f293295c3000de1f7b37"
+      },
+      {
+        "name": "arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "5cfbd765fee3dd8ec5c7ecda3df14fae38c6f00572ec62173655b5cbb77bc959"
+      },
+      {
+        "name": "arm64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "arm64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "ef199714736fa4d1dba2baf4bf4a860168238a0fbb185168ec9aeb31812aa630"
+      },
+      {
+        "name": "arm64-transfer-JAR_IDENTITY.json",
+        "sha256": "ad82ba2bb9107eb64c57b91a413356449b132329213703dc315294473268c8f9"
+      },
+      {
+        "name": "arm64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "3e5ffebb6af5a778c404193267504d4af887b367ed83f293295c3000de1f7b37"
+      }
+    ]
+  },
+  "actualAsyncReportsAcceptedByOriginalGuard": 4,
+  "resourceReportsAcceptedByOriginalGuard": 4,
+  "configuredCpuCount": 2,
+  "configuredMemoryBytes": 2147483648,
+  "configuredPids": 256,
+  "configuredSwapBytes": 1073741824,
+  "reportedActualSwapBytes": 0,
+  "limitHitsAndOom": 0,
+  "realCredentialsOrPrivateBookUsed": false,
+  "largeArchivesNotDownloadedLocally": true,
+  "publicMetadataFailureOverridden": false,
+  "realAuthenticationOrThreeWayProven": false,
+  "wholeGoalComplete": false,
+  "registryOrProductionChanged": false
+}

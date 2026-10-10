@@ -1,0 +1,26 @@
+{
+  "recordedDate": "2026-10-06",
+  "scope": "read-only original JAR class extraction and javap inspection; not application execution",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "classEntry": "BOOT-INF/classes/io/legado/app/help/SourceAnalyzer.class",
+  "classSha256": "5658f010597548ad2033ef5240f846d7948ba44803295e0765db7f6c04e55d13",
+  "originalJarOverwritten": false,
+  "originalApplicationExecuted": false,
+  "classModified": false,
+  "tool": "javap -c -p from JDK 11.0.8",
+  "observedBranch": [
+    "271: aload 7",
+    "273: ifnonnull 280",
+    "276: aconst_null",
+    "277: goto 285",
+    "280: aload 7",
+    "282: invokevirtual SourceAnalyzer$BookSourceAny.getRuleToc:()Ljava/lang/Object;",
+    "285: ifnonnull 1718"
+  ],
+  "sameRuleTocNullDiscriminatorAsRestoredSource": true,
+  "notProven": [
+    "Full original-JAR HTTP source-save and parsing parity",
+    "Product support for arbitrary partial nested source definitions",
+    "Real authentication or site reading through Reader"
+  ]
+}

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal class BrowserEgressProxy(
     private val networkPolicy: BrowserNetworkPolicy,
     private val timeoutMs: Int,
-    private val onBlocked: () -> Unit,
+    private val onBlocked: (BrowserNetworkPolicyViolation) -> Unit,
     private val upstreamProxy: BrowserUpstreamProxy? = null
 ) : AutoCloseable {
     private val running = AtomicBoolean(false)
@@ -100,8 +100,8 @@ internal class BrowserEgressProxy(
             } else {
                 forwardHttp(client, input, output, requestLine, head.headers)
             }
-        } catch (_: BrowserNetworkPolicyViolation) {
-            onBlocked()
+        } catch (failure: BrowserNetworkPolicyViolation) {
+            onBlocked(failure)
             runCatching { writeError(output, 403, "Forbidden") }
         } catch (_: Exception) {
             runCatching { writeError(output, 502, "Bad Gateway") }

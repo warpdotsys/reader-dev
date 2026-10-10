@@ -7,6 +7,7 @@ import io.legado.app.utils.*
 import me.ag2s.epublib.domain.EpubBook
 import me.ag2s.epublib.domain.Resource
 import me.ag2s.epublib.epub.EpubReader
+import me.ag2s.epublib.util.EpubArchivePolicy
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -129,6 +130,8 @@ class EpubFile(var book: Book) {
                 //     }
                 // }
             }
+        } catch (e: EpubArchivePolicy.ArchiveException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -139,7 +142,11 @@ class EpubFile(var book: Book) {
         try {
             val file = book.getLocalFile()
             //通过懒加载读取epub
-            return EpubReader().readEpubLazy(ZipFile(file), "utf-8")
+            return EpubArchivePolicy.open(file, EpubArchivePolicy.EPUB).use {
+                EpubReader().readEpubLazy(it, "utf-8")
+            }
+        } catch (e: EpubArchivePolicy.ArchiveException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
         }

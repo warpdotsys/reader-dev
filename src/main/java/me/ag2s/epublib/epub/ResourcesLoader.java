@@ -1,10 +1,13 @@
 package me.ag2s.epublib.epub;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -19,6 +22,7 @@ import me.ag2s.epublib.domain.Resource;
 import me.ag2s.epublib.domain.Resources;
 import me.ag2s.epublib.util.CollectionUtil;
 import me.ag2s.epublib.util.ResourceUtil;
+import me.ag2s.epublib.util.EpubArchivePolicy;
 
 
 /**
@@ -52,10 +56,10 @@ public class ResourcesLoader {
                 new EpubResourceProvider(zipFile.getName());
 
         Resources result = new Resources();
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        Collection<ZipEntry> entries = EpubArchivePolicy.validateMetadata(zipFile, EpubArchivePolicy.EPUB).values();
+        EpubArchivePolicy.Budget eager = new EpubArchivePolicy.Budget(EpubArchivePolicy.MAX_EAGER_BYTES);
 
-        while (entries.hasMoreElements()) {
-            ZipEntry zipEntry = entries.nextElement();
+        for (ZipEntry zipEntry : entries) {
 
             if (zipEntry == null || zipEntry.isDirectory()) {
                 continue;
@@ -68,12 +72,15 @@ public class ResourcesLoader {
             if (shouldLoadLazy(href, lazyLoadedTypes)) {
                 resource = new LazyResource(resourceProvider, zipEntry.getSize(), href);
             } else {
-                resource = ResourceUtil
-                        .createResource(zipEntry, zipFile.getInputStream(zipEntry));
+                if (zipEntry.getSize() > eager.remaining()) {
+                    throw new EpubArchivePolicy.ArchiveException("EPUB 非懒加载资源总量超过服务端内存预算");
+                }
+                try (InputStream input = EpubArchivePolicy.entryStream(zipFile, zipEntry, EpubArchivePolicy.EPUB, eager)) {
+                    resource = ResourceUtil.createResource(zipEntry, input);
+                }
                 /*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
                 if (href.endsWith("opf")) {
-                    String string = new String(resource.getData()).replace("smlns=\"", "xmlns=\"");
-                    resource.setData(string.getBytes());
+                    repairOpfNamespace(resource);
                 }
 
             }
@@ -121,20 +128,32 @@ public class ResourcesLoader {
                                           String defaultHtmlEncoding) throws IOException {
         Resources result = new Resources();
         ZipEntry zipEntry;
+        Set<String> paths = new HashSet<>();
+        int entryCount = 0;
+        EpubArchivePolicy.Budget eager = new EpubArchivePolicy.Budget(EpubArchivePolicy.MAX_EAGER_BYTES);
         do {
             // get next valid zipEntry
             zipEntry = getNextZipEntry(zipInputStream);
-            if ((zipEntry == null) || zipEntry.isDirectory()) {
-                continue;
+            if (zipEntry == null) continue;
+            if (++entryCount > EpubArchivePolicy.EPUB.entries || !paths.add(EpubArchivePolicy.entryKey(zipEntry.getName()))) {
+                throw new EpubArchivePolicy.ArchiveException("EPUB 流条目超限或存在重复路径");
             }
             String href = zipEntry.getName();
 
             // store resource
-            Resource resource = ResourceUtil.createResource(zipEntry, zipInputStream);
+            Resource resource;
+            try (InputStream input = EpubArchivePolicy.bounded(zipInputStream, zipEntry,
+                    EpubArchivePolicy.EPUB, eager, false)) {
+                if (zipEntry.isDirectory()) {
+                    byte[] discard = new byte[8192];
+                    while (input.read(discard) >= 0) { /* Validate directory payload too. */ }
+                    continue;
+                }
+                resource = ResourceUtil.createResource(zipEntry, input);
+            }
             ///*掌上书苑有很多自制书OPF的nameSpace格式不标准，强制修复成正确的格式*/
             if (href.endsWith("opf")) {
-                String string = new String(resource.getData()).replace("smlns=\"", "xmlns=\"");
-                resource.setData(string.getBytes());
+                repairOpfNamespace(resource);
             }
             if (resource.getMediaType() == MediaTypes.XHTML) {
                 resource.setInputEncoding(defaultHtmlEncoding);
@@ -143,6 +162,14 @@ public class ResourcesLoader {
         } while (zipEntry != null);
 
         return result;
+    }
+
+    private static void repairOpfNamespace(Resource resource) throws IOException {
+        // Only ASCII text is changed. ISO-8859-1 provides a reversible mapping for
+        // every byte, so the XML declaration and non-ASCII metadata stay intact.
+        String content = new String(resource.getData(), java.nio.charset.StandardCharsets.ISO_8859_1);
+        resource.setData(content.replace("smlns=\"", "xmlns=\"")
+                .getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
     }
 
 

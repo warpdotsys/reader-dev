@@ -1,12 +1,13 @@
 {
   "name": "reader-web-ui-a",
   "private": true,
-  "version": "6.0.45",
+  "version": "4.0.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview",
+    "test": "node --test",
     "audit:api": "node scripts/audit-api-routes.mjs"
   },
   "dependencies": {

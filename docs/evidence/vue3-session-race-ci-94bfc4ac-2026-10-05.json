@@ -1,0 +1,371 @@
+{
+  "codeRevision": "94bfc4aceff0dcbe6712eda3955b87b796f74453",
+  "testedPrMergeRevision": "d7b0cf768cb7abc3081df30922544e0f8d56116f",
+  "scope": "hosted generated contracts and native artifact round-trip; no real credential or private book",
+  "workflows": [
+    {
+      "id": 37253759106,
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37253759106",
+      "name": "Java Kotlin CI",
+      "status": "completed"
+    },
+    {
+      "id": 37253759138,
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37253759138",
+      "name": "Vue 3 preview build",
+      "status": "completed"
+    },
+    {
+      "id": 37253759143,
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37253759143",
+      "name": "Browser image integration",
+      "status": "completed"
+    },
+    {
+      "id": 37253759108,
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37253759108",
+      "name": "Native release artifact rehearsal",
+      "status": "completed"
+    }
+  ],
+  "actualUiRunner": {
+    "id": 111586472741,
+    "labels": [
+      "ubuntu-24.04"
+    ],
+    "name": "GitHub Actions 1000003548"
+  },
+  "coreUi": {
+    "failures": 0,
+    "errors": 0,
+    "suites": 14,
+    "completedSessionRaceModes": 3,
+    "skipped": 0,
+    "reports": [
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Login",
+        "sha256": "3c953cadac7df054ef5823ba2c1ab8171ad3ce87b4ed7a1e8627a34b951199f9",
+        "seconds": 2.51,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Reading",
+        "sha256": "162b9d89aab0a7ea0496f53cdd85e99789a8e1e5a373deb89120de48155e9c86",
+        "seconds": 3.14,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "LocalReading",
+        "sha256": "b56e62136c81dedf2b81595785f071937a091c2af69b2817f39535337d9a254f",
+        "seconds": 15.853,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "LocalCacheIsolation",
+        "sha256": "a640cdd7a62f0c7987bff9672ce16422de1d8328309037cdbbd7f3e52da29c04",
+        "seconds": 4.764,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "SessionRace",
+        "sha256": "af0513800d605dcf1bdcb9f970a0510306f85c874e03331319ec04784262711f",
+        "seconds": 11.004,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "EpubSafety",
+        "sha256": "a998916bd556da30b835bb171eca109bf721e42f966b5aeed1ae841e1ea74a45",
+        "seconds": 6.812,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "ShelfLayout",
+        "sha256": "2fc0fcfafd90f05083e295af700c4f82c6a47e7ab1702af7842f17f547f5305a",
+        "seconds": 6.401,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Search",
+        "sha256": "19f7ca930e69dfc39921a01cd3175fc64517a0c8a2c412a63adc70e50512c264",
+        "seconds": 3.124,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Source",
+        "sha256": "e4a43ca622f255a8862c392140e7b5e3a5f2e6b5deb56f3f40a5fae606902b91",
+        "seconds": 13.505,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "SourceCookie",
+        "sha256": "84a4bf304898d71bf192c55caebae6b70fda83efd1dbbeac13c6ad012e480819",
+        "seconds": 8.901,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Group",
+        "sha256": "4c8ec7049e6713d5f47aedbc53925189e1ee4c2ac858dc13e9c38b45c72645c1",
+        "seconds": 4.251,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "ReplaceRule",
+        "sha256": "66576f82389989e81122bd0a63643888fbbc491e4ac58476fe19b5d5ec6f88bd",
+        "seconds": 4.124,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "File",
+        "sha256": "a0fa35074ae57cc0260eb7910344b2a3262b0911da95e2fd01df0dd2684b75bb",
+        "seconds": 2.864,
+        "skipped": 0,
+        "tests": 1
+      },
+      {
+        "failures": 0,
+        "errors": 0,
+        "name": "Backup",
+        "sha256": "bc23b9c904068c0fc72567728bece9b72d615067c08700e6451cd34a6b571cb3",
+        "seconds": 2.14,
+        "skipped": 0,
+        "tests": 1
+      }
+    ],
+    "tests": 14
+  },
+  "subdirectory": {
+    "failures": 0,
+    "errors": 0,
+    "xmlSha256": "a0195c5682aeba72c552d1135f7a6521db91a0521724cb52cc3783549bc933dc",
+    "seconds": 2.704,
+    "skipped": 0,
+    "tests": 1
+  },
+  "camoufox": {
+    "failures": 0,
+    "errors": 0,
+    "xmlSha256": "6681051ed94c3d979521adb97bdeb0383f6950b4a207fb5af59c18ce0ee05991",
+    "seconds": 102.858,
+    "skipped": 0,
+    "tests": 12
+  },
+  "nativeJobs": [
+    {
+      "id": 111586472973,
+      "name": "Build one shared Java Kotlin JAR",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003550",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    },
+    {
+      "id": 111586769797,
+      "name": "Build and test native arm64 image",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003551",
+      "labels": [
+        "ubuntu-24.04-arm"
+      ]
+    },
+    {
+      "id": 111586769870,
+      "name": "Build and test native amd64 image",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003552",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    },
+    {
+      "id": 111587466537,
+      "name": "Reload and run tested amd64 image",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003554",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    },
+    {
+      "id": 111587466583,
+      "name": "Reload and run tested arm64 image",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003553",
+      "labels": [
+        "ubuntu-24.04-arm"
+      ]
+    },
+    {
+      "id": 111588095013,
+      "name": "Exercise both publisher imports without registry credentials",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000003555",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    }
+  ],
+  "limits": [
+    "not original JAR/remote/Camoufox real authenticated three-way",
+    "not all formats/cross-tab sessions/long-term pressure",
+    "optional original/remote/long soak workflow branches not executed",
+    "no new full-image/shared-JAR download locally",
+    "not merged, formally released, registry-published or deployed",
+    "documentation archive is not another source build"
+  ],
+  "artifacts": [
+    {
+      "part": "core",
+      "runId": 37253759138,
+      "artifactId": 11321773510,
+      "artifactName": "vue3-core-browser-reports-d7b0cf768cb7abc3081df30922544e0f8d56116f",
+      "artifactBytes": 7319,
+      "directory": "build/session-race-hosted-20261005-a/core"
+    },
+    {
+      "part": "subdir",
+      "runId": 37253759138,
+      "artifactId": 11322212487,
+      "artifactName": "vue3-subdir-browser-reports-d7b0cf768cb7abc3081df30922544e0f8d56116f",
+      "artifactBytes": 530,
+      "directory": "build/session-race-hosted-20261005-a/subdir"
+    },
+    {
+      "part": "cam",
+      "runId": 37253759143,
+      "artifactId": 11321359752,
+      "artifactName": "camoufox-contract-report",
+      "artifactBytes": 921,
+      "directory": "build/session-race-hosted-20261005-a/cam"
+    },
+    {
+      "part": "native",
+      "runId": 37253759108,
+      "artifactId": 11321758087,
+      "artifactName": "reader-publisher-import-d7b0cf768cb7abc3081df30922544e0f8d56116f",
+      "artifactBytes": 7072,
+      "directory": "build/session-race-hosted-20261005-a/native"
+    },
+    {
+      "part": "smoke",
+      "runId": 37253759143,
+      "artifactId": 11321769099,
+      "artifactName": "bundled-browser-synthetic-and-resources",
+      "artifactBytes": 893
+    }
+  ],
+  "native": {
+    "actualJsonReportsAudited": 20,
+    "testedPrMergeRevision": "d7b0cf768cb7abc3081df30922544e0f8d56116f",
+    "sharedJarSha256": "ac7f7e97af60f64e6d8996f3e2cfc1f86107f09e66748707d019727ffd479155",
+    "identityCookieRequestResourceFieldsPassed": true,
+    "architectures": {
+      "arm64": {
+        "archiveSha256": "d00e708d40ed452437d140baa218bbebb21af5e2a25fa1e1f6c3f5e762c5c94b",
+        "budgets": {
+          "arm64": {
+            "actualSwapBytes": 0,
+            "memoryPeakBytes": 822386688,
+            "pidsPeak": 177,
+            "configuredSwapMaxBytes": 1073741824
+          },
+          "arm64-transfer": {
+            "actualSwapBytes": 0,
+            "memoryPeakBytes": 787939328,
+            "pidsPeak": 180,
+            "configuredSwapMaxBytes": 1073741824
+          }
+        },
+        "imageId": "sha256:f50119d2cbad74e26971043bd4e2fccc5c7d762fa37c5df49c5ba30535d6017e"
+      },
+      "amd64": {
+        "archiveSha256": "e05caf6ee0625a92f76bcc3e21dce2c3c99f0d2c6293d0cf2d4ce7c3b3905b12",
+        "budgets": {
+          "amd64-transfer": {
+            "actualSwapBytes": 0,
+            "memoryPeakBytes": 841887744,
+            "pidsPeak": 177,
+            "configuredSwapMaxBytes": 1073741824
+          },
+          "amd64": {
+            "actualSwapBytes": 0,
+            "memoryPeakBytes": 776704000,
+            "pidsPeak": 186,
+            "configuredSwapMaxBytes": 1073741824
+          }
+        },
+        "imageId": "sha256:a504c2e5792b3cd464f42583e6e7c53af06032aac55228a3f859ad83c9d1dfb4"
+      }
+    },
+    "limits": [
+      "generated short samples, not real authentication or sustained load",
+      "configured swap remains permitted although actual use was zero",
+      "consumer import proof is not registry publication"
+    ]
+  },
+  "fullImageShortBudget": {
+    "scope": "one complete hosted Reader image; generated short sequential and four-account burst",
+    "actualJsonReportsAudited": 2,
+    "identityCookieRequestResourceFieldsPassed": true,
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "observations": {
+      "actualSwapBytes": 0,
+      "configuredSwapMaxBytes": 1073741824,
+      "memoryPeakBytes": 769712128,
+      "pidsPeak": 177
+    },
+    "budgetSha256": "0a02012bd6a0ec6d239af0092ae3eec062e52456717a8a956ed74b404b4c1924",
+    "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+  }
+}

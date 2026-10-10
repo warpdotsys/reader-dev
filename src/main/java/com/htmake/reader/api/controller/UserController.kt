@@ -176,8 +176,13 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
         if (!appConfig.secure) {
             return returnData.setErrorMsg("不支持的操作")
         }
-        var username = context.session().get("username") as String? ?: ""
-        context.session().destroy()
+        val tokenOnly = usesTokenAuthentication(context)
+        var username = if (tokenOnly) context.get<String>("username") ?: ""
+                       else context.session().get("username") as String? ?: ""
+        // 退出甲的标签页 token 不得销毁乙当前占用的共享 Cookie。
+        if (!tokenOnly || context.session().get<String>("username") == username) {
+            context.session().destroy()
+        }
 
         // 清除自动登录token
         var accessToken = context.queryParam("accessToken").firstOrNull() ?: ""
@@ -452,8 +457,13 @@ class UserController(coroutineContext: CoroutineContext): BaseController(corouti
 
     suspend fun getUserInfo(context: RoutingContext): ReturnData {
         val returnData = ReturnData()
-        checkAuth(context)
-        var username = context.session().get("username") as String?
+        val authenticated = checkAuth(context)
+        val tokenOnly = usesTokenAuthentication(context)
+        if (tokenOnly && !authenticated) {
+            return returnData.setData("NEED_LOGIN").setErrorMsg("请登录后使用")
+        }
+        var username = if (tokenOnly) context.get<String>("username")
+                       else context.session().get("username") as String?
         var secure = env.getProperty("reader.app.secure", Boolean::class.java)
         var secureKey = env.getProperty("reader.app.secureKey")
 

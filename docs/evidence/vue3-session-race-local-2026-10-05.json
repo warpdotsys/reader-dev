@@ -1,0 +1,171 @@
+{
+  "scope": "generated local UI only; not real credentials, production or full Camoufox acceptance",
+  "jarSha256": "33ef0f63b8973f162b1dc50e05c993e5a5b745e9f539ede6e7501f63ca6ee0f1",
+  "testSourceSha256": "017a14f546614107a4701d4eff7bac6628980df83dbc24993763944ce32a4f43",
+  "baseline": {
+    "seconds": 6.124,
+    "jarSha256": "c8b30b2d8f75d08865ebbeaf81a9cfe84cb38b993147a7a7dd4bcc60370baed8",
+    "xmlSha256": "bdf6f08ca804b982e67dd77ef0515bf69734261f51c60c1e5ce93cbe99a10f6e",
+    "failures": 1,
+    "skipped": 0,
+    "tests": 1,
+    "errorKind": "old account HTTP 401 cleared new token",
+    "testSourceSha256": "6fc443c5f8bce25b28f9c1f23ffa72f2e691595b7be11cde84a2ed79de78d7b2"
+  },
+  "frontend": {
+    "skipped": 0,
+    "milliseconds": 5275.3379,
+    "tests": 201,
+    "failures": 0
+  },
+  "packagedCurrentFrontendFilesChecked": 80,
+  "standaloneRace": {
+    "skipped": 0,
+    "xmlSha256": "c4f43952071d0bf1a42955e320972248d28059bb3aec5332194a84a28015ffbd",
+    "failures": 0,
+    "tests": 1,
+    "seconds": 15.485,
+    "completedErrorModes": 3
+  },
+  "coreUi": {
+    "skipped": 0,
+    "reports": [
+      {
+        "seconds": 3.779,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Login",
+        "sha256": "8cfc5c8bebf44859d4e1152f92529946f52fce4417156ac07406848df6a7bb8c",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 5.934,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Reading",
+        "sha256": "207143dd42c398f07f6029addb38af5376168363acec9ef87831c13820ca8674",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 24.466,
+        "errors": 0,
+        "skipped": 0,
+        "name": "LocalReading",
+        "sha256": "bcf14e1d516cbfa6f2284455965c1c6a1887b60265c6be301760a9642023d4cd",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 6.008,
+        "errors": 0,
+        "skipped": 0,
+        "name": "LocalCacheIsolation",
+        "sha256": "75ebc2c07f1ce950744314c06e25aa054727e667617c4a91994de580da1cbd86",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 11.58,
+        "errors": 0,
+        "skipped": 0,
+        "name": "SessionRace",
+        "sha256": "8e4105358e8d168e1f6a698fbc463ec1d8ce4cc1a2b1b78e64232a6da8a9b1e9",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 11.759,
+        "errors": 0,
+        "skipped": 0,
+        "name": "EpubSafety",
+        "sha256": "c4257b16baf47d3eb909b60c437e7084471cdaeb40b5023dc2d486394ed5d9d5",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 8.603,
+        "errors": 0,
+        "skipped": 0,
+        "name": "ShelfLayout",
+        "sha256": "81ab3ab3e9bb86f2a41026b135fe81efa55cc1a90781f76947cccbcf61cfea32",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 4.733,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Search",
+        "sha256": "d277326deb442b769af2874a85350780202667c8f95774001407e4b67196ac86",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 5.845,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Source",
+        "sha256": "5bdf6afb9c840bf7425333851cc8d266c42a6b9123513e319b10fc82e9cd44a0",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 12.882,
+        "errors": 0,
+        "skipped": 0,
+        "name": "SourceCookie",
+        "sha256": "e3c8c38d30e59afff5093926f547adf5be47d053ac7a9b33582b261a4f1f6608",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 7.564,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Group",
+        "sha256": "408a416859b0e0f8f0dede55dcc71b16e9e44ff485b87911efa9164e5ab6f1d1",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 6.952,
+        "errors": 0,
+        "skipped": 0,
+        "name": "ReplaceRule",
+        "sha256": "8224838636bf3964bf13aeb79488f2e9cb73b9b1c23866a940b077223a118be0",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 5.478,
+        "errors": 0,
+        "skipped": 0,
+        "name": "File",
+        "sha256": "b600d7fe5e5c1901b2021b9a66edc7db9dbbda80c26f26974fd1c9daef977484",
+        "tests": 1,
+        "failures": 0
+      },
+      {
+        "seconds": 8.882,
+        "errors": 0,
+        "skipped": 0,
+        "name": "Backup",
+        "sha256": "1c76a67719095105ebc271e59c4127dbc73fa69549eeaaaa7a966f0551eff452",
+        "tests": 1,
+        "failures": 0
+      }
+    ],
+    "errors": 0,
+    "tests": 14,
+    "failures": 0
+  },
+  "limits": [
+    "all data generated and isolated",
+    "production limit unchanged; fixture limit 100",
+    "old shared shelf metadata risk still pending",
+    "not cross-tab, all formats, real authenticated three-way or local full-image runtime",
+    "not released or deployed"
+  ]
+}

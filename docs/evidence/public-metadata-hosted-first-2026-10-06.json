@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-06",
+  "probeSourceHead": "12fc067c26498d3d981f209482c75096decd3059",
+  "workflowRun": {
+    "id": 37418653036,
+    "conclusion": "failure",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37418653036"
+  },
+  "runner": {
+    "jobId": 112122855929,
+    "name": "GitHub Actions 1000003759",
+    "group": "GitHub Actions",
+    "labels": [
+      "ubuntu-24.04"
+    ]
+  },
+  "artifact": {
+    "id": 11392049467,
+    "name": "public-metadata-amd64-37418653036",
+    "archiveBytes": 3014,
+    "githubDeclaredArchiveDigest": "sha256:e150d35497453b860ac0b19e360ad4cc9882ee36bed0cc3b77de8c0c740a4184",
+    "archiveDigestRecomputedLocally": false,
+    "extractedFileHashesRecomputedLocally": true
+  },
+  "results": {
+    "RUNTIME_RESOURCE_BUDGET.json": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.17.0-1022-azure",
+      "memoryCurrentBytes": 363847680,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 826904576,
+      "pidsCurrent": 35,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 201,
+      "scope": "one anonymous default-Camoufox metadata request",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0
+    },
+    "CLEANUP.json": {
+      "ownedContainerRemoved": true,
+      "probeExit": 1
+    },
+    "LOADED_IDENTITY.json": {
+      "phase": "loaded",
+      "architecture": "amd64",
+      "revision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "jarSha256": "0491a8324137baddbe482975fa3b2988ad0330d24f570c8f9a1287ba25f8fd8d",
+      "imageId": "sha256:229a96a16d33edf5828d8e528023fa85c048efd703056b8c9c32ee0849038c9b"
+    },
+    "SOURCE_RUN.json": {
+      "id": 37339021759,
+      "name": "Native release artifact rehearsal",
+      "path": ".github/workflows/release-native.yml",
+      "head_sha": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "event": "pull_request",
+      "conclusion": "success",
+      "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37339021759"
+    },
+    "CONTAINER_STATE.json": {
+      "Running": true,
+      "OOMKilled": false,
+      "ExitCode": 0
+    },
+    "PRELOAD_IDENTITY.json": {
+      "phase": "check",
+      "architecture": "amd64",
+      "revision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "jarSha256": "0491a8324137baddbe482975fa3b2988ad0330d24f570c8f9a1287ba25f8fd8d",
+      "imageId": "sha256:229a96a16d33edf5828d8e528023fa85c048efd703056b8c9c32ee0849038c9b"
+    },
+    "RUNNING_JAR_IDENTITY.json": {
+      "revision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "jarSha256": "0491a8324137baddbe482975fa3b2988ad0330d24f570c8f9a1287ba25f8fd8d",
+      "network": "bridge",
+      "publishedPorts": 0
+    },
+    "PUBLIC_METADATA_REPORT.json": {
+      "allDeviceTokenRevocationProven": false,
+      "bookInfoApiCalls": 1,
+      "chapterBodyRequested": false,
+      "cleanupCategory": "GeneratedSessionCleanupFailed",
+      "configuredRenderer": "camoufox",
+      "cookieRowsAfter": 0,
+      "cookieRowsBefore": 0,
+      "defaultBrowserProcessObserved": true,
+      "expectedImageRevision": "a82f08945a50c1520170fb6e8b3fb3c7a0b296fb",
+      "maximumObservedProcesses": {
+        "browser": 7,
+        "driver": 1,
+        "worker": 1
+      },
+      "metadata": {
+        "authorMatches": false,
+        "coverHasExpectedPublicOrigin": false,
+        "dataIsNull": false,
+        "dataIsObject": true,
+        "errorMessageLength": 0,
+        "errorMsgEmpty": true,
+        "errorMsgIsString": true,
+        "hostFingerprint": null,
+        "httpStatus": 200,
+        "isSuccess": true,
+        "isSuccessIsBoolean": true,
+        "knownFieldsPresent": {
+          "author": true,
+          "bookUrl": true,
+          "canUpdate": true,
+          "coverUrl": false,
+          "durChapterIndex": true,
+          "durChapterPos": true,
+          "group": true,
+          "name": true,
+          "tocUrl": true,
+          "totalChapterNum": true,
+          "type": true
+        },
+        "nameMatches": false,
+        "passed": false,
+        "policyReason": null
+      },
+      "observedAt": "2026-10-06T13:29:54.429708+08:00",
+      "originalJarOrArchivedParity": false,
+      "passed": false,
+      "privateNetworkGuardEnabled": true,
+      "processMonitorPassed": true,
+      "rawErrorHtmlCookieAndMetadataValuesNotPersisted": true,
+      "realAuthenticationProven": false,
+      "realCredentialsImported": false,
+      "requestSeconds": 5.521,
+      "resourceGuardPassed": true,
+      "runtimeUid": 10001,
+      "schemaVersion": 1,
+      "scope": "anonymous single-image public metadata only",
+      "source": "https://www.qidian.com/book/1010400217/"
+    }
+  },
+  "fileHashes": [
+    {
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+      "bytes": 54,
+      "file": "CLEANUP.json"
+    },
+    {
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+      "bytes": 61,
+      "file": "CONTAINER_STATE.json"
+    },
+    {
+      "sha256": "d6b557beeb0fb341788ffa19aeefd48fa123e78a82c7e2434587d40fead9c50b",
+      "bytes": 259,
+      "file": "LOADED_IDENTITY.json"
+    },
+    {
+      "sha256": "bf39cf258607cc61582f6dc0062e1814f740773a0ba655516f1562e947ac2b94",
+      "bytes": 258,
+      "file": "PRELOAD_IDENTITY.json"
+    },
+    {
+      "sha256": "0ced3af636296f88a93f2de9756f74107935565481d438f7c3d05a6582e8f8a5",
+      "bytes": 1683,
+      "file": "PUBLIC_METADATA_REPORT.json"
+    },
+    {
+      "sha256": "7ee32d96a6facc750db9ce88cc921f8d81859bb357c510de0f4d9f42c2204593",
+      "bytes": 190,
+      "file": "RUNNING_JAR_IDENTITY.json"
+    },
+    {
+      "sha256": "765067c111d5317162a3cf3933dae883bd9d9bd622b66cedece2136272f97983",
+      "bytes": 537,
+      "file": "RUNTIME_RESOURCE_BUDGET.json"
+    },
+    {
+      "sha256": "e9d186f195ba8f55570e83dfa76b7b03ae960911145ab128f1a07d903f340a25",
+      "bytes": 316,
+      "file": "SOURCE_RUN.json"
+    }
+  ],
+  "interpretation": {
+    "actualAnonymousDefaultCamoufoxMetadataFailed": true,
+    "defaultCamoufoxBrowserAndWorkerObserved": true,
+    "productPrivateNetworkGuardNotRelaxed": true,
+    "fixtureCleanupAssertionAlsoFailed": true,
+    "cleanupAssertionRootCauseFromReadableSource": "Logout setErrorMsg(...).setData(NEED_LOGIN) yields true with empty error; protected source-cookie endpoint yields false. Initial probe incorrectly required false for both.",
+    "correctedCleanupAssertionHostedVerified": false,
+    "ownedContainerRemoved": true,
+    "realCredentialsUsed": false,
+    "realChapterRead": false,
+    "realAuthenticationOrThreeWayParityProven": false,
+    "productionChanged": false,
+    "releasePublished": false
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-06",
+  "scope": "authorized official WSL uidmap installation and offline generated helper bootstrap; not complete current Reader image",
+  "installation": {
+    "distro": "Ubuntu",
+    "repository": "http://archive.ubuntu.com/ubuntu resolute/main amd64",
+    "command": "apt-get --assume-yes --no-install-recommends --no-upgrade install uidmap",
+    "packages": [
+      {
+        "name": "uidmap",
+        "version": "1:4.17.4-2ubuntu3"
+      },
+      {
+        "name": "libsubid5",
+        "version": "1:4.17.4-2ubuntu3",
+        "requiredDependency": true
+      }
+    ],
+    "upgradedPackages": 0,
+    "removedPackages": 0,
+    "approxDownloadBytes": 66900,
+    "installationStartLocal": "2026-10-06 21:45:31",
+    "installationEndLocal": "2026-10-06 21:45:34",
+    "systemProxyChanged": false,
+    "productionChanged": false,
+    "subordinateRangesChanged": false
+  },
+  "subordinateMappingFiles": {
+    "subuidBeforeSha256": "d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd",
+    "subuidAfterSha256": "d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd",
+    "subgidBeforeSha256": "d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd",
+    "subgidAfterSha256": "d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd"
+  },
+  "generatedBootstrap": {
+    "reportSha256": "e0ae215b1b011cfce4b38c87e7c6dd9e5274dd62f27f16b1522c2150a3c2d98b",
+    "precedingFailedReportSha256": "2d00f139a087ab90f70a288d55cd52a09c5e8ef0cf4c2874624154b360cf0101",
+    "scratchProbeSha256": "dc7a1e3b18afb744d61fbde794cddb3bcaaa4802b2d7a15de27d8965fa7f4f3b",
+    "scope": "old locked read-only image runtime plus current worker; generated helper only",
+    "oldRuntimeRevision": "a85410ce71da7679f5ceffb9e306b19bace4026d",
+    "oldJarSha256NotExecuted": "1c1c24bd90a7d08f48ef016d1b2578650d4aba0574aa3b53662d5b1ea2bf302f",
+    "exactCurrentReaderImage": false,
+    "readerStarted": false,
+    "currentWorkerSha256": "2bc9fe2f69c9b546f9380503af7248527994579fa3e7097e4e5bcfb62b706722",
+    "currentHelperSha256": "6e210b3d7d296cb5b9179e809a30b8dc36ecdfb918178220b23d0d5177a038ac",
+    "failureRetained": true,
+    "precedingFailure": {
+      "casesExecuted": 0,
+      "passed": false,
+      "finiteErrorClass": "OSError",
+      "errno": 30,
+      "diagnosis": "read-only whole temporary Camoufox cache prevented utils._generate_fontconfig from creating fontconfig cache"
+    },
+    "change": "new bounded tmpfs cache writable; existing installed browser assets and config remain read-only; original extracted runtime not modified",
+    "passed": true,
+    "totalSeconds": 56.364,
+    "runtimeExitCode": 0,
+    "runtimeIdentity": {
+      "effectiveCapabilitiesZero": true,
+      "interfaces": [
+        "lo"
+      ],
+      "noNewPrivileges": true,
+      "runtimeGid": 10001,
+      "runtimeUid": 10001,
+      "supplementaryGroups": [
+        65534,
+        65534,
+        65534,
+        65534,
+        65534,
+        65534,
+        0
+      ],
+      "withinBudgetCgroup": true
+    },
+    "originalThreeCaseGuardPassed": true,
+    "hostPidBudgetMembershipIndependentlyVerified": true,
+    "preflightOriginalBudgetGuardPassed": true,
+    "finalOriginalBudgetGuardPassed": true,
+    "documentObservation": {
+      "cases": [
+        {
+          "case": "deletedStateSameDocument",
+          "documentObservation": "sameDocument",
+          "mainFrameNavigationObserved": false,
+          "passed": true,
+          "sourceRuns": 1
+        },
+        {
+          "case": "deletedStateSameDocumentAfterHashNavigation",
+          "documentObservation": "sameDocument",
+          "mainFrameNavigationObserved": true,
+          "passed": true,
+          "sourceRuns": 1
+        },
+        {
+          "case": "replacedDocumentReferenceUnavailable",
+          "documentObservation": "unavailable",
+          "mainFrameNavigationObserved": true,
+          "passed": true,
+          "sourceRuns": 1
+        }
+      ],
+      "networkDenials": 0,
+      "passed": true,
+      "schemaVersion": 1,
+      "scope": "generated helper-level pinned browser; not Reader parity"
+    },
+    "finalResources": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.18.33.2-microsoft-standard-WSL2",
+      "memoryCurrentBytes": 1009688576,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 1511292928,
+      "pidsCurrent": 1,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 221,
+      "scope": "old locked read-only image runtime plus current worker; generated helper only",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0
+    },
+    "ownedRuntimeStateAbsent": true,
+    "userSystemdUnitAfterProbe": {
+      "loadState": "not-found",
+      "activeState": "inactive",
+      "subState": "dead"
+    },
+    "stderrBytesNotPersisted": 0,
+    "runtimeDifferences": [
+      "old read-only image runtime with current worker mounted; no current Reader JAR executed",
+      "rootless OCI supplemental mapped groups differ from final Docker process configuration",
+      "HOME and generated font cache use fresh tmpfs rather than original image HOME",
+      "startup tracing only records finite classes and numeric locations; caught internal exceptions are not fatal diagnosis"
+    ]
+  },
+  "boundaries": {
+    "browserSessionCopied": false,
+    "credentialsImported": false,
+    "realBookBodyRead": false,
+    "externalNetworkEnabled": false,
+    "originalJarExecuted": false,
+    "githubCredentialsUploaded": false,
+    "completeReaderImageAccepted": false,
+    "qidianAuthenticationAccepted": false,
+    "productionDeployed": false
+  }
+}

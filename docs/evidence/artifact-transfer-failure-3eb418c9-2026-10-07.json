@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "scope": "range-only proof of uploaded small generated receipts; not whole archive hash, AMD64 reload, publisher or real site acceptance",
+  "sourceHead": "3eb418c96ea442473ed318fe50a223d618079e8a",
+  "testedMergeRevision": "15ed874af760345fdba262d487ebb5b736912d5e",
+  "failedRun": 37612911968,
+  "failedJob": 112768265079,
+  "failedStage": "Verify transferred bytes and the actually loaded image without rebuilding",
+  "observedFailure": "ENOENT imported/metadata.json",
+  "imageProducerSuccess": true,
+  "downloadStepConclusion": "success",
+  "nativeWorkflowConclusion": "failure",
+  "publisherSkipped": true,
+  "artifactId": 11479257168,
+  "artifactZipBytes": 2174844316,
+  "downloadedBytes": 71004,
+  "imageEntryBytesDownloaded": 0,
+  "directorySha256": "cbded68700c3f4ec95a28556712260ac51f819c33910e082ca7f6ca8c9a90fdd",
+  "entries": [
+    {
+      "name": "reader-image.tar.gz",
+      "flags": 8,
+      "method": 0,
+      "crc32": 1667462706,
+      "compressedBytes": 2174837843,
+      "uncompressedBytes": 2174837843,
+      "localOffset": 0
+    },
+    {
+      "name": "BASE_IMAGE_DIGESTS",
+      "flags": 8,
+      "method": 0,
+      "crc32": 88111556,
+      "compressedBytes": 237,
+      "uncompressedBytes": 237,
+      "localOffset": 2174837908
+    },
+    {
+      "name": "metadata.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 962944396,
+      "compressedBytes": 390,
+      "uncompressedBytes": 390,
+      "localOffset": 2174838209
+    },
+    {
+      "name": "BROWSER_SYNTHETIC.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 4186500128,
+      "compressedBytes": 2350,
+      "uncompressedBytes": 2350,
+      "localOffset": 2174838658
+    },
+    {
+      "name": "BROWSER_RESOURCE_BUDGET.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 4013425299,
+      "compressedBytes": 818,
+      "uncompressedBytes": 818,
+      "localOffset": 2174841076
+    },
+    {
+      "name": "DEFAULT_UI.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 3878312636,
+      "compressedBytes": 1355,
+      "uncompressedBytes": 1355,
+      "localOffset": 2174841968
+    },
+    {
+      "name": "RELEASE_IDENTITY.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 2631833744,
+      "compressedBytes": 88,
+      "uncompressedBytes": 88,
+      "localOffset": 2174843384
+    },
+    {
+      "name": "JAR_IDENTITY.json",
+      "flags": 8,
+      "method": 0,
+      "crc32": 669810260,
+      "compressedBytes": 171,
+      "uncompressedBytes": 171,
+      "localOffset": 2174843539
+    }
+  ],
+  "metadataSha256": "c51a877c587ca61943ccafe6c3493a75292638d76fad7b1113cecdf58eb86337",
+  "nativeMetadata": {
+    "schemaVersion": 1,
+    "architecture": "amd64",
+    "version": "4.0.7",
+    "revision": "15ed874af760345fdba262d487ebb5b736912d5e",
+    "jarSha256": "dd0a8ae6ff258874e1de8a5fd88f1dbc5e7518eaf50156137ae2a48a50812869",
+    "archiveSha256": "fc706b2e516bf43abb87669a1ccf0f2c44686d68cf95cbeabbaefb6493274c47",
+    "imageId": "sha256:51f11e8a1255f3c9debca3079af18de95c989039e512f3d200ee7cbd00815905"
+  },
+  "generatedMetadataReceipt": {
+    "schemaVersion": 1,
+    "scope": "generated-delayed-dom",
+    "bookInfoApiCalls": 1,
+    "status": 200,
+    "isSuccess": true,
+    "errorMsg": "",
+    "dataIsObject": true,
+    "nameMatches": true,
+    "authorMatches": true,
+    "coverMatches": true,
+    "pageDiagnostics": {
+      "nameSelectorPresent": true,
+      "authorSelectorPresent": true,
+      "coverSelectorPresent": true,
+      "bodyHasText": true,
+      "bodyHasExpectedBookTitle": true,
+      "bodyHasExpectedAuthor": true,
+      "bodyHasSafetyPhrase": false,
+      "captchaContainerPresent": false
+    },
+    "sourceDefinitionRoundtrip": {
+      "dataIsObject": true,
+      "sourceUrlMatches": true,
+      "cookieJarDisabled": true,
+      "modernTocMarkerPresent": true,
+      "metadataRulesMatch": true,
+      "passed": true
+    },
+    "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+    "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+    "targetRequestCount": 1,
+    "targetRequest": {
+      "httpMethod": "GET",
+      "body": null,
+      "testHeader": null,
+      "cookie": ""
+    }
+  },
+  "rawRangeEvidencePath": "build/hosted-generated-metadata-3eb418c9-20261007-a/amd64-range-inspection.json",
+  "twoGiBBoundaryIsHypothesisNotUniqueCause": true,
+  "realSiteMetadataOrAuthenticationProven": false
+}

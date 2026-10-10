@@ -1,14 +1,21 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import { notifyBackendReachable } from './backendFlag'
+import { canExpireRequestSession, captureRequestSession, isRequestSessionCurrent, StaleSessionResponseError } from './requestSession'
+import type { RequestSessionSnapshot } from './requestSession'
 import type { ReturnData } from '@/types'
+import { readerRequestContext } from './requestContext'
+import { assertLegacyNamespace } from '@/utils/legacyNamespace'
+import { requestErrorMessage } from './requestErrorMessage'
 
 /** 自定义请求配置：silent=true 时失败不弹全局错误提示（探测待实现后端契约接口等场景，调用方自行降级处理） */
 declare module 'axios' {
   export interface AxiosRequestConfig {
     silent?: boolean
+    /** 内部身份快照，只在 axios 配置内存中存活，不发送到服务端。 */
+    readerSession?: RequestSessionSnapshot
   }
 }
 
@@ -22,6 +29,8 @@ export interface RequestOptions {
   timeout?: number
   /** 额外 query 参数（与 axios 实例自动携带的 accessToken 合并） */
   params?: Record<string, unknown>
+  /** 额外请求头（管理密钥等不能出现在 URL 的凭据） */
+  headers?: Record<string, string>
 }
 
 /** axios 实例：baseURL=/reader3，accessToken 自动携带（query），401/NEED_LOGIN 跳登录 */
@@ -32,21 +41,20 @@ const request = axios.create({
 
 request.interceptors.request.use((config) => {
   const store = useUserStore()
-  if (store.accessToken) {
-    config.params = { ...config.params, accessToken: store.accessToken }
-  }
-  // 管理员手动进入系统配置层：请求带 ns=default（后端仅管理员放行）。
-  // getUserConfig/saveUserConfig 的 ns 是配置键而非命名空间，不能覆盖。
-  const path = (config.url ?? '').split('?')[0]
-  const isUserConfigApi = path.endsWith('/getUserConfig') || path.endsWith('/saveUserConfig')
-  if (store.isAdmin && store.defaultConfigMode && !isUserConfigApi) {
-    config.params = { ...config.params, ns: 'default' }
-  }
+  config.readerSession = captureRequestSession(store)
+  const context = readerRequestContext()
+  config.params = { ...config.params, ...context.params }
+  for (const [name, value] of Object.entries(context.headers)) config.headers.set(name, value)
   return config
 })
 
 request.interceptors.response.use(
   (response) => {
+    // 必须在清会话、路由跳转、通知及返回业务数据之前检查。
+    // 也拒绝旧成功响应，避免调用方把旧账号数据写入当前页面。
+    if (!isRequestSessionCurrent(response.config.readerSession, useUserStore())) {
+      return Promise.reject(new StaleSessionResponseError())
+    }
     // 任一后端响应（含业务失败）都证明后端可达 → 复位降级模块的 backendDown 短路标志
     // （P2：backendDown 永不重置修复——网络恢复/重新登录后自动回到后端优先）
     notifyBackendReachable()
@@ -56,8 +64,10 @@ request.interceptors.response.use(
       if (!res.isSuccess) {
         if (res.data === 'NEED_LOGIN' || (res.errorMsg || '').includes('请登录')) {
           const store = useUserStore()
-          store.clear()
-          void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+          if (canExpireRequestSession(response.config.readerSession, store)) {
+            store.clear()
+            void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+          }
           return Promise.reject(new Error(res.errorMsg || '请登录后使用'))
         }
         const err = new Error(res.errorMsg || '请求失败') as Error & { data?: unknown }
@@ -69,20 +79,25 @@ request.interceptors.response.use(
         }
         return Promise.reject(err)
       }
-      return response
     }
+    const proof = response.headers['x-reader-namespace']
+    assertLegacyNamespace({ systemNamespace: response.config.readerSession?.namespace === 'default' },
+      response.config.url ?? '', typeof proof === 'string' ? proof : undefined)
     return response
   },
   (error) => {
+    const store = useUserStore()
+    if (error.config?.readerSession && !isRequestSessionCurrent(error.config.readerSession, store)) {
+      return Promise.reject(new StaleSessionResponseError())
+    }
     // 有 HTTP 响应（4xx/5xx）说明后端可达；纯网络错误不算
     if (error.response) notifyBackendReachable()
     const silent = !!(error.config as { silent?: boolean } | undefined)?.silent
-    if (error.response?.status === 401) {
-      const store = useUserStore()
+    if (error.response?.status === 401 && canExpireRequestSession(error.config?.readerSession, store)) {
       store.clear()
       void router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
     }
-    if (!silent) ElMessage.error(error.response?.data?.errorMsg || error.message || '网络错误')
+    if (!silent) ElMessage.error({ message: requestErrorMessage(error), grouping: true })
     return Promise.reject(error)
   },
 )
@@ -93,7 +108,7 @@ export function get<T>(
   opts?: RequestOptions,
 ): Promise<ReturnData<T>> {
   return request
-    .get(url, { params, silent: opts?.silent, timeout: opts?.timeout })
+    .get(url, { params, headers: opts?.headers, silent: opts?.silent, timeout: opts?.timeout })
     .then((r) => r.data as ReturnData<T>)
 }
 
@@ -103,13 +118,19 @@ export function post<T>(
   data?: unknown,
   paramsOrOpts?: Record<string, unknown> | RequestOptions,
 ): Promise<ReturnData<T>> {
-  const isOpts = !!paramsOrOpts && ('silent' in paramsOrOpts || 'signal' in paramsOrOpts)
+  const isOpts = !!paramsOrOpts && ('silent' in paramsOrOpts || 'signal' in paramsOrOpts || 'headers' in paramsOrOpts)
   const params = isOpts
     ? (paramsOrOpts as RequestOptions).params
     : (paramsOrOpts as Record<string, unknown> | undefined)
   const opts = isOpts ? (paramsOrOpts as RequestOptions) : undefined
   return request
-    .post(url, data, { params, silent: opts?.silent, signal: opts?.signal, timeout: opts?.timeout })
+    .post(url, data, {
+      params,
+      headers: opts?.headers,
+      silent: opts?.silent,
+      signal: opts?.signal,
+      timeout: opts?.timeout,
+    })
     .then((r) => r.data as ReturnData<T>)
 }
 

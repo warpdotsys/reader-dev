@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-08",
+  "scope": "own hosted generated-account UI, exact-byte JAR rebuild and full-image reports; manual screenshot review is separate from programmatic acceptance",
+  "sourceRevision": "8e4f5bf82d410c1d74e3342c799ffed5d76beb82",
+  "testedMergeSnapshot": "1d6f1f95c8d64c9d60ef4a7294cf871fe1d2b662",
+  "mergeComparisonChangedFiles": 0,
+  "vueRunId": 37772913604,
+  "javaRunId": 37772913607,
+  "fullRunId": 37772914072,
+  "nativeRunId": 37772913608,
+  "uiJavaReceiptSha256": "95249f2f828f85e5721b9197703f7bb1c83df7a2910292c524f5512cbcf57d81",
+  "hostedReceiptSha256": "298d4274111c1ae2b7e8031c46566ed092ec09cb3b77aa823ed6927379428659",
+  "nativeReceiptSha256": "e84dc3b98da4113b93990b9cf5d668f9686921649f94a23b0fa5d5e89d1d52be",
+  "ui": {
+    "coreActual": 19,
+    "managerAndSubdirectoryActual": 3,
+    "skipped": 0,
+    "failures": 0,
+    "hostedReadinessGuardNodeTests": 20,
+    "hostedFrontendNodeTests": 256,
+    "loginGeometriesAccepted": 14,
+    "ttsSeconds": 7.092,
+    "ttsArtifactId": 11548559217,
+    "screenshotsReviewed": 4,
+    "originalUiAnimationsDisabledOrFastForwarded": false,
+    "pageTimeoutRaised": false,
+    "privateBodiesOrRealCredentialsUsed": false
+  },
+  "screenshots": [
+    {
+      "file": "tts-cache-generated-a-playing.png",
+      "sha256": "1dbdedb08b4a39dbfa911df01ff364d10f7ba143c4092bed7e2c07f1bdb2a3b3",
+      "bytes": 64224,
+      "width": 1280,
+      "height": 720,
+      "assessment": "visible opaque TTS card with legible generated-page Chinese labels; saved-text toast is outside the card"
+    },
+    {
+      "file": "tts-cache-generated-a-returned.png",
+      "sha256": "af78e524bfb5cbee76e8936de1e0088efcc11e8e870f695cebbbbd4c9e25a9fd",
+      "bytes": 59388,
+      "width": 1280,
+      "height": 720,
+      "assessment": "visible opaque TTS card with legible controls; generated body does not show through the card"
+    },
+    {
+      "file": "tts-cache-generated-b-settings.png",
+      "sha256": "018e0913f794be1984808dfff71f4662a791042a84c81a29de963b77ff795064",
+      "bytes": 96698,
+      "width": 1280,
+      "height": 720,
+      "assessment": "generated account B setting shows one audio cache entry, 125.0 KB, and no old TTS card"
+    },
+    {
+      "file": "tts-cache-generated-b-cleared.png",
+      "sha256": "9bf751015afc8a712297faf962f34bcaf7e698666dbfc6543318f60067dd6b30",
+      "bytes": 100391,
+      "width": 1280,
+      "height": 720,
+      "assessment": "generated account B setting shows zero audio cache entries, 0 B, and no old TTS card"
+    }
+  ],
+  "rebuild": {
+    "jarSha256": "591ffbce8aba9b3fd36d83c4581f0fdf64848d6a0af0b0860edf82f1e943dcec",
+    "jarBytes": 285649077,
+    "entryCount": 1562,
+    "sameRunnerCleanBuilds": 2,
+    "secondBuildTasksExecuted": 6,
+    "secondBuildSeconds": 75,
+    "contentOrZipOrMissingEntryDifferences": 0,
+    "pythonTests": 382,
+    "pythonSkipped": 0,
+    "jvmTests": 170,
+    "jvmSkipped": 31,
+    "javaAndFullWorkflowJarDigestsMatch": true,
+    "allEnvironmentBuildsProven": false
+  },
+  "fullImage": {
+    "actualCamoufoxTests": 20,
+    "camoufoxSkipped": 0,
+    "actualChromiumTests": 23,
+    "sourceDocumentHelperCases": 3,
+    "memoryPeakBytes": 832471040,
+    "pidsPeak": 196,
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "configuredSwapAllowanceBytes": 1073741824,
+    "observedSwapBytes": 0,
+    "memoryMaxOrOomOrPidEvents": 0,
+    "zeroSwapLongSoakProvenByThisRun": false
+  },
+  "nativeRehearsal": {
+    "actualSuccessfulJobs": 6,
+    "jobIds": [113296623899, 113299651671, 113299652412, 113301193639, 113301193753, 113302329341],
+    "publisherArtifactId": 11548808192,
+    "publisherFilesAccepted": 24,
+    "actualCamoufoxTests": 20,
+    "camoufoxSkipped": 0,
+    "sourceDocumentHelperCases": 3,
+    "javaFullAndNativeWorkflowJarDigestsMatch": true,
+    "maxMemoryPeakBytes": 872206336,
+    "maxPidsPeak": 197,
+    "localArchivesDownloadedOrRehashedThisRound": false,
+    "nativeArchiveDigestsFromHostedReloadAndPublisherReceipts": true,
+    "newNativeImageLongSoakAccepted": false,
+    "registryPublished": false,
+    "images": [
+      {
+        "architecture": "amd64",
+        "archiveSha256": "1144997c6c80dc51a512726d851b68e201053a395422485556c2ed927c03c41b",
+        "imageId": "sha256:dcc08b14e110e61126f4eb345b483229e75111b4e288da96dae5bb00261efe48"
+      },
+      {
+        "architecture": "arm64",
+        "archiveSha256": "e1b33a82a5fb2139be6154fa6443171102c4d9ab7a04a179795697c559a05556",
+        "imageId": "sha256:9150fd1e28782fcab2401fd0753bd93bce9d5c1b7ae332ef50e2373d94125c18"
+      }
+    ]
+  },
+  "oldScreenshotFadeTimingRemainsInference": true,
+  "allUiBugsFixed": false,
+  "localBrowserConnectionSucceeded": false,
+  "localFullImageStarted": false,
+  "wslRestarted": false,
+  "userReportsUnchanged": 58,
+  "productionChanged": false,
+  "realSiteAuthenticationAccepted": false,
+  "currentFinalThreeWayAccepted": false,
+  "fullGoalComplete": false
+}

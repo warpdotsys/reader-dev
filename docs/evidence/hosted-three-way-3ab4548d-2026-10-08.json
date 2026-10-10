@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+  "testedMergeSnapshot": "fd140e93378c83867dac7aed53791e0be9593d8e",
+  "ordinaryHostedAccepted": true,
+  "ordinaryRuns": {
+    "vue": {
+      "id": 37790018836,
+      "sourceRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37790018836",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113354618421,
+          "name": "build"
+        },
+        {
+          "id": 113354618799,
+          "name": "Isolated Vue 3 browser journeys in Chromium"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    },
+    "java": {
+      "id": 37790019069,
+      "sourceRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37790019069",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113354618988,
+          "name": "Test and build JAR"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    },
+    "full": {
+      "id": 37790019475,
+      "sourceRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37790019475",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113354634294,
+          "name": "Build and smoke-test the full Reader image"
+        }
+      ],
+      "optionalSkippedJobs": 7
+    },
+    "native": {
+      "id": 37790018720,
+      "sourceRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37790018720",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113354618407,
+          "name": "Build one shared Java Kotlin JAR"
+        },
+        {
+          "id": 113357020451,
+          "name": "Build and test native amd64 image"
+        },
+        {
+          "id": 113357020639,
+          "name": "Build and test native arm64 image"
+        },
+        {
+          "id": 113359183999,
+          "name": "Reload and run tested arm64 image"
+        },
+        {
+          "id": 113359184290,
+          "name": "Reload and run tested amd64 image"
+        },
+        {
+          "id": 113361393678,
+          "name": "Exercise both publisher imports without registry credentials"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    }
+  },
+  "ui": {
+    "actualTests": 25,
+    "skipped": 0,
+    "frontendTests": 287,
+    "screenshotGuardTests": 20,
+    "typesAndBuildPassed": true,
+    "settingsScreenshots": [
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-settings-generated-opds-unavailable.png",
+        "sha256": "62f2e4b9874551136bd052e639fdc33c41f4c4efc8d5336307a3b46a6a8b94c0",
+        "bytes": 76725,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-settings-generated-tts-added.png",
+        "sha256": "85dbd853f84023bb20b8087918aafff44644a9c6f06e0b561a3b7779e378ce99",
+        "bytes": 81390,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-settings-generated-tts-edited.png",
+        "sha256": "6b1bd3941fcc3690c9af84563300cc2d2e5dfaba2b5edbb5676c57466c1d416b",
+        "bytes": 79308,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-settings-generated-tts-rejected.png",
+        "sha256": "fa63b371c61740ad3ea36580e145360de60981b3a09ce6222aac319c6ee99b03",
+        "bytes": 80843,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-txt-rule-generated-created.png",
+        "sha256": "59e131e78294598f6e5cb73edca4df59c36b56d01b7dbbc64d8998bb64959f88",
+        "bytes": 86827,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-txt-rule-generated-deleted.png",
+        "sha256": "11c5a0680d3a8b413f34d8596200321637af6ce3104a1e99ef4a9f3037441244",
+        "bytes": 92681,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-txt-rule-generated-disabled.png",
+        "sha256": "2be2247c57473bc5d3e0738d30af934c98fd6f19e8b3d4b5b8c91ee6f061d2b8",
+        "bytes": 86783,
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "path": "vue/vue3-settings-dialogs-fd140e93378c83867dac7aed53791e0be9593d8e/vue3-txt-rule-generated-invalid.png",
+        "sha256": "d195792bb9aae382fd22f8d9142fbd1cc9f0d611702c4573a491cebb5b5a7dc9",
+        "bytes": 84487,
+        "width": 1280,
+        "height": 720
+      }
+    ],
+    "settingsScreenshotsVisuallyReviewed": 8,
+    "opdsBackendImplemented": false
+  },
+  "java": {
+    "pythonTests": 395,
+    "pythonSeconds": 11.257,
+    "jvmSuites": 42,
+    "jvmTests": 170,
+    "jvmSkipped": 31,
+    "exactByteRebuildAccepted": true,
+    "jarSha256": "ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb",
+    "jarBytes": 285649123,
+    "jarEntryCount": 1562,
+    "reproducibilityReportSha256": "676ca0d1c0211f0276755cfd8759ef48a866d03964efc8ec21f77ebe3c0bbad3"
+  },
+  "full": {
+    "actualCamoufox": {
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "navigationContractPresent": true,
+      "earlyNavigationContractPresent": true,
+      "endlessNavigationContractPresent": true,
+      "promiseContractPresent": true,
+      "stateDeletionContractPresent": true,
+      "sourceNavigationContractPresent": true,
+      "numericalThreadContractPresent": true,
+      "utf8PostContractPresent": true,
+      "xmlSha256": "2be9d6a3c62fefc98c9dd58383f29ed08da2a2ea03edd081f75915ab5353dc20"
+    },
+    "chromiumActualTests": 23,
+    "chromiumSkipped": 0,
+    "helperCases": 3,
+    "jarSha256": "ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb",
+    "memoryPeakBytes": 831148032,
+    "pidsPeak": 196,
+    "ordinarySwapAllowanceBytes": 1073741824,
+    "observedSwapBytes": 0
+  },
+  "native": {
+    "actualCamoufox": {
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "navigationContractPresent": true,
+      "earlyNavigationContractPresent": true,
+      "endlessNavigationContractPresent": true,
+      "promiseContractPresent": true,
+      "stateDeletionContractPresent": true,
+      "sourceNavigationContractPresent": true,
+      "numericalThreadContractPresent": true,
+      "utf8PostContractPresent": true,
+      "xmlSha256": "2c66fbc439d1e6f7dbb62bd128b08c087966bfe8b4a0d96dc9595138bd15a73d"
+    },
+    "helperCases": 3,
+    "publisherFilesAccepted": 24,
+    "metadata": [
+      {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "fd140e93378c83867dac7aed53791e0be9593d8e",
+        "jarSha256": "ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb",
+        "archiveSha256": "f8aa93b7231ddb06b3639d7d631b97d64cf7eb91fd76c6c8f64cddc8f53213d2",
+        "imageId": "sha256:327fa2f6233489b70ad872406da0d2abe1043821976cfb99f14ac9f1c2698d54"
+      },
+      {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "fd140e93378c83867dac7aed53791e0be9593d8e",
+        "jarSha256": "ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb",
+        "archiveSha256": "2abf73c06e3c0e84ae38704a38e7afda91629625efad402daad9d701e43e3e90",
+        "imageId": "sha256:495e418fb703d7bb6cbf2ec076d44eb4ebde82b3389965f61ea2f7c9ea7d5d04"
+      }
+    ],
+    "thisJavaFullAndNativeJarDigestsMatch": true,
+    "maxMemoryPeakBytes": 874291200,
+    "maxPidsPeak": 208,
+    "ordinarySwapAllowanceBytes": [
+      1073741824,
+      1073741824,
+      1073741824,
+      1073741824
+    ],
+    "observedSwapBytes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "localArchiveHashesRecomputed": false
+  },
+  "originalIdentityFailure": {
+    "schemaVersion": 1,
+    "probeCheckoutRevision": "3ab4548de55b1ba47056a78ec521e3746903c179",
+    "probe": {
+      "id": 37790757361,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37790757361",
+      "headSha": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "jobId": 113357213174,
+      "status": "completed",
+      "conclusion": "failure",
+      "logSha256": "df5ca70af8be22248cd52d9c54b063a3cb455febde440e0f9be33016d5cc7421"
+    },
+    "identityRun": {
+      "id": 37791961831,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37791961831",
+      "headSha": "3ab4548de55b1ba47056a78ec521e3746903c179",
+      "jobId": 113361436767,
+      "status": "completed",
+      "conclusion": "failure",
+      "logSha256": "cef8df08eab8af45280017805b11133c16d9d1ab6b84e84f86ad650f7944b60d"
+    },
+    "exactBaseline": {
+      "jarBytes": 72913887,
+      "jarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+      "readOnlyHashRechecked": true
+    },
+    "nonBaselineArchive": {
+      "jarBytes": 72914622,
+      "jarSha256": "7222fbd0c55d8b7e6f6bc1bbf5f6637fbee45dfbd65eda0ef59e38b2e24cd43a",
+      "imageManifestDigest": "sha256:910043799b510b5796baf99537507a63ca95995cda7de95cbf2ba5eeb9dcb5d1"
+    },
+    "baselineIdentityAccepted": false,
+    "originalJarExecuted": false,
+    "threeWayBusinessProbeExecuted": false,
+    "aggregateRuntimeBudgetObserved": false,
+    "strictCompatibilityAccepted": false,
+    "currentUtf8CharacterizationDispatched": false,
+    "nativeArchiveDownloadedOnHostedRunner": true,
+    "nativeArchiveLoadedOnHostedRunner": true,
+    "nativeArchiveDownloadedLocally": false,
+    "loadedCandidateIdentity": {
+      "phase": "loaded",
+      "architecture": "amd64",
+      "revision": "ba1817b4256bfde0b0019ee8861d99af18c037a0",
+      "jarSha256": "ce76a57c850063609fc66787d046f540dd7fd0a157c32d890393445e0076d1fb",
+      "imageId": "sha256:f567061126c5efe13b67befd8ce6295be8eaeaa02b86a01168b770e41acff38e"
+    },
+    "artifact": {
+      "id": 11556945598,
+      "name": "generated-three-way-metadata-37790757361",
+      "size_in_bytes": 7280,
+      "digest": "sha256:494f200afb31056c0efec03122b73d98cd8c598172d63fde4582f09e90f6b5a0"
+    },
+    "artifactFileHashes": {
+      "LOADED_IDENTITY.json": "fa37e1f3d639ed22bbf6fb57c7fa672920399141a8a5f35ba1d628d02a6d927b",
+      "PRELOAD_IDENTITY.json": "cc0e618755cc96c16e707b64df1db21c433f2ac52d5ca2005bf11657c7cb9ea1",
+      "SOURCE_COMPARISON.json": "3172a5382e321b586407004b4bf492706e4c632a554f5299676b5a96d5b0edd7",
+      "SOURCE_JOBS.json": "ac96c218b1dd6c68fb232ddafdd84d206755fc54855bfbab65d3c55d5189413c",
+      "SOURCE_RUN.json": "0b8ffefa2e6b473320da8b2862573f9c2da483624791c5644c960ba6443b9749"
+    },
+    "previousMismatchAlreadyDocumented": "docs/ORIGINAL-JAR-PROVENANCE-2026-09-28.md",
+    "newFailureNotHashCaseIssue": true,
+    "privateJarUploaded": false,
+    "realCredentialsImported": false,
+    "privateBookBodiesRead": 0,
+    "productionChanged": false,
+    "userReportsUnchanged": 58,
+    "fullGoalComplete": false
+  },
+  "localIndependentReceiptSha256": {
+    "uiJava": "8387bf9577b13a79c859c25f6c6843f79fd15b89901448421907dc79eaae22f5",
+    "full": "388f02d9e5528b65dba11b83c8d346b0bf34dd7251c9eea0b2d34c9699c40b23",
+    "native": "95a14ab234832d90d8472219094d03f658dacd0d03d78245afce0267819f93c5",
+    "originalFailure": "c94f16ad3f510078edf0e7df3cdc678334ad614fa52d00dfab032c1a8c8339ca"
+  },
+  "newDriverGuardLocal": {
+    "targetedTests": 17,
+    "pythonTotal": 399,
+    "pythonSkipped": 1,
+    "pythonSeconds": 24.776,
+    "actualNewHostedPreflightExecuted": false,
+    "shaCaseBeforeErrors": 1,
+    "shaCaseBeforeExitCode": 1,
+    "shaCaseAfterPassed": true
+  },
+  "userReportsUnchanged": 58,
+  "privateJarUploaded": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "registryPublished": false,
+  "fullGoalComplete": false
+}

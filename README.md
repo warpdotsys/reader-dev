@@ -20,9 +20,13 @@
 
 ## 当前开发主线
 
-内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。浏览器仍使用远程渲染路径，新 UI 尚未接入或上线；原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
+内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。候选单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，线上也尚未切换。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
 
-浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目只保留一个完整 JAR 和一个正式镜像定义：JAR 含浏览器驱动，镜像同时包含 Chromium 与系统依赖，用户容器不依赖宿主机 Chrome。现有远程渲染配置暂留作回滚；内置方案的真实书源兼容与指纹能力尚未验收。单容器合成书源测试见 [GitHub Actions](https://github.com/warpdotsys/reader-dev/actions/workflows/browser-image.yml)。
+浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。完整镜像默认界面为 Vue 3，保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变。`de7c0c7e` 自己的镜像构建、重载、发布导入和默认入口已独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)，不覆盖随后新增的手机布局修复。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
+
+2026-10-07 手机分组遮挡修复 `e5cc2ba8` 及 `c3307ded` 长分组回归已独立托管验收，见[界面证据](docs/SHELF-MOBILE-CONTROLS-2026-10-07.md)。数值线程池修复 `09163efe` 自己的四条工作流／原生六作业也已通过，两套真实契约各 19 项及小身份／UI／预算报告独立核对，见[修复范围与资源风险](docs/CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)。后续新增有限[内存分类观测](docs/BROWSER-MEMORY-CATEGORIES-2026-10-07.md)，本机 helper 停止后的大项实为文件页记账，其自己的 `594cec9c` hosted 也已完成，5 份实际分类／原预算独立核对；不扣缓存放宽守卫、不倒填起点失败原因。[起点实站专项](docs/PUBLIC-METADATA-IMAGE-2026-10-06.md)及本机旧 worker 的触限／解析红灯仍保留，不能以普通 CI 成功发“已修好”的版本；未切换生产。
+
+隔离本机测试可加 `--reader.server.bindAddress=127.0.0.1`，让 HTTP 服务仅监听回环地址；默认值仍为 `0.0.0.0`，不改变现有容器反向代理的连通性。仅改监听地址不会隔离 `storage/data`，仍须另设全新 `reader.app.workDir`。
 
 ## 新许可证中心
 

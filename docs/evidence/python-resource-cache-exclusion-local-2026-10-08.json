@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-08",
+  "scope": "read-only historical local Boot JAR observation, generated archive tests and source packaging fix; not a newly built hosted artifact",
+  "beforeSourceRevision": "ce12b21bd7ca521eb918608896da7b6a7c42979d",
+  "observedLocalJar": {
+    "bytes": 285688820,
+    "sha256": "f9c9082a352d0d609f3a82497f4d4b0ed2907da72bec833a962ce5948a184f2b",
+    "archiveModified": false,
+    "cacheDirectoryPresent": true,
+    "pythonCaches": [
+      {
+        "entry": "BOOT-INF/classes/camoufox/__pycache__/worker.cpython-311.pyc",
+        "bytes": 25735,
+        "sha256": "2b24ceeaebc7d554ac0bef24cc8099f4a9e195750e6a1ab2e13f98bb841af9b8",
+        "first16BytesHex": "a70d0d0a00000000139cb76aae510000"
+      },
+      {
+        "entry": "BOOT-INF/classes/camoufox/__pycache__/worker.cpython-314.pyc",
+        "bytes": 44895,
+        "sha256": "99fc67ce93fdb35399467b29e1dd65a2026c898ea43ea64d234fdbacb3c6a69b",
+        "first16BytesHex": "2b0e0d0a000000005cdec56a789c0000"
+      }
+    ],
+    "bothLocalSourceCachesStillPresentWithSameDigests": true,
+    "cacheBytesOrSourceContentPersisted": false
+  },
+  "change": {
+    "formalProcessResourcesExcludesOnlyPythonCachePatterns": true,
+    "inspectorRejectsContaminationEvenWhenBothArchivesMatch": true,
+    "comparisonNormalizesOrDropsDifferentEntries": false,
+    "completeByteAndMetadataComparisonRetained": true,
+    "originalSizeBudgetsRetained": true,
+    "readableWorkerRequiredEntryRetained": true,
+    "localCacheFilesDeleted": false,
+    "localJarRebuilt": false,
+    "physicalChangedInputDigests": [
+      {"path": "build.gradle.kts", "sha256": "50fae34a263baa593e78b820a6164d2c57406ff364e40fd5d12f468a931c0171"},
+      {"path": "scripts/verify-reader-jar-reproducibility.py", "sha256": "f47e812e453fd259375c6eff8d828c1ec6a6bb36e6354fef186d6122a17bba5f"},
+      {"path": "src/test/python/reader_jar_reproducibility_test.py", "sha256": "b017aea959b309c19ee71da5b55f2fa6ea5b192ceab25760231e9876c1fbdbd8"}
+    ]
+  },
+  "tests": {
+    "newCases": 4,
+    "baselineTests": 21,
+    "baselineAssertionFailures": 5,
+    "windowsTargeted": {"tests": 21, "skipped": 0, "seconds": 0.360},
+    "wslTargeted": {"tests": 21, "skipped": 0, "seconds": 0.040},
+    "windowsAllPython": {"tests": 362, "passed": 361, "skipped": 1, "seconds": 19.581},
+    "nodeReleaseContracts": {"tests": 82, "skipped": 0, "passed": 82},
+    "releasePipelineStaticGuardPassed": true,
+    "heavyBrowserDownloadedOrLocalJvmCompilationExecuted": false
+  },
+  "allCrossWorkflowJarDifferencesUniquelyAttributed": false,
+  "newHostedArtifactsAccepted": false,
+  "realSiteOrAuthenticationPassed": false,
+  "userReportsUnchanged": 58,
+  "originalJarOverwritten": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

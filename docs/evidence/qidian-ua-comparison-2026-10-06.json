@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "scope": "credential-free public Qidian selector and User-Agent comparison; not authenticated Reader acceptance",
+  "observedOn": "2026-10-06",
+  "originalJarTested": false,
+  "archivedRemoteTested": false,
+  "defaultCamoufoxTested": false,
+  "visibleUserOpenedPage": {
+    "loginIndicatorVisible": true,
+    "accountIdentifierPersisted": false,
+    "credentialUrlPersisted": false,
+    "chapterContainerPresent": true,
+    "contentSpanCount": 64,
+    "visibleChallengeIframeCount": 0,
+    "loginPromptVisible": false,
+    "viewport": {
+      "width": 933,
+      "height": 871
+    },
+    "rawScreenshotHtmlAndBodyNotSaved": true,
+    "cookiesNotReadOrCopied": true
+  },
+  "inputs": {
+    "readerJarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+    "pairedDnsSnapshotSha256": "27c2319260f2903089d8106d925c9429ec73dd8c9137b10b39d7faf509c05c4f",
+    "chromeVersion": "154.0.8037.93",
+    "freshnessBoundary": "Public DNS answers observed at 2026-10-06T05:12:24Z; frozen JVM-only A snapshot, not a live DNS claim or system hosts change",
+    "sameSourceSelectors": true,
+    "savedSourceHeaderMatchesExpectedInBothGeneratedNamespaces": true,
+    "localProbeSha256": "b5849aacff125e3c054b676ec7037418cbcfbbbe9a7e76ac3c575dbae49e597b",
+    "separateGeneratedAccountsAndStorage": true,
+    "sequentialOwnedProcesses": true,
+    "publicNetworkGuardNotRelaxed": true
+  },
+  "observedReaderRuns": [
+    {
+      "scope": "public credential-free Qidian selectors, isolated generated Reader account",
+      "mode": "legacy-ua",
+      "productSourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "localJarBuiltOnBaseHead": "1f8475f8be3bb08b63e39bffee6a156f18e06467",
+      "chromeVersion": "154.0.8037.93",
+      "userAgentSelection": "legacy-ua",
+      "dnsSnapshotSha256": "27c2319260f2903089d8106d925c9429ec73dd8c9137b10b39d7faf509c05c4f",
+      "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+      "defaultCamoufoxTested": false,
+      "originalJarOrArchivedParity": false,
+      "realAuthenticationProven": false,
+      "source": {
+        "tocSelectors": {
+          "chapterUrl": "@href@js:result + \", {\\\"webView\\\":true}\"",
+          "chapterName": "@text",
+          "chapterList": "#allCatalog .catalog-volume .volume-chapters li.chapter-item a.chapter-name"
+        },
+        "contentSelector": "#c-403440812 p .content-text@text",
+        "infoSelectors": {
+          "coverUrl": "#bookImg img@src",
+          "name": "#bookName@text",
+          "author": ".book-info-top .book-meta .author@text"
+        }
+      },
+      "bookUrl": "https://www.qidian.com/book/1010400217/",
+      "onlyAllowedFreeChapter": "https://www.qidian.com/chapter/1010400217/403440812/",
+      "realCredentialsImported": false,
+      "realLocalBookRead": false,
+      "appLoggingDisabled": true,
+      "debugRuleLoggingDisabled": true,
+      "chapterCacheDisabled": true,
+      "privateNetworkGuardEnabled": true,
+      "processStopped": true,
+      "requests": [
+        {
+          "step": "bookInfo",
+          "httpStatus": 200,
+          "isSuccess": true,
+          "errorMsgEmpty": true,
+          "errorMessageLength": 0,
+          "dataIsNull": false,
+          "policyReason": "",
+          "hostFingerprint": "",
+          "seconds": 5.722,
+          "rawErrorBodyOrHtmlNotPersisted": true,
+          "nameMatches": false,
+          "authorMatches": false,
+          "coverUsesHttps": false,
+          "fields": [
+            "bookUrl",
+            "tocUrl",
+            "origin",
+            "originName",
+            "name",
+            "author",
+            "type",
+            "group",
+            "latestChapterTime",
+            "lastCheckTime",
+            "lastCheckCount",
+            "totalChapterNum",
+            "durChapterIndex",
+            "durChapterPos",
+            "durChapterTime",
+            "canUpdate",
+            "order",
+            "originOrder",
+            "useReplaceRule",
+            "isInShelf"
+          ]
+        }
+      ],
+      "chapterBodyRequested": false,
+      "testPid": 56352,
+      "cookieRowsBefore": 0,
+      "publicParserJourneyPassed": false,
+      "probeFailureType": "System.Management.Automation.RuntimeException",
+      "cookieRowsAfter": 0,
+      "capturedLogCharacters": 1192,
+      "testPortClosed": true,
+      "userReaderListenerPreserved": true
+    },
+    {
+      "scope": "public credential-free Qidian selectors, isolated generated Reader account",
+      "mode": "current-chrome-ua",
+      "productSourceHead": "5ee34f877cec1d8993800473b8ecd8fab8365589",
+      "localJarBuiltOnBaseHead": "1f8475f8be3bb08b63e39bffee6a156f18e06467",
+      "chromeVersion": "154.0.8037.93",
+      "userAgentSelection": "current-chrome-ua",
+      "dnsSnapshotSha256": "27c2319260f2903089d8106d925c9429ec73dd8c9137b10b39d7faf509c05c4f",
+      "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+      "defaultCamoufoxTested": false,
+      "originalJarOrArchivedParity": false,
+      "realAuthenticationProven": false,
+      "source": {
+        "tocSelectors": {
+          "chapterUrl": "@href@js:result + \", {\\\"webView\\\":true}\"",
+          "chapterName": "@text",
+          "chapterList": "#allCatalog .catalog-volume .volume-chapters li.chapter-item a.chapter-name"
+        },
+        "contentSelector": "#c-403440812 p .content-text@text",
+        "infoSelectors": {
+          "coverUrl": "#bookImg img@src",
+          "name": "#bookName@text",
+          "author": ".book-info-top .book-meta .author@text"
+        }
+      },
+      "bookUrl": "https://www.qidian.com/book/1010400217/",
+      "onlyAllowedFreeChapter": "https://www.qidian.com/chapter/1010400217/403440812/",
+      "realCredentialsImported": false,
+      "realLocalBookRead": false,
+      "appLoggingDisabled": true,
+      "debugRuleLoggingDisabled": true,
+      "chapterCacheDisabled": true,
+      "privateNetworkGuardEnabled": true,
+      "processStopped": true,
+      "requests": [
+        {
+          "step": "bookInfo",
+          "httpStatus": 200,
+          "isSuccess": true,
+          "errorMsgEmpty": true,
+          "errorMessageLength": 0,
+          "dataIsNull": false,
+          "policyReason": "",
+          "hostFingerprint": "",
+          "seconds": 5.76,
+          "rawErrorBodyOrHtmlNotPersisted": true,
+          "nameMatches": false,
+          "authorMatches": false,
+          "coverUsesHttps": false,
+          "fields": [
+            "bookUrl",
+            "tocUrl",
+            "origin",
+            "originName",
+            "name",
+            "author",
+            "type",
+            "group",
+            "latestChapterTime",
+            "lastCheckTime",
+            "lastCheckCount",
+            "totalChapterNum",
+            "durChapterIndex",
+            "durChapterPos",
+            "durChapterTime",
+            "canUpdate",
+            "order",
+            "originOrder",
+            "useReplaceRule",
+            "isInShelf"
+          ]
+        }
+      ],
+      "chapterBodyRequested": false,
+      "testPid": 18792,
+      "cookieRowsBefore": 0,
+      "publicParserJourneyPassed": false,
+      "probeFailureType": "System.Management.Automation.RuntimeException",
+      "cookieRowsAfter": 0,
+      "capturedLogCharacters": 1200,
+      "testPortClosed": true,
+      "userReaderListenerPreserved": true
+    }
+  ],
+  "result": {
+    "bothReturnedSuccessShellWithoutExpectedMetadata": true,
+    "changingOnlyUaDidNotRestoreMetadata": true,
+    "uniqueRootCauseEstablished": false,
+    "readerAuthenticatedJourneyPassed": false,
+    "chapterBodyRequested": false
+  },
+  "authorityBoundary": {
+    "newBrowserSessionCookieNotReadOrCopied": true,
+    "uidmapStillMissing": true,
+    "officialUidmapInstallQuestionOutstanding": true,
+    "productionChanged": false
+  }
+}

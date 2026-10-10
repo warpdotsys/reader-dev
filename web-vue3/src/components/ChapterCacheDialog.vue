@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { getBookContent } from '@/api/books'
-import { cacheBookRangeOnServer, cacheBookSSE, cancelCacheBook } from '@/api/cacheBook'
-import { saveLocalChapter } from '@/utils/readerLocalCache'
+import { cacheBookSSE } from '@/api/cacheBook'
+import { localChapterCacheScope, saveLocalChapter } from '@/utils/readerLocalCache'
+import { useUserStore } from '@/stores/user'
 import type { BookChapter } from '@/types'
 
 interface Props {
   modelValue: boolean
   bookUrl: string
   bookName?: string
-  /** 目录实章（已过滤卷标题行；顺序与后端 range 0 基一致） */
+  /** 目录实章（已过滤卷标题行） */
   chapters: BookChapter[]
   /** 书源 origin（拉取到本机时逐章 getBookContent 需要） */
   origin?: string
@@ -49,7 +50,9 @@ const total = ref(0)
 const msg = ref('')
 const msgError = ref(false)
 let sseHandle: { close: () => void } | null = null
-let cancelLocal = false
+let taskGeneration = 0
+const user = useUserStore()
+const localCacheScope = computed(() => localChapterCacheScope(user, window.location.origin + import.meta.env.BASE_URL))
 
 const chapterCount = computed(() => props.chapters.length)
 const title = computed(() => props.bookName || '本书')
@@ -77,8 +80,10 @@ const percent = computed(() => {
 const serverDisabled = computed(() => direction.value === 'server' && !props.allowServer)
 
 function reset() {
+  cancel()
   direction.value = 'server'
-  scope.value = props.defaultScope
+  // 服务端只支持整书缓存；本机方向才保留调用方给出的章节范围。
+  scope.value = 'all'
   rangeFrom.value = props.defaultFrom
   rangeTo.value = chapterCount.value || 1
   busy.value = false
@@ -87,7 +92,6 @@ function reset() {
   total.value = 0
   msg.value = ''
   msgError.value = false
-  cancelLocal = false
 }
 
 function close() {
@@ -102,15 +106,18 @@ watch(
       reset()
       document.body.style.overflow = 'hidden'
     } else {
+      cancel()
       document.body.style.overflow = ''
     }
   },
 )
 
 onBeforeUnmount(() => {
-  if (sseHandle) sseHandle.close()
+  cancel()
   document.body.style.overflow = ''
 })
+
+watch([localCacheScope, () => user.accessToken, () => props.bookUrl], () => cancel(), { flush: 'sync' })
 
 function fail(text: string) {
   busy.value = false
@@ -120,6 +127,10 @@ function fail(text: string) {
 
 function start() {
   if (busy.value || chapterCount.value === 0) return
+  if (!localCacheScope.value) {
+    ElMessage.warning('请先登录再缓存正文')
+    return
+  }
   if (serverDisabled.value) {
     ElMessage.warning('服务端缓存需要先把书加入书架')
     return
@@ -130,48 +141,41 @@ function start() {
   msgError.value = false
   const f = from.value
   const t = to.value
-  if (direction.value === 'server') void startServer(f, t)
+  if (direction.value === 'server') void startServer()
   else void startLocal(f, t)
 }
 
-async function startServer(f: number, t: number) {
+async function startServer() {
+  const generation = ++taskGeneration
+  const cacheScope = localCacheScope.value
+  const token = user.accessToken
+  const bookUrl = props.bookUrl
+  const isCurrent = () => generation === taskGeneration && cacheScope === localCacheScope.value
+    && token === user.accessToken && bookUrl === props.bookUrl
   try {
-    const res = await cacheBookRangeOnServer(props.bookUrl, f - 1, t - 1)
-    if (!res.isSuccess) throw new Error(res.errorMsg || '缓存启动失败')
-    const start = res.data
-    cached.value = start?.cached ?? 0
-    total.value = start?.total ?? t - f + 1
-    const taskId = start?.taskId
-    const handle = await cacheBookSSE(taskId || props.bookUrl, {
+    // legacy 后端仅支持整书 SSE 缓存。不能把范围选择伪装成服务端能力。
+    total.value = chapterCount.value
+    const handle = await cacheBookSSE(bookUrl, {
       onProgress: (p) => {
-        if (typeof p.cached === 'number') cached.value = p.cached
-        if (typeof p.total === 'number') total.value = p.total
-        if (p.cancelled) {
-          busy.value = false
-          msg.value = '缓存已取消'
-        } else if (p.error) {
-          fail(`缓存失败：${p.error}`)
-        } else if (p.finished) {
-          busy.value = false
-          finished.value = true
-          msg.value = `已缓存到服务器（${cached.value}/${total.value} 章）`
-          emit('done', { direction: 'server', from: f, to: t, saved: cached.value })
-        }
+        if (!isCurrent()) return
+        cached.value = p.cachedCount
       },
       onEnd: () => {
-        if (busy.value && !msg.value) {
+        if (isCurrent() && busy.value && !msg.value) {
           busy.value = false
           finished.value = true
-          msg.value = `已缓存到服务器（${cached.value}/${total.value} 章）`
-          emit('done', { direction: 'server', from: f, to: t, saved: cached.value })
+          msg.value = `已完成服务器整书缓存（目录中共 ${cached.value} 章）`
+          emit('done', { direction: 'server', from: 1, to: chapterCount.value, saved: cached.value })
         }
       },
       onStreamError: (m) => {
-        if (busy.value) fail(`缓存进度中断：${m}`)
+        if (isCurrent() && busy.value) fail(`缓存进度中断：${m}`)
       },
-    }, !!taskId)
-    sseHandle = handle
+    })
+    if (isCurrent() && busy.value) sseHandle = handle
+    else handle.close()
   } catch (err) {
+    if (!isCurrent()) return
     fail(`缓存失败：${err instanceof Error ? err.message : '请稍后重试'}`)
   }
 }
@@ -181,9 +185,15 @@ async function startLocal(f: number, t: number) {
     fail('缺少书源信息，无法拉取正文')
     return
   }
-  cancelLocal = false
+  const generation = ++taskGeneration
+  const cacheScope = localCacheScope.value
+  const token = user.accessToken
+  const bookUrl = props.bookUrl
+  const origin = props.origin
+  const isCurrent = () => generation === taskGeneration && cacheScope === localCacheScope.value
+    && token === user.accessToken && bookUrl === props.bookUrl
   const selected = props.chapters.slice(f - 1, t).map((ch, i) => ({
-    ch,
+    ch: { ...ch },
     index: f - 1 + i,
   }))
   total.value = selected.length
@@ -191,37 +201,36 @@ async function startLocal(f: number, t: number) {
   let cursor = 0
   let saved = 0
   const worker = async () => {
-    while (!cancelLocal) {
+    while (isCurrent()) {
       const item = selected[cursor++]
       if (!item) return
       try {
-        const res = await getBookContent(props.bookUrl, item.ch.url, props.origin || '', {
+        const res = await getBookContent(bookUrl, item.ch.url, origin, {
           index: item.ch.index,
           cache: true,
         })
+        if (!isCurrent()) return
         const text = res.data?.content ?? ''
         if (text) {
-          await saveLocalChapter({
-            bookUrl: props.bookUrl,
+          const written = await saveLocalChapter(cacheScope, {
+            bookUrl,
             chapterUrl: item.ch.url,
             title: item.ch.title,
             index: item.index,
             content: text,
           })
-          saved++
+          if (!isCurrent()) return
+          if (written) saved++
         }
       } catch {
         // 单章失败不中断整批（与服务器任务口径一致）
       }
+      if (!isCurrent()) return
       cached.value = saved
     }
   }
   await Promise.all(Array.from({ length: Math.min(3, selected.length) }, () => worker()))
-  if (cancelLocal) {
-    busy.value = false
-    msg.value = '已取消'
-    return
-  }
+  if (!isCurrent()) return
   busy.value = false
   finished.value = true
   msg.value = `已保存到本机缓存 ${saved} 章`
@@ -229,13 +238,12 @@ async function startLocal(f: number, t: number) {
 }
 
 function cancel() {
-  if (!busy.value) return
+  taskGeneration++
   if (sseHandle) {
     sseHandle.close()
     sseHandle = null
-    void cancelCacheBook(props.bookUrl, false).catch(() => {})
   }
-  cancelLocal = true
+  if (!busy.value) return
   busy.value = false
   msg.value = '已取消'
   msgError.value = false
@@ -265,7 +273,7 @@ function cancel() {
                 type="button"
                 :disabled="busy || !allowServer"
                 :title="allowServer ? '' : '服务端缓存需要先把书加入书架'"
-                @click="direction = 'server'"
+                @click="direction = 'server'; scope = 'all'"
               >
                 缓存到服务器
               </button>
@@ -289,7 +297,8 @@ function cancel() {
                 class="seg-btn"
                 :class="{ active: scope === 'chapter' }"
                 type="button"
-                :disabled="busy"
+                :disabled="busy || direction === 'server'"
+                :title="direction === 'server' ? '当前 Java/Kotlin 后端仅支持整书服务端缓存' : ''"
                 @click="scope = 'chapter'"
               >
                 当前章
@@ -298,7 +307,8 @@ function cancel() {
                 class="seg-btn"
                 :class="{ active: scope === 'rest' }"
                 type="button"
-                :disabled="busy"
+                :disabled="busy || direction === 'server'"
+                :title="direction === 'server' ? '当前 Java/Kotlin 后端仅支持整书服务端缓存' : ''"
                 @click="scope = 'rest'"
               >
                 至末尾
@@ -316,7 +326,8 @@ function cancel() {
                 class="seg-btn"
                 :class="{ active: scope === 'range' }"
                 type="button"
-                :disabled="busy"
+                :disabled="busy || direction === 'server'"
+                :title="direction === 'server' ? '当前 Java/Kotlin 后端仅支持整书服务端缓存' : ''"
                 @click="scope = 'range'"
               >
                 指定范围
@@ -324,7 +335,9 @@ function cancel() {
             </div>
           </div>
 
-          <div v-if="scope === 'range'" class="range-row">
+          <p v-if="direction === 'server'" class="cache-note">服务端目前仅提供整书缓存与 SSE 进度；关闭此窗口会停止当前请求，无法精确取消后台任务。</p>
+
+          <div v-if="direction === 'local' && scope === 'range'" class="range-row">
             <input
               v-model.number="rangeFrom"
               class="range-input"
@@ -547,6 +560,12 @@ function cancel() {
 }
 .search-msg.error {
   color: var(--danger, #d33);
+}
+.cache-note {
+  margin: -2px 0 10px 44px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-3);
 }
 .dlg-actions {
   display: flex;

@@ -104,7 +104,8 @@ dependencies {
 
     // json
     implementation("com.google.code.gson:gson:2.8.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
+    // Exact version present in reader-pro-3.2.14.jar; avoid online dynamic-version lookup.
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.5")
 
     // log
     implementation("io.github.microutils:kotlin-logging:1.6.24")
@@ -174,6 +175,10 @@ application {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClassName = "com.htmake.reader.ReaderApplicationKt"
+    // Gradle 6 keeps source mtimes and filesystem traversal order by default.
+    // Exact-byte CI comparison, not these options alone, proves a rebuild.
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
     // JavaFX is used only by the optional desktop packager. The reference
     // headless Spring Boot JAR does not ship JavaFX modules.
     exclude("**/javafx-*.jar")
@@ -182,7 +187,26 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 // The retained 3.2.14 frontend has the former centre URL embedded in its
 // minified bundle. Rewrite only that literal in generated resources, leaving
 // the extracted reference asset byte-for-byte available for provenance.
+val vue3Dist = file("web-vue3/dist")
+val verifyVue3UiDist = tasks.register("verifyVue3UiDist") {
+    doLast {
+        require(File(vue3Dist, "index.html").isFile) {
+            "Vue 3 UI build is missing; run npm ci and npm run build in web-vue3 first"
+        }
+    }
+}
+
 tasks.named<ProcessResources>("processResources") {
+    // Unit tests import the readable worker and can leave interpreter-version
+    // and checkout-time-dependent caches beside it. Keep those local files,
+    // but never package them as application resources.
+    exclude("**/__pycache__/**", "**/*.pyc", "**/*.pyo")
+    if (project.findProperty("readerWebUi")?.toString() == "vue3") {
+        dependsOn(verifyVue3UiDist)
+        from(vue3Dist) {
+            into("web-vue3")
+        }
+    }
     // Gradle 6.1.1 otherwise uses the host default charset for line filters.
     // On Windows that decoded the UTF-8 Vue bundles as GBK and produced
     // malformed JavaScript in the boot JAR.

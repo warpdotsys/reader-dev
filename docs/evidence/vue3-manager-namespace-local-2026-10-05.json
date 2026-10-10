@@ -1,0 +1,231 @@
+{
+  "date": "2026-10-05",
+  "scope": "Generated accounts, metadata and files only. No private book bodies, production writes, or new original-JAR differential.",
+  "baseline": {
+    "jarSha256": "6f78f28a2661f736f1a96709c458e4ec224c0c398ed7c9a6e6453b94bdc193d6",
+    "tests": 1,
+    "skipped": 0,
+    "failures": 1,
+    "errors": 0,
+    "seconds": 14.035,
+    "xmlSha256": "0e62d26a56762d99b527471c031f9f61b7507c542795de7105b59bff0159fa7b",
+    "observed": "Real manager-password success returns no isAdmin and does not expose the system-configuration button. This is an older restored Vue 3 candidate, not the original 3.2.14 JAR.",
+    "frozenOriginalProbeRetained": true
+  },
+  "firstCandidate": {
+    "jarSha256": "713913bf168f962f76eeb78498c94428229e58b1e7b27cf296777d49ad23b631",
+    "manager": {
+      "tests": 1,
+      "skipped": 0,
+      "failures": 1,
+      "errors": 0,
+      "seconds": 19.795,
+      "xmlSha256": "724ca694978881e32661f264f152cdd39081deef0aa165523ac8913c56e879ff"
+    },
+    "failure": "Own-user fallback was rejected but last successful system shelf remained visible without an explicit message. Failure evidence retained.",
+    "secureFile": {
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 7.644
+    }
+  },
+  "finalJarSha256": "721bbc9b91d3cf6ba8b3ecd88f2664530cc88928bec003de61c172101c4eb7a2",
+  "packagedCurrentUiFilesCheckedBySha256": 81,
+  "frontend": {
+    "tests": 213,
+    "skipped": 0,
+    "failures": 0,
+    "typecheck": "passed",
+    "build": "passed",
+    "staticRegisteredApiRoutes": 92,
+    "actionlint": "passed"
+  },
+  "managerJourney": {
+    "tests": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 33.822,
+    "xmlSha256": "d2abdfb60651bf6a5a65e50d1a364c0aec4025aa0f9d1f34d315d32264ac3ff4",
+    "testSourceSha256": "c01e8ea40475b0b42264c21ef0dca422acad96f329c20b78f75c2f8fd63a7b2b",
+    "generatedScreenshotsVisuallyInspected": 3
+  },
+  "secureFile": {
+    "tests": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 11.171,
+    "xmlSha256": "f0a8771440d12e3f10f11484d3b44235e15bf01644e73885b0d19df0d9bbde79"
+  },
+  "core": {
+    "tests": 15,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "individuallyChecked": true,
+    "reports": [
+      {
+        "journey": "Login",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 13.71,
+        "xmlSha256": "e4d80b4f6267f43a8f7a737b67fc95fdf23a47c34b7c6806fe35d43eb202cff1"
+      },
+      {
+        "journey": "Reading",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 17.385,
+        "xmlSha256": "b07e3791634a63a9a0708f3115a8edbb92adc3af263c19702f19fae6097e9fbe"
+      },
+      {
+        "journey": "LocalReading",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 66.653,
+        "xmlSha256": "bb1e4c7ba25e35bb60013c3e501ee164f0f5d34b6110836b62161af72bf2b908"
+      },
+      {
+        "journey": "LocalCacheIsolation",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 20.4,
+        "xmlSha256": "4e7a6da8a57c16873a9eeecdcaad655bebe66273f76cb35cacfb96745ee7da34"
+      },
+      {
+        "journey": "SessionRace",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 33.223,
+        "xmlSha256": "4956bb45c1768c73dc1c0cf7dcacd6dc795c44709337fa8f80587af602fda94b"
+      },
+      {
+        "journey": "ShelfOfflineIsolation",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 17.717,
+        "xmlSha256": "ac20c17c8e20f9f7dd49abcf3a7a4dfda3b9a7ce92a125525a03083b92a90fe2"
+      },
+      {
+        "journey": "EpubSafety",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 25.204,
+        "xmlSha256": "1790b2c5bd9917094d1bab6ea6b810bbab618810f7e45c998e581c7c82b75d4f"
+      },
+      {
+        "journey": "ShelfLayout",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 22.79,
+        "xmlSha256": "5aad39bb5d00a7039ec94ecf23ca4ffd4adfb7c74d0e0727f2cc845c60a150a9"
+      },
+      {
+        "journey": "Search",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 16.626,
+        "xmlSha256": "2600884566653fe82e193454d08b0c6fcc2a03e5775622716cf5e67fe0dd2bc3"
+      },
+      {
+        "journey": "Source",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 17.026,
+        "xmlSha256": "adfae8cc158655a730344370e6f50b31156c803399d3f23f771f8310eeb683d8"
+      },
+      {
+        "journey": "SourceCookie",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 41.411,
+        "xmlSha256": "fb9eda88d6cf9e30402ac1c130a6c16cdbd94a1eb1a360ff6d92d95886d18bac"
+      },
+      {
+        "journey": "Group",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 19.585,
+        "xmlSha256": "2a735bbf9dcbf514857f1303b9f2d9ac2f6cf9c752a389c86a789c2897561ad6"
+      },
+      {
+        "journey": "ReplaceRule",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 15.551,
+        "xmlSha256": "0d6b5cea42258024b67588d4e84eaf7e238d917cff7864cadef628e2fe42d2ac"
+      },
+      {
+        "journey": "File",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 17.439,
+        "xmlSha256": "b7c2cec50736e6f3971b9e1c21f8f64688e1ed5ead9cd9cf1908e7ef20434f59"
+      },
+      {
+        "journey": "Backup",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 29.296,
+        "xmlSha256": "fa3294b33bf93600bd12e941238098127802e8801c073589f2f11f9ca6be2c2e"
+      }
+    ]
+  },
+  "completedManagerChecks": [
+    "Actual HTTP 200/ReturnData wrong-key denial and correct-key user list",
+    "No fabricated persistent isAdmin field or editor",
+    "Actual userNS=default and X-Reader-Secure-Key; secret absent from resource URLs",
+    "Actual namespace headers for correct manager and legacy wrong-key own fallback",
+    "Wrong namespace response not rendered, not used as offline failure, not overwriting verified snapshot",
+    "Page reload revalidates manager password before restoring default mode",
+    "Own and default offline shelf metadata isolated",
+    "Next account cannot inherit manager credential or shelf; reauthentication required"
+  ],
+  "limitations": [
+    "System-namespace original-PDF opening temporarily blocked explicitly",
+    "System-namespace subscription offline mirror temporarily disabled; unknown legacy cache retained untouched",
+    "Default-namespace full-format/SSE/TTS/source-debug business journeys not fully verified",
+    "Concurrent retry notifications can overlap the navigation bar",
+    "Cross-tab session synchronization, production proxy header preservation, authenticated real-site three-way comparison, long soak and local final image runtime not completed",
+    "No PR merge, Release publication, registry push, or production deployment"
+  ],
+  "hostedVerification": "Pending for this source change; previous green runs prove only aa791010.",
+  "originalJar": {
+    "sha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "readOnly": true,
+    "differentialThisTurn": false
+  }
+}

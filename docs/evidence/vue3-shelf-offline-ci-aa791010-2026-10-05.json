@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-05",
+  "sourceCommit": "aa7910105549e0c1074871a736a454f4ca72258e",
+  "testedPrMergeCommit": "eec87995f5fc1a160064b2d7cdeeea5b3df7e0f9",
+  "fourHostedGates": [
+    {"runId":37256815284,"name":"Java Kotlin CI","conclusion":"success"},
+    {"runId":37256815266,"name":"Vue 3 preview build","conclusion":"success"},
+    {"runId":37256815264,"name":"Browser image integration","conclusion":"success"},
+    {"runId":37256815262,"name":"Native release artifact rehearsal","conclusion":"success"}
+  ],
+  "uiJob": {"id":111595558132,"runner":"GitHub Actions 1000003556","labels":["ubuntu-24.04"]},
+  "core": {"artifactId":11323435829,"artifactBytes":7984,"individuallyAuditedXmlReports":15,"tests":15,"skipped":0,"failures":0,"errors":0,"shelfOfflineSeconds":4.717,"shelfOfflineXmlSha256":"eeff61a56d3897326ed1d7d5a8d1f84dded7479f33911afd1b43d8303700f50b","allShelfAssertionsCompleted":true},
+  "subdirectory": {"artifactId":11323222336,"artifactBytes":530,"tests":1,"skipped":0,"failures":0,"errors":0,"seconds":3.152,"xmlSha256":"efd59c49ca336d1e6d7eda393d0b6b9101a8d5864992ba27d6418579a90984eb"},
+  "camoufox": {"artifactId":11323236275,"artifactBytes":919,"tests":12,"skipped":0,"failures":0,"errors":0,"seconds":95.986,"xmlSha256":"37e0fee762c15bc3ffaec04e069059ebedabfc2c3368bb09591679a8e29540a2"},
+  "fullImageGeneratedSmoke": {
+    "artifactId":11323181676,"artifactBytes":896,"actualJsonReportsAudited":2,
+    "identityCookieRequestResourceFieldsPassed":true,"architecture":"x86_64",
+    "cpuQuota":200000,"cpuPeriod":100000,"memoryMaxBytes":2147483648,"memoryPeakBytes":793559040,"pidsMax":256,"pidsPeak":175,
+    "memoryMaxOomOomKillEvents":0,"pidsMaxEvents":0,"actualSwapBytes":0,"configuredSwapMaxBytes":1073741824,
+    "budgetSha256":"058402160259248746d0e334bc10a5730780f5cd1858fa2ac81f785cc34c7ac1",
+    "syntheticSha256":"4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+  },
+  "nativePublisher": {
+    "artifactId":11323471280,"artifactBytes":7065,"actualJsonReportsAudited":20,"identityCookieRequestResourceFieldsPassed":true,
+    "sharedJarSha256":"1e92ca1ec29f071e71f95c7740faa3ba9fc6251ae25cfbcd51e0d41e3c59db20",
+    "actualHostedJobs": [
+      {"id":111595558354,"runner":"GitHub Actions 1000003558","label":"ubuntu-24.04","conclusion":"success"},
+      {"id":111595878894,"runner":"GitHub Actions 1000003562","label":"ubuntu-24.04-arm","conclusion":"success"},
+      {"id":111595878904,"runner":"GitHub Actions 1000003561","label":"ubuntu-24.04","conclusion":"success"},
+      {"id":111596633588,"runner":"GitHub Actions 1000003563","label":"ubuntu-24.04-arm","conclusion":"success"},
+      {"id":111596633600,"runner":"GitHub Actions 1000003564","label":"ubuntu-24.04","conclusion":"success"},
+      {"id":111597306819,"runner":"GitHub Actions 1000003565","label":"ubuntu-24.04","conclusion":"success"}
+    ],
+    "amd64": {
+      "imageId":"sha256:f266aad375eea1bc1126fbecfc3b1f016979967ddf39630e9a98d9aed4fc9aac",
+      "archiveSha256":"faade1320cc3b7ea3bb624f8d225e8fada2325889ea59fbcdb6b7cbc2b4d4083",
+      "buildMemoryPeakBytes":761462784,"buildPidsPeak":182,"consumerMemoryPeakBytes":817229824,"consumerPidsPeak":180
+    },
+    "arm64": {
+      "imageId":"sha256:52a3281ac031093a768f2cc195892739ae61a68b2ced1cc9fbabde602f90db89",
+      "archiveSha256":"b2d5d6e137a5e0f6237833010523105335917f35c9d0f0da030fd9c24b945e95",
+      "buildMemoryPeakBytes":771133440,"buildPidsPeak":177,"consumerMemoryPeakBytes":804016128,"consumerPidsPeak":176
+    },
+    "fourResourceBudgets": {"cpuQuota":200000,"cpuPeriod":100000,"memoryMaxBytes":2147483648,"pidsMax":256,"limitOomEvents":0,"actualSwapBytes":0,"configuredSwapMaxBytes":1073741824},
+    "syntheticChecks": ["four ordered sequential searches","cookie isolation and renewal sequence","four concurrent requests/counts","actual HTTP status and boolean ReturnData","GET/script request","POST q=post/body/header","native kernel architecture","build and consumer image/JAR/revision byte identity"]
+  },
+  "privacyAndCleanup": {"onlySmallReportsDownloaded":true,"newFullImagesOrSharedJarDownloaded":false,"realCredentialsOrPrivateBodiesUsed":false,"productionWrites":false,"originalJarSha256":"b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c","remainingRelevantListener":"127.0.0.1:18931/PID 61244 user Reader; untouched"},
+  "notClaimed": ["real authenticated original/remote/Camoufox three-way parity","long soak","real administrator offline cross-namespace UI acceptance","cross-tab session synchronization","all formats/dialogs/native fetch/SSE identity lifecycle","local final complete-image runtime","registry publication","release creation","PR merge","production deployment"]
+}

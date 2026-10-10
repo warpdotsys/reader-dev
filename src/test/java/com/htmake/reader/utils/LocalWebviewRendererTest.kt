@@ -31,6 +31,8 @@ class LocalWebviewRendererTest {
     private lateinit var originalAdapter: ReaderAdapterInterface
     private val privateRedirectHits = AtomicInteger()
     private val matchedResourceHits = AtomicInteger()
+    private val navigationStarts = AtomicInteger()
+    private val navigationPostStarts = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -51,6 +53,32 @@ class LocalWebviewRendererTest {
                 return@createContext
             }
             if (exchange.requestURI.path == "/target") privateRedirectHits.incrementAndGet()
+            if (exchange.requestURI.path.startsWith("/navigation-chain/")) {
+                val step = exchange.requestURI.path.substringAfterLast('/').toInt()
+                if (step == 0) {
+                    navigationStarts.incrementAndGet()
+                    if (exchange.requestMethod == "POST" &&
+                        exchange.requestBody.readBytes().toString(StandardCharsets.UTF_8) == "seed=generated") {
+                        navigationPostStarts.incrementAndGet()
+                    }
+                }
+                val target = if (step < 12) "/navigation-chain/${step + 1}" else "/navigation-final"
+                val html = ("<html><body><div id='result'>generated-navigation-intermediate</div>" +
+                    "<script>document.addEventListener('DOMContentLoaded', () => location.replace('$target'));" +
+                    "</script></body></html>").toByteArray(StandardCharsets.UTF_8)
+                exchange.responseHeaders.add("Content-Type", "text/html; charset=UTF-8")
+                exchange.sendResponseHeaders(200, html.size.toLong())
+                exchange.responseBody.use { it.write(html) }
+                return@createContext
+            }
+            if (exchange.requestURI.path == "/navigation-final") {
+                val html = "<html><body><div id='result'>generated-navigation-complete</div></body></html>"
+                    .toByteArray(StandardCharsets.UTF_8)
+                exchange.responseHeaders.add("Content-Type", "text/html; charset=UTF-8")
+                exchange.sendResponseHeaders(200, html.size.toLong())
+                exchange.responseBody.use { it.write(html) }
+                return@createContext
+            }
             if (exchange.requestURI.path == "/asset.js") {
                 val script = "document.querySelector('#resource-result').textContent='asset-loaded'"
                     .toByteArray(StandardCharsets.UTF_8)
@@ -135,6 +163,46 @@ class LocalWebviewRendererTest {
         val response = renderer.render(request("/resource-page", "reader-a",
             script = "document.querySelector('#resource-result').textContent"))
         assertEquals("asset-loaded", response.body)
+    }
+
+    @Test
+    fun readsHtmlAfterGeneratedClientNavigationWithoutReplayingTheRequest() = runBlocking {
+        repeat(3) { round ->
+            val response = renderer.render(request("/navigation-chain/0", "navigation-probe-$round",
+                post = true, body = "seed=generated"))
+            assertTrue("A finite generated navigation must yield the final document",
+                response.body!!.contains("generated-navigation-complete"))
+            assertFalse(response.body!!.contains("generated-navigation-intermediate"))
+        }
+        assertEquals("Snapshot retries must not replay the original request", 3, navigationStarts.get())
+        assertEquals("Each original form must be submitted exactly once", 3, navigationPostStarts.get())
+    }
+
+    @Test
+    fun generatedPageDoesNotTriggerBrowserBackgroundNetworkRequests() = runBlocking {
+        // Only the generated origin can resolve in this test. Unexpected browser
+        // service requests are rejected before DNS or any external connection.
+        val unexpectedHosts = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        val policy = BrowserNetworkPolicy(allowPrivateNetworks = true, resolve = { host ->
+            if (host != "127.0.0.1") {
+                unexpectedHosts.add(host)
+                throw java.net.UnknownHostException("Generated resolver denies non-fixture hosts")
+            }
+            arrayOf(InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)))
+        })
+        val isolatedRenderer = LocalWebviewRenderer(
+            System.getenv("READER_BROWSER_EXECUTABLE") ?: "", 5000, policy)
+        try {
+            repeat(3) { round ->
+                val response = isolatedRenderer.render(request("/echo", "background-probe-$round",
+                    script = "new Promise(resolve => setTimeout(() => " +
+                        "resolve(document.querySelector('#result').textContent), 1500))"))
+                assertEquals("GET||", response.body)
+            }
+            assertTrue("A generated page must not cause non-fixture DNS requests", unexpectedHosts.isEmpty())
+        } finally {
+            isolatedRenderer.close()
+        }
     }
 
     @Test

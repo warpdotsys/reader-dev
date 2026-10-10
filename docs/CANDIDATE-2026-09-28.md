@@ -1,0 +1,99 @@
+# Java/Kotlin + Vue 3 单容器候选验收记录（2026-09-28）
+
+此记录跟踪候选分支 `ci/full-reader-20260926`，确切功能代码以该分支 Git HEAD 为准，不是正式发布说明。`legacy` 默认分支、`read.medwarp.cn` 生产容器和 `storage/data` 均未因该候选改变；原始 `reader-pro-3.2.14.jar` 继续保留作只读对照。下列本机 JAR 散列对应较早的 `0fd3a082` 验证点，不能冒充当前提交的制品散列。
+
+## 当前验收快照（2026-10-03）
+
+`024da9d7` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/37090043938)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/37090044015)与[完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/37090043943)均由 GitHub 托管 runner 执行成功。新镜像烟测通过了与本地历史 WebKit 双 JAR 样本使用相同脚本标记和 POST 字段的两个用例：脚本结果被 Reader 解析为固定书名；目标端实际收到 `POST /search-post`、`q=post` 与 `X-Fixture=synthetic`。4 个隔离用户的同时搜索全部返回 1 本书，Cookie 未串用户。
+
+[下载制品的 JSON 证据](evidence/bundled-browser-024da9d7-2026-10-03.json)记录容器从启动到完成这些探针的 cgroup 峰值：内存 `809115648` 字节（约 772 MiB），PIDs 任务数（含线程）177；上限分别为 2 GiB、256 个任务和 2 CPU，OOM/PIDs 限额触发计数均为 0，最终 swap 使用为 0。浏览器渲染仍经单渲染队列，4 用户同时请求不等于 4 个浏览器同时执行；该短样本不证明生产长期吞吐、ARM64 或全部真实书源负载。下载的真实 Camoufox JUnit XML 为 11 项、0 跳过/失败/错误，其中未命中资源超时、主导航卡住后失败和随后恢复的用例均实际执行。
+
+同日只读测量部署主机得到可用磁盘 `47269437440` 字节（约 44 GiB）、4 CPU、约 2024 MiB available 内存；现有旧 Reader 与恢复版服务分别占约 1.57 GiB 与 308 MiB。此时旧服务已使用部分 swap。没有因测量停止容器或修改数据；实际拉取耗时、新旧镜像切换和灰度资源仍须在部署阶段验证。PR 保持草稿，候选尚未发布或部署。
+
+同一提交的[公开书源配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/37090342192)也成功；旧参考与内置 Camoufox 均返回 10 项、相同书名/URL 投影摘要，采样相隔 416.662 秒。该轮含公开页的完整镜像内存峰值约 794 MiB、PIDs（含线程）峰值 199，OOM 与限额事件均为 0。[下载制品与范围](REAL-SOURCE-DIFF-2026-09-28.md#2026-10-03-当前候选公开页复验)已保存；原 JAR、原生产远程实例与真实登录书源仍未加入本轮公开配对。
+
+## 已成功重建与本机验证
+
+- JDK 11、Gradle 6.1.1 执行 `./gradlew -PreaderWebUi=vue3 clean test bootJar --no-daemon` 成功。JUnit 结果为 82 项、0 失败、0 错误、12 跳过；跳过项包含 3 项本机缺少 Camoufox 的真实浏览器测试与 9 项本机缺少 Chromium 的测试，不能写成 82 项全部执行成功。
+- `web-vue3` 的 Node 测试 133/133 通过，`vue-tsc --noEmit` 与 Vite 生产构建通过；Python worker 协议测试 7/7 通过。
+- 本机产物 `build/libs/reader-4.0.7.jar` 为 285,614,283 字节，SHA-256 为 `53CB873590D895CA9AF286CD85B20C910AAB823CF15ABB54762F97D731B3D36F`。JAR 内已核对 `web-vue3/index.html`、`web-vue3/sw.js`、`camoufox/worker.py`、Playwright Java 与 driver bundle。散列仅标识此次本机构建，不等同于 GitHub 发布制品，也不证明字节级可重复构建。
+- Cookie bridge 已改用带 Domain、Path、Secure、HttpOnly、过期时间的结构化存储并按用户命名空间隔离；普通 HTTP 响应、历史平面 Cookie 迁移、Domain 删除、HTTP 不安全来源覆盖 Secure Cookie 和单次显式请求头均有定向测试。worker 正文/协议输出分别限制为 4/8 MiB，父进程 stdout 限制为 8 MiB；超限后恢复用例已通过。后续提交增加了 JavaScript 删除快照、公共后缀和精确 Path 回归；这些改动仍以 hosted Linux 真实 Camoufox 结果为最终门禁。
+- Vue 3 首次安装 Service Worker 不再在登录输入期间强制重载；更新改为用户确认后激活。本机独立浏览器此前验证了注册后自动登录、书架、阅读、搜索、书源、分组、替换规则、文件和备份等基础旅程，但这不是生产或正式镜像内验收。复核发现旧 `Vue3PreviewLoginTest` 仅覆盖注册后自动登录，不足以证明已有账号能从可见表单重新登录；`0dc24b57` 已补入隔离账号退出后重新登录与书架请求断言，并由 [hosted Chromium 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36513673849)以 `skipped=0` 执行通过。
+- 2026-09-29 在本机 Chrome 对隔离候选 JAR 执行新增的注册、退出、已有账号重新登录、刷新书架旅程，JUnit XML 为 `tests=1, skipped=0, failures=0, errors=0`；后端只绑定 `127.0.0.1:18895`，数据写入 `build/local-vue3-login-20260929`，测试后进程已停止。这是候选 UI 的真实本机浏览器证据，但仍不是 hosted Linux 或生产账号验收。
+- 本机隔离构建增加可选 `reader.server.bindAddress`；默认 `0.0.0.0` 保持旧部署行为，本机以 `127.0.0.1` 启动后，`netstat` 确认仅回环监听、`/reader3/getSystemInfo` 返回 HTTP 200。JDK 11/Gradle 6.1.1 离线 `test bootJar` 成功：84 项、0 失败、0 错误、13 跳过；产物 SHA-256 `A6B84FA76C628EA46E40DB5C7BCB8B115F2DE245757506C86AD5DF846397AE3E`。全新临时工作目录只生成合成账号，测试进程与该临时目录已清理。Chrome 中 Vue 3 登录表单和中文显示正常，但人工浏览器提交被自动化安全审查拦下；此轮不把它记作新的 UI 登录通过，继续以已通过的隔离 Chromium 旅程为既有证据。
+- **已从原始 JAR 验证**：`BOOT-INF/lib/jackson-module-kotlin-2.13.5.jar`。因此把恢复版直接依赖从浮动 `2.13.+` 固定为 `2.13.5`；这消除了本机首次构建时对 Maven 版本元数据的在线查询。固定后离线 `test bootJar` 再次成功，84 项、0 失败、0 错误、13 跳过，JAR SHA-256 `A1F6E1BC8FD094232C65A3CA6E80207EA5595744DF8B40F68249074D4156AB96`。这是单次产物散列，不宣称完整字节级可重复构建。
+
+## GitHub 托管 runner 验收
+
+最初的 `0fd3a082` 三道门禁中，[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36363337667) 和 [Vue 3 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36363336291) 已通过；[单容器浏览器集成](https://github.com/warpdotsys/reader-dev/actions/runs/36363341230) 在 Linux Camoufox Cookie 回归失败。第二轮 `e9e42ad6` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36364562161) 与 [Vue 3 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36364565231) 通过，但 [单容器集成](https://github.com/warpdotsys/reader-dev/actions/runs/36364566276) 在同类 Cookie 用例仍失败。两次失败都明确阻止发布，不能挑绿灯声称整体成功。
+
+`13664541` 的 [单容器浏览器集成](https://github.com/warpdotsys/reader-dev/actions/runs/36364945349) 在测试包装后的纯文本响应断言失败；保存的 JUnit 报告证明是 Firefox 将 `text/plain` 包在 HTML 中，未证明 Cookie 逻辑出错。`5c077810` 的 [单容器浏览器集成](https://github.com/warpdotsys/reader-dev/actions/runs/36365448082) 已通过真实 Camoufox GET/POST、脚本、Cookie、精确 Path 子资源和 sourceRegex 合约，但镜像构建末尾因非 root 用户无法删除 root 所有的临时安装文件而失败。该权限问题在 `cf7ffa2c` 修复。
+
+当前 `cf7ffa2c` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36366116761)、[Vue 3 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36366123499) 与 [单容器浏览器集成](https://github.com/warpdotsys/reader-dev/actions/runs/36366072758) 均在 GitHub 托管 runner 上通过。第三道门禁包括真实 Camoufox 合约、完整镜像构建，以及受限容器内的 Reader 接口和 WebView 合成书源冒烟。
+
+三个 workflow 的职责：
+
+- Java/Kotlin CI：前后端测试与 JAR。
+- Vue 3 浏览器旅程：隔离账号、真实 Chromium、构建后入口。
+- 单容器浏览器集成：固定 Camoufox、Linux renderer 合约、完整镜像与合成书源烟测；容器设置 2 GiB 内存、3 GiB memory+swap、256 PIDs 与 2 CPU 的上限。
+
+三道门禁全绿是候选构建和合成流程验收，不是原版兼容性证明。[一条公开真实书源的原 JAR／恢复版静态目录差分](REAL-SOURCE-DIFF-2026-09-28.md)已通过；`6427f09a` 的 [GitHub 单容器作业](https://github.com/warpdotsys/reader-dev/actions/runs/36367557675)还以手动实站选项验证了镜像内 Camoufox 能从同一公开站点解析 10 本书。但仍缺真实 WebView 三方差分和正式镜像/生产负载验收，不得据此创建正式标签、推送发布镜像或切换生产。
+
+`7710518d` 的设置页修正已在 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36416844091)、[Vue 3 Chromium 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36416847605)和 [完整单容器镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36416847244) 三道 GitHub 托管 runner 门禁通过。浏览器旅程使用隔离账号，不是生产账号。三道作业未在本次启用公开真实书源选项；前一轮真实书源结果仍需按其原提交范围解释。
+
+本轮 `f3e95b23` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36432696623)与[完整单容器镜像构建和容器内冒烟](https://github.com/warpdotsys/reader-dev/actions/runs/36432691482)通过；`b472589c` 的 [Vue 3 Chromium 浏览器旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36433301875)通过。两提交之间只修正了该 Vue 3 workflow 的 Linux 回环监听文本断言，产品源码与锁定依赖未变。此前 [5192ef51 的 Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36431567550)和 [f3e95b23 的 Vue 3 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36432659453)均在浏览器旅程开始前被此断言挡住：Linux `ss` 实际显示 `[::ffff:127.0.0.1]:18895`，不是普通 `127.0.0.1:18895`；修正后隔离账号旅程已跑完。`browser-image.yml` 中的原 JAR 来源探针和旧远程 WebView 探针是可选作业，本轮默认均跳过，不能算作三方差分通过。
+
+`1e91d94f` 修正 Camoufox 对对象、数组、数字型 JavaScript 返回值的编码，使其按旧参考镜像实测的紧凑 JSON 格式返回。其 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36438478628)通过；含同一产品源码的 `61d5b88c` [完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36439102342)通过 JAR 构建、真实 Camoufox 合约、单容器镜像构建及受限容器内 API/WebView 合成书源烟测。该作业 JAR SHA-256 为 `BCE9266B1F667DCA5A0C7C73ED2AE8A08AF45653E58F7ECD9E4D0614BDEC5BB9`；这是此 runner 的产物标识，不证明跨环境字节级可重复构建。随后提交只改了参考探针及文档，不改变产品逻辑。`ebda1164` 的 [Vue 3 预览构建与隔离 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36440229851)两个作业均通过；该旅程验证候选登录、书架、阅读、搜索、书源等既定测试场景，不等于生产 UI 验收。
+
+`51a91cc9` 的 [2026-09-29 完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36508005109)在 GitHub 托管 runner 成功：真实 Camoufox 合约、单镜像构建、2 GiB 内存／256 PID／2 CPU 上限中的合成烟测均通过；后者在四个独立账号并发搜索下分别得到一本书。该次 `docker image inspect .Size` 为 **5,611,994,503 字节**（约 5.23 GiB，未压缩镜像大小，不是传输量或宿主机实际占用）；容器 cgroup `memory.peak` 为 **778,379,264 字节**（约 742 MiB），`pids.peak` 为 **176**。这仅是短时合成负载的峰值，不代表真实站点或长时间运行的容量上限。其后的 `81f14c19` 将浏览器 Cookie 所有权改为显式能力声明，仍需对该提交单独完成 hosted 门禁；上述数值不可自动外推到新提交。
+
+`815b64d2` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36509889238)与 [Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36509889235)通过；[完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36509889267)在 Docker 构建的 apt 下载步骤失败，固定 Ubuntu 快照站对部分包返回 500/502/503，镜像内烟测未运行。这是外部包源故障的证据，不是产品测试通过，也不是已证实的产品回归。Dockerfile 随后给该固定快照的更新与安装加 `Acquire::Retries=3`，不更换来源或放宽包版本；仍需新作业成功才能称当前提交的完整镜像门禁通过。
+
+`c11e395b` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36511744634)和 [Vue 3 Chromium 全旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36511744767)通过，后者包括新增的已有账号重新登录；但 [完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36511744723)再次因同一 Ubuntu 快照站对全部索引返回 500/502 而失败。`Acquire::Retries=3` 不能解决该持续外部故障。下一候选改用已核验 OCI 摘要的 Playwright Python Jammy 基础镜像，其已有 Python、浏览器及系统依赖；叠加固定 JRE 11 与哈希锁定的 Camoufox wheels，构建时不再调用 apt。该改动会改变镜像组成与体积，须重新完成完整镜像、真实 Camoufox、字体和受限容器烟测；在新作业成功前不能援引旧镜像的大小与峰值作为新镜像结论。
+
+`207711f6` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36513001178)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36513001195)和[完整单镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36513001239)均通过。后者在固定 Playwright Python OCI 索引、固定 JRE 11、哈希锁定 wheels 和固定 Camoufox 浏览器资产下，无 apt 构建成功；镜像内 Python/Camoufox 能启动，四个独立账号并发搜索各返回一本书。`docker image inspect .Size` 为 **4,224,352,971 字节**（约 3.93 GiB，未压缩），比上一成功候选少 1,387,641,532 字节（约 24.7%）；2 GiB/256 PID/2 CPU 限制下的短时 cgroup `memory.peak` 为 **772,886,528 字节**（约 737 MiB）、`pids.peak` 为 **178**。镜像层诊断显示最大两层约 1.95 GB 与 1.28 GB，仍需后续分析压缩流量和生产磁盘共存空间。该作业未单独校验中文字体覆盖，也未运行真实需登录书源或长时间负载；不能将合成成功扩展成这些验收通过。
+
+`7daacc72` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36513673965)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36513673849)与[完整单镜像集成](https://github.com/warpdotsys/reader-dev/actions/runs/36513674140)全部通过。新增的镜像内中文字体断言识别到 WenQuanYi Zen Hei Mono／文泉驿等宽正黑；四个独立账号并发搜索仍各返回一本书。未压缩镜像仍为 **4,224,352,971 字节**，短时 `memory.peak` **768,057,344 字节**（约 732 MiB），`pids.peak` **176**。字体可用不等于所有网页字体或字符渲染一致，真实需登录书源、生产环境和长时间负载仍未验证。
+
+当前产品提交 `c548bbda` 的[手动公开书源作业](https://github.com/warpdotsys/reader-dev/actions/runs/36515240318)已在 GitHub 托管 runner 通过：真实 Camoufox 合约、完整单镜像、镜像内中文字体与四个隔离账号的合成并发搜索通过；额外从无登录凭据的公开 WebView 目录解析到 **10 本**，`ReturnData` 为 HTTP 200、`isSuccess=true`、`errorMsg=""`，书名与书籍 URL 投影 SHA-256 为 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`。未压缩镜像为 **4,224,352,970 字节**；2 GiB/256 PID/2 CPU 限制下此次短时 `memory.peak` 为 **799,502,336 字节**（约 762.5 MiB）、`pids.peak` 为 **196**。该摘要只标识本次可变公开目录的输出，不是跨日期稳定基线，也不能替代需登录书源、超时或长时间容量测试。镜像 `.Size` 与上次相差 1 字节，亦不能据此宣称字节级可重复构建。
+
+同一提交的[固定旧远程 WebView 参考镜像探针](https://github.com/warpdotsys/reader-dev/actions/runs/36515280090)亦通过；合成 GET/POST、脚本返回和已知 `sourceRegex` 监听卡住现象与历史记录一致，公开页 HTTP 200，但 HTML 长度／摘要随日期变化。详见[参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。两个作业并未把本地原始 JAR 接到同一远程服务，更未证明历史镜像与原生产实例同版，故仍未完成原 JAR／远程 WebView／内置浏览器的同条件三方差分。
+
+`b3297dca` 增加真实 Camoufox 的“`sourceRegex` 始终未命中→有界超时→同一渲染器的下一笔正常请求成功”回归。[托管完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36516767733)的保存版 JUnit XML 显示该类 **6 项、0 跳过、0 失败、0 错误**；新增用例约 8.8 秒，随后完整镜像和容器内合成书源烟测也通过。[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36516767734)与 [Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36516767720)均通过。本机没有 Camoufox，虽然新测试已离线编译成功，本机该类 6 项全跳过，不能将其列作本机真实浏览器通过。此用例只覆盖缺失匹配资源的超时与后续恢复，不证明慢站点导航、外部脚本、取消请求或长时间资源回收均已验收。
+
+`1deef714` 进一步加入只在回环地址运行的慢主页面夹具：主文档在超出 3 秒预算后才响应。该提交的[托管真实 Camoufox 合约报告](https://github.com/warpdotsys/reader-dev/actions/runs/36518203390)显示该类 **7 项、0 跳过、0 失败、0 错误**；新增用例约 8.7 秒，断言慢页面已被实际请求、渲染没有把错误页当成功正文返回，随后同一渲染器处理正常请求成功。完整镜像／容器内合成烟测、[Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36518203396)与[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36518203378)均通过。本用例只覆盖合成 HTTP 主页面延迟及恢复，不证明所有真实 HTTPS、外部脚本、取消或长时资源占用均正常；先前从代码推测的“代理错误页伪成功”未在此样本中复现，因而没有据此修改生产代理行为。
+
+`e128bcb8` 的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36529289304)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36529289390)和[常规完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36529289469)均通过。另一次[手动配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36529322389)在同一提交同时运行旧远程 WebView 固定参考镜像和完整 Reader/Camoufox 镜像：公开目录 HTTP 均为 200，参考 DOM 节点与 Reader 解析书目均为 10；比较制品记录两次采样相隔 433.381 秒。Reader 响应 `isSuccess=true`、`errorMsg=""`；真实 Camoufox 合约 JUnit XML 为 **11 项、0 跳过、0 失败、0 错误**。本次镜像未压缩 `.Size` 为 **4,224,353,999 字节**；2 GiB/256 PID/2 CPU 上限下短时 `memory.peak` **807,415,808 字节**、`pids.peak` **192**。这些是同一公开 URL 的有界数量观测，不是原 JAR／原生产远程 WebView／内置浏览器三方验收；镜像大小也不是下载流量。详细界限见[公开实站差分](REAL-SOURCE-DIFF-2026-09-28.md)。
+
+`a53cc7be` 的[手动配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531865466)进一步比较书名/URL 投影摘要：旧参考镜像页面脚本与完整单镜像 Reader 搜索均为 10 本、SHA-256 `46c56e39a396824f6cc2d7ff920791f5f6810419c3d60d2e271740d7817ce561`，采样相隔 237.914 秒；适用作业全部成功。此提交的 [Java/Kotlin CI](https://github.com/warpdotsys/reader-dev/actions/runs/36531856292)、[Vue 3 Chromium 旅程](https://github.com/warpdotsys/reader-dev/actions/runs/36531856193)和[常规完整镜像作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531856199)亦均通过。前一提交 `52d30125` 的[配对作业](https://github.com/warpdotsys/reader-dev/actions/runs/36531083960)因额外纯数字脚本偶发不可解析而红灯，虽有两份相同投影摘要，不能将其记作工作流通过。新比较制品不记录书名明文，只保留状态、数量、摘要、时间和“非原 JAR／非已证实生产实例”的边界。
+
+## 已知问题与尚未验证
+
+2026-10-04 更新：`b3b0e889` 的原生双架构六作业演练已全部通过，20 份实际报告的版本对象与 JAR/镜像/资源字段已本机核验，见[发布链证据](NATIVE-RELEASE-INTEGRITY-2026-10-04.md)。书源界面的无用户本地“已登录”标记在新 Chrome 回归中实际复现并修复，改为当前用户服务端“Cookie 已保存（未验证）”，且不回显凭据前缀；后续提交的托管与打包运行继续待验收。起点官方登录页已打开，但 **Reader 内扫码/验证码会话及真实需登录书源的同条件三方对照仍未实现/完成**，手动 Cookie 入口不能抵消此缺口，见[登录状态验收](QIDIAN-SOURCE-LOGIN-2026-10-04.md)。五个业务文件与唯一授权 EPUB 的后续许可按对应 2026-10-03 文档理解，不以以下旧日期“待授权”记录否定后来明确授权。
+
+2026-10-03 后续边界更新：`c5879535` 的登录拒绝/重试与 tab-local 会话刷新已有[托管 JUnit 证据](evidence/vue3-login-c5879535-2026-10-03.json)；`cf1377bd` 的[原生 ARM64 11 项合约与完整镜像烟测](NATIVE-ARM64-ACCEPTANCE-2026-10-03.md)也已通过，不能再笼统写成 ARM64 从未运行。生产 UI/真实用户数据、长期资源及正式多架构发布仍未完成。拟下载五个用户业务文件到指定本地隔离目录的操作被安全审查拒绝，等待明确授权；当前 Chrome 连接不可用，未改用其他数据通道。正式发布烟测新增回环与资源预算门禁及 5 项结构负向回归，本机通过但稳定标签尚未运行。下方较早快照中的 ARM64 未验收项按各自日期理解。
+
+- 当前单镜像体积仍偏大：`207711f6` 作业测得未压缩镜像约 3.93 GiB，虽较旧候选降低 24.7%，仍不代表实际拉取流量；2026-10-03 主机只读测量可用磁盘约 44 GiB，实际镜像拉取耗时和升级切换仍未验收。若继续更换基础镜像，仍须重跑真实 Camoufox、中文字体和完整镜像烟测，不能仅凭体积下降验收。
+- 真实需登录书源仍缺少“原始 JAR／现有远程 WebView／内置 Camoufox”同条件三方差分；已经通过的公开静态书源、镜像内公开 WebView 和合成书源都不能替代这项兼容验收。2026-09-28 的只读核查确认两条无登录凭据的真实 WebView 候选站点可达，但尚未执行三方请求；旧 Reader 所引用的远程 WebView 服务在部署主机上不存在运行中或已停止的容器，也无法从旧容器解析，因此不能把旧远程服务误记为已测对照。
+- `041d0b76` 的[真实 Camoufox 合约作业](https://github.com/warpdotsys/reader-dev/actions/runs/36524697676)上传的 JUnit XML 为 9 项、0 跳过、0 失败、0 错误：同一响应 `Set-Cookie` 后由书源 `webJs` 删除、页面内联脚本在 DOM 就绪前删除既有及新建普通 Cookie，下一请求均未复活；同场景的 `HttpOnly` Cookie 保留。worker 只对 host-only `HttpOnly` 设值和明确删除响应头使用回退值，普通 Cookie 的最终状态以浏览器快照为准。
+- 后续带引号与分号的 `HttpOnly` Cookie 合成测试在 [`b3ad9860` 作业](https://github.com/warpdotsys/reader-dev/actions/runs/36526434506)中实际失败：同次页面子资源带 Cookie，下一次 Reader 回放却为空。`31a88778` 改为浏览器快照可见时优先采用其值，响应头仅补缺失快照或明确删除；[真实 Camoufox 复验](https://github.com/warpdotsys/reader-dev/actions/runs/36527044078)的 JUnit XML 为 11 项、0 跳过、0 失败、0 错误，失败用例及既有 `HttpOnly` 刷新用例均执行通过。此结论只覆盖一个合成引号/分号值及一个 Expires 日期；其他复杂格式、跨站 SameSite、真实需登录书源和原生产远程 WebView 同条件行为仍未验证。
+- 公共镜像站的 `hectorqin/reader:3.2.14` 中 JAR 已在 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36418763589)与本地原件做大小和 SHA-256 核对，**不一致**；不得把它冒充原 JAR 来完成三方差分。官方 Docker Hub 的同名 Reader 标签当前返回 404；旧远程 WebView 3.2.0 镜像可获取，但其是否为原生产实例仍未证实。证据见[来源核验](ORIGINAL-JAR-PROVENANCE-2026-09-28.md)。
+- 固定摘要的旧远程 WebView 参考镜像在隔离 [托管 runner](https://github.com/warpdotsys/reader-dev/actions/runs/36437640038)上通过合成 GET、POST、公开目录以及脚本返回字符串、对象、数组和数字的探针。首次脚本探针因只有页面副作用而没有返回值，走了旧实现的空值重试分支；该超时不是已证实的服务故障。参考响应摘要、Cookie 与证据边界见[旧服务参考探针](ARCHIVED-REMOTE-WEBVIEW-2026-09-28.md)。Camoufox 曾把对象/数组调用 `toString()`，与已实测的参考 JSON 格式不同；候选源码已针对这一差异修改并通过上述真实浏览器和完整镜像门禁。不能把参考结果写成原 JAR 三方兼容通过。
+- 同一固定参考镜像的 `sourceRegex` 合成样本已从页面实际请求资源，但监听器未返回；源码使用 `request().url.match` 而非 Playwright API 的 `request().url().match`。这是[本镜像的已知缺陷](https://github.com/warpdotsys/reader-dev/actions/runs/36439381876)，在[预期缺陷探针](https://github.com/warpdotsys/reader-dev/actions/runs/36439959686)中复现并明确标记，不作为候选浏览器必须复现的行为，也不证明此前生产远程服务具有同样缺陷。
+- [远程回退合成差分](REMOTE-WEBVIEW-FALLBACK-DIFF-2026-09-29.md)发现并修复一处 Cookie 回放回归：为内置浏览器跳过 Cookie 请求头的条件曾误覆盖远程渲染器。较早的原 JAR 与恢复版本机观测均把书源 `webJs` 传为 `js_source`；恢复版的结构化 Cookie 回放仍是有意的兼容性差异。2026-09-29 对当前 `bd786e45` 候选重新构建并只运行恢复版：四次合成搜索均成功，Cookie 与 `js_source` 序列符合预期；**本次原 JAR 未执行**，不构成新的同条件差分，也不等于原生产 WebView 验收。
+- 原 JAR 的 `RestVerticle` 字节码使用 Vert.x `listen(port, handler)`，此前本机差分脚本传入的 `reader.server.bindAddress=127.0.0.1` 仅由恢复版支持；不能据此声称原进程只监听回环。提权只读核查还发现，测试所用 JDK 11 `java.exe` 在 Private/Public 配置文件下被入站规则允许任意 TCP 本地端口及任意远端地址，故本轮不在该主机重新启动原 JAR，也未改动防火墙。以前是否发生外部访问没有证据。26 条 Python 和 3 条 PowerShell 原 JAR 差分脚本现于启动前要求 `READER_ORIGINAL_JAR_NETWORK_ISOLATED=confirmed`；这仅是独立核验隔离后的确认标记，不创建网络隔离。PDF 夹具生成和仅恢复版诊断仍可无此标记运行。`compare-webview-cookie.py` 的双 JAR 模式还须显式选择，且禁止覆盖已有报告；未在本机用原 JAR 实跑这批保护。
+- 2026-09-28 与 2026-09-29 使用真实 Chrome 表单对当前线上原版完成登录；后一次退出旧会话再登录，读取到 169 本书；见[线上登录核验](PRODUCTION-CHROME-LOGIN-2026-09-28.md)。这仅证实现部署的 Chrome 路径在这两次测试成功，Edge 与本候选的线上 UI 登录仍未验证。
+- 2026-09-29 后续在仅回环网卡的 Linux 网络命名空间里实际运行本地原始 JAR 与当前恢复 JAR，对同一合成 `/render.html` 夹具完成四次 Cookie／`js_source` 差分；原 JAR 与恢复版的搜索状态及脚本字段相同，恢复版的 Cookie 回放是有意差异。该[原始证据与复现说明](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md)补强了上面的较早历史观测，但夹具不执行 JavaScript，也不代表原生产远程 WebView；不能据此关闭真实书源三方差分或发布门槛。
+- 同日新增显式 `--exercise-post` 的第 5 次合成搜索，原 JAR 与恢复版均把 `POST`、`q=post`、合成请求头和 `document.title` 脚本字段传给 `/render.html`，搜索均成功；[新原始 JSON 与限制](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加post-请求形态实测)已入库。夹具没有向目标站实际发 POST，故不能替代旧服务或内置浏览器的真正网络请求验收。
+- 2026-10-03 入库的[实际历史 WebKit 双 JAR 样本](ORIGINAL-JAR-NETNS-WEBVIEW-DIFF-2026-09-29.md#同日追加实际历史-webkit-服务的双-jar-差分)已在私有仅回环网络中由目标端观测到 4 次 GET 和 1 次 POST；方法、请求体、测试头和搜索结果两侧一致，脚本改写书名的结果断言也通过。目标 Cookie 两侧全为空。该样本运行于 2026-09-29，只覆盖固定历史镜像与合成书源，未加入 Camoufox 或证明原生产实例同版。完整镜像的同类脚本/POST 断言与资源门禁现已由 `024da9d7` 托管作业通过，见文首快照；不同运行环境的这些样本不等于真实书源同条件三方验收。
+- 本机缺少完整 Linux Camoufox 环境；hosted image 作业已确认真实浏览器与受限容器启动、合成请求和资源预算，但真实书源超时、生产负载、并发资源预算和 ARM64 尚未验收。
+- GitHub 托管 runner 当前将旧 Node.js 20 action 强制运行于 Node.js 24，并提示 `setup-java@v4` 维护期结束。现有门禁通过，但后续应升级并锁定新版本 action，避免未来平台迁移导致 CI 失效。
+- 单页正文 UTF-8 超过 4 MiB 会显式失败；这是一条安全/内存预算限制，可能影响超大章节或页面，需要用真实书源样本验证后决定是否调整。不能静默截断正文。
+- 数值线程修复后的原完整镜像在匿名起点详情仍可能返回成功外壳但缺书名、作者与封面；2026-10-07 唯一新请求实际严格失败。保存读回和零 swap 资源检查通过不能抵消业务红灯，返回快照八个标志均为 false 不能唯一证明验证码或选择器根因。[当前实站失败证据](PUBLIC-METADATA-IMAGE-2026-10-06.md)不支持真实登录书源已修复或正式发版。
+- 固定历史 WebView 镜像的 UTF-8 POST 截断是已实测缺陷：2026-10-07 原件／恢复远程／内置路径各实际六次搜索，完整生成 JSON 一致，但历史两侧发送 44 B／应有 60 B，Camoufox 正确发送 60 B。候选不会追随截断；[诊断报告](WEBVIEW-UTF8-CHARACTERIZATION-2026-10-07.md)明确严格六例等价不通过。它不是原生产远程服务同版证明，早先历史超时与 readiness 原因、真实认证书源和完整生产验收仍未完成，不能据此发正式版。
+- Vue 3 的基础旅程通过不代表与旧前端所有设置、书源规则和异常提示逐项一致。当前生产仍是原界面，线上登录只确认过一次成功进入书架并刷新后保持会话，未证明所有用户故障消失。
+- 2026-09-28 本地设置页视觉核查发现关于页沿用 Rust 版本履历、使用并不存在的后端统计字段、首次使用的云端偏好提示误报失败、OPDS 令牌明文显示；候选代码已修正，136 项 Node 测试、类型检查、Vite 构建和上述三道 hosted workflow 通过。早期只测生产登录 API 不能证明页面可用；后来已单独完成[生产 Chrome 表单登录](PRODUCTION-CHROME-LOGIN-2026-09-28.md)，但这仍不是恢复候选的生产验收。
+
+## 发布与回滚边界
+
+正式版本必须先等 hosted 三道门禁全绿，并补齐真实书源差分、已知问题和版本同步。`release.yml` 的稳定标签会发布 GHCR/Docker Hub 镜像并触发生产部署，因此验证前不得创建该标签。部署前需保留旧镜像与 `storage/data` 一致性快照，部署后验证公网登录、书架、书源、阅读和下载；任一检查失败须回到旧镜像与对应数据快照。只有现有远程 WebView 服务可用时，才可将 `READER_APP_WEBVIEWRENDERER` 回切到 `remote`，不能把切换配置当成数据回滚。

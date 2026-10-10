@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "scope": "anonymous restored JAR in old read-only runtime with shared WSL network; not final image or parity",
+  "testedJarSha256": "eaa34cc99308aed6bfad159f2d3e1e19c08a55a629ad77cbffd4224327228f32",
+  "testedWorkerSha256": "2bc9fe2f69c9b546f9380503af7248527994579fa3e7097e4e5bcfb62b706722",
+  "oldRuntimeRevision": "a85410ce71da7679f5ceffb9e306b19bace4026d",
+  "newWorkerWasNotTested": true,
+  "hostWslNetworkShared": true,
+  "freshPublicDnsSnapshot": {
+    "hosts": 11,
+    "scope": "explicit JVM hosts file only",
+    "sha256": "39a409ce4979f5571e8736d6025f65e30a57740ef88a579f9df8107976de6752"
+  },
+  "runtimeIdentity": {
+    "effectiveCapabilitiesZero": true,
+    "noNewPrivileges": true,
+    "runtimeGid": 10001,
+    "runtimeUid": 10001
+  },
+  "ownHostPidBudgetMembershipVerified": true,
+  "systemProxyHostsOrMappingModified": false,
+  "realCredentialsImported": false,
+  "originalJarExecuted": false,
+  "attempts": [
+    {
+      "source": {
+        "path": "build/local-public-metadata-20261007-a/snapshot-only.json",
+        "sha256": "625ff0119598dd753ad17938367a7d46b5089c233ee3ca71e52bd0cfa7863983",
+        "bytes": 2332
+      },
+      "probeSourceSha256": null,
+      "attempt": "a",
+      "phase": null,
+      "passed": false,
+      "totalSeconds": 12.227,
+      "finalResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 618545152,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 644845568,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 19,
+        "scope": "old read-only runtime/current rebuilt JAR; anonymous local diagnostic only",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "originalFinalBudgetGuardReexecutedPassed": true,
+      "ownedRuntimeStateAbsent": true,
+      "readerObservation": null
+    },
+    {
+      "source": {
+        "path": "build/local-public-metadata-20261007-a/snapshot-only-b.json",
+        "sha256": "ebbafc18b49c05c6667592282395183d3c4cf4a04a5645ce3f14f59ae68cb745",
+        "bytes": 2582
+      },
+      "probeSourceSha256": "5b0efbf283130d33ed76dc79bfe446e1137836a5feb66db67a7a6d52721f7b81",
+      "attempt": "b",
+      "phase": null,
+      "passed": false,
+      "totalSeconds": 11.648,
+      "finalResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 345456640,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 355328000,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 19,
+        "scope": "old read-only runtime/current rebuilt JAR; anonymous local diagnostic only",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "originalFinalBudgetGuardReexecutedPassed": true,
+      "ownedRuntimeStateAbsent": true,
+      "readerObservation": null
+    },
+    {
+      "source": {
+        "path": "build/local-public-metadata-20261007-a/snapshot-only-c.json",
+        "sha256": "e0e2fa7beec393b912b6b6b227d1a72acb10856f8638915c9a2b09bc1708cb2c",
+        "bytes": 3077
+      },
+      "probeSourceSha256": "b6f9fb52a5d32e43e805ecb132d6ec2025978c9c8713acb410f98b3a446330e3",
+      "attempt": "c",
+      "phase": "localAnonymousReaderMetadata",
+      "passed": false,
+      "totalSeconds": 17.827,
+      "finalResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 397410304,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 747315200,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 47,
+        "scope": "old read-only runtime/current rebuilt JAR; anonymous local diagnostic only",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "originalFinalBudgetGuardReexecutedPassed": true,
+      "ownedRuntimeStateAbsent": true,
+      "readerObservation": {
+        "bookInfoApiCalls": 0,
+        "chapterBodyRequested": false,
+        "failureClass": "AssertionError",
+        "ownedJavaHandleStopped": true,
+        "passed": false,
+        "readerStarted": true,
+        "realCredentialsImported": false,
+        "scope": "local anonymous generated account; not exact image, original or archived parity"
+      }
+    },
+    {
+      "source": {
+        "path": "build/local-public-metadata-20261007-a/snapshot-only-d.json",
+        "sha256": "4a2937371f86ea8a41cbbe902e6f29112d759c2aacba8233859f2592e1627e21",
+        "bytes": 4944
+      },
+      "probeSourceSha256": "a2af6e509953b1afcd44060b5c5c42bd2b42bc204a14042cdb67ab6b086d4578",
+      "attempt": "d",
+      "phase": "localAnonymousReaderMetadata",
+      "passed": false,
+      "totalSeconds": 20.768,
+      "finalResources": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "memoryCurrentBytes": 1395429376,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 2549,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 2147483648,
+        "pidsCurrent": 1,
+        "pidsEvents": {
+          "max": 2
+        },
+        "pidsMax": 256,
+        "pidsPeak": 256,
+        "scope": "old read-only runtime/current rebuilt JAR; anonymous local diagnostic only",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "originalFinalBudgetGuardReexecutedPassed": false,
+      "ownedRuntimeStateAbsent": true,
+      "readerObservation": {
+        "bookInfoApiCalls": 1,
+        "chapterBodyRequested": false,
+        "cookieRowsAfter": 0,
+        "cookieRowsBefore": 0,
+        "generatedCookieSessionRevokedVerified": true,
+        "generatedReaderReady": true,
+        "listenerObservation": {
+          "allExactLoopback": true,
+          "allOwned": true,
+          "count": 1,
+          "ipv4MappedObserved": true
+        },
+        "logoutObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": true,
+          "httpStatus": 200,
+          "isSuccess": true
+        },
+        "metadata": {
+          "authorHasText": false,
+          "authorMatches": false,
+          "coverHasExpectedPublicOrigin": false,
+          "coverHasText": false,
+          "dataIsNull": true,
+          "dataIsObject": false,
+          "errorMessageLength": 66,
+          "errorMsgEmpty": false,
+          "errorMsgIsString": true,
+          "hostFingerprint": null,
+          "httpStatus": 200,
+          "isSuccess": false,
+          "isSuccessIsBoolean": true,
+          "knownFieldsPresent": {
+            "author": false,
+            "bookUrl": false,
+            "canUpdate": false,
+            "coverUrl": false,
+            "durChapterIndex": false,
+            "durChapterPos": false,
+            "group": false,
+            "name": false,
+            "tocUrl": false,
+            "totalChapterNum": false,
+            "type": false
+          },
+          "nameHasText": false,
+          "nameMatches": false,
+          "pageDiagnostics": null,
+          "passed": false,
+          "policyReason": null,
+          "workerErrorCategory": null
+        },
+        "ownedJavaHandleStopped": true,
+        "ownedLoopbackListenerVerified": true,
+        "packagedWorkerSha256": "2bc9fe2f69c9b546f9380503af7248527994579fa3e7097e4e5bcfb62b706722",
+        "passed": false,
+        "phase": "anonymousMetadata",
+        "protectedFollowup": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": false,
+          "httpStatus": 200,
+          "isSuccess": false
+        },
+        "readerStarted": true,
+        "realCredentialsImported": false,
+        "requestSeconds": 6.747,
+        "scope": "local anonymous generated account; not exact image, original or archived parity",
+        "sourceDefinitionRoundtrip": {
+          "cookieJarDisabled": true,
+          "dataIsObject": true,
+          "metadataRulesMatch": true,
+          "modernTocMarkerPresent": true,
+          "passed": true,
+          "sourceUrlMatches": true
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "A-C are probe setup failures, not actual book-info outcomes",
+    "D failed both metadata and resource guards; no raw error or unique cause retained",
+    "No memory.stat breakdown; cache or leak is not established",
+    "No new-worker public-page acceptance",
+    "No real account, chapter, archived engine, original JAR, production or whole-image parity"
+  ]
+}

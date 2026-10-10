@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "e7236633474868c6aaa939cfb71e872d483b6a6d",
+  "testedMergeSnapshot": "5881352303f553776fc9867a3bbafcc22cc3c093",
+  "scope": "actual incomplete hosted TLS initialization timeout; not browser acceptance",
+  "sourceAndMergeFileTreeEqual": true,
+  "packagedWorkerHttpsAccepted": false,
+  "firstCasesObservedAcrossThreeFailedJobs": 3,
+  "privateFontconfigMountWasConfigured": true,
+  "timeoutRootCauseConfirmed": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "observations": [
+    {
+      "runId": 38046230748,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38046230748",
+      "jobId": 114197426703,
+      "jobName": "Build and test native amd64 image",
+      "runnerLabels": [
+        "ubuntu-24.04"
+      ],
+      "failedSteps": [
+        "Run generated browser contracts under the release resource budget"
+      ],
+      "firstActualPartialObservation": {
+        "partialCaseCompleted": "same-get",
+        "failureType": "TimeoutError",
+        "targetCount": 0
+      },
+      "failedLogSha256": "16334d8a48480f92db281ee042bc3dc359f0716d256fa326494ea1cda7d794f0",
+      "outerTimeoutExitCode": 124,
+      "finalReportObserved": false,
+      "allCasesOrTotalTargetRequestsKnown": false,
+      "archiveChecksumRecomputed": false,
+      "ownedCleanupIndependentlyAccepted": false
+    },
+    {
+      "runId": 38046230748,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38046230748",
+      "jobId": 114197426704,
+      "jobName": "Build and test native arm64 image",
+      "runnerLabels": [
+        "ubuntu-24.04-arm"
+      ],
+      "failedSteps": [
+        "Run generated browser contracts under the release resource budget"
+      ],
+      "firstActualPartialObservation": {
+        "partialCaseCompleted": "same-get",
+        "failureType": "TimeoutError",
+        "targetCount": 0
+      },
+      "failedLogSha256": "d0567ad414f0c8d4ac7b29a5938b9d07ffa37e1c55c51562771da4dcc22c9b39",
+      "outerTimeoutExitCode": 124,
+      "finalReportObserved": false,
+      "allCasesOrTotalTargetRequestsKnown": false,
+      "archiveChecksumRecomputed": false,
+      "ownedCleanupIndependentlyAccepted": false
+    },
+    {
+      "runId": 38046230859,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38046230859",
+      "jobId": 114196218000,
+      "jobName": "Build and smoke-test the full Reader image",
+      "runnerLabels": [
+        "ubuntu-24.04"
+      ],
+      "failedSteps": [
+        "Verify packaged-worker HTTPS redirects and certificate rejection offline",
+        "Preserve actual complete-image UI reports and generated screenshots"
+      ],
+      "firstActualPartialObservation": {
+        "partialCaseCompleted": "same-get",
+        "failureType": "TimeoutError",
+        "targetCount": 0
+      },
+      "failedLogSha256": "85d6e1f65d1acc62402c2d90de0bdb0b0df5c130eec73ae1bfad78eafbe584da",
+      "outerTimeoutExitCode": 124,
+      "finalReportObserved": false,
+      "allCasesOrTotalTargetRequestsKnown": false,
+      "archiveChecksumRecomputed": false,
+      "ownedCleanupIndependentlyAccepted": false
+    }
+  ]
+}

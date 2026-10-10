@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-10T14:55:20" hostname="LAPTOP-U8HHJC5R" time="5.041">
+  <properties/>
+  <testcase name="workerNavigationErrorCannotHideAnEgressPolicyViolation" classname="com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest" time="1.165"/>
+  <testcase name="certificateHintWithoutAnErrorCannotTurnSuccessIntoFailure" classname="com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest" time="0.634"/>
+  <testcase name="knownCertificateHintsHaveFixedChineseMessagesWithoutWorkerText" classname="com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest" time="1.094"/>
+  <testcase name="unknownCertificateHintOrWrongErrorClassKeepsGenericFailure" classname="com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest" time="2.148"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

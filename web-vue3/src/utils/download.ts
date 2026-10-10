@@ -1,4 +1,4 @@
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 
 /**
  * 触发浏览器下载：将 Blob 保存为 filename。

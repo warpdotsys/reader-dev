@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import {
   addUser,
   clearInactiveUsers,
@@ -22,14 +22,13 @@ import type { ReaderUser, UserUpdatePayload } from '@/types'
 
 const store = useUserStore()
 
-type PermField = 'enableWebdav' | 'enableLocalStore' | 'enableBookSource' | 'enableRssSource' | 'isAdmin'
+type PermField = 'enableWebdav' | 'enableLocalStore' | 'enableBookSource' | 'enableRssSource'
 
 const PERM_LABEL: Record<PermField, string> = {
   enableWebdav: 'WebDAV',
   enableLocalStore: '本地书仓',
   enableBookSource: '书源',
   enableRssSource: 'RSS',
-  isAdmin: '管理员',
 }
 
 /* ================= 列表 ================= */
@@ -95,7 +94,11 @@ async function confirmKey() {
     ElMessage.warning('请输入管理密码')
     return
   }
-  storeSecureKey(key)
+  try { storeSecureKey(key) }
+  catch (error) {
+    keyError.value = error instanceof Error ? error.message : '无法保存本标签页管理密码'
+    return
+  }
   keyDialogOpen.value = false
   document.body.style.overflow = ''
   const op = pendingOp
@@ -166,7 +169,6 @@ const addForm = ref<{
   enableLocalStore: boolean
   enableBookSource: boolean
   enableRssSource: boolean
-  isAdmin: boolean
   bookSourceLimit: number
   bookLimit: number
 }>({
@@ -176,7 +178,6 @@ const addForm = ref<{
   enableLocalStore: true,
   enableBookSource: true,
   enableRssSource: true,
-  isAdmin: false,
   bookSourceLimit: 80000,
   bookLimit: 5000,
 })
@@ -189,7 +190,6 @@ function openAdd() {
     enableLocalStore: true,
     enableBookSource: true,
     enableRssSource: true,
-    isAdmin: false,
     bookSourceLimit: 80000,
     bookLimit: 5000,
   }
@@ -226,7 +226,6 @@ async function confirmAdd() {
       enableLocalStore: addForm.value.enableLocalStore,
       enableBookSource: addForm.value.enableBookSource,
       enableRssSource: addForm.value.enableRssSource,
-      isAdmin: addForm.value.isAdmin,
       bookSourceLimit: Math.max(0, Number(addForm.value.bookSourceLimit) || 0),
       bookLimit: Math.max(0, Number(addForm.value.bookLimit) || 0),
     })
@@ -265,17 +264,12 @@ function permPayload(u: ReaderUser, field: PermField, value: boolean): UserUpdat
     enableRssSource: u.enableRssSource,
     bookSourceLimit: u.bookSourceLimit,
     bookLimit: u.bookLimit,
-    isAdmin: u.isAdmin,
     [field]: value,
   }
 }
 
 async function togglePerm(u: ReaderUser, field: PermField) {
   if (toggling.value.has(u.username)) return
-  if (field === 'isAdmin' && u.isAdmin && u.username === store.username) {
-    ElMessage.warning('不能撤销自己的管理员权限')
-    return
-  }
   toggling.value.add(u.username)
   const prev = Boolean(u[field])
   u[field] = !prev // 乐观切换，失败回滚
@@ -297,10 +291,9 @@ const editForm = ref<{
   enableLocalStore: boolean
   enableBookSource: boolean
   enableRssSource: boolean
-  isAdmin: boolean
   bookSourceLimit: number
   bookLimit: number
-}>({ enableWebdav: true, enableLocalStore: true, enableBookSource: true, enableRssSource: true, isAdmin: false, bookSourceLimit: 80000, bookLimit: 5000 })
+}>({ enableWebdav: true, enableLocalStore: true, enableBookSource: true, enableRssSource: true, bookSourceLimit: 80000, bookLimit: 5000 })
 
 function openEdit(u: ReaderUser) {
   editing.value = u
@@ -309,7 +302,6 @@ function openEdit(u: ReaderUser) {
     enableLocalStore: u.enableLocalStore,
     enableBookSource: u.enableBookSource,
     enableRssSource: u.enableRssSource,
-    isAdmin: u.isAdmin ?? false,
     bookSourceLimit: u.bookSourceLimit ?? 0,
     bookLimit: u.bookLimit ?? 0,
   }
@@ -333,7 +325,6 @@ async function saveEdit() {
     enableLocalStore: f.enableLocalStore,
     enableBookSource: f.enableBookSource,
     enableRssSource: f.enableRssSource,
-    isAdmin: f.isAdmin,
     bookSourceLimit: Math.max(0, Number(f.bookSourceLimit) || 0),
     bookLimit: Math.max(0, Number(f.bookLimit) || 0),
   }
@@ -379,8 +370,10 @@ async function confirmDelete() {
   }
   deleteBusy.value = true
   try {
-    await deleteUser(target.username)
-    users.value = users.value.filter((x) => x.username !== target.username)
+    const res = await deleteUser(target.username)
+    users.value = Array.isArray(res.data)
+      ? (res.data as ReaderUser[])
+      : users.value.filter((x) => x.username !== target.username)
     ElMessage.success('已删除')
     closeDelete()
   } catch (err) {
@@ -457,11 +450,12 @@ async function confirmClean() {
   cleanBusy.value = true
   try {
     const res = await clearInactiveUsers(days)
-    const data = res.data as { deleted?: string[]; count?: number } | null
-    const deleted = Array.isArray(data?.deleted) ? data.deleted : []
-    users.value = users.value.filter((x) => !deleted.includes(x.username))
-    selected.value = new Set([...selected.value].filter((name) => !deleted.includes(name)))
-    ElMessage.success(`已清理 ${deleted.length} 个不活跃用户`)
+    const remaining = Array.isArray(res.data) ? (res.data as ReaderUser[]) : users.value
+    const alive = new Set(remaining.map((user) => user.username))
+    const deletedCount = users.value.filter((user) => !alive.has(user.username)).length
+    users.value = remaining
+    selected.value = new Set([...selected.value].filter((name) => alive.has(name)))
+    ElMessage.success(`已清理 ${deletedCount} 个不活跃用户`)
     closeClean()
   } catch (err) {
     handleManageError(err, confirmClean)
@@ -605,7 +599,7 @@ onBeforeUnmount(() => {
       <div v-else-if="filteredUsers.length === 0" class="state-line">无匹配「{{ searchKey.trim() }}」的用户</div>
 
       <!-- 细字用户表格 -->
-      <div v-else class="table-wrap">
+      <div v-else class="table-wrap" role="region" aria-label="用户列表，可横向滚动" tabindex="0">
         <table class="user-table">
           <thead>
             <tr>
@@ -654,17 +648,17 @@ onBeforeUnmount(() => {
               <td class="col-user">
                 <span class="uname" :title="u.username">{{ u.username }}</span>
                 <span v-if="u.username === store.username" class="self-tag" title="当前登录账号">我</span>
-                <span v-if="u.isAdmin" class="admin-tag" title="管理员（可操作系统 default 配置）">管理员</span>
               </td>
               <td class="col-perm">
                 <div class="perm-cell">
-                  <template v-for="(label, field) in PERM_LABEL" :key="field">
+                  <div v-for="(label, field) in PERM_LABEL" :key="field" class="perm-toggle">
                     <button
                       class="switch"
                       :class="{ on: u[field as PermField] }"
                       :disabled="toggling.has(u.username)"
                       type="button"
                       role="switch"
+                      :aria-label="label"
                       :aria-checked="u[field as PermField]"
                       :title="`${label}：${u[field as PermField] ? '开' : '关'}`"
                       @click="togglePerm(u, field as PermField)"
@@ -672,7 +666,7 @@ onBeforeUnmount(() => {
                       <span class="switch-knob"></span>
                     </button>
                     <span class="perm-label">{{ label }}</span>
-                  </template>
+                  </div>
                 </div>
               </td>
               <td class="col-num">{{ u.bookSourceLimit ?? 0 }}</td>
@@ -1272,12 +1266,20 @@ onBeforeUnmount(() => {
 
 /* 权限开关组：极简圆角开关 + 细字标签 */
 .perm-cell {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  align-items: center;
+  gap: 8px 14px;
+}
+.perm-toggle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 .perm-label {
-  margin-right: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 11.5px;
   font-weight: 300;
   color: var(--text-3);

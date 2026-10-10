@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import {
   deleteBookSource,
   deleteBookSources,
@@ -38,6 +39,8 @@ import TopNav from '@/components/TopNav.vue'
 import { useUserStore } from '@/stores/user'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { isNotImplemented } from '@/utils/errors'
+import { savedSourceCookieRows, sourceCookieInputForSubmit } from '@/utils/sourceCookieState'
+import { dialogFocus as vDialogFocus } from '@/directives/dialogFocus'
 import type { BookSource, CookieRow, SourceSub } from '@/types'
 
 const router = useRouter()
@@ -950,49 +953,30 @@ function openEdit(s: BookSource) {
 function closeEdit() {
   if (editBusy.value) return
   editOpen.value = false
+  editCookie.value = ''
   document.body.style.overflow = ''
 }
 
 /** 校验 + 保存：JSON 字段逐个 parse（失败定位到具体字段），合并进原书源后 saveBookSource 整源覆盖，刷新列表 */
-/* ================= 书源登录（POST /reader3/loginBookSource 等；登录态 localStorage 持久 reader_src_login_{url}） ================= */
+/* ================= 书源凭据状态：服务端按用户命名空间隔离；不读取旧的无用户本地标记 ================= */
 
-const LOGIN_KEY_PREFIX = 'reader_src_login_'
-const LOGIN_KEY = (url: string) => `${LOGIN_KEY_PREFIX}${url}`
+const loggedUrls = computed(() => new Set(cookieRows.value.map(row => row.sourceUrl)))
 
-/** 已登录书源 URL 集合（localStorage 缓存 reader_src_login_{url}，刷新页面后仍显示「已登录」） */
-const loggedUrls = ref<Set<string>>(new Set())
-
-function syncLoggedUrls() {
-  const set = new Set<string>()
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i)
-    if (k && k.startsWith(LOGIN_KEY_PREFIX) && localStorage.getItem(k) === '1') {
-      set.add(k.slice(LOGIN_KEY_PREFIX.length))
-    }
-  }
-  loggedUrls.value = set
-}
-
-function markLoggedIn(url: string) {
-  localStorage.setItem(LOGIN_KEY(url), '1')
-  syncLoggedUrls()
-}
-
-function markLoggedOut(url: string) {
-  localStorage.removeItem(LOGIN_KEY(url))
-  syncLoggedUrls()
+function markSourcesLoggedOut(urls: string[]) {
+  const affected = new Set(urls)
+  cookieRows.value = cookieRows.value.filter((row) => !affected.has(row.sourceUrl))
 }
 
 const loginOpen = ref(false)
 const loginSource = ref<BookSource | null>(null)
 const loginBusy = ref(false)
 const loginForm = ref({ username: '', password: '' })
-/** 登录态：unknown=登录态未知（探测中/未探测） logged=已登录 not=登录失败 */
-const loginState = ref<'unknown' | 'logged' | 'not'>('unknown')
+/** Cookie 已保存不等于目标站验证通过。 */
+const loginState = ref<'unknown' | 'stored' | 'not'>('unknown')
 const loginProbe = ref('') // 状态区探测提示（getCaptcha 结果）
 const loginMsg = ref('') // 操作结果提示
 const loginMsgError = ref(false)
-const cookieSummary = ref('') // 登录成功后的 cookie 摘要（前 20 字符）
+const cookieSummary = ref('') // 仅固定隐藏提示；不回显用户输入的凭据
 const captcha = ref<{ captchaId: string; captchaUrl: string; message: string } | null>(null)
 const captchaFrom = ref<'probe' | 'login'>('probe') // 验证码来源（登录返回的验证码不被探测覆盖）
 const captchaText = ref('')
@@ -1015,17 +999,22 @@ function openLogin(s: BookSource) {
   manualCookie.value = ''
   loginOpen.value = true
   document.body.style.overflow = 'hidden'
-  if (loggedUrls.value.has(s.bookSourceUrl)) {
-    loginState.value = 'logged'
-    loginProbe.value = '本地缓存：该书源已登录（Cookie 存于服务端）'
-  } else {
-    void probeCaptcha() // 登录态未知 → getCaptcha 探测
-  }
+  void refreshCookieRows().then(() => {
+    if (loginSource.value?.bookSourceUrl !== s.bookSourceUrl || !loginOpen.value) return
+    if (loggedUrls.value.has(s.bookSourceUrl)) {
+      loginState.value = 'stored'
+      cookieSummary.value = '内容已隐藏'
+    }
+  })
+  void probeCaptcha()
 }
 
 function closeLogin() {
   if (loginBusy.value) return
   loginOpen.value = false
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
+  captchaText.value = ''
   document.body.style.overflow = ''
 }
 
@@ -1051,7 +1040,8 @@ async function probeCaptcha(force = false) {
       }
       loginProbe.value = '检测到图片验证码——填写用户名/密码后可提交'
     } else if (kind === 'slider') {
-      loginProbe.value = d?.message || '检测到滑块验证码——点击「登录」由浏览器自动处理'
+      loginProbe.value = d?.message || '需要在目标站手动完成滑块验证码；当前未提供交互式浏览器会话'
+      showManual.value = true
     } else if (kind === 'click') {
       showManual.value = true
       loginProbe.value = d?.message || '检测到点选类验证码——请在浏览器登录后粘贴 Cookie'
@@ -1069,14 +1059,15 @@ async function probeCaptcha(force = false) {
 }
 
 /** 登录结果统一处理（loginBookSource 的 success / submitCaptcha 的 isLogin 两套标记） */
-function applyLoginResult(d: BookSourceLoginResult | null | undefined) {
+async function applyLoginResult(d: BookSourceLoginResult | null | undefined) {
   const url = loginSource.value?.bookSourceUrl
   if (!d || !url) return
   if (d.isLogin === true || d.success === true) {
-    markLoggedIn(url)
-    loginState.value = 'logged'
-    cookieSummary.value = d.cookie ? d.cookie.slice(0, 20) : ''
-    loginMsg.value = '登录成功'
+    await refreshCookieRows()
+    if (loginSource.value?.bookSourceUrl !== url || !loginOpen.value) return
+    loginState.value = loggedUrls.value.has(url) ? 'stored' : 'unknown'
+    cookieSummary.value = loggedUrls.value.has(url) ? '内容已隐藏' : ''
+    loginMsg.value = loggedUrls.value.has(url) ? 'Cookie 已保存（未验证）' : '规则已执行；尚无法确认服务端 Cookie 状态'
     loginMsgError.value = false
     captcha.value = null
     captchaFrom.value = 'probe'
@@ -1122,7 +1113,7 @@ async function doLogin() {
       username: loginForm.value.username,
       password: loginForm.value.password,
     })
-    applyLoginResult(res.data)
+    await applyLoginResult(res.data)
   } catch {
     // 硬错误（ReturnData::err / 网络）已由拦截器提示
   } finally {
@@ -1147,7 +1138,7 @@ async function doSubmitCaptcha() {
       username: loginForm.value.username,
       password: loginForm.value.password,
     })
-    applyLoginResult(res.data)
+    await applyLoginResult(res.data)
   } catch {
     // 拦截器已提示
   } finally {
@@ -1159,19 +1150,20 @@ async function doSubmitCaptcha() {
 async function saveManualCookie() {
   const s = loginSource.value
   if (!s || loginBusy.value) return
-  const cookie = manualCookie.value.trim()
-  if (!cookie) return
+  const cookie = sourceCookieInputForSubmit(manualCookie.value)
+  if (!cookie.trim()) return
   loginBusy.value = true
   loginMsg.value = ''
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, cookie)
     if (res.data?.success) {
-      markLoggedIn(s.bookSourceUrl)
-      loginState.value = 'logged'
-      cookieSummary.value = cookie.slice(0, 20)
       showManual.value = false
       manualCookie.value = ''
-      loginMsg.value = 'Cookie 已保存'
+      await refreshCookieRows()
+      if (loginSource.value?.bookSourceUrl !== s.bookSourceUrl || !loginOpen.value) return
+      loginState.value = loggedUrls.value.has(s.bookSourceUrl) ? 'stored' : 'unknown'
+      cookieSummary.value = loggedUrls.value.has(s.bookSourceUrl) ? '内容已隐藏' : ''
+      loginMsg.value = loggedUrls.value.has(s.bookSourceUrl) ? 'Cookie 已保存（未验证）' : 'Cookie 已提交；服务端状态尚未确认'
       loginMsgError.value = false
     }
   } catch {
@@ -1190,7 +1182,8 @@ async function clearLoginCookie() {
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, '')
     if (res.data?.success) {
-      markLoggedOut(s.bookSourceUrl)
+      const cleared = res.data.clearedSourceUrls?.length ? res.data.clearedSourceUrls : [s.bookSourceUrl]
+      markSourcesLoggedOut(cleared)
       loginState.value = 'unknown'
       cookieSummary.value = ''
       captcha.value = null
@@ -1198,7 +1191,7 @@ async function clearLoginCookie() {
       captchaText.value = ''
       showManual.value = false
       manualCookie.value = ''
-      loginMsg.value = '已清除 Cookie（登录态失效）'
+      loginMsg.value = `已清除同域 ${cleared.length} 个书源的登录态`
       loginMsgError.value = false
     }
   } catch {
@@ -1208,17 +1201,38 @@ async function clearLoginCookie() {
   }
 }
 
-/* ================= 书源 Cookie 管理（GAP 196：已登录书源列表 + 摘要 + 清除；后端 getBookSourceCookie 读取登录态） ================= */
+/* ================= 书源 Cookie 管理：仅显示当前用户服务端存在的凭据，不声称目标站已认证 ================= */
 
 const cookieMgrOpen = ref(false)
 const cookieMgrBusy = ref<Set<string>>(new Set())
-/** 服务端登录态行（getBookSourceCookie：cookie/userAgent/loginHeader 摘要） */
+/** 服务端登录态行（getBookSourceCookie：仅返回脱敏摘要） */
 const cookieRows = ref<CookieRow[]>([])
 const cookieRowsMsg = ref('')
+let cookieRequestGeneration = 0
 
-/** 已登录书源列表：服务端登录态优先，补充本地登录态标记（无服务端 cookie 行的书源） */
+async function refreshCookieRows(): Promise<boolean> {
+  const generation = ++cookieRequestGeneration
+  const token = store.accessToken
+  const defaultMode = store.defaultConfigMode
+  const current = () => generation === cookieRequestGeneration && token === store.accessToken && defaultMode === store.defaultConfigMode
+  try {
+    const res = await getBookSourceCookie()
+    if (!current()) return false
+    if (res.isSuccess !== true) throw new Error('服务端未确认 Cookie 状态')
+    cookieRows.value = savedSourceCookieRows(res.data)
+    cookieRowsMsg.value = ''
+    return true
+  } catch {
+    if (current()) {
+      cookieRows.value = []
+      cookieRowsMsg.value = '服务端 Cookie 状态读取失败，不能确认已保存的凭据'
+    }
+    return false
+  }
+}
+
+/** 当前用户服务端存在 Cookie 的书源列表。 */
 const loggedSources = computed(() => {
-  const server = new Set(cookieRows.value.map((r) => r.sourceUrl))
   const merged = new Map<string, BookSource>()
   for (const r of cookieRows.value) {
     const s = sources.value.find((x) => x.bookSourceUrl === r.sourceUrl)
@@ -1237,18 +1251,12 @@ const loggedSources = computed(() => {
       } as BookSource)
     }
   }
-  for (const s of sources.value) {
-    if (loggedUrls.value.has(s.bookSourceUrl) && !server.has(s.bookSourceUrl)) {
-      merged.set(s.bookSourceUrl, s)
-    }
-  }
   return Array.from(merged.values())
 })
 
-/** 服务端登录态摘要（cookie 前 30 字符；无则空） */
+/** 服务端登录态摘要（后端已脱敏） */
 function cookiePreview(r: CookieRow): string {
-  const c = r.cookie?.trim() || ''
-  return c ? c.slice(0, 30) + (c.length > 30 ? '…' : '') : ''
+  return r.cookiePreview?.trim() || r.cookie?.trim() || ''
 }
 
 /** 域名提取（cookie 作用域按源 URL host） */
@@ -1261,16 +1269,9 @@ function hostOf(url: string): string {
 }
 
 function openCookieMgr() {
-  syncLoggedUrls() // 打开时重扫 localStorage，避免其他标签页变更未同步
   cookieRows.value = []
   cookieRowsMsg.value = ''
-  void getBookSourceCookie()
-    .then((res) => {
-      cookieRows.value = res.data ?? []
-    })
-    .catch(() => {
-      cookieRowsMsg.value = '服务端登录态读取失败，仅显示本地标记'
-    })
+  void refreshCookieRows()
   cookieMgrOpen.value = true
   document.body.style.overflow = 'hidden'
 }
@@ -1280,16 +1281,16 @@ function closeCookieMgr() {
   document.body.style.overflow = ''
 }
 
-/** 清除 Cookie：POST /reader3/setBookSourceCookie（空 cookie = 清除）→ 同步移除本地登录态 */
+/** 清除 Cookie：POST /reader3/setBookSourceCookie（空 cookie = 清除）→ 同步移除服务端状态行 */
 async function clearSourceCookie(s: BookSource) {
   if (cookieMgrBusy.value.has(s.bookSourceUrl)) return
   cookieMgrBusy.value = new Set(cookieMgrBusy.value).add(s.bookSourceUrl)
   try {
     const res = await setBookSourceCookie(s.bookSourceUrl, '')
     if (res.data?.success) {
-      markLoggedOut(s.bookSourceUrl)
-      cookieRows.value = cookieRows.value.filter((r) => r.sourceUrl !== s.bookSourceUrl)
-      ElMessage.success(`已清除「${s.bookSourceName}」的 Cookie`)
+      const cleared = res.data.clearedSourceUrls?.length ? res.data.clearedSourceUrls : [s.bookSourceUrl]
+      markSourcesLoggedOut(cleared)
+      ElMessage.success(`已清除同域 ${cleared.length} 个书源的登录态`)
     }
   } catch {
     // 拦截器已提示
@@ -1363,7 +1364,7 @@ async function confirmEdit() {
     // GAP 107：cookie 非空 → 单独走 setBookSourceCookie（后端书源模型无 cookie 字段，cookie 存服务端 cookie 表）
     if (editCookie.value.trim()) {
       try {
-        await setBookSourceCookie(merged.bookSourceUrl, editCookie.value.trim())
+        await setBookSourceCookie(merged.bookSourceUrl, sourceCookieInputForSubmit(editCookie.value))
       } catch {
         ElMessage.warning('书源已保存，但 Cookie 写入失败')
       }
@@ -1436,9 +1437,11 @@ async function doExportGroup() {
 
 /* ================= 本地文件导入（input file → 解析 JSON → saveBookSources） ================= */
 const localFileInput = ref<HTMLInputElement | null>(null)
+const localImportOpener = ref<HTMLElement | null>(null)
 const localImportBusy = ref(false)
 
-function openLocalImport() {
+function openLocalImport(event: MouseEvent) {
+  localImportOpener.value = event.currentTarget as HTMLElement
   localFileInput.value?.click()
 }
 
@@ -1550,14 +1553,10 @@ async function confirmPreview() {
         else subs.value.push({ url: previewRemoteUrl.value, name })
         setSubMsg(`订阅成功：已导入 ${res.data?.count ?? selected.length} 个书源`)
       } else {
-        // 后端不可达降级：本地导入所选书源 + 订阅记录（api 已写入 localStorage）
-        const saveRes = await saveBookSources(selected)
-        const existing = subs.value.find((x) => x.url === previewRemoteUrl.value)
-        if (existing) existing.name = previewRemoteUrl.value
-        else subs.value.push({ url: previewRemoteUrl.value, name: previewRemoteUrl.value })
-        setSubMsg(
-          `订阅成功（本地通道）：已导入 ${saveRes.data?.count ?? selected.length} 个书源`,
-        )
+        const message = res.errorMsg || '服务端未确认订阅保存'
+        setSubMsg(`订阅失败：${message}`, true)
+        ElMessage.error(`订阅失败：${message}`)
+        return
       }
       previewRemoteUrl.value = ''
       subUrl.value = ''
@@ -1662,7 +1661,7 @@ async function confirmImport() {
   }
 }
 
-/* ================= 订阅源（远程书源订阅，后端 /reader3/getSourceSubs 等为主，localStorage 降级，见 api/sourceSubs.ts） ================= */
+/* ================= 订阅源（远程书源订阅，服务端为准；localStorage 仅作离线只读镜像） ================= */
 const subs = ref<SourceSub[]>([])
 const subUrl = ref('')
 const subBusy = ref(false)
@@ -1675,31 +1674,6 @@ function setSubMsg(msg: string, isError = false) {
   subMsgError.value = isError
 }
 
-/** 拉取远程书源 JSON 并批量导入，返回导入数量 */
-async function fetchAndImport(url: string): Promise<number> {
-  const resp = await fetch(url, { mode: 'cors' })
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-  const raw: unknown = await resp.json()
-  const list = normalizeSources(raw)
-  if (list.length === 0) throw new Error('未识别到书源（需为书源数组或含 bookSourceList 的对象）')
-  const res = await saveBookSources(list)
-  return res.data?.count ?? list.length
-}
-
-/**
- * 刷新订阅并导入书源：后端 POST /reader3/refreshSourceSub 优先（服务端拉取远程 JSON 并导入书源表）；
- * 后端不可用时降级为前端 fetch + saveBookSources（preFetched 可复用已拉取的列表，避免二次请求）。
- */
-async function refreshAndImport(url: string, preFetched?: BookSource[]): Promise<number> {
-  const res = await refreshSourceSub(url)
-  if (res.isSuccess) return res.data?.count ?? preFetched?.length ?? 0
-  if (preFetched) {
-    const saveRes = await saveBookSources(preFetched)
-    return saveRes.data?.count ?? preFetched.length
-  }
-  return fetchAndImport(url)
-}
-
 /** 新增订阅：服务端抓取（saveSourceSub 后端拉取远程 JSON——避免浏览器 CORS）+ 导入 */
 async function confirmAddSub() {
   if (subBusy.value) return
@@ -1708,34 +1682,15 @@ async function confirmAddSub() {
   subBusy.value = true
   setSubMsg('')
   try {
-    // 先预览：服务端抓取优先，失败降级前端 fetch，均只展示不写库
-    let list: BookSource[] | null = null
-    let existing: Set<string> = new Set()
+    // 订阅 URL 的安全校验与预览均由服务端完成；业务拒绝不能降级绕过。
     const preview = await previewSourceSub(url)
-    if (preview.isSuccess && preview.data?.sources?.length) {
-      list = preview.data.sources
-      existing = new Set(preview.data.existing ?? [])
-    } else {
-      try {
-        const resp = await fetch(url, { mode: 'cors' })
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-        const raw: unknown = await resp.json()
-        const parsed = normalizeSources(raw)
-        if (parsed.length > 0) {
-          list = parsed
-          existing = new Set(sources.value.map((s) => s.bookSourceUrl))
-        }
-      } catch {
-        // 下方统一报错
-      }
-    }
-    if (!list) {
+    if (!preview.isSuccess || !preview.data?.sources?.length) {
       throw new Error(
         preview.errorMsg || '未识别到书源（需为书源数组或含 bookSourceList 的对象）',
       )
     }
     previewRemoteUrl.value = url
-    openPreview(list, existing, '添加订阅书源', 'sub')
+    openPreview(preview.data.sources, new Set(preview.data.existing ?? []), '添加订阅书源', 'sub')
     setSubMsg('请选择要导入的书源后确认（支持全选/反选/选择新增/排序）')
   } catch (err) {
     setSubMsg(
@@ -1747,17 +1702,19 @@ async function confirmAddSub() {
   }
 }
 
-/** 刷新订阅：重新拉取远程书源并批量导入（后端 refreshSourceSub / 降级前端导入） */
+/** 刷新订阅：服务端负责抓取和导入，失败不可改走浏览器抓取。 */
 async function refreshSub(sub: SourceSub) {
   if (subBusyUrls.value.has(sub.url)) return
   subBusyUrls.value.add(sub.url)
   try {
-    const count = await refreshAndImport(sub.url)
+    const res = await refreshSourceSub(sub.url)
+    if (!res.isSuccess) throw new Error(res.errorMsg || '服务端未确认刷新')
+    const count = res.data?.count ?? 0
     setSubMsg(`已刷新「${sub.name}」，导入 ${count} 个书源`)
     await load()
   } catch (err) {
     setSubMsg(
-      `刷新失败：${err instanceof Error && err.message ? err.message : '未知错误'}（若为浏览器跨域限制，可下载后手动新增）`,
+      `刷新失败：${err instanceof Error && err.message ? err.message : '未知错误'}`,
       true,
     )
   } finally {
@@ -1783,8 +1740,9 @@ async function toggleSubEnabled(sub: SourceSub) {
         ? `已启用订阅「${sub.name}」：恢复自动刷新`
         : `已禁用订阅「${sub.name}」：停止自动刷新（已导入书源保留）`,
     )
-  } catch {
+  } catch (err) {
     sub.enabled = prev
+    setSubMsg(`操作失败：${err instanceof Error ? err.message : '服务端未确认状态变更'}`, true)
   }
 }
 
@@ -1862,6 +1820,10 @@ async function confirmDeleteSub() {
   try {
     if (list.length) {
       const res = await deleteSourceSubs(list.map((x) => x.url))
+      if (!res.isSuccess) {
+        setSubMsg(`删除失败：${res.errorMsg || '服务端未确认删除'}`, true)
+        return
+      }
       const removed = new Set(list.map((x) => x.url))
       subs.value = subs.value.filter((x) => !removed.has(x.url))
       subSelected.value = new Set()
@@ -1869,13 +1831,17 @@ async function confirmDeleteSub() {
         `已删除 ${res.data?.deleted ?? list.length} 个订阅：自动刷新不再导入书源（已导入的书源保留）`,
       )
     } else if (s) {
-      await deleteSourceSub(s.url)
+      const res = await deleteSourceSub(s.url)
+      if (!res.isSuccess) {
+        setSubMsg(`删除失败：${res.errorMsg || '服务端未确认删除'}`, true)
+        return
+      }
       subs.value = subs.value.filter((x) => x.url !== s.url)
       setSubMsg('已删除订阅：自动刷新不再导入书源（已导入的书源保留）')
     }
     closeDeleteSub()
-  } catch {
-    // 已提示
+  } catch (err) {
+    setSubMsg(`删除失败：${err instanceof Error ? err.message : '未知错误'}`, true)
   } finally {
     deleteSubBusy.value = false
   }
@@ -1888,12 +1854,13 @@ function closeDeleteSub() {
 }
 
 async function loadSubs() {
-  const res = await getSourceSubs() // 后端优先；失败降级 localStorage（api 层已处理）
+  const res = await getSourceSubs()
   subs.value = res.data ?? []
+  if (!res.isSuccess) setSubMsg(`${res.errorMsg || '服务端不可用'}；当前仅显示本账号上次缓存`, true)
 }
 
 onMounted(() => {
-  syncLoggedUrls()
+  void refreshCookieRows()
   load()
   void loadSubs()
   // 简繁模式可能在其他页面改动 → 挂载时同步全站状态（书源名展示随其响应）
@@ -1901,8 +1868,35 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  cookieRequestGeneration++
+  // 浏览器后退仍可离开打开中的弹窗。只释放本页仍持有的锁，
+  // 不把整页刷新（body 被重建）误当成 Vue 卸载已经清理。
+  if (document.body.style.overflow === 'hidden' && (
+    addOpen.value || importOpen.value || previewOpen.value || deleting.value
+    || deletingSub.value || deletingSubs.value.length || debugOpen.value
+    || editOpen.value || loginOpen.value || cookieMgrOpen.value
+  )) document.body.style.overflow = ''
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
+  editCookie.value = ''
   window.clearTimeout(groupLongPressTimer)
   groupLongPressTimer = undefined
+})
+
+watch(() => [store.accessToken, store.defaultConfigMode], () => {
+  cookieRequestGeneration++
+  cookieRows.value = []
+  if (loginOpen.value || cookieMgrOpen.value || editOpen.value) document.body.style.overflow = ''
+  editOpen.value = false
+  editCookie.value = ''
+  loginOpen.value = false
+  cookieMgrOpen.value = false
+  loginForm.value = { username: '', password: '' }
+  manualCookie.value = ''
+  captchaText.value = ''
+  loginState.value = 'unknown'
+  cookieSummary.value = ''
+  void refreshCookieRows()
 })
 </script>
 
@@ -1959,7 +1953,7 @@ onBeforeUnmount(() => {
           <button
             class="ghost-btn"
             type="button"
-            title="Cookie 管理：已登录书源列表 + 清除登录态（POST /reader3/setBookSourceCookie）"
+            title="Cookie 管理：服务端已保存凭据 + 清除（不代表目标站认证通过）"
             @click="openCookieMgr"
           >
             Cookie 管理
@@ -2001,11 +1995,11 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- 订阅源：远程书源订阅（后端 /reader3/getSourceSubs 等为主，localStorage 降级，见 api/sourceSubs.ts） -->
+      <!-- 订阅源：服务端为准，localStorage 仅是离线只读镜像。 -->
       <section class="subs-section">
         <div class="subs-head">
           <h2 class="subs-title">订阅源</h2>
-          <span class="subs-sub">远程书源订阅 · 已接入服务端（账号内多设备一致；服务不可用时降级本地存储）</span>
+          <span class="subs-sub">远程书源订阅 · 服务端保存，离线仅可查看上次缓存</span>
           <div v-if="subs.length > 0" class="subs-toolbar">
             <label class="subs-all">
               <input
@@ -2247,7 +2241,7 @@ onBeforeUnmount(() => {
             {{ s.bookSourceGroup }}
           </span>
           <span v-if="invalidSources.has(s.bookSourceUrl)" class="source-badge invalid">失效</span>
-          <span v-if="loggedUrls.has(s.bookSourceUrl)" class="source-badge logged" title="已登录（Cookie 存于服务端，本地缓存）">已登录</span>
+          <span v-if="loggedUrls.has(s.bookSourceUrl)" class="source-badge logged" title="当前用户服务端存在 Cookie；是否有效仍需目标站验证">Cookie 已保存</span>
           <button
             v-if="defaultField"
             class="default-btn"
@@ -2317,7 +2311,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="addOpen" class="dlg-overlay" @click.self="closeAdd">
-          <div class="dlg" role="dialog" aria-modal="true" aria-label="新增书源" tabindex="-1" @keydown.esc="closeAdd">
+          <div v-dialog-focus class="dlg" role="dialog" aria-modal="true" aria-label="新增书源" tabindex="-1" @keydown.esc="closeAdd">
             <div class="dlg-head">
               <h2 class="dlg-title">新增书源</h2>
               <button class="dlg-close" type="button" title="关闭" :disabled="addBusy" @click="closeAdd">
@@ -2355,7 +2349,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="importOpen" class="dlg-overlay" @click.self="closeImport">
-          <div class="dlg" role="dialog" aria-modal="true" aria-label="远程导入书源" tabindex="-1" @keydown.esc="closeImport">
+          <div v-dialog-focus class="dlg" role="dialog" aria-modal="true" aria-label="远程导入书源" tabindex="-1" @keydown.esc="closeImport">
             <div class="dlg-head">
               <h2 class="dlg-title">远程导入书源</h2>
               <button class="dlg-close" type="button" title="关闭" :disabled="importBusy" @click="closeImport">
@@ -2389,6 +2383,7 @@ onBeforeUnmount(() => {
         <div v-if="previewOpen" class="dlg-overlay" @click.self="closePreview">
           <div
             class="dlg preview-dlg"
+            v-dialog-focus="previewMode === 'local' ? localImportOpener : undefined"
             role="dialog"
             aria-modal="true"
             :aria-label="previewTitle"
@@ -2463,7 +2458,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="deleting" class="dlg-overlay" @click.self="closeDelete">
-          <div class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除书源" tabindex="-1" @keydown.esc="closeDelete">
+          <div v-dialog-focus class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除书源" tabindex="-1" @keydown.esc="closeDelete">
             <div class="dlg-head">
               <h2 class="dlg-title">删除书源</h2>
             </div>
@@ -2485,7 +2480,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="deletingSub || deletingSubs.length" class="dlg-overlay" @click.self="closeDeleteSub">
-          <div class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除订阅" tabindex="-1" @keydown.esc="closeDeleteSub">
+          <div v-dialog-focus class="dlg dlg-confirm" role="alertdialog" aria-modal="true" aria-label="删除订阅" tabindex="-1" @keydown.esc="closeDeleteSub">
             <div class="dlg-head">
               <h2 class="dlg-title">删除订阅</h2>
             </div>
@@ -2551,6 +2546,7 @@ onBeforeUnmount(() => {
         <div v-if="debugOpen" class="dlg-overlay" @click.self="closeDebug">
           <div
             class="dlg dlg-debug"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="书源调试"
@@ -2612,6 +2608,7 @@ onBeforeUnmount(() => {
         <div v-if="editOpen" class="dlg-overlay" @click.self="closeEdit">
           <div
             class="dlg dlg-edit"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="编辑书源"
@@ -2693,14 +2690,14 @@ onBeforeUnmount(() => {
               </label>
               <label class="field">
                 <span class="field-label">Cookie</span>
-                <input
+                <textarea
                   v-model="editCookie"
-                  class="field-input"
-                  type="text"
-                  placeholder="粘贴 Cookie（保存时写入服务端）"
+                  class="cookie-textarea"
+                  rows="3"
+                  placeholder="粘贴普通 Cookie 头或 Netscape 导出（保存时写入服务端）"
                   spellcheck="false"
                   :disabled="editBusy"
-                />
+                ></textarea>
                 <span class="field-tip">非空时保存后调 setBookSourceCookie 写入（清除请用登录弹窗「清除 Cookie」）</span>
               </label>
               <div class="rules-head">
@@ -2746,12 +2743,13 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
-    <!-- 书源登录弹窗（POST /reader3/loginBookSource：状态区 + 用户名/密码表单 + 图片验证码 + 手动 Cookie；登录态 localStorage 持久） -->
+    <!-- 书源登录弹窗：当前用户服务端 Cookie 状态，不使用无用户的本地登录标记 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="loginOpen" class="dlg-overlay" @click.self="closeLogin">
           <div
             class="dlg dlg-login"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="书源登录"
@@ -2767,14 +2765,14 @@ onBeforeUnmount(() => {
               </button>
             </div>
 
-            <!-- 状态区：已登录（本地缓存） / 未登录 / 登录态未知（getCaptcha 探测） -->
-            <div class="login-status" :class="{ logged: loginState === 'logged', not: loginState === 'not' }">
+            <!-- 状态区：凭据存在不等于目标站认证通过。 -->
+            <div class="login-status" :class="{ logged: loginState === 'stored', not: loginState === 'not' }">
               <span class="login-state-dot"></span>
               <span class="login-state-text">
-                {{ loginState === 'logged' ? '已登录' : loginState === 'not' ? '未登录' : '登录态未知' }}
+                {{ loginState === 'stored' ? 'Cookie 已保存（未验证）' : loginState === 'not' ? '未登录' : '登录态未知' }}
               </span>
-              <span v-if="loginState === 'logged' && cookieSummary" class="login-cookie-sum" :title="cookieSummary + '…'">
-                Cookie {{ cookieSummary }}…
+              <span v-if="loginState === 'stored' && cookieSummary" class="login-cookie-sum">
+                {{ cookieSummary }}
               </span>
               <span v-else-if="loginState === 'unknown' && loginProbe" class="login-probe">{{ loginProbe }}</span>
             </div>
@@ -2845,11 +2843,11 @@ onBeforeUnmount(() => {
 
             <!-- 手动 Cookie 区：needManualCaptcha=true → 提示 + 明文粘贴框 + 保存 -->
             <div v-if="showManual" class="manual-box">
-              <p class="field-tip">需手动验证码：请在浏览器登录该书源后，在下方粘贴 Cookie（明文显示，便于核对）</p>
+              <p class="field-tip">当前不支持交互式站点登录或验证码。请自行在目标站登录后粘贴普通 Cookie 头或 Netscape 导出；不要发到聊天。导入保留域名、路径和 HTTPS 限制，替换适用于该书源主机的已保存凭据。输入区为明文，保存后隐藏；保存不代表 Cookie 有效。</p>
               <textarea
                 v-model="manualCookie"
                 class="cookie-textarea"
-                placeholder="粘贴 Cookie，如 a=1; b=2"
+                placeholder="粘贴 Cookie，如 a=1; b=2，或 Netscape 七列导出文本"
                 spellcheck="false"
                 :disabled="loginBusy"
               ></textarea>
@@ -2875,12 +2873,13 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
-    <!-- 书源 Cookie 管理弹窗（GAP 196：服务端登录态 + 本地标记；摘要来自 getBookSourceCookie；清除走 setBookSourceCookie 空 cookie） -->
+    <!-- 书源 Cookie 管理弹窗：仅当前用户服务端存在状态与脱敏摘要 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="cookieMgrOpen" class="dlg-overlay" @click.self="closeCookieMgr">
           <div
             class="dlg dlg-cookie"
+            v-dialog-focus
             role="dialog"
             aria-modal="true"
             aria-label="Cookie 管理"
@@ -2897,7 +2896,7 @@ onBeforeUnmount(() => {
             </div>
 
             <p class="cookie-mgr-note">
-              已登录书源 {{ loggedSources.length }} 个。服务端保存 Cookie/UA/登录头，摘要来自 getBookSourceCookie；清除后该书源登录态失效。
+              已保存 Cookie 的书源 {{ loggedSources.length }} 个，均来自当前用户的服务端状态。是否有效仍需目标站验证；清除会撤销同域书源的凭据。
               <span v-if="cookieRowsMsg" class="cookie-mgr-warn">{{ cookieRowsMsg }}</span>
             </p>
 
@@ -2935,7 +2934,7 @@ onBeforeUnmount(() => {
               </li>
             </ul>
             <div v-else class="state-row">
-              <span class="state-text">暂无已登录书源——书源行「登录」成功或粘贴 Cookie 后会出现在这里</span>
+              <span class="state-text">暂无已保存 Cookie 的书源；本地旧标记不会作为登录成功依据</span>
             </div>
 
             <div class="dlg-actions dlg-foot">

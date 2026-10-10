@@ -1,0 +1,873 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "originalExecuted": true,
+  "restoredJarSha256": "74FBD5A5A4B77A78352B54E82DC446590197EB99FFE2A96495ACFF7834084306",
+  "rendererMode": "archived-webkit",
+  "observedRequestEndpoint": "target /search",
+  "jsSourceDirectlyObserved": false,
+  "scriptValidatedByResult": true,
+  "original": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "renderScriptSources": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "POST",
+        "body": "q=post",
+        "testHeader": "synthetic"
+      }
+    ]
+  },
+  "restored": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "renderScriptSources": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "POST",
+        "body": "q=post",
+        "testHeader": "synthetic"
+      }
+    ]
+  },
+  "expectedOriginalCookieSequence": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "expectedRestoredCookieSequence": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "expectedScriptSources": [
+    null,
+    null,
+    null,
+    "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')",
+    "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')"
+  ],
+  "expectedPostRequestFields": {
+    "httpMethod": "POST",
+    "body": "q=post",
+    "testHeader": "synthetic"
+  },
+  "comparisonMode": "same-run-original-remote-camoufox",
+  "camoufox": {
+    "searches": [
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "data": [
+          {
+            "bookUrl": "http://127.0.0.1:57691/book",
+            "origin": "http://127.0.0.1:57691",
+            "originName": "Loopback WebView Cookie fixture",
+            "type": 0,
+            "name": "WebView差分书",
+            "author": "测试作者",
+            "intro": "",
+            "wordCount": "",
+            "latestChapterTitle": "",
+            "tocUrl": "",
+            "time": 0,
+            "originOrder": 0,
+            "infoHtml": "",
+            "tocHtml": ""
+          }
+        ],
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:57691/book",
+              "origin": "http://127.0.0.1:57691",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ]
+        }
+      }
+    ],
+    "renderCookieHeaders": [
+      "",
+      "session=alpha==",
+      "",
+      "",
+      ""
+    ],
+    "renderScriptSources": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      },
+      {
+        "httpMethod": "POST",
+        "body": "q=post",
+        "testHeader": "synthetic"
+      }
+    ]
+  },
+  "camoufoxJarSha256": "74FBD5A5A4B77A78352B54E82DC446590197EB99FFE2A96495ACFF7834084306",
+  "expectedCamoufoxCookieSequence": [
+    "",
+    "session=alpha==",
+    "",
+    "",
+    ""
+  ],
+  "fullGeneratedReaderJsonRecorded": true,
+  "historicalRendererStoppedBeforeCamoufox": true,
+  "originalProductionRendererVersionProven": false,
+  "realAuthenticatedSourceTested": false
+}

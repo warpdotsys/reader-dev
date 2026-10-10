@@ -1,0 +1,805 @@
+{
+  "schemaVersion": 1,
+  "scope": "real source worker single-case rootless startup diagnostics only",
+  "workerSha256": "c3ef2486a4b6ed37e0f3a898518dd4173c42e270c62d49d87e881562c50f4c24",
+  "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "generatedOnly": true,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "readerJarStarted": false,
+  "packagedWorkerHttpsAccepted": false,
+  "singleChangeFromReadonlyJToPassingR": "private 1 MiB /home/reader/camoufox tmpfs",
+  "dconfAloneInsufficient": true,
+  "configAloneInsufficient": true,
+  "broaderCacheAloneInsufficient": true,
+  "all12CasesRetestedByThisReceipt": false,
+  "newHostedNativeImagesAccepted": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "independentPerTunnelSourcePortCorrelationAccepted": false,
+  "sourcePortMembershipWasReportedByOriginalInnerOnly": true,
+  "softMemoryHighEventsAreRetainedNotClaimedZero": true,
+  "generatedHomeMetadataOnly": [
+    {
+      "relativePath": ".cache",
+      "size": 100,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o750"
+    },
+    {
+      "relativePath": ".camoufox",
+      "size": 40,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o700"
+    },
+    {
+      "relativePath": "Downloads",
+      "size": 40,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o755"
+    },
+    {
+      "relativePath": "camoufox",
+      "size": 40,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o700"
+    },
+    {
+      "relativePath": ".cache/camoufox",
+      "size": 120,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o750"
+    },
+    {
+      "relativePath": ".cache/dconf",
+      "size": 60,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o700"
+    },
+    {
+      "relativePath": ".cache/fontconfig",
+      "size": 160,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o755"
+    },
+    {
+      "relativePath": ".cache/dconf/user",
+      "size": 2,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o600"
+    },
+    {
+      "relativePath": ".cache/fontconfig/31af7268aca26b493c72e96fad0cabf3-le64.cache-7",
+      "size": 3627640,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/fontconfig/41501a58dd12b9b7cc418f0199afa963-le64.cache-7",
+      "size": 609248,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/fontconfig/8df9b9791b843407524a7a15520672a0-le64.cache-7",
+      "size": 1041032,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/fontconfig/9bc15e275938fa36dd539bec2d052721-le64.cache-7",
+      "size": 272648,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/fontconfig/CACHEDIR.TAG",
+      "size": 200,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/fontconfig/fba2d15a207ca781a37fdf43be4e3c31-le64.cache-7",
+      "size": 3032,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    },
+    {
+      "relativePath": ".cache/camoufox/.0.5_FLAG",
+      "size": 0,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o444"
+    },
+    {
+      "relativePath": ".cache/camoufox/config.json",
+      "size": 68,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o444"
+    },
+    {
+      "relativePath": ".cache/camoufox/fontconfig",
+      "size": 60,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o755"
+    },
+    {
+      "relativePath": ".cache/camoufox/fontconfig/fonts-04cf4a19f9a4.conf",
+      "size": 7245,
+      "uid": 10001,
+      "gid": 10001,
+      "mode": "0o644"
+    }
+  ],
+  "actualSingleCaseObservationR": {
+    "case": "same-get",
+    "failureType": null,
+    "generatedOnlyDiagnostic": null,
+    "tlsErrorCodes": [],
+    "workerResult": {
+      "body": "<html><head><meta charset=\"UTF-8\"></head><body><div class=\"book\"><a href=\"https://127.0.0.1:35049/book/same-get\">书</a><span class=\"name\">认证头差分书-same-get</span><span class=\"author\">生成作者</span></div></body></html>",
+      "cookies": []
+    },
+    "everyActualTargetConnectionUsedProxy": true,
+    "observedTargetSourcePorts": [
+      44844,
+      44856
+    ],
+    "negativeHttpRequests": null,
+    "tunnels": [
+      {
+        "method": "CONNECT",
+        "host": "127.0.0.1",
+        "port": 35049,
+        "clientToServerBytes": 2498,
+        "serverToClientBytes": 2430
+      },
+      {
+        "method": "CONNECT",
+        "host": "127.0.0.1",
+        "port": 35049,
+        "clientToServerBytes": 3019,
+        "serverToClientBytes": 928
+      }
+    ],
+    "targetRequests": [
+      {
+        "case": "same-get",
+        "actor": "primary",
+        "role": "start",
+        "method": "GET",
+        "headers": [
+          [
+            "Host",
+            "127.0.0.1:35049"
+          ],
+          [
+            "User-Agent",
+            "ReaderGeneratedHeaderProbe/1.0"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "authorization",
+            "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+          ],
+          [
+            "x-generated-trace",
+            "GENERATED_HEADER_TRACE_ONLY"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ]
+        ],
+        "bodyByteCount": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "same-get",
+        "actor": "primary",
+        "role": "end",
+        "method": "GET",
+        "headers": [
+          [
+            "Host",
+            "127.0.0.1:35049"
+          ],
+          [
+            "User-Agent",
+            "ReaderGeneratedHeaderProbe/1.0"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "authorization",
+            "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+          ],
+          [
+            "x-generated-trace",
+            "GENERATED_HEADER_TRACE_ONLY"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ]
+        ],
+        "bodyByteCount": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "rejections": 0
+  },
+  "observations": [
+    {
+      "trial": "j",
+      "actualResultSha256": "efa47b829b7f1c725438094e34a66f620603cafdfc34c5ddb32ce93a791e64ce",
+      "controllerSha256": "1071475b9a168fd3d26e6f1df19465e5c963cb8c5aea07ad449143eb8b4676d2",
+      "innerSha256": "3537911ffa03975f24a19ad963c3144ba57f68ec9fd831c06778f2671565349f",
+      "passedSingleCase": false,
+      "failureType": "TimeoutError",
+      "seconds": 75.325,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1439424512,
+        "memoryCurrentBytes": 1167052800,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10129408,
+          "file": 1147871232,
+          "shmem": 0,
+          "kernel": 7376896,
+          "kernel_stack": 0,
+          "pagetables": 253952,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 12288,
+          "file_writeback": 0,
+          "inactive_file": 981676032,
+          "active_file": 166199296,
+          "slab_reclaimable": 6803152,
+          "slab_unreclaimable": 217368
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 77,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "readonly generated home baseline"
+    },
+    {
+      "trial": "k",
+      "actualResultSha256": "97c58147b9a6288484772b1bd4fe84f89b1cd8ca6ed59d3ac19676825bbc9075",
+      "controllerSha256": "3de1b72eada7266466296a23bc594e78c3acb12482303fd9ba1a153c3750503c",
+      "innerSha256": "3537911ffa03975f24a19ad963c3144ba57f68ec9fd831c06778f2671565349f",
+      "passedSingleCase": false,
+      "failureType": "TimeoutError",
+      "seconds": 75.242,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1397673984,
+        "memoryCurrentBytes": 1181728768,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 11767808,
+          "file": 1155833856,
+          "shmem": 0,
+          "kernel": 11493376,
+          "kernel_stack": 0,
+          "pagetables": 3153920,
+          "sock": 0,
+          "file_mapped": 7221248,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 983003136,
+          "active_file": 172834816,
+          "slab_reclaimable": 7026936,
+          "slab_unreclaimable": 1082792
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 76,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 1 MiB dconf tmpfs only"
+    },
+    {
+      "trial": "l",
+      "actualResultSha256": "723de5d951038f356da8df765c4b5112b488d48e20b038dbaa1cf5889f5a708a",
+      "controllerSha256": "926c82d09d739cabcb0f194c6fc2357227284b059086b3b150f629b9302879ea",
+      "innerSha256": "b2d1f738aee08e51ee7162ccfa2dbcbee97cd2ff8a989c8ce0f43810375fffef",
+      "passedSingleCase": false,
+      "failureType": "RuntimeError",
+      "seconds": 1.142,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 54489088,
+        "memoryCurrentBytes": 34009088,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10113024,
+          "file": 21741568,
+          "shmem": 0,
+          "kernel": 1388544,
+          "kernel_stack": 0,
+          "pagetables": 253952,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 28672,
+          "file_writeback": 0,
+          "inactive_file": 18042880,
+          "active_file": 3702784,
+          "slab_reclaimable": 794376,
+          "slab_unreclaimable": 217256
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 14,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 32 MiB cache tmpfs; home still read-only; browser binaries read-only"
+    },
+    {
+      "trial": "m",
+      "actualResultSha256": "65aa9222a4eb010132c75b11ecdc5a5c6c7a0645fc5a1ca971fb8135842b3988",
+      "controllerSha256": "a410faa6b5a44085bc4adc1ccd37904c3b8e8be6c6e8b52d093f416ede6cee25",
+      "innerSha256": "b2d1f738aee08e51ee7162ccfa2dbcbee97cd2ff8a989c8ce0f43810375fffef",
+      "passedSingleCase": false,
+      "failureType": "TimeoutError",
+      "seconds": 75.419,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1397661696,
+        "memoryCurrentBytes": 1166258176,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10137600,
+          "file": 1147863040,
+          "shmem": 0,
+          "kernel": 7340032,
+          "kernel_stack": 0,
+          "pagetables": 249856,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 1027317760,
+          "active_file": 120549376,
+          "slab_reclaimable": 6781888,
+          "slab_unreclaimable": 187216
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 96,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "explicit UID-owned cache and camoufox metadata tmpfs; home and browser binaries read-only"
+    },
+    {
+      "trial": "n",
+      "actualResultSha256": "5c92bf27286c06035408189d027cf313608cabf7c1e135a26f5f68eba9612de9",
+      "controllerSha256": "db4b0c624057078836c06a9ab36e22eacab5acb515b7e403bf7913751997df7d",
+      "innerSha256": "b2d1f738aee08e51ee7162ccfa2dbcbee97cd2ff8a989c8ce0f43810375fffef",
+      "passedSingleCase": true,
+      "failureType": null,
+      "seconds": 9.4,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1611337728,
+        "memoryCurrentBytes": 1142112256,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 418,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10153984,
+          "file": 1123356672,
+          "shmem": 0,
+          "kernel": 8052736,
+          "kernel_stack": 0,
+          "pagetables": 249856,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 196608,
+          "file_writeback": 0,
+          "inactive_file": 895524864,
+          "active_file": 227831808,
+          "slab_reclaimable": 7290192,
+          "slab_unreclaimable": 391784
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 175,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 16 MiB UID-owned home tmpfs; immutable browser binaries and rootfs still read-only"
+    },
+    {
+      "trial": "o",
+      "actualResultSha256": "6f3c69f7c166a7c0f9d9f2ca20ca67662babfc30dc84cb76beffc0cd546f0735",
+      "controllerSha256": "a7c95cf6c6d6e837e5c1bb26147e0da061115d4f0585abada7a32c09ebb85e35",
+      "innerSha256": "8aedbab26166af475e099ba89476c5b1d9ed0786c43faff5ba5d4717e8b0a5b5",
+      "passedSingleCase": false,
+      "failureType": "TimeoutError",
+      "seconds": 76.456,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1396867072,
+        "memoryCurrentBytes": 1166274560,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10149888,
+          "file": 1147871232,
+          "shmem": 0,
+          "kernel": 7352320,
+          "kernel_stack": 0,
+          "pagetables": 253952,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 1027559424,
+          "active_file": 119713792,
+          "slab_reclaimable": 6786664,
+          "slab_unreclaimable": 188096
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 82,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 1 MiB config tmpfs only; home and browser binaries still read-only"
+    },
+    {
+      "trial": "p",
+      "actualResultSha256": "19f1cddc83301fd6f151cf3feccc0272514e8fed02729b65b43bbbfd3826b898",
+      "controllerSha256": "08b07348bfd93e753dc8f137272772002ab727fb7a89b7ee362efe1e102253b8",
+      "innerSha256": "c5d198ba8ddc61767098abb87ac5485ad73a6ac7c1438bbc9065a7b85b1a552d",
+      "passedSingleCase": true,
+      "failureType": null,
+      "seconds": 8.01,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1611137024,
+        "memoryCurrentBytes": 1144852480,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 439,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10170368,
+          "file": 1126027264,
+          "shmem": 0,
+          "kernel": 8044544,
+          "kernel_stack": 0,
+          "pagetables": 258048,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 221184,
+          "file_writeback": 0,
+          "inactive_file": 884293632,
+          "active_file": 241737728,
+          "slab_reclaimable": 7291240,
+          "slab_unreclaimable": 382208
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 178,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "read generated home path metadata only after the single case; no file contents"
+    },
+    {
+      "trial": "q",
+      "actualResultSha256": "715694ce08328b8555942067e22b7f79ece7f54e77a1faf6d90d6fbf7a300a69",
+      "controllerSha256": "a7781dfda8eab29ef3758f363bc6aecfb1ba2e56eb79afe791971939027fead2",
+      "innerSha256": "b2d1f738aee08e51ee7162ccfa2dbcbee97cd2ff8a989c8ce0f43810375fffef",
+      "passedSingleCase": true,
+      "failureType": null,
+      "seconds": 8.315,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1611198464,
+        "memoryCurrentBytes": 1106169856,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 581,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 11575296,
+          "file": 1085693952,
+          "shmem": 0,
+          "kernel": 8122368,
+          "kernel_stack": 0,
+          "pagetables": 262144,
+          "sock": 0,
+          "file_mapped": 6950912,
+          "file_dirty": 196608,
+          "file_writeback": 0,
+          "inactive_file": 813613056,
+          "active_file": 272084992,
+          "slab_reclaimable": 7297176,
+          "slab_unreclaimable": 448648
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 178,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 1 MiB non-dot camoufox app directory only; home/rootfs/browser binaries still read-only"
+    },
+    {
+      "trial": "r",
+      "actualResultSha256": "c90029a32d28c561cdad18867435e05037496d96cd5412206104ed8f1a19c89f",
+      "controllerSha256": "c8cd37ac7059f4a619f3ae8c99abe64678ddd4abb58c0a53b430e0257ae23f0d",
+      "innerSha256": "3537911ffa03975f24a19ad963c3144ba57f68ec9fd831c06778f2671565349f",
+      "passedSingleCase": true,
+      "failureType": null,
+      "seconds": 11.118,
+      "actualResources": {
+        "scope": "real Camoufox generated routing primitives only, no JAR or business fix acceptance",
+        "kernel": "6.18.33.2-microsoft-standard-WSL2",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 1611218944,
+        "memoryCurrentBytes": 1042767872,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryEvents": {
+          "low": 0,
+          "high": 751,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 10174464,
+          "file": 1024032768,
+          "shmem": 0,
+          "kernel": 8019968,
+          "kernel_stack": 0,
+          "pagetables": 258048,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 221184,
+          "file_writeback": 0,
+          "inactive_file": 681312256,
+          "active_file": 342720512,
+          "slab_reclaimable": 7303448,
+          "slab_unreclaimable": 337344
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 167,
+        "pidsCurrent": 1,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "ownedContainersRemaining": 0,
+      "difference": "private 1 MiB non-dot camoufox app directory only; cache/home/browser/rootfs still read-only"
+    }
+  ]
+}

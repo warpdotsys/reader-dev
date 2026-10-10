@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-03",
+  "scope": "Generated TXT and three EPUB fixtures in a dedicated loopback-only test instance",
+  "privateBookRead": false,
+  "productionChanged": false,
+  "before": {
+    "jarSha256": "9fc21e5b49fbebb23b1f706f206ba86042aad5189b03374cb1363fc140462f5d",
+    "controlledOldPostHeld": true,
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0,
+    "seconds": 18.007,
+    "failure": "New chapter read overtook an unresolved old progress POST",
+    "reportSha256": "a65e4875e9e5b8f3a0aa81b4f8e8297d24cf7e6cd1c20deebb11db6e16128a4a"
+  },
+  "after": {
+    "jarSha256": "74fbd5a5a4b77a78352b54e82dc446590197eb99ffe2a96495acff7834084306",
+    "controlledOldPostHeld": true,
+    "tests": 1, "skipped": 0, "failures": 0, "errors": 0,
+    "seconds": 21.637,
+    "reportSha256": "51358700e067346185f7ee1f1d1b42cdf50d4051c1e7bd7031dc25defe1dfd91",
+    "generatedNavScreenshotSha256": "c17b6cb0f50a185b47a5bf267da963479d9504d5b1c373b624bcbfe1c1985682",
+    "screenshotVisuallyReviewed": true
+  },
+  "frontendUnitTests": {"tests": 155, "passed": 155, "failed": 0, "skipped": 0},
+  "pythonUnitTests": {"tests": 45, "passed": 45},
+  "hostedBaseline": {
+    "sourceCommit": "e99982e87a943fe581f2143ef8edd3233736a20a",
+    "uiRun": "https://github.com/warpdotsys/reader-dev/actions/runs/37113117920",
+    "corePassed": 9, "coreFailed": 1,
+    "failure": "Expected durChapterIndex=1, observed 0 after new content was read",
+    "secureFileAndSubdirectorySkipped": true
+  },
+  "limitations": [
+    "A local fix pass is not a fresh GitHub runner pass or a production deployment",
+    "Original JAR comparison is recorded separately, not inferred from approximate source",
+    "Lost responses with late backend writes, cross-device progress and dedicated audio/video UI journeys remain unverified"
+  ]
+}

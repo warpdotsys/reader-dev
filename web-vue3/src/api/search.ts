@@ -1,5 +1,5 @@
 import { post } from './request'
-import { useUserStore } from '@/stores/user'
+import { readerRequestContext } from './requestContext'
 import { openSSEPost } from './sse'
 import type { ReturnData, SearchBook } from '@/types'
 
@@ -90,7 +90,7 @@ export function searchBookMultiSSE(
   params: SearchSSEParams,
   cbs: SearchSSECallbacks,
 ): Promise<SearchSSEHandle> {
-  const token = useUserStore().accessToken
+  const context = readerRequestContext()
   const body: Record<string, unknown> = { key: params.key }
   if (params.bookSourceGroup !== undefined) body.bookSourceGroup = params.bookSourceGroup
   if (params.lastIndex !== undefined) body.lastIndex = params.lastIndex
@@ -98,5 +98,5 @@ export function searchBookMultiSSE(
   if (params.concurrentCount !== undefined) body.concurrentCount = params.concurrentCount
   if (params.exact) body.key = `=${params.key}`
 
-  return openSSEPost('/reader3/searchBookMultiSSE', body, cbs, token)
+  return openSSEPost('/reader3/searchBookMultiSSE', body, cbs, context.params.accessToken ?? null, context)
 }

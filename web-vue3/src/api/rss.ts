@@ -11,31 +11,31 @@ export function saveRssSource(source: RssSource): Promise<ReturnData<null>> {
   return post<null>('/saveRssSource', source)
 }
 
-/** POST /reader3/deleteRssSource：删除订阅源（body { rssSourceUrl }） */
-export function deleteRssSource(rssSourceUrl: string): Promise<ReturnData<null>> {
-  return post<null>('/deleteRssSource', { rssSourceUrl })
+/** POST /reader3/deleteRssSource：legacy 按完整 RssSource 实体反序列化后以 sourceUrl 匹配。 */
+export function deleteRssSource(source: RssSource): Promise<ReturnData<string>> {
+  return post<string>('/deleteRssSource', source)
 }
 
 /**
- * GET /reader3/getRssArticles：订阅源文章列表（params rssSourceUrl + page，分页；hasRead 已读标记）。
+ * GET /reader3/getRssArticles：订阅源文章列表（params sourceUrl + sortName + sortUrl + page）。
  * sortUrl 为 legacy sortUrl 多段 `名称::地址` 中的分类 URL——传该段后后端抓对应分类 feed。
  * 后端每次调用会重新抓取 feed——「刷新全部」即逐源循环调此接口（silent 模式不弹全局提示）。
  */
 export function getRssArticles(
-  rssSourceUrl: string,
+  sourceUrl: string,
   page = 1,
   sortUrl?: string,
+  sortName?: string,
   opts?: RequestOptions,
 ): Promise<ReturnData<RssArticle[]>> {
-  return get<RssArticle[]>('/getRssArticles', { rssSourceUrl, page, sortUrl }, opts)
+  return get<RssArticle[]>('/getRssArticles', { sourceUrl, sortName, sortUrl, page }, opts)
 }
 
-/** POST /reader3/markRssArticleRead：标记文章已读/未读（body { articleUrl, read }） */
-export function markRssArticleRead(articleUrl: string, read: boolean): Promise<ReturnData<null>> {
-  return post<null>('/markRssArticleRead', { articleUrl, read })
-}
-
-/** GET /reader3/getRssArticle：文章正文（data: { content }，content 为 HTML） */
-export function getRssArticle(url: string): Promise<ReturnData<{ content: string }>> {
-  return get<{ content: string }>('/getRssArticle', { url })
+/** GET /reader3/getRssContent：正文直接作为 data 字符串返回。 */
+export function getRssContent(
+  sourceUrl: string,
+  link: string,
+  origin: string,
+): Promise<ReturnData<string>> {
+  return get<string>('/getRssContent', { sourceUrl, link, origin })
 }

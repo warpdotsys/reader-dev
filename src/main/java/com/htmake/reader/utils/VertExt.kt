@@ -202,25 +202,27 @@ fun getStorage(vararg name: String, ext: String = ".json"): String?  {
     val path = getRelativePath(*name.copyOfRange(0, name.size - 1), "$filename$ext")
     val file = File(storagePath, path)
     logger.info("Read file from storage name: {} path: {}", name, file.absoluteFile)
-    if (!file.exists()) {
-        val content = readMongoFile(path)
-        if (!content.isNullOrEmpty()) {
-            if (!file.parentFile.exists()) {
-                file.parentFile.mkdirs()
-            }
-            file.createNewFile()
-            file.writeText(content)
-            return content
-        }
-        return null
-    }
-
     val lock = storageLock(file)
     var acquired = false
     try {
         acquired = lock.readLock().tryLock(10, TimeUnit.SECONDS)
         if (!acquired) {
             throw Exception("读取文件超时: ${file.absolutePath}")
+        }
+        // saveStorage holds this lock while moving the old file to its backup
+        // and installing the replacement. Existence is part of the protected
+        // read, otherwise that small window looks like a missing user registry.
+        if (!file.exists()) {
+            val content = readMongoFile(path)
+            if (!content.isNullOrEmpty()) {
+                if (!file.parentFile.exists()) {
+                    file.parentFile.mkdirs()
+                }
+                file.createNewFile()
+                file.writeText(content)
+                return content
+            }
+            return null
         }
         var content = file.readText()
         if (content.isEmpty()) {
@@ -430,6 +432,19 @@ fun getStorageFile(vararg name: String, ext: String = ".json"): File {
     val filename = name.last()
     val relativePath = getRelativePath(*name.copyOfRange(0, name.size - 1), "${filename}${ext}")
     return File(storagePath, relativePath)
+}
+
+/** Hold the same reentrant file lock across a complete read/modify/write operation. */
+fun <T> withStorageWriteLock(vararg name: String, action: () -> T): T {
+    val lock = storageLock(getStorageFile(*name)).writeLock()
+    if (!lock.tryLock(10, TimeUnit.SECONDS)) {
+        throw IllegalStateException("存储修改超时")
+    }
+    try {
+        return action()
+    } finally {
+        lock.unlock()
+    }
 }
 
 private fun storageLock(file: File): ReadWriteLock {

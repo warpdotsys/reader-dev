@@ -4,7 +4,10 @@ import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.TxtTocRule
 import io.legado.app.help.DefaultData
+import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.utils.EncodingDetect
+import io.legado.app.utils.GSON
+import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.StringUtils
 import io.legado.app.utils.Utf8BomUtils
@@ -354,9 +357,17 @@ class TextFile(private val book: Book) {
      * 获取启用的目录规则
      */
     private fun getTocRules(): List<TxtTocRule> {
-        return DefaultData.txtTocRules.filter {
-            it.enable
-        }
+        // JAR 内置规则始终可用；恢复工程新增的用户规则沿用
+        // storage/data/<namespace>/txtTocRule.json，以便导入/备份数据生效。
+        val customRules = kotlin.runCatching {
+            val namespace = book.getUserNameSpace()
+            val file = java.io.File(ReaderAdapterHelper.getAdapter().getWorkDir(
+                "storage", "data", namespace, "txtTocRule.json"
+            ))
+            if (file.isFile) GSON.fromJsonArray<TxtTocRule>(file.readText()).getOrNull() ?: emptyList()
+            else emptyList()
+        }.getOrElse { emptyList() }
+        return (DefaultData.txtTocRules + customRules).filter { it.enable }
     }
 
 }

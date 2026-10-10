@@ -1,0 +1,2866 @@
+{
+  "schemaVersion": 1,
+  "sourceHead": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+  "testedMergeRevision": "53bf73d680045744ece5db080b0710bb9004a228",
+  "baseRevision": "c0bb51ab19d9ef579cbed372f8a25f00dab4022d",
+  "scope": "actual hosted async Reader API acceptance including two native producers, reloads, and both publisher imports",
+  "runs": [
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-06T07:12:47Z",
+      "event": "pull_request",
+      "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+      "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262849",
+      "id": 37428262849,
+      "name": "Java Kotlin CI",
+      "path": ".github/workflows/ci.yml",
+      "status": "completed",
+      "updated_at": "2026-10-06T07:14:59Z"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-06T07:12:47Z",
+      "event": "pull_request",
+      "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+      "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262826",
+      "id": 37428262826,
+      "name": "Vue 3 preview build",
+      "path": ".github/workflows/vue3-preview.yml",
+      "status": "completed",
+      "updated_at": "2026-10-06T07:17:10Z"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-06T07:12:47Z",
+      "event": "pull_request",
+      "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+      "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262830",
+      "id": 37428262830,
+      "name": "Browser image integration",
+      "path": ".github/workflows/browser-image.yml",
+      "status": "completed",
+      "updated_at": "2026-10-06T07:21:13Z"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-06T07:12:47Z",
+      "event": "pull_request",
+      "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+      "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262965",
+      "id": 37428262965,
+      "name": "Native release artifact rehearsal",
+      "path": ".github/workflows/release-native.yml",
+      "status": "completed",
+      "updated_at": "2026-10-06T07:29:36Z"
+    }
+  ],
+  "strictAsyncReaderGuardPassed": true,
+  "fullImage": {
+    "budget": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.17.0-1022-azure",
+      "memoryCurrentBytes": 344113152,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 848875520,
+      "pidsCurrent": 38,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 197,
+      "scope": "one full Reader image; sequential probes plus four-account burst",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 1073741824
+    },
+    "synthetic": {
+      "searches": [
+        {
+          "key": "alice-first",
+          "count": 1
+        },
+        {
+          "key": "bob-first",
+          "count": 1
+        },
+        {
+          "key": "alice-second",
+          "count": 1
+        },
+        {
+          "key": "alice-third",
+          "count": 1
+        }
+      ],
+      "cookieSequence": [
+        "",
+        "",
+        "session=alpha==",
+        ""
+      ],
+      "legacyReferenceCases": [
+        {
+          "case": "script",
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "targetRequest": {
+            "httpMethod": "GET",
+            "body": null,
+            "testHeader": null
+          }
+        },
+        {
+          "case": "post",
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "targetRequest": {
+            "httpMethod": "POST",
+            "body": "q=post",
+            "testHeader": "synthetic"
+          }
+        }
+      ],
+      "asyncReaderCases": [
+        {
+          "case": "get",
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "nameMatches": true,
+          "authorMatches": true,
+          "bookUrlMatches": true,
+          "targetRequest": {
+            "httpMethod": "GET",
+            "body": null,
+            "testHeader": null
+          },
+          "targetCookie": "",
+          "scriptMarkCount": 1,
+          "scriptMarkCookie": "asyncOnly=generated"
+        },
+        {
+          "case": "post",
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "nameMatches": true,
+          "authorMatches": true,
+          "bookUrlMatches": true,
+          "targetRequest": {
+            "httpMethod": "POST",
+            "body": "q=async",
+            "testHeader": "async"
+          },
+          "targetCookie": "asyncOnly=generated",
+          "scriptMarkCount": 1,
+          "scriptMarkCookie": ""
+        }
+      ],
+      "asyncCookieCleanup": {
+        "sameUserNextRequestCookie": "",
+        "sameUserNextRequestCount": 1,
+        "deletedVerified": true
+      },
+      "concurrentRequests": 4,
+      "concurrentBookCounts": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "files": [
+      {
+        "sha256": "53fbec5aa285489d5db63d54c25f9dd45ef6fd4b798dfdd46d683ada97abbca0",
+        "file": "full-image/bundled-browser-resource-budget.json",
+        "bytes": 495
+      },
+      {
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+        "file": "full-image/bundled-browser-synthetic.json",
+        "bytes": 1377
+      }
+    ]
+  },
+  "xmlFilesVerified": 108,
+  "pngFilesDownloaded": 64,
+  "pngFilesVisuallyReviewed": 16,
+  "githubArchiveDigestsAreDeclaredNotLocallyRehashed": true,
+  "files": [
+    {
+      "file": "browser-camoufox/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2614,
+      "sha256": "dd28313cf828d8be78bec359617be31ccab29e4a36d557358bf1c86632e1128c",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "total": 15,
+      "executed": 15,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "chromium/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1903,
+      "sha256": "a4b46a940cd0c1c589d598f5986750f32ca91de6b01b704ac0ab9524580cdd22",
+      "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+      "total": 11,
+      "executed": 11,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "chromium/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 486,
+      "sha256": "20d1ff995d77814d47449e07f0229cd2185b0af8f3855940d771a41e4e23149f",
+      "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "chromium/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 1902,
+      "sha256": "87f963d4dae000ad11e483cd4da9b4854f312ef49ae65f22ff076c1bfe256778",
+      "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+      "total": 11,
+      "executed": 11,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+      "bytes": 16852,
+      "sha256": "97ffca5a072c3107aeffc5dffbffda538b5a532335e2db1489c5df688c96cdec",
+      "suite": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+      "total": 6,
+      "executed": 6,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+      "bytes": 1036,
+      "sha256": "502a6c82c2a462dd7b21cf412d01a0456c2303a0d833b3cc55c3df4a8eead7d9",
+      "suite": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+      "bytes": 3879,
+      "sha256": "5053dce65a76e0ba7930c17641516515978cc828deca1a015f2d617fe6f49f73",
+      "suite": "com.htmake.reader.api.controller.FileControllerPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+      "bytes": 862,
+      "sha256": "1c24778046f527ff4dde3d65305752b45cc1f90c94cd9bb8773d37cffff3d870",
+      "suite": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+      "total": 4,
+      "executed": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+      "bytes": 815,
+      "sha256": "7e073381825fbdeffbfee64608f8c0a9f9590bdf3b5ee7eefbd89dded8562d7a",
+      "suite": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+      "bytes": 609,
+      "sha256": "b13ed60f9ff202b0b5e53c2385ddc513b642e1730d5e8e7ef1a2fa82d23d4523",
+      "suite": "com.htmake.reader.api.controller.SourceScanCursorTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+      "bytes": 1163,
+      "sha256": "8adc5dafdb714004ee3a4e532ce00eed80085f0e60331551ea93be9c30774d6c",
+      "suite": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.entity.LicenseTest.xml",
+      "bytes": 562,
+      "sha256": "b3fd70b8c6c4816a078350455794e6817d719c946e4f27280fe31d82e1fde583",
+      "suite": "com.htmake.reader.entity.LicenseTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+      "bytes": 620,
+      "sha256": "1cdaa194e5d628540c7ad24e00e3938cb8ffdea422a42f5a420d2ee195656281",
+      "suite": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.ReaderApplicationTests.xml",
+      "bytes": 14355,
+      "sha256": "3ab16863f36b74520ca2227aebbcc74370c80aae7ec62ed5ae76b952b57bda6c",
+      "suite": "com.htmake.reader.ReaderApplicationTests",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+      "bytes": 3290,
+      "sha256": "8e2952fd5e3ecd41b34533bd71d8e570d5518eb33810400c01ccbc81d698e2ae",
+      "suite": "com.htmake.reader.utils.BrowserCookieJarTest",
+      "total": 20,
+      "executed": 20,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1899,
+      "sha256": "1bd14abafa0d0525a63d1266cd39d0f22cb3cd9f41593f8cde2d1c96d6bf92a1",
+      "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+      "total": 11,
+      "executed": 11,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+      "bytes": 1096,
+      "sha256": "c8b7c98517f0ddd0eacede39a527280846282c587e20f47b618d4d0981d8e5d1",
+      "suite": "com.htmake.reader.utils.BrowserEgressProxyTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+      "bytes": 982,
+      "sha256": "c1f591a0d7e8ebc8ae18792a5ce4056b54678a8a4ae04f8d3e739db5d7ad5ce7",
+      "suite": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+      "total": 4,
+      "executed": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+      "bytes": 1087,
+      "sha256": "3ae66c3804e3cf79a6d15ff426f9df734a36887670516071bb8f5d28a3e5799c",
+      "suite": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+      "bytes": 732,
+      "sha256": "82d71edc876ef97f12e23f7306b41e7d4b173fa864eec1ddf9ecdeb2584daa79",
+      "suite": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+      "bytes": 522,
+      "sha256": "75c4317f8bea42e5dc064e5b2da33cbc52cc42fd0c2cfea55eed7f30f2a21ee3",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+      "bytes": 510,
+      "sha256": "87d60bccbf58e4236f6093b115cd021476565249fc3321da78bc88090c12e840",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 3002,
+      "sha256": "ce772ab6484b3baf6a01ec3e19e63276750b48eff53fa915782ecde7639c89e6",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "total": 15,
+      "executed": 0,
+      "skipped": 15,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 486,
+      "sha256": "d8e59cbafe4a3ed30e1fb13dc55209cd7360d323d7c7393cc233f242245a1775",
+      "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+      "bytes": 477,
+      "sha256": "6d4f7a3be4aed2ef3910d3cc37e0606eeaa293c58651ade0349102ece46172d3",
+      "suite": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 2191,
+      "sha256": "d11ba80a6632c74ef39243d2c57081702d3e1ae029f03d66349a03554239d326",
+      "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+      "total": 11,
+      "executed": 0,
+      "skipped": 11,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+      "bytes": 474,
+      "sha256": "0342a969e2e6f28d5098a05af7535e7e73e385924b06734e7b7c3d9dc7c64aa1",
+      "suite": "com.htmake.reader.utils.RemoteWebviewContractTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+      "bytes": 6853,
+      "sha256": "573dc72b644fd8d7e9fa8dd7c07fbfdc882065fada7ec532660b12c6894c8d16",
+      "suite": "com.htmake.reader.utils.StorageReadConsistencyTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+      "bytes": 803,
+      "sha256": "5337ec7e1e30ddd9c23b30398838c138957e805b77480c1e8396df3903e68cfa",
+      "suite": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+      "bytes": 10456,
+      "sha256": "4565175bf7da9739110145368a286679d59f3c9c5e6ac11faf3dafea98cad38d",
+      "suite": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+      "bytes": 616,
+      "sha256": "11b3be2bc504883497ebf2dc27d474aa10038eab2d7bed1eb40ee18bdbde5b14",
+      "suite": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+      "bytes": 605,
+      "sha256": "d940a17dc2dd93a477f361147c07623d368263e0031c32087055bc814e9ba9f4",
+      "suite": "com.htmake.reader.WebResourceEncodingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+      "bytes": 482,
+      "sha256": "c1d37d271d9b6cb141cb1b6c3332655d2cd56dd2185ec7efa29f8244d6b2a30c",
+      "suite": "io.legado.app.data.entities.BookChapterSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+      "bytes": 1262,
+      "sha256": "df172536524d7bf305932f23a196e6a90e83fd7276e16113e58acb707eb2de4f",
+      "suite": "io.legado.app.data.entities.BookLocalEpubPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+      "bytes": 905,
+      "sha256": "551185ea3c0c50fff291d491ab6753b641ba6bef85fd7fe6d4da31f35e029660",
+      "suite": "io.legado.app.data.entities.BookLocalPdfPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+      "bytes": 480,
+      "sha256": "2650a848806c296b739648fdc813eccdd983b92fe84353620edce6dc4ff29502",
+      "suite": "io.legado.app.data.entities.RssArticleSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+      "bytes": 494,
+      "sha256": "705578ea4b9dbca317d1517dd3fc546ddfaaf31e34e2bf865ce0cd0dec46f582",
+      "suite": "io.legado.app.data.entities.RssSourceSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+      "bytes": 485,
+      "sha256": "733df216a1f16f6ce96d2c9f2ef3dd7fcc84115c74bd496e8a4116cd8a9ecd6e",
+      "suite": "io.legado.app.data.entities.SearchBookSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+      "bytes": 633,
+      "sha256": "b5e195d9750ace0cb9654445d93f741e4bf89a26c8b32c41a91d66e0bd51ed37",
+      "suite": "io.legado.app.model.localBook.TextFileContentTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+      "bytes": 458,
+      "sha256": "2de5b0bd1d442b02cd2d2e35a25be0dae0c0b07b42828287a626980830a02e41",
+      "suite": "io.legado.app.model.rss.RssParserDefaultTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+      "bytes": 444,
+      "sha256": "275a638e16d43281bb78fee7ba52343edaf3985dc414e3a2c15702b15dce9d6f",
+      "suite": "io.legado.app.utils.EncoderUtilsTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+      "bytes": 575,
+      "sha256": "e93420779d5378711f78f09893f8463af470f68d448df051692b8d6081f4e1f2",
+      "suite": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+      "bytes": 501,
+      "sha256": "134d71fde2be9d746b092904214ae3dea2b75ce719f491df79f484a424afd529",
+      "suite": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+      "bytes": 1712,
+      "sha256": "3dad6bb882abf134d2d11b5500c40b3c9185e76804e12168a4694f02b87acdc5",
+      "suite": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+      "total": 10,
+      "executed": 10,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "java/TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+      "bytes": 590,
+      "sha256": "75ee039b1aadb6982e00ba4e9c8bf0669cf2f74de103039683d600861577f6cc",
+      "suite": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-camoufox/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2619,
+      "sha256": "9da39cd0ec46d678b9260b79cc9f9c346deca4008f63eda00dd2c781cad45e50",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "total": 15,
+      "executed": 15,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+      "bytes": 16853,
+      "sha256": "e7229ae02e45952d2dc3f1b629d15a936d371be0be629acc8d7e63cd368d508a",
+      "suite": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+      "total": 6,
+      "executed": 6,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+      "bytes": 1038,
+      "sha256": "402504f3bd7841d61e2976cd5be9827d3a3b65b0e913972820816091c6485331",
+      "suite": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+      "bytes": 3880,
+      "sha256": "369123febb9d57d714decfa919b54e104ecf7e910bb21800a7660a2f0060a1fb",
+      "suite": "com.htmake.reader.api.controller.FileControllerPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+      "bytes": 862,
+      "sha256": "2294b9c2bd6ae4037bd15c414494a038640307acf7a2b44b1618724bca95dde2",
+      "suite": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+      "total": 4,
+      "executed": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+      "bytes": 813,
+      "sha256": "54f6e63b9a5edbcc25780f30b9756555f4d0eabe786aacd61af808f212892466",
+      "suite": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+      "bytes": 609,
+      "sha256": "480ed358bb147bca64e5b67ccfbd07ba6e48e93e0cbe16bb7095be0a0ca571a7",
+      "suite": "com.htmake.reader.api.controller.SourceScanCursorTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+      "bytes": 1163,
+      "sha256": "73ae7dbb2ad3ebe17f9507417bdad34724056d3155c8eadb7227e378ed9774bd",
+      "suite": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.entity.LicenseTest.xml",
+      "bytes": 563,
+      "sha256": "9ba449d76a39c329c9ae96d7266f1fb0c0e0015c5e2a9615304fb8d8ac487eec",
+      "suite": "com.htmake.reader.entity.LicenseTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+      "bytes": 622,
+      "sha256": "5579201bc006b745d8474097f2c0b0f51d3a9b684ce2ee685d74c3cb37887453",
+      "suite": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.ReaderApplicationTests.xml",
+      "bytes": 14355,
+      "sha256": "57e18a89532f7b88bb0195fd21287a9ff320f0bb15d36d79e01e7fa3c3877184",
+      "suite": "com.htmake.reader.ReaderApplicationTests",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+      "bytes": 3291,
+      "sha256": "1aeff202ec4d2eedff95b443f9907f9d7e2ecfdd3d2d357ce8e0f00bbc0a2735",
+      "suite": "com.htmake.reader.utils.BrowserCookieJarTest",
+      "total": 20,
+      "executed": 20,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+      "bytes": 1903,
+      "sha256": "17ae2dde2dda70fb8f6e24bddb856d198a57dd63508dd2a65038633cc6edb98a",
+      "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+      "total": 11,
+      "executed": 11,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+      "bytes": 1096,
+      "sha256": "f3d642bbfa9cf8849321cff043d7b6c932f12c0d0005ffce3a41df2255467355",
+      "suite": "com.htmake.reader.utils.BrowserEgressProxyTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+      "bytes": 984,
+      "sha256": "60411a269ba3970785f156a1cd18b3c13b5f27a1db1bbcd3daadb954d729f868",
+      "suite": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+      "total": 4,
+      "executed": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+      "bytes": 1086,
+      "sha256": "b3222068b803989354f778f1dc23e2d99663873875df3aa32333c89730c6b13e",
+      "suite": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+      "total": 5,
+      "executed": 5,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+      "bytes": 736,
+      "sha256": "f431bfdea1738d80363748c4cdc63506b53c8e09dae6ba36baddbe08a53df285",
+      "suite": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+      "bytes": 522,
+      "sha256": "4131fdca87385463c302cad3f0ea3ba4f001badcd1b069aef80b490bb9f7e2e0",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+      "bytes": 508,
+      "sha256": "99dd74afd32501c6330232e288ae49c78a378208be4475ff9e2fc9363a661908",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 3006,
+      "sha256": "ce5c173c90c6189497db944086394e2d06c31dbeb7a14762fc55ebedc617339b",
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "total": 15,
+      "executed": 0,
+      "skipped": 15,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+      "bytes": 486,
+      "sha256": "45d87ee7af9b7648f2766a09526522423e78f666df6f98ae29016e06a6aac832",
+      "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+      "bytes": 477,
+      "sha256": "93aa55afd9cfe6314bec39ea4ad9bbd8e2dd282fa924ff935a73a1c4d3782b68",
+      "suite": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+      "bytes": 2195,
+      "sha256": "c7799f05cb5e61589689624b1d13f5aa050ff7759bc330bf245d451ab3ae4a73",
+      "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+      "total": 11,
+      "executed": 0,
+      "skipped": 11,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+      "bytes": 472,
+      "sha256": "15371f8b6b73ba83164cf754eacdfdbcbd4483cacd4dc060b12c465a896bfc1f",
+      "suite": "com.htmake.reader.utils.RemoteWebviewContractTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+      "bytes": 6850,
+      "sha256": "3197fd875b426b761f773deae8fb6dc869363f7ae68b4cb1972d3b292b0930db",
+      "suite": "com.htmake.reader.utils.StorageReadConsistencyTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+      "bytes": 803,
+      "sha256": "40c9575d08749ad98f7604983a7bda0be5a09b37a9ec35fe4d3f09c5c97ffaec",
+      "suite": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+      "total": 3,
+      "executed": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+      "bytes": 10456,
+      "sha256": "ea9d484c9d153626ee695e042019a40e32f360819dcf6adffce70e40ce90d5d9",
+      "suite": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+      "bytes": 615,
+      "sha256": "363472dbe3b8462d3819fe2c0bd9bee5e879572c0a5bbe8bcf35badabfc2d4c5",
+      "suite": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+      "bytes": 605,
+      "sha256": "1729379d1540d594e1ead8284ca8406ffa6b0adecc55887fcb19a01fdb743f1f",
+      "suite": "com.htmake.reader.WebResourceEncodingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+      "bytes": 482,
+      "sha256": "61c02d57425496b82ce92164bd4ceb51db60b4abe07280e2bebd18e89448c702",
+      "suite": "io.legado.app.data.entities.BookChapterSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+      "bytes": 1262,
+      "sha256": "650f1718faf738c2d40ee3eb4b1b38c90e77fd36f7d65944b6cd85019c7c3807",
+      "suite": "io.legado.app.data.entities.BookLocalEpubPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+      "bytes": 905,
+      "sha256": "a174d7d82383c3cece54d6eaf5c99e78fd402df03f0cde04e328329bf678ad0c",
+      "suite": "io.legado.app.data.entities.BookLocalPdfPathTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+      "bytes": 484,
+      "sha256": "b1c1dfe77bab4159209f578286423b5a1df4437a4c13a60e18cda28057b2f9a6",
+      "suite": "io.legado.app.data.entities.RssArticleSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+      "bytes": 494,
+      "sha256": "9230e9ccacbc59bda93ae9d415c6c45fbb69067e12acc8833ce4398c91f92a04",
+      "suite": "io.legado.app.data.entities.RssSourceSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+      "bytes": 485,
+      "sha256": "15e4008d9cf242b93c7ed6fe905471752195fb886c3ec1c272a4f8fac0c3c615",
+      "suite": "io.legado.app.data.entities.SearchBookSerializationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+      "bytes": 633,
+      "sha256": "bb6b9c37e7ab0a366e50d22c3df943dab158bb2fe429afb0eab0e4856e35eb96",
+      "suite": "io.legado.app.model.localBook.TextFileContentTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+      "bytes": 458,
+      "sha256": "b39302d4d0b549f168f422c641b7daf0eff3bcc5b7d592354d5a44b150f98356",
+      "suite": "io.legado.app.model.rss.RssParserDefaultTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+      "bytes": 444,
+      "sha256": "03e285de9499abafd2ca1a9378bb432f87bb18b285dd7096ba1246b0a5d32364",
+      "suite": "io.legado.app.utils.EncoderUtilsTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+      "bytes": 575,
+      "sha256": "aedca25b7361715dece3a7d06ea9bf6f13e0986d2a07337dee2d51e189d091aa",
+      "suite": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+      "bytes": 501,
+      "sha256": "090c16c95fb2002712eb6766912531b31ec5da23a5f9b7f9d9b8e20e7a94ffc8",
+      "suite": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+      "bytes": 1710,
+      "sha256": "c98ca9274037de647750318583626a2d0d2f9ba5f3474147a0610f0f7d549db0",
+      "suite": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+      "total": 10,
+      "executed": 10,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "release-java/TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+      "bytes": 590,
+      "sha256": "bef2aa5e478f1c0655977f56fc3f8c0b66a7a9c1ed2dbfbaeeffd2d5f435b32e",
+      "suite": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+      "total": 2,
+      "executed": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+      "bytes": 487,
+      "sha256": "f6f4a09fab1b48e703515e9f09dd983ca58b6eac2efe7664d0dba40a0b9988b1",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+      "bytes": 1009,
+      "sha256": "5bf187370f79a9cba3757276b0be56da43a303890f0313fbcc6917dd8d4ea1e9",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+      "bytes": 656,
+      "sha256": "0dda7cc7073b8ee421414d04d31f02f699c3c0d5a83d999947e3e7062b74907b",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+      "bytes": 463,
+      "sha256": "8d0cec117404fd5e00923693ddb48392ee758a887ef0a2eda14e2ae6f9a491a9",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+      "bytes": 483,
+      "sha256": "99f4990defb2a889554938e0b254ea008871b4bc4886a86c0ba0b8bc3452d611",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+      "bytes": 518,
+      "sha256": "4d5d4c02c07c4b6a065fe46115c09da61ddce1f86cdae92197114d23ca1dcde8",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+      "bytes": 614,
+      "sha256": "357d518b4f4d15401110b1d582d9a7d67076081e153cc112d8e6d53f4fb8d1db",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+      "bytes": 690,
+      "sha256": "f906caed436774a5324caf7dbaedb6c79b5e5f05031d466b6f45e426d23f0e7c",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+      "bytes": 478,
+      "sha256": "774ea136a2d3005b8c4e6d3018fccd534908774cbd719753e52cc765a2879125",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+      "bytes": 633,
+      "sha256": "999b237b6d57def6c9bd43a98b2af7f38b8bd755d89493a782e603ee86c563d5",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+      "bytes": 478,
+      "sha256": "364110b9be2856fc88eb74a3062089ef28e686b6c6f040b212d29927c017bb64",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+      "bytes": 496,
+      "sha256": "ff7704b38cd87821d66d17a0998a9f397ab14ce7d4f326d81706526ebc44d846",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+      "bytes": 469,
+      "sha256": "1b0ba6fa00cf99afa0ad70681e8e5e63fd2b690690bc2f063f95b8f5bc5f48c9",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+      "bytes": 845,
+      "sha256": "8de9b09aac99f674fa332bb44ebc25aeea1f48d744e985a0f9c054808a38d589",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+      "bytes": 497,
+      "sha256": "6a87dde7729c7eba35d29bcb2c0f5ca78f06493d879a6452b022d3a4eadf9f26",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+      "bytes": 733,
+      "sha256": "dd8229f0c04ff1a05212cb408b7866e0ce5173c6e6abbbd832173a08b36ca634",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+      "bytes": 480,
+      "sha256": "7694277ef84d00c18373319a8ce509d3b38d59bebd2e101e1bd4d82a2c91358e",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+      "bytes": 481,
+      "sha256": "5a57d6aed1e4caf52ed4fb7c2073f7eabaa80c132633023d54dbc832de1b82cc",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-login-bottom.png",
+      "bytes": 19930,
+      "sha256": "c53f7ee59fc288d65afae8b1e4fd79b5737d776a7f129cd851b5d887bcb7242d",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-login-full.png",
+      "bytes": 33531,
+      "sha256": "e11dbb766c8dc38aa4ca80ca1a27abde6a078594b853fd795d759b07f4187c0e",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-login-top.png",
+      "bytes": 17471,
+      "sha256": "312e60fc3a45b02fff599049ca1ceff4d4c6999888625a9d8a14153842d9af1a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-register-bottom.png",
+      "bytes": 21685,
+      "sha256": "aff142fbb72764e52749f15328d34ff1ba01025671489e61c5d230a5223a8d9a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-register-full.png",
+      "bytes": 38358,
+      "sha256": "ec9ad716ec7f9f40ab52f66bbb55425127d1bf200b945cd36003306c60e7a1ce",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x480-register-top.png",
+      "bytes": 17470,
+      "sha256": "ef32021424c6026ffa286fb7b9f2fa4c033c87db9cccdd2795e028672ac94740",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-login-bottom.png",
+      "bytes": 30615,
+      "sha256": "528c278a2d04076a7bfcfc2d9fc89487c74cbd2646ce0720c399ee3b860eef3e",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-login-full.png",
+      "bytes": 33531,
+      "sha256": "e11dbb766c8dc38aa4ca80ca1a27abde6a078594b853fd795d759b07f4187c0e",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-login-top.png",
+      "bytes": 30135,
+      "sha256": "6466d2071eed5d130496592f08316d1379d14a8adbff17963a7c7a95e535df71",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-register-bottom.png",
+      "bytes": 29116,
+      "sha256": "73c1cc191c4243351ea4af6b06787561aa2f9c466634210a5ea21fd49167ece7",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-register-full.png",
+      "bytes": 38358,
+      "sha256": "ec9ad716ec7f9f40ab52f66bbb55425127d1bf200b945cd36003306c60e7a1ce",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x720-register-top.png",
+      "bytes": 31497,
+      "sha256": "6c03fb8da517dce303b9f7bab951bb1a691915f9a966c4ad4bf18b356964cc5b",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-login-bottom.png",
+      "bytes": 34204,
+      "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-login-full.png",
+      "bytes": 34204,
+      "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-login-top.png",
+      "bytes": 34204,
+      "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-register-bottom.png",
+      "bytes": 38205,
+      "sha256": "55987e28d362450a407d51d1b7ac77fe44d8d7a21904e17313583bb84109477d",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-register-full.png",
+      "bytes": 38358,
+      "sha256": "ec9ad716ec7f9f40ab52f66bbb55425127d1bf200b945cd36003306c60e7a1ce",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-1280x900-register-top.png",
+      "bytes": 38205,
+      "sha256": "ec8d5f111ae78310494e33269caf31a7296428a54ea57e0ae0ee11e7964867f2",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-login-bottom.png",
+      "bytes": 18599,
+      "sha256": "dc2826d958c549ec1f347a123b496f17bc4d6148cdd0199f1121af80d3cf7ee6",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-login-full.png",
+      "bytes": 28287,
+      "sha256": "abdcc94a3932f960224e1f4a54445ef73f144fa3750e00fcca13e7bf37713fd8",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-login-top.png",
+      "bytes": 20430,
+      "sha256": "14140ee5125c126fdbdf1fc2c982ee12796f460590b03d04960b3618082a770c",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-register-bottom.png",
+      "bytes": 20929,
+      "sha256": "9f50b4c87a3026bcd1a49daf5a0ec917150341ebfd4b880c9b7ca798f58c381e",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-register-full.png",
+      "bytes": 32251,
+      "sha256": "0f7bdd276eab4094a3c24ff1a19e2763af8dbe184576373cbaea7a42f0a7af0d",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-320x568-register-top.png",
+      "bytes": 16767,
+      "sha256": "f7881e5b2650518d116e44ab154b4ff042017b36c40df0236e69031b8dd22213",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-login-bottom.png",
+      "bytes": 12835,
+      "sha256": "58ed77887bf9a030f5f04f81298ebbb7f8ed2d6cfaf875bc1da18a09fc66e4af",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-login-full.png",
+      "bytes": 28784,
+      "sha256": "0379cc38414ad22990a9e4926ea90ef0549ae2f4d66951542fa9b2566c96e2cb",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-login-top.png",
+      "bytes": 11596,
+      "sha256": "c7839d9bd5f30982d443f56ade8fc542ef0b615493887b60cd9f6d8df1a62c3d",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-register-bottom.png",
+      "bytes": 13520,
+      "sha256": "ea1b59740c6e31489f37feed60fb87031b1269427aeb88e967159fcb26951b99",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-register-full.png",
+      "bytes": 32965,
+      "sha256": "efd3489e39e36dfc983d338fcbc251e3bd8445df32ba61546ed3d63caf58e790",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x320-register-top.png",
+      "bytes": 11596,
+      "sha256": "c875c75b5b3329669f2d6f01f4c58ba5fe682f57c5f84054234ae5b69ce2a29a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-login-bottom.png",
+      "bytes": 21795,
+      "sha256": "b3cc075030cebfc8ec01548c1f88713fa7a3068459c77026da0cf4329a5b9323",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-login-full.png",
+      "bytes": 28784,
+      "sha256": "0379cc38414ad22990a9e4926ea90ef0549ae2f4d66951542fa9b2566c96e2cb",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-login-top.png",
+      "bytes": 22771,
+      "sha256": "752dd8d1f1fa8dddf2bb46f2cc043a1b8e681a7d553896e30ee5b79f2724de2b",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-register-bottom.png",
+      "bytes": 22680,
+      "sha256": "ceb03f77cd16336446ef62893c21d251e4598b4c102ee20e8a3ec71692a4a183",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-register-full.png",
+      "bytes": 32965,
+      "sha256": "efd3489e39e36dfc983d338fcbc251e3bd8445df32ba61546ed3d63caf58e790",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-360x640-register-top.png",
+      "bytes": 21554,
+      "sha256": "c4df165e4700a8b104e2b384b67fe3e504903ad86ac4a1c45df3385748c3bf59",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-login-bottom.png",
+      "bytes": 29431,
+      "sha256": "a55bf0d283861200924ce6ba2ba7ee098f3701f619c427aee81cc5a3642ec5e7",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-login-full.png",
+      "bytes": 29431,
+      "sha256": "a55bf0d283861200924ce6ba2ba7ee098f3701f619c427aee81cc5a3642ec5e7",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-login-top.png",
+      "bytes": 29431,
+      "sha256": "a55bf0d283861200924ce6ba2ba7ee098f3701f619c427aee81cc5a3642ec5e7",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-register-bottom.png",
+      "bytes": 32677,
+      "sha256": "e4b9c917802987b34994d9b4f4e6c484ede97c98e8078af1461bb7f2f1d97aff",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-register-full.png",
+      "bytes": 33205,
+      "sha256": "fdcfee28bf22102492d87082f2a76ae1a6950213424fd4eba916246af50c1395",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-390x844-register-top.png",
+      "bytes": 31830,
+      "sha256": "c3bd7de851f1efeec6bb6af2029ba31644ae0ccb0a1d3a2a59c226ebcb3ceb8b",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-login/vue3-login-layout-generated-geometry.json",
+      "bytes": 2421,
+      "sha256": "95d967bab2a80ae02fbce3f349acd117e374bfb2324d73eacfbb225b21dd3abe"
+    },
+    {
+      "file": "vue3-logout/vue3-logout-generated-first-button.png",
+      "bytes": 8993,
+      "sha256": "65e6d74e1b31056bf2871c0b6f79388d4bf4bea324c83eef36034e5267d7cf50",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-logout/vue3-logout-generated-offline-local-only.png",
+      "bytes": 39781,
+      "sha256": "357ec0e8911ed07220763877521b2220bd72a62ba3cb972073bfd1b9eadd15eb",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-logout/vue3-logout-generated-remembered-survives.png",
+      "bytes": 44610,
+      "sha256": "059c1370276ee4727fa7599106062b2a10dc1f245b21bc1ecda6b6ddebdcaf3a",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/reader-dev/reader-dev/browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+      "bytes": 868,
+      "sha256": "567e621b8ebfb64973cdb20734f8f8db8f704d7e693e12e94eccb458fd9ab3eb",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-manager/reader-dev/reader-dev/browser-poc/build/test-results/test/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+      "bytes": 482,
+      "sha256": "3a8fd9e221adcf7e47d01e83c0034db03c4e4af7b4e6b1958aa35391e34d1bf5",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-authorized.png",
+      "bytes": 61107,
+      "sha256": "a9dbbc454a12c59ffedaa7adeaa659e9b61d2f940f05f9760fac589097065cdc",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-notices-manage-footer.png",
+      "bytes": 98731,
+      "sha256": "832c485b4055bce89f0bd475efdd980f17778188bb34714b3d2003920ac4564d",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-notices-narrow-short-before-scroll.png",
+      "bytes": 24924,
+      "sha256": "ea9f5eadf72524795f5b78e9d11d8f5154c08575ea46674acbf6a8c98a6e2e0c",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-notices-narrow-short.png",
+      "bytes": 24168,
+      "sha256": "af0d7127aa0496448e59f4e93a28f5f69c50239823bc63905cd8e3857017a1eb",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-notices-short.png",
+      "bytes": 37947,
+      "sha256": "c5f965a3a30decb20b706f3ca51bbfe5bfa169f04da9cb2047491dfcb0fd9979",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-own-offline.png",
+      "bytes": 65904,
+      "sha256": "62163663e9b8a8a9b028ec62e611a2bc602a1b507993e251407c45278bdd8163",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-permissions-narrow.png",
+      "bytes": 41448,
+      "sha256": "ee0d089078347be895aeddac3ecf4f95fabb703cbfbaa1e25bee8a506f07db00",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-manager/_temp/vue3-manager-generated-wrong-space-rejected.png",
+      "bytes": 50784,
+      "sha256": "5c051b2ed43bf40f033445f7f23de7a2c7e5f6b2a13eb2b743f4ab58e8a84b59",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-reading/vue3-epub-safety-mobile-synthetic.png",
+      "bytes": 44638,
+      "sha256": "bf327c692d6d5ad829711382fb9a45115d83c4d23b8b5458242f8946eb894f2d",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-reading/vue3-epub-safety-synthetic.png",
+      "bytes": 71763,
+      "sha256": "223488b8905e9473976fae035830fb652528d41464b72dda863fcdf22d5d60c2",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-budget-fallback-synthetic.png",
+      "bytes": 35545,
+      "sha256": "22f423b2ef1a090985571b90cb93173ac9c627c14509cfdc4c67f87917de206a",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-budget-synthetic.png",
+      "bytes": 33835,
+      "sha256": "342667223fe9aa994e11a7dc8772813b6b81a8e709cfa03d747aff92f7b41ac1",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-css-synthetic.png",
+      "bytes": 32088,
+      "sha256": "e7a7791f692440621d17e76a3df365af733ce553f1111ecd8577a16f164baecf",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-download-deadline-synthetic.png",
+      "bytes": 34610,
+      "sha256": "62d697f611b0fe672e82df2665986f6d4954d164a5925537446b20ec9ba0fc54",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-fragments-synthetic.png",
+      "bytes": 111624,
+      "sha256": "a9ef5272c383870cb4b91337ea85a6183093ba374a5d4f4f21b32ddbae04c249",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-nav-fragments-synthetic.png",
+      "bytes": 92736,
+      "sha256": "723e7ff1a2382183d39a1cb8b04b1511ac04c6cf35dec01ed4f5e7307b93f6a9",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-raw-synthetic.png",
+      "bytes": 90534,
+      "sha256": "88ad0d0d5f14d0f3cb3fdec1b78673243509568807ba623385ace08b0ecb61c4",
+      "visuallyReviewed": false
+    },
+    {
+      "file": "vue3-reading/vue3-local-reading-synthetic.png",
+      "bytes": 122696,
+      "sha256": "d9992b1e4653baaa2b3fe06719d6dff3f9906fd6d867b54af5d62bff744fe88a",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-shelf/vue3-shelf-layout-1135.png",
+      "bytes": 86269,
+      "sha256": "c16ae3a702978d422032f6a27c5c4482c7f6813e4cc75b0cc1fe914484e92bd2",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "vue3-subdir/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+      "bytes": 487,
+      "sha256": "71267de6cb045240d35706210238d5442d47af9000fcd1622c07eb61ff65588d",
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest",
+      "total": 1,
+      "executed": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "sha256": "53fbec5aa285489d5db63d54c25f9dd45ef6fd4b798dfdd46d683ada97abbca0",
+      "file": "full-image/bundled-browser-resource-budget.json",
+      "bytes": 495
+    },
+    {
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "file": "full-image/bundled-browser-synthetic.json",
+      "bytes": 1377
+    }
+  ],
+  "visualScope": {
+    "syntheticOnly": true,
+    "productionUIProven": false,
+    "allViewportsOrThemesProven": false,
+    "notes": [
+      "The inspected Chinese labels and generated EPUB text have readable glyphs.",
+      "The shelf hover screenshot shows content behind a sticky translucent header; the test may auto-scroll when hovering. An initial-position geometry check is still needed before calling it a layout defect.",
+      "The first logout screenshot is a transition frame, not proof that the login form failed to appear.",
+      "The EPUB safety mobile image is the generated malformed-archive rejection state, not a successful reading screen."
+    ]
+  },
+  "nativeConsumerPending": false,
+  "qidianAuthenticationOrChapterProven": false,
+  "originalJarOrArchivedPromiseParityProven": false,
+  "productionDeployed": false,
+  "userReports": {
+    "count": 58,
+    "changed": 0
+  },
+  "nativeStrictProof": {
+    "fourActualAsyncReportsVerified": true,
+    "typedVersionsAndLoadedImageIDsVerified": true,
+    "runningJarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+    "maxNativeMemoryPeakBytes": 842461184,
+    "maxNativePids": 211,
+    "fourRuntimeBudgetsPassed": true,
+    "allowedSwapBytes": 1073741824,
+    "actualSwapBytes": 0,
+    "legacyHttpAndNamespaceBurstVerified": true
+  },
+  "nativeConsumerFiles": [
+    {
+      "data": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 320212992,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 828493824,
+        "pidsCurrent": 40,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 204,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "sha256": "fe374a80aefa8c524ceeb2285a583a10d9dc514a8c46bb16d9719bbfe94c5c6d",
+      "bytes": 495,
+      "file": "amd64-BROWSER_RESOURCE_BUDGET.json"
+    },
+    {
+      "data": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377,
+      "file": "amd64-BROWSER_SYNTHETIC.json"
+    },
+    {
+      "data": {
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10"
+      },
+      "sha256": "8e27f9eadd3413756dafc7517ddc00d10e8f3e577225cef6d1790061e5080f19",
+      "bytes": 171,
+      "file": "amd64-JAR_IDENTITY.json"
+    },
+    {
+      "data": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "archiveSha256": "5613f2dd6ff3402de48f6f4929c0f3bf0a20871c51dc63b672887bcc098661b8",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      },
+      "sha256": "4faa13ed43e9c2f5e82a42087260104e3690c3dbd72731878714d6b481293ae7",
+      "bytes": 390,
+      "file": "amd64-metadata.json"
+    },
+    {
+      "data": {
+        "version": "4.0.7",
+        "buildRevision": "53bf73d680045744ece5db080b0710bb9004a228"
+      },
+      "sha256": "455ca5aa4653eb0825edb212832430bc0805f9ea5278eb91a6ea4a6c06a66b2b",
+      "bytes": 88,
+      "file": "amd64-RELEASE_IDENTITY.json"
+    },
+    {
+      "data": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 335482880,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 842461184,
+        "pidsCurrent": 39,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 211,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "sha256": "72a7f71f02235f95867de05bd5cbe0c3b8f442d9dddd658712c594c81635b24d",
+      "bytes": 495,
+      "file": "amd64-transfer-BROWSER_RESOURCE_BUDGET.json"
+    },
+    {
+      "data": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377,
+      "file": "amd64-transfer-BROWSER_SYNTHETIC.json"
+    },
+    {
+      "data": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      },
+      "sha256": "b3961ac6afb0c785a376f7329c5b01af78a0f9c528b96c5aacf7409543186c1b",
+      "bytes": 259,
+      "file": "amd64-transfer-IMAGE_IDENTITY.json"
+    },
+    {
+      "data": {
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10"
+      },
+      "sha256": "8e27f9eadd3413756dafc7517ddc00d10e8f3e577225cef6d1790061e5080f19",
+      "bytes": 171,
+      "file": "amd64-transfer-JAR_IDENTITY.json"
+    },
+    {
+      "data": {
+        "version": "4.0.7",
+        "buildRevision": "53bf73d680045744ece5db080b0710bb9004a228"
+      },
+      "sha256": "455ca5aa4653eb0825edb212832430bc0805f9ea5278eb91a6ea4a6c06a66b2b",
+      "bytes": 88,
+      "file": "amd64-transfer-RELEASE_IDENTITY.json"
+    },
+    {
+      "data": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 312721408,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 803217408,
+        "pidsCurrent": 39,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 191,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "sha256": "6e35bdfb224b2aa9e2c5b463b6f35dee4713d39cec9fd8cf90051e6e011ee032",
+      "bytes": 496,
+      "file": "arm64-BROWSER_RESOURCE_BUDGET.json"
+    },
+    {
+      "data": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377,
+      "file": "arm64-BROWSER_SYNTHETIC.json"
+    },
+    {
+      "data": {
+        "architecture": "arm64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10"
+      },
+      "sha256": "fa68657f03b64aae8f39b9316e392fec631f790bc50ff085615fbd69853a9038",
+      "bytes": 171,
+      "file": "arm64-JAR_IDENTITY.json"
+    },
+    {
+      "data": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "archiveSha256": "9395753e627a2edfbd7190d109f48c9c64479bb0ab3985fb08f3b4ea292ac3b7",
+        "imageId": "sha256:2ac6f6ebd38b41740e527951a4c79e8b587bca1002dd8c24d88b8956345d2572"
+      },
+      "sha256": "85c52eed369e0f2a99eb52708e3f10f87fd8832d0bf4b4615bf0c79e49367496",
+      "bytes": 390,
+      "file": "arm64-metadata.json"
+    },
+    {
+      "data": {
+        "version": "4.0.7",
+        "buildRevision": "53bf73d680045744ece5db080b0710bb9004a228"
+      },
+      "sha256": "455ca5aa4653eb0825edb212832430bc0805f9ea5278eb91a6ea4a6c06a66b2b",
+      "bytes": 88,
+      "file": "arm64-RELEASE_IDENTITY.json"
+    },
+    {
+      "data": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 356405248,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 834977792,
+        "pidsCurrent": 40,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 200,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "sha256": "65a51ca41822e63d1ee548538e83cfb43622a7f1e0d6bbdb68bc424e61dc7d95",
+      "bytes": 496,
+      "file": "arm64-transfer-BROWSER_RESOURCE_BUDGET.json"
+    },
+    {
+      "data": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377,
+      "file": "arm64-transfer-BROWSER_SYNTHETIC.json"
+    },
+    {
+      "data": {
+        "phase": "loaded",
+        "architecture": "arm64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:2ac6f6ebd38b41740e527951a4c79e8b587bca1002dd8c24d88b8956345d2572"
+      },
+      "sha256": "da147fa1bb55c2e419e9e3e82bbb68ee1a588c5fa4cbadd3081a8262c3ae95c8",
+      "bytes": 259,
+      "file": "arm64-transfer-IMAGE_IDENTITY.json"
+    },
+    {
+      "data": {
+        "architecture": "arm64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10"
+      },
+      "sha256": "fa68657f03b64aae8f39b9316e392fec631f790bc50ff085615fbd69853a9038",
+      "bytes": 171,
+      "file": "arm64-transfer-JAR_IDENTITY.json"
+    },
+    {
+      "data": {
+        "version": "4.0.7",
+        "buildRevision": "53bf73d680045744ece5db080b0710bb9004a228"
+      },
+      "sha256": "455ca5aa4653eb0825edb212832430bc0805f9ea5278eb91a6ea4a6c06a66b2b",
+      "bytes": 88,
+      "file": "arm64-transfer-RELEASE_IDENTITY.json"
+    }
+  ],
+  "nativeConsumerArtifact": {
+    "created_at": "2026-10-06T07:29:33Z",
+    "digest": "sha256:e4acc5193a3d82db314f338438748d6a2b302cff5af02a8fa987df947d38b808",
+    "expired": false,
+    "id": 11396204773,
+    "name": "reader-publisher-import-53bf73d680045744ece5db080b0710bb9004a228",
+    "size_in_bytes": 7631,
+    "workflow_run": {
+      "head_branch": "ci/full-reader-20260926",
+      "head_repository_id": 1313473469,
+      "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+      "id": 37428262965,
+      "repository_id": 1313473469
+    }
+  },
+  "nativeArtifactMetadata": {
+    "artifacts": [
+      {
+        "created_at": "2026-10-06T07:26:29Z",
+        "digest": "sha256:052e2b6519cec5c9a1724a7a5be2f71143d596f013df86bb5f14f09b070f1c0f",
+        "expired": false,
+        "id": 11396646733,
+        "name": "reader-native-transfer-arm64-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 2357,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:19:11Z",
+        "digest": "sha256:f5c3b3791168155fe5878877950d8fda63b4b03af61dc0c60586515f0682ec41",
+        "expired": false,
+        "id": 11396367481,
+        "name": "reader-release-jar-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 279877483,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:19:00Z",
+        "digest": "sha256:451f366ff526d9316d2d10ffd3b5787fa6b64f90babd234f5d64a52ca668259d",
+        "expired": false,
+        "id": 11396367442,
+        "name": "reader-release-camoufox-contract-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 1007,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:26:36Z",
+        "digest": "sha256:3682b03b6e25c0383510aa0213d320a042c3de2f07448c28db885a551202aa9f",
+        "expired": false,
+        "id": 11396332541,
+        "name": "reader-native-transfer-amd64-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 2361,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:23:19Z",
+        "digest": "sha256:340e6e6c16f7a84d972a11cf471c64776de9971489f38c8393518733dbc6e7f5",
+        "expired": false,
+        "id": 11396282173,
+        "name": "reader-tested-native-amd64-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 2174858265,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:29:33Z",
+        "digest": "sha256:e4acc5193a3d82db314f338438748d6a2b302cff5af02a8fa987df947d38b808",
+        "expired": false,
+        "id": 11396204773,
+        "name": "reader-publisher-import-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 7631,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:22:48Z",
+        "digest": "sha256:a9f5b8b9ae37983a1787cf59db3cc7b115a98702b49d0625055abafe98135e80",
+        "expired": false,
+        "id": 11396038762,
+        "name": "reader-tested-native-arm64-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 2113066949,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      },
+      {
+        "created_at": "2026-10-06T07:15:25Z",
+        "digest": "sha256:2287b0af9f2c9c7f9be716aaa8692531020ad16d0850e9aa87ac50b889c696e5",
+        "expired": false,
+        "id": 11395931398,
+        "name": "reader-release-java-contracts-53bf73d680045744ece5db080b0710bb9004a228",
+        "size_in_bytes": 30680,
+        "workflow_run": {
+          "head_branch": "ci/full-reader-20260926",
+          "head_repository_id": 1313473469,
+          "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+          "id": 37428262965,
+          "repository_id": 1313473469
+        }
+      }
+    ],
+    "total_count": 8
+  },
+  "jobs": {
+    "java": {
+      "jobs": [
+        {
+          "completed_at": "2026-10-06T07:14:59Z",
+          "conclusion": "success",
+          "id": 112152814590,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Test and build JAR",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003788",
+          "started_at": "2026-10-06T07:12:50Z",
+          "status": "completed",
+          "steps": []
+        }
+      ],
+      "total_count": 1
+    },
+    "vue": {
+      "jobs": [
+        {
+          "completed_at": "2026-10-06T07:17:09Z",
+          "conclusion": "success",
+          "id": 112152814438,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Isolated Vue 3 browser journeys in Chromium",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003789",
+          "started_at": "2026-10-06T07:12:50Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:13:30Z",
+          "conclusion": "success",
+          "id": 112152814678,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "build",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003790",
+          "started_at": "2026-10-06T07:12:50Z",
+          "status": "completed"
+        }
+      ],
+      "total_count": 2
+    },
+    "browser": {
+      "jobs": [
+        {
+          "completed_at": "2026-10-06T07:21:12Z",
+          "conclusion": "success",
+          "id": 112152815006,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build and smoke-test the full Reader image",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003786",
+          "started_at": "2026-10-06T07:12:50Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:12:48Z",
+          "conclusion": "skipped",
+          "id": 112152816079,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Probe archived remote WebView reference",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-10-06T07:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:12:48Z",
+          "conclusion": "skipped",
+          "id": 112152816438,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Probe anonymous metadata in the exact tested native image",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-10-06T07:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:12:48Z",
+          "conclusion": "skipped",
+          "id": 112152816510,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Soak an already-tested native image offline",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-10-06T07:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:12:48Z",
+          "conclusion": "skipped",
+          "id": 112152868292,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Verify archived original JAR provenance",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-10-06T07:12:58Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:21:12Z",
+          "conclusion": "skipped",
+          "id": 112155562949,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Compare public page observations (not production parity)",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-10-06T07:21:12Z",
+          "status": "completed"
+        }
+      ],
+      "total_count": 6
+    },
+    "native": {
+      "jobs": [
+        {
+          "completed_at": "2026-10-06T07:19:15Z",
+          "conclusion": "success",
+          "id": 112152815414,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build one shared Java Kotlin JAR",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003787",
+          "started_at": "2026-10-06T07:12:50Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:23:21Z",
+          "conclusion": "success",
+          "id": 112154929959,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build and test native amd64 image",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003792",
+          "started_at": "2026-10-06T07:19:17Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:22:50Z",
+          "conclusion": "success",
+          "id": 112154930010,
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "name": "Build and test native arm64 image",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003791",
+          "started_at": "2026-10-06T07:19:19Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:26:38Z",
+          "conclusion": "success",
+          "id": 112156275836,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Reload and run tested amd64 image",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003794",
+          "started_at": "2026-10-06T07:23:23Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:26:31Z",
+          "conclusion": "success",
+          "id": 112156275843,
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "name": "Reload and run tested arm64 image",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003793",
+          "started_at": "2026-10-06T07:23:25Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-10-06T07:29:35Z",
+          "conclusion": "success",
+          "id": 112157383869,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Exercise both publisher imports without registry credentials",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000003795",
+          "started_at": "2026-10-06T07:26:41Z",
+          "status": "completed"
+        }
+      ],
+      "total_count": 6
+    }
+  },
+  "proofJsonFilesVerified": 22,
+  "visualGeometryJsonDownloadedNotUsedAsRuntimeProof": 1,
+  "localValidationCorrection": "Consumer artifact paths are flat with architecture prefixes. Initial local exact-basename lookup rejected the file count; corrected lookup and all four actual guards subsequently passed. No product failure was inferred."
+}

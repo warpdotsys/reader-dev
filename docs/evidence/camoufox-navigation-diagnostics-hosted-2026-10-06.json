@@ -1,0 +1,1069 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "1cf36e7b40c63218c28cba6913431582e2e18d07",
+  "testedMergeRevision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+  "defaultEngineArtifacts": [
+    {
+      "run": 37432510087,
+      "id": 11397986568,
+      "sizeBytes": 1010,
+      "githubDeclaredArchiveSha256": "af583ff77cdb84e9650186dae1229a65356fa740407b769266bb70264ca35c46"
+    },
+    {
+      "run": 37432510200,
+      "id": 11397373964,
+      "sizeBytes": 1007,
+      "githubDeclaredArchiveSha256": "d1dcd0b0ef730d6e818c807f90e9309cd0313b59471c66e3edc91617f5ddd0ea"
+    }
+  ],
+  "actualDownloadedReports": {
+    "contracts": [
+      {
+        "cases": [
+          {
+            "name": "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers",
+            "seconds": 9.441
+          },
+          {
+            "name": "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
+            "seconds": 6.663
+          },
+          {
+            "name": "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
+            "seconds": 6.536
+          },
+          {
+            "name": "importedHostOnlyCookieRetainsPathForSubresources",
+            "seconds": 4.372
+          },
+          {
+            "name": "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers",
+            "seconds": 11.983
+          },
+          {
+            "name": "cookiesArePersistedPerReaderNamespace",
+            "seconds": 6.764
+          },
+          {
+            "name": "sourceRegexReturnsTheResourceUrlWithoutFetchingIt",
+            "seconds": 2.068
+          },
+          {
+            "name": "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
+            "seconds": 7.159
+          },
+          {
+            "name": "existingHttpOnlyCookieCanBeRenewed",
+            "seconds": 6.521
+          },
+          {
+            "name": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+            "seconds": 36.627
+          },
+          {
+            "name": "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
+            "seconds": 19.861
+          },
+          {
+            "name": "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
+            "seconds": 4.543
+          },
+          {
+            "name": "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
+            "seconds": 7.087
+          },
+          {
+            "name": "importedNetscapeCookiesRetainScopeInRealBrowserRequests",
+            "seconds": 8.849
+          },
+          {
+            "name": "getPostScriptsAndSubresourcesUseTheBrowser",
+            "seconds": 6.772
+          }
+        ],
+        "phase": "native",
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "xmlSha256": "87e7ce94eb517fa120d02270d8ec16f429d1a7c4f6de9bf006ec11e08687ac89",
+        "tests": 15
+      },
+      {
+        "cases": [
+          {
+            "name": "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers",
+            "seconds": 8.438
+          },
+          {
+            "name": "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
+            "seconds": 7.77
+          },
+          {
+            "name": "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
+            "seconds": 7.246
+          },
+          {
+            "name": "importedHostOnlyCookieRetainsPathForSubresources",
+            "seconds": 4.884
+          },
+          {
+            "name": "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers",
+            "seconds": 13.996
+          },
+          {
+            "name": "cookiesArePersistedPerReaderNamespace",
+            "seconds": 7.304
+          },
+          {
+            "name": "sourceRegexReturnsTheResourceUrlWithoutFetchingIt",
+            "seconds": 2.318
+          },
+          {
+            "name": "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
+            "seconds": 7.812
+          },
+          {
+            "name": "existingHttpOnlyCookieCanBeRenewed",
+            "seconds": 7.471
+          },
+          {
+            "name": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+            "seconds": 40.191
+          },
+          {
+            "name": "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
+            "seconds": 23.36
+          },
+          {
+            "name": "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
+            "seconds": 5.252
+          },
+          {
+            "name": "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
+            "seconds": 8.393
+          },
+          {
+            "name": "importedNetscapeCookiesRetainScopeInRealBrowserRequests",
+            "seconds": 13.098
+          },
+          {
+            "name": "getPostScriptsAndSubresourcesUseTheBrowser",
+            "seconds": 8.108
+          }
+        ],
+        "phase": "full-image",
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "xmlSha256": "78e75b1841f59a18a83fba3b35592439de1866ea09d07283621179e2f22d8927",
+        "tests": 15
+      }
+    ],
+    "fullImageBudgetSha256": "267f30d0a87c6ee2e062ecf69bf7489b71da3a5e57711dd3d5f0ef20afafc1b5",
+    "fullImageBudget": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.17.0-1022-azure",
+      "memoryCurrentBytes": 335618048,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 845721600,
+      "pidsCurrent": 38,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 209,
+      "scope": "one full Reader image; sequential probes plus four-account burst",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 1073741824
+    }
+  },
+  "strictDefaultContractValidatorsPassed": true,
+  "finiteNavigationIndependentNamespacesPerSuite": 12,
+  "firstFailureStillFatal": true,
+  "fullImageAsyncReport": {
+    "actualArtifactId": 11398411319,
+    "artifactSizeBytes": 1033,
+    "jsonSha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+    "actualStrictValidatorPassed": true,
+    "actualCgroupValidatorPassed": true
+  },
+  "limits": [
+    "The c2679e7b navigation failure was not reproduced in this run and remains unresolved",
+    "Diagnostics do not implement retries, navigation recovery or a root-cause fix",
+    "Anonymous public metadata run 37432570576 still fails on the historical 53bf73d6 image",
+    "No merge, formal release, registry publish, deployment or real credentials",
+    "All four normal workflows and actual jobs succeeded; public metadata is a separate failed run",
+    "The observed fixed initialNavigation/TimeoutError diagnostic belongs to an expected generated failure case, not the historic c2679e7b failure"
+  ],
+  "workflowRuns": [
+    {
+      "run": 37432510139,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "id": 112166437850,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Test and build JAR",
+          "runner_name": "GitHub Actions 1000003804",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "run": 37432510075,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "id": 112166437414,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Isolated Vue 3 browser journeys in Chromium",
+          "runner_name": "GitHub Actions 1000003802",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112166437599,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "build",
+          "runner_name": "GitHub Actions 1000003803",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "run": 37432510200,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "id": 112166439934,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build and smoke-test the full Reader image",
+          "runner_name": "GitHub Actions 1000003805",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "id": 112166441393,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Verify archived original JAR provenance",
+          "runner_name": null,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "id": 112166441890,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Probe anonymous metadata in the exact tested native image",
+          "runner_name": null,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "id": 112166442061,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Soak an already-tested native image offline",
+          "runner_name": null,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "id": 112166486438,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Probe archived remote WebView reference",
+          "runner_name": null,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "id": 112169503007,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Compare public page observations (not production parity)",
+          "runner_name": null,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "run": 37432510087,
+      "jobs": [
+        {
+          "conclusion": "success",
+          "id": 112166441045,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build one shared Java Kotlin JAR",
+          "runner_name": "GitHub Actions 1000003806",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112168111990,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Build and test native amd64 image",
+          "runner_name": "GitHub Actions 1000003808",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112168112100,
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "name": "Build and test native arm64 image",
+          "runner_name": "GitHub Actions 1000003809",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112169659205,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Reload and run tested amd64 image",
+          "runner_name": "GitHub Actions 1000003810",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112169659340,
+          "labels": [
+            "ubuntu-24.04-arm"
+          ],
+          "name": "Reload and run tested arm64 image",
+          "runner_name": "GitHub Actions 1000003811",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "id": 112171230733,
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "name": "Exercise both publisher imports without registry credentials",
+          "runner_name": "GitHub Actions 1000003812",
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "nativeFinalStatus": {
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-06T08:11:49Z"
+  },
+  "actualJobCount": 10,
+  "nativePublisherArtifact": {
+    "id": 11397724166,
+    "name": "reader-publisher-import-b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+    "sizeBytes": 7635,
+    "githubDeclaredArchiveSha256": "62f9a185a2dba8579d55cd2d1725aab35c6c6ea495376f00511a13e253cc536e",
+    "archiveHashRecomputedLocally": false
+  },
+  "nativePublisherActualFiles": [
+    {
+      "value": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 331984896,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 822104064,
+        "pidsCurrent": 40,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 212,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "name": "amd64-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "8b527b8fccdfd7c3e4e466eb916a9d8028d601011763053880f91cb81dcfd7d2"
+    },
+    {
+      "value": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "name": "amd64-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+    },
+    {
+      "value": {
+        "architecture": "amd64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680"
+      },
+      "name": "amd64-JAR_IDENTITY.json",
+      "sha256": "63b9599ac98ec4bbf893695df7d82c39065fff44022e2a473a5d707bb6fc6617"
+    },
+    {
+      "value": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680",
+        "archiveSha256": "67ed1912e5474142fb1847fc5b45e09ff9f93dc53b2614fcc9215df48c17b754",
+        "imageId": "sha256:0ccef7e2392b07c46d52a9017aae93b741f50313828b903391fc445e4b1071de"
+      },
+      "name": "amd64-metadata.json",
+      "sha256": "f40564d5bb827c5f9f83aa315cd4bce8917372c01ea542da387c8ef734f82669"
+    },
+    {
+      "value": {
+        "version": "4.0.7",
+        "buildRevision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93"
+      },
+      "name": "amd64-RELEASE_IDENTITY.json",
+      "sha256": "aa742d553471911d25915f0757016cb59e5405d7f4b80a9194fffcb1bf38f81d"
+    },
+    {
+      "value": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 342228992,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 848408576,
+        "pidsCurrent": 39,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 199,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "name": "amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "fd79cfb3251bf2f9e56adf44bfaf3df4e9eb9f0ddeaa1a2954724e5323fb4e5a"
+    },
+    {
+      "value": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "name": "amd64-transfer-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+    },
+    {
+      "value": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680",
+        "imageId": "sha256:0ccef7e2392b07c46d52a9017aae93b741f50313828b903391fc445e4b1071de"
+      },
+      "name": "amd64-transfer-IMAGE_IDENTITY.json",
+      "sha256": "31bd463f36064ba821dda53ba4a2027ab32d3f84f43839129e19fbc47514adc4"
+    },
+    {
+      "value": {
+        "architecture": "amd64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680"
+      },
+      "name": "amd64-transfer-JAR_IDENTITY.json",
+      "sha256": "63b9599ac98ec4bbf893695df7d82c39065fff44022e2a473a5d707bb6fc6617"
+    },
+    {
+      "value": {
+        "version": "4.0.7",
+        "buildRevision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93"
+      },
+      "name": "amd64-transfer-RELEASE_IDENTITY.json",
+      "sha256": "aa742d553471911d25915f0757016cb59e5405d7f4b80a9194fffcb1bf38f81d"
+    },
+    {
+      "value": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 354304000,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 831754240,
+        "pidsCurrent": 40,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 198,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "name": "arm64-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "bdf11bf36c4c806d536284094496c2e4df1710a57c4bed5ed9d6013421982955"
+    },
+    {
+      "value": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "name": "arm64-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+    },
+    {
+      "value": {
+        "architecture": "arm64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680"
+      },
+      "name": "arm64-JAR_IDENTITY.json",
+      "sha256": "bf8d766d89e916f1b84732c6fca9556bbb18646feb486e7ad3dcab2812aabaf3"
+    },
+    {
+      "value": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680",
+        "archiveSha256": "fc4cbe65f83fb907fa08511025229126f4f0f3abcdf0610aeee43204b5c7b7cd",
+        "imageId": "sha256:10f4e3eee705bfd5a749ce32922e7e9e1a8782afbd3af443b8375f90f551f678"
+      },
+      "name": "arm64-metadata.json",
+      "sha256": "c22670c715f3caed4f1c47b5fb0430395f96172339197c51f8b6f3f313a986b9"
+    },
+    {
+      "value": {
+        "version": "4.0.7",
+        "buildRevision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93"
+      },
+      "name": "arm64-RELEASE_IDENTITY.json",
+      "sha256": "aa742d553471911d25915f0757016cb59e5405d7f4b80a9194fffcb1bf38f81d"
+    },
+    {
+      "value": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 349724672,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 832634880,
+        "pidsCurrent": 39,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 194,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      },
+      "name": "arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "d5c22083c0257960f32444d457c3422650a497ac79802cbdf3f3bbe4fa907648"
+    },
+    {
+      "value": {
+        "searches": [
+          {
+            "key": "alice-first",
+            "count": 1
+          },
+          {
+            "key": "bob-first",
+            "count": 1
+          },
+          {
+            "key": "alice-second",
+            "count": 1
+          },
+          {
+            "key": "alice-third",
+            "count": 1
+          }
+        ],
+        "cookieSequence": [
+          "",
+          "",
+          "session=alpha==",
+          ""
+        ],
+        "legacyReferenceCases": [
+          {
+            "case": "script",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            }
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=post",
+              "testHeader": "synthetic"
+            }
+          }
+        ],
+        "asyncReaderCases": [
+          {
+            "case": "get",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "GET",
+              "body": null,
+              "testHeader": null
+            },
+            "targetCookie": "",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": "asyncOnly=generated"
+          },
+          {
+            "case": "post",
+            "status": 200,
+            "isSuccess": true,
+            "errorMsg": "",
+            "count": 1,
+            "nameMatches": true,
+            "authorMatches": true,
+            "bookUrlMatches": true,
+            "targetRequest": {
+              "httpMethod": "POST",
+              "body": "q=async",
+              "testHeader": "async"
+            },
+            "targetCookie": "asyncOnly=generated",
+            "scriptMarkCount": 1,
+            "scriptMarkCookie": ""
+          }
+        ],
+        "asyncCookieCleanup": {
+          "sameUserNextRequestCookie": "",
+          "sameUserNextRequestCount": 1,
+          "deletedVerified": true
+        },
+        "concurrentRequests": 4,
+        "concurrentBookCounts": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "name": "arm64-transfer-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+    },
+    {
+      "value": {
+        "phase": "loaded",
+        "architecture": "arm64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680",
+        "imageId": "sha256:10f4e3eee705bfd5a749ce32922e7e9e1a8782afbd3af443b8375f90f551f678"
+      },
+      "name": "arm64-transfer-IMAGE_IDENTITY.json",
+      "sha256": "432b817efb45c75012824ac32a9dc62a4b8bf87b549cb16b870d2b6bdee043f4"
+    },
+    {
+      "value": {
+        "architecture": "arm64",
+        "revision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93",
+        "jarSha256": "046eb858085f822b191e89b61bd4ed7c981012c26593e82956190473af044680"
+      },
+      "name": "arm64-transfer-JAR_IDENTITY.json",
+      "sha256": "bf8d766d89e916f1b84732c6fca9556bbb18646feb486e7ad3dcab2812aabaf3"
+    },
+    {
+      "value": {
+        "version": "4.0.7",
+        "buildRevision": "b5ad4cfc46a519f5d7bd703440eaf9efec85cc93"
+      },
+      "name": "arm64-transfer-RELEASE_IDENTITY.json",
+      "sha256": "aa742d553471911d25915f0757016cb59e5405d7f4b80a9194fffcb1bf38f81d"
+    }
+  ],
+  "independentlyValidated20PublisherJsons": true,
+  "safeDiagnosticActuallyObservedInGeneratedJob": {
+    "rawLogNotPersisted": true,
+    "safeFixedDiagnostics": [
+      {
+        "kind": "unclassified",
+        "errorClass": "TimeoutError",
+        "operation": "initialNavigation"
+      }
+    ],
+    "readOnlyGeneratedJob": 112166441045
+  },
+  "nativeAndReloadMaximumPeakBytes": 848408576,
+  "nativeAndReloadMaximumPids": 212
+}

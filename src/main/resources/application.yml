@@ -39,6 +39,7 @@ reader:
 
   server:
     port: 8080
+    bindAddress: "0.0.0.0"
     contextPath: ""
     webUrl: http://localhost:${reader.server.port}${reader.server.contextPath}
 

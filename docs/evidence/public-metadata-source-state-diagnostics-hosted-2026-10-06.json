@@ -1,0 +1,84 @@
+{
+  "recordedDate": "2026-10-06",
+  "probeAndImageSourceCommit": "2f5b22896546f9b97cf68a106d63415a038bfcc4",
+  "runId": 37451304316,
+  "jobId": 112228268950,
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "mutuallyExclusiveSkippedJobs": 5,
+  "sourceNativeRun": 37449430278,
+  "testedImageRevision": "788bf8b0186a1141ae5cfd5deb5389eafb7ca0a2",
+  "jarSha256": "226227f6b84f747ffd9f13363b099f3f1ed762cb1cb1dd69062f2cec5cb3f46b",
+  "imageId": "sha256:00c5682f6a30fa9b4d992e8b5243911cb86c1c1c9a8e059bb32faa666a8829db",
+  "artifact": {
+    "id": 11406333297,
+    "name": "public-metadata-amd64-37451304316",
+    "sizeBytes": 3637,
+    "githubDeclaredArchiveSha256": "ce37e6a35aaed2998a54ddb83fb0b70f50eee565316d025349cec5e0385c5de4",
+    "exactNineJsonFileSetIndependentlyVerified": true,
+    "independentlyRecomputedFileSha256": {
+      "CLEANUP.json": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+      "CONTAINER_STATE.json": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+      "LOADED_IDENTITY.json": "d44107a77a528fc1c1fa5d6410b371298cabb727d2021c911a7c32ed3258ad7d",
+      "PRELOAD_IDENTITY.json": "8769bbde30071d387189c3b12187b80e427ff3303a9f69a9b1d1595f86e8ea75",
+      "PUBLIC_METADATA_REPORT.json": "9ab0b0ce79c14d6a16457f400b4690e2cb1911c3eab13f78904f2d658448abd4",
+      "RUNNING_JAR_IDENTITY.json": "cdd44b611d37461fb04cb3e9bfd78da7e31b7212d9a68225d6231cc141e6423b",
+      "RUNTIME_RESOURCE_BUDGET.json": "35f4131daf617facbc7d7972a53c47f69a7c269ebb3d76e9e562958befc4c27a",
+      "SOURCE_RUN.json": "2ee5415c8d14de34f095d71d1b01b56032a2c9ff7e56bbccd8f6ea897722fb0e",
+      "WORKER_DIAGNOSTICS.json": "4aded82cdec445f6feec45d1fcc638070ff72e7fbb7627f0f9fbf7b7cad3c29a"
+    }
+  },
+  "observations": {
+    "oneExternalMetadataOperation": true,
+    "httpStatus": 200,
+    "isSuccess": false,
+    "dataIsNull": true,
+    "errorMessageLength": 70,
+    "workerErrorCategory": "SourceScriptStateLost",
+    "requestSeconds": 7.387,
+    "metadataDomWaitBudgetMs": 8000,
+    "pageDiagnostics": null,
+    "sourceDefinitionRoundtripAllSixChecksPassed": true,
+    "workerDiagnosticSchemaIndependentlyVerified": true,
+    "workerDiagnosticsTruncated": false,
+    "workerDiagnostics": [
+      {"operation": "sourceScriptRead", "kind": "sourceStateMissing", "errorClass": "SourceScriptStateLost", "mainFrameNavigationObserved": true}
+    ]
+  },
+  "scopeAndCleanup": {
+    "sourceAndPreloadLoadedRunningIdentitiesIndependentlyVerified": true,
+    "runtimeUid": 10001,
+    "privateNetworkGuardEnabled": true,
+    "publishedPorts": 0,
+    "realCredentialsImported": false,
+    "chapterBodyRequested": false,
+    "rawErrorHtmlCookieAndMetadataValuesNotPersisted": true,
+    "rawLogsPersisted": false,
+    "cookieRowsBefore": 0,
+    "cookieRowsAfter": 0,
+    "generatedCookieSessionRevokedVerified": true,
+    "ownedContainerRemoved": true,
+    "probeExit": 1
+  },
+  "resourceBudget": {
+    "originalGuardRequireNoSwapExecutedAndPassed": true,
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 847601664,
+    "pidsMax": 256,
+    "pidsPeak": 190,
+    "swapMaxBytes": 0,
+    "swapCurrentBytes": 0,
+    "memoryLimitAndOomEvents": 0,
+    "pidsLimitEvents": 0
+  },
+  "notProven": [
+    "That the navigation event was a replacement document rather than same-document navigation",
+    "Navigation as the unique cause of missing source state",
+    "CAPTCHA visibility, page text or raw HTML emptiness",
+    "Actual metadata or authentication success through Reader",
+    "Original-JAR or historical-engine same-input public parity",
+    "Production or long-duration acceptance"
+  ]
+}

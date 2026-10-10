@@ -1,0 +1,44 @@
+{
+  "generatedOnly": true,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "74fbd5a5a4b77a78352b54e82dc446590197eb99ffe2a96495acff7834084306",
+  "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+  "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "realAuthenticatedSourceTested": false,
+  "originalProductionRendererVersionProven": false,
+  "slice": "readerwebview8791a2329271.slice",
+  "containerCgroups": [
+    "0::/readerwebview8791a2329271.slice/docker-76ff6e6b00f04a7fcb971cbe978385bcac4cac650a33a0c88d444286bce10fb6.scope",
+    "0::/readerwebview8791a2329271.slice/docker-0c983d24748e6356096ff7ae6a9c2a8c3f73e2f61bba9372f0479202fb699e34.scope"
+  ],
+  "probeCompleted": true,
+  "privateNetworkNamespaceInode": 4026532560,
+  "probeExitCode": 0,
+  "aggregateBudget": {
+    "scope": "both test containers and all their probe/Java/browser descendants",
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 2147483648,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 4007,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "removedOwnedTestContainers": [
+    "0c983d24748e6356096ff7ae6a9c2a8c3f73e2f61bba9372f0479202fb699e34",
+    "76ff6e6b00f04a7fcb971cbe978385bcac4cac650a33a0c88d444286bce10fb6"
+  ],
+  "originalJarUnchanged": true,
+  "restoredJarUnchanged": true
+}

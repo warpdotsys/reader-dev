@@ -1,0 +1,61 @@
+{
+  "scope": "local packaged Vue 3 UI in real Chrome; generated accounts, cookies and JSON only",
+  "baseRevision": "868654e44513b67eb76b97f3d71ed25849738357",
+  "testedChange": "source dialog focus including explicit async local-file opener and clearing transient editor cookie",
+  "baseline": {
+    "jarSha256": "60c42281c7b12296c30dd4791750200e8ceaeab520a1a3a547f48802db7cda41",
+    "xml": "build/source-dialog-keyboard-20261004-a/baseline-keyboard-failure.xml",
+    "xmlSha256": "a63eb0ade43df4bfb15d8464ef607ea640c3f78a036ae7c36060a862c62def49",
+    "tests": 1, "failures": 1, "errors": 0, "skipped": 0, "seconds": 13.648,
+    "failure": "Opening source login did not move focus into the dialog"
+  },
+  "firstFix": {
+    "jarSha256": "7846bf23f6654504be32f94edb9c5cb31c36a717fd0e7932601b9d4406faa89c",
+    "xml": "build/source-dialog-keyboard-20261004-a/first-fix-preview-failure.xml",
+    "xmlSha256": "dd56cae71308f08f960a372655ad9cb615c35661b9e3d34882e615e38cf86976",
+    "tests": 1, "failures": 1, "errors": 0, "skipped": 0, "seconds": 28.148,
+    "failure": "Local file preview did not restore focus to the original visible button"
+  },
+  "final": {
+    "jar": "build/source-dialog-keyboard-20261004-a/candidate-dialog-focus-v2.jar",
+    "jarSha256": "ce0a868b0097d051828b7a3e59dd55bb0e32643c98c3e8adf2eef46731634326",
+    "bundleEntry": "BOOT-INF/classes/web-vue3/static/SourceManageView-CtPlIRxN.js",
+    "bundleSha256": "d6d98a1234a78149c2e93037efa10f7ca2634f8bd837e7c553cd65935cccb496",
+    "bundleMatchesDist": true,
+    "xml": "build/source-dialog-keyboard-20261004-a/final-keyboard-chrome.xml",
+    "xmlSha256": "7ec0f50c5a44d8f9ea9b59c2c46b5524bca480b228ec5b9159db81bd5ced53c5",
+    "tests": 1, "failures": 0, "errors": 0, "skipped": 0, "seconds": 25.725,
+    "readerBase": "http://127.0.0.1:18942",
+    "usesPackagedJarNotVite": true,
+    "successfulKeyboardDialogClasses": 8,
+    "desktopViewport": [1280, 720], "narrowViewport": [375, 812],
+    "sourceLoginAndEditorNetscapeImport": true,
+    "emptyFinalNetscapeFieldPreserved": true,
+    "refreshRevokeAndActualUiAccountSwitchIsolation": true,
+    "unsavedCookieEmptyOnReopen": true,
+    "localGeneratedPreviewCancelledWithoutImport": true,
+    "ownedTestJvmStopped": true, "user18931Preserved": true
+  },
+  "localChecks": {
+    "frontendTests": 192, "frontendFailures": 0, "frontendSkipped": 0,
+    "dialogFocusUnitTests": 9, "cgroupUnitTests": 9,
+    "releasePipelineAndNativeArtifactTests": 33,
+    "frontendTypeCheckAndBuildPassed": true,
+    "fullCompileAndBootJarPassed": true, "finalResourceAndBootJarRebuildPassed": true,
+    "actionlintPassed": true, "externalShellcheckAndPyflakesEnabled": false
+  },
+  "screenshots": [
+    {"file": "build/source-dialog-keyboard-20261004-a/screenshots-v2/vue3-source-dialog-login.png", "sha256": "cd49bcdd832c24ddebfd4e272cdb306067a361c6a8f233f2de89a7ba725e1288", "visuallyInspected": true},
+    {"file": "build/source-dialog-keyboard-20261004-a/screenshots-v2/vue3-source-dialog-editor.png", "sha256": "f0911c41aaf5910b8731c92538a7fa6384ecb705c2be66bd3f2c4b4e857315ce", "visuallyInspected": false},
+    {"file": "build/source-dialog-keyboard-20261004-a/screenshots-v2/vue3-source-dialog-cookie-mobile.png", "sha256": "9fcbbcef0d1df8e49ab135500a2a0af369154f886cd7b2af3f85b215cb1a2232", "visuallyInspected": true},
+    {"file": "build/source-dialog-keyboard-20261004-a/screenshots-v2/vue3-source-cookie-stored.png", "sha256": "61811819b3ec286371f72cddc729099c24c8f82408be51a4b350381e1ef1ed5f", "visuallyInspected": false}
+  ],
+  "limitations": [
+    "Not original 3.2.14 UI or production account evidence",
+    "Deleting subscriptions and foreign nested dialogs lack dedicated real keyboard coverage",
+    "Not all app dialogs, screen readers, mobile touch or system keyboards",
+    "Empty input on reopen is not browser-memory erasure proof; in-flight identity changes are not exercised",
+    "Real Qidian Reader authentication, same-condition three-way comparison and deployment remain unverified",
+    "Hosted CI for this new change must be independently accepted"
+  ]
+}

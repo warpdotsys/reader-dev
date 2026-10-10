@@ -15,6 +15,11 @@ __pycache__/
 !**/src/main/**
 !**/src/test/**
 
+# Keep generated browser/Python caches ignored even under re-included source trees.
+.vite/
+**/__pycache__/
+*.py[cod]
+
 .apt_generated
 .classpath
 .factorypath

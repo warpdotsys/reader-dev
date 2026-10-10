@@ -14,6 +14,37 @@ import java.util.concurrent.atomic.AtomicReference
 
 class BrowserEgressProxyTest {
     @Test
+    fun deniedHttpAndConnectRequestsKeepOnlySanitizedPolicyDiagnostics() {
+        val benchmark = InetAddress.getByName("198.18.1.220")
+        val policy = BrowserNetworkPolicy(resolve = { arrayOf(benchmark) })
+        listOf(
+            "GET http://cdn.example/private-generated-path?token=generated-secret HTTP/1.1\r\n" +
+                "Host: cdn.example\r\nCookie: session=generated-cookie\r\nAuthorization: generated-auth\r\n\r\n",
+            "CONNECT cdn.example:443 HTTP/1.1\r\nHost: cdn.example:443\r\n\r\n"
+        ).forEach { request ->
+            val blocked = AtomicReference<BrowserNetworkPolicyViolation?>(null)
+            val egress = BrowserEgressProxy(policy, 3000, { blocked.compareAndSet(null, it) })
+            try {
+                val port = egress.start().substringAfterLast(':').toInt()
+                Socket(InetAddress.getByName("127.0.0.1"), port).use { socket ->
+                    socket.soTimeout = 3000
+                    socket.getOutputStream().write(request.toByteArray(StandardCharsets.ISO_8859_1))
+                    socket.getOutputStream().flush()
+                    val response = socket.getInputStream().readBytes().toString(StandardCharsets.ISO_8859_1)
+                    assertTrue(response.startsWith("HTTP/1.1 403"))
+                    assertEquals(BrowserNetworkBlockReason.BENCHMARK_RANGE, blocked.get()?.reason)
+                    assertTrue(blocked.get()?.hostFingerprint?.matches(Regex("[0-9a-f]{16}")) == true)
+                    val diagnostic = response + blocked.get()?.message.orEmpty()
+                    listOf("private-generated-path", "generated-secret", "generated-cookie", "generated-auth", "cdn.example")
+                        .forEach { assertFalse(diagnostic.contains(it)) }
+                }
+            } finally {
+                egress.close()
+            }
+        }
+    }
+
+    @Test
     fun authenticatedHttpProxyReceivesPinnedAddressAndOriginalHost() {
         val upstream = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))
         upstream.soTimeout = 3000

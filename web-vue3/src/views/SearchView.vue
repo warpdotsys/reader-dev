@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { searchBookMulti, searchBookMultiSSE } from '@/api/search'
 import { getBookSources } from '@/api/sources'
 import { getBookInfo } from '@/api/books'

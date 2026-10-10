@@ -1,0 +1,868 @@
+{
+  "schemaVersion": 1,
+  "scope": "own hosted generated acceptance; not real-source, original/archived parity or production",
+  "sourceHead": "09163efe213c35fd457cdad973063884cb2d2bd6",
+  "testedMergeRevision": "3aec4f9e0102626c9f47b74b6130a872ae541b27",
+  "observedTerminalRuns": [
+    {"id": 37580306827, "workflow": "Java Kotlin CI", "conclusion": "success", "actualJobs": 1},
+    {"id": 37580306818, "workflow": "Vue 3 preview build", "conclusion": "success", "actualJobs": 2},
+    {"id": 37580306816, "workflow": "Browser image integration", "conclusion": "success", "actualJobs": 1, "conditionalJobsSkipped": 5},
+    {"id": 37580306817, "workflow": "Native release artifact rehearsal", "conclusion": "success", "actualJobs": 6}
+  ],
+  "camoufoxSuites": [
+    {
+      "source": {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/native-default/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "a1d62ece67a2a4ac0db1c89e1c380e1817d5a001c5baf529867cec6906e395a9",
+        "bytes": 3266
+      },
+      "originalGuard": {
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 19,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "navigationContractPresent": true,
+        "earlyNavigationContractPresent": true,
+        "endlessNavigationContractPresent": true,
+        "promiseContractPresent": true,
+        "stateDeletionContractPresent": true,
+        "sourceNavigationContractPresent": true,
+        "numericalThreadContractPresent": true,
+        "xmlSha256": "a1d62ece67a2a4ac0db1c89e1c380e1817d5a001c5baf529867cec6906e395a9"
+      },
+      "numericalImportSeconds": 0.616
+    },
+    {
+      "source": {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/full-default/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "61f3cb97d85809926e838b12b3dea44603f07c2b68df08e6a84803509724decf",
+        "bytes": 3263
+      },
+      "originalGuard": {
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 19,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "navigationContractPresent": true,
+        "earlyNavigationContractPresent": true,
+        "endlessNavigationContractPresent": true,
+        "promiseContractPresent": true,
+        "stateDeletionContractPresent": true,
+        "sourceNavigationContractPresent": true,
+        "numericalThreadContractPresent": true,
+        "xmlSha256": "61f3cb97d85809926e838b12b3dea44603f07c2b68df08e6a84803509724decf"
+      },
+      "numericalImportSeconds": 0.615
+    }
+  ],
+  "documentHelpers": [
+    {
+      "source": {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/native-document/source-document-observation.json",
+        "sha256": "c59409ca1c57a5701102033ef31998d8070ab5c8d813d5b9015a70a5ab9ae9ad",
+        "bytes": 610
+      },
+      "originalGuardPassed": true,
+      "report": {
+        "cases": [
+          {
+            "case": "deletedStateSameDocument",
+            "documentObservation": "sameDocument",
+            "mainFrameNavigationObserved": false,
+            "passed": true,
+            "sourceRuns": 1
+          },
+          {
+            "case": "deletedStateSameDocumentAfterHashNavigation",
+            "documentObservation": "sameDocument",
+            "mainFrameNavigationObserved": true,
+            "passed": true,
+            "sourceRuns": 1
+          },
+          {
+            "case": "replacedDocumentReferenceUnavailable",
+            "documentObservation": "unavailable",
+            "mainFrameNavigationObserved": true,
+            "passed": true,
+            "sourceRuns": 1
+          }
+        ],
+        "networkDenials": 0,
+        "passed": true,
+        "schemaVersion": 1,
+        "scope": "generated helper-level pinned browser; not Reader parity"
+      }
+    },
+    {
+      "source": {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/full-document/source-document-observation.json",
+        "sha256": "c59409ca1c57a5701102033ef31998d8070ab5c8d813d5b9015a70a5ab9ae9ad",
+        "bytes": 610
+      },
+      "originalGuardPassed": true,
+      "report": {
+        "cases": [
+          {
+            "case": "deletedStateSameDocument",
+            "documentObservation": "sameDocument",
+            "mainFrameNavigationObserved": false,
+            "passed": true,
+            "sourceRuns": 1
+          },
+          {
+            "case": "deletedStateSameDocumentAfterHashNavigation",
+            "documentObservation": "sameDocument",
+            "mainFrameNavigationObserved": true,
+            "passed": true,
+            "sourceRuns": 1
+          },
+          {
+            "case": "replacedDocumentReferenceUnavailable",
+            "documentObservation": "unavailable",
+            "mainFrameNavigationObserved": true,
+            "passed": true,
+            "sourceRuns": 1
+          }
+        ],
+        "networkDenials": 0,
+        "passed": true,
+        "schemaVersion": 1,
+        "scope": "generated helper-level pinned browser; not Reader parity"
+      }
+    }
+  ],
+  "sharedJava": {
+    "total": 162,
+    "passed": 132,
+    "skipped": 30,
+    "failures": 0,
+    "errors": 0,
+    "files": [
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+        "sha256": "4288e67cc0ae8e890e13b6ae8021857a3bada7faae664d717e8d5c84aacfc6e5",
+        "bytes": 16853
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+        "sha256": "fdb89816e76b7c30676ca62bdd31695b7862d55c5fe16395a1eadd7e86bd3b7c",
+        "bytes": 1038
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+        "sha256": "8eb117b108a3ec9327669dbd208733420afdb5fb38e7e26f47e89146697ea4fd",
+        "bytes": 3881
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+        "sha256": "ae5577c734f515ce1496654563606ed9ce172f4e227d77410e222f5fa504d365",
+        "bytes": 864
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+        "sha256": "5e2afff5d95f84c1fa55fcfa0b099b49068ae32ccae97eafb210c06888043b6e",
+        "bytes": 815
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+        "sha256": "d154e7699808fa9cb16971dd6a2aa1dd9617d63da2e255b4dcd4a3389437f93c",
+        "bytes": 609
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+        "sha256": "3e616afaf0836cde0f04f7f03c8812456660a9c1582dcb623763fc8d047325f1",
+        "bytes": 1165
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.entity.LicenseTest.xml",
+        "sha256": "179f748ed6e40e1a839566c959ebccc1c4ebd8dba1fd85f0791f967689e0dbbb",
+        "bytes": 563
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+        "sha256": "66390107e267e2ba80eeb5bbe5d6885a63faec54e11d7d4bdcef0a1dd17b0345",
+        "bytes": 622
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.ReaderApplicationTests.xml",
+        "sha256": "6d6981c8993ea4ee97625d558483c19c9f397bef6a838979ccfc55a7e82f4dcc",
+        "bytes": 14353
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+        "sha256": "476b06aa7de0ea419706414163956d5b2b586bc79400ed1485e128713a8152a1",
+        "bytes": 3291
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "sha256": "0716d88508bc4d8ea638738d10ca9e961f00c4ecffda9e20ff2d591ad3a0c5f1",
+        "bytes": 1899
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+        "sha256": "50acb45eab4175e85d9bf966ac5a707649b06f94e40e9f20c6b0031ed6ef5836",
+        "bytes": 1096
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+        "sha256": "205c2caaeefdf00ae14d5a6661405a4f5033c6c485281392adc46a4a60fe506a",
+        "bytes": 985
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+        "sha256": "7d719acbdd36b8b5dc7b8bf5da1efa09a2c526cbeb207725c5cece40cc877846",
+        "bytes": 1089
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+        "sha256": "83f0a4439f3a061c1d40ffbdb50ff029b95e1688539ad2057ed214a18ccb0077",
+        "bytes": 736
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+        "sha256": "c81d80c8d762306bb54c8228d95cbb90cdf860283245ac34cb4cb6d5a4ea3ed1",
+        "bytes": 522
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+        "sha256": "173b42bbc71377b0de06bcbbc4c9a5ebc1192e2a80b8814e248ff66bd9eb9cd8",
+        "bytes": 510
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "e74c2a4232f0eb62a4e7f7423c9b63e8fb69572f39a9ca4288306b3bf263ee3f",
+        "bytes": 3773
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "cb1c7cd7da26266e69bcd3104193369b13fe755523b54c94bdee94186b7f32fa",
+        "bytes": 486
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+        "sha256": "f2ad9ad3554143bda96407b53420219be3a3f6e936b054fe70fbae57db35a122",
+        "bytes": 477
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "6d4bc58f8179afd9a157b1c3c495a58836d06d67cb75e2773be8b6192746c07d",
+        "bytes": 2195
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.PublicMetadataPageDiagnosticTest.xml",
+        "sha256": "e11801c235ddbdb82c0225187d0f2af1d66cdf933c2eff772b1fed8e27ba584e",
+        "bytes": 1757
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+        "sha256": "94fcb199d5902530b688bbfd5057cdd86990861b598d12152483d33518454805",
+        "bytes": 474
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+        "sha256": "93bac353a4e693173c7c67e34dd52a1114fd37015b3c8f2be6542c701940a346",
+        "bytes": 6851
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+        "sha256": "0d8947aadd119f1c43249aa37f983eb2522132eb0ffa67f190afd749aaf6cde8",
+        "bytes": 801
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+        "sha256": "74584749827e59cc0189828fd7b3c0d9395d802dc05e456c500e42ceaa568df1",
+        "bytes": 10456
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+        "sha256": "bc6c2fa7eaf3d4291bfeb70eca338e502c01df04d3fd95db2b714f081d1ae747",
+        "bytes": 613
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+        "sha256": "15187d1a5e13157a85946a1a1f0d6203158e1b30f509c74d8bcc19563a518d24",
+        "bytes": 603
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+        "sha256": "f04957465a62c6d132320054b671cb710462dae5271e08c32b0672c436d892bd",
+        "bytes": 482
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+        "sha256": "2d2b8bb15c05a80360da651d0ab5fa27f942c45beaaa83658671cc4894458839",
+        "bytes": 1262
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+        "sha256": "e60fa5b706196afc5de833cd02cb95b01b1a2954be6cc94451d1bac3c10bc363",
+        "bytes": 902
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+        "sha256": "304a65be965c74f192c1222f067ab1af2107fd8a803e11d3dc6379afcb46a379",
+        "bytes": 484
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+        "sha256": "02d07ce2eb9839d4d621a10beedbb490956602f48fe607cfbf42469d92008205",
+        "bytes": 494
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+        "sha256": "41c1ea5016b7b97b030fbb74c900f95fc0306e35e2fdffb829857242e0087473",
+        "bytes": 485
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+        "sha256": "4807c368742a354c3e5ee3ffaec07ed04e2b36a7314b0c1d9f7937f935842a32",
+        "bytes": 634
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+        "sha256": "4f904632e160918a88e7538c04c3cada07abf402a9c6269349547fb59a2ed784",
+        "bytes": 458
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+        "sha256": "453c197e8dc81bd8cb19efb199ef1351a85ec3e47430b45d8be6f776435a91d4",
+        "bytes": 444
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+        "sha256": "afa04273ed7648bb81c84072659fd4a4626e1cb98213af8d1edcdf102a79609a",
+        "bytes": 575
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+        "sha256": "555a716265f94fb04fabf5abc1451db460fd89392f28238ab18b20ef75c7b34f",
+        "bytes": 501
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+        "sha256": "8a3e67d162ad336ea4eea35cc4d747064b9bf804e5f62179932ca6f6f69a6538",
+        "bytes": 1710
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/shared-java/TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+        "sha256": "070defc36bcf9afb2fb5c65953a5775a3a180e258e96040118fd45b53c588b5b",
+        "bytes": 592
+      }
+    ]
+  },
+  "vueCore": {
+    "total": 18,
+    "passed": 18,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "files": [
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+        "sha256": "cfef7a0eff09e588964de3c615c9e251bff4b78b4c6bb658b8387a63944ea5ae",
+        "bytes": 487
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+        "sha256": "c0bafae20366ef38a7ba5a2679e7ec72c65ec1b92882bf1da4d7d5f32fb95446",
+        "bytes": 1009
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+        "sha256": "92fc6a3105cb504b002eadc7c3a539eda130c1f78c1ad5dc0ae25e0c5ac4fbc6",
+        "bytes": 654
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+        "sha256": "165f230a96b8650268970f1982980db8965ef33bc251095385360b5baf8932ac",
+        "bytes": 463
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+        "sha256": "fa265b68f27e7fb08e1ed86bf8e1f324a186da10324f53e2ab4465479f976998",
+        "bytes": 483
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+        "sha256": "952b50ec07e7352f369da2e0f7e405dd0b573df9ccf894a9f86213d355f4e37d",
+        "bytes": 518
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+        "sha256": "f0c3a0b8ba989f5be8f69fd59009d16a1056dff09bf5962a78001d11c429ebbf",
+        "bytes": 614
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+        "sha256": "c07b763c14a9465432c7d6627ae7ddac17b0b0a4fc4426420cf8f003b56186b4",
+        "bytes": 690
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+        "sha256": "36abef381a2caa88d25694fd50af990d58055689698338579ee8c052e4356888",
+        "bytes": 478
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+        "sha256": "0e03d8c4cf6cdef336d3c37c05e5182e5ce1e76912dd434d4861adbe8558b04a",
+        "bytes": 633
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+        "sha256": "7e319c591889ecada7f62fa52f11ad42d174372b93a7d97a8e3a881e6857d7be",
+        "bytes": 478
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+        "sha256": "92e301ccb8b9c675e4e5a433b159872b25c0051abf7b0330307ec4c7fdc8bbce",
+        "bytes": 496
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+        "sha256": "68f39398379adc52c1a6c1a8002b7c6a51d2cb13a74a4939a3429930aac55d91",
+        "bytes": 469
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+        "sha256": "f3e07e1c2ac6fec035cb1bb364bbdd88458cb0fc62f6fa5779bfcfce32f2ada4",
+        "bytes": 847
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+        "sha256": "4b63c526fe3181681064cf3fed0d6a4bb16a30277437de84717f6c40984b0dfc",
+        "bytes": 499
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+        "sha256": "4465fa3394ffffdd78c08fb893d3b4ffc54dbc927e6cf6f8c9a256f12806c029",
+        "bytes": 733
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+        "sha256": "8a4cf29a18ee7f1c16137f309bbb311cb4995a3eae456511da1dc3ad1f349384",
+        "bytes": 480
+      },
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-core/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+        "sha256": "6647e71baae3d7461d033fdb6ee1d12f45a9a50c6813983c02d36fc7a81617dd",
+        "bytes": 481
+      }
+    ]
+  },
+  "vueSubdir": {
+    "total": 1,
+    "passed": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "files": [
+      {
+        "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-subdir/TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+        "sha256": "70d1d567b436c7f51db525d2e6e888cd53a503e8357d5b119d8e7ba4583c68b8",
+        "bytes": 487
+      }
+    ]
+  },
+  "shelfGeometryCount": 18,
+  "customGroups": {
+    "schemaVersion": 1,
+    "scope": "generated persisted custom group scrolling; not production groups",
+    "observations": [
+      {
+        "width": 1135,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      },
+      {
+        "width": 360,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      },
+      {
+        "width": 320,
+        "scrollY": 0,
+        "tabCount": 9,
+        "scrollable": true,
+        "scrolled": true,
+        "lastTabInsidePane": true,
+        "lastTabUncovered": true,
+        "controlsUncovered": true,
+        "documentFits": true
+      }
+    ]
+  },
+  "shelfFiles": [
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-1135.png",
+      "sha256": "52562ffbeac0b138baa70fcdcede656b4402ed3ad2aa795daa3a2bf18aef7499",
+      "bytes": 86694
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-custom-groups-1135.png",
+      "sha256": "3f4658d1d8c8a6cc0e71266efc8ee0c7d69fd2ab0177e820271e9a56ffdd8981",
+      "bytes": 51274
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-custom-groups-320.png",
+      "sha256": "b191f18831d212a006b15ca056de69769233b5c90ad7e31177b74e702301ede1",
+      "bytes": 41323
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-custom-groups-360.png",
+      "sha256": "41caa6dfa17f7607c8cbd78271d44c5feb274b5cda7b989b29617e30d25de2e0",
+      "bytes": 42101
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-custom-groups.json",
+      "sha256": "077700cc5c2fe5879e939b3df1b4b5ed34864fb31b58083e1846d90fd6ed89d9",
+      "bytes": 614
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-geometry.json",
+      "sha256": "b5b24af832c5b6ff7a43c90ada771d031fa1d5f137fa0cac6fab0dffad017599",
+      "bytes": 3818
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-page-top-1135.png",
+      "sha256": "73f65871e72408d732e36d382c5fc54f832556f36251e4951d97cf6c14e667a3",
+      "bytes": 54250
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/vue-shelf/vue3-shelf-layout-generated-page-top-360.png",
+      "sha256": "3286a8edccdc0bf8847fd46df75d66bd018e8b052b20aa8108aa98f204422103",
+      "bytes": 47510
+    }
+  ],
+  "fullDefaultUi": {
+    "source": {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/full-resources/bundled-default-ui.json",
+      "sha256": "aa4a0654b398d385375f39eef1c760a96cc03cc9007f39f069581370b55ffe44",
+      "bytes": 1355
+    },
+    "jarSha256": "c7f9fc5b9277b57f6b2c0149c89605891f9dc2e385e3950743c3f13c132c29e3",
+    "originalGuardPassed": true
+  },
+  "fullAsync": {
+    "source": {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/full-resources/bundled-browser-synthetic.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377
+    },
+    "originalGuardPassed": true
+  },
+  "fullBudget": {
+    "source": {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/full-resources/bundled-browser-resource-budget.json",
+      "sha256": "a2471fd8303a193108cd4a484ab6308161072beea57a8ca6e666842a61cd6164",
+      "bytes": 495
+    },
+    "originalGuardPassed": true,
+    "report": {
+      "architecture": "x86_64",
+      "cpuPeriod": 100000,
+      "cpuQuota": "200000",
+      "kernel": "6.17.0-1022-azure",
+      "memoryCurrentBytes": 344240128,
+      "memoryEvents": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 842010624,
+      "pidsCurrent": 40,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pidsMax": 256,
+      "pidsPeak": 197,
+      "scope": "one full Reader image; sequential probes plus four-account burst",
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 1073741824
+    }
+  },
+  "limitations": [
+    "Old collector reports have no memory.stat; do not backfill categories",
+    "Normal swap configuration is not the zero-swap local helper budget",
+    "No new collector hosted acceptance",
+    "No real account, chapter, original/archived three-way, long soak, registry push or production deployment"
+  ],
+  "publisherFiles": [
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "1a41fda9e1c024d2891b9a0f23f1e3ea8906a8eae6f766cc313d3a6ed7c9b85b",
+      "bytes": 495
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-DEFAULT_UI.json",
+      "sha256": "25f59de164bb23916ba1980688fa26a05988c2942f0bfbb26fe3e4fb0618ab4e",
+      "bytes": 1355
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-JAR_IDENTITY.json",
+      "sha256": "33478542d95e2d25f39a8b1b847e1573e65333e41acd02d7788b579da18d7318",
+      "bytes": 171
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-metadata.json",
+      "sha256": "8bce6c6522cccf539d54ca3e0c3e0d2c5e7947ff418dbe8f2b336f85da9bc9a8",
+      "bytes": 390
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-RELEASE_IDENTITY.json",
+      "sha256": "6a426f3932aae88c08a094d9b066640e6c62c4f29677a3d630193322a8dd2124",
+      "bytes": 88
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "9bd30c404b1736553089b1869bbb5f5d4e1a795d39b55bac9b1d92e7b2b3b32b",
+      "bytes": 495
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-DEFAULT_UI.json",
+      "sha256": "25f59de164bb23916ba1980688fa26a05988c2942f0bfbb26fe3e4fb0618ab4e",
+      "bytes": 1355
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-IMAGE_IDENTITY.json",
+      "sha256": "56b87218464b908eedeb21ba0487032a925cb9e6367f9adffbd21900a96b297f",
+      "bytes": 259
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-JAR_IDENTITY.json",
+      "sha256": "33478542d95e2d25f39a8b1b847e1573e65333e41acd02d7788b579da18d7318",
+      "bytes": 171
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/amd64-transfer-RELEASE_IDENTITY.json",
+      "sha256": "6a426f3932aae88c08a094d9b066640e6c62c4f29677a3d630193322a8dd2124",
+      "bytes": 88
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "730a7fb810e0303136559c6a48bdf486960a6bd410791b63e1434a3d467b56a6",
+      "bytes": 496
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-DEFAULT_UI.json",
+      "sha256": "25f59de164bb23916ba1980688fa26a05988c2942f0bfbb26fe3e4fb0618ab4e",
+      "bytes": 1355
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-JAR_IDENTITY.json",
+      "sha256": "14f5b22f108f896d088a71db1da885ad993261b350793e866fabb373e6c5be1f",
+      "bytes": 171
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-metadata.json",
+      "sha256": "6604e5bb9bfeddb785283e0d581ccddf9ec4e78512a4e0ddd318d9cabbcfa778",
+      "bytes": 390
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-RELEASE_IDENTITY.json",
+      "sha256": "6a426f3932aae88c08a094d9b066640e6c62c4f29677a3d630193322a8dd2124",
+      "bytes": 88
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "7a08515fde63399168957c15415309b3ded186f087336c32c9197fcd4af944d6",
+      "bytes": 496
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-BROWSER_SYNTHETIC.json",
+      "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "bytes": 1377
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-DEFAULT_UI.json",
+      "sha256": "25f59de164bb23916ba1980688fa26a05988c2942f0bfbb26fe3e4fb0618ab4e",
+      "bytes": 1355
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-IMAGE_IDENTITY.json",
+      "sha256": "0e195d56b5fd45b6e8a97bac82f997e4e55ebe15f471510af07f1f243f69b2f6",
+      "bytes": 259
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-JAR_IDENTITY.json",
+      "sha256": "14f5b22f108f896d088a71db1da885ad993261b350793e866fabb373e6c5be1f",
+      "bytes": 171
+    },
+    {
+      "path": "build/numerical-threads-hosted-09163efe-20261007-a/publisher/arm64-transfer-RELEASE_IDENTITY.json",
+      "sha256": "6a426f3932aae88c08a094d9b066640e6c62c4f29677a3d630193322a8dd2124",
+      "bytes": 88
+    }
+  ],
+  "nativeIdentities": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "3aec4f9e0102626c9f47b74b6130a872ae541b27",
+      "jarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+      "archiveSha256": "2c3c04a63387e3a9adbe9ff07fc857d578156c1ea1b2f76d75c7686b52f64565",
+      "imageId": "sha256:43794ac7368605acc23c21524dc88f34032622b3ce40d3dd0c585c6282bd0174"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "3aec4f9e0102626c9f47b74b6130a872ae541b27",
+      "jarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+      "archiveSha256": "f581c7e406207277d80c31d4bf15cfd044d7f877cbba7c005d51f190feb2a26b",
+      "imageId": "sha256:3c55b4253f751346ca4667fe79080ca06caf54b4686298f6fd90264203a4f71a"
+    }
+  },
+  "nativeResources": [
+    {
+      "phase": "amd64",
+      "report": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 289325056,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 794021888,
+        "pidsCurrent": 41,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 194,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      }
+    },
+    {
+      "phase": "amd64-transfer",
+      "report": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 337039360,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 842723328,
+        "pidsCurrent": 43,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 204,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      }
+    },
+    {
+      "phase": "arm64",
+      "report": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 327122944,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 811692032,
+        "pidsCurrent": 41,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 191,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      }
+    },
+    {
+      "phase": "arm64-transfer",
+      "report": {
+        "architecture": "aarch64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 353390592,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 817905664,
+        "pidsCurrent": 42,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 187,
+        "scope": "one full Reader image; sequential probes plus four-account burst",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 1073741824
+      }
+    }
+  ],
+  "publisherOriginalUiAsyncAndBudgetGuardsReexecuted": 12
+}

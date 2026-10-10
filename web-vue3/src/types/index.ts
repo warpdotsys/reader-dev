@@ -11,7 +11,6 @@ export interface UserInfo {
   lastLoginAt: number
   accessToken: string
   /** 管理员（secure 模式可操作系统 default 配置与用户管理） */
-  isAdmin?: boolean
   [key: string]: unknown
 }
 
@@ -189,16 +188,21 @@ export interface RssSource {
   [key: string]: unknown
 }
 
-/** RSS 文章（/reader3/getRssArticles → data 数组；content 为正文 HTML，getRssArticle 单独拉取） */
+/** RSS 文章（Java/Kotlin RssArticle 的 JSON 形状；正文另走 getRssContent）。 */
 export interface RssArticle {
-  url: string
+  /** 文章所在 feed / 分类地址；与 link 一起构成文章身份。 */
+  origin: string
+  sort?: string
   title: string
-  author?: string | null
-  time: number
+  order?: number
+  link: string
+  pubDate?: string | null
+  description?: string | null
   content?: string | null
-  cover?: string | null
-  /** 已读标记（getRssArticles 返回 hasRead；点击文章后置 true） */
-  hasRead?: boolean
+  image?: string | null
+  /** 服务端列表中的当前 read 值；本项目没有对应的持久化写入路由。 */
+  read?: boolean
+  variable?: string | null
   [key: string]: unknown
 }
 
@@ -223,7 +227,7 @@ export interface ReplaceRule {
   [key: string]: unknown
 }
 
-/** HttpTTS 听书源（当前 localStorage: reader_http_tts_list；后端就绪后 ↔ POST /reader3/saveHttpTTS 等，见 api/httpTts.ts 契约注释；type 0=在线合成 / 1=本地引擎预留） */
+/** HttpTTS 听书源（/reader3/httpTTS/*；reader_http_tts_list 为离线镜像缓存；type 是 Vue 展示字段，0=在线合成 / 1=本地引擎预留，不写入 legacy 实体） */
 export interface HttpTts {
   id: string
   name: string
@@ -252,7 +256,7 @@ export interface TxtTocRule {
   [key: string]: unknown
 }
 
-/** 用户管理（GET /reader3/getUsers → ReaderUser；secure 模式需 secure+secureKey query，缺/错返回 NEED_SECURE_KEY） */
+/** 用户管理（GET /reader3/getUserList；管理密码通过请求头验证，legacy 无每用户管理员角色） */
 export interface ReaderUser {
   username: string
   enableWebdav: boolean
@@ -261,7 +265,6 @@ export interface ReaderUser {
   enableRssSource: boolean
   bookSourceLimit: number
   bookLimit: number
-  isAdmin?: boolean
   lastLoginAt: number
   /** 注册时间（毫秒时间戳；legacy createdAt） */
   createdAt?: number
@@ -277,19 +280,21 @@ export interface UserUpdatePayload {
   enableRssSource?: boolean
   bookSourceLimit?: number
   bookLimit?: number
-  isAdmin?: boolean
 }
 
-/** 系统信息（/reader3/getSystemInfo：版本/端口/用户数/书数/书源数） */
+/** Java/Kotlin 的 /reader3/getSystemInfo：JVM 内存与近期用户统计。 */
 export interface SystemInfo {
-  version: string
-  port: number
-  userCount: number
-  bookCount: number
-  bookSourceCount: number
+  fonts?: string | null
   freeMemory?: string
   totalMemory?: string
   maxMemory?: string
+  dayLoginUser?: number
+  sevenDayLoginUser?: number
+  monthLoginUser?: number
+  dayRegisterUser?: number
+  sevenDayRegisterUser?: number
+  monthRegisterUser?: number
+  keepUser?: number
   [key: string]: unknown
 }
 
@@ -381,7 +386,7 @@ export interface CacheInfo {
   [key: string]: unknown
 }
 
-/** 书源订阅（后端 /reader3/getSourceSubs 为主，localStorage: reader_source_subs 降级，见 api/sourceSubs.ts；
+/** 书源订阅（服务端为准，localStorage 仅按用户与命名空间保留离线只读镜像，见 api/sourceSubs.ts；
  * 禁用后停止自动刷新，订阅记录与已导入书源保留） */
 export interface SourceSub {
   url: string
@@ -421,8 +426,10 @@ export interface BookSource {
 /** 书源登录态（/reader3/getBookSourceCookie → CookieRow，camelCase） */
 export interface CookieRow {
   sourceUrl: string
-  /** Cookie 原文（本人可见，UI 仅展示摘要） */
+  /** 仅包含名称和掩码，不返回 Cookie 原文 */
   cookie: string
+  hasCookie?: boolean
+  cookiePreview?: string
   userAgent?: string
   loginHeader?: string
   updatedAt: number

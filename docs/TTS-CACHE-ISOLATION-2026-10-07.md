@@ -1,0 +1,67 @@
+# 听书缓存隔离与缺失音量默认值修复
+
+日期：2026-10-07，验收记录更新：2026-10-08。源代码基于 `6e4ad4897a9b52c5893d082373b6fa9231cb5d35` 的独立增量；不是正式发行或生产验收。
+
+## 已验证的问题与修复
+
+旧 Vue 3 `ttsCacheKey` 对正文只计算 `text.slice(0,4096) + ':' + text.length` 的 FNV 摘要。生成的两段 5001 字符正文 `生成.repeat(2500) + 甲/乙` 具有相同长度、不同尾字，却得到同一旧键 `/tts/b386e39f/a2440a7b.mp3`；新增负例在旧实现上实际失败（6 项中的 1 项失败），不是仅凭代码推断。旧 `tts-audio-v1` 同时没有部署、账号或管理员命名空间隔离。
+
+新实现使用全文及无歧义 JSON 参数数组的 SHA-256。缓存名称为 `tts-audio-v2:<作用域摘要>`，键为 `/tts/v2/<全文和参数摘要>.mp3`；作用域复用已认证的部署、用户名、实际配置命名空间和缓存契约版本，不持久化访问令牌。未认证或安全摘要不可用时放弃缓存，不退回旧共享键。
+
+读取、统计与写入的异步步骤检查捕获的短期会话；播放开始前（含加载听书源期间）也捕获会话及停止序号，不能把旧正文的晚到结果交给新身份。设置页仅统计、清理当前账号，并在显示成功前再次检查会话。旧共享 v1 不读取、不归属、不迁移、不删除。已经发出的原生 Cache API `put` 不能取消，但只可能完成在捕获的旧作用域内。
+
+实际生成页面还发现：`Number(localStorage.getItem(key))` 把缺失的音量设置 `null` 当成了 0，UI 显示 -100%。现在缺失、空、非有限或越界数值采用既定默认值；新会话音量显示 +0%（100%）。明确保存的 0 仍为静音，未擅自修改用户偏好。其他共用读取器的缺失数值同样采用其原有默认值。
+
+## 本增量实际验收
+
+- 前端全部 256 项：256 通过、0 跳过；其中音频缓存 14 项、数值设置 6 项。类型检查及 Vite 新目录构建通过；92 个静态 API 路由均有 Java/Kotlin 注册，仅证明路由名，不替代参数或权限测试。
+- 实际 Chromium 页面单用例：1 执行、0 跳过、0 失败、0 错误，25.101 秒。新无用户资料的 headless context，使用生成账号、生成正文、loopback 书源及隔离 Java/Kotlin 后端。只有 `/reader3/book/tts` 被测试拦截成 128044 字节的生成 WAV；真实 DOM 音频源、非暂停状态及播放时间推进被断言，测试中实际音频静音。
+- A 保存正文甲：一次 HTTP 合成、一条原生缓存；刷新重播仍只有一次 HTTP。改成同长度正文乙：累计两次 HTTP、A 两条缓存。B 使用相同正文甲：累计三次 HTTP、两个不同缓存名称、三条音频，不能命中 A。
+- B 设置页显示“1 条 · 125.0 KB”；清理后显示“0 条 · 0 B”。A 的原名称和全部两条键保持不变，旧 v1 仍保留；再登录 A 并重播正文乙，仍累计三次 HTTP，两条音频保留。清理后统计可能重新打开 B 的空缓存，所以验证的是条目及归属，不要求缓存名称消失。
+- 四张生成截图已目视核对（1280×720）；中文字形、默认音量、B 的统计／清理状态可见。不是全部视口、真实手机、外部语音或生产用户验收。
+- 发布结构门禁 49 项及另两组 manifest/native 契约，共 82 项全执行通过。58 份原有用户报告散列不变。
+- a/b/c 三轮的测试服务已退出；18954/18955/18956 无残留监听，用户 Reader 18931 的 PID 61244 未动。启动器只持有自己的三个 Process 对象并在 finally 回收，不按旧 PID 广泛结束 Java。Java 堆上限 512 MiB、三个 fixture 进程各两逻辑核；不把这个 Windows 配置宣称为最终镜像或所有测试进程合计的硬资源验收。
+
+准确本机字节与原始 XML 散列见 [机器证据](evidence/tts-cache-isolation-2026-10-07.json)。本机后端为已散列的历史恢复 JAR `221d41ef...`，前端为本次新构建；不混作本次新全包 JAR 或最终 Camoufox 镜像。
+
+## 失败、跳过与操作差错均保留
+
+1. a 第一轮：TTS 面板遮罩拦截编辑按钮，是测试未关闭面板，失败 XML 保留。
+2. a 第二轮：测试使用不存在的 `.pop-close`，失败 XML 保留。随后使用真实遮罩的正常关闭入口，不 force-click 产品控件。
+3. a 第三轮：已完成 A/B 隔离流程，失败于把“清空音频条目”错误断言成“只剩一个缓存名称”。保留实际 expected 1 / actual 2，不删除原结果。
+4. b：本机误用 `-Dbrowser.executable`，但此工程把 `READER_BROWSER_EXECUTABLE` 映射进测试 JVM，所以 Gradle 成功且实际 1 跳过。`browser-passed.xml` 是当时错误命名的原始跳过副本，不是通过证据；“通过”汇报已明确撤回。新用例在显式隔离 opt-in 后，缺浏览器／fixture 必须失败，不能继续 Assume 跳过。
+5. c：正确传入环境变量，用严格 XML 断言确认实际执行；只有此轮作为本增量的本机 UI 通过证据。
+
+本轮另有未加引号的 Gradle `-D` 参数、PowerShell foreach 管道及相对路径检查差错；未把这些命令错误或缺失散列列作产品缺陷或验收。原失败、跳过、生成数据与日志留在独立 `build/tts-cache-ui-20261007-{a,b,c}`，未上传真实正文、Cookie 或密码。
+
+## GitHub 托管验收与复现
+
+`vue3-preview.yml` 核心旅程新增 `Vue3PreviewTtsCacheIsolationTest`，原 18 项不删除；逐份 XML 要求 tests=1/skipped=0/failures=0/errors=0，另保留四张生成 TTS 图。仍使用 GitHub `ubuntu-24.04` runner，不使用自托管。下面记录本增量自己的实际托管结果；父提交绿色不代替新 UI。
+
+提交后已独立核对：源提交 `b17109db4e6d73b9dddeef453618e44cacd160ff`，被测合并快照 `fc897d0b52bdce0c11f881206b68359d0de28cc2`。自己的 Java `37641650075`、Vue `37641649969`、完整镜像 `37641650547` 已成功；下载并重算 84 个实际解压文件散列（不冒充本机重算远程 ZIP）。Vue 核心 19＋管理／安全 2＋子路径 1 全实际执行，TTS 7.85 秒／零跳过；四张自己的托管生成图已目视。普通 JVM 42 套件／170 项中 31 环境门控跳过，不能把这些计作真实浏览器；另一个实际 Camoufox 报告 20 项全执行、helper 3 项、Chromium／快照 23 项通过。原 async、生成详情、默认打包 UI、预算守卫独立接受：完整镜像 JAR 为 `5931436c...`，不是本机历史 221；峰值 826,163,200 B／PID 196、触限与实际 swap 0，但正常短测允许 1 GiB swap，不能写成零 swap 长测。独立回执 `build/tts-cache-hosted-b17109db-20261007-a/independent-acceptance.json` SHA-256 `f3bb5bf9b9870290009609bb0e355c22c0a24ecdbcf860f1fdd0f10b6c312fcf`。
+
+Native 原运行 [37641650055](https://github.com/warpdotsys/reader-dev/actions/runs/37641650055) 终态失败。网页确报 `Internal server error`／Correlation ID `c133c6a0-8cbd-4567-8e13-81f90ee005c5`，共享 JAR 作业成功，Native 矩阵作业未生成，后续导入跳过；不是通过发布预演。`--failed` 重试被 GitHub 明确拒绝。已确认原测试合并快照与源提交文件差异为空，再对同一源提交开启 [37715644210](https://github.com/warpdotsys/reader-dev/actions/runs/37715644210)。此具体运行现已 completed/success，六个实际作业全部成功：共享 JAR、原生 AMD64／ARM64、两侧归档重载和不使用 registry 凭据的发布导入。原失败仍保留，不声称原 PR 的 Native 红 check 已消失。
+
+这次 source/tested revision 均为 `b17109db...`，不能混作普通 PR 的合并快照 `fc897d0b...`。独立下载小报告、接受实际 Camoufox 20 项／零跳过、helper 3 项及全部 24 份 publisher JSON；两侧真实原生／重载执行的 UI、异步 Reader API、生成详情、原预算和发布身份全部通过，重载 image ID 与自身 metadata 匹配。共同 JAR SHA-256 `b8cf8c1b04683f8b1a2c8a030b1e56161e5eaf72b41757f262cf852a20c88a3c`，AMD64 image `sha256:387fb8e537fb05109ffc9f7dfebe69a9b298538a536acc6f2a67cdcf6389df40`、ARM64 image `sha256:08e3b314bd3b709624c6e018a4a5fe07e159ff26d5169ac0fe1871af432d2a65`。四份短测最高 898,486,272 B／PID 200，实际 swap 均为 0、配置仍允许 1 GiB。约 2 GiB 的两侧归档没有下载到本机，不能称本机重算其散列；测试／重载／发布导入作业已经在 hosted runner 消费归档。这不是最终零 swap 长测或正式发版。
+
+独立回执 `build/tts-native-b17109db-dispatch-a/independent-acceptance.json` SHA-256 `462437247744e724db2eb7b3b7fead7867a76af651f736bf03bcc4e9be61e592`。此新事实随有意义的生成阶段诊断增量回填；没有 registry 发布、实站认证三方、当前新源码长期或生产验收，goal 未完成。
+
+准备全新的 loopback fixture（明确 `READER_VUE3_ISOLATED=1`，生成书源及用户，`READER_BROWSER_EXECUTABLE` 指向测试浏览器）后：
+
+```powershell
+# Windows 所需变量还包括 JAVA_HOME 和该 checkout 的 GRADLE_USER_HOME。
+./gradlew.bat -p browser-poc test --tests 'com.medwarp.reader.browserpoc.Vue3PreviewTtsCacheIsolationTest' --no-daemon '-Dorg.gradle.jvmargs=-Xmx512m'
+# 不能只看 Gradle 成功；必须检查对应 JUnit XML 的 1/0/0/0。
+```
+
+前端可重复命令为 `npm ci --prefix web-vue3`、`npm --prefix web-vue3 test`、`npm --prefix web-vue3 run build`；本机使用已有锁定依赖和绝对 Node 执行相同入口，输出独立 build 目录，没有覆盖用户产物。
+
+## 已知限制及回退
+
+- 本增量不修复真实语音提供商：Java/Kotlin 没有音色列表端点，现有前端 volume/style 也未发送到 legacy 合成请求。默认音量修复仅证明设置读取与 UI；外部音色、音量／风格语义另行核验，不能拿生成 WAV 宣称已支持。
+- 旧 v1 为无法判断归属的数据，保留但新版本不使用；没有自动迁移或后台清理。多个账号同一浏览器同源数据的隔离是应用读取策略，不是对本机或恶意同源脚本的加密防护。
+- 无 WebCrypto／Cache API 时仍可走原网络合成，不提供共享缓存降级。听书源并发加载的所有行为、Late TTS 真实页面竞态及全部账号命名空间组合尚未完成 UI 验收；单测中的晚到 Cache API 检查不是实站凭据三方证明。
+- 起点真实详情／认证、严格 UTF-8 原件三方、最终新镜像长期／生产验收仍未完成。此变更不修改 Java/Kotlin 接口、原 JAR、生产服务或服务器资源。
+- 未创建发行标签、发布 registry 或部署。本增量不可据局部绿色宣布 goal 完成。
+
+回退时以正常版本控制 revert 本增量，重建前端／候选产物，不 reset 用户工作区、不删除任何账户数据或 v1/v2 缓存。若回退到旧共享缓存实现，会重新引入已证实的碰撞／隔离风险，宜先停用旧缓存路径；不能把退回旧行为称为安全修复。生产旧 Vue 2 路径与原始 JAR 对照仍保留。
