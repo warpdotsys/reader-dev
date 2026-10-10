@@ -239,8 +239,8 @@ SOURCE_DOCUMENT_OBSERVATIONS = frozenset({"sameDocument", "differentDocument", "
 def browser_operation(phase):
     """Annotate the original exception, without swallowing, retrying or replaying.
 
-    Only a fixed operation label survives. The existing NDJSON error class and
-    public ReturnData stay unchanged; diagnostic text never includes page data.
+    Only a fixed operation label survives. The error class stays unchanged;
+    optional finite certificate hints never include page or credential data.
     """
     if not isinstance(phase, str) or phase not in BROWSER_OPERATION_PHASES:
         raise ValueError("Unknown browser operation")
@@ -278,6 +278,10 @@ def browser_failure_diagnostic(error):
             if isinstance(document, str) and document in SOURCE_DOCUMENT_OBSERVATIONS:
                 diagnostic["sourceDocumentObservation"] = document
             return diagnostic
+    certificate = certificate_failure_code(error)
+    if certificate is not None:
+        return {"operation": phase, "kind": "certificateDomainMismatch" if certificate == "SSL_ERROR_BAD_CERT_DOMAIN"
+                else "certificateIssuerUntrusted", "errorClass": "Error", "certificateError": certificate}
     if name == "Error":
         try:
             message = str(error)
@@ -291,6 +295,29 @@ def browser_failure_diagnostic(error):
             kind = "documentChanging"
     return {"operation": phase, "kind": kind,
             "errorClass": name if name in {"Error", "TimeoutError", "TargetClosedError"} else "Other"}
+
+
+def certificate_failure_code(error):
+    """A finite browser-reported navigation hint, never authority to bypass TLS.
+
+    Do not classify source-script errors or codes appearing inside an arbitrary
+    URL/message. Only the engine's initial Page.goto error prefix is recognized.
+    No raw exception text crosses the worker protocol or enters diagnostics.
+    """
+    if (getattr(error, "_reader_browser_operation", None) != "initialNavigation" or
+            type(error).__name__ != "Error"):
+        return None
+    try:
+        message = str(error)[:512]
+    except Exception:
+        return None
+    for code in ("SSL_ERROR_BAD_CERT_DOMAIN", "SEC_ERROR_UNKNOWN_ISSUER"):
+        prefix = "Page.goto: " + code
+        if message.startswith(prefix):
+            suffix = message[len(prefix):]
+            if not suffix or suffix.startswith(("\n", "\r\n", " at https://", " at http://")):
+                return code
+    return None
 
 
 # Evaluate a rule once and return immediately, even when it yields a Promise.
@@ -1080,9 +1107,12 @@ def main():
         try:
             response = render(json.loads(raw))
         except Exception as error:
-            # Return only the exception class; URLs, headers, and proxy credentials
-            # can be present in Playwright exception text and must not be logged here.
+            # Return the exception class and an optional finite certificate hint.
+            # Never send raw Playwright text: it can contain URLs/credentials.
             response = {"error": type(error).__name__}
+            certificate = certificate_failure_code(error)
+            if certificate is not None:
+                response["certificateError"] = certificate
             diagnostic = browser_failure_diagnostic(error)
             if diagnostic is not None:
                 print("READER_BROWSER_FAILURE " + json.dumps(diagnostic, separators=(",", ":")), file=sys.stderr)

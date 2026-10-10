@@ -1,11 +1,14 @@
 package com.htmake.reader.utils
 
+import com.google.gson.Gson
 import io.legado.app.adapters.DefaultAdpater
 import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.adapters.ReaderAdapterInterface
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -55,7 +58,7 @@ class CamoufoxWebviewRendererNetworkDiagnosticTest {
                         String response = new String(socket.getInputStream().readAllBytes(), StandardCharsets.ISO_8859_1);
                         if (!response.startsWith("HTTP/1.1 403")) throw new AssertionError("Private target was not blocked");
                     }
-                    System.out.print("{\"error\":\"NavigationTimeout\",\"cookies\":[]}");
+                    System.out.print("{\"error\":\"Error\",\"certificateError\":\"SSL_ERROR_BAD_CERT_DOMAIN\",\"cookies\":[]}");
                 }
             }
         """.trimIndent())
@@ -76,5 +79,67 @@ class CamoufoxWebviewRendererNetworkDiagnosticTest {
         } finally {
             renderer.close()
         }
+    }
+
+    @Test
+    fun knownCertificateHintsHaveFixedChineseMessagesWithoutWorkerText() = runBlocking {
+        for ((code, expected) in listOf(
+            "SSL_ERROR_BAD_CERT_DOMAIN" to "Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)",
+            "SEC_ERROR_UNKNOWN_ISSUER" to "Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)"
+        )) {
+            val failure = generatedFailure(mapOf("error" to "Error", "certificateError" to code,
+                "unusedUntrustedText" to "PRIVATE_TOKEN https://generated.invalid/?cookie=PRIVATE_COOKIE"))
+            assertEquals(expected, failure.message)
+            assertTrue(!failure.message.orEmpty().contains("PRIVATE"))
+        }
+    }
+
+    @Test
+    fun unknownCertificateHintOrWrongErrorClassKeepsGenericFailure() = runBlocking {
+        for ((error, hint) in listOf("Error" to "PRIVATE_UNKNOWN", "Error" to "SSL_ERROR_BAD_CERT_DOMAIN\nPRIVATE",
+            "TimeoutError" to "SEC_ERROR_UNKNOWN_ISSUER", "Error" to null)) {
+            val failure = generatedFailure(mapOf("error" to error, "certificateError" to hint))
+            assertEquals("Camoufox 渲染失败 ($error)", failure.message)
+            assertTrue(!failure.message.orEmpty().contains("PRIVATE"))
+        }
+    }
+
+    @Test
+    fun certificateHintWithoutAnErrorCannotTurnSuccessIntoFailure() = runBlocking {
+        assertEquals("GENERATED_OK", generatedResponse(mapOf("body" to "GENERATED_OK", "cookies" to emptyList<String>(),
+            "certificateError" to "SEC_ERROR_UNKNOWN_ISSUER")))
+    }
+
+    private suspend fun generatedFailure(protocol: Map<String, Any?>): Exception {
+        try {
+            generatedResponse(protocol)
+            fail("Expected the generated worker protocol to fail")
+        } catch (error: Exception) { return error }
+        throw AssertionError("Missing generated protocol failure")
+    }
+
+    private suspend fun generatedResponse(protocol: Map<String, Any?>): String? {
+        val script = temp.root.toPath().resolve("GeneratedHintWorker.java")
+        // Gson encodes the finite generated JSON twice: protocol then Java string.
+        // This worker is explicitly a parent-protocol double, not a real browser.
+        val javaLiteral = Gson().toJson(Gson().toJson(protocol))
+        Files.writeString(script, """
+            public class GeneratedHintWorker {
+                public static void main(String[] args) throws Exception {
+                    new java.io.BufferedReader(new java.io.InputStreamReader(System.in,
+                        java.nio.charset.StandardCharsets.UTF_8)).readLine();
+                    System.out.print($javaLiteral);
+                }
+            }
+        """.trimIndent())
+        val java = Path.of(System.getProperty("java.home"), "bin",
+            if (System.getProperty("os.name").startsWith("Windows", true)) "java.exe" else "java")
+        val renderer = CamoufoxWebviewRenderer(java.toString(), timeoutMs = 8_000,
+            allowPrivateNetworks = false, workerScriptOverride = script)
+        try {
+            // Public literal needs no external DNS; the double never connects to it.
+            return renderer.render(WebviewRequest("https://8.8.8.8/", null, null, null, null, null,
+                null, null, false, null, "certificate-hint-generated", null)).body
+        } finally { renderer.close() }
     }
 }

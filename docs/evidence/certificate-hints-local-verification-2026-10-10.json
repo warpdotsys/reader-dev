@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "sourceBaseRevision": "c29e682b309214dd53f54891177869473fd043f1",
+  "scope": "Uncommitted finite certificate-hint candidate; local compiled parent-protocol and generated guard tests only",
+  "candidateWorkerSha256": "d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5",
+  "python": {"tests": 598, "seconds": 32.069, "failures": 0, "windowsPlatformSkipped": 1},
+  "pipelineNode": {"tests": 86, "failures": 0, "skipped": 0},
+  "jvmParentProtocol": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "generatedWorkerDouble": true,
+    "realBrowserExecutedByTheseTests": false,
+    "xmlSha256": "883cb46dc83be42cff404bc4c248af495953975dbfb4187e53dfb35180611c85"
+  },
+  "preparationFailuresRetained": [
+    {"stage": "compileTestKotlin", "failure": "Generated test helper declared String instead of actual nullable String body", "fixed": true},
+    {"stage": "pipeline mutation test", "failure": "Ignoring-validator mutation inserted before the new flag and hit the missing-flag guard", "fixed": true}
+  ],
+  "python310SyntaxFiles": 4,
+  "shellSyntaxFiles": 2,
+  "candidateProductionSourceCompiled": true,
+  "candidateJarBuilt": false,
+  "candidateActualReaderTlsExecuted": false,
+  "candidateRealSiteAccepted": false,
+  "rawExceptionMessagesCopiedToProtocol": false,
+  "certificateChecksRelaxed": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

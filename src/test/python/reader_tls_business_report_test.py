@@ -207,6 +207,53 @@ class ReaderTlsBusinessReportTest(unittest.TestCase):
     def test_packaged_negative_tls_connection_check_not_relaxed(self):
         self.reject_packaged(lambda r:r['observation']['results'][-1]['negativeTlsFailures'][0].update(sourcePort=1))
 
+    def certificate_hints_double(self):
+        """Generated protocol mutations, not a fresh TLS/browser execution."""
+        value=self.packaged_double()
+        for row in value['observation']['results'][-2:]:
+            row['readerApiResult']['returnData']['errorMsg']=(
+                'Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)' if row['case']=='wrong-host'
+                else 'Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)')
+        return value
+
+    def check_certificate_hints(self,value):
+        return guard.validate_packaged(value,JAR,guard.RECORDED_WORKER_SHA,REVISION,'amd64',True)
+
+    def test_current_certificate_hint_gate_accepts_only_fixed_messages(self):
+        self.assertTrue(self.check_certificate_hints(self.certificate_hints_double())['acceptedCertificateHintMessages'])
+
+    def test_old_generic_errors_remain_historical_but_fail_new_hint_gate(self):
+        value=self.packaged_double()
+        self.assertTrue(guard.validate_packaged(value,JAR,guard.RECORDED_WORKER_SHA,REVISION,'amd64')['acceptedCurrentReaderHttpsBusinessSubset'])
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def test_swapped_certificate_messages_fail_new_hint_gate(self):
+        value=self.certificate_hints_double()
+        rows=value['observation']['results'][-2:]
+        rows[0]['readerApiResult']['returnData']['errorMsg'], rows[1]['readerApiResult']['returnData']['errorMsg']=(
+            rows[1]['readerApiResult']['returnData']['errorMsg'],rows[0]['readerApiResult']['returnData']['errorMsg'])
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def test_certificate_message_cannot_echo_a_url_or_private_text(self):
+        value=self.certificate_hints_double()
+        value['observation']['results'][-1]['readerApiResult']['returnData']['errorMsg']+=' https://generated.invalid/?token=PRIVATE'
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def test_certificate_hint_gate_does_not_add_a_fake_data_field(self):
+        value=self.certificate_hints_double()
+        value['observation']['results'][-1]['readerApiResult']['returnData']['data']=None
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
+    def test_certificate_hint_does_not_replace_actual_http_rejection(self):
+        value=self.certificate_hints_double()
+        value['observation']['results'][-1]['negativeHttpRequests']=1
+        with self.assertRaises(ValueError):
+            self.check_certificate_hints(value)
+
 
 if __name__ == '__main__':
     unittest.main()

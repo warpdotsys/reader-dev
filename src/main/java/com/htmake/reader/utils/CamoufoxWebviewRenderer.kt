@@ -239,7 +239,17 @@ class CamoufoxWebviewRenderer private constructor(
             if (response.error == "BlockedScheme") {
                 throw BrowserNetworkPolicyViolation("Camoufox WebView 已阻止不支持的资源协议")
             }
-            response.error?.let { throw IllegalStateException("Camoufox 渲染失败 ($it)") }
+            response.error?.let { error ->
+                // The child is a protocol boundary. Only known hints accompanying
+                // its navigation Error may select these fixed messages; never
+                // echo a raw hint, URL or certificate text, or relax TLS policy.
+                val message = when (response.certificateError.takeIf { error == "Error" }) {
+                    "SSL_ERROR_BAD_CERT_DOMAIN" -> "Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)"
+                    "SEC_ERROR_UNKNOWN_ISSUER" -> "Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)"
+                    else -> "Camoufox 渲染失败 ($error)"
+                }
+                throw IllegalStateException(message)
+            }
             return response
         } catch (e: InterruptedException) {
             terminate(process)
@@ -356,7 +366,8 @@ class CamoufoxWebviewRenderer private constructor(
     private data class WorkerResponse(
         val body: String?,
         val cookies: List<WorkerCookie>?,
-        val error: String?
+        val error: String?,
+        val certificateError: String?
     )
 
     private class WorkerOutputLimitExceeded : IllegalStateException()

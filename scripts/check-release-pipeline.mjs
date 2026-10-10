@@ -61,6 +61,10 @@ if (/verify-camoufox-tls\.py[\s\S]{0,256}?(?:\|\|\s*true|;\s*true)/.test(nativeT
   throw new Error('packaged HTTPS acceptance must not ignore failures')
 }
 const readerTlsCall = 'bash scripts/smoke-native-tls.sh "$image" "$arch" "$revision" "$expected_jar" "$output/BROWSER_READER_TLS.json" reader-api'
+if (!nativeTls.includes('--architecture "$arch" --require-certificate-hints') ||
+    !nativeImporter.includes('--architecture "$arch" --require-certificate-hints')) {
+  throw new Error('Reader certificate hints must be checked during production and publisher consumption')
+}
 if (nativeSmoke.split('\n').filter(line => line.trim() === readerTlsCall).length !== 1 ||
     nativeSmoke.indexOf(readerTlsCall) <= nativeSmoke.indexOf(tlsCall) ||
     nativeSmoke.indexOf(readerTlsCall) >= nativeSmoke.indexOf('container_id=$(docker run -d') ||

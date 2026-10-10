@@ -4,6 +4,8 @@
 
 ## 当前方向
 
+- **c29自己的四条托管与六个Native作业已全部独立接受**：Full与双架构构建/重导入各自实际Reader HTTPS8项 / 12HTTP / 14CONNECT / 178头字段，生成用户/证书负例真实执行，publisher32份JSON逐字段重验；不是静态守卫或本机旧缓存运行时的代替结论。候选另修证书错误提示：只传两个有限码、不传原始异常，不放宽TLS；本机成功编译、4项Java协议 / 598Python / 86流水线检查通过，但自己的真实提示仍待新构建。[准确状态、候选、已知问题与回退](CERTIFICATE-ERROR-HINTS-2026-10-10.md)。
+
 - **真实Reader HTTPS业务门槛已整理为可维护候选并本机复跑**：实际API8项 / 12HTTP / 14CONNECT / 178头字段，旧worker12项 / 24HTTP也重新通过；586Python、84流水线检查通过。父5ec自己四条托管产物独立接受，但不冒充新业务模式CI；新Full / 双原生 / 重导入新增 `BROWSER_READER_TLS.json`、publisher32份待自己的托管实测。保留两个初始化失败、临时自有cgroup只读指标权限适配及有限验收边界。[源码入口、完整观察、已知问题与回退](PORTABLE-READER-HTTPS-GATE-2026-10-10.md)。
 
 - **22f949自己的新托管产物已独立接受，不借历史绿灯**：四条GitHub托管任务／Native六作业，525LinuxPython零跳过、198JVM／35原环境跳过、新4代理测试全执行、25实际生成UI零跳过、双干净JAR字节一致；Full与双原生重导入12例打包HTTPS／24目标请求／两证书负例和28publisher报告各自通过。新fcd JAR已下载重算实际字节SHA。最小私有非点`camoufox`目录解决该测试条件下只读启动，旧892／e723失败不抹除。[准确产物和范围](READER-HTTPS-BUSINESS-2026-10-10.md)。

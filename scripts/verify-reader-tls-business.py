@@ -49,7 +49,7 @@ def validate(report,jar_sha,revision,architecture='amd64'):
     resources.verify_report(budget,require_no_swap=True,expected_memory_high=1610612736)
     return validate_observation(report['observation'],jar_sha,RECORDED_WORKER_SHA)
 
-def validate_packaged(report,jar_sha,worker_sha,revision,architecture):
+def validate_packaged(report,jar_sha,worker_sha,revision,architecture,require_certificate_hints=False):
     """Hosted Docker scope differs from the historical rootless envelope, not the business checks."""
     require(re.fullmatch('[0-9a-f]{64}',jar_sha) and re.fullmatch('[0-9a-f]{64}',worker_sha) and
             re.fullmatch('[0-9a-f]{40}',revision),'Invalid expected packaged identity')
@@ -73,7 +73,16 @@ def validate_packaged(report,jar_sha,worker_sha,revision,architecture):
     resources=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(resources)
     resources.verify_report(budget,require_no_swap=True)
-    return validate_observation(report['observation'],jar_sha,worker_sha)
+    result=validate_observation(report['observation'],jar_sha,worker_sha)
+    if require_certificate_hints:
+        expected={'wrong-host':'Camoufox HTTPS 证书域名不匹配 (SSL_ERROR_BAD_CERT_DOMAIN)',
+                  'untrusted':'Camoufox HTTPS 证书签发机构不受信任 (SEC_ERROR_UNKNOWN_ISSUER)'}
+        for row in report['observation']['results']:
+            if row['case'] in expected:
+                require(row['readerApiResult']['returnData']['errorMsg']==expected[row['case']],
+                        'Actual Reader certificate hint is missing, swapped, or contains untrusted text')
+        result=dict(result,acceptedCertificateHintMessages=True)
+    return result
 
 def validate_observation(value,jar_sha,worker_sha):
     """Shared strict wire/header/socket/TLS checks for both actual execution envelopes."""
@@ -185,15 +194,18 @@ def main():
     parser.add_argument('--revision',required=True)
     parser.add_argument('--packaged',action='store_true',help='Validate the actual Docker Reader API report, not a rootless envelope')
     parser.add_argument('--worker-sha',help='Mandatory build worker digest for packaged reports')
+    parser.add_argument('--require-certificate-hints',action='store_true',
+                        help='New-build gate only; preserve historical generic-error observations by default')
     parser.add_argument('--architecture',choices=('amd64','arm64'),default='amd64')
     args=parser.parse_args()
     require(args.report.is_file() and not args.report.is_symlink() and args.report.stat().st_size<524288,'Expected bounded regular report')
     report=json.loads(args.report.read_bytes())
     if args.packaged:
         require(args.worker_sha is not None,'Packaged business report requires worker digest')
-        result=validate_packaged(report,args.jar_sha,args.worker_sha,args.revision,args.architecture)
+        result=validate_packaged(report,args.jar_sha,args.worker_sha,args.revision,args.architecture,args.require_certificate_hints)
     else:
         require(args.worker_sha is None,'Rootless historical report uses its recorded worker identity')
+        require(not args.require_certificate_hints,'Certificate message gate requires a current packaged report')
         result=validate(report,args.jar_sha,args.revision,args.architecture)
     print(json.dumps(result))
 

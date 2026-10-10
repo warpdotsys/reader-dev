@@ -35,7 +35,7 @@ for report_directory in "$directory" "$evidence"; do
   python3 scripts/verify-camoufox-tls.py "$report_directory/BROWSER_TLS.json" \
     --jar-sha "$jar_sha" --worker-sha "$worker_sha" --revision "$revision" --architecture "$arch"
   python3 scripts/verify-reader-tls-business.py "$report_directory/BROWSER_READER_TLS.json" --packaged \
-    --jar-sha "$jar_sha" --worker-sha "$worker_sha" --revision "$revision" --architecture "$arch"
+    --jar-sha "$jar_sha" --worker-sha "$worker_sha" --revision "$revision" --architecture "$arch" --require-certificate-hints
   python3 scripts/verify-reader-default-ui.py check "$report_directory/DEFAULT_UI.json" \
     --expected-jar-sha "$jar_sha"
   jq -e --arg arch "$arch" --arg revision "$revision" --arg jar_sha "$jar_sha" \

@@ -334,6 +334,67 @@ class WorkerOriginHeaderPolicyTest(unittest.TestCase):
 
 
 class WorkerBrowserDiagnosticTest(unittest.TestCase):
+    def test_known_navigation_certificate_hints_are_finite_and_do_not_echo_secrets(self):
+        Error = type("Error", (Exception,), {})
+        for code, kind in (("SSL_ERROR_BAD_CERT_DOMAIN", "certificateDomainMismatch"),
+                           ("SEC_ERROR_UNKNOWN_ISSUER", "certificateIssuerUntrusted")):
+            error = Error("Page.goto: " + code + " at https://generated.invalid/?token=PRIVATE_COOKIE\nPRIVATE_BODY")
+            error._reader_browser_operation = "initialNavigation"
+            self.assertEqual(code, worker.certificate_failure_code(error))
+            diagnostic = worker.browser_failure_diagnostic(error)
+            self.assertEqual({"operation": "initialNavigation", "kind": kind,
+                              "errorClass": "Error", "certificateError": code}, diagnostic)
+            self.assertNotIn("PRIVATE", str(diagnostic))
+            self.assertNotIn("generated.invalid", str(diagnostic))
+
+    def test_certificate_like_source_script_errors_are_not_navigation_hints(self):
+        Error = type("Error", (Exception,), {})
+        for phase in worker.BROWSER_OPERATION_PHASES - {"initialNavigation"}:
+            error = Error("Page.goto: SSL_ERROR_BAD_CERT_DOMAIN")
+            error._reader_browser_operation = phase
+            self.assertIsNone(worker.certificate_failure_code(error))
+            self.assertNotIn("certificateError", worker.browser_failure_diagnostic(error))
+
+    def test_certificate_hints_require_the_engine_prefix_not_a_url_or_substring(self):
+        Error = type("Error", (Exception,), {})
+        for message in ("PRIVATE SSL_ERROR_BAD_CERT_DOMAIN", "Page.goto: UNKNOWN_CERTIFICATE",
+                        "Page.goto: SSL_ERROR_BAD_CERT_DOMAIN_SUFFIX", "Page.goto: SEC_ERROR_UNKNOWN_ISSUER=PRIVATE",
+                        "Page.goto: timeout at https://generated.invalid/?code=SSL_ERROR_BAD_CERT_DOMAIN"):
+            error = Error(message)
+            error._reader_browser_operation = "initialNavigation"
+            self.assertIsNone(worker.certificate_failure_code(error))
+
+    def test_certificate_hints_require_known_phase_and_error_class(self):
+        Error = type("Error", (Exception,), {})
+        error = Error("Page.goto: SSL_ERROR_BAD_CERT_DOMAIN")
+        self.assertIsNone(worker.certificate_failure_code(error))
+        error._reader_browser_operation = "PRIVATE_PHASE"
+        self.assertIsNone(worker.certificate_failure_code(error))
+        other = RuntimeError("Page.goto: SSL_ERROR_BAD_CERT_DOMAIN")
+        other._reader_browser_operation = "initialNavigation"
+        self.assertIsNone(worker.certificate_failure_code(other))
+
+    def test_unprintable_navigation_error_does_not_replace_the_original_failure(self):
+        class Error(Exception):
+            def __str__(self):
+                raise RuntimeError("PRIVATE")
+        error = Error()
+        error._reader_browser_operation = "initialNavigation"
+        self.assertIsNone(worker.certificate_failure_code(error))
+        self.assertEqual("unclassified", worker.browser_failure_diagnostic(error)["kind"])
+
+    def test_main_certificate_protocol_has_only_class_and_allowlisted_hint(self):
+        Error = type("Error", (Exception,), {})
+        error = Error("Page.goto: SEC_ERROR_UNKNOWN_ISSUER\nhttps://generated.invalid/?cookie=PRIVATE_COOKIE")
+        error._reader_browser_operation = "initialNavigation"
+        output, diagnostic = io.StringIO(), io.StringIO()
+        with patch.object(worker, "render", side_effect=error), patch.object(worker, "protocol_out", output), \
+                patch.object(worker.sys, "stdin", io.StringIO("{}\n")), patch.object(worker.sys, "stderr", diagnostic):
+            worker.main()
+        self.assertEqual({"error": "Error", "certificateError": "SEC_ERROR_UNKNOWN_ISSUER"}, json.loads(output.getvalue()))
+        self.assertNotIn("PRIVATE", output.getvalue() + diagnostic.getvalue())
+        self.assertNotIn("generated.invalid", output.getvalue() + diagnostic.getvalue())
+
     def test_annotating_a_failure_preserves_the_original_exception_and_protocol_class(self):
         error = RuntimeError("PRIVATE_BODY https://generated.invalid/?cookie=PRIVATE_COOKIE")
         with self.assertRaises(RuntimeError) as raised:

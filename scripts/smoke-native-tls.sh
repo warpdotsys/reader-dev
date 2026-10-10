@@ -96,7 +96,7 @@ test "$(cat "$directory/exit-code")" = 0
 docker logs "$container_id" > "$directory/result.json" 2> "$directory/diagnostic.log"
 if [[ "$mode" = reader-api ]]; then
   python3 scripts/verify-reader-tls-business.py "$directory/result.json" --packaged --jar-sha "$expected_jar" \
-    --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch"
+    --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch" --require-certificate-hints
 else
   python3 scripts/verify-camoufox-tls.py "$directory/result.json" --jar-sha "$expected_jar" \
     --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch"
