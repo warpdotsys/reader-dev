@@ -98,6 +98,7 @@ class CamoufoxWebviewRendererTest {
     private val complexProbeHits = AtomicInteger()
     private val complexProbeCookie = AtomicReference("")
     private val echoCookie = AtomicReference("")
+    private val echoContentType = AtomicReference("")
     private val utf8PostHits = AtomicInteger()
     private val utf8PostBytes = AtomicReference(ByteArray(0))
     private val utf8PostMethod = AtomicReference("")
@@ -414,6 +415,7 @@ class CamoufoxWebviewRendererTest {
                 }
                 "/echo" -> {
                     echoCookie.set(cookie)
+                    echoContentType.set(exchange.requestHeaders.getFirst("Content-Type") ?: "")
                     respond(exchange,
                         "${exchange.requestMethod}|$requestBody|$cookie|${exchange.requestHeaders.getFirst("X-Reader-Probe") ?: ""}",
                         "text/plain; charset=utf-8")
@@ -449,9 +451,12 @@ class CamoufoxWebviewRendererTest {
     fun getPostScriptsAndSubresourcesUseTheBrowser() = runBlocking {
         val get = renderer.render(request("/echo", "user-a", headers = mapOf("X-Reader-Probe" to "header-ok")))
         assertTrue(get.body?.contains("GET|||header-ok") == true)
+        assertEquals("Ordinary GET must not acquire a form content type", "", echoContentType.get())
 
         val post = renderer.render(request("/echo", "user-a", post = true, body = "page=2"))
         assertTrue(post.body?.contains("POST|page=2|") == true)
+        assertEquals("The actual target must receive the original JAR's default form type",
+            "application/x-www-form-urlencoded; charset=UTF-8", echoContentType.get())
 
         val script = renderer.render(request(
             "/resource-page",

@@ -35,7 +35,7 @@ node --test scripts/check-release-pipeline.test.mjs
 
 缺少参考侧的五次（编码模式六次）实际观测时，保存已取得的历史观察并拒绝启动Camoufox；最终三侧都必须完整。13个新增生成守卫验证此行为及CLI传递，不是实际浏览器请求证明。最终报告明确 `literalHeaderParityAccepted=false`；User-Agent、Accept、Content-Type等差异仍需真实执行后逐项审阅，不能把观测完整误称字面兼容。
 
-本轮尚未用新JAR执行准确原件三方全请求头观测。此前已证的历史UTF-8 POST截断44／正确60字节、Cookie差异、真实认证和长测风险原样保留，不借此入口放宽。
+本记录最初尚未执行新JAR准确原件全请求头。随后已对da54完成两轮实际33份解析字段对，发现普通POST缺省类型遗漏，详见[后续实测和可读源码修正](TARGET-HEADER-DIFFERENTIAL-2026-10-10.md)。h五项旧契约通过并不代表所有头兼容；i严格UTF-8仍失败。后续修正自己的构建/实际浏览器结果另验，不借旧绿灯。Cookie差异、真实认证和长测风险保留。
 
 ## 自己的托管结果与回退
 
@@ -50,5 +50,19 @@ node --test scripts/check-release-pipeline.test.mjs
 现在500与业务处理器使用同一个仅日志的 `logRequestFailure`，基础处理器移除重复打印。业务分支记录当时的真实状态，不改status、content-type、ReturnData的null省略、errorMsg或已提交正文。测试使用真实 `YueduApi` 错误方法；抽象基础类由测试替身调用原方法，未初始化整套Reader服务。两个HTTP用例是独立临时loopback服务，不是生产或原件黑盒差分。
 
 修正后的9例本机实际2.622秒／零失败、错误、跳过；XML SHA `07ee761103538685f9acd904b14c94050e1a6863b98edaff7308e37c67d17afe`。新的JAR与自己的全部托管结果仍须重新接受，不能借首轮2957字节或上述绿灯。全请求头三方、真实认证、全部其他日志、错误响应本身、长测、OPDS与生产仍未宣称完成。
+
+### 调用链修正自己的四条托管结果已独立接受
+
+源码 `2a3db5106d0d1e3a638a166f627cdfd1896852cb`／tested merge `1b18ea95106148111e662cfabf689f4fea750bb2`，不是借c516绿灯。全部为GitHub托管runner；不发布、合并或部署。
+
+- [Java 38028479233](https://github.com/warpdotsys/reader-dev/actions/runs/38028479233)：467 Python全执行，43 JVM套件／188例／31原有环境跳过，日志9例实际0.639秒／零跳过，两个loopback HTTP错误入口均执行。日志XML SHA `fb35ddd78494d99fe286c98473ab4d16c95fe1a528370e0d0ee268967bff277e`，独立回执 `0f64c578799a0665e3f080bb5518bd50d53b6983dbdc6fcb4410b6e81977ea3a`。
+- 两次干净JAR均为 `da54c868867d4e3cd9ec9adce0f7c61e6597afca7db26ec638ed0e05df75dad1`／285,665,781B／1,569条目，完整字节、顺序及ZIP元数据差异均0。重建JSON SHA `ab4e642dc1eea771ea40aec088796626cc2e26fd890554c347b0db5e9f62cf9f`。它与c516的2957和a12的e59不同，不能复用旧产物身份。
+- [Vue 38028479235](https://github.com/warpdotsys/reader-dev/actions/runs/38028479235)：25实际UI／零跳过，296前端＋20截图守卫、类型检查和构建、11生成图完整性通过，独立回执 `8e6fa9cbaa6e6b38b4c83462cdee70d878885a899dc871f556755d883479d2e8`。
+- [Full 38028479310](https://github.com/warpdotsys/reader-dev/actions/runs/38028479310)：实际Cam20／Chrom23／helper3、默认UI静态字节、异步／metadata与新完整镜像默认界面旅程均通过。新旅程1例／7.174秒／零失败、错误、跳过；注册／错误与正确登录／TXT预览和确认／中文两章及刷新／退出经过。独立回执 `519b0134f9233883dce0b860276daec76ba27b26712d501020218cd5fa9de682`，最终累计服务端峰值856,944,640B／PID191；2CPU／2GiB／256PID，max／OOM／PID触限0，普通允许1GiB swap／实际0，客户端不计入服务端预算。当前登录、导入、阅读图逐张目视中文可读；退出图完整SHA与此前已目视a12图一致。导入完成弹窗仍保留，阅读入口仍直接旧bookUrl路由，不扩称所有卡片点击或全UI编码无误。
+- [Native 38028479215](https://github.com/warpdotsys/reader-dev/actions/runs/38028479215)：六实际作业、双架构原生构建运行、各自归档重新导入再运行、同正式publisher导入器无仓库凭据的演练均成功；24小JSON独立复核，回执 `f8f630fba92256b7b50265c9091173b64446772e7197e71c24a599b7d7cc493c`。四份原生／重导入预算最大852,234,240B／PID207，实际swap0但普通允许1GiB。AMD64 image ID `sha256:e500aae8286979ba3800a44cfbbeb6e4ec1088374986c8c39c711b7ac3d3a73f`，ARM64 `sha256:e8ee00e467cc566876d17da9b049cc98d9c5c1bcad79956749e3fc4d3154a988`；与Java及Full同da54 JAR。没有重复下载大归档，本机归档散列和新整镜像运行不宣称已验；新默认UI渲染旅程只有Full AMD64，不冒称ARM渲染。
+
+独立复验源码 SHA `1c0750db523c2ba35f98829f771dc66dcff09991869586e0124e02133bdf0efc`。c516旧Native `38027610452` 因修正源码而主动取消，已确认terminal cancelled，不列为产品失败或完整成功。原件及只读备份同b26／72,913,887B，58保护文件变化0，默认仍legacy／PR56仍draft。此处结果在验收后先保存本机，待后续有效增量提交；代码两项提交已推送。
+
+仍待：后续POST头修正自己的三方及托管实跑、所有头与字符集/严格UTF-8差异、真实书源认证、当前整镜像本机及长测、OPDS、其他日志和错误响应的信息暴露、生产／正式发布。CI另有已固定actions的Node20运行时与setup-java v4弃用警告；本次均成功，但未来版本兼容不由此证明。没有降低门禁、换原件、读取私人正文或重新使用已清除凭据。
 
 测试工具回退可撤销新开关及独立观测字段，不改旧报告或现有断言。日志修改回退会重新引入查询令牌与异常消息泄露风险，不能无说明恢复。若回到父镜像a12，只使用其已核对身份并保留数据；它有上传修复，但不含本日志修复。新默认UI旅程、旧Vue2回退和所有既有资源门禁仍保留。

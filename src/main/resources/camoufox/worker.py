@@ -816,7 +816,20 @@ def render(payload):
                     if (payload.get("post") and route.request.is_navigation_request()
                             and route_url == url and not state["post_sent"]):
                         state["post_sent"] = True
-                        route.continue_(method="POST", post_data=payload.get("body") or "")
+                        options = {"method": "POST", "post_data": payload.get("body") or ""}
+                        rule_headers = payload.get("headers") or {}
+                        if not any(name.lower() == "content-type" for name in rule_headers):
+                            # The exact original JAR/historical target sends this
+                            # default for form POSTs. Playwright otherwise chooses
+                            # application/octet-stream when overriding GET to POST.
+                            # Do not change context-wide headers, re-encode the body,
+                            # replace an explicit type, or replay the navigation.
+                            headers = dict(route.request.headers)
+                            headers.update({name.lower(): value for name, value in rule_headers.items()})
+                            if "content-type" not in headers:
+                                headers["content-type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+                                options["headers"] = headers
+                        route.continue_(**options)
                         return
                     route.continue_()
 

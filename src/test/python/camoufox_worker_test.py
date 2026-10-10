@@ -133,6 +133,65 @@ class WorkerInitialNavigationPolicyTest(unittest.TestCase):
         context.close.assert_called_once()
 
 
+class WorkerPostHeaderPolicyTest(unittest.TestCase):
+    def fixture(self, headers=None, body="q=post", post=True):
+        browser, context, page, payload = WorkerInitialNavigationPolicyTest().fixture()
+        payload.update(post=post, body=body, headers=headers or {})
+        requests = []
+
+        def navigate(*_args, **_kwargs):
+            handle = context.route.call_args.args[1]
+            for navigation, target in ((True, payload["url"]), (False, payload["url"] + "/asset"),
+                                       (True, payload["url"])):
+                route = MagicMock()
+                route.request.url = target
+                route.request.is_navigation_request.return_value = navigation
+                route.request.headers = {"accept": "text/html", "user-agent": "generated-agent",
+                                         **{key.lower(): value for key, value in payload["headers"].items()}}
+                handle(route)
+                requests.append(route.continue_.call_args.kwargs)
+
+        page.goto.side_effect = navigate
+        with patch.object(worker, "Camoufox", return_value=browser), \
+                patch.object(worker, "NewContext", return_value=context), \
+                patch.object(worker, "evaluate_source_script", return_value="generated-result"):
+            worker.render(payload)
+        return requests, payload, context
+
+    def test_default_post_has_the_observed_legacy_form_type_without_changing_body(self):
+        requests, payload, context = self.fixture({"X-Fixture": "synthetic"})
+        self.assertEqual("POST", requests[0]["method"])
+        self.assertEqual("q=post", requests[0]["post_data"])
+        self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
+                         requests[0].get("headers", {}).get("content-type"))
+        self.assertEqual("synthetic", requests[0]["headers"]["x-fixture"])
+        self.assertEqual("generated-agent", requests[0]["headers"]["user-agent"])
+        self.assertEqual({}, requests[1])
+        self.assertEqual({}, requests[2])
+        self.assertEqual({"X-Fixture": "synthetic"}, payload["headers"])
+        context.set_extra_http_headers.assert_called_once_with(payload["headers"])
+
+    def test_explicit_content_type_in_any_case_is_not_overridden_or_rewritten(self):
+        for name in ("Content-Type", "content-type", "CONTENT-TYPE"):
+            for value in ("application/json; charset=utf-8", "", "application/custom"):
+                with self.subTest(name=name, value=value):
+                    requests, _payload, _context = self.fixture({name: value})
+                    self.assertEqual({"method": "POST", "post_data": "q=post"}, requests[0])
+
+    def test_get_never_injects_a_form_header_or_changes_the_method(self):
+        requests, _payload, _context = self.fixture(post=False)
+        self.assertEqual([{}, {}, {}], requests)
+
+    def test_empty_body_keeps_legacy_empty_post_without_encoding_or_replay(self):
+        for body in (None, ""):
+            with self.subTest(body=body):
+                requests, _payload, _context = self.fixture(body=body)
+                self.assertEqual("", requests[0]["post_data"])
+                self.assertEqual("application/x-www-form-urlencoded; charset=UTF-8",
+                                 requests[0].get("headers", {}).get("content-type"))
+                self.assertEqual([{}, {}], requests[1:])
+
+
 class WorkerBrowserDiagnosticTest(unittest.TestCase):
     def test_annotating_a_failure_preserves_the_original_exception_and_protocol_class(self):
         error = RuntimeError("PRIVATE_BODY https://generated.invalid/?cookie=PRIVATE_COOKIE")
