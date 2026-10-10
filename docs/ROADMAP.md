@@ -4,9 +4,11 @@
 
 ## 当前方向
 
-- **只读启动故障已有最小实测候选，等待新托管产物**：九轮生成诊断保留失败；r与只读基线仅差1MiB私有`/home/reader/camoufox`（非`.camoufox`），11.118秒完成两请求／两CONNECT。没有开放整个home或放宽2CPU2GiB、UID、证书、外网；soft memory.high751真实保留，hard/OOM/PID触限0，精确清理0。正式打包门槛增加外部及内部私有目录核查，28生成报告／77结构／完整525Python通过，本机9JVM已编译；新12例／双架构／Full／新JAR与Java出口仍待自己的托管证据。[实测与隔离边界](PACKAGED-HTTPS-GATE-2026-10-10.md#最新实际失败与修订候选)。
+- **22f949自己的新托管产物已独立接受，不借历史绿灯**：四条GitHub托管任务／Native六作业，525LinuxPython零跳过、198JVM／35原环境跳过、新4代理测试全执行、25实际生成UI零跳过、双干净JAR字节一致；Full与双原生重导入12例打包HTTPS／24目标请求／两证书负例和28publisher报告各自通过。新fcd JAR已下载重算实际字节SHA。最小私有非点`camoufox`目录解决该测试条件下只读启动，旧892／e723失败不抹除。[准确产物和范围](READER-HTTPS-BUSINESS-2026-10-10.md)。
 
-- **已修复书源proxy在WebView GET／POST丢失**：准确原JAR的javap默认掩码证明它也把proxy置null；实际新测试修复前4项／3失败，两个参数修正后连同既有适配器与Cookie测试共9项JVM重新编译通过、零跳过。明确是遵从书源代理的有意行为修正，不改原件基准、不冒称真实HTTPS出口、自己的新JAR或生产已验证。[证据、可重复命令与回退](SOURCE-PROXY-FORWARDING-2026-10-10.md)。
+- **新fcd JAR实际HTTPS Java业务子集已独立复核**：生成注册／登录、保存回读书源、搜索／脚本、A/B Cookie及书源隔离，8场景／12目标HTTP／14CONNECT／178头字段，上游socket确属当前JVM，两种无效证书在HTTP前拒绝；52.39秒、2CPU2GiB／256PID／high1.5GiB／零swap，峰值1,611,509,760B／PID240、soft high2468／hard触限0、自有清理0。失败ReturnData省略data，原样保留。旧缓存runtime只读绑定新JAR，不是最新整镜像本机；33项新增静态守卫也不冒充新渲染。原件三方／真实站点／长测／OPDS／生产仍未完成，不发版部署。[业务、已知问题与回退](READER-HTTPS-BUSINESS-2026-10-10.md)。
+
+以下候选和失败条目保留各次捕获时的历史状态，最新终态以上述22f949记录为准。
 
 - **字体临时区修订e7236633仍失败，不发版**：自己的Java/Vue成功，Native双架构和Full均300秒外层超时；三个作业仅观察到首个生成same-get为TimeoutError／目标数0，没有最终报告，其余用例和总请求数未知。本机单例j/k同预算复现，OOM／触限0，单独开放dconf无效，已精确清理；继续诊断只读缓存与启动条件，不归因于用户CPU性能、不借历史绿灯。[当前失败与证据](PACKAGED-HTTPS-GATE-2026-10-10.md#最新实际失败与修订候选)。
 

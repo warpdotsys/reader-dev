@@ -1,1 +1,6 @@
 *.java linguist-language=Kotlin
+
+# Preserve these captured evidence bytes and SHA-256 on Windows/Linux checkouts.
+docs/evidence/proxy-appdir-hosted-*-22f949cc-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/reader-business-https-22f949cc-2026-10-10.json -text
+docs/evidence/reader-business-https-independent-2026-10-10.json -text

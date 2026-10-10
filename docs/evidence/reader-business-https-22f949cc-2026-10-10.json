@@ -1,0 +1,1664 @@
+{
+  "scope": "actual current Reader JAR generated HTTPS via Java and selected upstream proxy; not full-image/original acceptance",
+  "passed": true,
+  "readerStarted": true,
+  "realCredentialsImported": false,
+  "productionChanged": false,
+  "privateBookBodyRead": false,
+  "fullGoalComplete": false,
+  "freshDirectory": "/home/chong/.cache/reader-auth-routing-20261010-r8s3xc7m",
+  "imageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "innerSha256": "8b61045c3bafb9ea1c86587bce2997a8a596cdb658e1e061ef2afe7225e226a3",
+  "browserBinaryBytesChanged": false,
+  "dockerLikeReadonlyGeneratedHome": true,
+  "onlySingleGeneratedTlsCase": false,
+  "debugScope": "generated fixture only",
+  "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+  "sourceRevision": "22f949ccb3befff4d66af793598889b5879b0c45",
+  "testedMergeSnapshot": "d74875d2ea057500cadedcb66af4c7942e3f8d96",
+  "preflightResources": {
+    "scope": "actual current Reader JAR generated HTTPS via Java and selected upstream proxy; not full-image/original acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 14454784,
+    "memoryCurrentBytes": 12599296,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 11177984,
+      "file": 1785856,
+      "shmem": 0,
+      "kernel": 425984,
+      "kernel_stack": 0,
+      "pagetables": 102400,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 20480,
+      "file_writeback": 0,
+      "inactive_file": 188416,
+      "active_file": 1601536,
+      "slab_reclaimable": 219976,
+      "slab_unreclaimable": 39280
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 2,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "fixtureOnlyPrivateDistributionTmpfsVerified": true,
+  "identity": {
+    "uid": 10001,
+    "gid": 10001,
+    "groups": [],
+    "interfaces": [
+      "lo"
+    ],
+    "cpuSet": [
+      0,
+      1
+    ],
+    "capsZero": true,
+    "noNewPrivileges": true,
+    "namespaces": {
+      "user": 4026532232,
+      "net": 4026532237,
+      "mnt": 4026532233,
+      "pid": 4026532236,
+      "ipc": 4026532235,
+      "uts": 4026532234
+    }
+  },
+  "hostIndependentlyVerifiedIdentityAndReadOnlyInputs": true,
+  "observation": {
+    "generatedOnly": true,
+    "realCredentialsImported": false,
+    "readerJarStarted": true,
+    "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+    "allExpectedCaseOutcomesObserved": true,
+    "actualExpectedOutcomes": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "authObservationsWithoutCredentialsOrTokens": [
+      {
+        "actor": "a",
+        "operation": "register",
+        "status": 200,
+        "isSuccess": true,
+        "returnDataFieldNames": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "cookieCount": 1
+      },
+      {
+        "actor": "a",
+        "operation": "login",
+        "status": 200,
+        "isSuccess": true,
+        "returnDataFieldNames": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "cookieCount": 1
+      },
+      {
+        "actor": "b",
+        "operation": "register",
+        "status": 200,
+        "isSuccess": true,
+        "returnDataFieldNames": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "cookieCount": 1
+      },
+      {
+        "actor": "b",
+        "operation": "login",
+        "status": 200,
+        "isSuccess": true,
+        "returnDataFieldNames": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "cookieCount": 1
+      }
+    ],
+    "readerCleanup": {
+      "javaExitedBeforeOuterCleanup": true,
+      "javaExitCode": 143,
+      "privateLogBytes": 91501,
+      "realCredentialsImported": false
+    },
+    "workerSha256": "c3ef2486a4b6ed37e0f3a898518dd4173c42e270c62d49d87e881562c50f4c24",
+    "hostTrustStoreChanged": false,
+    "ignoreHttpsErrorsUsed": false,
+    "fixtureOnlyPrivateDistributionPolicy": true,
+    "workerLaunchOverridden": false,
+    "httpsTested": true,
+    "fullGoalComplete": false,
+    "results": [
+      {
+        "case": "same-get",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/same-get",
+                "origin": "https://127.0.0.1:39001/source/same-get",
+                "originName": "Generated header same-get",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-same-get",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          37808,
+          37816
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2498,
+            "serverToClientBytes": 2430,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "35721",
+              "clientHost": "127.0.0.1",
+              "clientPort": 46248,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 37808
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 3019,
+            "serverToClientBytes": 928,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "35749",
+              "clientHost": "127.0.0.1",
+              "clientPort": 46254,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 37816
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "start",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 37808
+          },
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "end",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 37816
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "cross-post",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/cross-post",
+                "origin": "https://127.0.0.1:39001/source/cross-post",
+                "originName": "Generated header cross-post",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-cross-post",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          35138,
+          35832
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2608,
+            "serverToClientBytes": 2436,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "37486",
+              "clientHost": "127.0.0.1",
+              "clientPort": 47572,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 35138
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.2",
+            "port": 33049,
+            "clientToServerBytes": 2395,
+            "serverToClientBytes": 2373,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "37489",
+              "clientHost": "127.0.0.1",
+              "clientPort": 47582,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 35832
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "cross-post",
+            "actor": "primary",
+            "role": "start",
+            "method": "POST",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "Content-Type",
+                "application/x-www-form-urlencoded; charset=UTF-8"
+              ],
+              [
+                "Content-Length",
+                "23"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 23,
+            "bodySha256": "1d83d7747f01125a6eb2edd7d260b9dcf04570c1fcd2637a6731fe82f828c47a",
+            "targetSourcePort": 35138
+          },
+          {
+            "case": "cross-post",
+            "actor": "secondary",
+            "role": "end",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.2:33049"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 35832
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "same-post-307",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/same-post-307",
+                "origin": "https://127.0.0.1:39001/source/same-post-307",
+                "originName": "Generated header same-post-307",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-same-post-307",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          35148,
+          35152
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2610,
+            "serverToClientBytes": 2246,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "36737",
+              "clientHost": "127.0.0.1",
+              "clientPort": 47586,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 35148
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 3181,
+            "serverToClientBytes": 938,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "36740",
+              "clientHost": "127.0.0.1",
+              "clientPort": 47594,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 35152
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "same-post-307",
+            "actor": "primary",
+            "role": "start",
+            "method": "POST",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "Content-Type",
+                "application/json; charset=UTF-8"
+              ],
+              [
+                "Content-Length",
+                "39"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 39,
+            "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e",
+            "targetSourcePort": 35148
+          },
+          {
+            "case": "same-post-307",
+            "actor": "primary",
+            "role": "end",
+            "method": "POST",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Content-Type",
+                "application/json; charset=UTF-8"
+              ],
+              [
+                "Content-Length",
+                "39"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Cookie",
+                "generated_session=GENERATED_SESSION_ONLY"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 39,
+            "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e",
+            "targetSourcePort": 35152
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "same-get",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/same-get",
+                "origin": "https://127.0.0.1:39001/source/same-get",
+                "originName": "Generated header same-get",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-same-get",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          50836,
+          50844
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2548,
+            "serverToClientBytes": 2430,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "39232",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38564,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 50836
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 3069,
+            "serverToClientBytes": 928,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "38561",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38576,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 50844
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "start",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Cookie",
+                "generated_session=GENERATED_SESSION_ONLY"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 50836
+          },
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "end",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Cookie",
+                "generated_session=GENERATED_SESSION_ONLY"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 50844
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "same-get",
+        "account": "b",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "b",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/same-get",
+                "origin": "https://127.0.0.1:39001/source/same-get",
+                "originName": "Generated header same-get",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-same-get",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": true
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          50854,
+          50860
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2498,
+            "serverToClientBytes": 2430,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "40095",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38586,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 50854
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 3019,
+            "serverToClientBytes": 928,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "40099",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38588,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 50860
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "start",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 50854
+          },
+          {
+            "case": "same-get",
+            "actor": "primary",
+            "role": "end",
+            "method": "GET",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "targetSourcePort": 50860
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "cross-post-308",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "https://127.0.0.1:39001/book/cross-post-308",
+                "origin": "https://127.0.0.1:39001/source/cross-post-308",
+                "originName": "Generated header cross-post-308",
+                "type": 0,
+                "name": "\u8ba4\u8bc1\u5934\u5dee\u5206\u4e66-cross-post-308",
+                "author": "\u751f\u6210\u4f5c\u8005",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": true,
+        "observedTargetSourcePorts": [
+          50866,
+          36560
+        ],
+        "negativeHttpRequests": null,
+        "negativeTlsFailures": null,
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 39001,
+            "clientToServerBytes": 2661,
+            "serverToClientBytes": 2247,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "40605",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38604,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 50866
+          },
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.2",
+            "port": 33049,
+            "clientToServerBytes": 2506,
+            "serverToClientBytes": 2381,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "40609",
+              "clientHost": "127.0.0.1",
+              "clientPort": 38612,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 36560
+          }
+        ],
+        "targetRequests": [
+          {
+            "case": "cross-post-308",
+            "actor": "primary",
+            "role": "start",
+            "method": "POST",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.1:39001"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Cookie",
+                "generated_session=GENERATED_SESSION_ONLY"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "Content-Type",
+                "application/json; charset=UTF-8"
+              ],
+              [
+                "Content-Length",
+                "39"
+              ],
+              [
+                "authorization",
+                "Bearer GENERATED_NOT_A_REAL_CREDENTIAL"
+              ],
+              [
+                "x-generated-trace",
+                "GENERATED_HEADER_TRACE_ONLY"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 39,
+            "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e",
+            "targetSourcePort": 50866
+          },
+          {
+            "case": "cross-post-308",
+            "actor": "secondary",
+            "role": "end",
+            "method": "POST",
+            "headers": [
+              [
+                "Host",
+                "127.0.0.2:33049"
+              ],
+              [
+                "User-Agent",
+                "ReaderGeneratedHeaderProbe/1.0"
+              ],
+              [
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              ],
+              [
+                "Accept-Language",
+                "en-US,en;q=0.9"
+              ],
+              [
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd"
+              ],
+              [
+                "Content-Type",
+                "application/json; charset=UTF-8"
+              ],
+              [
+                "Content-Length",
+                "39"
+              ],
+              [
+                "Connection",
+                "keep-alive"
+              ],
+              [
+                "Upgrade-Insecure-Requests",
+                "1"
+              ],
+              [
+                "Sec-Fetch-Dest",
+                "document"
+              ],
+              [
+                "Sec-Fetch-Mode",
+                "navigate"
+              ],
+              [
+                "Sec-Fetch-Site",
+                "none"
+              ],
+              [
+                "Sec-Fetch-User",
+                "?1"
+              ],
+              [
+                "Priority",
+                "u=0, i"
+              ]
+            ],
+            "bodyByteCount": 39,
+            "bodySha256": "43b1c202d411f63668feb978b2db46e873777456c041b720df55add7ed69456e",
+            "targetSourcePort": 36560
+          }
+        ],
+        "rejections": 0
+      },
+      {
+        "case": "wrong-host",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": false,
+            "errorMsg": "java.lang.IllegalStateException: Camoufox \u6e32\u67d3\u5931\u8d25 (Error)"
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": false,
+        "observedTargetSourcePorts": [],
+        "negativeHttpRequests": 0,
+        "negativeTlsFailures": [
+          {
+            "sourcePort": 52726,
+            "reason": "SSLV3_ALERT_BAD_CERTIFICATE"
+          }
+        ],
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 45625,
+            "clientToServerBytes": 1898,
+            "serverToClientBytes": 1440,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "41545",
+              "clientHost": "127.0.0.1",
+              "clientPort": 50768,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 52726
+          }
+        ],
+        "targetRequests": [],
+        "rejections": 0
+      },
+      {
+        "case": "untrusted",
+        "account": "a",
+        "failureType": null,
+        "generatedOnlyDiagnostic": null,
+        "tlsErrorCodes": [],
+        "readerApiResult": {
+          "actor": "a",
+          "status": 200,
+          "returnData": {
+            "isSuccess": false,
+            "errorMsg": "java.lang.IllegalStateException: Camoufox \u6e32\u67d3\u5931\u8d25 (Error)"
+          },
+          "sourceRoundtripMatched": true,
+          "configuredProxy": "http://127.0.0.1:37697",
+          "actualJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+          "bookSourcesWereEmptyForSecondNamespace": null
+        },
+        "workerResult": null,
+        "everyActualTargetConnectionUsedProxy": false,
+        "observedTargetSourcePorts": [],
+        "negativeHttpRequests": 0,
+        "negativeTlsFailures": [
+          {
+            "sourcePort": 43994,
+            "reason": "TLSV1_ALERT_UNKNOWN_CA"
+          }
+        ],
+        "tunnels": [
+          {
+            "method": "CONNECT",
+            "host": "127.0.0.1",
+            "port": 43677,
+            "clientToServerBytes": 1898,
+            "serverToClientBytes": 1438,
+            "actualClientOwnership": {
+              "clientIsOwnedCurrentReaderJvm": true,
+              "javaPid": 19,
+              "javaPidStartTick": "2171",
+              "javaSocketInode": "41984",
+              "clientHost": "127.0.0.1",
+              "clientPort": 50770,
+              "proxyPort": 37697
+            },
+            "targetSourcePort": 43994
+          }
+        ],
+        "targetRequests": [],
+        "rejections": 0
+      }
+    ]
+  },
+  "independentlyStoppedPidZeroAndDeleted": true,
+  "ownedContainersRemaining": 0,
+  "originalCachedPolicyUnchanged": true,
+  "finalResources": {
+    "scope": "actual current Reader JAR generated HTTPS via Java and selected upstream proxy; not full-image/original acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 1611509760,
+    "memoryCurrentBytes": 689844224,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 2468,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 9424896,
+      "file": 671850496,
+      "shmem": 0,
+      "kernel": 8388608,
+      "kernel_stack": 0,
+      "pagetables": 249856,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 4096,
+      "file_writeback": 0,
+      "inactive_file": 166973440,
+      "active_file": 504877056,
+      "slab_reclaimable": 7601680,
+      "slab_unreclaimable": 422160
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 240,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "seconds": 52.39,
+  "privateStderrBytes": 0
+}
