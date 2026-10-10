@@ -157,7 +157,6 @@ abstract class RestVerticle : CoroutineVerticle() {
     }
 
     open fun onHandlerError(ctx: RoutingContext, error: Exception) {
-        logger.error("Error: {}", error)
         ctx.error(error)
     }
 

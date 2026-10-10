@@ -3,7 +3,9 @@ package com.htmake.reader.verticle;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.htmake.reader.utils.VertExtKt;
+import com.htmake.reader.api.YueduApi;
+import com.htmake.reader.api.ReturnData;
+import com.htmake.reader.utils.ExtKt;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -30,6 +32,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.never;
 
 public class RestVerticleLoggingTest {
 
@@ -84,6 +88,15 @@ public class RestVerticleLoggingTest {
 
     @Test(timeout = 20000)
     public void actualLoopbackHttpFailureKeepsResponseButDoesNotLogItsToken() throws Exception {
+        checkActualHttpFailure(false);
+    }
+
+    @Test(timeout = 20000)
+    public void actualLoopbackBusinessFailureKeepsReturnDataAndDoesNotLogItsToken() throws Exception {
+        checkActualHttpFailure(true);
+    }
+
+    private void checkActualHttpFailure(boolean businessHandler) throws Exception {
         Vertx vertx = Vertx.vertx();
         HttpURLConnection connection = null;
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -92,7 +105,8 @@ public class RestVerticleLoggingTest {
         root.addAppender(appender);
         try {
             Router router = Router.router(vertx);
-            router.post("/reader3/generated-error").handler(context -> VertExtKt.error(context,
+            RestVerticle baseHandler = businessHandler ? new YueduApi() : mock(RestVerticle.class, CALLS_REAL_METHODS);
+            router.post("/reader3/generated-error").handler(context -> baseHandler.onHandlerError(context,
                     new IllegalStateException("synthetic-http-message-secret")));
             CompletableFuture<Integer> listening = new CompletableFuture<>();
             vertx.createHttpServer().requestHandler(router).listen(0, "127.0.0.1", result -> {
@@ -105,13 +119,19 @@ public class RestVerticleLoggingTest {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
             connection.setRequestMethod("POST");
-            assertEquals(500, connection.getResponseCode());
+            assertEquals(businessHandler ? 200 : 500, connection.getResponseCode());
             assertEquals("application/json; charset=utf-8", connection.getContentType());
-            JsonObject response = new JsonObject(new String(connection.getErrorStream().readAllBytes(),
+            JsonObject response = new JsonObject(new String((businessHandler ? connection.getInputStream() :
+                    connection.getErrorStream()).readAllBytes(),
                     StandardCharsets.UTF_8));
-            assertEquals(uri, response.getString("path"));
-            assertEquals("synthetic-http-message-secret", response.getString("message"));
-            assertEquals(6, response.size());
+            if (businessHandler) {
+                assertEquals(new JsonObject(ExtKt.getGson().toJson(new ReturnData().setErrorMsg(
+                        "java.lang.IllegalStateException: synthetic-http-message-secret"))), response);
+            } else {
+                assertEquals(uri, response.getString("path"));
+                assertEquals("synthetic-http-message-secret", response.getString("message"));
+                assertEquals(6, response.size());
+            }
             int safeErrors = 0;
             // Close waits for the event loop, so the captured events cannot race
             // the assertions below. No existing Reader process is involved.
@@ -125,12 +145,14 @@ public class RestVerticleLoggingTest {
                 String record = event.getFormattedMessage();
                 assertFalse(record.contains("synthetic-http-query-secret"));
                 assertFalse(record.contains("synthetic-http-message-secret"));
-                if (record.startsWith("{\"error\":\"Internal Server Error\"")) {
-                    assertNull(event.getThrowableProxy());
+                assertNull("the caller must not log a raw Throwable either", event.getThrowableProxy());
+                if (record.startsWith("{\"error\":")) {
                     JsonObject logged = new JsonObject(record);
                     assertEquals("/reader3/generated-error", logged.getString("path"));
                     assertEquals("POST", logged.getString("method"));
-                    assertEquals(response.getLong("timestamp"), logged.getLong("timestamp"));
+                    assertEquals(Integer.valueOf(businessHandler ? 200 : 500), logged.getInteger("status"));
+                    if (businessHandler) assertTrue(logged.getLong("timestamp") > 0);
+                    else assertEquals(response.getLong("timestamp"), logged.getLong("timestamp"));
                     safeErrors++;
                 }
             }
@@ -140,6 +162,66 @@ public class RestVerticleLoggingTest {
             root.detachAppender(appender);
             appender.stop();
             vertx.close();
+        }
+    }
+
+    @Test
+    public void businessFailureKeepsLegacyReturnDataAndOmitsSensitiveExceptionDetails() {
+        checkBusinessFailure(false);
+    }
+
+    @Test
+    public void alreadyCommittedBusinessFailureKeepsOldBodyWithoutChangingHeadersOrStatus() {
+        checkBusinessFailure(true);
+    }
+
+    private void checkBusinessFailure(boolean committed) {
+        RoutingContext context = mock(RoutingContext.class);
+        HttpServerRequest request = mock(HttpServerRequest.class);
+        HttpServerResponse response = mock(HttpServerResponse.class);
+        when(context.request()).thenReturn(request);
+        when(context.response()).thenReturn(response);
+        when(request.path()).thenReturn("/reader3/generated?accessToken=synthetic-query-secret");
+        when(request.method()).thenReturn(HttpMethod.POST);
+        when(response.headWritten()).thenReturn(committed);
+        when(response.getStatusCode()).thenReturn(committed ? 206 : 200);
+        when(response.putHeader(anyString(), anyString())).thenReturn(response);
+        IllegalStateException failure = new IllegalStateException("synthetic-message-secret",
+                new IllegalArgumentException("synthetic-cause-secret"));
+        failure.addSuppressed(new RuntimeException("synthetic-suppressed-secret"));
+        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        root.addAppender(appender);
+        try {
+            new YueduApi().onHandlerError(context, failure);
+            assertEquals(1, appender.list.size());
+            ILoggingEvent event = appender.list.get(0);
+            assertNull(event.getThrowableProxy());
+            String record = event.getFormattedMessage();
+            for (String secret : new String[] {"synthetic-query-secret", "synthetic-message-secret",
+                    "synthetic-cause-secret", "synthetic-suppressed-secret", "accessToken"}) {
+                assertFalse(secret, record.contains(secret));
+            }
+            JsonObject logged = new JsonObject(record);
+            assertEquals(6, logged.size());
+            assertEquals("Request Handler Error", logged.getString("error"));
+            assertEquals("/reader3/generated", logged.getString("path"));
+            assertEquals(Integer.valueOf(committed ? 206 : 200), logged.getInteger("status"));
+            assertTrue(logged.getLong("timestamp") > 0);
+            ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+            verify(response).end(body.capture());
+            if (committed) {
+                assertEquals(failure.toString(), body.getValue());
+                verify(response, never()).putHeader(anyString(), anyString());
+            } else {
+                assertEquals(ExtKt.getGson().toJson(new ReturnData().setErrorMsg(failure.toString())), body.getValue());
+                verify(response).putHeader("content-type", "application/json; charset=utf-8");
+            }
+            verify(response, never()).setStatusCode(anyInt());
+        } finally {
+            root.detachAppender(appender);
+            appender.stop();
         }
     }
 
@@ -161,7 +243,7 @@ public class RestVerticleLoggingTest {
         appender.start();
         root.addAppender(appender);
         try {
-            VertExtKt.error(context, failure);
+            mock(RestVerticle.class, CALLS_REAL_METHODS).onHandlerError(context, (Exception) failure);
             assertEquals("one safe error record, not a second raw Throwable record", 1, appender.list.size());
             ILoggingEvent event = appender.list.get(0);
             assertNull("causes and suppressed messages must not reach the sink", event.getThrowableProxy());

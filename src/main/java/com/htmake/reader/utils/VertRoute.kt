@@ -28,22 +28,27 @@ fun RoutingContext.error(throwable: Throwable) {
         System.currentTimeMillis()
     )
     val errorJson = gson.toJson(error)
-    // Keep the legacy HTTP response, but never send its URI/message or the
-    // original Throwable (including causes/suppressed exceptions) to a log sink.
-    // Exception type + route + timestamp provide a bounded diagnostic record.
-    val errorLog = gson.toJson(linkedMapOf(
-        "error" to error.error,
-        "exceptionType" to throwable.javaClass.name,
-        "method" to request().method().name,
-        "path" to sanitizeRequestTargetForLog(request().path()),
-        "status" to error.status,
-        "timestamp" to error.timestamp
-    ))
-    logger.error { errorLog }
+    logRequestFailure(throwable, error.status, error.timestamp)
     response()
         .putHeader("content-type", "application/json; charset=utf-8")
         .setStatusCode(500)
         .end(errorJson)
+}
+
+fun RoutingContext.logRequestFailure(throwable: Throwable, status: Int,
+                                    timestamp: Long = System.currentTimeMillis()) {
+    // Keep the legacy HTTP response, but never send its URI/message or the
+    // original Throwable (including causes/suppressed exceptions) to a log sink.
+    // Exception type + route + timestamp provide a bounded diagnostic record.
+    val errorLog = gson.toJson(linkedMapOf(
+        "error" to if (status == 500) "Internal Server Error" else "Request Handler Error",
+        "exceptionType" to throwable.javaClass.name,
+        "method" to request().method().name,
+        "path" to sanitizeRequestTargetForLog(request().path()),
+        "status" to status,
+        "timestamp" to timestamp
+    ))
+    logger.error { errorLog }
 }
 
 fun Route.globalHandler(handler: Handler<RoutingContext>) {

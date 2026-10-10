@@ -31,6 +31,7 @@ import com.htmake.reader.api.controller.SourceLoginController
 import com.htmake.reader.api.controller.TxtTocRuleController
 import com.htmake.reader.api.controller.SourceSubscriptionController
 import com.htmake.reader.utils.error
+import com.htmake.reader.utils.logRequestFailure
 import com.htmake.reader.utils.success
 import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.saveStorage
@@ -555,7 +556,7 @@ class YueduApi : RestVerticle() {
 
     override fun onHandlerError(ctx: RoutingContext, error: Exception) {
         val returnData = ReturnData()
-        logger.error("onHandlerError: ", error)
+        ctx.logRequestFailure(error, ctx.response().statusCode)
         if (!ctx.response().headWritten()) {
             ctx.success(returnData.setErrorMsg(error.toString()))
         } else {
