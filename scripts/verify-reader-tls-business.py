@@ -14,6 +14,7 @@ UA = 'ReaderGeneratedHeaderProbe/1.0'
 COOKIE = 'generated_session=GENERATED_SESSION_ONLY'
 POST = b'q=generated-header-only'
 UTF8_POST = 'q=生成中文&value=保持原始字节'.encode('utf-8')
+RECORDED_WORKER_SHA = 'c3ef2486a4b6ed37e0f3a898518dd4173c42e270c62d49d87e881562c50f4c24'
 
 def require(value, reason):
     if not value:
@@ -46,9 +47,38 @@ def validate(report,jar_sha,revision,architecture='amd64'):
     resources=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(resources)
     resources.verify_report(budget,require_no_swap=True,expected_memory_high=1610612736)
-    value=report['observation']
+    return validate_observation(report['observation'],jar_sha,RECORDED_WORKER_SHA)
+
+def validate_packaged(report,jar_sha,worker_sha,revision,architecture):
+    """Hosted Docker scope differs from the historical rootless envelope, not the business checks."""
+    require(re.fullmatch('[0-9a-f]{64}',jar_sha) and re.fullmatch('[0-9a-f]{64}',worker_sha) and
+            re.fullmatch('[0-9a-f]{40}',revision),'Invalid expected packaged identity')
+    require(report.get('schemaVersion')==2 and report.get('mode')=='reader-api' and
+            report.get('jarSha256')==jar_sha and report.get('workerSha256')==worker_sha and
+            report.get('revision')==revision and report.get('architecture')==architecture,
+            'Packaged Reader business identity mismatch')
+    for key in ('generatedOnly','fixtureOnlyPrivateDistributionPolicy','fixtureOnlyPrivateFontconfigTmpfs',
+                'fixtureOnlyPrivateAppDataTmpfs','fixtureOnlyPrivateStorageTmpfs','httpsTested','readerJarStarted'):
+        require(report.get(key) is True,'Missing packaged business isolation: '+key)
+    for key in ('realCredentialsImported','privateBookBodyRead','hostTrustStoreChanged','ignoreHttpsErrorsUsed',
+                'workerLaunchOverridden','productionChanged','fullGoalComplete'):
+        require(report.get(key) is False,'Invalid packaged business scope: '+key)
+    identity=report['identity']
+    require(identity['uid']==identity['gid']==10001 and isinstance(identity['groups'],list) and
+            set(identity['groups'])<={10001} and identity['interfaces']==['lo'] and
+            identity['capsZero'] is True and identity['noNewPrivileges'] is True,'Invalid packaged business runtime')
+    budget=report['resources']
+    require(budget['architecture']=={'amd64':'x86_64','arm64':'aarch64'}[architecture],'Wrong packaged runtime architecture')
+    spec=importlib.util.spec_from_file_location('packaged_business_budget',Path(__file__).with_name('report-browser-cgroup.py'))
+    resources=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(resources)
+    resources.verify_report(budget,require_no_swap=True)
+    return validate_observation(report['observation'],jar_sha,worker_sha)
+
+def validate_observation(value,jar_sha,worker_sha):
+    """Shared strict wire/header/socket/TLS checks for both actual execution envelopes."""
     require(value['readerJarStarted'] is True and value['actualJarSha256']==jar_sha and
-            value['workerSha256']=='c3ef2486a4b6ed37e0f3a898518dd4173c42e270c62d49d87e881562c50f4c24',
+            value['workerSha256']==worker_sha,
             'Wrong actual packaged worker/JAR')
     for key in ('hostTrustStoreChanged','ignoreHttpsErrorsUsed','workerLaunchOverridden','realCredentialsImported','fullGoalComplete'):
         require(value.get(key) is False,'Invalid observation scope: '+key)
@@ -153,10 +183,19 @@ def main():
     parser.add_argument('report',type=Path)
     parser.add_argument('--jar-sha',required=True)
     parser.add_argument('--revision',required=True)
+    parser.add_argument('--packaged',action='store_true',help='Validate the actual Docker Reader API report, not a rootless envelope')
+    parser.add_argument('--worker-sha',help='Mandatory build worker digest for packaged reports')
     parser.add_argument('--architecture',choices=('amd64','arm64'),default='amd64')
     args=parser.parse_args()
     require(args.report.is_file() and not args.report.is_symlink() and args.report.stat().st_size<524288,'Expected bounded regular report')
-    print(json.dumps(validate(json.loads(args.report.read_bytes()),args.jar_sha,args.revision,args.architecture)))
+    report=json.loads(args.report.read_bytes())
+    if args.packaged:
+        require(args.worker_sha is not None,'Packaged business report requires worker digest')
+        result=validate_packaged(report,args.jar_sha,args.worker_sha,args.revision,args.architecture)
+    else:
+        require(args.worker_sha is None,'Rootless historical report uses its recorded worker identity')
+        result=validate(report,args.jar_sha,args.revision,args.architecture)
+    print(json.dumps(result))
 
 if __name__=='__main__':
     main()

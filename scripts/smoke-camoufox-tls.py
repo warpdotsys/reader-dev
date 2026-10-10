@@ -2,7 +2,8 @@
 
 Only run in the dedicated offline, read-only native-image container. The test
 adds a generated CA to a private distribution tmpfs, never the host trust store.
-It exercises the production worker, not the Java API/production proxy chain.
+Worker mode exercises packaged worker bytes. Reader API mode instead starts the
+actual JAR and verifies its selected Java/upstream proxy through owned sockets.
 """
 import argparse
 import hashlib
@@ -48,7 +49,19 @@ def hash_file(path):
     return digest.hexdigest()
 
 
-def identity_and_budget(resources):
+def select_current_cgroup(resources, membership=Path('/proc/self/cgroup'), base=Path('/sys/fs/cgroup')):
+    """Docker exposes /; rootless WSL may expose the host tree. Read only our own group."""
+    entries=[line[3:] for line in membership.read_text().splitlines() if line.startswith('0::')]
+    require(len(entries)==1 and entries[0].startswith('/') and '..' not in Path(entries[0]).parts,
+            'Expected our actual unified cgroup membership')
+    root=base.resolve(strict=True)
+    target=base / entries[0].lstrip('/')
+    require(not target.is_symlink() and target.resolve(strict=True).is_relative_to(root),
+            'Current cgroup is not inside the exposed read-only controller tree')
+    resources.ROOT=target.resolve(strict=True)
+
+
+def runtime_identity():
     fields = dict(line.split(":", 1) for line in
                   Path("/proc/self/status").read_text().splitlines() if ":" in line)
     identity = {
@@ -64,6 +77,12 @@ def identity_and_budget(resources):
             set(identity["groups"]) <= {10001} and identity["interfaces"] == ["lo"] and
             identity["capsZero"] and identity["noNewPrivileges"],
             "TLS regression requires an offline unprivileged container")
+    return identity
+
+
+def identity_and_budget(resources):
+    identity=runtime_identity()
+    select_current_cgroup(resources)
     resources.verify_report(resources.collect_report(), require_no_swap=True)
     return identity
 
@@ -113,6 +132,9 @@ def probe(arguments):
     seed = json.loads(Path(arguments.seed_policy).read_bytes())["policy"]
     require(isinstance(seed, dict) and isinstance(seed.get("policies"), dict) and
             "Certificates" not in seed["policies"], "Unexpected base browser policy")
+    if arguments.mode == "reader-api":
+        # No Python renderer substitute: the JAR launches its own packaged worker.
+        return run_cases(arguments, identity, jar_sha, worker_sha, None, policy, seed, h, c, resources)
     with tempfile.TemporaryDirectory(prefix="reader-packaged-tls-worker-") as worker_directory:
         worker_path = Path(worker_directory) / "worker.py"
         worker_path.write_bytes(worker_source)
@@ -134,6 +156,10 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
     results=[]
     servers=[]
     threads=[]
+    reader=None
+    if arguments.mode == 'reader-api':
+        client=load_module('actual_reader_tls_api_client',Path(__file__).with_name('reader_tls_api_client.py'))
+        reader=client.ReaderApi(c,arguments.jar,jar_sha,worker_sha,os.environ['READER_APP_CAMOUFOXBROWSERVERSION'])
 
     class RedirectHandler(h.HeaderHandler):
         def handle_probe(self):
@@ -194,6 +220,12 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
                 assert len(tunnels)<32
                 row={'method':'CONNECT','host':host,'port':int(port),'clientToServerBytes':0,'serverToClientBytes':0}
                 tunnels.append(row)
+            if reader is not None:
+                try:
+                    row['actualClientOwnership']=reader.owner(self.client_address,self.server.server_port)
+                except Exception as error:
+                    row['clientOwnershipFailureType']=type(error).__name__
+                    self.send_error(403);return
             outgoing=socket.create_connection(endpoint,timeout=5)
             with tunnel_lock:
                 row['targetSourcePort'] = outgoing.getsockname()[1]
@@ -218,6 +250,21 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
             with self.lock:
                 super().record(case, actor, role, method, headers, body)
                 self.rows[-1]['targetSourcePort'] = self.connection_state.source_port
+
+    class TlsServer(ThreadingHTTPServer):
+        def get_request(self):
+            connection,peer=self.socket.accept()
+            connection.settimeout(5)
+            try:
+                return self.generated_context.wrap_socket(connection,server_side=True),peer
+            except ssl.SSLError as error:
+                reason=str(error.reason)
+                require(re.fullmatch('[A-Z0-9_]{1,80}',reason),'Unbounded generated TLS reason')
+                with fixture.lock:
+                    require(len(self.tls_failures)<16,'Too many generated TLS failures')
+                    self.tls_failures.append({'sourcePort':peer[1],'reason':reason})
+                connection.close()
+                raise
 
     fixture=TlsFixture.__new__(TlsFixture)
     fixture.connection_state=threading.local()
@@ -251,11 +298,12 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
             policy.chmod(0o600)
             for host,actor in (('127.0.0.1','primary'),('127.0.0.2','secondary'),('127.0.0.1','wrong-host'),('127.0.0.1','untrusted')):
                 certificate='valid' if actor in ('primary','secondary') else actor
-                server=ThreadingHTTPServer((host,0),RedirectHandler if certificate=='valid' else NegativeHandler)
+                server=TlsServer((host,0),RedirectHandler if certificate=='valid' else NegativeHandler)
                 server.actor=actor;server.fixture=fixture;server.actual_http_count=0
+                server.tls_failures=[]
                 context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
                 context.load_cert_chain(str(directory/(certificate+'.pem')),str(directory/(certificate+'.key')))
-                server.socket=context.wrap_socket(server.socket,server_side=True)
+                server.generated_context=context
                 servers.append(server)
                 thread=threading.Thread(target=server.serve_forever,daemon=True)
                 thread.start();threads.append(thread)
@@ -265,7 +313,13 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
             proxy_thread=threading.Thread(target=proxy.serve_forever,daemon=True)
             proxy_thread.start()
             try:
-                for case in (*h.CASES,'wrong-host','untrusted'):
+                if reader is not None:
+                    reader.start()
+                    guard=load_module('reader_tls_case_plan',Path(__file__).with_name('verify-reader-tls-business.py'))
+                    plan=guard.PLAN
+                else:
+                    plan=tuple((None,case) for case in (*h.CASES,'wrong-host','untrusted'))
+                for account,case in plan:
                     fixture.reset();fixture.target_connections.clear()
                     with tunnel_lock:tunnels.clear();proxy_outgoing_ports.clear()
                     negative=case in ('wrong-host','untrusted')
@@ -286,7 +340,21 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
                     if case.endswith(('307','308')):rule_headers['Content-Type']='application/json; charset=UTF-8'
                     payload={'url':url,'headers':rule_headers,'userAgent':h.USER_AGENT,'timeoutMs':8000,'browserVersion':os.environ['READER_APP_CAMOUFOXBROWSERVERSION'],
                         'proxy':'http://127.0.0.1:'+str(proxy.server_port),'javaScript':options['webJs'],'post':is_post,'body':raw_body if is_post else None}
-                    try:result=worker.render(payload)
+                    try:
+                        if reader is None:
+                            result=worker.render(payload)
+                        else:
+                            source=fixture.definition('same-get' if negative else case)
+                            if negative:
+                                source['bookSourceUrl']=fixture.primary+'/source/negative-'+case
+                            source_options={'webView':True,'headers':dict(options['headers'])}
+                            if options['webJs'] is not None:
+                                source_options['webJs']=options['webJs']
+                            if is_post:
+                                source_options.update({'method':'POST','body':raw_body})
+                                source_options['headers']['Content-Type']=rule_headers.get('Content-Type','application/x-www-form-urlencoded; charset=UTF-8')
+                            source['searchUrl']=url+', '+json.dumps(source_options,ensure_ascii=False)
+                            result=reader.render(case,source,payload['proxy'],account)
                     except Exception as error:
                         failure=type(error).__name__
                         if isinstance(error, OSError):
@@ -300,18 +368,39 @@ def run_cases(arguments, identity, jar_sha, worker_sha, worker, policy, seed, h,
                         assert len(codes)<=16
                     rows=fixture.snapshot()
                     with tunnel_lock:observed_tunnels=json.loads(json.dumps(tunnels))
-                    results.append({'case':case,'failureType':failure,'osErrorDiagnostic':os_error,'tlsErrorCodes':sorted(set(codes)),'workerResult':result,
+                    results.append({'case':case,'account':account,'failureType':failure,'osErrorDiagnostic':os_error,'tlsErrorCodes':sorted(set(codes)),
+                        'workerResult':result if reader is None else None,'readerApiResult':result if reader is not None else None,
                         'everyActualTargetConnectionUsedProxy':bool(fixture.target_connections) and all(port in proxy_outgoing_ports for port in fixture.target_connections),
                         'observedTargetSourcePorts':list(fixture.target_connections),'negativeHttpRequests':server.actual_http_count if negative else None,
+                        'negativeTlsFailures':list(server.tls_failures) if negative else None,
                         'tunnels':observed_tunnels,**rows})
                     print(json.dumps({'partialCaseCompleted':case,'failureType':failure,'targetCount':len(rows['targetRequests'])}),file=sys.stderr,flush=True)
             finally:
+                if reader is not None:
+                    reader_cleanup=reader.stop()
                 proxy.shutdown();proxy.server_close();proxy_thread.join(timeout=5)
                 assert not proxy_thread.is_alive()
     finally:
         if policy.exists(): policy.unlink()
         for server in servers:server.shutdown();server.server_close()
         for thread in threads:thread.join(timeout=5);assert not thread.is_alive()
+    if reader is not None:
+        budget=resources.collect_report('actual packaged Reader API generated HTTPS through owned JVM and selected upstream proxy')
+        resources.verify_report(budget,require_no_swap=True)
+        return {
+            'schemaVersion':2,'mode':'reader-api','scope':'generated actual Reader business HTTPS subset; not original/real-site/production acceptance',
+            'architecture':arguments.architecture,'revision':arguments.revision,
+            'jarSha256':jar_sha,'workerSha256':worker_sha,'identity':identity,'resources':budget,
+            'generatedOnly':True,'realCredentialsImported':False,'privateBookBodyRead':False,
+            'readerJarStarted':True,'hostTrustStoreChanged':False,'ignoreHttpsErrorsUsed':False,
+            'fixtureOnlyPrivateDistributionPolicy':True,'workerLaunchOverridden':False,
+            'fixtureOnlyPrivateFontconfigTmpfs':True,'fixtureOnlyPrivateAppDataTmpfs':True,
+            'fixtureOnlyPrivateStorageTmpfs':True,'httpsTested':True,'productionChanged':False,'fullGoalComplete':False,
+            'observation':{'generatedOnly':True,'realCredentialsImported':False,'readerJarStarted':True,
+                'actualJarSha256':jar_sha,'workerSha256':worker_sha,
+                'hostTrustStoreChanged':False,'ignoreHttpsErrorsUsed':False,'workerLaunchOverridden':False,
+                'fixtureOnlyPrivateDistributionPolicy':True,'httpsTested':True,'fullGoalComplete':False,
+                'authObservationsWithoutCredentialsOrTokens':reader.auth,'readerCleanup':reader_cleanup,'results':results}}
     budget = resources.collect_report("packaged worker generated HTTPS; no Reader API or real accounts")
     resources.verify_report(budget, require_no_swap=True)
     return {
@@ -336,7 +425,9 @@ def main(argv=None):
     parser.add_argument("--architecture", choices=("amd64", "arm64"), required=True)
     parser.add_argument("--distribution", required=True)
     parser.add_argument("--seed-policy", required=True)
+    parser.add_argument("--mode",choices=("worker","reader-api"),default="worker")
     arguments = parser.parse_args(argv)
+    require(not sys.flags.optimize,"Never disable generated fixture assertions")
     require(re.fullmatch(r"[0-9a-f]{64}", arguments.expected_jar_sha) and
             re.fullmatch(r"[0-9a-f]{64}", arguments.expected_worker_sha) and
             re.fullmatch(r"[0-9a-f]{40}", arguments.revision), "Invalid build identity")

@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Sequential, generated-only HTTPS gate. No host/browser session or Reader data.
 set -euo pipefail
-test "$#" = 5
+[[ "$#" = 5 || "$#" = 6 ]]
 image="$1"
 arch="$2"
 revision="$3"
 expected_jar="$4"
 report="$5"
+mode="${6:-worker}"
+[[ "$mode" = worker || "$mode" = reader-api ]]
 [[ "$arch" = amd64 || "$arch" = arm64 ]]
 [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
 [[ "$expected_jar" =~ ^[0-9a-f]{64}$ ]]
@@ -33,7 +35,7 @@ cleanup() {
   exit "$result"
 }
 trap cleanup EXIT
-for script in smoke-camoufox-tls.py compare-webview-cookie.py reader_header_security_differential.py report-browser-cgroup.py; do
+for script in smoke-camoufox-tls.py compare-webview-cookie.py reader_header_security_differential.py report-browser-cgroup.py reader_tls_api_client.py verify-reader-tls-business.py; do
   cp "scripts/$script" "$directory/$script"
 done
 # Discover the installed browser path/policy from the exact immutable image.
@@ -54,6 +56,10 @@ distribution=$(jq -er '.distribution | select(type == "string" and test("^/home/
 jq -e '.policy.policies | type == "object" and (has("Certificates") | not)' "$directory/browser.json" >/dev/null
 chmod 755 "$directory"
 chmod 444 "$directory"/*
+storage_arguments=()
+if [[ "$mode" = reader-api ]]; then
+  storage_arguments=(--tmpfs /storage:size=128m,mode=700,uid=10001,gid=10001)
+fi
 container_id=$(docker run -d --init --name "$name" --network none --read-only \
   --user 10001:10001 --cap-drop ALL --security-opt no-new-privileges:true \
   --cpus=2 --memory=2g --memory-swap=2g --pids-limit=256 --shm-size=512m \
@@ -62,11 +68,12 @@ container_id=$(docker run -d --init --name "$name" --network none --read-only \
   --tmpfs /home/reader/camoufox:size=1m,mode=700,uid=10001,gid=10001 \
   --tmpfs /home/reader/.cache/camoufox/fontconfig:size=1m,mode=700,uid=10001,gid=10001 \
   --tmpfs "$distribution:size=1m,mode=700,uid=10001,gid=10001" \
+  "${storage_arguments[@]}" \
   --mount "type=bind,source=$directory,target=/verification,readonly" \
   --entrypoint python "$image" /verification/smoke-camoufox-tls.py \
   --jar /app/reader.jar --expected-jar-sha "$expected_jar" --expected-worker-sha "$expected_worker" \
   --revision "$revision" --architecture "$arch" --distribution "$distribution" \
-  --seed-policy /verification/browser.json)
+  --seed-policy /verification/browser.json --mode "$mode")
 docker inspect "$container_id" > "$directory/container-inspect.json"
 jq -e --arg distribution "$distribution" '
   length == 1 and .[0].Config.User == "10001:10001" and
@@ -80,11 +87,20 @@ jq -e --arg distribution "$distribution" '
   .[0].HostConfig.Tmpfs["/home/reader/.cache/camoufox/fontconfig"] == "size=1m,mode=700,uid=10001,gid=10001" and
   .[0].HostConfig.Tmpfs[$distribution] == "size=1m,mode=700,uid=10001,gid=10001"
 ' "$directory/container-inspect.json" >/dev/null
+if [[ "$mode" = reader-api ]]; then
+  jq -e '.[0].HostConfig.Tmpfs["/storage"] == "size=128m,mode=700,uid=10001,gid=10001"' \
+    "$directory/container-inspect.json" >/dev/null
+fi
 timeout --signal=TERM 300 docker wait "$container_id" > "$directory/exit-code"
 test "$(cat "$directory/exit-code")" = 0
 docker logs "$container_id" > "$directory/result.json" 2> "$directory/diagnostic.log"
-python3 scripts/verify-camoufox-tls.py "$directory/result.json" --jar-sha "$expected_jar" \
-  --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch"
+if [[ "$mode" = reader-api ]]; then
+  python3 scripts/verify-reader-tls-business.py "$directory/result.json" --packaged --jar-sha "$expected_jar" \
+    --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch"
+else
+  python3 scripts/verify-camoufox-tls.py "$directory/result.json" --jar-sha "$expected_jar" \
+    --worker-sha "$expected_worker" --revision "$revision" --architecture "$arch"
+fi
 test "$(docker inspect --format '{{.State.Running}} {{.State.Pid}}' "$container_id")" = 'false 0'
 docker rm "$container_id" >/dev/null
 if docker inspect "$container_id" >/dev/null 2>&1; then

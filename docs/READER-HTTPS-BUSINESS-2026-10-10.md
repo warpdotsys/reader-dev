@@ -2,6 +2,8 @@
 
 日期：2026-10-10。源码 `22f949ccb3befff4d66af793598889b5879b0c45`，托管测试合并快照 `d74875d2ea057500cadedcb66af4c7942e3f8d96`。GitHub API 对比前进一提交、文件差异为零。默认分支仍为 `legacy`，PR56 保持 draft。本轮没有合并、创建 Release、推送 registry、部署或导入生产数据。
 
+后续已将实际API客户端整理为可维护入口，并重新取得8项业务/12项worker本机观察；新托管模式尚待自己的提交验收。5ec父提交四条托管已独立接受，但其业务33项仅为静态守卫。[后续接入和准确边界](PORTABLE-READER-HTTPS-GATE-2026-10-10.md)。下文保留22/a轮捕获时状态，不改写成后续结果。
+
 ## 已成功重建：这次提交自己的四条托管任务
 
 不是借用 ec20 的绿灯。实际作业、runner、测试 XML、小产物与阶段身份分别核查；原生六个作业均成功，使用 GitHub `ubuntu-24.04`／`ubuntu-24.04-arm`，不是自托管。
@@ -56,9 +58,21 @@ python3 -m unittest discover -s src/test/python -p '*_test.py'
 
 禁止在当前保留了授权书籍、证据和未提交数据的本机 `build` 目录上执行clean。本次新的8场景实际API测试尚未接入托管工作流，工作流中的33项新守卫是静态记录测试，不能把此前托管的worker HTTPS门槛称为托管Java业务链验收。
 
+## 后续补充：当前 fcd 的首轮有限 HTTP 三方
+
+在保存上一阶段5ecbc609提交后，又对同一当前fcd产物运行新n轮，不借用旧574的三方结果。[独立回执](evidence/origin-header-fcd-current-jar-three-way-2026-10-10.json)，SHA `36141b5701e39cdc2c2c08727171aa4cc9b006ac593f69ef69c225c5cf2454e0`；[完整原始观察](evidence/reader-fcd-three-way-raw-2026-10-10.json)，SHA `3863969c7fafb7aa179a41ce12e274240c8b791cb9579daf92168e32e229df40`。
+
+准确b26原件、新fcd JAR的历史远程模式、新fcd的Camoufox模式，实际执行五项基础Cookie／脚本／POST契约，并追加same-get、cross-get、cross-post303、resources四组。12份完整ReturnData逐字相等；实际状态均200／isSuccess=true／errorMsg为空，data字段存在。基础15目标请求、追加25目标请求均来自生成夹具。原件与恢复远程模式的角色排序完整HTTP字段相同，字面请求顺序也相同。
+
+原件与固定历史引擎仍向跨源目标发送生成Authorization／trace；新版Cam保同源、剥跨源，且正确跟随旧侧未跟随的POST303。**当前有限业务结果兼容通过，但严格安全三方相等仍为false**；不是把旧泄漏行为改写为通过或让新引擎回退。固定历史镜像manifest `sha256:88c250043bd33715ca372b749c1dca055c14e4550882caf968bd7af933d53573`的身份已核对，但不能证明它就是原JAR当年线上使用的WebView版本。
+
+约77.148秒；两自有非root运行时同user/net、分离mount/pid/ipc/uts、仅lo，顺序停止历史引擎至PID0后才允许Cam；aggregate2CPU／2GiB／high1.5GiB／256PID／零swap，峰值1,611,759,616B／PID242，soft high5584／hard max与OOM、PID触限0，自有清理0，生成历史PID1回收36个已收养僵尸。此轮client用私有home/cache临时区，**不冒充上一节的只读home HTTPS条件或最新完整镜像**，也没有原件HTTPS或真实站点认证。
+
+核验完成后仅删除这一已停止n轮的两份输入JAR副本358,585,050B；原件、只读备份及四份CI下载重新核对并保留，可从这些字节重建临时副本。不删除任何其他缓存目录、书籍或测试证据。
+
 ## 尚未验证、已知问题与回退
 
-- 新 fcd JAR 与准确 b26 原件／固定历史远程 WebView 的完整三方还没跑；旧 ac0 的有限三方不能移植为新版本结论。原件跨源认证泄漏的旧行为保留为差异，不能恢复危险行为追求相等。
+- 当前fcd已取得上节自己的有限HTTP三方；原件HTTPS、显式proxy差异、编码扩展及完整业务兼容仍未接受。旧ac0和本次有限子集都不能移植为完整版本结论；不能恢复旧跨源认证泄漏追求相等。
 - 原件非ASCII正文编码差异、getBookGroups编码差异保留；不能归一化原版数据来消除失败。
 - 当前错误消息只到 `Camoufox 渲染失败 (Error)`，证书原因由生成目标端握手观测确认；不能称已经向用户提供了精准TLS诊断。
 - 真实站点登录／购买边界、授权真实书阅读全旅程、WS/WSS头作用域、长时间与冷启动资源、并发／崩溃恢复、最新整个镜像本机验收仍需补齐；OPDS后端仍未实现。

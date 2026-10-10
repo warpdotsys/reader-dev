@@ -60,6 +60,32 @@ if (/verify-camoufox-tls\.py[\s\S]{0,256}?(?:\|\|\s*true|;\s*true)/.test(nativeT
       browserWorkflow.indexOf('      - name: Run Reader API and WebView fixture')))) {
   throw new Error('packaged HTTPS acceptance must not ignore failures')
 }
+const readerTlsCall = 'bash scripts/smoke-native-tls.sh "$image" "$arch" "$revision" "$expected_jar" "$output/BROWSER_READER_TLS.json" reader-api'
+if (nativeSmoke.split('\n').filter(line => line.trim() === readerTlsCall).length !== 1 ||
+    nativeSmoke.indexOf(readerTlsCall) <= nativeSmoke.indexOf(tlsCall) ||
+    nativeSmoke.indexOf(readerTlsCall) >= nativeSmoke.indexOf('container_id=$(docker run -d') ||
+    !nativeWorkflow.includes('exported/BROWSER_READER_TLS.json') ||
+    !nativeWorkflow.includes('dist/*-BROWSER_READER_TLS.json') ||
+    !browserWorkflow.includes('"$RUNNER_TEMP/bundled-reader-business-tls.json" reader-api') ||
+    !browserWorkflow.includes('name: bundled-reader-business-tls-generated') ||
+    !nativeImporter.includes('python3 scripts/verify-reader-tls-business.py "$report_directory/BROWSER_READER_TLS.json" --packaged')) {
+  throw new Error('Reader API HTTPS gate must run sequentially and survive publisher transfer')
+}
+for (const token of [
+  'reader_tls_api_client.py verify-reader-tls-business.py',
+  'storage_arguments=(--tmpfs /storage:size=128m,mode=700,uid=10001,gid=10001)',
+  '.[0].HostConfig.Tmpfs["/storage"] == "size=128m,mode=700,uid=10001,gid=10001"',
+  'python3 scripts/verify-reader-tls-business.py "$directory/result.json" --packaged --jar-sha "$expected_jar"',
+  '--seed-policy /verification/browser.json --mode "$mode"',
+]) {
+  if (!nativeTls.includes(token)) throw new Error('Reader API HTTPS isolation missing: ' + token)
+}
+if (/verify-reader-tls-business\.py[\s\S]{0,256}?(?:\|\|\s*true|;\s*true)/.test(nativeTls + nativeImporter) ||
+    /continue-on-error:\s*true/.test(browserWorkflow.slice(
+      browserWorkflow.indexOf('      - name: Verify actual Reader API HTTPS'),
+      browserWorkflow.indexOf('      - name: Run Reader API and WebView fixture')))) {
+  throw new Error('Reader API HTTPS acceptance must not ignore failures')
+}
 
 for (const token of [
   'verify-release-inputs', 'verify-vue3-e2e', 'build-and-publish-images', 'deploy-production',

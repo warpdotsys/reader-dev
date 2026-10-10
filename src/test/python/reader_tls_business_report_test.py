@@ -147,6 +147,66 @@ class ReaderTlsBusinessReportTest(unittest.TestCase):
     def test_claimed_whole_goal_rejected(self):
         self.reject(lambda r: r.update(fullGoalComplete=True))
 
+    def packaged_double(self):
+        """Adapt generated observations for envelope unit tests; NEVER fresh execution evidence."""
+        old=self.report()
+        value={'schemaVersion':2,'mode':'reader-api','architecture':'amd64','revision':REVISION,
+            'jarSha256':JAR,'workerSha256':guard.RECORDED_WORKER_SHA,
+            'identity':old['identity'],'resources':old['finalResources'],'observation':old['observation'],
+            'generatedOnly':True,'fixtureOnlyPrivateDistributionPolicy':True,
+            'fixtureOnlyPrivateFontconfigTmpfs':True,'fixtureOnlyPrivateAppDataTmpfs':True,
+            'fixtureOnlyPrivateStorageTmpfs':True,'httpsTested':True,'readerJarStarted':True,
+            'realCredentialsImported':False,'privateBookBodyRead':False,'hostTrustStoreChanged':False,
+            'ignoreHttpsErrorsUsed':False,'workerLaunchOverridden':False,'productionChanged':False,'fullGoalComplete':False}
+        value['resources']['memoryHighBytes']='max'
+        value['identity']['groups']=[10001]
+        return value
+
+    def reject_packaged(self,mutate):
+        value=self.packaged_double()
+        mutate(value)
+        with self.assertRaises((ValueError,SystemExit,KeyError)):
+            guard.validate_packaged(value,JAR,guard.RECORDED_WORKER_SHA,REVISION,'amd64')
+
+    def test_packaged_generated_double_preserves_business_checks(self):
+        value=self.packaged_double()
+        result=guard.validate_packaged(value,JAR,guard.RECORDED_WORKER_SHA,REVISION,'amd64')
+        self.assertEqual(result['actualConnectTunnels'],14)
+        self.assertFalse(result['fullGoalComplete'])
+
+    def test_packaged_mode_must_be_actual_reader_api(self):
+        self.reject_packaged(lambda r:r.update(mode='worker'))
+
+    def test_packaged_build_worker_identity_must_match(self):
+        self.reject_packaged(lambda r:r.update(workerSha256='0'*64))
+
+    def test_packaged_private_storage_is_required(self):
+        self.reject_packaged(lambda r:r.update(fixtureOnlyPrivateStorageTmpfs=False))
+
+    def test_packaged_foreign_group_is_rejected(self):
+        self.reject_packaged(lambda r:r['identity'].update(groups=[10001,0]))
+
+    def test_packaged_arm_claim_requires_actual_architecture(self):
+        self.reject_packaged(lambda r:r.update(architecture='arm64'))
+
+    def test_packaged_no_swap_still_required(self):
+        self.reject_packaged(lambda r:r['resources'].update(swapCurrentBytes=1))
+
+    def test_packaged_jvm_cleanup_still_required(self):
+        self.reject_packaged(lambda r:r['observation']['readerCleanup'].update(javaExitedBeforeOuterCleanup=False))
+
+    def test_packaged_live_socket_ownership_still_required(self):
+        self.reject_packaged(lambda r:r['observation']['results'][0]['tunnels'][0]['actualClientOwnership'].update(clientIsOwnedCurrentReaderJvm=False))
+
+    def test_packaged_cross_origin_header_check_not_relaxed(self):
+        self.reject_packaged(lambda r:r['observation']['results'][1]['targetRequests'][1]['headers'].append(['Authorization',guard.AUTH]))
+
+    def test_packaged_second_namespace_cookie_check_not_relaxed(self):
+        self.reject_packaged(lambda r:r['observation']['results'][4]['targetRequests'][0]['headers'].append(['Cookie',guard.COOKIE]))
+
+    def test_packaged_negative_tls_connection_check_not_relaxed(self):
+        self.reject_packaged(lambda r:r['observation']['results'][-1]['negativeTlsFailures'][0].update(sourcePort=1))
+
 
 if __name__ == '__main__':
     unittest.main()

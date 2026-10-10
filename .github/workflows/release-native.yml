@@ -16,6 +16,11 @@ on:
       - 'scripts/smoke-native-tls.sh'
       - 'scripts/smoke-camoufox-tls.py'
       - 'scripts/verify-camoufox-tls.py'
+      - 'scripts/verify-reader-tls-business.py'
+      - 'scripts/reader_tls_api_client.py'
+      - 'src/test/python/reader_tls_business_report_test.py'
+      - 'src/test/python/reader_tls_api_client_test.py'
+      - 'src/test/python/reader_tls_cgroup_selection_test.py'
       - 'scripts/reader_header_security_differential.py'
       - 'scripts/compare-webview-cookie.py'
       - 'src/test/python/camoufox_tls_report_test.py'
@@ -241,6 +246,7 @@ jobs:
             exported/BROWSER_SYNTHETIC.json
             exported/BROWSER_RESOURCE_BUDGET.json
             exported/BROWSER_TLS.json
+            exported/BROWSER_READER_TLS.json
             exported/DEFAULT_UI.json
             exported/RELEASE_IDENTITY.json
             exported/JAR_IDENTITY.json
@@ -349,6 +355,7 @@ jobs:
             dist/*-BROWSER_SYNTHETIC.json
             dist/*-BROWSER_RESOURCE_BUDGET.json
             dist/*-BROWSER_TLS.json
+            dist/*-BROWSER_READER_TLS.json
             dist/*-DEFAULT_UI.json
           if-no-files-found: error
           retention-days: 14

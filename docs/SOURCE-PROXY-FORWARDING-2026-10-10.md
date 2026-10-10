@@ -22,7 +22,7 @@
 
 ## 尚未验证与已知问题
 
-初次记录时只有参数替身。现在22f949cc自己的四条托管编译／Boot JAR／双原生结果已经独立接受；新fcd JAR本机生成Reader API经Java CONNECT及选定代理的8场景HTTPS实际完成，上游客户端逐socket核对属于该JVM。[新产物、实际观察与有限范围](READER-HTTPS-BUSINESS-2026-10-10.md)。仍没有新fcd／准确原件三方、真实站点账号或生产兼容接受。
+初次记录时只有参数替身。现在22f949cc自己的四条托管编译／Boot JAR／双原生结果已经独立接受；新fcd JAR本机生成Reader API经Java CONNECT及选定代理的8场景HTTPS实际完成，上游客户端逐socket核对属于该JVM。[新产物、实际观察与有限范围](READER-HTTPS-BUSINESS-2026-10-10.md)。新fcd另有4组／12份HTTP生成三方ReturnData相等，但不包括显式proxy差异、原件HTTPS、真实站点账号或生产接受。
 
 [打包HTTPS门槛](PACKAGED-HTTPS-GATE-2026-10-10.md)的旧e723启动超时失败记录保留；22f949另加入最小私有app-data目录后自己的12例及两架构已经完成。proxy参数修复不是启动故障的解释，二者不可混淆。OPDS等既有未完成项继续保留，不因为有限子集通过而宣称整个项目完成。
 

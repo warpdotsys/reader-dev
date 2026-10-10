@@ -4,11 +4,15 @@
 
 ## 当前方向
 
+- **真实Reader HTTPS业务门槛已整理为可维护候选并本机复跑**：实际API8项 / 12HTTP / 14CONNECT / 178头字段，旧worker12项 / 24HTTP也重新通过；586Python、84流水线检查通过。父5ec自己四条托管产物独立接受，但不冒充新业务模式CI；新Full / 双原生 / 重导入新增 `BROWSER_READER_TLS.json`、publisher32份待自己的托管实测。保留两个初始化失败、临时自有cgroup只读指标权限适配及有限验收边界。[源码入口、完整观察、已知问题与回退](PORTABLE-READER-HTTPS-GATE-2026-10-10.md)。
+
 - **22f949自己的新托管产物已独立接受，不借历史绿灯**：四条GitHub托管任务／Native六作业，525LinuxPython零跳过、198JVM／35原环境跳过、新4代理测试全执行、25实际生成UI零跳过、双干净JAR字节一致；Full与双原生重导入12例打包HTTPS／24目标请求／两证书负例和28publisher报告各自通过。新fcd JAR已下载重算实际字节SHA。最小私有非点`camoufox`目录解决该测试条件下只读启动，旧892／e723失败不抹除。[准确产物和范围](READER-HTTPS-BUSINESS-2026-10-10.md)。
 
 - **新fcd JAR实际HTTPS Java业务子集已独立复核**：生成注册／登录、保存回读书源、搜索／脚本、A/B Cookie及书源隔离，8场景／12目标HTTP／14CONNECT／178头字段，上游socket确属当前JVM，两种无效证书在HTTP前拒绝；52.39秒、2CPU2GiB／256PID／high1.5GiB／零swap，峰值1,611,509,760B／PID240、soft high2468／hard触限0、自有清理0。失败ReturnData省略data，原样保留。旧缓存runtime只读绑定新JAR，不是最新整镜像本机；33项新增静态守卫也不冒充新渲染。原件三方／真实站点／长测／OPDS／生产仍未完成，不发版部署。[业务、已知问题与回退](READER-HTTPS-BUSINESS-2026-10-10.md)。
 
 以下候选和失败条目保留各次捕获时的历史状态，最新终态以上述22f949记录为准。
+
+当前fcd在新n轮另外实跑准确原件／固定历史WebView／Cam有限HTTP三方：五项基础契约、追加四组12完整ReturnData相等；旧侧跨站认证泄漏仍观察到，新Cam不传出，strict安全三方false。77.148秒、aggregate2CPU2GiB零swap／PID242、soft high5584／hard触限0、自有清理0；私有home/cache临时条件不冒充最新整镜像。仅清理两份已停止输入JAR副本358,585,050B，原件及下载保留。[原始观察及有限兼容边界](READER-HTTPS-BUSINESS-2026-10-10.md#后续补充当前-fcd-的首轮有限-http-三方)。完整原件HTTPS／编码与真实站点仍未完成。
 
 - **字体临时区修订e7236633仍失败，不发版**：自己的Java/Vue成功，Native双架构和Full均300秒外层超时；三个作业仅观察到首个生成same-get为TimeoutError／目标数0，没有最终报告，其余用例和总请求数未知。本机单例j/k同预算复现，OOM／触限0，单独开放dconf无效，已精确清理；继续诊断只读缓存与启动条件，不归因于用户CPU性能、不借历史绿灯。[当前失败与证据](PACKAGED-HTTPS-GATE-2026-10-10.md#最新实际失败与修订候选)。
 

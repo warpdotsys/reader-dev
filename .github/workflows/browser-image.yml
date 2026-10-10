@@ -39,6 +39,11 @@ on:
       - 'scripts/smoke-native-tls.sh'
       - 'scripts/smoke-camoufox-tls.py'
       - 'scripts/verify-camoufox-tls.py'
+      - 'scripts/verify-reader-tls-business.py'
+      - 'scripts/reader_tls_api_client.py'
+      - 'src/test/python/reader_tls_business_report_test.py'
+      - 'src/test/python/reader_tls_api_client_test.py'
+      - 'src/test/python/reader_tls_cgroup_selection_test.py'
       - 'scripts/reader_header_security_differential.py'
       - 'src/test/python/camoufox_tls_report_test.py'
       - 'scripts/probe-baseline-api-in-guarded-runtime.py'
@@ -128,6 +133,11 @@ on:
       - 'scripts/smoke-native-tls.sh'
       - 'scripts/smoke-camoufox-tls.py'
       - 'scripts/verify-camoufox-tls.py'
+      - 'scripts/verify-reader-tls-business.py'
+      - 'scripts/reader_tls_api_client.py'
+      - 'src/test/python/reader_tls_business_report_test.py'
+      - 'src/test/python/reader_tls_api_client_test.py'
+      - 'src/test/python/reader_tls_cgroup_selection_test.py'
       - 'scripts/reader_header_security_differential.py'
       - 'src/test/python/camoufox_tls_report_test.py'
       - 'scripts/probe-baseline-api-in-guarded-runtime.py'
@@ -627,6 +637,21 @@ jobs:
         with:
           name: bundled-browser-tls-generated
           path: ${{ runner.temp }}/bundled-browser-tls.json
+          if-no-files-found: error
+      - name: Verify actual Reader API HTTPS and selected Java proxy offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          jar=$(find build/libs -maxdepth 1 -type f -name 'reader-*.jar' -print -quit)
+          test -n "$jar"
+          jar_sha=$(sha256sum "$jar" | awk '{print $1}')
+          bash scripts/smoke-native-tls.sh reader-browser:smoke "$READER_CI_NATIVE_ARCH" \
+            "$(git rev-parse --verify HEAD)" "$jar_sha" "$RUNNER_TEMP/bundled-reader-business-tls.json" reader-api
+      - name: Preserve actual Reader HTTPS ReturnData, headers, and Java socket ownership
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bundled-reader-business-tls-generated
+          path: ${{ runner.temp }}/bundled-reader-business-tls.json
           if-no-files-found: error
       - name: Run Reader API and WebView fixture inside the image
         shell: bash
