@@ -32,6 +32,7 @@ import {
 import { clearTtsCache, ttsCacheStats } from '@/utils/ttsCache'
 import { localChapterCacheScope } from '@/utils/readerLocalCache'
 import { readerRequestContext } from '@/api/requestContext'
+import { requestErrorMessage } from '@/api/requestErrorMessage'
 import { backupToWebdav, downloadWebdavBackup, getLatestWebdavBackup } from '@/api/backup'
 import { getSystemInfo } from '@/api/system'
 import { deleteTxtTocRule, getTxtTocRules, importDefaultTxtTocRules, saveTxtTocRule } from '@/api/txtTocRules'
@@ -247,27 +248,30 @@ async function confirmEditTts() {
     ElMessage.warning('URL 不能为空')
     return
   }
+  const context = readerRequestContext()
   ttsSaving.value = true
   try {
     const result = await updateHttpTts(ttsOriginal.value, {
       ...t,
       name: t.name.trim() || t.url,
     })
+    if (!context.isCurrent()) return
     if (!result.isSuccess) {
       ElMessage.warning(result.errorMsg)
       return
     }
     if (!await loadTtsList()) {
-      ElMessage.warning('修改已保存，但列表未重新读取；请刷新页面确认')
+      if (context.isCurrent()) ElMessage.warning('修改已保存，但列表未重新读取；请刷新页面确认')
       return
     }
-  } catch {
-    // 已提示
+  } catch (error) {
+    // The request is silent; never display an old account's rejected write.
+    if (context.isCurrent()) ElMessage.error(requestErrorMessage(error))
     return
   } finally {
     ttsSaving.value = false
   }
-  closeEditTts()
+  if (context.isCurrent()) closeEditTts()
 }
 
 function closeAddTts() {

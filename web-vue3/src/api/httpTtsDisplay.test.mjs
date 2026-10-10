@@ -27,8 +27,8 @@ function fixture(options = {}) {
       if (options.error) throw options.error
       return response
     },
-    post: async (route, body) => {
-      writes.push({ route, body: JSON.parse(JSON.stringify(body)) })
+    post: async (route, body, opts) => {
+      writes.push({ route, body: JSON.parse(JSON.stringify(body)), ...(opts ? { options: JSON.parse(JSON.stringify(opts)) } : {}) })
       if (options.postError) throw options.postError
       return options.postResponse ?? { isSuccess: true, errorMsg: '', data: '' }
     },
@@ -122,6 +122,7 @@ test('editing sends the complete original snapshot and no display field to one a
   assert.equal(result.isSuccess, true)
   assert.equal(f.writes.length, 1, 'Never use save then delete for a rename')
   assert.equal(f.writes[0].route, '/httpTTS/update')
+  assert.deepEqual(f.writes[0].options, { silent: true }, 'The edit dialog owns failure notifications, not both layers')
   assert.deepEqual(f.writes[0].body.original, item)
   assert.equal(f.writes[0].body.updated.name, '生成新名称')
   assert.equal(f.writes[0].body.updated.id, item.id)

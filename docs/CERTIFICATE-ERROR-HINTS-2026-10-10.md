@@ -76,6 +76,28 @@ Full同样停在固定消息断言，后续完整镜像默认UI报告不存在�
 
 脚本修正后本机602 Python / 36.825秒 / 零失败 / 1原Windows平台跳过、55业务报告守卫及86流水线守卫通过。4个新增Python用例包括缺失/任意前缀拒绝和两架构真实错误记录回归；记录回归不是新的浏览器执行。生产worker仍为d8 SHA，Java/Kotlin生产源码未再次改变。长测将在新成功准确镜像上进行，保持2CPU / 2GiB / 256PID / 零swap与生成数据隔离。
 
+## 已成功重建：c158自己的完整镜像接受固定wire消息
+
+源码 `c1581a9edc33b1653157207c4dd2cae9a896f63e`，自己的测试快照 `0c5f744cdd0d730b33cc3cf64b5d85c5826c2405`；源码与快照文件差异零，不能借fc或c29任务结论。自己的 [Java任务](https://github.com/warpdotsys/reader-dev/actions/runs/38063801059)、[UI任务](https://github.com/warpdotsys/reader-dev/actions/runs/38063801098)、[Full任务](https://github.com/warpdotsys/reader-dev/actions/runs/38063801151) 均终态成功并独立核对：602 Linux Python / 零跳过、201 JVM / 35原环境跳过、25实际生成UI / 零跳过；自己的双干净复建为0882 SHA / 285,672,007B / 1,570条目，与fc相比生产源码/前端未变化。不声称本机重新下载重算了这个JAR或native大归档。
+
+[Java](evidence/certificate-hints-hosted-java-c1581a9e-2026-10-10.json) SHA `87013f44b87ac5f43661bc45d7a888b0ccab69190559709a2387828a373f8f4d`；[UI/Java](evidence/certificate-hints-hosted-ui-java-c1581a9e-2026-10-10.json) SHA `35ca6f19eaa29f17cc703c3bf45f2d6779b6bafd62a8d89ac047389b1b2406cb`；[Full独立回执](evidence/certificate-hints-hosted-full-c1581a9e-2026-10-10.json) SHA `448a87ae4735d8116a0d4699d764a252a8f6c91ed27a66c7f2ebd2ed0ea18792`。
+
+Full取得 [**未遮盖的实际业务产物**](evidence/certificate-hints-hosted-full-raw-c1581a9e-2026-10-10.json)，SHA `f060d3a95346256925a42130293a4c79c8f269164846f6a5265ecfb55bfddaff`，不是日志payload。它真实执行8场景 / 12HTTP / 14CONNECT / 178头字段、两个生成用户注册登录/Cookie及书源隔离、两个证书负例；独立完整字段守卫和新固定消息门槛均通过。HTTP200 / 失败isSuccess=false / 省略data，两个负例目标HTTP均0；没有放宽证书、伪造ReturnData或补复原遮盖头。原fc失败和遮盖日志完整保留。
+
+该真实HTTPS业务阶段2CPU / 2GiB / 256PID / 零swap、UID10001、只读根/浏览器/JAR及私有CA/storage；实际峰值956,583,936B / PID194，hard/OOM/PID触限0，high=max。Java在外层清理前退出143。普通Reader/UI阶段918,089,728B / PID198，配置允许swap但实际0；这两个阶段不混作同一预算或本机high1.5GiB结论。真实默认UI、Cam24、Chromium23及worker12也在Full各自接受。
+
+此段捕获时Native双架构构建成功，重导入正在运行，最终publisher尚未结束；**不是Native全绿或可发布声明**。30分钟新镜像长测和当前JAR完整原件三方尚未完成。新听书源编辑通知候选另见 [通知归属、会话隔离与验收边界](TTS-EDIT-NOTIFICATION-OWNERSHIP-2026-10-10.md)，不能用c158当前的UI绿灯接受尚未提交的改动。
+
+### 后续终态：Native自己的六作业与32份报告全部接受
+
+[Native任务38063801166](https://github.com/warpdotsys/reader-dev/actions/runs/38063801166) 六个作业现已终态成功，均为GitHub托管runner。独立逐字段核对32份publisher JSON、自己的Cam24和helper3、双架构构建/重导入各自worker12及**实际Reader HTTPS8项**；四份业务报告全部含新固定wire提示并满足12HTTP / 14CONNECT / 178头字段/Java socket归属/两证书HTTP前拒绝/两生成用户隔离。没有登录registry、推镜像、发版或修改生产。
+
+[Native独立回执](evidence/certificate-hints-hosted-native-c1581a9e-2026-10-10.json) SHA `cf6a78ce070ffa8f5edd9924485b635e9440fda81ed37c0ba1a07e0ba9f9d27e`。业务原始报告：[amd64构建](evidence/certificate-hints-hosted-native-amd64-raw-c1581a9e-2026-10-10.json) SHA `134aa9b45fa13b99966b6861c63b572cf7ae0d02c5dccaec1b9ca5aa6f8ef1a0`；[amd64重导入](evidence/certificate-hints-hosted-native-amd64-transfer-raw-c1581a9e-2026-10-10.json) SHA `134faf7cb93bdb49d0c12814e1c4785aa2ba48409e37e9a37a92b45fd63128f7`；[arm64构建](evidence/certificate-hints-hosted-native-arm64-raw-c1581a9e-2026-10-10.json) SHA `08b682fc3b365a000606d50d294434db9976a46bfaf6f061de63db8fb19f7675`；[arm64重导入](evidence/certificate-hints-hosted-native-arm64-transfer-raw-c1581a9e-2026-10-10.json) SHA `baa8d27336e6f9472ff6999b83c4a55992517b1aae0b87c37e65b781cacd1424`。业务最高963,334,144B（amd64构建）/ PID192（arm64重导入），每次2CPU / 2GiB / 256PID / 零swap、hard/OOM/PID触限0；普通阶段最高884,228,096B / PID197，允许swap但实际0。最高内存和PID来自不同报告，不拼成一次观测。
+
+自己的准确镜像身份：amd64 `sha256:12c18b0562f940d5eb8934c54781b280bb4dc508598d597d7500f4d68e1ce67b` / 归档SHA `410ff876583dcd46582b4bcbe8611cf8494fe02296d4181358880ea1e5a4dcc6`；arm64 `sha256:e6ad3489f5af663aa4abd227c0ea69d961c5b8bdeff418142b80b48c54e65bcd` / 归档SHA `b411dac8569074951c67f7716fc0828cb3a95deb46183256336a18e1de1ebff0`。本机未下载/重算这些大归档，身份来自实际producer/重导入/publisher证据。
+
+以成功Native任务为输入，已各启动 [amd6430分钟长测](https://github.com/warpdotsys/reader-dev/actions/runs/38065471515)、[arm6430分钟长测](https://github.com/warpdotsys/reader-dev/actions/runs/38065492523) 及 [准确原件/历史WebView/新镜像生成metadata三方](https://github.com/warpdotsys/reader-dev/actions/runs/38065495289)。脚本checkout仍为c158，镜像快照仍为0c5，输入Native任务仍为38063801166；不是稍后的UI通知候选。长测明确2CPU / 2GiB / 256PID / 零swap并仅给自己的临时parent cgroup设置high1.5GiB，包含冷请求、4生成用户GET/POST并发、超时/watchdog/自有worker崩溃恢复及每轮静默回收观察；三方先从公开归档提取原件并校验b26 SHA，不上传本地私有JAR或用户正文。**启动不等于通过**，当前还需各自终态和原始报告；原件TLS、真实站点认证及最新整镜像本机等仍未完成。
+
 ## 已知问题与回退
 
 原件HTTPS/完整三方及编码扩展、真实站点认证/授权真实书完整旅程、WS/WSS、并发长测/冷启动/崩溃恢复、最新整镜像本机运行仍未齐；原件非ASCII/getBookGroups编码差异、OPDS后端未实现继续保留。证书诊断仅覆盖两个已识别码，不宣称涵盖过期、吊销、中间人或所有网络失败。

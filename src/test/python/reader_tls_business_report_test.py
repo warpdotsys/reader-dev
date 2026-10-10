@@ -258,6 +258,20 @@ class ReaderTlsBusinessReportTest(unittest.TestCase):
     def test_recorded_actual_arm64_api_includes_reader_exception_prefix(self):
         self.check_recorded_failed_hosted_job('arm64','0abb147cb993777001aa6cba643a908a0326688025705055395d2e979e7dff8e')
 
+    def test_recorded_unmasked_full_image_actual_reader_tls_accepts_the_complete_hint_contract(self):
+        """Successful c158 artifact, unlike masked fc job logs; not a new browser run."""
+        path=ROOT / 'docs/evidence/certificate-hints-hosted-full-raw-c1581a9e-2026-10-10.json'
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),
+            'f060d3a95346256925a42130293a4c79c8f269164846f6a5265ecfb55bfddaff')
+        result=guard.validate_packaged(json.loads(path.read_bytes()),
+            '0882fcf42692723381fc20dd746f269df96035c0c2b1c336d0fed027782bdf56',
+            'd8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5',
+            '0c5f744cdd0d730b33cc3cf64b5d85c5826c2405','amd64',True)
+        self.assertTrue(result['acceptedCertificateHintMessages'])
+        self.assertEqual((result['generatedScenarios'],result['actualTargetRequests'],result['actualConnectTunnels'],
+            result['parsedHeaderFields']),(8,12,14,178))
+        self.assertFalse(result['fullGoalComplete'])
+
     def test_old_generic_errors_remain_historical_but_fail_new_hint_gate(self):
         value=self.packaged_double()
         self.assertTrue(guard.validate_packaged(value,JAR,guard.RECORDED_WORKER_SHA,REVISION,'amd64')['acceptedCurrentReaderHttpsBusinessSubset'])

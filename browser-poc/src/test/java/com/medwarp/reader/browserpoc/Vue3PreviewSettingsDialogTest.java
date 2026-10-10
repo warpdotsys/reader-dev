@@ -214,6 +214,11 @@ public class Vue3PreviewSettingsDialogTest {
                         && URI.create(request.url()).getPath().equals("/reader3/httpTTS/update"),
                 () -> editor.locator("button[type=submit]").click());
         page.locator(".el-message").filter(new Locator.FilterOptions().setHasText("未确认保存")).waitFor();
+        assertEquals("One failed edit has one notification owner", 1,
+                page.locator("#reader-message-stack .el-message").count());
+        assertEquals("The global transport toast must not duplicate the dialog warning", 0,
+                page.locator("#reader-message-stack .el-message")
+                        .filter(new Locator.FilterOptions().setHasText("网络连接失败")).count());
         assertTrue(editor.isVisible());
         assertEquals(cacheBefore, page.evaluate("() => localStorage.getItem('reader_http_tts_list')"));
         assertEquals(concurrentUrl, named(list(page), name).get("url"));

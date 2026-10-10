@@ -142,7 +142,8 @@ export async function updateHttpTts(original: HttpTts, updated: HttpTts): Promis
   const { type: _displayType, ...snapshot } = original
   const edited = { ...toLegacyHttpTts(updated), id: original.id }
   try {
-    const result = await post<string>('/httpTTS/update', { original: snapshot, updated: edited })
+    // The edit dialog owns both business and offline failure notifications.
+    const result = await post<string>('/httpTTS/update', { original: snapshot, updated: edited }, { silent: true })
     // Refreshing from /list after success supplies the new server timestamp.
     // Do not install a guessed record or corrupt the optimistic-edit snapshot.
     return result

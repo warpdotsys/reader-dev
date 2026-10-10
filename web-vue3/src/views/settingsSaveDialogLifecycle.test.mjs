@@ -139,7 +139,7 @@ const variants = [
 ]
 
 function otherFixture(kind, options = {}) {
-  const calls = { save: [], original: [], load: 0, warning: [], success: [] }
+  const calls = { save: [], original: [], load: 0, warning: [], success: [], error: [] }
   const context = {
     Error,
     ttsBusy: { value: false }, ttsDialogOpen: { value: true },
@@ -153,7 +153,10 @@ function otherFixture(kind, options = {}) {
     opdsCfgMsg: { value: '' }, opdsCfgMsgError: { value: false }, opdsTestPassword: '',
     document: { body: { style: { overflow: 'hidden' } } },
     newTtsId: () => 'generated-only',
-    ElMessage: { warning: value => calls.warning.push(value), success: value => calls.success.push(value) },
+    ElMessage: { warning: value => calls.warning.push(value), success: value => calls.success.push(value),
+      error: value => calls.error.push(value) },
+    readerRequestContext: () => ({ isCurrent: () => options.current?.() ?? true }),
+    requestErrorMessage: error => error?.message || '网络错误',
     saveHttpTts: async value => { calls.save.push({ ...value }); return await options.save?.() ?? { isSuccess: true, data: '' } },
     updateHttpTts: async (original, value) => {
       calls.original.push({ ...original })
@@ -212,6 +215,70 @@ test('TTS edit failed confirmed-list refresh does not close or fabricate a new s
   assert.equal(f.isBusy(), false)
   assert.equal(f.context.ttsOriginal.value.name, '生成语音')
   assert.deepEqual(f.calls.warning, ['修改已保存，但列表未重新读取；请刷新页面确认'])
+})
+
+test('TTS edit has one local notification on a rejected current-account write', async () => {
+  const f = otherFixture(variants[1], { save: () => { throw new Error('生成重名拒绝') } })
+  await f.save()
+  assert.deepEqual(f.calls.error, ['生成重名拒绝'])
+  assert.deepEqual(f.calls.warning, [])
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.isOpen(), true)
+  assert.equal(f.isBusy(), false)
+})
+
+test('TTS edit old-account rejection is silent after the identity changes', async () => {
+  let current = true
+  const f = otherFixture(variants[1], { current: () => current, save: () => {
+    current = false
+    throw new Error('生成旧账号拒绝，不得显示')
+  } })
+  await f.save()
+  assert.deepEqual(f.calls.error, [])
+  assert.deepEqual(f.calls.warning, [])
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.isOpen(), true)
+})
+
+test('TTS edit old-account offline result does not warn or refresh the new account', async () => {
+  let current = true
+  const f = otherFixture(variants[1], { current: () => current, save: () => {
+    current = false
+    return { isSuccess: false, errorMsg: '生成旧账号未确认', data: '' }
+  } })
+  await f.save()
+  assert.deepEqual(f.calls.error, [])
+  assert.deepEqual(f.calls.warning, [])
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.isOpen(), true)
+})
+
+test('TTS edit old-account success does not close a form after a session transition', async () => {
+  let current = true
+  const f = otherFixture(variants[1], { current: () => current, save: () => {
+    current = false
+    return { isSuccess: true, data: '' }
+  } })
+  await f.save()
+  assert.equal(f.calls.load, 0)
+  assert.equal(f.isOpen(), true)
+  assert.deepEqual(f.calls.error, [])
+  assert.deepEqual(f.calls.warning, [])
+})
+
+test('TTS edit session transition during refresh suppresses warning and dialog close', async () => {
+  for (const refreshed of [false, true]) {
+    let current = true
+    const f = otherFixture(variants[1], { current: () => current, load: () => {
+      current = false
+      return refreshed
+    } })
+    await f.save()
+    assert.equal(f.calls.load, 1)
+    assert.equal(f.isOpen(), true)
+    assert.deepEqual(f.calls.error, [])
+    assert.deepEqual(f.calls.warning, [])
+  }
 })
 
 for (const kind of variants) {

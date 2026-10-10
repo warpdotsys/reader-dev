@@ -14,3 +14,4 @@ docs/evidence/reader-https-hosted-*-c29e682b-2026-10-10.json -text whitespace=cr
 docs/evidence/certificate-hints-local-verification-2026-10-10.json -text
 docs/evidence/certificate-hints-local-parent-protocol-2026-10-10.xml -text whitespace=cr-at-eol
 docs/evidence/certificate-hints-hosted-*-fc0860f1-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/certificate-hints-hosted-*-c1581a9e-2026-10-10.json -text whitespace=cr-at-eol
