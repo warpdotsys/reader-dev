@@ -44,6 +44,20 @@ gh workflow run browser-image.yml --ref ci/full-reader-20260926 -f native_arch=a
 
 该命令会在托管 runner 下载约 2 GiB 原镜像，不在本机重复下载，不传私有 JAR/会话/正文，不发布或部署。执行时间、来源和结果必须按实际运行回填；新工具源码身份与被消费的 c594 镜像身份分开。
 
+### 第一轮托管发布门禁失败及精确修正
+
+工具源码 `f2dff030640af21daddcd14fb93101c309408c27` 的 [Java38005979632](https://github.com/warpdotsys/reader-dev/actions/runs/38005979632) 与 [Native38005979602](https://github.com/warpdotsys/reader-dev/actions/runs/38005979602) 实际在发布门禁负面测试中失败，未进入 Gradle/JAR/镜像构建。新增 `report-browser-cgroup.py` 文件触发规则后，原比较器在 YAML＋脚本混合文字里匹配到文件名，导致删除真实资源命令的用例被误分到后面的 async 门禁错误。不能借父版 c594 构建或本地单次静态检查宣布这版 CI 成功。
+
+本地完整复现原 49 项中的 1 条失败；再加三条负面回归，实际 52 项／4 失败：原错误原因，以及被注释、忽略失败、重复覆盖回执的资源命令都没有被准确拒绝。修正只要求 smoke 脚本中恰好一组真实、失败不可忽略的 collector／receipt 命令；YAML 路径或注释不能充当执行证据，不删用例或放宽原错误断言。修正后发布门禁 52、原生身份 19、manifest 14，共 85 项全执行通过。自己的新托管结果仍须另验。
+
+[独立离线专项38005988689](https://github.com/warpdotsys/reader-dev/actions/runs/38005988689) 已实际失败，作业 `114074785422` 属于 GitHub 托管 `ubuntu-24.04`，其余七项互斥任务跳过。前述 c594 完整镜像实际下载、加载且两阶段身份匹配；停止在资源配置前置判断，没有启动 Reader、进行 600 秒业务长测或取得内存/清理回执。只下载 1,009 B 小制品并逐字段/SHA 核对三个 JSON，不重新下载大镜像。[失败的有限记录](evidence/memory-high-hosted-f2dff030-2026-10-10.json)。不能把成功加载写成运行通过。
+
+原判断要求不存在的 slice 显示 `LoadState=not-found`。本机对独有未运行名称只读核对，实际 `loaded/inactive`，FragmentPath/DropInPaths/ControlGroup 为空、Transient=no、cgroup 不存在；同名 service 才是 not-found。由此确认该 slice 前置条件有误，但首次托管没有采到这些值，不能事后补造或唯一归因。改为核对无配置、无活动状态、无 cgroup 的隐式 slice，仍拒绝任何活动/配置/drop-in/transient/归属记录；现有工作负载不能借此被覆盖。三个新增生成回归包含实际 Bash 状态谓词和无副作用 CLI 拒绝，全部通过。
+
+新增有限只读 host preflight 位于两个制品下载之前；不支持 cgroup v2/systemd 时先保存失败状态再拒绝，不再为这种前置失败下载大镜像。正式门禁必须绑定该实际观察、父级资源及删除后的清理。宿主回执目录由 runner 持有并加 sticky 位；UID10001仍可写自己的生成业务回执，但不能移除/替换宿主独立观察文件。容器归属阶段另核对这些权限；原无外网、能力、限额和业务门禁不改。专项脚本源码与后续发布门禁修正分别记录，修正工具自己的托管结果仍待验。
+
+最终修正后本机再次执行：Windows全套416项／23.549秒／1项原平台跳过，WSL全套416项全执行／17.481秒；发布相关85项在两系统全执行通过。新Bash谓词/CLI检查确实执行，但没有在这些生成单测里启动systemd或Docker，真实runner的前置/启动/清理仍必须单独验证。初版413结果和全部失败保留，不用测试环境修正覆盖历史。
+
 ## 尚未完成与回退
 
 - 最新完整 Native 镜像的本机验收、准确 b26 原件的当前三方、真实认证书源和当前产物长期验收仍未完成。

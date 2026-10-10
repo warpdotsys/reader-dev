@@ -81,6 +81,14 @@ def verify_memory_policy(policy, running, document, require_removal):
     require(running.get("memoryPolicy", "unchanged") == policy, "MemoryPolicyMismatch")
     if policy == "unchanged":
         return {"selection": policy, "parentEarlyReclaimVerified": False}
+    host = document("MEMORY_HIGH_HOST_PREFLIGHT.json")
+    require(host.get("preflightOnly") is True and host.get("systemdWritesPerformed") is False and
+            host.get("policy") == policy and host.get("dockerCgroupDriver") == "systemd" and
+            host.get("dockerCgroupVersion") == "2" and host.get("generatedSliceLoadState") == "loaded" and
+            host.get("generatedSliceActiveState") == "inactive" and
+            host.get("unconfiguredSliceStateAccepted") is True and
+            host.get("generatedSliceCgroupAbsent") is True and host.get("accepted") is True,
+            "ParentHostPreflightUnproven")
     member = document("MEMORY_HIGH_MEMBERSHIP.json")
     cid, slice_name = running.get("containerId"), member.get("slice")
     require(type(cid) is str and re.fullmatch(r"[0-9a-f]{64}", cid) and
@@ -88,6 +96,8 @@ def verify_memory_policy(policy, running, document, require_removal):
             re.fullmatch(r"readerhigh[0-9a-f]{16}\.slice", slice_name) and
             member.get("membership") == f"0::/{slice_name}/docker-{cid}.scope" and
             integer(member.get("hostPid"), 2) and member.get("verifiedBeforeProbe") is True and
+            member.get("hostEvidenceDirectorySticky") is True and
+            member.get("hostEvidenceOwnerDiffersFromRuntimeUid") is True and
             member.get("policy") == policy, "ParentBudgetMembershipUnproven")
     names = ["MEMORY_HIGH_PRESTART.json", "MEMORY_HIGH_AFTER_SOAK.json"]
     if require_removal:
@@ -125,7 +135,8 @@ def verify_memory_policy(policy, running, document, require_removal):
                 type(cleanup.get("populatedAfterContainerRemoval")) is int and
                 cleanup["populatedAfterContainerRemoval"] == 0 and cleanup.get("ownedUnitsInactive") is True and
                 cleanup.get("policy") == policy, "ParentBudgetCleanupUnproven")
-    return {"selection": policy, "parentEarlyReclaimVerified": True, "memoryHighBytes": 1610612736,
+    return {"selection": policy, "hostPreflightVerified": True,
+            "parentEarlyReclaimVerified": True, "memoryHighBytes": 1610612736,
             "parentPeakBytes": final["memoryPeakBytes"], "parentHighEvents": final["memoryEvents"]["high"],
             "parentCleanupVerified": require_removal, "defaultImageOrProductionPolicyChanged": False}
 

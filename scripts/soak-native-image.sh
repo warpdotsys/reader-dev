@@ -40,6 +40,12 @@ install -d "$storage"
 sudo chown 10001:10001 "$storage"
 # Preserve the runner's report ownership; grant only the container UID write access.
 sudo setfacl -m u:10001:rwx "$output"
+# UID 10001 may create its own generated observations, but may not unlink or
+# replace host-owned independent identity/resource receipts in this directory.
+test -O "$output"
+test "$(stat -c %u "$output")" != 10001
+sudo chmod +t "$output"
+test -k "$output"
 container_id=''
 cleanup() {
   result=$?

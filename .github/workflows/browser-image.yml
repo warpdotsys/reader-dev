@@ -720,6 +720,12 @@ jobs:
                 {id, name, path, head_sha, event, conclusion, html_url}' \
             > "$RUNNER_TEMP/reader-soak-report/SOURCE_RUN.json"
           python3 -m unittest discover -s src/test/python -p '*_test.py'
+      - name: Observe explicit parent-policy support before large artifact downloads
+        env:
+          READER_SOAK_MEMORY_POLICY: ${{ inputs.soak_memory_policy || 'unchanged' }}
+        run: |
+          set -euo pipefail
+          bash scripts/reader-browser-budget-slice.sh preflight "$READER_SOAK_MEMORY_POLICY" "$RUNNER_TEMP/reader-soak-report"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, Node 24
         with:
           digest-mismatch: error

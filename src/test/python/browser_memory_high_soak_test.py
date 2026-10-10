@@ -2,7 +2,10 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 
@@ -19,10 +22,16 @@ CID = "e" * 64
 def generated_high_documents():
     documents = BASELINE.generated_documents()
     documents["RUNNING_JAR_IDENTITY.json"].update(containerId=CID, memoryPolicy="high-1536m")
+    documents["MEMORY_HIGH_HOST_PREFLIGHT.json"] = {
+        "preflightOnly": True, "systemdWritesPerformed": False, "policy": "high-1536m",
+        "dockerCgroupDriver": "systemd", "dockerCgroupVersion": "2",
+        "generatedSliceLoadState": "loaded", "generatedSliceActiveState": "inactive",
+        "unconfiguredSliceStateAccepted": True, "generatedSliceCgroupAbsent": True, "accepted": True}
     documents["MEMORY_HIGH_MEMBERSHIP.json"] = {
         "containerId": CID, "slice": SLICE, "hostPid": 1234,
         "membership": f"0::/{SLICE}/docker-{CID}.scope",
-        "verifiedBeforeProbe": True, "policy": "high-1536m"}
+        "verifiedBeforeProbe": True, "hostEvidenceDirectorySticky": True,
+        "hostEvidenceOwnerDiffersFromRuntimeUid": True, "policy": "high-1536m"}
     for name, peak, high, pids in (
             ("MEMORY_HIGH_PRESTART.json", 10 * 1024**2, 0, 1),
             ("MEMORY_HIGH_AFTER_SOAK.json", 1537 * 1024**2, 2893, 220),
@@ -76,7 +85,7 @@ class BrowserMemoryHighSoakTest(unittest.TestCase):
             self.verify()
 
     def test_missing_parent_observations_fail_even_with_accepted_leaf_resources(self):
-        for name in ("MEMORY_HIGH_PRESTART.json", "MEMORY_HIGH_MEMBERSHIP.json",
+        for name in ("MEMORY_HIGH_HOST_PREFLIGHT.json", "MEMORY_HIGH_PRESTART.json", "MEMORY_HIGH_MEMBERSHIP.json",
                      "MEMORY_HIGH_AFTER_SOAK.json", "MEMORY_HIGH_FINAL.json", "MEMORY_HIGH_CLEANUP.json"):
             def read(filename):
                 if filename == name:
@@ -88,7 +97,8 @@ class BrowserMemoryHighSoakTest(unittest.TestCase):
     def test_only_the_exact_running_container_parent_and_host_membership_are_accepted(self):
         for key, value in (("containerId", "f" * 64), ("slice", "system.slice"),
                            ("slice", "readerhigh../../other.slice"), ("hostPid", True), ("hostPid", 1),
-                           ("verifiedBeforeProbe", False), ("membership", f"0::/other/{CID}")):
+                           ("verifiedBeforeProbe", False), ("membership", f"0::/other/{CID}"),
+                           ("hostEvidenceDirectorySticky", False), ("hostEvidenceOwnerDiffersFromRuntimeUid", False)):
             self.documents = generated_high_documents()
             self.documents["MEMORY_HIGH_MEMBERSHIP.json"][key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
@@ -140,12 +150,69 @@ class BrowserMemoryHighSoakTest(unittest.TestCase):
         policy = self.verify(require_removal=False, memory_policy="unchanged")["memoryPolicy"]
         self.assertEqual({"selection": "unchanged", "parentEarlyReclaimVerified": False}, policy)
 
+    def test_host_preflight_cannot_be_assumed_or_hide_a_preexisting_workload(self):
+        for key, value in (("systemdWritesPerformed", True), ("dockerCgroupDriver", "cgroupfs"),
+                           ("dockerCgroupVersion", 2), ("generatedSliceLoadState", "not-found"),
+                           ("generatedSliceActiveState", "active"), ("unconfiguredSliceStateAccepted", False),
+                           ("generatedSliceCgroupAbsent", False), ("accepted", False)):
+            self.documents = generated_high_documents()
+            self.documents["MEMORY_HIGH_HOST_PREFLIGHT.json"][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.verify()
+
+    @staticmethod
+    def bash():
+        binary = os.environ.get("READER_TEST_BASH")
+        if not binary and os.name == "nt":
+            git_bash = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/bin/bash.exe"
+            if git_bash.is_file():
+                binary = str(git_bash)
+        return binary or shutil.which("bash")
+
+    def test_actual_bash_state_predicate_accepts_only_an_inactive_unconfigured_implicit_slice(self):
+        bash = self.bash()
+        self.assertTrue(bash, "Bash is required; the actual state predicate must not be skipped")
+        helper = Path(__file__).resolve().parents[3] / "scripts/reader-browser-budget-slice.sh"
+        cases = [(0, ["loaded", "inactive", "", "", "no", ""])]
+        for index, invalid in ((0, "not-found"), (1, "active"), (2, "generated-existing.slice"),
+                               (3, "generated-existing.conf"), (4, "yes"), (5, "/generated-existing")):
+            values = ["loaded", "inactive", "", "", "no", ""]
+            values[index] = invalid
+            cases.append((1, values))
+        cases.append((1, ["loaded", "inactive", "", "", "no"]))
+        for expected, values in cases:
+            result = subprocess.run([bash, "-c", 'source "$1"; shift; require_unconfigured_slice_state "$@"',
+                                     "generated-only-predicate", helper.as_posix(), *values],
+                                    capture_output=True, text=True, timeout=10, check=False)
+            with self.subTest(values=values):
+                self.assertEqual(expected, result.returncode)
+                self.assertEqual("", result.stdout)
+                self.assertEqual("", result.stderr)
+
+    def test_bash_cli_default_and_invalid_requests_do_not_query_or_write_host_state(self):
+        bash = self.bash()
+        self.assertTrue(bash, "Bash is required; CLI rejection must not be skipped")
+        helper = Path(__file__).resolve().parents[3] / "scripts/reader-browser-budget-slice.sh"
+        env = dict(os.environ, GITHUB_ACTIONS="false")
+        for expected, args in ((0, ["preflight", "unchanged", "not-created"]),
+                               (1, ["preflight", "high-1536m", "not-created"]),
+                               (1, ["preflight", "unknown", "not-created"]),
+                               (1, ["preflight", "unchanged", "not-created", "extra"]), (1, [])):
+            result = subprocess.run([bash, helper.as_posix(), *args], env=env, cwd=self.directory,
+                                    capture_output=True, text=True, timeout=10, check=False)
+            with self.subTest(args=args):
+                self.assertEqual(expected, result.returncode)
+                self.assertEqual("", result.stdout)
+                self.assertEqual("", result.stderr)
+                self.assertEqual([], list(self.directory.iterdir()))
+
     def test_harness_keeps_the_default_offline_budget_and_new_policy_is_explicit(self):
         root = Path(__file__).resolve().parents[3]
         harness = (root / "scripts/soak-native-image.sh").read_text(encoding="utf-8")
         helper = (root / "scripts/reader-browser-budget-slice.sh").read_text(encoding="utf-8")
         self.assertIn('READER_SOAK_MEMORY_POLICY:-unchanged', harness)
         self.assertIn('--network none', harness)
+        self.assertIn('sudo chmod +t "$output"', harness)
         self.assertIn('--memory=2g --memory-swap=2g --pids-limit=256 --cpus=2', harness)
         self.assertIn('MemoryHigh=1610612736 MemoryMax=2147483648 MemorySwapMax=0 TasksMax=256', helper)
         self.assertNotIn('memory.peak', helper)

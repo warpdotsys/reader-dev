@@ -47,6 +47,17 @@ for (const token of [
 for (const token of ['v*-restored', 'macos-15', 'reader-4.0.7']) {
   if ((workflow + nativeWorkflow).includes(token)) throw new Error(`release workflow contains forbidden legacy token: ${token}`)
 }
+// A path filter or comment can contain the filename without executing the
+// collector. Require one real, fail-closed command/receipt pair in the smoke
+// script itself; do not infer runtime checks from the combined YAML text.
+const nativeSmokeLines = nativeSmoke.split('\n')
+const resourceInvocation = 'docker exec -i "$container_id" python - < scripts/report-browser-cgroup.py \\'
+const resourceCommands = nativeSmokeLines.flatMap((line, index) =>
+  line.trim() === resourceInvocation ? [index] : [])
+if (resourceCommands.length !== 1 ||
+    nativeSmokeLines[resourceCommands[0] + 1]?.trim() !== '| tee "$output/BROWSER_RESOURCE_BUDGET.json"') {
+  throw new Error('native smoke must execute scripts/report-browser-cgroup.py once with a fail-closed resource receipt')
+}
 for (const token of [
   'npm --prefix web-vue3 run build', 'Read and validate locked base image digests',
   'base-images.lock', 'REQUIRE_WHEEL_HASHES=true', 'fc-list :lang=zh family',

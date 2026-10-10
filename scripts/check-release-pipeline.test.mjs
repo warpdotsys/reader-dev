@@ -70,6 +70,36 @@ test('removing the release resource assertion is rejected', (t) => {
   assert.match(result.stderr, /report-browser-cgroup/)
 })
 
+test('a workflow path filter or comment cannot impersonate the native resource command', (t) => {
+  const current = fixture(t)
+  current.change('scripts/smoke-native-release.sh', (text) =>
+    text.replace('docker exec -i "$container_id" python - < scripts/report-browser-cgroup.py',
+      '# docker exec -i "$container_id" python - < scripts/report-browser-cgroup.py'))
+  const result = current.check()
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /report-browser-cgroup/)
+})
+
+test('resource command failures cannot be ignored after the receipt pipeline', (t) => {
+  const current = fixture(t)
+  current.change('scripts/smoke-native-release.sh', (text) =>
+    text.replace('| tee "$output/BROWSER_RESOURCE_BUDGET.json"',
+      '| tee "$output/BROWSER_RESOURCE_BUDGET.json" || true'))
+  const result = current.check()
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /report-browser-cgroup/)
+})
+
+test('duplicated resource receipt commands are rejected instead of overwriting evidence', (t) => {
+  const current = fixture(t)
+  current.change('scripts/smoke-native-release.sh', (text) =>
+    text + '\ndocker exec -i "$container_id" python - < scripts/report-browser-cgroup.py \\\n' +
+      '  | tee "$output/BROWSER_RESOURCE_BUDGET.json"\n')
+  const result = current.check()
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /report-browser-cgroup/)
+})
+
 test('exporting the native image before the browser and resource checks is rejected', (t) => {
   const current = fixture(t)
   current.change('.github/workflows/release-native.yml', (text) =>
