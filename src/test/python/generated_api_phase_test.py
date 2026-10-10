@@ -72,7 +72,7 @@ class GeneratedApiPhaseTest(unittest.TestCase):
             self.assertEqual(0, phase.failure_context()['completedCalls'])
 
     def test_real_probe_control_flow_preserves_source_read_timeout_phase(self):
-        fixture = SimpleNamespace(snapshot=lambda: [], request_snapshot=lambda: [])
+        fixture = SimpleNamespace(snapshot=lambda: [], request_snapshot=lambda: [], observe_target_headers=False)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             process = mock.Mock()
@@ -92,7 +92,8 @@ class GeneratedApiPhaseTest(unittest.TestCase):
 
     def test_actual_metadata_branch_records_attempt_but_not_return_or_completion(self):
         helper = m.metadata_helper()
-        fixture = SimpleNamespace(metadata=helper, snapshot=lambda: [], request_snapshot=lambda: [])
+        fixture = SimpleNamespace(metadata=helper, snapshot=lambda: [], request_snapshot=lambda: [],
+                                  observe_target_headers=False)
         saved = {}
         def success(opener, base, path, body=None, include_return_data=False):
             if path.endswith('saveBookSource'): saved.clear(); saved.update(body)

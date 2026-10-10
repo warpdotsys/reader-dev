@@ -3,6 +3,7 @@
 package com.htmake.reader.utils
 
 import com.htmake.reader.entity.BasicError
+import com.htmake.reader.verticle.sanitizeRequestTargetForLog
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Route
@@ -27,8 +28,18 @@ fun RoutingContext.error(throwable: Throwable) {
         System.currentTimeMillis()
     )
     val errorJson = gson.toJson(error)
-    logger.error("Internal Server Error", throwable)
-    logger.error { errorJson }
+    // Keep the legacy HTTP response, but never send its URI/message or the
+    // original Throwable (including causes/suppressed exceptions) to a log sink.
+    // Exception type + route + timestamp provide a bounded diagnostic record.
+    val errorLog = gson.toJson(linkedMapOf(
+        "error" to error.error,
+        "exceptionType" to throwable.javaClass.name,
+        "method" to request().method().name,
+        "path" to sanitizeRequestTargetForLog(request().path()),
+        "status" to error.status,
+        "timestamp" to error.timestamp
+    ))
+    logger.error { errorLog }
     response()
         .putHeader("content-type", "application/json; charset=utf-8")
         .setStatusCode(500)

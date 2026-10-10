@@ -5,8 +5,25 @@
 ## 证据边界
 
 - **已核对源码与已有托管证据**：原有 25 项 Vue3 旅程的主要用例直接连接打包后的 Java/Kotlin JAR，不是 Vite 后端替代品。仅子目录部署用例使用预览服务器。已有成功不等于完整 Docker 镜像本身已经执行界面旅程。
-- **本次新增，尚待自己的托管实跑**：`NativeImageDefaultUiTest` 直接连接本次构建的 `reader-browser-smoke` 容器 `http://127.0.0.1:18890`。不覆盖 `READER_APP_WEBUI`，并验证实际发布资源中的版本及完整 tested merge revision。原先默认 Vue3 HTML/静态资源与 JAR SHA 门禁仍在它之前执行。
+- **本次新增，第三轮自己的托管实跑已接受**：`NativeImageDefaultUiTest` 直接连接本次构建的 `reader-browser-smoke` 容器 `http://127.0.0.1:18890`。不覆盖 `READER_APP_WEBUI`，并验证实际发布资源中的版本及完整 tested merge revision。原先默认 Vue3 HTML/静态资源与 JAR SHA 门禁仍在它之前执行。
 - 本次生成 XML/PNG 头部单测仅验证校验器拒绝策略，绝不当作真实浏览器、截图像素或产品成功。
+
+## 第三轮：上传修复后的完整镜像已通过
+
+`a12abe6481534926e523f65872eabdd8677a7576` / tested merge `6429154d41d98407516c9f5a2702933b4a4f36ac` 的 [Full run 38025473013](https://github.com/warpdotsys/reader-dev/actions/runs/38025473013) 已成功，随后独立下载小回执，核对来源、唯一真实 XML、四张图、已有默认静态字节/异步/metadata/Cam20/Chrom23/helper3及最终累计预算。独立回执 SHA `94b6db644b53df37c00f895209c9d13e5ace2c916c8af627b5dc53b5d3126ae1`；校验执行源码 SHA `bc988b97acd47f72ad1906c744128c60fc068e43de492492a13914f2405ae9ed`。不借上一提交绿灯或覆盖前两次失败。
+
+- 新旅程实际 1 次 / 8.316 秒 / 零失败、错误、跳过。真实上传的 `importBookPreview` 从上一轮500变为200 / `isSuccess=true`，随后旧 `saveBook`、中文两章阅读、翻章与刷新、退出及根页保护均经过。
+- JAR 仍为 `e59a01bf190de757f73216557ff353411019507d25bad76f0c808b48366adb84` / 285,665,012 B；两次独立干净重建一致。Java run `38025472980` 的独立回执 `51bd72d7c5c36c6354e673c2f6886e6a7535c3fceed051f8dae5039876b3a460`，454 Python全部执行，181 JVM / 31原有环境跳过 / TTS编辑11全执行。Vue run `38025472963` 的25实际旅程零跳过也独立接受，回执 `79930af5b7f7d0a1817016a7716ddbd67d75f1b4f970cc801f2bcb50548aa66e`。
+- 最终服务端峰值 845,193,216 B / PID192；CPU quota200000 / period100000，2GiB / 256PID。memory.max/OOM/oom_kill/PID触限均0，实际swap0；普通短测允许1GiB swap，memory.high仍为既有 `max`。客户端明确不属于此预算，不冒称全客户端加服务端2GiB或严格零swap长测。
+- 主agent逐张核对图像：登录空表单、导入完成的弹窗及背景书架1本、第二章中文正文与控件、退出后的空登录界面均可辨，无真实账号或正文。登录图与上一轮同 SHA，已有像素图也核对；并非空白截图。导入截图仍保留可继续导入的完成弹窗；阅读入口使用旧返回bookUrl直接路由，**不额外声称所有书架卡片点击/弹窗行为也由此例验证**。
+- 自己的 [Native run 38025472975](https://github.com/warpdotsys/reader-dev/actions/runs/38025472975) 六个实际作业及24个publisher JSON也已独立接受，回执 SHA `0b63ad5bc311ae6cf056b6ae3ed57f2e5ff13670a7e676bc5df57e07f6bf99d4`：双原生构建运行、各自重新导入并运行、同publisher导入器无注册表凭据的演练都经过。四份运行预算最高898,363,392 B／PID201、普通允许1GiB swap／实际0。新AMD64 image ID `sha256:bd36d843ff9e8664842569ebe69c6e3a9c861cf8c2d920a4bbe5026f17cd4cc7`，ARM64 `sha256:0e993e89c7faaa0a056493d090a87c7ca9db1212b4e6e1b37d577bb559bd8055`；仅下载小回执，不把托管归档散列冒充本机重算。本次新渲染旅程仅在Full的AMD64镜像上执行，不冒充ARM64渲染或本机新镜像结果。58份用户保护报告和原件仍保持原散列，生产、正式发布未变。
+
+| 生成截图 | SHA-256 |
+| --- | --- |
+| login | `e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a` |
+| shelf | `f3c26c419e8010d634bfaf91530b13672451b470c4a9d51f37e2c6174a55f408` |
+| reading | `589d1089815853d959042d142b6184d89ee444b42e4462f68a1353bbdbb7fd66` |
+| logout | `e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09` |
 
 ## 实际旅程的必验项
 
@@ -40,6 +57,8 @@ python3 scripts/verify-native-default-ui-journey.py \
 服务端继续使用原 2 CPU / 2 GiB / 256 PID 普通短测预算，允许 1 GiB swap 的既有政策不变；最终累计资源回执在 UI 旅程后收集，不重置计数器。**托管 Chromium 只是外部验收客户端，其内存不属于服务端 cgroup，因此不能宣称客户端加服务端合计仍限 2 GiB。** 产品内置 Camoufox 及依赖仍来自锁定镜像，不引入宿主 Chrome 的运行时依赖。
 
 ## 已知问题与未验证项
+
+以下保留每轮发现及当时状态；上传修复的第三轮实证见上，不覆盖此前失败。错误日志脱敏、全部请求头差分、真实认证/长期/生产等尚未完成。
 
 - 首次增量 `59468f03` / tested merge `438a7963` 的 Full run `38023674991` 实际失败：错误使用根工程 `:browser-poc:*` 任务，Gradle 报 `Project 'browser-poc' not found in root project 'reader'`。独立测试工程应使用 `-p browser-poc`，已修正并增加防回退检查；当时页面旅程尚未执行、无 UI XML/截图、没有最终累计预算，不能冒称登录失败或 UI 通过。该 run 保留红灯与原日志；Java `38023674968` 及 Vue `38023674838` 自己的回执已分别复验，但不代表 Full 通过。
 - 第二轮 `6c8123f2` / tested merge `46d7eb8d` 的 Full run `38024428773` 实际执行一例/零跳过，5.463 秒后失败：生成注册、错误密码、正确登录、tab 会话刷新与空书架断言均经过，但 `importBookPreview` 返回 HTTP 500。JUnit 与服务器日志共同定位 `java.nio.file.AccessDeniedException: /app/file-uploads`。只保留一张登录截图，没有通过导入/阅读/退出或最终预算；不能把此前 25 项直连 JAR 的 UI 成功替代这个镜像缺陷。

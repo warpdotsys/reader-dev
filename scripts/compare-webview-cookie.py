@@ -61,6 +61,43 @@ def historical_utf8_truncation_fields():
             "bodyByteCount": len(raw), "bodySha256": hashlib.sha256(raw).hexdigest()}
 
 
+def bounded_target_headers(headers):
+    """Record parsed target field pairs, not wire bytes; reject, never truncate.
+
+    Called only by the opt-in generated/isolated three-way target fixture. Case,
+    order and duplicates remain observable. This is not a production logger.
+    """
+    pairs = []
+    size = 0
+    for name, value in headers.raw_items():
+        if not isinstance(name, str) or not isinstance(value, str):
+            raise ValueError("Target header fields must be strings")
+        size += len(name.encode("utf-8")) + len(value.encode("utf-8"))
+        if len(pairs) >= 64 or size > 8192:
+            raise ValueError("Target header observation exceeds its finite budget")
+        pairs.append([name, value])
+    return pairs
+
+
+def validate_target_header_observation(result, exercise_encoding=False):
+    if not isinstance(result, dict):
+        raise RuntimeError("Missing executed target header observations")
+    observations = result.get("renderTargetHeaders")
+    if not isinstance(observations, list) or len(observations) != 5 + int(exercise_encoding):
+        raise RuntimeError("Missing executed target header observations")
+    for pairs in observations:
+        if not isinstance(pairs, list) or not 1 <= len(pairs) <= 64:
+            raise RuntimeError("Invalid target header field-pair observation")
+        size = 0
+        for pair in pairs:
+            if not isinstance(pair, list) or len(pair) != 2 or \
+                    not all(isinstance(value, str) for value in pair):
+                raise RuntimeError("Invalid target header field-pair observation")
+            size += sum(len(value.encode("utf-8")) for value in pair)
+        if size > 8192:
+            raise RuntimeError("Target header observation exceeds its finite budget")
+
+
 def free_port():
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -76,15 +113,18 @@ def sha256(path):
 
 
 class Fixture(ThreadingHTTPServer):
-    def __init__(self, address, archived_renderer=False, exercise_encoding=False, exercise_metadata=False):
+    def __init__(self, address, archived_renderer=False, exercise_encoding=False, exercise_metadata=False,
+                 observe_target_headers=False):
         super().__init__(address, FixtureHandler)
         self.archived_renderer = archived_renderer
         self.exercise_encoding = exercise_encoding
+        self.observe_target_headers = observe_target_headers
         self.metadata = metadata_helper() if exercise_metadata else None
         self.metadata_requests = []
         self.calls = []
         self.script_sources = []
         self.request_fields = []
+        self.target_headers = []
         self.lock = threading.Lock()
 
     def reset(self):
@@ -92,6 +132,7 @@ class Fixture(ThreadingHTTPServer):
             self.calls.clear()
             self.script_sources.clear()
             self.request_fields.clear()
+            self.target_headers.clear()
             self.metadata_requests.clear()
 
     def snapshot(self):
@@ -105,6 +146,10 @@ class Fixture(ThreadingHTTPServer):
     def request_snapshot(self):
         with self.lock:
             return list(self.request_fields)
+
+    def target_header_snapshot(self):
+        with self.lock:
+            return [[list(pair) for pair in pairs] for pairs in self.target_headers]
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -162,7 +207,16 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.send_search_html(call_number)
 
     def serve_search(self, method, body, raw=None):
+        observed_headers = None
+        if self.server.observe_target_headers:
+            try:
+                observed_headers = bounded_target_headers(self.headers)
+            except ValueError:
+                self.send_error(431)
+                return
         with self.server.lock:
+            if observed_headers is not None:
+                self.server.target_headers.append(observed_headers)
             self.server.calls.append(self.headers.get("Cookie", ""))
             self.server.script_sources.append(None)
             fields = {
@@ -444,6 +498,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
                 "renderScriptSources": fixture.script_snapshot(),
                 "renderRequestFields": fixture.request_snapshot(),
+                **({"renderTargetHeaders": fixture.target_header_snapshot()}
+                   if fixture.observe_target_headers else {}),
                 **({"metadata": metadata} if exercise_metadata else {})}
     except Exception as failure:
         if failure_report is not None:
@@ -454,7 +510,9 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                 **({"metadataBookInfoApiCalls": metadata_calls, "lastObservedMetadata": metadata}
                    if exercise_metadata else {}),
                 "renderCookieHeaders": fixture.snapshot(),
-                "renderRequestFields": fixture.request_snapshot()})
+                "renderRequestFields": fixture.request_snapshot(),
+                **({"renderTargetHeaders": fixture.target_header_snapshot()}
+                   if fixture.observe_target_headers else {})})
         log_output.flush()
         log_lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
         print("Reader diagnostics (local fixture only):", *log_lines[-40:], sep="\n")
@@ -615,6 +673,8 @@ def main():
                         help="Also verify a synthetic webJs rule is sent as js_source")
     parser.add_argument("--exercise-post", action="store_true",
                         help="Also verify a synthetic WebView POST method, body, and header")
+    parser.add_argument("--observe-target-headers", action="store_true",
+                        help="Preserve all parsed header field pairs at the generated three-way target; not parity acceptance")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="In actual three-way mode also compare raw UTF-8 POST bytes and supplementary characters")
     parser.add_argument("--exercise-metadata", action="store_true",
@@ -635,6 +695,9 @@ def main():
     if args.exercise_metadata and not (args.camoufox_python and args.original_network_isolated and
             args.archived_renderer_base and args.exercise_script and args.exercise_post and args.phase_handoff_dir):
         parser.error("Metadata probe requires actual isolated three-way mode and guarded handoff")
+    if args.observe_target_headers and not (args.original_network_isolated and args.archived_renderer_base and
+                                           args.camoufox_python and args.exercise_script and args.exercise_post):
+        parser.error("Target header observation requires generated isolated actual three-way GET/POST execution")
     if args.exercise_metadata and (args.exercise_encoding or args.characterize_historical_utf8):
         parser.error("Metadata addition does not replace or relax the separate strict UTF-8 gate")
     if args.metadata_clock_contract and not args.exercise_metadata:
@@ -688,6 +751,7 @@ def main():
     fixture_port = free_port()
     fixture = Fixture(("127.0.0.1", fixture_port),
                       archived_renderer=bool(args.archived_renderer_base), exercise_encoding=args.exercise_encoding,
+                      **({"observe_target_headers": True} if args.observe_target_headers else {}),
                       **({"exercise_metadata": True} if args.exercise_metadata else {}))
     fixture_base = f"http://127.0.0.1:{fixture_port}"
     worker = threading.Thread(target=fixture.serve_forever, daemon=True)
@@ -731,6 +795,9 @@ def main():
                        if args.exercise_metadata else {}),
                 })
             if args.camoufox_python:
+                if args.observe_target_headers:
+                    for result in (original, restored):
+                        validate_target_header_observation(result, args.exercise_encoding)
                 if args.phase_handoff_dir:
                     wait_for_camoufox_handoff(args.phase_handoff_dir, original, restored,
                                               exercise_encoding=args.exercise_encoding,
@@ -779,6 +846,11 @@ def main():
     }
     if args.exercise_post:
         report["expectedPostRequestFields"] = expected_post
+    if args.observe_target_headers:
+        report["headerObservation"] = {"generatedOnly": True, "allParsedFieldPairsRecorded": True,
+            "caseOrderDuplicatesPreserved": True, "maximumFieldsPerRequest": 64,
+            "maximumUtf8FieldBytesPerRequest": 8192, "wireBytesRecorded": False,
+            "literalHeaderParityAccepted": False, "realAuthenticationProven": False}
     if args.exercise_encoding:
         report["encodingProbe"] = {"charset": "UTF-8", "expectedRequestFields": encoding_request_fields(),
                                    "expectedBookName": ENCODING_BOOK, "rawTargetBodyRecorded": True}
@@ -801,6 +873,9 @@ def main():
     if args.characterize_historical_utf8:
         report["characterization"] = validate_utf8_characterization(original, restored, camoufox)
     write_report(args.report, report)
+    if args.observe_target_headers:
+        for result in (original, restored, camoufox):
+            validate_target_header_observation(result, args.exercise_encoding)
     endpoint = "target" if args.archived_renderer_base else "render"
     if original is not None:
         print(f"Original {endpoint} Cookie sequence: {original['renderCookieHeaders']}")

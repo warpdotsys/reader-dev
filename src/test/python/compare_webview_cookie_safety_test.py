@@ -12,6 +12,7 @@ import hashlib
 import io
 import threading
 import contextlib
+from email.message import Message
 from pathlib import Path
 from unittest import mock
 
@@ -285,6 +286,7 @@ class EncodingReportValidationTest(unittest.TestCase):
     def handler(self, raw):
         handler = object.__new__(PROBE.FixtureHandler)
         handler.server = mock.Mock(archived_renderer=True, exercise_encoding=True,
+                                   observe_target_headers=False,
                                    calls=[], script_sources=[], request_fields=[], lock=threading.Lock())
         handler.path = "/search-utf8"
         handler.headers = {"Content-Length": str(len(raw)), "X-Fixture": "synthetic-utf8"}
@@ -706,6 +708,154 @@ class ThreeWayReportValidationTest(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("Refusing to start the original JAR", result.stderr)
             self.assertFalse(report.exists())
+
+
+class GeneratedTargetHeaderObservationTest(unittest.TestCase):
+    def headers(self, pairs):
+        headers = Message()
+        for name, value in pairs:
+            headers[name] = value
+        return headers
+
+    def test_all_parsed_pairs_preserve_case_order_duplicates_and_unknown_fields(self):
+        pairs = [["Host", "127.0.0.1:7"], ["X-Fixture", "synthetic"],
+                 ["x-fixture", "duplicate"], ["X-Unknown-Generated", "中文"],
+                 ["Content-Type", "application/json; charset=utf-8"], ["Empty", ""]]
+        self.assertEqual(pairs, PROBE.bounded_target_headers(self.headers(pairs)))
+
+    def test_field_count_limit_accepts_64_but_rejects_65_without_truncation(self):
+        pairs = [["X", "generated"]] * 64
+        self.assertEqual(pairs, PROBE.bounded_target_headers(self.headers(pairs)))
+        with self.assertRaisesRegex(ValueError, "finite budget"):
+            PROBE.bounded_target_headers(self.headers(pairs + [["X", "overflow"]]))
+
+    def test_utf8_byte_limit_is_not_character_count(self):
+        pairs = [["X", "中" * 2730 + "a"]]  # 1 + 8190 + 1 = 8192 bytes.
+        self.assertEqual(pairs, PROBE.bounded_target_headers(self.headers(pairs)))
+        with self.assertRaisesRegex(ValueError, "finite budget"):
+            PROBE.bounded_target_headers(self.headers([["X", "中" * 2731]]))
+
+    def test_nonstring_field_is_rejected(self):
+        headers = mock.Mock()
+        headers.raw_items.return_value = [("X", False)]
+        with self.assertRaisesRegex(ValueError, "strings"):
+            PROBE.bounded_target_headers(headers)
+
+    def test_missing_partial_empty_or_malformed_observations_fail(self):
+        for result in (None, {}, {"renderTargetHeaders": None}, {"renderTargetHeaders": []},
+                       {"renderTargetHeaders": [[["Host", "generated"]]] * 4},
+                       {"renderTargetHeaders": [[]] * 5},
+                       {"renderTargetHeaders": [[["Host", False]]] * 5},
+                       {"renderTargetHeaders": [["not-a-pair"]] * 5}):
+            with self.subTest(result=result), self.assertRaises(RuntimeError):
+                PROBE.validate_target_header_observation(result)
+
+    def test_validation_enforces_count_and_byte_budgets(self):
+        for pairs in ([[["X", "y"]] * 65], [[["X", "中" * 2731]]]):
+            with self.subTest(pairs=pairs), self.assertRaises(RuntimeError):
+                PROBE.validate_target_header_observation({"renderTargetHeaders": pairs * 5})
+
+    def test_encoding_mode_requires_six_actual_observations(self):
+        observed = {"renderTargetHeaders": [[["Host", "generated"]]] * 5}
+        PROBE.validate_target_header_observation(observed)
+        with self.assertRaises(RuntimeError):
+            PROBE.validate_target_header_observation(observed, True)
+        observed["renderTargetHeaders"].append([["Host", "generated"]])
+        PROBE.validate_target_header_observation(observed, True)
+
+    def handler(self, pairs):
+        handler = object.__new__(PROBE.FixtureHandler)
+        handler.server = mock.Mock(archived_renderer=True, exercise_encoding=False,
+            observe_target_headers=True, target_headers=[], calls=[], script_sources=[],
+            request_fields=[], lock=threading.Lock())
+        handler.path = "/search"
+        handler.headers = self.headers(pairs)
+        handler.send_search_html = mock.Mock()
+        handler.send_error = mock.Mock()
+        return handler
+
+    def test_target_handler_records_all_pairs_without_changing_old_request_fields(self):
+        pairs = [["Host", "127.0.0.1:7"], ["X-Fixture", "synthetic"], ["X-Other", "generated"]]
+        handler = self.handler(pairs)
+        handler.serve_search("POST", "q=post", b"q=post")
+        self.assertEqual([pairs], handler.server.target_headers)
+        self.assertEqual([{"httpMethod": "POST", "body": "q=post", "testHeader": "synthetic"}],
+                         handler.server.request_fields)
+        handler.send_search_html.assert_called_once_with(1)
+        handler.send_error.assert_not_called()
+
+    def test_over_budget_request_is_rejected_before_any_success_observation(self):
+        handler = self.handler([["X", "y"]] * 65)
+        handler.serve_search("GET", None)
+        handler.send_error.assert_called_once_with(431)
+        handler.send_search_html.assert_not_called()
+        self.assertEqual([], handler.server.target_headers)
+        self.assertEqual([], handler.server.request_fields)
+        self.assertEqual([], handler.server.calls)
+
+    def test_default_does_not_record_target_headers(self):
+        handler = self.handler([["Host", "generated"]])
+        handler.server.observe_target_headers = False
+        handler.serve_search("GET", None)
+        self.assertEqual([], handler.server.target_headers)
+        self.assertEqual(1, len(handler.server.request_fields))
+
+    def test_cli_refuses_synthetic_or_partial_modes_before_any_inputs(self):
+        for arguments in (("--restored-only",), ("--original-network-isolated",),
+                          ("--original-network-isolated", "--exercise-post", "--exercise-script")):
+            with self.subTest(arguments=arguments), tempfile.TemporaryDirectory() as directory:
+                report = Path(directory) / "headers.json"
+                result = invoke(*arguments, "--observe-target-headers", "--report", report)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("Target header observation requires", result.stderr)
+                self.assertFalse(report.exists())
+
+    def cli_observation(self, missing=False):
+        sides = [executed_results([""] * 5), executed_results([""] * 5),
+                 executed_results(["", "session=alpha==", "", "", ""])]
+        for index, side in enumerate(sides):
+            side["renderTargetHeaders"] = [[["Host", "generated"], ["X-Engine", str(index)]]] * 5
+        if missing:
+            del sides[1]["renderTargetHeaders"]
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "headers.json"
+            arguments = [SCRIPT, "--java", sys.executable, "--original", SCRIPT, "--restored", SCRIPT,
+                "--report", report, "--original-network-isolated", "--archived-renderer-base",
+                "http://127.0.0.1:8050", "--exercise-script", "--exercise-post",
+                "--camoufox-python", sys.executable, "--observe-target-headers"]
+            with mock.patch.object(sys, "argv", list(map(str, arguments))), \
+                    mock.patch.dict(sys.modules, {"original_jar_safety": mock.Mock()}), \
+                    mock.patch.object(PROBE, "require_verified_private_loopback"), \
+                    mock.patch.object(PROBE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    mock.patch.object(PROBE, "Fixture") as fixture, \
+                    mock.patch.object(PROBE, "free_port", return_value=9), \
+                    mock.patch.object(PROBE.threading, "Thread"), \
+                    mock.patch.object(PROBE, "run_jar", side_effect=sides) as run, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                if missing:
+                    with self.assertRaisesRegex(RuntimeError, "Missing executed target header"):
+                        PROBE.main()
+                else:
+                    PROBE.main()
+            self.assertIs(True, fixture.call_args.kwargs["observe_target_headers"])
+            history = json.loads(report.with_name("headers.historical-observation.json").read_text(encoding="utf-8"))
+            self.assertEqual(sides[0], history["original"])
+            self.assertEqual(sides[1], history["restored"])
+            if missing:
+                self.assertEqual(2, run.call_count)
+                self.assertFalse(report.exists())
+            else:
+                self.assertEqual(3, run.call_count)
+                value = json.loads(report.read_text(encoding="utf-8"))
+                self.assertEqual(sides[2], value["camoufox"])
+                self.assertIs(False, value["headerObservation"]["literalHeaderParityAccepted"])
+                self.assertIs(False, value["headerObservation"]["wireBytesRecorded"])
+
+    def test_cli_preserves_all_three_observations_without_claiming_literal_header_parity(self):
+        self.cli_observation()
+
+    def test_missing_reference_headers_preserve_history_but_never_start_camoufox(self):
+        self.cli_observation(missing=True)
 
 
 if __name__ == "__main__":
