@@ -14,6 +14,8 @@ on:
       - 'scripts/verify-release-manifest*'
       - 'scripts/smoke-native-release.sh'
       - 'scripts/report-browser-cgroup.py'
+      - 'scripts/probe-baseline-api-in-guarded-runtime.py'
+      - 'src/test/python/guarded_baseline_api_test.py'
       - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/browser_memory_high_soak_test.py'
       - 'scripts/smoke-local-webview.py'
