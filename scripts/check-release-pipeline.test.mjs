@@ -12,6 +12,7 @@ const fixtureFiles = [
   '.github/workflows/release.yml', '.github/workflows/ci.yml',
   '.github/workflows/release-native.yml', 'scripts/smoke-native-release.sh',
   'scripts/import-native-release.sh',
+  'scripts/smoke-native-tls.sh',
   '.github/workflows/browser-image.yml', '.github/workflows/vue3-preview.yml',
   '.github/workflows/artifact-download-regression.yml',
   'deploy/reader-pro/compose.production.yaml', 'deploy/reader-pro/Dockerfile',
@@ -54,6 +55,13 @@ test('current release and CI satisfy the structural guard', (t) => {
 })
 
 for (const [name, file, mutate, expected] of [
+  ['packaged HTTPS gate omitted', 'scripts/smoke-native-release.sh', text => text.replace('bash scripts/smoke-native-tls.sh', 'echo omitted-TLS'), /packaged HTTPS gate/],
+  ['TLS evidence lost in native artifact', '.github/workflows/release-native.yml', text => text.replace('exported/BROWSER_TLS.json', 'exported/omitted-TLS.json'), /packaged HTTPS gate/],
+  ['TLS publisher validation omitted', 'scripts/import-native-release.sh', text => text.replace('python3 scripts/verify-camoufox-tls.py', 'echo omitted-TLS-guard'), /packaged HTTPS gate/],
+  ['TLS container outside network allowed', 'scripts/smoke-native-tls.sh', text => text.replaceAll('--network none --read-only', '--network host --read-only'), /offline packaged HTTPS safety/],
+  ['TLS container allows swap', 'scripts/smoke-native-tls.sh', text => text.replace('--memory=2g --memory-swap=2g', '--memory=2g --memory-swap=3g'), /offline packaged HTTPS safety/],
+  ['TLS certificate policy not isolated', 'scripts/smoke-native-tls.sh', text => text.replace('"$distribution:size=1m,mode=700,uid=10001,gid=10001"', 'omitted-policy'), /offline packaged HTTPS safety/],
+  ['TLS check failure ignored', 'scripts/import-native-release.sh', text => text.replace('--architecture "$arch"', '--architecture "$arch" || true'), /packaged HTTPS acceptance must not ignore failures/],
   ['missing legacy upload staging link', 'deploy/reader-pro/Dockerfile', text => text.replace('ln -s /tmp/reader-file-uploads /app/file-uploads', 'echo omitted-link'), /retain the legacy upload path/],
   ['upload temp symlink substitution not rejected', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test ! -L "$upload_tmp"', ''), /private upload staging entrypoint guard missing/],
   ['non-private upload directory allowed', 'deploy/reader-pro/docker-entrypoint.sh', text => text.replace('test "$(stat -c \'%a\' -- "$upload_tmp")" = 700', ''), /private upload staging entrypoint guard missing/],

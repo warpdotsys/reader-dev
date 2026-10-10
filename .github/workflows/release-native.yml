@@ -13,6 +13,12 @@ on:
       - 'scripts/release-native-artifacts*'
       - 'scripts/verify-release-manifest*'
       - 'scripts/smoke-native-release.sh'
+      - 'scripts/smoke-native-tls.sh'
+      - 'scripts/smoke-camoufox-tls.py'
+      - 'scripts/verify-camoufox-tls.py'
+      - 'scripts/reader_header_security_differential.py'
+      - 'scripts/compare-webview-cookie.py'
+      - 'src/test/python/camoufox_tls_report_test.py'
       - 'scripts/report-browser-cgroup.py'
       - 'scripts/probe-baseline-api-in-guarded-runtime.py'
       - 'src/test/python/guarded_baseline_api_test.py'
@@ -234,6 +240,7 @@ jobs:
             exported/BASE_IMAGE_DIGESTS
             exported/BROWSER_SYNTHETIC.json
             exported/BROWSER_RESOURCE_BUDGET.json
+            exported/BROWSER_TLS.json
             exported/DEFAULT_UI.json
             exported/RELEASE_IDENTITY.json
             exported/JAR_IDENTITY.json
@@ -341,6 +348,7 @@ jobs:
             dist/*_IDENTITY.json
             dist/*-BROWSER_SYNTHETIC.json
             dist/*-BROWSER_RESOURCE_BUDGET.json
+            dist/*-BROWSER_TLS.json
             dist/*-DEFAULT_UI.json
           if-no-files-found: error
           retention-days: 14

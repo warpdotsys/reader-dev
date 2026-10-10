@@ -13,6 +13,7 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g
 const workflow = read('.github/workflows/release.yml')
 const nativeWorkflow = read('.github/workflows/release-native.yml')
 const nativeSmoke = read('scripts/smoke-native-release.sh')
+const nativeTls = read('scripts/smoke-native-tls.sh')
 const nativeImporter = read('scripts/import-native-release.sh')
 const browserWorkflow = read('.github/workflows/browser-image.yml')
 const artifactRegression = read('.github/workflows/artifact-download-regression.yml')
@@ -29,6 +30,34 @@ const compose = read('deploy/reader-pro/compose.production.yaml')
 const dockerfile = read('deploy/reader-pro/Dockerfile')
 const imageEntrypoint = read('deploy/reader-pro/docker-entrypoint.sh')
 const baseImagesLock = read('deploy/reader-pro/base-images.lock')
+
+const tlsCall = 'bash scripts/smoke-native-tls.sh "$image" "$arch" "$revision" "$expected_jar" "$output/BROWSER_TLS.json"'
+if (nativeSmoke.split('\n').filter(line => line.trim() === tlsCall).length !== 1 ||
+    nativeSmoke.indexOf(tlsCall) >= nativeSmoke.indexOf('container_id=$(docker run -d') ||
+    !browserWorkflow.includes('bash scripts/smoke-native-tls.sh reader-browser:smoke "$READER_CI_NATIVE_ARCH" \\') ||
+    !nativeWorkflow.includes('exported/BROWSER_TLS.json') ||
+    !nativeWorkflow.includes('dist/*-BROWSER_TLS.json') ||
+    !nativeImporter.includes('python3 scripts/verify-camoufox-tls.py "$report_directory/BROWSER_TLS.json" \\')) {
+  throw new Error('packaged HTTPS gate must run sequentially, fail closed, and survive publisher transfer')
+}
+for (const token of [
+  '--network none --read-only', '--user 10001:10001 --cap-drop ALL',
+  '--memory=2g --memory-swap=2g --pids-limit=256', '--cpus=2',
+  '--security-opt no-new-privileges:true', '"$distribution:size=1m,mode=700,uid=10001,gid=10001"',
+  '--jar /app/reader.jar --expected-jar-sha "$expected_jar" --expected-worker-sha "$expected_worker"',
+  'timeout --signal=TERM 300 docker wait "$container_id"',
+  'test "$(cat "$directory/exit-code")" = 0',
+  'python3 scripts/verify-camoufox-tls.py "$directory/result.json" --jar-sha "$expected_jar"',
+  'docker rm "$container_id"', 'cmp "$directory/result.json" "$report"',
+]) {
+  if (!nativeTls.includes(token)) throw new Error('offline packaged HTTPS safety contract missing: ' + token)
+}
+if (/verify-camoufox-tls\.py[\s\S]{0,256}?(?:\|\|\s*true|;\s*true)/.test(nativeTls + nativeImporter) ||
+    /continue-on-error:\s*true/.test(browserWorkflow.slice(
+      browserWorkflow.indexOf('      - name: Verify packaged-worker HTTPS'),
+      browserWorkflow.indexOf('      - name: Run Reader API and WebView fixture')))) {
+  throw new Error('packaged HTTPS acceptance must not ignore failures')
+}
 
 for (const token of [
   'verify-release-inputs', 'verify-vue3-e2e', 'build-and-publish-images', 'deploy-production',

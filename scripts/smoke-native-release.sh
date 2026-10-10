@@ -37,6 +37,10 @@ cleanup() {
   exit "$result"
 }
 trap cleanup EXIT
+# This gate finishes and removes its own offline browser container BEFORE the
+# Reader smoke starts, so the two 2 CPU / 2 GiB budgets never overlap here.
+expected_jar=$(sha256sum "dist/reader-pro-v${version}.jar" | awk '{print $1}')
+bash scripts/smoke-native-tls.sh "$image" "$arch" "$revision" "$expected_jar" "$output/BROWSER_TLS.json"
 container_id=$(docker run -d --init --name "$container" --network host --shm-size=1g \
   --memory=2g --memory-swap=3g --pids-limit=256 --cpus=2 \
   --security-opt no-new-privileges:true --cap-drop ALL \
@@ -64,7 +68,6 @@ docker exec "$container_id" sh -ec '
   test "$(stat -c %a /tmp/reader-file-uploads)" = 700
   test -w /app/file-uploads
 '
-expected_jar=$(sha256sum "dist/reader-pro-v${version}.jar" | awk '{print $1}')
 actual_jar=$(docker exec "$container_id" sha256sum /app/reader.jar | awk '{print $1}')
 test "$actual_jar" = "$expected_jar"
 jq -n --arg arch "$arch" --arg revision "$revision" --arg jarSha256 "$actual_jar" \
