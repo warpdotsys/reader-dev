@@ -38,6 +38,14 @@ def metadata_helper():
     return module
 
 
+def header_security_helper():
+    spec = importlib.util.spec_from_file_location("three_way_header_security",
+        Path(__file__).with_name("reader_header_security_differential.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def encoding_request_fields():
     raw = ENCODING_BODY.encode("utf-8")
     return {"httpMethod": "POST", "body": ENCODING_BODY, "testHeader": "synthetic-utf8",
@@ -284,7 +292,8 @@ class GeneratedApiPhase:
     ALLOWED = frozenset(("startup", "register", "login", "sourceSave", "sourceRead",
         "searchFirst", "searchSecond", "searchThird", "scriptSourceSave", "scriptSearch",
         "postSourceSave", "postSearch", "encodingSourceSave", "encodingSourceRead", "encodingSearch",
-        "metadataSourceSave", "metadataSourceRead", "metadataGetBookInfo"))
+        "metadataSourceSave", "metadataSourceRead", "metadataGetBookInfo",
+        "headerSourceSave", "headerSourceRead", "headerSearch"))
 
     def __init__(self):
         self.active = None
@@ -324,13 +333,15 @@ def require_verified_private_loopback():
 def run_jar(java, jar, workdir, port, fixture_base, fixture,
             exercise_script=False, exercise_post=False, renderer_base=None,
             camoufox_python=None, include_data=False, exercise_encoding=False, failure_report=None,
-            exercise_metadata=False, metadata_clock_contract=False):
+            exercise_metadata=False, metadata_clock_contract=False, header_security_fixture=None):
     if exercise_encoding and not (renderer_base and exercise_script and exercise_post and include_data):
         raise SystemExit("Encoding probe requires actual isolated renderer and full script/POST results")
     if exercise_metadata and not (renderer_base and exercise_script and exercise_post and include_data):
         raise SystemExit("Metadata probe requires actual isolated renderer and full script/POST results")
     if metadata_clock_contract and not exercise_metadata:
         raise SystemExit("Metadata clock contract requires actual metadata execution")
+    if header_security_fixture is not None and not (renderer_base and exercise_script and exercise_post and include_data):
+        raise SystemExit("Header-security probe requires actual isolated renderer and full script/POST results")
     if renderer_base is not None or camoufox_python is not None:
         require_verified_private_loopback()
     base = f"http://127.0.0.1:{port}"
@@ -364,6 +375,7 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
     probes = []
     last_search_response = None
     metadata = None
+    header_security = None
     metadata_calls = 0
     api_phase = GeneratedApiPhase()
     try:
@@ -495,12 +507,17 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                 "bookInfoApiCalls": metadata_calls}
             if metadata_clock_contract:
                 metadata["requestWindowMs"] = {"started": started_ms, "completed": completed_ms}
+        if header_security_fixture is not None:
+            header_security = header_security_fixture.exercise(opener, base, api_phase, require_success, request)
+            # Observation completeness is mandatory, even when security/parity fails.
+            header_security_helper().characterize(header_security)
         return {"searches": probes, "renderCookieHeaders": fixture.snapshot(),
                 "renderScriptSources": fixture.script_snapshot(),
                 "renderRequestFields": fixture.request_snapshot(),
                 **({"renderTargetHeaders": fixture.target_header_snapshot()}
                    if fixture.observe_target_headers else {}),
-                **({"metadata": metadata} if exercise_metadata else {})}
+                **({"metadata": metadata} if exercise_metadata else {}),
+                **({"headerSecurity": header_security} if header_security_fixture is not None else {})}
     except Exception as failure:
         if failure_report is not None:
             write_report(failure_report, {"generatedOnly": True, "probeCompleted": False,
@@ -509,6 +526,8 @@ def run_jar(java, jar, workdir, port, fixture_base, fixture,
                 "lastObservedSearchResponse": last_search_response,
                 **({"metadataBookInfoApiCalls": metadata_calls, "lastObservedMetadata": metadata}
                    if exercise_metadata else {}),
+                **({"headerSecurity": header_security, "partialHeaderTargetObservation": header_security_fixture.snapshot()}
+                   if header_security_fixture is not None else {}),
                 "renderCookieHeaders": fixture.snapshot(),
                 "renderRequestFields": fixture.request_snapshot(),
                 **({"renderTargetHeaders": fixture.target_header_snapshot()}
@@ -675,6 +694,8 @@ def main():
                         help="Also verify a synthetic WebView POST method, body, and header")
     parser.add_argument("--observe-target-headers", action="store_true",
                         help="Preserve all parsed header field pairs at the generated three-way target; not parity acceptance")
+    parser.add_argument("--characterize-header-security", action="store_true",
+                        help="Generated HTTP Authorization/303/subresource characterization only; always exits nonzero, not parity or real-login acceptance")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="In actual three-way mode also compare raw UTF-8 POST bytes and supplementary characters")
     parser.add_argument("--exercise-metadata", action="store_true",
@@ -692,6 +713,11 @@ def main():
     args = parser.parse_args()
     if args.report.exists() or args.report.is_symlink():
         parser.error(f"Report already exists; choose a new path: {args.report}")
+    if args.characterize_header_security and not (args.observe_target_headers and args.original_network_isolated and
+            args.archived_renderer_base and args.camoufox_python and args.exercise_script and args.exercise_post and args.phase_handoff_dir):
+        parser.error("Header-security characterization requires isolated actual three-way headers and guarded handoff")
+    if args.characterize_header_security and (args.exercise_metadata or args.exercise_encoding or args.characterize_historical_utf8):
+        parser.error("Header-security characterization is separate from metadata and strict UTF-8 gates")
     if args.exercise_metadata and not (args.camoufox_python and args.original_network_isolated and
             args.archived_renderer_base and args.exercise_script and args.exercise_post and args.phase_handoff_dir):
         parser.error("Metadata probe requires actual isolated three-way mode and guarded handoff")
@@ -756,7 +782,10 @@ def main():
     fixture_base = f"http://127.0.0.1:{fixture_port}"
     worker = threading.Thread(target=fixture.serve_forever, daemon=True)
     worker.start()
+    header_fixture = None
     try:
+        if args.characterize_header_security:
+            header_fixture = header_security_helper().HeaderFixture(require_verified_private_loopback, bounded_target_headers)
         with tempfile.TemporaryDirectory(prefix="reader-webview-diff-") as directory:
             root = Path(directory)
             original = None
@@ -770,7 +799,8 @@ def main():
                                    include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
                                    failure_report=failure_reports.get("original"),
                                    **({"exercise_metadata": True} if args.exercise_metadata else {}),
-                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
+                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}),
+                                   **({"header_security_fixture": header_fixture} if header_fixture is not None else {}))
             fixture.reset()
             restored = run_jar(args.java, args.restored, root / "restored",
                                free_port(), fixture_base, fixture,
@@ -779,7 +809,8 @@ def main():
                                include_data=bool(args.camoufox_python), exercise_encoding=args.exercise_encoding,
                                failure_report=failure_reports.get("restored"),
                                **({"exercise_metadata": True} if args.exercise_metadata else {}),
-                               **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
+                               **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}),
+                               **({"header_security_fixture": header_fixture} if header_fixture is not None else {}))
             if historical_observation is not None:
                 # Capture completed observations BEFORE the strict handoff validator.
                 # A failed pair must not lose its actual byte fields or Reader JSON;
@@ -812,8 +843,11 @@ def main():
                                    include_data=True, exercise_encoding=args.exercise_encoding,
                                    failure_report=failure_reports.get("camoufox"),
                                    **({"exercise_metadata": True} if args.exercise_metadata else {}),
-                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
+                                   **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}),
+                                   **({"header_security_fixture": header_fixture} if header_fixture is not None else {}))
     finally:
+        if header_fixture is not None:
+            header_fixture.close()
         fixture.shutdown()
         fixture.server_close()
         worker.join(timeout=5)
@@ -872,6 +906,11 @@ def main():
                        "realAuthenticatedSourceTested": False})
     if args.characterize_historical_utf8:
         report["characterization"] = validate_utf8_characterization(original, restored, camoufox)
+    if args.characterize_header_security:
+        report["headerSecurityCharacterization"] = {
+            side: header_security_helper().characterize(result.get("headerSecurity"))
+            for side, result in (("original", original), ("restored", restored), ("camoufox", camoufox))}
+        report["headerSecurityCharacterization"]["strictThreeWayAccepted"] = False
     write_report(args.report, report)
     if args.observe_target_headers:
         for result in (original, restored, camoufox):
@@ -898,6 +937,8 @@ def main():
         validate_three_way(original, restored, camoufox, args.exercise_encoding,
                            **({"exercise_metadata": True} if args.exercise_metadata else {}),
                            **({"metadata_clock_contract": True} if args.metadata_clock_contract else {}))
+    if args.characterize_header_security:
+        raise RuntimeError("Header-security characterization complete; strict three-way parity/security NOT accepted")
     expected_fields = ([{"httpMethod": "GET", "body": None, "testHeader": None}] *
                        (3 + int(args.exercise_script)) +
                        ([expected_post] if args.exercise_post else []) +
