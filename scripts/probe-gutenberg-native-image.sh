@@ -14,7 +14,7 @@ case "$arch:$RUNNER_ARCH:$(uname -m)" in
   amd64:X64:x86_64|arm64:ARM64:aarch64) ;;
   *) exit 1 ;;
 esac
-for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json GUTENBERG_REPORT.json WORKER_DIAGNOSTICS.json; do
+for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json GUTENBERG_REPORT.json WORKER_DIAGNOSTICS.json GUTENBERG_UI_REPORT.json UI_BROWSER_RESOURCE_BUDGET.json UI_SERVER_RESOURCE_BUDGET.json UI_CLIENT_CLEANUP.json; do
   test ! -e "$output/$report"
 done
 test "$(jq -er '.jarSha256' imported/metadata.json)" = f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b
@@ -36,10 +36,24 @@ install -d "$storage"
 sudo chown 10001:10001 "$storage"
 sudo setfacl -m u:10001:rwx "$output"
 container_id=''
+client_id=''
 cleanup() {
   result=$?
   trap - EXIT
+  if [[ -n "$client_id" ]]; then
+    client_removed=false
+    if docker rm -f "$client_id" >/dev/null; then client_removed=true; fi
+    jq -n --argjson removed "$client_removed" \
+      '{ownedTestClientRemoved: $removed, testClientNotDeploymentDependency: true, clientOutsideReaderServerBudget: true}' \
+      > "$output/UI_CLIENT_CLEANUP.json"
+    if [[ "$client_removed" != true ]]; then result=1; fi
+  fi
   if [[ -n "$container_id" ]]; then
+    if [[ -n "$client_id" ]]; then
+      docker exec "$container_id" python /verification-scripts/report-browser-cgroup.py --require-no-swap \
+        | jq '.scope = "same Reader server lifetime: API then actual default UI; test client excluded"' \
+        > "$output/UI_SERVER_RESOURCE_BUDGET.json" || result=1
+    fi
     if docker logs --tail 200 "$container_id" 2>&1 |
         python3 scripts/collect-browser-failure.py "$output/WORKER_DIAGNOSTICS.json"; then
       :
@@ -96,3 +110,18 @@ jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
   '{revision: $revision, jarSha256: $jarSha256, network: "bridge", publishedPorts: 0}' \
   > "$output/RUNNING_JAR_IDENTITY.json"
 docker exec "$container_id" python /verification-scripts/probe-gutenberg-reader.py --expected-revision "$revision"
+
+# A normal external UI client, using the SAME pinned packaged browser bytes.
+# Not a WebView service, not part of deployment, not a combined 2-GiB claim.
+client="reader-gutenberg-ui-$arch"
+if docker container inspect "$client" >/dev/null 2>&1; then exit 1; fi
+client_id=$(docker create --init --name "$client" --network "container:$container_id" --shm-size=1g \
+  --memory=2g --memory-swap=2g --pids-limit=256 --cpus=2 \
+  --security-opt no-new-privileges:true --cap-drop ALL \
+  --tmpfs /tmp:size=256m,mode=1777 \
+  -v "$PWD/scripts:/verification-scripts:ro" -v "$output:/verification-output" \
+  --entrypoint python "$image" /verification-scripts/probe-gutenberg-ui.py --expected-revision "$revision")
+test "$(docker inspect --format '{{.Config.User}}' "$client_id")" = 10001:10001
+docker inspect "$client_id" | jq -e '((.[0].HostConfig.PortBindings // {}) | length) == 0' >/dev/null
+# No raw browser logs are uploaded. The Python probe emits only finite facts.
+timeout --signal=TERM 210s docker start -a "$client_id" >/dev/null 2>&1

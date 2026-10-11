@@ -1,6 +1,6 @@
 # 无凭据固定公开书籍的内置浏览器验收
 
-日期：2026-10-11。两轮托管实站均有实际失败；第二轮详情通过、28目录已返回，但链接校验失败，正文尚未执行。后续目录契约修正待新的实站验收。目标是在已独立验收的单 Reader 镜像内通过 Java/Kotlin API 实际读取固定公开书籍详情、目录和首章，不能只凭站点直连成功或测试夹具证明产品可用。
+日期：2026-10-11。第三轮准确新f5c9镜像已实际通过详情、完整28目录和首章6822字符；前两轮真实失败保持不变。不等于原件/历史WebView三方或真实认证通过，也不提前接受后续真实UI候选。cc17自己的普通CI另有独立回执。目标是在已独立验收的单Reader镜像内通过Java/Kotlin API实际读取固定公开书籍，不能只凭站点直连或夹具证明产品可用。
 
 ## 范围与依据
 
@@ -77,6 +77,20 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-rea
 
 普通Full允许1GiB swap而实际0，不改称配置禁止swap；外部UI客户端不属于服务端预算。仅下载有限报告，原生归档摘要保留托管观测值，不冒称本机重新散列大型镜像。58受保护用户报告与准确原件未变。普通CI不运行此显式真实网络模式，不能把普通绿灯当本模式通过，也不能用d6结果接受后续作者/前端候选。
 
-修正后的源规则尚待本镜像新的实站执行，包括目录带 WebView 选项的 URL、原始页面片段章节以及 Rhino `chapter.url` 的真实解析。不能因十项离线守卫通过就称业务已通。站点页面和上游网络也是变量；单次失败不自动归因于 Reader，也不通过关 TLS、放开私网或处理验证码取绿灯。
+### 第三轮新产物实际详情、完整目录和首章已独立接受
+
+[实站任务38117042668](https://github.com/warpdotsys/reader-dev/actions/runs/38117042668)，源cc17b0ceb964632221168ce1c996c162ab348696，实际托管作业114403888620 / ubuntu-24.04。输入仍明确区分：7739自己的Native38115254938 / ec6af7快照 / f5c9 JAR / 75bfc0 AMD64镜像；维护脚本checkout是后续cc17，不将源镜像或cc17普通CI身份混写。
+
+`/getBookInfo`、`/getChapterList`、`/getBookContent` 各一次，均HTTP200 / isSuccess=true / 空errorMsg / 完整isSuccess/errorMsg/data包络。详情真实书名作者匹配；目录完整28项，实际28个原相对URL、固定base、预期letter1–4/chap01–24锚点和顺序、索引、非空标题、非卷及WebView选项均通过；原序列化URL没有重写。真实首章6822字符，首Letter标记存在、不是资源URL/空实现，没有script标签或U+FFFD替换字符。
+
+目录规范JSON SHA61af49ad646781649f796440dec95dbed27308ca1c7d119b0bc92c287f9450c7；实际首章UTF-8字符串SHAea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366。只保留有限计数/摘要，不输出完整目录标题、URL列表、正文、Cookie、凭据或原错误。API入口尝试数不等于目标站点HTTP请求数；本轮未测目标全请求头/请求总数，也没有原件/历史WebView正文对照或前端实际打开此网络书。
+
+20.043秒，实际worker1 / driver1 / browser7；2CPU / 2GiB / 256PID，配置和观察swap0，峰958,705,664B / PID184，无hard/OOM/PID触限。UID10001、私网拒绝与TLS校验保留，源规则完整回读匹配，Cookie索引0→0，生成会话撤销且容器移除；无真实凭据、本地正文、Captcha交互、禁止站内搜索、生产改动或registry发布。
+
+[独立通过回执](evidence/gutenberg-third-independent-success-2026-10-11.json)，SHA8ffe6fa7285e43fd0ae8264eca54b266c463ef3ad9f8fd35affcd54a2679347e；[原观察](evidence/gutenberg-third-raw-observation-2026-10-11.json)、[原预算](evidence/gutenberg-third-raw-budget-2026-10-11.json)。独立核对九份JSON的精确集合/摘要、自己的源任务/托管runner、源Native回执及下载/载入/运行身份、完整有限三项响应、实际浏览器观察、零swap预算和清理。不是把GHA绿色外壳当业务成功，也不借这份实站回执接受cc17自己的普通四条CI或后续源码。
+
+站点页面和上游网络仍是变量；这一固定匿名子集通过不能消除之前起点、认证、三方和资源压力失败。未证明前两轮失败的唯一引擎根因，不通过关TLS、放开私网、改超时/预算或处理验证码取绿灯。原件/历史WebView同输入及网络书前端旅程仍需后续实证。
 
 此前起点、认证头、合并资源预算超时等失败仍保留；本次不发版、不合并或部署。回退只撤回新增显式模式和自有探针，旧起点模式及其失败记录保留；仅清理本轮自有容器和一次性 storage，不动生产或用户工作树。
+
+随后 cc17 自己四条普通托管及 Native 六作业已收齐并独立接受，仍不把三项 API 成功追写为 UI 成功。[新的强制真实界面旅程候选、准确输入和预算范围](GUTENBERG-UI-JOURNEY-2026-10-11.md)。其源码与实测属于后续提交，不能借 cc17 普通绿灯接受。

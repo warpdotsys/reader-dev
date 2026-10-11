@@ -30,6 +30,10 @@ on:
       - 'scripts/collect-browser-failure.py'
       - 'src/test/python/browser_failure_collector_test.py'
       - 'scripts/probe-public-native-image.sh'
+      - 'scripts/probe-gutenberg-*.py'
+      - 'scripts/probe-gutenberg-native-image.sh'
+      - 'scripts/verify-gutenberg-ui-report.py'
+      - 'src/test/python/gutenberg*_test.py'
       - 'src/test/python/public_metadata_probe_test.py'
       - 'src/test/javascript/public-metadata-wait.test.mjs'
       - 'scripts/verify-camoufox-contracts.py'
@@ -124,6 +128,10 @@ on:
       - 'scripts/collect-browser-failure.py'
       - 'src/test/python/browser_failure_collector_test.py'
       - 'scripts/probe-public-native-image.sh'
+      - 'scripts/probe-gutenberg-*.py'
+      - 'scripts/probe-gutenberg-native-image.sh'
+      - 'scripts/verify-gutenberg-ui-report.py'
+      - 'src/test/python/gutenberg*_test.py'
       - 'src/test/python/public_metadata_probe_test.py'
       - 'src/test/javascript/public-metadata-wait.test.mjs'
       - 'scripts/verify-camoufox-contracts.py'
@@ -930,6 +938,7 @@ jobs:
         run: |
           if [[ "$CAPTURE_MODE" = gutenberg-fixed-book ]]; then
             bash scripts/probe-gutenberg-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report"
+            python3 scripts/verify-gutenberg-ui-report.py "$RUNNER_TEMP/reader-public-metadata-report" "$NATIVE_REVISION"
           else
             bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE" "$USER_AGENT_MODE"
           fi
