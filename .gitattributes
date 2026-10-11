@@ -21,3 +21,8 @@ docs/evidence/three-way-public-archive-failure-c1581a9e-2026-10-11.json -text wh
 docs/evidence/three-way-local-metadata-pair-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.xml -text whitespace=cr-at-eol
+
+docs/evidence/header-diagnostic-*-685aab2f-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/metadata-standalone-9b9d-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/metadata-three-way-9b9d-reclaim-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/reclaim-stopped-browser-cgroup-executed-2026-10-11.py -text whitespace=-blank-at-eof

@@ -4,6 +4,8 @@
 
 ## 当前方向
 
+- **准确原件生成元数据同次三方已实际接受，不抹掉原失败或剩余目标**：b26原件/9b9d历史WebView/9b9d内置Camoufox每侧5搜索+1元数据，完整基础ReturnData相等、完整非时间元数据JSON相等、三个默认时间字段各在自己的请求窗口；原始元数据字面相等仍false。2CPU/2GiB/256PID/零swap、45.947秒，峰值1,611,583,488B/PID242，hard/OOM/PID触限0。只对已停止PID0自有历史叶节点定向回收缓存，EAGAIN部分回收如实记录；不清全局、不改Reader预算，不能证明此前超时唯一原因。685自己的Java/Vue/Full/Native均已独立核验；原同源头失败本轮未复现不等于修复。新18护栏/本机622测试中的1平台跳过不借685绿灯通过后续源码。[准确身份、完整生成响应、当前未完成项和回退](GENERATED-METADATA-THREE-WAY-2026-10-11.md)。
+
 - **c158准确镜像双架构30分钟长测已独立接受**：冻结0c5快照/0882 JAR，AMD64实际100轮/408成功搜索、ARM64 113轮/460成功搜索；逐轮检查原始trace、三种故障恢复、Cookie/用户隔离、资源与清理。2CPU/2GiB/256PID/零swap，父memory.high1.5GiB；没有hard/OOM/PID触限，容器与临时预算已清理。不是a5cd新镜像、真实站点或生产容量证明。[准确身份和完整边界](BROWSER-SOAK-30MIN-2026-10-11.md)。
 
 - **a5cd通知修复有限接受；整体验收仍拒绝**：自己的9b9d JAR准确复建、25生成UI及截图目视只有一条编辑未确认保存；Java/Vue/Native六作业和32publisher报告独立接受。但Full实际Cam24契约中同源认证头1失败，整镜像后续未执行，不能借Native绿灯通过。准确原件与新JAR的历史WebView元数据对照通过完整非时间JSON/各自新鲜时间窗口；Cam首搜索超时，元数据未执行，三方false。新增有限case/actor/role诊断及真实失败记录回归，原断言/发布守卫不变。保留所有失败，不发版部署。[当前失败、有限成功、已知问题和回退](HEADER-CONTRACT-DIAGNOSTIC-2026-10-11.md)、[通知修复](TTS-EDIT-NOTIFICATION-OWNERSHIP-2026-10-10.md)、[公开归档身份失败](PUBLIC-ARCHIVE-IDENTITY-FAILURE-2026-10-11.md)。

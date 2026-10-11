@@ -1,0 +1,4985 @@
+{
+  "schemaVersion": 1,
+  "scope": "same-run exact local original/remote/Camoufox generated metadata",
+  "accepted": true,
+  "generatedMetadataThreeWayAccepted": true,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "workerSha256": "d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5",
+  "jarDownloadedFromSource": "a5cd1e74ab0652361968f5bac1cec117373f5272",
+  "jarByteEqualToIndependentlyAccepted685aab2fRebuild": true,
+  "rawReportSha256": "be547b914994222e10c06ad189905eb33e0c3bbbc899e5fe752d6e528c4b7edc",
+  "actualSearchCallsPerSide": 5,
+  "actualBookInfoCallsPerSide": 1,
+  "allBaselineFullReturnDataEqual": true,
+  "metadataComparisons": {
+    "restored": {
+      "mode": "exact-static-json-and-bounded-default-clocks",
+      "fullRawReturnDataEqual": false,
+      "nonClockFullJsonEqual": true,
+      "clockFieldsFreshInEachOwnRequestWindow": true,
+      "clockFields": {
+        "durChapterTime": {
+          "left": 1791689698207,
+          "right": 1791689707418
+        },
+        "lastCheckTime": {
+          "left": 1791689698207,
+          "right": 1791689707418
+        },
+        "latestChapterTime": {
+          "left": 1791689698207,
+          "right": 1791689707418
+        }
+      },
+      "leftRequestWindowMs": {
+        "started": 1791689698198,
+        "completed": 1791689699550
+      },
+      "rightRequestWindowMs": {
+        "started": 1791689707406,
+        "completed": 1791689708710
+      }
+    },
+    "camoufox": {
+      "mode": "exact-static-json-and-bounded-default-clocks",
+      "fullRawReturnDataEqual": false,
+      "nonClockFullJsonEqual": true,
+      "clockFieldsFreshInEachOwnRequestWindow": true,
+      "clockFields": {
+        "durChapterTime": {
+          "left": 1791689698207,
+          "right": 1791689728689
+        },
+        "lastCheckTime": {
+          "left": 1791689698207,
+          "right": 1791689728689
+        },
+        "latestChapterTime": {
+          "left": 1791689698207,
+          "right": 1791689728689
+        }
+      },
+      "leftRequestWindowMs": {
+        "started": 1791689698198,
+        "completed": 1791689699550
+      },
+      "rightRequestWindowMs": {
+        "started": 1791689728680,
+        "completed": 1791689731027
+      }
+    }
+  },
+  "metadataLiteralFullRawReturnDataEqualityAccepted": false,
+  "completeGeneratedRawResponses": {
+    "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+    "originalExecuted": true,
+    "restoredJarSha256": "9B9D0C9808968C0390022156A5FCBFCC03F595ED228F124AFBB06E830CD7DD84",
+    "rendererMode": "archived-webkit",
+    "observedRequestEndpoint": "target /search",
+    "jsSourceDirectlyObserved": false,
+    "scriptValidatedByResult": true,
+    "original": {
+      "searches": [
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        }
+      ],
+      "renderCookieHeaders": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "renderScriptSources": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "renderRequestFields": [
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "POST",
+          "body": "q=post",
+          "testHeader": "synthetic"
+        }
+      ],
+      "renderTargetHeaders": [
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "X-Fixture",
+            "synthetic"
+          ],
+          [
+            "Content-Type",
+            "application/x-www-form-urlencoded; charset=UTF-8"
+          ],
+          [
+            "Content-Length",
+            "6"
+          ],
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ]
+      ],
+      "metadata": {
+        "status": 200,
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": {
+            "bookUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "tocUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "origin": "http://127.0.0.1:50885/metadata-source",
+            "originName": "Generated delayed metadata differential",
+            "name": "黎明之剑",
+            "author": "远瞳",
+            "coverUrl": "http://127.0.0.1:50885/generated-cover.svg",
+            "intro": "{\"nameSelectorPresent\":true,\"authorSelectorPresent\":true,\"coverSelectorPresent\":true,\"bodyHasText\":true,\"bodyHasExpectedBookTitle\":true,\"bodyHasExpectedAuthor\":true,\"bodyHasSafetyPhrase\":false,\"captchaContainerPresent\":false}",
+            "type": 0,
+            "group": 0,
+            "latestChapterTime": 1791689698207,
+            "lastCheckTime": 1791689698207,
+            "lastCheckCount": 0,
+            "totalChapterNum": 0,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": 1791689698207,
+            "canUpdate": true,
+            "order": 0,
+            "originOrder": 0,
+            "useReplaceRule": true,
+            "isInShelf": false
+          }
+        },
+        "fixtureBase": "http://127.0.0.1:50885",
+        "sourceDefinitionRoundtrip": {
+          "dataIsObject": true,
+          "sourceUrlMatches": true,
+          "cookieJarDisabled": true,
+          "modernTocMarkerPresent": true,
+          "metadataRulesMatch": true,
+          "passed": true
+        },
+        "targetRequests": [
+          {
+            "httpMethod": "GET",
+            "body": null,
+            "testHeader": null,
+            "cookie": ""
+          }
+        ],
+        "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+        "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+        "bookInfoApiCalls": 1,
+        "requestWindowMs": {
+          "started": 1791689698198,
+          "completed": 1791689699550
+        }
+      }
+    },
+    "restored": {
+      "searches": [
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        }
+      ],
+      "renderCookieHeaders": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "renderScriptSources": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "renderRequestFields": [
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "POST",
+          "body": "q=post",
+          "testHeader": "synthetic"
+        }
+      ],
+      "renderTargetHeaders": [
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate"
+          ],
+          [
+            "Accept-Language",
+            "en-US"
+          ],
+          [
+            "Connection",
+            "Keep-Alive"
+          ]
+        ],
+        [
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "X-Fixture",
+            "synthetic"
+          ],
+          [
+            "Content-Type",
+            "application/x-www-form-urlencoded; charset=UTF-8"
+          ],
+          [
+            "Content-Length",
+            "6"
+          ],
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ]
+      ],
+      "metadata": {
+        "status": 200,
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": {
+            "bookUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "tocUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "origin": "http://127.0.0.1:50885/metadata-source",
+            "originName": "Generated delayed metadata differential",
+            "name": "黎明之剑",
+            "author": "远瞳",
+            "coverUrl": "http://127.0.0.1:50885/generated-cover.svg",
+            "intro": "{\"nameSelectorPresent\":true,\"authorSelectorPresent\":true,\"coverSelectorPresent\":true,\"bodyHasText\":true,\"bodyHasExpectedBookTitle\":true,\"bodyHasExpectedAuthor\":true,\"bodyHasSafetyPhrase\":false,\"captchaContainerPresent\":false}",
+            "type": 0,
+            "group": 0,
+            "latestChapterTime": 1791689707418,
+            "lastCheckTime": 1791689707418,
+            "lastCheckCount": 0,
+            "totalChapterNum": 0,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": 1791689707418,
+            "canUpdate": true,
+            "order": 0,
+            "originOrder": 0,
+            "useReplaceRule": true,
+            "isInShelf": false
+          }
+        },
+        "fixtureBase": "http://127.0.0.1:50885",
+        "sourceDefinitionRoundtrip": {
+          "dataIsObject": true,
+          "sourceUrlMatches": true,
+          "cookieJarDisabled": true,
+          "modernTocMarkerPresent": true,
+          "metadataRulesMatch": true,
+          "passed": true
+        },
+        "targetRequests": [
+          {
+            "httpMethod": "GET",
+            "body": null,
+            "testHeader": null,
+            "cookie": ""
+          }
+        ],
+        "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+        "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+        "bookInfoApiCalls": 1,
+        "requestWindowMs": {
+          "started": 1791689707406,
+          "completed": 1791689708710
+        }
+      }
+    },
+    "expectedOriginalCookieSequence": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "expectedRestoredCookieSequence": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "expectedScriptSources": [
+      null,
+      null,
+      null,
+      "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')",
+      "document.documentElement.outerHTML.replace('WebView脚本原始书','WebView差分书')"
+    ],
+    "expectedPostRequestFields": {
+      "httpMethod": "POST",
+      "body": "q=post",
+      "testHeader": "synthetic"
+    },
+    "headerObservation": {
+      "generatedOnly": true,
+      "allParsedFieldPairsRecorded": true,
+      "caseOrderDuplicatesPreserved": true,
+      "maximumFieldsPerRequest": 64,
+      "maximumUtf8FieldBytesPerRequest": 8192,
+      "wireBytesRecorded": false,
+      "literalHeaderParityAccepted": false,
+      "realAuthenticationProven": false
+    },
+    "metadataProbe": {
+      "generatedDelayedDom": true,
+      "actualGetBookInfo": true,
+      "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+      "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+      "realSiteMetadataOrAuthenticationProven": false,
+      "clockContractRequested": true,
+      "comparisonScope": "exact-static-json-and-bounded-default-clocks"
+    },
+    "comparisonMode": "same-run-original-remote-camoufox",
+    "camoufox": {
+      "searches": [
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "isSuccess": true,
+          "errorMsg": "",
+          "count": 1,
+          "data": [
+            {
+              "bookUrl": "http://127.0.0.1:50885/book",
+              "origin": "http://127.0.0.1:50885",
+              "originName": "Loopback WebView Cookie fixture",
+              "type": 0,
+              "name": "WebView差分书",
+              "author": "测试作者",
+              "intro": "",
+              "wordCount": "",
+              "latestChapterTitle": "",
+              "tocUrl": "",
+              "time": 0,
+              "originOrder": 0,
+              "infoHtml": "",
+              "tocHtml": ""
+            }
+          ],
+          "returnData": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "bookUrl": "http://127.0.0.1:50885/book",
+                "origin": "http://127.0.0.1:50885",
+                "originName": "Loopback WebView Cookie fixture",
+                "type": 0,
+                "name": "WebView差分书",
+                "author": "测试作者",
+                "intro": "",
+                "wordCount": "",
+                "latestChapterTitle": "",
+                "tocUrl": "",
+                "time": 0,
+                "originOrder": 0,
+                "infoHtml": "",
+                "tocHtml": ""
+              }
+            ]
+          }
+        }
+      ],
+      "renderCookieHeaders": [
+        "",
+        "session=alpha==",
+        "",
+        "",
+        ""
+      ],
+      "renderScriptSources": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "renderRequestFields": [
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        },
+        {
+          "httpMethod": "POST",
+          "body": "q=post",
+          "testHeader": "synthetic"
+        }
+      ],
+      "renderTargetHeaders": [
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Cookie",
+            "session=alpha=="
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ],
+        [
+          [
+            "Host",
+            "127.0.0.1:50885"
+          ],
+          [
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+          ],
+          [
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ],
+          [
+            "Accept-Language",
+            "en-US,en;q=0.9"
+          ],
+          [
+            "Accept-Encoding",
+            "gzip, deflate, br, zstd"
+          ],
+          [
+            "Upgrade-Insecure-Requests",
+            "1"
+          ],
+          [
+            "Sec-Fetch-Dest",
+            "document"
+          ],
+          [
+            "Sec-Fetch-Mode",
+            "navigate"
+          ],
+          [
+            "Sec-Fetch-Site",
+            "none"
+          ],
+          [
+            "Sec-Fetch-User",
+            "?1"
+          ],
+          [
+            "Content-Type",
+            "application/x-www-form-urlencoded; charset=UTF-8"
+          ],
+          [
+            "Content-Length",
+            "6"
+          ],
+          [
+            "x-fixture",
+            "synthetic"
+          ],
+          [
+            "Priority",
+            "u=0, i"
+          ],
+          [
+            "Connection",
+            "close"
+          ]
+        ]
+      ],
+      "metadata": {
+        "status": 200,
+        "returnData": {
+          "isSuccess": true,
+          "errorMsg": "",
+          "data": {
+            "bookUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "tocUrl": "http://127.0.0.1:50885/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+            "origin": "http://127.0.0.1:50885/metadata-source",
+            "originName": "Generated delayed metadata differential",
+            "name": "黎明之剑",
+            "author": "远瞳",
+            "coverUrl": "http://127.0.0.1:50885/generated-cover.svg",
+            "intro": "{\"nameSelectorPresent\":true,\"authorSelectorPresent\":true,\"coverSelectorPresent\":true,\"bodyHasText\":true,\"bodyHasExpectedBookTitle\":true,\"bodyHasExpectedAuthor\":true,\"bodyHasSafetyPhrase\":false,\"captchaContainerPresent\":false}",
+            "type": 0,
+            "group": 0,
+            "latestChapterTime": 1791689728689,
+            "lastCheckTime": 1791689728689,
+            "lastCheckCount": 0,
+            "totalChapterNum": 0,
+            "durChapterIndex": 0,
+            "durChapterPos": 0,
+            "durChapterTime": 1791689728689,
+            "canUpdate": true,
+            "order": 0,
+            "originOrder": 0,
+            "useReplaceRule": true,
+            "isInShelf": false
+          }
+        },
+        "fixtureBase": "http://127.0.0.1:50885",
+        "sourceDefinitionRoundtrip": {
+          "dataIsObject": true,
+          "sourceUrlMatches": true,
+          "cookieJarDisabled": true,
+          "modernTocMarkerPresent": true,
+          "metadataRulesMatch": true,
+          "passed": true
+        },
+        "targetRequests": [
+          {
+            "httpMethod": "GET",
+            "body": null,
+            "testHeader": null,
+            "cookie": ""
+          }
+        ],
+        "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+        "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+        "bookInfoApiCalls": 1,
+        "requestWindowMs": {
+          "started": 1791689728680,
+          "completed": 1791689731027
+        }
+      }
+    },
+    "camoufoxJarSha256": "9B9D0C9808968C0390022156A5FCBFCC03F595ED228F124AFBB06E830CD7DD84",
+    "expectedCamoufoxCookieSequence": [
+      "",
+      "session=alpha==",
+      "",
+      "",
+      ""
+    ],
+    "fullGeneratedReaderJsonRecorded": true,
+    "historicalRendererStoppedBeforeCamoufox": true,
+    "originalProductionRendererVersionProven": false,
+    "realAuthenticatedSourceTested": false
+  },
+  "stoppedHistoricalReclaim": {
+    "scope": "owned-stopped-historical-server-leaf-only",
+    "unit": "reader-three-way-metadata-9b9d-reclaim-20261011-a.service",
+    "runtimeId": "reader-three-way-metadata-9b9d-reclaim-20261011-a-server",
+    "stoppedPidZeroObserved": true,
+    "before": {
+      "parentMemoryCurrent": 1119764480,
+      "childMemoryCurrent": 545071104,
+      "childPidsCurrent": 0,
+      "childMemoryStat": {
+        "anon": 0,
+        "file": 540184576,
+        "shmem": 0,
+        "file_dirty": 4096,
+        "file_writeback": 0
+      },
+      "parentMemoryEvents": {
+        "high": 248,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "aggregateLimits": {
+        "cpu.max": "200000 100000",
+        "memory.max": "2147483648",
+        "memory.high": "1610612736",
+        "memory.swap.max": "0",
+        "pids.max": "256"
+      },
+      "aggregateCpus": "0-1"
+    },
+    "requestedBytes": 545071104,
+    "globalCacheDropUsed": false,
+    "diskFilesDeleted": false,
+    "readerBudgetChanged": false,
+    "earlierTimeoutCauseProven": false,
+    "writeAttempted": true,
+    "kernelPartialReclaimObserved": true,
+    "after": {
+      "parentMemoryCurrent": 578433024,
+      "childMemoryCurrent": 4542464,
+      "childPidsCurrent": 0,
+      "childMemoryStat": {
+        "anon": 0,
+        "file": 0,
+        "shmem": 0,
+        "file_dirty": 0,
+        "file_writeback": 0
+      },
+      "parentMemoryEvents": {
+        "high": 248,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "aggregateLimits": {
+        "cpu.max": "200000 100000",
+        "memory.max": "2147483648",
+        "memory.high": "1610612736",
+        "memory.swap.max": "0",
+        "pids.max": "256"
+      },
+      "aggregateCpus": "0-1"
+    },
+    "seconds": 0.030675,
+    "observedChildChargeReduction": 540528640
+  },
+  "reclaimModuleSha256": "2be31c58c2df28cf55af7166b2fd72e25e85a6573c719c168d711646206eae72",
+  "probeSha256": "0f788b36a1870a1ada94151262325f40c674d1c295f9a0fa8d118ab5c0763831",
+  "innerSha256": "6245960cd2a1b9e21e6f730149c7e6c6ce094ad647d68516331f2d6a54f8d339",
+  "resources": {
+    "scope": "exact original/a5cd1e74 9b9d JAR and pinned historical/Camoufox five baseline cases plus delayed generated metadata; exact static JSON and individually bounded default clocks, not real-site or header-security acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 1611583488,
+    "memoryCurrentBytes": 1168674816,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 3663,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 14725120,
+      "file": 1143599104,
+      "shmem": 0,
+      "kernel": 9363456,
+      "kernel_stack": 0,
+      "pagetables": 262144,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 65536,
+      "file_writeback": 0,
+      "inactive_file": 708362240,
+      "active_file": 435240960,
+      "slab_reclaimable": 8750744,
+      "slab_unreclaimable": 226616
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 242,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "resourceSamples": [
+    {
+      "phase": "bothOwnedRuntimesReady",
+      "elapsedMs": 1870,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 23,
+          "memory.current": 188063744,
+          "memory.peak": 307351552,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 15093760,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29769728,
+          "memory.peak": 29769728,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 1872,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 23,
+          "memory.current": 188063744,
+          "memory.peak": 307351552,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 15093760,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29769728,
+          "memory.peak": 29769728,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 2372,
+      "groups": {
+        "parent": {
+          "pids.current": 12,
+          "pids.peak": 23,
+          "memory.current": 558571520,
+          "memory.peak": 558571520,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 3,
+          "pids.peak": 6,
+          "memory.current": 400543744,
+          "memory.peak": 400543744,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 2873,
+      "groups": {
+        "parent": {
+          "pids.current": 14,
+          "pids.peak": 23,
+          "memory.current": 673980416,
+          "memory.peak": 673980416,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 5,
+          "pids.peak": 6,
+          "memory.current": 515952640,
+          "memory.peak": 515952640,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 3374,
+      "groups": {
+        "parent": {
+          "pids.current": 31,
+          "pids.peak": 31,
+          "memory.current": 724832256,
+          "memory.peak": 724832256,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 22,
+          "memory.current": 566804480,
+          "memory.peak": 566804480,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 3875,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 32,
+          "memory.current": 833396736,
+          "memory.peak": 833396736,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 23,
+          "memory.current": 675368960,
+          "memory.peak": 675368960,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 4377,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 33,
+          "memory.current": 861708288,
+          "memory.peak": 861708288,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142647296,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 24,
+          "memory.current": 703680512,
+          "memory.peak": 703680512,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 4878,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 970108928,
+          "memory.peak": 970108928,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142630912,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 27,
+          "pids.peak": 27,
+          "memory.current": 812236800,
+          "memory.peak": 812236800,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 5379,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 42,
+          "memory.current": 1033842688,
+          "memory.peak": 1034117120,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142630912,
+          "memory.peak": 142733312,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 33,
+          "pids.peak": 33,
+          "memory.current": 875970560,
+          "memory.peak": 876244992,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 5880,
+      "groups": {
+        "parent": {
+          "pids.current": 70,
+          "pids.peak": 86,
+          "memory.current": 1150763008,
+          "memory.peak": 1150767104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 33,
+          "pids.peak": 49,
+          "memory.current": 230699008,
+          "memory.peak": 230711296,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 904814592,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 6380,
+      "groups": {
+        "parent": {
+          "pids.current": 211,
+          "pids.peak": 215,
+          "memory.current": 1248927744,
+          "memory.peak": 1268056064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 174,
+          "pids.peak": 178,
+          "memory.current": 329134080,
+          "memory.peak": 348000256,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 904814592,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 6881,
+      "groups": {
+        "parent": {
+          "pids.current": 55,
+          "pids.peak": 242,
+          "memory.current": 1400737792,
+          "memory.peak": 1400737792,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 18,
+          "pids.peak": 205,
+          "memory.current": 480681984,
+          "memory.peak": 480681984,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 904814592,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 7385,
+      "groups": {
+        "parent": {
+          "pids.current": 60,
+          "pids.peak": 242,
+          "memory.current": 1432383488,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 23,
+          "pids.peak": 205,
+          "memory.current": 599273472,
+          "memory.peak": 780075008,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 817803264,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 7886,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 242,
+          "memory.current": 1438789632,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 14,
+          "pids.peak": 205,
+          "memory.current": 605769728,
+          "memory.peak": 780075008,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 817778688,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 8387,
+      "groups": {
+        "parent": {
+          "pids.current": 116,
+          "pids.peak": 242,
+          "memory.current": 1456750592,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 78,
+          "pids.peak": 205,
+          "memory.current": 630263808,
+          "memory.peak": 780075008,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 811245568,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 8888,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 242,
+          "memory.current": 1455296512,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 205,
+          "memory.current": 628547584,
+          "memory.peak": 780075008,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 811507712,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 9388,
+      "groups": {
+        "parent": {
+          "pids.current": 128,
+          "pids.peak": 242,
+          "memory.current": 1450033152,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 91,
+          "pids.peak": 205,
+          "memory.current": 636391424,
+          "memory.peak": 795721728,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 798924800,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 9889,
+      "groups": {
+        "parent": {
+          "pids.current": 62,
+          "pids.peak": 242,
+          "memory.current": 1465180160,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 25,
+          "pids.peak": 205,
+          "memory.current": 651014144,
+          "memory.peak": 795721728,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 798924800,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 10390,
+      "groups": {
+        "parent": {
+          "pids.current": 159,
+          "pids.peak": 242,
+          "memory.current": 1457549312,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 122,
+          "pids.peak": 205,
+          "memory.current": 645754880,
+          "memory.peak": 798253056,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 797077504,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 10890,
+      "groups": {
+        "parent": {
+          "pids.current": 87,
+          "pids.peak": 242,
+          "memory.current": 1541206016,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 50,
+          "pids.peak": 205,
+          "memory.current": 729411584,
+          "memory.peak": 798253056,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 797077504,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 11391,
+      "groups": {
+        "parent": {
+          "pids.current": 204,
+          "pids.peak": 242,
+          "memory.current": 1461239808,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 167,
+          "pids.peak": 205,
+          "memory.current": 648413184,
+          "memory.peak": 798253056,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 797458432,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 11892,
+      "groups": {
+        "parent": {
+          "pids.current": 89,
+          "pids.peak": 242,
+          "memory.current": 1594871808,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 52,
+          "pids.peak": 205,
+          "memory.current": 792662016,
+          "memory.peak": 807350272,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 786968576,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 12393,
+      "groups": {
+        "parent": {
+          "pids.current": 44,
+          "pids.peak": 242,
+          "memory.current": 1419538432,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615870464,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 31,
+          "pids.peak": 40,
+          "memory.current": 788426752,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 12893,
+      "groups": {
+        "parent": {
+          "pids.current": 35,
+          "pids.peak": 242,
+          "memory.current": 1114198016,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615854080,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 483102720,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 13394,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 242,
+          "memory.current": 1244893184,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615854080,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 613797888,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 13896,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 242,
+          "memory.current": 1310904320,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615854080,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 679809024,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 14397,
+      "groups": {
+        "parent": {
+          "pids.current": 40,
+          "pids.peak": 242,
+          "memory.current": 1349419008,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615833600,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 27,
+          "pids.peak": 40,
+          "memory.current": 718344192,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 14897,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 242,
+          "memory.current": 1390723072,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 615813120,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 33,
+          "pids.peak": 40,
+          "memory.current": 759668736,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 15398,
+      "groups": {
+        "parent": {
+          "pids.current": 80,
+          "pids.peak": 242,
+          "memory.current": 1426575360,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 44,
+          "pids.peak": 205,
+          "memory.current": 637911040,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 773619712,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 15899,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 242,
+          "memory.current": 1417932800,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 14,
+          "pids.peak": 205,
+          "memory.current": 629071872,
+          "memory.peak": 810708992,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 773619712,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 16399,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 242,
+          "memory.current": 1413894144,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 14,
+          "pids.peak": 205,
+          "memory.current": 620589056,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 778063872,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 16900,
+      "groups": {
+        "parent": {
+          "pids.current": 223,
+          "pids.peak": 242,
+          "memory.current": 1443536896,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 186,
+          "pids.peak": 205,
+          "memory.current": 650231808,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 778063872,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 17401,
+      "groups": {
+        "parent": {
+          "pids.current": 76,
+          "pids.peak": 242,
+          "memory.current": 1510391808,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 37,
+          "pids.peak": 205,
+          "memory.current": 717090816,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 778059776,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 17901,
+      "groups": {
+        "parent": {
+          "pids.current": 230,
+          "pids.peak": 242,
+          "memory.current": 1418592256,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 192,
+          "pids.peak": 205,
+          "memory.current": 629452800,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 773787648,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 18402,
+      "groups": {
+        "parent": {
+          "pids.current": 57,
+          "pids.peak": 242,
+          "memory.current": 1398243328,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 20,
+          "pids.peak": 205,
+          "memory.current": 608215040,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775319552,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 18902,
+      "groups": {
+        "parent": {
+          "pids.current": 233,
+          "pids.peak": 242,
+          "memory.current": 1409585152,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 196,
+          "pids.peak": 205,
+          "memory.current": 619024384,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775319552,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 19403,
+      "groups": {
+        "parent": {
+          "pids.current": 75,
+          "pids.peak": 242,
+          "memory.current": 1412673536,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 38,
+          "pids.peak": 205,
+          "memory.current": 622923776,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775303168,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 19904,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 242,
+          "memory.current": 1405517824,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 205,
+          "memory.current": 614981632,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775303168,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 20404,
+      "groups": {
+        "parent": {
+          "pids.current": 144,
+          "pids.peak": 242,
+          "memory.current": 1434030080,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 107,
+          "pids.peak": 205,
+          "memory.current": 642981888,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775815168,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 20905,
+      "groups": {
+        "parent": {
+          "pids.current": 72,
+          "pids.peak": 242,
+          "memory.current": 1452257280,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 35,
+          "pids.peak": 205,
+          "memory.current": 661209088,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775815168,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 21405,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 242,
+          "memory.current": 1399742464,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 604516352,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779993088,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 21906,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 242,
+          "memory.current": 1176055808,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 604483584,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 556339200,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "historicalPairCompleteBeforeReferenceStop",
+      "elapsedMs": 22407,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 242,
+          "memory.current": 1178808320,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14688256,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 205,
+          "memory.current": 604483584,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 559091712,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "historicalStoppedBeforeCamoufoxPermission",
+      "elapsedMs": 22590,
+      "groups": {
+        "parent": {
+          "pids.current": 5,
+          "pids.peak": 242,
+          "memory.current": 1119682560,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14999552,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 545071104,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 559067136,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "historicalStoppedAfterGuardedReclaimBeforeCamoufoxPermission",
+      "elapsedMs": 22842,
+      "groups": {
+        "parent": {
+          "pids.current": 5,
+          "pids.peak": 242,
+          "memory.current": 577650688,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14827520,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 559067136,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 22898,
+      "groups": {
+        "parent": {
+          "pids.current": 5,
+          "pids.peak": 242,
+          "memory.current": 578011136,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 15187968,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 559067136,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 23399,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 242,
+          "memory.current": 644747264,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 626331648,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 23900,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 242,
+          "memory.current": 797126656,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 778448896,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 24401,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 242,
+          "memory.current": 818933760,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 800256000,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 24901,
+      "groups": {
+        "parent": {
+          "pids.current": 28,
+          "pids.peak": 242,
+          "memory.current": 851103744,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 27,
+          "pids.peak": 40,
+          "memory.current": 832425984,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 25402,
+      "groups": {
+        "parent": {
+          "pids.current": 35,
+          "pids.peak": 242,
+          "memory.current": 894271488,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 34,
+          "pids.peak": 40,
+          "memory.current": 875593728,
+          "memory.peak": 904814592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 25902,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 242,
+          "memory.current": 1088335872,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 45,
+          "memory.current": 1069658112,
+          "memory.peak": 1069940736,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 26403,
+      "groups": {
+        "parent": {
+          "pids.current": 54,
+          "pids.peak": 242,
+          "memory.current": 1412988928,
+          "memory.peak": 1611096064,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 3211264,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 53,
+          "pids.peak": 54,
+          "memory.current": 1394311168,
+          "memory.peak": 1394311168,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 26904,
+      "groups": {
+        "parent": {
+          "pids.current": 113,
+          "pids.peak": 242,
+          "memory.current": 1610842112,
+          "memory.peak": 1611247616,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 112,
+          "pids.peak": 112,
+          "memory.current": 1593495552,
+          "memory.peak": 1593901056,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 27404,
+      "groups": {
+        "parent": {
+          "pids.current": 111,
+          "pids.peak": 242,
+          "memory.current": 1610620928,
+          "memory.peak": 1611247616,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 110,
+          "pids.peak": 112,
+          "memory.current": 1592545280,
+          "memory.peak": 1593901056,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 27905,
+      "groups": {
+        "parent": {
+          "pids.current": 135,
+          "pids.peak": 242,
+          "memory.current": 1610829824,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 134,
+          "pids.peak": 134,
+          "memory.current": 1593368576,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 28406,
+      "groups": {
+        "parent": {
+          "pids.current": 190,
+          "pids.peak": 242,
+          "memory.current": 1610547200,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 189,
+          "pids.peak": 189,
+          "memory.current": 1593200640,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 28906,
+      "groups": {
+        "parent": {
+          "pids.current": 202,
+          "pids.peak": 242,
+          "memory.current": 1562935296,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 201,
+          "pids.peak": 210,
+          "memory.current": 1545588736,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 29407,
+      "groups": {
+        "parent": {
+          "pids.current": 135,
+          "pids.peak": 242,
+          "memory.current": 1550077952,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 134,
+          "pids.peak": 210,
+          "memory.current": 1532731392,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 29908,
+      "groups": {
+        "parent": {
+          "pids.current": 126,
+          "pids.peak": 242,
+          "memory.current": 1557876736,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14921728,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 125,
+          "pids.peak": 210,
+          "memory.current": 1540530176,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 30408,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 242,
+          "memory.current": 1229107200,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 210,
+          "memory.current": 1211764736,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 30909,
+      "groups": {
+        "parent": {
+          "pids.current": 50,
+          "pids.peak": 242,
+          "memory.current": 1414287360,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 49,
+          "pids.peak": 210,
+          "memory.current": 1396944896,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 31410,
+      "groups": {
+        "parent": {
+          "pids.current": 157,
+          "pids.peak": 242,
+          "memory.current": 1584447488,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 156,
+          "pids.peak": 210,
+          "memory.current": 1567105024,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 31910,
+      "groups": {
+        "parent": {
+          "pids.current": 186,
+          "pids.peak": 242,
+          "memory.current": 1610448896,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 185,
+          "pids.peak": 210,
+          "memory.current": 1593106432,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 32411,
+      "groups": {
+        "parent": {
+          "pids.current": 193,
+          "pids.peak": 242,
+          "memory.current": 1588367360,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 192,
+          "pids.peak": 210,
+          "memory.current": 1571024896,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 32912,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 242,
+          "memory.current": 1264697344,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 210,
+          "memory.current": 1247354880,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 33412,
+      "groups": {
+        "parent": {
+          "pids.current": 122,
+          "pids.peak": 242,
+          "memory.current": 1443536896,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 121,
+          "pids.peak": 210,
+          "memory.current": 1426194432,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 33913,
+      "groups": {
+        "parent": {
+          "pids.current": 173,
+          "pids.peak": 242,
+          "memory.current": 1608916992,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 172,
+          "pids.peak": 210,
+          "memory.current": 1591574528,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 34414,
+      "groups": {
+        "parent": {
+          "pids.current": 205,
+          "pids.peak": 242,
+          "memory.current": 1610170368,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 204,
+          "pids.peak": 210,
+          "memory.current": 1592827904,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 34914,
+      "groups": {
+        "parent": {
+          "pids.current": 50,
+          "pids.peak": 242,
+          "memory.current": 1197928448,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 49,
+          "pids.peak": 210,
+          "memory.current": 1180585984,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 35415,
+      "groups": {
+        "parent": {
+          "pids.current": 77,
+          "pids.peak": 242,
+          "memory.current": 1357635584,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 76,
+          "pids.peak": 210,
+          "memory.current": 1340293120,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 35915,
+      "groups": {
+        "parent": {
+          "pids.current": 155,
+          "pids.peak": 242,
+          "memory.current": 1461866496,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 154,
+          "pids.peak": 210,
+          "memory.current": 1444524032,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 36416,
+      "groups": {
+        "parent": {
+          "pids.current": 198,
+          "pids.peak": 242,
+          "memory.current": 1581744128,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 197,
+          "pids.peak": 210,
+          "memory.current": 1564663808,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 36917,
+      "groups": {
+        "parent": {
+          "pids.current": 54,
+          "pids.peak": 242,
+          "memory.current": 1228214272,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 53,
+          "pids.peak": 210,
+          "memory.current": 1210871808,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 37417,
+      "groups": {
+        "parent": {
+          "pids.current": 92,
+          "pids.peak": 242,
+          "memory.current": 1389719552,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 91,
+          "pids.peak": 210,
+          "memory.current": 1372377088,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 37918,
+      "groups": {
+        "parent": {
+          "pids.current": 169,
+          "pids.peak": 242,
+          "memory.current": 1528004608,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 168,
+          "pids.peak": 210,
+          "memory.current": 1510662144,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 38418,
+      "groups": {
+        "parent": {
+          "pids.current": 202,
+          "pids.peak": 242,
+          "memory.current": 1610539008,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 201,
+          "pids.peak": 211,
+          "memory.current": 1593196544,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 38919,
+      "groups": {
+        "parent": {
+          "pids.current": 209,
+          "pids.peak": 242,
+          "memory.current": 1610133504,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 208,
+          "pids.peak": 211,
+          "memory.current": 1592791040,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 39419,
+      "groups": {
+        "parent": {
+          "pids.current": 151,
+          "pids.peak": 242,
+          "memory.current": 1508835328,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 150,
+          "pids.peak": 211,
+          "memory.current": 1491492864,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 39920,
+      "groups": {
+        "parent": {
+          "pids.current": 149,
+          "pids.peak": 242,
+          "memory.current": 1601667072,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 148,
+          "pids.peak": 211,
+          "memory.current": 1584848896,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 40421,
+      "groups": {
+        "parent": {
+          "pids.current": 148,
+          "pids.peak": 242,
+          "memory.current": 1609236480,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 147,
+          "pids.peak": 211,
+          "memory.current": 1591894016,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 40921,
+      "groups": {
+        "parent": {
+          "pids.current": 148,
+          "pids.peak": 242,
+          "memory.current": 1609867264,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 147,
+          "pids.peak": 211,
+          "memory.current": 1592524800,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 41425,
+      "groups": {
+        "parent": {
+          "pids.current": 58,
+          "pids.peak": 242,
+          "memory.current": 1162883072,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 57,
+          "pids.peak": 211,
+          "memory.current": 1145540608,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 41926,
+      "groups": {
+        "parent": {
+          "pids.current": 66,
+          "pids.peak": 242,
+          "memory.current": 1301135360,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 65,
+          "pids.peak": 211,
+          "memory.current": 1284055040,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 42427,
+      "groups": {
+        "parent": {
+          "pids.current": 175,
+          "pids.peak": 242,
+          "memory.current": 1427333120,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 174,
+          "pids.peak": 211,
+          "memory.current": 1409990656,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 42927,
+      "groups": {
+        "parent": {
+          "pids.current": 210,
+          "pids.peak": 242,
+          "memory.current": 1574092800,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 209,
+          "pids.peak": 211,
+          "memory.current": 1556750336,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 43428,
+      "groups": {
+        "parent": {
+          "pids.current": 224,
+          "pids.peak": 242,
+          "memory.current": 1573629952,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 223,
+          "pids.peak": 233,
+          "memory.current": 1556287488,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 43928,
+      "groups": {
+        "parent": {
+          "pids.current": 55,
+          "pids.peak": 242,
+          "memory.current": 1205329920,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 54,
+          "pids.peak": 233,
+          "memory.current": 1187987456,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 44429,
+      "groups": {
+        "parent": {
+          "pids.current": 27,
+          "pids.peak": 242,
+          "memory.current": 1092653056,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14917632,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1880064,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 26,
+          "pids.peak": 233,
+          "memory.current": 1075310592,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "acceptedBusinessResultBeforeCleanup",
+      "elapsedMs": 45113,
+      "groups": {
+        "parent": {
+          "pids.current": 1,
+          "pids.peak": 242,
+          "memory.current": 1170935808,
+          "memory.peak": 1611583488,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 18587648,
+          "memory.peak": 306790400,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 205,
+          "memory.current": 1875968,
+          "memory.peak": 812552192,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 0,
+          "pids.peak": 233,
+          "memory.current": 1149927424,
+          "memory.peak": 1594236928,
+          "pids.max.events": 0
+        }
+      }
+    }
+  ],
+  "earlierFailedReportRetainedSha256": "bf5af82a6b0d58d076a34cedaa56c0c6b7ece4c5ab24395c5cd63e15f55f5541",
+  "earlierTimeoutRootCauseProven": false,
+  "authorizationHeaderLossRootCauseProven": false,
+  "sameOriginAuthorizationFailureAcceptedAsFixed": false,
+  "currentWholeImageAcceptedByLocalProbe": false,
+  "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "historicalManifestDigest": "sha256:88c250043bd33715ca372b749c1dca055c14e4550882caf968bd7af933d53573",
+  "fullOriginalHttpsThreeWayAccepted": false,
+  "webSocketContractAccepted": false,
+  "realSiteMetadataOrAuthenticationProven": false,
+  "privateBookBodiesRead": 0,
+  "realCredentialsImported": false,
+  "productionChanged": false,
+  "userReportsUnchanged": 58,
+  "ownedContainersRemaining": 0,
+  "seconds": 45.947,
+  "fullGoalComplete": false
+}
