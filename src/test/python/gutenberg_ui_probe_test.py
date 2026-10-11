@@ -208,7 +208,8 @@ class GutenbergUiProbeTests(unittest.TestCase):
                              VERIFY.png_visual_facts(raw))
 
     def test_png_bad_filter_crc_truncation_or_inflated_stream_is_rejected(self):
-        for raw in (self.generated_png(method=5), self.generated_png()[:-1], self.generated_png(extra=b'\0'),
+        for raw in (self.generated_png(method=5), self.generated_png()[:-1], self.generated_png()[:-12],
+                    self.generated_png(extra=b'\0'),
                     self.generated_png()[:-8] + b'corrupt!'):
             with self.assertRaises(AssertionError):
                 VERIFY.png_visual_facts(raw)

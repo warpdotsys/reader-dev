@@ -18,7 +18,7 @@ def helper(name):
 def png_visual_facts(raw):
     """Bounded 8-bit RGB/RGBA screenshots, no Pillow/system package dependency."""
     assert raw[:8] == b'\x89PNG\r\n\x1a\n' and len(raw) <= 2 * 1024 * 1024
-    offset, data, header = 8, bytearray(), None
+    offset, data, header, ended = 8, bytearray(), None, False
     while offset + 12 <= len(raw):
         size = struct.unpack('>I', raw[offset:offset + 4])[0]
         kind = raw[offset + 4:offset + 8]
@@ -33,8 +33,9 @@ def png_visual_facts(raw):
         offset += size + 12
         if kind == b'IEND':
             assert size == 0 and offset == len(raw)
+            ended = True
             break
-    assert header is not None and offset == len(raw)
+    assert ended and header is not None and offset == len(raw)
     width, height, bits, color, compression, filtering, interlace = header
     assert 1 <= width <= 1280 and 1 <= height <= 900
     assert bits == 8 and color in (2, 6) and (compression, filtering, interlace) == (0, 0, 0)

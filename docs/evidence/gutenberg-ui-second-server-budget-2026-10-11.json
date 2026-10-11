@@ -1,0 +1,44 @@
+{
+  "architecture": "x86_64",
+  "cgroupRoot": "/sys/fs/cgroup",
+  "cpuPeriod": 100000,
+  "cpuQuota": "200000",
+  "kernel": "6.17.0-1022-azure",
+  "memoryCurrentBytes": 919760896,
+  "memoryEvents": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "memoryHighBytes": "max",
+  "memoryMaxBytes": 2147483648,
+  "memoryPeakBytes": 1054720000,
+  "memoryStatBytes": {
+    "active_file": 135168,
+    "anon": 871542784,
+    "file": 26648576,
+    "file_dirty": 0,
+    "file_mapped": 7344128,
+    "file_writeback": 0,
+    "inactive_file": 5816320,
+    "kernel": 20889600,
+    "kernel_stack": 3178496,
+    "pagetables": 9166848,
+    "shmem": 20697088,
+    "slab_reclaimable": 3425936,
+    "slab_unreclaimable": 4954832,
+    "sock": 0
+  },
+  "pidsCurrent": 194,
+  "pidsEvents": {
+    "max": 0
+  },
+  "pidsMax": 256,
+  "pidsPeak": 211,
+  "scope": "same Reader server lifetime: API then actual default UI; test client excluded",
+  "swapCurrentBytes": 0,
+  "swapMaxBytes": 0
+}
