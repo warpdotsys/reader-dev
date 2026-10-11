@@ -168,3 +168,53 @@ R 是两轮之间的启动失败，须单独记录：根代理未等辅助任务
 **另一个已知缺口，尚未修改**：POST 包装器把第三参数判为选项时只识别 silent/signal/headers，因此仅 `{timeout: ...}` 会被当成旧 query params。当前相关 wrapper 调用同时带 silent，纯 timeout 的文件/导入调用直接走 Axios instance；未确认这些现有业务受此缺口影响。暂不顺手改变旧 query 判别语义，后续须单独明确兼容和测试；不能称所有 RequestOptions 已正确支持。
 
 回退该产品增量时，在独立干净工作树只撤回 GET 的 signal 透传并形成单独回退提交；保留诊断及已知问题记录，不 reset/checkout 用户工作区。回退会重新失去 GET 取消能力，不能称业务缺口消失。真实大型 EPUB、完整八场景、资源/写断归因、原件/远程 WebView 三方及生产切换仍未完成，当前没有合并或部署。
+
+## 2026-10-12：bfd 自己的托管构建通过，V 实测仍保留失败
+
+**已成功重建并独立复核**：GET 修复提交 `bfd30ebf5e5eda318962a4380a9032fdec470751`，实际测试 PR 合并快照 `06bf1117a4baffffaab23e047d542eaee47a2a89`；不是上述 a4df/c2e 证据。以下四项均为 GitHub 托管 runner 终态 success，根代理重新执行全部冻结守卫并只读精确比较既有回执，未覆盖回执：
+
+| 检查 | 本次证据范围 |
+| --- | --- |
+| [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/38148738554) | Python 725 项；JVM 总计 207 / 35 项既有环境跳过 / 实际执行 172；双 clean 完整 JAR 字节一致 |
+| [Vue](https://github.com/warpdotsys/reader-dev/actions/runs/38148738557) | 前端 308 项；生成浏览器旅程 25 项 |
+| [完整单容器](https://github.com/warpdotsys/reader-dev/actions/runs/38148738575) | 实际 Camoufox 24 项；合成子集峰值 882,098,176B / 197 tasks；四张生成登录/书架/阅读/退出截图实际查看且重算哈希 |
+| [原生两架构](https://github.com/warpdotsys/reader-dev/actions/runs/38148738570) | amd64 / arm64 构建、转移和重导入有限报告通过；publisher 子集最大 904,609,792B / 202 tasks；没有 registry 发布 |
+
+实际下载并逐条哈希的 JAR 为 `0675ec6dd851f737804e0f6d306b265f0b9e9b5df45fb62f79c9ad018aa2febe`，285,672,106B、1570 条目。与旧**恢复版** be87 JAR 完整 entry 内容比较，69 项差异全部是 Vue：index 内容变化 1 项、哈希资源新增/删除各 34 项；Java/Kotlin class、依赖、非 Vue 资源、manifest 内容差异均 0。这不代表与原始 b26 JAR 已完全等价。未下载或本机重算大型镜像归档；四绿也不抵消下述生成诊断、大书压力或生产未验证。
+
+**U 没有运行**：冻结代码审查发现仅拒绝 browser overflow、未拒绝非空失败记录/非零计数的假成功风险；另把关联器 `server_write_failed=false` 的“尚未关联”误写成 capture 错误。U 四源及独立工具全部保留，不能称 U 已实测。V 在新目录修正成功与清理后的失败守卫，并保留原 primary；无资源/超时放宽。V 的平铺值由严格 after 快照直接赋值，内部 cleanup helper 的相等比较并非任意输入类型验证；独立根验收器另对平铺类型、before/after、额外 helper SHA 和新 JAR 身份严格检查。原独立 V 工具仍残留旧 JAR 常量/字节数且新字段检查不足，原字节保留，不使用它给出正向验收；根验收器锁定原工具 SHA、只精确更新运行身份并收紧字段，49 项纯结构护栏实际通过。
+
+**V 已实际运行、整轮拒绝**：使用 bfd 的 0675 JAR，但 browser/runtime 仍是旧缓存 `401d895c…bc44`，明确不是本次最新整镜像本机验收；只有同一全生成 806 spine EPUB，501,316B / 810 ZIP 条目 / 展开 6,718,908B，SHA `844e0c31…cb63`。text/HTML/raw 都读到 2891 字符、46/45/45 段、U+FFFD/script 0，raw iframe 653px。Worker 原资源 `46bb4b6d…2332`、四事件、posted→reply 143ms / created→terminated 144ms；server/request/frame Reader 导航 1/1/3，host 0。这是观察子集，不是完整八场景或原件三方。
+
+实际两次 API 类 `abort` 和两次 `clientWrite/closed/200`；两个清理前后快照相同，但 **精确关联仍为 0**。观察回调自身异常记录显式存在且空，不能等同浏览器零失败。另有 5 个有限 correlation capture `validation`，不能静默丢弃；现有分类还不足以解释这些捕获拒绝或证明对应请求。相同 API 类、相同数量不能证明一一对应，也不能据此宣布正常取消或业务修复。当前 EPUB 下载走原生 fetch，章节/目录调用未传 signal；本次共享 GET 修复不能直接解释或修复该次写断。下一步须在生成环境记录有限操作名/资源类型及绑定拒绝原因，不输出 URL/query/header/标识或正文，不反写 V。
+
+父级峰值 1,611,587,584B / 246 tasks，soft-high 2512，hard-memory/OOM/PID-max/swap 0；探针 21.768s / UI 探针 19.016s / systemd 单元 26.043s，不混作 Worker 时间。保持 2 CPU / 2 GiB / high 1.5 GiB / 256 PID / 零 swap，身份/namespace/只读挂载/仅 lo、实际 Worker、清理守卫独立通过，browser failures 与关联守卫拒绝。两个自有容器 stopped/PID0/delete、inventory0，代理/Java/sampler 停止，另外实查单元 inactive/dead/MainPID0；没有真实正文或凭据，也没有生产更改。
+
+[V 公开有限回执](evidence/generated-reader-worker-v-finite-diagnostic-2026-10-12.json)绑定原始只读 JSON `ab5e7a51…20af` / 124,240B。原始 `passed=false`、独立 `accepted=false`、product/pressure/full-goal 全 false 保留。官方 Ubuntu uidmap `1:4.17.4-2ubuntu3` 已安装，`/etc/subuid` 与 `/etc/subgid` 哈希仍为原 `d796e52b…e9cbd`；58 份用户报告、原件/只读备份及获准 EPUB 的哈希复核未变。此后文档属于后续工作区快照，不冒称已包含在 bfd/06bf 的四绿源码里；未合并、发版、部署或扩大验收范围。
+
+## W/X/Y 定位与 Z 有限生成旅程通过：测试修正，不抹掉旧失败
+
+**已实际定位**：W 在新目录增加只有白名单的操作名、GET/POST 等方法、资源类型和绑定拒绝类别；无 URL、参数、header、标识或正文输出。它记录一次 `getBookshelf` GET/XHR 的 abort 和一次 proxy `clientWrite/closed/200`，但精确配对仍 0，不能宣称是同一个请求。代码核查发现探针在收到 `saveBook` 响应后直接 `goto`，而界面随后仍 `await load()` 刷新书架；仅等待 `.bookshelf-page` 已存在不能证明导入工作完成。
+
+X 起必须等导入弹窗在刷新后自动关闭、生成书卡片实际出现才跳页；没有提高产品或探针默认超时。X 的 API abort 与 proxy 写断没有再次记录，但出现一次图片请求 `other`，未定因，不能称图片 bug 已修复。Y 没有浏览器 requestfailed；两轮 proxy failure 记录字段均缺失，摘要保留 `fieldPresent=false/null`，不伪造成原始空数组。旧 proxy 守卫允许该字段缺失时用空默认值，不能声称它是“缺字段严格拒绝”。
+
+**实际关联拒绝，不是捕获异常**：Y 的五条拒绝均为测试标记已赋给另一 request 对象；四条脚本响应 `from_service_worker=true`，一条 logo.png 为 false。Y 原字段 `network` 只表达该 bool 为 false，不证明一次新网络传输；Z 改名为 `non-service-worker`。Service Worker 的 Cache API 会保留克隆响应的测试 header，代理的 HTTP no-store 不等于禁止 Cache API。logo.png 的原源码和 JAR 字节一致，SHA `ab35c6f6…5c3a`，PNG 各块 CRC、像素解码和 512×512 尺寸实际通过；未改图，也不把 X 的间歇失败归因于坏 PNG。
+
+Z 只修正诊断把 `bind_response=false` 当作 capture exception 的错误：对有当前内存标记、`token-other-request`、HTTP GET、已知静态 script 或 logo/favicon image、明确 SW/非 SW 来源的拒绝，保留每条有限记录但不伪报捕获异常。未知标记、缺 header、API/XHR、未知来源、POST、畸形输入、任何 requestfailed/proxy 写错、真正 callback/capture 异常、溢出仍拒绝；没有改业务前端、后端、原产品超时、cache policy 或资源上限。15 项纯 helper 回归及 72 项独立结构守卫真实执行，包含上述负例；不能把这个规则用来给旧轮次重新验收。
+
+| 轮次 | 浏览器失败 | proxy 写错 | 绑定拒绝 | 该轮独立结论 |
+| --- | --- | --- | --- | --- |
+| W | 1 个书架 GET/XHR abort | 1 个 closed/200 | 5 | 拒绝，原始 `d344826a…63fb` |
+| X | 1 个 image/other | 未记录，字段缺失 | 5 | 拒绝，原始 `10bc4f61…076f` |
+| Y | 0 | 未记录，字段缺失 | 5，已细分类 | 拒绝，原始 `a29fa74f…42ab` |
+| Z | 0 | 未记录，字段缺失 | 5，全部已知静态标记复用且保留 | **仅有限生成旅程接受**，原始 `b29c028f…5a63` |
+
+Z 确实完成 UI 生成账户/预览/保存、刷新后可见、text/HTML/raw 三模式；每模式 2891 字符、46/45/45 段、U+FFFD/script 0，raw iframe 631px。原 Worker 四事件及资源 `46bb4b6d…2332` 绑定，posted→reply 214ms / created→terminated 215ms；server/request/frame 1/1/3、host 0。原始和独立 `accepted=true`，但 `productAcceptance/largeEpubPressure/fullGoalComplete=false`。原验证模板在成功时也有 `failure=other` 缺省值，它只在拒绝时才有诊断意义；Z 原始 primary 是 null，不把该缺省值当作新故障。
+
+Z 59 个 200、1 个 4xx、304/3xx/5xx 0；已有状态守卫允许有限 4xx 记录，该条尚未逐路定位，**不能称所有 HTTP 零错误**。峰值 1,611,620,352B / 249 tasks / soft-high 2509，hard-memory/OOM/PID-max/swap 0；2 CPU / 2 GiB / high 1.5 GiB / 256 PID 不变。soft-high 与很小的 task 余量仍是风险，不是容量修复。探针 23.787s / UI 21.728s / 单元 24.871s 不混作 Worker 时间。W/X/Y/Z 都 stopped/PID0/delete 两个自有容器、inventory0；Z 又实查 inactive/dead/MainPID0，无真实输入、凭据或生产更改。
+
+[W/X/Y/Z 公开有限摘要](evidence/generated-reader-worker-wxyz-finite-diagnostic-2026-10-12.json)逐字段从四份冻结只读记录投影并重新执行各自独立守卫精确比较，公开文件 SHA `8ca465db…370e` / 27,144B，未覆盖任何旧源码或回执。仍是 0675 JAR + 401d 缓存 runtime + 全生成输入，不是最新整镜像本机、授权大书、完整八场景、实站认证或原件三方；源产品没有为此增补空实现。
+
+**已维护进真实 CI 测试源码，真实执行待本提交自己的托管检查**：`NativeImageDefaultUiTest` 保留原登录、错密、记住/不记住、TXT 翻章刷新、退出和四截图旅程，新增 2 章生成 EPUB 的 UI 导入、文本/HTML/原版、原版翻章与刷新；TXT 导入同样等真实刷新和书卡片，不只看 save 响应。JUnit 方法数仍 1、180s 总上限和 30s 默认等待未提高，完整 Reader 仍由现有镜像 job 提供，Chromium 只是预算之外的验收客户端，不是部署依赖，不替代合计预算验证。
+
+本机 JDK11 `compileTestJava` 已通过；实际调用维护的 fixture factory/validator，6 条目 CRC/UTF-8/manifest 校验和两次独立生成字节相等通过（2107B，SHA `5ff6acb9…13b9`），固定 DOS 本地时间而非依赖时区。此夹具检查没有启动 Reader/浏览器，不能称新增镜像 EPUB 旅程本机已执行或借 bfd 的四绿通过。后续自己的 GitHub 运行和准确产物必须另绑定；主要未闭合项与原失败保持。撤回这一测试增量仅会减少自动覆盖，不修复业务问题；在独立干净工作树做定向回退，不 reset 用户数据。

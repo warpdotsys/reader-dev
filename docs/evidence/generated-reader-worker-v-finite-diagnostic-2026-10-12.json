@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "scope": "one bounded generated EPUB diagnostic; not product, large-book or original-JAR three-way acceptance",
+  "sourceRevision": "bfd30ebf5e5eda318962a4380a9032fdec470751",
+  "currentJarSha256": "0675ec6dd851f737804e0f6d306b265f0b9e9b5df45fb62f79c9ad018aa2febe",
+  "currentJarBytes": 285672106,
+  "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "notLatestWholeNativeImageAcceptance": true,
+  "rawReceiptSha256": "ab5e7a51aabdbcf1dafcd8aa1ccb46b1a46cfc4816ec6c776d01f4f2bd2f20af",
+  "rawReceiptBytes": 124240,
+  "rawReceiptReadOnly": true,
+  "frozenVerifierSha256": "b62e7a988b43037695b45ea40faf7e09e576883e663a9965ec62c5c9f6fb5652",
+  "pureGuardChecks": 49,
+  "allPureGuardChecksPassed": true,
+  "executedSources": {
+    "start": "096f50c4afc9282aed7ea6bbbc842859629c5856afd04a7983b0e28c37b3e75c",
+    "probe": "dcaf0992661c2bfb575533f3fa55df4de45a761f38eb12543fffab0efffbbff9",
+    "inner": "4a545ce8756c978d5162314547ac85de601cdd07b5debd5a56812da3d57f70a9",
+    "generated": "6c9aad99191f5a4e335cc617879536ae9f964b62f750c43b11573b672d781aaf"
+  },
+  "generatedInput": {
+    "spineCount": 806,
+    "inputBytes": 501316,
+    "zipEntryCount": 810,
+    "expandedBytes": 6718908,
+    "inputSha256": "844e0c312978578cd7da1c721120ba0bfcbd90c061e82fd55fe3712224fbcb63",
+    "generatedOnly": true
+  },
+  "observedCases": {
+    "text805": {"characters": 2891, "paragraphs": 46, "replacementCharacters": 0, "scripts": 0},
+    "html805": {"characters": 2891, "paragraphs": 45, "replacementCharacters": 0, "scripts": 0},
+    "raw805": {"characters": 2891, "paragraphs": 45, "replacementCharacters": 0, "scripts": 0, "iframeHeight": 653}
+  },
+  "worker": {
+    "assetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+    "recordCount": 4,
+    "postedToReplyMs": 143,
+    "createdToTerminatedMs": 144
+  },
+  "readerNavigationCounts": {"server": 1, "request": 1, "frame": 3, "host": 0},
+  "browserRequestFailures": {
+    "records": [
+      {"category": "api", "code": "abort", "bindingState": "unlinked"},
+      {"category": "api", "code": "abort", "bindingState": "unlinked"}
+    ],
+    "count": 2,
+    "overflow": false,
+    "beforeAndAfterCleanupEqual": true,
+    "bindingStateIsCallbackTimeNotFinalPairing": true
+  },
+  "proxyWriteFailures": {
+    "records": [
+      {"stage": "clientWrite", "code": "closed", "httpStatus": 200},
+      {"stage": "clientWrite", "code": "closed", "httpStatus": 200}
+    ],
+    "count": 2,
+    "overflow": false
+  },
+  "proxyResponseStatusCounts": {"ok200": 59, "notModified304": 0, "redirect3xx": 0, "client4xx": 0, "server5xx": 0, "other": 0},
+  "callbackFailureRecordsFieldPresent": true,
+  "callbackFailureRecordCount": 0,
+  "browserRecorderValidationFailureCount": 0,
+  "correlationCaptureFailureCodes": ["validation", "validation", "validation", "validation", "validation"],
+  "exactFailurePairCount": 0,
+  "exactFailurePairingProven": false,
+  "primaryFailureCode": "validation",
+  "failedPhase": "firstGeneratedRaw805Finished",
+  "originalPrimaryFailurePreserved": true,
+  "probeSeconds": 21.768,
+  "uiProbeSeconds": 19.016,
+  "serviceRuntimeSeconds": 26.043,
+  "resources": {
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryPeakBytes": 1611587584,
+    "memoryHighEvents": 2512,
+    "pidsMax": 256,
+    "pidsPeak": 246,
+    "hardMemoryEvents": 0,
+    "oomEvents": 0,
+    "oomKillEvents": 0,
+    "pidsMaxEvents": 0,
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "cleanup": {
+    "twoOwnedContainersStoppedPidZeroAndDeleted": true,
+    "ownedContainersRemaining": 0,
+    "ownedProxyStopped": true,
+    "ownedJavaStopped": true,
+    "passiveSamplerStopped": true,
+    "systemdUnitInactiveDeadMainPidZero": true
+  },
+  "runtimeIdentityAndNamespaceAccepted": true,
+  "resourceAndCleanupGuardsAccepted": true,
+  "actualWorkerSubsetObserved": true,
+  "wholeDiagnosticAccepted": false,
+  "productAcceptance": false,
+  "largeEpubPressureAcceptance": false,
+  "originalJarExecuted": false,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

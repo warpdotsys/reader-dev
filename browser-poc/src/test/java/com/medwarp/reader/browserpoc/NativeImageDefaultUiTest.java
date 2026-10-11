@@ -10,10 +10,17 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipFile;
 
 import static org.junit.Assert.*;
 
@@ -21,6 +28,9 @@ import static org.junit.Assert.*;
 public class NativeImageDefaultUiTest {
     private static final String FIRST = "完整镜像生成正文第一段，中文与 UTF-8。";
     private static final String LAST = "完整镜像生成正文第二段，翻章和刷新。";
+    private static final String EPUB_NAME = "完整镜像生成 EPUB";
+    private static final String EPUB_FIRST = "完整镜像生成 EPUB 第一章，三种模式与中文。";
+    private static final String EPUB_LAST = "完整镜像生成 EPUB 第二章，返回与刷新。";
 
     @Test(timeout = 180000)
     public void defaultImageRegisterLoginImportReadReloadAndLogout() throws Exception {
@@ -44,6 +54,7 @@ public class NativeImageDefaultUiTest {
         String password = "GeneratedImageProbe-2026";
         Path fixture = Files.createTempFile("reader-native-generated-", ".txt");
         Files.writeString(fixture, "第一章 起点\n" + FIRST + "\n第二章 终点\n" + LAST, StandardCharsets.UTF_8);
+        Path epubFixture = Files.createTempFile("reader-native-generated-", ".epub");
         List<String> unexpectedNetwork = new ArrayList<>();
         List<String> pageErrors = new ArrayList<>();
         List<String> requestedPaths = new ArrayList<>();
@@ -53,6 +64,8 @@ public class NativeImageDefaultUiTest {
                      .setExecutablePath(Path.of(executable)).setHeadless(true));
              BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                      .setViewportSize(1280, 900))) {
+            writeGeneratedEpub(epubFixture);
+            validateGeneratedEpub(epubFixture);
             // No fake responses. Only the actual isolated Reader origin is
             // allowed; this generated-book journey needs no external resources.
             context.route("**/*", route -> {
@@ -128,6 +141,12 @@ public class NativeImageDefaultUiTest {
             assertEnvelope(page, saved, true);
             String bookUrl = (String) page.evaluate("raw => JSON.parse(raw).data.bookUrl", saved.text());
             assertTrue(bookUrl.startsWith("storage/data/"));
+            // A save response precedes Vue's awaited shelf refresh. Do not
+            // navigate away while that real user-visible workflow is pending.
+            page.locator("[aria-label='导入本地书籍']")
+                    .waitFor(new Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+            String savedName = (String) page.evaluate("raw => JSON.parse(raw).data.name", saved.text());
+            page.locator(".book-card").filter(new Locator.FilterOptions().setHasText(savedName)).waitFor();
             page.locator(".bookshelf-page").waitFor();
             assertEquals(1, shelfCount(page));
             capture(page, directory, "shelf");
@@ -155,6 +174,10 @@ public class NativeImageDefaultUiTest {
             page.getByText(FIRST, new Page.GetByTextOptions().setExact(true)).waitFor();
             page.navigate(base + "/");
             page.locator(".bookshelf-page").waitFor();
+            importGeneratedEpubAndReadModes(page, epubFixture, base);
+            page.navigate(base + "/");
+            page.locator(".bookshelf-page").waitFor();
+            assertEquals(2, shelfCount(page));
             page.locator(".logout-btn").click();
             page.locator(".login-page").waitFor();
             assertNoTokens(page);
@@ -167,7 +190,142 @@ public class NativeImageDefaultUiTest {
             assertTrue("Generated image journey must have no page errors", pageErrors.isEmpty());
         } finally {
             Files.deleteIfExists(fixture); // Only this exclusive generated fixture, never an input/user book.
+            Files.deleteIfExists(epubFixture);
         }
+    }
+
+    private static void importGeneratedEpubAndReadModes(Page page, Path fixture, String base) {
+        page.locator(".import-btn").click();
+        Locator dialog = page.locator("[aria-label='导入本地书籍']");
+        dialog.waitFor();
+        FileChooser chooser = page.waitForFileChooser(() -> page.locator(".dropzone").click());
+        Response preview = page.waitForResponse(response -> endpoint(response, "importBookPreview"),
+                () -> chooser.setFiles(fixture));
+        assertEnvelope(page, preview, true);
+        page.locator(".preview-panel").waitFor();
+        assertTrue(page.locator(".preview-panel").innerText().contains(EPUB_NAME));
+        assertEquals(1, shelfCount(page));
+        Response saved = page.waitForResponse(response -> endpoint(response, "saveBook"),
+                () -> dialog.locator(".accent-btn").click());
+        assertEnvelope(page, saved, true);
+        String bookUrl = (String) page.evaluate("raw => JSON.parse(raw).data.bookUrl", saved.text());
+        assertTrue(bookUrl.startsWith("storage/data/"));
+        dialog.waitFor(new Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+        page.locator(".book-card").filter(new Locator.FilterOptions().setHasText(EPUB_NAME)).waitFor();
+        assertEquals(2, shelfCount(page));
+        String reader = base + "/reader/" + URLEncoder.encode(bookUrl, StandardCharsets.UTF_8).replace("+", "%20");
+        page.navigate(reader + "?chapter=0");
+        page.getByText(EPUB_FIRST, new Page.GetByTextOptions().setExact(true)).waitFor();
+        assertFalse(page.locator(".reader-content").innerText().contains("\ufffd"));
+        assertEquals(0, page.locator(".reader-content script").count());
+        assertTrue(page.locator("button[title^='EPUB 排版模式']").innerText().contains("文本"));
+
+        page.locator("button[title^='EPUB 排版模式']").click();
+        page.locator(".reader-content.epub-html").waitFor();
+        page.getByText(EPUB_FIRST, new Page.GetByTextOptions().setExact(true)).waitFor();
+        assertFalse(page.locator(".reader-content").innerText().contains("\ufffd"));
+        assertEquals(0, page.locator(".reader-content script").count());
+
+        page.locator("button[title^='EPUB 排版模式']").click();
+        page.locator("iframe.epub-frame").waitFor();
+        assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
+        Locator rawBody = page.frameLocator("iframe.epub-frame").locator("body");
+        page.frameLocator("iframe.epub-frame").getByText(EPUB_FIRST,
+                new FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+        assertFalse(rawBody.innerText().contains("\ufffd"));
+        assertEquals(0, page.frameLocator("iframe.epub-frame").locator("script").count());
+        page.locator(".chapter-nav button").last().click();
+        page.frameLocator("iframe.epub-frame").getByText(EPUB_LAST,
+                new FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+        page.waitForCondition(() -> page.url().contains("chapter=1"));
+        page.reload();
+        page.frameLocator("iframe.epub-frame").getByText(EPUB_LAST,
+                new FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+        assertFalse(page.frameLocator("iframe.epub-frame").locator("body").innerText().contains("\ufffd"));
+    }
+
+    static void writeGeneratedEpub(Path path) throws Exception {
+        String container = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\">"
+                + "<rootfiles><rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/>"
+                + "</rootfiles></container>";
+        String opf = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<package version=\"2.0\" unique-identifier=\"id\" xmlns=\"http://www.idpf.org/2007/opf\">"
+                + "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:identifier id=\"id\">urn:generated-native-ui</dc:identifier>"
+                + "<dc:title>" + EPUB_NAME + "</dc:title><dc:creator>Generated Fixture</dc:creator><dc:language>zh-CN</dc:language></metadata>"
+                + "<manifest><item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\"/>"
+                + "<item id=\"c1\" href=\"chapter1.xhtml\" media-type=\"application/xhtml+xml\"/>"
+                + "<item id=\"c2\" href=\"chapter2.xhtml\" media-type=\"application/xhtml+xml\"/></manifest>"
+                + "<spine toc=\"ncx\"><itemref idref=\"c1\"/><itemref idref=\"c2\"/></spine></package>";
+        String ncx = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<ncx version=\"2005-1\" xmlns=\"http://www.daisy.org/z3986/2005/ncx/\">"
+                + "<head><meta name=\"dtb:uid\" content=\"urn:generated-native-ui\"/></head><docTitle><text>" + EPUB_NAME + "</text></docTitle>"
+                + "<navMap><navPoint id=\"c1\" playOrder=\"1\"><navLabel><text>第一章 生成 EPUB</text></navLabel><content src=\"chapter1.xhtml\"/></navPoint>"
+                + "<navPoint id=\"c2\" playOrder=\"2\"><navLabel><text>第二章 生成 EPUB</text></navLabel><content src=\"chapter2.xhtml\"/></navPoint></navMap></ncx>";
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(path), StandardCharsets.UTF_8)) {
+            byte[] mimetype = "application/epub+zip".getBytes(StandardCharsets.US_ASCII);
+            CRC32 crc = new CRC32();
+            crc.update(mimetype);
+            ZipEntry first = new ZipEntry("mimetype");
+            first.setMethod(ZipEntry.STORED);
+            first.setSize(mimetype.length);
+            first.setCompressedSize(mimetype.length);
+            first.setCrc(crc.getValue());
+            first.setTimeLocal(LocalDateTime.of(1980, 1, 1, 0, 0));
+            zip.putNextEntry(first);
+            zip.write(mimetype);
+            zip.closeEntry();
+            zipText(zip, "META-INF/container.xml", container);
+            zipText(zip, "OEBPS/content.opf", opf);
+            zipText(zip, "OEBPS/toc.ncx", ncx);
+            zipText(zip, "OEBPS/chapter1.xhtml", generatedXhtml("第一章 生成 EPUB", EPUB_FIRST));
+            zipText(zip, "OEBPS/chapter2.xhtml", generatedXhtml("第二章 生成 EPUB", EPUB_LAST));
+        }
+    }
+
+    static void validateGeneratedEpub(Path path) throws Exception {
+        assertTrue(Files.size(path) > 0 && Files.size(path) < 65536);
+        try (ZipFile zip = new ZipFile(path.toFile(), StandardCharsets.UTF_8)) {
+            assertEquals(6, zip.size());
+            ZipEntry first = zip.entries().nextElement();
+            assertEquals("mimetype", first.getName());
+            assertEquals(ZipEntry.STORED, first.getMethod());
+            Set<String> names = new LinkedHashSet<>();
+            for (ZipEntry entry : java.util.Collections.list(zip.entries())) {
+                assertTrue(names.add(entry.getName()));
+                byte[] bytes;
+                try (InputStream stream = zip.getInputStream(entry)) {
+                    bytes = stream.readAllBytes();
+                }
+                CRC32 crc = new CRC32();
+                crc.update(bytes);
+                assertEquals(entry.getSize(), (long) bytes.length);
+                assertEquals(entry.getCrc(), crc.getValue());
+                String text = new String(bytes, StandardCharsets.UTF_8);
+                assertFalse(text.contains("\ufffd"));
+                if (entry.getName().equals("mimetype")) assertEquals("application/epub+zip", text);
+                if (entry.getName().equals("META-INF/container.xml")) assertTrue(text.contains("OEBPS/content.opf"));
+                if (entry.getName().equals("OEBPS/content.opf")) assertTrue(text.contains("<dc:title>" + EPUB_NAME + "</dc:title>"));
+                if (entry.getName().equals("OEBPS/chapter1.xhtml")) assertTrue(text.contains(EPUB_FIRST));
+                if (entry.getName().equals("OEBPS/chapter2.xhtml")) assertTrue(text.contains(EPUB_LAST));
+            }
+            assertEquals(Set.of("mimetype", "META-INF/container.xml", "OEBPS/content.opf", "OEBPS/toc.ncx",
+                    "OEBPS/chapter1.xhtml", "OEBPS/chapter2.xhtml"), names);
+        }
+    }
+
+    private static String generatedXhtml(String title, String content) {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>" + title + "</title></head>"
+                + "<body><h1>" + title + "</h1><p>" + content + "</p></body></html>";
+    }
+
+    private static void zipText(ZipOutputStream zip, String name, String text) throws Exception {
+        ZipEntry entry = new ZipEntry(name);
+        entry.setTimeLocal(LocalDateTime.of(1980, 1, 1, 0, 0));
+        zip.putNextEntry(entry);
+        zip.write(text.getBytes(StandardCharsets.UTF_8));
+        zip.closeEntry();
     }
 
     private static boolean endpoint(Response response, String name) {
