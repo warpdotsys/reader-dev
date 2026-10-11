@@ -7,6 +7,16 @@ on:
   pull_request:
     branches: [legacy]
     paths:
+      # Native rehearsal must validate changes to the actual JAR/UI and browser
+      # journeys, not reuse an older green image for a newer product snapshot.
+      - 'build.gradle.kts'
+      - 'cli.gradle'
+      - 'web-vue3/**'
+      - 'web/package.json'
+      - 'browser-poc/**'
+      - 'src/main/java/**'
+      - 'src/test/java/**'
+      - 'src/main/resources/**'
       - '.github/workflows/release.yml'
       - '.github/workflows/release-native.yml'
       - 'scripts/check-release-pipeline*'

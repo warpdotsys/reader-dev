@@ -12,6 +12,17 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const read = (path) => readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g, '\n')
 const workflow = read('.github/workflows/release.yml')
 const nativeWorkflow = read('.github/workflows/release-native.yml')
+// Check the actual PR trigger section, not a matching filename in a comment,
+// workflow_dispatch, or a downstream shell command. These inputs change the
+// shared JAR or the real UI/browser contracts and require their own Native run.
+const nativePrPaths = nativeWorkflow.match(/^  pull_request:\n    branches: \[legacy\]\n    paths:\n((?:[ \t].*\n|\n)*)/m)?.[1] ?? ''
+const nativePrPathLines = nativePrPaths.split('\n').map(line => line.trim())
+for (const path of ['build.gradle.kts', 'cli.gradle', 'web-vue3/**', 'web/package.json',
+  'browser-poc/**', 'src/main/java/**', 'src/test/java/**', 'src/main/resources/**']) {
+  if (!nativePrPathLines.includes(`- '${path}'`)) {
+    throw new Error('native PR trigger must cover current product and journey inputs: ' + path)
+  }
+}
 const nativeSmoke = read('scripts/smoke-native-release.sh')
 const nativeTls = read('scripts/smoke-native-tls.sh')
 const nativeImporter = read('scripts/import-native-release.sh')

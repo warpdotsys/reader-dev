@@ -9,7 +9,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +41,47 @@ public class WebResourceEncodingTest {
         assertTrue(serviceWorker.contains("workbox.core.clientsClaim()"));
         assertTrue(serviceWorker.contains("reader-utf8fix1"));
         assertTrue(manifest.contains("\"revision\": \"utf8fix1-"));
+    }
+
+    @Test
+    public void readerBundlePreservesSupplementaryHanAcrossTheWholeLegacyTransform() throws Exception {
+        String path = "web/js/reader.6e871769.js";
+        byte[] source = readSource(path);
+        String sourceText = decodeUtf8Strictly(source);
+        String supplementaryHan = new String(Character.toChars(0x2B2AE));
+        assertTrue("Source must retain U+2B2AE before resource processing", sourceText.contains(supplementaryHan));
+
+        byte[] expected = canonicalLegacyText(sourceText, true);
+        byte[] packaged = readResource("/" + path);
+        assertArrayEquals("Whole JS resource must use only the established LF/license transform", expected, packaged);
+        assertTrue("Packaged resource must retain U+2B2AE instead of a replacement glyph",
+                decodeUtf8Strictly(packaged).contains(supplementaryHan));
+    }
+
+    @Test
+    public void applicationYamlResourcesAreStrictUtf8LfExactCopies() throws Exception {
+        for (String path : new String[] {"application.yml", "application-prod.yml"}) {
+            String sourceText = decodeUtf8Strictly(readSource(path));
+            byte[] expected = canonicalLegacyText(sourceText, false);
+            byte[] packaged = readResource("/" + path);
+            assertArrayEquals("Classpath " + path + " must be the complete LF-normalized source", expected, packaged);
+            assertFalse("Classpath " + path + " must not retain CR bytes", containsCarriageReturn(packaged));
+        }
+    }
+
+    private static byte[] readSource(String relativePath) throws IOException {
+        return Files.readAllBytes(Path.of("src", "main", "resources").resolve(relativePath));
+    }
+
+    private static byte[] canonicalLegacyText(String source, boolean replaceLicenseUrl) {
+        String canonical = source.replace("\r\n", "\n").replace("\r", "\n");
+        if (replaceLicenseUrl) canonical = canonical.replace("https://r.htmake.com", "https://license.medwarp.cn");
+        return canonical.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static boolean containsCarriageReturn(byte[] bytes) {
+        for (byte value : bytes) if (value == '\r') return true;
+        return false;
     }
 
     private static byte[] readResource(String path) throws IOException {

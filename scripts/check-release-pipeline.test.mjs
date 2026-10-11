@@ -54,6 +54,21 @@ test('current release and CI satisfy the structural guard', (t) => {
   assert.match(result.stdout, /static checks passed/)
 })
 
+for (const path of ['build.gradle.kts', 'cli.gradle', 'web-vue3/**', 'web/package.json',
+  'browser-poc/**', 'src/main/java/**', 'src/test/java/**', 'src/main/resources/**']) {
+  test('rejects missing Native PR path even when retained only as a comment: ' + path, t => {
+    const current = fixture(t)
+    current.change('.github/workflows/release-native.yml', text => {
+      const line = `      - '${path}'\n`
+      assert.ok(text.includes(line))
+      return text.replace(line, `      # omitted trigger: '${path}'\n`)
+    })
+    const result = current.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /native PR trigger must cover current product and journey inputs/)
+  })
+}
+
 for (const [name, file, mutate, expected] of [
   ['packaged HTTPS gate omitted', 'scripts/smoke-native-release.sh', text => text.replace('bash scripts/smoke-native-tls.sh', 'echo omitted-TLS'), /packaged HTTPS gate/],
   ['TLS evidence lost in native artifact', '.github/workflows/release-native.yml', text => text.replace('exported/BROWSER_TLS.json', 'exported/omitted-TLS.json'), /packaged HTTPS gate/],

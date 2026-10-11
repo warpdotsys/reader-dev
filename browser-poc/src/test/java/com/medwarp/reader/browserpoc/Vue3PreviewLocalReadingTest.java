@@ -17,11 +17,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -69,16 +72,17 @@ public class Vue3PreviewLocalReadingTest {
                 page.setDefaultTimeout(30000);
                 page.navigate(base + "/login");
                 page.locator(".mode-switch button").nth(1).click();
-                page.locator("input[autocomplete=username]").fill("local" +
-                        UUID.randomUUID().toString().replace("-", "").substring(0, 10));
+                String username = "local" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+                page.locator("input[autocomplete=username]").fill(username);
                 page.locator("input[autocomplete=current-password]").fill("LocalProbe-2026");
                 page.locator(".submit-btn").click();
                 page.locator(".bookshelf-page").waitFor();
                 String txtUrl = importBook(page, txt);
+                String epubUrl = importBook(page, epub);
+                verifySameRecordBookSwitch(page, base, username, txtUrl, epubUrl);
                 verifyReading(page, base, txtUrl, TXT_TEXT, TXT_LAST, false);
                 page.navigate(base);
                 page.locator(".bookshelf-page").waitFor();
-                String epubUrl = importBook(page, epub);
                 verifyReading(page, base, epubUrl, EPUB_TEXT, EPUB_LAST, true);
                 Path screenshot = Path.of(System.getenv().getOrDefault("RUNNER_TEMP",
                         System.getProperty("java.io.tmpdir")), "vue3-local-reading-synthetic.png");
@@ -145,6 +149,139 @@ public class Vue3PreviewLocalReadingTest {
         assertTrue(url.startsWith("storage/data/"));
         page.locator(".bookshelf-page").waitFor();
         return url;
+    }
+
+    /**
+     * 同一个 /reader/:bookUrl record 内的真实 SPA 切书。A 是生成 TXT，B 是生成
+     * EPUB；不 mock 接口、不重载 B，也不借由书架先卸载阅读组件。
+     */
+    private static void verifySameRecordBookSwitch(Page page, String base, String username, String txtUrl, String epubUrl) {
+        String reader = base + "/reader/" + URLEncoder.encode(txtUrl, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        Response initial = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                .endsWith("/reader3/getBookContent"), () -> page.navigate(reader + "?chapter=0"));
+        assertEquals(200, initial.status());
+        page.getByText(TXT_TEXT, new Page.GetByTextOptions().setExact(true)).waitFor();
+
+        Response moved = waitForProgress(page, txtUrl, 0, () -> page.locator(".chapter-nav button").last().click());
+        assertEquals(200, moved.status());
+        assertProgressRequest(page, moved, txtUrl, 0);
+        page.getByText(TXT_LAST, new Page.GetByTextOptions().setExact(true)).waitFor();
+        int navigationCount = ((Number) page.evaluate("() => performance.getEntriesByType('navigation').length")).intValue();
+        String documentMarker = "reader-route-document-" + UUID.randomUUID();
+        assertEquals(documentMarker, page.evaluate("marker => { window.__readerRouteDocumentMarker=marker;"
+                + "return window.__readerRouteDocumentMarker; }", documentMarker));
+
+        // #app is the actual Vue mount target. The production app installs its Router before mount,
+        // so this calls Vue Router's real push rather than altering history or mocking a response.
+        assertEquals(Boolean.TRUE, page.evaluate("() => { const app=document.querySelector('#app').__vue_app__;"
+                + "return !!(app && app.config.globalProperties.$router); }"));
+        Response leavingA = waitForProgress(page, txtUrl, 1, () -> pushReader(page, epubUrl, 0));
+        assertEquals(200, leavingA.status());
+        assertProgressRequest(page, leavingA, txtUrl, 1);
+        page.getByText(EPUB_TEXT, new Page.GetByTextOptions().setExact(true)).waitFor();
+        assertEquals("Vue Router push must be same-document navigation", navigationCount,
+                ((Number) page.evaluate("() => performance.getEntriesByType('navigation').length")).intValue());
+        assertEquals("Vue Router push must preserve the original document", documentMarker,
+                page.evaluate("() => window.__readerRouteDocumentMarker"));
+        assertTrue(page.url().contains(URLEncoder.encode(epubUrl, StandardCharsets.UTF_8).replace("+", "%20")));
+
+        String readerMarker = "reader-route-b-node-" + UUID.randomUUID();
+        assertEquals(readerMarker, page.evaluate("marker => { const node=document.querySelector('.reader-page');"
+                + "node.dataset.routeMarker=marker; window.__readerRouteBNode=node; return node.dataset.routeMarker; }", readerMarker));
+
+        page.locator(".toc-btn").click();
+        page.locator(".chapter-drawer").waitFor();
+        assertTrue("B must render its own EPUB TOC", page.locator(".chapter-drawer").innerText().contains("第一章"));
+        assertFalse("B TOC must not retain A's TXT heading", page.locator(".chapter-drawer").innerText().contains("第一章 起点"));
+        page.locator(".drawer-close").click();
+
+        pushReader(page, epubUrl, 1);
+        page.getByText(EPUB_LAST, new Page.GetByTextOptions().setExact(true)).waitFor();
+        page.waitForCondition(() -> page.url().contains("chapter=1"));
+        assertReaderNodePreserved(page, readerMarker);
+        routerHistory(page, "back");
+        page.getByText(EPUB_TEXT, new Page.GetByTextOptions().setExact(true)).waitFor();
+        page.waitForCondition(() -> page.url().contains("chapter=0"));
+        assertReaderNodePreserved(page, readerMarker);
+        routerHistory(page, "forward");
+        page.getByText(EPUB_LAST, new Page.GetByTextOptions().setExact(true)).waitFor();
+        page.waitForCondition(() -> page.url().contains("chapter=1"));
+        assertReaderNodePreserved(page, readerMarker);
+
+        Response savedB = waitForProgress(page, epubUrl, 1,
+                () -> page.evaluate("window.dispatchEvent(new Event('scroll'))"));
+        assertEquals(200, savedB.status());
+        assertProgressRequest(page, savedB, epubUrl, 1);
+        assertLocalProgress(page, username, txtUrl, epubUrl);
+        assertEquals(Boolean.TRUE, page.evaluate("async urls => { const token=sessionStorage.getItem('reader_access_token')"
+                + " || localStorage.getItem('reader_access_token'); const response=await fetch('/reader3/getBookshelf?accessToken='"
+                + " + encodeURIComponent(token || '')); const result=await response.json();"
+                + "if(!response.ok || result.isSuccess!==true || !Array.isArray(result.data)) return false;"
+                + "const byUrl=new Map(result.data.map(book=>[book.bookUrl,book]));"
+                + "return byUrl.get(urls[0])?.durChapterIndex===1 && byUrl.get(urls[1])?.durChapterIndex===1; }",
+                List.of(txtUrl, epubUrl)));
+    }
+
+    private static void pushReader(Page page, String bookUrl, int chapter) {
+        Object result = page.evaluate("async args => { const app=document.querySelector('#app').__vue_app__;"
+                + "const router=app && app.config.globalProperties.$router; if(!router) return null;"
+                + "await router.push({name:'reader',params:{bookUrl:args[0]},query:{chapter:String(args[1])}});"
+                + "return router.currentRoute.value.name === 'reader' && router.currentRoute.value.params.bookUrl === args[0]; }",
+                List.of(bookUrl, chapter));
+        assertEquals("Expected the production Vue Router push to settle on the generated reader route", Boolean.TRUE, result);
+    }
+
+    private static void routerHistory(Page page, String direction) {
+        Object result = page.evaluate("direction => { const app=document.querySelector('#app').__vue_app__;"
+                + "const router=app && app.config.globalProperties.$router; if(!router) return false; router[direction](); return true; }",
+                direction);
+        assertEquals(Boolean.TRUE, result);
+    }
+
+    private static void assertProgressRequest(Page page, Response response, String expectedBookUrl, int expectedIndex) {
+        assertTrue(progressRequestMatches(response, expectedBookUrl, expectedIndex));
+        assertEquals(Boolean.TRUE, page.evaluate("raw => { try { return JSON.parse(raw).isSuccess === true; }"
+                + " catch { return false; } }", response.text()));
+    }
+
+    private static Response waitForProgress(Page page, String expectedBookUrl, int expectedIndex, Runnable action) {
+        return page.waitForResponse(response -> progressRequestMatches(response, expectedBookUrl, expectedIndex), action);
+    }
+
+    private static boolean progressRequestMatches(Response response, String expectedBookUrl, int expectedIndex) {
+        if (!URI.create(response.url()).getPath().endsWith("/reader3/saveBookProgress")) return false;
+        String raw = response.request().postData();
+        if (raw == null) return false;
+        try {
+            ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+            if (engine == null) return false;
+            engine.put("payload", raw);
+            Object value = engine.eval("Java.asJSONCompatible(JSON.parse(payload))");
+            if (!(value instanceof Map)) return false;
+            Map<?, ?> body = (Map<?, ?>) value;
+            return body.size() == 2 && body.keySet().containsAll(List.of("url", "index"))
+                    && expectedBookUrl.equals(body.get("url"))
+                    && body.get("index") instanceof Number
+                    && Double.isFinite(((Number) body.get("index")).doubleValue())
+                    && ((Number) body.get("index")).doubleValue() == expectedIndex;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static void assertReaderNodePreserved(Page page, String expectedMarker) {
+        assertEquals(Boolean.TRUE, page.evaluate("marker => { const node=document.querySelector('.reader-page');"
+                + "return node === window.__readerRouteBNode && node.dataset.routeMarker === marker; }", expectedMarker));
+    }
+
+    private static void assertLocalProgress(Page page, String username, String txtUrl, String epubUrl) {
+        // 只读取此测试刚生成账号、当前 origin 和两本已知 URL 对应的键；不枚举浏览器数据。
+        assertEquals(Boolean.TRUE, page.evaluate("args => { const scope=JSON.stringify([window.location.origin+'/',"
+                + "args[0],args[0],'token-auth-v1']); const indexOf=url => { try { const raw=localStorage.getItem("
+                + "'reader-progress-v2:'+scope+':'+url); const value=JSON.parse(raw); return value.chapterIndex; }"
+                + " catch { return null; } }; return indexOf(args[1]) === 1 && indexOf(args[2]) === 1; }",
+                List.of(username, txtUrl, epubUrl)));
     }
 
     private static void verifyReading(Page page, String base, String bookUrl,

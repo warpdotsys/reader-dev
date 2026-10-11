@@ -5,6 +5,9 @@ import io.github.fvarrui.javapackager.model.Platform
 import io.github.fvarrui.javapackager.model.WindowsConfig
 import de.undercouch.gradle.tasks.download.Download
 import org.gradle.language.jvm.tasks.ProcessResources
+import java.nio.ByteBuffer
+import java.nio.charset.CodingErrorAction
+import java.nio.charset.CharacterCodingException
 
 buildscript {
     val kotlin_version: String by extra{"1.5.21"}
@@ -196,6 +199,57 @@ val verifyVue3UiDist = tasks.register("verifyVue3UiDist") {
     }
 }
 
+// The recorded Gradle 6 Windows line-filter output damaged a supplementary
+// character and used host CRLF; the precise internal encoder is not established.
+// Transform only these generated legacy text resources as complete strict UTF-8
+// values. Never rewrite their source files, the captured original, or binary data.
+fun canonicalLegacyResourceBytes(bytes: ByteArray, path: String): ByteArray {
+    require(bytes.size <= 8 * 1024 * 1024) { "Legacy text resource exceeds the finite build limit: $path" }
+    val decoder = Charsets.UTF_8.newDecoder()
+        .onMalformedInput(CodingErrorAction.REPORT)
+        .onUnmappableCharacter(CodingErrorAction.REPORT)
+    var text = decoder.decode(ByteBuffer.wrap(bytes)).toString()
+        .replace("\r\n", "\n").replace("\r", "\n")
+    if (path.startsWith("web/js/") && path.endsWith(".js")) {
+        text = text.replace("https://r.htmake.com", "https://license.medwarp.cn")
+    } else if (path.startsWith("web/precache-manifest.") && path.endsWith(".js")) {
+        text = text.replace(Regex("\"revision\": \"(?!utf8fix1-)"), "\"revision\": \"utf8fix1-")
+    }
+    return text.toByteArray(Charsets.UTF_8)
+}
+
+val verifyLegacyResourceEncoding = tasks.register("verifyLegacyResourceEncoding") {
+    doLast {
+        val supplementary = "\uD86C\uDEAE" // U+2B2AE, lost by the recorded streaming build.
+        for (offset in listOf(4093, 4095, 8191, 16383, 262143)) {
+            for (eol in listOf("\n", "\r\n", "\r")) {
+                val prefix = "a".repeat(offset)
+                val source = prefix + supplementary + eol + "https://r.htmake.com" + eol
+                val expected = prefix + supplementary + "\nhttps://license.medwarp.cn\n"
+                check(canonicalLegacyResourceBytes(source.toByteArray(Charsets.UTF_8), "web/js/generated.js")
+                    .contentEquals(expected.toByteArray(Charsets.UTF_8))) { "Supplementary UTF-8/LF regression" }
+            }
+        }
+        val precache = "\"revision\": \"generated\"\r\n" + supplementary
+        check(canonicalLegacyResourceBytes(precache.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+            .contentEquals(("\"revision\": \"utf8fix1-generated\"\n" + supplementary).toByteArray(Charsets.UTF_8)))
+        val prefixed = "\"revision\": \"utf8fix1-generated\"\n" + supplementary
+        check(canonicalLegacyResourceBytes(prefixed.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+            .contentEquals(prefixed.toByteArray(Charsets.UTF_8))) { "Do not duplicate the existing revision prefix" }
+        val transformed = canonicalLegacyResourceBytes(precache.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+        check(canonicalLegacyResourceBytes(transformed, "web/precache-manifest.generated.js")
+            .contentEquals(transformed)) { "Repeated canonical transformation must be byte-identical" }
+        val yaml = "generated: '$supplementary'\r\n"
+        check(canonicalLegacyResourceBytes(yaml.toByteArray(Charsets.UTF_8), "application-prod.yml")
+            .contentEquals("generated: '$supplementary'\n".toByteArray(Charsets.UTF_8)))
+        var invalidRejected = false
+        try { canonicalLegacyResourceBytes(byteArrayOf(0xc3.toByte(), 0x28), "web/js/generated.js") }
+        catch (_: CharacterCodingException) { invalidRejected = true }
+        check(invalidRejected) { "Malformed UTF-8 must not become replacement characters" }
+        logger.lifecycle("Verified 20 generated strict UTF-8/LF legacy resource cases")
+    }
+}
+
 tasks.named<ProcessResources>("processResources") {
     // Unit tests import the readable worker and can leave interpreter-version
     // and checkout-time-dependent caches beside it. Keep those local files,
@@ -207,20 +261,16 @@ tasks.named<ProcessResources>("processResources") {
             into("web-vue3")
         }
     }
-    // Gradle 6.1.1 otherwise uses the host default charset for line filters.
-    // On Windows that decoded the UTF-8 Vue bundles as GBK and produced
-    // malformed JavaScript in the boot JAR.
-    filteringCharset = "UTF-8"
-    filesMatching("web/js/*.js") {
-        filter { line: String ->
-            line.replace("https://r.htmake.com", "https://license.medwarp.cn")
-        }
-    }
-    // The broken deployment may already be in the Workbox precache. Give all
-    // entries a new revision generation so existing browsers fetch clean bytes.
-    filesMatching("web/precache-manifest.*.js") {
-        filter { line: String ->
-            line.replace("\"revision\": \"", "\"revision\": \"utf8fix1-")
+    dependsOn(verifyLegacyResourceEncoding)
+    doLast {
+        val resources = file("src/main/resources")
+        fileTree(resources) {
+            include("web/js/*.js", "web/precache-manifest.*.js", "application.yml", "application-prod.yml")
+        }.files.forEach { source ->
+            val path = source.relativeTo(resources).invariantSeparatorsPath
+            val generated = File(destinationDir, path)
+            require(generated.isFile) { "Missing copied legacy text resource: $path" }
+            generated.writeBytes(canonicalLegacyResourceBytes(source.readBytes(), path))
         }
     }
 }

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "scope": "Windows exact new standalone JAR, generated-only route/browser regression; headless Chrome outside server job; not complete Linux image acceptance",
+  "jarSha256": "38522f23817738ea33c75a43df1aec91bfef06f759123d5cb0283e009badfca7",
+  "jarBytes": 285677426,
+  "previousJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "changedJarEntries": 111,
+  "onlyVuePackagedResourcesChanged": true,
+  "generatedOnlyActualBrowserExecuted": true,
+  "tests": 1,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 37.839,
+  "actualSameDocumentProductionRouterPush": true,
+  "differentBookBodyAndTocVerified": true,
+  "departingBookProgressStillTargetsA": true,
+  "sameBookChapterQueryBackForwardKeepsInstanceAndChangesBody": true,
+  "generatedTwoBookLocalAndServerProgressVerified": true,
+  "originalSafetyCancellationTimeoutJourneysKept": true,
+  "suiteSha256": "fab2ace6c6340720ed3fe39d14ca5be35d0fcc3c201e39f7920304bad92aa706",
+  "testSourceSha256": "01f65d39fc8eda977ddffe660d7360285e781e490473c82ae2fc52e915b969d3",
+  "serverReceiptSha256": "c6266c331c56fc83b0b5918dcecaa6d9675183d7109bae46b84b68ba9dc8d5df",
+  "screenshots": [
+    {
+      "file": "vue3-local-reading-synthetic.png",
+      "bytes": 122254,
+      "sha256": "d6d2cf1bcc373fe4c9880ddd1b2e242cc043e5a12376ebf2174fc3662cbcc3af"
+    },
+    {
+      "file": "vue3-local-reading-raw-synthetic.png",
+      "bytes": 66321,
+      "sha256": "f1186b2881f01bfcb284bca6e6f9fbbcff188511c20f4432c583d36b4007b7d6"
+    }
+  ],
+  "peakServerWindowsJobCommittedMemoryBytes": 455233536,
+  "headlessChromeOutsideServerWindowsJob": true,
+  "visibleDesktopChromeUsed": false,
+  "windowsProcessBudgetNotLinuxThreadOrCacheBudget": true,
+  "ownReaderStopped": true,
+  "ownPortClosed": true,
+  "userReportsUnchanged": 58,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "tempBookPromptBrowserAccepted": false,
+  "delayedMediaBrowserAccepted": false,
+  "sameChapterAnchorHistoryAccepted": false,
+  "wholeLatestNativeImageTested": false,
+  "originalJarThreeWayAccepted": false,
+  "reproducibleCleanJarAccepted": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

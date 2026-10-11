@@ -41,6 +41,9 @@ onUnmounted(() => window.removeEventListener('reader:update-ready', onUpdateRead
 
 // i18n：语言切换后重算 <html lang> 与当前路由标题
 const route = useRoute()
+// 阅读页仅在书籍身份变化时重建：同一本书的 ?chapter / 其他 query 更新必须保留
+// 当前实例，避免翻章时丢失阅读状态。非阅读页不需要人为指定 key。
+const routeViewKey = () => route.name === 'reader' ? String(route.params.bookUrl ?? '') : undefined
 watch(lang, () => {
   applyDocLang()
   const meta = route.meta
@@ -53,7 +56,7 @@ watch(lang, () => {
   <ErrorBoundary>
     <router-view v-slot="{ Component }">
       <transition name="page" mode="out-in">
-        <component :is="Component" />
+        <component :is="Component" :key="routeViewKey()" />
       </transition>
     </router-view>
   </ErrorBoundary>

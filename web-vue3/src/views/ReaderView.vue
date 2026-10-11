@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { ElMessage } from '@/utils/message'
 import { getBookshelf, deleteBook, saveBookProgress } from '@/api/bookshelf'
@@ -75,8 +75,17 @@ let readerDisposed = false
 let displayedContentScope: string | null = null
 let displayedContentToken = ''
 
-/** /reader/:bookUrl —— vue-router 已自动解码 encodeURIComponent 参数 */
-const bookUrl = computed(() => String(route.params.bookUrl ?? ''))
+/**
+ * /reader/:bookUrl —— vue-router 已自动解码 encodeURIComponent 参数。
+ *
+ * App 以此参数为 ReaderView 的 key，因此一个实例只服务一本书。保留创建瞬间的
+ * 身份，避免路由已指向下一本书而旧实例正在卸载时，把 A 的进度/异步结果写到 B。
+ */
+const initialBookUrl = String(route.params.bookUrl ?? '')
+const initialRouteQuery = { ...route.query }
+const bookUrl = computed(() => initialBookUrl)
+const isCurrentReaderRoute = () => !readerDisposed && route.name === 'reader'
+  && String(route.params.bookUrl ?? '') === initialBookUrl
 
 const MIN_FONT = 14
 const MAX_FONT = 22
@@ -114,6 +123,7 @@ const chapterIndex = ref(0)
 // 目录/搜索入口的显式章节优先于已保存进度；翻章后必须同步这个入口，
 // 否则刷新仍会被旧 ?chapter 拉回。无显式章节的续读不添加参数，保留进度恢复逻辑。
 watch(chapterIndex, (idx) => {
+  if (!isCurrentReaderRoute()) return
   if (route.query.chapter === undefined || route.query.chapter === String(idx)) return
   const query: typeof route.query = { ...route.query, chapter: String(idx) }
   delete query.epubAnchor
@@ -3134,8 +3144,8 @@ async function confirmRetention() {
   }
 }
 
-// 临时书（先读后入架）：离开时提醒加入书架
-onBeforeRouteLeave(() => {
+// 临时书（先读后入架）：切到另一书仍是同一路由 record，也必须提醒。
+function confirmReaderDeparture() {
   const b = shelfBook.value
   if (!b || !(b as unknown as { isTemp?: boolean }).isTemp) return true
   retentionOpen.value = true
@@ -3145,6 +3155,11 @@ onBeforeRouteLeave(() => {
       resolve(ok)
     }
   })
+}
+onBeforeRouteLeave(confirmReaderDeparture)
+onBeforeRouteUpdate((to, from) => {
+  if (String(to.params.bookUrl ?? '') === String(from.params.bookUrl ?? '')) return true
+  return confirmReaderDeparture()
 })
 
 function goToChapter(idx: number) {
@@ -3161,6 +3176,15 @@ function goToChapter(idx: number) {
   if (isNonTextBook.value) void loadNonTextChapter(ch.url)
   else void loadContent(ch.url)
 }
+
+// 同书的历史返回/前进与目录搜索入口不会重建实例；响应真实路由的章节变化。
+// 自己翻章同步 query 后 idx 已相等，不会重复加载；旧 A 实例不能响应 B 的 query。
+watch(() => route.query.chapter, (value) => {
+  if (!isCurrentReaderRoute() || typeof value !== 'string' || !/^\d+$/.test(value)) return
+  const idx = Number(value)
+  if (!Number.isSafeInteger(idx) || idx < 0 || idx >= chapters.value.length) return
+  goToChapter(idx)
+})
 
 /** 缓存完成：组件已展示结果；阅读页无需额外刷新（详情页才刷新单书缓存状态） */
 function onCacheDone() {
@@ -3622,7 +3646,8 @@ function loadHlsJs(): Promise<{ default?: unknown } | null> {
   })
 }
 
-async function setupHls(el: HTMLAudioElement, url: string) {
+async function setupHls(el: HTMLAudioElement, url: string, stillCurrent: () => boolean) {
+  if (!stillCurrent()) return
   hlsInstance?.destroy()
   hlsInstance = null
   hlsFailed.value = false
@@ -3630,6 +3655,7 @@ async function setupHls(el: HTMLAudioElement, url: string) {
   // 原生支持（Safari）→ 直接 src
   if (el.canPlayType('application/vnd.apple.mpegurl')) return
   const mod = await loadHlsJs()
+  if (!stillCurrent()) return
   if (!mod || !win.Hls?.isSupported()) {
     hlsFailed.value = true
     return
@@ -3732,6 +3758,14 @@ const fileUrl = ref('')
 /** 非文本书章节加载（按 bookType 分派：不走正文分段解析/替换/简繁转换） */
 async function loadNonTextChapter(chapterUrl: string) {
   if (!shelfBook.value?.origin) return
+  const generation = ++contentRequestGeneration
+  const scope = localCacheScope.value
+  const token = store.accessToken
+  const url = bookUrl.value
+  const origin = shelfBook.value.origin
+  const index = chapterIndex.value
+  const stillCurrent = () => isCurrentReaderRoute() && generation === contentRequestGeneration
+    && scope === localCacheScope.value && token === store.accessToken && index === chapterIndex.value
   loading.value = true
   loadError.value = false
   // 清空上一章媒体态
@@ -3744,10 +3778,12 @@ async function loadNonTextChapter(chapterUrl: string) {
   hlsFailed.value = false
   try {
     await pendingProgressWrites.settle()
-    const res = await getBookContent(bookUrl.value, chapterUrl, shelfBook.value.origin, {
+    if (!stillCurrent()) return
+    const res = await getBookContent(url, chapterUrl, origin, {
       timeout: chapterTimeout.value * 1000,
-      index: chapterIndex.value,
+      index,
     })
+    if (!stillCurrent()) return
     const data = res.data ?? {}
     if (isAudioBook.value) {
       const url = data.audioUrl
@@ -3758,6 +3794,7 @@ async function loadNonTextChapter(chapterUrl: string) {
       audioUrl.value = url
       audioContentType.value = data.contentType ?? ''
       await nextTick()
+      if (!stillCurrent()) return
       const el = mediaAudioRef.value
       if (el) {
         el.pause()
@@ -3769,7 +3806,10 @@ async function loadNonTextChapter(chapterUrl: string) {
         const isHls =
           url.toLowerCase().includes('.m3u8') ||
           (audioContentType.value ?? '').toLowerCase().includes('mpegurl')
-        if (isHls) await setupHls(el, url)
+        if (isHls) {
+          await setupHls(el, url, stillCurrent)
+          if (!stillCurrent()) return
+        }
         // 恢复该章播放位置（saveProgress 存秒数）
         const savedPos = restoreScrollY ?? 0
         restoreScrollY = null
@@ -3792,6 +3832,7 @@ async function loadNonTextChapter(chapterUrl: string) {
       }
       comicImages.value = images.map((u) => proxyImageUrl(u) ?? u)
       await nextTick()
+      if (!stillCurrent()) return
       // 恢复该章页位置（saveProgress 存页索引）
       const savedPage = restoreScrollY ?? 0
       restoreScrollY = null
@@ -3807,6 +3848,7 @@ async function loadNonTextChapter(chapterUrl: string) {
         return
       }
       await nextTick()
+      if (!stillCurrent()) return
       const el = videoElRef.value
       const savedPos = restoreScrollY ?? 0
       restoreScrollY = null
@@ -3821,9 +3863,9 @@ async function loadNonTextChapter(chapterUrl: string) {
       }
     }
   } catch {
-    loadError.value = true
+    if (stillCurrent()) loadError.value = true
   } finally {
-    loading.value = false
+    if (stillCurrent()) loading.value = false
   }
 }
 
@@ -3849,16 +3891,21 @@ function mediaPosition(): number {
 /* ---------------- 初始化 ---------------- */
 
 async function init() {
+  const scope = localCacheScope.value
+  const token = store.accessToken
+  const stillCurrent = () => isCurrentReaderRoute()
+    && scope === localCacheScope.value && token === store.accessToken
   loading.value = true
   loadError.value = false
   notFound.value = false
   try {
     // 正文/目录接口需要 bookSource=book.origin，先从书架定位本书
     const shelfRes = await getBookshelf()
+    if (!stillCurrent()) return
     const found = (shelfRes.data ?? []).find((b) => b.bookUrl === bookUrl.value)
     if (!found?.origin) {
       // 非书架书（详情页「直接阅读」跳入）：用 query 构建临时书——先读后提示入架
-      const q = route.query as Record<string, string>
+      const q = initialRouteQuery as Record<string, string>
       if (q.source) {
         const qType = Number(q.type)
         shelfBook.value = {
@@ -3896,6 +3943,7 @@ async function init() {
       }),
       getBookInfo(shelfBook.value!.bookUrl, shelfBook.value!.origin, { silent: true }),
     ])
+    if (!stillCurrent()) return
     if (tocRes.status === 'fulfilled' && tocRes.value.isSuccess) {
       chapters.value = tocRes.value.data ?? []
       void loadCacheMarkers()
@@ -3950,9 +3998,9 @@ async function init() {
       else await loadContent(start.url)
     }
   } catch {
-    loadError.value = true
+    if (stillCurrent()) loadError.value = true
   } finally {
-    loading.value = false
+    if (stillCurrent()) loading.value = false
   }
 }
 

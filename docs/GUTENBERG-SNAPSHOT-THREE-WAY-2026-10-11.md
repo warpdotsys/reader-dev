@@ -76,3 +76,22 @@ python3 scripts/compare-gutenberg-snapshot.py \
 仍需原件完整HTTPS/WS/WSS、真实来源的登录Cookie模型、更多下载/SSE差分、最新完整镜像本机/长测及生产UI和容量验证。起点验证码/搜索失败、真实EPUB合并预算的压力失败和未实现的OPDS服务保持未闭合；本轮有限成功不抵消它们。
 
 本轮不合并、打tag、发布、推送registry或部署，goal保持active。回退只撤回新的快照比较器和对应测试；保留准确原件和首轮失败，不能用关闭证书/隔离检查、提高预算或伪造空实现取得通过。1ddf自己的普通托管验收与本轮后续工具源码的CI身份分开记录，不能借旧绿灯接受新提交。
+
+## 35587 快照工具自己的托管结果已独立接受
+
+后续维护提交 `35587a53864dd96ea1d75bf0d1fa00f039c16af9`，PR 测试合并快照 `2c75fdde9018d8dc02ae2b3101c3f47f92692771`；已用 GitHub commit API 核对其第二 parent 是35587。以下四条均为此提交自己的 GitHub 托管 runner 结果，不借1ddf绿灯；没有重新运行上文原件快照业务来改写旧报告。
+
+| 实际运行 | 已独立核验 | 有限回执 |
+| --- | --- | --- |
+| [Java 38122457305](https://github.com/warpdotsys/reader-dev/actions/runs/38122457305) | Linux Python700/零跳过；JVM205/35既有环境跳过；双 clean 同f5c9 | [Java](evidence/gutenberg-snapshot-hosted-35587a53-independent-java-acceptance-2026-10-11.json) |
+| [Vue 38122457349](https://github.com/warpdotsys/reader-dev/actions/runs/38122457349) | 前端302；实际生成UI25/零跳过；11张生成PNG结构核验 | [UI＋Java](evidence/gutenberg-snapshot-hosted-35587a53-independent-ui-java-acceptance-v2-2026-10-11.json) |
+| [Full 38122457314](https://github.com/warpdotsys/reader-dev/actions/runs/38122457314) | Cam24；完整镜像默认生成UI1例7.967秒/零跳过；打包worker和Reader HTTPS实际执行 | [Full](evidence/gutenberg-snapshot-hosted-35587a53-independent-full-acceptance-2026-10-11.json) |
+| [Native 38122457346](https://github.com/warpdotsys/reader-dev/actions/runs/38122457346) | 六个必需作业均实际成功；amd64/arm64原生构建、重载运行、publisher32文件及四组打包HTTPS报告 | [Native](evidence/gutenberg-snapshot-hosted-35587a53-independent-native-acceptance-2026-10-11.json) |
+
+四份回执 SHA 依次 `e77a2b667a380f11a0e757ac9e9571eae910203bbd99b1cb5cfc57959f848059`、`36ca59b8d3428f9fae7d93770e5f15d3e791c37924b16ef41e8007b027ff31a1`、`25c8fb1eb6dfc0ff40523ef0ef93f2601672f9ec1c2676ae27c01b4961013faf`、`219fd4ee9d0586623f83c2a61f0c405cf037aa9e968aea7427509129e7010431`。JAR 285,671,807B/1570条目，准确SHA仍为f5c9；1122类、90依赖及worker字节未因维护工具改变。
+
+Full峰值866,394,112B/PID193；Native四组资源回执最大925,851,648B/PID197，配置允许1GiB普通swap、实际均0。默认UI客户端在服务端预算之外，不能覆盖[另记的真实EPUB](AUTHORIZED-EPUB-9B9D-2026-10-11.md)客户端＋服务端合并预算失败；Full另有7个按事件不适用的可选作业跳过，不谎称它们全执行。主代理另实际查看本轮Full的登录、生成文本第二章、退出三张PNG，中文可读、并非空白；仅是这三张生成图的目视，不是全部界面编码或真实正文验收。
+
+Native镜像身份：amd64 `sha256:7e6102bf6e14d276c53c6ba08950e081797f11261b030ed040355c729c3a23a9`、归档 `8ec196f7d19c2f8a4921493be56e6da0f0ced3fedd995445c7a7c0708f43086b`；arm64 `sha256:f2ac94bc71f7d0c9e6914f0147f1f765b8f977cadf0159149a7a79d5f747e6bd`、归档 `7fd484e74a7cc622d61b2d8fae2a239e19e8d5833ab915ee469e1ef9be946a1b`。本机只下载有限证据，没有重下这两个大镜像或重新散列其完整归档；上述归档身份是同一次托管导出/传输/发布导入的核验证据。
+
+真实认证、最新整镜像本机、长期容量和生产仍未验收；不发布部署。后续新增Worker诊断工具不属于35587，需要它自己的CI。

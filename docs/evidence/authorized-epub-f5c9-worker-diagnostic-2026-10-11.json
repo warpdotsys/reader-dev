@@ -1,0 +1,1752 @@
+{
+  "schemaVersion": 1,
+  "scope": "finite single authorized EPUB worker diagnostics only",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "currentJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "authorizedEpubSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+  "authorizedEpubBytes": 37809796,
+  "matchingOwnCiSource": "35587a53864dd96ea1d75bf0d1fa00f039c16af9",
+  "matchingOwnCiMerge": "2c75fdde9018d8dc02ae2b3101c3f47f92692771",
+  "currentDownloadedFromRun": 38115254938,
+  "currentDownloadedFromSourcePrefix": "7739ab85",
+  "wholeLatestNativeImageTested": false,
+  "otherPrivateBooksRead": 0,
+  "privateBodyOrScreenshotPublished": false,
+  "productionChanged": false,
+  "originalUserShelfUsed": false,
+  "realCredentialsImported": false,
+  "browserMainWorldEvalOptionChanged": false,
+  "productTimeoutOrLimitsChanged": false,
+  "rootCauseProven": false,
+  "productFixAccepted": false,
+  "fullGoalComplete": false,
+  "userReportsUnchanged": 58,
+  "rounds": [
+    {
+      "round": "h",
+      "rawSha256": "ca68371a6d2ea7bcca3befa7a6913bdcc85b7a9ab8127efdd13d06da077449dd",
+      "observerSha256": "7d9495473eb3d63bad4eaaabef1fd659fe26d993d8e5d6a76009931a0290df3f",
+      "apiPairAccepted": true,
+      "uiWholeAccepted": false,
+      "fullRunAccepted": false,
+      "aggregateBudgetAccepted": false,
+      "seconds": 66.828,
+      "memoryPeakBytes": 1624424448,
+      "memoryEvents": {
+        "low": 0,
+        "high": 68044,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "pidsPeak": 256,
+      "pidsEvents": {
+        "max": 1
+      },
+      "pressureSampleCount": 87,
+      "firstSampledPidLimit": {
+        "phase": "uiRefresh806Text",
+        "epochMs": 1791705583858,
+        "parentPressure": {
+          "pidsCurrent": 237,
+          "pidsMaxEvents": 1,
+          "memoryCurrent": 1610543104,
+          "memoryHighEvents": 3224,
+          "memoryMaxEvents": 0,
+          "oomKill": 0
+        },
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 3
+          },
+          "java": {
+            "processes": 1,
+            "threads": 69
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 162
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0,
+        "workerLifecycleUnavailable": true
+      },
+      "phaseObservations": [
+        {
+          "phase": "uiRegister",
+          "epochMs": 1791705576016,
+          "parentPressure": {
+            "pidsCurrent": 160,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610584064,
+            "memoryHighEvents": 1477,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 29
+            },
+            "browser": {
+              "processes": 6,
+              "threads": 125
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "epochMs": 1791705578580,
+          "parentPressure": {
+            "pidsCurrent": 210,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610358784,
+            "memoryHighEvents": 2179,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 42
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 162
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiSaveBook",
+          "epochMs": 1791705580566,
+          "parentPressure": {
+            "pidsCurrent": 225,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1581531136,
+            "memoryHighEvents": 2518,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 64
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 155
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "epochMs": 1791705581641,
+          "parentPressure": {
+            "pidsCurrent": 225,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1609555968,
+            "memoryHighEvents": 2553,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 64
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 155
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiNext806Text",
+          "epochMs": 1791705583099,
+          "parentPressure": {
+            "pidsCurrent": 237,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610395648,
+            "memoryHighEvents": 2961,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 161
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRefresh806Text",
+          "epochMs": 1791705583348,
+          "parentPressure": {
+            "pidsCurrent": 235,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610031104,
+            "memoryHighEvents": 2989,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 160
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiHtml806",
+          "epochMs": 1791705584356,
+          "parentPressure": {
+            "pidsCurrent": 238,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610526720,
+            "memoryHighEvents": 3360,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 162
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRaw806",
+          "epochMs": 1791705584487,
+          "parentPressure": {
+            "pidsCurrent": 238,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610256384,
+            "memoryHighEvents": 3457,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 162
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiExceptionBeforeOwnedCleanup",
+          "epochMs": 1791705614576,
+          "parentPressure": {
+            "pidsCurrent": 221,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1429090304,
+            "memoryHighEvents": 68044,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 146
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "records": []
+          }
+        }
+      ],
+      "cases": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+        },
+        "text806": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "text806Refresh": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "html806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+        }
+      },
+      "generatedRealPageWorkerSelfcheck": null,
+      "visibleState": {
+        "rawIframePresent": false,
+        "rawErrorPresent": true,
+        "rawErrorDownloadTimeout": false,
+        "rawErrorWorkerTimeout": true,
+        "rawErrorWorkerFailure": false,
+        "genericChapterErrorPresent": true,
+        "loadingStateCount": 0
+      },
+      "failureType": "TimeoutError",
+      "boundedFailureFrames": [
+        {
+          "file": "inner.py",
+          "function": "<module>",
+          "line": 101
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "ui",
+          "line": 238
+        }
+      ],
+      "testOnlyDocumentResponseCounts": null,
+      "cleanupReceiptSha256": "774c821c091905f3c3b21cba798fece423f8cbecd52ae6b40bb9ad002ade2fb2"
+    },
+    {
+      "round": "i",
+      "rawSha256": "5b38a2803ca4edd511fc586e9d1c182ec0fe00813c293ba24faf22c924724ff4",
+      "observerSha256": "4862853050f9b64245180b8d657aed713bf522c29e1d9c73ff700dabab96574a",
+      "apiPairAccepted": true,
+      "uiWholeAccepted": false,
+      "fullRunAccepted": false,
+      "aggregateBudgetAccepted": false,
+      "seconds": 106.123,
+      "memoryPeakBytes": 1624248320,
+      "memoryEvents": {
+        "low": 0,
+        "high": 229602,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "pidsPeak": 256,
+      "pidsEvents": {
+        "max": 1
+      },
+      "pressureSampleCount": 141,
+      "firstSampledPidLimit": {
+        "phase": "uiRefresh806Text",
+        "epochMs": 1791705972999,
+        "parentPressure": {
+          "pidsCurrent": 241,
+          "pidsMaxEvents": 1,
+          "memoryCurrent": 1606569984,
+          "memoryHighEvents": 4438,
+          "memoryMaxEvents": 0,
+          "oomKill": 0
+        },
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 3
+          },
+          "java": {
+            "processes": 1,
+            "threads": 70
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 165
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0,
+        "workerLifecycleUnavailable": true
+      },
+      "phaseObservations": [
+        {
+          "phase": "uiRegister",
+          "epochMs": 1791705962265,
+          "parentPressure": {
+            "pidsCurrent": 173,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1608708096,
+            "memoryHighEvents": 1690,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 29
+            },
+            "browser": {
+              "processes": 6,
+              "threads": 138
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "epochMs": 1791705964163,
+          "parentPressure": {
+            "pidsCurrent": 214,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610067968,
+            "memoryHighEvents": 2386,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 47
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 161
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiSaveBook",
+          "epochMs": 1791705965937,
+          "parentPressure": {
+            "pidsCurrent": 231,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1593835520,
+            "memoryHighEvents": 2772,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 156
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "epochMs": 1791705967078,
+          "parentPressure": {
+            "pidsCurrent": 230,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610485760,
+            "memoryHighEvents": 2979,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 155
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiNext806Text",
+          "epochMs": 1791705970185,
+          "parentPressure": {
+            "pidsCurrent": 235,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1594884096,
+            "memoryHighEvents": 3752,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 160
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRefresh806Text",
+          "epochMs": 1791705971367,
+          "parentPressure": {
+            "pidsCurrent": 235,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610399744,
+            "memoryHighEvents": 3809,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 160
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiHtml806",
+          "epochMs": 1791705973270,
+          "parentPressure": {
+            "pidsCurrent": 241,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610145792,
+            "memoryHighEvents": 4584,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 165
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRaw806",
+          "epochMs": 1791705973557,
+          "parentPressure": {
+            "pidsCurrent": 239,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610395648,
+            "memoryHighEvents": 4718,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 163
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiExceptionBeforeOwnedCleanup",
+          "epochMs": 1791706030319,
+          "parentPressure": {
+            "pidsCurrent": 223,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1611419648,
+            "memoryHighEvents": 188136,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 69
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 148
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        }
+      ],
+      "cases": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+        },
+        "text806": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "text806Refresh": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "html806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+        }
+      },
+      "generatedRealPageWorkerSelfcheck": null,
+      "visibleState": {
+        "rawIframePresent": false,
+        "rawErrorPresent": true,
+        "rawErrorDownloadTimeout": false,
+        "rawErrorWorkerTimeout": true,
+        "rawErrorWorkerFailure": false,
+        "genericChapterErrorPresent": true,
+        "loadingStateCount": 0
+      },
+      "failureType": "TimeoutError",
+      "boundedFailureFrames": [
+        {
+          "file": "inner.py",
+          "function": "<module>",
+          "line": 101
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "ui",
+          "line": 238
+        }
+      ],
+      "testOnlyDocumentResponseCounts": null,
+      "cleanupReceiptSha256": "d0cc919162a7f9fde31981f80e2a92bd8bdd41e188aa3ca455670b6dca81db8b"
+    },
+    {
+      "round": "j",
+      "rawSha256": "b120cca672944e79c1f1254fe2d1838541cb26d1957686ea609c2d2d99cfd488",
+      "observerSha256": "07f08f5bda185387810700352817f4616df727a243a21f8bf0990fcc6d65099d",
+      "apiPairAccepted": true,
+      "uiWholeAccepted": false,
+      "fullRunAccepted": false,
+      "aggregateBudgetAccepted": true,
+      "seconds": 87.002,
+      "memoryPeakBytes": 1611653120,
+      "memoryEvents": {
+        "low": 0,
+        "high": 3087,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "pidsPeak": 245,
+      "pidsEvents": {
+        "max": 0
+      },
+      "pressureSampleCount": 148,
+      "firstSampledPidLimit": null,
+      "phaseObservations": [
+        {
+          "phase": "uiRegister",
+          "epochMs": 1791706518131,
+          "parentPressure": {
+            "pidsCurrent": 187,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610551296,
+            "memoryHighEvents": 1687,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 29
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 152
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": [
+              {
+                "kind": "created",
+                "workerId": 1,
+                "epochMs": 1791706517795
+              },
+              {
+                "kind": "posted",
+                "workerId": 1,
+                "epochMs": 1791706517797,
+                "inputIsArrayBuffer": true,
+                "inputBytes": 123
+              },
+              {
+                "kind": "message",
+                "workerId": 1,
+                "epochMs": 1791706517854,
+                "filesReceived": true,
+                "filesCount": 1,
+                "outputBytes": 77,
+                "errorReply": false
+              },
+              {
+                "kind": "terminated",
+                "workerId": 1,
+                "epochMs": 1791706517855
+              }
+            ]
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "epochMs": 1791706520123,
+          "parentPressure": {
+            "pidsCurrent": 217,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610158080,
+            "memoryHighEvents": 2236,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 48
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 163
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiSaveBook",
+          "epochMs": 1791706521709,
+          "parentPressure": {
+            "pidsCurrent": 233,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1584459776,
+            "memoryHighEvents": 2536,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 157
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "epochMs": 1791706522694,
+          "parentPressure": {
+            "pidsCurrent": 232,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610547200,
+            "memoryHighEvents": 2612,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 156
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        }
+      ],
+      "cases": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+        }
+      },
+      "generatedRealPageWorkerSelfcheck": {
+        "supported": true,
+        "overflow": false,
+        "constructorStillInstalled": true,
+        "records": [
+          {
+            "kind": "created",
+            "workerId": 1,
+            "epochMs": 1791706517795
+          },
+          {
+            "kind": "posted",
+            "workerId": 1,
+            "epochMs": 1791706517797,
+            "inputIsArrayBuffer": true,
+            "inputBytes": 123
+          },
+          {
+            "kind": "message",
+            "workerId": 1,
+            "epochMs": 1791706517854,
+            "filesReceived": true,
+            "filesCount": 1,
+            "outputBytes": 77,
+            "errorReply": false
+          },
+          {
+            "kind": "terminated",
+            "workerId": 1,
+            "epochMs": 1791706517855
+          }
+        ]
+      },
+      "visibleState": null,
+      "failureType": "TimeoutError",
+      "boundedFailureFrames": [
+        {
+          "file": "inner.py",
+          "function": "<module>",
+          "line": 101
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "ui",
+          "line": 285
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "checkpoint",
+          "line": 122
+        }
+      ],
+      "testOnlyDocumentResponseCounts": null,
+      "cleanupReceiptSha256": "887c28ecf7b838346adf70aa6f8c44db04f7ba2c9896ee5317454bafee4114d3"
+    },
+    {
+      "round": "k",
+      "recoveredControlSha256": "c7abdebce3b339dcf4f797e7965fc44c2b61e4f90205cf363ad446188191d59b",
+      "recoveredInnerSha256": "d68fafe2b0e34a4cc1f9d6b6fe21a7240e3d3ea30ecc31ef59dce9f8a89bea5b",
+      "observerSha256": "07f08f5bda185387810700352817f4616df727a243a21f8bf0990fcc6d65099d",
+      "apiPairAccepted": true,
+      "uiWholeAccepted": false,
+      "fullRunAccepted": false,
+      "aggregateBudgetAccepted": false,
+      "completeResourceReportAvailable": false,
+      "seconds": 460.853,
+      "pressureSampleCount": 79,
+      "firstSampledPidLimit": {
+        "phase": "uiRefresh806Text",
+        "epochMs": 1791706747964,
+        "parentPressure": {
+          "pidsCurrent": 239,
+          "pidsMaxEvents": 1,
+          "memoryCurrent": 1610407936,
+          "memoryHighEvents": 3130,
+          "memoryMaxEvents": 0,
+          "oomKill": 0
+        },
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 3
+          },
+          "java": {
+            "processes": 1,
+            "threads": 71
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 162
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0,
+        "workerLifecycleUnavailable": true
+      },
+      "lastFinitePressureSample": {
+        "phase": "uiRaw805Refresh",
+        "epochMs": 1791707181098,
+        "parentPressure": {
+          "pidsCurrent": 21,
+          "pidsMaxEvents": 2,
+          "memoryCurrent": 445554688,
+          "memoryHighEvents": 259550,
+          "memoryMaxEvents": 0,
+          "oomKill": 0
+        },
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 3
+          },
+          "java": {
+            "processes": 1,
+            "threads": 1
+          },
+          "browser": {
+            "processes": 6,
+            "threads": 16
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 7,
+        "workerLifecycleUnavailable": true
+      },
+      "phaseObservations": [
+        {
+          "phase": "uiRegister",
+          "epochMs": 1791706739777,
+          "parentPressure": {
+            "pidsCurrent": 191,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610481664,
+            "memoryHighEvents": 1608,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 29
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 156
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": [
+              {
+                "kind": "created",
+                "workerId": 1,
+                "epochMs": 1791706739589
+              },
+              {
+                "kind": "posted",
+                "workerId": 1,
+                "epochMs": 1791706739592,
+                "inputIsArrayBuffer": true,
+                "inputBytes": 123
+              },
+              {
+                "kind": "message",
+                "workerId": 1,
+                "epochMs": 1791706739631,
+                "filesReceived": true,
+                "filesCount": 1,
+                "outputBytes": 77,
+                "errorReply": false
+              },
+              {
+                "kind": "terminated",
+                "workerId": 1,
+                "epochMs": 1791706739631
+              }
+            ]
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "epochMs": 1791706741663,
+          "parentPressure": {
+            "pidsCurrent": 216,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610301440,
+            "memoryHighEvents": 2183,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 45
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 165
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiSaveBook",
+          "epochMs": 1791706744826,
+          "parentPressure": {
+            "pidsCurrent": 231,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1582698496,
+            "memoryHighEvents": 2473,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 67
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 158
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "epochMs": 1791706746000,
+          "parentPressure": {
+            "pidsCurrent": 231,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610395648,
+            "memoryHighEvents": 2561,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 67
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 158
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycle": {
+            "supported": true,
+            "overflow": false,
+            "constructorStillInstalled": true,
+            "records": []
+          }
+        },
+        {
+          "phase": "uiNext806Text",
+          "epochMs": 1791706747261,
+          "parentPressure": {
+            "pidsCurrent": 238,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610407936,
+            "memoryHighEvents": 2857,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 71
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 161
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        },
+        {
+          "phase": "uiRefresh806Text",
+          "epochMs": 1791706747477,
+          "parentPressure": {
+            "pidsCurrent": 237,
+            "pidsMaxEvents": 0,
+            "memoryCurrent": 1610563584,
+            "memoryHighEvents": 2897,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 71
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 160
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        },
+        {
+          "phase": "uiHtml806",
+          "epochMs": 1791706748308,
+          "parentPressure": {
+            "pidsCurrent": 239,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610371072,
+            "memoryHighEvents": 3227,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 71
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 162
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        },
+        {
+          "phase": "uiRaw806",
+          "epochMs": 1791706748415,
+          "parentPressure": {
+            "pidsCurrent": 239,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1610448896,
+            "memoryHighEvents": 3312,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 71
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 162
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        },
+        {
+          "phase": "uiRaw805Previous",
+          "epochMs": 1791706758719,
+          "parentPressure": {
+            "pidsCurrent": 235,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1537286144,
+            "memoryHighEvents": 33859,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 159
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        },
+        {
+          "phase": "uiRaw805Refresh",
+          "epochMs": 1791706759612,
+          "parentPressure": {
+            "pidsCurrent": 234,
+            "pidsMaxEvents": 1,
+            "memoryCurrent": 1601781760,
+            "memoryHighEvents": 33860,
+            "memoryMaxEvents": 0,
+            "oomKill": 0
+          },
+          "processGroups": {
+            "python": {
+              "processes": 1,
+              "threads": 3
+            },
+            "java": {
+              "processes": 1,
+              "threads": 70
+            },
+            "browser": {
+              "processes": 7,
+              "threads": 158
+            },
+            "other": {
+              "processes": 1,
+              "threads": 1
+            }
+          },
+          "ownPidNamespaceZombieCount": 0,
+          "workerLifecycleUnavailable": true
+        }
+      ],
+      "cases": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+        },
+        "text806": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "text806Refresh": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+        },
+        "html806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null,
+          "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+        },
+        "raw806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 688,
+          "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+        },
+        "raw805": {
+          "paragraphs": 64,
+          "characters": 3906,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 688,
+          "bodySha256": "8840e39870e34d782ad6d5f6130e8f2c6d76cb25a93b20b44eb08449edf33c0f"
+        }
+      },
+      "generatedRealPageWorkerSelfcheck": {
+        "supported": true,
+        "overflow": false,
+        "constructorStillInstalled": true,
+        "records": [
+          {
+            "kind": "created",
+            "workerId": 1,
+            "epochMs": 1791706739589
+          },
+          {
+            "kind": "posted",
+            "workerId": 1,
+            "epochMs": 1791706739592,
+            "inputIsArrayBuffer": true,
+            "inputBytes": 123
+          },
+          {
+            "kind": "message",
+            "workerId": 1,
+            "epochMs": 1791706739631,
+            "filesReceived": true,
+            "filesCount": 1,
+            "outputBytes": 77,
+            "errorReply": false
+          },
+          {
+            "kind": "terminated",
+            "workerId": 1,
+            "epochMs": 1791706739631
+          }
+        ]
+      },
+      "failureType": "TargetClosedError",
+      "boundedFailureFrames": [
+        {
+          "file": "inner.py",
+          "function": "<module>",
+          "line": 101
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "ui",
+          "line": 293
+        },
+        {
+          "file": "authorized_probe.py",
+          "function": "checkpoint",
+          "line": 123
+        }
+      ],
+      "primaryBusinessErrorNotCapturedBecauseExceptionCheckpointFailed": true,
+      "visibleState": null,
+      "testOnlyDocumentResponseCounts": {
+        "fixture": 1,
+        "login": 1
+      },
+      "cleanupReceiptSha256": "73b9a457e1ab0101249b0a0878956a9bb14ff60d8d6bf2043be9f261a046a312"
+    }
+  ]
+}
