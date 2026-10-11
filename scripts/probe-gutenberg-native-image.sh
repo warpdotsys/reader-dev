@@ -17,7 +17,7 @@ esac
 for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json GUTENBERG_REPORT.json WORKER_DIAGNOSTICS.json; do
   test ! -e "$output/$report"
 done
-test "$(jq -er '.jarSha256' imported/metadata.json)" = 9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84
+test "$(jq -er '.jarSha256' imported/metadata.json)" = f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b
 version=$(jq -er '.version' imported/metadata.json)
 node scripts/release-native-artifacts.mjs check "$arch" "$version" "$revision" dist imported \
   | tee "$output/PRELOAD_IDENTITY.json"

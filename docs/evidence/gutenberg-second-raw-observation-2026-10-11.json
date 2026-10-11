@@ -1,0 +1,62 @@
+{
+  "bundledBrowserObserved": true,
+  "businessApiCalls": {
+    "/getBookInfo": 1,
+    "/getChapterList": 1
+  },
+  "captchaInteractedWith": false,
+  "cookieRowsAfter": 0,
+  "cookieRowsBefore": 0,
+  "expectedImageRevision": "ccbdad907fb803ca4f75a38d182cb86009372dc9",
+  "failureCategory": "UnexpectedRealToc",
+  "generatedSessionRevoked": true,
+  "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "maximumObservedProcesses": {
+    "browser": 7,
+    "driver": 1,
+    "worker": 1
+  },
+  "metadata": {
+    "authorMatches": true,
+    "dataIsObject": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "isSuccess": true,
+    "nameMatches": true,
+    "status": 200
+  },
+  "originalOrRemoteParityProven": false,
+  "passed": false,
+  "privateLocalBooksRead": 0,
+  "privateNetworkGuardEnabled": true,
+  "processMonitorPassed": true,
+  "rawBodyCookieOrErrorPersisted": false,
+  "realAuthenticationProven": false,
+  "realCredentialsImported": false,
+  "renderer": "camoufox",
+  "resourceGuardPassed": true,
+  "runtimeUid": 10001,
+  "schemaVersion": 1,
+  "scope": "fixed Gutenberg 84 anonymous bundled Reader; not original or archived parity",
+  "seconds": 9.924,
+  "siteSearchRequested": false,
+  "source": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+  "sourceRulesRetained": true,
+  "tlsErrorsIgnored": false,
+  "toc": {
+    "chapterCount": 28,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "fixedBookChapterUrlsValid": false,
+    "isSuccess": true,
+    "status": 200
+  }
+}

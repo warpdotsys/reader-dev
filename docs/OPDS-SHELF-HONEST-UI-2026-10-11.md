@@ -18,8 +18,25 @@ Java/Kotlin后端没有OPDS书架路由，但书架弹窗原先宣称复制地�
 
 前端index为bc234bb3ea74ce82edc38212d4fa83e7cbbf6f0a9d1f5c7446ab328f220d7487；测试源及服务回执SHA在独立JSON中。后端仍9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84。
 
+## 本修正自己的托管重建和整镜像已接受
+
+源7739ab8516dd60b872ff3a0227cb18e19b8b1948 / 实际合并快照ec6af77a25a1d048e1751bdf983d3a1894d629ff。不是借d6或8b绿灯：
+
+| GitHub托管流程 | 本修正实际执行与独立回执 |
+| --- | --- |
+| [Java38115254873](https://github.com/warpdotsys/reader-dev/actions/runs/38115254873) | 637 Linux Python零跳过、203 JVM / 35既有环境跳过，作者测试18项/新增2全执行；双clean同f5c9；[Java](evidence/gutenberg-normal-hosted-7739ab85-independent-java-acceptance.json) |
+| [Vue38115254857](https://github.com/warpdotsys/reader-dev/actions/runs/38115254857) | 前端302、实际生成UI25项零跳过，含书架OPDS新断言后继续原TXT导入；11合成图身份但不声称本轮逐图目视；[UI](evidence/gutenberg-normal-hosted-7739ab85-independent-ui-java-acceptance-v2.json) |
+| [Full38115254894](https://github.com/warpdotsys/reader-dev/actions/runs/38115254894) | Cam24、实际打包Reader HTTPS及完整默认UI；峰856,494,080B/PID196；[Full](evidence/gutenberg-normal-hosted-7739ab85-independent-full-acceptance.json) |
+| [Native38115254938](https://github.com/warpdotsys/reader-dev/actions/runs/38115254938) | 六实际作业终态成功、双原生与重导入运行、publisher32份有限报告逐字段接受；最大858,873,856B/PID209；[Native](evidence/gutenberg-normal-hosted-7739ab85-independent-native-acceptance.json) |
+
+准确新JAR：f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b，285,671,807B / 1570条目。它含本修正前端，不再把9b旧后端加本机预览当成这份新JAR的执行。AMD64镜像75bfc0e1c63cb2e8e2e8d85cdbc31d9b4cb831a24e3bd3cefc09a5d57a20156d，ARM64 dd5264b5495106ec4b8b7811c0b80638086366327a53e2fffca07a51d6c91da8；仅原生归档SHA保留托管观测值，未下载/重算大型镜像。
+
+托管书架原测试[XML](evidence/opds-shelf-hosted-7739ab85-2026-10-11.xml)实际1项 / 4.937秒 / 零失败、错误、跳过；准确源提交内确有新警告、凭据不在弹窗及无不存在OPDS请求的断言。不是仅静态检查，也不是OPDS服务通过。四回执SHA依次7378901540580bd4847488e2f9e73e8ca8d382c08e05e4d247c5bc149b0938c1、9627ea1e98c712be710723d2a7036774c3bed018a8250da78b2c9af55490f92a、1801d4179f902509694264c816c71831e9f69f4ae070f22bf967dd4e5fda700a、d6dd331db814df924cdc90af0067a3fbb5deff9cab7e265eb5b72a481f6f8211。
+
+Runner均GitHub托管，不使用自托管。普通Full允许1GiB swap、观察0，外部UI客户端不计服务端预算；不扩称ARM页面渲染或本机最新整镜像验收。58受保护报告及原件未变。与本提交另外运行的Gutenberg实站目录失败是不同作业，普通四条成功不抵消实站失败，也不接受后续目录候选。
+
 ## 已知问题与回退
 
-OPDS服务仍未实现；如果未来开发，必须真实验证路由、身份、命名空间和外部阅读器，不以当前说明弹窗代替功能。新前端打包JAR及托管镜像结果待本提交自己的任务验证。真实认证、原件完整三方、长测/合并预算超时和生产仍未完成，不发版、不合并或部署。
+OPDS服务仍未实现；如果未来开发，必须真实验证路由、身份、命名空间和外部阅读器，不以当前说明弹窗代替功能。新前端打包JAR及本提交自己的托管镜像已实际验证，但真实认证、原件完整三方、长测/合并预算超时、最新整镜像本机及生产仍未完成，不发版、不合并或部署。
 
 若撤回本提示修正，只撤回自有三处源码/测试改动；不会停止、替换或迁移生产，不删除用户storage。旧未实现状态和失败记录保留，不能恢复虚假承诺作为“修复”。

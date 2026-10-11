@@ -6,6 +6,7 @@ import io.legado.app.adapters.DefaultAdpater
 import io.legado.app.adapters.ReaderAdapterHelper
 import io.legado.app.adapters.ReaderAdapterInterface
 import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.BookSource
 import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.legado.app.model.webBook.WebBook
@@ -93,6 +94,44 @@ class PublicMetadataPageDiagnosticTest {
             "<h2>Letter 1</h2><h2>Chapter 1</h2></body></html>"
         val analyzer = AnalyzeRule(Book()).setContent(generated, "https://example.org/generated/")
         assertEquals("", analyzer.getString(fixedPublicAuthorRule()))
+    }
+
+    private fun fixedPublicTripleQuotedRule(marker: String): String {
+        val probe = File(originalUserDir, "scripts/probe-gutenberg-reader.py").readText(Charsets.UTF_8)
+        assertEquals(2, probe.split(marker).size)
+        return probe.substringAfter(marker).substringBefore("\"\"\"")
+    }
+
+    @Test
+    fun fixedPublicChapterUrlRemainsRelativeAndResolvesWithOriginalOptions() {
+        val base = "https://www.gutenberg.org/cache/epub/84/pg84-images.html"
+        val options = ", {\"webView\":true}"
+        val urlRule = fixedPublicTripleQuotedRule("CHAPTER_URL_RULE = \"\"\"")
+        // BookChapterList passes each selected Jsoup Element, not the entire document.
+        val element = org.jsoup.Jsoup.parse("<a href='#letter1'>Generated title</a>").select("a").first()
+        val raw = AnalyzeRule(Book()).setContent(element, base).getString(urlRule)
+        assertEquals("#letter1" + options, raw)
+        val chapter = BookChapter(url = raw, baseUrl = base)
+        assertEquals(raw, Gson().toJsonTree(chapter).asJsonObject.get("url").asString)
+        // Legacy paramPattern consumes whitespace around the comma when resolving,
+        // while the serialized raw url above still preserves the source's bytes.
+        val absolute = chapter.getAbsoluteURL()
+        assertEquals(base + "#letter1,{\"webView\":true}", absolute)
+        val resolvedOptions = VertxJsonObject(absolute.substringAfter(','))
+        assertEquals(setOf("webView"), resolvedOptions.fieldNames())
+        assertTrue(resolvedOptions.getBoolean("webView"))
+    }
+
+    @Test
+    fun fixedPublicContentRuleUsesActualChapterBindingAndOnlySelectedParagraphs() {
+        val base = "https://www.gutenberg.org/cache/epub/84/pg84-images.html"
+        val generated = "Generated first letter " + "generated body ".repeat(100)
+        val html = "<div class='chapter'><h2 id='letter1'>Generated heading</h2><p>" + generated +
+            "</p></div><div class='chapter'><h2 id='letter2'>Other heading</h2><p>OTHER_GENERATED_BODY</p></div>"
+        val contentRule = fixedPublicTripleQuotedRule("'ruleContent': {'content': \"\"\"")
+        val analyzer = AnalyzeRule(Book()).setContent(html, base)
+        analyzer.chapter = BookChapter(url = "#letter1, {\"webView\":true}", baseUrl = base)
+        assertEquals(generated.trim(), analyzer.getString(contentRule))
     }
 
     private fun observeSnapshot(html: String): JsonObject {

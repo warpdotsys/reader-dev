@@ -9,6 +9,65 @@ PROBE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(PROBE)
 
 class GutenbergProbeTests(unittest.TestCase):
+    def test_probe_and_wrapper_pin_the_actual_new_product_instead_of_old_frontend(self):
+        digest = 'f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b'
+        self.assertEqual(digest, PROBE.EXPECTED_JAR)
+        wrapper = (ROOT / 'scripts/probe-gutenberg-native-image.sh').read_text(encoding='utf-8')
+        self.assertIn('= ' + digest, wrapper)
+        self.assertNotIn('9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84', wrapper)
+
+    def generated_toc(self, absolute=False):
+        return [dict(url=(PROBE.BOOK if absolute else '') + '#' + fragment + PROBE.OPTIONS,
+            baseUrl=PROBE.BOOK, title='GENERATED_TITLE_NOT_EXPORTED_' + str(index),
+            index=index, isVolume=False) for index, fragment in enumerate(PROBE.TOC_FRAGMENTS)]
+
+    def test_legacy_relative_toc_is_validated_without_rewriting_it(self):
+        toc = self.generated_toc()
+        before = json.dumps(toc)
+        facts = PROBE.toc_facts(toc)
+        self.assertIs(True, facts['fixedBookChapterUrlsValid'])
+        self.assertEqual(28, facts['relativeChapterUrls'])
+        self.assertEqual(before, json.dumps(toc))
+        self.assertNotIn('GENERATED_TITLE_NOT_EXPORTED', json.dumps(facts))
+        self.assertNotIn('#letter1', json.dumps(facts))
+        self.assertEqual(64, len(facts['canonicalTocSha256']))
+
+    def test_absolute_toc_still_requires_the_same_fixed_page_and_fragments(self):
+        facts = PROBE.toc_facts(self.generated_toc(absolute=True))
+        self.assertIs(True, facts['fixedBookChapterUrlsValid'])
+        self.assertEqual(0, facts['relativeChapterUrls'])
+
+    def test_toc_foreign_target_or_base_is_rejected(self):
+        for key, value in (('url', 'https://other.invalid/#letter1' + PROBE.OPTIONS),
+                ('url', '/cache/epub/99/other.html#letter1' + PROBE.OPTIONS),
+                ('baseUrl', 'https://other.invalid/'), ('url', '//other.invalid/#letter1' + PROBE.OPTIONS)):
+            toc = self.generated_toc()
+            toc[0][key] = value
+            self.assertIs(False, PROBE.toc_facts(toc)['fixedBookChapterUrlsValid'])
+
+    def test_toc_options_order_duplicates_and_wrong_anchor_are_rejected(self):
+        for url in ('#letter1', '#letter1, {"webView":false}', '#wrong' + PROBE.OPTIONS,
+                '#letter2' + PROBE.OPTIONS, '\n#letter1' + PROBE.OPTIONS):
+            toc = self.generated_toc()
+            toc[0]['url'] = url
+            self.assertIs(False, PROBE.toc_facts(toc)['fixedBookChapterUrlsValid'])
+        toc = self.generated_toc()
+        toc.reverse()
+        self.assertIs(False, PROBE.toc_facts(toc)['fixedBookChapterUrlsValid'])
+
+    def test_toc_missing_wrong_types_and_default_fields_are_rejected(self):
+        for value in (None, {}, [], self.generated_toc()[:-1], [None] * 28):
+            self.assertIs(False, PROBE.toc_facts(value)['fixedBookChapterUrlsValid'])
+        for key, value in (('url', {}), ('title', ''), ('title', None), ('index', True),
+                ('index', 1), ('isVolume', True), ('isVolume', None)):
+            toc = self.generated_toc()
+            toc[0][key] = value
+            self.assertIs(False, PROBE.toc_facts(toc)['fixedBookChapterUrlsValid'])
+
+    def test_raw_chapter_rule_keeps_relative_href_and_original_options(self):
+        self.assertEqual("@href@js:result + ', {\"webView\":true}'", PROBE.CHAPTER_URL_RULE)
+        self.assertEqual(PROBE.CHAPTER_URL_RULE, PROBE.SOURCE_DEFINITION['ruleToc']['chapterUrl'])
+
     def test_source_is_one_fixed_https_book_no_search_or_login(self):
         source = PROBE.SOURCE_DEFINITION
         self.assertEqual('https://www.gutenberg.org', source['bookSourceUrl'])

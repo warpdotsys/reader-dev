@@ -1,6 +1,6 @@
 # 无凭据固定公开书籍的内置浏览器验收
 
-日期：2026-10-11。首轮托管实站已实际失败；作者选择规则的后续修正尚待新的实站执行。目标是在已独立验收的单 Reader 镜像内通过 Java/Kotlin API 实际读取固定公开书籍详情、目录和首章，不能只凭站点直连成功或测试夹具证明产品可用。
+日期：2026-10-11。两轮托管实站均有实际失败；第二轮详情通过、28目录已返回，但链接校验失败，正文尚未执行。后续目录契约修正待新的实站验收。目标是在已独立验收的单 Reader 镜像内通过 Java/Kotlin API 实际读取固定公开书籍详情、目录和首章，不能只凭站点直连成功或测试夹具证明产品可用。
 
 ## 范围与依据
 
@@ -14,15 +14,19 @@
 
 ## 镜像身份与重复命令
 
-使用 Native 成功任务38111391710、测试快照ccbdad907fb803ca4f75a38d182cb86009372dc9、JAR9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84。维护脚本是后续独立 checkout；不改写输入镜像来源、拿输入镜像绿灯接受新探针，也不在本模式重建或上传 registry。
+前两轮历史输入：Native成功任务38111391710、测试快照ccbdad907fb803ca4f75a38d182cb86009372dc9、JAR9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84；其失败身份不改写。
+
+下一轮切至本修正自己的已独立接受Native38115254938、快照ec6af77a25a1d048e1751bdf983d3a1894d629ff、准确f5c9 JAR，AMD64镜像75bfc0e1c63cb2e8e2e8d85cdbc31d9b4cb831a24e3bd3cefc09a5d57a20156d。脚本与wrapper两处强SHA守卫同步固定f5c9，不使用latest。维护脚本仍是后续独立checkout，不拿输入镜像绿灯接受新探针或在本模式重建/上传registry。
+
+本机独立下载该任务reader-release-jar artifact11693213191，285,671,807B / SHA f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b，设为只读；与保留9b旧下载副本逐条重算完整JAR及所有条目字节。两者均1570条目，仅Vue前端变化：同名1条改动、各35个哈希名资源删/增；1122个class、90个依赖以及全部非前端共同条目内容不变，包括worker d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5。[独立字节差异](evidence/opds-frontend-product-byte-delta-2026-10-11.json)，SHAc89c5ad23a93b0aa2397d462f23063fd1967b6aecbe279e4faad8dda57b8e5f6。这里只本机重算JAR，不冒称下载/重算完整原生镜像或已取得新网络业务结果。
 
 复用 `.github/workflows/browser-image.yml` 的显式 `gutenberg-fixed-book` 模式；普通 Full 和起点 metadata 模式不变。仅 GitHub 托管原生 runner、2 CPU / 2 GiB / 256 PID / 零swap、UID10001、cap-drop ALL、no-new-privileges、零宿主端口和私网拒绝。重新校验下载/载入/运行的准确归档、镜像与 JAR 身份，观察实际 worker/browser 进程；有成功外壳但缺书名/作者/目录/正文、资源失败、会话清理失败或未观察浏览器均判失败。
 
 ```powershell
-gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-reader-20260926 -f public_metadata_native_run=38111391710 -f public_metadata_revision=ccbdad907fb803ca4f75a38d182cb86009372dc9 -f public_metadata_capture=gutenberg-fixed-book -f native_arch=amd64
+gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-reader-20260926 -f public_metadata_native_run=38115254938 -f public_metadata_revision=ec6af77a25a1d048e1751bdf983d3a1894d629ff -f public_metadata_capture=gutenberg-fixed-book -f native_arch=amd64
 ```
 
-执行条件是指定原生 artifact 未过期。若原生版本已改变，脚本的准确 JAR 守卫必须先经审阅更新和另验，不能换入不明 `latest` 或修改期望以掩盖失败。
+执行条件是指定原生artifact未过期。要重现前两次历史失败，使用其各自准确源码提交及旧输入，而不是给当前f5c9守卫塞旧9b。若原生版本再改变，脚本准确SHA守卫必须先经审阅和实际字节/产物核验更新，不能换入不明latest或修改期望掩盖业务失败。
 
 ## 已知问题和回退
 
@@ -37,6 +41,24 @@ gh workflow run browser-image.yml --repo warpdotsys/reader-dev --ref ci/full-rea
 后续本机直接取样仍为相同468,370B/SHA页面：h3只有25字符且不含Shelley；唯一以 `by ` 起始的h2包含作者。原探针把副标题h3当作者，已改为明确CSS `@CSS:h2:matches(^by\s)@text`，不注入作者名或删除作者校验。原CI没有保存网页字节，不能追补它与本机页面的完整相等证据或认定这是原轮唯一引擎根因。
 
 新增两项真实JVM解析回归，生成标题/h3副标题/h2作者和缺作者页面：正确选择作者，缺失仍空；所在测试类18项全部执行、零失败/错误/跳过。[本机原XML](evidence/gutenberg-author-rule-local-2026-10-11.xml)，SHA01362dfec4e0300b60494cbe63c32beace9c0b0277ebc8976c663ba51b603a7e。Python专用守卫10项、完整637项 / 29.156秒 / 一个既有Windows跳过通过。仅维护来源规则及测试，未改变产品；旧失败保留，新托管实际结果另验，不借d6普通绿灯接受该修正。
+
+### 第二轮实际取得详情与28目录，整体仍失败
+
+[任务38115252638](https://github.com/warpdotsys/reader-dev/actions/runs/38115252638)，源7739ab8516dd60b872ff3a0227cb18e19b8b1948。实际 `/getBookInfo` 和 `/getChapterList` 各一次；两者均HTTP200 / isSuccess=true / 空errorMsg / 完整三字段包络，书名与作者匹配，目录28项，但fixedBookChapterUrlsValid=false，UnexpectedRealToc判红；首章没有执行。9.924秒，worker1 / driver1 / browser7，峰942,919,680B / PID184，无预算触限/OOM，配置和实际swap0，Cookie0→0、会话撤销和容器移除成功。
+
+[独立失败回执](evidence/gutenberg-second-independent-failure-2026-10-11.json)，SHA87838046f2cb53041d098967c8c8359198c7ca7a503fafe74bb5ce6a9ea4a6b9；[原观察](evidence/gutenberg-second-raw-observation-2026-10-11.json)、[原预算](evidence/gutenberg-second-raw-budget-2026-10-11.json)。同样逐项核验九份有限JSON、源任务和精确8b输入镜像、运行JAR、托管runner、清理及预算。没有保存原章节URL值，不能将本机/源码推断追补为该轮实际相对URL观测，更不能认定已证明唯一引擎根因。原失败不改写。
+
+### 目录契约修正候选，不改Reader接口或原来源URL
+
+可读 `BookChapterList` 将所选Jsoup Element交给AnalyzeRule，原规则保留相对href；`BookChapter.url` 也以原相对值序列化，真正请求用 `getAbsoluteURL()` 加baseUrl解析。初始探针要求所有原 `url` 都以完整BOOK开头，这个契约不正确。候选按固定BOOK解析原始URL，仍严格要求28个letter1–4/chap01–24锚点及顺序、索引0–27、非空标题、非卷项、准确baseUrl、原WebView选项、所有解析结果仍属于唯一固定书籍；外站、其它书、缺选项、重复/错序/错误锚点、缺默认字段及控制符均拒绝，不重写原TOC或删除安全检查。
+
+新增六项Python守卫，专用16项通过；完整643项 / 27.879秒 / 零失败 / 一个既有Windows跳过。输出只有有限布尔/计数和完整目录对象的**规范JSON摘要**，不输出原标题、URL列表或正文；摘要不是原始HTTP字节相等证明。
+
+切到本修正自己的准确f5c9产物后，新增第17项强SHA回归，确认探针与wrapper同步固定新JAR且不接受旧9b；最终完整644项 / 28.547秒 / 零失败 / 一个既有Windows跳过。镜像更新依据是7739自己的四条托管终态、原生/重导入实际运行及本机完整JAR条目比较，不调整业务/资源/TLS/私网期望以掩盖失败。新探针实站与其自身普通CI仍需新的准确源码任务。
+
+新增JVM真实解析回归必须与实际所选Element和chapter绑定一致。首轮生成夹具误将整个Document交给 `@href`，结果为空；修正Element后，第二轮又发现测试错误要求绝对URL保留逗号后的空格，而legacy `paramPattern`实际消费了它。两次均20项/一项失败，分别保留[首轮原XML](evidence/gutenberg-toc-rule-local-first-failure-2026-10-11.xml)、[次轮原XML](evidence/gutenberg-toc-rule-local-second-failure-2026-10-11.xml)。修正的是夹具与已有契约断言：原序列化相对URL/选项保持字节，实际解析绝对URL逗号紧接JSON，选项语义仍为唯一webView=true；不改生产解析器或把空结果算成功。修后的真实JVM和新实站结果另验。
+
+修后的JVM已实际20项 / 零失败、错误、跳过，新增两项确实执行；正文用实际chapter绑定，仅取生成HTML中所选letter1段落，不串入另一章节。[原通过XML](evidence/gutenberg-toc-rule-local-passed-2026-10-11.xml)，SHAeaa2387935daf0913ba6e04cdd6b6f0c1547eab388a89731e1644b5bf486d498。它证明本机解析契约，不代替第三轮实站；两份旧失败XML及第二轮目录失败均保持不变。
 
 初始d6探针本机新增九项离线守卫通过；完整 Python636项 / 29.242秒 / 零失败 / 一个既有Windows POSIX跳过，Node119项全部通过，YAML解析和脚本语法检查通过。最初全量回归发现旧固定模式枚举断言未同步；更新为五个明确模式，继续检查原默认值、原起点分支及无插值传参，不移除安全断言。本机离线通过不作为实站业务通过。
 

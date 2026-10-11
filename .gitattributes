@@ -34,3 +34,7 @@ docs/evidence/gutenberg-author-rule-local-2026-10-11.xml -text whitespace=cr-at-
 docs/evidence/gutenberg-normal-hosted-d6b7d6a4-*.json -text whitespace=cr-at-eol
 docs/evidence/opds-shelf-local-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/opds-shelf-local-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-toc-rule-local-*-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-normal-hosted-7739ab85-*.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-hosted-7739ab85-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/opds-frontend-product-byte-delta-2026-10-11.json -text whitespace=cr-at-eol

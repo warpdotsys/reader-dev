@@ -16,6 +16,7 @@ import secrets
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 SOURCE = 'https://www.gutenberg.org'
@@ -23,16 +24,19 @@ BOOK = SOURCE + '/cache/epub/84/pg84-images.html'
 OPTIONS = ', {"webView":true}'
 BOOK_REQUEST = BOOK + OPTIONS
 BASE = 'http://127.0.0.1:18893'
-EXPECTED_JAR = '9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84'
+EXPECTED_JAR = 'f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b'
 MAX_BYTES = 128 * 1024
 AUTHOR_RULE = r"@CSS:h2:matches(^by\s)@text"
+CHAPTER_URL_RULE = """@href@js:result + ', {"webView":true}'"""
+TOC_FRAGMENTS = tuple('letter' + str(index) for index in range(1, 5)) + tuple(
+    'chap' + str(index).zfill(2) for index in range(1, 25))
 SOURCE_DEFINITION = {
     'bookSourceUrl': SOURCE, 'bookSourceName': 'Fixed Gutenberg 84 anonymous compatibility probe',
     'enabledCookieJar': False,
     'ruleBookInfo': {'name': 'h1@text', 'author': AUTHOR_RULE,
         'tocUrl': "@js:'" + BOOK_REQUEST + "'"},
     'ruleToc': {'chapterList': 'table a[href^="#"]', 'chapterName': '@text',
-        'chapterUrl': '@href@js:result + \', {"webView":true}\''},
+        'chapterUrl': CHAPTER_URL_RULE},
     'ruleContent': {'content': """@js:(function () {
         var url = String(chapter.url);
         var id = url.split('#')[1].split(',')[0];
@@ -108,6 +112,52 @@ def content_facts(value):
         'firstLetterMarkerPresent': 'To Mrs. Saville, England.' in value,
         'noScriptTag': '<script' not in value.lower(),
         'isNotResourceUrl': not value.strip().startswith(('http://', 'https://'))}
+
+def toc_facts(value):
+    """Validate legacy raw relative URLs by their actual fixed-page resolution.
+
+    Do not rewrite chapter.url, invent anchors, emit raw titles/URLs, accept a
+    cross-book target, or delete the WebView-options check to obtain a pass.
+    """
+    rows = value if isinstance(value, list) else []
+    urls, fragments = [], []
+    options, bases, titles, indices, volumes = [], [], [], [], []
+    for index, item in enumerate(rows):
+        row = item if isinstance(item, dict) else {}
+        url = row.get('url')
+        has_options = isinstance(url, str) and url.endswith(OPTIONS)
+        raw = url[:-len(OPTIONS)] if has_options else ''
+        try:
+            resolved = urllib.parse.urljoin(BOOK, raw)
+            fragment = urllib.parse.urlsplit(resolved).fragment
+            urls.append(resolved == BOOK + '#' + fragment and raw == raw.strip()
+                and not any(ord(char) < 32 for char in raw) and fragment in TOC_FRAGMENTS)
+        except ValueError:
+            fragment = ''
+            urls.append(False)
+        fragments.append(fragment)
+        options.append(has_options)
+        bases.append(row.get('baseUrl') == BOOK)
+        titles.append(isinstance(row.get('title'), str) and bool(row['title'].strip()))
+        indices.append(type(row.get('index')) is int and row['index'] == index)
+        volumes.append(row.get('isVolume') is False)
+    expected_count = len(rows) == len(TOC_FRAGMENTS)
+    facts = {'chapterCount': len(rows) if isinstance(value, list) else None,
+        'webViewOptionsRetained': expected_count and all(options),
+        'baseUrlsMatchFixedBook': expected_count and all(bases),
+        'chaptersRemainInFixedBook': expected_count and all(urls),
+        'fragmentsMatchExpected': tuple(fragments) == TOC_FRAGMENTS,
+        'chapterTitlesPresent': expected_count and all(titles),
+        'indicesSequential': expected_count and all(indices),
+        'noVolumeEntries': expected_count and all(volumes),
+        'relativeChapterUrls': sum(isinstance(row, dict) and isinstance(row.get('url'), str)
+            and row['url'].startswith('#') for row in rows),
+        'canonicalTocSha256': hashlib.sha256(json.dumps(value, ensure_ascii=False,
+            sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest()}
+    facts['fixedBookChapterUrlsValid'] = expected_count and all(facts[key] for key in (
+        'webViewOptionsRetained', 'baseUrlsMatchFixedBook', 'chaptersRemainInFixedBook',
+        'fragmentsMatchExpected', 'chapterTitlesPresent', 'indicesSequential', 'noVolumeEntries'))
+    return facts
 
 def require_environment(revision, output):
     if not re.fullmatch(r'[0-9a-f]{40}', revision):
@@ -194,12 +244,8 @@ def main():
                 if not all(report[key][item] for item in ('dataIsObject', 'nameMatches', 'authorMatches')):
                     raise Rejected('MissingRealMetadata')
             elif key == 'toc':
-                valid = (isinstance(value, list) and len(value) == 28 and all(
-                    isinstance(item, dict) and str(item.get('url', '')).startswith(BOOK + '#')
-                    and str(item.get('url', '')).endswith(OPTIONS) and item.get('title') for item in value))
-                report[key].update({'chapterCount': len(value) if isinstance(value, list) else None,
-                    'fixedBookChapterUrlsValid': bool(valid)})
-                if not valid:
+                report[key].update(toc_facts(value))
+                if not report[key]['fixedBookChapterUrlsValid']:
                     raise Rejected('UnexpectedRealToc')
             else:
                 report[key].update(content_facts(value))
