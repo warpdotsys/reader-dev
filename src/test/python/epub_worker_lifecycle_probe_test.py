@@ -206,5 +206,123 @@ class WorkerObserverTests(unittest.TestCase):
                 probe.validate_snapshot(value)
 
 
+class RouteObservationTests(unittest.TestCase):
+    def test_route_classification_discards_query_fragment_and_unknowns(self):
+        self.assertEqual(probe.classify_route('/'), 'root')
+        self.assertEqual(probe.classify_route('https://generated.invalid/login?token=not-exported'), 'login')
+        self.assertEqual(probe.classify_route('/reader/chapter?book=not-exported#fragment'), 'reader')
+        self.assertEqual(probe.classify_route('/fixtures/generated'), 'fixture')
+        self.assertEqual(probe.classify_route('/__worker_probe_fixture?query=not-exported'), 'fixture')
+        self.assertEqual(probe.classify_route('/admin?body=not-exported'), 'other')
+        self.assertEqual(probe.classify_route(None), 'other')
+        self.assertEqual(probe.classify_route('x' * 16385), 'other')
+
+    def test_finite_route_aggregate_never_exports_candidate_values(self):
+        observation = probe.RouteObservation()
+        observation.route_seen('/reader?book=DO-NOT-EXPORT')
+        observation.navigation_seen('/login?cookie=DO-NOT-EXPORT')
+        observation.html_accepted()
+        observation.inject_started()
+        observation.inject_completed()
+        observation.mark_csp()
+        snapshot = observation.snapshot()
+        self.assertEqual(snapshot['routeSeen']['reader'], 1)
+        self.assertEqual(snapshot['navigationSeen']['login'], 1)
+        self.assertTrue(snapshot['hasCsp'])
+        self.assertNotIn('DO-NOT-EXPORT', json.dumps(snapshot))
+
+    def test_route_counts_saturate_at_4096_without_expanding_schema(self):
+        observation = probe.RouteObservation()
+        for _ in range(4097):
+            observation.route_seen('/reader')
+        value = observation.snapshot()
+        self.assertEqual(value['routeSeen']['reader'], 4096)
+        self.assertNotIn('eventCount', value)
+        self.assertNotIn('overflow', value)
+        self.assertEqual(probe.validate_route_snapshot(value), value)
+        value['routeSeen']['reader'] = 4097
+        with self.assertRaises(ValueError):
+            probe.validate_route_snapshot(value)
+
+    def test_route_snapshot_rejects_extra_raw_field_and_boolean_count(self):
+        value = probe.RouteObservation().snapshot()
+        value['url'] = 'https://generated.invalid/reader?secret'
+        with self.assertRaises(ValueError):
+            probe.validate_route_snapshot(value)
+        value = probe.RouteObservation().snapshot()
+        value['routeSeen']['root'] = True
+        with self.assertRaises(ValueError):
+            probe.validate_route_snapshot(value)
+
+    def test_checkpoint_capture_never_replaces_primary_failure(self):
+        primary = RuntimeError('primary generated failure')
+        try:
+            raise primary
+        except RuntimeError as caught:
+            code = probe.run_diagnostic_preserving_primary(lambda: (_ for _ in ()).throw(ValueError('do not export')))
+            self.assertEqual(code, 'validation')
+            with self.assertRaises(RuntimeError) as raised:
+                raise caught
+        self.assertIs(raised.exception, primary)
+        self.assertIsNone(probe.run_diagnostic_preserving_primary(lambda: None))
+        self.assertEqual(probe.run_diagnostic_preserving_primary(lambda: (_ for _ in ()).throw(TimeoutError())), 'timeout')
+        self.assertEqual(probe.run_diagnostic_preserving_primary(lambda: (_ for _ in ()).throw(EOFError())), 'closed')
+
+    def test_generated_route_hook_emits_only_finite_aggregate(self):
+        code = '''
+          const nodes = new Map();
+          globalThis.location = {href: 'https://generated.invalid/'};
+          globalThis.document = {head:{appendChild(node) {nodes.set(node.id,node);}},
+            getElementById(id) {return nodes.get(id);},
+            createElement() {return {setAttribute(key,value) {this[key]=value;}};}};
+        ''' + probe.MAIN_DOCUMENT_ROUTE_OBSERVER_JS + '''
+          __readerMainRouteProbe.routeSeen('/reader?secret=DO-NOT-EXPORT');
+          __readerMainRouteProbe.navigationSeen('/login?cookie=DO-NOT-EXPORT');
+          __readerMainRouteProbe.htmlAccepted();
+          __readerMainRouteProbe.injectStarted();
+          __readerMainRouteProbe.injectCompleted();
+          __readerMainRouteProbe.hasCsp();
+          process.stdout.write(document.getElementById('reader-main-route-observations').content);
+        '''
+        result = subprocess.run(['node', '--input-type=module', '-e', code], capture_output=True,
+            encoding='utf-8', timeout=10, check=True)
+        value = probe.validate_route_snapshot(json.loads(result.stdout))
+        self.assertEqual(value['routeSeen']['reader'], 1)
+        self.assertEqual(value['navigationSeen']['login'], 1)
+        self.assertTrue(value['hasCsp'])
+        self.assertNotIn('DO-NOT-EXPORT', result.stdout)
+
+    def test_python_and_js_route_categories_match_generated_boundaries(self):
+        candidates = ['/', '/login?secret=not-exported', '/reader/chapter',
+                      '/__worker_probe_fixture?private=not-exported', '/fixtures/generated',
+                      '/other', 'x' * 16385, None]
+        observed = probe.RouteObservation()
+        for candidate in candidates:
+            observed.route_seen(candidate)
+        expected = observed.snapshot()['routeSeen']
+        code = '''
+          const nodes = new Map();
+          globalThis.location = {href: 'https://generated.invalid/'};
+          globalThis.document = {head:{appendChild(node) {nodes.set(node.id,node);}},
+            getElementById(id) {return nodes.get(id);},
+            createElement() {return {setAttribute(key,value) {this[key]=value;}};}};
+        ''' + probe.MAIN_DOCUMENT_ROUTE_OBSERVER_JS + '''
+          for (const value of JSON.parse(process.argv[1])) __readerMainRouteProbe.routeSeen(value);
+          process.stdout.write(document.getElementById('reader-main-route-observations').content);
+        '''
+        result = subprocess.run(['node', '--input-type=module', '-e', code, '--', json.dumps(candidates)],
+            capture_output=True, encoding='utf-8', timeout=10, check=True)
+        actual = probe.validate_route_snapshot(json.loads(result.stdout))['routeSeen']
+        self.assertEqual(actual, expected)
+        self.assertNotIn('not-exported', result.stdout)
+
+    def test_route_hook_injection_is_separate_from_worker_marker(self):
+        original = b'<!doctype html><html><head><script src="/static/generated.js"></script></head></html>'
+        modified = probe.inject_main_document_route_observer(original)
+        self.assertIn(b'reader-main-route-observations', modified)
+        self.assertNotIn(b'reader-epub-worker-observations', modified)
+        self.assertLess(modified.index(b'__readerMainRouteProbe'), modified.index(b'/static/generated.js'))
+
+
 if __name__ == '__main__':
     unittest.main()
