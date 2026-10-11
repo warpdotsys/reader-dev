@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated-only T diagnostic; not product, pressure or production acceptance",
+  "rawFiniteReceiptSha256": "c68d6948471597e25e19fcd8368f7ce78a26c946e2b806101a22ee2dcf6d229a",
+  "independentVerifierSha256": "7e3f87a77cb5edb94597ffe9fba53b6c0461013449dce687ade04bc8d15efb63",
+  "failureCorrelationHelperSha256": "6cfde24925a3e91059b3020e0967c32da4a109971a7d9291d42bb76f275bb7a7",
+  "sourceSha256": {
+    "start": "e95a3f3bfc3d0da717a841d31b32b998f765968fa8730cfc996c55b36b26be85",
+    "probe": "388a19839fe8e8543b9c7f60ac9a1a93f9789b87a10b09b5c8c537150662589f",
+    "inner": "4af20b5026819476cca02ec6fad010eaa37cfef5042b282b14f25866c157e65f",
+    "generated": "bb1323b89ac3192d03c8068117e7679f17e3d9c2974a2e3965cf7c33afe363c0",
+    "observer": "e4d2573dbb51e2259ef6299b681ba8c27337a79e33441323d96a41c38df3e81f"
+  },
+  "currentJarSha256": "be87f00490fc53a0462c48b06cc5500c6fea80ee07ee3f48b2fde035eb83eeab",
+  "currentJarBytes": 285672055,
+  "wholeRunPassed": false,
+  "wholeIndependentAcceptance": false,
+  "primaryFailurePreserved": true,
+  "primaryFailureCode": "validation",
+  "failedPhase": "firstGeneratedRaw805Finished",
+  "actualReaderWorkerLifecycleAcceptedInOriginalReceipt": false,
+  "independentPureGuardCount": 15,
+  "independentGuardResults": {
+    "sourceBinding": true,
+    "identities": true,
+    "onlyUserAndNetShared": true,
+    "resources": true,
+    "parentResourceSamples": true,
+    "cleanup": true,
+    "uiCases": true,
+    "workerSubset": true,
+    "workerAssetBound": true,
+    "hostRouteFiniteNoReader": true,
+    "navigationGuard": true,
+    "finiteProxyAndEvents": false,
+    "failureCorrelation": true,
+    "cacheHygieneWithoutRouteInterception": true,
+    "actualWorkerSubsetObserved": true,
+    "productAndPressureAcceptanceFalse": true,
+    "accepted": false
+  },
+  "generatedEpub": {
+    "generatedOnly": true,
+    "spineCount": 806,
+    "inputBytes": 501316,
+    "zipEntryCount": 810,
+    "expandedBytes": 6718908,
+    "inputSha256": "844e0c312978578cd7da1c721120ba0bfcbd90c061e82fd55fe3712224fbcb63"
+  },
+  "generatedUiCases": {
+    "html805": {
+      "characters": 2891,
+      "generatedChapterMarker": true,
+      "iframeHeight": null,
+      "paragraphs": 45,
+      "replacementCharacters": 0,
+      "scripts": 0
+    },
+    "raw805": {
+      "characters": 2891,
+      "generatedChapterMarker": true,
+      "iframeHeight": 582,
+      "paragraphs": 45,
+      "replacementCharacters": 0,
+      "scripts": 0
+    },
+    "text805": {
+      "characters": 2891,
+      "generatedChapterMarker": true,
+      "iframeHeight": null,
+      "paragraphs": 46,
+      "replacementCharacters": 0,
+      "scripts": 0
+    }
+  },
+  "workerAssetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+  "workerEventKinds": [
+    "created",
+    "posted",
+    "message",
+    "terminated"
+  ],
+  "workerPostedToMessageMs": 157,
+  "workerCreatedToTerminatedMs": 158,
+  "readerNavigationCounts": {
+    "finalHostRouteObservations": 0,
+    "finalServerRouteObservations": 1,
+    "finalRequestEventObservations": 1,
+    "finalTopFrameNavigationObservations": 3
+  },
+  "proxyFailureRecords": [
+    {
+      "code": "closed",
+      "httpStatus": 200,
+      "stage": "clientWrite"
+    }
+  ],
+  "proxyFailureRecordsOverflow": false,
+  "proxyResponseStatusCounts": {
+    "client4xx": 0,
+    "notModified304": 0,
+    "ok200": 59,
+    "other": 0,
+    "redirect3xx": 0,
+    "server5xx": 0
+  },
+  "eventFailureRecordsFieldPresent": false,
+  "eventFailureRecords": null,
+  "eventFailureRecordsOverflow": false,
+  "missingEventRecordsNotConvertedToEmptyList": true,
+  "proxyBrowserFailureCorrelation": {
+    "browserRequestFailures": {
+      "api": 2,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "exactLinkCounts": {
+      "api": 0,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "exactLinks": [],
+    "overflow": false,
+    "serverWriteFailures": {
+      "api": 1,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "supported": true,
+    "unlinkedBrowserRequestFailures": {
+      "api": 2,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "unlinkedServerWriteFailures": {
+      "api": 1,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    }
+  },
+  "proxyBrowserFailureCorrelationAfterCleanup": {
+    "browserRequestFailures": {
+      "api": 2,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "exactLinkCounts": {
+      "api": 0,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "exactLinks": [],
+    "overflow": false,
+    "serverWriteFailures": {
+      "api": 1,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "supported": true,
+    "unlinkedBrowserRequestFailures": {
+      "api": 2,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    },
+    "unlinkedServerWriteFailures": {
+      "api": 1,
+      "login": 0,
+      "other": 0,
+      "reader": 0,
+      "root": 0,
+      "static": 0,
+      "worker": 0
+    }
+  },
+  "correlationCaptureFailureCodes": [],
+  "correlationCaptureFailureOverflow": false,
+  "finalCorrelationCaptureFailureCode": null,
+  "requestCancellationCauseEstablished": false,
+  "routeInterceptionInstalled": false,
+  "testOnlyProxyCacheHygieneEnabled": true,
+  "resourceBudget": {
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000,
+    "memoryPeakBytes": 1611603968,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 2369,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "pidsPeak": 249,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "swapMaxBytes": 0,
+    "swapCurrentBytes": 0
+  },
+  "probeSeconds": 22.037,
+  "ownContainersStoppedPidZeroDeleted": 2,
+  "ownContainersRemaining": 0,
+  "ownProxyJavaSamplerStopped": true,
+  "productAcceptance": false,
+  "pressureAcceptance": false,
+  "fullEightSceneAccepted": false,
+  "largeEpubPressureAccepted": false,
+  "originalExecuted": false,
+  "realBookOrCredentialsRead": false,
+  "productionChanged": false
+}

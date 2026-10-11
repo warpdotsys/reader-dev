@@ -102,3 +102,69 @@ O 父级同预算：2 CPU、2 GiB max、1.5 GiB high、256 tasks、swap 0；峰�
 独立只读验证器 SHA `50032e83…366c` 锁定五份源码、JAR/Worker/实际生成输入 SHA，严格解析 e4 的两个页面快照、四事件/单调时间、唯一容器清理及精确 cgroup/namespace。根代理重跑实际 P 回执和 9 项纯生成守卫（1 正例、8 拒绝）均得到预期结果：身份/资源/清理/三种 UI/实际 Worker 子集可确认，但 `wholeRunPassed=false` / `accepted=false`。公开回执又逐字段与原始有限 JSON 比较，不覆盖原件，也不把观察子集扩大为发布验收。
 
 本节是后续诊断文档，不在 `324a7d50` 被测试快照内；四项托管门禁只对应上表既有快照。没有改产品、合并、tag、发版、registry 推送或部署，完整目标继续 active。
+
+## a4df 文档提交的四项托管复核
+
+**已成功重建并测试**：文档提交 `a4dfb1a6de772da2248832741a123ced596212cd`，实际 PR 合并快照 `c2e271ff1f86b04d26dcc3f8341abff11099398b`。四项门禁均终态成功，独立回执及根代理只读重算一致；JAR 仍是同一 be87，不能把后续 Q/S/T 文档或 GET 修复算进这个被测试快照。
+
+| 门禁 | 实际运行与有限结论 |
+| --- | --- |
+| [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/38144149410) | Python 725 项零跳过；JVM 报告总计 207 项，其中 35 项既有环境跳过，实际执行 172 项；编码 4 项零跳过；双 clean JAR 字节一致 |
+| [Vue 3](https://github.com/warpdotsys/reader-dev/actions/runs/38144149408) | UI 25 项零跳过；前端 304 项；截图保护 20 项 |
+| [完整单容器](https://github.com/warpdotsys/reader-dev/actions/runs/38144149492) | 实际 Camoufox 24 项零跳过；完整服务峰值 882,020,352B / 196 tasks |
+| [原生两架构](https://github.com/warpdotsys/reader-dev/actions/runs/38144149453) | amd64 / arm64 构建、转移有限回执通过；各阶段最大 974,974,976B / 203 tasks；未推送 registry |
+
+四份独立回执 SHA 分别为 `0d83adb2…831b` / `bdc313fb…15bb` / `02ddd4c8…95b1` / `f822535b…e315`。Native 未下载大镜像，保留 `localArchiveHashesRecomputed=false`。根代理查看了这次托管生成的登录/阅读截图，截图中的中文正常；这不是生产站全页面检查，也不是授权大型 EPUB、三方对照或完整目标通过。
+
+## Q 定位阶段，S 改进测试工具：两轮均保留失败
+
+**已从 JAR 和实际页面验证**：仍用同一 be87 JAR / 原样 Worker 资源 `46bb4b6d…2332` / 旧锁定浏览器 runtime；仅使用全生成 806 章 EPUB。固定 ZIP `create_system=3` 后，本机两次生成预检及两轮 Linux 实际输入 SHA 都是 `844e0c31…cb63`，压缩 501,316B、810 条目、展开 6,718,908B。这只证明这些具体样本，不反写 P 为跨平台一致。
+
+Q 增加有限代理阶段与响应分类，并分别观察 server、浏览器 request、顶层 frame。实际三路 Reader 导航均收到：server=1、request=1、frame=3；原 host route 回调仍是 0。Reader 文档两个 marker 和 bootstrap 有效，实际 Worker 四事件输入/输出及资源 SHA 都绑定正确。Q 的有限失败明确是两次 `clientWrite/closed/200` 和一次 `backendStatus/validation/304`；不是未知阶段错误，也不能仅凭写入断开认定为正常取消或 Reader 业务错误。
+
+S 在新目录仅修正测试方法：不再安装请求路由拦截；测试代理剥除 `If-None-Match` / `If-Modified-Since`、响应缓存校验/缓存头，添加 `no-store`。所有 3xx 仍拒绝，最终 origin、身份、原产品超时、预算、失败保护和实际 Worker 资源均不变；没有修改生产 HTTP 缓存或产品前端。五项纯回环 mock 核验缓存剥离、302/304、非法状态和错误 origin，不能代替真实运行。
+
+S 实际 60 次 200、304/3xx/4xx/5xx 均为 0，三路 Reader 导航仍为 1/1/3；实际 Worker 四事件及三个 UI 模式均就绪。但仍有一次 `clientWrite/closed/200`，后置守卫正确拒绝。Q/S 的 `passed=false`、`actualReaderWorkerLifecycleAccepted=false`、primary `validation` 均保留；独立验证器只确认观察子集，不将新的三路导航守卫用于改写 Q，也不把 S 观察子集当作整体压力通过。
+
+| 项目 | Q | S |
+| --- | --- | --- |
+| text / HTML / raw | 2891 字符，46 / 45 / 45 段 | 同左 |
+| U+FFFD / script | 0 / 0 | 0 / 0 |
+| raw iframe | 688px，`allow-same-origin` | 807px，`allow-same-origin` |
+| Worker posted → message / created → terminated | 217ms / 217ms | 364ms / 364ms |
+| 父级峰值 / tasks | 1,611,603,968B / 253 | 1,611,489,280B / 247 |
+| soft-high 事件 | 2403 | 2339 |
+| hard-memory / PID-max / OOM / swap | 0 / 0 / 0 / 0 | 同左 |
+| 探针 / 单元耗时 | 23.849s / 28.077s | 24.601s / 26.772s |
+
+探针/单元耗时不能混作 Worker 时间；soft-high 与接近 task 上限仍存在。双容器 UID10001、六 namespace 独立交叉核对只有 user/net 相同、只读根/JAR/浏览器及仅 lo 均观察到；没有真实输入挂载。两轮各两个自有容器 stopped/PID0/delete、inventory0，代理/Java/sampler 停止、单元 inactive/MainPID0 均确认。未读取真实书或凭据，也没有改动用户 Reader。
+
+R 是两轮之间的启动失败，须单独记录：根代理未等辅助任务冻结便提前执行，Python `IndentationError` 阻止进入 Reader/浏览器；辅助任务同时修正了源文件。因此只有启动失败和单元 inactive/MainPID0 可报告，没有不可变完整回执，**执行源码绑定未验收**。不能拿后改的 R 源码冒充失败时冻结源码，更不能把它当作浏览器或预算测试通过。后续 S 在独立目录先完成全脚本 AST、`sh -n`、mock 和不再修改声明，再实际运行。
+
+[Q/S 公开有限回执](evidence/generated-reader-worker-q-s-finite-diagnostic-2026-10-11.json)由冻结原始有限 JSON 逐字段生成并只读精确比较，不包含正文、URL、Cookie、凭据、日志或截图。Q 原始 SHA `211f74fe…13ba` / S `d89e425f…aaa9`；独立验证器最终 SHA `87d26169…703c` / `5e45843a…921d`，两轮都严格拒绝整体验收。58 份脏报告、原 JAR/只读备份和授权 EPUB 的哈希保护复核未变。
+
+下一步只在生成环境加入“同一 request 对象 + 测试响应头”的短期内存关联，区分实际对应的浏览器请求失败与未关联的写入断开；不导出请求标识、URL、header 或错误原文。该诊断仍保留原 proxy failure，不通过放宽守卫来取得绿色结果。大型 EPUB 压力、完整八场景、fflate 临时扩容、原 JAR/远程 WebView 三方、真实站点登录、OPDS 与同章 anchor 等仍未闭合。没有合并、tag、发版、registry 推送或生产部署，完整目标仍 active。
+
+## T 有限请求关联：没有证实取消，整轮仍失败
+
+**已实际运行且保留失败**：T 使用同一 be87 JAR、原样 Worker 和 SHA `844e0c31…cb63` 的全生成 EPUB；先冻结源码、通过 AST / shell / 7 项纯回环 mock，再执行。仅测试代理增加短期内存 trace 与同一浏览器 request 对象关联，公开回执不包含这些标识、header、URL 或正文。无路由拦截、仅回环、缓存卫生、3xx 拒绝和原产品超时/资源上限均保留，没有改产品来迁就测试。
+
+实际 59 次 200，304/3xx/4xx/5xx 均 0，仍有一次 `clientWrite/closed/200`。清理前后两个关联快照完全相同：API 类 server 写入失败 1、浏览器请求失败 2，**精确关联为 0**，全部未关联。不能把同为 API 类当作同一请求，也不能把未关联推定为正常导航取消。原始事件失败记录字段缺失，公开回执保留 `eventFailureRecordsFieldPresent=false` / `null`，不把缺失伪造成空列表；该字段只记录 request/frame 观察回调自身的异常，不是浏览器 `requestfailed` 列表，不能称浏览器零失败。冻结验收器对该字段使用空列表默认值，因此明确拒绝原因是非空 proxy failure，而非“缺字段也被严格拒绝”。后续新探针须显式初始化该字段，并单独记录有上限的浏览器失败类别/有限码；不能反写 T。
+
+独立验收器 SHA `7e3f87a7…fb63` 的 15 项纯结构守卫通过，根代理也实际重跑。源码、身份/namespace、父级资源采样、三个 UI 模式、原版 Worker 接点/资源、三路导航及清理守卫均通过；`finiteProxyAndEvents=false`，`passed=false` / `accepted=false` / 原 `actualReaderWorkerLifecycleAccepted=false` 和 primary `validation` 均保留。生成文字 2891 字符、46/45/45 段、U+FFFD/script 0，raw iframe 582px；实际 Worker posted→message 157ms、created→terminated 158ms。它们仍只是该次生成样本的观察子集，不是大型 EPUB 或全项目验收。
+
+父级峰值 1,611,603,968B / 249 tasks，soft-high 2369，hard-memory/PID-max/OOM/swap 0；探针 22.037 秒，不能混作 Worker 时间。两个自有容器 stopped/PID0/delete、inventory0，代理/Java/sampler 停止；根代理另外确认单元 inactive/dead/MainPID0。没有读取真实正文/账号或更改用户 Reader。
+
+**从当前源码核查，尚未定因**：登录成功后才导航，导入/入架调用及书架卸载均没有 API 主动取消信号；Reader 的 AbortController 仅覆盖 EPUB 加载，不能据此解释上述 API 写断。另发现 GET 包装器声明支持 `signal` 却未透传，须单独修复和测试，不能称它已解释 T 的故障。缓存 runtime 的 `release` 元数据是 Eclipse Adoptium Temurin `11.0.32.1`；本机编译 JDK `11.0.8` 不是该 runtime。两 CPU 配额不等于 JVM 仅感知两个处理器，尚未做实际 JVM 线程/处理器归因，不据此擅改线程池参数。
+
+[T 公开有限回执](evidence/generated-reader-worker-t-finite-diagnostic-2026-10-11.json)逐字段绑定原始只读 JSON SHA `c68d6948…229a`，并由根代理只读精确比较。Q/S/T 文档属于后续快照，不属于 a4df/c2e 四绿快照；未合并、发版、registry 推送或部署。完整目标及上述主要风险均未闭合。
+
+## GET 取消信号窄修复：源码与本机回归，自己的托管构建待验
+
+**已从当前源码确认并修复**：`web-vue3/src/api/request.ts` 的 GET 包装器没有透传已声明的 `RequestOptions.signal`；本次只向原 Axios config 增加 `signal: opts?.signal`。GET 的 params、headers、silent、timeout 和返回值、POST 既有判别/透传、登录/命名空间与后端存储逻辑不改。这不是 T 写断的已证实根因，也没有提高产品下载或 Worker 超时。
+
+**本机回归通过，不等于锁定重建**：新增 `requestSignal.test.ts` 四项：GET signal 及原参数/header/timeout、无 signal、POST 既有 signal、真实 Node HTTP adapter 取消。以 Vite SSR 载入实际 `request.ts` 和实际 Axios；测试插件只替换 router/message/store/requestContext/namespace 等边界依赖，不用伪浏览器或假取消代替 HTTP 管线。最后一项显式选择真实 `http` adapter、禁用环境代理、只绑定 `127.0.0.1`，实际请求到达后 abort，验证 `ERR_CANCELED` 和客户端关闭；响应为自生成常量，未读正文/凭据。相关请求/session/error 共 16 项、完整前端 308 项及 TypeScript 检查通过。根代理实际重跑了 16 项、全前端 308 项和类型检查；本机使用已有依赖目录，不宣称执行了 `npm ci`。新提交、实际 PR 合并快照及自己的 GitHub 托管构建须另行绑定，不能借 a4df 的旧四绿发版。
+
+**另一个已知缺口，尚未修改**：POST 包装器把第三参数判为选项时只识别 silent/signal/headers，因此仅 `{timeout: ...}` 会被当成旧 query params。当前相关 wrapper 调用同时带 silent，纯 timeout 的文件/导入调用直接走 Axios instance；未确认这些现有业务受此缺口影响。暂不顺手改变旧 query 判别语义，后续须单独明确兼容和测试；不能称所有 RequestOptions 已正确支持。
+
+回退该产品增量时，在独立干净工作树只撤回 GET 的 signal 透传并形成单独回退提交；保留诊断及已知问题记录，不 reset/checkout 用户工作区。回退会重新失去 GET 取消能力，不能称业务缺口消失。真实大型 EPUB、完整八场景、资源/写断归因、原件/远程 WebView 三方及生产切换仍未完成，当前没有合并或部署。

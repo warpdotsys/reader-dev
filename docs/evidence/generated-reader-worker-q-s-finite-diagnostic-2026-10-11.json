@@ -1,0 +1,559 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated-only Reader and actual Vite Worker diagnostic, not product or pressure acceptance",
+  "currentJarSha256": "be87f00490fc53a0462c48b06cc5500c6fea80ee07ee3f48b2fde035eb83eeab",
+  "currentJarBytes": 285672055,
+  "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestWholeNativeImageLocallyAccepted": false,
+  "rounds": [
+    {
+      "label": "Q",
+      "rawFiniteReceiptSha256": "211f74fedc6b15656dd55e228e12ec1846edfc088d12be4990964df5a91613ba",
+      "independentVerifierSha256": "87d261696be53da706c9235356315f0f4dedc1d8612dc38e5a8040d6b7dc703c",
+      "sourceSha256": {
+        "start": "9f2fe6dd26e3c88379e41bfdddbb56486318f9be7f1b40befe6bf27df0c01ac3",
+        "probe": "ef7b9c8c3ff1af8d3c199a05ab83525ad3779412fd7e907d569a44e145d2bf80",
+        "inner": "04670dffa1b87e8863cdfc622b48346b19b74f3f7173687d1c0d1a589373c8e0",
+        "generated": "0737489e4333379b2940a7e525b382778812bba5cad86c48a84608ea0c9c37a1",
+        "observer": "e4d2573dbb51e2259ef6299b681ba8c27337a79e33441323d96a41c38df3e81f"
+      },
+      "wholeRunPassed": false,
+      "wholeIndependentAcceptance": false,
+      "primaryFailurePreserved": true,
+      "primaryFailureCode": "validation",
+      "failedPhase": "firstGeneratedRaw805Finished",
+      "actualReaderWorkerLifecycleAcceptedInOriginalReceipt": false,
+      "actualWorkerSubsetObserved": true,
+      "independentGuardResults": {
+        "sourceBinding": true,
+        "identities": true,
+        "onlyUserAndNetShared": true,
+        "resources": true,
+        "cleanup": true,
+        "workerSubset": true,
+        "workerAssetBound": true,
+        "navigationGuard": false,
+        "finiteProxyAndEvents": false,
+        "actualWorkerSubsetObserved": true,
+        "productAndPressureAcceptanceFalse": true,
+        "accepted": false
+      },
+      "generatedEpub": {
+        "expandedBytes": 6718908,
+        "generatedOnly": true,
+        "inputBytes": 501316,
+        "inputSha256": "844e0c312978578cd7da1c721120ba0bfcbd90c061e82fd55fe3712224fbcb63",
+        "spineCount": 806,
+        "zipEntryCount": 810
+      },
+      "generatedUiCases": {
+        "html805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": null,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": 688,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": null,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "workerAssetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+      "workerSnapshot": {
+        "constructorStillInstalled": true,
+        "overflow": false,
+        "publishFailed": false,
+        "records": [
+          {
+            "epochMs": 1791726914938,
+            "kind": "created",
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791726914938,
+            "inputBytes": 501316,
+            "inputIsArrayBuffer": true,
+            "kind": "posted",
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791726915155,
+            "errorReply": false,
+            "filesCount": 810,
+            "filesReceived": true,
+            "kind": "message",
+            "outputBytes": 6718908,
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791726915155,
+            "kind": "terminated",
+            "workerId": 1
+          }
+        ],
+        "supported": true
+      },
+      "currentReaderDocumentBootstrap": {
+        "hasCsp": false,
+        "htmlAccepted": 1,
+        "injectCompleted": 1,
+        "injectRejected": 0,
+        "injectStarted": 1,
+        "navigationSeen": {
+          "fixture": 0,
+          "login": 0,
+          "other": 0,
+          "reader": 1,
+          "root": 0
+        },
+        "routeSeen": {
+          "fixture": 0,
+          "login": 0,
+          "other": 0,
+          "reader": 1,
+          "root": 0
+        }
+      },
+      "finiteRouteObservations": {
+        "finalHostRouteObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 3,
+          "injectCompleted": 3,
+          "injectRejected": 3,
+          "injectStarted": 3,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 0,
+            "reader": 0,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 25,
+            "reader": 0,
+            "root": 0
+          }
+        },
+        "finalServerRouteObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 3,
+          "injectCompleted": 3,
+          "injectRejected": 0,
+          "injectStarted": 3,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 0,
+            "reader": 1,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 56,
+            "reader": 1,
+            "root": 1
+          }
+        },
+        "finalRequestEventObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 0,
+          "injectCompleted": 0,
+          "injectRejected": 0,
+          "injectStarted": 0,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 0,
+            "reader": 1,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 57,
+            "reader": 1,
+            "root": 0
+          }
+        },
+        "finalTopFrameNavigationObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 0,
+          "injectCompleted": 0,
+          "injectRejected": 0,
+          "injectStarted": 0,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 3,
+            "other": 0,
+            "reader": 3,
+            "root": 2
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 3,
+            "other": 0,
+            "reader": 3,
+            "root": 2
+          }
+        }
+      },
+      "proxyFailureRecords": [
+        {
+          "code": "closed",
+          "httpStatus": 200,
+          "stage": "clientWrite"
+        },
+        {
+          "code": "closed",
+          "httpStatus": 200,
+          "stage": "clientWrite"
+        },
+        {
+          "code": "validation",
+          "httpStatus": 304,
+          "stage": "backendStatus"
+        }
+      ],
+      "proxyFailureRecordsOverflow": false,
+      "proxyResponseStatusCounts": {
+        "client4xx": 0,
+        "notModified304": 1,
+        "ok200": 58,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "eventFailureRecords": [],
+      "eventFailureRecordsOverflow": false,
+      "resourceBudget": {
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000,
+        "memoryPeakBytes": 1611603968,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "pidsPeak": 253,
+        "pidsMax": 256,
+        "swapMaxBytes": 0,
+        "swapCurrentBytes": 0,
+        "memoryEvents": {
+          "low": 0,
+          "high": 2403,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "pidsEvents": {
+          "max": 0
+        }
+      },
+      "probeSeconds": 23.849,
+      "ownContainersStoppedPidZeroDeleted": 2,
+      "ownContainersRemaining": 0,
+      "ownProxyJavaSamplerStopped": true,
+      "productAcceptance": false,
+      "pressureAcceptance": false,
+      "fullEightSceneAccepted": false,
+      "originalExecuted": false,
+      "realBookOrCredentialsRead": false,
+      "productionChanged": false
+    },
+    {
+      "label": "S",
+      "rawFiniteReceiptSha256": "d89e425fdb866059ee5c82f62df069c9af808522bfd4ed060676a0d8a699aaa9",
+      "independentVerifierSha256": "5e45843a7f3057a006a5dfb5d2e2274d4440bd302dc6425650874bacbfcb921d",
+      "sourceSha256": {
+        "start": "cad837078f8b5ccde0e29725a1db9946871d4846e7b174ad62d13da8e38b4134",
+        "probe": "42dfc66aca280f6dddbed9e4bbd6685d9207bba5ca4597f21c05018c4ecc30aa",
+        "inner": "4965090ba8084c2882aa49fb75db22eb00ba0831ab7c1e8d9e121d4d5e489916",
+        "generated": "08f62a7acb3f9781de588398803ee8793721f7919e90740c1c77f3de375cbf23",
+        "observer": "e4d2573dbb51e2259ef6299b681ba8c27337a79e33441323d96a41c38df3e81f"
+      },
+      "wholeRunPassed": false,
+      "wholeIndependentAcceptance": false,
+      "primaryFailurePreserved": true,
+      "primaryFailureCode": "validation",
+      "failedPhase": "firstGeneratedRaw805Finished",
+      "actualReaderWorkerLifecycleAcceptedInOriginalReceipt": false,
+      "actualWorkerSubsetObserved": true,
+      "independentGuardResults": {
+        "sourceBinding": true,
+        "identities": true,
+        "onlyUserAndNetShared": true,
+        "resources": true,
+        "parentResourceSamples": true,
+        "cleanup": true,
+        "uiCases": true,
+        "workerSubset": true,
+        "workerAssetBound": true,
+        "hostRouteFiniteNoReader": true,
+        "navigationGuard": true,
+        "finiteProxyAndEvents": false,
+        "cacheHygieneWithoutRouteInterception": true,
+        "actualWorkerSubsetObserved": true,
+        "productAndPressureAcceptanceFalse": true,
+        "accepted": false
+      },
+      "generatedEpub": {
+        "expandedBytes": 6718908,
+        "generatedOnly": true,
+        "inputBytes": 501316,
+        "inputSha256": "844e0c312978578cd7da1c721120ba0bfcbd90c061e82fd55fe3712224fbcb63",
+        "spineCount": 806,
+        "zipEntryCount": 810
+      },
+      "generatedUiCases": {
+        "html805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": null,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": 807,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "generatedChapterMarker": true,
+          "iframeHeight": null,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "workerAssetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+      "workerSnapshot": {
+        "constructorStillInstalled": true,
+        "overflow": false,
+        "publishFailed": false,
+        "records": [
+          {
+            "epochMs": 1791727444527,
+            "kind": "created",
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791727444527,
+            "inputBytes": 501316,
+            "inputIsArrayBuffer": true,
+            "kind": "posted",
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791727444891,
+            "errorReply": false,
+            "filesCount": 810,
+            "filesReceived": true,
+            "kind": "message",
+            "outputBytes": 6718908,
+            "workerId": 1
+          },
+          {
+            "epochMs": 1791727444891,
+            "kind": "terminated",
+            "workerId": 1
+          }
+        ],
+        "supported": true
+      },
+      "currentReaderDocumentBootstrap": {
+        "hasCsp": false,
+        "htmlAccepted": 1,
+        "injectCompleted": 1,
+        "injectRejected": 0,
+        "injectStarted": 1,
+        "navigationSeen": {
+          "fixture": 0,
+          "login": 0,
+          "other": 0,
+          "reader": 1,
+          "root": 0
+        },
+        "routeSeen": {
+          "fixture": 0,
+          "login": 0,
+          "other": 0,
+          "reader": 1,
+          "root": 0
+        }
+      },
+      "finiteRouteObservations": {
+        "finalHostRouteObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 3,
+          "injectCompleted": 3,
+          "injectRejected": 1,
+          "injectStarted": 3,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 0,
+            "other": 0,
+            "reader": 0,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 0,
+            "other": 0,
+            "reader": 0,
+            "root": 0
+          }
+        },
+        "finalServerRouteObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 3,
+          "injectCompleted": 3,
+          "injectRejected": 0,
+          "injectStarted": 3,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 0,
+            "reader": 1,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 57,
+            "reader": 1,
+            "root": 1
+          }
+        },
+        "finalRequestEventObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 0,
+          "injectCompleted": 0,
+          "injectRejected": 0,
+          "injectStarted": 0,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 0,
+            "reader": 1,
+            "root": 0
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 1,
+            "other": 57,
+            "reader": 1,
+            "root": 0
+          }
+        },
+        "finalTopFrameNavigationObservations": {
+          "hasCsp": false,
+          "htmlAccepted": 0,
+          "injectCompleted": 0,
+          "injectRejected": 0,
+          "injectStarted": 0,
+          "navigationSeen": {
+            "fixture": 0,
+            "login": 3,
+            "other": 0,
+            "reader": 3,
+            "root": 2
+          },
+          "routeSeen": {
+            "fixture": 0,
+            "login": 3,
+            "other": 0,
+            "reader": 3,
+            "root": 2
+          }
+        }
+      },
+      "proxyFailureRecords": [
+        {
+          "code": "closed",
+          "httpStatus": 200,
+          "stage": "clientWrite"
+        }
+      ],
+      "proxyFailureRecordsOverflow": false,
+      "proxyResponseStatusCounts": {
+        "client4xx": 0,
+        "notModified304": 0,
+        "ok200": 60,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "eventFailureRecords": [],
+      "eventFailureRecordsOverflow": false,
+      "resourceBudget": {
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000,
+        "memoryPeakBytes": 1611489280,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "pidsPeak": 247,
+        "pidsMax": 256,
+        "swapMaxBytes": 0,
+        "swapCurrentBytes": 0,
+        "memoryEvents": {
+          "low": 0,
+          "high": 2339,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "pidsEvents": {
+          "max": 0
+        }
+      },
+      "probeSeconds": 24.601,
+      "ownContainersStoppedPidZeroDeleted": 2,
+      "ownContainersRemaining": 0,
+      "ownProxyJavaSamplerStopped": true,
+      "productAcceptance": false,
+      "pressureAcceptance": false,
+      "fullEightSceneAccepted": false,
+      "originalExecuted": false,
+      "realBookOrCredentialsRead": false,
+      "productionChanged": false,
+      "routeInterceptionInstalled": false,
+      "testOnlyProxyCacheHygieneEnabled": true
+    }
+  ],
+  "rStartupFailure": {
+    "rootObservedIndentationError": true,
+    "browserAndReaderStarted": false,
+    "preStartProbeSha256": "d5e6ba58085ff8f636b28cf8f55c334452e1daee3310e077de40223fee796cac",
+    "postStartProbeSha256": "52d3e72fadcf3d595d406a59701050e02cff7e796881321a7a0f0affdcebe64a",
+    "sourceBindingAccepted": false,
+    "immutableRuntimeReceiptAvailable": false,
+    "rootStartedBeforeAgentFreezeCompleted": true,
+    "notIndependentRuntimeAcceptance": true
+  },
+  "privacy": {
+    "bodyUrlsCredentialsCookiesPrivateLogsScreenshotsIncluded": false,
+    "actualBookReadDuringTheseRounds": false,
+    "userDataChanged": false
+  }
+}

@@ -108,7 +108,7 @@ export function get<T>(
   opts?: RequestOptions,
 ): Promise<ReturnData<T>> {
   return request
-    .get(url, { params, headers: opts?.headers, silent: opts?.silent, timeout: opts?.timeout })
+    .get(url, { params, headers: opts?.headers, silent: opts?.silent, signal: opts?.signal, timeout: opts?.timeout })
     .then((r) => r.data as ReturnData<T>)
 }
 
