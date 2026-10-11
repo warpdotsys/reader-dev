@@ -1,0 +1,817 @@
+{
+  "schemaVersion": 1,
+  "scope": "downloaded exact Native shared JAR compared to own clean receipt, local UI input, and prior hosted JAR",
+  "sourceRevision": "3e225f97efe1036e405490e0b4b253f1285a7ce4",
+  "testedMergeSnapshot": "f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7",
+  "ownJavaRun": 38127563432,
+  "ownNativeRun": 38127563397,
+  "nativeJarArtifactId": 11697809064,
+  "nativeJarArtifactName": "reader-release-jar-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7",
+  "artifactArchiveDigestProviderReported": "sha256:d51a4b3c6d878d6ae55eb0f80e26715534ed2aaee18d9916bd13941b64b892f5",
+  "artifactArchiveDigestRecomputed": false,
+  "jarSha256": "be87f00490fc53a0462c48b06cc5500c6fea80ee07ee3f48b2fde035eb83eeab",
+  "jarBytes": 285672055,
+  "localJarSha256": "38522f23817738ea33c75a43df1aec91bfef06f759123d5cb0283e009badfca7",
+  "localJarBytes": 285677426,
+  "previousJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "exactLocalVsHostedJarMatch": false,
+  "localVsHostedChangedEntries": 111,
+  "localVsHostedNonVueChanges": [],
+  "previousVsHostedChangedEntries": 73,
+  "previousVsHostedNonVueChanges": [],
+  "allClasses": 1122,
+  "businessClasses": 1072,
+  "dependencies": 90,
+  "allClassesDependenciesWorkerAndNonVueResourcesUnchanged": true,
+  "ownLinuxDoubleCleanPassed": true,
+  "ownDoubleCleanReceiptSha256": "41c6ac6c8a5c8b2444763af2a6620c1a01b95461badf95f95f05a48dfa2f2d41",
+  "firstLocalHashExpectationRejected": true,
+  "firstVerifierSha256": "86b6547368f41e873ab1612d31368211b18015667cd12156405a83fba5ed1ff1",
+  "crossOsReproducibilityAccepted": false,
+  "localActualBrowserTestAcceptedForHostedJar": false,
+  "hostedActualUiAndFullNativeAcceptanceRequiresSeparateReceipts": true,
+  "changedVueEntries": [
+    {
+      "path": "BOOT-INF/classes/web-vue3/index.html",
+      "localBytes": 634,
+      "hostedBytes": 621,
+      "localSha256": "5126438380081548b6113d7f023ef7392a597074805f37c3386d0db29aeaa86d",
+      "hostedSha256": "20fb26da21ab4000fb7cc20726dd0e9f0b285a13d2d539814318602306f84e08"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/logo-light.svg",
+      "localBytes": 1881,
+      "hostedBytes": 1850,
+      "localSha256": "636aa2c344e722ae283adc9cae624d096f11b59aa9f09c4eb031404fdd1ffc34",
+      "hostedSha256": "7a9439c1eacd78e7e94347ee4a73d7025019573e36367bfac67154df74f7c928"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/logo.svg",
+      "localBytes": 1881,
+      "hostedBytes": 1850,
+      "localSha256": "3309dba163ef363464828bc91417c268940e617989d19005023ada5e6bf471f8",
+      "hostedSha256": "f904e3579221b4b352fc326ef986aa8e26df195a52e857e4a6e1d4ba234f8ee2"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/manifest.webmanifest",
+      "localBytes": 717,
+      "hostedBytes": 690,
+      "localSha256": "9027ae10011b1ab7cb063127f674011350ca9d64b7fe20bbdb0385fda6c71662",
+      "hostedSha256": "5ab421d3938eb4d073c3737f6ddd5058b83ed2eec34c3a5988b0b3fd070a4597"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookDetailView-C19n_Z5C.js",
+      "localBytes": null,
+      "hostedBytes": 31375,
+      "localSha256": null,
+      "hostedSha256": "6f4355b383cb3820aa57e7e029846e60a329351cd1c5f431a73e2f52e379f966"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookDetailView-CYckQwW0.css",
+      "localBytes": null,
+      "hostedBytes": 22111,
+      "localSha256": null,
+      "hostedSha256": "2271cbfb3d6ede17734f3e92a1270f7f190edf939718c0634f5fb113991f9abe"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookDetailView-D4yVJHFR.css",
+      "localBytes": 22111,
+      "hostedBytes": null,
+      "localSha256": "cfd47ed641cb66a9b7d77d18874ce9946c0987d84458eb4c8bc595c51fcd7d80",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookDetailView-Dd2erOks.js",
+      "localBytes": 31375,
+      "hostedBytes": null,
+      "localSha256": "02b9e6b95a276b7e8db18435c5a05c7d5a45b40f2b0f7306ffcf16e6a373b687",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookshelfView-BaD69EFc.js",
+      "localBytes": null,
+      "hostedBytes": 72505,
+      "localSha256": null,
+      "hostedSha256": "34704c0d2c326d5fcc8a4c77eea461c383c32226d07a30271b58921e586f2b20"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookshelfView-BjjbZIF3.css",
+      "localBytes": 42309,
+      "hostedBytes": null,
+      "localSha256": "27fa7895d7546e8b4dec36e4cd4f6968b32c54c5df3fc68778648cd15f9fe618",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookshelfView-BtgNd-bJ.css",
+      "localBytes": null,
+      "hostedBytes": 42309,
+      "localSha256": null,
+      "hostedSha256": "89a50e8137cd3c8b147596eb98ee3cdf01f29f49b4eb702f4b4cfb191d47e4a2"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/BookshelfView-MvuhtUx2.js",
+      "localBytes": 72510,
+      "hostedBytes": null,
+      "localSha256": "72e86f560542a82495779ecd57a1be7e61b93af5021d712edbe20b5473416259",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ChapterCacheDialog-B22ceZOG.css",
+      "localBytes": null,
+      "hostedBytes": 4421,
+      "localSha256": null,
+      "hostedSha256": "0f4945e6c7b3cdb6c19b7ff58ed523f2a949650f2484028202f71ab6be6953ed"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ChapterCacheDialog-BZVZGBV6.js",
+      "localBytes": null,
+      "hostedBytes": 9352,
+      "localSha256": null,
+      "hostedSha256": "b63b3e44e8edd57db89e4730d2cbe992a5e124b6a19dda5f9c08982397b22f3d"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ChapterCacheDialog-CwQcZvsw.css",
+      "localBytes": 4421,
+      "hostedBytes": null,
+      "localSha256": "e5055faa1c4964ef9d5bf9df20e2d8788cf70646b918ed9a919d97885c8ee0de",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ChapterCacheDialog-DcbRk_AK.js",
+      "localBytes": 9352,
+      "hostedBytes": null,
+      "localSha256": "1dc72bc452e02772617f0c640871531a805594bfa7d958ca0e87e8e36b517f6d",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ExploreView-3qHUIL9q.js",
+      "localBytes": 16442,
+      "hostedBytes": null,
+      "localSha256": "fce2c74e71f4dfa7332c6786844721e16e59e8548f414fc0124f810ec590876e",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ExploreView-CYWH3LIK.css",
+      "localBytes": 11883,
+      "hostedBytes": null,
+      "localSha256": "7bc56b5991bde3e5c4db4e645b4352a77a9e8610834f9b32e1bd56e1ec2df608",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ExploreView-DcWKLn8T.css",
+      "localBytes": null,
+      "hostedBytes": 11883,
+      "localSha256": null,
+      "hostedSha256": "8461cdba6b60f5bc0f1b831f30892197d89436a777adf001e84a79ab434e6c53"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ExploreView-Dr5vsP9a.js",
+      "localBytes": null,
+      "hostedBytes": 16442,
+      "localSha256": null,
+      "hostedSha256": "622d73c956536b270429cc3bf234f37d6e6470914389f3b329bf865da94293ae"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/FileManageView-BrqPvx8e.js",
+      "localBytes": null,
+      "hostedBytes": 25024,
+      "localSha256": null,
+      "hostedSha256": "50de70791d4db786550e5af54785bd026dc237bd5c8969fd40479132ddc22646"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/FileManageView-CMnCfUr0.js",
+      "localBytes": 25024,
+      "hostedBytes": null,
+      "localSha256": "077ab1baf6dcedd8ee238338372fd03c1864eaeec234ea7f83c03731a0a9155f",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/FileManageView-DKs8arhH.css",
+      "localBytes": 14154,
+      "hostedBytes": null,
+      "localSha256": "f090c43425ef2a3860d668c0d3a084800ec5e44641df6d3aa15904992502ac4b",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/FileManageView-DuGqz7Cn.css",
+      "localBytes": null,
+      "hostedBytes": 14154,
+      "localSha256": null,
+      "hostedSha256": "46ddc8cc7a216a1311296bd05af247467930d30c9a85118f0d785cf6d6bd5705"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/LoginView-BlQhmtZg.css",
+      "localBytes": 3897,
+      "hostedBytes": null,
+      "localSha256": "3dd69b8a403f9d6388b513abbf6c16571f4a1acace35fa77873abf2067823777",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/LoginView-CSHjI8-Y.js",
+      "localBytes": 4049,
+      "hostedBytes": null,
+      "localSha256": "d5672f0f750e359eb0738619f1d94b480f7d641e4ca34af7389c2d405f46f938",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/LoginView-CdeFovUF.css",
+      "localBytes": null,
+      "hostedBytes": 3897,
+      "localSha256": null,
+      "hostedSha256": "24daa512abd7f2f29796e31a07cc120fb96473f8f85465500bb6b3fea18c763c"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/LoginView-DsGeYTII.js",
+      "localBytes": null,
+      "hostedBytes": 4049,
+      "localSha256": null,
+      "hostedSha256": "5b2ec0b0aa204e41229b3a8ba519e30ab86e2665b781cdfc551fd6f71c9e91dc"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/NotFoundView-8oNerAi6.js",
+      "localBytes": 478,
+      "hostedBytes": null,
+      "localSha256": "9e322f2d9b6cd080e66c07ccaf7e4aa45b428d860f7a294da7d99e98c7e2d6fe",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/NotFoundView-Bzz8cCEl.css",
+      "localBytes": 865,
+      "hostedBytes": null,
+      "localSha256": "2cfd072c4fd437b86beb7b4ea85ad20107e299a3c8140db6a05c0741129d5eca",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/NotFoundView-CinTZBFG.css",
+      "localBytes": null,
+      "hostedBytes": 865,
+      "localSha256": null,
+      "hostedSha256": "40a8aed4112e14491c52fdc5e8a02f7e3f18b9834c2357f9112c5cb527327e1e"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/NotFoundView-DPWkkR0_.js",
+      "localBytes": null,
+      "hostedBytes": 483,
+      "localSha256": null,
+      "hostedSha256": "a400eba6747f2fe30620cd779f541b55b13ed73396c848d1b1d1ecd85ac1bbc2"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReaderView-BssZ3Qo5.css",
+      "localBytes": null,
+      "hostedBytes": 41221,
+      "localSha256": null,
+      "hostedSha256": "5dbbc8632625caaba541ff237b642b9818efacc6214474234a957652da0f7ede"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReaderView-CKX4lSfz.js",
+      "localBytes": 140022,
+      "hostedBytes": null,
+      "localSha256": "096757bbafe6d4688f6a906b0473b7d566e7bcdce9d8c396413aba3c19619b48",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReaderView-ClannFqx.js",
+      "localBytes": null,
+      "hostedBytes": 140022,
+      "localSha256": null,
+      "hostedSha256": "dc464e7bde35166d8510e8f7f6ffb9640741c062f6fd9c447c2a320f22502260"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReaderView-aGuNX4Ve.css",
+      "localBytes": 41221,
+      "hostedBytes": null,
+      "localSha256": "5e9646018a20d1482c4886ad2169c62a3ab2a858c057e931bd6904f801966cd1",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReplaceRuleView-DG0EBFZr.js",
+      "localBytes": 26715,
+      "hostedBytes": null,
+      "localSha256": "9ae15cdf6cb8f901680ac15450da8790cf812eb135c1d8db8dfcfb97d10a4a99",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReplaceRuleView-Dib_WXea.js",
+      "localBytes": null,
+      "hostedBytes": 26715,
+      "localSha256": null,
+      "hostedSha256": "7761b4b3982640c1bad66d1b98af73ea7442fa23c3bc91d87fa04f2170acdd0f"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReplaceRuleView-ZYf3WJ9L.css",
+      "localBytes": null,
+      "hostedBytes": 13543,
+      "localSha256": null,
+      "hostedSha256": "dea96eb77230d6d17af89b2e178c9aae5c4a970fcfbdcb6f5026894200ca9577"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ReplaceRuleView-zPJ2Cz52.css",
+      "localBytes": 13543,
+      "hostedBytes": null,
+      "localSha256": "fd6fdaaf34ad9b41c0be698b42b3a524daadcb7d1777419b309893263943875b",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/RssView-CDqAXK2L.css",
+      "localBytes": null,
+      "hostedBytes": 17321,
+      "localSha256": null,
+      "hostedSha256": "efd5ee6a31d50cc84664bcc4b9f897f04f8f94bc15d06cbe48359a7783cebfe1"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/RssView-D1PjHiHC.css",
+      "localBytes": 17321,
+      "hostedBytes": null,
+      "localSha256": "228dd67d4ccd8d1289552525e0f0227a25a2609e7b5c741ac620a058ff867131",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/RssView-DqCVMiwt.js",
+      "localBytes": 25250,
+      "hostedBytes": null,
+      "localSha256": "3eb5ec2a79a2ce1994b667ac3b44a7e81e1459d541da5873edb5c235af865a50",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/RssView-xwDU0Tg2.js",
+      "localBytes": null,
+      "hostedBytes": 25250,
+      "localSha256": null,
+      "hostedSha256": "ac484cf649ea88fdf1959ce3f281b91a62d22d04eb4dda48c19f961074b65264"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SearchView-Crei3CV1.js",
+      "localBytes": null,
+      "hostedBytes": 19153,
+      "localSha256": null,
+      "hostedSha256": "7760bd7d3e926277882e839e2adf6fcbbe4fdb9b3d4d96721096d4689195198c"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SearchView-DNYyHxKH.css",
+      "localBytes": null,
+      "hostedBytes": 14247,
+      "localSha256": null,
+      "hostedSha256": "6c2afc92c6cfd158c8139140d42cf4802f576241d16252e59e6ee5afff348174"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SearchView-DWh4RQMl.js",
+      "localBytes": 19153,
+      "hostedBytes": null,
+      "localSha256": "838014c8af944cd2ff4eecc70fbf5647d6f40f019f3c2319a5546dbf8c9b9c68",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SearchView-MhXnw_iZ.css",
+      "localBytes": 14247,
+      "hostedBytes": null,
+      "localSha256": "1d781d750e321ef6387dec30917aa881fc222d0afceb666d84d671687541df9c",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ServerStatsView-BbY3rdTt.css",
+      "localBytes": null,
+      "hostedBytes": 4844,
+      "localSha256": null,
+      "hostedSha256": "239b05b08719f6481c6610d9db2227fcab4c3056814dc51de8d96378524f16f5"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ServerStatsView-BsXBPpFd.js",
+      "localBytes": 6913,
+      "hostedBytes": null,
+      "localSha256": "a8262fdb6b2c73656472d3234b1c0e2e9ab56e29f583c196c05e659687624115",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ServerStatsView-DEtyuinn.css",
+      "localBytes": 4844,
+      "hostedBytes": null,
+      "localSha256": "0d9b8a6b4c341732c7646b8321bbc792ccc643b707eedcebafd6eedb8768ab2e",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/ServerStatsView-DsQ6ejNW.js",
+      "localBytes": null,
+      "hostedBytes": 6913,
+      "localSha256": null,
+      "hostedSha256": "ce833035f9ae9c421594f460c3f3a054ea1a767f311bdbf71e8ca5018628b1e8"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SettingsView-ByqKdfYr.css",
+      "localBytes": 19413,
+      "hostedBytes": null,
+      "localSha256": "533e16bca32fd609fccafd8dc984ef1c70bcc314114faf04aab66972ed48b867",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SettingsView-CPeuMHDS.css",
+      "localBytes": null,
+      "hostedBytes": 19413,
+      "localSha256": null,
+      "hostedSha256": "e0ef091537425d21d98109764731021e141e2a63cd1eea602bc6f6a225cba244"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SettingsView-CRhkmRGS.js",
+      "localBytes": 63687,
+      "hostedBytes": null,
+      "localSha256": "84bd6f892368b83730edf4c5e085e95c8be306d70c66e1840c0d67f906b9217a",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SettingsView-DBrgVQam.js",
+      "localBytes": null,
+      "hostedBytes": 63687,
+      "localSha256": null,
+      "hostedSha256": "a380829f7381f895bb92fab7b9d6121144716f84266532554df1642fcff13ebd"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SourceManageView-APA6eyVl.css",
+      "localBytes": null,
+      "hostedBytes": 28722,
+      "localSha256": null,
+      "hostedSha256": "df5f68f721bad022d28b88937f24e1c087b87fc66e1b5926fab0c89f76a17b38"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SourceManageView-B75IXre_.js",
+      "localBytes": null,
+      "hostedBytes": 74509,
+      "localSha256": null,
+      "hostedSha256": "30f00bbc9bd63debc3d0b849bab4e0797841938295c1a59f403e7f4b7fa08cd1"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SourceManageView-Bc8W-3KD.css",
+      "localBytes": 28722,
+      "hostedBytes": null,
+      "localSha256": "b6658b17dcdb0d8c2dd84e182e5a173b6e55cee155355068282a99c1a9c7d0c4",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/SourceManageView-DgrljHQF.js",
+      "localBytes": 74509,
+      "hostedBytes": null,
+      "localSha256": "1a47ae53fcd06653aefa19b6c8c7b7fc7060c19865c2b3b1cfa31b4c47a394a3",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/StoreView-Bsqv_zu9.js",
+      "localBytes": 7213,
+      "hostedBytes": null,
+      "localSha256": "60024179c36a1977570a7313415c5042b40cba7e748682505d512cbc396ff4e5",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/StoreView-CYeobbkQ.css",
+      "localBytes": 6305,
+      "hostedBytes": null,
+      "localSha256": "edf1ae4037f612556eb59863021751e4b93fb9209acd3d45728cf485eda60e09",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/StoreView-Dyeku8Ai.js",
+      "localBytes": null,
+      "hostedBytes": 7213,
+      "localSha256": null,
+      "hostedSha256": "de212995ed22a05d5b4adde568923044191c20f3f1340f9270d9b1a2218c4269"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/StoreView-LTbHLSVV.css",
+      "localBytes": null,
+      "hostedBytes": 6305,
+      "localSha256": null,
+      "hostedSha256": "fa6977aa39b27b96a2c6413fd392fa49d222b1ac39b490bcf286e5ecbdcb6875"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/TopNav-B4gRs0xk.js",
+      "localBytes": 3587,
+      "hostedBytes": null,
+      "localSha256": "b1810bbe1ce439a6b6fc75a208334023e815f3c7347928ce371c9737b3462443",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/TopNav-BLrWUtmi.css",
+      "localBytes": null,
+      "hostedBytes": 3308,
+      "localSha256": null,
+      "hostedSha256": "3a8a0829b498dabacabfbd32c847895a0642e7c7e55988e0c0eb405742ea36ab"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/TopNav-CsqXApVd.js",
+      "localBytes": null,
+      "hostedBytes": 3587,
+      "localSha256": null,
+      "hostedSha256": "eb5d2021a9632a507305586fe1f1574a2b0ee49e94a38cc1a20cd543f853db55"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/TopNav-HvKyP244.css",
+      "localBytes": 3308,
+      "hostedBytes": null,
+      "localSha256": "9ac92fd29f273bc1995fecf5aba8d48625b82738aac0931da568954944f5fea2",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/UserManageView-B3XkcRBw.js",
+      "localBytes": 24335,
+      "hostedBytes": null,
+      "localSha256": "ae1e27c460ca9ca035a1c0be8c117020c76e8839d19d44c23e2cc95d00d8c349",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/UserManageView-ClKdsUFD.css",
+      "localBytes": 12045,
+      "hostedBytes": null,
+      "localSha256": "fe7e49d63b57d9acf61bff967e7c290f02f62d873db3d7d831d8a6a9fa1947b3",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/UserManageView-Cvz8ua81.js",
+      "localBytes": null,
+      "hostedBytes": 24335,
+      "localSha256": null,
+      "hostedSha256": "2befa74f2aa3a2a87c6df9183893c08839baed7591378a340d04cc4e09cf7873"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/UserManageView-D4o_E8mE.css",
+      "localBytes": null,
+      "hostedBytes": 12045,
+      "localSha256": null,
+      "hostedSha256": "07e5522088ae4f93c88f6cc56d49639ba3372cd65bdad26b3c87360dd9e62b81"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/auth-CCj-7pC8.js",
+      "localBytes": null,
+      "hostedBytes": 777,
+      "localSha256": null,
+      "hostedSha256": "d1b3e1d63afca32ffb56ee334809df98eb8a0dacb0f401a314a7eb41106cfee7"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/auth-oDZVwqkH.js",
+      "localBytes": 777,
+      "hostedBytes": null,
+      "localSha256": "517124c7ad75606f95f617e2222a9cb255b7edc4ce9e4961e4841c151f84cddc",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/bookmarks-C2Y7xhzN.js",
+      "localBytes": null,
+      "hostedBytes": 1115,
+      "localSha256": null,
+      "hostedSha256": "6594ffba010d7e67ac15ee270ad75e49cc3afbee81dd19e8d32af480e32aad7d"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/bookmarks-DZHreqTQ.js",
+      "localBytes": 1115,
+      "hostedBytes": null,
+      "localSha256": "4261d8f0fab9eba827941c5030ac69f6074c44883e30098d204bcd85ac8d59d7",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/books-BCkgpqyi.js",
+      "localBytes": null,
+      "hostedBytes": 1086,
+      "localSha256": null,
+      "hostedSha256": "cb008ee04830c5b64b9b0b603aef5fb10141c8ed1b2ce380a5000f6b13c9c38d"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/books-BqhKHYf9.js",
+      "localBytes": 1086,
+      "hostedBytes": null,
+      "localSha256": "8fddc3ff0d6a76c1529a77c2c03f9383dda3113a54f9cb3d24e18af14777a34d",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/bookshelf-BFrzH0Xk.js",
+      "localBytes": null,
+      "hostedBytes": 4920,
+      "localSha256": null,
+      "hostedSha256": "883bc49f07010359f33ea3e66816f6f594eb3d6699d7b342753291c6d9b326a7"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/bookshelf-CMQc2XgA.js",
+      "localBytes": 4920,
+      "hostedBytes": null,
+      "localSha256": "763321fafee8fdaec9c8f66f79bdb483bd6d98d9fa8c8603250ad1275b2418b3",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/download-Ca2OCHhO.js",
+      "localBytes": null,
+      "hostedBytes": 491,
+      "localSha256": null,
+      "hostedSha256": "8729c986a33a4768073eb592d320b90cc846c2c10f744acb76d382001bf9a721"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/download-_ODD2ezm.js",
+      "localBytes": 491,
+      "hostedBytes": null,
+      "localSha256": "7522d17558e68a4604b0dc4bd54e5e54625cd6a64a0f12aaaa80e9f196924d2b",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/export-Brmtui9d.js",
+      "localBytes": 452,
+      "hostedBytes": null,
+      "localSha256": "186dba027ec9579126e9b59d0fd978297d586fd74c9199f6a2ea0363cc827cb7",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/export-NUTcDSBt.js",
+      "localBytes": null,
+      "hostedBytes": 452,
+      "localSha256": null,
+      "hostedSha256": "68672e7bf1027098bc1ce8db94a9702745f7526070dce4cc79e6a0191e6cb9b5"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/file-BNJd5b--.js",
+      "localBytes": 1730,
+      "hostedBytes": null,
+      "localSha256": "c1c72b89ce0662a84f58fcb916c1a7be8fc6627e31e2b5b9cd99cbe21f0d08a7",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/file-Cu2YCr3k.js",
+      "localBytes": null,
+      "hostedBytes": 1730,
+      "localSha256": null,
+      "hostedSha256": "e3b2368591b91f8f9e2b50ee0ad3bd76ce8ef2efe8b9e8746da71df7e3481654"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/hanMode-DkDo5rbG.js",
+      "localBytes": 1080388,
+      "hostedBytes": null,
+      "localSha256": "26861b9ccdf42f20392f3f0c7dace4f29ae4a6168365595b760e8179d0ae1a1e",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/hanMode-DmZNb8cL.js",
+      "localBytes": null,
+      "hostedBytes": 1080388,
+      "localSha256": null,
+      "hostedSha256": "90360c25ac3f78f80f56685b87fde8cb82fee3f1fbadcfa282ba85092ac49691"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/hls-WrVSMb3K.js",
+      "localBytes": null,
+      "hostedBytes": 591751,
+      "localSha256": null,
+      "hostedSha256": "8edf5a3e69a612759fe5451a9a55b60aaf636b2f244a72779bae87ed84c7068a"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/hls-h6QHvJ3w.js",
+      "localBytes": 592626,
+      "hostedBytes": null,
+      "localSha256": "eb729b4a5638b2bc913f41288655ef496c049debff24c2608550eaf5a2abb01e",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/index-1uULvRp8.js",
+      "localBytes": null,
+      "hostedBytes": 1062541,
+      "localSha256": null,
+      "hostedSha256": "2eb01e9bc6daf13fbea84dbe9b087f29fc54da92feb200263f37fb8ea5aef190"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/index-BQlnBnQi.css",
+      "localBytes": null,
+      "hostedBytes": 372055,
+      "localSha256": null,
+      "hostedSha256": "0a8091c83e067ed6832dd525ede52be7c954382a90114b0161307c83dc72dff0"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/index-CJSeDs0x.css",
+      "localBytes": 375742,
+      "hostedBytes": null,
+      "localSha256": "bc26f1582cee83e92d60e10b0152f10b687caeebd99e8df7922e04368e0b5b75",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/index-Otxk3E52.js",
+      "localBytes": 1080241,
+      "hostedBytes": null,
+      "localSha256": "01d63ceeda9b4e1513bd4013faa0fdc11c4134edb27a9f14d01725c4660c0bf8",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/readerConfig-BbZwxSBr.js",
+      "localBytes": 11881,
+      "hostedBytes": null,
+      "localSha256": "fe7d841ca7a4dab6739c51fef02cb5ed639955b3bf55b42a34c472b0ed75fe1a",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/readerConfig-i1wyUlJ_.js",
+      "localBytes": null,
+      "hostedBytes": 11881,
+      "localSha256": null,
+      "hostedSha256": "fa4cf647c630a9a5ef3c7081c27b688fa10ef4fd64b8015056b5e87085e687ad"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/readerLocalCache-Bi7g6ARi.js",
+      "localBytes": 2441,
+      "hostedBytes": null,
+      "localSha256": "120339f2efeab5d06a0048cd6ed0a9d38f19eb35a6311b075916e92b37a89e13",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/readerLocalCache-DXDGBOf0.js",
+      "localBytes": null,
+      "hostedBytes": 2441,
+      "localSha256": null,
+      "hostedSha256": "6942c4f9591a00d008fd82f1921f8694db1c0b819d66abf44f72037465263cc9"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/replaceRules-CJjW3Ivm.js",
+      "localBytes": 3321,
+      "hostedBytes": null,
+      "localSha256": "c52e3e31570cd31f86f0dff219b5eb154ada912f8a73a82145b1c3753542e16d",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/replaceRules-hydNt_ag.js",
+      "localBytes": null,
+      "hostedBytes": 3321,
+      "localSha256": null,
+      "hostedSha256": "0f0c2bc395761d8e17d647dd33a10d77159bb7434fa73fd95a5f0f6c3d0be196"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/request-CgAvmrXv.js",
+      "localBytes": 58560,
+      "hostedBytes": null,
+      "localSha256": "6290b1b8ea5ac591d9b2dfc93b23bc4851de9824d79c7c6b6bfa450e92fa7469",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/request-Dl9O8bQv.js",
+      "localBytes": null,
+      "hostedBytes": 55656,
+      "localSha256": null,
+      "hostedSha256": "178391e15f180fd837f352c805b726d4170ea0da67427f240f7548836bc53115"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/sources-BsCw7zbS.js",
+      "localBytes": null,
+      "hostedBytes": 2485,
+      "localSha256": null,
+      "hostedSha256": "678217f8ab3a4934b1fff5318cb21da2c424b848cb3919627aeb36b41ea8a27f"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/sources-CH3pA58E.js",
+      "localBytes": 2485,
+      "hostedBytes": null,
+      "localSha256": "01f22e3400412931756617877f5468e101f673b1b468a3751098e6a8336c31f4",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/system-CEYNIFRf.js",
+      "localBytes": null,
+      "hostedBytes": 252,
+      "localSha256": null,
+      "hostedSha256": "e1c5d8913344a283df1fd6f5e68dac71eeb48a01ebd240f875554e6d5c17d4f4"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/system-DhNTnF1M.js",
+      "localBytes": 252,
+      "hostedBytes": null,
+      "localSha256": "13c55414b366650caea3bc4158f43d398fc071562a3ff764432d1d0753f85972",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/tocRules-BO8sgdkj.js",
+      "localBytes": null,
+      "hostedBytes": 484,
+      "localSha256": null,
+      "hostedSha256": "607c65ecf5a813b9f610fd68db103a2a5620ebd168fe4524a4ad3506fa3a65a1"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/tocRules-BVwfLL3U.js",
+      "localBytes": 484,
+      "hostedBytes": null,
+      "localSha256": "c1844b590d740d69244ebb10f2d3d7f4237c3ae9cdc8ad3d396659ffb23c753f",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/users-Ci7Cm3q6.js",
+      "localBytes": null,
+      "hostedBytes": 1558,
+      "localSha256": null,
+      "hostedSha256": "d1bd746d01fd52ee03a5f04d2ba02cef5841c28c66f8c51fb441dbe82d357da0"
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/static/users-UO2fnIjt.js",
+      "localBytes": 1558,
+      "hostedBytes": null,
+      "localSha256": "4f935c3f60f65287f8cac8762294d3ebb92bdeb11ff909e9afff16776cc54a01",
+      "hostedSha256": null
+    },
+    {
+      "path": "BOOT-INF/classes/web-vue3/sw.js",
+      "localBytes": 7566,
+      "hostedBytes": 7408,
+      "localSha256": "076acc17680e7b77c37ea3efe2020a7b3e43a1c3a4beb8047907011737e2fa6a",
+      "hostedSha256": "1d7353ddf62c0aa905c08877996164fe79c0d53a3a45a1afab72f3c895f89a0f"
+    }
+  ],
+  "sourceEncodingRootCauseProven": false,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

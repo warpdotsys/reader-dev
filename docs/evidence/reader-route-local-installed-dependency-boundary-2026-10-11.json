@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "scope": "local existing package metadata versus npm lock only",
+  "testedSourceRevision": "3e225f97efe1036e405490e0b4b253f1285a7ce4",
+  "lockFileVersion": 3,
+  "lockSha256": "97411e99e38534951c7e5f39cc81f625563f8d433808513c23c52402a26b4b27",
+  "packages": [
+    {
+      "name": "@vitejs/plugin-vue",
+      "lockedVersion": "6.0.8",
+      "installedVersion": "6.0.9",
+      "exactVersionMatches": false,
+      "installedMetadataSha256": "fc6ec30b002301294bba8da23e81fce670b711c7931738a05042bee1ff5671c1"
+    },
+    {
+      "name": "vue",
+      "lockedVersion": "3.5.40",
+      "installedVersion": "3.5.43",
+      "exactVersionMatches": false,
+      "installedMetadataSha256": "b5cbf896563ac8087e8acdfe81ff5155db2eb75aced9725cdc05820be483cdda"
+    },
+    {
+      "name": "vite",
+      "lockedVersion": "7.3.6",
+      "installedVersion": "7.3.6",
+      "exactVersionMatches": true,
+      "installedMetadataSha256": "e5ed0f85215f871fe22a48987dcd77fcfbe14064a53c0c9f7f48186a6b7e2cf0"
+    },
+    {
+      "name": "typescript",
+      "lockedVersion": "5.8.3",
+      "installedVersion": "5.8.3",
+      "exactVersionMatches": true,
+      "installedMetadataSha256": "ebb0ce176c85ac13ce82f5be7e6f15114732ba0f064ccc893fd9051426d35d3a"
+    }
+  ],
+  "localNpmCiExecuted": false,
+  "existingNodeModulesModified": false,
+  "localTestsAreSupplemental": true,
+  "localInstalledDependenciesAcceptedAsLocked": false,
+  "hostedNpmCiEvidenceRequiresOwnHostedReceipts": true,
+  "crossOsByteReproducibilityAccepted": false,
+  "lineEndingsAreProvenSoleCause": false,
+  "newBrowserTestExecuted": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false
+}
