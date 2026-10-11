@@ -639,42 +639,15 @@ async function startUpload() {
 
 /* ================= OPDS 服务器入口（外部阅读器：legado/静读等） ================= */
 const opdsOpen = ref(false)
-const opdsCopied = ref(false)
-
-/** OPDS 地址 = 当前 host + /opds（secure 模式附带 accessToken=用户名:token） */
-const opdsUrl = computed(() => {
-  const base = `${window.location.origin}/opds`
-  return store.accessToken ? `${base}?accessToken=${encodeURIComponent(store.accessToken)}` : base
-})
 
 function openOpds() {
   opdsOpen.value = true
-  opdsCopied.value = false
   document.body.style.overflow = 'hidden'
 }
 
 function closeOpds() {
   opdsOpen.value = false
   document.body.style.overflow = ''
-}
-
-async function copyOpdsUrl() {
-  const text = opdsUrl.value
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {
-    // 剪贴板 API 不可用（非 https 等）：textarea 降级
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-  }
-  opdsCopied.value = true
-  window.setTimeout(() => (opdsCopied.value = false), 1600)
 }
 
 onBeforeUnmount(() => {
@@ -2204,7 +2177,7 @@ onMounted(() => {
 
       <template #extra>
         <button class="nav-link" type="button" title="全部书签（跨书）" @click="openBookmarks">书签</button>
-        <button class="nav-link" type="button" title="OPDS 服务器（外部阅读器连接）" @click="openOpds">OPDS</button>
+        <button class="nav-link" type="button" title="OPDS 服务器（当前后端尚未实现）" @click="openOpds">OPDS</button>
       </template>
     </TopNav>
 
@@ -2703,7 +2676,7 @@ onMounted(() => {
       </Transition>
     </Teleport>
 
-    <!-- OPDS 服务器弹窗（外部阅读器连接地址 + 复制） -->
+    <!-- 保留入口说明未实现的能力，不生成带登录凭据的无效地址。 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="opdsOpen" class="dlg-overlay" @click.self="closeOpds">
@@ -2723,13 +2696,7 @@ onMounted(() => {
                 </svg>
               </button>
             </div>
-            <p class="opds-tip">将以下地址粘贴到外部阅读器（legado、静读天下等）的 OPDS 地址栏，即可同步书架与阅读。地址已附带登录凭证，请勿分享给他人。</p>
-            <div class="opds-row">
-              <span class="opds-url mono" :title="opdsUrl">{{ opdsUrl }}</span>
-              <button class="accent-btn" type="button" @click="copyOpdsUrl">
-                {{ opdsCopied ? '已复制' : '复制' }}
-              </button>
-            </div>
+            <p class="opds-tip" role="status">当前 Java/Kotlin 服务端尚未实现 OPDS 书架服务，暂时无法连接外部阅读器。本页不会生成或复制带登录凭据的无效地址；你仍可继续使用网页书架和阅读。</p>
           </div>
         </div>
       </Transition>

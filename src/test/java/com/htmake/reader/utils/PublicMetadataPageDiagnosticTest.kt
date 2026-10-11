@@ -71,6 +71,30 @@ class PublicMetadataPageDiagnosticTest {
         return value
     }
 
+    private fun fixedPublicAuthorRule(): String {
+        val probe = File(originalUserDir, "scripts/probe-gutenberg-reader.py").readText(Charsets.UTF_8)
+        val marker = "AUTHOR_RULE = r\""
+        assertEquals(2, probe.split(marker).size)
+        return probe.substringAfter(marker).substringBefore('"')
+    }
+
+    @Test
+    fun fixedPublicAuthorRuleUsesAuthorHeadingInsteadOfSubtitle() {
+        val generated = "<html><body><h1>Generated book</h1><h3>Generated subtitle</h3>" +
+            "<h2>by Generated Author</h2><div><h2>Letter 1</h2><p>Generated body</p></div></body></html>"
+        val analyzer = AnalyzeRule(Book()).setContent(generated, "https://example.org/generated/")
+        assertEquals("Generated subtitle", analyzer.getString("h3@text"))
+        assertEquals("by Generated Author", analyzer.getString(fixedPublicAuthorRule()))
+    }
+
+    @Test
+    fun fixedPublicAuthorRuleDoesNotInventAuthorFromOtherHeadings() {
+        val generated = "<html><body><h1>Generated book</h1><h3>Generated subtitle</h3>" +
+            "<h2>Letter 1</h2><h2>Chapter 1</h2></body></html>"
+        val analyzer = AnalyzeRule(Book()).setContent(generated, "https://example.org/generated/")
+        assertEquals("", analyzer.getString(fixedPublicAuthorRule()))
+    }
+
     private fun observeSnapshot(html: String): JsonObject {
         val raw = AnalyzeRule(Book()).setContent(html, "https://example.org/generated/")
             .getString(snapshotRule).htmlFormat()

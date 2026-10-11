@@ -29,6 +29,11 @@ class GutenbergProbeTests(unittest.TestCase):
             with self.assertRaises(PROBE.Rejected):
                 PROBE.allowed_request(path, body)
 
+    def test_author_rule_selects_by_heading_not_subtitle(self):
+        self.assertEqual(r'@CSS:h2:matches(^by\s)@text', PROBE.AUTHOR_RULE)
+        self.assertEqual(PROBE.AUTHOR_RULE, PROBE.SOURCE_DEFINITION['ruleBookInfo']['author'])
+        self.assertNotIn('h3', PROBE.SOURCE_DEFINITION['ruleBookInfo']['author'])
+
     def test_only_generated_accounts_can_be_used(self):
         good = {'username': 'gutenberg0123456789', 'password': 'Generated-' + 'a' * 36, 'isLogin': False}
         PROBE.allowed_request('/login', good)

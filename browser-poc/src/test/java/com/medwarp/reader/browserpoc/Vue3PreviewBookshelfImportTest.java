@@ -4,8 +4,10 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.FileChooser;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.options.AriaRole;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -54,6 +56,21 @@ public class Vue3PreviewBookshelfImportTest {
                 page.onRequest(request -> requestedPaths.add(URI.create(request.url()).getPath()));
                 register(page, previewUrl);
                 assertEquals(0, shelfCount(page));
+                page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("OPDS").setExact(true)).click();
+                Locator opds = page.locator("[aria-label='OPDS 服务器']");
+                opds.waitFor();
+                assertTrue(opds.innerText().contains("当前 Java/Kotlin 服务端尚未实现 OPDS 书架服务"));
+                assertEquals(0, opds.locator(".opds-url").count());
+                assertEquals(0, opds.getByRole(AriaRole.BUTTON,
+                        new Locator.GetByRoleOptions().setName("复制").setExact(true)).count());
+                assertTrue("The unsupported dialog must not disclose the generated login token",
+                        (Boolean) page.evaluate("() => { const token=localStorage.getItem('reader_access_token');"
+                            + "const text=document.querySelector('[aria-label=\"OPDS 服务器\"]').textContent;"
+                            + "return !!token && !text.includes(token) && !text.includes(encodeURIComponent(token)); }"));
+                opds.locator(".dlg-close").click();
+                assertFalse("The unsupported entry must not contact a nonexistent OPDS backend",
+                        requestedPaths.stream().anyMatch(path -> "/opds".equals(path)
+                                || path.endsWith("/reader3/getOpdsSettings") || path.endsWith("/reader3/saveOpdsSettings")));
 
                 page.locator(".import-btn").click();
                 page.locator("[aria-label='导入本地书籍']").waitFor();

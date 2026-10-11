@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-10-11T05:12:48" hostname="LAPTOP-U8HHJC5R" time="2.027">
+  <properties/>
+  <testcase name="explicitBlankDocumentIsDistinctFromEmptyRawString" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.748"/>
+  <testcase name="headOnlyScriptAndTitleAreObservedWithoutLeakingOrExecutingContent" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.036"/>
+  <testcase name="whitespaceOnlyRawStringIsNotReportedAsZeroLength" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.033"/>
+  <testcase name="savedSourceKeepsDiagnosticForAnEmptyGeneratedDocument" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.739"/>
+  <testcase name="rawTagHintsCanComeFromCommentsAndAreNotAParsedPageVerdict" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.026"/>
+  <testcase name="savedProbeSourceParsesGeneratedMetadataAndDiagnosticViaWebBook" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.044"/>
+  <testcase name="missingTocMarkerCharacterizesExistingLegacyConversionWithoutChangingIt" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.137"/>
+  <testcase name="fixedPublicAuthorRuleUsesAuthorHeadingInsteadOfSubtitle" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.007"/>
+  <testcase name="scriptTextIsNotMistakenForBodyOrExecuted" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.021"/>
+  <testcase name="generatedNormalMetadataIsObservedWithoutChangingItsSelectors" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.026"/>
+  <testcase name="generatedSafetyPageHasHintsButDoesNotGainMetadata" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.025"/>
+  <testcase name="fixedPublicAuthorRuleDoesNotInventAuthorFromOtherHeadings" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.007"/>
+  <testcase name="frameAndElementStructureDoesNotRevealUrlsOrClaimAuthentication" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.028"/>
+  <testcase name="hintsDoNotClaimVisibilityOrSuccessfulAuthentication" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.028"/>
+  <testcase name="emptyRawStringIsDistinctFromJsoupSynthesizedDocumentNodes" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.029"/>
+  <testcase name="generatedEmptySnapshotRemainsEmpty" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.025"/>
+  <testcase name="exactProbeSourceRetainsRulesThroughSaveAndReaderDeserialization" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.024"/>
+  <testcase name="detailsSourceRoundtripsAndParsesGeneratedMetadataViaRealWebBook" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.041"/>
+  <system-out><![CDATA[13:12:50.036 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceUrl']
+13:12:50.050 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceName']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceGroup']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceComment']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookUrlPattern']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['serialNumber']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['httpUserAgent']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchUrl']
+13:12:50.051 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindUrl']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceType']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['enable']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchList']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchName']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchAuthor']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchIntroduce']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchKind']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchNoteUrl']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchCoverUrl']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchLastChapter']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindList']
+13:12:50.052 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindName']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindAuthor']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindIntroduce']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindKind']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindNoteUrl']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindCoverUrl']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindLastChapter']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookInfoInit']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookName']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookAuthor']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleIntroduce']
+13:12:50.053 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookKind']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleCoverUrl']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookLastChapter']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterUrl']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterList']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterName']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleContentUrl']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterUrlNext']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookContent']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookContentReplace']
+13:12:50.054 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleContentUrlNext']
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

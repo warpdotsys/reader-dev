@@ -25,10 +25,11 @@ BOOK_REQUEST = BOOK + OPTIONS
 BASE = 'http://127.0.0.1:18893'
 EXPECTED_JAR = '9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84'
 MAX_BYTES = 128 * 1024
+AUTHOR_RULE = r"@CSS:h2:matches(^by\s)@text"
 SOURCE_DEFINITION = {
     'bookSourceUrl': SOURCE, 'bookSourceName': 'Fixed Gutenberg 84 anonymous compatibility probe',
     'enabledCookieJar': False,
-    'ruleBookInfo': {'name': 'h1@text', 'author': 'h3@text',
+    'ruleBookInfo': {'name': 'h1@text', 'author': AUTHOR_RULE,
         'tocUrl': "@js:'" + BOOK_REQUEST + "'"},
     'ruleToc': {'chapterList': 'table a[href^="#"]', 'chapterName': '@text',
         'chapterUrl': '@href@js:result + \', {"webView":true}\''},

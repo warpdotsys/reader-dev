@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "observationIndependentlyVerified": true,
+  "businessAccepted": false,
+  "sourceRevision": "d6b7d6a43a6719f6fd51ac85bfe6ab724fd9d989",
+  "runId": 38113464255,
+  "jobId": 114393605913,
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38113464255",
+  "testedImageRevision": "ccbdad907fb803ca4f75a38d182cb86009372dc9",
+  "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "imageId": "sha256:aa3b64d75108514eb9d1a1ee49dc97f80ba42e447aa7de008b6c5f634f47f8fc",
+  "sourceNativeRun": 38111391710,
+  "sourceNativeReceiptSha256": "c467cd98c43e11365f0861889974b3cfc0401d62a6e813bba3df836e29740903",
+  "observedMetadata": {
+    "authorMatches": false,
+    "dataIsObject": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "isSuccess": true,
+    "nameMatches": true,
+    "status": 200
+  },
+  "businessApiCalls": {
+    "/getBookInfo": 1
+  },
+  "tocAndChapterExecuted": false,
+  "maximumObservedProcesses": {
+    "browser": 7,
+    "driver": 1,
+    "worker": 1
+  },
+  "resourceGuardAccepted": true,
+  "memoryPeakBytes": 851341312,
+  "pidsPeak": 180,
+  "seconds": 5.425,
+  "swapConfiguredAndObservedZero": true,
+  "sourceRulesRetained": true,
+  "cookieRowsBefore": 0,
+  "cookieRowsAfter": 0,
+  "generatedSessionRevoked": true,
+  "ownedContainerRemoved": true,
+  "readerEngineRootCauseProven": false,
+  "originalOrRemoteParityProven": false,
+  "realAuthenticationProven": false,
+  "rawBodyOrCookiePublished": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "files": {
+    "CLEANUP.json": {
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    "CONTAINER_STATE.json": {
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    "GUTENBERG_REPORT.json": {
+      "bytes": 1385,
+      "sha256": "6469d68a58e8c8afe34e31d845bed7015e50812209baaebb09390bae97a5eab9"
+    },
+    "LOADED_IDENTITY.json": {
+      "bytes": 259,
+      "sha256": "80968467ebdd0a9a1432f5cd84d95c25bdbf23690a3ab9611ea28d31e59840a7"
+    },
+    "PRELOAD_IDENTITY.json": {
+      "bytes": 258,
+      "sha256": "86a947966513c27712b4ccce05b421541442bf5f01f3cc8f9cc1ffee1168c0c1"
+    },
+    "RUNNING_JAR_IDENTITY.json": {
+      "bytes": 190,
+      "sha256": "5fde471f1bfb3292b27a4ac0f98a404b0ee67731e9801a4607a30e98b4a7ee3b"
+    },
+    "RUNTIME_RESOURCE_BUDGET.json": {
+      "bytes": 973,
+      "sha256": "5fb35d2576361518e24ea409c821894dc4607dce2334078e16ebe622b519db6f"
+    },
+    "SOURCE_RUN.json": {
+      "bytes": 316,
+      "sha256": "53a79d5c38696810568b8351f1b7fbe1ef7a7f2fcb5cb1854f24456033e8a6ca"
+    },
+    "WORKER_DIAGNOSTICS.json": {
+      "bytes": 165,
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    }
+  }
+}

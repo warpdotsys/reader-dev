@@ -29,3 +29,8 @@ docs/evidence/reclaim-stopped-browser-cgroup-executed-2026-10-11.py -text whites
 docs/evidence/stopped-cache-hosted-8e74b255-*.json -text whitespace=cr-at-eol
 docs/evidence/authorized-epub-9b9d-*-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/hash-compat-hosted-8b250346-*.json -text whitespace=cr-at-eol
+docs/evidence/gutenberg-*-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/gutenberg-author-rule-local-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-normal-hosted-d6b7d6a4-*.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-local-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-local-2026-10-11.xml -text whitespace=cr-at-eol
