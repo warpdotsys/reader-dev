@@ -53,8 +53,13 @@ def isolate_then_drop():
 
 
 def digest(path):
+    # The bundled Ubuntu runtime uses Python 3.10; file_digest needs 3.11.
+    # Hash every original byte with bounded reads, without an insecure fallback.
+    digest = hashlib.sha256()
     with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+        while block := stream.read(1024 * 1024):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def new_opener():

@@ -1,11 +1,14 @@
 """Safety and redaction tests; no private data or JAR is executed in CI."""
 
 import importlib.util
+import hashlib
+import io
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "compare-authorized-storage-in-netns.py"
 spec = importlib.util.spec_from_file_location("authorized_storage_netns", SCRIPT)
@@ -14,6 +17,47 @@ spec.loader.exec_module(probe)
 
 
 class AuthorizedStorageNetnsTest(unittest.TestCase):
+    def test_digest_of_empty_binary_fixture(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "empty.bin"
+            source.write_bytes(b"")
+            self.assertEqual(hashlib.sha256(b"").hexdigest(), probe.digest(source))
+
+    def test_digest_matches_known_binary_vector(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "vector.bin"
+            source.write_bytes(b"abc")
+            self.assertEqual("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", probe.digest(source))
+
+    def test_digest_without_python311_file_digest(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "generated.bin"
+            source.write_bytes(b"GENERATED_HASH_COMPATIBILITY_ONLY\x00\xff\r\n")
+            expected = hashlib.sha256(source.read_bytes()).hexdigest()
+            with patch.object(probe.hashlib, "file_digest", create=True,
+                    side_effect=AttributeError("file_digest is absent on Python 3.10")) as unavailable:
+                self.assertEqual(expected, probe.digest(source))
+                unavailable.assert_not_called()
+
+    def test_digest_preserves_binary_bytes_across_chunks(self):
+        generated = bytes(range(256)) * 10000 + b"\x00\r\n\xffTAIL"
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "multiple-chunks.bin"
+            source.write_bytes(generated)
+            self.assertEqual(hashlib.sha256(generated).hexdigest(), probe.digest(source))
+
+    def test_digest_reads_bounded_chunks_not_whole_file(self):
+        class TrackingBytes(io.BytesIO):
+            def read(self, size=-1):
+                self_sizes.append(size)
+                return super().read(size)
+        self_sizes = []
+        generated = b"GENERATED_ONLY" * 100000
+        with patch.object(Path, "open", return_value=TrackingBytes(generated)):
+            self.assertEqual(hashlib.sha256(generated).hexdigest(), probe.digest(Path("never-read-private-data")))
+        self.assertGreater(len(self_sizes), 1)
+        self.assertTrue(all(size == 1024 * 1024 for size in self_sizes))
+
     def test_host_invocation_fails_before_data_read_or_launch(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / "must-not-exist.json"

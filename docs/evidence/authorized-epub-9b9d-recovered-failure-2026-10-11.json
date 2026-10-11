@@ -1,0 +1,286 @@
+{
+  "passed": false,
+  "scope": "recovered API pair only; UI and full aggregate-resource acceptance rejected",
+  "rawGeneratedStdoutSha256": "5d6007b31b8dcc8ad3628b3b058c551f7a9018b7ff71ab2f89c4aeae2bd43efb",
+  "standaloneObservation": {
+    "scope": "single hash-authorized EPUB only",
+    "authorizedEpubOnly": true,
+    "originalExecuted": true,
+    "apiCompleted": true,
+    "privateRawDataPublished": false,
+    "realCredentialsImported": false,
+    "otherPrivateBooksRead": 0,
+    "threeWayAccepted": false,
+    "originalShelfMetadataUsed": false,
+    "seedMetadataDerivedFromAuthorizedEpub": true,
+    "ui": {
+      "passed": false,
+      "cases": {},
+      "rawBodyOrScreenshotPublished": false,
+      "activePhase": "uiRead805Text",
+      "registrationViaUiSucceeded": true,
+      "importPreviewViaUiSucceeded": true,
+      "importSaveViaUiSucceeded": true
+    },
+    "runtimePythonVersion": [
+      3,
+      10,
+      12
+    ],
+    "storageDigestHasPython311Interface": false,
+    "executedStorageHelperSha256": "f1e4aeeaf0dda99bfc6e0adc578a6475852aee8149913ef3e27f78153fc7605f",
+    "activePhase": "restoredUi",
+    "authorizedBodyReadAttempted": true,
+    "api": {
+      "original": {
+        "toc": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "count": 1611,
+          "projectionSha256": "2c67c5685868f01c689e6eed9436623397b43512e9b0c6bf35e7db9cb77395fb",
+          "titleReplacementCharacters": 0
+        },
+        "chapters": {
+          "0": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "6de29d2f7f84e2d70fb4a52bd54c3c7534a0e9a312926d0d9067ea929747a923",
+            "bodyTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bodyCharacters": 0,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "1": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "ab8c2767af92bd636079e8129949d61d5faeaa66dc1367b512873edc8255744c",
+            "bodyTextSha256": "112cf89db49ebdcb86176a36a2f290d13e3b9ca82ae1cbd7cf0b7e1959fc97f7",
+            "bodyCharacters": 205,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "805": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "15b29b031ce2d026032b01b97f7e76a6b7f7200938efbb1f8c0bd87df6ac3282",
+            "bodyTextSha256": "a5706921018215176247bc0b3dfd66f121549027dcc9ca582d71c611794e45f9",
+            "bodyCharacters": 3888,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "1610": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "8742e5180fb8b58c78a81b249f3d5ca8431208819462e5fe5552868ccc4a5658",
+            "bodyTextSha256": "41100ed366b49f53fa9e8dd9f80864ec2f5845d40a3e47bacccd3f032ec4686f",
+            "bodyCharacters": 321,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          }
+        },
+        "tocUpdatedDisposableShelf": true,
+        "facts": {
+          "shelfUnchangedAfterTocByCachedReads": true,
+          "progressUnchanged": true,
+          "sourceUnchanged": true,
+          "otherNamespaceDenied": true,
+          "anonymousDenied": true
+        }
+      },
+      "restored": {
+        "toc": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "count": 1611,
+          "projectionSha256": "2c67c5685868f01c689e6eed9436623397b43512e9b0c6bf35e7db9cb77395fb",
+          "titleReplacementCharacters": 0
+        },
+        "chapters": {
+          "0": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "6de29d2f7f84e2d70fb4a52bd54c3c7534a0e9a312926d0d9067ea929747a923",
+            "bodyTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bodyCharacters": 0,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "1": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "ab8c2767af92bd636079e8129949d61d5faeaa66dc1367b512873edc8255744c",
+            "bodyTextSha256": "112cf89db49ebdcb86176a36a2f290d13e3b9ca82ae1cbd7cf0b7e1959fc97f7",
+            "bodyCharacters": 205,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "805": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "15b29b031ce2d026032b01b97f7e76a6b7f7200938efbb1f8c0bd87df6ac3282",
+            "bodyTextSha256": "a5706921018215176247bc0b3dfd66f121549027dcc9ca582d71c611794e45f9",
+            "bodyCharacters": 3888,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          },
+          "1610": {
+            "status": 200,
+            "isSuccess": true,
+            "errorEmpty": true,
+            "envelopeFields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "htmlSha256": "8742e5180fb8b58c78a81b249f3d5ca8431208819462e5fe5552868ccc4a5658",
+            "bodyTextSha256": "41100ed366b49f53fa9e8dd9f80864ec2f5845d40a3e47bacccd3f032ec4686f",
+            "bodyCharacters": 321,
+            "replacementCharacters": 0,
+            "assetStatus": 200,
+            "assetContentType": "application/xhtml+xml",
+            "legacyAssetInjectionObserved": true,
+            "assetMatchesHtmlAfterInjection": true,
+            "bodyTextUnchangedByInjection": true
+          }
+        },
+        "tocUpdatedDisposableShelf": true,
+        "facts": {
+          "shelfUnchangedAfterTocByCachedReads": true,
+          "progressUnchanged": true,
+          "sourceUnchanged": true,
+          "otherNamespaceDenied": true,
+          "anonymousDenied": true
+        }
+      },
+      "tocEqual": true,
+      "sampledChaptersEqual": true
+    },
+    "apiTemporaryTreesRemoved": true,
+    "failureType": "Error",
+    "boundedFailureFrames": [
+      {
+        "file": "inner.py",
+        "function": "<module>",
+        "line": 101
+      },
+      {
+        "file": "authorized_probe.py",
+        "function": "ui",
+        "line": 148
+      },
+      {
+        "file": "authorized_probe.py",
+        "function": "wait_content",
+        "line": 70
+      },
+      {
+        "file": "authorized_probe.py",
+        "function": "metrics",
+        "line": 42
+      }
+    ],
+    "seconds": 34.065
+  },
+  "apiPairIndependentlyAccepted": true,
+  "uiAccepted": false,
+  "aggregateBudgetAccepted": false,
+  "aggregateBudgetReceiptUnavailableAfterCleanupRace": true,
+  "freshDirectory": "/home/chong/.cache/reader-authorized-epub-9b9d-20261011-ukypaai_",
+  "cleanup": [
+    {
+      "id": "reader-authorized-epub-9b9d-20261011-b-client",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    },
+    {
+      "id": "reader-authorized-epub-9b9d-20261011-b-server",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    }
+  ],
+  "ownedContainersRemaining": 0,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

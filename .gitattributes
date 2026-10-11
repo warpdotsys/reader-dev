@@ -26,3 +26,5 @@ docs/evidence/header-diagnostic-*-685aab2f-2026-10-11.json -text whitespace=cr-a
 docs/evidence/metadata-standalone-9b9d-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/metadata-three-way-9b9d-reclaim-2026-10-11.json -text whitespace=cr-at-eol
 docs/evidence/reclaim-stopped-browser-cgroup-executed-2026-10-11.py -text whitespace=-blank-at-eof
+docs/evidence/stopped-cache-hosted-8e74b255-*.json -text whitespace=cr-at-eol
+docs/evidence/authorized-epub-9b9d-*-2026-10-11.json -text whitespace=cr-at-eol
