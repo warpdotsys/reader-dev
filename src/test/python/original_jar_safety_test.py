@@ -35,9 +35,16 @@ class OriginalJarSafetyTest(unittest.TestCase):
 
     def test_every_legacy_comparison_has_a_guard(self):
         compare_scripts = sorted(SCRIPTS.glob("compare-*.py"))
-        self.assertEqual(29, len(compare_scripts))
+        self.assertEqual(30, len(compare_scripts))
         for path in compare_scripts:
             body = path.read_text(encoding="utf-8")
+            if path.name == "compare-gutenberg-snapshot.py":
+                guard = body.index("helper('compare-webview-cookie').require_verified_private_loopback()")
+                self.assertLess(guard, body.index("if file_sha(args.original)"))
+                self.assertLess(guard, body.index("sides[name] = run_side("))
+                self.assertIn("os.environ.get('READER_ORIGINAL_JAR_NETWORK_ISOLATED') != 'confirmed'", body)
+                self.assertLess(body.index("guard.require_verified_private_loopback()"), body.index("process = subprocess.Popen(command"))
+                continue
             if path.name == "compare-generated-epub-fragments-in-netns.py":
                 guard = body.index("BASE.isolate_then_drop()  #")
                 self.assertLess(guard, body.index("if BASE.digest(args.original)"))

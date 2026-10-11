@@ -72,6 +72,18 @@ cc17b0ceb964632221168ce1c996c162ab348696 自己四条托管任务全部完成成
 
 最后本机完整Python666项/26.699秒/1项平台跳过再次通过，包含离线IEND加固；自己的后续普通CI仍需重新执行，goal保持active。本次不合并、发版、registry推送或部署。
 
+## 1ddf 普通四项与 Native 六作业已独立接受
+
+源码1ddf1210307f9e963c5ee0358ec936b210ef3d6c／测试PR快照3645657599e77ac2c338bdb6bce35a950e50775b（远端父提交包含确切1ddf）。Java38120389978、Vue38120389989、Full38120390025、Native38120390028各自完成成功并独立下载有限报告核对；所有实际作业都由GitHub托管runner运行，无自托管runner。不是用5fa或8f结果替代此次验收。
+
+666 Linux Python/零跳过，205 JVM/35既有环境跳过，302前端/实际生成UI25零跳过及11张生成截图身份、双clean f5c9、实际Cam24/零跳过、打包HTTPS负例、双架构重导入与publisher32均接受。Full峰874,373,120B/PID194；Native各观察最大877,203,456B/PID199。普通任务允许swap但观察0，不说配置禁用swap。
+
+Native AMD64 `sha256:169bd558959ef217c7d35208726637c887ae6666192c5e08f1415c83b2ed1da8`，归档摘要 `28f7800901e65b1f48a5c4134667bee03bcd8dc02c2dac53d92331f699456cb7`；ARM64 `sha256:c4a7863fa56070aa1ae7cff3c9670181bf88feccfdf5198d104cfcc105f6aaa4`，归档摘要 `de05bdf274ebab6d9f14a5df6e41df0abc598e98d1958027d968ad50420ea564`。大镜像归档没有下载到本机重新散列；上述身份不追改两轮真实UI的cc17输入，也不替代本机最新整镜像验收。
+
+[Java回执](evidence/gutenberg-normal-hosted-1ddf1210-independent-java-acceptance-2026-10-11.json)、[Vue/JVM回执](evidence/gutenberg-normal-hosted-1ddf1210-independent-ui-java-acceptance-v2-2026-10-11.json)、[Full回执](evidence/gutenberg-normal-hosted-1ddf1210-independent-full-acceptance-2026-10-11.json)、[Native回执](evidence/gutenberg-normal-hosted-1ddf1210-independent-native-acceptance-2026-10-11.json)。原JAR与58份用户脏报告未变。
+
+另完成[准确原件/f5的公开HTML快照三方](GUTENBERG-SNAPSHOT-THREE-WAY-2026-10-11.md)，只有离线真实DOM/详情/目录/前两章子集；不冒称三侧实站HTTPS、真实认证或完整目标完成。后续维护工具源码仍须自己的托管CI，不能借1ddf绿灯。本轮不合并、发版或部署。
+
 ## 已知问题与回退
 
 OPDS 服务仍未实现；合并服务端和客户端预算的真实 EPUB 压力失败、起点验证码/首搜索失败、原件与历史 WebView 的完整真实正文对照、真实账号认证和生产容量仍未闭合。普通 CI 绿灯不能消除这些问题。

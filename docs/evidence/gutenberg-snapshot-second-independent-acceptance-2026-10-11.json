@@ -1,0 +1,394 @@
+{
+  "accepted": true,
+  "actualFullReturnDataComparedInExecution": true,
+  "actualObservation": {
+    "captureBytes": 468370,
+    "captureSha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+    "capturedPublicUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "comparison": {
+      "defaultClocksFreshInOwnActualWindows": true,
+      "firstTwoChaptersFullReturnDataEqual": true,
+      "jsonTypesAndAllNonClockFieldsCompared": true,
+      "literalFullMetadataEqual": false,
+      "nonClockMetadataFullJsonEqual": true,
+      "tocFullReturnDataEqual": true
+    },
+    "fixtureOnlyPrivateNetworkException": true,
+    "fixtureRequests": {
+      "cookiePresent": 0,
+      "fixedPage": 21,
+      "otherPaths": 7
+    },
+    "fullGoalComplete": false,
+    "interfacesLoopbackOnlyVerified": true,
+    "notLatestWholeNativeImageAcceptance": true,
+    "originalExecuted": true,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "passed": true,
+    "privateBooksRead": 0,
+    "rawBodyOrCredentialsExported": false,
+    "realAuthenticationProven": false,
+    "realSiteHttpsThreeWayProven": false,
+    "restoredJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+    "schemaVersion": 1,
+    "scope": "captured public HTML; same loopback HTTP alias; no WAN three-way replay",
+    "sides": {
+      "camoufox": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791704112468,
+          "lastCheckTime": 1791704112468,
+          "latestChapterTime": 1791704112468
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "9cc975f6316becb6a21343588659d968ced8a7e5544aec4ebb3d85e998693200",
+        "metadataRawReturnDataSha256": "3a3256116c5a76a4e14a97d9dbde967389135a5cb439e1246c751f0426ad968a",
+        "metadataWindowMs": {
+          "completed": 1791704117632,
+          "started": 1791704112459
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "3a3256116c5a76a4e14a97d9dbde967389135a5cb439e1246c751f0426ad968a",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "8fb5e5056ed2d17f058bc5e89c7c917338d8c7b08d9b641e4467e2fcf3a23119",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      },
+      "original": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791704087032,
+          "lastCheckTime": 1791704087032,
+          "latestChapterTime": 1791704087032
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "9cc975f6316becb6a21343588659d968ced8a7e5544aec4ebb3d85e998693200",
+        "metadataRawReturnDataSha256": "75bd12358d744db3b7fe4a61eab83e1364e7c83f72a4057a9007431726408e12",
+        "metadataWindowMs": {
+          "completed": 1791704089427,
+          "started": 1791704087024
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "75bd12358d744db3b7fe4a61eab83e1364e7c83f72a4057a9007431726408e12",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "8fb5e5056ed2d17f058bc5e89c7c917338d8c7b08d9b641e4467e2fcf3a23119",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      },
+      "restored": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791704098913,
+          "lastCheckTime": 1791704098913,
+          "latestChapterTime": 1791704098913
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "9cc975f6316becb6a21343588659d968ced8a7e5544aec4ebb3d85e998693200",
+        "metadataRawReturnDataSha256": "a2351f0be9d755be070533517a58515a7eb416854c9c271c0d01f1bad27c9efd",
+        "metadataWindowMs": {
+          "completed": 1791704100467,
+          "started": 1791704098903
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "a2351f0be9d755be070533517a58515a7eb416854c9c271c0d01f1bad27c9efd",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "8fb5e5056ed2d17f058bc5e89c7c917338d8c7b08d9b641e4467e2fcf3a23119",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      }
+    }
+  },
+  "executedComparatorSha256": "ed224408d8856a79a49eea0447d852da429eac7ae148666d87ee5694ab595ef3",
+  "firstBootstrapFailurePreserved": true,
+  "firstFailureUniqueRootCauseProven": false,
+  "fullGoalComplete": false,
+  "latestWholeImageOrRealHttpsOrRealAuthenticationAccepted": false,
+  "noWanAndUid10001IndependentlyVerified": true,
+  "originalAndReadOnlyBackupUnchanged": true,
+  "ownedRuntimeCleanupIndependentlyVerified": true,
+  "productionChanged": false,
+  "rawChapterBodyRecomparedFromExportedReport": false,
+  "rawObservationSha256": "1d024bfc5758e87355f381140e0eb2dd16db5224a7dc1e775c77a47d9d6c2ac3",
+  "resources": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "memoryCurrentBytes": 676962304,
+    "memoryEvents": {
+      "high": 3201,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryHighBytes": 1610612736,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1611476992,
+    "memoryStatBytes": {
+      "active_file": 441356288,
+      "anon": 14307328,
+      "file": 652574720,
+      "file_dirty": 24576,
+      "file_mapped": 0,
+      "file_writeback": 0,
+      "inactive_file": 211222528,
+      "kernel": 9596928,
+      "kernel_stack": 0,
+      "pagetables": 262144,
+      "shmem": 0,
+      "slab_reclaimable": 8727976,
+      "slab_unreclaimable": 409248,
+      "sock": 0
+    },
+    "pidsCurrent": 1,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 241,
+    "scope": "exact original b26 / restored f5 JAR; captured public HTML via same loopback HTTP alias, historical/Camoufox; no WAN, not three-way real-site HTTPS or current whole-image acceptance",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "schemaVersion": 1,
+  "scope": "captured public HTML; same loopback HTTP alias; no WAN three-way replay",
+  "sourceRevisionWithMatchingProductBytes": "1ddf1210307f9e963c5ee0358ec936b210ef3d6c",
+  "testedMergeSnapshotWithMatchingProductBytes": "3645657599e77ac2c338bdb6bce35a950e50775b",
+  "userProtectedFilesUnchanged": 58
+}
