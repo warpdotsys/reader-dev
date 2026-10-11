@@ -1,0 +1,43 @@
+{
+  "architecture": "x86_64",
+  "cpuPeriod": 100000,
+  "cpuQuota": "200000",
+  "kernel": "6.17.0-1022-azure",
+  "memoryCurrentBytes": 93130752,
+  "memoryEvents": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "memoryHighBytes": "max",
+  "memoryMaxBytes": 2147483648,
+  "memoryPeakBytes": 796041216,
+  "memoryStatBytes": {
+    "active_file": 0,
+    "anon": 80601088,
+    "file": 5734400,
+    "file_dirty": 5730304,
+    "file_mapped": 0,
+    "file_writeback": 0,
+    "inactive_file": 5734400,
+    "kernel": 6406144,
+    "kernel_stack": 32768,
+    "pagetables": 3428352,
+    "shmem": 0,
+    "slab_reclaimable": 2591048,
+    "slab_unreclaimable": 324880,
+    "sock": 0
+  },
+  "pidsCurrent": 2,
+  "pidsEvents": {
+    "max": 0
+  },
+  "pidsMax": 256,
+  "pidsPeak": 171,
+  "scope": "disposable packaged-browser UI test CLIENT only; Reader server excluded",
+  "swapCurrentBytes": 0,
+  "swapMaxBytes": 0
+}

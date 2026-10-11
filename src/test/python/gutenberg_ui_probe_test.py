@@ -1,7 +1,10 @@
 import importlib.util
 import json
 from pathlib import Path
+import struct
+import subprocess
 import unittest
+import zlib
 
 ROOT = Path(__file__).parents[3]
 SCRIPT = ROOT / 'scripts/probe-gutenberg-ui.py'
@@ -98,7 +101,7 @@ class GutenbergUiProbeTests(unittest.TestCase):
             report[key] = 0
         report['paintedChapters'] = [dict(index=index, characters=1600, sha256=str(index) * 64,
             replacementCharacters=0, matchesActualApiAfterWhitespaceNormalization=True,
-            postAnimationFramesObserved=True) for index in (0, 1, 1, 0)]
+            postAnimationFramesObserved=True, computedOpacityAndFiniteAnimationsSettled=True) for index in (0, 1, 1, 0)]
         report['toc'] = UI.PROBE.toc_facts([dict(url='#' + fragment + UI.PROBE.OPTIONS,
             baseUrl=UI.PROBE.BOOK, title='GENERATED_TITLE_' + str(index), index=index, isVolume=False)
             for index, fragment in enumerate(UI.PROBE.TOC_FRAGMENTS)])
@@ -106,7 +109,8 @@ class GutenbergUiProbeTests(unittest.TestCase):
             fields=['data', 'errorMsg', 'isSuccess']) for endpoint in
             ('login', 'logout', 'login', 'getBookInfo', 'saveBook', 'getChapterList', 'getBookContent',
              'getBookContent', 'saveBookProgress', 'logout')]
-        report['screenshots'] = {name: dict(sha256='a' * 64, bytes=20000, persisted=name != 'toolbar')
+        report['screenshots'] = {name: dict(sha256='a' * 64, bytes=20000, persisted=name != 'toolbar',
+                                          computedOpacityAndFiniteAnimationsSettled=True)
                                  for name in ('login', 'toolbar', 'logout')}
         return report
 
@@ -158,6 +162,86 @@ class GutenbergUiProbeTests(unittest.TestCase):
         segment = workflow.split('\n  public-metadata:\n', 1)[1].split('\n  compare-public-webview:', 1)[0]
         self.assertIn('python3 scripts/verify-gutenberg-ui-report.py', segment)
         self.assertNotIn('continue-on-error', segment)
+
+    def generated_png(self, channels=3, method=0, extra=b''):
+        def chunk(kind, data):
+            return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
+        header = struct.pack('>IIBBBBB', 4, 4, 8, 2 if channels == 3 else 6, 0, 0, 0)
+        rows = bytes([method]) + b'\0' * (4 * channels)
+        return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header) +
+                chunk(b'IDAT', zlib.compress(rows * 4 + extra)) + chunk(b'IEND', b''))
+
+    def test_png_uniform_picture_remains_a_measurable_failure_not_visual_pass(self):
+        for channels in (3, 4):
+            facts = VERIFY.png_visual_facts(self.generated_png(channels))
+            self.assertEqual(1, facts['distinctPixelValues'])
+            self.assertEqual(0, facts['nonDominantPixels'])
+
+    def test_png_all_five_filter_methods_decode_generated_uniform_samples(self):
+        for method in range(5):
+            self.assertEqual(1, VERIFY.png_visual_facts(self.generated_png(method=method))['distinctPixelValues'])
+
+    def test_png_nonuniform_rgb_roundtrip_for_every_filter_method(self):
+        def chunk(kind, data):
+            return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
+        for method in range(5):
+            prior, filtered = [0] * 12, bytearray()
+            for y in range(4):
+                row = [x * 20 + y * 7 + channel for x in range(4) for channel in range(3)]
+                filtered.append(method)
+                for i, value in enumerate(row):
+                    left = row[i - 3] if i >= 3 else 0
+                    above = prior[i]
+                    corner = prior[i - 3] if i >= 3 else 0
+                    predictions = (0, left, above, (left + above) // 2)
+                    if method == 4:
+                        p = left + above - corner
+                        candidates = (left, above, corner)
+                        predicted = min(enumerate(candidates), key=lambda pair: (abs(p - pair[1]), pair[0]))[1]
+                    else:
+                        predicted = predictions[method]
+                    filtered.append((value - predicted) % 256)
+                prior = row
+            header = struct.pack('>IIBBBBB', 4, 4, 8, 2, 0, 0, 0)
+            raw = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header) + chunk(b'IDAT', zlib.compress(filtered)) + chunk(b'IEND', b'')
+            self.assertEqual({'width': 4, 'height': 4, 'distinctPixelValues': 16, 'nonDominantPixels': 15},
+                             VERIFY.png_visual_facts(raw))
+
+    def test_png_bad_filter_crc_truncation_or_inflated_stream_is_rejected(self):
+        for raw in (self.generated_png(method=5), self.generated_png()[:-1], self.generated_png(extra=b'\0'),
+                    self.generated_png()[:-8] + b'corrupt!'):
+            with self.assertRaises(AssertionError):
+                VERIFY.png_visual_facts(raw)
+
+    def test_verifier_no_longer_accepts_prepaint_row_or_picture(self):
+        for field in ('paintedChapters', 'screenshots'):
+            report = self.complete_report()
+            row = report[field][0] if field == 'paintedChapters' else report[field]['logout']
+            row['computedOpacityAndFiniteAnimationsSettled'] = False
+            with self.assertRaises(AssertionError):
+                VERIFY.verify_report(report, 'a' * 40)
+
+    def test_actual_javascript_gate_rejects_hidden_opacity_or_running_finite_animation(self):
+        code = 'const gate=(' + UI.PAINT_READY + ');' + r'''
+            global.HTMLElement = class Element {};
+            global.getComputedStyle = node => node.style;
+            const make = (opacity='1', state='finished', iterations=1) => {
+                const node = new HTMLElement(); node.style={opacity,visibility:'visible',display:'block'};
+                node.parentElement=null;node.getAnimations=()=>[{playState:state,effect:{getComputedTiming:()=>({iterations})}}];
+                return node;
+            };
+            let current=make();global.document={querySelector:()=>current};
+            if(!gate('.test'))throw Error('finished rejected');
+            for(const node of [make('0'),make('0.5'),make('1','running')]){
+                current=node;if(gate('.test'))throw Error('unfinished accepted');
+            }
+            current=make();current.parentElement=make('0');
+            if(gate('.test'))throw Error('hidden ancestor accepted');
+            current=make('1','running',Infinity);if(!gate('.test'))throw Error('infinite spinner blocks ready forever');
+            current=null;if(gate('.test'))throw Error('missing accepted');
+        '''
+        result = subprocess.run(['node', '-e', code], capture_output=True, timeout=10)
+        self.assertEqual(0, result.returncode, result.stderr.decode('utf-8', errors='replace'))
 
 
 if __name__ == '__main__':

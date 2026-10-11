@@ -29,6 +29,18 @@ PROBE = helper('probe-gutenberg-reader')
 BASE = PROBE.BASE
 OUTPUT = Path('/verification-output')
 BUSINESS = ('login', 'logout', 'getBookInfo', 'getChapterList', 'getBookContent', 'saveBook', 'saveBookProgress')
+PAINT_READY = """selector => {
+    const element = document.querySelector(selector);
+    if (!element) return false;
+    for (let node = element; node instanceof HTMLElement; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        if (Number(style.opacity) < 0.99 || style.visibility !== 'visible' || style.display === 'none') return false;
+        const animations = node.getAnimations({subtree: node === element});
+        if (!animations.every(animation => animation.effect?.getComputedTiming().iterations === Infinity
+            || ['finished', 'idle'].includes(animation.playState))) return false;
+    }
+    return true;
+}"""
 
 
 class Rejected(ValueError):
@@ -161,6 +173,9 @@ def main():
                     page.on('response', observe)
 
                     def screenshot(locator, name):
+                        selector = '.topbar' if name == 'toolbar' else '.login-page'
+                        page.wait_for_function(PAINT_READY, arg=selector)
+                        page.evaluate('() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
                         raw = locator.screenshot()
                         # A transparent/sticky toolbar could reveal body behind
                         # it. Its image stays in memory; only empty login pages
@@ -171,7 +186,8 @@ def main():
                             with path.open('xb') as stream:
                                 stream.write(raw)
                         report['screenshots'][name] = {'sha256': hashlib.sha256(raw).hexdigest(),
-                                                       'bytes': len(raw), 'persisted': persisted}
+                                                       'bytes': len(raw), 'persisted': persisted,
+                                                       'computedOpacityAndFiniteAnimationsSettled': True}
 
                     report['stage'] = 'register'
                     page.goto(BASE + '/login')
@@ -224,6 +240,7 @@ def main():
                         page.wait_for_function("arg => { const title=document.querySelector('.chapter-title');"
                             "const el=document.querySelector('.reader-content');return title && title.textContent.includes('Letter ' + arg)"
                             "&& el && el.innerText.length>1000 && !document.querySelector('.loading-text'); }", arg=index + 1)
+                        page.wait_for_function(PAINT_READY, arg='.reader-content')
                         page.evaluate('() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
                         text = page.locator('.reader-content').inner_text()
                         facts = body_facts(text)
@@ -233,7 +250,8 @@ def main():
                         if index == 0:
                             check('To Mrs. Saville, England.' in text, 'MissingRealFirstLetter')
                         facts.update({'index': index, 'matchesActualApiAfterWhitespaceNormalization': True,
-                                      'postAnimationFramesObserved': True})
+                                      'postAnimationFramesObserved': True,
+                                      'computedOpacityAndFiniteAnimationsSettled': True})
                         report['paintedChapters'].append(facts)
                     painted(0)
                     screenshot(page.locator('.topbar'), 'toolbar')
