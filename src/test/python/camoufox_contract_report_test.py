@@ -1,5 +1,6 @@
-"""Synthetic XML validates the release guard, not actual browser compatibility."""
+"""Synthetic XML and one preserved failure validate the guard, not a new browser run."""
 
+import hashlib
 import importlib.util
 from pathlib import Path
 import tempfile
@@ -58,6 +59,21 @@ class CamoufoxContractReportTest(unittest.TestCase):
         self.suite.set("failures", "1")
         with self.assertRaises(GUARD.ContractReportError):
             self.verify()
+
+    def test_preserved_actual_origin_header_failure_cannot_become_a_release_pass(self):
+        # This is a recorded a5cd hosted failure, not a fresh runtime test and
+        # not replaced by the same source's successful native job. The original
+        # generated-only artifact bytes must retain their exact identity.
+        path = SCRIPT.parents[1] / "docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.xml"
+        self.assertEqual("f7a80968881d90e744477edbd4f072c55637b987c761acb430bff17be2bf39ad",
+                         hashlib.sha256(path.read_bytes()).hexdigest())
+        suite = ET.fromstring(path.read_bytes())
+        self.assertEqual("24", suite.get("tests"))
+        self.assertEqual("1", suite.get("failures"))
+        failed = [case for case in suite.findall("testcase") if case.find("failure") is not None]
+        self.assertEqual([GUARD.ORIGIN_HEADER_CONTRACT], [case.get("name") for case in failed])
+        with self.assertRaises(GUARD.ContractReportError):
+            GUARD.verify_report(path)
 
     def test_old_twelve_contracts_cannot_replace_navigation_acceptance(self):
         self.discard_new_policy_cases()

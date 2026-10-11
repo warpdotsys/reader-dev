@@ -15,3 +15,9 @@ docs/evidence/certificate-hints-local-verification-2026-10-10.json -text
 docs/evidence/certificate-hints-local-parent-protocol-2026-10-10.xml -text whitespace=cr-at-eol
 docs/evidence/certificate-hints-hosted-*-fc0860f1-2026-10-10.json -text whitespace=cr-at-eol
 docs/evidence/certificate-hints-hosted-*-c1581a9e-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/browser-soak-30min-c1581a9e-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/tts-notification-*-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/three-way-public-archive-failure-c1581a9e-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/three-way-local-metadata-pair-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.xml -text whitespace=cr-at-eol

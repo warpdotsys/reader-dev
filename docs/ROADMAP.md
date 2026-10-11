@@ -1,10 +1,12 @@
 # Reader-dev 维护路线
 
-更新日期：2026-10-10。
+更新日期：2026-10-11。
 
 ## 当前方向
 
-- **c158自己的四条托管/Native六作业已全部独立接受**：自己的准确0882 JAR双干净复建相同，602 Linux Python / 201 JVM（35原环境跳过）/ 25实际生成UI；Full及双架构构建/重导入各自8项实际Reader HTTPS产物严格通过，32publisher报告逐字段重验、两个固定证书提示含原有异常类型前缀、负例目标HTTP均0。保留fc原断言失败和遮盖日志；两架构30分钟离线长测/生成原件三方已绑定成功准确镜像启动，尚未验收，不发版部署。另针对实际截图中的听书源编辑断网双通知整理局部通知/会话守卫候选，301前端/603Python及构建通过，不借c158绿灯接受新UI。[准确新产物、失败与范围](CERTIFICATE-ERROR-HINTS-2026-10-10.md)、[通知修复候选](TTS-EDIT-NOTIFICATION-OWNERSHIP-2026-10-10.md)。
+- **c158准确镜像双架构30分钟长测已独立接受**：冻结0c5快照/0882 JAR，AMD64实际100轮/408成功搜索、ARM64 113轮/460成功搜索；逐轮检查原始trace、三种故障恢复、Cookie/用户隔离、资源与清理。2CPU/2GiB/256PID/零swap，父memory.high1.5GiB；没有hard/OOM/PID触限，容器与临时预算已清理。不是a5cd新镜像、真实站点或生产容量证明。[准确身份和完整边界](BROWSER-SOAK-30MIN-2026-10-11.md)。
+
+- **a5cd通知修复有限接受；整体验收仍拒绝**：自己的9b9d JAR准确复建、25生成UI及截图目视只有一条编辑未确认保存；Java/Vue/Native六作业和32publisher报告独立接受。但Full实际Cam24契约中同源认证头1失败，整镜像后续未执行，不能借Native绿灯通过。准确原件与新JAR的历史WebView元数据对照通过完整非时间JSON/各自新鲜时间窗口；Cam首搜索超时，元数据未执行，三方false。新增有限case/actor/role诊断及真实失败记录回归，原断言/发布守卫不变。保留所有失败，不发版部署。[当前失败、有限成功、已知问题和回退](HEADER-CONTRACT-DIAGNOSTIC-2026-10-11.md)、[通知修复](TTS-EDIT-NOTIFICATION-OWNERSHIP-2026-10-10.md)、[公开归档身份失败](PUBLIC-ARCHIVE-IDENTITY-FAILURE-2026-10-11.md)。
 
 下列较早条目保留各自捕获时的状态，不作为最新提交的验收结论。
 

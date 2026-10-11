@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "scope": "failed generated HTTP origin-header contract before whole image build",
+  "sourceRevision": "a5cd1e74ab0652361968f5bac1cec117373f5272",
+  "testedMergeSnapshot": "2147efa3f2b3fc5af0c993311863cafbcd733d78",
+  "runId": 38065687414,
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38065687414",
+  "runAttempt": 1,
+  "conclusion": "failure",
+  "jobId": 114252736608,
+  "runnerName": "GitHub Actions 1000004496",
+  "runnerLabels": [
+    "ubuntu-24.04"
+  ],
+  "actualSuiteTests": 24,
+  "actualSuiteFailures": 1,
+  "actualSuiteSkipped": 0,
+  "rawXmlSha256": "f7a80968881d90e744477edbd4f072c55637b987c761acb430bff17be2bf39ad",
+  "failedTestName": "generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts",
+  "generatedSameOriginAuthorizationExpectedButAbsent": true,
+  "failingSubcaseAndTargetRoleKnown": false,
+  "crossOriginCredentialLeakProvenByThisFailure": false,
+  "rootCauseProven": false,
+  "classifiedAsFlaky": false,
+  "strictContractVerifierStillRejects": true,
+  "failedSteps": [
+    "Verify Camoufox GET/POST, scripts, cookies, and sourceRegex",
+    "Preserve actual source document observations including failures",
+    "Preserve actual complete-image UI reports and generated screenshots"
+  ],
+  "downstreamSkippedSteps": [
+    "Build one-container image",
+    "Verify packaged-worker HTTPS redirects and certificate rejection offline",
+    "Preserve actual packaged HTTPS fields and negative certificate controls",
+    "Verify actual Reader API HTTPS and selected Java proxy offline",
+    "Preserve actual Reader HTTPS ReturnData, headers, and Java socket ownership",
+    "Run Reader API and WebView fixture inside the image",
+    "Exercise the complete image default UI with generated data",
+    "Preserve synthetic browser and resource observations",
+    "Preserve bounded bundled-browser observations",
+    "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+    "Post Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1"
+  ],
+  "fullImageWorkflowAccepted": false,
+  "overallCandidateAccepted": false,
+  "fullGoalComplete": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "userReportsUnchanged": 58
+}

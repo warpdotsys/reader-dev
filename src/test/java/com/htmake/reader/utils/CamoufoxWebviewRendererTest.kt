@@ -919,7 +919,7 @@ class CamoufoxWebviewRendererTest {
                 assertEquals("Legacy response URL remains the original request URL", fixture.start(case), response.url)
                 val rows = fixture.snapshot()
                 assertEquals(if (case == "resources") 3 else 2, rows.size)
-                fixture.assertOriginHeaders(rows)
+                fixture.assertOriginHeaders(rows, case)
                 if (case == "cross-post") {
                     assertEquals(listOf("POST", "GET"), rows.map { it.method })
                     assertArrayEquals("q=generated-header-only".toByteArray(StandardCharsets.UTF_8), rows[0].body)
@@ -948,7 +948,7 @@ class CamoufoxWebviewRendererTest {
                     assertArrayEquals(raw.toByteArray(StandardCharsets.UTF_8), row.body)
                     assertEquals("application/json; charset=UTF-8", row.contentType)
                 }
-                fixture.assertOriginHeaders(rows)
+                fixture.assertOriginHeaders(rows, case)
                 assertEquals("", rows[0].cookie)
                 assertEquals(if (case.startsWith("same-")) "generated_session=GENERATED_SESSION_ONLY" else "", rows[1].cookie)
                 val persisted = BrowserCookieJar.cookiesForRequest(
@@ -970,7 +970,7 @@ class CamoufoxWebviewRendererTest {
                 fixture.assertDocument(response.body!!, case)
                 val rows = fixture.snapshot()
                 assertEquals(if (case == "resources-redirect") 5 else 2, rows.size)
-                fixture.assertOriginHeaders(rows)
+                fixture.assertOriginHeaders(rows, case)
                 assertEquals(1, rows.count { it.actor == "secondary" })
             }
         }
@@ -1086,13 +1086,17 @@ class CamoufoxWebviewRendererTest {
         fun start(case: String) = "$primary/probe/$case/start"
         fun reset() = rows.clear()
         fun snapshot(): List<HeaderObservation> = synchronized(rows) { rows.toList() }
-        fun assertOriginHeaders(observed: List<HeaderObservation>) {
+        fun assertOriginHeaders(observed: List<HeaderObservation>, case: String) {
             assertTrue(observed.any { it.actor == "primary" })
             for (row in observed) {
-                assertEquals("Host must identify the actual target, including after POST redirects",
+                // Finite generated roles identify a failure without printing a
+                // URL, body, Cookie, or real account credential. Keep every
+                // presence/value assertion; this is diagnosis, not a retry.
+                val context = "$case/${row.actor}/${row.role}/${row.method}"
+                assertEquals("$context: Host must identify the actual target, including after POST redirects",
                     URI(if (row.actor == "primary") primary else secondary).authority, row.host)
-                assertEquals(if (row.actor == "primary") headers["Authorization"] else "", row.authorization)
-                assertEquals(if (row.actor == "primary") headers["X-Generated-Trace"] else "", row.trace)
+                assertEquals("$context: Authorization policy", if (row.actor == "primary") headers["Authorization"] else "", row.authorization)
+                assertEquals("$context: generated trace policy", if (row.actor == "primary") headers["X-Generated-Trace"] else "", row.trace)
             }
         }
         fun assertDocument(body: String, case: String) {

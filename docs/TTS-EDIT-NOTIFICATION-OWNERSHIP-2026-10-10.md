@@ -2,6 +2,8 @@
 
 日期：2026-10-10。Java/Kotlin legacy 维护线；不做语言重写，不改生产或用户数据。
 
+后续实际更新2026-10-11：a5cd自己的[Java](evidence/tts-notification-java-a5cd1e74-2026-10-11.json)和[25项真实生成UI/截图](evidence/tts-notification-ui-java-a5cd1e74-2026-10-11.json)已独立接受，断网截图已目视只有一条未确认保存，原缓存、服务端记录和表单保护继续通过。准确9b9d JAR为自己的新产物，不借c158绿灯。Native六作业成功子集也已重验，但Full同源认证头契约失败，因此候选**整体未接受**、没有发版或部署。见[失败、源码诊断与准确原件边界](HEADER-CONTRACT-DIAGNOSTIC-2026-10-11.md)。以下候选构建段保留当时未提交状态，不替代此后续终态。
+
 ## 已从实际生成截图和源码核查
 
 fc自己的25个生成UI旅程通过，但准确 `vue3-settings-generated-tts-edit-offline.png` 仍同时显示全局“网络连接失败”和编辑框“未确认保存”两条消息。该截图来自 [托管UI任务](https://github.com/warpdotsys/reader-dev/actions/runs/38062537167)，记录在 [自己的UI回执](evidence/certificate-hints-hosted-ui-java-fc0860f1-2026-10-10.json)。它只使用生成账号/数据，没有读取真实本地正文或导入真实Cookie。

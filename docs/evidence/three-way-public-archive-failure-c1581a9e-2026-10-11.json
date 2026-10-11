@@ -1,0 +1,39 @@
+{
+  "runId": 38065495289,
+  "sourceRevision": "c1581a9edc33b1653157207c4dd2cae9a896f63e",
+  "testedNativeSnapshot": "0c5f744cdd0d730b33cc3cf64b5d85c5826c2405",
+  "runConclusion": "failure",
+  "scope": "exact archive identity preflight rejection; no original/candidate business comparison",
+  "wrongPublicJarRejectedBeforeBusiness": true,
+  "nativeArtifactsWereNotDownloaded": true,
+  "extractionContainerNeverStarted": true,
+  "ownedExtractionContainerRemoved": true,
+  "originalJarThreeWayAccepted": false,
+  "productionChanged": false,
+  "privateBookBodiesRead": 0,
+  "fullGoalComplete": false,
+  "observedArchiveIdentity": {
+    "probeRunOwnership": "38065495289-1",
+    "archiveReference": "swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader:3.2.14",
+    "archiveImageId": "sha256:68dcf26f62df454e48dac104eb3e8b5e94f50c7d37e9fc48e6a9945bc5d80dff",
+    "archiveRepoDigests": [
+      "swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/hectorqin/reader@sha256:910043799b510b5796baf99537507a63ca95995cda7de95cbf2ba5eeb9dcb5d1"
+    ],
+    "expectedJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "actualJarSha256": "7222fbd0c55d8b7e6f6bc1bbf5f6637fbee45dfbd65eda0ef59e38b2e24cd43a",
+    "jarBytes": 72914622,
+    "regularJarObserved": true,
+    "originalIdentityAccepted": false,
+    "extractionContainerId": "fcef9b3794677fae10849690fcb4b1872df3d1e7fbc0daacfe242a8622da6fa8",
+    "extractionContainerNeverStarted": true,
+    "extractionContainerRemovalObserved": true,
+    "privateJarUploaded": false,
+    "businessProbeStarted": false
+  },
+  "capturedFileSha256": {
+    "ORIGINAL_ARCHIVE_IDENTITY.json": "b53c7af845ec8f5dcf6cb96b01d5faff544b7f133f3ba7c2156dfecd6c14d22a",
+    "SOURCE_RUN.json": "d0e1bd22a924eb3d81d3b8b362d02771db08f587455180cc0ce37b80b7249cca",
+    "SOURCE_JOBS.json": "d5267d644f0bccda0f077b3d89eb3b132a344cf7f62864881fdcb66e031a25c8",
+    "SOURCE_COMPARISON.json": "4f68aeadad101a46d10bb0682019ab4b9f5510475efba59dd2a2a3e7b0cc152a"
+  }
+}
