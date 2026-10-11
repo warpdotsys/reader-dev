@@ -28,3 +28,4 @@ docs/evidence/metadata-three-way-9b9d-reclaim-2026-10-11.json -text whitespace=c
 docs/evidence/reclaim-stopped-browser-cgroup-executed-2026-10-11.py -text whitespace=-blank-at-eof
 docs/evidence/stopped-cache-hosted-8e74b255-*.json -text whitespace=cr-at-eol
 docs/evidence/authorized-epub-9b9d-*-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/hash-compat-hosted-8b250346-*.json -text whitespace=cr-at-eol

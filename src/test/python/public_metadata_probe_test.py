@@ -640,10 +640,12 @@ class HostedCaptureModeTest(unittest.TestCase):
 
     def test_workflow_passes_the_fixed_mode_without_shell_interpolation(self):
         workflow = (ROOT / ".github/workflows/browser-image.yml").read_text(encoding="utf-8")
-        self.assertIn("options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details]", workflow)
+        self.assertIn("options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details, gutenberg-fixed-book]", workflow)
         self.assertIn("default: bounded-dom", workflow)
         self.assertEqual(2, workflow.count("CAPTURE_MODE: ${{ inputs.public_metadata_capture }}"))
-        self.assertIn('[[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details ]]', workflow)
+        self.assertIn('[[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details || "$CAPTURE_MODE" = gutenberg-fixed-book ]]', workflow)
+        self.assertIn('if [[ "$CAPTURE_MODE" = gutenberg-fixed-book ]]; then test "$USER_AGENT_MODE" = reader-default; fi', workflow)
+        self.assertIn('else\n            bash scripts/probe-public-native-image.sh', workflow)
         self.assertIn('"$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE"', workflow)
         self.assertIn("${{ inputs.public_metadata_capture || 'bounded-dom' }}", workflow)
         self.assertNotIn('run: ${{ inputs.public_metadata_capture', workflow)

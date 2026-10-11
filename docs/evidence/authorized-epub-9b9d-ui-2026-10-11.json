@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "accepted": true,
+  "scope": "headless external project Chromium frontend UI only; not bundled browser or Linux image acceptance",
+  "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "authorizedEpubSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+  "casesExecutedInOneRun": 8,
+  "cases": {
+    "text805": {
+      "paragraphs": 66,
+      "characters": 3953,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+    },
+    "text806": {
+      "paragraphs": 59,
+      "characters": 4017,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+    },
+    "text806Refresh": {
+      "paragraphs": 59,
+      "characters": 4017,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+    },
+    "html806": {
+      "paragraphs": 57,
+      "characters": 4016,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+    },
+    "raw806": {
+      "paragraphs": 57,
+      "characters": 4016,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "iframeHeight": 585,
+      "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+    },
+    "raw805": {
+      "paragraphs": 64,
+      "characters": 3952,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "iframeHeight": 585,
+      "bodySha256": "47f23ed8aa5dd68549872f3f73e4c0e971811248bff0abdd21afe5d4f06225f6"
+    },
+    "raw805Refresh": {
+      "paragraphs": 64,
+      "characters": 3952,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "iframeHeight": 585,
+      "bodySha256": "47f23ed8aa5dd68549872f3f73e4c0e971811248bff0abdd21afe5d4f06225f6"
+    },
+    "text805Return": {
+      "paragraphs": 66,
+      "characters": 3953,
+      "replacementCharacters": 0,
+      "scripts": 0,
+      "resourceUrlOnly": false,
+      "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+    }
+  },
+  "uiObservationSha256": "a8a673ee10e9b5179e596378b4e6bb0fcb751660a316153bd27483c15a347ab5",
+  "serverObservationSha256": "ffceaeba1faf57601bf9dbe69f126c8d9c3f79356a44180e83d11da2559aac70",
+  "previousSeparateRunObservationSha256": "8521d1b6bd67fb9838e989978ee3ed38db750af00d42f3f8ffe6968884070a7f",
+  "fontAndBusyReadyWaited": true,
+  "initialViewport": {
+    "imageCount": 2,
+    "firstLongParagraphInViewport": false,
+    "paragraphRectTop": 696.765625,
+    "frameHeight": 585
+  },
+  "longParagraphScrolledIntoViewport": true,
+  "privatePngFilesVerifiedLocally": 3,
+  "uiSeconds": 26.491,
+  "serverJobSeconds": 254.194,
+  "serverPeakCommittedMemoryBytes": 547340288,
+  "windowsServerMemoryLimitBytes": 2147483648,
+  "windowsServerProcessLimit": 256,
+  "viewerOutsideServerBudget": true,
+  "ownedReaderStopped": true,
+  "userReportsUnchanged": 58,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "bodyOrScreenshotIncludedInReceipt": false,
+  "linuxSingleImageAcceptedByThisObservation": false,
+  "combinedBudgetFailureRootCauseProvenOrFixed": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}

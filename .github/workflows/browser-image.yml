@@ -235,7 +235,7 @@ on:
         options: [unchanged, high-1536m]
         default: unchanged
       public_metadata_native_run:
-        description: 'Successful native rehearsal to consume for ONE anonymous Qidian metadata request; no Cookie or chapters'
+        description: 'Tested native run for anonymous Qidian metadata or the explicit fixed Gutenberg book mode; no credentials'
         required: false
         type: string
         default: ''
@@ -245,10 +245,10 @@ on:
         type: string
         default: ''
       public_metadata_capture:
-        description: 'Public metadata: optional bounded wait and finite returned-string details; no retry or HTML output'
+        description: 'Qidian metadata capture, or fixed Gutenberg detail/TOC/first chapter; no retry or raw HTML/body output'
         required: false
         type: choice
-        options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details]
+        options: [bounded-dom, snapshot-only, bounded-dom-details, snapshot-only-details, gutenberg-fixed-book]
         default: bounded-dom
       public_metadata_user_agent:
         description: 'Only the generated anonymous metadata request: compare inherited Reader UA with the existing browser default'
@@ -874,7 +874,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
-      - name: Validate the completed source run and metadata-only inputs
+      - name: Validate the completed source run and anonymous fixed inputs
         env:
           GH_TOKEN: ${{ github.token }}
           NATIVE_RUN: ${{ inputs.public_metadata_native_run }}
@@ -888,8 +888,9 @@ jobs:
           [[ "$NATIVE_RUN" =~ ^[1-9][0-9]*$ ]]
           [[ "$NATIVE_REVISION" =~ ^[0-9a-f]{40}$ ]]
           [[ "$EXPECTED_ARCH" = amd64 || "$EXPECTED_ARCH" = arm64 ]]
-          [[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details ]]
+          [[ "$CAPTURE_MODE" = bounded-dom || "$CAPTURE_MODE" = snapshot-only || "$CAPTURE_MODE" = bounded-dom-details || "$CAPTURE_MODE" = snapshot-only-details || "$CAPTURE_MODE" = gutenberg-fixed-book ]]
           [[ "$USER_AGENT_MODE" = reader-default || "$USER_AGENT_MODE" = browser-native ]]
+          if [[ "$CAPTURE_MODE" = gutenberg-fixed-book ]]; then test "$USER_AGENT_MODE" = reader-default; fi
           test "$OTHER_MODES" != true
           command -v setfacl
           case "$EXPECTED_ARCH:$RUNNER_ARCH:$(uname -m)" in
@@ -920,13 +921,18 @@ jobs:
           path: imported
           run-id: ${{ inputs.public_metadata_native_run }}
           github-token: ${{ github.token }}
-      - name: Verify unchanged bytes and probe public metadata with guards intact
+      - name: Verify unchanged bytes and probe the selected fixed public mode with guards intact
         env:
           EXPECTED_ARCH: ${{ inputs.native_arch }}
           NATIVE_REVISION: ${{ inputs.public_metadata_revision }}
           CAPTURE_MODE: ${{ inputs.public_metadata_capture }}
           USER_AGENT_MODE: ${{ inputs.public_metadata_user_agent }}
-        run: bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE" "$USER_AGENT_MODE"
+        run: |
+          if [[ "$CAPTURE_MODE" = gutenberg-fixed-book ]]; then
+            bash scripts/probe-gutenberg-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report"
+          else
+            bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE" "$USER_AGENT_MODE"
+          fi
       - name: Preserve only bounded anonymous observations including failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
