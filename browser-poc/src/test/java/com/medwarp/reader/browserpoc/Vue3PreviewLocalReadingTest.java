@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import javax.script.ScriptEngine;
@@ -439,6 +440,7 @@ public class Vue3PreviewLocalReadingTest {
         page.reload();
         waitRawReady(page);
         assertAnchorAtTop(page, "h2[id='中文目标']");
+        verifySameChapterFragmentHistory(page, bookUrl);
         // File-qualified and fragment-only links preserve distinct anchors at the same legacy index.
         page.frameLocator("iframe.epub-frame").getByText("同文件返回首节").click();
         page.waitForCondition(() -> page.url().contains("chapter=0"));
@@ -476,6 +478,76 @@ public class Vue3PreviewLocalReadingTest {
     private static void waitRawReady(Page page) {
         page.locator("iframe.epub-frame").waitFor();
         page.waitForCondition(() -> "false".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+    }
+
+    /** Same legacy index, actual Router query navigation + native history; no mocked response. */
+    private static void verifySameChapterFragmentHistory(Page page, String bookUrl) {
+        AtomicInteger contentReads = new AtomicInteger();
+        Consumer<Request> requests = request -> {
+            if (URI.create(request.url()).getPath().endsWith("/reader3/getBookContent")) contentReads.incrementAndGet();
+        };
+        page.onRequest(requests);
+        int documentNavigations = ((Number) page.evaluate("() => performance.getEntriesByType('navigation').length")).intValue();
+        assertEquals(Boolean.TRUE, page.evaluate("() => { window.__readerAnchorFrameDocument ="
+                + " document.querySelector('iframe.epub-frame').contentDocument; return !!window.__readerAnchorFrameDocument; }"));
+        try {
+            pushReaderFragment(page, bookUrl, "intro");
+            waitRawReady(page);
+            assertAnchorAtTop(page, "h2[id='intro']");
+            pushReaderFragment(page, bookUrl, "note");
+            waitRawReady(page);
+            assertAnchorAtTop(page, "a[name='note']");
+            routerHistory(page, "back");
+            page.waitForCondition(() -> page.url().contains("epubAnchor=intro"));
+            waitRawReady(page);
+            assertAnchorAtTop(page, "h2[id='intro']");
+            routerHistory(page, "forward");
+            page.waitForCondition(() -> page.url().contains("epubAnchor=note"));
+            waitRawReady(page);
+            assertAnchorAtTop(page, "a[name='note']");
+            pushReaderFragment(page, bookUrl, "missing");
+            page.getByText("目录锚点不存在，已回到本页顶部", new Page.GetByTextOptions().setExact(true)).waitFor();
+            waitRawReady(page);
+            assertEquals(0, innerScroll(page), 2);
+            routerHistory(page, "back");
+            page.waitForCondition(() -> page.url().contains("epubAnchor=note"));
+            waitRawReady(page);
+            assertAnchorAtTop(page, "a[name='note']");
+            assertEquals(0, page.getByText("目录锚点不存在，已回到本页顶部", new Page.GetByTextOptions().setExact(true)).count());
+            pushReaderFragment(page, bookUrl, -1, "intro");
+            waitRawReady(page);
+            assertAnchorAtTop(page, "h2[id='intro']");
+            pushReaderFragment(page, bookUrl, "note");
+            waitRawReady(page);
+            assertAnchorAtTop(page, "a[name='note']");
+            assertEquals("Same-chapter anchor history must not fetch chapter content again", 0, contentReads.get());
+            assertEquals("Same-chapter anchors must not reload the top-level document", documentNavigations,
+                    ((Number) page.evaluate("() => performance.getEntriesByType('navigation').length")).intValue());
+            assertEquals("Anchor navigation must reuse the current sanitized iframe document", Boolean.TRUE,
+                    page.evaluate("() => window.__readerAnchorFrameDocument === document.querySelector('iframe.epub-frame').contentDocument"));
+        } finally {
+            page.offRequest(requests);
+        }
+        // Leave the original journey at its previous generated anchor, without a page reload.
+        pushReaderFragment(page, bookUrl, "中文目标");
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+    }
+
+    private static void pushReaderFragment(Page page, String bookUrl, String fragment) {
+        pushReaderFragment(page, bookUrl, 0, fragment);
+    }
+
+    private static void pushReaderFragment(Page page, String bookUrl, int chapter, String fragment) {
+        Object result = page.evaluate("async args => { const router=document.querySelector('#app').__vue_app__.config.globalProperties.$router;"
+                + "const current=router.currentRoute.value; const query={...current.query,epubAnchor:args[2],anchorProbe:'generated-only'};"
+                + "if(args[1]<0) delete query.chapter; else query.chapter=String(args[1]);"
+                + "await router.push({name:'reader',params:{bookUrl:args[0]},query,hash:current.hash});"
+                + "const next=router.currentRoute.value; return next.params.bookUrl===args[0]"
+                + " && next.query.chapter===(args[1]<0?undefined:String(args[1]))"
+                + " && next.query.epubAnchor===args[2] && next.query.anchorProbe==='generated-only' && next.hash===current.hash; }",
+                List.of(bookUrl, chapter, fragment));
+        assertEquals("The actual generated anchor Router push must settle", Boolean.TRUE, result);
     }
 
     private static void verifyNavFragmentReading(Page page, String base, String bookUrl) {
@@ -557,6 +629,22 @@ public class Vue3PreviewLocalReadingTest {
         page.reload();
         waitRawReady(page);
         assertEquals(savedPosition, innerScroll(page), 2);
+        // Cross-resource history also carries an explicit fragment; a matching old
+        // saved scroll position must not override the user's new history target.
+        pushReaderFragment(page, bookUrl, 0, "中文目标");
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        routerHistory(page, "back");
+        page.waitForCondition(() -> page.url().contains("chapter=1") && page.url().contains("epubAnchor=finale"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='finale']");
+        routerHistory(page, "forward");
+        page.waitForCondition(() -> page.url().contains("chapter=0"));
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='中文目标']");
+        pushReaderFragment(page, bookUrl, 1, "finale");
+        waitRawReady(page);
+        assertAnchorAtTop(page, "h2[id='finale']");
         page.frameLocator("iframe.epub-frame").getByText("跨文件返回中文小节").click();
         page.waitForCondition(() -> page.url().contains("chapter=0"));
         waitRawReady(page);

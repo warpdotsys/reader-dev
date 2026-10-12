@@ -63,6 +63,7 @@ import { listProfiles, saveProfile, deleteProfile, applyProfile } from '@/utils/
 import { sanitizeHtml } from '@/utils/sanitize'
 import { epubHtmlToText } from '@/utils/epubText'
 import { epubProgressKey, epubScrollPosition } from '@/utils/epubProgress'
+import { readerRouteNavigation } from '@/utils/readerRouteNavigation'
 import { readEpubNavigation, type EpubTocEntry } from '@/utils/epubToc'
 import type { Book, BookChapter, BookInfo, Bookmark, HttpTts, ReplaceRule, SearchBook } from '@/types'
 
@@ -3179,11 +3180,24 @@ function goToChapter(idx: number) {
 
 // 同书的历史返回/前进与目录搜索入口不会重建实例；响应真实路由的章节变化。
 // 自己翻章同步 query 后 idx 已相等，不会重复加载；旧 A 实例不能响应 B 的 query。
-watch(() => route.query.chapter, (value) => {
-  if (!isCurrentReaderRoute() || typeof value !== 'string' || !/^\d+$/.test(value)) return
-  const idx = Number(value)
-  if (!Number.isSafeInteger(idx) || idx < 0 || idx >= chapters.value.length) return
-  goToChapter(idx)
+watch(() => [route.query.chapter, route.query.epubAnchor] as const, ([chapter, anchor], [oldChapter, oldAnchor]) => {
+  if (!isCurrentReaderRoute()) return
+  const navigation = readerRouteNavigation({ chapter, anchor }, { chapter: oldChapter, anchor: oldAnchor },
+    chapterIndex.value, chapters.value, epubRawActive.value)
+  if (!navigation) return
+  if (navigation.kind === 'chapter') {
+    goToChapter(navigation.index)
+    // 外部历史/分享入口的明确锚点优先于该资源以前保存的滚动位置。
+    // goToChapter 的 startFromTop 同时保留，raw watcher 只消费一次 pending。
+    if (navigation.fragment !== null) epubPendingFragment = navigation.fragment
+  } else {
+    const fragment = navigation.fragment ?? epubFragment(chapters.value[navigation.index]?.url ?? '')
+    // onEpubNav 已处理的同一目标不再重复恢复；外部同章请求不重读正文/重建 iframe。
+    if (fragment === epubTargetFragment.value) return
+    epubInitialScroll.value = null
+    epubTargetFragment.value = fragment
+    epubNavigationId.value++
+  }
 })
 
 /** 缓存完成：组件已展示结果；阅读页无需额外刷新（详情页才刷新单书缓存状态） */

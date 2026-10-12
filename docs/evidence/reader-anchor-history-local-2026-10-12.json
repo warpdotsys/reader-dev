@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated actual browser anchor routing only",
+  "basisCommit": "605cf80de7a1e4baeccb6fcc2f4f9344161f689b",
+  "backendJarSha256": "6feedd00bd3db90fa7db8bdd5b31aebf3bdf6e8fa877ffed01a24345fa7fb412",
+  "baseline": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 47.292,
+    "xmlSha256": "882e62bb4bef0bd645a8bbebdf2ac1889011db646b871e41be7ebf0725a04241",
+    "ownedServerStopped": true,
+    "peakServerJobCommittedBytes": 450281472,
+    "windowsProcessesNotLinuxThreadPids": true,
+    "clientOutsideServerJob": true
+  },
+  "firstCandidate": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 26.565,
+    "xmlSha256": "3fcd05cd480f01236887347e44863c33537b7b847e276c604ecf8f862554e97e",
+    "ownedServerStopped": true,
+    "peakServerJobCommittedBytes": 502726656,
+    "windowsProcessesNotLinuxThreadPids": true,
+    "clientOutsideServerJob": true
+  },
+  "finalExtendedCandidate": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 26.882,
+    "xmlSha256": "6ea0e4e1fb567b017ab3949b8b13d6f90d3ea35346e24d55914cc2358ac3ae18",
+    "ownedServerStopped": true,
+    "peakServerJobCommittedBytes": 483614720,
+    "windowsProcessesNotLinuxThreadPids": true,
+    "clientOutsideServerJob": true
+  },
+  "localSourceFileSha256": {
+    "web-vue3/src/views/ReaderView.vue": "6772590c659e95f553735e78ba229e1b80caa2bed8fd9a39d597730c34733a44",
+    "web-vue3/src/utils/readerRouteNavigation.ts": "5608543fe8d7460c5661d5636a6f4d1ad585b68fd87f1bd07fc6f2643170a59a",
+    "web-vue3/src/utils/readerRouteNavigation.test.ts": "402fade1bd74f89f6801b09570d11905dfe7754469dcf3d01571e4d1606c3f7a",
+    "browser-poc/src/test/java/com/medwarp/reader/browserpoc/Vue3PreviewLocalReadingTest.java": "589b0bbeee1a1130632bd6c013c6cdeffdc7e15438fab70cdb8dee01c48fe40c"
+  },
+  "sourceFingerprintsCollectedAfterExecution": true,
+  "sourceFingerprintTimingIsNotAnOriginalRunManifest": true,
+  "baselineTestSourcePreservedAfterExecution": true,
+  "sameChapterHistoryAndMissingQueryChapterExecuted": true,
+  "crossChapterHistoryExplicitFragmentExecuted": true,
+  "explicitHistoryFragmentOverridesOldSavedPosition": true,
+  "sameChapterContentReadsAdded": 0,
+  "sameChapterFrameDocumentReused": true,
+  "originalFailedXmlOverwritten": false,
+  "screenshots": [
+    {
+      "stage": "fragments",
+      "sha256": "01a46d201f60d46b4d8977f0d2466354653ed086e2266e51dba6accac84df524",
+      "bytes": 81688,
+      "pngDecodedAndNonUniform": true,
+      "rootActuallyViewed": true
+    },
+    {
+      "stage": "nav-fragments",
+      "sha256": "e83a645db06bf50be41c7f2363d7461a2f490de60e4aa4d2e52eb06a41bf7643",
+      "bytes": 73689,
+      "pngDecodedAndNonUniform": true,
+      "rootActuallyViewed": true
+    }
+  ],
+  "currentFrontendWithExistingBackendJarNotNewCandidateJar": true,
+  "localDependenciesNotFreshNpmCi": true,
+  "frontendTypesAndBuildExecuted": true,
+  "hostedCandidateAcceptance": false,
+  "fullNativeImageLocallyAccepted": false,
+  "originalJarThreeWayAccepted": false,
+  "realAccountOrPrivateBookTested": false,
+  "combinedServerClientPressureAccepted": false,
+  "productionChanged": false,
+  "goalComplete": false
+}
