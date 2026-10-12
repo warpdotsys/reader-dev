@@ -10,6 +10,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import mu.KotlinLogging
 import com.htmake.reader.api.YueduApi
+import com.htmake.reader.utils.readerVertxOptions
 
 import com.htmake.reader.verticle.RestVerticle
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +30,7 @@ class ReaderApplication {
     private lateinit var yueduApi: YueduApi
 
     companion object {
-        val vertx by lazy { Vertx.vertx() }
+        val vertx by lazy { Vertx.vertx(readerVertxOptions()) }
         fun vertx() = vertx
     }
 

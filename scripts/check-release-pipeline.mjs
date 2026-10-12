@@ -178,6 +178,14 @@ if (!compose.includes('image: ${READER_IMAGE:?READER_IMAGE must be an immutable 
 if (!compose.includes('READER_APP_WEBVIEWRENDERER: camoufox')) {
   throw new Error('production compose must select the in-image Camoufox renderer')
 }
+for (const name of ['READER_VERTX_WORKER_POOL_SIZE', 'READER_VERTX_INTERNAL_BLOCKING_POOL_SIZE']) {
+  const declarations = dockerfile.split('\n').filter(line => line.trim().startsWith(name + '='))
+  const composeDeclarations = compose.split('\n').filter(line => line.trim().startsWith(name + ':'))
+  if (declarations.length !== 1 || declarations[0].trim() !== name + '=8 \\' ||
+      composeDeclarations.length !== 1 || !compose.includes(name + ': ${' + name + ':-8}')) {
+    throw new Error('bounded Vertx pool defaults must match Docker and Compose: ' + name)
+  }
+}
 if (!compose.includes('init: true')) {
   throw new Error('production compose must reap browser child processes with Docker init')
 }

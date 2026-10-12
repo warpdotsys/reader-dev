@@ -13,6 +13,8 @@ Required server-side files that are deliberately not committed:
 
 ## 正式发布
 
+2026-10-12 真实单书再次触及256PID：采样确认两个Vert.x阻塞池各20，刷新时先触限，之后raw Worker超时。新可读源码候选保留独立JAR原20/20默认，完整镜像通过两个`READER_VERTX_*_POOL_SIZE`变量默认各8；只改变两池，不提高预算或延长超时。214项本机JVM/7项新回归及98项结构检查通过，但新正式产物及同书重测待验，不作生产切换依据。[原失败、变量、已知限制和回退](../../docs/VERTX-POOL-CANDIDATE-2026-10-12.md)。
+
 2026-10-07 数值线程修复 `09163efe` 自己的四条托管工作流／原生六作业、两套各 19 项真实契约及小身份／预算报告已独立验收。[完整已知风险与回滚](../../docs/CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)仍保留实站失败和本机旧 worker 的 2 GiB／256 PID 触限。之后的有限[内存分类采集](../../docs/BROWSER-MEMORY-CATEGORIES-2026-10-07.md)也完成自己的 `594cec9c` 托管验收，5 份实际分类／原资源守卫通过；仅补观测，不扣除文件页、不清宿主缓存、不升预算取绿灯。没有正式发版、安装服务器新浏览器或切换生产产物。
 
 正式版本通过 `.github/workflows/release.yml` 发布。全部验收完成后，准备与标签同名的
