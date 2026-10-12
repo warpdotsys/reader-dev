@@ -186,6 +186,23 @@ class SnapshotContracts(unittest.TestCase):
     def test_finite_report_contract_accepts_complete_generated_observation(self):
         self.assertTrue(probe.validate_report(report(self.sides)))
 
+    def test_report_requires_explicit_current_restored_sha_and_keeps_original_and_capture_fixed(self):
+        value = report(self.sides)
+        value['restoredJarSha256'] = 'b' * 64
+        self.assertTrue(probe.validate_report(value, 'b' * 64))
+        for wrong in (probe.RESTORED_SHA, 'c' * 64):
+            with self.assertRaises(probe.Rejected):
+                probe.validate_report(value, wrong)
+        for key in ('originalJarSha256', 'captureSha256'):
+            bad = copy.deepcopy(value); bad[key] = 'b' * 64
+            with self.assertRaises(probe.Rejected):
+                probe.validate_report(bad, 'b' * 64)
+
+    def test_current_restored_identity_does_not_admit_malformed_or_nonstring_hash(self):
+        for bad in (None, 1, True, [], '', 'g' * 64, 'A' * 64, 'a' * 63, 'a' * 64 + '\n'):
+            with self.assertRaisesRegex(probe.Rejected, '^InvalidRestoredJarIdentity$'):
+                probe.validated_restored_sha256(bad)
+
     def test_finite_report_rejects_incomplete_execution(self):
         value = report(self.sides)
         value['passed'] = False

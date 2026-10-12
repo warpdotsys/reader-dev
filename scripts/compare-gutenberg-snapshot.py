@@ -164,11 +164,19 @@ def facts(side):
     return result
 
 
-def validate_report(report):
+def validated_restored_sha256(value):
+    try:
+        return helper('probe-gutenberg-reader').validated_jar_sha256(value)
+    except ValueError:
+        raise Rejected('InvalidRestoredJarIdentity') from None
+
+
+def validate_report(report, expected_restored_sha256=RESTORED_SHA):
     """Independently reject partial/identity-mismatched exported observations."""
+    expected_restored = validated_restored_sha256(expected_restored_sha256)
     if report.get('passed') is not True or report.get('originalExecuted') is not True or set(report.get('sides', {})) != {'original', 'restored', 'camoufox'}:
         raise Rejected('IncompleteThreeWayReport')
-    if any(report.get(k) != v for k, v in {'originalJarSha256': ORIGINAL_SHA, 'restoredJarSha256': RESTORED_SHA,
+    if any(report.get(k) != v for k, v in {'originalJarSha256': ORIGINAL_SHA, 'restoredJarSha256': expected_restored,
             'captureSha256': CAPTURE_SHA, 'captureBytes': 468370, 'capturedPublicUrl': PUBLIC_URL}.items()):
         raise Rejected('ReportInputIdentityDiffers')
     if any(report.get(k) is not False for k in ('realSiteHttpsThreeWayProven', 'realAuthenticationProven', 'rawBodyOrCredentialsExported', 'fullGoalComplete')) or report.get('privateBooksRead') != 0:
@@ -316,13 +324,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('java', 'original', 'restored', 'snapshot', 'report', 'phase-handoff-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--expected-restored-sha256', default=RESTORED_SHA)
     args = parser.parse_args()
+    expected_restored = validated_restored_sha256(args.expected_restored_sha256)
     helper('compare-webview-cookie').require_verified_private_loopback()
     if os.environ.get('READER_ORIGINAL_JAR_NETWORK_ISOLATED') != 'confirmed' or os.getuid() != 10001:
         raise Rejected('HostVerifiedIsolationRequired')
     if args.report.exists() or args.phase_handoff_dir.exists():
         raise Rejected('PreserveExistingOutput')
-    if file_sha(args.original) != ORIGINAL_SHA or file_sha(args.restored) != RESTORED_SHA or file_sha(args.snapshot) != CAPTURE_SHA:
+    if file_sha(args.original) != ORIGINAL_SHA or file_sha(args.restored) != expected_restored or file_sha(args.snapshot) != CAPTURE_SHA:
         raise Rejected('ExactInputShaMismatch')
     raw_html = args.snapshot.read_bytes()
     if len(raw_html) != 468370:
@@ -357,7 +367,7 @@ def main():
     sides, progress = {}, {}
     report = {'schemaVersion': 1, 'passed': False, 'originalExecuted': False,
         'scope': 'captured public HTML; same loopback HTTP alias; no WAN three-way replay',
-        'originalJarSha256': ORIGINAL_SHA, 'restoredJarSha256': RESTORED_SHA,
+        'originalJarSha256': ORIGINAL_SHA, 'restoredJarSha256': expected_restored,
         'captureSha256': CAPTURE_SHA, 'captureBytes': len(raw_html), 'capturedPublicUrl': PUBLIC_URL,
         'realSiteHttpsThreeWayProven': False, 'realAuthenticationProven': False,
         'notLatestWholeNativeImageAcceptance': True, 'privateBooksRead': 0,
