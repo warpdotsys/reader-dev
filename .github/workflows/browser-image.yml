@@ -602,7 +602,8 @@ jobs:
           name: source-document-observation-report
           path: build/source-document-observation.json
           if-no-files-found: error
-      - name: Build one-container image
+      - name: Prepare locked one-container build inputs
+        id: image-inputs
         shell: bash
         run: |
           set -euo pipefail
@@ -616,13 +617,34 @@ jobs:
           revision=$(git rev-parse --verify HEAD)
           version="ci-${revision:0:12}"
           cp "$jar" "deploy/reader-pro/$jar_name"
-          docker build -f deploy/reader-pro/Dockerfile \
-            --build-arg "TEMURIN_JRE_IMAGE=$temurin_jre_image" \
-            --build-arg "PLAYWRIGHT_PYTHON_IMAGE=$playwright_python_image" \
-            --build-arg "READER_JAR=$jar_name" \
-            --build-arg "READER_VERSION=$version" \
-            --build-arg "READER_BUILD_REVISION=$revision" \
-            -t reader-browser:smoke deploy/reader-pro
+          printf 'temurin=%s\nplaywright=%s\njar=%s\nversion=%s\nrevision=%s\n' \
+            "$temurin_jre_image" "$playwright_python_image" "$jar_name" "$version" "$revision" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build one-container image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7, Node 24
+        with:
+          context: deploy/reader-pro
+          file: deploy/reader-pro/Dockerfile
+          platforms: linux/${{ env.READER_CI_NATIVE_ARCH }}
+          load: true
+          push: false
+          pull: true
+          provenance: false
+          sbom: false
+          tags: reader-browser:smoke
+          build-args: |
+            TEMURIN_JRE_IMAGE=${{ steps.image-inputs.outputs.temurin }}
+            PLAYWRIGHT_PYTHON_IMAGE=${{ steps.image-inputs.outputs.playwright }}
+            READER_JAR=${{ steps.image-inputs.outputs.jar }}
+            READER_VERSION=${{ steps.image-inputs.outputs.version }}
+            READER_BUILD_REVISION=${{ steps.image-inputs.outputs.revision }}
+            REQUIRE_WHEEL_HASHES=true
+          cache-from: type=gha,version=2,timeout=60s,scope=reader-runtime-v1-${{ env.READER_CI_NATIVE_ARCH }}-${{ hashFiles('deploy/reader-pro/base-images.lock', 'deploy/reader-pro/requirements-camoufox.lock', 'deploy/reader-pro/camoufox-browser.lock') }}
+          cache-to: type=gha,version=2,timeout=60s,mode=max,ignore-error=true,scope=reader-runtime-v1-${{ env.READER_CI_NATIVE_ARCH }}-${{ hashFiles('deploy/reader-pro/base-images.lock', 'deploy/reader-pro/requirements-camoufox.lock', 'deploy/reader-pro/camoufox-browser.lock') }}
+      - name: Verify the loaded full image architecture and layers
+        shell: bash
+        run: |
+          set -euo pipefail
           docker image inspect --format 'Reader image size: {{.Size}} bytes' reader-browser:smoke
           image_arch=$(docker image inspect --format '{{.Architecture}}' reader-browser:smoke)
           test "$image_arch" = "$READER_CI_NATIVE_ARCH"

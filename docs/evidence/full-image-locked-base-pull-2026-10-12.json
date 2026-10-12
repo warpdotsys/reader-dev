@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "oldRunId": 38235052988,
+  "oldSource": "91c62c451ecbad6fb4b63a56457702890e1611af",
+  "oldJobConclusion": "cancelled",
+  "oldFullBuildSeconds": 2150,
+  "oldLockedPlaywrightBaseLayerSeconds": 2113.8,
+  "oldReaderTlsConsumerOutputAcceptedBeforeCancellation": true,
+  "oldFullUiExecuted": false,
+  "newRunId": 38240714941,
+  "newSource": "a80ccf23829cf167e158a9d34325697f27a75ae2",
+  "newJobConclusion": "success",
+  "newFullBuildSeconds": 51,
+  "bothRunsBeforeCacheCandidate": true,
+  "cacheImprovementProvenByTheseTimings": false,
+  "lockedBaseIndexSha256": "47a65aee64780daa8bad02b37e0ef14902851a3aa7ad0153234f784eb12422b0",
+  "knownCause": "old base-layer pull dominated job budget; exact network slowdown cause not proven",
+  "httpOrWorkerOrJobTimeoutIncreased": false,
+  "rawLogsPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

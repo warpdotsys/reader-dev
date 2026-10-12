@@ -218,7 +218,7 @@ jobs:
           install -d exported image-context
           printf 'temurin=%s\nplaywright=%s\nwheel_hashes=enforced\n' "$temurin" "$playwright" > exported/BASE_IMAGE_DIGESTS
           printf 'temurin=%s\nplaywright=%s\n' "$temurin" "$playwright" >> "$GITHUB_OUTPUT"
-      - name: Build the complete native Reader image from the shared JAR
+      - name: Prepare the complete native image from the shared JAR
         shell: bash
         env:
           ARCH: ${{ matrix.arch }}
@@ -229,13 +229,35 @@ jobs:
           cp deploy/reader-pro/Dockerfile deploy/reader-pro/requirements-camoufox.lock \
             deploy/reader-pro/camoufox-browser.lock deploy/reader-pro/install_camoufox_pinned.py \
             deploy/reader-pro/docker-entrypoint.sh image-context/
-          docker build --pull --platform "linux/$ARCH" -f image-context/Dockerfile \
-            --build-arg "READER_JAR=reader-${VERSION}.jar" --build-arg "READER_VERSION=$VERSION" \
-            --build-arg "READER_BUILD_REVISION=${GITHUB_SHA}" --build-arg REQUIRE_WHEEL_HASHES=true \
-            --build-arg 'TEMURIN_JRE_IMAGE=${{ steps.bases.outputs.temurin }}' \
-            --build-arg 'PLAYWRIGHT_PYTHON_IMAGE=${{ steps.bases.outputs.playwright }}' \
-            -t "reader-pro:camoufox-smoke-$ARCH" image-context
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build the complete native Reader image from the shared JAR
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7, Node 24
+        with:
+          context: image-context
+          file: image-context/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          push: false
+          pull: true
+          provenance: false
+          sbom: false
+          tags: reader-pro:camoufox-smoke-${{ matrix.arch }}
+          build-args: |
+            READER_JAR=reader-${{ needs.build-jar.outputs.version }}.jar
+            READER_VERSION=${{ needs.build-jar.outputs.version }}
+            READER_BUILD_REVISION=${{ github.sha }}
+            REQUIRE_WHEEL_HASHES=true
+            TEMURIN_JRE_IMAGE=${{ steps.bases.outputs.temurin }}
+            PLAYWRIGHT_PYTHON_IMAGE=${{ steps.bases.outputs.playwright }}
+          cache-from: type=gha,version=2,timeout=60s,scope=reader-runtime-v1-${{ matrix.arch }}-${{ hashFiles('deploy/reader-pro/base-images.lock', 'deploy/reader-pro/requirements-camoufox.lock', 'deploy/reader-pro/camoufox-browser.lock') }}
+          cache-to: type=gha,version=2,timeout=60s,mode=max,ignore-error=true,scope=reader-runtime-v1-${{ matrix.arch }}-${{ hashFiles('deploy/reader-pro/base-images.lock', 'deploy/reader-pro/requirements-camoufox.lock', 'deploy/reader-pro/camoufox-browser.lock') }}
+      - name: Verify loaded native image architecture and size
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
           docker image inspect --format 'Complete image size={{.Size}} bytes architecture={{.Architecture}}' "reader-pro:camoufox-smoke-$ARCH"
+          test "$(docker image inspect --format '{{.Architecture}}' "reader-pro:camoufox-smoke-$ARCH")" = "$ARCH"
       - name: Run generated browser contracts under the release resource budget
         run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" built exported
       - name: Export only the smoke-tested native image and record its byte provenance

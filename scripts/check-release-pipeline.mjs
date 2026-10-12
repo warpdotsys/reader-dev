@@ -136,7 +136,7 @@ for (const token of [
   'base-images.lock', 'REQUIRE_WHEEL_HASHES=true', 'fc-list :lang=zh family',
   'READER_SERVER_BINDADDRESS=127.0.0.1', '--tmpfs /tmp:size=256m,mode=1777',
   'reader-release-listener.txt', 'scripts/report-browser-cgroup.py',
-  'BROWSER_RESOURCE_BUDGET.json', 'READER_BUILD_REVISION=${GITHUB_SHA}',
+  'BROWSER_RESOURCE_BUDGET.json', 'READER_BUILD_REVISION=${{ github.sha }}',
   'sha256sum /app/reader.jar', 'test "$actual_jar" = "$expected_jar"',
 ]) {
   if (!buildContract.includes(token)) throw new Error(`native build missing release safety token: ${token}`)
@@ -154,10 +154,36 @@ const approvedActions = new Map([
   ['actions/setup-java', 'cf277c60eb25467037889841efdb72551f06f6c3'],
   ['actions/setup-python', 'ece7cb06caefa5fff74198d8649806c4678c61a1'],
   ['docker/setup-buildx-action', '8d2750c68a42422c14e847fe6c8ac0403b4cbd6f'],
+  ['docker/build-push-action', 'c3c9e263c25d99ce0380d002d59b67737d91b0dc'],
   ['docker/login-action', 'c94ce9fb468520275223c153574b00df6fe4bcc9'],
   ['actions/upload-artifact', 'ea165f8d65b6e75b540449e92b4886f43607fa02'],
   ['actions/download-artifact', '9000827ccba6bdab643e8b6fd33ac0654aef8333'],
 ])
+const cacheLockFiles = "hashFiles('deploy/reader-pro/base-images.lock', 'deploy/reader-pro/requirements-camoufox.lock', 'deploy/reader-pro/camoufox-browser.lock')"
+for (const [label, content, name, arch, context, tag, revision] of [
+  ['full', browserWorkflow, 'Build one-container image', 'env.READER_CI_NATIVE_ARCH', 'deploy/reader-pro', 'reader-browser:smoke', 'steps.image-inputs.outputs.revision'],
+  ['native', nativeWorkflow, 'Build the complete native Reader image from the shared JAR', 'matrix.arch', 'image-context', 'reader-pro:camoufox-smoke-${{ matrix.arch }}', 'github.sha'],
+]) {
+  const step = content.split('      - name: ' + name + '\n')[1]?.split('\n      - ')[0] ?? ''
+  const stepLines = step.split('\n').map(line => line.trim())
+  const scope = `reader-runtime-v1-\${{ ${arch} }}-\${{ ${cacheLockFiles} }}`
+  for (const token of [
+    'uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc',
+    `context: ${context}`, `file: ${context}/Dockerfile`, `platforms: linux/\${{ ${arch} }}`,
+    'load: true', 'push: false', 'pull: true', 'provenance: false', 'sbom: false', `tags: ${tag}`,
+    `READER_BUILD_REVISION=\${{ ${revision} }}`, 'REQUIRE_WHEEL_HASHES=true',
+    `cache-from: type=gha,version=2,timeout=60s,scope=${scope}`,
+    `cache-to: type=gha,version=2,timeout=60s,mode=max,ignore-error=true,scope=${scope}`,
+  ]) {
+    const present = token.startsWith('uses: ')
+      ? stepLines.some(line => line === token || line.startsWith(token + ' #'))
+      : stepLines.includes(token)
+    if (!present) throw new Error(`bounded cached ${label} build contract missing: ${token}`)
+  }
+  if (/continue-on-error:|push: true|type=registry/.test(step)) {
+    throw new Error(`cached ${label} build must load without registry pushes or suppressed build failures`)
+  }
+}
 for (const [, action, ref] of (workflow + nativeWorkflow + browserWorkflow + artifactRegression).matchAll(/^\s*(?:-\s+)?uses:\s+([^@\s]+)@([^\s#]+)/gm)) {
   const expected = approvedActions.get(action)
   if (!expected || ref !== expected || !/^[0-9a-f]{40}$/.test(ref)) {

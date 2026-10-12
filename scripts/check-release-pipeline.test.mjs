@@ -54,6 +54,42 @@ test('current release and CI satisfy the structural guard', (t) => {
   assert.match(result.stdout, /static checks passed/)
 })
 
+for (const [label, file, step, arch, context, revision] of [
+  ['full', '.github/workflows/browser-image.yml', 'Build one-container image', 'env.READER_CI_NATIVE_ARCH', 'deploy/reader-pro', 'steps.image-inputs.outputs.revision'],
+  ['native', '.github/workflows/release-native.yml', 'Build the complete native Reader image from the shared JAR', 'matrix.arch', 'image-context', 'github.sha'],
+]) {
+  for (const [name, before, after] of [
+    ['wrong platform', `platforms: linux/\${{ ${arch} }}`, 'platforms: linux/amd64'],
+    ['missing load', 'load: true', 'load: false'],
+    ['registry push', 'push: false', 'push: true'],
+    ['Git rather than prepared context', `context: ${context}`, 'context: "{{defaultContext}}"'],
+    ['wrong source revision', `READER_BUILD_REVISION=\${{ ${revision} }}`, 'READER_BUILD_REVISION=unknown'],
+    ['mixed architecture cache', `reader-runtime-v1-\${{ ${arch} }}`, 'reader-runtime-v1-shared'],
+    ['obsolete cache protocol', 'type=gha,version=2', 'type=gha,version=1'],
+    ['missing base digest lock in scope', "hashFiles('deploy/reader-pro/base-images.lock',", "hashFiles('deploy/reader-pro/removed.lock',"],
+    ['unbounded cache wait', 'timeout=60s', 'timeout=10m'],
+    ['suppressed build failure', 'with:', 'continue-on-error: true\n        with:'],
+    ['cache clause only in comment', 'cache-from: type=gha,', '# cache-from: type=gha,'],
+  ]) {
+    test(`rejects ${label} cached build ${name}`, t => {
+      const input = fixture(t)
+      input.change(file, text => {
+        const prefix = '      - name: ' + step + '\n'
+        const start = text.indexOf(prefix)
+        assert.ok(start >= 0)
+        const end = text.indexOf('\n      - ', start + prefix.length)
+        assert.ok(end > start)
+        const block = text.slice(start, end)
+        assert.ok(block.includes(before))
+        return text.slice(0, start) + block.replaceAll(before, after) + text.slice(end)
+      })
+      const result = input.check()
+      assert.notEqual(result.status, 0)
+      assert.match(result.stderr, /bounded cached|must load without registry|native build missing release safety token: READER_BUILD_REVISION/)
+    })
+  }
+}
+
 for (const name of ['READER_VERTX_WORKER_POOL_SIZE', 'READER_VERTX_INTERNAL_BLOCKING_POOL_SIZE']) {
   test('rejects mismatched image pool default for ' + name, t => {
     const input = fixture(t)

@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "a80ccf23829cf167e158a9d34325697f27a75ae2",
+  "testedMergeSnapshot": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+  "ownRuns": [
+    {
+      "runId": 38240714771,
+      "workflow": "Java Kotlin CI",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "runId": 38240714774,
+      "workflow": "Vue 3 preview build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "runId": 38240714941,
+      "workflow": "Browser image integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "runId": 38240714786,
+      "workflow": "Native release artifact rehearsal",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "jarSha256": "d00784f6f54041de0786236fd1aadb66f7d2ff9967d82ad89dddc702b83621a7",
+  "jarBytes": 285673713,
+  "jarEntries": 1568,
+  "twoCleanBuildBytesEqual": true,
+  "jarDownloadedAndIndependentlyRehashed": true,
+  "knownCacheClassDeltaOnly": true,
+  "vueDependenciesManifestAndBrowserWorkerUnchanged": true,
+  "nativeSmallReports": {
+    "schemaVersion": 1,
+    "sourceRevision": "a80ccf23829cf167e158a9d34325697f27a75ae2",
+    "testedMergeSnapshot": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+    "nativeRunId": 38240714786,
+    "nativeSixHostedJobsAccepted": true,
+    "nativeArchitectures": [
+      "amd64",
+      "arm64"
+    ],
+    "metadata": {
+      "amd64": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+        "jarSha256": "d00784f6f54041de0786236fd1aadb66f7d2ff9967d82ad89dddc702b83621a7",
+        "archiveSha256": "17a69ee11ff9e99679c8927771c01d658d890533191bfb1f83d84a3ef948b42d",
+        "imageId": "sha256:0c26cf1831989ebc6cff82c4370056652f6c666a0b22aa0317bdc48846e1ee5a"
+      },
+      "arm64": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+        "jarSha256": "d00784f6f54041de0786236fd1aadb66f7d2ff9967d82ad89dddc702b83621a7",
+        "archiveSha256": "55d68ef2d7a77aba425e7c896c7da109e0dd8d8b5065e29bbe4159cfb5d79eb4",
+        "imageId": "sha256:db1e982d4185a672946bf4ab7eca5fa9b00af652822df1c606065ad40a68b708"
+      }
+    },
+    "checks": [
+      {
+        "architecture": "amd64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "amd64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      }
+    ],
+    "publisherSmallJsonFiles": 32,
+    "camoufoxContractTests": 24,
+    "hostedPythonTests": 748,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 12.264,
+    "jvmTests": 222,
+    "jvmSkipped": 35,
+    "maximumPublisherResourceSubsetMemoryBytes": 864804864,
+    "maximumPublisherResourceSubsetPids": 208,
+    "largeArchivesLocallyDownloadedOrRehashed": false,
+    "currentWholeImageLocallyAccepted": false,
+    "realBookPressureAccepted": false,
+    "rawLogsOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "vueGeneratedJourneys": 25,
+  "vueSkipped": 0,
+  "allFivePreviouslyFailedJourneysIncludedAndPassed": true,
+  "fullImageUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 12.905,
+    "xmlSha256": "f96061e3e882cde18ccde9fa1649bcc72496f6a822805ff1152acf00ed02dec9",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "ed659c37c163dc623fc8a7623be1f19243264c2d0a12f806c16be8e6d2d1a448",
+        "bytes": 49342,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "754be0a44980402c1fb693a5a12a1df8113693a4d2f30d5bfab70ab079fd27c9",
+        "bytes": 33670,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "generatedLoginAndReadingScreenshotsVisuallyReviewed": true,
+  "readerHttpsBusiness": {
+    "acceptedCurrentReaderHttpsBusinessSubset": true,
+    "generatedScenarios": 8,
+    "actualTargetRequests": 12,
+    "actualConnectTunnels": 14,
+    "parsedHeaderFields": 178,
+    "negativeCertificateControls": 2,
+    "generatedUserNamespaces": 2,
+    "proxySocketOwnershipVerifiedByLiveProducer": true,
+    "originalJarThreeWayAccepted": false,
+    "fullNativeImageLocallyAccepted": false,
+    "realSiteLoginAccepted": false,
+    "productionChanged": false,
+    "fullGoalComplete": false,
+    "acceptedCertificateHintMessages": true
+  },
+  "workerHttps": {
+    "acceptedPackagedWorkerHttpsSubset": true,
+    "positiveCases": 10,
+    "negativeCertificateControls": 2,
+    "targetRequests": 24,
+    "parsedHeaderFields": 334,
+    "readerApiOrProductionAccepted": false
+  },
+  "fullServerOnlyMemoryPeakBytes": 849977344,
+  "fullServerOnlyPidsPeak": 198,
+  "fullServerConfiguredSwapMaxBytes": 1073741824,
+  "fullServerObservedSwapBytes": 0,
+  "fullUiClientOutsideServerResourceBudget": true,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "originalThreeWayOrRealAuthenticatedSiteOrRealBookPressureAccepted": false,
+  "oldFailuresOverwritten": false,
+  "productionChanged": false,
+  "goalComplete": false
+}
