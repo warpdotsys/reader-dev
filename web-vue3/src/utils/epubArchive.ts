@@ -73,26 +73,26 @@ export function expandEpubArchive(bytes: Uint8Array,
     }
     seen.add(key)
     let size = 0
-    const chunks: Uint8Array[] = []
+    // The central directory and local entry have already passed the size and
+    // aggregate budgets. Fill one owned destination instead of retaining all
+    // emitted chunks and allocating/copying another complete resource at EOF.
+    // fflate's own temporary decode allocations are separate and still apply.
+    const result = key.endsWith('/') ? undefined : new Uint8Array(expected.originalSize)
     file.ondata = (error, chunk, final) => {
       if (error) throw error
       if (chunk) {
+        const offset = size
         size += chunk.length
         expanded += chunk.length
         if (size > expected.originalSize || size > entryLimit(key, limits) || expanded > limits.expandedBytes) {
           throw new Error('EPUB 实际解压量超过声明或原版排版上限')
         }
-        if (chunk.length) chunks.push(chunk)
+        if (chunk.length && result) result.set(chunk, offset)
       }
       if (final) {
         if (size !== expected.originalSize) throw new Error('EPUB ZIP 实际资源大小与声明不一致')
         completed++
-        if (!key.endsWith('/')) {
-          const result = new Uint8Array(size)
-          let offset = 0
-          for (const part of chunks) { result.set(part, offset); offset += part.length }
-          files.set(key, result)
-        }
+        if (result) files.set(key, result)
       }
     }
     file.start()

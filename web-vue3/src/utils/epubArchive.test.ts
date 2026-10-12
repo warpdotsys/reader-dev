@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { zipSync, strToU8 } from 'fflate'
+import { zipSync, strToU8, Zip, ZipDeflate } from 'fflate'
 import { expandEpubArchive, readEpubResponse, EPUB_ARCHIVE_LIMITS } from './epubArchive.ts'
 
 const small = { ...EPUB_ARCHIVE_LIMITS, entryBytes: 1000, textBytes: 1000, expandedBytes: 2000 }
@@ -13,6 +13,76 @@ test('EPUB ZIP：正常 deflate/stored 和目录条目逐字节恢复', () => {
     assert.deepEqual(files.get('OEBPS/ch.xhtml'), source)
     assert.equal(files.size, 1)
   }
+})
+
+function generatedBytes(length: number): Uint8Array {
+  const bytes = new Uint8Array(length)
+  let state = 0x13579bdf
+  for (let index = 0; index < length; index++) {
+    state ^= state << 13
+    state ^= state >>> 17
+    state ^= state << 5
+    bytes[index] = state & 255
+  }
+  return bytes
+}
+
+test('EPUB ZIP：多块与多资源填入独占缓冲区，逐字节且没有零填充尾部', () => {
+  const binary = generatedBytes(256 * 1024 + 7)
+  const text = strToU8('生成正文，跨分块且不能损坏中文。'.repeat(3000))
+  for (const level of [0, 6] as const) {
+    const bytes = zipSync({ 'assets/a.bin': binary, 'OEBPS/ch.xhtml': text }, { level })
+    assert.ok(bytes.length > 4096 * 2)
+    const files = expandEpubArchive(bytes)
+    for (const [name, expected] of [['assets/a.bin', binary], ['OEBPS/ch.xhtml', text]] as const) {
+      const result = files.get(name)!
+      assert.deepEqual(result, expected)
+      assert.equal(result.byteOffset, 0)
+      assert.equal(result.buffer.byteLength, expected.length)
+      assert.notEqual(result.buffer, expected.buffer)
+      assert.notEqual(result.buffer, bytes.buffer)
+    }
+    assert.notEqual(files.get('assets/a.bin')!.buffer, files.get('OEBPS/ch.xhtml')!.buffer)
+  }
+})
+
+test('EPUB ZIP：未知本地大小的数据描述符仍由中央预算和实际输出核验', () => {
+  const expected = generatedBytes(192 * 1024 + 11)
+  const chunks: Uint8Array[] = []
+  let completed = false
+  const zip = new Zip((error, chunk, final) => {
+    assert.equal(error, null)
+    chunks.push(chunk)
+    completed ||= final
+  })
+  const entry = new ZipDeflate('assets/streamed.bin', { level: 6 })
+  zip.add(entry)
+  entry.push(expected.subarray(0, 70000), false)
+  entry.push(expected.subarray(70000), true)
+  zip.end()
+  assert.equal(completed, true)
+  const bytes = new Uint8Array(chunks.reduce((size, chunk) => size + chunk.length, 0))
+  let offset = 0
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length }
+  assert.notEqual(new DataView(bytes.buffer).getUint16(6, true) & 8, 0)
+  const actual = expandEpubArchive(bytes).get('assets/streamed.bin')!
+  assert.deepEqual(actual, expected)
+  assert.equal(actual.buffer.byteLength, expected.length)
+})
+
+test('EPUB ZIP：高报大小必须拒绝，空资源保留而目录不物化', () => {
+  const expected = strToU8('只生成的小样本')
+  const bytes = zipSync({ 'a.xhtml': expected })
+  const view = new DataView(bytes.buffer)
+  for (let index = 0; index + 46 <= bytes.length; index++) {
+    const signature = view.getUint32(index, true)
+    if (signature === 0x04034b50) view.setUint32(index + 22, expected.length + 9, true)
+    if (signature === 0x02014b50) view.setUint32(index + 24, expected.length + 9, true)
+  }
+  assert.throws(() => expandEpubArchive(bytes), /实际资源大小与声明不一致/)
+  const files = expandEpubArchive(zipSync({ 'OEBPS/': new Uint8Array(), 'OEBPS/empty.xhtml': new Uint8Array() }))
+  assert.deepEqual([...files.keys()], ['OEBPS/empty.xhtml'])
+  assert.equal(files.get('OEBPS/empty.xhtml')!.buffer.byteLength, 0)
 })
 
 test('EPUB ZIP：压缩输入、单资源、文本、累计量和条目数分别受限', () => {
