@@ -52,8 +52,29 @@ Firefox为合成POST重新构造upload元数据是候选解释，不是本次托
 
 [有限公开摘要](evidence/post-redirect-media-diagnostic-2026-10-12.json)绑定原始135,413B回执SHA `7a7038b7…bc52`、失败XML及各执行源，独立重新检查后精确比较；公开文件SHA `e2f79622…049f`。不含URL、正文、Cookie值、用户名、requestId或异常原文，未反写任何旧轮次。
 
+## 9e7 候选自己的托管结果：四项与六个 Native 作业已独立接受
+
+实际产品源码 `9e70301a410c74245f23d27e6fea5f5fd3fabb64`，受测合并快照 `ab2b37db81702b466679933e32f79b554d01c420`。本轮四份新回执已生成，根代理又重新执行冻结守卫并精确比较，没有覆写原回执或借用8e0/eda9结果。
+
+| 自己的运行 | 实际接受的子集 |
+| --- | --- |
+| [Java/Kotlin](https://github.com/warpdotsys/reader-dev/actions/runs/38190353220) | Linux Python725/零跳过；JVM207/35既有环境跳过；双clean JAR完整字节相等 |
+| [Vue](https://github.com/warpdotsys/reader-dev/actions/runs/38190353221) | 前端311，实际生成界面25/零跳过，类型检查与构建 |
+| [完整镜像](https://github.com/warpdotsys/reader-dev/actions/runs/38190353319) | Camoufox24/零失败错误跳过；本方法实际执行原4个JSON及新增4个表单重定向场景；打包worker HTTPS及真实Reader Java代理HTTPS业务子集；默认界面旅程12.558秒 |
+| [Native](https://github.com/warpdotsys/reader-dev/actions/runs/38190353224) | GitHub原生amd64/arm64构建、各自重载运行、双架构发布导入六作业与32份有限文件；共同build-jar Cam24通过，不将它多计为两架构各一套JUnit |
+
+所有实际作业均使用GitHub托管 `ubuntu-24.04` / `ubuntu-24.04-arm`，不是自托管runner。准确共享JAR `6feedd00bd3db90fa7db8bdd5b31aebf3bdf6e8fa877ffed01a24345fa7fb412`，285,672,774B/1570条目，已真正下载并在本机重新散列，与两个clean构建相等；包内worker SHA `50497908…cf08`。逐条与旧恢复0675 JAR比较，class、依赖、MANIFEST内容差异0，其他差异仅Vue资源和worker；不是与原始b26 JAR完全等价的证明。
+
+完整镜像同一真实界面旅程含生成TXT及两章EPUB三模式/翻章/刷新/退出。四张生成登录、书架、TXT阅读、退出图已由根代理实际查看，并核对原SHA/PNG解码/非单色像素，中文可读、不空白；没有EPUB模式截图或ARM64界面测试。客户端在服务端预算之外，不能称合计2GiB压力通过。
+
+Full合成服务端子集峰值892,682,240B/PID193，普通配置允许1GiB swap、实际0；另一个真实Reader HTTPS子集8场景/12目标HTTP/14 CONNECT/178头字段与两个证书负例通过，其峰值985,186,304B/PID189、配置及实际swap0。Native publisher资源子集最大899,387,392B/PID199。这些是各自子集的观测，不是整个工作流或合计客户端的统一最高峰。
+
+[当前有限验收摘要](evidence/candidate-post-and-epub-acceptance-2026-10-12.json)由四份冻结回执及另一个本机授权单书解压回执严格投影，SHA `0ea43384…2e0b`；9个解压负例拒绝、公开文件重新生成值与原文件精确比较。没有导出正文、私有书内路径、Cookie、用户名或原异常，旧失败XML `d8597a7e…0293`仍保持原字节。本机未下载或重新散列大镜像归档，镜像导入/运行证明来自本轮托管产物，不冒称本机最新整镜像已经验收。
+
+这次仅接受候选自己的生成契约与有限镜像业务。旧8e0准确失败子场景仍未定位；本机旧、新都通过，不将新绿灯转换成“旧错误根因已证明”或“生产修复已完成”。
+
 ## 未闭合项与回退
 
-候选自己的托管合约、准确新JAR/实际镜像、失败子场景定位、Java gate端到端、HTTPS/实站认证与原件/远程/current三方仍待验证。EPUB真实单书压力、fflate瞬时工作集、应用/浏览器任务分类、完整场景、OPDS、同章anchor及Z未定位4xx等原缺口仍保留。
+候选自己的托管合约、准确新JAR及托管镜像上述有限子集已接受；失败子场景定位、实站认证、准确原件/远程/current三方、本机最新完整镜像仍待验证。EPUB真实单书合计压力、fflate瞬时工作集、应用/浏览器任务分类、完整场景、OPDS、同章anchor及Z未定位4xx等原缺口仍保留。[授权单书逐条字节对照](EPUB-OUTPUT-BUFFER-2026-10-12.md#授权单书三轮逐条对照字节兼容通过没有省内存结论)不是上述整轮压力的替代。
 
 回退在独立干净工作树定向移除单请求媒体类型记录/生命周期listener及post标记；恢复原origin策略，不更改Cookie、正文、Host或用户storage，不reset本工作区。保留失败与回归以暴露该缺口；回退不是“已解决”。当前不合并、发版、推registry或部署，完整goal保持active。
