@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "7daa2c6a5002daee8ba5521d0e82e669986765f1",
+  "testedMergeSnapshot": "6970af949b41b3018eb6325afdfc7f7d95b175ea",
+  "runs": {
+    "java": {
+      "conclusion": "success",
+      "databaseId": 38198554839,
+      "headSha": "7daa2c6a5002daee8ba5521d0e82e669986765f1",
+      "name": "Java Kotlin CI",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38198554839"
+    },
+    "vue": {
+      "conclusion": "success",
+      "databaseId": 38198554901,
+      "headSha": "7daa2c6a5002daee8ba5521d0e82e669986765f1",
+      "name": "Vue 3 preview build",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38198554901"
+    },
+    "full": {
+      "conclusion": "success",
+      "databaseId": 38198554910,
+      "headSha": "7daa2c6a5002daee8ba5521d0e82e669986765f1",
+      "name": "Browser image integration",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38198554910"
+    }
+  },
+  "jarSha256": "30e8cafcea6b07781aae8039c5ae0230340c189884f61eba445bab72e5b440af",
+  "workerSha256": "50497908dbae2a6a41c379daea05b670b3c3eb327f239aabc345faf5cdabcf08",
+  "hostedLinuxPythonTests": 732,
+  "hostedLinuxPythonSkipped": 0,
+  "hostedLinuxPythonSeconds": 13.367,
+  "camoufoxContractTests": 24,
+  "camoufoxContractSkipped": 0,
+  "asyncReaderCases": 2,
+  "readerTlsGeneratedScenarios": 8,
+  "readerTlsParsedHeaderFields": 178,
+  "readerTlsNegativeCertificateControls": 2,
+  "workerTlsPositiveCases": 10,
+  "workerTlsNegativeCertificateControls": 2,
+  "sourceDocumentHelperCases": 3,
+  "completeImageGeneratedUiTests": 1,
+  "completeImageGeneratedUiSeconds": 13.0,
+  "completeImageUiClientOutsideServerBudget": true,
+  "actualLoginAndReadingScreenshotsViewed": true,
+  "serverResourceSubsetMemoryPeakBytes": 870047744,
+  "serverResourceSubsetPidsPeak": 197,
+  "configuredSwapMaxBytes": 1073741824,
+  "observedSwapCurrentBytes": 0,
+  "nativeWorkflowAcceptedByThisReceipt": false,
+  "artifactZipBytesIndependentlyRehashed": false,
+  "failed4cRunAcceptedOrOverwritten": false,
+  "realAccountOrLargeBookPressureAccepted": false,
+  "rawLogsOrPrivateBodiesExported": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

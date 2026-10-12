@@ -18,6 +18,14 @@
 
 修正后已有本机完整 732 项测试通过（1 项既有 Windows/POSIX 平台跳过），相关 14 项在 Windows 和 WSL Ubuntu 均通过。当前 WSL 的 `/usr/bin/python3` 活验为 3.14.4，不等同托管 3.10.22；这些结果不代替新提交自己的 GitHub 托管构建。后续托管结果需按新的源码和运行编号独立核实，不重跑旧失败来掩盖它，也不借用 6a 的旧绿灯。
 
+## 后续自己的托管结果（原失败不变）
+
+修正提交 `7daa2c6a5002daee8ba5521d0e82e669986765f1`、受测快照 `6970af949b41b3018eb6325afdfc7f7d95b175ea` 的 Java/Kotlin、Vue 和 [完整镜像流程 38198554910](https://github.com/warpdotsys/reader-dev/actions/runs/38198554910) 已终态成功。GitHub 自带 Ubuntu runner 的 732 项 Python 回归、13.367 秒、零跳过；完整流程还真正执行 Camoufox 24 项、生成 Reader HTTPS 8 场景/178 头字段、Worker TLS 10 正向/2 负证书、三个文档 helper 场景和完整镜像默认界面旅程。下载报告经原消费器复验，登录及生成阅读截图实际查看中文可读、不空白。
+
+默认界面旅程 13.000 秒/零跳过，包含生成 TXT、两章 EPUB、三种模式、翻章及刷新；其测试客户端位于服务端资源预算之外。服务端普通合成资源子集峰值 870,047,744B/PID197，配置允许 1GiB swap、实际 swap0；不冒称授权大书合计 2GiB/256PID/零swap已验收。报告绑定运行 JAR `30e8cafc…40af` 与包内 worker `50497908…08`。
+
+[有限独立消费摘要](evidence/optimized-guard-full-ci-acceptance-2026-10-12.json)只接受这三条终态和上述准确范围。没有本机重算下载 ZIP 原始字节，Native workflow 尚按自己的实际运行另外核验，不据此接受双架构/publisher，不替代原件三方、真实认证或生产验收。后续新增线程诊断的 748 项本机结果也不借用此 732 项托管绿灯。
+
 ## 安全边界与回退
 
 本机官方 `uidmap` / `libsubid5` 已安装，版本 `1:4.17.4-2ubuntu3`，`newuidmap`、`newgidmap` 可用；`/etc/subuid`、`/etc/subgid` 仍各为原 SHA-256 `d796e52bc335df4e55114fad949f19850e6b4008cf07bf8d53a4e88936be9cbd`。未更改映射范围、代理或生产服务。
