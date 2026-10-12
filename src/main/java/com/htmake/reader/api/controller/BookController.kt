@@ -194,7 +194,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         if (bookInfo == null) {
             // 看看有没有缓存数据
             var bookSource: String? = null
-            var cacheInfo: Book? = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            var cacheInfo: Book? = readCachedBookInfo(bookInfoCache, bookUrl)
             if (cacheInfo != null) {
                 // 使用缓存的书籍信息包含的书源
                 bookSource = getBookSourceString(context, cacheInfo.origin)
@@ -409,7 +409,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         var bookSource: String? = null
         if (bookInfo == null) {
             // 看看有没有缓存数据
-            var cacheInfo: Book? = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            var cacheInfo: Book? = readCachedBookInfo(bookInfoCache, bookUrl)
             if (cacheInfo != null) {
                 // 使用缓存的书籍信息包含的书源
                 bookSource = getBookSourceString(context, cacheInfo.origin)
@@ -563,7 +563,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
                 bookSource = getBookSourceStringBySourceURLOpt(bookInfo.origin, userNameSpace)
             }
             // 看看有没有缓存数据
-            var cacheInfo: Book? = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            var cacheInfo: Book? = readCachedBookInfo(bookInfoCache, bookUrl)
             if (cacheInfo != null) {
                 // 使用缓存的书籍信息包含的书源
                 bookSource = getBookSourceString(context, cacheInfo.origin)
@@ -1074,7 +1074,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         }
         var book = getShelfBookByURL(bookUrl, userNameSpace)
         if (book == null) {
-            book = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            book = readCachedBookInfo(bookInfoCache, bookUrl)
         }
         if (book == null) {
             return returnData.setErrorMsg("书籍信息错误")
@@ -1181,7 +1181,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
 
         var book = getShelfBookByURL(bookUrl, userNameSpace)
         if (book == null) {
-            book = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            book = readCachedBookInfo(bookInfoCache, bookUrl)
         }
         if (book == null) {
             response.write("event: error\n")
@@ -1319,7 +1319,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
         var userNameSpace = getUserNameSpace(context)
         var book = getShelfBookByURL(bookUrl, userNameSpace)
         if (book == null) {
-            book = bookInfoCache.getAsString(bookUrl)?.toMap()?.toDataClass()
+            book = readCachedBookInfo(bookInfoCache, bookUrl)
         }
         if (book == null) {
             return returnData.setErrorMsg("书籍信息错误")
@@ -1691,7 +1691,7 @@ class BookController(coroutineContext: CoroutineContext): BaseController(corouti
     }
 
     suspend fun mergeBookCacheInfo(book: Book): Book {
-        var cacheInfo: Book? = bookInfoCache.getAsString(book.bookUrl)?.toMap()?.toDataClass()
+        var cacheInfo: Book? = readCachedBookInfo(bookInfoCache, book.bookUrl)
 
         if (cacheInfo != null) {
             return book.fillData(cacheInfo, listOf("name", "author", "coverUrl", "tocUrl", "intro", "latestChapterTitle", "wordCount"))
