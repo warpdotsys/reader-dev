@@ -8,6 +8,7 @@ const scope = globalThis as unknown as {
 
 scope.onmessage = event => {
   try {
+    scope.postMessage({ phase: 'expanding' }, [])
     const files = [...expandEpubArchive(new Uint8Array(event.data))]
     scope.postMessage({ files }, files.map(([, data]) => data.buffer as ArrayBuffer))
   } catch (error) {
@@ -15,3 +16,6 @@ scope.onmessage = event => {
     scope.postMessage({ error: detail.startsWith('EPUB ') ? detail : 'EPUB ZIP 无效或无法解压' }, [])
   } finally { scope.close() }
 }
+
+// 只报告固定阶段，不包含文件名、正文或输入；主线程仍使用同一条总超时。
+scope.postMessage({ phase: 'ready' }, [])

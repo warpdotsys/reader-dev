@@ -16,7 +16,10 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
   return new Promise((resolve, reject) => {
     const worker = createWorker()
     let finished = false
-    const timer = setTimeout(() => finish(new Error('EPUB 解压超时（15 秒），已终止原版排版加载')), timeoutMs)
+    let phase: 'starting' | 'ready' | 'expanding' = 'starting'
+    const phaseText = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件' }
+    const timer = setTimeout(() => finish(new Error(
+      `EPUB 解压超时（15 秒；阶段：${phaseText[phase]}），已终止原版排版加载`)), timeoutMs)
     const abort = () => finish(new DOMException('EPUB 加载已取消', 'AbortError'))
     function finish(error?: Error, files?: Map<string, Uint8Array>) {
       if (finished) return
@@ -29,7 +32,17 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
       else resolve(files!)
     }
     worker.onmessage = event => {
-      const reply = event.data as { files?: [string, Uint8Array][]; error?: string }
+      const reply = event.data as { phase?: unknown; files?: [string, Uint8Array][]; error?: string }
+      if (reply && typeof reply === 'object' && 'phase' in reply) {
+        // 阶段确认不是结果，也不能重启/延长计时器；拒绝混合、重复或逆序协议。
+        if (Object.keys(reply).length !== 1
+          || !((phase === 'starting' && reply.phase === 'ready')
+            || (phase === 'ready' && reply.phase === 'expanding'))) {
+          finish(new Error('EPUB 解压 Worker 返回无效阶段')); return
+        }
+        phase = reply.phase as 'ready' | 'expanding'
+        return
+      }
       if (typeof reply?.error === 'string') { finish(new Error(reply.error)); return }
       if (!Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
         && typeof entry[0] === 'string' && entry[1] instanceof Uint8Array)) {

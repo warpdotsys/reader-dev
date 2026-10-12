@@ -65,3 +65,58 @@ test('EPUB Worker：发送失败及子视图不转移无关字节', async () => 
   await assert.rejects(expandEpubInWorker(new Uint8Array(), undefined, () => failed.worker), /send failure/)
   assert.equal(failed.terminated, 1)
 })
+
+test('EPUB Worker：固定阶段确认不完成任务，最终文件与转移协议不变', async () => {
+  const fixture = fixtureWorker()
+  const input = new Uint8Array([80, 75])
+  let completed = false
+  const result = expandEpubInWorker(input, undefined, () => fixture.worker)
+  void result.then(() => { completed = true })
+  for (const phase of ['ready', 'expanding']) {
+    fixture.worker.onmessage!({ data: { phase } } as MessageEvent)
+    await Promise.resolve()
+    assert.equal(completed, false)
+    assert.equal(fixture.terminated, 0)
+  }
+  assert.equal(fixture.sent, input.buffer)
+  assert.deepEqual(fixture.transferred, [input.buffer])
+  fixture.worker.onmessage!({ data: { files: [['a', new Uint8Array([7])]] } } as MessageEvent)
+  assert.deepEqual((await result).get('a'), new Uint8Array([7]))
+  assert.equal(fixture.terminated, 1)
+})
+
+for (const targetPhase of ['starting', 'ready', 'expanding'] as const) {
+  test(`EPUB Worker：${targetPhase} 阶段仍在原总期限结束，不重置超时`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const fixture = fixtureWorker()
+    const result = expandEpubInWorker(new Uint8Array(), undefined, () => fixture.worker)
+    const expected = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件' }
+    const observed = assert.rejects(result, new RegExp(`解压超时.*阶段：${expected[targetPhase]}`))
+    t.mock.timers.tick(14998)
+    if (targetPhase !== 'starting') fixture.worker.onmessage!({ data: { phase: 'ready' } } as MessageEvent)
+    t.mock.timers.tick(1)
+    if (targetPhase === 'expanding') fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+    assert.equal(fixture.terminated, 0)
+    t.mock.timers.tick(1)
+    await observed
+    assert.equal(fixture.terminated, 1)
+    assert.equal(fixture.worker.onmessage, null)
+    assert.equal(fixture.worker.onerror, null)
+  })
+}
+
+test('EPUB Worker：未知、混合、逆序和重复阶段拒绝，不能伪报成功', async () => {
+  for (const phases of [
+    [{ phase: 'unknown' }], [{ phase: undefined }], [{ phase: 'expanding' }],
+    [{ phase: 'ready', files: [] }], [{ phase: 'ready', error: 'generated' }],
+    [{ phase: 'ready' }, { phase: 'ready' }],
+    [{ phase: 'ready' }, { phase: 'expanding' }, { phase: 'ready' }],
+  ]) {
+    const fixture = fixtureWorker()
+    const result = expandEpubInWorker(new Uint8Array(), undefined, () => fixture.worker)
+    const observed = assert.rejects(result, /无效阶段/)
+    for (const data of phases) fixture.worker.onmessage!({ data } as MessageEvent)
+    await observed
+    assert.equal(fixture.terminated, 1)
+  }
+})
