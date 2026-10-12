@@ -13,6 +13,8 @@ Required server-side files that are deliberately not committed:
 
 ## 正式发布
 
+2026-10-12 后续候选：Worker 正确 ready 后才转移输入，取消/超时/重复确认不能再发送；15 秒总期限及所有 ZIP、下载、隔离限制不改。37 定向和 332 全前端/零跳过、类型/Vite 已执行，但自己的正式产物及同书八场景待验，不把此前 789 的绿灯当本候选验收，不作生产切换。[时序候选与回退](../../docs/EPUB-READY-BEFORE-TRANSFER-2026-10-12.md)。
+
 2026-10-12 最新：789 的准确正式 JAR 已独立核 SHA 与自己的双次 clean 重建；Java、Vue、Full 的生成消费器通过，但授权单书 S 仅四/八，首次原样 Worker starting 超时，原样刷新未执行。没有真实阅读修复 / RSS 改善结论，不进入生产发布；本轮隔离进程和两份输入副本已清理，原件、授权来源及用户 58 报告保留。Full 的缓存使用确有观察，207 秒构建 / 58.2 秒发送不证明稳定提速或严格总 60 秒限。[正式产物、失败复测、已知风险和回退](../../docs/EPUB-FORMAL-ARTIFACT-ACCEPTANCE-2026-10-12.md)。下列为捕获时历史，不覆盖新结果。
 
 2026-10-12：a80接受而真实单书R仍六/八，刷新解压超时，不能发版。403 Full/Java/Vue接受、Native固定下载HTTP504拒绝；缓存导出152.8秒，不把timeout60s当已证总限或提速。新有界下载缓冲已326前端/真实输入三头字节一致，固定URL最多3次重试已7生成及755本机Python（1原平台跳过）执行；版本、完整性、预算及Reader超时不改，自己的正式构建/八场景待验，不作生产切换依据。[最新原失败、候选与回退](../../docs/EPUB-DOWNLOAD-BUFFER-CANDIDATE-2026-10-12.md)、[8/8线程配置历史](../../docs/VERTX-POOL-CANDIDATE-2026-10-12.md)。

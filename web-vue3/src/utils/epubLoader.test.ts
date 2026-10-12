@@ -124,8 +124,12 @@ for (const directory of [true, false]) {
     class FixtureWorker implements EpubArchiveWorker {
       onmessage: EpubArchiveWorker['onmessage'] = null
       onerror: EpubArchiveWorker['onerror'] = null
+      constructor() { queueMicrotask(() => this.onmessage?.({ data: { phase: 'ready' } } as MessageEvent)) }
       postMessage(data: ArrayBuffer) {
-        queueMicrotask(() => this.onmessage?.({ data: { files: [...expandEpubArchive(new Uint8Array(data))] } } as MessageEvent))
+        queueMicrotask(() => {
+          this.onmessage?.({ data: { phase: 'expanding' } } as MessageEvent)
+          this.onmessage?.({ data: { files: [...expandEpubArchive(new Uint8Array(data))] } } as MessageEvent)
+        })
       }
       terminate() { this.onmessage = this.onerror = null }
     }

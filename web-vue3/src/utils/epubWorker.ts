@@ -31,7 +31,19 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
       if (error) reject(error)
       else resolve(files!)
     }
+    function sendInput() {
+      if (finished) return
+      if (signal?.aborted) { abort(); return }
+      try {
+        // 在固定 ready 确认后才转移整本输入，不将大文件排入尚未启动的 Worker。
+        // 仍使用创建时的同一条总期限；子视图只复制有效字节，不转移无关数据。
+        const input = bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+          && bytes.buffer instanceof ArrayBuffer ? bytes.buffer : bytes.slice().buffer as ArrayBuffer
+        worker.postMessage(input, [input])
+      } catch (error) { finish(error instanceof Error ? error : new Error('EPUB Worker 启动失败')) }
+    }
     worker.onmessage = event => {
+      if (finished) return
       const reply = event.data as { phase?: unknown; files?: [string, Uint8Array][]; error?: string }
       if (reply && typeof reply === 'object' && 'phase' in reply) {
         // 阶段确认不是结果，也不能重启/延长计时器；拒绝混合、重复或逆序协议。
@@ -41,10 +53,11 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
           finish(new Error('EPUB 解压 Worker 返回无效阶段')); return
         }
         phase = reply.phase as 'ready' | 'expanding'
+        if (phase === 'ready') sendInput()
         return
       }
       if (typeof reply?.error === 'string') { finish(new Error(reply.error)); return }
-      if (!Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
+      if (phase !== 'expanding' || !Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
         && typeof entry[0] === 'string' && entry[1] instanceof Uint8Array)) {
         finish(new Error('EPUB 解压 Worker 返回无效数据')); return
       }
@@ -53,11 +66,5 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
     worker.onerror = event => { event.preventDefault(); finish(new Error('EPUB 解压 Worker 运行失败')) }
     signal?.addEventListener('abort', abort, { once: true })
     if (signal?.aborted) { abort(); return }
-    try {
-      // 网络读取返回独占的连续 ArrayBuffer；测试用视图不能意外转移无关数据。
-      const input = bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
-        && bytes.buffer instanceof ArrayBuffer ? bytes.buffer : bytes.slice().buffer as ArrayBuffer
-      worker.postMessage(input, [input])
-    } catch (error) { finish(error instanceof Error ? error : new Error('EPUB Worker 启动失败')) }
   })
 }
