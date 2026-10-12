@@ -938,7 +938,8 @@ jobs:
         run: |
           if [[ "$CAPTURE_MODE" = gutenberg-fixed-book ]]; then
             bash scripts/probe-gutenberg-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report"
-            python3 scripts/verify-gutenberg-ui-report.py "$RUNNER_TEMP/reader-public-metadata-report" "$NATIVE_REVISION"
+            python3 scripts/verify-gutenberg-ui-report.py "$RUNNER_TEMP/reader-public-metadata-report" "$NATIVE_REVISION" \
+              --expected-jar-sha256 "$(jq -er '.jarSha256' imported/metadata.json)"
           else
             bash scripts/probe-public-native-image.sh "$EXPECTED_ARCH" "$NATIVE_REVISION" "$RUNNER_TEMP/reader-public-metadata-report" "$CAPTURE_MODE" "$USER_AGENT_MODE"
           fi

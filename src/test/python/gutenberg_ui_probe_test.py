@@ -118,6 +118,29 @@ class GutenbergUiProbeTests(unittest.TestCase):
         counts = VERIFY.verify_report(self.complete_report(), 'a' * 40)
         self.assertEqual(2, counts['getBookContent'])
 
+    def test_explicit_current_identity_matches_report_without_accepting_old_or_inferred_hash(self):
+        report = self.complete_report()
+        report['jarSha256'] = 'b' * 64
+        self.assertEqual(2, VERIFY.verify_report(report, 'a' * 40, 'b' * 64)['getBookContent'])
+        for expected in (None, 'c' * 64):
+            with self.assertRaises(AssertionError):
+                VERIFY.verify_report(report, 'a' * 40, expected)
+        report['jarSha256'] = UI.PROBE.EXPECTED_JAR
+        with self.assertRaises(AssertionError):
+            VERIFY.verify_report(report, 'a' * 40, 'b' * 64)
+
+    def test_runtime_identity_cannot_mix_jar_revision_network_or_ports(self):
+        good = {'revision': 'a' * 40, 'jarSha256': 'b' * 64, 'network': 'bridge', 'publishedPorts': 0}
+        VERIFY.verify_running_identity(good, 'a' * 40, 'b' * 64)
+        for key, bad in (('revision', 'c' * 40), ('jarSha256', 'c' * 64), ('network', 'host'),
+                         ('publishedPorts', 1), ('publishedPorts', False), ('rawBody', 'PRIVATE_BODY')):
+            with self.assertRaises(AssertionError):
+                VERIFY.verify_running_identity(dict(good, **{key: bad}), 'a' * 40, 'b' * 64)
+
+    def test_workflow_passes_explicit_artifact_identity_to_ui_verification(self):
+        text = (ROOT / '.github/workflows/browser-image.yml').read_text(encoding='utf-8')
+        self.assertIn('--expected-jar-sha256 "$(jq -er \'.jarSha256\' imported/metadata.json)"', text)
+
     def test_verifier_rejects_different_identity_skip_or_unbounded_raw_fields(self):
         for key, value in (('expectedImageRevision', 'b' * 40), ('passed', False), ('stage', 'next'),
                            ('rawBody', 'PRIVATE_BODY'), ('combinedTwoGiBBudgetProven', True),

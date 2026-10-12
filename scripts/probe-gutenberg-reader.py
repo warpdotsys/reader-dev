@@ -25,6 +25,8 @@ OPTIONS = ', {"webView":true}'
 BOOK_REQUEST = BOOK + OPTIONS
 BASE = 'http://127.0.0.1:18893'
 EXPECTED_JAR = 'f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b'
+# Historical default keeps old frozen callers verifiable. Current native probes
+# pass the exact digest from independently verified artifact metadata explicitly.
 MAX_BYTES = 128 * 1024
 AUTHOR_RULE = r"@CSS:h2:matches(^by\s)@text"
 CHAPTER_URL_RULE = """@href@js:result + ', {"webView":true}'"""
@@ -56,6 +58,12 @@ def helper(name):
 
 class Rejected(ValueError):
     pass
+
+
+def validated_jar_sha256(value):
+    if not isinstance(value, str) or not re.fullmatch('[0-9a-f]{64}', value):
+        raise Rejected('InvalidJarIdentity')
+    return value
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -182,14 +190,16 @@ def write_new(path, value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--expected-revision', required=True)
+    parser.add_argument('--expected-jar-sha256', default=EXPECTED_JAR)
     parser.add_argument('--output', type=Path, default=Path('/verification-output'))
     args = parser.parse_args()
+    expected_jar = validated_jar_sha256(args.expected_jar_sha256)
     require_environment(args.expected_revision, args.output)
     cgroup, processes, auth = helper('report-browser-cgroup'), helper('soak-bundled-browser'), helper('probe-public-metadata')
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect(),
         urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     report = {'schemaVersion': 1, 'scope': 'fixed Gutenberg 84 anonymous bundled Reader; not original or archived parity',
-        'source': BOOK, 'expectedImageRevision': args.expected_revision, 'jarSha256': EXPECTED_JAR,
+        'source': BOOK, 'expectedImageRevision': args.expected_revision, 'jarSha256': expected_jar,
         'renderer': 'camoufox', 'runtimeUid': os.getuid(), 'privateNetworkGuardEnabled': True,
         'tlsErrorsIgnored': False, 'realCredentialsImported': False, 'privateLocalBooksRead': 0,
         'siteSearchRequested': False, 'captchaInteractedWith': False, 'rawBodyCookieOrErrorPersisted': False,
@@ -216,7 +226,7 @@ def main():
             digest = hashlib.sha256()
             for block in iter(lambda: stream.read(1024 * 1024), b''):
                 digest.update(block)
-        if digest.hexdigest() != EXPECTED_JAR:
+        if digest.hexdigest() != expected_jar:
             raise Rejected('UnexpectedJarBytes')
         successful(call(opener, '/getSystemInfo'))
         successful(call(opener, '/login', {'username': 'gutenberg' + secrets.token_hex(5),

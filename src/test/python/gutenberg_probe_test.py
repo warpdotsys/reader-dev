@@ -9,12 +9,22 @@ PROBE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(PROBE)
 
 class GutenbergProbeTests(unittest.TestCase):
-    def test_probe_and_wrapper_pin_the_actual_new_product_instead_of_old_frontend(self):
+    def test_probe_keeps_historical_default_but_wrapper_binds_verified_current_artifact(self):
         digest = 'f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b'
         self.assertEqual(digest, PROBE.EXPECTED_JAR)
         wrapper = (ROOT / 'scripts/probe-gutenberg-native-image.sh').read_text(encoding='utf-8')
-        self.assertIn('= ' + digest, wrapper)
+        self.assertNotIn('= ' + digest, wrapper)
+        self.assertIn("expected_jar=$(jq -er '.jarSha256' imported/metadata.json)", wrapper)
+        self.assertLess(wrapper.index('node scripts/release-native-artifacts.mjs check'), wrapper.index('expected_jar='))
+        self.assertIn('test "$actual_jar" = "$expected_jar"', wrapper)
+        self.assertEqual(2, wrapper.count('--expected-jar-sha256 "$expected_jar"'))
         self.assertNotIn('9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84', wrapper)
+
+    def test_expected_jar_identity_rejects_nonlowercase_hex_and_nontext(self):
+        self.assertEqual('a' * 64, PROBE.validated_jar_sha256('a' * 64))
+        for bad in (None, True, 123, {}, [], '', 'A' * 64, 'g' * 64, 'a' * 63, 'a' * 65, 'a' * 64 + '\n'):
+            with self.assertRaisesRegex(PROBE.Rejected, '^InvalidJarIdentity$'):
+                PROBE.validated_jar_sha256(bad)
 
     def generated_toc(self, absolute=False):
         return [dict(url=(PROBE.BOOK if absolute else '') + '#' + fragment + PROBE.OPTIONS,

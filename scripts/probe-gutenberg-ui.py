@@ -95,14 +95,16 @@ def write_once(name, value):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--expected-revision', required=True)
+    parser.add_argument('--expected-jar-sha256', default=PROBE.EXPECTED_JAR)
     args = parser.parse_args()
+    expected_jar = PROBE.validated_jar_sha256(args.expected_jar_sha256)
     check(re.fullmatch('[0-9a-f]{40}', args.expected_revision), 'InvalidRevision')
     check(os.getuid() == 10001, 'UnexpectedRuntimeUid')
     for name in ('GUTENBERG_UI_REPORT.json', 'UI_BROWSER_RESOURCE_BUDGET.json', 'ui-login.png', 'ui-toolbar.png', 'ui-logout.png'):
         check(not (OUTPUT / name).exists(), 'ExistingEvidence')
     cgroup = helper('report-browser-cgroup')
     report = {'schemaVersion': 1, 'scope': 'actual bundled default Vue UI; fixed anonymous Gutenberg 84',
-              'expectedImageRevision': args.expected_revision, 'jarSha256': PROBE.EXPECTED_JAR,
+              'expectedImageRevision': args.expected_revision, 'jarSha256': expected_jar,
               'clientRuntimeUid': os.getuid(), 'testClientNotDeploymentDependency': True,
               'clientOutsideReaderServerBudget': True, 'combinedTwoGiBBudgetProven': False,
               'realCredentialsImported': False, 'privateLocalBooksRead': 0,
@@ -122,7 +124,7 @@ def main():
         with Path('/app/reader.jar').open('rb') as stream:
             for block in iter(lambda: stream.read(1024 * 1024), b''):
                 digest.update(block)
-        check(digest.hexdigest() == PROBE.EXPECTED_JAR, 'UnexpectedJarBytes')
+        check(digest.hexdigest() == expected_jar, 'UnexpectedJarBytes')
         # Do not export third-party diagnostics or a Playwright exception which
         # may contain a request URL/token. No real profile or cookies are loaded.
         with contextlib.redirect_stdout(sys.stderr):

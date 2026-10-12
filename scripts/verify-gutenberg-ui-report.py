@@ -76,7 +76,9 @@ def png_visual_facts(raw):
             'nonDominantPixels': width * height - max(counts.values())}
 
 
-def verify_report(report, revision):
+def verify_report(report, revision, expected_jar_sha256=None):
+    probe = helper('probe-gutenberg-reader')
+    expected_jar = probe.validated_jar_sha256(probe.EXPECTED_JAR if expected_jar_sha256 is None else expected_jar_sha256)
     expected_keys = set('schemaVersion scope expectedImageRevision jarSha256 clientRuntimeUid '
         'testClientNotDeploymentDependency clientOutsideReaderServerBudget combinedTwoGiBBudgetProven '
         'realCredentialsImported privateLocalBooksRead responseMocked siteSearchRequested tlsErrorsIgnored '
@@ -87,7 +89,7 @@ def verify_report(report, revision):
         'apiObservationErrorCount budgetAccepted toc'.split())
     assert set(report) == expected_keys
     assert report['schemaVersion'] == 1 and report['expectedImageRevision'] == revision
-    assert report['jarSha256'] == helper('probe-gutenberg-reader').EXPECTED_JAR
+    assert report['jarSha256'] == expected_jar
     assert report['clientRuntimeUid'] == 10001 and report['stage'] == 'complete'
     for key in ('passed', 'budgetAccepted', 'testClientNotDeploymentDependency', 'clientOutsideReaderServerBudget',
                 'defaultUiReleaseIdentityMatches', 'uiRegistrationSucceeded', 'uiLoginSucceeded',
@@ -146,16 +148,24 @@ def verify_report(report, revision):
     return counts
 
 
-def verify_directory(directory, revision):
+def verify_running_identity(identity, revision, expected_jar_sha256):
+    expected_jar = helper('probe-gutenberg-reader').validated_jar_sha256(expected_jar_sha256)
+    assert identity == {'revision': revision, 'jarSha256': expected_jar, 'network': 'bridge', 'publishedPorts': 0}
+    assert type(identity['publishedPorts']) is int
+
+
+def verify_directory(directory, revision, expected_jar_sha256=None):
+    probe = helper('probe-gutenberg-reader')
+    expected_jar = probe.validated_jar_sha256(probe.EXPECTED_JAR if expected_jar_sha256 is None else expected_jar_sha256)
     read = lambda name: json.loads((directory / name).read_text(encoding='utf-8'))
     report = read('GUTENBERG_UI_REPORT.json')
-    counts = verify_report(report, revision)
+    counts = verify_report(report, revision, expected_jar)
     for name in ('UI_BROWSER_RESOURCE_BUDGET.json', 'UI_SERVER_RESOURCE_BUDGET.json'):
         helper('report-browser-cgroup').verify_report(read(name), require_no_swap=True)
     assert read('UI_CLIENT_CLEANUP.json') == {'ownedTestClientRemoved': True,
         'testClientNotDeploymentDependency': True, 'clientOutsideReaderServerBudget': True}
     assert read('CLEANUP.json') == {'ownedContainerRemoved': True, 'probeExit': 0}
-    assert read('RUNNING_JAR_IDENTITY.json')['revision'] == revision
+    verify_running_identity(read('RUNNING_JAR_IDENTITY.json'), revision, expected_jar)
     assert not (directory / 'ui-toolbar.png').exists()
     for name in ('login', 'logout'):
         raw = (directory / ('ui-' + name + '.png')).read_bytes()
@@ -173,5 +183,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=Path)
     parser.add_argument('revision')
+    parser.add_argument('--expected-jar-sha256')
     args = parser.parse_args()
-    print(json.dumps(verify_directory(args.directory, args.revision), sort_keys=True))
+    print(json.dumps(verify_directory(args.directory, args.revision, args.expected_jar_sha256), sort_keys=True))

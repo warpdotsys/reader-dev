@@ -17,10 +17,11 @@ esac
 for report in PRELOAD_IDENTITY.json LOADED_IDENTITY.json RUNNING_JAR_IDENTITY.json GUTENBERG_REPORT.json WORKER_DIAGNOSTICS.json GUTENBERG_UI_REPORT.json UI_BROWSER_RESOURCE_BUDGET.json UI_SERVER_RESOURCE_BUDGET.json UI_CLIENT_CLEANUP.json; do
   test ! -e "$output/$report"
 done
-test "$(jq -er '.jarSha256' imported/metadata.json)" = f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b
 version=$(jq -er '.version' imported/metadata.json)
 node scripts/release-native-artifacts.mjs check "$arch" "$version" "$revision" dist imported \
   | tee "$output/PRELOAD_IDENTITY.json"
+expected_jar=$(jq -er '.jarSha256' imported/metadata.json)
+[[ "$expected_jar" =~ ^[0-9a-f]{64}$ ]]
 docker load -i imported/reader-image.tar.gz
 image="reader-pro:camoufox-smoke-$arch"
 docker image inspect "$image" > imported/image-inspect.json
@@ -103,13 +104,13 @@ raise SystemExit(0 if good else 1)
   sleep 2
 done
 test "$ready" = true
-expected_jar=$(jq -er '.jarSha256' imported/metadata.json)
 actual_jar=$(docker exec "$container_id" sha256sum /app/reader.jar | awk '{print $1}')
 test "$actual_jar" = "$expected_jar"
 jq -n --arg revision "$revision" --arg jarSha256 "$actual_jar" \
   '{revision: $revision, jarSha256: $jarSha256, network: "bridge", publishedPorts: 0}' \
   > "$output/RUNNING_JAR_IDENTITY.json"
-docker exec "$container_id" python /verification-scripts/probe-gutenberg-reader.py --expected-revision "$revision"
+docker exec "$container_id" python /verification-scripts/probe-gutenberg-reader.py --expected-revision "$revision" \
+  --expected-jar-sha256 "$expected_jar"
 
 # A normal external UI client, using the SAME pinned packaged browser bytes.
 # Not a WebView service, not part of deployment, not a combined 2-GiB claim.
@@ -120,7 +121,8 @@ client_id=$(docker create --init --name "$client" --network "container:$containe
   --security-opt no-new-privileges:true --cap-drop ALL \
   --tmpfs /tmp:size=256m,mode=1777 \
   -v "$PWD/scripts:/verification-scripts:ro" -v "$output:/verification-output" \
-  --entrypoint python "$image" /verification-scripts/probe-gutenberg-ui.py --expected-revision "$revision")
+  --entrypoint python "$image" /verification-scripts/probe-gutenberg-ui.py --expected-revision "$revision" \
+  --expected-jar-sha256 "$expected_jar")
 test "$(docker inspect --format '{{.Config.User}}' "$client_id")" = 10001:10001
 docker inspect "$client_id" | jq -e '((.[0].HostConfig.PortBindings // {}) | length) == 0' >/dev/null
 # No raw browser logs are uploaded. The Python probe emits only finite facts.
