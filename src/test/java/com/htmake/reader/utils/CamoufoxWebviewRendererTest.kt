@@ -935,18 +935,23 @@ class CamoufoxWebviewRendererTest {
     fun generatedPostRedirectsPreserveBodyCookiesAndOriginHeaders() = runBlocking {
         GeneratedHeaderFixture().use { fixture ->
             val raw = "q=生成中文&value=保持原始字节"
-            for (case in listOf("same-post-307", "same-post-308", "cross-post-307", "cross-post-308")) {
+            for (case in listOf("same-post-307", "same-post-308", "cross-post-307", "cross-post-308",
+                "same-form-post-307", "same-form-post-308", "cross-form-post-307", "cross-form-post-308")) {
                 fixture.reset()
+                val form = case.contains("-form-")
+                val expectedType = if (form) "application/x-www-form-urlencoded; charset=UTF-8"
+                    else "application/json; charset=UTF-8"
                 val response = renderer.render(headerRequest(fixture, case).copy(
                     post = true, body = raw,
-                    headerMap = fixture.headers + ("Content-Type" to "application/json; charset=UTF-8")))
+                    headerMap = if (form) fixture.headers else fixture.headers + ("Content-Type" to expectedType)))
                 fixture.assertDocument(response.body!!, case)
                 val rows = fixture.snapshot()
                 assertEquals(2, rows.size)
                 assertEquals(listOf("POST", "POST"), rows.map { it.method })
                 for (row in rows) {
-                    assertArrayEquals(raw.toByteArray(StandardCharsets.UTF_8), row.body)
-                    assertEquals("application/json; charset=UTF-8", row.contentType)
+                    val context = "$case/${row.actor}/${row.role}/${row.method}"
+                    assertArrayEquals("$context: preserved POST body", raw.toByteArray(StandardCharsets.UTF_8), row.body)
+                    assertEquals("$context: preserved POST media type", expectedType, row.contentType)
                 }
                 fixture.assertOriginHeaders(rows, case)
                 assertEquals("", rows[0].cookie)

@@ -12,17 +12,32 @@ const source = worker.slice(start, worker.indexOf('"""', start));
 const origin = 'https://generated.invalid:443/book';
 function listener(url = origin, policyOverrides = {}) {
   let rewrite, ready;
+  const lifecycle = {};
   const policy = { url, bootstrapUrl: 'http://reader-header-generated.invalid/ready', nonce: 'GENERATED_NONCE',
     headers: { authorization: 'Bearer GENERATED', 'x-trace': 'GENERATED_TRACE', accept: 'GENERATED_ACCEPT',
       'content-type': 'application/json; charset=UTF-8' } };
   Object.assign(policy, policyOverrides);
-  const browser = { webRequest: { onBeforeSendHeaders: { addListener(fn, filter, options) {
+  function event(name) {
+    return { addListener(fn, filter) {
+      assert.deepEqual(Array.from(filter.urls), ['http://*/*', 'https://*/*']);
+      assert.deepEqual(Array.from(filter.types), ['main_frame']);
+      lifecycle[name] = fn;
+    } };
+  }
+  const browser = { webRequest: {
+    onBeforeRedirect: event('redirect'), onCompleted: event('completed'), onErrorOccurred: event('error'),
+    onBeforeSendHeaders: { addListener(fn, filter, options) {
     assert.deepEqual(Array.from(filter.urls), ['http://*/*', 'https://*/*']);
     assert.deepEqual(Array.from(options), ['blocking', 'requestHeaders']);
     rewrite = fn;
   } } }, runtime: { id: 'GENERATED_ADDON', onMessage: { addListener(fn) { ready = fn; } } } };
   vm.runInNewContext(source, { policy, browser, URL });
-  return { rewrite: (url, headers = [], method = 'GET') => JSON.parse(JSON.stringify(rewrite({ url, requestHeaders: headers, method }))), ready, policy };
+  return {
+    rewrite: (url, headers = [], method = 'GET', details = {}) => JSON.parse(JSON.stringify(rewrite({ url, requestHeaders: headers, method, ...details }))),
+    redirect: details => lifecycle.redirect?.(details),
+    completed: details => lifecycle.completed?.(details),
+    error: details => lifecycle.error?.(details), ready, policy,
+  };
 }
 
 test('native form default changes only initial POST type without freezing transport headers', () => {
@@ -125,4 +140,122 @@ test('cross-origin preserved POST retains native body media type but no origin c
 test('cross-origin GET does not reintroduce rule body media type after a 303', () => {
   assert.deepEqual(listener().rewrite('https://other.invalid/end',
     [{ name: 'Content-Type', value: 'application/json; charset=UTF-8' }], 'GET').requestHeaders, []);
+});
+
+const ownedPost = { requestId: 'GENERATED_POST', type: 'main_frame', frameId: 0, tabId: 7 };
+const nativeOctet = [{ name: 'Content-Type', value: 'application/octet-stream' }];
+const jsonType = 'application/json; charset=UTF-8';
+const formType = 'application/x-www-form-urlencoded; charset=UTF-8';
+function media(headers) { return headers.find(header => header.name.toLowerCase() === 'content-type')?.value; }
+
+test('owned 307/308 POST redirects restore its initial declared media type after native reset', () => {
+  for (const statusCode of [307, 308]) {
+    const subject = listener(origin, { post: true });
+    assert.equal(media(subject.rewrite(origin, nativeOctet, 'POST', ownedPost).requestHeaders), jsonType);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode, redirectUrl: 'https://other.invalid/end' });
+    const output = subject.rewrite('https://other.invalid/end', [...nativeOctet,
+      { name: 'Authorization', value: 'Bearer GENERATED' }], 'POST', ownedPost).requestHeaders;
+    assert.deepEqual(output, [{ name: 'Content-Type', value: jsonType }]);
+  }
+});
+
+test('owned default-form POST media type survives a body-preserving cross-origin redirect', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true, post: true });
+  assert.equal(media(subject.rewrite(origin, nativeOctet, 'POST', ownedPost).requestHeaders), formType);
+  subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+  assert.equal(media(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders), formType);
+});
+
+test('one owned POST may traverse several 307/308 origins without carrying rule credentials', () => {
+  const subject = listener(origin, { post: true });
+  subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+  for (const [url, redirectUrl, statusCode] of [[origin, 'https://other.invalid/first', 307],
+    ['https://other.invalid/first', 'https://third.invalid/end', 308]]) {
+    subject.redirect({ ...ownedPost, url, method: 'POST', statusCode, redirectUrl });
+    const output = subject.rewrite(redirectUrl, [...nativeOctet,
+      { name: 'X-Trace', value: 'GENERATED_TRACE' }], 'POST', ownedPost).requestHeaders;
+    assert.deepEqual(output, [{ name: 'Content-Type', value: jsonType }]);
+  }
+});
+
+test('an unrelated POST id or a POST without a redirect event retains its native media type', () => {
+  for (const unrelated of [true, false]) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    if (unrelated) subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+    const details = unrelated ? { ...ownedPost, requestId: 'OTHER_GENERATED_POST' } : ownedPost;
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', details).requestHeaders, nativeOctet);
+  }
+});
+
+test('301/302/303 and method conversion never grant POST metadata replay', () => {
+  for (const statusCode of [301, 302, 303]) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode, redirectUrl: 'https://other.invalid/end' });
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', [], 'GET', ownedPost).requestHeaders, []);
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders, nativeOctet);
+  }
+  for (const method of ['GET', 'HEAD']) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', [], method, ownedPost).requestHeaders, []);
+  }
+});
+
+test('completed and failed POST metadata is discarded instead of crossing into another request', () => {
+  for (const event of ['completed', 'error']) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+    subject[event](ownedPost);
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders, nativeOctet);
+  }
+});
+
+test('request id alone cannot transfer POST media metadata to another tab or frame', () => {
+  for (const details of [{ ...ownedPost, tabId: 8 }, { ...ownedPost, frameId: 1, type: 'sub_frame' }]) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', details).requestHeaders, nativeOctet);
+  }
+});
+
+test('only the synthesized initial main-frame POST can seed redirect media metadata', () => {
+  for (const details of [{ ...ownedPost, type: 'xmlhttprequest' }, { ...ownedPost, type: 'sub_frame', frameId: 1 },
+    { ...ownedPost, requestId: '' }, { ...ownedPost, requestId: undefined }]) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', details);
+    subject.redirect({ ...details, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', details).requestHeaders, nativeOctet);
+  }
+});
+
+test('a known redirect target keeps POST media metadata across repeated native header events', () => {
+  const subject = listener(origin, { headers: {}, defaultFormPost: true, post: true });
+  subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+  assert.equal(media(subject.rewrite(origin, nativeOctet, 'POST', ownedPost).requestHeaders), formType);
+  subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    assert.equal(media(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders), formType);
+  }
+});
+
+test('missing or non-HTTP redirect targets do not allow POST metadata replay', () => {
+  for (const redirectUrl of [undefined, 'data:text/plain,generated', 'javascript:generated()', '/relative', 'x'.repeat(8193)]) {
+    const subject = listener(origin, { post: true });
+    subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+    subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl });
+    assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders, nativeOctet);
+  }
+});
+
+test('an unexpected target clears owned POST metadata instead of granting it later', () => {
+  const subject = listener(origin, { post: true });
+  subject.rewrite(origin, nativeOctet, 'POST', ownedPost);
+  subject.redirect({ ...ownedPost, url: origin, method: 'POST', statusCode: 307, redirectUrl: 'https://other.invalid/end' });
+  assert.deepEqual(subject.rewrite('https://unexpected.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders, nativeOctet);
+  assert.deepEqual(subject.rewrite('https://other.invalid/end', nativeOctet, 'POST', ownedPost).requestHeaders, nativeOctet);
 });

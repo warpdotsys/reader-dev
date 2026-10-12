@@ -82,6 +82,26 @@ const origin = new URL(policy.url).origin;
 const initialUrl = new URL(policy.url);
 initialUrl.hash = '';
 let defaultFormPostPending = policy.defaultFormPost === true;
+let initialPostPending = policy.post === true || policy.defaultFormPost === true;
+let postMedia = null;
+function ownedPostNavigation(details) {
+  return details.type === 'main_frame' && details.frameId === 0 &&
+    Number.isInteger(details.tabId) && details.tabId >= 0 &&
+    typeof details.requestId === 'string' && details.requestId.length > 0 && details.requestId.length <= 256;
+}
+function samePostRequest(details) {
+  return postMedia && ownedPostNavigation(details) && details.requestId === postMedia.requestId &&
+    details.tabId === postMedia.tabId && details.frameId === postMedia.frameId;
+}
+function requestHref(value) {
+  if (typeof value !== 'string' || value.length > 8192) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    parsed.hash = '';
+    return parsed.href;
+  } catch { return null; }
+}
 browser.webRequest.onBeforeSendHeaders.addListener(details => {
   const same = new URL(details.url).origin === origin;
   const headers = details.requestHeaders.filter(header => {
@@ -107,8 +127,48 @@ browser.webRequest.onBeforeSendHeaders.addListener(details => {
     }
     headers.push({name: 'Content-Type', value: 'application/x-www-form-urlencoded; charset=UTF-8'});
   }
+  // Firefox can rebuild a synthesized POST's upload Content-Type on 307/308.
+  // Remember only this render's initial main-frame POST. A known redirect of
+  // that exact request may restore its body metadata, never origin credentials,
+  // Host, Cookie, Content-Length, unrelated script requests or converted GETs.
+  if (samePostRequest(details)) {
+    if (details.method !== 'POST') {
+      postMedia = null;
+    } else if (postMedia.currentTarget !== null) {
+      if (requestHref(details.url) === postMedia.currentTarget) {
+        for (let index = headers.length - 1; index >= 0; index--) {
+          if (headers[index].name.toLowerCase() === 'content-type') headers.splice(index, 1);
+        }
+        headers.push({name: 'Content-Type', value: postMedia.contentType});
+      } else { postMedia = null; }
+    }
+  }
+  if (initialPostPending && ownedPostNavigation(details) && details.method === 'POST' &&
+      requestHref(details.url) === initialUrl.href) {
+    initialPostPending = false;
+    const values = headers.filter(header => header.name.toLowerCase() === 'content-type');
+    if (values.length === 1 && typeof values[0].value === 'string' && values[0].value.length <= 8192) {
+      postMedia = {requestId: details.requestId, tabId: details.tabId, frameId: details.frameId,
+        contentType: values[0].value, currentTarget: initialUrl.href};
+    }
+  }
   return {requestHeaders: headers};
 }, {urls: ['http://*/*', 'https://*/*']}, ['blocking', 'requestHeaders']);
+browser.webRequest.onBeforeRedirect.addListener(details => {
+  if (!samePostRequest(details)) return;
+  if (details.method === 'POST' && (details.statusCode === 307 || details.statusCode === 308)) {
+    const target = requestHref(details.redirectUrl);
+    if (target !== null) { postMedia.currentTarget = target; return; }
+  }
+  postMedia = null;
+}, {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']});
+function discardPostMedia(details) {
+  if (samePostRequest(details)) postMedia = null;
+}
+browser.webRequest.onCompleted.addListener(discardPostMedia,
+  {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']});
+browser.webRequest.onErrorOccurred.addListener(discardPostMedia,
+  {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']});
 browser.runtime.onMessage.addListener((message, sender) => {
   if (sender.id === browser.runtime.id && sender.url === policy.bootstrapUrl && message === policy.nonce) {
     return Promise.resolve(policy.nonce);
@@ -140,7 +200,7 @@ def origin_header_addon(url, headers, post=False):
             "content_scripts": [{"matches": [bootstrap_origin + "/*"],
                                  "js": ["ready.js"], "run_at": "document_start"}],
         }
-        policy = {"url": url, "headers": configured, "bootstrapUrl": bootstrap_url, "nonce": nonce,
+        policy = {"url": url, "headers": configured, "bootstrapUrl": bootstrap_url, "nonce": nonce, "post": bool(post),
                   "defaultFormPost": default_form_post}
         ready = """
 browser.runtime.sendMessage(%s).then(nonce => {

@@ -211,6 +211,7 @@ class WorkerOriginHeaderPolicyTest(unittest.TestCase):
             self.assertTrue(policy["defaultFormPost"])
             source=(Path(policy["addons"][0])/"policy.js").read_text(encoding="utf-8")
             self.assertIn('"defaultFormPost": true',source)
+            self.assertIn('"post": true',source)
             self.assertIn('"headers": {}',source)
         for name in ("Content-Type","CONTENT-TYPE"):
             with worker.origin_header_addon("https://generated.invalid/book", {name:""}, post=True) as policy:

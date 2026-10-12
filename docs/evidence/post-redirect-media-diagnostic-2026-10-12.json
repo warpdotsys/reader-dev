@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "scope": "retained failed CI and limited generated browser comparison",
+  "failedCi": {
+    "sourceRevision": "8e0f8d7ce89212080decdd56ab7e214e17d16ab6",
+    "testedMergeSnapshot": "9c569c79f981f6fcea7ea475d1ad095d89454273",
+    "runId": 38187529026,
+    "conclusion": "failure",
+    "tests": 24,
+    "failedCases": 1,
+    "suiteSha256": "d8597a7ee8f20edc271c7369afec6f693e1065f4d5816ac903d8fcbdff290293",
+    "case": "generatedPostRedirectsPreserveBodyCookiesAndOriginHeaders",
+    "caseSeconds": 10.229,
+    "expectedMediaFamily": "json",
+    "actualMediaFamily": "octet",
+    "exactSubcaseIdentified": false,
+    "epubImageUiExecuted": false,
+    "newDoubleBuildJarSha256": "cb115989e91a2bef70d44356ae3ed8cb0e9e38796cd6670eef571e964910fc97",
+    "sharedJarLocallyRehashed": false,
+    "wholeImageAccepted": false
+  },
+  "standaloneBrowser": {
+    "rawSha256": "7a7038b71add6ef895ee3ca0d122a7c012511a7c8e8ade31291988906d1cbc52",
+    "rawBytes": 135413,
+    "executedSourceSha256": {
+      "start.sh": "9efe2cd633c3e5b980bea9ff89796c525f6a818bb08397bf56818453f6898849",
+      "probe.py": "b79b77608437b7acf25b69434985447c5703e4dcbe1fea18c3adce77140d6952",
+      "inner.py": "5beea30c968f971afbbd3983e0aa754b56bb3a45e1b60782583ddbcac1d7cf75",
+      "header_probe.py": "71f178d08603e5531c4943b6a8245a779ffa38305874da3d6f2643c3f72a4782",
+      "baseline-worker.py": "d8b2674c5f28cf31d9003479c7e5035c9d4ebefc0286c0d8a61c4d9672a565f5",
+      "candidate-worker.py": "50497908dbae2a6a41c379daea05b670b3c3eb327f239aabc345faf5cdabcf08"
+    },
+    "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+    "latestWholeImageAccepted": false,
+    "uid": 10001,
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "capsZero": true,
+    "noNewPrivileges": true,
+    "loopbackOnly": true,
+    "observedCases": [
+      {
+        "variant": "baseline",
+        "mediaFamily": "json",
+        "direction": "same",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "json",
+        "direction": "same",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "json",
+        "direction": "cross",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "json",
+        "direction": "cross",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "form",
+        "direction": "same",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "form",
+        "direction": "same",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "form",
+        "direction": "cross",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "baseline",
+        "mediaFamily": "form",
+        "direction": "cross",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "json",
+        "direction": "same",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "json",
+        "direction": "same",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "json",
+        "direction": "cross",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "json",
+        "direction": "cross",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "form",
+        "direction": "same",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "form",
+        "direction": "same",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "form",
+        "direction": "cross",
+        "status": 307,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      },
+      {
+        "variant": "candidate",
+        "mediaFamily": "form",
+        "direction": "cross",
+        "status": 308,
+        "allFiniteChecksPassed": true,
+        "targetRequests": 2
+      }
+    ],
+    "baselinePassedCases": 8,
+    "candidatePassedCases": 8,
+    "targetRequests": 32,
+    "localCiFailureReproduced": false,
+    "rootCauseProven": false,
+    "actualJavaGateTested": false,
+    "httpsOrRealLoginTested": false,
+    "realBookRead": false,
+    "parentMemoryPeakBytes": 1611337728,
+    "parentPidsPeak": 234,
+    "softHighEvents": 1116,
+    "hardOomPidEvents": 0,
+    "swapBytes": 0,
+    "probeSeconds": 44.968,
+    "ownWorkerProcessesStopped": true,
+    "ownContainerStoppedPidZeroDeleted": true,
+    "remainingOwnContainers": 0
+  },
+  "productionFixAccepted": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}
