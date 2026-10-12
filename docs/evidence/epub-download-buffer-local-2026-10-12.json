@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "scope": "single authorized EPUB exact byte collector only, not browser/Java/Worker/UI or combined pressure",
+  "rawReportSha256": "f6ecfb07914b4b40fdbab4e70b489bfab69329e7801ce987abb398135390cec3",
+  "authorizedAssetBytes": 37809796,
+  "authorizedAssetSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+  "cases": [
+    {
+      "case": "exact",
+      "completeBytesEqual": true,
+      "exclusiveBuffer": true,
+      "milliseconds": 60,
+      "responseLockReleased": true
+    },
+    {
+      "case": "missing",
+      "completeBytesEqual": true,
+      "exclusiveBuffer": true,
+      "milliseconds": 69,
+      "responseLockReleased": true
+    },
+    {
+      "case": "underreported",
+      "completeBytesEqual": true,
+      "exclusiveBuffer": true,
+      "milliseconds": 66,
+      "responseLockReleased": true
+    }
+  ],
+  "otherPrivateBooksRead": 0,
+  "inputModified": false,
+  "frontendLocalTests": 326,
+  "frontendSkipped": 0,
+  "typeCheckAndLocalViteBuildPassed": true,
+  "localDependenciesAreFreshLockedNpmCi": false,
+  "newInstallerGeneratedTests": 7,
+  "installerFixturesAlsoExecutedWithoutSitePackages": true,
+  "fullLocalPythonTests": 755,
+  "localPythonExistingPlatformSkipped": 1,
+  "declaredCompressedOrActualExpandedBudgetsChanged": false,
+  "downloadOrWorkerTimeoutExtended": false,
+  "wholeProcessMemorySavingsProven": false,
+  "fullEightReadingScenesAccepted": false,
+  "newFormalJarOrImageAccepted": false,
+  "rawBodiesOrChapterHashesOrScreenshotsPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

@@ -107,7 +107,69 @@ export function expandEpubArchive(bytes: Uint8Array,
   return files
 }
 
-/** 按实际字节限流，不依赖 Content-Length；出错/超限必须取消响应流。 */
+/** Bounded owned buffer: the header is a capacity hint, never proof of actual bytes. */
+export class EpubDownloadBuffer {
+  private chunks: Uint8Array[] = []
+  private owned: Uint8Array | null = null
+  private size = 0
+  private hint: number | null
+  private readonly limit: number
+
+  constructor(limit: number, declared: number | null) {
+    this.limit = limit
+    this.hint = declared !== null && Number.isSafeInteger(declared) && declared > 0 && declared <= limit
+      ? declared : null
+  }
+
+  get retainedBytes(): number {
+    return (this.owned?.byteLength ?? 0) + this.chunks.reduce((total, chunk) => total + chunk.byteLength, 0)
+  }
+
+  push(chunk: Uint8Array): void {
+    const next = this.size + chunk.byteLength
+    if (next > this.limit) throw new Error('EPUB 文件超过原版排版下载上限（64 MiB）')
+    if (this.hint !== null && next > this.hint) {
+      // An understated header must not truncate data or exempt it from the cap.
+      if (this.owned) this.chunks.push(this.owned.subarray(0, this.size))
+      this.owned = null
+      this.hint = null
+    }
+    if (this.owned) this.owned.set(chunk, this.size)
+    else {
+      this.chunks.push(chunk)
+      // Do not amplify an empty/small body to a large untrusted header hint.
+      // Large hints need at least half their bytes (and a MiB) before reserving;
+      // real exact-length files then stop retaining chunks plus a second whole ZIP.
+      const threshold = this.hint === null ? Infinity : this.hint <= 1024 * 1024
+        ? this.hint : Math.max(1024 * 1024, Math.ceil(this.hint / 2))
+      if (this.hint !== null && next >= threshold) {
+        this.owned = new Uint8Array(this.hint)
+        let offset = 0
+        for (const value of this.chunks) { this.owned.set(value, offset); offset += value.byteLength }
+        this.chunks.length = 0
+      }
+    }
+    this.size = next
+  }
+
+  finish(): Uint8Array {
+    try {
+      if (this.owned) return this.size === this.owned.byteLength ? this.owned : this.owned.slice(0, this.size)
+      const result = new Uint8Array(this.size)
+      let offset = 0
+      for (const chunk of this.chunks) { result.set(chunk, offset); offset += chunk.byteLength }
+      return result
+    } finally { this.clear() }
+  }
+
+  clear(): void {
+    this.chunks.length = 0
+    this.owned = null
+    this.size = 0
+  }
+}
+
+/** 按实际字节限流，Content-Length仅作有界容量提示；出错/超限必须取消响应流。 */
 export async function readEpubResponse(response: Response,
   limit = EPUB_ARCHIVE_LIMITS.compressedBytes): Promise<Uint8Array> {
   const declared = response.headers.get('content-length')
@@ -117,22 +179,16 @@ export async function readEpubResponse(response: Response,
   }
   if (!response.body) throw new Error('EPUB 下载响应缺少正文流')
   const reader = response.body.getReader()
-  const chunks: Uint8Array[] = []
-  let size = 0
+  const bytes = new EpubDownloadBuffer(limit, declared && /^\d+$/.test(declared) ? Number(declared) : null)
   try {
     for (;;) {
       const { done, value } = await reader.read()
       if (done) break
-      size += value.length
-      if (size > limit) throw new Error('EPUB 文件超过原版排版下载上限（64 MiB）')
-      chunks.push(value)
+      bytes.push(value)
     }
+    return bytes.finish()
   } catch (error) {
     try { await reader.cancel() } catch { /* 原下载错误优先 */ }
     throw error
-  } finally { reader.releaseLock() }
-  const result = new Uint8Array(size)
-  let offset = 0
-  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.length }
-  return result
+  } finally { bytes.clear(); reader.releaseLock() }
 }

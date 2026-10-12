@@ -7,6 +7,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 import requests
@@ -23,26 +24,60 @@ def platform_key():
     raise RuntimeError(f"Unsupported Camoufox CPU architecture: {machine}")
 
 
-def download_verified(url, target, expected_size, expected_sha256):
+def _download_once(url, target, expected_size, expected_sha256):
     digest = hashlib.sha256()
     size = 0
-    with requests.get(url, stream=True, timeout=(15, 120)) as response:
-        response.raise_for_status()
-        with target.open("wb") as output:
-            for chunk in response.iter_content(chunk_size=1024 * 1024):
-                if not chunk:
-                    continue
-                size += len(chunk)
-                if size > expected_size:
-                    raise RuntimeError("Camoufox release asset exceeds its locked size")
-                digest.update(chunk)
-                output.write(chunk)
-    actual = digest.hexdigest()
-    if size != expected_size:
-        raise RuntimeError(f"Camoufox asset size mismatch: expected {expected_size}, got {size}")
-    if actual != expected_sha256:
-        raise RuntimeError(f"Camoufox asset SHA-256 mismatch: {actual}")
-    return size, actual
+    created = False
+    try:
+        with requests.get(url, stream=True, timeout=(15, 120)) as response:
+            response.raise_for_status()
+            with target.open("xb") as output:
+                created = True
+                for chunk in response.iter_content(chunk_size=1024 * 1024):
+                    if not chunk:
+                        continue
+                    size += len(chunk)
+                    if size > expected_size:
+                        raise RuntimeError("Camoufox release asset exceeds its locked size")
+                    digest.update(chunk)
+                    output.write(chunk)
+        actual = digest.hexdigest()
+        if size != expected_size:
+            raise RuntimeError(f"Camoufox asset size mismatch: expected {expected_size}, got {size}")
+        if actual != expected_sha256:
+            raise RuntimeError(f"Camoufox asset SHA-256 mismatch: {actual}")
+        return size, actual
+    except BaseException as primary:
+        if created:
+            try:
+                target.unlink()
+            except OSError as cleanup:
+                raise primary from cleanup
+        raise
+
+
+def _transient_download_error(error):
+    if isinstance(error, requests.exceptions.SSLError):
+        return False
+    if isinstance(error, requests.exceptions.HTTPError):
+        return error.response is not None and error.response.status_code in (429, 500, 502, 503, 504)
+    return isinstance(error, (requests.exceptions.Timeout, requests.exceptions.ConnectionError,
+                              requests.exceptions.ChunkedEncodingError))
+
+
+def download_verified(url, target, expected_size, expected_sha256):
+    if target.exists() or target.is_symlink():
+        raise RuntimeError("Refusing to overwrite an existing Camoufox download target")
+    for attempt in range(3):
+        try:
+            return _download_once(url, target, expected_size, expected_sha256)
+        except requests.exceptions.RequestException as error:
+            if attempt == 2 or target.exists() or not _transient_download_error(error):
+                raise
+            # Same locked URL, unchanged connect/read limits; no resume/partial
+            # reuse, alternate version or integrity-error retry. Do not log bodies.
+            print(f"Camoufox asset transient download retry {attempt + 1}/2", file=sys.stderr)
+            time.sleep(attempt + 1)
 
 
 def main():

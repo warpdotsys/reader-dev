@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { zipSync, strToU8, Zip, ZipDeflate } from 'fflate'
-import { expandEpubArchive, readEpubResponse, EPUB_ARCHIVE_LIMITS } from './epubArchive.ts'
+import { expandEpubArchive, readEpubResponse, EPUB_ARCHIVE_LIMITS, EpubDownloadBuffer } from './epubArchive.ts'
 
 const small = { ...EPUB_ARCHIVE_LIMITS, entryBytes: 1000, textBytes: 1000, expandedBytes: 2000 }
 
@@ -154,4 +154,108 @@ test('EPUB 下载：流失败保留错误并释放锁，正常字节不改动', 
   await assert.rejects(readEpubResponse(new Response(broken)), /generated failure/)
   assert.equal(broken.locked, false)
   assert.deepEqual(await readEpubResponse(new Response(new Uint8Array([80, 75, 9]))), new Uint8Array([80, 75, 9]))
+})
+
+test('EPUB 下载：精确有界提示复用一份目的缓冲，完成后不再保留块引用', () => {
+  const collector = new EpubDownloadBuffer(20, 8)
+  collector.push(new Uint8Array([1, 2, 3, 4]))
+  assert.equal(collector.retainedBytes, 4)
+  collector.push(new Uint8Array([5, 6, 7, 8]))
+  assert.equal(collector.retainedBytes, 8)
+  assert.deepEqual(collector.finish(), new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]))
+  assert.equal(collector.retainedBytes, 0)
+})
+
+test('EPUB 下载：大提示必须先收到真实数据，未知/低报/高报均保留完整实际字节', () => {
+  const tiny = new EpubDownloadBuffer(64 * 1024 * 1024, 64 * 1024 * 1024)
+  tiny.push(new Uint8Array([1, 2]))
+  assert.equal(tiny.retainedBytes, 2)
+  assert.deepEqual(tiny.finish(), new Uint8Array([1, 2]))
+  for (const hint of [null, 0, 1, 4, 10, 21, NaN]) {
+    const collector = new EpubDownloadBuffer(20, hint)
+    collector.push(new Uint8Array([1, 2, 3, 4]))
+    collector.push(new Uint8Array([5, 6]))
+    assert.deepEqual(collector.finish(), new Uint8Array([1, 2, 3, 4, 5, 6]))
+    assert.equal(collector.retainedBytes, 0)
+  }
+})
+
+test('EPUB 下载：高报64MiB不能把仅1MiB正文提前放大成64MiB缓冲', () => {
+  const collector = new EpubDownloadBuffer(64 * 1024 * 1024, 64 * 1024 * 1024)
+  collector.push(new Uint8Array(1024 * 1024).fill(3))
+  assert.equal(collector.retainedBytes, 1024 * 1024)
+  const bytes = collector.finish()
+  assert.equal(bytes.byteLength, 1024 * 1024)
+  assert.equal(collector.retainedBytes, 0)
+})
+
+test('EPUB 下载：提示缓冲溢出后回到实际计数，仍拒绝越过硬限', () => {
+  const collector = new EpubDownloadBuffer(8, 4)
+  collector.push(new Uint8Array([1, 2, 3, 4]))
+  collector.push(new Uint8Array([5, 6]))
+  assert.equal(collector.retainedBytes, 6)
+  assert.throws(() => collector.push(new Uint8Array(3)), /下载上限/)
+  collector.clear()
+  assert.equal(collector.retainedBytes, 0)
+})
+
+test('EPUB 下载：真实 MiB 阈值后不同时保留整份块与目的缓冲', () => {
+  const data = new Uint8Array(1024 * 1024).fill(7)
+  const collector = new EpubDownloadBuffer(data.length + 4, data.length + 4)
+  collector.push(data)
+  assert.equal(collector.retainedBytes, data.length + 4)
+  collector.push(new Uint8Array([1, 2, 3, 4]))
+  const result = collector.finish()
+  assert.equal(result.byteLength, data.length + 4)
+  assert.deepEqual(result.subarray(data.length), new Uint8Array([1, 2, 3, 4]))
+  assert.ok(result.subarray(0, data.length).every(value => value === 7))
+  assert.equal(collector.retainedBytes, 0)
+})
+
+test('EPUB 下载：已启用提示缓冲的过报也只返回真实字节，清理不擦掉返回值', () => {
+  const size = 1024 * 1024
+  const collector = new EpubDownloadBuffer(size * 2, size * 2)
+  collector.push(new Uint8Array(size).fill(9))
+  assert.equal(collector.retainedBytes, size * 2)
+  const result = collector.finish()
+  assert.equal(result.byteLength, size)
+  assert.equal(result.buffer.byteLength, size)
+  assert.ok(result.every(value => value === 9))
+  collector.clear()
+  assert.equal(collector.retainedBytes, 0)
+  assert.equal(result[0], 9)
+})
+
+test('EPUB 下载：提示缓冲后流失败/取消失败仍保留首错并释放读取锁', async () => {
+  let pulls = 0
+  const primary = new Error('generated streamed primary')
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (++pulls === 1) controller.enqueue(new Uint8Array(1024 * 1024))
+      else controller.error(primary)
+    },
+    cancel() { throw new Error('generated secondary cancellation') },
+  })
+  await assert.rejects(readEpubResponse(new Response(stream, {
+    headers: { 'content-length': String(2 * 1024 * 1024) },
+  })), error => error === primary)
+  assert.equal(stream.locked, false)
+})
+
+test('EPUB 下载：连续块、过报和低报 Response 返回相同独占字节，不修改来源', async () => {
+  for (const hint of ['', '2', '6', '10']) {
+    const chunks = [new Uint8Array([80, 75, 1]), new Uint8Array([2, 3, 4])]
+    const stream = new ReadableStream<Uint8Array>({ start(controller) {
+      for (const chunk of chunks) controller.enqueue(chunk)
+      controller.close()
+    } })
+    const result = await readEpubResponse(new Response(stream, { headers: hint ? { 'content-length': hint } : {} }), 20)
+    assert.deepEqual(result, new Uint8Array([80, 75, 1, 2, 3, 4]))
+    assert.equal(result.byteOffset, 0)
+    assert.equal(result.byteLength, result.buffer.byteLength)
+    assert.notEqual(result.buffer, chunks[0].buffer)
+    result[0] = 9
+    assert.equal(chunks[0][0], 80)
+    assert.equal(stream.locked, false)
+  }
 })
