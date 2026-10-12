@@ -43,6 +43,27 @@ class GuardedBaselineApiTest(unittest.TestCase):
         self.assertEqual(result.stdout, "")
         self.assertIn("Refuses disabled safety assertions", result.stderr)
 
+    def test_optimized_entry_refuses_before_heavy_imports_or_main_input_handling(self):
+        script = ROOT / "scripts/probe-baseline-api-in-guarded-runtime.py"
+        code = """import builtins, sys
+original = builtins.__import__
+def reject_heavy(name, *args, **kwargs):
+    if name.split('.')[0] in ('argparse', 'hashlib', 'http', 'urllib', 'socket', 'subprocess', 'pathlib'):
+        raise RuntimeError('UNEXPECTED_HEAVY_IMPORT')
+    return original(name, *args, **kwargs)
+builtins.__import__ = reject_heavy
+path = sys.argv[1]
+with open(path, 'rb') as stream:
+    source = stream.read()
+exec(compile(source, path, 'exec'), {'__name__': '__main__', '__file__': path})
+"""
+        result = subprocess.run([sys.executable, "-O", "-S", "-c", code, str(script)],
+            capture_output=True, text=True, timeout=10)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("Refuses disabled safety assertions", result.stderr)
+        self.assertNotIn("UNEXPECTED_HEAVY_IMPORT", result.stderr)
+
     def test_unsafe_main_inputs_are_rejected_before_identity_or_any_jar(self):
         with mock.patch.object(PROBE, "identity") as identity:
             with self.assertRaises(ValueError):

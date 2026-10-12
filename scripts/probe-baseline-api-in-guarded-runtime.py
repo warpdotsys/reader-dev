@@ -4,6 +4,14 @@ Both sides use generated accounts in separate new tmpfs stores. The host must
 authorize this exact no-egress namespace before Java starts. Keep differential
 red results red; successful readiness is not three-way/production acceptance.
 """
+import sys
+
+# This probe relies on mandatory assertions throughout the guarded runtime.
+# Reject optimized execution before importing SSL/HTTP/process helpers or
+# touching paths, not only after all imports when main() eventually runs.
+if sys.flags.optimize:
+    raise RuntimeError("Refuses disabled safety assertions")
+
 import argparse
 import hashlib
 import http.cookiejar
@@ -15,7 +23,6 @@ import re
 import secrets
 import socket
 import subprocess
-import sys
 import time
 import urllib.error
 import urllib.parse
