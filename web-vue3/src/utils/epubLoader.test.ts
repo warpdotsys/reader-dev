@@ -10,6 +10,8 @@ import {
   parseEpubBytes,
   resolveHref,
   destroyEpubDoc,
+  releaseEpubDoc,
+  epubResourceUrl,
   type EpubDoc,
   loadEpubDoc,
   epubFileLocation,
@@ -101,6 +103,74 @@ test('C2: destroyEpubDoc clears blob URL table (no-op without URLs)', () => {
   assert.equal(doc.blobUrls.size, 0)
   destroyEpubDoc(doc)
   assert.equal(doc.blobUrls.size, 0)
+})
+
+test('最终释放清空持有的资源表和目录；源 ZIP 字节不被修改', t => {
+  const source = buildMinimalEpub()
+  const original = source.slice()
+  const doc = parseEpubBytes(source)
+  const files = doc.files, manifest = doc.manifest, spine = doc.spine
+  assert.ok(files.size > 0 && manifest.size > 0 && spine.length > 0)
+  const revoked: string[] = []
+  t.mock.method(URL, 'revokeObjectURL', (url: string) => revoked.push(url))
+  const resource = epubResourceUrl(doc, 'OEBPS/images/cover.png')
+  assert.ok(resource)
+  doc.cssBytes = 12
+  releaseEpubDoc(doc)
+  assert.deepEqual(revoked, [resource])
+  assert.equal(files.size, 0)
+  assert.equal(manifest.size, 0)
+  assert.equal(spine.length, 0)
+  assert.equal(doc.opfDir, '')
+  assert.equal(doc.blobUrls.size, 0)
+  assert.equal(doc.cssBytes, 0)
+  assert.deepEqual(source, original)
+})
+
+test('最终释放幂等，迟到资源请求不能从旧文档重建 blob', t => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  const urls: string[] = []
+  t.mock.method(URL, 'revokeObjectURL', (url: string) => urls.push(url))
+  assert.ok(epubResourceUrl(doc, 'OEBPS/images/cover.png'))
+  releaseEpubDoc(doc)
+  releaseEpubDoc(doc)
+  assert.equal(urls.length, 1)
+  t.mock.method(URL, 'createObjectURL', () => { throw new Error('released document must not recreate resources') })
+  assert.equal(epubResourceUrl(doc, 'OEBPS/images/cover.png'), null)
+})
+
+test('撤销异常仍尝试其余 URL 并释放字节；保留首个异常', t => {
+  const doc = parseEpubBytes(buildMinimalEpub())
+  doc.blobUrls.set('generated-first', 'blob:generated-first')
+  doc.blobUrls.set('generated-second', 'blob:generated-second')
+  const failure = new Error('generated revoke failure')
+  const attempted: string[] = []
+  t.mock.method(URL, 'revokeObjectURL', (url: string) => {
+    attempted.push(url)
+    if (url === 'blob:generated-first') throw failure
+  })
+  assert.throws(() => releaseEpubDoc(doc), error => error === failure)
+  assert.deepEqual(attempted, ['blob:generated-first', 'blob:generated-second'])
+  assert.equal(doc.files.size, 0)
+  assert.equal(doc.manifest.size, 0)
+  assert.equal(doc.spine.length, 0)
+  assert.equal(doc.blobUrls.size, 0)
+  assert.equal(doc.cssBytes, 0)
+  assert.doesNotThrow(() => releaseEpubDoc(doc))
+})
+
+test('可复用清理仍保留资源；最终释放旧文档不影响新文档', () => {
+  const source = buildMinimalEpub()
+  const oldDoc = parseEpubBytes(source)
+  const newDoc = parseEpubBytes(source)
+  destroyEpubDoc(oldDoc)
+  assert.ok(oldDoc.files.has('OEBPS/text/chapter1.xhtml'))
+  assert.equal(oldDoc.manifest.size, 4)
+  releaseEpubDoc(oldDoc)
+  assert.ok(newDoc.files.has('OEBPS/text/chapter1.xhtml'))
+  assert.equal(newDoc.manifest.size, 4)
+  assert.equal(newDoc.spine.length, 2)
+  releaseEpubDoc(newDoc)
 })
 
 test('legacy EPUB home mapping preserves owner and physical originName', () => {

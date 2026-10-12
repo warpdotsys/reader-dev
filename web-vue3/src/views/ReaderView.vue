@@ -22,7 +22,7 @@ import { loadReplaceRules, saveReplaceRules } from '@/api/replaceRules'
 import { getTtsVoices, synthesizeTts, type TtsVoice } from '@/api/tts'
 import EpubIframe from '@/components/EpubIframe.vue'
 import { ProgressWriteBarrier } from '@/utils/progressBarrier'
-import { loadEpubDoc, destroyEpubDoc, epubChapterPath, epubFragment, epubNavigationIndex, type EpubDoc } from '@/utils/epubLoader'
+import { loadEpubDoc, releaseEpubDoc, epubChapterPath, epubFragment, epubNavigationIndex, type EpubDoc } from '@/utils/epubLoader'
 import { getCachedTts, putCachedTts, ttsCacheKey } from '@/utils/ttsCache'
 import { parseReaderNumericSetting } from '@/utils/readerNumericSetting'
 import { getLocalChapter, listLocalChapterUrls, localChapterCacheScope, saveLocalChapter } from '@/utils/readerLocalCache'
@@ -288,7 +288,7 @@ async function ensureEpubDoc(): Promise<void> {
       managerKey: requestContext.headers['X-Reader-Secure-Key'],
       signal: controller.signal,
     })
-    if (controller.signal.aborted || epubLoadController !== controller || !requestContext.isCurrent()) { destroyEpubDoc(loaded); return }
+    if (controller.signal.aborted || epubLoadController !== controller || !requestContext.isCurrent()) { releaseEpubDoc(loaded); return }
     epubDoc.value = loaded
     try { epubTocEntries.value = readEpubNavigation(epubDoc.value) }
     catch (e) { epubTocError.value = e instanceof Error ? e.message : 'EPUB 书内目录解析失败' }
@@ -4176,7 +4176,10 @@ onBeforeUnmount(() => {
   contentRequestGeneration++
   epubLoadController?.abort()
   epubLoadController = null
-  if (epubDoc.value) destroyEpubDoc(epubDoc.value)
+  const released = epubDoc.value
+  epubDoc.value = null
+  epubTocEntries.value = []
+  if (released) releaseEpubDoc(released)
 })
 onBeforeUnmount(() => {
   mediaQuery?.removeEventListener('change', onSystemThemeChange)

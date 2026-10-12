@@ -38,3 +38,17 @@ docs/evidence/gutenberg-toc-rule-local-*-2026-10-11.xml -text whitespace=cr-at-e
 docs/evidence/gutenberg-normal-hosted-7739ab85-*.json -text whitespace=cr-at-eol
 docs/evidence/opds-shelf-hosted-7739ab85-2026-10-11.xml -text whitespace=cr-at-eol
 docs/evidence/opds-frontend-product-byte-delta-2026-10-11.json -text whitespace=cr-at-eol
+
+# Preserve exact LF bytes for the terminal-release candidate's public receipts.
+docs/evidence/authorized-epub-308d-ready-2026-10-12.json -text
+docs/evidence/epub-full-reader-ui-pressure-2026-10-13.json -text
+docs/evidence/epub-idle-java-firefox-decode-2026-10-12.json -text
+docs/evidence/epub-node-decode-counters-2026-10-12.json -text
+docs/evidence/epub-pure-firefox-decode-2026-10-12.json -text
+docs/evidence/epub-ready-partial-2026-10-12.json -text
+docs/evidence/epub-real-business-prefix-2026-10-12.json -text
+docs/evidence/epub-real-file-download-2026-10-12.json -text
+docs/evidence/epub-real-stream-read-2026-10-12.json -text
+docs/evidence/gha-ready-7bf-hosted-2026-10-12.json -text
+docs/evidence/original-account-relogin-2026-10-13.json -text
+docs/evidence/epub-terminal-release-local-2026-10-13.json -text

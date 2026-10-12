@@ -297,9 +297,29 @@ function mimeOf(path: string, declared?: string): string {
   return 'application/octet-stream'
 }
 
-/** 销毁：revoke 全部 blob URL（切书/卸载防泄漏） */
+/** 撤销渲染 URL；保留原始资源，可在同一文档上重新建立排版。 */
 export function destroyEpubDoc(doc: EpubDoc): void {
-  for (const url of doc.blobUrls.values()) URL.revokeObjectURL(url)
+  let failed = false
+  let firstError: unknown
+  for (const url of doc.blobUrls.values()) {
+    try { URL.revokeObjectURL(url) }
+    catch (error) {
+      if (!failed) { failed = true; firstError = error }
+    }
+  }
   doc.blobUrls.clear()
   doc.cssBytes = 0
+  if (failed) throw firstError
+}
+
+/** 文档持有方最终退出时释放资源表；调用后不能再用该文档渲染。 */
+export function releaseEpubDoc(doc: EpubDoc): void {
+  try { destroyEpubDoc(doc) }
+  finally {
+    // 异步回调即使仍持有 doc，也不应继续保留整本解压字节和目录。
+    doc.files.clear()
+    doc.manifest.clear()
+    doc.spine.length = 0
+    doc.opfDir = ''
+  }
 }
