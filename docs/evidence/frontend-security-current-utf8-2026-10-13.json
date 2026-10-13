@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "scope": "exact current JAR known historical UTF8 truncation characterization only",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+  "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+  "runtimeIsCurrentWholeNativeImage": false,
+  "generatedSearchResponses": 18,
+  "observationsComplete": true,
+  "strictSixCaseParityAccepted": false,
+  "strictOriginalValidatorRefused": true,
+  "historicalUtf8BodyCorrect": false,
+  "camoufoxUtf8BodyCorrect": true,
+  "historicalBodyBytes": 44,
+  "historicalBodySha256": "c61ca3e561f770d4fc8551da0bddb98afd0be801801502504a73221ed11ec5d9",
+  "correctBodyBytes": 60,
+  "correctBodySha256": "8d0383070028f4f457194a194e8e9133df2487261e341c1da121171d59eeeef1",
+  "originalObservedBodiesNotNormalizedOrPatched": true,
+  "aggregateBudget": {
+    "scope": "both test containers and all their probe/Java/browser descendants",
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1611522048,
+    "memoryEvents": {
+      "low": 0,
+      "high": 2176,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 4
+    },
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsEvents": {
+      "max": 0
+    },
+    "memoryHighBytes": 1610612736
+  },
+  "independentOwnedInventoryEmpty": true,
+  "rawFilesSha256": {
+    "server-utf8-d-provenance.json": "15279f3a42a70c675927f6794349247dfb8a8b91f5bc9269378ac8906bde0fe1",
+    "server-utf8-d-three-way.json": "009ab24d16d78199768430f150d3da80aab2697bb2121b03a990e9e7001a51b0"
+  },
+  "probeExitCode": 1,
+  "overallAccepted": false,
+  "actualRealSourceAuthenticationAccepted": false,
+  "rawLogsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

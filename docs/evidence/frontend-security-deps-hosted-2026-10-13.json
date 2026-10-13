@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "scope": "Own 548a four hosted pipelines and independently consumed small evidence; not final goal acceptance",
+  "sourceRevision": "548a387949a40b1ce06fac0ba9d44c3d6c39c65a",
+  "testedMergeSnapshot": "87b0e768951ff0e4e063a095d50138a36aefab04",
+  "reportedHostedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+  "reportedHostedJarBytes": 285683521,
+  "ownHostedRuns": {
+    "java": 38354402452,
+    "vue": 38354402228,
+    "full": 38354402266,
+    "native": 38354402243
+  },
+  "jvm": {
+    "tests": 222,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 35
+  },
+  "jvmSkipsCountedAsPasses": false,
+  "twoCleanCompleteJarBytesEqual": true,
+  "frontendTests": 376,
+  "frontendFailures": 0,
+  "coldTypecheckAndViteAccepted": true,
+  "actualChromiumJourneys": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fullHostedPythonTests": 755,
+  "fullHostedPythonSkipped": 0,
+  "defaultEngineContracts": 24,
+  "fullGeneratedUiSeconds": 13.064,
+  "currentGeneratedLoginAndReadingImagesActuallyViewed": true,
+  "generatedUiScreenshots": [
+    {
+      "file": "native-default-ui-generated-login.png",
+      "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+      "bytes": 34204,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "native-default-ui-generated-shelf.png",
+      "sha256": "6c119fc44f4caf4696ac29fe6db322dd35b9e0887643a1db93a5a33f52b307a8",
+      "bytes": 49026,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "native-default-ui-generated-reading.png",
+      "sha256": "997496b58b7dd7030992e3ee187ceaf8c6b502570ddf788720566057e808cb86",
+      "bytes": 33289,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "native-default-ui-generated-logout.png",
+      "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+      "bytes": 34077,
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "visualScope": "Current complete-image generated login and chapter-two reading screenshots; Chinese labels and generated text legible, no blank reading page. Not real credentials, private book or all-page acceptance.",
+  "fullUiClientOutsideServerResourceBudget": true,
+  "nativeSixHostedJobsAccepted": true,
+  "nativePublisherSmallJsonFiles": 32,
+  "nativeMetadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+      "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+      "archiveSha256": "813c281ed322e03d433d989d733f780630c9229c3dc77fa1eb2b3c98d513085e",
+      "imageId": "sha256:de1f40226f5946cd56bc4bf04b0c030ba9dd933ce393024771e88bfa133b061f"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+      "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+      "archiveSha256": "4978c4f09fba450b4e7390dbfd67ab4f06b17d77d32c0d7977db354ac8f06321",
+      "imageId": "sha256:9c1013fa51bf3004d996b776b4b930bddb0beddcab7d4b0481952dcf44115958"
+    }
+  },
+  "nativeProducerAndReloadChecks": [
+    {
+      "architecture": "amd64",
+      "phase": "native",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "amd64",
+      "phase": "transferred",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "arm64",
+      "phase": "native",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "arm64",
+      "phase": "transferred",
+      "sevenProducerReportTypesAccepted": true
+    }
+  ],
+  "ordinaryFullServerSubsetMemoryPeakBytes": 886145024,
+  "ordinaryFullServerSubsetPidsPeak": 207,
+  "ordinaryNativeServerSubsetMemoryPeakBytes": 899850240,
+  "ordinaryNativeServerSubsetPidsPeak": 199,
+  "ordinaryShortChecksDoNotProveCombinedClientBudgetOrLongRun": true,
+  "smallArtifactArchivesIndependentlyRehashed": false,
+  "currentHostedJarLocallyDownloadedAndRehashed": false,
+  "currentWholeNativeImageLocallyAccepted": false,
+  "currentThirtyMinuteSoaksAccepted": false,
+  "currentPublicBookUiAccepted": false,
+  "currentAuthorizedPrivateBookAccepted": false,
+  "currentOriginalRemoteCamThreeWayAccepted": false,
+  "realSiteAuthenticationAccepted": false,
+  "rawLogsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false,
+  "receiptSha256": {
+    "verified-java-vue-small.json": "eb0b919893e5435f3b9923d3c3e34a153dac911cef06ed852c31d1a8f8dfb277",
+    "independent-full-reports.json": "dd0733380e5f25eb562ff743fa525c60ef7752cfd75bdc6ddddef8828be9dad1",
+    "independent-native-small-acceptance.json": "e300f0f41f222c86dc1eadcaf2f140f26e627eac513715d260ca955ad381ed5e"
+  }
+}

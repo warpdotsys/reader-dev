@@ -131,6 +131,59 @@ class DockerThreeWayBudgetTest(unittest.TestCase):
             self.assertEqual(0, report["swapMaxBytes"])
             self.assertEqual(512, report["pidsMax"])
 
+    def test_early_reclaim_is_explicit_and_does_not_relax_other_properties(self):
+        expected = ["CPUQuota=200%", "MemoryMax=2147483648", "MemorySwapMax=0", "TasksMax=512"]
+        self.assertEqual(expected, PROBE.budget_properties())
+        self.assertEqual(expected + ["MemoryHigh=1610612736"], PROBE.budget_properties(1610612736))
+        for invalid in (False, True, 0, 2147483648, "1610612736"):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                PROBE.budget_properties(invalid)
+
+    def test_early_reclaim_requires_actual_kernel_high_and_keeps_cache_peak(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            self.files(directory)
+            (directory / "memory.high").write_text("1610612736")
+            (directory / "memory.peak").write_text("1700000000")
+            report = PROBE.budget_snapshot(directory, 1610612736)
+            self.assertEqual(1610612736, report["memoryHighBytes"])
+            self.assertEqual(1700000000, report["memoryPeakBytes"])
+            self.assertEqual(2147483648, report["memoryMaxBytes"])
+            self.assertEqual(0, report["swapMaxBytes"])
+
+    def test_early_reclaim_cannot_invent_a_missing_or_unapplied_kernel_value(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            self.files(directory)
+            with self.assertRaises(FileNotFoundError):
+                PROBE.budget_snapshot(directory, 1610612736)
+            for invalid in ("max", "2147483648", "0"):
+                (directory / "memory.high").write_text(invalid)
+                with self.subTest(invalid=invalid), self.assertRaises((ValueError, RuntimeError)):
+                    PROBE.budget_snapshot(directory, 1610612736)
+
+    def test_early_reclaim_still_rejects_actual_hard_limit_events(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            self.files(directory)
+            (directory / "memory.high").write_text("1610612736")
+            (directory / "memory.events").write_text("high 1234\nmax 46\noom 0\noom_kill 0\n")
+            report = PROBE.budget_snapshot(directory, 1610612736)
+            self.assertEqual(1234, report["memoryEvents"]["high"])
+            with self.assertRaisesRegex(RuntimeError, "aggregate resource limit"):
+                PROBE.require_unpressured_budget(report)
+
+    def test_invalid_early_reclaim_selection_refuses_before_host_and_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "absent"
+            result = subprocess.run([sys.executable, "-B", str(SCRIPT), "--original", "absent",
+                "--restored", "absent", "--runtime-image", "sha256:" + "a" * 64,
+                "--output", str(output), "--memory-high-bytes", "2147483648"],
+                capture_output=True, text=True, timeout=10, check=False)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("invalid choice", result.stderr)
+            self.assertFalse(output.exists())
+
     def test_relaxed_budget_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

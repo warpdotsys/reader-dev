@@ -75,4 +75,10 @@ docs/evidence/epub-bounded-inflate-candidate-2026-10-13.json -text
 docs/evidence/epub-bounded-disk-two-runs-2026-10-13.json -text
 docs/evidence/bounded-inflate-hosted-acceptance-2026-10-13.json -text
 docs/evidence/frontend-security-deps-local-2026-10-13.json -text
+docs/evidence/frontend-security-deps-hosted-2026-10-13.json -text
+docs/evidence/frontend-security-current-public-ui-2026-10-13.json -text
+docs/evidence/frontend-security-current-soaks-2026-10-13.json -text
+docs/evidence/frontend-security-current-jar-2026-10-13.json -text
+docs/evidence/frontend-security-current-metadata-2026-10-13.json -text
+docs/evidence/frontend-security-current-utf8-2026-10-13.json -text
 browser-poc/src/test/resources/epub-frame-readiness.js text eol=lf

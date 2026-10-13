@@ -39,7 +39,19 @@ def write_new(path, value):
         output.write("\n")
 
 
-def budget_snapshot(group):
+def budget_properties(memory_high_bytes=None):
+    if memory_high_bytes is not None and (type(memory_high_bytes) is not int or memory_high_bytes != 1610612736):
+        raise ValueError("Only the explicit 1.5-GiB early-reclaim policy is supported")
+    result = ["CPUQuota=200%", "MemoryMax=2147483648", "MemorySwapMax=0", "TasksMax=512"]
+    if memory_high_bytes is not None:
+        result.append("MemoryHigh=" + str(memory_high_bytes))
+    return result
+
+
+def budget_snapshot(group, memory_high_bytes=None):
+    # Validate the selection before reading observations; never infer a desired
+    # limit from the report, subtract file cache or replace a missing value.
+    budget_properties(memory_high_bytes)
     def pairs(name):
         return {key: int(value) for key, value in
                 (line.split() for line in (group / name).read_text().splitlines())}
@@ -55,6 +67,10 @@ def budget_snapshot(group):
             result["memoryMaxBytes"] != 2147483648 or result["swapMaxBytes"] != 0 or \
             result["pidsMax"] != 512:
         raise RuntimeError("The aggregate resource budget was not actually applied")
+    if memory_high_bytes is not None:
+        result["memoryHighBytes"] = int((group / "memory.high").read_text())
+        if result["memoryHighBytes"] != memory_high_bytes:
+            raise RuntimeError("The explicit early-reclaim policy was not actually applied")
     return result
 
 
@@ -202,6 +218,8 @@ def main():
                         help="Add generated delayed-DOM getBookInfo parity after the unchanged five baseline cases")
     parser.add_argument("--metadata-clock-contract", action="store_true",
                         help="Explicit metadata default-clock freshness contract; not literal timestamp equality")
+    parser.add_argument("--memory-high-bytes", type=int, choices=(1610612736,), default=None,
+                        help="Explicit 1.5-GiB parent early reclaim; keeps the 2-GiB hard/zero-swap/CPU/PID budget")
     parser.add_argument("--characterize-historical-utf8", action="store_true",
                         help="Diagnostic only: preserve all sides of the known UTF-8 defect, never overall acceptance")
     args = parser.parse_args()
@@ -232,6 +250,8 @@ def main():
     token = "readerwebview" + os.urandom(6).hex()
     parent, anchor = token + ".slice", token + "-anchor.service"
     group = Path("/sys/fs/cgroup") / parent
+    def snapshot():
+        return budget_snapshot(group, args.memory_high_bytes)
     containers = []
     legacy = None
     slice_started = False
@@ -254,15 +274,17 @@ def main():
         provenance["metadataComparisonScope"] = "exact-static-json-and-bounded-default-clocks" if args.metadata_clock_contract else "literal-full-json"
     if args.metadata_clock_contract:
         provenance["metadataClockContractRequested"] = True
+    if args.memory_high_bytes is not None:
+        provenance["memoryHighRequestedBytes"] = args.memory_high_bytes
+        provenance["memoryPolicySelection"] = "high-1536m"
     if args.characterize_historical_utf8:
         provenance["historicalUtf8CharacterizationRequested"] = True
     try:
         command("systemd-run", "--unit=" + anchor, "--slice=" + parent,
                 "--property=Type=oneshot", "--property=RemainAfterExit=yes", "/bin/true")
         slice_started = True
-        command("systemctl", "set-property", "--runtime", parent, "CPUQuota=200%",
-                "MemoryMax=2147483648", "MemorySwapMax=0", "TasksMax=512")
-        budget_snapshot(group)
+        command("systemctl", "set-property", "--runtime", parent, *budget_properties(args.memory_high_bytes))
+        snapshot()
         common = ["--cgroup-parent", parent, "--cpus=2", "--memory=2g", "--memory-swap=2g",
                   "--pids-limit=256", "--shm-size=512m", "--cap-drop=ALL",
                   "--security-opt=no-new-privileges:true", "--restart=no",
@@ -336,7 +358,7 @@ def main():
         def handoff():
             sample("historical-pair-complete")
             # Never reset cumulative memory.peak/events or increase the shared budget.
-            require_unpressured_budget(budget_snapshot(group))
+            require_unpressured_budget(snapshot())
             owned_container(legacy, token)
             command("docker", "stop", "--time=10", legacy, timeout=30)
             state = owned_container(legacy, token)
@@ -356,7 +378,7 @@ def main():
         sample("probe-finished")
         provenance["probeExitCode"] = exit_code
         provenance["probeCompleted"] = exit_code == 0
-        provenance["aggregateBudget"] = budget_snapshot(group)
+        provenance["aggregateBudget"] = snapshot()
         require_probe_acceptance(exit_code, args.characterize_historical_utf8)
         events = provenance["aggregateBudget"]
         require_unpressured_budget(events)
@@ -366,7 +388,7 @@ def main():
     finally:
         if group.exists() and "aggregateBudget" not in provenance:
             try:
-                provenance["aggregateBudget"] = budget_snapshot(group)
+                provenance["aggregateBudget"] = snapshot()
             except (OSError, ValueError, RuntimeError):
                 provenance["aggregateBudgetUnavailable"] = True
         # Preserve only this run's generated engine logs. Diagnostic failure must
