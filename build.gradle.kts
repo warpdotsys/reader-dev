@@ -8,6 +8,7 @@ import org.gradle.language.jvm.tasks.ProcessResources
 import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.CharacterCodingException
+import java.util.jar.JarFile
 
 buildscript {
     val kotlin_version: String by extra{"1.5.21"}
@@ -178,6 +179,12 @@ application {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClassName = "com.htmake.reader.ReaderApplicationKt"
+    // A versioned filename/image label is not an application version embedded
+    // in the JAR. Use deterministic metadata, never checkout time or host data.
+    manifest.attributes(mapOf(
+        "Implementation-Title" to "Reader Pro",
+        "Implementation-Version" to project.version.toString()
+    ))
     // Gradle 6 keeps source mtimes and filesystem traversal order by default.
     // Exact-byte CI comparison, not these options alone, proves a rebuild.
     isPreserveFileTimestamps = false
@@ -185,6 +192,17 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
     // JavaFX is used only by the optional desktop packager. The reference
     // headless Spring Boot JAR does not ship JavaFX modules.
     exclude("**/javafx-*.jar")
+    doLast {
+        JarFile(archiveFile.get().asFile).use { jar ->
+            check(jar.manifest.mainAttributes.getValue("Implementation-Version") == project.version.toString()) {
+                "Packaged Reader version does not match the project version"
+            }
+            check(jar.manifest.mainAttributes.getValue("Start-Class") == "com.htmake.reader.ReaderApplicationKt") {
+                "Packaged Reader must retain the headless server entrypoint"
+            }
+        }
+        logger.lifecycle("Verified embedded Reader version {}", project.version)
+    }
 }
 
 // The retained 3.2.14 frontend has the former centre URL embedded in its
