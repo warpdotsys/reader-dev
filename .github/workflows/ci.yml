@@ -40,6 +40,8 @@ jobs:
           node scripts/test-simple-web-context-path.js
       - name: Verify formal release safety invariants without publishing
         run: |
+          node scripts/check-reader-version.mjs
+          node --test scripts/check-reader-version.test.mjs scripts/build-script.test.mjs
           node scripts/check-release-pipeline.mjs
           node --test scripts/check-release-pipeline.test.mjs
           node --test scripts/release-native-artifacts.test.mjs scripts/verify-release-manifest.test.mjs

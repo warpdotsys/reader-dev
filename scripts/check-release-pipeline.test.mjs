@@ -20,6 +20,20 @@ const fixtureFiles = [
   'deploy/reader-pro/docker-entrypoint.sh',
 ]
 
+for (const [label, file, before] of [
+  ['release project version validation', '.github/workflows/release.yml', 'node scripts/check-reader-version.mjs "$version"'],
+  ['CI project version validation', '.github/workflows/ci.yml', 'node scripts/check-reader-version.mjs'],
+  ['CI safe local build and version regression tests', '.github/workflows/ci.yml', 'node --test scripts/check-reader-version.test.mjs scripts/build-script.test.mjs'],
+]) {
+  test(`rejects missing ${label}`, t => {
+    const input = fixture(t)
+    input.change(file, source => source.replace(before, 'echo omitted-generated-version-check'))
+    const result = input.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /project and root lock versions|CI must execute project version/)
+  })
+}
+
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), 'reader-release-guard-'))
   t.after(() => {

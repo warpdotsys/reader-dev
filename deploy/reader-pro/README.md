@@ -1,5 +1,15 @@
 # Production deployment
 
+## 当前状态（2026-10-13）
+
+以[完整交付状态](../../docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)及[正式发布就绪核查](../../docs/DELIVERY-READINESS-2026-10-13.md)为准：准确548a整镜像已完成获准单书八场景和固定公开书HTTPS三方，较早的大书失败证据仍保留；c703自己的托管验收也已接受。两者镜像身份不混用，不宣称整个Goal已完成或可直接部署。正式流水线已经等待原生AMD64/ARM64构建、独立重载和发布器导入；它不是下文历史阶段的AMD64-only路径。
+
+生产SSH四个Secret已在GitHub的`production`环境中列名确认，仓库级列表没有这些名称不代表缺失。仅核查名称，未读取私钥或任何Secret值，不能据此证明凭据有效或部署成功。用户已选择下一候选v6.1.0；后端、备用CLI、两套前端及锁文件根包已同步，依赖版本不改，[同名发布说明](../../docs/releases/v6.1.0.md)明确未验证范围。仓库最新正式版仍为v6.0.45（master）；发布排序门禁保留。新版本自己的托管验收未完成，尚未打标签或部署，不移借c703/548a结果。
+
+下文带日期的验收、失败与部署禁止状态按当时范围保留，不覆盖最新独立结果。
+
+## 历史候选记录与部署要求
+
 当前原版 EPUB 测试已加强文档就绪判据，但授权大书首次解压仍超时，不能部署；新测试提交必须独立经过托管流水线。[实测、已知问题与回退](../../docs/EPUB-FRAME-READINESS-2026-10-13.md)。
 
 最新 `e31` 四托管全验收，但授权大书刷新仍未通过；8KiB实验已撤回，不得作为修复部署。[准确产物、失败证据与回退](../../docs/EPUB-ALLOCATION-TRIAL-2026-10-13.md)。
@@ -48,7 +58,7 @@ Required server-side files that are deliberately not committed:
 2026-10-07 数值线程修复 `09163efe` 自己的四条托管工作流／原生六作业、两套各 19 项真实契约及小身份／预算报告已独立验收。[完整已知风险与回滚](../../docs/CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)仍保留实站失败和本机旧 worker 的 2 GiB／256 PID 触限。之后的有限[内存分类采集](../../docs/BROWSER-MEMORY-CATEGORIES-2026-10-07.md)也完成自己的 `594cec9c` 托管验收，5 份实际分类／原资源守卫通过；仅补观测，不扣除文件页、不清宿主缓存、不升预算取绿灯。没有正式发版、安装服务器新浏览器或切换生产产物。
 
 正式版本通过 `.github/workflows/release.yml` 发布。全部验收完成后，准备与标签同名的
-`docs/releases/<tag>.md`，并从 `legacy` 上创建稳定 SemVer 标签（例如 `v4.1.0`）。
+`docs/releases/<tag>.md`，并从 `legacy` 上创建高于当时最新正式Release的稳定SemVer标签。
 触发前必须同步提升 `build.gradle.kts`、`web/package.json` 与
 `web-vue3/package.json` 的版本号；流水线拒绝版本不一致、非稳定 SemVer、非 `legacy`
 祖先提交，或不高于当时最新 GitHub 正式 Release 的标签。
@@ -99,10 +109,10 @@ node scripts/check-release-pipeline.mjs
 
 该检查也由普通 Java/Kotlin CI 和正式发布输入检查执行。正式产物目录增加
 `BROWSER_RESOURCE_BUDGET.json`，记录该次完整镜像烟测的原生架构、资源峰值及
-限额事件；它不证明生产长期吞吐。当前 `release.yml` 仍在 amd64 runner 构建和
-推送一个原生镜像，尚未生成 amd64/arm64 多架构 manifest。候选
-[ARM64 原生验收入口](../../docs/NATIVE-ARM64-ACCEPTANCE-2026-10-03.md)与正式多架构
-发布是两个不同门槛，不能只因为 wheel/浏览器锁含 ARM64 就宣称正式标签兼容 ARM64。
+限额事件；它不证明生产长期吞吐。当前`release.yml`复用`release-native.yml`，要求
+GitHub托管的原生AMD64及ARM64构建、两侧独立重载、正式发布器导入均通过后，才推送
+两个已经受测的镜像并创建多架构manifest，不在发布器内重建。普通Native演练不登录registry，
+因此已有六作业成功不能宣称正式manifest已发布或生产已验收。
 
 以下命令只用于已有 digest 镜像的紧急手动恢复，不作为正常发版流程：
 

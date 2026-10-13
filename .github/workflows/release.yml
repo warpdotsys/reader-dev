@@ -40,10 +40,11 @@ jobs:
           node scripts/check-release-pipeline.mjs
           tag="$GITHUB_REF_NAME"
           if [[ ! "$tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "Only stable SemVer tags such as v4.1.0 are releaseable; got: $tag" >&2
+            echo "Only stable SemVer tags such as v6.1.0 are releaseable; got: $tag" >&2
             exit 1
           fi
           version="${tag#v}"
+          node scripts/check-reader-version.mjs "$version"
           git fetch --no-tags origin legacy
           git merge-base --is-ancestor "$GITHUB_SHA" origin/legacy
           backend_version=$(sed -nE 's/^version = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' build.gradle.kts)

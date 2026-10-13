@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "observations": [
+    {
+      "phase": "first",
+      "readerStarted": false,
+      "businessApiCalls": 0,
+      "publicHttpStatus": null,
+      "upstreamFailureType": "HTTPError",
+      "byteHashes": {
+        "provenance": "04d15e7d87776aaf0c233157165f3ef62079ab43d8f8c6ab341e15bee14c27be",
+        "business": "a642bd1bb8caa09812311acc0c2cf5b001c9b0941a69b8591c181d2f410be23c",
+        "launch": "8821a432a39f2f8317ed1d20da650a8d6b41754930d7785e50933504a4756640"
+      },
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 940683264,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      },
+      "overallAccepted": false
+    },
+    {
+      "phase": "second",
+      "readerStarted": false,
+      "businessApiCalls": 0,
+      "publicHttpStatus": 504,
+      "upstreamFailureType": "HTTPError",
+      "byteHashes": {
+        "provenance": "f48d4e75fb0d746ce510ff11caee2ee461f5171b5668ce3f0c0b7e8c5572a2f3",
+        "business": "509941c7de1c33d791927dfb654ced547a1a5e606b5d850f2315529dfdc407da",
+        "launch": "fb394f5fe1df9111d85bab367b3261d9e87029b147de1a736779891c07e78e4c"
+      },
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 913608704,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      },
+      "overallAccepted": false
+    }
+  ],
+  "firstHttpStatusNotCaptured": true,
+  "secondActualHttpStatus": 504,
+  "noReaderStartedOrBusinessCalls": true,
+  "exactOriginalAndCandidateJarUnchanged": true,
+  "ownContainersRemaining": 0,
+  "ownBrokerSocketsRemoved": true,
+  "ownParentSlicesStopped": true,
+  "realSiteScriptOrCookieAccepted": false,
+  "publicGeneratedSoftwareSourcesCopied": true,
+  "realSourceCredentialsOrPrivateBooksCopied": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

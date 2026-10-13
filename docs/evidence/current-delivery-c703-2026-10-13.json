@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "sourceCodeRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+  "scope": "own hosted workflows plus separately pinned 548a actual publisher and generated three-way; not real-site authentication or full Goal",
+  "consumerReceiptSha256": {
+    "java": "6fc5de6674e58fbd2210c1b553bef31a8a673283feca65301f5b74ee0941b25b",
+    "javaVue": "9b5affd9e88b9c4d8cf32a83fb872f2021f2f9941432e478546dfbcbc0d60236",
+    "full": "990f55a3ccf28f67aaec343ffdffbb13ddd7be24e83f80772bf0cf18ecbd9afd",
+    "native": "08ef0c4d4dcb06bce27546370f858bb51ab5078bf2e4d02c1ffb7dcdfe94d0e3",
+    "realPublisher": "7686a4defef3ccfcdb7652e15e3d5b8410ce167a83aa59387f6f283782701b9a",
+    "exactMetadata": "f5919c5f2ad18eca7d2d70836ae123acbb78d031d4c4a8fcb8e464a1c78b09a5",
+    "exactUtf8": "53d4afa933216b4c12affe32fdff5abcde32e22839eebc19d7159ed70ceb91fd"
+  },
+  "ownHostedJavaAndVue": {
+    "schemaVersion": 1,
+    "sourceRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+    "testedMergeSnapshot": "f784338adfc1277ab166ea475b8b3162ab62862c",
+    "scope": "own hosted small artifacts independently accepted; no new hosted JAR or whole Native local acceptance",
+    "java": {
+      "runId": 38383739279,
+      "hostedUbuntuRunner": true,
+      "jobs": 1,
+      "conclusion": "success",
+      "junit": {
+        "counts": {
+          "tests": 222,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 35
+        },
+        "suites": 47,
+        "reportSetSha256": "802fde9314e91805c35b6f198f0312ceb541c3d29d5336a536e3b7976c807f41"
+      },
+      "twoCleanBytesEqual": true,
+      "reproducibilityReportSha256": "087301e4ba1315ac9adcfc764360beb9028467f4e0bc80c072336b299598cfd5",
+      "reportedHostedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+      "reportedHostedJarBytes": 285683521
+    },
+    "vue": {
+      "runId": 38383739183,
+      "hostedUbuntuRunner": true,
+      "jobs": 2,
+      "conclusion": "success",
+      "junit": {
+        "counts": {
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "suites": 25,
+        "reportSetSha256": "c2449ce3fd08f9f4ce8eb9008eb9c6281393bf9e1dbba0738b4804b3a6d55f3f"
+      },
+      "coldFrontendTests": 376,
+      "coldFrontendFailures": 0,
+      "typecheckAndViteAccepted": true
+    },
+    "currentLocalJarBuilt": false,
+    "localAndHostedJarBytesEqual": null,
+    "hostedJarDownloadedAndRehashed": false,
+    "hostedActualAuthorizedLargeBookAccepted": false,
+    "latestWholeNativeImageLocallyAccepted": false,
+    "browserAndNativeWorkflowsAccepted": false,
+    "reportArchivesLocallyRehashed": false,
+    "screenshotsVisuallyExamined": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "ownActuallyExecutedLinuxBridge": {
+    "schemaVersion": 1,
+    "sourceRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+    "testedMergeSnapshot": "f784338adfc1277ab166ea475b8b3162ab62862c",
+    "javaRun": 38383739279,
+    "hostedRunner": "ubuntu-24.04",
+    "junit": {
+      "tests": 222,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 35
+    },
+    "junitSuites": 47,
+    "junitSetSha256": "c3b523d001d16477776c1bcd9ae4c0e2e320cc57aac0923d71ba6ba8c1e4181d",
+    "twoCleanCompleteJarBytesEqual": true,
+    "reportedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "reportedJarBytes": 285683521,
+    "reproducibilityReportSha256": "087301e4ba1315ac9adcfc764360beb9028467f4e0bc80c072336b299598cfd5",
+    "linuxBridgeActuallyExecuted": true,
+    "publisherAndManifestTests": 38,
+    "publisherSkipped": 0,
+    "linuxPythonTests": 779,
+    "linuxPythonSkipped": 0,
+    "linuxPythonSeconds": 13.989,
+    "testScope": "generated CLI commands execute real verifier; not actual Docker cross-store runtime",
+    "fullOrNativeWorkflowAccepted": false,
+    "exactImageThreeWayAccepted": false,
+    "realSiteAuthenticationAccepted": false,
+    "privateBodiesOrCredentialsPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "ownHostedFullImage": {
+    "schemaVersion": 1,
+    "sourceRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+    "testedMergeSnapshot": "f784338adfc1277ab166ea475b8b3162ab62862c",
+    "fullRun": 38383739189,
+    "fullJob": 115250269168,
+    "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "ownFullWorkflowAccepted": true,
+    "hostedPythonTests": 779,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 13.269,
+    "fullImageUi": {
+      "schemaVersion": 1,
+      "scope": "complete-image-default-ui-generated-journey",
+      "testedRevision": "f784338adfc1277ab166ea475b8b3162ab62862c",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 12.165,
+      "xmlSha256": "2496d4b861aa785fbcfb8a9cc4a1edff476108d3231f5df479a8e58a6d2ca51d",
+      "screenshots": [
+        {
+          "file": "native-default-ui-generated-login.png",
+          "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+          "bytes": 34204,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-shelf.png",
+          "sha256": "f6cf4de5bc3b471051ad980a88258745d2320e72508a3222712e4ab43beb8efa",
+          "bytes": 48987,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-reading.png",
+          "sha256": "53d906151f4cedb9191e79ed3aaf4cd6215ed0dc8b840aba96b6bf07d368e338",
+          "bytes": 33498,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-logout.png",
+          "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+          "bytes": 34077,
+          "width": 1280,
+          "height": 900
+        }
+      ],
+      "clientRunsOutsideServerResourceBudget": true,
+      "realAccountOrPrivateBooksTested": false,
+      "productionOrLongRunProven": false
+    },
+    "generatedLoginAndReadingScreenshotsVisuallyReviewed": false,
+    "readerHttpsBusiness": {
+      "acceptedCurrentReaderHttpsBusinessSubset": true,
+      "generatedScenarios": 8,
+      "actualTargetRequests": 12,
+      "actualConnectTunnels": 14,
+      "parsedHeaderFields": 178,
+      "negativeCertificateControls": 2,
+      "generatedUserNamespaces": 2,
+      "proxySocketOwnershipVerifiedByLiveProducer": true,
+      "originalJarThreeWayAccepted": false,
+      "fullNativeImageLocallyAccepted": false,
+      "realSiteLoginAccepted": false,
+      "productionChanged": false,
+      "fullGoalComplete": false,
+      "acceptedCertificateHintMessages": true
+    },
+    "workerHttps": {
+      "acceptedPackagedWorkerHttpsSubset": true,
+      "positiveCases": 10,
+      "negativeCertificateControls": 2,
+      "targetRequests": 24,
+      "parsedHeaderFields": 334,
+      "readerApiOrProductionAccepted": false
+    },
+    "fullServerOnlyMemoryPeakBytes": 924844032,
+    "fullServerOnlyPidsPeak": 198,
+    "fullUiClientOutsideServerResourceBudget": true,
+    "imageBuildStepSeconds": 200,
+    "ghaCacheImportManifestObserved": true,
+    "cachedBuildStepCount": 8,
+    "cacheExportSeconds": [
+      40.7
+    ],
+    "strictSixtySecondTotalCacheExportCapProven": false,
+    "causalCacheSpeedupProven": false,
+    "latestWholeNativeImageLocallyAccepted": false,
+    "nativeWholeWorkflowAccepted": false,
+    "realBookFullAcceptance": false,
+    "rawLogOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "ownHostedNative": {
+    "schemaVersion": 1,
+    "sourceRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+    "testedMergeSnapshot": "f784338adfc1277ab166ea475b8b3162ab62862c",
+    "nativeRunId": 38383739203,
+    "nativeSixHostedJobsAccepted": true,
+    "nativeArchitectures": [
+      "amd64",
+      "arm64"
+    ],
+    "metadata": {
+      "amd64": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "f784338adfc1277ab166ea475b8b3162ab62862c",
+        "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+        "archiveSha256": "063038929bf3050ba6c4957d4846654c91db5304d1e8c84d7f2a14973bcad342",
+        "imageId": "sha256:74b58464c064b38f26f5c98f8364e029816c2e4c7d2b6c5563ab4e9de7994911"
+      },
+      "arm64": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "f784338adfc1277ab166ea475b8b3162ab62862c",
+        "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+        "archiveSha256": "5660c14599aef95395c5d08cb81af9500dd4b8b05f32e28de97c94e24c25b291",
+        "imageId": "sha256:f9c5bfe0ae2eec6a96a92ffefe85488af4cae56a4f3e8a3c32321cf80f834c9f"
+      }
+    },
+    "checks": [
+      {
+        "architecture": "amd64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "amd64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      }
+    ],
+    "publisherSmallJsonFiles": 32,
+    "camoufoxContractTests": 24,
+    "hostedPythonTests": 779,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 13.269,
+    "jvmTests": 222,
+    "jvmSkipped": 35,
+    "maximumPublisherResourceSubsetMemoryBytes": 886140928,
+    "maximumPublisherResourceSubsetPids": 199,
+    "largeArchivesLocallyDownloadedOrRehashed": false,
+    "currentWholeImageLocallyAccepted": false,
+    "realBookPressureAccepted": false,
+    "rawLogsOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "actualFormalPublisherAcrossDockerStores": {
+    "schemaVersion": 1,
+    "sourceCodeRevision": "c703abaad98bf492a00d17d436e4b5e61a31dd44",
+    "sourceArtifactRevision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+    "sourceNativeRun": 38354402243,
+    "sourceArtifactId": 11792952286,
+    "actualPublisherBridgeIndependentlyAccepted": true,
+    "originalConfigDigest": "sha256:de1f40226f5946cd56bc4bf04b0c030ba9dd933ce393024771e88bfa133b061f",
+    "loadedDocker29ManifestId": "sha256:80866d4158b28ba266d8b3251bd9a67bb78bd7485468eedde032276729d5bf2c",
+    "actualFourteenLayerRelationship": true,
+    "originalNativeMetadataUnchanged": true,
+    "archiveAndSharedJarBytesRehashedByActualPublisher": true,
+    "seconds": 4.668,
+    "nodeVersion": "v24.18.1",
+    "sourceCodeSha256": {
+      "reader_image_identity.py": "cc0dd6263611306a794114c1a25d16c77ef00f9ee8f1c3f5d4643c83146ae5b6",
+      "release-native-artifacts.mjs": "9f9143e0c153ef5144750d2dad478345b3dfeb085b55a4c3cf0751cca8367107"
+    },
+    "producerReceiptSha256": "8cbe68831d8ed85ad156f35ac7746f5ab0d55b7b449cc1274a4b803a38ecd977",
+    "temporaryPublicSoftwareCopiesRemovedAndSourcesPreserved": true,
+    "oldSmokeAliasIndependentlyUnchanged": true,
+    "readerOrBrowserStarted": false,
+    "bookBodiesRead": 0,
+    "credentialsRead": 0,
+    "resourceLimitIndependentSnapshotPreserved": false,
+    "resourceGateAcceptedByThisReceipt": false,
+    "registryPushOrReleaseCreated": false,
+    "exactImageThreeWayOrRealAuthenticationAccepted": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "exactPinnedGeneratedThreeWay": {
+    "schemaVersion": 1,
+    "sourceRuntimeArtifactRevision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+    "sourceRuntimeNativeRun": 38354402243,
+    "sourceRuntimeArtifactId": 11792952286,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredAndActualPackagedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "runtimeImageId": "sha256:80866d4158b28ba266d8b3251bd9a67bb78bd7485468eedde032276729d5bf2c",
+    "originalConfigDigest": "sha256:de1f40226f5946cd56bc4bf04b0c030ba9dd933ce393024771e88bfa133b061f",
+    "currentExactPackagedRuntimeVerified": true,
+    "fullFiveCaseSearchResponses": 15,
+    "actualGeneratedMetadataResponses": 3,
+    "fullReturnDataJsonTypesDefaultsGetPostBodiesHeadersAccepted": true,
+    "historicalEmptyCookieAndCurrentReplayClearContractAccepted": true,
+    "metadataComparisons": [
+      {
+        "mode": "exact-static-json-and-bounded-default-clocks",
+        "fullRawReturnDataEqual": false,
+        "nonClockFullJsonEqual": true,
+        "clockFieldsFreshInEachOwnRequestWindow": true,
+        "clockFields": {
+          "durChapterTime": {
+            "left": 1791889185426,
+            "right": 1791889205376
+          },
+          "lastCheckTime": {
+            "left": 1791889185426,
+            "right": 1791889205376
+          },
+          "latestChapterTime": {
+            "left": 1791889185426,
+            "right": 1791889205376
+          }
+        },
+        "leftRequestWindowMs": {
+          "started": 1791889185377,
+          "completed": 1791889187769
+        },
+        "rightRequestWindowMs": {
+          "started": 1791889205360,
+          "completed": 1791889207875
+        }
+      },
+      {
+        "mode": "exact-static-json-and-bounded-default-clocks",
+        "fullRawReturnDataEqual": false,
+        "nonClockFullJsonEqual": true,
+        "clockFieldsFreshInEachOwnRequestWindow": true,
+        "clockFields": {
+          "durChapterTime": {
+            "left": 1791889185426,
+            "right": 1791889262764
+          },
+          "lastCheckTime": {
+            "left": 1791889185426,
+            "right": 1791889262764
+          },
+          "latestChapterTime": {
+            "left": 1791889185426,
+            "right": 1791889262764
+          }
+        },
+        "leftRequestWindowMs": {
+          "started": 1791889185377,
+          "completed": 1791889187769
+        },
+        "rightRequestWindowMs": {
+          "started": 1791889262750,
+          "completed": 1791889268784
+        }
+      }
+    ],
+    "literalFullMetadataReturnDataEqualityClaimed": false,
+    "actualControllerIncludedInOuterBudget": true,
+    "outerAggregateBudget": {
+      "scope": "both test containers and all their probe/Java/browser descendants",
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 1611681792,
+      "memoryEvents": {
+        "low": 0,
+        "high": 3024,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 6
+      },
+      "swapMaxBytes": 0,
+      "pidsMax": 512,
+      "pidsEvents": {
+        "max": 0
+      },
+      "memoryHighBytes": 1610612736
+    },
+    "actualTotalBudgetScope": "controller plus both serial reference/runtime containers and all Java/browser descendants",
+    "independentOwnedContainerRemaining": 0,
+    "ownedParentSliceStopped": true,
+    "firstPreReaderHierarchyFailurePreserved": true,
+    "fullOriginalReportsPreservedOnServer": true,
+    "localCompleteJsonProjectionSha256": {
+      "metadata-a-provenance.json": "3919c949a48be1e595b18d708b05981cd30790c2bcb877a7e6ef99e69206b452",
+      "metadata-a-provenance.json.source-bytes.json": "e582121326be3366630c3073f60331e23aaf9dbfab031a8a1ed0e3b0893e7df8",
+      "metadata-b-launch.json": "4843bbdbbba1f3f708d8f3036847a23e38274842530963fe5b5192aa8cb03496",
+      "metadata-b-launch.json.source-bytes.json": "2961d7ccd6807cb5081ec352908d8e4fc0c69144d3d0257ec07419f9763b8656",
+      "metadata-b-provenance.json": "adaf342b3164d77cfb735c889f726754c289ddefa1ac4448797cdd336336cdf8",
+      "metadata-b-provenance.json.source-bytes.json": "8d14bc47d0aa3bd8e04f4907b86b88ac6963b012f92a54eea9649041866bcb3c",
+      "metadata-b-three-way.json": "23fb0be5ffaf40fe48ac3ba194b6495e3bab357357e1a8a31107d2b6dac387fa",
+      "metadata-b-three-way.json.source-bytes.json": "b4898c38124d03d76e8a00cbe49dc5f23605c0ef7b786723e0d5382c38b5be95"
+    },
+    "realSiteAuthenticationAccepted": false,
+    "originalProductionRendererVersionProven": false,
+    "privateBodiesOrCredentialsRead": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "exactPinnedUtf8": {
+    "schemaVersion": 1,
+    "sourceRuntimeArtifactRevision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+    "sourceRuntimeNativeRun": 38354402243,
+    "sourceRuntimeArtifactId": 11792952286,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredAndActualPackagedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "runtimeImageId": "sha256:80866d4158b28ba266d8b3251bd9a67bb78bd7485468eedde032276729d5bf2c",
+    "exactPackagedRuntimeIdentityAccepted": true,
+    "generatedSearchResponses": 18,
+    "observationsComplete": true,
+    "camoufoxUtf8RequestCorrect": true,
+    "historicalUtf8RequestCorrect": false,
+    "strictSixCaseParityAccepted": false,
+    "overallAccepted": false,
+    "originalStrictValidatorRefused": true,
+    "totalControllerAndContainersBudget": {
+      "scope": "both test containers and all their probe/Java/browser descendants",
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 1611644928,
+      "memoryEvents": {
+        "low": 0,
+        "high": 4028,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 8
+      },
+      "swapMaxBytes": 0,
+      "pidsMax": 512,
+      "pidsEvents": {
+        "max": 0
+      },
+      "memoryHighBytes": 1610612736
+    },
+    "independentOwnedContainersRemaining": 0,
+    "ownedOuterSliceStopped": true,
+    "sourceOriginalReportReceipts": {
+      "utf8-c-launch.json.source-bytes.json": {
+        "sourceBytes": 268,
+        "sourceSha256": "f7bae3d98912c1f38eead33208675b1cf79230aa11c4fe143ebe8857404891b7",
+        "fullOriginalFilePreservedOnServer": true
+      },
+      "utf8-c-provenance.json.source-bytes.json": {
+        "sourceBytes": 86776,
+        "sourceSha256": "4ccc25dfaceca9ffa2367bd7659fed6fe9807be042800607a5cabd21e94b54fd",
+        "fullOriginalFilePreservedOnServer": true
+      },
+      "utf8-c-three-way.json.source-bytes.json": {
+        "sourceBytes": 29666,
+        "sourceSha256": "ceab02ae2dd9d74ed462053a800adcd7f99198f948b608688d2af24dde4631a3",
+        "fullOriginalFilePreservedOnServer": true
+      }
+    },
+    "fullOriginalReportsPreservedOnServer": true,
+    "privateBodiesOrCredentialsRead": false,
+    "actualRealSourceAuthenticationAccepted": false,
+    "productionChanged": false,
+    "goalComplete": false,
+    "historicalRequest": {
+      "httpMethod": "POST",
+      "bodyByteCount": 44,
+      "bodySha256": "c61ca3e561f770d4fc8551da0bddb98afd0be801801502504a73221ed11ec5d9"
+    },
+    "correctCurrentRequest": {
+      "httpMethod": "POST",
+      "bodyByteCount": 60,
+      "bodySha256": "8d0383070028f4f457194a194e8e9133df2487261e341c1da121171d59eeeef1"
+    },
+    "generatedRequestBodiesNotExported": true
+  },
+  "privateBodyPasswordTokenOrPrivateTitlePublished": false,
+  "productionChanged": false,
+  "registryPublished": false,
+  "releaseCreated": false,
+  "goalComplete": false
+}

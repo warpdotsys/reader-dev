@@ -11,6 +11,9 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const read = (path) => readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g, '\n')
 const workflow = read('.github/workflows/release.yml')
+if (!workflow.includes('          node scripts/check-reader-version.mjs "$version"\n')) {
+  throw new Error('release must verify all project and root lock versions against the requested tag')
+}
 const nativeWorkflow = read('.github/workflows/release-native.yml')
 // Check the actual PR trigger section, not a matching filename in a comment,
 // workflow_dispatch, or a downstream shell command. These inputs change the
@@ -462,6 +465,12 @@ if (browserWorkflow.match(/reader-4\.0\.7\.jar/) || ciWorkflow.match(/reader-4\.
   throw new Error('versioned workflows must not hard-code reader-4.0.7.jar')
 }
 const imageRead = workflow.indexOf("previous_image=$(docker inspect")
+for (const command of ['node scripts/check-reader-version.mjs',
+  'node --test scripts/check-reader-version.test.mjs scripts/build-script.test.mjs']) {
+  if (!ciWorkflow.split('\n').some(line => line.trim() === command)) {
+    throw new Error('CI must execute project version and safe local build regression checks')
+  }
+}
 const trapRegistration = workflow.indexOf('trap rollback ERR')
 const serviceStop = workflow.indexOf('if [ "$initial_deploy" = false ]; then docker stop reader-pro-restored; fi')
 if (imageRead < 0 || trapRegistration < imageRead || serviceStop < trapRegistration) {

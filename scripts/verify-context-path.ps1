@@ -6,7 +6,11 @@ param(
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 if (-not $JavaHome) { $JavaHome = Join-Path $projectRoot ".tools\jdk-11.0.8" }
-if (-not $JarPath) { $JarPath = Join-Path $projectRoot "build\libs\reader-4.0.7.jar" }
+if (-not $JarPath) {
+    . (Join-Path $PSScriptRoot 'reader-project-version.ps1')
+    $buildVersion = Get-ReaderBuildVersion -ProjectRoot $projectRoot
+    $JarPath = Join-Path $projectRoot "build\libs\reader-$buildVersion.jar"
+}
 $java = Join-Path $JavaHome "bin\java.exe"
 if (-not (Test-Path -LiteralPath $java) -or -not (Test-Path -LiteralPath $JarPath)) {
     throw "JDK or built JAR is missing. Run scripts/build.ps1 first."
