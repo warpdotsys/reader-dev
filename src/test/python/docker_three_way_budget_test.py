@@ -15,6 +15,33 @@ SPEC.loader.exec_module(PROBE)
 
 
 class DockerThreeWayBudgetTest(unittest.TestCase):
+    def test_slice_group_uses_actual_nested_control_group_and_rejects_escape(self):
+        outer='readerall'+'a'*12+'.slice';child=outer.removesuffix('.slice')+'-readerwebview'+'b'*12+'.slice'
+        with mock.patch.object(PROBE,'command',return_value=subprocess.CompletedProcess([],0,stdout='/'+outer+'/'+child+'\n')):
+            self.assertEqual(Path('/sys/fs/cgroup')/outer/child,PROBE.expected_slice_group(child,outer))
+        for value in ('/'+child,'/system.slice','/'+outer+'suffix/'+child):
+            with mock.patch.object(PROBE,'command',return_value=subprocess.CompletedProcess([],0,stdout=value)),self.assertRaises(RuntimeError):
+                PROBE.expected_slice_group(child,outer)
+        with mock.patch.object(PROBE,'command',return_value=subprocess.CompletedProcess([],0,stdout='/generated.slice\n')):
+            self.assertEqual(Path('/sys/fs/cgroup/generated.slice'),PROBE.expected_slice_group('generated.slice'))
+
+    def test_outer_controller_membership_must_match_exact_generated_parent(self):
+        name='readerall'+'a'*12+'.slice'
+        PROBE.require_outer_controller(name,'0::/'+name+'/reader-controller.service')
+        for candidate,membership in [('system.slice','0::/system.slice/a.service'),(name,'0::/another.slice/a.service'),
+                                     (name,'0::/'+name+'-suffix/a.service'),(name,None),(None,'0::/')]:
+            with self.subTest(candidate=candidate),self.assertRaises(ValueError):PROBE.require_outer_controller(candidate,membership)
+
+    def test_partial_explicit_image_identity_refuses_before_any_input(self):
+        for flag,value in (('--runtime-config-digest','sha256:'+'b'*64),('--runtime-revision','a'*40),('--restored-jar-sha256','c'*64)):
+            with tempfile.TemporaryDirectory() as temporary:
+                output=Path(temporary)/'must-not-exist'
+                result=subprocess.run([sys.executable,'-B',str(SCRIPT),'--original','absent','--restored','absent',
+                    '--runtime-image','sha256:'+'a'*64,'--output',str(output),flag,value],capture_output=True,text=True,timeout=10)
+                self.assertNotEqual(0,result.returncode)
+                self.assertIn('config digest, revision and JAR hash together',result.stderr)
+                self.assertFalse(output.exists())
+
     def test_characterization_never_accepts_any_exit_code_even_unexpected_zero(self):
         for code in (0, 1, 2, 137, None, False):
             with self.subTest(code=code), self.assertRaises(RuntimeError):

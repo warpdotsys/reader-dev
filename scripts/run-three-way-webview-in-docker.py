@@ -7,6 +7,7 @@ and archived renderer to have been downloaded before this offline run.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -20,6 +21,9 @@ import time
 ARCHIVED = "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a"
 ORIGINAL_SHA = "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c"
 SCRIPTS = Path(__file__).resolve().parent
+IDENTITY_SPEC=importlib.util.spec_from_file_location("reader_image_identity",SCRIPTS/"reader_image_identity.py")
+IDENTITY=importlib.util.module_from_spec(IDENTITY_SPEC)
+IDENTITY_SPEC.loader.exec_module(IDENTITY)
 CPU_STAT_FIELDS = ("usage_usec", "user_usec", "system_usec", "nr_periods", "nr_throttled", "throttled_usec")
 
 
@@ -78,6 +82,21 @@ def require_unpressured_budget(report):
     if any(report["memoryEvents"].get(key, 0) for key in ("max", "oom", "oom_kill")) or \
             report["pidsEvents"].get("max", 0):
         raise RuntimeError("The generated test triggered an aggregate resource limit")
+
+
+def require_outer_controller(slice_name,membership):
+    if not isinstance(slice_name,str) or not re.fullmatch(r"readerall[0-9a-f]{12}\.slice",slice_name):
+        raise ValueError("Outer aggregate slice must be this generated readerall identity")
+    if not isinstance(membership,str) or not membership.startswith("0::/"+slice_name+"/"):
+        raise ValueError("Controller must already belong to the requested aggregate slice")
+
+
+def expected_slice_group(parent,outer=None):
+    expected="/"+parent if outer is None else "/"+outer+"/"+parent
+    actual=command("systemctl","show",parent,"--property=ControlGroup","--value").stdout.strip()
+    if actual!=expected:
+        raise RuntimeError("Actual generated slice hierarchy differs from its expected parent")
+    return Path("/sys/fs/cgroup")/actual.lstrip("/")
 
 
 def require_probe_acceptance(exit_code, characterize_historical_utf8=False):
@@ -211,6 +230,10 @@ def main():
     parser.add_argument("--original", type=Path, required=True)
     parser.add_argument("--restored", type=Path, required=True)
     parser.add_argument("--runtime-image", required=True, help="Already verified sha256 image ID")
+    parser.add_argument("--runtime-config-digest", help="Explicit original config digest; never normalize the loaded manifest ID")
+    parser.add_argument("--runtime-revision", help="Exact expected packaged revision, required with config digest")
+    parser.add_argument("--restored-jar-sha256", help="Exact shared JAR hash, required with config digest")
+    parser.add_argument("--aggregate-parent-slice", help="Optional pre-budgeted outer slice including this controller; no host reconfiguration")
     parser.add_argument("--output", type=Path, required=True, help="New directory under /var/tmp")
     parser.add_argument("--exercise-encoding", action="store_true",
                         help="Also execute the sixth generated UTF-8 POST/script/response comparison")
@@ -223,6 +246,9 @@ def main():
     parser.add_argument("--characterize-historical-utf8", action="store_true",
                         help="Diagnostic only: preserve all sides of the known UTF-8 defect, never overall acceptance")
     args = parser.parse_args()
+    identity_flags=(args.runtime_config_digest,args.runtime_revision,args.restored_jar_sha256)
+    if any(identity_flags) and not all(identity_flags):
+        parser.error("Explicit runtime identity requires config digest, revision and JAR hash together")
     if args.characterize_historical_utf8 and not args.exercise_encoding:
         parser.error("Historical UTF-8 characterization requires --exercise-encoding")
     if args.exercise_metadata and (args.exercise_encoding or args.characterize_historical_utf8):
@@ -233,6 +259,12 @@ def main():
         parser.error("A root-owned Linux Docker/systemd host is required")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.runtime_image):
         parser.error("Runtime image must be an exact image ID, never a mutable tag")
+    outer_group=None
+    if args.aggregate_parent_slice is not None:
+        membership=Path("/proc/self/cgroup").read_text().strip()
+        require_outer_controller(args.aggregate_parent_slice,membership)
+        outer_group=Path("/sys/fs/cgroup")/args.aggregate_parent_slice
+        budget_snapshot(outer_group,args.memory_high_bytes)
     output = args.output.resolve()
     if not output.is_relative_to(Path("/var/tmp")) or output == Path("/var/tmp") or \
             args.output.is_symlink() or output.exists():
@@ -246,8 +278,16 @@ def main():
     if image["Id"] != args.runtime_image or image["Architecture"] != "amd64" or \
             image["Config"]["User"] != "10001:10001":
         parser.error("Expected the previously tested non-root amd64 runtime image")
+    runtime_identity=None
+    if all(identity_flags):
+        if digest(restored)!=args.restored_jar_sha256:
+            parser.error("Candidate JAR differs from the explicitly pinned image JAR")
+        runtime_identity=IDENTITY.inspect_verified(args.runtime_image,args.runtime_config_digest,
+            "amd64",args.runtime_revision,args.restored_jar_sha256)
     command("docker", "image", "inspect", ARCHIVED)
     token = "readerwebview" + os.urandom(6).hex()
+    if outer_group is not None:
+        token=args.aggregate_parent_slice.removesuffix(".slice")+"-"+token
     parent, anchor = token + ".slice", token + "-anchor.service"
     group = Path("/sys/fs/cgroup") / parent
     def snapshot():
@@ -269,6 +309,11 @@ def main():
                   "historicalRendererStoppedBeforeCamoufox": False, "resourceSamples": []}
     if args.exercise_encoding:
         provenance["encodingProbeRequested"] = True
+    if runtime_identity is not None:
+        provenance["runtimeConfigIdentity"]=runtime_identity
+    if outer_group is not None:
+        provenance["controllerIncludedOuterSlice"]=args.aggregate_parent_slice
+        provenance["controllerInitialMembership"]=membership
     if args.exercise_metadata:
         provenance["metadataProbeRequested"] = True
         provenance["metadataComparisonScope"] = "exact-static-json-and-bounded-default-clocks" if args.metadata_clock_contract else "literal-full-json"
@@ -284,6 +329,7 @@ def main():
                 "--property=Type=oneshot", "--property=RemainAfterExit=yes", "/bin/true")
         slice_started = True
         command("systemctl", "set-property", "--runtime", parent, *budget_properties(args.memory_high_bytes))
+        group=expected_slice_group(parent,args.aggregate_parent_slice)
         snapshot()
         common = ["--cgroup-parent", parent, "--cpus=2", "--memory=2g", "--memory-swap=2g",
                   "--pids-limit=256", "--shm-size=512m", "--cap-drop=ALL",
@@ -299,7 +345,8 @@ def main():
             state = json.loads(command("docker", "inspect", cid).stdout)[0]
             path = Path("/proc") / str(state["State"]["Pid"]) / "cgroup"
             membership = path.read_text().strip()
-            if not membership.startswith("0::/" + parent + "/") or state["HostConfig"]["PortBindings"]:
+            expected_membership="0::/"+str(group.relative_to(Path("/sys/fs/cgroup")))+"/"
+            if not membership.startswith(expected_membership) or state["HostConfig"]["PortBindings"]:
                 raise RuntimeError("A test component escaped its aggregate slice or published ports")
             provenance["containerCgroups"].append(membership)
             return cid, state["State"]["Pid"]
@@ -326,6 +373,12 @@ def main():
             args.runtime_image, "-c", "import time;time.sleep(600)"])
         if os.stat("/proc/" + str(runtime_pid) + "/ns/net").st_ino != int(inode):
             raise RuntimeError("Probe container does not share the guarded private network")
+        if runtime_identity is not None:
+            packaged=command("docker","exec",runtime,"sha256sum","/app/reader.jar").stdout.split()
+            if len(packaged)!=2 or packaged!=[args.restored_jar_sha256,"/app/reader.jar"]:
+                raise RuntimeError("Actual packaged JAR differs from the pinned shared candidate")
+            provenance["packagedJarSha256"]=packaged[0]
+            provenance["packagedJarBytesIndependentlyRead"]=True
         readiness = "import socket; socket.create_connection(('127.0.0.1',8050),timeout=2).close()"
         for attempt in range(30):
             if command("docker", "exec", runtime, "python3", "-c", readiness, check=False).returncode == 0:
@@ -382,6 +435,9 @@ def main():
         require_probe_acceptance(exit_code, args.characterize_historical_utf8)
         events = provenance["aggregateBudget"]
         require_unpressured_budget(events)
+        if outer_group is not None:
+            provenance["outerAggregateBudget"]=budget_snapshot(outer_group,args.memory_high_bytes)
+            require_unpressured_budget(provenance["outerAggregateBudget"])
         provenance["budgetAccepted"] = True
         provenance["overallAccepted"] = True
         print(json.dumps({"probeCompleted": True, "aggregateBudget": events}), flush=True)
@@ -406,9 +462,18 @@ def main():
         provenance["removedOwnedTestContainers"] = stopped
         if slice_started:
             command("systemctl", "stop", anchor, parent)
+        if outer_group is not None and outer_group.exists():
+            try:
+                provenance["outerAggregateBudget"]=budget_snapshot(outer_group,args.memory_high_bytes)
+                require_unpressured_budget(provenance["outerAggregateBudget"])
+            except (OSError,ValueError,RuntimeError) as error:
+                provenance["outerBudgetFinalFailureType"]=type(error).__name__
+                provenance["budgetAccepted"]=provenance["overallAccepted"]=False
         provenance["originalJarUnchanged"] = digest(original) == ORIGINAL_SHA
         provenance["restoredJarUnchanged"] = digest(restored) == provenance["restoredJarSha256"]
         write_new(output / "provenance.json", provenance)
+        if "outerBudgetFinalFailureType" in provenance:
+            raise RuntimeError("Final outer aggregate budget failed; preserved non-acceptance")
 
 
 if __name__ == "__main__":
