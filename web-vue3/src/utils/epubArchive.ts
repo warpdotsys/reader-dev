@@ -1,5 +1,6 @@
 /** 先检查 ZIP 目录预算，再按小块核对实际输出；不信任条目声明的大小。 */
-import { Unzip, UnzipInflate, unzipSync, type UnzipFileInfo } from 'fflate'
+import { Unzip, unzipSync, type UnzipFileInfo } from 'fflate'
+import { BoundedEpubInflate } from './epubInflate.ts'
 
 export interface EpubArchiveLimits {
   compressedBytes: number
@@ -76,7 +77,7 @@ export function expandEpubArchive(bytes: Uint8Array,
     // The central directory and local entry have already passed the size and
     // aggregate budgets. Fill one owned destination instead of retaining all
     // emitted chunks and allocating/copying another complete resource at EOF.
-    // fflate's own temporary decode allocations are separate and still apply.
+    // DEFLATE emits at most 64 KiB per callback; no output-ratio-sized temporary.
     const result = key.endsWith('/') ? undefined : new Uint8Array(expected.originalSize)
     file.ondata = (error, chunk, final) => {
       if (error) throw error
@@ -97,7 +98,14 @@ export function expandEpubArchive(bytes: Uint8Array,
     }
     file.start()
   })
-  archive.register(UnzipInflate)
+  class ArchiveInflate extends BoundedEpubInflate {
+    constructor(name: string) {
+      const expected = declared.get(zipKey(name))
+      if (!expected) throw new Error('EPUB ZIP 缺少声明条目')
+      super(expected.size, expected.originalSize)
+    }
+  }
+  archive.register(ArchiveInflate)
   // 单次输入小块，限制解码器在调用 ondata 之前的临时展开；生产另有 Worker 超时。
   for (let offset = 0; offset < bytes.length; offset += 4096) {
     const end = Math.min(offset + 4096, bytes.length)

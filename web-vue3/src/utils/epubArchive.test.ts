@@ -137,8 +137,8 @@ test('EPUB ZIP：跨多个输入块的32MiB高压缩率条目低报为16字节�
   try {
     assert.throws(() => expandEpubArchive(bytes), /实际解压量超过声明/)
     assert.equal(chunks.length, 1)
-    // 最小长度/距离编码的高比率上界；不是承诺库的所有临时分配等于输出大小。
-    assert.ok(chunks[0] > 16 && chunks[0] <= 8192 * 1032 + 258)
+    // 中央目录低报16字节，固定缓冲仅允许多解出1字节就立即拒绝。
+    assert.equal(chunks[0], 17)
   } finally { Unzip.prototype.register = register }
 })
 

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "scope": "own d313 hosted source and independent consumers, plus separately identified earlier e31 archive preparation",
+  "sourceRevision": "d3132820389a996c3f170be9789346030929f388",
+  "testedMergeSnapshot": "c4f03151770ff5e9834fd6e052b831e33fef50c5",
+  "javaRun": 38343657023,
+  "vueRun": 38343657143,
+  "fullRun": 38343657078,
+  "nativeRun": 38343656992,
+  "allFourOwnHostedWorkflowsAccepted": true,
+  "javaReceiptSha256": "39c308cc9e6647c93c795fb479e8a63dbe46ab708ff8d95aa885b6cacff18e64",
+  "vueReceiptSha256": "6618d8a66f64d91511b7e8a12f7646957b4a4db609b74e946fb00f2406b324fc",
+  "fullReceiptSha256": "88b3e6eb0a2cbb25a159793aa699d938f8f18c181c32e223d5f08952008aae0a",
+  "nativeReceiptSha256": "1c70027e4de22df29a6a5cde81501087fbd62b007fe17f2c33a98478849e9869",
+  "jvm": {
+    "tests": 222,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 35
+  },
+  "jvmEnvironmentSkipsNotPassed": true,
+  "completeTwoCleanJarBytesEqual": true,
+  "reportedHostedJarSha256": "7d75741541d249bf93637cc3057f5d26dd31ba7581dda5927f16aeefa424b811",
+  "reportedHostedJarBytes": 285674394,
+  "chromiumGeneratedUi": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "camoufoxContracts": 24,
+  "linuxPythonTests": 755,
+  "linuxPythonSkipped": 0,
+  "fullImageGeneratedUiSeconds": 13.285,
+  "fullImageXmlAndFourPngChecksAccepted": true,
+  "reviewedGeneratedScreens": [
+    {
+      "file": "native-default-ui-generated-login.png",
+      "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+      "actuallyVisuallyReviewed": true,
+      "generatedOnly": true,
+      "chineseTextVisibleWithoutObservedMojibake": true
+    },
+    {
+      "file": "native-default-ui-generated-reading.png",
+      "sha256": "ff381baf0fbb3f5b4e800b25a30b35ae5e10dce23b32ec9fd0201f08f8de6f2e",
+      "actuallyVisuallyReviewed": true,
+      "generatedOnly": true,
+      "chineseTextVisibleWithoutObservedMojibake": true
+    }
+  ],
+  "fullUiClientOutsideServerResourceBudget": true,
+  "nativeArchitectures": [
+    "amd64",
+    "arm64"
+  ],
+  "nativeSixJobsAccepted": true,
+  "producerTransferredLoadedPublisherSmallJsonAccepted": 32,
+  "newNativeMetadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "c4f03151770ff5e9834fd6e052b831e33fef50c5",
+      "jarSha256": "7d75741541d249bf93637cc3057f5d26dd31ba7581dda5927f16aeefa424b811",
+      "archiveSha256": "a51b7926bdcebe55e14032ee2de0f184dff1d900bf7c0f67e0a7fa63ad8693f5",
+      "imageId": "sha256:ad4708286b74054951b0c19d43bddbaba7c9b970c7689d09e0b4833cf2ea4ad0"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "c4f03151770ff5e9834fd6e052b831e33fef50c5",
+      "jarSha256": "7d75741541d249bf93637cc3057f5d26dd31ba7581dda5927f16aeefa424b811",
+      "archiveSha256": "eb07329f3866823159351a8897e2e28b3f98fe6add3cb967b7f63e1a211391b8",
+      "imageId": "sha256:a775ddef14c92eea3bc8217e3dbb92a79d49d624a5401676fd66c5f00c1ddbe1"
+    }
+  },
+  "accurateEarlierArchive": {
+    "sourceRevision": "e31c70bb0cf5dcea13d7c96f5839544855a92da3",
+    "imageId": "sha256:5454e1d0504d4bc3ffe909cbd35eaf123d3332ccd1f244fa94990f778ad3b1f7",
+    "archiveSha256": "e4192076b8a5433343051dfb025abe245178bfd6d3d4e78b7c9cf64cc23a2b52",
+    "archiveBytes": 2174844482,
+    "independentlyRehashed": true,
+    "originalConfigIndependentlyHashed": true,
+    "isCurrentD313NativeArchive": false,
+    "rootfsExtracted": false,
+    "imageExecuted": false
+  },
+  "originalProductJarOrDecoderChangedByReadinessCommit": false,
+  "actualAuthorizedLargeBookAccepted": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "originalJarAndRemoteWebviewRemainingParityAccepted": false,
+  "realSiteAuthenticationAndLongRunCompletionProven": false,
+  "optionalSkippedWorkflowsNotPassed": true,
+  "userReportsParsed": false,
+  "realCredentialsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "released": false,
+  "goalComplete": false
+}

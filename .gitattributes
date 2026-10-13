@@ -70,4 +70,6 @@ docs/evidence/native-deflate-reader-trial-2026-10-13.json -text
 docs/evidence/native-deflate-trial-rejected-2026-10-13.json -text
 docs/evidence/epub-generated-readiness-2026-10-13.json -text
 docs/evidence/epub-authorized-readiness-unreached-2026-10-13.json -text
+docs/evidence/frame-readiness-hosted-acceptance-2026-10-13.json -text
+docs/evidence/epub-bounded-inflate-candidate-2026-10-13.json -text
 browser-poc/src/test/resources/epub-frame-readiness.js text eol=lf
