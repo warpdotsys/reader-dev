@@ -9,6 +9,7 @@ import type { ReturnData } from '@/types'
 import { readerRequestContext } from './requestContext'
 import { assertLegacyNamespace } from '@/utils/legacyNamespace'
 import { requestErrorMessage } from './requestErrorMessage'
+import { readerFetch } from './readerFetch'
 
 /** 自定义请求配置：silent=true 时失败不弹全局错误提示（探测待实现后端契约接口等场景，调用方自行降级处理） */
 declare module 'axios' {
@@ -37,6 +38,8 @@ export interface RequestOptions {
 const request = axios.create({
   baseURL: '/reader3',
   timeout: 15000,
+  ...(typeof globalThis.fetch === 'function'
+    ? { env: { fetch: readerFetch(globalThis.fetch.bind(globalThis)) } } : {}),
 })
 
 request.interceptors.request.use((config) => {

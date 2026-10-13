@@ -72,4 +72,7 @@ docs/evidence/epub-generated-readiness-2026-10-13.json -text
 docs/evidence/epub-authorized-readiness-unreached-2026-10-13.json -text
 docs/evidence/frame-readiness-hosted-acceptance-2026-10-13.json -text
 docs/evidence/epub-bounded-inflate-candidate-2026-10-13.json -text
+docs/evidence/epub-bounded-disk-two-runs-2026-10-13.json -text
+docs/evidence/bounded-inflate-hosted-acceptance-2026-10-13.json -text
+docs/evidence/frontend-security-deps-local-2026-10-13.json -text
 browser-poc/src/test/resources/epub-frame-readiness.js text eol=lf
