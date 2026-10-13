@@ -1,11 +1,11 @@
 # 正式发布就绪核查
 
-主线／发布配置审计基线为`c703abaad98bf492a00d17d436e4b5e61a31dd44`，检查时间2026-10-13。随后用户批准下一正式候选统一版本`v6.1.0`，本轮准备源码版本、构建入口及[候选发布说明](releases/v6.1.0.md)，不创建标签、合并PR、修改Secrets、登录registry或部署生产。c703的证据不移借为新版本验收。用户未提交的报告仍只核对哈希，不读取、暂存或覆盖。
+主线／发布配置审计基线为`c703abaad98bf492a00d17d436e4b5e61a31dd44`，检查时间2026-10-13。随后用户批准统一版本v6.1.0，当前源码候选为`f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41`；本候选自己的四条托管流程已独立接受，[精准收据](evidence/candidate-f6e61bf3-hosted-acceptance-2026-10-13.json)与[候选发布说明](releases/v6.1.0.md)已同步。不创建标签、合并PR、修改Secrets、登录registry或部署生产。c703的历史证据不移借为新版本验收。用户未提交的报告仍只核对哈希，不读取、暂存或覆盖。
 
 ## 已从当前仓库和GitHub状态验证
 
-- 仓库默认分支为`legacy`。PR56为OPEN／draft，base=legacy，head=c703，mergeStateStatus=CLEAN；可合并状态不等于已完成审查或已合并。[当前PR](https://github.com/warpdotsys/reader-dev/pull/56)。
-- 本源码自己的Java38383739279、Vue38383739183、Full38383739189、Native38383739203均已完成success；独立消费器验收范围见[当前交付状态](CURRENT-DELIVERY-STATUS-2026-10-13.md)，不将跳过作业或重复测试叠加成新覆盖。
+- 仓库默认分支legacy。配置审计时PR56为OPEN／draft、base=legacy、head=c703、mergeStateStatus=CLEAN；随后代码候选更新为f6e61bf3。可合并状态不等于已完成审查或已合并，[当前PR](https://github.com/warpdotsys/reader-dev/pull/56)仍未合入主线。
+- c703历史四流程38383739279／38383739183／38383739189／38383739203保持原身份；当前f6自己的四条流程见下文及[精准本候选收据](evidence/candidate-f6e61bf3-hosted-acceptance-2026-10-13.json)。不将跳过作业或重复测试叠加成新覆盖。
 - 审计时工程清单为`4.0.7`，旧前端锁文件根包仍为`4.0.5`。用户随后选定`v6.1.0`；当前后端、备用CLI、两套前端及其锁文件根包已经同步为`6.1.0`，依赖节点版本不改，新增只读同步守卫。仓库最新正式Release为`v6.0.45`，非draft／非prerelease，targetCommitish=master，发布日期2026-08-24。[该正式版](https://github.com/warpdotsys/reader-dev/releases/tag/v6.0.45)。发布工作流检查仓库全局最新正式稳定版本，不以当前分支重置排序；4.0.7及文档旧例4.1.0仍会被拒绝。6.1.0尚未打标签或发布，不猜测旧版的语言、源码一致性或数据兼容性。
 - 仓库级变量名称`GHCR_IMAGE`、`DOCKERHUB_IMAGE`存在，仓库级Secret名称`DOCKERHUB_USERNAME`、`DOCKERHUB_PASSWORD`存在。`production`环境存在，四个`PROD_SSH_HOST/USER/KEY/KNOWN_HOSTS`环境Secret名称齐备，部署job明确选择该环境。因此仓库级Secret清单中没有生产名称并不构成缺失证据。仅确认配置名称，不读取Secret值，不将名称齐备当作认证或端到端部署成功。
 - 正式流水线只接受稳定SemVer、三处同步版本、带“已知问题”章节的同名Markdown、legacy祖先提交，并要求版本高于当时最新正式Release。它复用完整Vue旅程及双原生Native门禁；正式publisher先校验并导入已经受测的双镜像，再登录registry、推送同镜像及多架构manifest，不重新构建。
@@ -20,13 +20,15 @@
 
 新增公开站点脚本／生成Cookie预检两轮均失败，第二次实际HTTP504，第一轮状态码未捕获；零Reader启动／零业务调用，不能算实站脚本或Cookie通过。两轮自有容器、socket及父级隔离组已独立清理。用户新批准的Chrome起点登录态仍只限本机；浏览器工具因无法确认当前网址中止，未读取或导出Cookie，不改变服务器唯一公开站点授权。
 
-首个6.1.0候选f1bcfaab自己的Java/Vue流程已完成并独立复核，实际下载共享JAR与双clean的66d1摘要相符，但MANIFEST缺少Implementation-Version。[独立实物验收失败](evidence/candidate-f1bcfaab-jar-version-rejection-2026-10-13.json)保留，不伪称已内嵌版本。构建源码随后补入确定性应用版本并读取打包实物检查，512MiB／最多两个worker的本机离线配置检查已通过；这不是本机重建或启动。补标候选仍须自己的完整托管链路；首候选镜像结果不能直接当作补标后结果。
+首个6.1.0候选f1bcfaab实际下载JAR与双clean的66d1摘要相符，但MANIFEST缺少Implementation-Version；[实物验收失败](evidence/candidate-f1bcfaab-jar-version-rejection-2026-10-13.json)保留。随后补入确定性应用版本的f6e61bf3已完成自己的Java38411329432／Vue38411329680／Full38411330336／Native38411330281，独立接受全部六个Native作业及32份发布器JSON。实际下载1f114993 JAR实读Implementation-Version=6.1.0、原ReaderApplicationKt入口，完整字节与其两次clean一致；本机离线配置检查不是本机重建或启动。Full生成账号旅程11.074秒及两张中文截图已验看，客户端在服务端预算外；真实账号、准确新镜像单书／原件三方仍不能移借首候选或548a结果。
+
+服务器固定Gutenberg页本轮严格HTTPS预检200，页面摘要与历史捕获一致；准确新镜像的软件源上传遇SSH超时／连接关闭，保留不完整输入，尚未加载或启动Reader。预检不是真实脚本／Cookie业务通过，不改生产或扩大出网范围。
 
 最终发布仍需闭合：
 
 1. 剩余真实书源脚本／Cookie及真实站点认证的明确测试范围和证据；不得复用已清凭据，不扩大唯一域名服务器出网授权。
 2. 最终候选精准源码、JAR、镜像与验收范围一致，保留历史失败，不用普通CI绿灯代替真实用户路径。
-3. 将候选审查并合入legacy；用户已选定6.1.0并同步项目／根包版本与发布说明，但本版本自己的托管验收仍待执行，发布时仍须高于当时最新正式版。不能靠删除“版本必须增加”的门禁发布4.x。
+3. 将候选审查并合入legacy；用户已选定6.1.0并同步项目／根包版本与发布说明，本版本自己的托管验收现已独立接受，但其余真实业务及最终审查未闭合。发布时仍须高于当时最新正式版，不能靠删除“版本必须增加”的门禁发布4.x。
 4. 通过托管runner的正式链路完成双registry一致manifest、GitHub正式Release、服务器按digest拉取、回滚快照及公网版本／构建提交校验。现在只有演练与配置名称证据，并未发生正式发布或生产切换。
 
 ## 回滚与保全

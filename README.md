@@ -20,9 +20,9 @@
 
 ## 当前开发主线
 
-2026-10-13 当前验收入口：[交付状态及已知问题](docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)、[完整目标验收矩阵](docs/GOAL-EVIDENCE-MATRIX-2026-10-13.md)、[正式发布就绪核查](docs/DELIVERY-READINESS-2026-10-13.md)。以下提交记录保留历史范围，不把较早的“仍在运行／尚未测试”视为当前状态。`c703abaa`四条GitHub托管流程已独立接受；准确548a归档的获准单书、长测、生成三方和固定Gutenberg真实HTTPS三方分别有证据，镜像身份不混用。PR56仍为以`legacy`为base的草稿，尚未合并、正式发版或生产切换。
+2026-10-13 当前验收入口：[交付状态及已知问题](docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)、[完整目标验收矩阵](docs/GOAL-EVIDENCE-MATRIX-2026-10-13.md)、[正式发布就绪核查](docs/DELIVERY-READINESS-2026-10-13.md)。当前代码候选`f6e61bf3`的Java／Vue／Full／Native四条GitHub托管流程已独立接受，精准证据保存于[本候选收据](docs/evidence/candidate-f6e61bf3-hosted-acceptance-2026-10-13.json)。以下历史记录及准确548a归档的单书／长测／原件三方保持原身份，不移借当前镜像。PR56仍为以legacy为base的草稿，尚未合并、正式发版或生产切换。
 
-下一候选已按用户选择统一为`v6.1.0`，项目与根包锁版本已同步，[待发说明及已知问题](docs/releases/v6.1.0.md)已准备；新版本自己的托管验收待执行，尚未创建标签或部署。本机PowerShell 7构建入口为`pwsh -NoProfile -File .\scripts\build.ps1`，不再清空保存授权输入的`build`目录；独立CI仍执行双clean字节一致验证。
+候选已按用户选择统一为v6.1.0，项目／根包锁版本与[待发说明及已知问题](docs/releases/v6.1.0.md)已同步。本版本托管验收通过，实际下载JAR的MANIFEST版本6.1.0与双clean完整字节一致，默认镜像生成账号登录／阅读／退出已验收；起点真实认证与准确新镜像的剩余业务尚未闭合，尚未创建标签或部署。本机PowerShell 7构建入口为`pwsh -NoProfile -File .\scripts\build.ps1`，不再清空保存授权输入的build目录；独立CI仍执行双clean字节一致验证。
 
 内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。候选单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，线上也尚未切换。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
 
