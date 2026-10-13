@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { createReadStream, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { spawnSync } from 'node:child_process'
 
 const sha = /^[0-9a-f]{64}$/
 const digest = /^sha256:[0-9a-f]{64}$/
@@ -42,6 +43,37 @@ export async function hashFile(path) {
   for await (const chunk of createReadStream(path)) hash.update(chunk)
   return hash.digest('hex')
 }
+export function validateLoadedMetadata(metadata, expected, image, inspectConfigIdentity) {
+  // Provenance and inspected runtime gates always run before invoking the
+  // read-only content check. A mere boolean/similar environment is never proof.
+  validateMetadata(metadata, expected)
+  validateImage(image, expected.arch, expected.version, expected.revision)
+  if (metadata.imageId === image.Id) {
+    validateMetadata(metadata, expected, image)
+    return undefined
+  }
+  if (typeof inspectConfigIdentity !== 'function') throw new Error('Different loaded ID requires a live original-config relationship check')
+  const proof = inspectConfigIdentity(image.Id, metadata.imageId, expected)
+  if (!proof || proof.schemaVersion !== 1 || proof.loadedImageId !== image.Id ||
+      proof.originalConfigDigest !== metadata.imageId || proof.loadedIdObjectKind !== 'manifest' ||
+      proof.architecture !== expected.arch || proof.expectedRevision !== expected.revision ||
+      proof.expectedJarSha256 !== expected.jarSha256 ||
+      proof.configBytesSha256Verified !== true || proof.manifestBytesSha256Verified !== true ||
+      proof.allOriginalLayerDiffIdsMatch !== true || proof.readOnlyIdentityCheck !== true ||
+      proof.runtimeExecuted !== false || proof.packagedJarBytesIndependentlyRead !== false ||
+      !Number.isInteger(proof.layerCount) || proof.layerCount < 1 || proof.layerCount > 128) {
+    throw new Error('Live loaded-manifest relationship proof mismatches the original artifact')
+  }
+  return proof
+}
+function inspectConfigIdentity(imageId, configDigest, expected) {
+  const script = fileURLToPath(new URL('./reader_image_identity.py', import.meta.url))
+  const result = spawnSync('python3', [script, '--image', imageId, '--config', configDigest,
+    '--architecture', expected.arch, '--revision', expected.revision, '--jar-sha', expected.jarSha256],
+    {encoding: 'utf8', timeout: 70000, maxBuffer: 1024 * 1024})
+  if (result.error || result.status !== 0) throw new Error('Read-only original-config relationship inspection failed')
+  return JSON.parse(result.stdout)
+}
 async function main() {
   const [mode, arch, version, revision, jarDirectory, nativeDirectory] = process.argv.slice(2)
   if (!['record', 'check', 'loaded'].includes(mode) || !jarDirectory || !nativeDirectory || process.argv.length !== 8) throw new Error('Usage: release-native-artifacts.mjs record|check|loaded arch version revision jar-directory native-directory')
@@ -59,6 +91,8 @@ async function main() {
   }
   const metadataPath = resolve(directory, 'metadata.json')
   let metadata
+  let loadedIdentity
+  let loadedImage
   if (mode === 'record') {
     if (existsSync(metadataPath)) throw new Error('Refusing to overwrite existing native provenance')
     const image = readImage()
@@ -71,9 +105,19 @@ async function main() {
     writeFileSync(metadataPath, JSON.stringify(metadata, null, 2) + '\n', {flag: 'wx'})
   } else {
     metadata = JSON.parse(readFileSync(metadataPath, 'utf8'))
-    validateMetadata(metadata, expected, mode === 'loaded' ? readImage() : undefined)
+    if (mode === 'loaded') {
+      loadedImage = readImage()
+      loadedIdentity = validateLoadedMetadata(metadata, expected, loadedImage, inspectConfigIdentity)
+    } else {
+      validateMetadata(metadata, expected)
+    }
   }
-  console.log(JSON.stringify({phase: mode, architecture: arch, revision, jarSha256: metadata.jarSha256, imageId: metadata.imageId}))
+  const result = {phase: mode, architecture: arch, revision, jarSha256: metadata.jarSha256, imageId: metadata.imageId}
+  if (loadedIdentity) {
+    result.loadedImageId = loadedImage.Id
+    result.originalConfigIdentity = loadedIdentity
+  }
+  console.log(JSON.stringify(result))
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch(error => { console.error(error.message); process.exitCode = 1 })

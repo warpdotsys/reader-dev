@@ -45,6 +45,25 @@ def actual_shape():
 
 
 class HostedThreeWayTest(unittest.TestCase):
+    def test_loaded_runtime_keeps_original_metadata_and_uses_verified_manifest_id(self):
+        metadata=dict(imageId=IMAGE,jarSha256=JAR,revision=REVISION,architecture='amd64')
+        loaded=dict(imageId=IMAGE,jarSha256=JAR)
+        self.assertEqual(IMAGE,PROBE.resolve_loaded_runtime(metadata,loaded))
+        manifest='sha256:'+'e'*64
+        proof=dict(loadedImageId=manifest,originalConfigDigest=IMAGE,loadedIdObjectKind='manifest',
+            expectedJarSha256=JAR,expectedRevision=REVISION,architecture='amd64',
+            configBytesSha256Verified=True,manifestBytesSha256Verified=True,
+            allOriginalLayerDiffIdsMatch=True,readOnlyIdentityCheck=True,runtimeExecuted=False,layerCount=14)
+        loaded.update(loadedImageId=manifest,originalConfigIdentity=proof)
+        self.assertEqual(manifest,PROBE.resolve_loaded_runtime(metadata,loaded))
+        self.assertEqual(IMAGE,metadata['imageId'])
+        for mutate in (lambda v:v.pop('originalConfigIdentity'),
+            lambda v:v['originalConfigIdentity'].update(originalConfigDigest=manifest),
+            lambda v:v['originalConfigIdentity'].update(configBytesSha256Verified=False),
+            lambda v:v.update(loadedImageId='reader:latest')):
+            value=copy.deepcopy(loaded);mutate(value)
+            with self.assertRaises(ValueError):PROBE.resolve_loaded_runtime(metadata,value)
+
     def test_exact_source_and_all_actual_jobs_can_validate(self):
         PROBE.validate_source(*source_receipts(), 7, SOURCE, REVISION)
 

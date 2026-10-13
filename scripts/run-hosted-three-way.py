@@ -193,6 +193,28 @@ def validate_metadata_outcome(provenance, comparison, jar, image):
             raise ValueError("All three actual generated journeys must finish")
 
 
+def resolve_loaded_runtime(metadata,loaded):
+    original=metadata.get("imageId")
+    if loaded.get("imageId")!=original or loaded.get("jarSha256")!=metadata.get("jarSha256"):
+        raise ValueError("Loaded identity does not match this native artifact")
+    actual=loaded.get("loadedImageId",original)
+    if not isinstance(actual,str) or not re.fullmatch(r"sha256:[0-9a-f]{64}",actual):
+        raise ValueError("Loaded runtime must remain an immutable image ID")
+    if actual!=original:
+        proof=loaded.get("originalConfigIdentity")
+        if not isinstance(proof,dict) or proof.get("loadedImageId")!=actual or \
+                proof.get("originalConfigDigest")!=original or proof.get("loadedIdObjectKind")!="manifest" or \
+                proof.get("expectedJarSha256")!=metadata.get("jarSha256") or \
+                proof.get("expectedRevision")!=metadata.get("revision") or \
+                proof.get("architecture")!=metadata.get("architecture") or \
+                any(proof.get(key) is not True for key in ("configBytesSha256Verified","manifestBytesSha256Verified",
+                    "allOriginalLayerDiffIdsMatch","readOnlyIdentityCheck")) or \
+                proof.get("runtimeExecuted") is not False or type(proof.get("layerCount")) is not int or \
+                not 1<=proof["layerCount"]<=128:
+            raise ValueError("Different loaded runtime requires its exact original-config relationship receipt")
+    return actual
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--native-run", type=int, required=True)
@@ -231,9 +253,7 @@ def main():
     loaded = json.loads(command("node", "scripts/release-native-artifacts.mjs", "loaded",
         "amd64", version, args.revision, "dist", "imported", timeout=300).stdout)
     write_new(report / "LOADED_IDENTITY.json", loaded)
-    image = meta["imageId"]
-    if loaded.get("imageId") != image or loaded.get("jarSha256") != meta["jarSha256"]:
-        raise ValueError("Loaded identity does not match this native artifact")
+    image = resolve_loaded_runtime(meta,loaded)
     label = os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
     command("docker", "pull", "--platform", "linux/amd64", ARCHIVED, timeout=420)
     jars = list((ROOT / "dist").glob("reader-*.jar"))
@@ -242,6 +262,9 @@ def main():
     output = Path("/var/tmp") / ("reader-three-way-" + label + "-" + args.mode)
     flags = ["--exercise-metadata", "--metadata-clock-contract"] if args.mode == "metadata" else [
         "--exercise-encoding", "--characterize-historical-utf8"]
+    if image!=meta["imageId"]:
+        flags.extend(["--runtime-config-digest",meta["imageId"],"--runtime-revision",args.revision,
+                      "--restored-jar-sha256",meta["jarSha256"]])
     # Root-owned GNU timeout sends TERM to its own process group first. The
     # existing harness handles TERM/HUP and cleans its exact owned containers.
     result = command("sudo", "-n", "timeout", "--signal=TERM", "--kill-after=15s", "480s",
@@ -267,6 +290,9 @@ def main():
         "candidateJarUnchanged": provenance.get("restoredJarUnchanged"), "postRemoval": removal,
         "realCredentialsImported": False, "privateBookBodiesRead": 0, "productionChanged": False,
         "originalProductionRendererVersionProven": False}
+    if image!=meta["imageId"]:
+        summary["originalSourceImageId"]=meta["imageId"]
+        summary["loadedOriginalConfigIdentity"]=loaded["originalConfigIdentity"]
     write_new(report / "SUMMARY.json", summary)
     print(json.dumps(summary))
     if not accepted:
