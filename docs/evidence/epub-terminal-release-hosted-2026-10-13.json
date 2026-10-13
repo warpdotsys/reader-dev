@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "1dd6979d4f05c0cc075e59b99aabce6b3681f18c",
+  "testedMergeSnapshot": "2651c7d1b25f4aeb9c6ec7dd90245d600fa065c4",
+  "scope": "own four hosted workflows, native producers/imports/publisher and downloaded JAR; not real-book acceptance",
+  "ownCompletedRuns": [
+    {
+      "runId": 38324276314,
+      "name": "Java Kotlin CI",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38324276314"
+    },
+    {
+      "runId": 38324276295,
+      "name": "Vue 3 preview build",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38324276295"
+    },
+    {
+      "runId": 38324276350,
+      "name": "Browser image integration",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38324276350"
+    },
+    {
+      "runId": 38324276423,
+      "name": "Native release artifact rehearsal",
+      "conclusion": "success",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38324276423"
+    }
+  ],
+  "independentReceiptSha256": {
+    "verified-jar.json": "bfe133159cd59a17d50322f4a5aadacb01232dfbd167f8aac8f19f28dffea434",
+    "independent-java-vue-reports.json": "308c5281427d9c9b9720912bb1480e09543fb998a18f28c702cd48d64d4adc7f",
+    "independent-full-reports.json": "ddfb757061fb73c5d12a1f8182c2e8bae1f90b3b23af3b0428f86b233bc584b5",
+    "independent-native-small-acceptance.json": "125914a75ad8cbc643e171e5fdee79418ff11080f34884c3c9c57a1f9cc95a78"
+  },
+  "jarSha256": "a031311612b75c9fbfe80e8323dd52cc3eca992701c6e311b491e60effdd0c83",
+  "jarBytes": 285674123,
+  "jarEntries": 1568,
+  "downloadedJarIndependentlyRehashed": true,
+  "completeTwoCleanBuildBytesEqual": true,
+  "vueResourceDeltaOnly": true,
+  "backendDependenciesManifestAndBrowserWorkerUnchanged": true,
+  "epubArchiveWorkerSha256": "59ebfb6aec769cdda4401f5efa7cb62a88f6a9e0d9bcfcbf7d7e8077464ed9f1",
+  "jvmTests": 222,
+  "existingEnvironmentJvmSkipped": 35,
+  "vueGeneratedJourneys": 25,
+  "vueSkipped": 0,
+  "camoufoxContractTests": 24,
+  "camoufoxSkipped": 0,
+  "hostedPythonTests": 755,
+  "hostedPythonSkipped": 0,
+  "completeImageGeneratedUiSeconds": 13.097,
+  "generatedLoginAndReadingScreenshotsActuallyViewedThisTurn": true,
+  "viewedGeneratedScreenshotSha256": {
+    "login": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+    "reading": "c51f61913ad11d042b1f8d24037fbbf9e8bcc4bd4ffe92a1c4912a7010a3e0e5"
+  },
+  "fullUiClientOutsideServerResourceBudget": true,
+  "nativeHostedJobs": 6,
+  "nativeArchitectures": [
+    "amd64",
+    "arm64"
+  ],
+  "publisherSmallJsonReportsIndependentlyVerified": 32,
+  "nativeImageMetadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "2651c7d1b25f4aeb9c6ec7dd90245d600fa065c4",
+      "jarSha256": "a031311612b75c9fbfe80e8323dd52cc3eca992701c6e311b491e60effdd0c83",
+      "archiveSha256": "73d2d3cad912f511714d77e33cdaabdcfcd3b3ea94822506ad269d39cb49f830",
+      "imageId": "sha256:e4a4d06fb0f9555fc7431280c8b4915829023f1d23cf4bd1e2d7ab06433fde66"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "2651c7d1b25f4aeb9c6ec7dd90245d600fa065c4",
+      "jarSha256": "a031311612b75c9fbfe80e8323dd52cc3eca992701c6e311b491e60effdd0c83",
+      "archiveSha256": "c048b0bb9030e06fa22709b4840579a23dc003986e38f56d4ad889ba45d82f99",
+      "imageId": "sha256:b98d979ad679a4ea585efc5a8b8de0bbcb730b34c995cb1bd496d327a8203a67"
+    }
+  },
+  "largeNativeArchivesLocallyDownloadedOrRehashed": false,
+  "latestWholeNativeImageLocallyLoaded": false,
+  "imageBuildStepSeconds": 289.0,
+  "ghaCacheImportManifestObserved": true,
+  "cachedBuildStepCount": 7,
+  "cacheExportSeconds": [
+    102.8
+  ],
+  "strictSixtySecondTotalExportCapOrStableCacheSpeedupProven": false,
+  "optionalOriginalRemoteSoakSkippedJobsAccepted": false,
+  "realAuthorizedBookFullAcceptance": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

@@ -396,6 +396,8 @@ interface ImportItem {
   error?: string
   /** 后端已经保存的临时本地书与目录；确认后由 book 提交给 /saveBook。 */
   preview?: LocalBookImportPreview
+  /** saveBook 发出后，即使响应丢失也不能断言资产未入架，禁止自动删除。 */
+  saveAttempted?: boolean
 }
 
 const importOpen = ref(false)
@@ -409,6 +411,37 @@ const importSummary = ref('')
 const acceptTip = ref('')
 const importItems = ref<ImportItem[]>([])
 let importSession = 0
+let importCloseTimer: number | undefined
+
+function isCurrentImportSession(session: number): boolean {
+  return !shelfDisposed && importOpen.value && session === importSession
+}
+
+function clearImportCloseTimer() {
+  if (importCloseTimer !== undefined) window.clearTimeout(importCloseTimer)
+  importCloseTimer = undefined
+}
+
+function scheduleImportClose(session: number) {
+  clearImportCloseTimer()
+  const timer = window.setTimeout(() => {
+    if (importCloseTimer !== timer) return
+    importCloseTimer = undefined
+    if (isCurrentImportSession(session)) closeImport()
+  }, 800)
+  importCloseTimer = timer
+}
+
+/** 失效后只回收从未提交入架的预览；不删除进行中或结果未知的 saveBook 资产。 */
+function disposeImportSession() {
+  importSession++
+  clearImportCloseTimer()
+  const released = importItems.value
+  importItems.value = []
+  importOpen.value = false
+  uploadBusy.value = false
+  for (const item of released) discardPreview(item)
+}
 
 /** 整体进度：按文件大小加权 */
 const totalProgress = computed(() => {
@@ -454,18 +487,20 @@ async function checkPreview(item: ImportItem, session: number) {
     const res = await importBookPreview(item.file)
     const preview = res.data?.[0]
     if (!preview?.book?.bookUrl || !preview.book.origin) {
+      if (!isCurrentImportSession(session) || !importItems.value.includes(item)) return
       item.status = 'error'
       item.error = '服务器未返回可导入书籍'
       return
     }
     // 用户在请求完成前关闭弹窗时，回收已经保存但未入架的用户资产。
-    if (session !== importSession || !importOpen.value) {
-      void discardImportPreview(preview)
+    if (!isCurrentImportSession(session) || !importItems.value.includes(item)) {
+      discardUnconfirmedPreview(preview)
       return
     }
     item.preview = preview
     item.status = 'pending'
   } catch (err) {
+    if (!isCurrentImportSession(session) || !importItems.value.includes(item)) return
     item.status = 'error'
     item.error = err instanceof Error ? err.message : '解析书籍失败'
   }
@@ -489,6 +524,8 @@ function isSupported(file: File): boolean {
 }
 
 function openImport() {
+  if (shelfDisposed || importOpen.value || uploadBusy.value) return
+  clearImportCloseTimer()
   importSession++
   importOpen.value = true
   uploadBusy.value = false
@@ -502,15 +539,12 @@ function openImport() {
 
 function closeImport() {
   if (uploadBusy.value) return
-  importSession++
-  // `importBookPreview` 已将待确认文件写入用户 assets；关闭或取消时回收未入架项。
-  for (const item of importItems.value) discardPreview(item)
-  importOpen.value = false
+  disposeImportSession()
   document.body.style.overflow = ''
 }
 
 function addFiles(files: File[]) {
-  if (uploadBusy.value) return
+  if (!isCurrentImportSession(importSession) || uploadBusy.value) return
   const valid = files.filter(isSupported)
   const ignored = files.length - valid.length
   const added: ImportItem[] = []
@@ -522,6 +556,7 @@ function addFiles(files: File[]) {
   }
   acceptTip.value = ignored > 0 ? `已忽略 ${ignored} 个不支持的文件（支持 .epub / .txt / .pdf / .cbz / .umd）` : ''
   if (valid.length > 0) {
+    clearImportCloseTimer()
     importDone.value = false
     importSummary.value = ''
   }
@@ -553,8 +588,16 @@ function onDrop(e: DragEvent) {
   addFiles(Array.from(e.dataTransfer?.files ?? []))
 }
 
+function discardUnconfirmedPreview(preview: LocalBookImportPreview) {
+  void discardImportPreview(preview).catch(() => {
+    if (!shelfDisposed) ElMessage.warning('未入架的预览文件清理失败，可在文件管理中检查')
+  })
+}
+
 function discardPreview(item: ImportItem) {
-  if (item.preview && item.status !== 'done') void discardImportPreview(item.preview)
+  const preview = item.preview
+  item.preview = undefined
+  if (preview && item.status !== 'done' && !item.saveAttempted) discardUnconfirmedPreview(preview)
 }
 
 function importFormat(file: File): string {
@@ -603,38 +646,48 @@ async function checkImportDuplicates(): Promise<boolean> {
 
 /** 逐个确认入架。文件已由 importBookPreview 保存，此处只提交原版 Book JSON。 */
 async function startUpload() {
-  if (uploadBusy.value || previewChecking.value || !hasPending.value) return
-  // GAP 126：同名书确认弹窗（取消则中止本次导入）
-  if (!(await checkImportDuplicates())) {
-    ElMessage.info('已取消导入')
-    return
-  }
+  if (!isCurrentImportSession(importSession) || uploadBusy.value || previewChecking.value || !hasPending.value) return
+  const session = importSession
+  const items = importItems.value.filter(item => item.status === 'pending')
+  // 确认弹窗期间也锁住提交，防止重复保存或关闭后向新会话写入旧结果。
   uploadBusy.value = true
   importDone.value = false
-  let ok = 0
-  for (let i = 0; i < importItems.value.length; i++) {
-    const item = importItems.value[i]
-    uploadIndex.value = i
-    item.status = 'uploading'
-    item.progress = 0
-    try {
-      if (!item.preview) throw new Error('书籍尚未解析完成')
-      await saveBook(item.preview.book)
-      item.status = 'done'
-      item.progress = 100
-      ok++
-    } catch (err) {
-      item.status = 'error'
-      item.error = err instanceof Error ? err.message : '导入失败'
+  try {
+    // GAP 126：同名书确认弹窗（取消则中止本次导入）
+    const confirmed = await checkImportDuplicates()
+    if (!isCurrentImportSession(session)) return
+    if (!confirmed) {
+      ElMessage.info('已取消导入')
+      return
     }
+    for (let i = 0; i < items.length; i++) {
+      if (!isCurrentImportSession(session)) return
+      const item = items[i]
+      uploadIndex.value = i
+      item.status = 'uploading'
+      item.progress = 0
+      try {
+        if (!item.preview) throw new Error('书籍尚未解析完成')
+        item.saveAttempted = true
+        await saveBook(item.preview.book)
+        item.status = 'done'
+        item.progress = 100
+      } catch (err) {
+        item.status = 'error'
+        item.error = err instanceof Error ? err.message : '导入失败'
+      }
+    }
+    if (!isCurrentImportSession(session)) return
+    importDone.value = true
+    const ok = importItems.value.filter(item => item.status === 'done').length
+    const failed = importItems.value.length - ok
+    importSummary.value =
+      failed > 0 ? `导入完成：${ok} 本成功，${failed} 本失败` : `导入完成，共 ${ok} 本`
+    await load() // 刷新书架（getBookshelf）
+    if (isCurrentImportSession(session) && failed === 0) scheduleImportClose(session)
+  } finally {
+    if (isCurrentImportSession(session)) uploadBusy.value = false
   }
-  uploadBusy.value = false
-  importDone.value = true
-  const failed = importItems.value.length - ok
-  importSummary.value =
-    failed > 0 ? `导入完成：${ok} 本成功，${failed} 本失败` : `导入完成，共 ${ok} 本`
-  await load() // 刷新书架（getBookshelf）
-  if (failed === 0) window.setTimeout(() => closeImport(), 800)
 }
 
 /* ================= OPDS 服务器入口（外部阅读器：legado/静读等） ================= */
@@ -652,6 +705,7 @@ function closeOpds() {
 
 onBeforeUnmount(() => {
   shelfDisposed = true
+  disposeImportSession()
   shelfLoadVersion++
   if (longPressTimer) clearTimeout(longPressTimer)
   wrapObserver?.disconnect()

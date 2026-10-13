@@ -1,5 +1,7 @@
 # Production deployment
 
+当前仍是候选验收阶段，不得以旧托管绿灯部署新源码；[导入生命周期候选、已知大 EPUB 刷新超时及回退](../../docs/BOOKSHELF-IMPORT-LIFECYCLE-2026-10-13.md)。
+
 `reader-pro-restored` runs beside the existing Reader container and binds only
 to `127.0.0.1:18088`. The host Nginx terminates TLS for `read.medwarp.cn`.
 
@@ -12,6 +14,8 @@ Required server-side files that are deliberately not committed:
   from a JAR on the host.
 
 ## 正式发布
+
+2026-10-13准确新产物验收：1dd自己的四托管 / Native六作业 / 发布器小报告均通过，A031 JAR两次clean同字节且仅Vue变化；实际授权大EPUB在原账号登录前置下两轮原版刷新仍expanding超时，六 / 八，不发版部署。MainThread实为Node测试驱动，纠正后的驱动约100MiB，不把旧混合组作为浏览器或驱动独因。所有自建实例 / 副本已清，原件和用户数据保留。[实际失败、完整构建证据及下一项](../../docs/EPUB-TERMINAL-RELEASE-ACCEPTANCE-2026-10-13.md)。
 
 2026-10-13源码候选：EPUB可复用清理保留，新增终态release供卸载 / 作废加载结果清整本资源引用；338前端及类型 / Vite、153管线生成测试通过。不把组件卸载等同于硬刷新全部生命周期，自己的托管和准确JAR / 真书待验，Y六 / 八失败仍在，继续不发版部署。[候选证据与回退](../../docs/EPUB-TERMINAL-RELEASE-CANDIDATE-2026-10-13.md)。
 

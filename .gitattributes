@@ -52,3 +52,7 @@ docs/evidence/epub-real-stream-read-2026-10-12.json -text
 docs/evidence/gha-ready-7bf-hosted-2026-10-12.json -text
 docs/evidence/original-account-relogin-2026-10-13.json -text
 docs/evidence/epub-terminal-release-local-2026-10-13.json -text
+docs/evidence/epub-terminal-release-hosted-2026-10-13.json -text
+docs/evidence/epub-terminal-release-real-reader-2026-10-13.json -text
+docs/evidence/generated-upload-memory-2026-10-13.json -text
+docs/evidence/import-lifecycle-local-reader-2026-10-13.json -text
