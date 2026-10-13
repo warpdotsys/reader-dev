@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "classification": "verified negative actual-Reader diagnostic, not completed acceptance",
+  "sourceReportSha256": "757999e67325459efeb933868f8a4cdb591abf046e83bb3f612036f81021a0ad",
+  "volumeBindingSha256": "121918145fb23636e330cb2a7d6756c51eced591197e1660ae930313727a116d",
+  "generatedStorageCleanupSha256": "a3ad50da3ede7765f57266b1025ce0c65a94c3b0eb24ff00b4d59e0d48ca2896",
+  "inputCleanupSha256": "749d944a89862a62a15f7aefef01a8bf33e9bb49955a6fb6af817ce19967d521",
+  "sourceRevision": "e31c70bb0cf5dcea13d7c96f5839544855a92da3",
+  "jarSha256": "7d75741541d249bf93637cc3057f5d26dd31ba7581dda5927f16aeefa424b811",
+  "workerSha256": "59ebfb6aec769cdda4401f5efa7cb62a88f6a9e0d9bcfcbf7d7e8077464ed9f1",
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestWholeImageAccepted": false,
+  "productSourceChanged": false,
+  "diskMountIndependentlyAccepted": true,
+  "filesystem": "ext4",
+  "containerUid": 10001,
+  "capabilitiesZero": true,
+  "noNewPrivileges": true,
+  "network": "loopback-only",
+  "budgets": {
+    "cpuCount": 2,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "pidsMax": 256,
+    "swapMaxBytes": 0,
+    "generatedStorageBytes": 536870912,
+    "workerTotalMilliseconds": 15000
+  },
+  "completedCaseNames": [
+    "text805",
+    "text806",
+    "text806Refresh",
+    "html806"
+  ],
+  "completedCases": 4,
+  "requiredCases": 8,
+  "rawFirstRead": {
+    "iframePresent": false,
+    "workerError": true,
+    "workerExpanding": true,
+    "downloadTimeout": false
+  },
+  "generatedStorage": {
+    "maximumBytesObserved": 88177031,
+    "maximumFilesObserved": 1688,
+    "samples": 70,
+    "budgetExceeded": false,
+    "monitorStopped": true,
+    "fileBodiesRead": false,
+    "namesPublished": false
+  },
+  "resources": {
+    "seconds": 101.521,
+    "memoryPeakBytes": 1627189248,
+    "pidsPeak": 248,
+    "memoryHighEvents": 95853,
+    "memoryMaxEvents": 0,
+    "oomEvents": 0,
+    "oomKillEvents": 0,
+    "maximumSampledShmemBytes": 69029888
+  },
+  "conclusion": "Replacing generated tmpfs Reader storage with fresh ext4 did not remove the first raw-rendering Worker timeout in this run. This does not establish a sole cause, stable performance delta, or production storage behavior.",
+  "stoppedAndPidZero": true,
+  "ownedContainersRemaining": 0,
+  "cleanup": {
+    "generatedFilesIndividuallyUnlinked": 1688,
+    "emptySubdirectoriesRemoved": 25,
+    "generatedBytesRemoved": 88177031,
+    "readonlyInputCopiesRemoved": 3,
+    "readonlyInputCopyBytesRemoved": 37824508,
+    "rootDirectoriesAndSourcesRetained": true,
+    "sameGeneratedCredentialsRecoverable": false,
+    "replayFromRetainedSourcesPossible": true,
+    "bulkRecursiveDeletion": false
+  },
+  "privacy": {
+    "realCredentialsImported": false,
+    "otherPrivateBooksRead": 0,
+    "bodyTextNamesUrlsTokensOrBodyHashesPublished": false,
+    "existingUserStorageMounted": false,
+    "userReportsParsed": false
+  },
+  "productionChanged": false,
+  "released": false
+}

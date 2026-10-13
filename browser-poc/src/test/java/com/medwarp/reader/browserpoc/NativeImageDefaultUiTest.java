@@ -227,7 +227,7 @@ public class NativeImageDefaultUiTest {
         assertEquals(0, page.locator(".reader-content script").count());
 
         page.locator("button[title^='EPUB 排版模式']").click();
-        page.locator("iframe.epub-frame").waitFor();
+        RawEpubReadiness.waitFor(page);
         assertEquals("allow-same-origin", page.locator("iframe.epub-frame").getAttribute("sandbox"));
         Locator rawBody = page.frameLocator("iframe.epub-frame").locator("body");
         page.frameLocator("iframe.epub-frame").getByText(EPUB_FIRST,
@@ -238,9 +238,11 @@ public class NativeImageDefaultUiTest {
         page.frameLocator("iframe.epub-frame").getByText(EPUB_LAST,
                 new FrameLocator.GetByTextOptions().setExact(true)).waitFor();
         page.waitForCondition(() -> page.url().contains("chapter=1"));
+        RawEpubReadiness.waitFor(page);
         page.reload();
         page.frameLocator("iframe.epub-frame").getByText(EPUB_LAST,
                 new FrameLocator.GetByTextOptions().setExact(true)).waitFor();
+        RawEpubReadiness.waitFor(page);
         assertFalse(page.frameLocator("iframe.epub-frame").locator("body").innerText().contains("\ufffd"));
     }
 

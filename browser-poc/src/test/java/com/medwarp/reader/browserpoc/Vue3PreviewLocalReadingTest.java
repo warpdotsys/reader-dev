@@ -376,7 +376,7 @@ public class Vue3PreviewLocalReadingTest {
 
     private static void verifyRawScrollRestore(Page page, String bookUrl) {
         // This evaluates only our generated fixture in a dedicated test browser, never personal tabs.
-        page.waitForCondition(() -> !"true".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+        RawEpubReadiness.waitFor(page);
         String key = (String) page.evaluate("url => { const owner = localStorage.getItem('reader_username')"
                 + " || sessionStorage.getItem('reader_username') || 'default';"
                 + "return 'reader-epub-progress-' + encodeURIComponent(JSON.stringify([owner,url])); }", bookUrl);
@@ -476,8 +476,7 @@ public class Vue3PreviewLocalReadingTest {
     }
 
     private static void waitRawReady(Page page) {
-        page.locator("iframe.epub-frame").waitFor();
-        page.waitForCondition(() -> "false".equals(page.locator("iframe.epub-frame").getAttribute("aria-busy")));
+        RawEpubReadiness.waitFor(page);
     }
 
     /** Same legacy index, actual Router query navigation + native history; no mocked response. */

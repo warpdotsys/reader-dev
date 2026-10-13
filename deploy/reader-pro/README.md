@@ -1,5 +1,9 @@
 # Production deployment
 
+当前原版 EPUB 测试已加强文档就绪判据，但授权大书首次解压仍超时，不能部署；新测试提交必须独立经过托管流水线。[实测、已知问题与回退](../../docs/EPUB-FRAME-READINESS-2026-10-13.md)。
+
+最新 `e31` 四托管全验收，但授权大书刷新仍未通过；8KiB实验已撤回，不得作为修复部署。[准确产物、失败证据与回退](../../docs/EPUB-ALLOCATION-TRIAL-2026-10-13.md)。
+
 当前仍是候选验收阶段，不得以旧托管绿灯部署新源码；[导入生命周期候选、已知大 EPUB 刷新超时及回退](../../docs/BOOKSHELF-IMPORT-LIFECYCLE-2026-10-13.md)。
 
 `reader-pro-restored` runs beside the existing Reader container and binds only

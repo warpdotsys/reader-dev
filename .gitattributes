@@ -56,3 +56,18 @@ docs/evidence/epub-terminal-release-hosted-2026-10-13.json -text
 docs/evidence/epub-terminal-release-real-reader-2026-10-13.json -text
 docs/evidence/generated-upload-memory-2026-10-13.json -text
 docs/evidence/import-lifecycle-local-reader-2026-10-13.json -text
+docs/evidence/import-lifecycle-real-reader-2026-10-13.json -text
+docs/evidence/e31-hosted-acceptance-2026-10-13.json -text
+docs/evidence/epub-allocation-trial-rejected-2026-10-13.json -text
+docs/evidence/epub-worker-handoff-2026-10-13.json -text
+docs/evidence/epub-handoff-comparison-unreached-2026-10-13.json -text
+docs/evidence/epub-main-handoff-incomplete-2026-10-13.json -text
+
+# Preserve these finite negative/readiness receipts and the shared test predicate.
+docs/evidence/epub-disk-storage-negative-2026-10-13.json -text
+docs/evidence/native-deflate-worker-capability-2026-10-13.json -text
+docs/evidence/native-deflate-reader-trial-2026-10-13.json -text
+docs/evidence/native-deflate-trial-rejected-2026-10-13.json -text
+docs/evidence/epub-generated-readiness-2026-10-13.json -text
+docs/evidence/epub-authorized-readiness-unreached-2026-10-13.json -text
+browser-poc/src/test/resources/epub-frame-readiness.js text eol=lf

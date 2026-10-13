@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "scope": "temporary exact-worker console timing diagnostics; not official Reader acceptance",
+  "sourceRevision": "e31c70bb0cf5dcea13d7c96f5839544855a92da3",
+  "sourceJarSha256": "7d75741541d249bf93637cc3057f5d26dd31ba7581dda5927f16aeefa424b811",
+  "diagnosticJarSha256": "3f87c233abc401941651a30d571ed01113567e3446754f1a0d285389480023e7",
+  "diagnosticJarBindingSha256": "459361966bc19f05cd1d9276f82996f0234af207141c55c92b4e7a075ec5589e",
+  "originalWorkerSha256": "59ebfb6aec769cdda4401f5efa7cb62a88f6a9e0d9bcfcbf7d7e8077464ed9f1",
+  "diagnosticWorkerSha256": "7334f2a48f8c1fb7e4a73b91edd522d290bd10ee0093944b3dbfe4dfac1a525b",
+  "onlyWorkerContentChanged": true,
+  "originalDecodedAllResourceNamesAndBytesMatchedInVm": true,
+  "originalPostMessageProtocolUnchanged": true,
+  "temporaryJarIsFormalArtifact": false,
+  "productionChanged": false,
+  "productFilesChanged": false,
+  "afRouteAttempt": {
+    "rawReportSha256": "4d6e73c246a91e758541251e4ab47c7fbed0b1c304008849af625448cf0b2cad",
+    "routeOverlayActuallyApplied": false,
+    "workerConsoleTraceRecords": 0,
+    "diagnosticTimingAccepted": false,
+    "successfulReadingCount": 4,
+    "failure": "visible iframe wait timeout; not a Worker timing conclusion"
+  },
+  "agPackedAttempt": {
+    "rawReportSha256": "8ba1833c7acc744017ae2481023937462cb4c709a0f5b572bd229eeffd01fdb4",
+    "routeOrHttpCachePolicyModified": false,
+    "successfulReadingCount": 6,
+    "requiredCount": 8,
+    "readingParityAccepted": false,
+    "failedCheck": "refresh innerText SHA equality",
+    "workerTimeoutVisible": false,
+    "iframeVisibleAtFailure": true,
+    "workerConsoleTraceErrors": 0,
+    "workerTimings": [
+      {
+        "readerStage": "uiRaw806",
+        "decodeMilliseconds": 2241,
+        "postMessageCallMilliseconds": 27,
+        "consoleReceiptGapAfterDecodedMilliseconds": 12188,
+        "workerConsoleStagesObserved": [
+          "booted",
+          "input",
+          "decoded",
+          "posted",
+          "closing"
+        ]
+      },
+      {
+        "readerStage": "uiRaw805Refresh",
+        "decodeMilliseconds": 3116,
+        "postMessageCallMilliseconds": 65,
+        "consoleReceiptGapAfterDecodedMilliseconds": 3948,
+        "workerConsoleStagesObserved": [
+          "booted",
+          "input",
+          "decoded",
+          "posted",
+          "closing"
+        ]
+      }
+    ],
+    "memoryPeakBytes": 1623842816,
+    "highEvents": 131485,
+    "pidsPeak": 247,
+    "seconds": 114.659
+  },
+  "consoleReceiptGapIsReaderResultMessageLatency": false,
+  "uniqueRootCauseProven": false,
+  "aggregateCpuCount": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapMaxBytes": 0,
+  "workerDeadlineSeconds": 15,
+  "downloadDeadlineSeconds": 60,
+  "privateTextsNamesOrBookHashesPublished": false,
+  "otherPrivateBooksRead": 0,
+  "realCredentialsImported": false,
+  "ownedInstancesStopped": true,
+  "temporaryInputCopiesDeleted": 8,
+  "temporaryInputBytesDeleted": 75672243,
+  "directoriesRecursivelyDeleted": false,
+  "sourceJarsAndAllDiagnosticReportsRetained": true,
+  "rollback": "stop diagnostic instance and run the retained unmodified 7d hosted JAR",
+  "limitations": [
+    "Temporary Worker logging can perturb scheduling; not an unmodified Reader performance or acceptance claim.",
+    "Worker internal time and host console event reception are separate clocks/channels.",
+    "postMessage returning does not prove the Reader onmessage handler has processed data.",
+    "Different refresh hashes are still a failure; wrong chapter versus rendered-text/layout cause is not established.",
+    "Prior official-JAR hard-refresh timeouts remain uncleared."
+  ]
+}

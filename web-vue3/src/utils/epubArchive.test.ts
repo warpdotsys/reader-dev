@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { zipSync, strToU8, Zip, ZipDeflate } from 'fflate'
+import { zipSync, strToU8, Zip, ZipDeflate, Unzip } from 'fflate'
 import { expandEpubArchive, readEpubResponse, EPUB_ARCHIVE_LIMITS, EpubDownloadBuffer } from './epubArchive.ts'
 
 const small = { ...EPUB_ARCHIVE_LIMITS, entryBytes: 1000, textBytes: 1000, expandedBytes: 2000 }
@@ -104,6 +104,42 @@ test('EPUB ZIP：不信任低报的中央/本地大小，不能静默截断正�
     if (sig === 0x02014b50) view.setUint32(index + 24, 16, true)
   }
   assert.throws(() => expandEpubArchive(bytes), /实际解压量超过声明/)
+})
+
+test('EPUB ZIP：跨多个输入块的32MiB高压缩率条目低报为16字节，在首个有界输出拒绝', () => {
+  const bytes = zipSync({ 'generated.bin': new Uint8Array(32 * 1024 * 1024).fill(0x55) }, { level: 6 })
+  assert.ok(bytes.length > 8192 * 2 && bytes.length < 65536)
+  const view = new DataView(bytes.buffer)
+  let locals = 0, centrals = 0
+  for (let index = 0; index + 46 <= bytes.length; index++) {
+    const signature = view.getUint32(index, true)
+    if (signature === 0x04034b50) { view.setUint32(index + 22, 16, true); locals++ }
+    if (signature === 0x02014b50) { view.setUint32(index + 24, 16, true); centrals++ }
+  }
+  assert.equal(locals, 1)
+  assert.equal(centrals, 1)
+  const register = Unzip.prototype.register
+  const chunks: number[] = []
+  Unzip.prototype.register = function (Decoder) {
+    class Observed extends Decoder {
+      constructor(...args: ConstructorParameters<typeof Decoder>) {
+        super(...args)
+        let downstream: InstanceType<typeof Decoder>['ondata']
+        const ondata: typeof downstream = (error, data, final) => {
+          if (data?.length) chunks.push(data.length)
+          downstream(error, data, final)
+        }
+        Object.defineProperty(this, 'ondata', { get: () => ondata, set: value => { downstream = value } })
+      }
+    }
+    return register.call(this, Observed)
+  }
+  try {
+    assert.throws(() => expandEpubArchive(bytes), /实际解压量超过声明/)
+    assert.equal(chunks.length, 1)
+    // 最小长度/距离编码的高比率上界；不是承诺库的所有临时分配等于输出大小。
+    assert.ok(chunks[0] > 16 && chunks[0] <= 8192 * 1032 + 258)
+  } finally { Unzip.prototype.register = register }
 })
 
 test('EPUB ZIP：本地与中央不一致、重复解码路径和越界路径拒绝', () => {
