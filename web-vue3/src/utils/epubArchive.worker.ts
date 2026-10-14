@@ -10,6 +10,9 @@ scope.onmessage = event => {
   try {
     scope.postMessage({ phase: 'expanding' }, [])
     const files = [...expandEpubArchive(new Uint8Array(event.data))]
+    // Separate completed decoding from structured transfer without exposing
+    // resource names/content or extending the original total deadline.
+    scope.postMessage({ phase: 'transferring' }, [])
     scope.postMessage({ files }, files.map(([, data]) => data.buffer as ArrayBuffer))
   } catch (error) {
     const detail = error instanceof Error ? error.message : ''

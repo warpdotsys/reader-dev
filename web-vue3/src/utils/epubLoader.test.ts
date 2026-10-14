@@ -198,6 +198,7 @@ for (const directory of [true, false]) {
       postMessage(data: ArrayBuffer) {
         queueMicrotask(() => {
           this.onmessage?.({ data: { phase: 'expanding' } } as MessageEvent)
+          this.onmessage?.({ data: { phase: 'transferring' } } as MessageEvent)
           this.onmessage?.({ data: { files: [...expandEpubArchive(new Uint8Array(data))] } } as MessageEvent)
         })
       }

@@ -16,8 +16,8 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
   return new Promise((resolve, reject) => {
     const worker = createWorker()
     let finished = false
-    let phase: 'starting' | 'ready' | 'expanding' = 'starting'
-    const phaseText = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件' }
+    let phase: 'starting' | 'ready' | 'expanding' | 'transferring' = 'starting'
+    const phaseText = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件', transferring: '等待解压结果传递' }
     const timer = setTimeout(() => finish(new Error(
       `EPUB 解压超时（15 秒；阶段：${phaseText[phase]}），已终止原版排版加载`)), timeoutMs)
     const abort = () => finish(new DOMException('EPUB 加载已取消', 'AbortError'))
@@ -49,15 +49,16 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
         // 阶段确认不是结果，也不能重启/延长计时器；拒绝混合、重复或逆序协议。
         if (Object.keys(reply).length !== 1
           || !((phase === 'starting' && reply.phase === 'ready')
-            || (phase === 'ready' && reply.phase === 'expanding'))) {
+            || (phase === 'ready' && reply.phase === 'expanding')
+            || (phase === 'expanding' && reply.phase === 'transferring'))) {
           finish(new Error('EPUB 解压 Worker 返回无效阶段')); return
         }
-        phase = reply.phase as 'ready' | 'expanding'
+        phase = reply.phase as 'ready' | 'expanding' | 'transferring'
         if (phase === 'ready') sendInput()
         return
       }
       if (typeof reply?.error === 'string') { finish(new Error(reply.error)); return }
-      if (phase !== 'expanding' || !Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
+      if (phase !== 'transferring' || !Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
         && typeof entry[0] === 'string' && entry[1] instanceof Uint8Array)) {
         finish(new Error('EPUB 解压 Worker 返回无效数据')); return
       }

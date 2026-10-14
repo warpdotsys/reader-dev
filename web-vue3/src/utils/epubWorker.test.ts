@@ -25,6 +25,7 @@ test('EPUB Worker：输入/输出保持完整，成功后终止并清除回调',
   assert.equal(fixture.sent, input.buffer)
   assert.deepEqual(fixture.transferred, [input.buffer])
   fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+  fixture.worker.onmessage!({ data: { phase: 'transferring' } } as MessageEvent)
   fixture.worker.onmessage!({ data: { files: [['a', new Uint8Array([7])]] } } as MessageEvent)
   assert.deepEqual((await result).get('a'), new Uint8Array([7]))
   assert.equal(fixture.terminated, 1)
@@ -83,7 +84,7 @@ test('EPUB Worker：固定阶段确认不完成任务，最终文件与转移协
   const result = expandEpubInWorker(input, undefined, () => fixture.worker)
   void result.then(() => { completed = true })
   assert.equal(fixture.sentCount, 0)
-  for (const phase of ['ready', 'expanding']) {
+  for (const phase of ['ready', 'expanding', 'transferring']) {
     fixture.worker.onmessage!({ data: { phase } } as MessageEvent)
     await Promise.resolve()
     assert.equal(completed, false)
@@ -97,18 +98,19 @@ test('EPUB Worker：固定阶段确认不完成任务，最终文件与转移协
   assert.equal(fixture.terminated, 1)
 })
 
-for (const targetPhase of ['starting', 'ready', 'expanding'] as const) {
+for (const targetPhase of ['starting', 'ready', 'expanding', 'transferring'] as const) {
   test(`EPUB Worker：${targetPhase} 阶段仍在原总期限结束，不重置超时`, async t => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
     const fixture = fixtureWorker()
     const result = expandEpubInWorker(new Uint8Array(), undefined, () => fixture.worker)
-    const expected = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件' }
+    const expected = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件', transferring: '等待解压结果传递' }
     const observed = assert.rejects(result, new RegExp(`解压超时.*阶段：${expected[targetPhase]}`))
     t.mock.timers.tick(14998)
     assert.equal(fixture.sentCount, 0)
     if (targetPhase !== 'starting') fixture.worker.onmessage!({ data: { phase: 'ready' } } as MessageEvent)
     t.mock.timers.tick(1)
-    if (targetPhase === 'expanding') fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+    if (targetPhase === 'expanding' || targetPhase === 'transferring') fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+    if (targetPhase === 'transferring') fixture.worker.onmessage!({ data: { phase: 'transferring' } } as MessageEvent)
     assert.equal(fixture.terminated, 0)
     t.mock.timers.tick(1)
     await observed
@@ -125,6 +127,10 @@ test('EPUB Worker：未知、混合、逆序和重复阶段拒绝，不能伪报
     [{ phase: 'ready', files: [] }], [{ phase: 'ready', error: 'generated' }],
     [{ phase: 'ready' }, { phase: 'ready' }],
     [{ phase: 'ready' }, { phase: 'expanding' }, { phase: 'ready' }],
+    [{ phase: 'transferring' }], [{ phase: 'ready' }, { phase: 'transferring' }],
+    [{ phase: 'ready' }, { phase: 'expanding' }, { phase: 'transferring', files: [] }],
+    [{ phase: 'ready' }, { phase: 'expanding' }, { phase: 'transferring' }, { phase: 'transferring' }],
+    [{ phase: 'ready' }, { phase: 'expanding' }, { phase: 'transferring' }, { phase: 'expanding' }],
   ]) {
     const fixture = fixtureWorker()
     const result = expandEpubInWorker(new Uint8Array(), undefined, () => fixture.worker)
@@ -149,6 +155,7 @@ test('EPUB Worker：未 ready 前既不排入整本输入，也不复制子视�
   assert.equal(copies, 1)
   assert.deepEqual(new Uint8Array(fixture.sent!), new Uint8Array([80, 75]))
   fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+  fixture.worker.onmessage!({ data: { phase: 'transferring' } } as MessageEvent)
   fixture.worker.onmessage!({ data: { files: [] } } as MessageEvent)
   assert.deepEqual(await result, new Map())
 })
@@ -195,21 +202,22 @@ test('EPUB Worker：实际转移只在 ready 后分离独占输入，成功不�
   assert.equal(input.byteLength, 0)
   assert.deepEqual(new Uint8Array(received!), new Uint8Array([80, 75]))
   fixture.worker.onmessage!({ data: { phase: 'expanding' } } as MessageEvent)
+  fixture.worker.onmessage!({ data: { phase: 'transferring' } } as MessageEvent)
   fixture.worker.onmessage!({ data: { files: [] } } as MessageEvent)
   await result
   assert.equal(fixture.terminated, 1)
   assert.equal(fixture.worker.onmessage, null)
 })
 
-test('EPUB Worker：ready 之前或未确认 expanding 的结果不能伪报成功', async () => {
-  for (const ready of [false, true]) {
+test('EPUB Worker：未确认解压完成的结果不能伪报成功', async () => {
+  for (const phases of [[], ['ready'], ['ready', 'expanding']]) {
     const fixture = fixtureWorker()
     const result = expandEpubInWorker(new Uint8Array([80, 75]), undefined, () => fixture.worker)
     const observed = assert.rejects(result, /无效数据/)
-    if (ready) fixture.worker.onmessage!({ data: { phase: 'ready' } } as MessageEvent)
+    for (const phase of phases) fixture.worker.onmessage!({ data: { phase } } as MessageEvent)
     fixture.worker.onmessage!({ data: { files: [] } } as MessageEvent)
     await observed
-    assert.equal(fixture.sentCount, ready ? 1 : 0)
+    assert.equal(fixture.sentCount, phases.length ? 1 : 0)
     assert.equal(fixture.terminated, 1)
   }
 })
@@ -228,4 +236,21 @@ test('EPUB Worker：重复 ready 拒绝且不二次转移已分离的输入', as
   await observed
   assert.equal(fixture.sentCount, 1)
   assert.equal(fixture.terminated, 1)
+})
+
+test('EPUB Worker：结果传递阶段取消后迟到结果不能重建旧文档', async () => {
+  const fixture = fixtureWorker()
+  const controller = new AbortController()
+  const result = expandEpubInWorker(new Uint8Array([80, 75]), controller.signal, () => fixture.worker)
+  for (const phase of ['ready', 'expanding', 'transferring']) {
+    fixture.worker.onmessage!({ data: { phase } } as MessageEvent)
+  }
+  const lateReply = fixture.worker.onmessage!
+  const observed = assert.rejects(result, { name: 'AbortError' })
+  controller.abort()
+  lateReply({ data: { files: [['generated', new Uint8Array([1])]] } } as MessageEvent)
+  await observed
+  assert.equal(fixture.sentCount, 1)
+  assert.equal(fixture.terminated, 1)
+  assert.equal(fixture.worker.onmessage, null)
 })

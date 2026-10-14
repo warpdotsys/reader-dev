@@ -1,0 +1,77 @@
+{
+  "scope": "accurate f6/c76 Docker server B: four of eight rejected, distinct from prior refresh download failure",
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "imageRevision": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+  "accepted": false,
+  "completedScenes": 4,
+  "requiredScenes": 8,
+  "uiWorkerExpandingTimeout": true,
+  "fullDownloadAccepted": true,
+  "transfers": [
+    {
+      "kind": "selected-path-check",
+      "httpStatus": 200,
+      "responseBodyBytes": 302,
+      "headersDurationMs": 10.325000000000001,
+      "bodyDurationMs": 0.0820273437499992
+    },
+    {
+      "kind": "selected-file-download",
+      "httpStatus": 200,
+      "responseBodyBytes": 37809796,
+      "headersDurationMs": 8.314,
+      "bodyDurationMs": 265.789916015625
+    }
+  ],
+  "budget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryPeakBytes": 1612689408,
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "memoryEvents": {
+      "low": 0,
+      "high": 16131,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 2219
+    },
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "seconds": 69.703,
+  "cleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1",
+      "ActiveState": "failed",
+      "SubState": "failed"
+    },
+    "ownedContainersRemaining": 0,
+    "generatedFilesRemoved": 1688,
+    "generatedBytesRemoved": 88175793,
+    "bookCopyRemoved": true,
+    "bookCopyBytesRemoved": 37809796,
+    "generatedDataRemoved": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false,
+    "privateBodiesReadForCleanup": false
+  },
+  "privateBodiesOrNamesOrBodyHashesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false,
+  "receiptSha256": {
+    "observation": "09b71b359a0b5d93e9f7ca3544e627a8b3593da841136583f234845cf35a8a57",
+    "provenance": "beb3e4ea7ae6d1c79f5e9216450e506a9fe2eb93ca6aa21ea04e2c683bf7940f",
+    "launch": "f746d5d772cfd8e0090c8627572ceaba33ceb64686029b86708e1d3b1a7b1aa7",
+    "cleanup": "2318f25f3646aa05e66149b06a4a2759fbca7d383dc2798262d1a5048f55648c"
+  }
+}

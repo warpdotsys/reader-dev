@@ -1,0 +1,66 @@
+{
+  "scope": "same f6 artifact local OCI diagnostic, not server or formal whole-image acceptance",
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "imageRevision": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "imageId": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+  "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+  "eightFrozenScenesIndependentlyAccepted": true,
+  "realUiLoginAndReloginAccepted": true,
+  "requestedChapterHeadingAndStrictBodyComparisonAccepted": true,
+  "privateBodiesOrBodyHashesPublished": false,
+  "seconds": 75.757,
+  "memoryPeakBytes": 1619337216,
+  "memoryEvents": {
+    "low": 0,
+    "high": 71173,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "transfers": [
+    {
+      "requestId": 1,
+      "kind": "selected-path-check",
+      "phase": "uiRaw806",
+      "httpStatus": 200,
+      "responseBodyBytes": 302,
+      "bodyDurationMs": 0.05677734374999943,
+      "headersDurationMs": 49.072,
+      "observedRequestToFinishedMs": 135
+    },
+    {
+      "requestId": 2,
+      "kind": "selected-file-download",
+      "phase": "uiRaw806",
+      "httpStatus": 200,
+      "responseBodyBytes": 37809796,
+      "bodyDurationMs": 386.473939453125,
+      "headersDurationMs": 33.054,
+      "observedRequestToFinishedMs": 531
+    },
+    {
+      "requestId": 3,
+      "kind": "selected-path-check",
+      "phase": "uiRaw805Refresh",
+      "httpStatus": 200,
+      "responseBodyBytes": 302,
+      "bodyDurationMs": 0.046072265624999886,
+      "headersDurationMs": 14.558999999999997,
+      "observedRequestToFinishedMs": 10
+    },
+    {
+      "requestId": 4,
+      "kind": "selected-file-download",
+      "phase": "uiRaw805Refresh",
+      "httpStatus": 200,
+      "responseBodyBytes": 37809796,
+      "bodyDurationMs": 11189.11603515625,
+      "headersDurationMs": 2.0600000000000005,
+      "observedRequestToFinishedMs": 12965
+    }
+  ],
+  "serverSixOfEightFailureResolved": false,
+  "productionChanged": false,
+  "fullGoalComplete": false
+}
