@@ -194,12 +194,21 @@ for (const directory of [true, false]) {
     class FixtureWorker implements EpubArchiveWorker {
       onmessage: EpubArchiveWorker['onmessage'] = null
       onerror: EpubArchiveWorker['onerror'] = null
+      private completed: { entries: number; bytes: number } | null = null
       constructor() { queueMicrotask(() => this.onmessage?.({ data: { phase: 'ready' } } as MessageEvent)) }
-      postMessage(data: ArrayBuffer) {
+      postMessage(data: Parameters<EpubArchiveWorker['postMessage']>[0]) {
+        if (!(data instanceof ArrayBuffer)) {
+          assert.equal(data.batchAccepted, 0)
+          assert.ok(this.completed)
+          queueMicrotask(() => this.onmessage?.({ data: { complete: true, ...this.completed } } as MessageEvent))
+          return
+        }
         queueMicrotask(() => {
           this.onmessage?.({ data: { phase: 'expanding' } } as MessageEvent)
           this.onmessage?.({ data: { phase: 'transferring' } } as MessageEvent)
-          this.onmessage?.({ data: { files: [...expandEpubArchive(new Uint8Array(data))] } } as MessageEvent)
+          const files = [...expandEpubArchive(new Uint8Array(data))]
+          this.completed = { entries: files.length, bytes: files.reduce((n, [, bytes]) => n + bytes.byteLength, 0) }
+          this.onmessage?.({ data: { batch: 0, files } } as MessageEvent)
         })
       }
       terminate() { this.onmessage = this.onerror = null }

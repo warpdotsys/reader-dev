@@ -1,8 +1,11 @@
 /** 专用单 Worker：转移输入/输出，不在主线程同步解压整本书；终止和超时统一收尾。 */
+import { EPUB_ARCHIVE_LIMITS } from './epubArchive.ts'
+import { EPUB_TRANSFER_BATCH_BYTES, EPUB_TRANSFER_BATCH_ENTRIES, type EpubTransferAck } from './epubTransfer.ts'
+
 export interface EpubArchiveWorker {
   onmessage: ((event: MessageEvent) => void) | null
   onerror: ((event: ErrorEvent) => void) | null
-  postMessage: (value: ArrayBuffer, transfer: Transferable[]) => void
+  postMessage: (value: ArrayBuffer | EpubTransferAck, transfer: Transferable[]) => void
   terminate: () => void
 }
 
@@ -16,6 +19,9 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
   return new Promise((resolve, reject) => {
     const worker = createWorker()
     let finished = false
+    const received = new Map<string, Uint8Array>()
+    let sequence = 0
+    let receivedBytes = 0
     let phase: 'starting' | 'ready' | 'expanding' | 'transferring' = 'starting'
     const phaseText = { starting: '等待 Worker 启动', ready: '等待接收文件', expanding: '解压文件', transferring: '等待解压结果传递' }
     const timer = setTimeout(() => finish(new Error(
@@ -28,7 +34,7 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
       signal?.removeEventListener('abort', abort)
       worker.onmessage = worker.onerror = null
       worker.terminate()
-      if (error) reject(error)
+      if (error) { received.clear(); reject(error) }
       else resolve(files!)
     }
     function sendInput() {
@@ -44,7 +50,8 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
     }
     worker.onmessage = event => {
       if (finished) return
-      const reply = event.data as { phase?: unknown; files?: [string, Uint8Array][]; error?: string }
+      const reply = event.data as { phase?: unknown; batch?: unknown; files?: unknown; error?: string;
+        complete?: unknown; entries?: unknown; bytes?: unknown }
       if (reply && typeof reply === 'object' && 'phase' in reply) {
         // 阶段确认不是结果，也不能重启/延长计时器；拒绝混合、重复或逆序协议。
         if (Object.keys(reply).length !== 1
@@ -58,11 +65,46 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
         return
       }
       if (typeof reply?.error === 'string') { finish(new Error(reply.error)); return }
-      if (phase !== 'transferring' || !Array.isArray(reply?.files) || !reply.files.every(entry => Array.isArray(entry)
-        && typeof entry[0] === 'string' && entry[1] instanceof Uint8Array)) {
+      if (phase !== 'transferring' || !reply || typeof reply !== 'object') {
         finish(new Error('EPUB 解压 Worker 返回无效数据')); return
       }
-      finish(undefined, new Map(reply.files))
+      if ('complete' in reply) {
+        if (Object.keys(reply).length !== 3 || reply.complete !== true
+          || reply.entries !== received.size || reply.bytes !== receivedBytes) {
+          finish(new Error('EPUB 解压 Worker 返回无效数据')); return
+        }
+        finish(undefined, received)
+        return
+      }
+      if (Object.keys(reply).length !== 2 || reply.batch !== sequence || !Array.isArray(reply.files)
+        || !reply.files.length || reply.files.length > EPUB_TRANSFER_BATCH_ENTRIES) {
+        finish(new Error('EPUB 解压 Worker 返回无效数据')); return
+      }
+      const names = new Set<string>()
+      let batchBytes = 0
+      for (const entry of reply.files) {
+        if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== 'string' || !entry[0]
+          || !(entry[1] instanceof Uint8Array) || !(entry[1].buffer instanceof ArrayBuffer)
+          || entry[1].byteOffset !== 0 || entry[1].byteLength !== entry[1].buffer.byteLength
+          || received.has(entry[0]) || names.has(entry[0])) {
+          finish(new Error('EPUB 解压 Worker 返回无效数据')); return
+        }
+        const limit = /\.(xml|opf|ncx|x?html?|css)$/i.test(entry[0])
+          ? EPUB_ARCHIVE_LIMITS.textBytes : EPUB_ARCHIVE_LIMITS.entryBytes
+        if (entry[1].byteLength > limit) { finish(new Error('EPUB 解压 Worker 资源超过原版排版上限')); return }
+        names.add(entry[0])
+        batchBytes += entry[1].byteLength
+      }
+      if ((reply.files.length > 1 && batchBytes > EPUB_TRANSFER_BATCH_BYTES)
+        || received.size + names.size > EPUB_ARCHIVE_LIMITS.entries
+        || receivedBytes + batchBytes > EPUB_ARCHIVE_LIMITS.expandedBytes) {
+        finish(new Error('EPUB 解压 Worker 资源超过原版排版上限')); return
+      }
+      for (const [name, data] of reply.files as [string, Uint8Array][]) received.set(name, data)
+      receivedBytes += batchBytes
+      sequence++
+      try { worker.postMessage({ batchAccepted: sequence - 1 }, []) }
+      catch (error) { finish(error instanceof Error ? error : new Error('EPUB Worker 结果确认失败')) }
     }
     worker.onerror = event => { event.preventDefault(); finish(new Error('EPUB 解压 Worker 运行失败')) }
     signal?.addEventListener('abort', abort, { once: true })
