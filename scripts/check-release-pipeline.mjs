@@ -27,6 +27,8 @@ for (const path of ['build.gradle.kts', 'cli.gradle', 'web-vue3/**', 'web/packag
   }
 }
 const nativeSmoke = read('scripts/smoke-native-release.sh')
+const pressureSmoke = read('scripts/smoke-native-epub-pressure.sh')
+const pressureRunner = read('scripts/epub-pressure/runner.py')
 const nativeTls = read('scripts/smoke-native-tls.sh')
 const nativeImporter = read('scripts/import-native-release.sh')
 const browserWorkflow = read('.github/workflows/browser-image.yml')
@@ -371,6 +373,32 @@ for (const token of ['self-hosted', 'setup-qemu', 'docker push', 'docker/login-a
 }
 const smokeCall = nativeBuild.indexOf('bash scripts/smoke-native-release.sh')
 const archiveExport = nativeBuild.indexOf('docker save ')
+for (const [stage, content] of [['built', nativeBuild], ['transferred', nativeTransfer]]) {
+  const invocation = `run: bash scripts/smoke-native-epub-pressure.sh '\${{ matrix.arch }}' '\${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" ${stage} build/epub-pressure-${stage}-\${{ matrix.arch }}.json`
+  const calls = content.split('\n').filter(line => line.trim() === invocation)
+  const pressureCall = content.indexOf('bash scripts/smoke-native-epub-pressure.sh')
+  if (calls.length !== 1 || pressureCall < content.indexOf('bash scripts/smoke-native-release.sh') ||
+      (stage === 'built' && pressureCall >= archiveExport)) {
+    throw new Error('large EPUB pressure gate must execute sequentially and fail closed before exporting an image or accepting transfer')
+  }
+  if (!content.includes(`path: build/epub-pressure-${stage}-\${{ matrix.arch }}.json`) ||
+      !content.includes(`name: reader-epub-pressure-${stage}-\${{ matrix.arch }}-\${{ github.sha }}`)) {
+    throw new Error('large EPUB pressure gate must preserve generated failure evidence separately from publisher artifacts')
+  }
+}
+for (const path of ['scripts/smoke-native-epub-pressure.sh', 'scripts/epub-pressure/**', 'src/test/python/generated_epub_pressure*_test.py']) {
+  if (!nativePrPathLines.includes(`- '${path}'`)) throw new Error('native PR trigger must cover large EPUB pressure inputs')
+}
+for (const token of ['set -euo pipefail', 'test "${GITHUB_ACTIONS:-}" = true',
+  'sudo -n -- "$(command -v python3)" scripts/epub-pressure/runner.py',
+  'python3 scripts/epub-pressure/verify.py "$report"', '--work-root "$RUNNER_TEMP"', '--jar-sha "$jar_sha"']) {
+  if (!pressureSmoke.includes(token)) throw new Error('large EPUB pressure gate must preserve exact identity and hosted fail-closed execution')
+}
+if (/\|\|\s*(?:true|echo)\b/.test(pressureSmoke) || !pressureRunner.includes("range(3)") ||
+    !pressureRunner.includes("'MemoryHigh=1610612736', 'MemoryMax=2147483648', 'MemorySwapMax=0', 'TasksMax=512'") ||
+    !pressureRunner.includes("'--network=none'") || !pressureRunner.includes("'--cgroup-parent', parent")) {
+  throw new Error('large EPUB pressure gate must keep three rounds and the aggregate offline budget')
+}
 const browserSmoke = nativeSmoke.indexOf('python3 scripts/smoke-local-webview.py')
 const budgetCheck = nativeSmoke.indexOf('scripts/report-browser-cgroup.py')
 const asyncReaderCheck = nativeSmoke.indexOf('python3 scripts/verify-reader-async-smoke.py')

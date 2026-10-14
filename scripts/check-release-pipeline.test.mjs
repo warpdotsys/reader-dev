@@ -13,12 +13,29 @@ const fixtureFiles = [
   '.github/workflows/release-native.yml', 'scripts/smoke-native-release.sh',
   'scripts/import-native-release.sh',
   'scripts/smoke-native-tls.sh',
+  'scripts/smoke-native-epub-pressure.sh', 'scripts/epub-pressure/runner.py',
   '.github/workflows/browser-image.yml', '.github/workflows/vue3-preview.yml',
   '.github/workflows/artifact-download-regression.yml',
   'deploy/reader-pro/compose.production.yaml', 'deploy/reader-pro/Dockerfile',
   'deploy/reader-pro/base-images.lock',
   'deploy/reader-pro/docker-entrypoint.sh',
 ]
+
+for (const [label, file, change, pattern] of [
+  ['omitted large EPUB runtime gate', '.github/workflows/release-native.yml', text => text.replace('run: bash scripts/smoke-native-epub-pressure.sh', 'run: echo omitted-pressure'), /large EPUB pressure gate/],
+  ['ignored large EPUB execution failure', '.github/workflows/release-native.yml', text => text.replace('built build/epub-pressure-built-${{ matrix.arch }}.json', 'built build/epub-pressure-built-${{ matrix.arch }}.json || true'), /large EPUB pressure gate/],
+  ['pressure validator omitted', 'scripts/smoke-native-epub-pressure.sh', text => text.replace('python3 scripts/epub-pressure/verify.py', 'echo omitted-consumer'), /large EPUB pressure gate/],
+  ['pressure budget widened', 'scripts/epub-pressure/runner.py', text => text.replace('MemoryMax=2147483648', 'MemoryMax=3221225472'), /large EPUB pressure gate/],
+  ['pressure source trigger omitted', '.github/workflows/release-native.yml', text => text.replace("      - 'scripts/epub-pressure/**'\n", ''), /native PR trigger.*pressure/],
+]) {
+  test(`rejects ${label}`, t => {
+    const input = fixture(t)
+    input.change(file, change)
+    const result = input.check()
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, pattern)
+  })
+}
 
 for (const [label, file, before] of [
   ['release project version validation', '.github/workflows/release.yml', 'node scripts/check-reader-version.mjs "$version"'],

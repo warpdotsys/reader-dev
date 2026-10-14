@@ -23,6 +23,9 @@ on:
       - 'scripts/release-native-artifacts*'
       - 'scripts/verify-release-manifest*'
       - 'scripts/smoke-native-release.sh'
+      - 'scripts/smoke-native-epub-pressure.sh'
+      - 'scripts/epub-pressure/**'
+      - 'src/test/python/generated_epub_pressure*_test.py'
       - 'scripts/smoke-native-tls.sh'
       - 'scripts/smoke-camoufox-tls.py'
       - 'scripts/verify-camoufox-tls.py'
@@ -260,6 +263,16 @@ jobs:
           test "$(docker image inspect --format '{{.Architecture}}' "reader-pro:camoufox-smoke-$ARCH")" = "$ARCH"
       - name: Run generated browser contracts under the release resource budget
         run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" built exported
+      - name: Execute three fresh default-image large EPUB UI rounds within the aggregate budget
+        run: bash scripts/smoke-native-epub-pressure.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" built build/epub-pressure-built-${{ matrix.arch }}.json
+      - name: Preserve generated large EPUB observations including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-epub-pressure-built-${{ matrix.arch }}-${{ github.sha }}
+          path: build/epub-pressure-built-${{ matrix.arch }}.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Export only the smoke-tested native image and record its byte provenance
         shell: bash
         run: |
@@ -333,6 +346,16 @@ jobs:
           cp imported/metadata.json transferred/metadata.json
       - name: Actually run the reloaded image with fresh generated accounts and storage
         run: bash scripts/smoke-native-release.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" transferred transferred
+      - name: Execute three fresh reloaded-image large EPUB UI rounds within the aggregate budget
+        run: bash scripts/smoke-native-epub-pressure.sh '${{ matrix.arch }}' '${{ needs.build-jar.outputs.version }}' "$GITHUB_SHA" transferred build/epub-pressure-transferred-${{ matrix.arch }}.json
+      - name: Preserve reloaded generated large EPUB observations including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-epub-pressure-transferred-${{ matrix.arch }}-${{ github.sha }}
+          path: build/epub-pressure-transferred-${{ matrix.arch }}.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve small round-trip evidence, not the image or private content
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

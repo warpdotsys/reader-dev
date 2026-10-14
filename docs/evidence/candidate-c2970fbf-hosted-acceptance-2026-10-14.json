@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "c2970fbfc0eba698fa332a344233d1bbdc689477",
+  "testedMergeSnapshot": "e06ea3b107c26579e41c033b6e1bbb3939e0bbcf",
+  "scope": "own four hosted workflows plus exact downloaded JAR and generated screenshots; not real-book or production acceptance",
+  "fourHostedWorkflowsIndependentlyAccepted": true,
+  "nativeSixHostedJobsAccepted": true,
+  "jarSha256": "012b12d407faa230990ac165af320f6c166141db81a81c0ffd6e6a7c3c89fb2d",
+  "jarBytes": 285683587,
+  "actualDownloadedJarAgainRehashed": true,
+  "nonVue3EntriesByteIdenticalToF6Baseline": true,
+  "epubWorkerSha256": "bdcf7d8fe3281ab59077774064c8d63c9e9b3740ce75c474a7f54d8e21793870",
+  "frontendTests": 380,
+  "actualChromiumTests": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "generatedLoginLayoutsAccepted": 14,
+  "camoufoxContracts": 24,
+  "jvmTests": 222,
+  "jvmExistingSkipped": 35,
+  "pythonTests": 779,
+  "pythonSkipped": 0,
+  "fullGeneratedUiSeconds": 11.489,
+  "fullGeneratedUiClientOutsideServerBudget": true,
+  "fullServerOnlyMemoryPeakBytes": 892219392,
+  "fullServerOnlyPidsPeak": 200,
+  "nativeMetadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "6.1.0",
+      "revision": "e06ea3b107c26579e41c033b6e1bbb3939e0bbcf",
+      "jarSha256": "012b12d407faa230990ac165af320f6c166141db81a81c0ffd6e6a7c3c89fb2d",
+      "archiveSha256": "8c5e875ce27a1e6319004f210d38d135f27d95f258252cf2d9242a66b90c5b15",
+      "imageId": "sha256:0298b97d5ca14af28ed2e43a8a46eb9ee56ca51169bd46dd3feb2ffca4789fb8"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "6.1.0",
+      "revision": "e06ea3b107c26579e41c033b6e1bbb3939e0bbcf",
+      "jarSha256": "012b12d407faa230990ac165af320f6c166141db81a81c0ffd6e6a7c3c89fb2d",
+      "archiveSha256": "fb562fc3836b4c479a4e968efd30399f2ddc04a73f6047dcd85d7ec5a62cfebc",
+      "imageId": "sha256:5f958f121cf2f666a0d9ee6c84855aab26dd44865d554218c09d3d9c39c4cccd"
+    }
+  },
+  "publicReceiptSha256": {
+    "java": "5b036b648779ecc5b62ebb2615aaa185d2fb8f2367dbd4c4b39d5893f0660e11",
+    "vue": "8a7b8d4661efeba327491d55acc96ed530685ca0fa84713296d173c789e5d903",
+    "full": "19caf8a5b7ee2488d901634f37fb43ff7490142f6387ab1da2d9e3a94f3cc275",
+    "native": "a9e6020cf551d6f77c770a7cbb6c1d88f23475f29dbe9967ad925faf828cf9da",
+    "jar": "3a0a2207739dd7ca5ac5335297ce19525fda5d3b4e57c8c5ca6dfd39d79c339b",
+    "visualReview": "672314e7ea111bda319ab9e42c6420df2c405455fa8d19ba2e4fb6861f640dc0"
+  },
+  "generatedLoginAndReadingScreenshotsActuallyReviewed": true,
+  "actualCurrentWholeImageServerAccepted": false,
+  "currentWholeImageLargeBookAccepted": false,
+  "currentWholeImageSoakAccepted": false,
+  "realSiteAuthenticationAccepted": false,
+  "branchMerged": false,
+  "tagOrReleaseCreated": false,
+  "productionChanged": false,
+  "goalComplete": false
+}
