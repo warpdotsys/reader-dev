@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 1,
+  "scope": "exact 678a dual-native 30-minute generated-only offline soaks",
+  "sourceRevision": "678a0d1cba8a92f1963127f81e0908d44e523201",
+  "testedMergeSnapshot": "ffa69b73d13565b391cc9a079df3d9a2a8373105",
+  "nativeRun": 38496598950,
+  "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+  "architectures": [
+    {
+      "runId": 38500836557,
+      "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38500836557",
+      "jobId": 115647145918,
+      "runnerName": "GitHub Actions 1000004907",
+      "runnerLabels": [
+        "ubuntu-24.04"
+      ],
+      "artifactId": 11866911412,
+      "artifactZipBytes": 12325,
+      "artifactZipSha256": "1b3a204aadf990e43d4a74bd8f17fba67f48228158df38f439065c97079a8aa5",
+      "artifactArchiveDigestLocallyRecomputed": true,
+      "allExtractedBytesMatchExactArchive": true,
+      "independentlyAcceptedRawReports": {
+        "accepted": true,
+        "scope": "bounded offline generated-data soak only",
+        "architecture": "amd64",
+        "nativeRun": 38496598950,
+        "sourceRevision": "678a0d1cba8a92f1963127f81e0908d44e523201",
+        "imageRevision": "ffa69b73d13565b391cc9a079df3d9a2a8373105",
+        "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+        "imageId": "sha256:ad53b6918e1f7e3af1fac77c7c76aef66df9f3b417c037bbeda1cf1edd148ba0",
+        "continuousSeconds": 1807.881,
+        "rounds": 153,
+        "lastRoundElapsedSeconds": 1807.881,
+        "successfulSearches": 620,
+        "memoryPeakBytes": 1004945408,
+        "pidsPeak": 211,
+        "maxObservedRequestSeconds": 15.63,
+        "quiescentMemoryChangeBytes": 64106496,
+        "preRemovalContainerStateObserved": true,
+        "independentPostRemovalInventoryObserved": true,
+        "memoryPolicy": {
+          "selection": "high-1536m",
+          "hostPreflightVerified": true,
+          "parentEarlyReclaimVerified": true,
+          "memoryHighBytes": 1610612736,
+          "parentPeakBytes": 1004961792,
+          "parentHighEvents": 0,
+          "parentCleanupVerified": true,
+          "defaultImageOrProductionPolicyChanged": false
+        },
+        "productionCapacityOrLeakAbsenceProven": false,
+        "fileSha256": {
+          "SOURCE_RUN.json": "b0f369ef90a87db0b1c633ecce32df6ec344f1b3c71d327d5e37e206f8657ad1",
+          "PRELOAD_IDENTITY.json": "25b6f892e7791657aa22fe9bb3f0116a99f3f352be0fe7a8e4897e15a0ccb4df",
+          "LOADED_IDENTITY.json": "cf93728de94feb8ad4a2255d9ef2aca106e1a2b1f0825b5cef5a1c3ef3229bf2",
+          "RUNNING_JAR_IDENTITY.json": "7869ca6fbd0aef844e52245a612ae754e432e9ce6540010c30833bfb1f43b535",
+          "SOAK_REPORT.json": "e2b523772fa62fcb8d74c06f0c0a405b9626553ca15a394750c4a0d138145fd5",
+          "SOAK_TRACE.jsonl": "1726f173edae9d48f806aca27fcc4ab9192927a31e6b6f75290fe11afb12443c",
+          "CONTAINER_STATE.json": "56ea92e3aa480be1cb3742893a51321ac104b831f135a382e4454fb7373bf0d3",
+          "CONTAINER_REMOVAL.json": "4c5e2363d5ab8eac3960ce2406662dce0160919d418c34d45033f6c145f3188d",
+          "MEMORY_HIGH_HOST_PREFLIGHT.json": "7a35977d3a3f7c4085bba5f82551014c2782de49a644777903e2ce7b196a75b7",
+          "MEMORY_HIGH_MEMBERSHIP.json": "27a49645b7346b22a302b07dd610a3b5223f7880957111d894bfc392f621d1e2",
+          "MEMORY_HIGH_PRESTART.json": "aa00e1c7953b266c1af60a55532702ce22041ed6987cf97133c94d8ca1586f78",
+          "MEMORY_HIGH_AFTER_SOAK.json": "10c4c8dd7e1bb8bc21c11507c1db35cf8b5857ee9fc3f2001e0981022576c05f",
+          "MEMORY_HIGH_FINAL.json": "10c4c8dd7e1bb8bc21c11507c1db35cf8b5857ee9fc3f2001e0981022576c05f",
+          "MEMORY_HIGH_CLEANUP.json": "36d585cad0db501fe09258e1830cee64063fd4f5d08e6aa74a72aca90783ead5"
+        }
+      },
+      "coldRequestSeconds": 3.2124592450000193,
+      "totalSeconds": 1868.663,
+      "faults": [
+        {
+          "kind": "navigationTimeout",
+          "failedReturnDataVerified": true,
+          "seconds": 7.382,
+          "ownedWorkerKilled": false,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 335884288,
+            "memoryPeakBytes": 884633600,
+            "pidsCurrent": 42,
+            "pidsPeak": 201,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        },
+        {
+          "kind": "scriptWatchdog",
+          "failedReturnDataVerified": true,
+          "seconds": 25.028,
+          "ownedWorkerKilled": false,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 337629184,
+            "memoryPeakBytes": 884633600,
+            "pidsCurrent": 42,
+            "pidsPeak": 201,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        },
+        {
+          "kind": "workerExit",
+          "failedReturnDataVerified": true,
+          "seconds": 2.202,
+          "ownedWorkerKilled": true,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 337588224,
+            "memoryPeakBytes": 884633600,
+            "pidsCurrent": 43,
+            "pidsPeak": 201,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        }
+      ],
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "swapMaxBytes": 0,
+      "swapCurrentBytes": 0,
+      "pidsEvents": {
+        "max": 0
+      }
+    },
+    {
+      "runId": 38500839954,
+      "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38500839954",
+      "jobId": 115647155803,
+      "runnerName": "GitHub Actions 1000004908",
+      "runnerLabels": [
+        "ubuntu-24.04-arm"
+      ],
+      "artifactId": 11867050548,
+      "artifactZipBytes": 11424,
+      "artifactZipSha256": "19c19318fcac506598dba123bbb9582ea25ff89e59b79504579de1d2b95849f4",
+      "artifactArchiveDigestLocallyRecomputed": true,
+      "allExtractedBytesMatchExactArchive": true,
+      "independentlyAcceptedRawReports": {
+        "accepted": true,
+        "scope": "bounded offline generated-data soak only",
+        "architecture": "arm64",
+        "nativeRun": 38496598950,
+        "sourceRevision": "678a0d1cba8a92f1963127f81e0908d44e523201",
+        "imageRevision": "ffa69b73d13565b391cc9a079df3d9a2a8373105",
+        "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+        "imageId": "sha256:8750ba600b885bc97dde49e45033b9a2136251f7c216b6e0e060f45b28230fb5",
+        "continuousSeconds": 1803.349,
+        "rounds": 112,
+        "lastRoundElapsedSeconds": 1803.348,
+        "successfulSearches": 456,
+        "memoryPeakBytes": 967868416,
+        "pidsPeak": 201,
+        "maxObservedRequestSeconds": 21.227,
+        "quiescentMemoryChangeBytes": 69550080,
+        "preRemovalContainerStateObserved": true,
+        "independentPostRemovalInventoryObserved": true,
+        "memoryPolicy": {
+          "selection": "high-1536m",
+          "hostPreflightVerified": true,
+          "parentEarlyReclaimVerified": true,
+          "memoryHighBytes": 1610612736,
+          "parentPeakBytes": 967884800,
+          "parentHighEvents": 0,
+          "parentCleanupVerified": true,
+          "defaultImageOrProductionPolicyChanged": false
+        },
+        "productionCapacityOrLeakAbsenceProven": false,
+        "fileSha256": {
+          "SOURCE_RUN.json": "b0f369ef90a87db0b1c633ecce32df6ec344f1b3c71d327d5e37e206f8657ad1",
+          "PRELOAD_IDENTITY.json": "084f05899e414d99a8a292cd8a864fc53d0b141ddcdcad1dac0781e5ac8c16a4",
+          "LOADED_IDENTITY.json": "f58c05fc21323c2f3fc95ce1264f2fe12e591650508cbe7b9d814f06613c85a3",
+          "RUNNING_JAR_IDENTITY.json": "ea79ca5656ab2ad230dff58bbf4348c1788a9e8d702d03cfa22e2f152b553b91",
+          "SOAK_REPORT.json": "35ff8137d4bb45e0d5561af5db68d9fa1c51ce05b02070927adf52d8009db3d0",
+          "SOAK_TRACE.jsonl": "857f197398e8b6d60f0d7a24beb536a2a164415cbf03f0ce1c2e12aa1c9404c2",
+          "CONTAINER_STATE.json": "516801d24588af74a41101a06844a43f8d337966451b74d04b2213b0317d5cc3",
+          "CONTAINER_REMOVAL.json": "b4553b539a28ea8bd6cb1722a5a20c4d4919d3c307455d45c92b949e210042dc",
+          "MEMORY_HIGH_HOST_PREFLIGHT.json": "7a35977d3a3f7c4085bba5f82551014c2782de49a644777903e2ce7b196a75b7",
+          "MEMORY_HIGH_MEMBERSHIP.json": "5ff4f8e9c36a8f0539a69f814beac3adbc34ff4483364d702001527e1b451369",
+          "MEMORY_HIGH_PRESTART.json": "718cc1b34b116451334d989760c84180075a0a1d4ebd82302d1e83eac144d274",
+          "MEMORY_HIGH_AFTER_SOAK.json": "51f0d4c653bf3be5db4b4d6ce1b07bb22d45d8cb0c863c03616e8418fcbd2f13",
+          "MEMORY_HIGH_FINAL.json": "51f0d4c653bf3be5db4b4d6ce1b07bb22d45d8cb0c863c03616e8418fcbd2f13",
+          "MEMORY_HIGH_CLEANUP.json": "f410cfef5b71de7f873c30176e07be0961fadb8fcc8903abef1631bedd182c40"
+        }
+      },
+      "coldRequestSeconds": 3.7219847649999735,
+      "totalSeconds": 1869.484,
+      "faults": [
+        {
+          "kind": "navigationTimeout",
+          "failedReturnDataVerified": true,
+          "seconds": 7.951,
+          "ownedWorkerKilled": false,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 313696256,
+            "memoryPeakBytes": 829206528,
+            "pidsCurrent": 41,
+            "pidsPeak": 193,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        },
+        {
+          "kind": "scriptWatchdog",
+          "failedReturnDataVerified": true,
+          "seconds": 25.027,
+          "ownedWorkerKilled": false,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 315793408,
+            "memoryPeakBytes": 829206528,
+            "pidsCurrent": 41,
+            "pidsPeak": 193,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        },
+        {
+          "kind": "workerExit",
+          "failedReturnDataVerified": true,
+          "seconds": 2.652,
+          "ownedWorkerKilled": true,
+          "healthyRecoveryVerified": true,
+          "afterRecovery": {
+            "memoryCurrentBytes": 318263296,
+            "memoryPeakBytes": 829206528,
+            "pidsCurrent": 39,
+            "pidsPeak": 193,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        }
+      ],
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "swapMaxBytes": 0,
+      "swapCurrentBytes": 0,
+      "pidsEvents": {
+        "max": 0
+      }
+    }
+  ],
+  "userReportsUnchanged": 58,
+  "originalJarUnchanged": true,
+  "largeJarOrImagesLocallyDownloaded": false,
+  "productionChanged": false,
+  "defaultMemoryPolicyChanged": false,
+  "realSiteAuthenticationProven": false,
+  "originalJarThreeWayAccepted": false,
+  "privateBookOrLocalWholeNativeAccepted": false,
+  "fullGoalComplete": false
+}

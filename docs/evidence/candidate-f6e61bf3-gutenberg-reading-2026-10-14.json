@@ -1,0 +1,847 @@
+{
+  "schemaVersion": 1,
+  "checkedDate": "2026-10-14",
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "version": "6.1.0",
+  "scope": "Exact candidate image: fixed real public HTTPS page; original/remote/current metadata, 28-item toc and two complete chapter ReturnData comparison",
+  "rawReceiptHashes": {
+    "software-fetch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/accurate-native-f6e61bf3-20261013.uzcq04it/software/fetch-receipt.json",
+      "bytes": 988,
+      "sha256": "d4b608f9f12922536876c15f183c353b9ac3024dfc8fab859b731bcf8065d5d5"
+    },
+    "software-load": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/accurate-native-f6e61bf3-20261013.uzcq04it/software/load-receipt.json",
+      "bytes": 1849,
+      "sha256": "ca850a4162fc39b2604fa20def6ade7e5a9dc49c7c8e85ff00dba535b3d10632"
+    },
+    "reading-cleanup": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6reading1/cleanup-verified.json",
+      "bytes": 317,
+      "sha256": "4e93f32d80ed3cfa930e4fa0e215be702debf16a65ec6f32d40227f5a2777086"
+    },
+    "reading-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6reading1/results/REAL_THREE_WAY.json",
+      "bytes": 16212,
+      "sha256": "5b9cdfe3a1c07e70de2f133ba2edc2b4a26fd5f5f8b2d0d408518dbe4792174c"
+    },
+    "reading-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6reading1/provenance.json",
+      "bytes": 119968,
+      "sha256": "1538cc6e21ce410880eca40cf071d2890169ca6a73b63fb9b528ea57e0da0a4a"
+    },
+    "reading-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6reading1/launch.json",
+      "bytes": 448,
+      "sha256": "9b9c0916c20d9df997970a4a698393f326b877f568cce241779bd65e964f8ab0"
+    }
+  },
+  "business": {
+    "allThreeRenderersCertificateValidationProven": false,
+    "comparison": {
+      "defaultClocksFreshInOwnActualWindows": true,
+      "firstTwoChaptersFullReturnDataEqual": true,
+      "jsonTypesAndAllNonClockFieldsCompared": true,
+      "literalFullMetadataEqual": false,
+      "nonClockMetadataFullJsonEqual": true,
+      "tocFullReturnDataEqual": true
+    },
+    "currentRendererTlsErrorsIgnored": false,
+    "fixtureOnlyPrivateNetworkException": false,
+    "fullGoalComplete": false,
+    "historicalRendererIgnoresTlsErrors": true,
+    "originalExecuted": true,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "partialSideFacts": {
+      "camoufox": {
+        "actualApiObservations": {
+          "chapter0": {
+            "bytes": 6878,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "51efd19b14efe9cac256377a1c9d771b6e0f7a52b10d9105004d79fc1cdb9866",
+            "status": 200
+          },
+          "chapter1": {
+            "bytes": 7396,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "36d3eb061034b83a3af1013399c4460953bc67ee181f524f858836a84ee8c00f",
+            "status": 200
+          },
+          "metadata": {
+            "bytes": 667,
+            "dataType": "dict",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "c60c929fb817e8c28089a86406f341538c991fcb1d8fa2215196d6ba06ba849d",
+            "status": 200
+          },
+          "toc": {
+            "bytes": 7130,
+            "dataType": "list",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "06ddd0fb08e3c3d9be336f0a0f5d88851aa463978ed25ac188d9e38f9eaeec2a",
+            "status": 200
+          }
+        },
+        "readerStopped": true
+      },
+      "original": {
+        "actualApiObservations": {
+          "chapter0": {
+            "bytes": 6878,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "51efd19b14efe9cac256377a1c9d771b6e0f7a52b10d9105004d79fc1cdb9866",
+            "status": 200
+          },
+          "chapter1": {
+            "bytes": 7396,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "36d3eb061034b83a3af1013399c4460953bc67ee181f524f858836a84ee8c00f",
+            "status": 200
+          },
+          "metadata": {
+            "bytes": 667,
+            "dataType": "dict",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "ba9119f3084af40d35f04ee145a383c5d633aa073ccdc3fcb00f9d41d6e42473",
+            "status": 200
+          },
+          "toc": {
+            "bytes": 7130,
+            "dataType": "list",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "06ddd0fb08e3c3d9be336f0a0f5d88851aa463978ed25ac188d9e38f9eaeec2a",
+            "status": 200
+          }
+        },
+        "readerStopped": true
+      },
+      "restored": {
+        "actualApiObservations": {
+          "chapter0": {
+            "bytes": 6878,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "51efd19b14efe9cac256377a1c9d771b6e0f7a52b10d9105004d79fc1cdb9866",
+            "status": 200
+          },
+          "chapter1": {
+            "bytes": 7396,
+            "dataType": "str",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "36d3eb061034b83a3af1013399c4460953bc67ee181f524f858836a84ee8c00f",
+            "status": 200
+          },
+          "metadata": {
+            "bytes": 667,
+            "dataType": "dict",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "b1628b3cfc9239c85f63a4c03238ff0f113fefd9311a34a55025adab8534056a",
+            "status": 200
+          },
+          "toc": {
+            "bytes": 7130,
+            "dataType": "list",
+            "errorMsgEmpty": true,
+            "errorMsgSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "isSuccess": true,
+            "sha256": "06ddd0fb08e3c3d9be336f0a0f5d88851aa463978ed25ac188d9e38f9eaeec2a",
+            "status": 200
+          }
+        },
+        "readerStopped": true
+      }
+    },
+    "passed": true,
+    "privateBooksRead": 0,
+    "publicUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "rawBodyOrCredentialsExported": false,
+    "realAuthenticationProven": false,
+    "realCredentialsImported": false,
+    "realSiteHttpsThreeWayProven": true,
+    "restoredJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "schemaVersion": 1,
+    "scope": "fixed public Gutenberg 84 actual HTTPS through sole-domain proxy",
+    "seconds": 125.624,
+    "sides": {
+      "camoufox": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791942189716,
+          "lastCheckTime": 1791942189716,
+          "latestChapterTime": 1791942189716
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "3b2692a712a7fcb330e9590d99683b302ea018facdc262c4c762b1f22b64ead4",
+        "metadataRawReturnDataSha256": "7a8abcc16a610c47d5c99e5b0fe9f5744ec4ce18bbcb54c0655d5fd64cb2e853",
+        "metadataWindowMs": {
+          "completed": 1791942200945,
+          "started": 1791942189685
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "7a8abcc16a610c47d5c99e5b0fe9f5744ec4ce18bbcb54c0655d5fd64cb2e853",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "806afd35d5e896b09bccca1185ed147874b0447fa1865df448812fed6b3736cc",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      },
+      "original": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791942121623,
+          "lastCheckTime": 1791942121623,
+          "latestChapterTime": 1791942121623
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "3b2692a712a7fcb330e9590d99683b302ea018facdc262c4c762b1f22b64ead4",
+        "metadataRawReturnDataSha256": "ce1aacf6498cdebe87a1444cda7f0b0b99a63b938247536180ca167b437d9a0c",
+        "metadataWindowMs": {
+          "completed": 1791942126159,
+          "started": 1791942121601
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ce1aacf6498cdebe87a1444cda7f0b0b99a63b938247536180ca167b437d9a0c",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "806afd35d5e896b09bccca1185ed147874b0447fa1865df448812fed6b3736cc",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      },
+      "restored": {
+        "businessApiCalls": {
+          "chapter0": 1,
+          "chapter1": 1,
+          "metadata": 1,
+          "toc": 1
+        },
+        "chapterCount": 28,
+        "clocks": {
+          "durChapterTime": 1791942150718,
+          "lastCheckTime": 1791942150718,
+          "latestChapterTime": 1791942150718
+        },
+        "httpStatuses": {
+          "chapter0": 200,
+          "chapter1": 200,
+          "metadata": 200,
+          "toc": 200
+        },
+        "logoutSucceeded": true,
+        "metadataDataFields": [
+          "author",
+          "bookUrl",
+          "canUpdate",
+          "durChapterIndex",
+          "durChapterPos",
+          "durChapterTime",
+          "group",
+          "isInShelf",
+          "lastCheckCount",
+          "lastCheckTime",
+          "latestChapterTime",
+          "name",
+          "order",
+          "origin",
+          "originName",
+          "originOrder",
+          "tocUrl",
+          "totalChapterNum",
+          "type",
+          "useReplaceRule"
+        ],
+        "metadataNonClockReturnDataSha256": "3b2692a712a7fcb330e9590d99683b302ea018facdc262c4c762b1f22b64ead4",
+        "metadataRawReturnDataSha256": "da999444508c74a773229008426884160326525198eb4db2b0bd8f490a036817",
+        "metadataWindowMs": {
+          "completed": 1791942154322,
+          "started": 1791942150691
+        },
+        "operations": {
+          "chapter0": {
+            "bodySha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+            "characters": 6822,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "511e9571948fce23e0c3d92d584c280322d4ca58c76ecd44d5abfec02d24fab4",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "chapter1": {
+            "bodySha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d",
+            "characters": 7332,
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "ca655b0c703bf27f6318a7fa555e325db10398c1a5b7f485ad67582cb2a7e7e5",
+            "isSuccess": true,
+            "replacementCharacters": 0
+          },
+          "metadata": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "da999444508c74a773229008426884160326525198eb4db2b0bd8f490a036817",
+            "isSuccess": true
+          },
+          "toc": {
+            "errorMsgEmpty": true,
+            "fields": [
+              "data",
+              "errorMsg",
+              "isSuccess"
+            ],
+            "fullReturnDataSha256": "806afd35d5e896b09bccca1185ed147874b0447fa1865df448812fed6b3736cc",
+            "isSuccess": true
+          }
+        },
+        "readerStopped": true,
+        "sourceRulesRetained": true
+      }
+    },
+    "upstreamAfter": {
+      "bytes": 468370,
+      "sha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+      "status": 200,
+      "tlsCertificateValidationEnabled": true
+    },
+    "upstreamBefore": {
+      "bytes": 468370,
+      "sha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+      "status": 200,
+      "tlsCertificateValidationEnabled": true
+    },
+    "upstreamBytesStable": true,
+    "whiteListNegativeChecks": {
+      "CONNECT-127.0.0.1:443": true,
+      "CONNECT-example.com:443": true,
+      "CONNECT-www.gutenberg.org:80": true,
+      "GET-http://www.gutenberg.org/": true
+    }
+  },
+  "runtime": {
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "runtimeImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+    "runtimeConfigIdentity": {
+      "schemaVersion": 1,
+      "loadedImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+      "loadedIdObjectKind": "manifest",
+      "originalConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+      "configBytesSha256Verified": true,
+      "manifestBytesSha256Verified": true,
+      "allOriginalLayerDiffIdsMatch": true,
+      "layerCount": 14,
+      "architecture": "amd64",
+      "expectedRevision": "27512eca06d9889df4bf217a7e1291aed589210f",
+      "expectedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+      "packagedJarBytesIndependentlyRead": false,
+      "readOnlyIdentityCheck": true,
+      "runtimeExecuted": false
+    },
+    "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+    "controllerIncludedOuterSlice": "readerallafe82b59111d.slice",
+    "packagedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "historicalRendererStoppedBeforeCamoufox": true,
+    "outerAggregateBudget": {
+      "scope": "both test containers and all their probe/Java/browser descendants",
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 1611624448,
+      "memoryEvents": {
+        "low": 0,
+        "high": 2283,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 116
+      },
+      "swapMaxBytes": 0,
+      "pidsMax": 512,
+      "pidsEvents": {
+        "max": 0
+      },
+      "memoryHighBytes": 1610612736
+    },
+    "proxyObservations": {
+      "allowedHost": "www.gutenberg.org",
+      "allowedPort": 443,
+      "upstreamPinnedPublicAddresses": [
+        "152.19.134.47"
+      ],
+      "hostTcpListenerCreated": false,
+      "deniedRequests": 4,
+      "tunnels": [
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 770,
+          "serverToClientBytes": 476096
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180218
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180249
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180220
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180189
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180219
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180249
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180219
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180219
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180220
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180275
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2775,
+          "serverToClientBytes": 817011
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2740,
+          "serverToClientBytes": 817268
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2775,
+          "serverToClientBytes": 817042
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2775,
+          "serverToClientBytes": 817221
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2740,
+          "serverToClientBytes": 817166
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2740,
+          "serverToClientBytes": 817104
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2775,
+          "serverToClientBytes": 817175
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 770,
+          "serverToClientBytes": 476052
+        }
+      ],
+      "transportFailureTypes": []
+    },
+    "removedOwnedTestContainers": [
+      "d4a5223cb87571616ecd52f2b3aa0ad04be6de40d0dcbcf1718877a8791ce65a",
+      "3e37997342612275a38995ed909e0696f3f9266cc0fe1bb4e0e5dbfc4ab04977"
+    ],
+    "ownedBrokerStoppedAndSocketRemoved": true,
+    "originalJarUnchanged": true,
+    "restoredJarUnchanged": true,
+    "probeExitCode": 0,
+    "overallAccepted": true,
+    "budgetAccepted": true,
+    "seconds": 130.054,
+    "productionChanged": false,
+    "privateBooksRead": 0,
+    "realCredentialsImported": false
+  },
+  "independentRecheck": {
+    "schemaVersion": 1,
+    "accepted": true,
+    "rawReceiptTransportHashesRechecked": 6,
+    "actualBusinessCalls": 12,
+    "actualMetadataTocAndTwoChaptersRechecked": true,
+    "tocItemsEach": 28,
+    "chapterCharacters": [
+      6822,
+      7332
+    ],
+    "fullTocAndChapterJsonDigestsEqual": true,
+    "metadataNonClockDigestEqual": true,
+    "originalClockValuesAndFreshWindowsRetained": true,
+    "literalFullMetadataEqualityClaimed": false,
+    "realAuthenticationClaimed": false,
+    "privateBookBodiesRead": 0,
+    "hardLimitOomAndPidsEventsZero": true,
+    "memoryHighEventsRetained": 2283,
+    "socketThrottlingEventsRetained": 116,
+    "observedParentPidsPeak": 235,
+    "ownedScopeCleanupRechecked": true,
+    "wholeGoalComplete": false
+  },
+  "ownedScopeCleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "ownedContainersRemaining": 0,
+    "ownedBrokerSocketAbsent": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false
+  },
+  "rawChapterBodiesExported": false,
+  "realAuthenticationClaimed": false,
+  "wholeGoalComplete": false,
+  "productionDeploymentPerformed": false
+}
