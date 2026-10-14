@@ -218,6 +218,7 @@ const epubRawActive = computed(() => isEpubBook.value && epubMode.value === 'raw
 
 /** 已加载的 EPUB 文档（懒加载：进入 raw 模式才拉取解析） */
 const epubDoc = shallowRef<EpubDoc | null>(null)
+let epubDocumentClosing = false
 const epubDocLoading = ref(false)
 const epubDocError = ref('')
 let epubLoadController: AbortController | null = null
@@ -273,7 +274,7 @@ function onEpubProgress(ratio: number, position: number, persistPosition: boolea
 const epubCurrentPath = computed(() => epubDoc.value
   ? epubChapterPath(epubDoc.value, chapters.value[chapterIndex.value]?.url ?? '') : '')
 async function ensureEpubDoc(): Promise<void> {
-  if (!isEpubBook.value || !shelfBook.value || epubDoc.value || epubDocLoading.value) return
+  if (readerDisposed || epubDocumentClosing || !isEpubBook.value || !shelfBook.value || epubDoc.value || epubDocLoading.value) return
   epubDocLoading.value = true
   epubDocError.value = ''
   const controller = new AbortController()
@@ -4153,6 +4154,7 @@ onMounted(() => {
   window.addEventListener('touchend', onSelectionUp, { passive: true })
   window.addEventListener('mousedown', onDocMouseDown)
   window.addEventListener('keydown', onKeydown)
+  window.addEventListener('pagehide', onReaderPageHide)
   // GAP 85：左右滑动翻章（passive——不 preventDefault，不干扰纵向滚动/选择）
   window.addEventListener('touchstart', onSwipeTouchStart, { passive: true })
   window.addEventListener('touchend', onSwipeTouchEnd, { passive: true })
@@ -4171,15 +4173,29 @@ onMounted(() => {
   void init()
 })
 
-onBeforeUnmount(() => {
-  readerDisposed = true
-  contentRequestGeneration++
+function releaseEpubReadResources(): void {
   epubLoadController?.abort()
   epubLoadController = null
+  epubDocLoading.value = false
   const released = epubDoc.value
   epubDoc.value = null
   epubTocEntries.value = []
   if (released) releaseEpubDoc(released)
+}
+
+function onReaderPageHide(event: PageTransitionEvent): void {
+  // Vue unmount does not run on a full-page reload/navigation. Clear the old
+  // expanded archive explicitly; do not destroy a document retained by BFCache.
+  if (event.persisted) return
+  epubDocumentClosing = true
+  releaseEpubReadResources()
+}
+
+onBeforeUnmount(() => {
+  readerDisposed = true
+  contentRequestGeneration++
+  window.removeEventListener('pagehide', onReaderPageHide)
+  releaseEpubReadResources()
 })
 onBeforeUnmount(() => {
   mediaQuery?.removeEventListener('change', onSystemThemeChange)

@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT = Path(__file__).parents[3]
 SPEC = importlib.util.spec_from_file_location('pressure_runner_guard', ROOT / 'scripts/epub-pressure/runner.py')
@@ -59,6 +61,19 @@ class GeneratedPressureRunnerBudgetTest(unittest.TestCase):
         (self.group / 'memory.events').unlink()
         with self.assertRaises(FileNotFoundError):
             RUNNER.budget(self.group)
+
+    def test_owned_container_query_requests_full_ids_not_ambiguous_prefixes(self):
+        token = 'readergen' + 'a' * 12
+        with patch.object(RUNNER, 'cmd', return_value=SimpleNamespace(stdout='b' * 64 + '\n')) as call:
+            self.assertEqual(['b' * 64], RUNNER.generated_container_ids(token))
+            call.assert_called_once_with('docker', 'ps', '--no-trunc', '-aq', '--filter',
+                                         'label=com.medwarp.reader.generated-pressure=' + token)
+
+    def test_short_duplicate_or_foreign_container_ids_are_rejected(self):
+        for output in ('b' * 12 + '\n', 'b' * 64 + '\n' + 'b' * 64 + '\n', 'foreign\n'):
+            with patch.object(RUNNER, 'cmd', return_value=SimpleNamespace(stdout=output)):
+                with self.assertRaises(AssertionError):
+                    RUNNER.generated_container_ids('readergen' + 'a' * 12)
 
 
 if __name__ == '__main__':

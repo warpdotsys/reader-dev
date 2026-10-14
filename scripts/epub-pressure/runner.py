@@ -34,6 +34,14 @@ def digest(path):
     return result.hexdigest()
 
 
+def generated_container_ids(token):
+    assert re.fullmatch('readergen[0-9a-f]{12}', token)
+    rows = cmd('docker', 'ps', '--no-trunc', '-aq', '--filter',
+               'label=com.medwarp.reader.generated-pressure=' + token).stdout.splitlines()
+    assert len(rows) == len(set(rows)) and all(re.fullmatch('[0-9a-f]{64}', row) for row in rows)
+    return rows
+
+
 def budget(group):
     quota, period = map(int, (group / 'cpu.max').read_text().split())
     result = dict(cpuQuota=quota, cpuPeriod=period,
@@ -134,8 +142,7 @@ def worker(config_path):
         if cid is not None:
             owned()
             cmd('docker', 'rm', '--force', cid)
-            provenance['ownedContainerRemoved'] = cmd('docker', 'ps', '-aq', '--filter',
-                    'label=com.medwarp.reader.generated-pressure=' + token).stdout.strip() == ''
+            provenance['ownedContainerRemoved'] = generated_container_ids(token) == []
         # This newly minted volume contains generated data only. Refuse symlinks,
         # hardlinks, foreign owners or paths outside that exact disposable target.
         assert data.resolve(strict=True) == data and data.parent == root and data.name == 'data'
@@ -223,8 +230,7 @@ def dispatch(args):
             cmd('systemctl', 'stop', unit, timeout=30, check=False)
             # RuntimeMaxSec/OOM may stop the worker before its own finally. Only
             # exact label + immutable image + frozen mounts authorize fallback.
-            stranded = cmd('docker', 'ps', '-aq', '--filter',
-                           'label=com.medwarp.reader.generated-pressure=' + token).stdout.splitlines()
+            stranded = generated_container_ids(token)
             for cid in stranded:
                 assert re.fullmatch('[0-9a-f]{64}', cid)
                 state = json.loads(cmd('docker', 'container', 'inspect', cid).stdout)[0]
