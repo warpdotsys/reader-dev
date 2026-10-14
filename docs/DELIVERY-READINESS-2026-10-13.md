@@ -22,7 +22,7 @@
 
 首个6.1.0候选f1bcfaab实际下载JAR与双clean的66d1摘要相符，但MANIFEST缺少Implementation-Version；[实物验收失败](evidence/candidate-f1bcfaab-jar-version-rejection-2026-10-13.json)保留。随后补入确定性应用版本的f6e61bf3已完成自己的Java38411329432／Vue38411329680／Full38411330336／Native38411330281，独立接受全部六个Native作业及32份发布器JSON。实际下载1f114993 JAR实读Implementation-Version=6.1.0、原ReaderApplicationKt入口，完整字节与其两次clean一致；本机离线配置检查不是本机重建或启动。Full生成账号旅程11.074秒及两张中文截图已验看，客户端在服务端预算外；真实账号、准确新镜像单书／原件三方仍不能移借首候选或548a结果。
 
-服务器固定Gutenberg页本轮严格HTTPS预检200，页面摘要与历史捕获一致；准确新镜像的软件源上传遇SSH超时／连接关闭，保留不完整输入，尚未加载或启动Reader。预检不是真实脚本／Cookie业务通过，不改生产或扩大出网范围。
+2026-10-14更新：服务器已恢复，准确新镜像的软件下载／14层实读／包内6.1.0 JAR及配置到manifest身份桥接接受；并实际完成固定Gutenberg公开页脚本／生成Cookie四阶段三方，12调用及独立复核／清理，见[当前有限验收](REAL-GUTENBERG-COOKIE-2026-10-14.md)。原件共享default空间和历史不重放Cookie的差异明确记录；当前两用户空间分离、内置重放和清除实际通过。总硬2GiB保持，high2779／sock261压力保留。此前传输及预检失败不抹去；当前成功不替代起点认证、准确新镜像单书／匿名目录正文／长测，不改生产或扩大出网授权。
 
 最终发布仍需闭合：
 

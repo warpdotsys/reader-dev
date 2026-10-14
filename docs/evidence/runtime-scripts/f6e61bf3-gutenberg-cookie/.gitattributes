@@ -1,0 +1,4 @@
+*.py text eol=lf
+compare_cookie_script.py whitespace=-blank-at-eof
+controller.py whitespace=-blank-at-eof
+start_server.py whitespace=-blank-at-eof

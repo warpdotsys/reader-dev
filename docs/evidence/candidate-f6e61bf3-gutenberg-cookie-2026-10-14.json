@@ -1,0 +1,2110 @@
+{
+  "schemaVersion": 1,
+  "checkedDate": "2026-10-14",
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "version": "6.1.0",
+  "scope": "Exact v6.1.0 image, real fixed public HTTPS DOM script and generated cookie/two-user comparison; not real website authentication",
+  "softwareFetch": {
+    "schemaVersion": 1,
+    "artifactId": 11823129196,
+    "nativeRunId": 38411330281,
+    "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+    "metadata": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "6.1.0",
+      "revision": "27512eca06d9889df4bf217a7e1291aed589210f",
+      "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+      "archiveSha256": "6aa82394c82bdb03eeeeef0fad546ac48a26325c1c8a18707bd367b5ceefe965",
+      "imageId": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850"
+    },
+    "outerZipBytes": 2174961682,
+    "outerZipSha256": "1c350d773958374f9d9b1ae3360299a71532a98fef2dadd9dba7879bf4678504",
+    "innerArchiveBytes": 2174899974,
+    "innerArchiveSha256": "6aa82394c82bdb03eeeeef0fad546ac48a26325c1c8a18707bd367b5ceefe965",
+    "seconds": 541.648,
+    "githubLoginTokenTransferred": false,
+    "downloadUrlSaved": false,
+    "readerStarted": false,
+    "productionChanged": false,
+    "realBookBodiesRead": 0
+  },
+  "softwareLoad": {
+    "schemaVersion": 1,
+    "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+    "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+    "originalConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+    "sourceArchiveSha256": "6aa82394c82bdb03eeeeef0fad546ac48a26325c1c8a18707bd367b5ceefe965",
+    "allArchiveLayerBytesRehashed": true,
+    "archiveLayerCount": 14,
+    "oldSmokeAliasImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+    "oldSmokeAliasRestored": true,
+    "readerStarted": false,
+    "realBookBodiesRead": 0,
+    "productionChanged": false,
+    "filesystemOrConfigRebuilt": false,
+    "loaderBudgetDoesNotLimitExistingDockerDaemon": true,
+    "accepted": true,
+    "loadedDockerImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+    "identity": {
+      "schemaVersion": 1,
+      "loadedImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+      "loadedIdObjectKind": "manifest",
+      "originalConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+      "configBytesSha256Verified": true,
+      "manifestBytesSha256Verified": true,
+      "allOriginalLayerDiffIdsMatch": true,
+      "layerCount": 14,
+      "architecture": "amd64",
+      "expectedRevision": "27512eca06d9889df4bf217a7e1291aed589210f",
+      "expectedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+      "packagedJarBytesIndependentlyRead": false,
+      "readOnlyIdentityCheck": true,
+      "runtimeExecuted": false
+    },
+    "packagedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "packagedJarBytes": 285683585,
+    "actualPackagedManifestVersion": "6.1.0",
+    "packagedJarBytesIndependentlyRead": true,
+    "ownedInertContainerRemoved": true,
+    "seconds": 82.606
+  },
+  "rawReceiptHashes": {
+    "software-fetch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/accurate-native-f6e61bf3-20261013.uzcq04it/software/fetch-receipt.json",
+      "bytes": 988,
+      "sha256": "d4b608f9f12922536876c15f183c353b9ac3024dfc8fab859b731bcf8065d5d5"
+    },
+    "software-load": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/accurate-native-f6e61bf3-20261013.uzcq04it/software/load-receipt.json",
+      "bytes": 1849,
+      "sha256": "ca850a4162fc39b2604fa20def6ade7e5a9dc49c7c8e85ff00dba535b3d10632"
+    },
+    "e-cleanup": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a5/cleanup-verified.json",
+      "bytes": 317,
+      "sha256": "4e93f32d80ed3cfa930e4fa0e215be702debf16a65ec6f32d40227f5a2777086"
+    },
+    "a-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a1/results/REAL_COOKIE_SCRIPT.json",
+      "bytes": 4877,
+      "sha256": "fb43caa43759187d910198ff32829c035fc5cf2dc85a98f1516cd0e79a48e9fd"
+    },
+    "a-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a1/provenance.json",
+      "bytes": 19406,
+      "sha256": "0b76107cfa7559581501c63b7457a13efec922fd065d3d2073f243cd53f4ff21"
+    },
+    "a-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a1/launch.json",
+      "bytes": 448,
+      "sha256": "82c54b100260c11b421ddac2e945ac1e57dd03ed6115634028aed76f3f30582e"
+    },
+    "b-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a2/results/REAL_COOKIE_SCRIPT.json",
+      "bytes": 9308,
+      "sha256": "fe7811a15e4742c353229712269d3e837a62cf0b7b164d2b68e30fa245ed56c5"
+    },
+    "b-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a2/provenance.json",
+      "bytes": 21482,
+      "sha256": "62d141300e31a031937b289bfe4ecafebd62276b4c6bdd8c5a03c4c06a996282"
+    },
+    "b-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a2/launch.json",
+      "bytes": 448,
+      "sha256": "def027f9d80d6e559b1e129687b70ce4b7cb6e31cd49e714eaf1c82f69d69a3b"
+    },
+    "c-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a3/results/REAL_COOKIE_SCRIPT.json",
+      "bytes": 9876,
+      "sha256": "19b394f80b12fc41f08879a412d9f97b9e80826a3b0dd25f2ec1c9d79adc8094"
+    },
+    "c-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a3/provenance.json",
+      "bytes": 22406,
+      "sha256": "6b1a4dd81568fabaa24512e0470ee9e5e16a2db6993b06fa8a7b15adf3b6c59a"
+    },
+    "c-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a3/launch.json",
+      "bytes": 448,
+      "sha256": "2fde98f33e1f4f19a16db32310e8847f0b9cc3e8caa7ed4fb93ced2ece45fe46"
+    },
+    "d-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a4/results/REAL_COOKIE_SCRIPT.json",
+      "bytes": 8010,
+      "sha256": "39f4ea2c5c829cc2295f5eeb5c3932f2c886d76b1020305a694de8b2024cb16a"
+    },
+    "d-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a4/provenance.json",
+      "bytes": 18496,
+      "sha256": "1f596fff1014e7e273fdb983caf8fda18d00dbcbd8477e3d6febf88fc8562d9c"
+    },
+    "d-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a4/launch.json",
+      "bytes": 448,
+      "sha256": "0701ea357e82bb099ec23c7d7de5b607f6ccc1fcadd466384d74f5150f14640a"
+    },
+    "e-business": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a5/results/REAL_COOKIE_SCRIPT.json",
+      "bytes": 67041,
+      "sha256": "e1950bd67235e52f4a269cd6752ec75e4746b55628ae2ed058da7ce572ffc5b9"
+    },
+    "e-provenance": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a5/provenance.json",
+      "bytes": 81670,
+      "sha256": "753e30b6a46a5c1e57f13dcddb7c5af490ecae23f12b5fd46a1b4f6c213d700c"
+    },
+    "e-launch": {
+      "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a5/launch.json",
+      "bytes": 448,
+      "sha256": "4bad12986a83253fd225af077ccbc0ab494dd6aeeeb7872408c02e98df27eec0"
+    }
+  },
+  "previousRejectedBusinessAttempts": {
+    "a": {
+      "businessReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a1/results/REAL_COOKIE_SCRIPT.json",
+        "bytes": 4877,
+        "sha256": "fb43caa43759187d910198ff32829c035fc5cf2dc85a98f1516cd0e79a48e9fd"
+      },
+      "runtimeReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a1/provenance.json",
+        "bytes": 19406,
+        "sha256": "0b76107cfa7559581501c63b7457a13efec922fd065d3d2073f243cd53f4ff21"
+      },
+      "failureType": "JSONDecodeError",
+      "failureReason": null,
+      "failureContext": {
+        "activeSide": "original",
+        "stage": "seeded"
+      },
+      "seconds": 17.031,
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1502912512,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      }
+    },
+    "b": {
+      "businessReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a2/results/REAL_COOKIE_SCRIPT.json",
+        "bytes": 9308,
+        "sha256": "fe7811a15e4742c353229712269d3e837a62cf0b7b164d2b68e30fa245ed56c5"
+      },
+      "runtimeReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a2/provenance.json",
+        "bytes": 21482,
+        "sha256": "62d141300e31a031937b289bfe4ecafebd62276b4c6bdd8c5a03c4c06a996282"
+      },
+      "failureType": "ValueError",
+      "failureReason": null,
+      "failureContext": {
+        "activeSide": "original",
+        "stage": "seeded"
+      },
+      "seconds": 19.474,
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1515114496,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      }
+    },
+    "c": {
+      "businessReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a3/results/REAL_COOKIE_SCRIPT.json",
+        "bytes": 9876,
+        "sha256": "19b394f80b12fc41f08879a412d9f97b9e80826a3b0dd25f2ec1c9d79adc8094"
+      },
+      "runtimeReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a3/provenance.json",
+        "bytes": 22406,
+        "sha256": "6b1a4dd81568fabaa24512e0470ee9e5e16a2db6993b06fa8a7b15adf3b6c59a"
+      },
+      "failureType": "ValueError",
+      "failureReason": "Actual original generated cookie input was not stored",
+      "failureContext": {
+        "activeSide": "original",
+        "stage": "seeded"
+      },
+      "seconds": 20.582,
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1596522496,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      }
+    },
+    "d": {
+      "businessReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a4/results/REAL_COOKIE_SCRIPT.json",
+        "bytes": 8010,
+        "sha256": "39f4ea2c5c829cc2295f5eeb5c3932f2c886d76b1020305a694de8b2024cb16a"
+      },
+      "runtimeReceipt": {
+        "remotePath": "/var/tmp/reader-generated-fragments-20261003.RMZay2/live-gutenberg-20261014.f6e61bf3a4/provenance.json",
+        "bytes": 18496,
+        "sha256": "1f596fff1014e7e273fdb983caf8fda18d00dbcbd8477e3d6febf88fc8562d9c"
+      },
+      "failureType": "ValueError",
+      "failureReason": null,
+      "failureContext": {
+        "activeSide": "original",
+        "stage": "seeded"
+      },
+      "seconds": 16.568,
+      "budget": {
+        "scope": "both test containers and all their probe/Java/browser descendants",
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1520570368,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "pidsEvents": {
+          "max": 0
+        },
+        "memoryHighBytes": 1610612736
+      },
+      "directOriginalBaselineNamespace": "default",
+      "seededFailureTransportFacts": {
+        "bytes": 303,
+        "dataType": "NoneType",
+        "errorMsgEmpty": false,
+        "errorMsgSha256": "7a9dd2b53e80915c585f5820e75035a4ab8d6ab7b19710ee82779076d4cd2d10",
+        "fields": [
+          "errorMsg",
+          "isSuccess"
+        ],
+        "isSuccess": false,
+        "sha256": "985c1b5f90a3ae1bc9c287c5669207bb94395d301dbadfb5b412c4163d535e3f",
+        "status": 200
+      }
+    }
+  },
+  "business": {
+    "browserScriptSha256": "9b7a83d9833e7b086e3ada38ea3b7a10f9d43ea6125e0e71ba744b2c66a51dcf",
+    "comparison": {
+      "allRawMetadataReturnDataAndDefaultClocksPreserved": true,
+      "allThreeBrowserDomFreshOtherUserAndClearedCookieAbsent": true,
+      "allThreeExecuteActualBrowserScriptOnFixedRealHttpsPage": true,
+      "currentBothRenderersCookieStoreUserIsolationProven": true,
+      "currentGeneratedManualCookieReplay": true,
+      "fullLiteralJsonParityClaimed": false,
+      "originalBookRequestCookieNamespace": "default",
+      "originalCookieStoreUserIsolationProven": false,
+      "originalNamespaceDefectNotReintroduced": true,
+      "originalSharedCookieInputObservedInSecondUser": true,
+      "seededCookieVisibility": {
+        "camoufox": true,
+        "original": false,
+        "restored": false
+      },
+      "threeWaySeededCookieVisibilityEqual": false,
+      "trueWebsiteAuthenticationClaimed": false
+    },
+    "currentHttpCookieSetterNotClaimedOriginalApi": true,
+    "currentPrivateNetworkGuardDisabled": false,
+    "currentTlsErrorsIgnored": false,
+    "fixedPublicUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "historicalTlsErrorsIgnored": true,
+    "localBooksRead": 0,
+    "originalCookieInputUsesVerifiedLegacyRequestJvmApi": true,
+    "originalDefaultNamespaceDirectlyObservedInRejectedD": true,
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "originalNamespaceIsolationNotClaimed": true,
+    "passed": true,
+    "rawChapterBodiesExported": false,
+    "realCredentialsImported": false,
+    "realSiteScriptCookieThreeWayProven": true,
+    "realWebsiteAuthenticationProven": false,
+    "restoredJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "schemaVersion": 1,
+    "scope": "real fixed Gutenberg HTTPS DOM script and generated cookie/two-user scope only",
+    "seconds": 86.551,
+    "sides": {
+      "camoufox": {
+        "bothGeneratedSessionsLoggedOut": true,
+        "cookieInputMechanism": "current setBookSourceCookie HTTP extension",
+        "cookieSetterExtensionMutations": {
+          "cleared": {
+            "httpStatus": 200,
+            "returnData": {
+              "data": {
+                "cleared": true,
+                "clearedSourceUrls": [
+                  "https://www.gutenberg.org"
+                ],
+                "success": true
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            }
+          },
+          "seeded": {
+            "httpStatus": 200,
+            "returnData": {
+              "data": {
+                "success": true
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            }
+          }
+        },
+        "phases": {
+          "baseline": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenbergd8ad20b81e",
+              "phase": "baseline"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenbergd8ad20b81e"
+              },
+              {
+                "bytes": 122,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1689,
+            "responseSha256": "a13074387962acd222b504745a3e9b04b3cf6498b2d23fcf8b1564e20cbe2928",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"baseline\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940762476,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940762476,
+                "latestChapterTime": 1791940762476,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"baseline\\\",\\\"namespace\\\":\\\"gutenbergd8ad20b81e\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "e4b5052a17c3bfff461499f96c2bb73d625454777a9b830299abd1da9d43a85c",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940773275,
+              "started": 1791940762435
+            }
+          },
+          "cleared": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenbergd8ad20b81e",
+              "phase": "cleared"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg59bd2aa077"
+              },
+              {
+                "bytes": 122,
+                "directory": false,
+                "relativePath": "gutenberg59bd2aa077/550978023"
+              },
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenbergd8ad20b81e"
+              },
+              {
+                "bytes": 122,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1687,
+            "responseSha256": "45760bf17f9355cf923521a937868c6d83c65acda7c72234f8376f3510bb9b81",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"cleared\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940784691,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940784691,
+                "latestChapterTime": 1791940784691,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"cleared\\\",\\\"namespace\\\":\\\"gutenbergd8ad20b81e\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "561f814108945a6ea61f270110978507d21d0b1a09a2cb3babbdc890889277c4",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940790295,
+              "started": 1791940784666
+            }
+          },
+          "other-user": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg59bd2aa077/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg59bd2aa077/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenberg59bd2aa077",
+              "phase": "other-user"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg59bd2aa077"
+              },
+              {
+                "bytes": 122,
+                "directory": false,
+                "relativePath": "gutenberg59bd2aa077/550978023"
+              },
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenbergd8ad20b81e"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/1950193437"
+              },
+              {
+                "bytes": 379,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1693,
+            "responseSha256": "c3ab55f1c2da13947e3ad6e8254bbc5900f2cc1ed32fd11df18b2a815110e5ff",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"other-user\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940779090,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940779090,
+                "latestChapterTime": 1791940779090,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"other-user\\\",\\\"namespace\\\":\\\"gutenberg59bd2aa077\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "07f33ccb4228f5629dc92809e09b6355ce1fbcacc6c40fe3d175af1342d632d4",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940784632,
+              "started": 1791940779071
+            }
+          },
+          "seeded": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/1950193437",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/gutenbergd8ad20b81e/-2079302027",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": true,
+              "manualPresent": true,
+              "namespace": "gutenbergd8ad20b81e",
+              "phase": "seeded"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenbergd8ad20b81e"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/1950193437"
+              },
+              {
+                "bytes": 379,
+                "directory": false,
+                "relativePath": "gutenbergd8ad20b81e/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1684,
+            "responseSha256": "4495bf2ba3d277a5ecc3393efe463c2a647c1448fdb0efe1935ceb63aab1cf79",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"seeded\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940773404,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-present",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940773404,
+                "latestChapterTime": 1791940773404,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"seeded\\\",\\\"namespace\\\":\\\"gutenbergd8ad20b81e\\\",\\\"manualPresent\\\":true,\\\"jarPresent\\\":true}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "1f998008f04a16a782aaf40cdd01a60f518b1003b5a043116f2f84589d1db099",
+              "generatedCookieVisible": true,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940779038,
+              "started": 1791940773380
+            }
+          }
+        },
+        "readerStopped": true,
+        "requestCookieProbeRulesSha256": {
+          "baseline": "e2763811fec6a478bbe3330202a8fc423828f8424941570cbaf90e03106879ee",
+          "cleared": "8b11c384691df9a47e9fc64402b68b14fe453e85e26462ed7293d6db522bce6b",
+          "other-user": "8a060db3e41cf6e23c45ff3d590b53e69ef35ae07dbe7cf3c3659d7c5410fcb5",
+          "seeded": "9e1ab5693617ebb6dc6031378cc6e394f989e1492166a2f16388cc73d7d0b63e"
+        },
+        "sourceRulesRetained": true
+      },
+      "original": {
+        "bothGeneratedSessionsLoggedOut": true,
+        "cookieInputMechanism": "original Book/request namespace CookieStore via supported AnalyzeUrl JVM option js",
+        "cookieSetterExtension": {
+          "available": false,
+          "bytes": 53,
+          "contentType": "text/html; charset=utf-8",
+          "httpStatus": 404,
+          "inputTransportNotParityClaimed": true,
+          "sha256": "92c52ebd5c1a7deabbe07072b77b48858fb5d72c64797b6e46db5917f8f53cb0"
+        },
+        "legacyRequestCookieRulesSha256": {},
+        "phases": {
+          "baseline": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": false,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/default/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/default/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "default",
+              "phase": "baseline"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "default"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1677,
+            "responseSha256": "6cf5b0d90ff78e1930196a38bfd6f3ec26cc8d09e3b230f286b2f3204848b380",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"baseline\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940712045,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940712045,
+                "latestChapterTime": 1791940712045,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"baseline\\\",\\\"namespace\\\":\\\"default\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "7922e6671a2c51b70e457397e1764362907f6cc3ea8ab1ef4cf036236c9395af",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940716369,
+              "started": 1791940712023
+            }
+          },
+          "cleared": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": false,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/default/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/default/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "default",
+              "phase": "cleared"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "default"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1986,
+            "responseSha256": "49b7b3f541e6efc994a98eaa595b48446d65d5787ca29ca20dfda564642ad956",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"cookie.removeCookie(source.getKey());var c=cookie.getCacheInstance();c.remove(\\\"gutenberg.org_cookieJar\\\");var v=c.getAsString(\\\"gutenberg.org_cookieJar\\\");if(String(cookie.getCookie(source.getKey()))!==\\\"\\\"||(v!==null&&String(v)!==\\\"\\\"))throw new Error(\\\"GeneratedLegacyCookieNotCleared\\\");var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"cleared\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940722341,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940722341,
+                "latestChapterTime": 1791940722341,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"cleared\\\",\\\"namespace\\\":\\\"default\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "2cb7cc1002b0b81ea632e87a0171075affb40efca9b5e2784434e93cf039f075",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940725072,
+              "started": 1791940722328
+            }
+          },
+          "other-user": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": false,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/default/1950193437",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/default/-2079302027",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": true,
+              "manualPresent": true,
+              "namespace": "default",
+              "phase": "other-user"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "default"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "default/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "default/1950193437"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1679,
+            "responseSha256": "6fa3b4cda3a73d2c5cf760a113f7bbf8494e470c6fc03ef1a474d186ba095425",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"other-user\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940719113,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940719113,
+                "latestChapterTime": 1791940719113,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"other-user\\\",\\\"namespace\\\":\\\"default\\\",\\\"manualPresent\\\":true,\\\"jarPresent\\\":true}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "b9b57c1c5873873f12f00d894296f5f60bd8f7f445c2c018ff2a0693c4656bb5",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940722317,
+              "started": 1791940719097
+            }
+          },
+          "seeded": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": false,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/default/1950193437",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/default/-2079302027",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": true,
+              "manualPresent": true,
+              "namespace": "default",
+              "phase": "seeded"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "default"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "default/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "default/1950193437"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 2127,
+            "responseSha256": "ce58aa4039ef8c4c5c46f3e0334c9ce4756734dba881d71ceb3e56bdef034237",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"cookie.setCookie(source.getKey(),\\\"reader_public_probe=generated-scope-only\\\");var c=cookie.getCacheInstance();c.put(\\\"gutenberg.org_cookieJar\\\",\\\"reader_public_probe=generated-scope-only\\\");if(String(cookie.getCookie(source.getKey()))!==\\\"reader_public_probe=generated-scope-only\\\"||String(c.getAsString(\\\"gutenberg.org_cookieJar\\\"))!==\\\"reader_public_probe=generated-scope-only\\\")throw new Error('GeneratedLegacyCookieNotStored');var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"seeded\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940716395,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940716395,
+                "latestChapterTime": 1791940716395,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"seeded\\\",\\\"namespace\\\":\\\"default\\\",\\\"manualPresent\\\":true,\\\"jarPresent\\\":true}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "5050b35fb4ab28aa74474f7fa596100b3ef9d8f77d69a0a83641fdbcb7fb412b",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940719082,
+              "started": 1791940716381
+            }
+          }
+        },
+        "readerStopped": true,
+        "requestCookieProbeRulesSha256": {
+          "baseline": "e2763811fec6a478bbe3330202a8fc423828f8424941570cbaf90e03106879ee",
+          "cleared": "716135526aeaf6bc1ddb9d177cffac4592559df350c3a83e1300f0d13f4132bd",
+          "other-user": "8a060db3e41cf6e23c45ff3d590b53e69ef35ae07dbe7cf3c3659d7c5410fcb5",
+          "seeded": "6e25b2d7420ffe6230b1fef5fe746ac4aa26b49de80b15e726686dc4986de3d1"
+        },
+        "sourceRulesRetained": true
+      },
+      "restored": {
+        "bothGeneratedSessionsLoggedOut": true,
+        "cookieInputMechanism": "current setBookSourceCookie HTTP extension",
+        "cookieSetterExtensionMutations": {
+          "cleared": {
+            "httpStatus": 200,
+            "returnData": {
+              "data": {
+                "cleared": true,
+                "clearedSourceUrls": [
+                  "https://www.gutenberg.org"
+                ],
+                "success": true
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            }
+          },
+          "seeded": {
+            "httpStatus": 200,
+            "returnData": {
+              "data": {
+                "success": true
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            }
+          }
+        },
+        "phases": {
+          "baseline": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenberg374f72c8f0",
+              "phase": "baseline"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg374f72c8f0"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1689,
+            "responseSha256": "33a8e899ae8e6ca5993bbda223c30d07ee1493ea073950f5648c9bedc5992b2a",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"baseline\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940732339,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940732339,
+                "latestChapterTime": 1791940732339,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"baseline\\\",\\\"namespace\\\":\\\"gutenberg374f72c8f0\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "513d3eae0ee7427c0856bca7f1301913a177324999ca14f0c7ebdfce865d7c15",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940736603,
+              "started": 1791940732306
+            }
+          },
+          "cleared": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenberg374f72c8f0",
+              "phase": "cleared"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg075039717f"
+              },
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg374f72c8f0"
+              },
+              {
+                "bytes": 88,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1687,
+            "responseSha256": "cedbd26f85dbe106f3859c13b89df9ef484237a7355e8576071d8ea7387dfc34",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"cleared\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940742295,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940742295,
+                "latestChapterTime": 1791940742295,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"cleared\\\",\\\"namespace\\\":\\\"gutenberg374f72c8f0\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "5ec402f26d486e25c418328f3dbe3efc31d9f7a1a36c3b3468f0c9b83b0a97bd",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940745327,
+              "started": 1791940742279
+            }
+          },
+          "other-user": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg075039717f/1950193437",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 0,
+                "generatedLiteralPresent": false,
+                "relativePath": "storage/cache/cookie/gutenberg075039717f/-2079302027",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": false,
+              "manualPresent": false,
+              "namespace": "gutenberg075039717f",
+              "phase": "other-user"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg075039717f"
+              },
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg374f72c8f0"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/1950193437"
+              },
+              {
+                "bytes": 150,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1693,
+            "responseSha256": "831ec5943c7a196dd7c41b00a8ef1db63a8c51a8065b78c4fafaddbcc8dce14c",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"other-user\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940739497,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940739497,
+                "latestChapterTime": 1791940739497,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"other-user\\\",\\\"namespace\\\":\\\"gutenberg075039717f\\\",\\\"manualPresent\\\":false,\\\"jarPresent\\\":false}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "9ab5f532b38209ba5714b2517417b1c45707669407df1ec29c8200d60285e4a5",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940742215,
+              "started": 1791940739484
+            }
+          },
+          "seeded": {
+            "actualCalls": 1,
+            "actualCookieNamespaceMatchesGeneratedUser": true,
+            "actualGeneratedCookieStoreInputs": {
+              "gutenberg.org": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/1950193437",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              },
+              "gutenberg.org_cookieJar": {
+                "bytes": 40,
+                "generatedLiteralPresent": true,
+                "relativePath": "storage/cache/cookie/gutenberg374f72c8f0/-2079302027",
+                "sha256": "39c3729c447def4a8b7dd69aec968e1c49ea714cf2dbf0075694d64f723394fa"
+              }
+            },
+            "actualJvmCookieBinding": {
+              "jarPresent": true,
+              "manualPresent": true,
+              "namespace": "gutenberg374f72c8f0",
+              "phase": "seeded"
+            },
+            "generatedCookieCacheMetadata": [
+              {
+                "bytes": 0,
+                "directory": true,
+                "relativePath": "gutenberg374f72c8f0"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/-2079302027"
+              },
+              {
+                "bytes": 40,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/1950193437"
+              },
+              {
+                "bytes": 150,
+                "directory": false,
+                "relativePath": "gutenberg374f72c8f0/550978023"
+              }
+            ],
+            "httpStatus": 200,
+            "responseBytes": 1683,
+            "responseSha256": "5d5905651df8a2dbafed89713a821f674e4b555be11e2c35afb3a57f800e1756",
+            "returnData": {
+              "data": {
+                "author": "by Mary Wollstonecraft (Godwin) Shelley",
+                "bookUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true,\"webJs\":\"(function(){var h=document.querySelector('h1');if(!h)throw new Error('FixedHeadingMissing');h.setAttribute('data-reader-probe-script','executed');h.setAttribute('data-reader-probe-cookie',document.cookie.split(/;\\\\s*/).indexOf(\\\"reader_public_probe=generated-scope-only\\\")>=0?'probe-present':'probe-absent');return document.documentElement.outerHTML;})()\",\"js\":\"var pc=cookie.getCacheInstance();book.putVariable(\\\"_readerGeneratedCookieProbe\\\",JSON.stringify({phase:\\\"seeded\\\",namespace:String(cookie.getUserNameSpace()),manualPresent:String(cookie.getCookie(source.getKey()))===\\\"reader_public_probe=generated-scope-only\\\",jarPresent:String(pc.getAsString(\\\"gutenberg.org_cookieJar\\\"))===\\\"reader_public_probe=generated-scope-only\\\"}));result;\"}",
+                "canUpdate": true,
+                "durChapterIndex": 0,
+                "durChapterPos": 0,
+                "durChapterTime": 1791940736725,
+                "group": 0,
+                "intro": "executed",
+                "isInShelf": false,
+                "kind": "probe-absent",
+                "lastCheckCount": 0,
+                "lastCheckTime": 1791940736725,
+                "latestChapterTime": 1791940736725,
+                "name": "Frankenstein;",
+                "order": 0,
+                "origin": "https://www.gutenberg.org",
+                "originName": "Fixed Gutenberg 84 anonymous compatibility probe",
+                "originOrder": 0,
+                "tocUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html, {\"webView\":true}",
+                "totalChapterNum": 0,
+                "type": 0,
+                "useReplaceRule": true,
+                "variable": "{\n  \"_readerGeneratedCookieProbe\": \"{\\\"phase\\\":\\\"seeded\\\",\\\"namespace\\\":\\\"gutenberg374f72c8f0\\\",\\\"manualPresent\\\":true,\\\"jarPresent\\\":true}\"\n}"
+              },
+              "errorMsg": "",
+              "isSuccess": true
+            },
+            "transportFacts": {},
+            "validatedFacts": {
+              "defaultClocksFreshInActualWindow": true,
+              "errorMsgEmpty": true,
+              "fullReturnDataSha256": "c200f56a38864670e2494e2156d481f08272fc8e319b6805207bc1099597d0ac",
+              "generatedCookieVisible": false,
+              "httpStatus": 200,
+              "isSuccess": true,
+              "metadataFields": [
+                "author",
+                "bookUrl",
+                "canUpdate",
+                "durChapterIndex",
+                "durChapterPos",
+                "durChapterTime",
+                "group",
+                "intro",
+                "isInShelf",
+                "kind",
+                "lastCheckCount",
+                "lastCheckTime",
+                "latestChapterTime",
+                "name",
+                "order",
+                "origin",
+                "originName",
+                "originOrder",
+                "tocUrl",
+                "totalChapterNum",
+                "type",
+                "useReplaceRule",
+                "variable"
+              ],
+              "nameAndAuthorValid": true,
+              "scriptExecuted": true
+            },
+            "windowMs": {
+              "completed": 1791940739472,
+              "started": 1791940736711
+            }
+          }
+        },
+        "readerStopped": true,
+        "requestCookieProbeRulesSha256": {
+          "baseline": "e2763811fec6a478bbe3330202a8fc423828f8424941570cbaf90e03106879ee",
+          "cleared": "8b11c384691df9a47e9fc64402b68b14fe453e85e26462ed7293d6db522bce6b",
+          "other-user": "8a060db3e41cf6e23c45ff3d590b53e69ef35ae07dbe7cf3c3659d7c5410fcb5",
+          "seeded": "9e1ab5693617ebb6dc6031378cc6e394f989e1492166a2f16388cc73d7d0b63e"
+        },
+        "sourceRulesRetained": true
+      }
+    },
+    "syntheticCookieLiteralIncludedInOwnedTestCode": true,
+    "upstreamAfter": {
+      "bytes": 468370,
+      "sha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+      "status": 200,
+      "tlsCertificateValidationEnabled": true
+    },
+    "upstreamBefore": {
+      "bytes": 468370,
+      "sha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+      "status": 200,
+      "tlsCertificateValidationEnabled": true
+    },
+    "upstreamBytesStable": true,
+    "whiteListNegativeChecks": {
+      "CONNECT-127.0.0.1:443": true,
+      "CONNECT-example.com:443": true,
+      "CONNECT-www.gutenberg.org:80": true,
+      "GET-http://www.gutenberg.org/": true
+    },
+    "wholeGoalComplete": false
+  },
+  "runtime": {
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "runtimeImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+    "runtimeConfigIdentity": {
+      "schemaVersion": 1,
+      "loadedImageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+      "loadedIdObjectKind": "manifest",
+      "originalConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+      "configBytesSha256Verified": true,
+      "manifestBytesSha256Verified": true,
+      "allOriginalLayerDiffIdsMatch": true,
+      "layerCount": 14,
+      "architecture": "amd64",
+      "expectedRevision": "27512eca06d9889df4bf217a7e1291aed589210f",
+      "expectedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+      "packagedJarBytesIndependentlyRead": false,
+      "readOnlyIdentityCheck": true,
+      "runtimeExecuted": false
+    },
+    "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+    "controllerIncludedOuterSlice": "readerall9fb0d395d8fd.slice",
+    "packagedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "packagedJarBytesIndependentlyRead": true,
+    "historicalRendererStoppedBeforeCamoufox": true,
+    "privateNetworkNamespaceInode": 4026532560,
+    "containerCgroups": [
+      "0::/readerall9fb0d395d8fd.slice/docker-5c3a65d0e0a18eddf7d147c935c38cdad58a948090d4460350e0c25d35da3518.scope",
+      "0::/readerall9fb0d395d8fd.slice/docker-45c890e9c9f248a4ae8b11baaf6de8e5ac40d92a397c3861bd395b5793dcbb49.scope"
+    ],
+    "ownedNetnsLoopbackPublicAlias": "152.19.134.47",
+    "transparentTlsBridgeRequiresExactGutenbergSni": true,
+    "outerAggregateBudget": {
+      "scope": "both test containers and all their probe/Java/browser descendants",
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 1611538432,
+      "memoryEvents": {
+        "low": 0,
+        "high": 2779,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 261
+      },
+      "swapMaxBytes": 0,
+      "pidsMax": 512,
+      "pidsEvents": {
+        "max": 0
+      },
+      "memoryHighBytes": 1610612736
+    },
+    "proxyObservations": {
+      "allowedHost": "www.gutenberg.org",
+      "allowedPort": 443,
+      "upstreamPinnedPublicAddresses": [
+        "152.19.134.47"
+      ],
+      "hostTcpListenerCreated": false,
+      "deniedRequests": 4,
+      "tunnels": [
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 770,
+          "serverToClientBytes": 476096
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180159
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180247
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180275
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180246
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180275
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180219
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 1048,
+          "serverToClientBytes": 180275
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2740,
+          "serverToClientBytes": 817197
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2806,
+          "serverToClientBytes": 817104
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2775,
+          "serverToClientBytes": 817144
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 2740,
+          "serverToClientBytes": 817082
+        },
+        {
+          "host": "www.gutenberg.org",
+          "port": 443,
+          "method": "CONNECT",
+          "clientToServerBytes": 770,
+          "serverToClientBytes": 476096
+        }
+      ],
+      "transportFailureTypes": []
+    },
+    "removedOwnedTestContainers": [
+      "45c890e9c9f248a4ae8b11baaf6de8e5ac40d92a397c3861bd395b5793dcbb49",
+      "5c3a65d0e0a18eddf7d147c935c38cdad58a948090d4460350e0c25d35da3518"
+    ],
+    "ownedBrokerStoppedAndSocketRemoved": true,
+    "originalJarUnchanged": true,
+    "restoredJarUnchanged": true,
+    "probeExitCode": 0,
+    "overallAccepted": true,
+    "budgetAccepted": true,
+    "seconds": 91.303,
+    "productionChanged": false,
+    "privateBooksRead": 0,
+    "realCredentialsImported": false,
+    "originalProductionRendererVersionProven": false
+  },
+  "independentRecheck": {
+    "schemaVersion": 1,
+    "accepted": true,
+    "rawReceiptsTransportRechecked": 18,
+    "completeMetadataCalls": 12,
+    "actualJvmAndFilesystemInputsRechecked": true,
+    "currentTwoUserNamespaceIsolationRechecked": true,
+    "originalDefaultSharedNamespaceObserved": true,
+    "originalCookieStoreIsolationNotClaimed": true,
+    "defaultClocksRechecked": true,
+    "currentReplayAndClearRechecked": true,
+    "realWebsiteAuthenticationClaimed": false,
+    "accurateConfigManifestAndPackagedJarIdentitiesRechecked": true,
+    "upstreamBytesStableRechecked": true,
+    "budgetHardLimitAndOomEventsZero": true,
+    "memoryHighEventsPreserved": 2779,
+    "socketThrottlingEventsPreserved": 261,
+    "parentPidsObservedPeak": 252,
+    "sourceCheck": {
+      "actualPublicSourceHashesVerified": 11
+    },
+    "ownedScopeCleanupRechecked": true,
+    "previousFourFailuresRetained": true
+  },
+  "ownedScopeCleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "ownedContainersRemaining": 0,
+    "ownedBrokerSocketAbsent": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false
+  },
+  "publicProbeSourceHashes": {
+    "controller.py": "500f51ffc4d2da0a9e131f631b7455af357f2c753dae473f8d661f66f04f9d5d",
+    "start_server.py": "21fcbbfe27914033aa122f9d4ec8b1c897314b07a2e9581ed2e880e3d56a4829",
+    "compare_cookie_script.py": "22c7dc71730b5797fd2bb17377177aa7c096e4966ef3988772f752238db5c5ae",
+    "allowlist_transport.py": "c5b465b11487d999aa1bdd47f31d8073b61073ec20418ceb325098ac319529be",
+    "compare_live.py": "479c4c8170940da940513d46556c3b7550d19b8738dda2cb467da4ee6934506e",
+    "reader_image_identity.py": "cc0dd6263611306a794114c1a25d16c77ef00f9ee8f1c3f5d4643c83146ae5b6",
+    "run-three-way-webview-in-docker.py": "f3143f0370f067821dee897a541ab58a4d8bf606d05187a4810f0cc2349572c0",
+    "run-webview-cookie-in-linux-netns.py": "e3a5bcaba6a014250909b9b95c029941739f049c8feda525b771079d23baba81",
+    "compare-webview-cookie.py": "de02ec3c468b73e46b574ea65ca0d6aa380a0f3ebf5b42b0f5e0d115a1914d56",
+    "compare-gutenberg-snapshot.py": "adef8d55cd877aeae1de83c7b1f47c22f7a3bb67fc7a1b516fa087ffd8d0bb0b",
+    "probe-gutenberg-reader.py": "22a6ed3ed41d2262cab25e22066410c54dd1ca9aa37140cd07310d2322806e57"
+  },
+  "realWebsiteAuthenticationClaimed": false,
+  "exactCurrentAnonymousTocAndChaptersClaimed": false,
+  "exactCurrentAuthorizedEpubClaimed": false,
+  "exactCurrentLongSoakClaimed": false,
+  "goalComplete": false,
+  "mergeTagReleaseOrProductionDeploymentPerformed": false
+}
