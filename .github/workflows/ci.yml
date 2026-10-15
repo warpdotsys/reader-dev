@@ -46,7 +46,18 @@ jobs:
           node --test scripts/check-release-pipeline.test.mjs
           node --test scripts/release-native-artifacts.test.mjs scripts/verify-release-manifest.test.mjs
       - name: Verify browser protocol and differential CLI safety without a browser download
-        run: python3 -m unittest discover -s src/test/python -p '*_test.py'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s src/test/python -p '*_test.py' 2>&1 | tee "$RUNNER_TEMP/reader-python-contracts.log"
+      - name: Preserve Python safety contracts including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-python-contracts-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-python-contracts.log
+          if-no-files-found: warn
+          retention-days: 14
       - name: Build and test
         run: |
           npm ci --prefix web-vue3
