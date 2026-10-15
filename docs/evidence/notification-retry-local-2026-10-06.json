@@ -1,0 +1,768 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-06",
+  "scope": "source recovery UI follow-up: offline retry control clearance; generated local data only, not hosted or production",
+  "baseSourceHead": "1f8475f8be3bb08b63e39bffee6a156f18e06467",
+  "runs": [
+    {
+      "phase": "baseline",
+      "jarSha256": "6fa6bddf259c31854683234169f71b71fcaa9dadd41f1e3670c4e1aa3bf7a970",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 11.517,
+          "sha256": "d69e704c74de14e3c83e6df059e5b965b12e08ca4a7d622c10e4d6f0b28008b8",
+          "failureMessages": [
+            "java.lang.AssertionError: Notification region, including dismiss control, must leave offline retry clear expected:<true> but was:<false>"
+          ],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 3.927,
+          "sha256": "c647b90d88f8919a2d91c0a61b7390673dadeaac1e1c7946603e456c303f9e0f",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "vue3-manager-generated-authorized.png",
+          "bytes": 49273,
+          "sha256": "71d2f5957ee4a62bc409f07ed12c126c82e3938ea58b6c2b64427f726cb501e7"
+        },
+        {
+          "file": "vue3-manager-generated-notices-manage-footer.png",
+          "bytes": 103751,
+          "sha256": "4cd19f04d62d2a84733b50dba75881f6609c85c73f860360b4f640e9929b9841"
+        },
+        {
+          "file": "vue3-manager-generated-notices-narrow-short-before-scroll.png",
+          "bytes": 25819,
+          "sha256": "38001bac4afe333165b1702477ff1093af9ea1cb2ba976900035b344bc738726"
+        },
+        {
+          "file": "vue3-manager-generated-notices-short.png",
+          "bytes": 39761,
+          "sha256": "e5b92ad22d8aaa6507689599f337abb85551d81ba0492f1837e132ca9b11133a"
+        },
+        {
+          "file": "vue3-manager-generated-own-offline.png",
+          "bytes": 72368,
+          "sha256": "3f745e8264424059a903a012ebaa343edfa4ad92b006294d89a4981b5cddfc97"
+        },
+        {
+          "file": "vue3-manager-generated-permissions-narrow.png",
+          "bytes": 36835,
+          "sha256": "3d4dd3dada9f57f088a0cb7808d1fb49f10ab90a34c1071f076d8564607e7299"
+        },
+        {
+          "file": "vue3-manager-generated-wrong-space-rejected.png",
+          "bytes": 51767,
+          "sha256": "d21dc3ef73395fc2b4306d9aeba0e2af63be1163550fbf855aba8b524d681d74"
+        }
+      ]
+    },
+    {
+      "phase": "candidate",
+      "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 13.48,
+          "sha256": "749a1d107262acfbdb9905c15d04543c2f3f09a92693ddb588013df48a4ba331",
+          "failureMessages": [],
+          "stdout": "NOTICE_VIEWPORT {\"width\":375,\"height\":320,\"clientHeight\":48,\"scrollHeight\":287,\"regionHeight\":74,\"safeTop\":\"230px\",\"bottom\":\"16px\"}\nMANAGER_NAMESPACE legacyUserNS=actual noFakeIsAdmin=verified wrongKey=denied namespaceProof=actual silentFallback=rejected reload=reverified systemShelf=isolated ownOffline=isolated nextAccount=reverify credentialUrl=absent\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 3.219,
+          "sha256": "f30011d0c8688495568c33ad7ae01e4593721ef17c5ab9fb1a2e842df0ed0ef1",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "vue3-manager-generated-authorized.png",
+          "bytes": 49093,
+          "sha256": "005b388d99a2dc77f8ef16bebf121759417a271bbb772511910426b788414d5f"
+        },
+        {
+          "file": "vue3-manager-generated-notices-manage-footer.png",
+          "bytes": 103851,
+          "sha256": "5c28f6f4daa325a6596f0c5b9b3ad5561f4710b003026edfb30199093341490b"
+        },
+        {
+          "file": "vue3-manager-generated-notices-narrow-short-before-scroll.png",
+          "bytes": 25379,
+          "sha256": "9bd0d2c6072607324c3198ad76f965eff4451b7c4d72636763fa1603e59aa947"
+        },
+        {
+          "file": "vue3-manager-generated-notices-narrow-short.png",
+          "bytes": 24676,
+          "sha256": "5dc23bc21410c7299f900099f313a786501fd94b6e231137af141372149e15d1"
+        },
+        {
+          "file": "vue3-manager-generated-notices-short.png",
+          "bytes": 40146,
+          "sha256": "6aded3b32bd70106e9e633ab6e801a58d355c3515558c1510066cb632f81e459"
+        },
+        {
+          "file": "vue3-manager-generated-own-offline.png",
+          "bytes": 72512,
+          "sha256": "dd306bad80388d83968ab2d6acc076d16f42c05e30bd058f14dbbbbce7f7f092"
+        },
+        {
+          "file": "vue3-manager-generated-permissions-narrow.png",
+          "bytes": 36871,
+          "sha256": "ce45a866d5ec1c00f06b9145e64505b7532832404d969c7b71f66e503bfd42aa"
+        },
+        {
+          "file": "vue3-manager-generated-wrong-space-rejected.png",
+          "bytes": 51123,
+          "sha256": "8309be66042ef3e716e877d02a547ae7f3041371dbf4629a181da35a69260e4b"
+        }
+      ]
+    },
+    {
+      "phase": "candidate-core",
+      "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 13.717,
+          "sha256": "ee7a8a909550605c1e41e7222c30d74ffb323373589bdbe67f19e7143060cd8d",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 30.482,
+          "sha256": "154cd0790f8332d186d4ec6fe2f73df48f9cfbdd7c8c2f38698242045942c092",
+          "failureMessages": [],
+          "stdout": "CROSS_TAB sentFirstIdentity=true visibleFirstIdentity=true actualNamespace=tabaae7131b44b renderedSecond=false cachedSecondUnderFirst=false\nCROSS_TAB_REFRESH first-reconnected actual-status/ReturnData/namespace/book-card verified\nCROSS_TAB_LOGOUT isSuccess=true errorMsg= data=NEED_LOGIN\nCROSS_TAB_REFRESH second-after-first-logout actual-status/ReturnData/namespace/book-card verified\nCROSS_TAB_COMPLETE read/write/info/missing/invalid/legacy-cookie/history/old-cache/logout verified with generated accounts\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 12.02,
+          "sha256": "278d66dfd56df60a5d2238ed6dba56f8d0093db173e31ad711b694ea6f13b92a",
+          "failureMessages": [],
+          "stdout": "Seven tiny malformed imports: HTTP 200, failed ReturnData/omitted null data, visible Chinese errors, unchanged valid preview; valid UI retry/read PASS\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.222,
+          "sha256": "0324811730b39b8ba8d88c0bc43b316376a789a292fe689ad51fa1e7d9c2aabd",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.552,
+          "sha256": "bbc7c548637ede723996abddcea139de213b9e31e55d1f35f52e5e22845a3b66",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.04,
+          "sha256": "9b80d4bc884d03d29b175416c7b4ffbbe26bb228727e714dc158f133529797dd",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 24.436,
+          "sha256": "5c505c59305bfaa8f37e31d12e9e6f9f63abf7ab8e9f48ccda3c4d4ba2b180ac",
+          "failureMessages": [],
+          "stdout": "Generated EPUB: stalled download aborted at the 60-second browser-clock deadline, ordinary reading and real retry PASS\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 13.135,
+          "sha256": "40ae8ec41819b34b509837f02ad59966a17b5a8cd75d9b36329058cfd428f2b3",
+          "failureMessages": [],
+          "stdout": "LOGIN_LAYOUT_GENERATED_PASSED sizes=7 modes=2 native-hit=checked scroll=checked keyboard=checked generated-register=passed generated-login=passed external-group=not-opened\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 6.04,
+          "sha256": "9b1e0b9e53804406ec507038fc20bfb514b0d68649f9cd8557d31552f6ba3df5",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 28.85,
+          "sha256": "95f71985300ba14f4fd9d5295d4eec12601894ce479a0868ad73885505fd89f8",
+          "failureMessages": [],
+          "stdout": "LOGOUT_COMPLETE bookshelf/settings/cancel/mixed-reload/signed-out/offline-warning/other-token preserved; generated accounts only\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 5.768,
+          "sha256": "a8e3509a6447f732dab0431d55e12951f120a16fa8380237083a7c5fa1e4a4bd",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 7.175,
+          "sha256": "1dfc6ad68265dd2cb2adc0ff0c197153c850076842d9f823199ed0a9475a45dd",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 7.963,
+          "sha256": "e36656af05e57d90bce30122ba3e86699abfaaf0a8b681a6e1a5c9d897542add",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 14.782,
+          "sha256": "17417add9b5e5e337248cfc48d82bbb0c12301f86cacdb37cf31f4c4d6570ba5",
+          "failureMessages": [],
+          "stdout": "SESSION_RACE mode=0 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\nSESSION_RACE mode=1 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\nSESSION_RACE mode=2 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 9.536,
+          "sha256": "53fa2949dc6fbf548d4200478a9baea92f8bcad968561eef7177c64b76b4e171",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.295,
+          "sha256": "52ef2a456a70e7eb1d98f60caf472952f7721b42d97346e2f9c93bac2cdf6d65",
+          "failureMessages": [],
+          "stdout": "SHELF_OFFLINE crossAccount=hidden ownAccount=restored business=notOffline server503=restored recovery=online legacy=untouched credentials=notInKey lateRefresh=discarded partialGroups=preserved\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 17.954,
+          "sha256": "992c1fd642315b9832438af88c23cf0308e073473862c94ac9c4ce503e91b53e",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+          "tests": 1,
+          "actualCases": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 9.262,
+          "sha256": "d98b97d1336e419f5c3922e8e0a3dc25a07e6e84219dfe25b4432f5c3c19923d",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "generated-second-user-cache-isolated.png",
+          "bytes": 28543,
+          "sha256": "5584170794498cd4406b3ee86f25d5aea5d3947c7339ca54ecc85b796e4edbe6"
+        },
+        {
+          "file": "vue3-cross-tab-generated-first-after-second-login.png",
+          "bytes": 48122,
+          "sha256": "c0d6c2cb403b87675ee6a021c6772a180802769f20841ba7622ec5f4529e7d51"
+        },
+        {
+          "file": "vue3-cross-tab-generated-first-reconnected.png",
+          "bytes": 56992,
+          "sha256": "cd543df59386ef609a82a92d45cea7a1f239c9c87944fde1f7c7483614dcdbce"
+        },
+        {
+          "file": "vue3-cross-tab-generated-old-cookie-cache-refused.png",
+          "bytes": 50229,
+          "sha256": "f93ce505f69a783246a582b9c1b462d62511e391bf7528a7dc163f37d23608eb"
+        },
+        {
+          "file": "vue3-cross-tab-generated-second-after-first-logout.png",
+          "bytes": 48521,
+          "sha256": "076528b4b874b4d6e2e2c5f17fcd85e6f7fdb1c58f64941ee0aae539634948d7"
+        },
+        {
+          "file": "vue3-cross-tab-generated-second-survives-first-logout.png",
+          "bytes": 48472,
+          "sha256": "7c9516047c2b923a82ba88c871d297c702c0d5aa4ef9b7196f7a66abee610111"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-login-bottom.png",
+          "bytes": 21064,
+          "sha256": "621a29f1abdc58f485a62258694dc0c5348a963d7f4efe53b5d1089de12514d1"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-login-full.png",
+          "bytes": 35294,
+          "sha256": "28f41594866fc551a98d677a76c19d9193b8a7dc22e73d09f111d977f6418459"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-login-top.png",
+          "bytes": 18529,
+          "sha256": "9c6ef31a0f2fef4e5a69e5faf9fa7a87199740ceca7c5e2e826f62acd1054eb4"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-register-bottom.png",
+          "bytes": 23286,
+          "sha256": "251a45a057b54e09786c08dc35ebc4f3b396e80ee34bb458d05bb193d8989de3"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-register-full.png",
+          "bytes": 40902,
+          "sha256": "c64629547b334d16ee9d0a9140c8d9ec0ebfdbe06d698020fdfaa2af719d3399"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x480-register-top.png",
+          "bytes": 18538,
+          "sha256": "50d79494c251ca30067e3ba77c8305b07a4e452349d0a9514186fb1376fbcdf3"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-login-bottom.png",
+          "bytes": 32506,
+          "sha256": "fa8c699cda86aa7f0ccd2465ac93b353634a08ff9fb08ef97a2ab9144b7a45ba"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-login-full.png",
+          "bytes": 35294,
+          "sha256": "28f41594866fc551a98d677a76c19d9193b8a7dc22e73d09f111d977f6418459"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-login-top.png",
+          "bytes": 32062,
+          "sha256": "729c8187e3003449228c7d3835af2ae01f3a935b02f7d87f1fea5f7134f7e6d9"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-register-bottom.png",
+          "bytes": 31382,
+          "sha256": "ae4b361d942bca377ae0afbcce9812cfba21744ad5eca1387e1086437e40f794"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-register-full.png",
+          "bytes": 40902,
+          "sha256": "c64629547b334d16ee9d0a9140c8d9ec0ebfdbe06d698020fdfaa2af719d3399"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x720-register-top.png",
+          "bytes": 33917,
+          "sha256": "f45166be77fa4bdecbe8e28bd3ff974f1a37665193ac1ae56132d6aa7eef07a0"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-login-bottom.png",
+          "bytes": 35883,
+          "sha256": "149e97144aa0624e4a80b79d866ce9ce1e7ee8453cfca2e4918e5bee087c827c"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-login-full.png",
+          "bytes": 35883,
+          "sha256": "149e97144aa0624e4a80b79d866ce9ce1e7ee8453cfca2e4918e5bee087c827c"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-login-top.png",
+          "bytes": 35883,
+          "sha256": "149e97144aa0624e4a80b79d866ce9ce1e7ee8453cfca2e4918e5bee087c827c"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-register-bottom.png",
+          "bytes": 40807,
+          "sha256": "cb0ad45b874103cd082c11fac54a4d18c6aba59ef06bb65f97c815d05a28317c"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-register-full.png",
+          "bytes": 40902,
+          "sha256": "c64629547b334d16ee9d0a9140c8d9ec0ebfdbe06d698020fdfaa2af719d3399"
+        },
+        {
+          "file": "vue3-login-layout-generated-1280x900-register-top.png",
+          "bytes": 40808,
+          "sha256": "3973dac7f1e7368af392f7624e44b43b2447d4e1a8d5c5d0cc7ff9eb88096936"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-login-bottom.png",
+          "bytes": 19283,
+          "sha256": "84f86656f0163b5d7686549504273bf26d77d3500097284afd4e4d80bdfe6bc3"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-login-full.png",
+          "bytes": 29854,
+          "sha256": "67f6b6156251b491b31a354acd205b3ed530e5bddc4371694bea318875458ef7"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-login-top.png",
+          "bytes": 22554,
+          "sha256": "960b1ca510302807ad184738c6dbe4c88989c965e634a15ab2599b4802b9d7b9"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-register-bottom.png",
+          "bytes": 22541,
+          "sha256": "4f9114aa0bad62fbb7800ed75e195bee07883dd118b76c3a3369b216615eecf3"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-register-full.png",
+          "bytes": 34496,
+          "sha256": "f7aa9c09eb906279ca2eba4ed78598c3c37b995bdef3f2a7cf9679bb8001a9fb"
+        },
+        {
+          "file": "vue3-login-layout-generated-320x568-register-top.png",
+          "bytes": 18157,
+          "sha256": "2e70d44be57d1fbdb1447595ac89d763dfd8c67d88d1cce327933db4f6948921"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-login-bottom.png",
+          "bytes": 14054,
+          "sha256": "8fc5b4a72c3acded44d2b1d0f09e13337d4308acf857480d047e8939abebdb5c"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-login-full.png",
+          "bytes": 30470,
+          "sha256": "a5fe39db00c96bc668e71902c01ed0d64b97a75ea490f18e0ff5f6d1ed028c79"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-login-top.png",
+          "bytes": 11954,
+          "sha256": "6096509996f576d5b4dadd78c8d35ebfc0888b0c400bfdbf2558866c48d94f6b"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-register-bottom.png",
+          "bytes": 15299,
+          "sha256": "efabb80f0b777700f80639cc199044758e9f971152076fe4ca01a9158636df60"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-register-full.png",
+          "bytes": 35334,
+          "sha256": "0f7130fd900f1bdbd9f23f87887b358aa4a41131a6a34720d5e54eb2c4ee5f04"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x320-register-top.png",
+          "bytes": 11962,
+          "sha256": "7cbcff0d5df8af0c42bf6117dee658609cc49987adb18ebe477961f8c86aaecb"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-login-bottom.png",
+          "bytes": 23076,
+          "sha256": "962994704afd2cf6981779f0d2059f087764ba4a2e3294322e1bcab5952e57d3"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-login-full.png",
+          "bytes": 30470,
+          "sha256": "a5fe39db00c96bc668e71902c01ed0d64b97a75ea490f18e0ff5f6d1ed028c79"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-login-top.png",
+          "bytes": 24503,
+          "sha256": "58480f72977cb268dafae7209e241bfa09653416034b30ad701e7006dc04c00a"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-register-bottom.png",
+          "bytes": 24337,
+          "sha256": "b5f0053de04b495e2b07058eee5bbeb9bcfb266475543ab95205bea6efd38418"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-register-full.png",
+          "bytes": 35334,
+          "sha256": "0f7130fd900f1bdbd9f23f87887b358aa4a41131a6a34720d5e54eb2c4ee5f04"
+        },
+        {
+          "file": "vue3-login-layout-generated-360x640-register-top.png",
+          "bytes": 25028,
+          "sha256": "841db4c75746b7db274c3a21e47451d9a4c5a83b7526be588c981553983d8ffa"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-login-bottom.png",
+          "bytes": 30718,
+          "sha256": "5e4338daac9f77ec2f73859f8b340f961f1e545b1f4dd182708411e46044266a"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-login-full.png",
+          "bytes": 30718,
+          "sha256": "5e4338daac9f77ec2f73859f8b340f961f1e545b1f4dd182708411e46044266a"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-login-top.png",
+          "bytes": 30718,
+          "sha256": "5e4338daac9f77ec2f73859f8b340f961f1e545b1f4dd182708411e46044266a"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-register-bottom.png",
+          "bytes": 35182,
+          "sha256": "c24c9eaec04ae92ebb4ad4b5c09601e74c88402a1b4965e0381b3ee3d58ff601"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-register-full.png",
+          "bytes": 35554,
+          "sha256": "52360e68d6acb3815b4fec7932f8b04a6d2e7c5a86db9a4b950c96f1d1e38fdf"
+        },
+        {
+          "file": "vue3-login-layout-generated-390x844-register-top.png",
+          "bytes": 34310,
+          "sha256": "2f142d74d78ac40ec1302076239945da29301644a728e87f21531b3fb2913ef2"
+        },
+        {
+          "file": "vue3-logout-generated-first-button.png",
+          "bytes": 9150,
+          "sha256": "f34b4b1261e6bdc5f076d90a6fc959d015576343aa8c7b37ef492e1895ef05d3"
+        },
+        {
+          "file": "vue3-logout-generated-offline-local-only.png",
+          "bytes": 15411,
+          "sha256": "3acb756a7f8925a987733e2ef0948f733c38bb213cd27b34b722ba5d1b4736b9"
+        },
+        {
+          "file": "vue3-logout-generated-remembered-survives.png",
+          "bytes": 46745,
+          "sha256": "918ce43252de0222ec96b7ebbf2eddefb9b9c847f91086747f4646eb6a12bb55"
+        },
+        {
+          "file": "vue3-session-race-generated-0.png",
+          "bytes": 58019,
+          "sha256": "757f8a5a6910453682bff69efb8f153ba4371d862aa091856d3704037c3c32e6"
+        },
+        {
+          "file": "vue3-session-race-generated-1.png",
+          "bytes": 59838,
+          "sha256": "494a11df68e5bf5c29310965c2b3ad1b2f5b2693207c6a151d5bd456247673ff"
+        },
+        {
+          "file": "vue3-session-race-generated-2.png",
+          "bytes": 57652,
+          "sha256": "d128b437baf91b77effe391c0e52a9f59f20ec8c179195bac33645b9287ed483"
+        },
+        {
+          "file": "vue3-shelf-offline-generated-other-account-empty.png",
+          "bytes": 61625,
+          "sha256": "db7bbcf5a87f139b5dc868d5d6c43c0238f210a15f600bb418e918f016f79bc6"
+        },
+        {
+          "file": "vue3-shelf-offline-generated-own-account-offline.png",
+          "bytes": 70671,
+          "sha256": "cca6005bd6081ce276a9708280839234431b4f52fd909c0f01a0aaeb39605674"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "web-vue3/src/utils/message.ts",
+      "sha256": "6d71b6a59a8c096ab46d67dc588ed029b991f5516d8ac080159627370e12c9cd"
+    },
+    {
+      "path": "web-vue3/src/styles/main.css",
+      "sha256": "69bd8f9197ad85e253effeb49ce717d0fbbff84d29a6388f2785738d414fa98e"
+    },
+    {
+      "path": "browser-poc/src/test/java/com/medwarp/reader/browserpoc/Vue3PreviewManagerNamespaceTest.java",
+      "sha256": "36b05e052eea0dd375cdd370f2c5fb56457d372c3f778ee1c73e48edea40c206"
+    }
+  ],
+  "frontend": {
+    "actualCases": 239,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "69b9f6896005dc3829aed5577612e8935ac5dde7d961ca08d494076e7c3b2db4"
+  },
+  "listeners": [
+    {
+      "port": 18931,
+      "pid": 61244
+    }
+  ],
+  "lockSha256": "97411e99e38534951c7e5f39cc81f625563f8d433808513c23c52402a26b4b27",
+  "jarBytes": {
+    "jarSha256": "cf20374c8ab52f440e5144fde49e0ddd7a0f3f1a7fe146b45c234562234acd2f",
+    "distFiles": 81,
+    "jarFiles": 81,
+    "matched": 81,
+    "extra": 0
+  },
+  "dependencies": {
+    "node": "24.19.0",
+    "elementPlusLocked": "2.14.3",
+    "vite": "7.3.6",
+    "jdk": "11.0.8",
+    "gradle": "6.1.1",
+    "lockUnchanged": true,
+    "originalNodeModulesNotOverwritten": true
+  },
+  "actualFinalUiCases": 20,
+  "screenshotsActuallyViewed": [
+    "vue3-manager-generated-authorized.png",
+    "vue3-manager-generated-notices-manage-footer.png",
+    "vue3-manager-generated-notices-narrow-short-before-scroll.png",
+    "vue3-manager-generated-notices-narrow-short.png",
+    "vue3-manager-generated-notices-short.png",
+    "vue3-manager-generated-own-offline.png",
+    "vue3-manager-generated-permissions-narrow.png",
+    "vue3-manager-generated-wrong-space-rejected.png"
+  ],
+  "actualChecks": [
+    "full notification region including dismiss leaves retry rectangle clear",
+    "retry center actual pointer hit target",
+    "real click sends GET getBookshelf before and after notification keyboard scroll",
+    "failed request retains only own generated shelf",
+    "at least one complete text line rectangle fits visible message stack, not just padded clientHeight",
+    "all preceding manager credentials/namespace/search/footer/keyboard/clear/logout/account isolation checks retained",
+    "18 existing login/reading/source/cache/file/backup journeys actually complete"
+  ],
+  "cleanup": {
+    "ownReaderAndFixtureHandlesClosed": true,
+    "testPortsNoLongerListening": [
+      18945,
+      18946
+    ],
+    "userReaderRetained": {
+      "port": 18931,
+      "pid": 61244
+    },
+    "dirtyUserReports": 58,
+    "hashComparisonWithinIncrementMismatches": 0
+  },
+  "preservation": {
+    "previousOwnDistFilesPreserved": 81,
+    "previousOwnDistVerifiedAgainstFrozenJar": true,
+    "originalJarAndPrivateBodiesUntouched": true,
+    "noBytecodePatch": true,
+    "noRealCredentialsReusedOrUploaded": true
+  },
+  "hostedStatus": "not yet tested from this increment's own clean PR merge bytes; preceding 1f8475f8 green does not accept these follow-up changes",
+  "limitations": [
+    "Local installed Chromium is test tooling, not default packaged Camoufox acceptance",
+    "Generated login and metadata are not real production login or authenticated Qidian three-way proof",
+    "Other content-area controls can still be temporarily overlaid; not an all-buttons guarantee",
+    "Real phone keyboard/visual viewport, very tiny screen, long account/message and reader/PWA footer visual acceptance remain open",
+    "No formal release, registry publication, legacy merge, deployment or real data import"
+  ],
+  "rollback": "Revert only this increment's offline banner tracking/scroll listener, repeated top-margin removal, short-message vertical padding and added retry/text-line tests; retain prior notification wrapper and rebuild locked readable source. No data migration or worktree reset."
+}

@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated helper current-memory categories; not full Reader image or public-source acceptance",
+  "sourceHeadBeforeCollectorChange": "09163efe213c35fd457cdad973063884cb2d2bd6",
+  "source": {
+    "path": "build/local-camoufox-image-20261004-a/evidence/local-bounded-runtime-20261007-b.json",
+    "sha256": "fdc9ce98006f6205183f2143d528638968b6a3b3d86f827cd380c3e5dbfdbdc7",
+    "bytes": 10663
+  },
+  "collectorSha256": "aeb04b4feca35e65d8aef509a31902753386ea7cba64fe09843ff857314bdcf7",
+  "probeSha256": "05b5d30e01058a45cf157f9747d76297f3cc8f12c714f3a2d7a2161af1a2c210",
+  "workerSha256": "01863dcd45eab836bc0e76e2f0512d97656112a43c8f7dd1ffa3e3e8845087be",
+  "oldRuntimeRevision": "a85410ce71da7679f5ceffb9e306b19bace4026d",
+  "readerStarted": false,
+  "externalNetworkPresent": false,
+  "realCredentialsImported": false,
+  "documentObservation": {
+    "cases": [
+      {
+        "case": "deletedStateSameDocument",
+        "documentObservation": "sameDocument",
+        "mainFrameNavigationObserved": false,
+        "passed": true,
+        "sourceRuns": 1
+      },
+      {
+        "case": "deletedStateSameDocumentAfterHashNavigation",
+        "documentObservation": "sameDocument",
+        "mainFrameNavigationObserved": true,
+        "passed": true,
+        "sourceRuns": 1
+      },
+      {
+        "case": "replacedDocumentReferenceUnavailable",
+        "documentObservation": "unavailable",
+        "mainFrameNavigationObserved": true,
+        "passed": true,
+        "sourceRuns": 1
+      }
+    ],
+    "networkDenials": 0,
+    "passed": true,
+    "schemaVersion": 1,
+    "scope": "generated helper-level pinned browser; not Reader parity"
+  },
+  "runtimeIdentity": {
+    "effectiveCapabilitiesZero": true,
+    "interfaces": [
+      "lo"
+    ],
+    "noNewPrivileges": true,
+    "runtimeGid": 10001,
+    "runtimeUid": 10001,
+    "supplementaryGroups": [
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      0
+    ],
+    "withinBudgetCgroup": true
+  },
+  "hostBudgetMembershipIndependentlyVerified": true,
+  "originalDocumentGuardReexecuted": true,
+  "originalZeroSwapBudgetGuardsReexecuted": 4,
+  "ownedRuntimeStateAbsent": true,
+  "afterOldJarIdentityReadResources": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "memoryCurrentBytes": 311504896,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 312553472,
+    "memoryStatBytes": {
+      "active_file": 126976,
+      "anon": 11882496,
+      "file": 298876928,
+      "file_dirty": 0,
+      "file_mapped": 5050368,
+      "file_writeback": 0,
+      "inactive_file": 298754048,
+      "kernel": 290816,
+      "kernel_stack": 0,
+      "pagetables": 114688,
+      "shmem": 0,
+      "slab_reclaimable": 128512,
+      "slab_unreclaimable": 30112,
+      "sock": 0
+    },
+    "pidsCurrent": 1,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 1,
+    "scope": "old locked read-only image runtime plus current worker; generated helper only",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "sampling": {
+    "highestObservedCurrent": {
+      "elapsedSeconds": 12.056,
+      "memoryCurrentBytes": 2073055232,
+      "memoryPeakBytes": 2085363712,
+      "memoryStatBytes": {
+        "active_file": 155676672,
+        "anon": 452268032,
+        "file": 1595633664,
+        "file_dirty": 217088,
+        "file_mapped": 240701440,
+        "file_writeback": 0,
+        "inactive_file": 1420128256,
+        "kernel": 21082112,
+        "kernel_stack": 3031040,
+        "pagetables": 8241152,
+        "shmem": 19832832,
+        "slab_reclaimable": 4476320,
+        "slab_unreclaimable": 4965728,
+        "sock": 0
+      },
+      "phase": "generatedBrowserHelperRunning",
+      "pidsCurrent": 186,
+      "pidsPeak": 202
+    },
+    "highestObservedPids": {
+      "elapsedSeconds": 10.542,
+      "memoryCurrentBytes": 2065829888,
+      "memoryPeakBytes": 2065829888,
+      "memoryStatBytes": {
+        "active_file": 76378112,
+        "anon": 451067904,
+        "file": 1590566912,
+        "file_dirty": 217088,
+        "file_mapped": 240324608,
+        "file_writeback": 0,
+        "inactive_file": 1499373568,
+        "kernel": 20930560,
+        "kernel_stack": 3260416,
+        "pagetables": 8044544,
+        "shmem": 14819328,
+        "slab_reclaimable": 4443352,
+        "slab_unreclaimable": 4840336,
+        "sock": 0
+      },
+      "phase": "generatedBrowserHelperRunning",
+      "pidsCurrent": 201,
+      "pidsPeak": 201
+    },
+    "sampleCount": 26
+  },
+  "resources": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "memoryCurrentBytes": 1592733696,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 2095718400,
+    "memoryStatBytes": {
+      "active_file": 171302912,
+      "anon": 14209024,
+      "file": 1569054720,
+      "file_dirty": 217088,
+      "file_mapped": 5406720,
+      "file_writeback": 0,
+      "inactive_file": 1397747712,
+      "kernel": 4415488,
+      "kernel_stack": 0,
+      "pagetables": 135168,
+      "shmem": 0,
+      "slab_reclaimable": 3902584,
+      "slab_unreclaimable": 395112,
+      "sock": 0
+    },
+    "pidsCurrent": 1,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 202,
+    "scope": "old locked read-only image runtime plus current worker; generated helper only",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "finalResources": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "memoryCurrentBytes": 1592569856,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 2095718400,
+    "memoryStatBytes": {
+      "active_file": 171302912,
+      "anon": 14221312,
+      "file": 1569054720,
+      "file_dirty": 217088,
+      "file_mapped": 5406720,
+      "file_writeback": 0,
+      "inactive_file": 1397747712,
+      "kernel": 4501504,
+      "kernel_stack": 0,
+      "pagetables": 131072,
+      "shmem": 0,
+      "slab_reclaimable": 3934136,
+      "slab_unreclaimable": 428856,
+      "sock": 0
+    },
+    "pidsCurrent": 1,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 202,
+    "scope": "old locked read-only image runtime plus current worker; generated helper only",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "totalSeconds": 14.333,
+  "pythonChecks": {
+    "tests": 238,
+    "passed": 237,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 13.894
+  },
+  "protectedReportsChecked": 58,
+  "protectedReportsChanged": 0,
+  "limitations": [
+    "Categories describe current observations, not the exact kernel peak breakdown",
+    "file includes shmem and kernel categories overlap; no category sum or subtraction is used",
+    "Probe overhead and old-JAR integrity read remain inside the same total budget",
+    "No unique attribution of earlier public request failure, leak-free claim, controlled whole-page A/B or production acceptance",
+    "New collector's own hosted acceptance is pending"
+  ]
+}

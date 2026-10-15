@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "7bf8c8a43544abb04ede076df560bad988be3699",
+  "testedMergeSnapshot": "a1a02913c5f431b9d74a1ada1446c3690bfcf8d9",
+  "ownCompletedRuns": [
+    {
+      "runId": 38254356645,
+      "name": "Java Kotlin CI",
+      "conclusion": "success"
+    },
+    {
+      "runId": 38254356591,
+      "name": "Vue 3 preview build",
+      "conclusion": "success"
+    },
+    {
+      "runId": 38254356680,
+      "name": "Browser image integration",
+      "conclusion": "success"
+    }
+  ],
+  "reportedAndFullRunningJarSha256": "308d94ed216fe531e1b9a9477363999df31b35944be78d7200aa6806a766bf90",
+  "reportedJarBytes": 285674067,
+  "reportedTwoCleanBuildBytesEqual": true,
+  "jvmTests": 222,
+  "jvmSkipped": 35,
+  "vueGeneratedJourneys": 25,
+  "vueSkipped": 0,
+  "allFivePreviouslyFailedJourneysIncludedAndPassed": true,
+  "hostedLinuxPythonTests": 755,
+  "hostedLinuxPythonSkipped": 0,
+  "fullImageUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "a1a02913c5f431b9d74a1ada1446c3690bfcf8d9",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 12.749,
+    "xmlSha256": "b9130c6b4659e45226f79f6a7fd2bae8fd265732ee4517ae5ec67abe439c7e99",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "8507e4c148ac8a4e8aa564d5829f33160e227a6deaea2486637fceb2e17d5bae",
+        "bytes": 49269,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "fa3b2b83a126e754ae0bf483d4d52a6f1f07a93bf459bb807533590502d503f5",
+        "bytes": 33510,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "generatedLoginAndReadingScreenshotsVisuallyReviewed": true,
+  "readerHttpsBusiness": {
+    "acceptedCurrentReaderHttpsBusinessSubset": true,
+    "generatedScenarios": 8,
+    "actualTargetRequests": 12,
+    "actualConnectTunnels": 14,
+    "parsedHeaderFields": 178,
+    "negativeCertificateControls": 2,
+    "generatedUserNamespaces": 2,
+    "proxySocketOwnershipVerifiedByLiveProducer": true,
+    "originalJarThreeWayAccepted": false,
+    "fullNativeImageLocallyAccepted": false,
+    "realSiteLoginAccepted": false,
+    "productionChanged": false,
+    "fullGoalComplete": false,
+    "acceptedCertificateHintMessages": true
+  },
+  "workerHttps": {
+    "acceptedPackagedWorkerHttpsSubset": true,
+    "positiveCases": 10,
+    "negativeCertificateControls": 2,
+    "targetRequests": 24,
+    "parsedHeaderFields": 334,
+    "readerApiOrProductionAccepted": false
+  },
+  "fullUiClientOutsideServerResourceBudget": true,
+  "imageBuildStepSeconds": 253.0,
+  "ghaCacheImportManifestObserved": true,
+  "cachedBuildStepCount": 7,
+  "cacheExportSeconds": [
+    76.8
+  ],
+  "causalCacheSpeedupProven": false,
+  "strictSixtySecondTotalCacheExportCapProven": false,
+  "nativeRunToContinue": 38254356613,
+  "sharedNativeJarJobToContinue": 114836585843,
+  "nativeWholeWorkflowAccepted": false,
+  "jarDownloadedAndIndependentlyRehashed": false,
+  "largeArchivesLocallyDownloadedOrRehashed": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "realSingleBookRetested": false,
+  "realSingleBookFullAcceptance": false,
+  "priorSFourOfEightAndRRefreshFailuresPreserved": true,
+  "rawLogsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

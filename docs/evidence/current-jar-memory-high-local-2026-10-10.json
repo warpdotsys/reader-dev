@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated-only current CI JAR overlaid read-only on older locked runtime; not latest-native image acceptance",
+  "jar": {
+    "sourceRevision": "c594217119aae2bc48bf8792e06306995d69a672",
+    "testedRevision": "0db121d5ab611cef4d32185e1333066b081ca9f5",
+    "nativeRun": 37946438729,
+    "artifactId": 11624549044,
+    "bytes": 285665012,
+    "sha256": "e59a01bf190de757f73216557ff353411019507d25bad76f0c808b48366adb84",
+    "fullLocalJarHashVerified": true,
+    "outerZipHashIndependentlyVerifiedLocally": false,
+    "firstDownloadPostconditionFailed": "expected-one-file-but-payload-contained-jar-and-checksum-list",
+    "redownloaded": false
+  },
+  "runtimeImage": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestNativeImageDownloadedLocally": false,
+  "originalImageFilesystemChanged": false,
+  "hardBudget": {"cpus": 2, "memoryBytes": 2147483648, "pids": 256, "swapBytes": 0},
+  "reports": [
+    {"file": "build/local-camoufox-image-20261008-a/evidence/local-current-jar-20261010-c.json", "sha256": "b416620d9bf87ae53cdc63167005fc8f295832c67772bad979ec1009a5d42f1d", "variant": "default", "businessPassed": true, "overallPassed": false, "peakBytes": 2147483648, "high": 0, "max": 1816, "pidsPeak": 219, "seconds": 51.03},
+    {"file": "build/local-camoufox-image-20261008-a/evidence/local-current-jar-20261010-d.json", "sha256": "f8df35c6880b8edee491f6dcad8f26950b33524bb37cba28889a5216da4c6159", "variant": "initial-heap-128m-only", "businessPassed": true, "overallPassed": false, "peakBytes": 2147483648, "high": 0, "max": 881, "pidsPeak": 225, "seconds": 42.067},
+    {"file": "build/local-camoufox-image-20261008-a/evidence/local-current-jar-20261010-e.json", "sha256": "0b48d90a3d47b70d791f00d2771e694f5783fda8a11eda5101f8a4ed0c2e8c5f", "variant": "post-worker-readonly-font-cache-advice-only", "businessPassed": true, "overallPassed": false, "peakBytes": 2147483648, "high": 0, "max": 788, "pidsPeak": 222, "seconds": 50.01},
+    {"file": "build/local-camoufox-image-20261008-a/evidence/local-current-jar-20261010-f.json", "sha256": "e8b9230f00ef5602d727346e849af35477d016fb9352dfa76c5071af220c0869", "variant": "aggregate-memory-high-1536m", "businessPassed": true, "overallPassed": true, "peakBytes": 1611399168, "high": 2893, "max": 0, "pidsPeak": 218, "seconds": 62.45},
+    {"file": "build/local-camoufox-image-20261008-a/evidence/local-current-jar-20261010-g.json", "sha256": "4420d5e6cd3b9b0d4ca75d2c1edb1ab9434f19d1f16e10e382d45c4bf0c9e0a9", "variant": "aggregate-memory-high-1536m-independent-repeat", "businessPassed": true, "overallPassed": true, "peakBytes": 1611395072, "high": 3768, "max": 0, "pidsPeak": 220, "seconds": 44.503}
+  ],
+  "allFiveReports": {"oom": 0, "oomKill": 0, "pidsLimitEvents": 0, "swapBytes": 0, "mainExit": 0, "remainingOwnedContainers": 0},
+  "wslStopOrRestartPerformed": false,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "renderedUiVerified": false,
+  "originalJarThreeWayVerified": false,
+  "newHostedMemoryPolicyVerified": false,
+  "productionChanged": false
+}

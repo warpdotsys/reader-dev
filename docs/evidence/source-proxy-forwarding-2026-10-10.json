@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "scope": "real compiled URL parser to explicit renderer double; not live browser proof",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "originalJarVerified": true,
+  "originalGetAndPostDefaultMasks": [
+    134,
+    902
+  ],
+  "proxyDefaultMask": 128,
+  "originalBytecodeAlsoDefaultsProxyToNull": true,
+  "originalAnalyzeUrlClassSha256": "eb7af96657027bd214b7805dfb82470fb66795c29614666b936ab65fa5964592",
+  "originalDefaultImplsClassSha256": "6c1516163e89db2b6626f193dc7b2398d91133baf9e6b67dd439197588ceeeee",
+  "readableSourceSha256": "ab762cb1ff36f66167f21c36f23e52afc4cd389ec6c04f195f41642093f770e4",
+  "beforeFix": {
+    "tests": 4,
+    "failures": 3,
+    "errors": 0,
+    "actualFailures": {
+      "sourceProxyReachesWebviewPostWithTheOriginalBody": "java.lang.AssertionError: expected:<socks5://127.0.0.1:18082> but was:<null>",
+      "sourceProxyReachesWebviewGetWithoutBecomingAnHttpHeader": "java.lang.AssertionError: expected:<http://127.0.0.1:18081> but was:<null>",
+      "explicitHeaderMapRetainsItsPrecedenceOverSourceProxy": "java.lang.AssertionError: expected:<http://127.0.0.1:18083> but was:<null>"
+    },
+    "xmlSha256": "b88efea564606b833cc187c405cc63a6cbe1f4f4297de4a6916bef5b2e1fd3ec"
+  },
+  "afterFix": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "xmlSha256": "2743b27e028ec2ade3ef0505843b1e3f8c0a65e4a868a533aec7ea8ad4f6612f"
+  },
+  "actualCompiledSuites": [
+    {
+      "suite": "com.htmake.reader.init.AnalyzeUrlWebviewProxyTest",
+      "tests": 4,
+      "xmlSha256": "2743b27e028ec2ade3ef0505843b1e3f8c0a65e4a868a533aec7ea8ad4f6612f"
+    },
+    {
+      "suite": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+      "tests": 2,
+      "xmlSha256": "0634aa910f5852e327c02a6dd0650fb29c11cc8cd70b582dce2e62ce4e740dae"
+    },
+    {
+      "suite": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+      "tests": 3,
+      "xmlSha256": "884122ebebf6d91a97cf22dea36737c7f2c8e3c5370ea2bc429af6fc4a4d62d2"
+    }
+  ],
+  "intentionalBehaviorChange": "forward configured source proxy instead of silently defaulting to direct",
+  "realBrowserOrJavaEgressAccepted": false,
+  "currentJarRebuilt": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "fullGoalComplete": false
+}

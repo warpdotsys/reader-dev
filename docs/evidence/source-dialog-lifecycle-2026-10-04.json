@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-04",
+  "scope": "local isolated Chromium; generated accounts and metadata only; packaged restored JAR",
+  "baselineJarSha256": "ce0a868b0097d051828b7a3e59dd55bb0e32643c98c3e8adf2eef46731634326",
+  "fullPageNavigation": {
+    "passed": true,
+    "reproducesSpaLifecycle": false,
+    "xmlSha256": "7598e31021aa8638b27fc4a1e60a282bd2abef958f6f70abc40fbf9019a0c182"
+  },
+  "actualSpaBaseline": {
+    "tests": 1, "failures": 1, "errors": 0, "skipped": 0, "seconds": 22.189,
+    "failure": "History navigation from source modal must restore actual shelf scrolling; overflow=hidden",
+    "xmlSha256": "66831b8a387351dd93c4edb59bcebdef0f304d8d0f7feeaf518ba5e24f20902b"
+  },
+  "restored": {
+    "jarSha256": "cdd3786c8f7ed023c92d8ae35a55040f9162e3de3d2af61c3cd67426e4347d9b",
+    "tests": 1, "failures": 0, "errors": 0, "skipped": 0, "seconds": 24.773,
+    "xmlSha256": "159aa7bb4fcce39abcd40961ec46b217bb0705038ccb75c8901a156d7cdc5217",
+    "generatedShelfBooks": 32,
+    "sameDocumentSentinelVerified": true,
+    "wheelScrollBeforeAndAfterVerified": true,
+    "sourceOwnedScrollLockReleased": true,
+    "priorCookieKeyboardIdentityJourneyStillPassed": true,
+    "bundle": "BOOT-INF/classes/web-vue3/static/SourceManageView-B6AxAaIK.js",
+    "bundleMatchesDistSha256": "97e57e2c711bd2e92bff18ced26c7255d5fadfc2968faf3eb528a2eeb376b661"
+  },
+  "frontend": {"tests": 192, "failures": 0, "skipped": 0, "typeCheckPassed": true, "productionBuildPassed": true},
+  "build": {"bootJarPassed": true, "seconds": 42, "tasksExecuted": 3, "tasksUpToDate": 2, "javaKotlinRecompiledInThisIncrement": false},
+  "screenshots": {
+    "settledTransitionWaitAdded": true,
+    "cookieMobileVisuallyInspected": true,
+    "cookieMobileSha256": "9fcbbcef0d1df8e49ab135500a2a0af369154f886cd7b2af3f85b215cb1a2232"
+  },
+  "cleanup": {"port18942Closed": true, "userReader18931Preserved": true},
+  "limits": ["not original JAR parity", "new increment hosted CI not yet audited", "not all dialogs, pages or input devices", "no real credential or chapter body in this regression"]
+}

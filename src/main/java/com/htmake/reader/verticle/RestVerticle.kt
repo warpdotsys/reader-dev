@@ -36,6 +36,7 @@ abstract class RestVerticle : CoroutineVerticle() {
     protected lateinit var router: Router
 
     open var port: Int = 8080
+    open var bindAddress: String = "0.0.0.0"
 
     override suspend fun start() {
         super.start()
@@ -125,10 +126,10 @@ abstract class RestVerticle : CoroutineVerticle() {
         } else {
             router
         }
-        logger.info("port: {}", port)
+        logger.info("Listening on {}:{}", bindAddress, port)
         vertx.createHttpServer().requestHandler(mainRouter).exceptionHandler { error ->
             onException(error)
-        }.listen(port) { res ->
+        }.listen(port, bindAddress) { res ->
             if (res.succeeded()) {
                 logger.info("Server running at: http://localhost:{}", port);
                 logger.info("Web reader running at: http://localhost:{}", port);
@@ -156,7 +157,6 @@ abstract class RestVerticle : CoroutineVerticle() {
     }
 
     open fun onHandlerError(ctx: RoutingContext, error: Exception) {
-        logger.error("Error: {}", error)
         ctx.error(error)
     }
 

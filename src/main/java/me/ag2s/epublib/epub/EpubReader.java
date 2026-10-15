@@ -18,6 +18,7 @@ import me.ag2s.epublib.domain.Resource;
 import me.ag2s.epublib.domain.Resources;
 import me.ag2s.epublib.util.ResourceUtil;
 import me.ag2s.epublib.util.StringUtil;
+import me.ag2s.epublib.util.EpubArchivePolicy;
 
 /**
  * Reads an epub file.
@@ -88,6 +89,8 @@ public class EpubReader {
      */
     public EpubBook readEpubLazy(ZipFile zipFile, String encoding,
                                  List<MediaType> lazyLoadedTypes) throws IOException {
+        // Verify actual output before legacy OPF/NCX parsers can turn read failures into empty TOCs.
+        EpubArchivePolicy.validate(zipFile);
         Resources resources = ResourcesLoader
                 .loadResources(zipFile, encoding, lazyLoadedTypes);
         return readEpub(resources);

@@ -30,7 +30,7 @@ public class ResourceInputStream extends FilterInputStream {
 
   @Override
   public void close() throws IOException {
-    super.close();
-    zipFile.close();
+    try { super.close(); }
+    finally { zipFile.close(); }
   }
 }

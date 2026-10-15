@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { getCurrentInstance, onMounted, watch } from 'vue'
+import { getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { applyUiTheme, loadUiTheme } from '@/utils/uiTheme'
 import { applyCustomCss } from '@/utils/customCss'
 import { applyDocLang, lang, t } from '@/utils/i18n'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
+
+const updateAvailable = ref(false)
+const onUpdateReady = () => { updateAvailable.value = true }
+const applyUpdate = () => window.dispatchEvent(new Event('reader:apply-update'))
 
 // GAP 69 全局错误处理：未被子组件捕获的渲染/生命周期/异步错误统一记录
 // （子组件渲染错误由 ErrorBoundary 的 onErrorCaptured 拦截并展示重载页，
@@ -20,6 +24,7 @@ if (app) {
 }
 
 onMounted(() => {
+  window.addEventListener('reader:update-ready', onUpdateReady)
   // 界面主题（浅色/深色/跟随系统）：进入即恢复，并监听系统深色偏好（system 时自动切换）
   applyUiTheme(loadUiTheme())
   // GAP 5：自定义样式注入（reader_custom_css → 全局 <style>，阅读器/界面均可覆盖）
@@ -32,9 +37,13 @@ onMounted(() => {
   }
   mq.addEventListener('change', onSystemChange)
 })
+onUnmounted(() => window.removeEventListener('reader:update-ready', onUpdateReady))
 
 // i18n：语言切换后重算 <html lang> 与当前路由标题
 const route = useRoute()
+// 阅读页仅在书籍身份变化时重建：同一本书的 ?chapter / 其他 query 更新必须保留
+// 当前实例，避免翻章时丢失阅读状态。非阅读页不需要人为指定 key。
+const routeViewKey = () => route.name === 'reader' ? String(route.params.bookUrl ?? '') : undefined
 watch(lang, () => {
   applyDocLang()
   const meta = route.meta
@@ -47,10 +56,43 @@ watch(lang, () => {
   <ErrorBoundary>
     <router-view v-slot="{ Component }">
       <transition name="page" mode="out-in">
-        <component :is="Component" />
+        <component :is="Component" :key="routeViewKey()" />
       </transition>
     </router-view>
   </ErrorBoundary>
   <!-- GAP：全局命令面板（Ctrl+K——任意页可用） -->
   <CommandPalette />
+  <div v-if="updateAvailable" class="update-banner" role="status">
+    <span>{{ t('app.updateReady') }}</span>
+    <button type="button" @click="applyUpdate">{{ t('app.updateNow') }}</button>
+  </div>
 </template>
+
+<style scoped>
+.update-banner {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+  font-size: 13px;
+}
+.update-banner button {
+  flex: none;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+}
+</style>

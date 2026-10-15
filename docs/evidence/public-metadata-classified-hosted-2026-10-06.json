@@ -1,0 +1,207 @@
+{
+  "recordedDate": "2026-10-06",
+  "probeSourceCommit": "1cf36e7b40c63218c28cba6913431582e2e18d07",
+  "probeRun": {
+    "id": 37432570576,
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37432570576",
+    "status": "completed",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "actualJobId": 112166633301
+  },
+  "artifact": {
+    "id": 11397338457,
+    "name": "public-metadata-amd64-37432570576",
+    "sizeBytes": 3115,
+    "githubDeclaredArchiveSha256": "810736a0cc7ef0c6ef61ac0d3a49fb781789958627b0e4780f59f9f75e5a9139",
+    "archiveHashRecomputedLocally": false
+  },
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+      "value": {
+        "ownedContainerRemoved": true,
+        "probeExit": 1
+      }
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+      "value": {
+        "Running": true,
+        "OOMKilled": false,
+        "ExitCode": 0
+      }
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "sha256": "b3961ac6afb0c785a376f7329c5b01af78a0f9c528b96c5aacf7409543186c1b",
+      "value": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      }
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "sha256": "05057b6c3ceeabfa08eb403f808bf4273608064033eb17ff838bef972aab891d",
+      "value": {
+        "phase": "check",
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      }
+    },
+    {
+      "name": "PUBLIC_METADATA_REPORT.json",
+      "sha256": "f24e198289871c03f0551cc3637dacbec4345884cf85cb0df46acfb1af2d54af",
+      "value": {
+        "allDeviceTokenRevocationProven": false,
+        "bookInfoApiCalls": 1,
+        "chapterBodyRequested": false,
+        "configuredRenderer": "camoufox",
+        "cookieRowsAfter": 0,
+        "cookieRowsBefore": 0,
+        "defaultBrowserProcessObserved": true,
+        "expectedImageRevision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "generatedCookieSessionRevokedVerified": true,
+        "logoutObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": true,
+          "httpStatus": 200,
+          "isSuccess": true
+        },
+        "maximumObservedProcesses": {
+          "browser": 7,
+          "driver": 1,
+          "worker": 1
+        },
+        "metadata": {
+          "authorMatches": false,
+          "coverHasExpectedPublicOrigin": false,
+          "dataIsNull": false,
+          "dataIsObject": true,
+          "errorMessageLength": 0,
+          "errorMsgEmpty": true,
+          "errorMsgIsString": true,
+          "hostFingerprint": null,
+          "httpStatus": 200,
+          "isSuccess": true,
+          "isSuccessIsBoolean": true,
+          "knownFieldsPresent": {
+            "author": true,
+            "bookUrl": true,
+            "canUpdate": true,
+            "coverUrl": false,
+            "durChapterIndex": true,
+            "durChapterPos": true,
+            "group": true,
+            "name": true,
+            "tocUrl": true,
+            "totalChapterNum": true,
+            "type": true
+          },
+          "nameMatches": false,
+          "passed": false,
+          "policyReason": null,
+          "workerErrorCategory": null
+        },
+        "metadataDomWaitBudgetMs": 8000,
+        "observedAt": "2026-10-06T15:57:27.737043+08:00",
+        "originalJarOrArchivedParity": false,
+        "passed": false,
+        "postLogoutProtectedObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": false,
+          "httpStatus": 200,
+          "isSuccess": false
+        },
+        "privateNetworkGuardEnabled": true,
+        "processMonitorPassed": true,
+        "rawErrorHtmlCookieAndMetadataValuesNotPersisted": true,
+        "realAuthenticationProven": false,
+        "realCredentialsImported": false,
+        "requestSeconds": 12.472,
+        "resourceGuardPassed": true,
+        "runtimeUid": 10001,
+        "schemaVersion": 1,
+        "scope": "anonymous single-image public metadata only",
+        "source": "https://www.qidian.com/book/1010400217/",
+        "sourceScriptMode": "boundedMetadataDom",
+        "sourceScriptSynthesizesMetadata": false
+      }
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "sha256": "6245dbe5019034599f7fb4539c76b1469e143d6845ebc5af6842598122e19bc9",
+      "value": {
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "network": "bridge",
+        "publishedPorts": 0
+      }
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "sha256": "2f12a4617251b63c8369863349bf61a955fab0a78257c9c1fe8babfc09a1b1f2",
+      "value": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 347484160,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 868945920,
+        "pidsCurrent": 35,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 190,
+        "scope": "one anonymous default-Camoufox metadata request",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      }
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "sha256": "fe6282f61769b092b80dc6d2b36913b27c0424006fd6961759329c6065c1dd2a",
+      "value": {
+        "id": 37428262965,
+        "name": "Native release artifact rehearsal",
+        "path": ".github/workflows/release-native.yml",
+        "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+        "event": "pull_request",
+        "conclusion": "success",
+        "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262965"
+      }
+    }
+  ],
+  "independentChecks": {
+    "allEightJsonFilesDownloaded": true,
+    "allExtractedHashesRecomputed": true,
+    "actualCgroupVerifierPassedWithNoSwap": true,
+    "loadedImageMatchesPreload": true,
+    "runningJarMatchesLoadedImage": true,
+    "onlyOneAnonymousGetBookInfo": true,
+    "generatedSessionRevocationAndContainerRemovalVerified": true
+  },
+  "limits": [
+    "Image revision 53bf73d6 is historical, not a 1cf36e7b rebuilt image",
+    "This request has no worker error; cannot classify the previous 70-character error",
+    "Metadata is a successful empty/mismatched shell and remains failed",
+    "No real account, Cookie import, chapters, production mutation or original/remote parity"
+  ]
+}

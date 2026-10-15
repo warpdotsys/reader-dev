@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-07",
+  "scope": "own hosted mobile layout fix plus later local generated custom-group regression; not real source or production acceptance",
+  "sourceHead": "e5cc2ba84fd396cd3ca88f69bc5a3c204058d318",
+  "testedMergeRevision": "ea3d709f677471335f0cc7c7fbe9718651529169",
+  "runs": {
+    "java": {"id": 37574666793, "status": "completed", "conclusion": "success"},
+    "vue": {"id": 37574666764, "status": "completed", "conclusion": "success"},
+    "fullImage": {"id": 37574666765, "status": "completed", "conclusion": "success"},
+    "native": {"id": 37574666745, "status": "completed", "conclusion": "success", "actualJobs": 6}
+  },
+  "artifacts": {
+    "shelfLayout": 11462621182, "coreVue": 11462511308, "subdirectoryVue": 11462346004,
+    "fullResources": 11462182369, "fullCamoufox": 11462037860,
+    "fullSourceDocument": 11462092532, "fullChromium": 11463015057,
+    "publisher": 11462233738, "nativeAmd64Transfer": 11463121352,
+    "nativeArm64Transfer": 11462692636, "nativeCamoufox": 11463120081,
+    "nativeJava": 11461978911, "nativeSourceDocument": 11462137490
+  },
+  "independentChecks": {
+    "strictPublisherJsonFiles": 24,
+    "defaultUiReports": 5, "asyncReaderReports": 5, "resourceBudgetReports": 5,
+    "nativeIdentitySets": 4, "nativeSharedJarAndDefaultUiEqual": true,
+    "camoufoxSuites": 2, "camoufoxCasesEach": 18, "camoufoxFailuresErrorsSkipped": 0,
+    "sourceDocumentHelperSuites": 2, "sourceDocumentCasesEach": 3,
+    "nativeJavaTotal": 161, "nativeJavaPassed": 132, "nativeJavaSkipped": 29,
+    "nativeJavaFailuresErrors": 0,
+    "fullChromiumPassed": 23, "fullChromiumFailuresErrorsSkipped": 0,
+    "vueCorePassed": 18, "vueSubdirectoryPassed": 1, "vueFailuresErrorsSkipped": 0,
+    "hostedPageTopGeometryCases": 18, "hostedPageTopGeometryPassed": true,
+    "hostedPhoneScreenshotViewed": true
+  },
+  "nativeIdentity": {
+    "version": "4.0.7",
+    "sharedJarSha256": "bbd526609ae21fc99c97818e74a59b86e9272663c6c83a6b6a69ec12630c3092",
+    "amd64": {
+      "imageId": "sha256:807c0c5e254904a137cbf92c2ba0cc36b0687e283dad28332b1827a7342d9088",
+      "archiveSha256RecordedByCI": "78d1522ff044a33253d624b0fc83f37b235d20ee2a9dd71c5f309b8f54b3cd83"
+    },
+    "arm64": {
+      "imageId": "sha256:a49870879a7fdcf5e07e9a0e729d913d0cdb7792931396452e027fa5a724158e",
+      "archiveSha256RecordedByCI": "84932d85c95a5004c07612b1b3f258ab53dd0227617442b93e67702418cf9c06"
+    },
+    "largeImageArchivesDownloadedOrRehashedLocally": false
+  },
+  "fullWorkflowJarSha256": "9752bdb2dea0983ade9e609e0184608b57b48722307b359dc5544ec431fefdb1",
+  "differentWorkflowBuildsNotClaimedBitReproducible": true,
+  "shortSmokeBudget": {
+    "cpuCount": 2, "memoryMaxBytes": 2147483648, "pidsMax": 256,
+    "swapMaxBytes": 1073741824, "actualSwapBytesAll": 0, "memoryOomAndPidLimitEventsAll": 0,
+    "observations": [
+      {"phase": "amd64 built", "memoryPeakBytes": 847716352, "pidsPeak": 200},
+      {"phase": "amd64 loaded", "memoryPeakBytes": 821014528, "pidsPeak": 200},
+      {"phase": "arm64 built", "memoryPeakBytes": 835010560, "pidsPeak": 205},
+      {"phase": "arm64 loaded", "memoryPeakBytes": 824631296, "pidsPeak": 196},
+      {"phase": "full-image smoke", "memoryPeakBytes": 812818432, "pidsPeak": 201}
+    ]
+  },
+  "reportManifests": {
+    "algorithm": "SHA256 of case-sensitive lexicographically sorted relative/path + space + SHA256(file) + newline; slash paths; UTF-8",
+    "publisher": {"files": 24, "bytes": 15244, "sha256": "c539794163f7a771d86e7004aac69dca65ad61312cb08e62b61bec4e582aca0c"},
+    "full": {"files": 8, "bytes": 11239, "sha256": "5c4a95bd2f0045b43ac52268ec3ca59273c1b4f8bacc711b89041baa1521eb51"},
+    "nativeJava": {"files": 42, "bytes": 88204, "sha256": "3420a11f882c42e79fb3b0a8e6c7bde9a35ba1ff07e7cae80dc89f5acb007174"},
+    "shelfVisual": {"files": 4, "bytes": 191631, "sha256": "634b6d35294b385cbd7fc6d8a3d277dc90d704f9225424003949c8cd768fa3d6"}
+  },
+  "hostedPageTopGeometrySha256": "b5b24af832c5b6ff7a43c90ada771d031fa1d5f137fa0cac6fab0dffad017599",
+  "camoufoxXmlSha256": {
+    "full": "4804fd8e4e689ea147e179eedab960abe768f1b9971e5000d529bb3f21defd71",
+    "native": "b12e136e2d6b4ab3a6761bd097e4b785a2bbfd76c68aff17390514a72383396e"
+  },
+  "laterLocalCustomGroupRegression": {
+    "scope": "existing fresh Chrome context and isolated generated Reader; not a current full-image or aggregate-cgroup run",
+    "jarSha256": "eaa34cc99308aed6bfad159f2d3e1e19c08a55a629ad77cbffd4224327228f32",
+    "testSourceSha256": "66f736aaf8381d287bac8ee20b938a331b622cb93656f62a4805bd6b60b557a1",
+    "tests": 1, "failures": 0, "errors": 0, "skipped": 0, "seconds": 24.084,
+    "pageTopCases": 18, "customGroupCases": 3, "widths": [1135, 360, 320], "height": 865,
+    "createdCustomGroups": 4, "charactersPerName": 20, "totalFilterTabs": 9,
+    "persistedAfterReload": true, "actualLastFilterAndManagementClicksPassed": true,
+    "allRestoresGeneratedBooks": true, "horizontalDocumentOverflow": false,
+    "allEvidenceScrollY": 0, "phoneScreenshotViewed": true,
+    "xmlSha256": "4a0bc8f0def5eda8d6720ba30745f3f79feda5dc65a72db714e0b316a7ad4f57",
+    "geometrySha256": "077700cc5c2fe5879e939b3df1b4b5ed34864fb31b58083e1846d90fd6ed89d9",
+    "phoneScreenshotSha256": "bc13f39585fb6eca97c2eb0e9afbdb1ac80b53e93c589b443eff9d8d635c4020",
+    "ownedHandlesStopped": true, "testListenersAbsent": true,
+    "newTestHostedExecutionNotYetAccepted": true
+  },
+  "boundaries": {
+    "realQidianFixed": false, "realCredentialsImported": false, "privateBodyRead": false,
+    "originalJarParityExecuted": false, "currentRevisionLongSoakExecuted": false,
+    "realMobileTouchAccepted": false, "tagCreated": false,
+    "registryWritten": false, "productionChanged": false
+  }
+}

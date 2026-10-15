@@ -6,6 +6,8 @@
  * 展示时经 file/download 拉取（附 accessToken，BookshelfView 封面同款方式）。
  */
 
+import { authenticatedReaderUrl } from './tokenAuthentication.ts'
+
 export type BgMode = 'color' | 'texture' | 'preset' | 'image'
 
 export const BG_MODE_KEY = 'reader_bg_mode'
@@ -93,5 +95,5 @@ export function bgPresetUrl(name: string): string {
 export function bgImageUrl(path: string, accessToken: string): string {
   if (!path) return ''
   const base = `/reader3/file/download?path=${encodeURIComponent(path)}`
-  return accessToken ? `${base}&accessToken=${encodeURIComponent(accessToken)}` : base
+  return authenticatedReaderUrl(base, accessToken)
 }

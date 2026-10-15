@@ -1,0 +1,361 @@
+{
+  "recordedDate": "2026-10-06",
+  "scope": "generated hosted contracts and unchanged native artifact consumption; not real authentication or production",
+  "sourceCommit": "c89d6623f0d870f6b8ea53ea0bdb3bcc26d2b4a8",
+  "testedMergeRevision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+  "runs": [
+    {
+      "id": 37436316382,
+      "workflow": "Java Kotlin CI",
+      "status": "completed",
+      "conclusion": "success",
+      "actualJobs": [
+        112178884760
+      ]
+    },
+    {
+      "id": 37436316384,
+      "workflow": "Vue 3 preview build",
+      "status": "completed",
+      "conclusion": "success",
+      "actualJobs": [
+        112178884826,
+        112178885175
+      ]
+    },
+    {
+      "id": 37436316357,
+      "workflow": "Browser image integration",
+      "status": "completed",
+      "conclusion": "success",
+      "actualJobs": [
+        112178885750
+      ],
+      "mutuallyExclusiveSkippedJobs": 5
+    },
+    {
+      "id": 37436316345,
+      "workflow": "Native release artifact rehearsal",
+      "status": "completed",
+      "conclusion": "success",
+      "actualJobs": [
+        112178885385,
+        112181223978,
+        112181223983,
+        112182789807,
+        112182789954,
+        112184385028
+      ]
+    }
+  ],
+  "actualSuccessfulJobs": 10,
+  "defaultEngineArtifacts": [
+    {
+      "run": 37436316345,
+      "id": 11399463127,
+      "sizeBytes": 1025,
+      "githubDeclaredArchiveSha256": "afbb759490fa5ae670e6a31ee258d7a00469a35525ed8e9d15c14379838a9d71"
+    },
+    {
+      "run": 37436316357,
+      "id": 11399467547,
+      "sizeBytes": 1024,
+      "githubDeclaredArchiveSha256": "60f201abe74085fae71b017b5a0b124549386b36cd23b29ce9ef516001de1c47"
+    }
+  ],
+  "actualDownloadedReports": {
+    "contracts": [
+      {
+        "phase": "native",
+        "tests": 16,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "xmlSha256": "86c2dd62bb2b0824d61d3350e6dcc8ca63001879fe9b2e6c88a3377fbbcbb39e",
+        "cases": [
+          {
+            "name": "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers",
+            "seconds": 9.853
+          },
+          {
+            "name": "generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost",
+            "seconds": 3.07
+          },
+          {
+            "name": "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
+            "seconds": 10.16
+          },
+          {
+            "name": "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
+            "seconds": 8.808
+          },
+          {
+            "name": "importedHostOnlyCookieRetainsPathForSubresources",
+            "seconds": 5.955
+          },
+          {
+            "name": "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers",
+            "seconds": 14.5
+          },
+          {
+            "name": "cookiesArePersistedPerReaderNamespace",
+            "seconds": 9.043
+          },
+          {
+            "name": "sourceRegexReturnsTheResourceUrlWithoutFetchingIt",
+            "seconds": 2.86
+          },
+          {
+            "name": "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
+            "seconds": 8.654
+          },
+          {
+            "name": "existingHttpOnlyCookieCanBeRenewed",
+            "seconds": 8.992
+          },
+          {
+            "name": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+            "seconds": 44.693
+          },
+          {
+            "name": "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
+            "seconds": 25.879
+          },
+          {
+            "name": "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
+            "seconds": 5.967
+          },
+          {
+            "name": "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
+            "seconds": 8.579
+          },
+          {
+            "name": "importedNetscapeCookiesRetainScopeInRealBrowserRequests",
+            "seconds": 11.981
+          },
+          {
+            "name": "getPostScriptsAndSubresourcesUseTheBrowser",
+            "seconds": 9.062
+          }
+        ]
+      },
+      {
+        "phase": "full-image",
+        "tests": 16,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "xmlSha256": "9aa6ba13c9a4737ad21d6cfb8767b9f60e3f9ce0eb1e96abcdfed050252ff2a6",
+        "cases": [
+          {
+            "name": "endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers",
+            "seconds": 9.843
+          },
+          {
+            "name": "generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost",
+            "seconds": 3.214
+          },
+          {
+            "name": "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
+            "seconds": 9.528
+          },
+          {
+            "name": "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
+            "seconds": 9.282
+          },
+          {
+            "name": "importedHostOnlyCookieRetainsPathForSubresources",
+            "seconds": 6.338
+          },
+          {
+            "name": "scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers",
+            "seconds": 15.062
+          },
+          {
+            "name": "cookiesArePersistedPerReaderNamespace",
+            "seconds": 9.532
+          },
+          {
+            "name": "sourceRegexReturnsTheResourceUrlWithoutFetchingIt",
+            "seconds": 2.956
+          },
+          {
+            "name": "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
+            "seconds": 8.97
+          },
+          {
+            "name": "existingHttpOnlyCookieCanBeRenewed",
+            "seconds": 9.533
+          },
+          {
+            "name": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+            "seconds": 46.525
+          },
+          {
+            "name": "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
+            "seconds": 26.93
+          },
+          {
+            "name": "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
+            "seconds": 6.254
+          },
+          {
+            "name": "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
+            "seconds": 8.728
+          },
+          {
+            "name": "importedNetscapeCookiesRetainScopeInRealBrowserRequests",
+            "seconds": 12.477
+          },
+          {
+            "name": "getPostScriptsAndSubresourcesUseTheBrowser",
+            "seconds": 9.316
+          }
+        ]
+      }
+    ],
+    "fullImageSmokeHashes": [
+      {
+        "name": "bundled-browser-resource-budget.json",
+        "sha256": "dba066ce01988e1bc3b0803fc2c2fed012677859f9a44bd003aa24aaa688752b"
+      },
+      {
+        "name": "bundled-browser-synthetic.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      }
+    ]
+  },
+  "publisherArtifact": {
+    "run": 37436316345,
+    "id": 11400790189,
+    "sizeBytes": 7629,
+    "githubDeclaredArchiveSha256": "2e893fbf41e4cb3a816051365f7f8bf37ee8529e2777ba94af6457bfd047f669"
+  },
+  "publisherVerification": {
+    "count": 20,
+    "identityAndGeneratedBaselinePassed": true,
+    "identities": [
+      {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "jarSha256": "e589818dcafcbd230aa5973dd2e9492677533023c09bffa0860b524146a9c2ea",
+        "archiveSha256": "20b98437b68b7e7ea9b059e9847bb38059d5ea42efcaaea066592ceeec50e9aa",
+        "imageId": "sha256:7dea2494cb99a9b78d8b4b343cdfc0a227afef574bb532665c3d961d7d403428"
+      },
+      {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "5eeeb4d597836695f27044c91360fbee8aceee3f",
+        "jarSha256": "e589818dcafcbd230aa5973dd2e9492677533023c09bffa0860b524146a9c2ea",
+        "archiveSha256": "d41047bac28216e33020e602bf1d4df402979c57f8bc66707b28a9c9f6545af8",
+        "imageId": "sha256:bdaa67d1efbba70ff9c442759c4cf695f495f5125d56161b46c64df5efff903c"
+      }
+    ],
+    "hashes": [
+      {
+        "name": "amd64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "31c30efdbd90cfc1be54ea6ae6bec40c65e296e475b710cb63849fd1ff03ab19"
+      },
+      {
+        "name": "amd64-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "amd64-JAR_IDENTITY.json",
+        "sha256": "429cc453b72ea30f391fe1c91fcb0c9853e8eb94734119753b952bfc12644715"
+      },
+      {
+        "name": "amd64-metadata.json",
+        "sha256": "a88f50d83e5bd4b1cde5221dd17d73254f41f88425fa1f59f86590c7a56142cc"
+      },
+      {
+        "name": "amd64-RELEASE_IDENTITY.json",
+        "sha256": "798738eb44105d301d2c16faa897521bc7c72cdeb3aab677be0ae25a32fae3fb"
+      },
+      {
+        "name": "amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "aa60ece4558355949f55e6a3663bae8b47481d7cdb4a8dfbae8e42824c2c574e"
+      },
+      {
+        "name": "amd64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "amd64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "1e6901a0d18b495f3f2fb0a7954420ea25767ae10497cfc66765a76de60588c6"
+      },
+      {
+        "name": "amd64-transfer-JAR_IDENTITY.json",
+        "sha256": "429cc453b72ea30f391fe1c91fcb0c9853e8eb94734119753b952bfc12644715"
+      },
+      {
+        "name": "amd64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "798738eb44105d301d2c16faa897521bc7c72cdeb3aab677be0ae25a32fae3fb"
+      },
+      {
+        "name": "arm64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "14bcc022102a009e4998de0322195b66900b755b09aa8f7732ba59d26e8d3ae7"
+      },
+      {
+        "name": "arm64-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "arm64-JAR_IDENTITY.json",
+        "sha256": "f53c5ae3b93d075ca416dc21a6cc3b974b403980668789fdf4c25a2c57599195"
+      },
+      {
+        "name": "arm64-metadata.json",
+        "sha256": "ddcf6d372f0622a3e65898e725fc4ad2b9b107e5293c0d8529d31b19f22acae5"
+      },
+      {
+        "name": "arm64-RELEASE_IDENTITY.json",
+        "sha256": "798738eb44105d301d2c16faa897521bc7c72cdeb3aab677be0ae25a32fae3fb"
+      },
+      {
+        "name": "arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "3285bf9d9ab021a9fb3ae6cb9f7a47b96f92134d052715e80ef2eed3dd4a96bf"
+      },
+      {
+        "name": "arm64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868"
+      },
+      {
+        "name": "arm64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "8115d748a5a924497f467c615f7b6f49262aa52d692ee978b21cf4ccbb20668c"
+      },
+      {
+        "name": "arm64-transfer-JAR_IDENTITY.json",
+        "sha256": "f53c5ae3b93d075ca416dc21a6cc3b974b403980668789fdf4c25a2c57599195"
+      },
+      {
+        "name": "arm64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "798738eb44105d301d2c16faa897521bc7c72cdeb3aab677be0ae25a32fae3fb"
+      }
+    ]
+  },
+  "publisherActualAsyncReportsVerifiedByOriginalGuard": 4,
+  "fullImageActualAsyncReportVerifiedByOriginalGuard": true,
+  "resourceReportsVerifiedByOriginalGuard": 5,
+  "nativeAndReloadMaximumPeakBytes": 880332800,
+  "nativeAndReloadMaximumPids": 200,
+  "fullImagePeakBytes": 827023360,
+  "configuredCpuCount": 2,
+  "configuredMemoryBytes": 2147483648,
+  "configuredPids": 256,
+  "configuredSwapBytes": 1073741824,
+  "actualSwapBytes": 0,
+  "limitHitsAndOom": 0,
+  "largeImageAndJarNotDownloadedLocally": true,
+  "productWorkerChangedInSourceCommit": false,
+  "oldC267FailureReproduced": false,
+  "oldC267RootCauseProven": false,
+  "realCookieUsed": false,
+  "privateBookBodyRead": false,
+  "realQidianMetadataProven": false,
+  "realAuthenticationOrThreeWayParityProven": false,
+  "registryReleaseOrProductionChanged": false
+}

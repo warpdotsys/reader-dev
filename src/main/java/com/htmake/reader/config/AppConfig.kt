@@ -32,11 +32,15 @@ class AppConfig {
 
     // Shelf update interval (minutes)
     var shelfUpdateInteval: Int = 10
+    // Select the packaged web application without removing the Vue 2 rollback UI.
+    var webUi: String = "vue2"
     // Remote webview API
     var remoteWebviewApi: String = ""
     var webviewRenderer: String = "remote"
     var browserExecutablePath: String = ""
     var browserTimeoutMs: Int = 20000
+    var camoufoxPythonExecutable: String = "python3"
+    var camoufoxBrowserVersion: String = "152.0.4-beta.30"
 
     // License centre. The public key is injected at deployment time so the
     // signing private key never needs to be present in this application.

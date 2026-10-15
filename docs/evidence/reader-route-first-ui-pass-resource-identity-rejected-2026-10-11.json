@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "scope": "first generated actual route UI passed; strict JAR resource identity rejected",
+  "jarSha256": "4bf6e02a6b87ed8fbec1d8e72cac1d3543084c1bc3a7161d5983cc137a9cc0ad",
+  "jarBytes": 285677568,
+  "previousJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "generatedOnlyUiExecuted": true,
+  "tests": 1,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 40.001,
+  "generatedOnlySameRecordJourneyPassed": true,
+  "suiteSha256": "a0020e5d79f01f5b955932ccc12ece220b6568ddf4025efc745441651f22ea4a",
+  "serverReceiptSha256": "2393997f25fb9eb9465253231e6315e17286bfdcf7b9b107e0a36191856de03d",
+  "failedIdentityVerifierSha256": "eee2e9e9b3369d5d40bfa61dfe901bce6333e4eefab7fa738ff6df89d1ce709c",
+  "nonVueResourceDifferences": [
+    {
+      "path": "BOOT-INF/classes/application-prod.yml",
+      "previousSha256": "48a7655bd9ab28ec71ebcaed5555ca515938b5ff738be245addb799eb06b045a",
+      "firstBuiltSha256": "a41edbeda0d1bf6505ae0e6e9e81db0ab6c6ce7044cb96dfea40dc3e456f8ab5",
+      "previousBytes": 998,
+      "firstBuiltBytes": 1043,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/precache-manifest.0d903434eaa73f94acefeef5d39c6628.js",
+      "previousSha256": "674d01bcfb750551592f2e2773217e2748dc48ca7c4081bcbb8b86ad17f2478e",
+      "firstBuiltSha256": "6414c8cb4d873e9a38455e80db4b6a7b782c4a5f19fb3b9f67718301436117f0",
+      "previousBytes": 6314,
+      "firstBuiltBytes": 6551,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/chunk-vendors.4589d111.js",
+      "previousSha256": "68dda97988b12552522dc9d918a9badc34519875d4a911c0b935e672d3a7f67f",
+      "firstBuiltSha256": "4c7beb0a57d6d720904b8e30c78f98f911adbdf0e3dbddcbfe94eea8b4bcab4c",
+      "previousBytes": 842366,
+      "firstBuiltBytes": 842466,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/dash.all.min.js",
+      "previousSha256": "3a1db51ed00412c16f9edb304db69ac84f1ffce8aa2d61caf4895aa9c9bdf0df",
+      "firstBuiltSha256": "2c5a744c9c0a19d62e2dce21b9248bba32865ba861f6375320790f4aa6e69dcd",
+      "previousBytes": 793860,
+      "firstBuiltBytes": 793862,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/flv.min.js",
+      "previousSha256": "733b9b325dbc59871a652c0a84f2f285a2cfd06cf2efcedcd87cb1e194cd1e8f",
+      "firstBuiltSha256": "b15e268e20bec162086b63f7f358f21c5e7443b1b2c74fd708bf386787f087d6",
+      "previousBytes": 144165,
+      "firstBuiltBytes": 144174,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/hls.min.js",
+      "previousSha256": "286f029b4740b056eb047b8c8bd73e6cca1ca52bd658ae1cf5a587f4b19f0d8e",
+      "firstBuiltSha256": "040cab2c007b075c0ed2ff60e5e1ee8cb059a3c24c27ed7148e49d55ca3482ff",
+      "previousBytes": 412466,
+      "firstBuiltBytes": 412468,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/pear-player.min.js",
+      "previousSha256": "aa3f625ea6d01a1b4ae939df59c22f4f3240f091e255b6b60221df2b142f2677",
+      "firstBuiltSha256": "fb692a72859098936f158077d84a52fe853f1d8553c44d9654ca94da77abaec2",
+      "previousBytes": 436655,
+      "firstBuiltBytes": 436657,
+      "crlfToLfEqualsPrevious": true
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/reader.6e871769.js",
+      "previousSha256": "e64d0c9b5f0a18609b25da07b7d7e38b886b3d06fa8ddd35fc32b653918aefc3",
+      "firstBuiltSha256": "3f5763b19191464ee6620e0e8ce65e05a632b491b9f13cd639c857ee8181fbf7",
+      "previousBytes": 1709365,
+      "firstBuiltBytes": 1709372,
+      "crlfToLfEqualsPrevious": false,
+      "sourceBytesUnchanged": true,
+      "affectedCodepoint": "U+2B2AE",
+      "affectedPreviousUtf8Hex": "f0ab8aae",
+      "affectedFirstUtf8Hex": "3f3f",
+      "byteOffset": 300098
+    },
+    {
+      "path": "BOOT-INF/classes/web/js/webtorrent.min.js",
+      "previousSha256": "53ee52566beac51b5b7c2883d735f7d4aff671d73d9d3c45f9ba66d3b0d1dff3",
+      "firstBuiltSha256": "836bb9be264137df571a2bf2e89785067599211de7a7deae5cbe9812a877d6aa",
+      "previousBytes": 265975,
+      "firstBuiltBytes": 265984,
+      "crlfToLfEqualsPrevious": true
+    }
+  ],
+  "wholeRunAccepted": false,
+  "jarByteIdentityAccepted": false,
+  "internalGradleEncoderRootCauseProven": false,
+  "sourceBytesChanged": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "fullGoalComplete": false,
+  "ownReaderStopped": true,
+  "serverWindowsJobPeakCommittedBytes": 452521984,
+  "headlessClientOutsideServerJob": true
+}

@@ -9,8 +9,14 @@
 cd web-vue3
 npm ci
 npm run build
+npm test
+npm run audit:api
 READER_BACKEND_URL=http://127.0.0.1:8080 npm run dev
 ```
+
+本地构建与单元测试使用 Node.js 24；`npm test` 会运行全部 `src/**/*.test.ts`
+（Node 原生测试运行器），而不是只挑选少数测试文件。`audit:api` 是前端路由名与
+Java/Kotlin 路由注册表的静态比对，不能代替浏览器旅程或响应结构验证。
 
 子目录构建保留根路径为默认值；仅在需要把界面挂载到 `/reader/` 时设置：
 
@@ -27,9 +33,11 @@ READER_UI_BASE=/reader/ READER_BACKEND_URL=http://127.0.0.1:8080 \
 登录、刷新、资源、PWA Service Worker 作用域和根路径 API。
 
 `npm run build` 只验证 Vue/TypeScript 编译，不验证页面与 Java/Kotlin
-后端兼容。本目录尚未打入 Reader JAR、镜像或生产入口，原版 Vue 2
-仍是正式界面。预览构建只证明可编译；隔离浏览器测试只证明其覆盖的页面旅程，
-不能推断其余功能可用。
+后端兼容。现已新增显式 Gradle 打包选项 `-PreaderWebUi=vue3`，把构建产物
+放入 JAR 的 `web-vue3/` 资源目录；`reader.app.web-ui=vue3` 会选择该静态资源并
+为 HTML5 history 页面回退到 `index.html`。这条 JAR 集成仍待 GitHub 托管 runner
+构建及浏览器旅程验证。未完成验证前，默认入口仍为原版 Vue 2；预览构建和既有隔离
+旅程只能证明已覆盖的页面，不代表其余功能或生产部署可用。
 
 本机的 opt-in 页面测试需要一个**隔离** Reader 工作目录、Vite
 预览和已安装的 Chrome。先把 Vite 的 `READER_BACKEND_URL` 指向隔离

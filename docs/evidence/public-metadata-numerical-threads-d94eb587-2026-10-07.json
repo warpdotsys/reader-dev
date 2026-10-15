@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "scope": "One anonymous public metadata request in unchanged tested native d94eb587 image; strict business failure, NOT real authentication, original-JAR parity or production acceptance",
+  "probeSourceHead": "f88fdd819c029f4e794bcc5c8e059aece0fcd2b5",
+  "workflowRun": 37607391579,
+  "workflowUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37607391579",
+  "workflowConclusion": "failure",
+  "jobId": 112746116304,
+  "artifactId": 11475104097,
+  "artifactZipBytes": 3754,
+  "nativeSourceRun": {
+    "id": 37598990910,
+    "name": "Native release artifact rehearsal",
+    "path": ".github/workflows/release-native.yml",
+    "head_sha": "d94eb5874c9a28ff0b052ea6ba52a9bd97c18dbb",
+    "event": "pull_request",
+    "conclusion": "success",
+    "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37598990910"
+  },
+  "testedImageRevision": "a25cd623029269fd40d593126b9d093b45a73899",
+  "jarSha256": "3816fd6980cf745c3b5eac010968a33dd6f15dbc0f22ac87038d62da7a8ad50f",
+  "imageId": "sha256:3fccf95fb3f29f341bbbcd876b26815622ce529f4e0e96f5104782bc5532896c",
+  "publicMetadataAccepted": false,
+  "bookInfoApiCalls": 1,
+  "requestSeconds": 13.077,
+  "observedAt": "2026-10-07T10:28:02.473749+00:00",
+  "httpStatus": 200,
+  "isSuccess": true,
+  "errorMsgEmpty": true,
+  "metadataFieldsMatched": false,
+  "allReturnedSnapshotStructureFlagsFalse": true,
+  "snapshotStructureNotVisibilityOrUniqueCause": true,
+  "workerErrorCategory": null,
+  "sourceDefinitionRoundtripPassed": true,
+  "captureMode": "bounded-dom",
+  "sourceScriptWaitBudgetMs": 8000,
+  "runtimeUid": 10001,
+  "privateNetworkGuardEnabled": true,
+  "publishedPorts": 0,
+  "resourceGuardPassedWithNoSwap": true,
+  "resource": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 328613888,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 856649728,
+    "memoryStatBytes": {
+      "active_file": 131072,
+      "anon": 316510208,
+      "file": 5951488,
+      "file_dirty": 5705728,
+      "file_mapped": 32768,
+      "file_writeback": 0,
+      "inactive_file": 5746688,
+      "kernel": 5443584,
+      "kernel_stack": 573440,
+      "pagetables": 1138688,
+      "shmem": 73728,
+      "slab_reclaimable": 2976856,
+      "slab_unreclaimable": 695440,
+      "sock": 0
+    },
+    "pidsCurrent": 35,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 185,
+    "scope": "one anonymous default-Camoufox metadata request",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "cookieRowsBefore": 0,
+  "cookieRowsAfter": 0,
+  "generatedCookieSessionRevokedVerified": true,
+  "allDeviceTokenRevocationProven": false,
+  "ownedContainerRemovalReported": true,
+  "independentHostRemainingContainerCountUnavailable": true,
+  "probeExitCode": 1,
+  "realCredentialsImported": false,
+  "chapterBodyRequested": false,
+  "rawErrorHtmlCookieAndMetadataValuesPersisted": false,
+  "userReportsUnchanged": 58,
+  "reportSetExact": true,
+  "reportContentBytes": 5115,
+  "reportFiles": [
+    {
+      "name": "CLEANUP.json",
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "a6c6fbe2773cd90918679f28e809a31df97f3ed1683b448162341aa8384e4769"
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "bytes": 258,
+      "sha256": "09b3e9267aa8bd2deba044141f665271fafa7eec7ab9e4379943250c23f50964"
+    },
+    {
+      "name": "PUBLIC_METADATA_REPORT.json",
+      "bytes": 2889,
+      "sha256": "5474ed01ced47a053d871feab54fecdc9aeac8bac663723b95c181ddf72670e7"
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "bytes": 190,
+      "sha256": "ddc208766553981e4d1010398af4121da64f0b3e4715c10e051b6378dde8cad2"
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "bytes": 923,
+      "sha256": "5b584f0b2d532f93a0b879fd0f7f9f2228d18088a9bc336f4bc8408a3a18a72f"
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "bytes": 316,
+      "sha256": "cc42599aa301520ef7ebcce145b2277a8516e15596c45f0cc485ef0275db17bb"
+    },
+    {
+      "name": "WORKER_DIAGNOSTICS.json",
+      "bytes": 165,
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    }
+  ]
+}

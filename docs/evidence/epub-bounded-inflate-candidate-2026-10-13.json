@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "scope": "bounded DEFLATE candidate with preserved actual Reader failures",
+  "basedOnRevision": "d3132820389a996c3f170be9789346030929f388",
+  "productSourceChanged": true,
+  "originalJarOrPrivateUserDataChanged": false,
+  "otherPrivateBooksRead": 0,
+  "privateBodiesNamesPathsCredentialsOrBodyHashesPublished": false,
+  "implementation": {
+    "decoder": "pako",
+    "version": "2.1.0",
+    "outputChunkMaximumBytes": 65536,
+    "lowReported16ByteBombRejectedAtActualBytes": 17,
+    "archivePolicyOrWorkerDeadlineRelaxed": false,
+    "javaKotlinBackendChanged": false,
+    "compiledNonVueMembersEqualToHostedBaseline": 1373
+  },
+  "nodeComparison": {
+    "schemaVersion": 1,
+    "scope": "Node single-authorized-book byte and Uint8 allocation comparison",
+    "sourceRevision": "d3132820389a996c3f170be9789346030929f388",
+    "baselineSourceSha256": "a45e8b3601aeeae1c5a1526a141c21a9f4e6ddf30d554ddd9b18cded884a9c1d",
+    "candidateSourceSha256": "d62f8460d646036cc8b542cf347c7860ddecc7a54ff48dd52f811420d65447cb",
+    "adapterSourceSha256": "5674d4423d71d3ed3182f0507580e23145aab8ff39109f49865f699b84ffe8e3",
+    "pakoVersion": "2.1.0",
+    "nodeVersion": "v24.19.0",
+    "resourceCount": 1673,
+    "expandedBytes": 49382784,
+    "allActualResourceBytesEqual": true,
+    "sourceBookUnchanged": true,
+    "privateBodiesNamesOrBodyHashesPublished": false,
+    "otherPrivateBooksRead": 0,
+    "baseline": {
+      "allocations": 31891,
+      "allocatedUint8Bytes": 2983618615,
+      "largestUint8Allocation": 1963103,
+      "elapsedMilliseconds": 2015.0774999999999
+    },
+    "candidate": {
+      "allocations": 18381,
+      "allocatedUint8Bytes": 155149926,
+      "largestUint8Allocation": 1963103,
+      "elapsedMilliseconds": 485.0374999999999
+    },
+    "allocationInstrumentationUsed": true,
+    "completePeakMemoryMeasured": false,
+    "firefoxExecuted": false,
+    "fullReaderAccepted": false,
+    "hostedCandidateAccepted": false,
+    "goalComplete": false
+  },
+  "nodeComparisonReceiptSha256": "dac318327daf2a068540fca2a8efe7e3052bce3f369fe7d2fcab254dcde08bf0",
+  "localFrontendTests": {
+    "tests": 366,
+    "failures": 0,
+    "skipped": 0
+  },
+  "initialJarTrialAP": {
+    "sourceReportSha256": "521318411b96874e2c35872f036c14c44f18a579dada4ee3b88fd92cefe0d862",
+    "inputCleanupSha256": "ac20db5d5f03afc18ca383f0ff6fbd10b73dd74a8280aaf2ad41997530ab2a59",
+    "jarSha256": "289c7bd07a5776105ec0d869ffecdf7e2f3fe7aa3747b32065fce46c61940fb1",
+    "epubWorkerSha256": "4ce6c50ba8756d28a46713c12af4e0104d608cce012ceb3a76eb7c8eaa2d2b80",
+    "completedCaseNames": [
+      "html806",
+      "raw805",
+      "raw806",
+      "text805",
+      "text806",
+      "text806Refresh"
+    ],
+    "requiredCases": 8,
+    "actualReaderAccepted": false,
+    "seconds": 167.017,
+    "memoryPeakBytes": 1631092736,
+    "pidsPeak": 245,
+    "memoryHighEvents": 255407,
+    "oomEvents": 0,
+    "pidsMaxEvents": 0,
+    "resourceBudgetAccepted": true,
+    "diagnosticObservationWindowSeconds": 150,
+    "productWorkerDeadlineMilliseconds": 15000,
+    "ownInputsIndividuallyDeleted": 3,
+    "ownInputBytesDeleted": 37846263,
+    "sourceOriginalJarAndAuthorizedBookUnchanged": true,
+    "latestWholeImageLocallyAccepted": false
+  },
+  "observedTrialAQ": {
+    "sourceReportSha256": "70bb350317307fea47f0829a2cd334be0e2a4dffa13e8f0b93a3d770a8d9ca27",
+    "inputCleanupSha256": "410ffce7126d74ce2ad13f37bf3f08261817513941f4691a30908416c91525a8",
+    "jarSha256": "289c7bd07a5776105ec0d869ffecdf7e2f3fe7aa3747b32065fce46c61940fb1",
+    "epubWorkerSha256": "4ce6c50ba8756d28a46713c12af4e0104d608cce012ceb3a76eb7c8eaa2d2b80",
+    "completedCaseNames": [
+      "text805",
+      "text806",
+      "text806Refresh",
+      "html806",
+      "raw806",
+      "raw805"
+    ],
+    "requiredCases": 8,
+    "actualReaderAccepted": false,
+    "seconds": 149.135,
+    "memoryPeakBytes": 1622175744,
+    "pidsPeak": 247,
+    "memoryHighEvents": 203598,
+    "oomEvents": 0,
+    "pidsMaxEvents": 0,
+    "resourceBudgetAccepted": true,
+    "diagnosticObservationWindowSeconds": 240,
+    "productWorkerDeadlineMilliseconds": 15000,
+    "ownInputsIndividuallyDeleted": 3,
+    "ownInputBytesDeleted": 37846263,
+    "sourceOriginalJarAndAuthorizedBookUnchanged": true,
+    "latestWholeImageLocallyAccepted": false,
+    "refreshFailure": {
+      "rawIframePresent": false,
+      "rawErrorPresent": true,
+      "rawErrorDownloadTimeout": false,
+      "rawErrorWorkerTimeout": true,
+      "rawErrorWorkerStarting": true,
+      "rawErrorWorkerReceiving": false,
+      "rawErrorWorkerExpanding": false,
+      "rawErrorWorkerFailure": false,
+      "genericChapterErrorPresent": true,
+      "loadingStateCount": 0
+    },
+    "lastPhaseCounters": [
+      {
+        "phase": "uiRaw805Previous",
+        "aggregate": {
+          "memoryCurrent": 1598324736,
+          "pidsCurrent": 204,
+          "memoryHighEvents": 43795,
+          "memoryStat": {
+            "anon": 1134612480,
+            "file": 429080576,
+            "shmem": 191922176,
+            "pgscan_direct": 16196771,
+            "pgsteal_direct": 7257916,
+            "workingset_refault_file": 6969151
+          },
+          "cpuStat": {
+            "usage_usec": 94645463,
+            "user_usec": 59804786,
+            "system_usec": 34840676,
+            "nr_periods": 955,
+            "nr_throttled": 1,
+            "throttled_usec": 1779
+          }
+        },
+        "availableProcessAnonBytesSum": {
+          "python": 83873792,
+          "java": 310108160,
+          "browser-driver": 101130240,
+          "browser-main": 358035456,
+          "browser-service": 42446848,
+          "browser-content": 267763712
+        },
+        "availableProcessSumsAreNotUniquePrivateMemory": true
+      },
+      {
+        "phase": "uiRaw805Refresh",
+        "aggregate": {
+          "memoryCurrent": 1588699136,
+          "pidsCurrent": 204,
+          "memoryHighEvents": 43822,
+          "memoryStat": {
+            "anon": 1095032832,
+            "file": 460341248,
+            "shmem": 191983616,
+            "pgscan_direct": 16202226,
+            "pgsteal_direct": 7262683,
+            "workingset_refault_file": 6981534
+          },
+          "cpuStat": {
+            "usage_usec": 96796607,
+            "user_usec": 61662257,
+            "system_usec": 35134350,
+            "nr_periods": 968,
+            "nr_throttled": 2,
+            "throttled_usec": 2238
+          }
+        },
+        "availableProcessAnonBytesSum": {
+          "python": 83898368,
+          "java": 317673472,
+          "browser-driver": 101130240,
+          "browser-main": 358207488,
+          "browser-service": 42446848,
+          "browser-content": 219549696
+        },
+        "availableProcessSumsAreNotUniquePrivateMemory": true
+      },
+      {
+        "phase": "uiExceptionBeforeOwnedCleanup",
+        "aggregate": {
+          "memoryCurrent": 1598418944,
+          "pidsCurrent": 198,
+          "memoryHighEvents": 203450,
+          "memoryStat": {
+            "anon": 1135329280,
+            "file": 428118016,
+            "shmem": 189882368,
+            "pgscan_direct": 99738848,
+            "pgsteal_direct": 34765138,
+            "workingset_refault_file": 34476596
+          },
+          "cpuStat": {
+            "usage_usec": 172593478,
+            "user_usec": 64246448,
+            "system_usec": 108347029,
+            "nr_periods": 1489,
+            "nr_throttled": 2,
+            "throttled_usec": 2238
+          }
+        },
+        "availableProcessAnonBytesSum": {
+          "python": 84844544,
+          "java": 305954816,
+          "browser-driver": 103526400,
+          "browser-main": 311689216,
+          "browser-service": 42450944,
+          "browser-content": 317829120
+        },
+        "availableProcessSumsAreNotUniquePrivateMemory": true
+      }
+    ]
+  },
+  "productionDependencyAudit": {
+    "highPackageEntries": 5,
+    "names": [
+      "axios",
+      "vue",
+      "@vue/server-renderer",
+      "nanoid",
+      "source-map-js"
+    ],
+    "newPakoAdvisoryPresent": false,
+    "allDependenciesSafeProven": false,
+    "runtimeReachabilityAssessed": false
+  },
+  "budgets": {
+    "cpuCount": 2,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "pidsMax": 256,
+    "swapMaxBytes": 0,
+    "workerTotalMilliseconds": 15000
+  },
+  "hostedCandidateAccepted": false,
+  "exactCurrentWholeNativeImageLocallyAccepted": false,
+  "originalAndRemoteRemainingThreeWayAccepted": false,
+  "realSiteAuthenticationAndLongRunAccepted": false,
+  "merged": false,
+  "released": false,
+  "productionDeployed": false,
+  "goalComplete": false
+}

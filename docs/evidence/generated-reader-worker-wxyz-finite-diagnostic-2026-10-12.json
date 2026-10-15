@@ -1,0 +1,880 @@
+{
+  "cachedRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "cases": [
+    {
+      "allPureChecksPassed": true,
+      "browserFailureRecords": [
+        {
+          "bindingState": "unlinked",
+          "category": "api",
+          "code": "abort"
+        }
+      ],
+      "callbackFailureRecords": [],
+      "containersRemaining": 0,
+      "correlationCaptureCodes": [
+        "validation",
+        "validation",
+        "validation",
+        "validation",
+        "validation"
+      ],
+      "exactFailurePairs": 0,
+      "identityResourceAndCleanupGuardsAccepted": true,
+      "independentlyAccepted": false,
+      "legacyGuardUsesEmptyDefaultWhenProxyFieldAbsent": true,
+      "memoryEvents": {
+        "high": 2351,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "name": "W",
+      "observedUi": {
+        "html805": {
+          "characters": 2891,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "iframeHeight": 819,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "operationAfterCleanup": {
+        "overflow": false,
+        "requestFailureCount": 1,
+        "requestFailureOperations": [
+          {
+            "code": "abort",
+            "method": "GET",
+            "operation": "bookshelf",
+            "resourceType": "xhr",
+            "urlKind": "http"
+          }
+        ],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "method": "GET",
+            "operation": "other",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationBeforeCleanup": {
+        "overflow": false,
+        "requestFailureCount": 1,
+        "requestFailureOperations": [
+          {
+            "code": "abort",
+            "method": "GET",
+            "operation": "bookshelf",
+            "resourceType": "xhr",
+            "urlKind": "http"
+          }
+        ],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "method": "GET",
+            "operation": "other",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationHelperSha256": "38814f30c575957e4fbe3fbc596665e7d0825b95eb580710adb0b1569da4e6d0",
+      "ownedJavaStopped": true,
+      "ownedProxyStopped": true,
+      "passed": false,
+      "pidsEvents": {
+        "max": 0
+      },
+      "postImportUiSettledBeforeNavigation": null,
+      "primaryFailureCode": "validation",
+      "probeSeconds": 20.332,
+      "proxyFailureRecords": [
+        {
+          "code": "closed",
+          "httpStatus": 200,
+          "stage": "clientWrite"
+        }
+      ],
+      "proxyFailureRecordsFieldPresent": true,
+      "proxyResponseStatusCounts": {
+        "client4xx": 0,
+        "notModified304": 0,
+        "ok200": 59,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "pureGuardChecks": 60,
+      "rawBytes": 133949,
+      "rawReadOnly": true,
+      "rawSha256": "d344826a3ca46849aec761c35f3bc38b3ee9b84393e4bd46af42acfc8d3663fb",
+      "readerNavigationCounts": {
+        "frame": 3,
+        "host": 0,
+        "request": 1,
+        "server": 1
+      },
+      "resources": {
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "memoryHighBytes": 1610612736,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1611493376,
+        "pidsMax": 256,
+        "pidsPeak": 248,
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "samplerStopped": true,
+      "sources": {
+        "generated": "6c48d614a650eaaea82bb24d569e738ada818be6c03c326530a517f21d269a12",
+        "inner": "c8aaf66208736b00148e523377db633f9bb1d24c449d5d2951ca172437954702",
+        "probe": "9506d8f344d43f93ff0d6be7e58d6433c2bcab5ac5eda66f91a588f93f9b1dab",
+        "start": "041aca6c448f0bfd03f4db5d987e1f166354a3914e3d5122959aab318fb09629"
+      },
+      "twoOwnedContainersStoppedPidZeroAndDeleted": true,
+      "uiProbeSeconds": 18.227,
+      "verifierSha256": "0b4f206f531dc7aba0173e8ad5e6a4fb3cf9ce218f4c2610801b944c1c844d1e",
+      "worker": {
+        "assetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+        "createdToTerminatedMs": 176,
+        "postedToReplyMs": 176,
+        "records": 4
+      }
+    },
+    {
+      "allPureChecksPassed": true,
+      "browserFailureRecords": [
+        {
+          "bindingState": "unlinked",
+          "category": "static",
+          "code": "other"
+        }
+      ],
+      "callbackFailureRecords": [],
+      "containersRemaining": 0,
+      "correlationCaptureCodes": [
+        "validation",
+        "validation",
+        "validation",
+        "validation",
+        "validation"
+      ],
+      "exactFailurePairs": 0,
+      "identityResourceAndCleanupGuardsAccepted": true,
+      "independentlyAccepted": false,
+      "legacyGuardUsesEmptyDefaultWhenProxyFieldAbsent": true,
+      "memoryEvents": {
+        "high": 2449,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "name": "X",
+      "observedUi": {
+        "html805": {
+          "characters": 2891,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "iframeHeight": 643,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "operationAfterCleanup": {
+        "overflow": false,
+        "requestFailureCount": 1,
+        "requestFailureOperations": [
+          {
+            "code": "other",
+            "method": "GET",
+            "operation": "other",
+            "resourceType": "image",
+            "urlKind": "http"
+          }
+        ],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "other",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationBeforeCleanup": {
+        "overflow": false,
+        "requestFailureCount": 1,
+        "requestFailureOperations": [
+          {
+            "code": "other",
+            "method": "GET",
+            "operation": "other",
+            "resourceType": "image",
+            "urlKind": "http"
+          }
+        ],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "other",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationHelperSha256": "8a9eff4731915578648e8b26b8e8896bdaa9d5182fda04c3b8181e0f93e8d307",
+      "ownedJavaStopped": true,
+      "ownedProxyStopped": true,
+      "passed": false,
+      "pidsEvents": {
+        "max": 0
+      },
+      "postImportUiSettledBeforeNavigation": true,
+      "primaryFailureCode": "validation",
+      "probeSeconds": 20.409,
+      "proxyFailureRecords": null,
+      "proxyFailureRecordsFieldPresent": false,
+      "proxyResponseStatusCounts": {
+        "client4xx": 1,
+        "notModified304": 0,
+        "ok200": 59,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "pureGuardChecks": 63,
+      "rawBytes": 142647,
+      "rawReadOnly": true,
+      "rawSha256": "10bc4f6127e84a94615dd0d807e3fea3add33451b917ff18576019e80aee076f",
+      "readerNavigationCounts": {
+        "frame": 3,
+        "host": 0,
+        "request": 1,
+        "server": 1
+      },
+      "resources": {
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "memoryHighBytes": 1610612736,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1611493376,
+        "pidsMax": 256,
+        "pidsPeak": 248,
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "samplerStopped": true,
+      "sources": {
+        "generated": "7eef12a600f968b0dc83a9f51e8958d2f4851e43a673fdcb59e2d6398ff19d2c",
+        "inner": "35f9c6cde4d5d042e0d2c8b25e4c6e76337a521dc37df3fe50fac15bf10212e1",
+        "probe": "fb0ab162425d4e972d455c1cad406e27181010451a4fbdb62013dde602856728",
+        "start": "a67af2330fcb724c3cb447df024d037e9050447753e2627939ebcb5450f8e6c5"
+      },
+      "twoOwnedContainersStoppedPidZeroAndDeleted": true,
+      "uiProbeSeconds": 18.468,
+      "verifierSha256": "a320a07b55c89919e05f9abdd6dca22812aafe3080035767c524f544138456f0",
+      "worker": {
+        "assetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+        "createdToTerminatedMs": 147,
+        "postedToReplyMs": 147,
+        "records": 4
+      }
+    },
+    {
+      "allPureChecksPassed": true,
+      "browserFailureRecords": [],
+      "callbackFailureRecords": [],
+      "containersRemaining": 0,
+      "correlationCaptureCodes": [
+        "validation",
+        "validation",
+        "validation",
+        "validation",
+        "validation"
+      ],
+      "exactFailurePairs": 0,
+      "identityResourceAndCleanupGuardsAccepted": true,
+      "independentlyAccepted": false,
+      "legacyGuardUsesEmptyDefaultWhenProxyFieldAbsent": true,
+      "memoryEvents": {
+        "high": 2365,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "name": "Y",
+      "observedUi": {
+        "html805": {
+          "characters": 2891,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "iframeHeight": 653,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "operationAfterCleanup": {
+        "overflow": false,
+        "requestFailureCount": 0,
+        "requestFailureOperations": [],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "logo-png",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "responseSource": "network",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationBeforeCleanup": {
+        "overflow": false,
+        "requestFailureCount": 0,
+        "requestFailureOperations": [],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "logo-png",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "responseSource": "network",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationHelperSha256": "521c0fa57eab2affde47d50821881a57407e68562da315a96328903387c32b46",
+      "ownedJavaStopped": true,
+      "ownedProxyStopped": true,
+      "passed": false,
+      "pidsEvents": {
+        "max": 0
+      },
+      "postImportUiSettledBeforeNavigation": true,
+      "primaryFailureCode": "validation",
+      "probeSeconds": 20.493,
+      "proxyFailureRecords": null,
+      "proxyFailureRecordsFieldPresent": false,
+      "proxyResponseStatusCounts": {
+        "client4xx": 1,
+        "notModified304": 0,
+        "ok200": 59,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "pureGuardChecks": 64,
+      "rawBytes": 141543,
+      "rawReadOnly": true,
+      "rawSha256": "a29fa74fe4c6b757c6692447373e4671354d55413a6812ff2980d5fa12d342ab",
+      "readerNavigationCounts": {
+        "frame": 3,
+        "host": 0,
+        "request": 1,
+        "server": 1
+      },
+      "resources": {
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "memoryHighBytes": 1610612736,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1611640832,
+        "pidsMax": 256,
+        "pidsPeak": 247,
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "samplerStopped": true,
+      "sources": {
+        "generated": "6b9c5a4f9b33cea1b08dbfc14677cf9c8dbd54c89edf734b345e86ac0aed81df",
+        "inner": "3b710acdf1d71e863cea6759691b99bacf9586491e04f30bd7cfc6d2b98da899",
+        "probe": "e8339cb95a6e186cd4031502cf92435905d945e70262a1f77209d9002a3ed0bd",
+        "start": "0dbc9d26c8f0ff69d34c6f0da5eed1bb16d6471f880bcf0370a4c5ffb445fe8e"
+      },
+      "twoOwnedContainersStoppedPidZeroAndDeleted": true,
+      "uiProbeSeconds": 18.502,
+      "verifierSha256": "85a4a98ac20224e7ac9b5d9dc6713be282efb2db28e946f0294ccbe21fb46dfc",
+      "worker": {
+        "assetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+        "createdToTerminatedMs": 171,
+        "postedToReplyMs": 171,
+        "records": 4
+      }
+    },
+    {
+      "allPureChecksPassed": true,
+      "browserFailureRecords": [],
+      "callbackFailureRecords": [],
+      "containersRemaining": 0,
+      "correlationCaptureCodes": [],
+      "exactFailurePairs": 0,
+      "identityResourceAndCleanupGuardsAccepted": true,
+      "independentlyAccepted": true,
+      "legacyGuardUsesEmptyDefaultWhenProxyFieldAbsent": true,
+      "memoryEvents": {
+        "high": 2509,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "name": "Z",
+      "observedUi": {
+        "html805": {
+          "characters": 2891,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "raw805": {
+          "characters": 2891,
+          "iframeHeight": 631,
+          "paragraphs": 45,
+          "replacementCharacters": 0,
+          "scripts": 0
+        },
+        "text805": {
+          "characters": 2891,
+          "paragraphs": 46,
+          "replacementCharacters": 0,
+          "scripts": 0
+        }
+      },
+      "operationAfterCleanup": {
+        "overflow": false,
+        "requestFailureCount": 0,
+        "requestFailureOperations": [],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "logo-png",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "responseSource": "non-service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationBeforeCleanup": {
+        "overflow": false,
+        "requestFailureCount": 0,
+        "requestFailureOperations": [],
+        "responseBindingRejectionCount": 5,
+        "responseBindingRejections": [
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "logo-png",
+            "reason": "binding-rejected",
+            "resourceType": "image",
+            "responseSource": "non-service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          },
+          {
+            "bindingDetail": "token-other-request",
+            "method": "GET",
+            "operation": "static",
+            "reason": "binding-rejected",
+            "resourceType": "script",
+            "responseSource": "service-worker",
+            "urlKind": "http"
+          }
+        ]
+      },
+      "operationHelperSha256": "1ed97ca2daad416ccb5c3fdf767d4f1eb15c0ceab30112f4e5069e86db71722f",
+      "ownedJavaStopped": true,
+      "ownedProxyStopped": true,
+      "passed": true,
+      "pidsEvents": {
+        "max": 0
+      },
+      "postImportUiSettledBeforeNavigation": true,
+      "primaryFailureCode": null,
+      "probeSeconds": 23.787,
+      "proxyFailureRecords": null,
+      "proxyFailureRecordsFieldPresent": false,
+      "proxyResponseStatusCounts": {
+        "client4xx": 1,
+        "notModified304": 0,
+        "ok200": 59,
+        "other": 0,
+        "redirect3xx": 0,
+        "server5xx": 0
+      },
+      "pureGuardChecks": 72,
+      "rawBytes": 146220,
+      "rawReadOnly": true,
+      "rawSha256": "b29c028f5ce9746f3d69707c65267e8fa5a50fc5b859e1c450ca243454a75a63",
+      "readerNavigationCounts": {
+        "frame": 3,
+        "host": 0,
+        "request": 1,
+        "server": 1
+      },
+      "resources": {
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "memoryHighBytes": 1610612736,
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 1611620352,
+        "pidsMax": 256,
+        "pidsPeak": 249,
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "samplerStopped": true,
+      "sources": {
+        "generated": "4320601416a7997ccac20e83e867a04f05e338d4f3e1564873c9637421be5bb0",
+        "inner": "2ff1a58c3b2b7991ad9ece8f14577d33e37cc6c3775616ce3cb322fdd45122e4",
+        "probe": "aaa620711b52d8a07b8ead59ccd869cef798632ea1be49135b3495edb6adaec3",
+        "start": "9898226d1ed9162295f9a8210bf646951fa624805a883d316545ce1899c26f89"
+      },
+      "twoOwnedContainersStoppedPidZeroAndDeleted": true,
+      "uiProbeSeconds": 21.728,
+      "verifierSha256": "64c810188541d6db3f2da55d5e61e8a63aff02a4a3418ddcb379f2454a2f45d3",
+      "worker": {
+        "assetSha256": "46bb4b6de4973e3c3236cdeaffdcdd8b78cda78ef77ac5da60f01014ba4b2332",
+        "createdToTerminatedMs": 215,
+        "postedToReplyMs": 214,
+        "records": 4
+      }
+    }
+  ],
+  "fullGoalComplete": false,
+  "generatedInput": {
+    "expandedBytes": 6718908,
+    "generatedOnly": true,
+    "inputBytes": 501316,
+    "inputSha256": "844e0c312978578cd7da1c721120ba0bfcbd90c061e82fd55fe3712224fbcb63",
+    "spineCount": 806,
+    "zipEntryCount": 810
+  },
+  "jarBytes": 285672106,
+  "jarSha256": "0675ec6dd851f737804e0f6d306b265f0b9e9b5df45fb62f79c9ad018aa2febe",
+  "largeEpubPressureAccepted": false,
+  "notLatestWholeNativeImageAcceptance": true,
+  "originalJarExecuted": false,
+  "privateBookBodyRead": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "schemaVersion": 1,
+  "scope": "four bounded generated EPUB diagnostics; not large-book, full-image, three-way or production acceptance",
+  "sourceRevision": "bfd30ebf5e5eda318962a4380a9032fdec470751",
+  "wholeProductAccepted": false
+}

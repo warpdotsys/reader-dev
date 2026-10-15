@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-04",
+  "environment": "local Codex in-app browser only",
+  "siteOrigin": "https://www.qidian.com",
+  "temporarySessionFields": 4,
+  "cookieScope": "host-only HTTPS www.qidian.com; narrower than the supplied export",
+  "authenticatedHome": {"loginVisible": false, "visibleLogoutCount": 1},
+  "search": {
+    "actualUiSearchUrl": "https://www.qidian.com/so/%E9%BB%8E%E6%98%8E%E4%B9%8B%E5%89%91.html",
+    "exactTitleMatches": 1,
+    "bookUrl": "https://www.qidian.com/book/1010400217/",
+    "screenshotLocalOnly": "build/qidian-real-search-20261004-a/public-search-card.jpg",
+    "screenshotSha256": "F4FB8DB606E1022BF12F9D875F6095B9266260C14648CB1DC363325EE90BC060"
+  },
+  "freeChapter": {
+    "freeTrialHrefCheckedOnBookPage": true,
+    "chapterUrl": "https://www.qidian.com/chapter/1010400217/403440812/",
+    "title": "第一章 穿越成一个视角是什么鬼",
+    "contentContainer": "c-403440812",
+    "directChildCount": 64,
+    "renderedTextCharactersIncludingAnnotations": 3691,
+    "siteReportedCharacters": 3193,
+    "bodyActuallyVisible": true,
+    "captchaIframeIntersectsViewport": false,
+    "captchaInteractedWith": false,
+    "screenshotLocalOnly": "build/qidian-real-search-20261004-a/free-chapter-heading-verified.jpg",
+    "screenshotSha256": "B18D5ACD9E6E3A9A4941D3768965D300F4310227184B196277FD45CF0F89F517"
+  },
+  "cleanup": {
+    "temporarySessionFieldsDeleted": 4,
+    "afterCleanupLoginVisible": true,
+    "afterCleanupVisibleLogoutCount": 0,
+    "actualSiteLogoutEndpointNotInvoked": true,
+    "agentCreatedTabsClosed": 4,
+    "userLocalReaderTabPreserved": true
+  },
+  "limits": [
+    "site interaction only; not a Reader search, parser, authentication or three-way result",
+    "a free chapter does not demonstrate paid or authentication-required content access",
+    "no credential values, user identity, raw HTML or chapter body persisted in these reports",
+    "screenshots remain local and exclude account header, credentials and body text",
+    "no purchase, subscription, bookshelf or account modification",
+    "no credentials transferred to Reader, servers, GitHub or CI",
+    "no production deployment or modification"
+  ]
+}

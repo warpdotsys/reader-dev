@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 1,
+  "sourceHeadAtExecution": "7198c7f0fe461fe41d229e50b33d6cea1e0e2cd2",
+  "scope": "Generated-only additive metadata differential; uncommitted six input scripts on source head. Existing historical JARs, not a new final image or production acceptance.",
+  "tests": {
+    "windowsPython": {
+      "tests": 323,
+      "skipped": 1
+    },
+    "windowsMetadata": {
+      "tests": 24,
+      "skipped": 0
+    },
+    "wslMetadata": {
+      "tests": 24,
+      "skipped": 0
+    },
+    "releaseStructure": {
+      "tests": 49,
+      "skipped": 0
+    }
+  },
+  "a": {
+    "historicalOldFiveStrict": true,
+    "eachMetadataApiCalls": 1,
+    "metadataFields": 22,
+    "eachKnownDefaultsAndPageDiagnostics": true,
+    "strictLiteralMetadataPairAccepted": false,
+    "nonClockFullJsonEqual": true,
+    "camoufoxExecuted": false,
+    "soleRawDifferences": {
+      "latestChapterTime": {
+        "original": 1791378013869,
+        "restored": 1791378034876
+      },
+      "lastCheckTime": {
+        "original": 1791378013869,
+        "restored": 1791378034876
+      },
+      "durChapterTime": {
+        "original": 1791378013869,
+        "restored": 1791378034876
+      }
+    },
+    "ownedContainersRemainingAtExactLabelCheck": 0
+  },
+  "b": {
+    "probeStarted": false,
+    "readerExecuted": false,
+    "cause": "Root-owned 0700 input mount unreadable by UID 10001; actual Python permission-denied log, probe exit 2; preserved",
+    "ownedContainersRemainingAtExactLabelCheck": 0
+  },
+  "c": {
+    "unit": "reader-threeway-metadata-20261007-c.service",
+    "invocationId": "9a778621e52246daa1058eaa386374a7",
+    "started": true,
+    "inputBytesSameAsB": true,
+    "inputDirectoryMode": "0755",
+    "sourceFileModes": "0444",
+    "probeUid": 10001,
+    "metadataClockContractRequested": true,
+    "outerRuntimeMaxSeconds": 480,
+    "outerTimeoutStopSeconds": 30,
+    "terminalResultVerified": true,
+    "cleanupVerified": true,
+    "reason": "Original-side TimeoutError before completed searches, no detail API calls; bounded host controller timeout, not a metadata clock validation failure. Exact original-side API phase was not recorded; no retest.",
+    "terminalState": "failed",
+    "controllerTimeoutProven": true,
+    "probeCompleted": false,
+    "completedSearches": 0,
+    "metadataBookInfoApiCalls": 0,
+    "lastObservedSearchResponse": null,
+    "lastObservedMetadata": null,
+    "failureType": "TimeoutError",
+    "failurePhasePreciselyRecorded": false,
+    "metadataCompatibilityEvaluated": false,
+    "camoufoxExecuted": false,
+    "ownedContainersRemainingAtExactLabelCheck": 0
+  },
+  "originalBytecode": {
+    "class": "io.legado.app.data.entities.Book",
+    "sha256": "5aa525ae490d03a64013209a3354af95a357aff83258059c6a1a9545b85ba1ea",
+    "defaultConstructorEvidenceSha256": "efd09a7d60f097d885f2a735483ac27dc4d193c581b3a2b219c17c0236621c9b",
+    "clockCallOffsets": {
+      "latestChapterTime": 192,
+      "lastCheckTime": 205,
+      "durChapterTime": 273
+    }
+  },
+  "runs": [
+    {
+      "id": "a",
+      "unit": "reader-threeway-metadata-20261007-a.service",
+      "provenance": {
+        "generatedOnly": true,
+        "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+        "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+        "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+        "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+        "probeCompleted": false,
+        "probeExitCode": 1,
+        "budgetAccepted": false,
+        "overallAccepted": false,
+        "privateNetworkNamespaceInode": 4026532560,
+        "slice": "readerwebview23fd7e3cb601.slice",
+        "aggregateBudget": {
+          "scope": "both test containers and all their probe/Java/browser descendants",
+          "cpuQuota": 200000,
+          "cpuPeriod": 100000,
+          "memoryMaxBytes": 2147483648,
+          "memoryPeakBytes": 1165811712,
+          "memoryEvents": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 1
+          },
+          "swapMaxBytes": 0,
+          "pidsMax": 512,
+          "pidsEvents": {
+            "max": 0
+          }
+        },
+        "historicalRendererStoppedBeforeCamoufox": false,
+        "removedOwnedTestContainers": [
+          "b6c5ec7abe5901ae5a2f6e600785006c560ed0dfa26cbbbfebee2102d6f52aff",
+          "db00943b55c26ec9feadc25fab4710cace6cade5ef0f6fa6adfbc890324c6b2a"
+        ],
+        "originalJarUnchanged": true,
+        "restoredJarUnchanged": true
+      },
+      "inputFiles": [
+        {
+          "name": "compare-webview-cookie.py",
+          "bytes": 45714,
+          "sha256": "953d4cb61e64afde1d4446adefb4b7118b0b4afea7c910915e55ecc2b26cd40a"
+        },
+        {
+          "name": "run-three-way-webview-in-docker.py",
+          "bytes": 21378,
+          "sha256": "69f11bb283824a4c957e9051bb76d14f9da9b1eb7811142be5b98b3d21507720"
+        },
+        {
+          "name": "run-webview-cookie-in-linux-netns.py",
+          "bytes": 5129,
+          "sha256": "e3a5bcaba6a014250909b9b95c029941739f049c8feda525b771079d23baba81"
+        },
+        {
+          "name": "original_jar_safety.py",
+          "bytes": 874,
+          "sha256": "a105f70c313f05ad8df2ee778e94861442a90710269b9ef324d536beb692bc7c"
+        },
+        {
+          "name": "probe-public-metadata.py",
+          "bytes": 22891,
+          "sha256": "cc50bc571829a9fddb10b6da775f2e85e9ec64cd12235473de925efeb31e08e1"
+        },
+        {
+          "name": "reader_metadata_differential.py",
+          "bytes": 6751,
+          "sha256": "9ef733851c43ecc6cad5b7ba1336306a14ac83a0b6f4ee13af21d453ef6b8fc4"
+        }
+      ],
+      "files": [
+        {
+          "name": "probe.log",
+          "bytes": 608,
+          "sha256": "b49183054f74b979c410d62b05c961236ac1ef7ea19eb3f40d033c154fdb5096"
+        },
+        {
+          "name": "provenance.json",
+          "bytes": 45653,
+          "sha256": "21de9ee7c388e76d044981e1e8f6fe03d8db40209f76563937847d1412569725"
+        },
+        {
+          "name": "three-way.historical-observation.json",
+          "bytes": 21454,
+          "sha256": "28fda05603c950c0e49536aae16c0265db2a760f822c895fc0b393b49eceefb9"
+        }
+      ],
+      "cleanup": {
+        "letter": "a",
+        "unit": {
+          "MainPID": "0",
+          "Result": "exit-code",
+          "ExecMainStatus": "1",
+          "ActiveState": "failed",
+          "InvocationID": "275352bc1d854724a114284945d2b62a"
+        },
+        "token": "readerwebview23fd7e3cb601",
+        "remainingOwnedContainers": []
+      }
+    },
+    {
+      "id": "b",
+      "unit": "reader-threeway-metadata-20261007-b.service",
+      "provenance": {
+        "generatedOnly": true,
+        "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+        "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+        "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+        "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+        "probeCompleted": false,
+        "probeExitCode": 2,
+        "budgetAccepted": false,
+        "overallAccepted": false,
+        "privateNetworkNamespaceInode": 4026532560,
+        "slice": "readerwebviewa747b568fb33.slice",
+        "aggregateBudget": {
+          "scope": "both test containers and all their probe/Java/browser descendants",
+          "cpuQuota": 200000,
+          "cpuPeriod": 100000,
+          "memoryMaxBytes": 2147483648,
+          "memoryPeakBytes": 112738304,
+          "memoryEvents": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "swapMaxBytes": 0,
+          "pidsMax": 512,
+          "pidsEvents": {
+            "max": 0
+          }
+        },
+        "historicalRendererStoppedBeforeCamoufox": false,
+        "removedOwnedTestContainers": [
+          "8d3f3e0268bc737275cac236f9f8bbcf1c78c6f1c91f16d5f7fc991ff560004f",
+          "6b8e341fb5ac4c48767fd322ab832b41f4080300248fb6b56fce96cde61d765f"
+        ],
+        "originalJarUnchanged": true,
+        "restoredJarUnchanged": true
+      },
+      "inputFiles": [
+        {
+          "name": "compare-webview-cookie.py",
+          "bytes": 47261,
+          "sha256": "78f1f23e5bf9977e6f98846f4ebf08ee12ef8f1af17a87a91055535bd28c3825"
+        },
+        {
+          "name": "run-three-way-webview-in-docker.py",
+          "bytes": 22056,
+          "sha256": "80c1fc098e2db30725c0049ba554ae6f6a3973769467403c99eaeacec0a3b3fa"
+        },
+        {
+          "name": "run-webview-cookie-in-linux-netns.py",
+          "bytes": 5129,
+          "sha256": "e3a5bcaba6a014250909b9b95c029941739f049c8feda525b771079d23baba81"
+        },
+        {
+          "name": "original_jar_safety.py",
+          "bytes": 874,
+          "sha256": "a105f70c313f05ad8df2ee778e94861442a90710269b9ef324d536beb692bc7c"
+        },
+        {
+          "name": "probe-public-metadata.py",
+          "bytes": 22891,
+          "sha256": "cc50bc571829a9fddb10b6da775f2e85e9ec64cd12235473de925efeb31e08e1"
+        },
+        {
+          "name": "reader_metadata_differential.py",
+          "bytes": 9625,
+          "sha256": "3a8659c5496f81523047d293cd0db2c321eb0a900b9dcc26eab08f53079a1735"
+        }
+      ],
+      "files": [
+        {
+          "name": "probe.log",
+          "bytes": 90,
+          "sha256": "1dc3f5bd7ca905668500b9cfff1242e37da4f81ca649380c7bb2cbb82f09d770"
+        },
+        {
+          "name": "provenance.json",
+          "bytes": 5511,
+          "sha256": "b7682c7c098ec9bceb52e1bf932ca6dcfed28cba628580612102bf26fc369846"
+        }
+      ],
+      "cleanup": {
+        "letter": "b",
+        "unit": {
+          "MainPID": "0",
+          "Result": "exit-code",
+          "ExecMainStatus": "1",
+          "ActiveState": "failed",
+          "InvocationID": "f28d36f8ca114fe49d16bd8f81d5f943"
+        },
+        "token": "readerwebviewa747b568fb33",
+        "remainingOwnedContainers": []
+      }
+    },
+    {
+      "id": "c",
+      "unit": "reader-threeway-metadata-20261007-c.service",
+      "provenance": {
+        "generatedOnly": true,
+        "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+        "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+        "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+        "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+        "probeCompleted": false,
+        "probeExitCode": null,
+        "budgetAccepted": false,
+        "overallAccepted": false,
+        "privateNetworkNamespaceInode": 4026532560,
+        "slice": "readerwebviewf14398a653a4.slice",
+        "aggregateBudget": {
+          "scope": "both test containers and all their probe/Java/browser descendants",
+          "cpuQuota": 200000,
+          "cpuPeriod": 100000,
+          "memoryMaxBytes": 2147483648,
+          "memoryPeakBytes": 529154048,
+          "memoryEvents": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "swapMaxBytes": 0,
+          "pidsMax": 512,
+          "pidsEvents": {
+            "max": 0
+          }
+        },
+        "historicalRendererStoppedBeforeCamoufox": false,
+        "removedOwnedTestContainers": [
+          "fd573fc3210e09af7f429f5ae1fc78902bee1a9b59863601ea2c3fc5007a9466",
+          "495c3e4c4d57bac8188a5a7a8e7d8cd6945a485fa7412ed3578b93683e352506"
+        ],
+        "originalJarUnchanged": true,
+        "restoredJarUnchanged": true
+      },
+      "inputFiles": [
+        {
+          "name": "compare-webview-cookie.py",
+          "bytes": 47261,
+          "sha256": "78f1f23e5bf9977e6f98846f4ebf08ee12ef8f1af17a87a91055535bd28c3825"
+        },
+        {
+          "name": "run-three-way-webview-in-docker.py",
+          "bytes": 22056,
+          "sha256": "80c1fc098e2db30725c0049ba554ae6f6a3973769467403c99eaeacec0a3b3fa"
+        },
+        {
+          "name": "run-webview-cookie-in-linux-netns.py",
+          "bytes": 5129,
+          "sha256": "e3a5bcaba6a014250909b9b95c029941739f049c8feda525b771079d23baba81"
+        },
+        {
+          "name": "original_jar_safety.py",
+          "bytes": 874,
+          "sha256": "a105f70c313f05ad8df2ee778e94861442a90710269b9ef324d536beb692bc7c"
+        },
+        {
+          "name": "probe-public-metadata.py",
+          "bytes": 22891,
+          "sha256": "cc50bc571829a9fddb10b6da775f2e85e9ec64cd12235473de925efeb31e08e1"
+        },
+        {
+          "name": "reader_metadata_differential.py",
+          "bytes": 9625,
+          "sha256": "3a8659c5496f81523047d293cd0db2c321eb0a900b9dcc26eab08f53079a1735"
+        }
+      ],
+      "files": [
+        {
+          "name": "host-cleanup.json",
+          "bytes": 269,
+          "sha256": "bb41a6bc819ec740a6fbfc7f07b25155a8689cb4a43f56d80d0cad107a17f02c"
+        },
+        {
+          "name": "probe.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "provenance.json",
+          "bytes": 18514,
+          "sha256": "cfacc6d966134e5ea80d4b3ba26c8e0e76ce4d8f06aac1e0027c654499016517"
+        },
+        {
+          "name": "three-way.original-failed.json",
+          "bytes": 276,
+          "sha256": "4eaba5eae16112a179f4e17ddae428e6cb3bf78be30851838a35ad193927fd1b"
+        }
+      ],
+      "cleanup": {
+        "letter": "c",
+        "unit": {
+          "MainPID": "0",
+          "Result": "exit-code",
+          "ExecMainStatus": "1",
+          "ActiveState": "failed",
+          "InvocationID": "9a778621e52246daa1058eaa386374a7"
+        },
+        "token": "readerwebviewf14398a653a4",
+        "remainingOwnedContainers": []
+      }
+    }
+  ],
+  "userReportHashesChecked": 58,
+  "userReportHashesChanged": 0,
+  "strictHistoricalUtf8ParityAccepted": false,
+  "realSiteMetadataOrAuthenticationProven": false,
+  "currentFinalImageLongSoakAccepted": false,
+  "productionChanged": false,
+  "hostMemoryObservationAfterC": {
+    "totalBytes": 4100820992,
+    "availableBytes": 473833472,
+    "swapTotalBytes": 2147479552,
+    "swapUsedBytes": 2147479552,
+    "scope": "Host-wide observation after test cleanup, not test cgroup counters or proof of sole cause. No unrelated service changed."
+  },
+  "metadataClockContractThreeWayAccepted": false
+}

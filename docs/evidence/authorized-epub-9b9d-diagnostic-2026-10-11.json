@@ -1,0 +1,575 @@
+{
+  "schemaVersion": 1,
+  "scope": "one hash-authorized real EPUB; API pair and four partial current UI observations only",
+  "rawReportSha256": "c0c4188ab8e06bbf2f7ed7cf398e1f861f54d0713c4c04e04d81085c3929711b",
+  "fullRunAccepted": false,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "authorizedEpubSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+  "authorizedEpubBytes": 37809796,
+  "apiPairAccepted": true,
+  "api": {
+    "original": {
+      "toc": {
+        "status": 200,
+        "isSuccess": true,
+        "errorEmpty": true,
+        "envelopeFields": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "count": 1611,
+        "projectionSha256": "2c67c5685868f01c689e6eed9436623397b43512e9b0c6bf35e7db9cb77395fb",
+        "titleReplacementCharacters": 0
+      },
+      "chapters": {
+        "0": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "6de29d2f7f84e2d70fb4a52bd54c3c7534a0e9a312926d0d9067ea929747a923",
+          "bodyTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bodyCharacters": 0,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "1": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "ab8c2767af92bd636079e8129949d61d5faeaa66dc1367b512873edc8255744c",
+          "bodyTextSha256": "112cf89db49ebdcb86176a36a2f290d13e3b9ca82ae1cbd7cf0b7e1959fc97f7",
+          "bodyCharacters": 205,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "805": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "15b29b031ce2d026032b01b97f7e76a6b7f7200938efbb1f8c0bd87df6ac3282",
+          "bodyTextSha256": "a5706921018215176247bc0b3dfd66f121549027dcc9ca582d71c611794e45f9",
+          "bodyCharacters": 3888,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "1610": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "8742e5180fb8b58c78a81b249f3d5ca8431208819462e5fe5552868ccc4a5658",
+          "bodyTextSha256": "41100ed366b49f53fa9e8dd9f80864ec2f5845d40a3e47bacccd3f032ec4686f",
+          "bodyCharacters": 321,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        }
+      },
+      "tocUpdatedDisposableShelf": true,
+      "facts": {
+        "shelfUnchangedAfterTocByCachedReads": true,
+        "progressUnchanged": true,
+        "sourceUnchanged": true,
+        "otherNamespaceDenied": true,
+        "anonymousDenied": true
+      }
+    },
+    "restored": {
+      "toc": {
+        "status": 200,
+        "isSuccess": true,
+        "errorEmpty": true,
+        "envelopeFields": [
+          "data",
+          "errorMsg",
+          "isSuccess"
+        ],
+        "count": 1611,
+        "projectionSha256": "2c67c5685868f01c689e6eed9436623397b43512e9b0c6bf35e7db9cb77395fb",
+        "titleReplacementCharacters": 0
+      },
+      "chapters": {
+        "0": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "6de29d2f7f84e2d70fb4a52bd54c3c7534a0e9a312926d0d9067ea929747a923",
+          "bodyTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bodyCharacters": 0,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "1": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "ab8c2767af92bd636079e8129949d61d5faeaa66dc1367b512873edc8255744c",
+          "bodyTextSha256": "112cf89db49ebdcb86176a36a2f290d13e3b9ca82ae1cbd7cf0b7e1959fc97f7",
+          "bodyCharacters": 205,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "805": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "15b29b031ce2d026032b01b97f7e76a6b7f7200938efbb1f8c0bd87df6ac3282",
+          "bodyTextSha256": "a5706921018215176247bc0b3dfd66f121549027dcc9ca582d71c611794e45f9",
+          "bodyCharacters": 3888,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        },
+        "1610": {
+          "status": 200,
+          "isSuccess": true,
+          "errorEmpty": true,
+          "envelopeFields": [
+            "data",
+            "errorMsg",
+            "isSuccess"
+          ],
+          "htmlSha256": "8742e5180fb8b58c78a81b249f3d5ca8431208819462e5fe5552868ccc4a5658",
+          "bodyTextSha256": "41100ed366b49f53fa9e8dd9f80864ec2f5845d40a3e47bacccd3f032ec4686f",
+          "bodyCharacters": 321,
+          "replacementCharacters": 0,
+          "assetStatus": 200,
+          "assetContentType": "application/xhtml+xml",
+          "legacyAssetInjectionObserved": true,
+          "assetMatchesHtmlAfterInjection": true,
+          "bodyTextUnchangedByInjection": true
+        }
+      },
+      "tocUpdatedDisposableShelf": true,
+      "facts": {
+        "shelfUnchangedAfterTocByCachedReads": true,
+        "progressUnchanged": true,
+        "sourceUnchanged": true,
+        "otherNamespaceDenied": true,
+        "anonymousDenied": true
+      }
+    },
+    "tocEqual": true,
+    "sampledChaptersEqual": true
+  },
+  "uiObservedPartialCasesAccepted": true,
+  "uiWholeAccepted": false,
+  "ui": {
+    "passed": false,
+    "cases": {
+      "text805": {
+        "paragraphs": 66,
+        "characters": 3953,
+        "replacementCharacters": 0,
+        "scripts": 0,
+        "resourceUrlOnly": false,
+        "iframeHeight": null,
+        "bodySha256": "685402aab166e895a534222dfc3ac701976456c00a1296ac9615ef97d18799e2"
+      },
+      "text806": {
+        "paragraphs": 59,
+        "characters": 4017,
+        "replacementCharacters": 0,
+        "scripts": 0,
+        "resourceUrlOnly": false,
+        "iframeHeight": null,
+        "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+      },
+      "text806Refresh": {
+        "paragraphs": 59,
+        "characters": 4017,
+        "replacementCharacters": 0,
+        "scripts": 0,
+        "resourceUrlOnly": false,
+        "iframeHeight": null,
+        "bodySha256": "67f99d3d9bda9164f75ab0aac06839e8cbe4fa50be7e91fe5f1ba013c09e5675"
+      },
+      "html806": {
+        "paragraphs": 57,
+        "characters": 4016,
+        "replacementCharacters": 0,
+        "scripts": 0,
+        "resourceUrlOnly": false,
+        "iframeHeight": null,
+        "bodySha256": "9c5be994e21e2b45b9210371a23211094e694d896addda634a584486984bee05"
+      }
+    },
+    "rawBodyOrScreenshotPublished": false,
+    "metricsTextHeldOnlyInPrivateProcessMemory": true,
+    "browserCapabilities": {
+      "crypto": true,
+      "subtle": false
+    },
+    "activePhase": "uiExceptionBeforeOwnedCleanup",
+    "boundedPhaseProcessObservations": [
+      {
+        "phase": "uiRegister",
+        "monotonicMs": 95248,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 29
+          },
+          "browser": {
+            "processes": 6,
+            "threads": 134
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiImportPreview",
+        "monotonicMs": 97071,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 47
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 161
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiSaveBook",
+        "monotonicMs": 99710,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 69
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 156
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiRead805Text",
+        "monotonicMs": 101021,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 69
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 155
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiNext806Text",
+        "monotonicMs": 102805,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 70
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 161
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiRefresh806Text",
+        "monotonicMs": 103135,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 69
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 161
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiHtml806",
+        "monotonicMs": 104524,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 70
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 163
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiRaw806",
+        "monotonicMs": 104877,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 70
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 162
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      },
+      {
+        "phase": "uiExceptionBeforeOwnedCleanup",
+        "monotonicMs": 146849,
+        "processGroups": {
+          "python": {
+            "processes": 1,
+            "threads": 2
+          },
+          "java": {
+            "processes": 1,
+            "threads": 69
+          },
+          "browser": {
+            "processes": 7,
+            "threads": 150
+          },
+          "other": {
+            "processes": 1,
+            "threads": 1
+          }
+        },
+        "ownPidNamespaceZombieCount": 0
+      }
+    ],
+    "registrationViaUiSucceeded": true,
+    "importPreviewViaUiSucceeded": true,
+    "importSaveViaUiSucceeded": true,
+    "boundedVisibleState": {
+      "rawIframePresent": false,
+      "rawErrorPresent": true,
+      "rawErrorDownloadTimeout": false,
+      "rawErrorWorkerTimeout": true,
+      "rawErrorWorkerFailure": false,
+      "genericChapterErrorPresent": true,
+      "loadingStateCount": 0
+    }
+  },
+  "failureType": "TimeoutError",
+  "boundedFailureFrames": [
+    {
+      "file": "inner.py",
+      "function": "<module>",
+      "line": 101
+    },
+    {
+      "file": "authorized_probe.py",
+      "function": "ui",
+      "line": 196
+    }
+  ],
+  "aggregateBudgetAccepted": false,
+  "resourceObservation": {
+    "scope": "one specifically hash-authorized EPUB: original/current read-only four-chapter API comparison plus current Vue3 UI using bundled Camoufox; no other private books or raw bodies published",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 1625563136,
+    "memoryCurrentBytes": 429027328,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 153081,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 14905344,
+      "file": 407093248,
+      "shmem": 0,
+      "kernel": 6516736,
+      "kernel_stack": 0,
+      "pagetables": 266240,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 12288,
+      "file_writeback": 0,
+      "inactive_file": 265469952,
+      "active_file": 141623296,
+      "slab_reclaimable": 5747104,
+      "slab_unreclaimable": 326112
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 256,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 1
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "seconds": 77.463,
+  "cleanup": [
+    {
+      "id": "reader-authorized-epub-9b9d-20261011-d-client",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    },
+    {
+      "id": "reader-authorized-epub-9b9d-20261011-d-server",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    }
+  ],
+  "ownedContainersRemaining": 0,
+  "otherPrivateBooksRead": 0,
+  "originalAndAuthorizedSourceUnchanged": true,
+  "originalShelfMetadataUsed": false,
+  "seedMetadataDerivedFromAuthorizedEpub": true,
+  "runtimePythonVersion": [
+    3,
+    10,
+    12
+  ],
+  "executedStorageHelperSha256": "f1e4aeeaf0dda99bfc6e0adc578a6475852aee8149913ef3e27f78153fc7605f",
+  "rawBodiesOrScreenshotsPublished": false,
+  "realCredentialsImported": false,
+  "productionChanged": false,
+  "latestWholeLocalImageAccepted": false,
+  "rootCauseProven": false,
+  "fullGoalComplete": false
+}

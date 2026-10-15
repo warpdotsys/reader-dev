@@ -1,0 +1,78 @@
+{
+  "sourceCommit": "f5e4764f7ceededf2602e3d2c457fbb6414407ca",
+  "pullRequestMergeCommit": "3a6543dd24ee6be9ce415d22101c957a599a97cc",
+  "runs": [
+    {"id": 37106811266, "name": "Java Kotlin CI", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37106811266"},
+    {"id": 37106811182, "name": "Vue 3 preview build", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37106811182"},
+    {"id": 37106811208, "name": "Browser image integration", "conclusion": "success", "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37106811208"}
+  ],
+  "executedRunnerLabels": ["ubuntu-24.04"],
+  "coreJUnit": [
+    {"name": "Backup", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 2.378},
+    {"name": "File", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.203},
+    {"name": "Group", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.706},
+    {"name": "LocalReading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 6.104},
+    {"name": "Login", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 2.702},
+    {"name": "Reading", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 3.815},
+    {"name": "ReplaceRule", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.139},
+    {"name": "Search", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 5.365},
+    {"name": "ShelfLayout", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 6.418},
+    {"name": "Source", "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 14.134}
+  ],
+  "additionalUiSteps": {"secureFile": "success", "subdirectoryBuild": "success", "subdirectoryJourney": "success"},
+  "frontendTests": 145,
+  "protocolPythonTests": 40,
+  "releaseSafetyStaticPassed": true,
+  "releaseSafetyTests": 5,
+  "generatedScreenshots": [
+    {"file": "vue3-local-reading-raw-synthetic.png", "sha256": "c635e26882adec2755e3b2ee1173864ac084066b8fb7937a9216bbcc951840bf", "visuallyReviewed": true},
+    {"file": "vue3-local-reading-synthetic.png", "sha256": "950fe5abf9d7404ab622b1f38eeba7162ad367b6676b000e038a492182607539", "visuallyReviewed": true}
+  ],
+  "generatedRawProgressJourney": {
+    "ncxDiffersFromSpine": true, "cssAsserted": true, "scriptsRemoved": true,
+    "minimumIframeHeightPx": 320, "chaptersWithExtraGeneratedParagraphs": 2,
+    "extraGeneratedParagraphsPerChapter": 50, "requestedInnerScrollPx": 600,
+    "restoredInnerScrollRangePx": [580, 620], "hostScrollUpperBoundPx": 80,
+    "namespaceAndBookScopedLocalRecordAsserted": true,
+    "legacyProgressRequestKeys": ["index", "url"],
+    "innerLinkAndPreviousChapterAsserted": true, "textReturnWithoutRefresh": true
+  },
+  "beforeFixLocalRegression": {
+    "jarSha256": "b0f6ddec4dd03ea019ca300c071ce968ae27ef81aace2f9f365ad2d9099f15ef",
+    "tests": 1, "skipped": 0, "failures": 1, "seconds": 39.402,
+    "failure": "timed out waiting for saveBookProgress after generated inner scroll",
+    "originalJarResult": false, "reportPreservedOutsideGit": true
+  },
+  "afterFixLocalRegression": {"tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 16.517},
+  "localCandidateJarSha256": "97cb130670cba0a35f31a8b2966f9eb61e489232e7bc8ef6866cbef861a6e065",
+  "camoufoxJUnit": {"tests": 11, "skipped": 0, "failures": 0, "errors": 0, "seconds": 87.026},
+  "resourceBudget": {
+    "architecture": "x86_64", "cpuPeriod": 100000, "cpuQuota": "200000",
+    "memoryPeakBytes": 816467968, "memoryMaxBytes": 2147483648,
+    "memoryEvents": {"high": 0, "low": 0, "max": 0, "oom": 0, "oom_group_kill": 0, "oom_kill": 0},
+    "pidsCurrent": 36, "pidsPeak": 176, "pidsMax": 256, "pidsEvents": {"max": 0},
+    "swapCurrentBytes": 0, "swapMaxBytes": 1073741824,
+    "scope": "one full Reader image; sequential probes plus four-account burst; not sustained load"
+  },
+  "syntheticImageProbe": {
+    "cookieSequence": ["", "", "session=alpha==", ""],
+    "scriptGet": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+    "post": {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1, "body": "q=post", "testHeader": "synthetic"},
+    "fourAccountBurstCounts": [1, 1, 1, 1]
+  },
+  "imageOptionalJobsSkipped": ["Verify archived original JAR provenance", "Probe archived remote WebView reference", "Compare public page observations (not production parity)"],
+  "authorizedBookManualDomObservation": {
+    "bookCount": 1, "chapterIndex": 805, "paragraphs": 64,
+    "stableInnerScrollBeforeReloadPx": 2344.666748046875,
+    "innerScrollAfterReloadPx": 2344.666748046875,
+    "hostScrollAfterReloadPx": 64.66666412353516,
+    "replacementCharacters": 0, "scriptNodes": 0,
+    "explicitNextChapter": {"index": 806, "paragraphs": 57, "innerScrollPx": 0},
+    "explicitPreviousChapter": {"index": 805, "paragraphs": 64, "innerScrollPx": 0},
+    "browserInteraction": "visible click and PageDown; read-only rendered DOM observations",
+    "bookBytesUploaded": false, "bookBodyUploaded": false, "privateScreenshotsUploaded": false
+  },
+  "knownUnverified": ["same-XHTML multi-fragment exact TOC position", "nested CSS imports", "oversized EPUB resource boundary", "cross-device raw pixel progress", "sustained production load", "formal multiarchitecture manifest", "real authenticated-source three-way WebView parity"],
+  "productionChanged": false,
+  "formalRelease": false
+}

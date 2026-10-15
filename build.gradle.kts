@@ -5,6 +5,10 @@ import io.github.fvarrui.javapackager.model.Platform
 import io.github.fvarrui.javapackager.model.WindowsConfig
 import de.undercouch.gradle.tasks.download.Download
 import org.gradle.language.jvm.tasks.ProcessResources
+import java.nio.ByteBuffer
+import java.nio.charset.CodingErrorAction
+import java.nio.charset.CharacterCodingException
+import java.util.jar.JarFile
 
 buildscript {
     val kotlin_version: String by extra{"1.5.21"}
@@ -57,7 +61,7 @@ apply(plugin = "kotlin")
 apply(plugin = "io.github.fvarrui.javapackager.plugin")
 
 group = "com.htmake"
-version = "4.0.7"
+version = "6.1.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -104,7 +108,8 @@ dependencies {
 
     // json
     implementation("com.google.code.gson:gson:2.8.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
+    // Exact version present in reader-pro-3.2.14.jar; avoid online dynamic-version lookup.
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.5")
 
     // log
     implementation("io.github.microutils:kotlin-logging:1.6.24")
@@ -174,29 +179,116 @@ application {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClassName = "com.htmake.reader.ReaderApplicationKt"
+    // A versioned filename/image label is not an application version embedded
+    // in the JAR. Use deterministic metadata, never checkout time or host data.
+    manifest.attributes(mapOf(
+        "Implementation-Title" to "Reader Pro",
+        "Implementation-Version" to project.version.toString()
+    ))
+    // Gradle 6 keeps source mtimes and filesystem traversal order by default.
+    // Exact-byte CI comparison, not these options alone, proves a rebuild.
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
     // JavaFX is used only by the optional desktop packager. The reference
     // headless Spring Boot JAR does not ship JavaFX modules.
     exclude("**/javafx-*.jar")
+    doLast {
+        JarFile(archiveFile.get().asFile).use { jar ->
+            check(jar.manifest.mainAttributes.getValue("Implementation-Version") == project.version.toString()) {
+                "Packaged Reader version does not match the project version"
+            }
+            check(jar.manifest.mainAttributes.getValue("Start-Class") == "com.htmake.reader.ReaderApplicationKt") {
+                "Packaged Reader must retain the headless server entrypoint"
+            }
+        }
+        logger.lifecycle("Verified embedded Reader version {}", project.version)
+    }
 }
 
 // The retained 3.2.14 frontend has the former centre URL embedded in its
 // minified bundle. Rewrite only that literal in generated resources, leaving
 // the extracted reference asset byte-for-byte available for provenance.
-tasks.named<ProcessResources>("processResources") {
-    // Gradle 6.1.1 otherwise uses the host default charset for line filters.
-    // On Windows that decoded the UTF-8 Vue bundles as GBK and produced
-    // malformed JavaScript in the boot JAR.
-    filteringCharset = "UTF-8"
-    filesMatching("web/js/*.js") {
-        filter { line: String ->
-            line.replace("https://r.htmake.com", "https://license.medwarp.cn")
+val vue3Dist = file("web-vue3/dist")
+val verifyVue3UiDist = tasks.register("verifyVue3UiDist") {
+    doLast {
+        require(File(vue3Dist, "index.html").isFile) {
+            "Vue 3 UI build is missing; run npm ci and npm run build in web-vue3 first"
         }
     }
-    // The broken deployment may already be in the Workbox precache. Give all
-    // entries a new revision generation so existing browsers fetch clean bytes.
-    filesMatching("web/precache-manifest.*.js") {
-        filter { line: String ->
-            line.replace("\"revision\": \"", "\"revision\": \"utf8fix1-")
+}
+
+// The recorded Gradle 6 Windows line-filter output damaged a supplementary
+// character and used host CRLF; the precise internal encoder is not established.
+// Transform only these generated legacy text resources as complete strict UTF-8
+// values. Never rewrite their source files, the captured original, or binary data.
+fun canonicalLegacyResourceBytes(bytes: ByteArray, path: String): ByteArray {
+    require(bytes.size <= 8 * 1024 * 1024) { "Legacy text resource exceeds the finite build limit: $path" }
+    val decoder = Charsets.UTF_8.newDecoder()
+        .onMalformedInput(CodingErrorAction.REPORT)
+        .onUnmappableCharacter(CodingErrorAction.REPORT)
+    var text = decoder.decode(ByteBuffer.wrap(bytes)).toString()
+        .replace("\r\n", "\n").replace("\r", "\n")
+    if (path.startsWith("web/js/") && path.endsWith(".js")) {
+        text = text.replace("https://r.htmake.com", "https://license.medwarp.cn")
+    } else if (path.startsWith("web/precache-manifest.") && path.endsWith(".js")) {
+        text = text.replace(Regex("\"revision\": \"(?!utf8fix1-)"), "\"revision\": \"utf8fix1-")
+    }
+    return text.toByteArray(Charsets.UTF_8)
+}
+
+val verifyLegacyResourceEncoding = tasks.register("verifyLegacyResourceEncoding") {
+    doLast {
+        val supplementary = "\uD86C\uDEAE" // U+2B2AE, lost by the recorded streaming build.
+        for (offset in listOf(4093, 4095, 8191, 16383, 262143)) {
+            for (eol in listOf("\n", "\r\n", "\r")) {
+                val prefix = "a".repeat(offset)
+                val source = prefix + supplementary + eol + "https://r.htmake.com" + eol
+                val expected = prefix + supplementary + "\nhttps://license.medwarp.cn\n"
+                check(canonicalLegacyResourceBytes(source.toByteArray(Charsets.UTF_8), "web/js/generated.js")
+                    .contentEquals(expected.toByteArray(Charsets.UTF_8))) { "Supplementary UTF-8/LF regression" }
+            }
+        }
+        val precache = "\"revision\": \"generated\"\r\n" + supplementary
+        check(canonicalLegacyResourceBytes(precache.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+            .contentEquals(("\"revision\": \"utf8fix1-generated\"\n" + supplementary).toByteArray(Charsets.UTF_8)))
+        val prefixed = "\"revision\": \"utf8fix1-generated\"\n" + supplementary
+        check(canonicalLegacyResourceBytes(prefixed.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+            .contentEquals(prefixed.toByteArray(Charsets.UTF_8))) { "Do not duplicate the existing revision prefix" }
+        val transformed = canonicalLegacyResourceBytes(precache.toByteArray(Charsets.UTF_8), "web/precache-manifest.generated.js")
+        check(canonicalLegacyResourceBytes(transformed, "web/precache-manifest.generated.js")
+            .contentEquals(transformed)) { "Repeated canonical transformation must be byte-identical" }
+        val yaml = "generated: '$supplementary'\r\n"
+        check(canonicalLegacyResourceBytes(yaml.toByteArray(Charsets.UTF_8), "application-prod.yml")
+            .contentEquals("generated: '$supplementary'\n".toByteArray(Charsets.UTF_8)))
+        var invalidRejected = false
+        try { canonicalLegacyResourceBytes(byteArrayOf(0xc3.toByte(), 0x28), "web/js/generated.js") }
+        catch (_: CharacterCodingException) { invalidRejected = true }
+        check(invalidRejected) { "Malformed UTF-8 must not become replacement characters" }
+        logger.lifecycle("Verified 20 generated strict UTF-8/LF legacy resource cases")
+    }
+}
+
+tasks.named<ProcessResources>("processResources") {
+    // Unit tests import the readable worker and can leave interpreter-version
+    // and checkout-time-dependent caches beside it. Keep those local files,
+    // but never package them as application resources.
+    exclude("**/__pycache__/**", "**/*.pyc", "**/*.pyo")
+    if (project.findProperty("readerWebUi")?.toString() == "vue3") {
+        dependsOn(verifyVue3UiDist)
+        from(vue3Dist) {
+            into("web-vue3")
+        }
+    }
+    dependsOn(verifyLegacyResourceEncoding)
+    doLast {
+        val resources = file("src/main/resources")
+        fileTree(resources) {
+            include("web/js/*.js", "web/precache-manifest.*.js", "application.yml", "application-prod.yml")
+        }.files.forEach { source ->
+            val path = source.relativeTo(resources).invariantSeparatorsPath
+            val generated = File(destinationDir, path)
+            require(generated.isFile) { "Missing copied legacy text resource: $path" }
+            generated.writeBytes(canonicalLegacyResourceBytes(source.readBytes(), path))
         }
     }
 }

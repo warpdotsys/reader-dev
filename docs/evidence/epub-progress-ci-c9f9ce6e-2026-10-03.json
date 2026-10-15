@@ -1,0 +1,46 @@
+{
+  "sourceCommit": "c9f9ce6e338a64d22510c04bbacc0d03bfb608a4",
+  "prMergeSnapshot": "63c5671ec3766b19b4a3cc770d46eb44fab3d95c",
+  "runnerLabels": ["ubuntu-24.04"],
+  "runnerProvider": "GitHub Actions",
+  "workflows": {
+    "javaKotlin": {"id": 37115145388, "conclusion": "success"},
+    "vue3": {"id": 37115145387, "conclusion": "success"},
+    "browserImage": {"id": 37115145390, "conclusion": "success"}
+  },
+  "downloadedCoreUi": {"tests": 10, "skipped": 0, "failures": 0, "errors": 0},
+  "generatedReading": {
+    "seconds": 14.659,
+    "oldProgressPostDelayControlled": true,
+    "reportSha256": "ff564f21adbef794a6255f88be77ea2e114e74379f4f26915c412f0aa1352b3b",
+    "navScreenshotSha256": "736eda53b7ee6a127cb7cf9c56f278476266c37ff85df790f848aea9cbcca7c8",
+    "screenshotVisuallyReviewed": true,
+    "privateBookRead": false
+  },
+  "additionalUiSteps": {
+    "secureFile": "Executed successfully; non-skipped JUnit check in job log",
+    "subdirectory": "Executed successfully; non-skipped JUnit check in job log"
+  },
+  "camoufox": {
+    "tests": 11, "skipped": 0, "failures": 0, "errors": 0,
+    "seconds": 64.255,
+    "reportSha256": "3addcfdda05e8399112986cf311018a645534b51ef422779fd79d1c235f75ce7"
+  },
+  "frontendTests": 155,
+  "pythonTests": 45,
+  "releaseSafetyTests": 5,
+  "resourceReport": {
+    "file": "c9f9ce6e-browser-resource-budget-2026-10-03.json",
+    "sha256": "c935c25e56a04505eb58fbccd1eb8c3d56f09ee6e288cd96a20dbb8d8f9982cc"
+  },
+  "syntheticReport": {
+    "file": "c9f9ce6e-browser-synthetic-2026-10-03.json",
+    "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+  },
+  "limitations": [
+    "Optional archived reference/provenance/public pair jobs were skipped in this run",
+    "The four-account burst uses the managed sequential rendering queue",
+    "Original-JAR generated EPUB parity is a separate server report, not this image resource measurement",
+    "No release, registry publish, production switch or long-term load acceptance"
+  ]
+}

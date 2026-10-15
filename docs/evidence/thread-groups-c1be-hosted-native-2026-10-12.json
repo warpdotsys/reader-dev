@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "c1be4bb5e26136bd68188730979f76692e057097",
+  "testedMergeSnapshot": "74e76dada5a66b03b74f2cf2dd2234212d5eaab3",
+  "nativeRunId": 38201139800,
+  "nativeSixHostedJobsAccepted": true,
+  "nativeArchitectures": [
+    "amd64",
+    "arm64"
+  ],
+  "metadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "74e76dada5a66b03b74f2cf2dd2234212d5eaab3",
+      "jarSha256": "30e8cafcea6b07781aae8039c5ae0230340c189884f61eba445bab72e5b440af",
+      "archiveSha256": "195f3db264ab858825d62c4b3b01d019aa38bea209ac4875c0bc658ce4b656df",
+      "imageId": "sha256:fa43889b061fcec0e4e90dce6e2914ba4f56c797667c1180d0f04f3c7eb00a76"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "74e76dada5a66b03b74f2cf2dd2234212d5eaab3",
+      "jarSha256": "30e8cafcea6b07781aae8039c5ae0230340c189884f61eba445bab72e5b440af",
+      "archiveSha256": "1f7491e7bf7f08c0b46f966b673c0adb48f63fee7f54f7d5660f1bd78caff657",
+      "imageId": "sha256:af02c26939117c63f620fddace35a2c0a749d7c2711fdfa5cd40e8ae7bee8cd0"
+    }
+  },
+  "checks": [
+    {
+      "architecture": "amd64",
+      "phase": "native",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "amd64",
+      "phase": "transferred",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "arm64",
+      "phase": "native",
+      "sevenProducerReportTypesAccepted": true
+    },
+    {
+      "architecture": "arm64",
+      "phase": "transferred",
+      "sevenProducerReportTypesAccepted": true
+    }
+  ],
+  "publisherSmallJsonFiles": 32,
+  "camoufoxContractTests": 24,
+  "hostedPythonTests": 748,
+  "hostedPythonSkipped": 0,
+  "hostedPythonSeconds": 13.811,
+  "jvmTests": 207,
+  "jvmSkipped": 35,
+  "maximumPublisherResourceSubsetMemoryBytes": 928165888,
+  "maximumPublisherResourceSubsetPids": 202,
+  "largeArchivesLocallyDownloadedOrRehashed": false,
+  "currentWholeImageLocallyAccepted": false,
+  "realBookPressureAccepted": false,
+  "rawLogsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

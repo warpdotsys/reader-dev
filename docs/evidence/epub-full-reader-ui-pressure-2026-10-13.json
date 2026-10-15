@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "7bf8c8a43544abb04ede076df560bad988be3699",
+  "scope": "same unmodified formal candidate, real Reader eight scenes twice, two JAR preparation variants",
+  "jarSha256": "308d94ed216fe531e1b9a9477363999df31b35944be78d7200aa6806a766bf90",
+  "workerSha256": "59ebfb6aec769cdda4401f5efa7cb62a88f6a9e0d9bcfcbf7d7e8077464ed9f1",
+  "authorizedBookCount": 1,
+  "otherPrivateBooksRead": 0,
+  "realCredentialsOrExistingStorageImported": false,
+  "cpuLimit": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapMaxBytes": 0,
+  "downloadDeadlineMilliseconds": 60000,
+  "workerDeadlineMilliseconds": 15000,
+  "javaInitialHeapMiB": 128,
+  "javaMaximumHeapMiB": 768,
+  "vertxWorkerPools": [
+    8,
+    8
+  ],
+  "browserOrWorkerCodeInjected": false,
+  "passiveOperatingSystemCountersOnly": true,
+  "runs": [
+    {
+      "diagnostic": "V",
+      "jarPreparation": "readOnlySourceBind",
+      "rawReportSha256": "7b208fdd4f5c7ac4431834583c4e90fda1226a5de0cf3496eb54968bf0e6f35e",
+      "uiProbeSha256": "1ad213320ab99957508e7b9b906cb59ce528933c7cbe21cc8d4c1dd3cbd55ef6",
+      "hostProbeSha256": "58d9db2e914e8bdc8adefb1927745ee16b3f2fb481e620665c993c8d1cbd82ef",
+      "fullEightScenesAccepted": true,
+      "caseQualityMetrics": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "text806": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "text806Refresh": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "html806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "raw806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 641
+        },
+        "raw805": {
+          "paragraphs": 64,
+          "characters": 3952,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 641
+        },
+        "raw805Refresh": {
+          "paragraphs": 64,
+          "characters": 3952,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 641
+        },
+        "text805Return": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        }
+      },
+      "pressureWindows": [
+        {
+          "beginPhase": "uiRaw806",
+          "endPhase": "uiRaw805Previous",
+          "elapsedMilliseconds": 4565,
+          "includesDownloadParseAndIframeNotWorkerOnly": true,
+          "cpuTicksPerSecond": 100,
+          "observedProcessCpuTicksLowerBoundDelta": {
+            "java": 26,
+            "python": 8,
+            "browser-driver": 0,
+            "browser-main": 163,
+            "browser-content": 318,
+            "browser-service": 0,
+            "other": 0
+          },
+          "aggregateCpuMicroseconds": {
+            "usage_usec": 5166908,
+            "user_usec": 1576863,
+            "system_usec": 3590046
+          },
+          "memoryHighEventDelta": 7217,
+          "directReclaimPagesScannedDelta": 1663056,
+          "fileWorkingSetRefaultDelta": 1100459
+        },
+        {
+          "beginPhase": "uiRaw805Refresh",
+          "endPhase": "uiReturnText805",
+          "elapsedMilliseconds": 13439,
+          "includesDownloadParseAndIframeNotWorkerOnly": true,
+          "cpuTicksPerSecond": 100,
+          "observedProcessCpuTicksLowerBoundDelta": {
+            "java": 169,
+            "python": 41,
+            "browser-driver": 0,
+            "browser-main": 796,
+            "browser-content": 950,
+            "browser-service": 2,
+            "other": 0
+          },
+          "aggregateCpuMicroseconds": {
+            "usage_usec": 19717835,
+            "user_usec": 4988828,
+            "system_usec": 14729007
+          },
+          "memoryHighEventDelta": 31319,
+          "directReclaimPagesScannedDelta": 16205259,
+          "fileWorkingSetRefaultDelta": 5408086
+        }
+      ],
+      "memoryPeakBytes": 1619423232,
+      "memoryHighEvents": 41244,
+      "pidsPeak": 233,
+      "hardMemoryOomOrPidEvents": 0,
+      "seconds": 51.191,
+      "processCounterSamples": 42,
+      "counterReadErrors": 0,
+      "temporaryInputCopiesCleanedBytes": 37824508,
+      "allOwnedProcessesStopped": true
+    },
+    {
+      "diagnostic": "W",
+      "jarPreparation": "freshCopyWithinAggregateThenReadOnlyBind",
+      "rawReportSha256": "5b1cbb00237cfd75af17125429aba4ac748c616cb94074b2c88edaf6177c6702",
+      "uiProbeSha256": "1ad213320ab99957508e7b9b906cb59ce528933c7cbe21cc8d4c1dd3cbd55ef6",
+      "hostProbeSha256": "c77867cc4c708a991eefd66b440a18a512d8080a7dd9d7a056d1ab6a28a30033",
+      "fullEightScenesAccepted": true,
+      "caseQualityMetrics": {
+        "text805": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "text806": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "text806Refresh": {
+          "paragraphs": 59,
+          "characters": 4017,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "html806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        },
+        "raw806": {
+          "paragraphs": 57,
+          "characters": 4016,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 643
+        },
+        "raw805": {
+          "paragraphs": 64,
+          "characters": 3952,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 643
+        },
+        "raw805Refresh": {
+          "paragraphs": 64,
+          "characters": 3952,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": 643
+        },
+        "text805Return": {
+          "paragraphs": 66,
+          "characters": 3953,
+          "replacementCharacters": 0,
+          "scripts": 0,
+          "resourceUrlOnly": false,
+          "iframeHeight": null
+        }
+      },
+      "pressureWindows": [
+        {
+          "beginPhase": "uiRaw806",
+          "endPhase": "uiRaw805Previous",
+          "elapsedMilliseconds": 12361,
+          "includesDownloadParseAndIframeNotWorkerOnly": true,
+          "cpuTicksPerSecond": 100,
+          "observedProcessCpuTicksLowerBoundDelta": {
+            "java": 218,
+            "python": 53,
+            "browser-driver": 0,
+            "browser-main": 769,
+            "browser-content": 804,
+            "browser-service": 0,
+            "other": 0
+          },
+          "aggregateCpuMicroseconds": {
+            "usage_usec": 18509547,
+            "user_usec": 2316335,
+            "system_usec": 16193213
+          },
+          "memoryHighEventDelta": 35023,
+          "directReclaimPagesScannedDelta": 41521737,
+          "fileWorkingSetRefaultDelta": 5822904
+        },
+        {
+          "beginPhase": "uiRaw805Refresh",
+          "endPhase": "uiReturnText805",
+          "elapsedMilliseconds": 7713,
+          "includesDownloadParseAndIframeNotWorkerOnly": true,
+          "cpuTicksPerSecond": 100,
+          "observedProcessCpuTicksLowerBoundDelta": {
+            "java": 101,
+            "python": 19,
+            "browser-driver": 0,
+            "browser-main": 458,
+            "browser-content": 564,
+            "browser-service": 0,
+            "other": 1
+          },
+          "aggregateCpuMicroseconds": {
+            "usage_usec": 11514326,
+            "user_usec": 4284535,
+            "system_usec": 7229790
+          },
+          "memoryHighEventDelta": 15822,
+          "directReclaimPagesScannedDelta": 6397362,
+          "fileWorkingSetRefaultDelta": 2612312
+        }
+      ],
+      "memoryPeakBytes": 1623162880,
+      "memoryHighEvents": 54437,
+      "pidsPeak": 234,
+      "hardMemoryOomOrPidEvents": 0,
+      "seconds": 41.48,
+      "processCounterSamples": 32,
+      "counterReadErrors": 0,
+      "temporaryInputCopiesCleanedBytes": 323498575,
+      "allOwnedProcessesStopped": true
+    }
+  ],
+  "bothEightSceneRunsAccepted": true,
+  "historicalTFailureDiscarded": false,
+  "jarPreparationIsSoleFailureCauseProven": false,
+  "pressureIsSoleFailureCauseProven": false,
+  "stablePerformanceOrLeakAbsenceProven": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "originalJarOrRemoteWebviewDifferentialExecutedThisTurn": false,
+  "tokensUrlsEntryNamesBodiesOrPrivateHashesPublished": false,
+  "productImplementationOrLimitsChanged": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

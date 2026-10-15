@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "sourceReportSha256": "f74eddc1fe8c2735f06284f83ca1e4487f357eac3c523f9717859834c82e9d88",
+  "scope": "generated 64KiB format capability in pinned Firefox, not archive or Reader acceptance",
+  "overallDiagnosticAccepted": false,
+  "workerFormatCapabilityAccepted": true,
+  "pageFormatCapabilityAccepted": false,
+  "pageFailure": "Permission denied to access property autoAllocateChunkSize",
+  "pageFailureCauseConfirmed": false,
+  "workerResults": [
+    {
+      "format": "deflate-raw",
+      "supported": true,
+      "decodedBytes": 65536,
+      "bytesEqual": true,
+      "truncatedRejected": true,
+      "trailingRejected": true
+    },
+    {
+      "format": "deflate",
+      "supported": true,
+      "decodedBytes": 65536,
+      "bytesEqual": true,
+      "truncatedRejected": true,
+      "trailingRejected": true
+    },
+    {
+      "format": "gzip",
+      "supported": true,
+      "decodedBytes": 65536,
+      "bytesEqual": true,
+      "truncatedRejected": true,
+      "trailingRejected": true
+    }
+  ],
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestWholeImageAccepted": false,
+  "independentIdentityAndAggregateBudgetAccepted": true,
+  "containerUid": 10001,
+  "network": "loopback-only",
+  "capabilitiesZero": true,
+  "noNewPrivileges": true,
+  "budgets": {
+    "cpuCount": 2,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "pidsMax": 256,
+    "swapMaxBytes": 0
+  },
+  "failedPreparatoryAttemptRetained": true,
+  "incompleteNonInstrumentedAttemptRetained": true,
+  "readerExecuted": false,
+  "javaStarted": false,
+  "bookRead": false,
+  "realCredentialsOrPersonalBrowserProfileImported": false,
+  "stoppedAndPidZero": true,
+  "ownedContainersRemaining": 0,
+  "generatedBytesOnly": true,
+  "productionChanged": false,
+  "released": false
+}

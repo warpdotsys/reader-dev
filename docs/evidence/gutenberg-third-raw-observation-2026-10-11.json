@@ -1,0 +1,87 @@
+{
+  "bundledBrowserObserved": true,
+  "businessApiCalls": {
+    "/getBookContent": 1,
+    "/getBookInfo": 1,
+    "/getChapterList": 1
+  },
+  "captchaInteractedWith": false,
+  "chapter": {
+    "characters": 6822,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "firstLetterMarkerPresent": true,
+    "isNotResourceUrl": true,
+    "isSuccess": true,
+    "noScriptTag": true,
+    "replacementCharacters": 0,
+    "sha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+    "status": 200
+  },
+  "cookieRowsAfter": 0,
+  "cookieRowsBefore": 0,
+  "expectedImageRevision": "ec6af77a25a1d048e1751bdf983d3a1894d629ff",
+  "generatedSessionRevoked": true,
+  "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "maximumObservedProcesses": {
+    "browser": 7,
+    "driver": 1,
+    "worker": 1
+  },
+  "metadata": {
+    "authorMatches": true,
+    "dataIsObject": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "isSuccess": true,
+    "nameMatches": true,
+    "status": 200
+  },
+  "originalOrRemoteParityProven": false,
+  "passed": true,
+  "privateLocalBooksRead": 0,
+  "privateNetworkGuardEnabled": true,
+  "processMonitorPassed": true,
+  "rawBodyCookieOrErrorPersisted": false,
+  "realAuthenticationProven": false,
+  "realCredentialsImported": false,
+  "renderer": "camoufox",
+  "resourceGuardPassed": true,
+  "runtimeUid": 10001,
+  "schemaVersion": 1,
+  "scope": "fixed Gutenberg 84 anonymous bundled Reader; not original or archived parity",
+  "seconds": 20.043,
+  "siteSearchRequested": false,
+  "source": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+  "sourceRulesRetained": true,
+  "tlsErrorsIgnored": false,
+  "toc": {
+    "baseUrlsMatchFixedBook": true,
+    "canonicalTocSha256": "61af49ad646781649f796440dec95dbed27308ca1c7d119b0bc92c287f9450c7",
+    "chapterCount": 28,
+    "chapterTitlesPresent": true,
+    "chaptersRemainInFixedBook": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "fixedBookChapterUrlsValid": true,
+    "fragmentsMatchExpected": true,
+    "indicesSequential": true,
+    "isSuccess": true,
+    "noVolumeEntries": true,
+    "relativeChapterUrls": 28,
+    "status": 200,
+    "webViewOptionsRetained": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8f8095dbbd4d89b88947f30cd76b0ddced25302f",
+  "runId": 38119618382,
+  "imageRevision": "ffa8ddc1e77e15df97fee6f1a60e406afd317ca5",
+  "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "mainAgentActuallyViewedBothLocalPictures": true,
+  "pictures": [
+    {
+      "path": "docs/evidence/gutenberg-ui-second-login-2026-10-11.png",
+      "sha256": "7d1f0a014abb92ce90bc63a7bef092f868176fdbef196dda0b42d3c9b49fbdee",
+      "verdict": "The empty generated login form and Chinese labels are visible and legible."
+    },
+    {
+      "path": "docs/evidence/gutenberg-ui-second-logout-2026-10-11.png",
+      "sha256": "40c21761781367d6ea9f13f22c4004dcc608c1e91738a09019ed9da28688f356",
+      "verdict": "The empty login form after logout is visible, not the uniform blank first-run frame."
+    }
+  ],
+  "mainAgentViewedNetworkBodyPictures": false,
+  "bodyPicturesExported": false,
+  "realCredentialsImported": false,
+  "privateLocalBooksRead": 0,
+  "productionUiProven": false,
+  "fullGoalComplete": false
+}

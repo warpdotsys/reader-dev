@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "a80ccf23829cf167e158a9d34325697f27a75ae2",
+  "testedMergeSnapshot": "e146d6d280018369a8a7bf9d826c4ead0cea3fc9",
+  "scope": "same eight actual single authorized EPUB UI scenes; read-only Worker asset events",
+  "rawReportSha256": "18bcc83da8fe828e25ad8c721371c28de2bca9cfb1738fad8fdeae1ec431fd34",
+  "jarSha256": "d00784f6f54041de0786236fd1aadb66f7d2ff9967d82ad89dddc702b83621a7",
+  "authorizedBookCount": 1,
+  "otherPrivateBooksRead": 0,
+  "originalExecuted": false,
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestWholeNativeImageLocallyAccepted": false,
+  "completedCases": [
+    "text805",
+    "text806",
+    "text806Refresh",
+    "html806",
+    "raw806",
+    "raw805"
+  ],
+  "firstFourBodiesEqualPriorRun": true,
+  "fullEightCasesAccepted": false,
+  "rawFirstTwoChaptersAccepted": true,
+  "rawFirstTwoScriptAndReplacementCounts": 0,
+  "rawFirstTwoIframeHeight": 883,
+  "refreshAccepted": false,
+  "lastUiActionBeforeFailure": "uiRaw805Refresh",
+  "workerTimeoutStage": "expanding",
+  "downloadTimeoutVisible": false,
+  "passiveWorkerAssetEvents": [
+    {
+      "kind": "worker-created",
+      "milliseconds": 18312,
+      "phase": "uiRaw806"
+    },
+    {
+      "kind": "request",
+      "milliseconds": 18333,
+      "phase": "uiRaw806",
+      "get": true,
+      "script": true
+    },
+    {
+      "kind": "response",
+      "milliseconds": 18333,
+      "phase": "uiRaw806",
+      "status": 200,
+      "javascriptMedia": true
+    },
+    {
+      "kind": "worker-created",
+      "milliseconds": 41340,
+      "phase": "uiRaw805Refresh"
+    },
+    {
+      "kind": "request",
+      "milliseconds": 44877,
+      "phase": "uiRaw805Refresh",
+      "get": true,
+      "script": true
+    },
+    {
+      "kind": "response",
+      "milliseconds": 44894,
+      "phase": "uiRaw805Refresh",
+      "status": 200,
+      "javascriptMedia": true
+    }
+  ],
+  "passiveObserverWrappedWorkerOrInjectedHtml": false,
+  "soleTimeoutCauseProven": false,
+  "aggregateBudgetAccepted": true,
+  "javaMaximumObservedThreads": 48,
+  "javaPeakCategories": {
+    "vertxEventLoop": 3,
+    "vertxInternalWorker": 8,
+    "vertxWorker": 8,
+    "coroutineDispatcher": 5,
+    "readerBrowser": 0,
+    "okHttp": 0,
+    "forkJoin": 0,
+    "scheduler": 1,
+    "jvmRuntime": 18,
+    "other": 5
+  },
+  "peakPids": 236,
+  "pidsMaxEvents": 0,
+  "memoryPeakBytes": 1620348928,
+  "memoryHighEvents": 66595,
+  "hardMemoryOrOomEvents": 0,
+  "aggregateCpuLimit": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapMaxBytes": 0,
+  "swapCurrentBytes": 0,
+  "seconds": 75.911,
+  "primaryUiFailureCode": "timeout",
+  "outerAcceptanceRejectionCode": "validation",
+  "ownedJavaAndSamplerStopped": true,
+  "ownedContainersRemaining": 0,
+  "temporaryInputCopiesCleanedBytes": 323483509,
+  "originalOrAllowedSourceDeleted": false,
+  "rawBodiesOrScreenshotsOrPrivateChapterHashesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

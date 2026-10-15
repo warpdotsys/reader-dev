@@ -1,0 +1,6077 @@
+{
+  "schemaVersion": 1,
+  "scope": "exact local original/restored historical-WebView metadata pair accepted; third side failed before metadata",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "sourceRevision": "a5cd1e74ab0652361968f5bac1cec117373f5272",
+  "testedMergeSnapshot": "2147efa3f2b3fc5af0c993311863cafbcd733d78",
+  "rawReportSha256": "bf5af82a6b0d58d076a34cedaa56c0c6b7ece4c5ab24395c5cd63e15f55f5541",
+  "fiveBaselineSearchesEach": 5,
+  "originalRestoredFullBaselineReturnDataEqual": true,
+  "originalRestoredMetadata": {
+    "mode": "exact-static-json-and-bounded-default-clocks",
+    "fullRawReturnDataEqual": false,
+    "nonClockFullJsonEqual": true,
+    "clockFieldsFreshInEachOwnRequestWindow": true,
+    "clockFields": {
+      "durChapterTime": {
+        "left": 1791649076607,
+        "right": 1791649104529
+      },
+      "lastCheckTime": {
+        "left": 1791649076607,
+        "right": 1791649104529
+      },
+      "latestChapterTime": {
+        "left": 1791649076607,
+        "right": 1791649104529
+      }
+    },
+    "leftRequestWindowMs": {
+      "started": 1791649076602,
+      "completed": 1791649078250
+    },
+    "rightRequestWindowMs": {
+      "started": 1791649104420,
+      "completed": 1791649111088
+    }
+  },
+  "originalMetadata": {
+    "status": 200,
+    "returnData": {
+      "isSuccess": true,
+      "errorMsg": "",
+      "data": {
+        "bookUrl": "http://127.0.0.1:54339/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+        "tocUrl": "http://127.0.0.1:54339/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+        "origin": "http://127.0.0.1:54339/metadata-source",
+        "originName": "Generated delayed metadata differential",
+        "name": "黎明之剑",
+        "author": "远瞳",
+        "coverUrl": "http://127.0.0.1:54339/generated-cover.svg",
+        "intro": "{\"nameSelectorPresent\":true,\"authorSelectorPresent\":true,\"coverSelectorPresent\":true,\"bodyHasText\":true,\"bodyHasExpectedBookTitle\":true,\"bodyHasExpectedAuthor\":true,\"bodyHasSafetyPhrase\":false,\"captchaContainerPresent\":false}",
+        "type": 0,
+        "group": 0,
+        "latestChapterTime": 1791649076607,
+        "lastCheckTime": 1791649076607,
+        "lastCheckCount": 0,
+        "totalChapterNum": 0,
+        "durChapterIndex": 0,
+        "durChapterPos": 0,
+        "durChapterTime": 1791649076607,
+        "canUpdate": true,
+        "order": 0,
+        "originOrder": 0,
+        "useReplaceRule": true,
+        "isInShelf": false
+      }
+    },
+    "fixtureBase": "http://127.0.0.1:54339",
+    "sourceDefinitionRoundtrip": {
+      "dataIsObject": true,
+      "sourceUrlMatches": true,
+      "cookieJarDisabled": true,
+      "modernTocMarkerPresent": true,
+      "metadataRulesMatch": true,
+      "passed": true
+    },
+    "targetRequests": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null,
+        "cookie": ""
+      }
+    ],
+    "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+    "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+    "bookInfoApiCalls": 1,
+    "requestWindowMs": {
+      "started": 1791649076602,
+      "completed": 1791649078250
+    }
+  },
+  "restoredMetadata": {
+    "status": 200,
+    "returnData": {
+      "isSuccess": true,
+      "errorMsg": "",
+      "data": {
+        "bookUrl": "http://127.0.0.1:54339/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+        "tocUrl": "http://127.0.0.1:54339/book-info, {\"webView\": true, \"webJs\": \"new Promise(resolve => {\\n  const started = performance.now();\\n  const read = () => {\\n    const name = document.querySelector('#bookName');\\n    const author = document.querySelector('.book-info-top .book-meta .author');\\n    const cover = document.querySelector('#bookImg img');\\n    if ((name && name.textContent.trim() && author && author.textContent.trim()\\n         && cover && cover.getAttribute('src')) || performance.now() - started >= 8000) {\\n      resolve(document.documentElement.outerHTML);\\n      return;\\n    }\\n    setTimeout(read, 100);\\n  };\\n  read();\\n})\"}",
+        "origin": "http://127.0.0.1:54339/metadata-source",
+        "originName": "Generated delayed metadata differential",
+        "name": "黎明之剑",
+        "author": "远瞳",
+        "coverUrl": "http://127.0.0.1:54339/generated-cover.svg",
+        "intro": "{\"nameSelectorPresent\":true,\"authorSelectorPresent\":true,\"coverSelectorPresent\":true,\"bodyHasText\":true,\"bodyHasExpectedBookTitle\":true,\"bodyHasExpectedAuthor\":true,\"bodyHasSafetyPhrase\":false,\"captchaContainerPresent\":false}",
+        "type": 0,
+        "group": 0,
+        "latestChapterTime": 1791649104529,
+        "lastCheckTime": 1791649104529,
+        "lastCheckCount": 0,
+        "totalChapterNum": 0,
+        "durChapterIndex": 0,
+        "durChapterPos": 0,
+        "durChapterTime": 1791649104529,
+        "canUpdate": true,
+        "order": 0,
+        "originOrder": 0,
+        "useReplaceRule": true,
+        "isInShelf": false
+      }
+    },
+    "fixtureBase": "http://127.0.0.1:54339",
+    "sourceDefinitionRoundtrip": {
+      "dataIsObject": true,
+      "sourceUrlMatches": true,
+      "cookieJarDisabled": true,
+      "modernTocMarkerPresent": true,
+      "metadataRulesMatch": true,
+      "passed": true
+    },
+    "targetRequests": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null,
+        "cookie": ""
+      }
+    ],
+    "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+    "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+    "bookInfoApiCalls": 1,
+    "requestWindowMs": {
+      "started": 1791649104420,
+      "completed": 1791649111088
+    }
+  },
+  "failedThirdSide": {
+    "generatedOnly": true,
+    "probeCompleted": false,
+    "failureType": "TimeoutError",
+    "completedSearches": [],
+    "apiFailureContext": {
+      "activePhase": "searchFirst",
+      "lastCompletedPhase": "sourceRead",
+      "startedCalls": 27,
+      "completedCalls": 5
+    },
+    "lastObservedSearchResponse": null,
+    "metadataBookInfoApiCalls": 0,
+    "lastObservedMetadata": null,
+    "renderCookieHeaders": [
+      ""
+    ],
+    "renderRequestFields": [
+      {
+        "httpMethod": "GET",
+        "body": null,
+        "testHeader": null
+      }
+    ],
+    "renderTargetHeaders": [
+      [
+        [
+          "Host",
+          "127.0.0.1:54339"
+        ],
+        [
+          "User-Agent",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+        ],
+        [
+          "Accept",
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        ],
+        [
+          "Accept-Language",
+          "en-US,en;q=0.9"
+        ],
+        [
+          "Accept-Encoding",
+          "gzip, deflate, br, zstd"
+        ],
+        [
+          "Upgrade-Insecure-Requests",
+          "1"
+        ],
+        [
+          "Sec-Fetch-Dest",
+          "document"
+        ],
+        [
+          "Sec-Fetch-Mode",
+          "navigate"
+        ],
+        [
+          "Sec-Fetch-Site",
+          "none"
+        ],
+        [
+          "Sec-Fetch-User",
+          "?1"
+        ],
+        [
+          "Priority",
+          "u=0, i"
+        ],
+        [
+          "Connection",
+          "close"
+        ]
+      ]
+    ]
+  },
+  "camoufoxMetadataExecuted": false,
+  "camoufoxFirstTargetRequestObserved": true,
+  "threeWayAccepted": false,
+  "timeoutRootCauseProven": false,
+  "aggregateResources": {
+    "scope": "exact original/a5cd1e74 9b9d JAR and pinned historical/Camoufox five baseline cases plus delayed generated metadata; exact static JSON and individually bounded default clocks, not real-site or header-security acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 1611567104,
+    "memoryCurrentBytes": 820969472,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 3538,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 10305536,
+      "file": 797794304,
+      "shmem": 0,
+      "kernel": 12201984,
+      "kernel_stack": 0,
+      "pagetables": 245760,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 28672,
+      "file_writeback": 0,
+      "inactive_file": 403324928,
+      "active_file": 394473472,
+      "slab_reclaimable": 11670936,
+      "slab_unreclaimable": 114328
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 239,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "resourceSamples": [
+    {
+      "phase": "bothOwnedRuntimesReady",
+      "elapsedMs": 2102,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 22,
+          "memory.current": 187154432,
+          "memory.peak": 306987008,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14594048,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142266368,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29769728,
+          "memory.peak": 29769728,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 2103,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 22,
+          "memory.current": 187154432,
+          "memory.peak": 306987008,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14594048,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142266368,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29769728,
+          "memory.peak": 29769728,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 2604,
+      "groups": {
+        "parent": {
+          "pids.current": 12,
+          "pids.peak": 22,
+          "memory.current": 547065856,
+          "memory.peak": 547721216,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14327808,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142266368,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 3,
+          "pids.peak": 6,
+          "memory.current": 389947392,
+          "memory.peak": 390602752,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 3104,
+      "groups": {
+        "parent": {
+          "pids.current": 13,
+          "pids.peak": 22,
+          "memory.current": 604696576,
+          "memory.peak": 605290496,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14327808,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142266368,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 6,
+          "memory.current": 447578112,
+          "memory.peak": 448172032,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 3605,
+      "groups": {
+        "parent": {
+          "pids.current": 12,
+          "pids.peak": 22,
+          "memory.current": 620761088,
+          "memory.peak": 690401280,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142020608,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 3,
+          "pids.peak": 6,
+          "memory.current": 464031744,
+          "memory.peak": 533934080,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 4106,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 32,
+          "memory.current": 767533056,
+          "memory.peak": 767533056,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142020608,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 23,
+          "memory.current": 610803712,
+          "memory.peak": 610803712,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 4607,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 32,
+          "memory.current": 826990592,
+          "memory.peak": 827592704,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142020608,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 23,
+          "memory.current": 670261248,
+          "memory.peak": 670863360,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 5109,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 33,
+          "memory.current": 846307328,
+          "memory.peak": 848109568,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142020608,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 24,
+          "memory.current": 689577984,
+          "memory.peak": 691380224,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 5610,
+      "groups": {
+        "parent": {
+          "pids.current": 32,
+          "pids.peak": 33,
+          "memory.current": 879493120,
+          "memory.peak": 879493120,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142020608,
+          "memory.peak": 142266368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 24,
+          "memory.current": 722763776,
+          "memory.peak": 722763776,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 6111,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 941965312,
+          "memory.peak": 941969408,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14344192,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142282752,
+          "memory.peak": 142282752,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 27,
+          "pids.peak": 28,
+          "memory.current": 784973824,
+          "memory.peak": 784977920,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 6612,
+      "groups": {
+        "parent": {
+          "pids.current": 38,
+          "pids.peak": 38,
+          "memory.current": 948690944,
+          "memory.peak": 948690944,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14340096,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142282752,
+          "memory.peak": 142282752,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 29,
+          "pids.peak": 29,
+          "memory.current": 791703552,
+          "memory.peak": 791703552,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 7114,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 43,
+          "memory.current": 986611712,
+          "memory.peak": 986611712,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14336000,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142282752,
+          "memory.peak": 142282752,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 33,
+          "pids.peak": 34,
+          "memory.current": 829628416,
+          "memory.peak": 829628416,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 7614,
+      "groups": {
+        "parent": {
+          "pids.current": 107,
+          "pids.peak": 112,
+          "memory.current": 1152491520,
+          "memory.peak": 1162833920,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14331904,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 70,
+          "pids.peak": 75,
+          "memory.current": 286310400,
+          "memory.peak": 296943616,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 851193856,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 8115,
+      "groups": {
+        "parent": {
+          "pids.current": 236,
+          "pids.peak": 239,
+          "memory.current": 1207492608,
+          "memory.peak": 1212182528,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14327808,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 200,
+          "pids.peak": 202,
+          "memory.current": 341606400,
+          "memory.peak": 346296320,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 851193856,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 8616,
+      "groups": {
+        "parent": {
+          "pids.current": 60,
+          "pids.peak": 239,
+          "memory.current": 1363984384,
+          "memory.peak": 1363988480,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14581760,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 23,
+          "pids.peak": 202,
+          "memory.current": 498106368,
+          "memory.peak": 498106368,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 36,
+          "memory.current": 851193856,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 9117,
+      "groups": {
+        "parent": {
+          "pids.current": 79,
+          "pids.peak": 239,
+          "memory.current": 1567621120,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14577664,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 42,
+          "pids.peak": 202,
+          "memory.current": 737394688,
+          "memory.peak": 780443648,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 815284224,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 9617,
+      "groups": {
+        "parent": {
+          "pids.current": 167,
+          "pids.peak": 239,
+          "memory.current": 1450332160,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14573568,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 130,
+          "pids.peak": 202,
+          "memory.current": 614477824,
+          "memory.peak": 780443648,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 820695040,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 10122,
+      "groups": {
+        "parent": {
+          "pids.current": 63,
+          "pids.peak": 239,
+          "memory.current": 1484439552,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14569472,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 26,
+          "pids.peak": 202,
+          "memory.current": 648826880,
+          "memory.peak": 780443648,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 820678656,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 10623,
+      "groups": {
+        "parent": {
+          "pids.current": 125,
+          "pids.peak": 239,
+          "memory.current": 1435664384,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 88,
+          "pids.peak": 202,
+          "memory.current": 613908480,
+          "memory.peak": 788783104,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 806825984,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 11124,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1437540352,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 615735296,
+          "memory.peak": 788783104,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 806821888,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 11625,
+      "groups": {
+        "parent": {
+          "pids.current": 96,
+          "pids.peak": 239,
+          "memory.current": 1445289984,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 60,
+          "pids.peak": 202,
+          "memory.current": 618926080,
+          "memory.peak": 788783104,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 807063552,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 12126,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 239,
+          "memory.current": 1431838720,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 14,
+          "pids.peak": 202,
+          "memory.current": 609845248,
+          "memory.peak": 788783104,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 807063552,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 12628,
+      "groups": {
+        "parent": {
+          "pids.current": 70,
+          "pids.peak": 239,
+          "memory.current": 1440677888,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 33,
+          "pids.peak": 202,
+          "memory.current": 623616000,
+          "memory.peak": 793473024,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 802131968,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 13128,
+      "groups": {
+        "parent": {
+          "pids.current": 206,
+          "pids.peak": 239,
+          "memory.current": 1438879744,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 169,
+          "pids.peak": 202,
+          "memory.current": 621981696,
+          "memory.peak": 793473024,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 37,
+          "memory.current": 802131968,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 13635,
+      "groups": {
+        "parent": {
+          "pids.current": 72,
+          "pids.peak": 239,
+          "memory.current": 1521340416,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 35,
+          "pids.peak": 202,
+          "memory.current": 703377408,
+          "memory.peak": 793473024,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 38,
+          "memory.current": 803033088,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 14136,
+      "groups": {
+        "parent": {
+          "pids.current": 172,
+          "pids.peak": 239,
+          "memory.current": 1453838336,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 135,
+          "pids.peak": 202,
+          "memory.current": 636055552,
+          "memory.peak": 793473024,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 38,
+          "memory.current": 803024896,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 14637,
+      "groups": {
+        "parent": {
+          "pids.current": 72,
+          "pids.peak": 239,
+          "memory.current": 1493139456,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14565376,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 35,
+          "pids.peak": 202,
+          "memory.current": 675184640,
+          "memory.peak": 793473024,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 38,
+          "memory.current": 803024896,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 15137,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1421123584,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 609595392,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 38,
+          "memory.current": 796864512,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 15638,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1129828352,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607395840,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 507506688,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 16140,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 239,
+          "memory.current": 1194082304,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607657984,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 571498496,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 16641,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 239,
+          "memory.current": 1317462016,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607657984,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 694878208,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 17141,
+      "groups": {
+        "parent": {
+          "pids.current": 37,
+          "pids.peak": 239,
+          "memory.current": 1374609408,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607657984,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 24,
+          "pids.peak": 40,
+          "memory.current": 752025600,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 17642,
+      "groups": {
+        "parent": {
+          "pids.current": 36,
+          "pids.peak": 239,
+          "memory.current": 1399836672,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607649792,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 777261056,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 18144,
+      "groups": {
+        "parent": {
+          "pids.current": 40,
+          "pids.peak": 239,
+          "memory.current": 1424195584,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607629312,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 27,
+          "pids.peak": 40,
+          "memory.current": 801640448,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 18645,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1439256576,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607608832,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 29,
+          "pids.peak": 40,
+          "memory.current": 816721920,
+          "memory.peak": 851193856,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 19146,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1512894464,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607588352,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 33,
+          "pids.peak": 40,
+          "memory.current": 890380288,
+          "memory.peak": 890380288,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 19646,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1521840128,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 607567872,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 33,
+          "pids.peak": 40,
+          "memory.current": 899346432,
+          "memory.peak": 899346432,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 20147,
+      "groups": {
+        "parent": {
+          "pids.current": 146,
+          "pids.peak": 239,
+          "memory.current": 1549582336,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 109,
+          "pids.peak": 202,
+          "memory.current": 632430592,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 902225920,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 20663,
+      "groups": {
+        "parent": {
+          "pids.current": 225,
+          "pids.peak": 239,
+          "memory.current": 1545068544,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 183,
+          "pids.peak": 202,
+          "memory.current": 624594944,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 902225920,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 21168,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1539375104,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 630710272,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 893739008,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 21670,
+      "groups": {
+        "parent": {
+          "pids.current": 82,
+          "pids.peak": 239,
+          "memory.current": 1610043392,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 45,
+          "pids.peak": 202,
+          "memory.current": 738865152,
+          "memory.peak": 799649792,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 856252416,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 22171,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1419255808,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 608378880,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 795951104,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 22674,
+      "groups": {
+        "parent": {
+          "pids.current": 113,
+          "pids.peak": 239,
+          "memory.current": 1443389440,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 74,
+          "pids.peak": 202,
+          "memory.current": 630063104,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798040064,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 23175,
+      "groups": {
+        "parent": {
+          "pids.current": 220,
+          "pids.peak": 239,
+          "memory.current": 1458831360,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 183,
+          "pids.peak": 202,
+          "memory.current": 645894144,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798007296,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 23676,
+      "groups": {
+        "parent": {
+          "pids.current": 72,
+          "pids.peak": 239,
+          "memory.current": 1521881088,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 35,
+          "pids.peak": 202,
+          "memory.current": 709246976,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 797970432,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 24177,
+      "groups": {
+        "parent": {
+          "pids.current": 115,
+          "pids.peak": 239,
+          "memory.current": 1443332096,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 78,
+          "pids.peak": 202,
+          "memory.current": 627515392,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798228480,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 24678,
+      "groups": {
+        "parent": {
+          "pids.current": 168,
+          "pids.peak": 239,
+          "memory.current": 1453273088,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 131,
+          "pids.peak": 202,
+          "memory.current": 640131072,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798216192,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 25179,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1453780992,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 640638976,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798216192,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 25706,
+      "groups": {
+        "parent": {
+          "pids.current": 84,
+          "pids.peak": 239,
+          "memory.current": 1604534272,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 47,
+          "pids.peak": 202,
+          "memory.current": 791916544,
+          "memory.peak": 800370688,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 798216192,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 26214,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1416704000,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 620089344,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 781688832,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 26716,
+      "groups": {
+        "parent": {
+          "pids.current": 82,
+          "pids.peak": 239,
+          "memory.current": 1441796096,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 45,
+          "pids.peak": 202,
+          "memory.current": 644132864,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782737408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 27217,
+      "groups": {
+        "parent": {
+          "pids.current": 190,
+          "pids.peak": 239,
+          "memory.current": 1441464320,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 153,
+          "pids.peak": 202,
+          "memory.current": 643801088,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782737408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 27718,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1433505792,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 635842560,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782737408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 28219,
+      "groups": {
+        "parent": {
+          "pids.current": 63,
+          "pids.peak": 239,
+          "memory.current": 1477812224,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 26,
+          "pids.peak": 202,
+          "memory.current": 680148992,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782737408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 28720,
+      "groups": {
+        "parent": {
+          "pids.current": 83,
+          "pids.peak": 239,
+          "memory.current": 1559953408,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 46,
+          "pids.peak": 202,
+          "memory.current": 762290176,
+          "memory.peak": 811712512,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782737408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 29222,
+      "groups": {
+        "parent": {
+          "pids.current": 64,
+          "pids.peak": 239,
+          "memory.current": 1429782528,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 27,
+          "pids.peak": 202,
+          "memory.current": 635813888,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 29725,
+      "groups": {
+        "parent": {
+          "pids.current": 90,
+          "pids.peak": 239,
+          "memory.current": 1426894848,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 52,
+          "pids.peak": 202,
+          "memory.current": 632631296,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 30233,
+      "groups": {
+        "parent": {
+          "pids.current": 117,
+          "pids.peak": 239,
+          "memory.current": 1433120768,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 80,
+          "pids.peak": 202,
+          "memory.current": 639152128,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 30739,
+      "groups": {
+        "parent": {
+          "pids.current": 150,
+          "pids.peak": 239,
+          "memory.current": 1444651008,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 113,
+          "pids.peak": 202,
+          "memory.current": 650682368,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 31242,
+      "groups": {
+        "parent": {
+          "pids.current": 176,
+          "pids.peak": 239,
+          "memory.current": 1435316224,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 139,
+          "pids.peak": 202,
+          "memory.current": 641347584,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 31744,
+      "groups": {
+        "parent": {
+          "pids.current": 214,
+          "pids.peak": 239,
+          "memory.current": 1434128384,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 177,
+          "pids.peak": 202,
+          "memory.current": 640147456,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 32246,
+      "groups": {
+        "parent": {
+          "pids.current": 229,
+          "pids.peak": 239,
+          "memory.current": 1428795392,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 193,
+          "pids.peak": 202,
+          "memory.current": 634802176,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 32750,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1434116096,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 640147456,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 33254,
+      "groups": {
+        "parent": {
+          "pids.current": 52,
+          "pids.peak": 239,
+          "memory.current": 1444417536,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 15,
+          "pids.peak": 202,
+          "memory.current": 650448896,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 33760,
+      "groups": {
+        "parent": {
+          "pids.current": 86,
+          "pids.peak": 239,
+          "memory.current": 1525755904,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 49,
+          "pids.peak": 202,
+          "memory.current": 731787264,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 34324,
+      "groups": {
+        "parent": {
+          "pids.current": 86,
+          "pids.peak": 239,
+          "memory.current": 1538117632,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 49,
+          "pids.peak": 202,
+          "memory.current": 744148992,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779042816,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 34847,
+      "groups": {
+        "parent": {
+          "pids.current": 77,
+          "pids.peak": 239,
+          "memory.current": 1510191104,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 40,
+          "pids.peak": 202,
+          "memory.current": 715984896,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779280384,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 35351,
+      "groups": {
+        "parent": {
+          "pids.current": 58,
+          "pids.peak": 239,
+          "memory.current": 1425534976,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 22,
+          "pids.peak": 202,
+          "memory.current": 631066624,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 35856,
+      "groups": {
+        "parent": {
+          "pids.current": 86,
+          "pids.peak": 239,
+          "memory.current": 1435656192,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 49,
+          "pids.peak": 202,
+          "memory.current": 641175552,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 36359,
+      "groups": {
+        "parent": {
+          "pids.current": 141,
+          "pids.peak": 239,
+          "memory.current": 1433489408,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 104,
+          "pids.peak": 202,
+          "memory.current": 639021056,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 36862,
+      "groups": {
+        "parent": {
+          "pids.current": 164,
+          "pids.peak": 239,
+          "memory.current": 1429618688,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 127,
+          "pids.peak": 202,
+          "memory.current": 635084800,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 37364,
+      "groups": {
+        "parent": {
+          "pids.current": 209,
+          "pids.peak": 239,
+          "memory.current": 1434472448,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 172,
+          "pids.peak": 202,
+          "memory.current": 640004096,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 37866,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 239,
+          "memory.current": 1430691840,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 14,
+          "pids.peak": 202,
+          "memory.current": 636223488,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 38367,
+      "groups": {
+        "parent": {
+          "pids.current": 60,
+          "pids.peak": 239,
+          "memory.current": 1459367936,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 23,
+          "pids.peak": 202,
+          "memory.current": 665161728,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 38868,
+      "groups": {
+        "parent": {
+          "pids.current": 83,
+          "pids.peak": 239,
+          "memory.current": 1558978560,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 46,
+          "pids.peak": 202,
+          "memory.current": 764510208,
+          "memory.peak": 815943680,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779542528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 39370,
+      "groups": {
+        "parent": {
+          "pids.current": 85,
+          "pids.peak": 239,
+          "memory.current": 1602482176,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 48,
+          "pids.peak": 202,
+          "memory.current": 811950080,
+          "memory.peak": 818835456,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 775606272,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 39874,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1419333632,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 628023296,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 776384512,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 40393,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1422680064,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627978240,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 779776000,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 40895,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1425031168,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627978240,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 782127104,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 41398,
+      "groups": {
+        "parent": {
+          "pids.current": 49,
+          "pids.peak": 239,
+          "memory.current": 1426075648,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627978240,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 36,
+          "pids.peak": 40,
+          "memory.current": 783171584,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 41900,
+      "groups": {
+        "parent": {
+          "pids.current": 45,
+          "pids.peak": 239,
+          "memory.current": 1426550784,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627965952,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 32,
+          "pids.peak": 40,
+          "memory.current": 783659008,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 42497,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1041301504,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627949568,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 398950400,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 43017,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1065132032,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627949568,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 422256640,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 43520,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1086218240,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627949568,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 443342848,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 44021,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1197072384,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627933184,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 554213376,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 44523,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1203331072,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627916800,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 560488448,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 45026,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1203331072,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627916800,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 560488448,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 45528,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1203331072,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627916800,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 560488448,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "historicalPairCompleteBeforeReferenceStop",
+      "elapsedMs": 46032,
+      "groups": {
+        "parent": {
+          "pids.current": 17,
+          "pids.peak": 239,
+          "memory.current": 1201627136,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14561280,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 12,
+          "pids.peak": 202,
+          "memory.current": 627916800,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 558784512,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "historicalStoppedBeforeCamoufoxPermission",
+      "elapsedMs": 47750,
+      "groups": {
+        "parent": {
+          "pids.current": 5,
+          "pids.peak": 239,
+          "memory.current": 1119088640,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14991360,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544956416,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 558776320,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 48157,
+      "groups": {
+        "parent": {
+          "pids.current": 5,
+          "pids.peak": 239,
+          "memory.current": 1118892032,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14798848,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544956416,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 4,
+          "pids.peak": 40,
+          "memory.current": 558772224,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 48661,
+      "groups": {
+        "parent": {
+          "pids.current": 21,
+          "pids.peak": 239,
+          "memory.current": 1130160128,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14798848,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544956416,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 20,
+          "pids.peak": 40,
+          "memory.current": 570040320,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 49165,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1144168448,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14798848,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544956416,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 584048640,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 49670,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1154117632,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14798848,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 594014208,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 50172,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1168248832,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14798848,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 608145408,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 50673,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1188323328,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14794752,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 628224000,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 51176,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1211285504,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14790656,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 651190272,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 51678,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1235652608,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14786560,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 675561472,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 52182,
+      "groups": {
+        "parent": {
+          "pids.current": 22,
+          "pids.peak": 239,
+          "memory.current": 1249005568,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14782464,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 21,
+          "pids.peak": 40,
+          "memory.current": 688918528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 52683,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1274687488,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14782464,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 714600448,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 53204,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1297481728,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14778368,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 737398784,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 53714,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1322373120,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14774272,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 762294272,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 54219,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1345175552,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14770176,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 785100800,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 54723,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1375117312,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14766080,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 815046656,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 55230,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1380950016,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14761984,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 820883456,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 55732,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1385037824,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14757888,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 824975360,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 56238,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1398128640,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14753792,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 838070272,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 56740,
+      "groups": {
+        "parent": {
+          "pids.current": 23,
+          "pids.peak": 239,
+          "memory.current": 1413324800,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14749696,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 22,
+          "pids.peak": 40,
+          "memory.current": 853270528,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 57278,
+      "groups": {
+        "parent": {
+          "pids.current": 24,
+          "pids.peak": 239,
+          "memory.current": 1416990720,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14745600,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 23,
+          "pids.peak": 40,
+          "memory.current": 856940544,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 57790,
+      "groups": {
+        "parent": {
+          "pids.current": 27,
+          "pids.peak": 239,
+          "memory.current": 1423790080,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14741504,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 26,
+          "pids.peak": 40,
+          "memory.current": 863744000,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 58291,
+      "groups": {
+        "parent": {
+          "pids.current": 27,
+          "pids.peak": 239,
+          "memory.current": 1452531712,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 26,
+          "pids.peak": 40,
+          "memory.current": 892489728,
+          "memory.peak": 902230016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 58792,
+      "groups": {
+        "parent": {
+          "pids.current": 29,
+          "pids.peak": 239,
+          "memory.current": 1480912896,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 28,
+          "pids.peak": 40,
+          "memory.current": 920870912,
+          "memory.peak": 925782016,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 59294,
+      "groups": {
+        "parent": {
+          "pids.current": 33,
+          "pids.peak": 239,
+          "memory.current": 1519443968,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 32,
+          "pids.peak": 40,
+          "memory.current": 959401984,
+          "memory.peak": 959401984,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 59796,
+      "groups": {
+        "parent": {
+          "pids.current": 33,
+          "pids.peak": 239,
+          "memory.current": 1527734272,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 32,
+          "pids.peak": 40,
+          "memory.current": 967692288,
+          "memory.peak": 967700480,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 60309,
+      "groups": {
+        "parent": {
+          "pids.current": 38,
+          "pids.peak": 239,
+          "memory.current": 1556148224,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 544940032,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 37,
+          "pids.peak": 40,
+          "memory.current": 996368384,
+          "memory.peak": 996368384,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 60819,
+      "groups": {
+        "parent": {
+          "pids.current": 38,
+          "pids.peak": 239,
+          "memory.current": 1587834880,
+          "memory.peak": 1611087872,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 540975104,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 37,
+          "pids.peak": 40,
+          "memory.current": 1031757824,
+          "memory.peak": 1054519296,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 61320,
+      "groups": {
+        "parent": {
+          "pids.current": 40,
+          "pids.peak": 239,
+          "memory.current": 1610739712,
+          "memory.peak": 1611137024,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 505491456,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 39,
+          "pids.peak": 40,
+          "memory.current": 1090076672,
+          "memory.peak": 1090260992,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 61821,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1610629120,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 468287488,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 45,
+          "memory.current": 1126952960,
+          "memory.peak": 1127030784,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 62322,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1610514432,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 446021632,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 46,
+          "memory.current": 1149390848,
+          "memory.peak": 1149390848,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 62835,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1610485760,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 429232128,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 46,
+          "memory.current": 1166151680,
+          "memory.peak": 1166225408,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 63344,
+      "groups": {
+        "parent": {
+          "pids.current": 46,
+          "pids.peak": 239,
+          "memory.current": 1610342400,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 415567872,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 45,
+          "pids.peak": 46,
+          "memory.current": 1179672576,
+          "memory.peak": 1179885568,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 63845,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 239,
+          "memory.current": 1611042816,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 388726784,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 50,
+          "pids.peak": 51,
+          "memory.current": 1206607872,
+          "memory.peak": 1206841344,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 64347,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 239,
+          "memory.current": 1610350592,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 358674432,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 50,
+          "pids.peak": 51,
+          "memory.current": 1236836352,
+          "memory.peak": 1236836352,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 64849,
+      "groups": {
+        "parent": {
+          "pids.current": 51,
+          "pids.peak": 239,
+          "memory.current": 1610194944,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 337018880,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 50,
+          "pids.peak": 51,
+          "memory.current": 1258074112,
+          "memory.peak": 1258860544,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 65366,
+      "groups": {
+        "parent": {
+          "pids.current": 55,
+          "pids.peak": 239,
+          "memory.current": 1610625024,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 312180736,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 54,
+          "pids.peak": 54,
+          "memory.current": 1282994176,
+          "memory.peak": 1283362816,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 65896,
+      "groups": {
+        "parent": {
+          "pids.current": 68,
+          "pids.peak": 239,
+          "memory.current": 1608806400,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 302120960,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 67,
+          "pids.peak": 67,
+          "memory.current": 1291583488,
+          "memory.peak": 1293729792,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 66402,
+      "groups": {
+        "parent": {
+          "pids.current": 78,
+          "pids.peak": 239,
+          "memory.current": 1610801152,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 301064192,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 77,
+          "pids.peak": 77,
+          "memory.current": 1294635008,
+          "memory.peak": 1294729216,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 66908,
+      "groups": {
+        "parent": {
+          "pids.current": 96,
+          "pids.peak": 239,
+          "memory.current": 1610428416,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 297000960,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 95,
+          "pids.peak": 95,
+          "memory.current": 1298325504,
+          "memory.peak": 1298558976,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 67410,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610874880,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 293146624,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1302626304,
+          "memory.peak": 1302626304,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 67913,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610772480,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 290037760,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1305632768,
+          "memory.peak": 1305710592,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 68419,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610711040,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 285634560,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1309716480,
+          "memory.peak": 1310003200,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 68939,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610702848,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 281812992,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1313382400,
+          "memory.peak": 1313779712,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 69464,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610752000,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 281587712,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1313775616,
+          "memory.peak": 1314037760,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 69979,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610313728,
+          "memory.peak": 1611214848,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 280092672,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1315119104,
+          "memory.peak": 1315377152,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 70483,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1611530240,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 267214848,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1328660480,
+          "memory.peak": 1329012736,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 70985,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610645504,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 255057920,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1340485632,
+          "memory.peak": 1340653568,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 71490,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610506240,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 244203520,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1351200768,
+          "memory.peak": 1351426048,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 71992,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610489856,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 226287616,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1369227264,
+          "memory.peak": 1369509888,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 72494,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610493952,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 216576000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1378934784,
+          "memory.peak": 1379340288,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 73001,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610076160,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 201711616,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1393524736,
+          "memory.peak": 1394167808,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 73502,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1609060352,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 196919296,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1397563392,
+          "memory.peak": 1399054336,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 74004,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1610407936,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 195428352,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1398030336,
+          "memory.peak": 1400520704,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 74507,
+      "groups": {
+        "parent": {
+          "pids.current": 104,
+          "pids.peak": 239,
+          "memory.current": 1609928704,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14737408,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 192466944,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 103,
+          "pids.peak": 103,
+          "memory.current": 1402359808,
+          "memory.peak": 1403277312,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 75010,
+      "groups": {
+        "parent": {
+          "pids.current": 108,
+          "pids.peak": 239,
+          "memory.current": 1610465280,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 178360320,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 107,
+          "pids.peak": 107,
+          "memory.current": 1417605120,
+          "memory.peak": 1417605120,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 75516,
+      "groups": {
+        "parent": {
+          "pids.current": 131,
+          "pids.peak": 239,
+          "memory.current": 1611354112,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 166146048,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 130,
+          "pids.peak": 130,
+          "memory.current": 1429737472,
+          "memory.peak": 1430093824,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 76018,
+      "groups": {
+        "parent": {
+          "pids.current": 168,
+          "pids.peak": 239,
+          "memory.current": 1610862592,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 157306880,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 167,
+          "pids.peak": 167,
+          "memory.current": 1438457856,
+          "memory.peak": 1438633984,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 76526,
+      "groups": {
+        "parent": {
+          "pids.current": 169,
+          "pids.peak": 239,
+          "memory.current": 1610448896,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 155000832,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 168,
+          "pids.peak": 169,
+          "memory.current": 1440350208,
+          "memory.peak": 1440649216,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 77029,
+      "groups": {
+        "parent": {
+          "pids.current": 173,
+          "pids.peak": 239,
+          "memory.current": 1610555392,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 153497600,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 172,
+          "pids.peak": 172,
+          "memory.current": 1441951744,
+          "memory.peak": 1442455552,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 77533,
+      "groups": {
+        "parent": {
+          "pids.current": 198,
+          "pids.peak": 239,
+          "memory.current": 1610678272,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 149626880,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 197,
+          "pids.peak": 197,
+          "memory.current": 1445826560,
+          "memory.peak": 1446088704,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 78038,
+      "groups": {
+        "parent": {
+          "pids.current": 199,
+          "pids.peak": 239,
+          "memory.current": 1610575872,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 142782464,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 198,
+          "pids.peak": 198,
+          "memory.current": 1452695552,
+          "memory.peak": 1452920832,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 78541,
+      "groups": {
+        "parent": {
+          "pids.current": 189,
+          "pids.peak": 239,
+          "memory.current": 1610293248,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 135634944,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 188,
+          "pids.peak": 198,
+          "memory.current": 1459560448,
+          "memory.peak": 1459937280,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 79045,
+      "groups": {
+        "parent": {
+          "pids.current": 162,
+          "pids.peak": 239,
+          "memory.current": 1563369472,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 135045120,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 161,
+          "pids.peak": 198,
+          "memory.current": 1413226496,
+          "memory.peak": 1460641792,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 79551,
+      "groups": {
+        "parent": {
+          "pids.current": 160,
+          "pids.peak": 239,
+          "memory.current": 1588842496,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 135045120,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 159,
+          "pids.peak": 198,
+          "memory.current": 1438961664,
+          "memory.peak": 1460641792,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 80054,
+      "groups": {
+        "parent": {
+          "pids.current": 132,
+          "pids.peak": 239,
+          "memory.current": 1610502144,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 132870144,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 131,
+          "pids.peak": 198,
+          "memory.current": 1462534144,
+          "memory.peak": 1462857728,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 80557,
+      "groups": {
+        "parent": {
+          "pids.current": 132,
+          "pids.peak": 239,
+          "memory.current": 1610633216,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 123109376,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 131,
+          "pids.peak": 198,
+          "memory.current": 1472425984,
+          "memory.peak": 1472806912,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 81060,
+      "groups": {
+        "parent": {
+          "pids.current": 55,
+          "pids.peak": 239,
+          "memory.current": 1438531584,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 54,
+          "pids.peak": 198,
+          "memory.current": 1302601728,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 81562,
+      "groups": {
+        "parent": {
+          "pids.current": 43,
+          "pids.peak": 239,
+          "memory.current": 1337053184,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 42,
+          "pids.peak": 198,
+          "memory.current": 1201123328,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 82066,
+      "groups": {
+        "parent": {
+          "pids.current": 43,
+          "pids.peak": 239,
+          "memory.current": 1337053184,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 42,
+          "pids.peak": 198,
+          "memory.current": 1201123328,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 82571,
+      "groups": {
+        "parent": {
+          "pids.current": 43,
+          "pids.peak": 239,
+          "memory.current": 1327869952,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 42,
+          "pids.peak": 198,
+          "memory.current": 1191940096,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 83074,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1262866432,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1126936576,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 83579,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1263337472,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1127407616,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 84099,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1263833088,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14733312,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1127903232,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 84670,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1264345088,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1128419328,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 85182,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1265381376,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1129455616,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 85688,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1266110464,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1130184704,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 86190,
+      "groups": {
+        "parent": {
+          "pids.current": 42,
+          "pids.peak": 239,
+          "memory.current": 1266302976,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 41,
+          "pids.peak": 198,
+          "memory.current": 1130377216,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 86694,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 239,
+          "memory.current": 1268502528,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 9,
+          "pids.peak": 198,
+          "memory.current": 1132576768,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 87196,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 239,
+          "memory.current": 960421888,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 9,
+          "pids.peak": 198,
+          "memory.current": 821141504,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 87698,
+      "groups": {
+        "parent": {
+          "pids.current": 7,
+          "pids.peak": 239,
+          "memory.current": 854274048,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 6,
+          "pids.peak": 198,
+          "memory.current": 718348288,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualCurrentJarCamoufox",
+      "elapsedMs": 88201,
+      "groups": {
+        "parent": {
+          "pids.current": 7,
+          "pids.peak": 239,
+          "memory.current": 854269952,
+          "memory.peak": 1611567104,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 9,
+          "memory.current": 14729216,
+          "memory.peak": 306454528,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 0,
+          "pids.peak": 202,
+          "memory.current": 120832000,
+          "memory.peak": 819027968,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 6,
+          "pids.peak": 198,
+          "memory.current": 718344192,
+          "memory.peak": 1475137536,
+          "pids.max.events": 0
+        }
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "id": "reader-three-way-metadata-a5cd-20261011-a-client",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    },
+    {
+      "id": "reader-three-way-metadata-a5cd-20261011-a-server",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    }
+  ],
+  "ownedContainersRemaining": 0,
+  "historicalStoppedBeforeCamoufox": true,
+  "localRuntimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "latestWholeNativeImageAccepted": false,
+  "rawPrivateRuntimeLogsPublished": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "userReportsUnchanged": 58,
+  "fullGoalComplete": false
+}

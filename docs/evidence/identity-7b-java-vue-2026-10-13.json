@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "7b0e11b1431bbae8e68dd329088cd71760f37723",
+  "testedMergeSnapshot": "b9e4c0edc340ffdb032b00b80416bc3c0b08ef3e",
+  "scope": "7b own Java/Vue small reports accepted; not subsequent publisher bridge source or full/native/real-auth acceptance",
+  "java": {
+    "runId": 38381587272,
+    "hostedUbuntuRunner": true,
+    "jobs": 1,
+    "conclusion": "success",
+    "junit": {
+      "counts": {
+        "tests": 222,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 35
+      },
+      "suites": 47,
+      "reportSetSha256": "f5c5cc08174fb6f1806510dfa60a9cb05935e980c64ab3ad7f5599ad25920fba"
+    },
+    "twoCleanBytesEqual": true,
+    "reproducibilityReportSha256": "087301e4ba1315ac9adcfc764360beb9028467f4e0bc80c072336b299598cfd5",
+    "reportedHostedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "reportedHostedJarBytes": 285683521
+  },
+  "vue": {
+    "runId": 38381587267,
+    "hostedUbuntuRunner": true,
+    "jobs": 2,
+    "conclusion": "success",
+    "junit": {
+      "counts": {
+        "tests": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": 25,
+      "reportSetSha256": "95a7b565788ae80552be0d5adaffbf6a617ca84da2f61fa23efcec17667201fd"
+    },
+    "coldFrontendTests": 376,
+    "coldFrontendFailures": 0,
+    "typecheckAndViteAccepted": true
+  },
+  "currentLocalJarBuilt": false,
+  "localAndHostedJarBytesEqual": null,
+  "hostedJarDownloadedAndRehashed": false,
+  "hostedActualAuthorizedLargeBookAccepted": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "browserAndNativeWorkflowsAccepted": false,
+  "reportArchivesLocallyRehashed": false,
+  "screenshotsVisuallyExamined": false,
+  "productionChanged": false,
+  "goalComplete": false,
+  "independentConsumerReceiptSha256": "260d20d6e76d6c13dbbdd830b1faebc8134d75cd8a6568cd8870613740df726e"
+}

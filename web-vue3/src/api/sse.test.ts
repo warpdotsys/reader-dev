@@ -150,3 +150,16 @@ test('P2 SSE 统一：consumeSSEStreamBlocks 连接中断回调 onStreamError；
   )
   assert.equal(errMsg, '')
 })
+
+test('SSE 同一批数据切换身份后丢弃迟到事件，并取消 Reader 流', async () => {
+  let current = true
+  let cancelled = false
+  let received = 0
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) { controller.enqueue(new TextEncoder().encode('data: first\n\ndata: late\n\n')) },
+    cancel() { cancelled = true },
+  })
+  await consumeSSEStreamBlocks(stream, () => { received++; current = false }, () => !current)
+  assert.equal(received, 1)
+  assert.equal(cancelled, true)
+})

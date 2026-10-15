@@ -1,0 +1,131 @@
+# Generated from official PyPI release metadata for Ubuntu 22.04 / CPython 3.10.
+# Supports linux/amd64 and linux/arm64; every allowed wheel has a SHA-256.
+# Regenerate with scripts/lock_camoufox_wheels.py and review the diff.
+# PyPI wheels: ansicon-1.89.0-py2.py3-none-any.whl
+ansicon==1.89.0 \
+    --hash=sha256:f1def52d17f65c2c9682cf8370c03f541f410c1752d6a14029f97318e4b9dfec
+# PyPI wheels: apify_fingerprint_datapoints-0.15.0-py3-none-any.whl
+apify_fingerprint_datapoints==0.15.0 \
+    --hash=sha256:fc9299b3136880f47b468897cd00ac622ad2c2a93e9cc9f972d10dbf5ed2b3aa
+# PyPI wheels: blessed-1.50.0-py3-none-any.whl
+blessed==1.50.0 \
+    --hash=sha256:6a693d524f7c21129dd61c4d10f11bda89911c05dc7df91219854c9ccf394cbf
+# PyPI wheels: browserforge-1.2.4-py3-none-any.whl
+browserforge==1.2.4 \
+    --hash=sha256:fb1c14e62ac09de221dcfc73074200269f697596c642cb200ceaab1127a17542
+# PyPI wheels: camoufox-0.5.6-py3-none-any.whl
+camoufox==0.5.6 \
+    --hash=sha256:b906836cd952376a466f0e55445f139b8a65adfb9f18ab55cb2cd0c727b11561
+# PyPI wheels: certifi-2026.7.22-py3-none-any.whl
+certifi==2026.7.22 \
+    --hash=sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775
+# PyPI wheels: charset_normalizer-3.5.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl, charset_normalizer-3.5.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl, charset_normalizer-3.5.1-cp37-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl, charset_normalizer-3.5.1-cp37-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl, charset_normalizer-3.5.1-py3-none-any.whl
+charset-normalizer==3.5.1 \
+    --hash=sha256:e9fbdce1e47394b09bc9f26ab117dfc8d6491977a11d86f592bb42c779db2fda \
+    --hash=sha256:96eefc178f8636b9c760c5829345307fd81cfae9ab1e80997dbddeb0f54ee9a3 \
+    --hash=sha256:a6dac12ff6b846103483683f60c5f8fee205121adc58ffd87e90a90a3af69e99 \
+    --hash=sha256:cee5dd7c6fb5dd52a0fe2a740f9bc6e3593f5f8b1788bde49de02086f30182b2 \
+    --hash=sha256:6df0ec430f9a831772c23ca5a224cba36517a58a84bb32c32bb59a9fa67c47f6
+# PyPI wheels: click-8.5.0-py3-none-any.whl
+click==8.5.0 \
+    --hash=sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360
+# PyPI wheels: colorama-0.4.6-py2.py3-none-any.whl
+colorama==0.4.6 \
+    --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
+# PyPI wheels: editor-2.0.1-py3-none-any.whl
+editor==2.0.1 \
+    --hash=sha256:96277ffb0c529d9b54f0c10bff4bd39d23ab1298504424232319b1a26b41240a
+# PyPI wheels: greenlet-3.5.6-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl, greenlet-3.5.6-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+greenlet==3.5.6 \
+    --hash=sha256:b7d501d5eb5d4f67207df364752ad697465b834268744be7581c18d81d35d41d \
+    --hash=sha256:eed88b64a5e5da72d6a71cdc5aaeefaa5ced9b748f8d19f89800b339961dad39
+# PyPI wheels: idna-3.20-py3-none-any.whl
+idna==3.20 \
+    --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c
+# PyPI wheels: inquirer-3.4.1-py3-none-any.whl
+inquirer==3.4.1 \
+    --hash=sha256:717bf146d547b595d2495e7285fd55545cff85e5ce01decc7487d2ec6a605412
+# PyPI wheels: jinxed-2.1.0-py2.py3-none-any.whl
+jinxed==2.1.0 \
+    --hash=sha256:43b802d18b70e405d410fb66eb2837d1101e7e5ea922e666507bb43f34d11d09
+# PyPI wheels: language_tags-1.3.1-py3-none-any.whl
+language-tags==1.3.1 \
+    --hash=sha256:f7db7ef8879523019603e09644a86d95ba60595ce5e5ea82d46e8971b0f68f7b
+# PyPI wheels: lxml-6.1.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl, lxml-6.1.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl, lxml-6.1.3-cp310-cp310-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl, lxml-6.1.3-cp310-cp310-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
+lxml==6.1.3 \
+    --hash=sha256:ff88a92cafde90888511242d1c54afcc1a8adbb6dc0a88fa7f87e29e92400d4a \
+    --hash=sha256:c00e26288784460885fe76e4d4b293573e0f791f52e6d60e27b42edf005922eb \
+    --hash=sha256:773062aec2f2e56b2b22d37054123f0de8a22a4688a0c3376c3fe42685f975cf \
+    --hash=sha256:f6449672f9c93316deb5e2839e18931f468670e44d5bd9b1301a5a9655d45c07
+# PyPI wheels: markdown_it_py-4.2.0-py3-none-any.whl
+markdown-it-py==4.2.0 \
+    --hash=sha256:9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a
+# PyPI wheels: mdurl-0.1.2-py3-none-any.whl
+mdurl==0.1.2 \
+    --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8
+# PyPI wheels: numpy-2.2.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl, numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+numpy==2.2.6 \
+    --hash=sha256:efd28d4e9cd7d7a8d39074a4d44c63eda73401580c5c76acda2ce969e0a38e83 \
+    --hash=sha256:fc7b73d02efb0e18c000e9ad8b83480dfcd5dfd11065997ed4c6747470ae8915
+# PyPI wheels: orjson-3.12.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl, orjson-3.12.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+orjson==3.12.0 \
+    --hash=sha256:18a87929f31d94a77f7dc93cf527e91f39ce7fe7813d588a4de2507efd32a387 \
+    --hash=sha256:e9683ee9ea0659da64f36574ef675b8a86330c34c19ea75db1fb93c3ff99e0ef
+# PyPI wheels: platformdirs-4.11.13-py3-none-any.whl
+platformdirs==4.11.13 \
+    --hash=sha256:228b2283af5c1f32673cdf55271216a52bbd8258cb31374e302ad7bd26cd7513
+# PyPI wheels: playwright-1.62.0-py3-none-manylinux1_x86_64.whl, playwright-1.62.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+playwright==1.62.0 \
+    --hash=sha256:ba33bae6a13b3d9d354c751cb618af357d20fe1d57767cbcce52079bbef17ad3 \
+    --hash=sha256:db2d76613a57ad844362ce42f7d0c2fa26b19a4f7a46d4f76b891c631e6e5aff
+# PyPI wheels: pyee-13.0.1-py3-none-any.whl
+pyee==13.0.1 \
+    --hash=sha256:af2f8fede4171ef667dfded53f96e2ed0d6e6bd7ee3bb46437f77e3b57689228
+# PyPI wheels: pygments-2.21.0-py3-none-any.whl
+Pygments==2.21.0 \
+    --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9
+# PyPI wheels: PySocks-1.7.1-py3-none-any.whl
+PySocks==1.7.1 \
+    --hash=sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5
+# PyPI wheels: pyyaml-6.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl, pyyaml-6.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+PyYAML==6.0.3 \
+    --hash=sha256:b30236e45cf30d2b8e7b3e85881719e98507abed1011bf463a8fa23e9c3e98a8 \
+    --hash=sha256:9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b
+# PyPI wheels: readchar-4.2.2-py3-none-any.whl
+readchar==4.2.2 \
+    --hash=sha256:92daf7e42c52b0787e6c75d01ecfb9a94f4ceff3764958b570c1dddedd47b200
+# PyPI wheels: requests-2.34.2-py3-none-any.whl
+requests==2.34.2 \
+    --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0
+# PyPI wheels: rich-15.0.0-py3-none-any.whl
+rich==15.0.0 \
+    --hash=sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb
+# PyPI wheels: rich_click-1.9.9-py3-none-any.whl
+rich-click==1.9.9 \
+    --hash=sha256:365e7a9d0adb42e41ea832a0a12e02c44c079a26536dee688125eb9814f97274
+# PyPI wheels: runs-1.3.0-py3-none-any.whl
+runs==1.3.0 \
+    --hash=sha256:e71a551cfa8da9ef882cac1d5a108bda78c9edee5b8d87e37c1003da5b6a7bed
+# PyPI wheels: screeninfo-0.8.1-py3-none-any.whl
+screeninfo==0.8.1 \
+    --hash=sha256:e97d6b173856edcfa3bd282f81deb528188aff14b11ec3e195584e7641be733c
+# PyPI wheels: typing_extensions-4.16.0-py3-none-any.whl
+typing_extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+# PyPI wheels: ua_parser-1.0.2-py3-none-any.whl
+ua-parser==1.0.2 \
+    --hash=sha256:0f8e6d0484af2a9ff804bba5a4fe696e87c028eaba98ad9a7dfae873fef7788a
+# PyPI wheels: ua_parser_builtins-202606-py3-none-any.whl
+ua-parser-builtins==202606 \
+    --hash=sha256:13b483eb12a5419c1094ce02b7df705fefc6b5d869764b3ffbf6c940c6d014cb
+# PyPI wheels: urllib3-2.8.0-py3-none-any.whl
+urllib3==2.8.0 \
+    --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3
+# PyPI wheels: wcwidth-0.9.1-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl, wcwidth-0.9.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl, wcwidth-0.9.1-py3-none-any.whl
+wcwidth==0.9.1 \
+    --hash=sha256:b5da43d6967668982e44a52fb551967d293f86d26cd86036ac95bbdd34394ed9 \
+    --hash=sha256:747fb724223f417a17541a95a17c1dac3a8ef9a0cf41684950f0eab191a35f65 \
+    --hash=sha256:e0c3a1c45c5b9550c6919a4449e95f5b177f6e165786376981db8f1addae9b21
+# PyPI wheels: xmod-1.10.0-py3-none-any.whl
+xmod==1.10.0 \
+    --hash=sha256:bebf8493b7ac63097401590a329c9ed20da224de0583a522e7ccb634af122f5a

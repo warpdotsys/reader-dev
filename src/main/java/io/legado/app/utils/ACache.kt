@@ -76,11 +76,12 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      * @param key   保存的key
      * @param value 保存的String数据
      */
+    @Synchronized
     fun put(key: String, value: String) {
         mCache?.let { mCache ->
             try {
                 val file = mCache.newFile(key)
-                file.writeText(value)
+                publishCacheBytes(file, value.toByteArray(Charsets.UTF_8))
                 mCache.put(file)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -104,6 +105,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      *
      * @return String 数据
      */
+    @Synchronized
     fun getAsString(key: String): String? {
         mCache?.let { mCache ->
             val file = mCache[key]
@@ -127,6 +129,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         return null
     }
 
+    @Synchronized
     fun getByHashCode(hashCode: String): String? {
         mCache?.let { mCache ->
             val file =  mCache.newFileFromHashCode(hashCode)
@@ -240,10 +243,11 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      * @param key   保存的key
      * @param value 保存的数据
      */
+    @Synchronized
     fun put(key: String, value: ByteArray) {
         mCache?.let { mCache ->
             val file = mCache.newFile(key)
-            file.writeBytes(value)
+            publishCacheBytes(file, value)
             mCache.put(file)
         }
     }
@@ -264,6 +268,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      *
      * @return byte 数据
      */
+    @Synchronized
     fun getAsBinary(key: String): ByteArray? {
         mCache?.let { mCache ->
             var removeFile = false
@@ -430,6 +435,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      *
      * @return value 缓存的文件
      */
+    @Synchronized
     fun file(key: String): File? {
         mCache?.let { mCache ->
             try {
@@ -449,6 +455,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
      *
      * @return 是否移除成功
      */
+    @Synchronized
     fun remove(key: String): Boolean {
         return mCache?.remove(key) == true
     }
@@ -456,6 +463,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     /**
      * 清除所有数据
      */
+    @Synchronized
     fun clear() {
         mCache?.clear()
     }
@@ -658,25 +666,24 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
          */
         private fun calculateCacheSizeAndCacheCount() {
             Thread {
-
-                try {
-                    var size = 0
-                    var count = 0
-                    val cachedFiles = cacheDir.listFiles()
-                    if (cachedFiles != null) {
-                        for (cachedFile in cachedFiles) {
-                            size += calculateSize(cachedFile).toInt()
-                            count += 1
-                            lastUsageDates[cachedFile] = cachedFile.lastModified()
+                synchronized(this@ACache) {
+                    try {
+                        var size = 0
+                        var count = 0
+                        val cachedFiles = cacheDir.listFiles()
+                        if (cachedFiles != null) {
+                            for (cachedFile in cachedFiles.filterNot { it.name.startsWith(CACHE_PUBLICATION_TEMP_PREFIX) }) {
+                                size += calculateSize(cachedFile).toInt()
+                                count += 1
+                                lastUsageDates[cachedFile] = cachedFile.lastModified()
+                            }
+                            cacheSize.set(size.toLong())
+                            cacheCount.set(count)
                         }
-                        cacheSize.set(size.toLong())
-                        cacheCount.set(count)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
-
-
             }.start()
         }
 

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "version": "6.1.0",
+  "independentReceiptSha256": {
+    "independent-java-acceptance.json": "47186ec9e679729abb47b38e8dc0e6f320060d295e25cc62deaedc59408993fe",
+    "verified-java-vue-small.json": "a356ff6b781119ca9241f862918b9f70390b33ffc00345038e7deb16a58409b0",
+    "independent-full-reports.json": "a017b0ca3795548996fdc0cc6dcfb139cfd461793ba78f3af5a348dcfe68a0fc",
+    "independent-native-small-acceptance.json": "8249bed83c9b7c5c2efe702fb40b92c44e13f3f3d0cfa06d2fb17f1356d79c38",
+    "independent-downloaded-jar.json": "7c36b0332521dc3e92a5c93c104502932314ed8131a8ba6510938b9330b6d33c"
+  },
+  "hostedRuns": {
+    "java": {
+      "id": 38411329432,
+      "conclusion": "success"
+    },
+    "vue": {
+      "id": 38411329680,
+      "conclusion": "success"
+    },
+    "full": {
+      "id": 38411330336,
+      "conclusion": "success"
+    },
+    "native": {
+      "id": 38411330281,
+      "conclusion": "success",
+      "allSixHostedJobsAccepted": true
+    }
+  },
+  "tests": {
+    "jvm": {
+      "total": 222,
+      "existingSkipped": 35,
+      "failed": 0
+    },
+    "linuxNode": {
+      "total": 182,
+      "skipped": 0,
+      "includesVersionAndPowerShellEntryContracts": 21
+    },
+    "linuxPython": {
+      "total": 779,
+      "skipped": 0
+    },
+    "frontend": 376,
+    "actualChromiumJourneys": {
+      "total": 25,
+      "skipped": 0
+    },
+    "camoufoxContracts": {
+      "total": 24,
+      "skipped": 0
+    }
+  },
+  "jar": {
+    "sha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "bytes": 285683585,
+    "entries": 1568,
+    "actualDownloadRehashed": true,
+    "implementationVersion": "6.1.0",
+    "startClass": "com.htmake.reader.ReaderApplicationKt",
+    "twoIndependentCleanBuildsFullBytesEqual": true,
+    "classVersionCounts": {
+      "52": 1070
+    },
+    "workerSha256": "50497908dbae2a6a41c379daea05b670b3c3eb327f239aabc345faf5cdabcf08",
+    "bothVueEntryPoints": true
+  },
+  "fullGeneratedUi": {
+    "seconds": 11.074,
+    "accepted": true,
+    "loginReadingLogout": true,
+    "clientOutsideServerResourceBudget": true,
+    "serverOnlyMemoryPeakBytes": 846249984,
+    "serverOnlyPidsPeak": 189,
+    "reviewedScreenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900,
+        "visuallyReviewedThisTurn": true,
+        "realAccountOrPrivateBody": false
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "655a76b1909221a3e1d732f39a869e4274413d664587608624901b3cb2de80fa",
+        "bytes": 33231,
+        "width": 1280,
+        "height": 900,
+        "visuallyReviewedThisTurn": true,
+        "realAccountOrPrivateBody": false
+      }
+    ]
+  },
+  "native": {
+    "metadata": {
+      "amd64": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "6.1.0",
+        "revision": "27512eca06d9889df4bf217a7e1291aed589210f",
+        "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+        "archiveSha256": "6aa82394c82bdb03eeeeef0fad546ac48a26325c1c8a18707bd367b5ceefe965",
+        "imageId": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850"
+      },
+      "arm64": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "6.1.0",
+        "revision": "27512eca06d9889df4bf217a7e1291aed589210f",
+        "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+        "archiveSha256": "471ca28fdf72ea14611d43dd0a184830e371844871dae0d2d069a6383f6189c2",
+        "imageId": "sha256:446296c444ab0ca1579ce1e9e92abf02290eefa755dbb84494666ff3b63e72cf"
+      }
+    },
+    "publisherSmallJsonFiles": 32,
+    "nativeAndFreshReloadAndPublisherIndependentReportsAccepted": true,
+    "wholeArchiveServerDownloadAndLayerRehashAccepted": false,
+    "currentExactWholeImageOriginalThreeWayAccepted": false,
+    "currentExactWholeImageAuthorizedBookAccepted": false
+  },
+  "knownLimits": {
+    "trueQidianAuthenticationAccepted": false,
+    "publicSiteCookieScriptBusinessAccepted": false,
+    "sixtySecondCacheExportCapProven": false,
+    "observedCacheExportSeconds": [
+      72.3
+    ],
+    "completeOriginalStorageCompatibilityProven": false,
+    "finiteEarlier548aBookOrLongRunResultsTransferredToThisIdentity": false
+  },
+  "protectedInputHashCheck": {
+    "reportHashes": 58,
+    "originalAndReadOnlyBackupUnchanged": true,
+    "allowedSingleEpubHashUnchanged": true,
+    "protectedReportContentsDecoded": false
+  },
+  "rawLogsOrCredentialsOrPrivateBodiesPublished": false,
+  "productionChanged": false,
+  "releaseTagCreated": false,
+  "prMerged": false,
+  "goalComplete": false
+}

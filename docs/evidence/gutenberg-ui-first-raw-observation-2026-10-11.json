@@ -1,0 +1,276 @@
+{
+  "addedViaUi": true,
+  "apiObservationErrorCount": 0,
+  "apiObservations": [
+    {
+      "endpoint": "login",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "logout",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "login",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookInfo",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "saveBook",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookInfo",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getChapterList",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookContent",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "saveBookProgress",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "saveBookProgress",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookContent",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookContent",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getChapterList",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "getBookInfo",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "saveBookProgress",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    },
+    {
+      "endpoint": "logout",
+      "errorMsgEmpty": true,
+      "fields": [
+        "data",
+        "errorMsg",
+        "isSuccess"
+      ],
+      "isSuccess": true,
+      "status": 200
+    }
+  ],
+  "blockedClientRequests": 0,
+  "bodyScreenshotsExported": false,
+  "budgetAccepted": true,
+  "clientOutsideReaderServerBudget": true,
+  "clientRuntimeUid": 10001,
+  "combinedTwoGiBBudgetProven": false,
+  "defaultUiReleaseIdentityMatches": true,
+  "elapsedSeconds": 27.886,
+  "expectedImageRevision": "ffa8ddc1e77e15df97fee6f1a60e406afd317ca5",
+  "generatedNamespaceVerified": true,
+  "generatedSessionRevoked": true,
+  "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "originalOrRemoteParityProven": false,
+  "pageErrorCount": 0,
+  "paintedChapters": [
+    {
+      "characters": 6822,
+      "index": 0,
+      "matchesActualApiAfterWhitespaceNormalization": true,
+      "postAnimationFramesObserved": true,
+      "replacementCharacters": 0,
+      "sha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366"
+    },
+    {
+      "characters": 7332,
+      "index": 1,
+      "matchesActualApiAfterWhitespaceNormalization": true,
+      "postAnimationFramesObserved": true,
+      "replacementCharacters": 0,
+      "sha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d"
+    },
+    {
+      "characters": 7332,
+      "index": 1,
+      "matchesActualApiAfterWhitespaceNormalization": true,
+      "postAnimationFramesObserved": true,
+      "replacementCharacters": 0,
+      "sha256": "e055c84c6b94026a5e8bbe0064b03e6edaa4451fdc9441e159ea5f1b79d38e6d"
+    },
+    {
+      "characters": 6822,
+      "index": 0,
+      "matchesActualApiAfterWhitespaceNormalization": true,
+      "postAnimationFramesObserved": true,
+      "replacementCharacters": 0,
+      "sha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366"
+    }
+  ],
+  "passed": true,
+  "privateLocalBooksRead": 0,
+  "rawBodyCookieOrErrorPersisted": false,
+  "realCredentialsImported": false,
+  "responseMocked": false,
+  "schemaVersion": 1,
+  "scope": "actual bundled default Vue UI; fixed anonymous Gutenberg 84",
+  "screenshots": {
+    "login": {
+      "bytes": 35069,
+      "persisted": true,
+      "sha256": "7d1f0a014abb92ce90bc63a7bef092f868176fdbef196dda0b42d3c9b49fbdee"
+    },
+    "logout": {
+      "bytes": 6512,
+      "persisted": true,
+      "sha256": "caea027370910d2c7644918f553b0355df7e5a206e1fc95c09906c783b862735"
+    },
+    "toolbar": {
+      "bytes": 10507,
+      "persisted": false,
+      "sha256": "db4c56e1ee20b4391d858e9959352647b185ab3a18a87906f09941ba15fc9cb6"
+    }
+  },
+  "siteSearchRequested": false,
+  "sourceRulesRetained": true,
+  "sourceSeededViaApiNotUi": true,
+  "stage": "complete",
+  "testBrowserClosed": true,
+  "testClientNotDeploymentDependency": true,
+  "tlsErrorsIgnored": false,
+  "toc": {
+    "baseUrlsMatchFixedBook": true,
+    "canonicalTocSha256": "61af49ad646781649f796440dec95dbed27308ca1c7d119b0bc92c287f9450c7",
+    "chapterCount": 28,
+    "chapterTitlesPresent": true,
+    "chaptersRemainInFixedBook": true,
+    "fixedBookChapterUrlsValid": true,
+    "fragmentsMatchExpected": true,
+    "indicesSequential": true,
+    "noVolumeEntries": true,
+    "relativeChapterUrls": 28,
+    "webViewOptionsRetained": true
+  },
+  "uiLoginSucceeded": true,
+  "uiRegistrationSucceeded": true
+}

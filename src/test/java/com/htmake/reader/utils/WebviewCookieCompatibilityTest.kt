@@ -74,6 +74,71 @@ class WebviewCookieCompatibilityTest {
     }
 
     @Test
+    fun browserCookiesFlowToOrdinaryRequestsWithScopeAndManualPrecedence() = runBlocking {
+        val testDir = Files.createTempDirectory("reader-browser-to-http-cookie-").toFile()
+        val originalWorkDir = workDirPath
+        val originalWorkDirInit = workDirInit
+        val originalAdapter = ReaderAdapterHelper.readerAdapter
+        val received = mutableMapOf<String, String>()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/") { exchange ->
+            received[exchange.requestURI.path] = exchange.requestHeaders.getFirst("Cookie") ?: ""
+            val response = "ok".toByteArray(StandardCharsets.UTF_8)
+            exchange.sendResponseHeaders(200, response.size.toLong())
+            exchange.responseBody.use { it.write(response) }
+        }
+        try {
+            workDirPath = testDir.absolutePath
+            workDirInit = true
+            ReaderAdapterHelper.setAdapter(ReaderAdapter)
+            server.start()
+            val baseUrl = "http://127.0.0.1:${server.address.port}"
+            val namespace = "browser-login"
+            val store = CookieStore(namespace)
+            BrowserCookieJar.merge(store, "$baseUrl/login", listOf(
+                BrowserCookieJar.Cookie("pathOnly", "browser", "127.0.0.1", path = "/reader"),
+                BrowserCookieJar.Cookie("shared", "browser", "127.0.0.1")
+            ))
+            // This represents a user-entered legacy login cookie. It must override
+            // a browser value of the same name, while an explicit request header
+            // remains the final override.
+            store.setCookie(baseUrl, "manual=legacy; shared=legacy")
+            BrowserCookieJar.setManualCookies(store, "127.0.0.1", "manual=legacy; shared=legacy")
+            val ruleData = object : RuleDataInterface {
+                override val variableMap = HashMap<String, String>()
+                override fun getUserNameSpace() = namespace
+                override fun putVariable(key: String, value: String?) {
+                    if (value == null) variableMap.remove(key) else variableMap[key] = value
+                }
+            }
+            val source = BookSource(bookSourceUrl = baseUrl)
+            val explicit = mapOf("Cookie" to "shared=explicit; request=header")
+
+            AnalyzeUrl("$baseUrl/reader/chapter", source = source, ruleData = ruleData, headerMapF = explicit)
+                .getStrResponseAwait()
+            AnalyzeUrl("$baseUrl/outside", source = source, ruleData = ruleData, headerMapF = explicit)
+                .getStrResponseAwait()
+
+            val readerCookies = CookieStore(namespace).cookieToMap(received["/reader/chapter"] ?: "")
+            assertEquals("browser", readerCookies["pathOnly"])
+            assertEquals("legacy", readerCookies["manual"])
+            assertEquals("explicit", readerCookies["shared"])
+            assertEquals("header", readerCookies["request"])
+            val outsideCookies = CookieStore(namespace).cookieToMap(received["/outside"] ?: "")
+            assertEquals("legacy", outsideCookies["manual"])
+            assertEquals("explicit", outsideCookies["shared"])
+            assertEquals("header", outsideCookies["request"])
+            org.junit.Assert.assertFalse(outsideCookies.containsKey("pathOnly"))
+        } finally {
+            server.stop(0)
+            ReaderAdapterHelper.setAdapter(originalAdapter)
+            workDirPath = originalWorkDir
+            workDirInit = originalWorkDirInit
+            testDir.deleteRecursively()
+        }
+    }
+
+    @Test
     fun remoteCookiesReachOnlyTheRequestingUsersLegacyJar() = runBlocking {
         val testDir = Files.createTempDirectory("reader-webview-cookie-").toFile()
         val originalWorkDir = workDirPath

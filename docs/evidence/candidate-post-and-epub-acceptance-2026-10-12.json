@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "scope": "source-bound hosted candidate and local authorized decoder subset",
+  "sourceRevision": "9e70301a410c74245f23d27e6fea5f5fd3fabb64",
+  "testedMergeSnapshot": "ab2b37db81702b466679933e32f79b554d01c420",
+  "receiptSha256": {
+    "java": "1e8d251dec5b12d752438f794cb4397020b8b8cf4a0e4dc9e00bb1afb739f42e",
+    "ui": "5b18e627fe9f4b8a030c2055c5a17009800c0e46aafa251aa489132e6e665826",
+    "full": "dfa0e1f86364fd1f52b4a71bd7109d932cffd82625b51f93691d77ee3f053f1e",
+    "native": "fc08268529dd294fcb19980a10ba52202a526fedbb32ba368b0839491f4cafac"
+  },
+  "runs": {
+    "java": {
+      "id": 38190353220,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38190353220",
+      "conclusion": "success",
+      "actualHostedJobs": 1
+    },
+    "vue": {
+      "id": 38190353221,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38190353221",
+      "conclusion": "success",
+      "actualHostedJobs": 2
+    },
+    "full": {
+      "id": 38190353319,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38190353319",
+      "conclusion": "success",
+      "actualHostedJobs": 1
+    },
+    "native": {
+      "id": 38190353224,
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38190353224",
+      "conclusion": "success",
+      "actualHostedJobs": 6
+    }
+  },
+  "jarSha256": "6feedd00bd3db90fa7db8bdd5b31aebf3bdf6e8fa877ffed01a24345fa7fb412",
+  "jarBytes": 285672774,
+  "jarEntries": 1570,
+  "sharedJarActuallyDownloadedAndRehashed": true,
+  "twoCleanBuildsExactlyEqual": true,
+  "previousRestoredJarComparison": {
+    "classDifferences": 0,
+    "dependencyDifferences": 0,
+    "manifestDifferences": 0,
+    "changesOnlyVueAndWorker": true
+  },
+  "tests": {
+    "linuxPython": 725,
+    "linuxPythonSkipped": 0,
+    "jvm": 207,
+    "jvmSkipped": 35,
+    "frontend": 311,
+    "generatedUiJourneys": 25,
+    "camoufoxMethodsEachSuite": 24,
+    "nativeJobs": 6,
+    "publisherFiles": 32
+  },
+  "completeImageUi": {
+    "actualGeneratedJourney": true,
+    "seconds": 12.558,
+    "generatedTxtAndEpubModesExecuted": true,
+    "rootViewedFourScreenshots": true,
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "5f161d160c564ba1517d5301336c48e7d645c59ef87233232bfc90fec262d19d",
+        "bytes": 49239,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "df30961b435af314256f77cc4ac5b710658425b1471131096cccf4c7ea6f1a20",
+        "bytes": 33456,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "epubModeScreenshotsPresent": false,
+    "clientOutsideServerBudget": true,
+    "realAccountOrBookAccepted": false
+  },
+  "actualReaderHttpsSubset": {
+    "acceptedCurrentReaderHttpsBusinessSubset": true,
+    "generatedScenarios": 8,
+    "actualTargetRequests": 12,
+    "actualConnectTunnels": 14,
+    "parsedHeaderFields": 178,
+    "negativeCertificateControls": 2,
+    "generatedUserNamespaces": 2,
+    "proxySocketOwnershipVerifiedByLiveProducer": true,
+    "originalJarThreeWayAccepted": false,
+    "fullNativeImageLocallyAccepted": false,
+    "realSiteLoginAccepted": false,
+    "productionChanged": false,
+    "fullGoalComplete": false,
+    "acceptedCertificateHintMessages": true
+  },
+  "fullSyntheticBudget": {
+    "memoryPeakBytes": 892682240,
+    "pidsPeak": 193,
+    "ordinarySwapAllowanceBytes": 1073741824,
+    "observedSwapBytes": 0
+  },
+  "nativePublisherResourceSubset": {
+    "maxMemoryPeakBytes": 899387392,
+    "maxPidsPeak": 199
+  },
+  "localAuthorizedDecoder": {
+    "rawReceiptSha256": "18dfcf0525d778c1c0c094538171d053ad38148ce1376c4294a919b63f0025da",
+    "sourceBindings": {
+      "baselineSha256": "feb2e3b263837cdf14eb2169b845f93ce7d7b5ccb081b70abf260af28c80c56d",
+      "baselineGitBlob": "766fa7b53af0bca1a9a9f8c12370e2d9771f2160",
+      "candidateSha256": "6431c8c41f44caa9d7316144bdb78933229f4d1f01aef76537ba17b9f651a9f3",
+      "candidateGitBlob": "47940e9c6fff88f4301b680719a8afb5928a245d",
+      "benchmarkSha256": "c72b2e98a9902f161ed8fb0f7acf39193785e34d9dc368e2c5298260fb047dd7",
+      "referenceSha256": "da15a92ab19e4afe5c2360523fa511f2a47848c4ffacbeaa18e05c6fb4c90cda",
+      "launchSha256": "56749b6319ae971870d898d568715a358b81469d87b27685aab743b6d4cba715"
+    },
+    "onlyOneAuthorizedBook": true,
+    "uid": 1000,
+    "releaseUid10001Tested": false,
+    "compressedBytes": 37809796,
+    "expandedBytes": 49382784,
+    "entries": 1673,
+    "rounds": 3,
+    "allOutputBytesMatchIndependentZipfileReference": true,
+    "measurements": [
+      {
+        "round": 0,
+        "variant": "baseline",
+        "decoderMilliseconds": 1110.889979,
+        "osProcessMaxRssBytes": 328859648,
+        "sampledPeakArrayBufferBytes": 175228202,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      },
+      {
+        "round": 0,
+        "variant": "candidate",
+        "decoderMilliseconds": 1205.3478109999999,
+        "osProcessMaxRssBytes": 364146688,
+        "sampledPeakArrayBufferBytes": 213616549,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      },
+      {
+        "round": 1,
+        "variant": "baseline",
+        "decoderMilliseconds": 1119.555774,
+        "osProcessMaxRssBytes": 333066240,
+        "sampledPeakArrayBufferBytes": 182328636,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      },
+      {
+        "round": 1,
+        "variant": "candidate",
+        "decoderMilliseconds": 1186.646386,
+        "osProcessMaxRssBytes": 340123648,
+        "sampledPeakArrayBufferBytes": 190005488,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      },
+      {
+        "round": 2,
+        "variant": "baseline",
+        "decoderMilliseconds": 1115.258678,
+        "osProcessMaxRssBytes": 336596992,
+        "sampledPeakArrayBufferBytes": 185017025,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      },
+      {
+        "round": 2,
+        "variant": "candidate",
+        "decoderMilliseconds": 1123.994833,
+        "osProcessMaxRssBytes": 337248256,
+        "sampledPeakArrayBufferBytes": 186408878,
+        "applicationAllocations": 1673,
+        "applicationAllocatedBytes": 49382784
+      }
+    ],
+    "resources": {
+      "memoryPeakBytes": 467173376,
+      "pidsPeak": 14,
+      "swapCurrentBytes": 0,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "pidsEvents": {
+        "max": 0
+      }
+    },
+    "measurementHasOverhead": true,
+    "uniformMemoryOrSpeedImprovementProven": false,
+    "readerOrBrowserStarted": false,
+    "fullWorkerOrUiBudgetAccepted": false,
+    "privateInputCopiesCreated": 0,
+    "otherPrivateBooksRead": 0,
+    "bookTextOrEntryNamesExported": false
+  },
+  "priorFailedFullRun": {
+    "id": 38187529026,
+    "failurePreserved": true,
+    "xmlSha256": "d8597a7ee8f20edc271c7369afec6f693e1065f4d5816ac903d8fcbdff290293",
+    "exactFailureSubcaseLocated": false,
+    "productionRootCauseOrFixProven": false
+  },
+  "largeImageArchivesDownloadedOrLocallyRehashed": false,
+  "currentFinalThreeWayAccepted": false,
+  "realSiteLoginAccepted": false,
+  "combinedReaderAndUiClientPressureAccepted": false,
+  "productionChanged": false,
+  "registryPublished": false,
+  "goalComplete": false
+}

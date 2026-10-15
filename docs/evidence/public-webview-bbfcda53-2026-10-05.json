@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-05",
+  "sourceHead": "bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6",
+  "checkoutRevision": "bbfcda53d379f4d2a992ed8cc092b9e07fcbcfe6",
+  "runId": 37309242432,
+  "comparison": {
+    "archivedReference": {
+      "directPageSha256": "177f47680ac680c44fa66814a582d205db9b5e74e35c1489ba92af985f8ab1fd",
+      "directPageStatus": 200,
+      "observedAt": "2026-10-05T20:24:27.729995+08:00",
+      "projectionCount": 10,
+      "projectionSha256": "3b131db566c96a9a06bd0d7f576a10321344da8e49221f4b2ef975d9c9ed91d8",
+      "projectionStatus": 200
+    },
+    "bundledCamoufox": {
+      "bookCount": 10,
+      "bookProjectionSha256": "3b131db566c96a9a06bd0d7f576a10321344da8e49221f4b2ef975d9c9ed91d8",
+      "observedAt": "2026-10-05T20:31:33.397958+08:00",
+      "readerErrorMsgEmpty": true,
+      "readerIsSuccess": true,
+      "readerStatus": 200
+    },
+    "countEqual": true,
+    "fullResponseParityProven": false,
+    "interpretation": "matching-projection-with-time-skew",
+    "observationDeltaSeconds": 425.668,
+    "originalJarCompared": false,
+    "projectionEqual": true,
+    "referenceProvenProduction": false,
+    "scope": "archived-reference-vs-bundled-camoufox-public-page",
+    "url": "https://m.jjjxsw.com/txt/"
+  },
+  "actualCamGate": {
+    "endlessNavigationContractPresent": true,
+    "errors": 0,
+    "failures": 0,
+    "navigationContractPresent": true,
+    "skipped": 0,
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 14,
+    "xmlSha256": "5f8889869c49791d5287fefb68d893ebf413937f070cecb57e4339dd5076378e"
+  },
+  "resources": {
+    "scope": "one complete hosted Reader image; generated short sequential and four-account burst",
+    "actualJsonReportsAudited": 2,
+    "identityCookieRequestResourceFieldsPassed": true,
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "observations": {
+      "memoryPeakBytes": 858886144,
+      "configuredSwapMaxBytes": 1073741824,
+      "pidsPeak": 200,
+      "actualSwapBytes": 0
+    },
+    "budgetSha256": "7830489c9d8837f361e676cbfda05c11ddaa7b78ac0da15d714a659f28ae5a61",
+    "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+  },
+  "budget": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 347824128,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 858886144,
+    "pidsCurrent": 38,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 200,
+    "scope": "one full Reader image; sequential probes plus four-account burst",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  },
+  "artifacts": [
+    {
+      "id": 11345412745,
+      "name": "public-webview-comparison",
+      "zipBytes": 644
+    },
+    {
+      "id": 11345118115,
+      "name": "bundled-browser-synthetic-and-resources",
+      "zipBytes": 894
+    },
+    {
+      "id": 11345520044,
+      "name": "camoufox-contract-report",
+      "zipBytes": 983
+    }
+  ],
+  "proofFiles": [
+    {
+      "path": "bundled-browser-synthetic-and-resources/bundled-browser-resource-budget.json",
+      "bytes": 495,
+      "sha256": "7830489c9d8837f361e676cbfda05c11ddaa7b78ac0da15d714a659f28ae5a61"
+    },
+    {
+      "path": "bundled-browser-synthetic-and-resources/bundled-browser-synthetic.json",
+      "bytes": 620,
+      "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+    },
+    {
+      "path": "camoufox-contract-report/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+      "bytes": 2457,
+      "sha256": "5f8889869c49791d5287fefb68d893ebf413937f070cecb57e4339dd5076378e"
+    },
+    {
+      "path": "public-webview-comparison/public-comparison.json",
+      "bytes": 995,
+      "sha256": "bf2f69db9ac55c17972aa29a5a32ff33a907cecf68cdb362063ef09a2e7c0429"
+    }
+  ],
+  "referenceImage": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "limits": [
+    "Two jobs use different GitHub hosted runners and observation times; matching name/URL projection is not identical upstream response control.",
+    "No original JAR was run; archived image has not been proven identical to the former production remote service.",
+    "No Qidian account, third-party authentication, paid chapter, private storage, or production data was used.",
+    "Resources are a short generated plus public-list sample, not sustained-load capacity.",
+    "Configured swap limit allows 1 GiB, measured actual use was zero."
+  ]
+}

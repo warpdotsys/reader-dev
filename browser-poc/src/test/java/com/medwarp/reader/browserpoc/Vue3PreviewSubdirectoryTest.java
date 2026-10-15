@@ -5,6 +5,7 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.PlaywrightException;
+import com.microsoft.playwright.Response;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -103,7 +104,14 @@ public class Vue3PreviewSubdirectoryTest {
                 page.locator("input[autocomplete=username]").fill("subdir" +
                         UUID.randomUUID().toString().replace("-", "").substring(0, 10));
                 page.locator("input[autocomplete=current-password]").fill("SubdirProbe-2026");
-                page.locator(".submit-btn").click();
+                Response login = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                        .endsWith("/reader3/login"), () -> page.locator(".submit-btn").click());
+                assertEquals("Subdirectory authentication still uses the root legacy API", 200, login.status());
+                String reply = login.text();
+                java.util.regex.Matcher message = java.util.regex.Pattern
+                        .compile("\\\"errorMsg\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"").matcher(reply);
+                assertTrue("Subdirectory registration failed; token fields omitted; errorMsg="
+                        + (message.find() ? message.group(1) : "not provided"), reply.contains("\"isSuccess\":true"));
                 page.locator(".bookshelf-page").waitFor();
                 assertTrue(URI.create(page.url()).getPath().startsWith("/reader/"));
 

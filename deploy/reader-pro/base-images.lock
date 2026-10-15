@@ -1,0 +1,6 @@
+# Official OCI index digests verified directly against each registry;
+# Playwright Python index re-verified on 2026-09-29 (linux/amd64 and linux/arm64).
+# Update only through a reviewed change that re-verifies the registry response and
+# then records a new complete-image digest in the release artifacts.
+TEMURIN_JRE_IMAGE=eclipse-temurin@sha256:68607af464c53b34d7dd3ee25697d53531ec46a80326be95129346ff74ae6f8f
+PLAYWRIGHT_PYTHON_IMAGE=mcr.microsoft.com/playwright/python@sha256:47a65aee64780daa8bad02b37e0ef14902851a3aa7ad0153234f784eb12422b0

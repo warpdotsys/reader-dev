@@ -1,0 +1,28 @@
+{
+  "originalJarSha256": "B26FB4769D689D98FF26408CE79A275D719F360906C84ACF52FF404E98030C8C",
+  "originalExecuted": true,
+  "restoredJarSha256": "0B1EBE9E92B53E7256E96069F76668957754336DD34AB1728A9B25AD8458A2CF",
+  "original": {
+    "searches": [
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1}
+    ],
+    "renderCookieHeaders": ["", "", "", ""],
+    "renderScriptSources": [null, null, null, "document.title"]
+  },
+  "restored": {
+    "searches": [
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1},
+      {"status": 200, "isSuccess": true, "errorMsg": "", "count": 1}
+    ],
+    "renderCookieHeaders": ["", "session=alpha==", "", ""],
+    "renderScriptSources": [null, null, null, "document.title"]
+  },
+  "expectedOriginalCookieSequence": ["", "", "", ""],
+  "expectedRestoredCookieSequence": ["", "session=alpha==", "", ""],
+  "expectedScriptSources": [null, null, null, "document.title"]
+}

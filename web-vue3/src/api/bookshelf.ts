@@ -18,6 +18,11 @@ export function saveBook(book: Book): Promise<ReturnData<null>> {
   return post<null>('/saveBook', book)
 }
 
+/** Legacy 只接收 {url, index}，不会解析 Vue/Rust 的 durChapter* 请求体。 */
+export function saveBookProgress(bookUrl: string, chapterIndex: number): Promise<ReturnData<string>> {
+  return post<string>('/saveBookProgress', { url: bookUrl, index: chapterIndex }, { silent: true })
+}
+
 /**
  * GAP 78：POST /reader3/refreshLocalBook：重扫本地书（local:// 重解析原文件；
  * loc_book/storage 文件书重解析）——书架长按菜单「重新扫描」入口。

@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "probeSourceHead": "c2679e7b69217bd7d869028fa86907c59a6926dd",
+  "imageSourceRun": 37428262965,
+  "imageRevision": "53bf73d680045744ece5db080b0710bb9004a228",
+  "run": {
+    "conclusion": "failure",
+    "created_at": "2026-10-06T07:33:29Z",
+    "event": "workflow_dispatch",
+    "head_sha": "c2679e7b69217bd7d869028fa86907c59a6926dd",
+    "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37430404938",
+    "id": 37430404938,
+    "name": "Browser image integration",
+    "status": "completed",
+    "updated_at": "2026-10-06T07:35:18Z"
+  },
+  "artifact": {
+    "created_at": "2026-10-06T07:35:16Z",
+    "digest": "sha256:5f7e99ca791668ac0a7bd98814523ca47fbd78c5b1438a6526216c2ee7296550",
+    "expired": false,
+    "id": 11397031274,
+    "name": "public-metadata-amd64-37430404938",
+    "size_in_bytes": 3106,
+    "workflow_run": {
+      "head_branch": "ci/full-reader-20260926",
+      "head_repository_id": 1313473469,
+      "head_sha": "c2679e7b69217bd7d869028fa86907c59a6926dd",
+      "id": 37430404938,
+      "repository_id": 1313473469
+    }
+  },
+  "jobs": {
+    "jobs": [
+      {
+        "completed_at": "2026-10-06T07:35:17Z",
+        "conclusion": "failure",
+        "id": 112159687639,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Probe anonymous metadata in the exact tested native image",
+        "runner_group_name": "GitHub Actions",
+        "runner_name": "GitHub Actions 1000003796",
+        "started_at": "2026-10-06T07:33:33Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-06T07:33:30Z",
+        "conclusion": "skipped",
+        "id": 112159688788,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Probe archived remote WebView reference",
+        "runner_group_name": null,
+        "runner_name": null,
+        "started_at": "2026-10-06T07:33:31Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-06T07:33:30Z",
+        "conclusion": "skipped",
+        "id": 112159688904,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Soak an already-tested native image offline",
+        "runner_group_name": null,
+        "runner_name": null,
+        "started_at": "2026-10-06T07:33:31Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-06T07:33:30Z",
+        "conclusion": "skipped",
+        "id": 112159688920,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Build and smoke-test the full Reader image",
+        "runner_group_name": null,
+        "runner_name": null,
+        "started_at": "2026-10-06T07:33:31Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-06T07:33:30Z",
+        "conclusion": "skipped",
+        "id": 112159689128,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Verify archived original JAR provenance",
+        "runner_group_name": null,
+        "runner_name": null,
+        "started_at": "2026-10-06T07:33:31Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-06T07:33:31Z",
+        "conclusion": "skipped",
+        "id": 112159690275,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "name": "Compare public page observations (not production parity)",
+        "runner_group_name": null,
+        "runner_name": null,
+        "started_at": "2026-10-06T07:33:31Z",
+        "status": "completed"
+      }
+    ],
+    "total_count": 6
+  },
+  "files": [
+    {
+      "data": {
+        "ownedContainerRemoved": true,
+        "probeExit": 1
+      },
+      "file": "CLEANUP.json",
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    {
+      "data": {
+        "Running": true,
+        "OOMKilled": false,
+        "ExitCode": 0
+      },
+      "file": "CONTAINER_STATE.json",
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "data": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      },
+      "file": "LOADED_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "b3961ac6afb0c785a376f7329c5b01af78a0f9c528b96c5aacf7409543186c1b"
+    },
+    {
+      "data": {
+        "phase": "check",
+        "architecture": "amd64",
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "imageId": "sha256:e268ce3b71afdd7338cbf20f4f134782cdeaf4d6df29f8f87ee55224e2f798a0"
+      },
+      "file": "PRELOAD_IDENTITY.json",
+      "bytes": 258,
+      "sha256": "05057b6c3ceeabfa08eb403f808bf4273608064033eb17ff838bef972aab891d"
+    },
+    {
+      "data": {
+        "allDeviceTokenRevocationProven": false,
+        "bookInfoApiCalls": 1,
+        "chapterBodyRequested": false,
+        "configuredRenderer": "camoufox",
+        "cookieRowsAfter": 0,
+        "cookieRowsBefore": 0,
+        "defaultBrowserProcessObserved": true,
+        "expectedImageRevision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "generatedCookieSessionRevokedVerified": true,
+        "logoutObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": true,
+          "httpStatus": 200,
+          "isSuccess": true
+        },
+        "maximumObservedProcesses": {
+          "browser": 7,
+          "driver": 1,
+          "worker": 1
+        },
+        "metadata": {
+          "authorMatches": false,
+          "coverHasExpectedPublicOrigin": false,
+          "dataIsNull": true,
+          "dataIsObject": false,
+          "errorMessageLength": 70,
+          "errorMsgEmpty": false,
+          "errorMsgIsString": true,
+          "hostFingerprint": null,
+          "httpStatus": 200,
+          "isSuccess": false,
+          "isSuccessIsBoolean": true,
+          "knownFieldsPresent": {
+            "author": false,
+            "bookUrl": false,
+            "canUpdate": false,
+            "coverUrl": false,
+            "durChapterIndex": false,
+            "durChapterPos": false,
+            "group": false,
+            "name": false,
+            "tocUrl": false,
+            "totalChapterNum": false,
+            "type": false
+          },
+          "nameMatches": false,
+          "passed": false,
+          "policyReason": null
+        },
+        "metadataDomWaitBudgetMs": 8000,
+        "observedAt": "2026-10-06T15:35:08.635991+08:00",
+        "originalJarOrArchivedParity": false,
+        "passed": false,
+        "postLogoutProtectedObservation": {
+          "dataIsNeedLogin": true,
+          "errorMsgEmpty": false,
+          "httpStatus": 200,
+          "isSuccess": false
+        },
+        "privateNetworkGuardEnabled": true,
+        "processMonitorPassed": true,
+        "rawErrorHtmlCookieAndMetadataValuesNotPersisted": true,
+        "realAuthenticationProven": false,
+        "realCredentialsImported": false,
+        "requestSeconds": 6.175,
+        "resourceGuardPassed": true,
+        "runtimeUid": 10001,
+        "schemaVersion": 1,
+        "scope": "anonymous single-image public metadata only",
+        "source": "https://www.qidian.com/book/1010400217/",
+        "sourceScriptMode": "boundedMetadataDom",
+        "sourceScriptSynthesizesMetadata": false
+      },
+      "file": "PUBLIC_METADATA_REPORT.json",
+      "bytes": 2091,
+      "sha256": "6ba3fe0afb2061caf737e2671dfc329b09d366a25b45d513088c852477020549"
+    },
+    {
+      "data": {
+        "revision": "53bf73d680045744ece5db080b0710bb9004a228",
+        "jarSha256": "12334f821bd5fd539766a53926491b377bebc56b32e7ddb187ac00cb7d97be10",
+        "network": "bridge",
+        "publishedPorts": 0
+      },
+      "file": "RUNNING_JAR_IDENTITY.json",
+      "bytes": 190,
+      "sha256": "6245dbe5019034599f7fb4539c76b1469e143d6845ebc5af6842598122e19bc9"
+    },
+    {
+      "data": {
+        "architecture": "x86_64",
+        "cpuPeriod": 100000,
+        "cpuQuota": "200000",
+        "kernel": "6.17.0-1022-azure",
+        "memoryCurrentBytes": 317173760,
+        "memoryEvents": {
+          "high": 0,
+          "low": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_group_kill": 0,
+          "oom_kill": 0
+        },
+        "memoryMaxBytes": 2147483648,
+        "memoryPeakBytes": 847728640,
+        "pidsCurrent": 35,
+        "pidsEvents": {
+          "max": 0
+        },
+        "pidsMax": 256,
+        "pidsPeak": 191,
+        "scope": "one anonymous default-Camoufox metadata request",
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0
+      },
+      "file": "RUNTIME_RESOURCE_BUDGET.json",
+      "bytes": 537,
+      "sha256": "0a08f3197ad76d8df46f555e31b06e13cbbfd4390229267105870b679d0b1673"
+    },
+    {
+      "data": {
+        "id": 37428262965,
+        "name": "Native release artifact rehearsal",
+        "path": ".github/workflows/release-native.yml",
+        "head_sha": "0d6843419eeaef27aca00b0044a95aa4962c73e4",
+        "event": "pull_request",
+        "conclusion": "success",
+        "html_url": "https://github.com/warpdotsys/reader-dev/actions/runs/37428262965"
+      },
+      "file": "SOURCE_RUN.json",
+      "bytes": 316,
+      "sha256": "fe6282f61769b092b80dc6d2b36913b27c0424006fd6961759329c6065c1dd2a"
+    }
+  ],
+  "strictIdentityScopeBudgetAndCleanupVerified": true,
+  "publicMetadataPassed": false,
+  "errorClassNotRetainedByThisProbe": true,
+  "conclusions": [
+    "One real default-engine public metadata request failed before the script's 8-second DOM deadline could be inferred.",
+    "The result is a negative ReturnData envelope, not the two older positive envelopes with empty metadata.",
+    "No raw server error, HTML, Cookie, body, or new user browser credentials were persisted.",
+    "Failure class and root cause remain unknown; the short elapsed time alone is not proof of a navigation/state-loss failure.",
+    "This is not original-JAR/archived parity or real authentication proof."
+  ]
+}

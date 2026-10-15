@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" tests="20" skipped="0" failures="1" errors="0" timestamp="2026-10-11T05:41:16" hostname="LAPTOP-U8HHJC5R" time="1.534">
+  <properties/>
+  <testcase name="explicitBlankDocumentIsDistinctFromEmptyRawString" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.591"/>
+  <testcase name="headOnlyScriptAndTitleAreObservedWithoutLeakingOrExecutingContent" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.026"/>
+  <testcase name="fixedPublicContentRuleUsesActualChapterBindingAndOnlySelectedParagraphs" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.03"/>
+  <testcase name="whitespaceOnlyRawStringIsNotReportedAsZeroLength" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.024"/>
+  <testcase name="savedSourceKeepsDiagnosticForAnEmptyGeneratedDocument" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.541"/>
+  <testcase name="rawTagHintsCanComeFromCommentsAndAreNotAParsedPageVerdict" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.017"/>
+  <testcase name="savedProbeSourceParsesGeneratedMetadataAndDiagnosticViaWebBook" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.031"/>
+  <testcase name="missingTocMarkerCharacterizesExistingLegacyConversionWithoutChangingIt" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.101"/>
+  <testcase name="fixedPublicAuthorRuleUsesAuthorHeadingInsteadOfSubtitle" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.004"/>
+  <testcase name="scriptTextIsNotMistakenForBodyOrExecuted" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.015"/>
+  <testcase name="generatedNormalMetadataIsObservedWithoutChangingItsSelectors" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.018"/>
+  <testcase name="generatedSafetyPageHasHintsButDoesNotGainMetadata" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.016"/>
+  <testcase name="fixedPublicAuthorRuleDoesNotInventAuthorFromOtherHeadings" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.003"/>
+  <testcase name="frameAndElementStructureDoesNotRevealUrlsOrClaimAuthentication" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.017"/>
+  <testcase name="hintsDoNotClaimVisibilityOrSuccessfulAuthentication" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.016"/>
+  <testcase name="emptyRawStringIsDistinctFromJsoupSynthesizedDocumentNodes" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.017"/>
+  <testcase name="generatedEmptySnapshotRemainsEmpty" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.016"/>
+  <testcase name="exactProbeSourceRetainsRulesThroughSaveAndReaderDeserialization" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.014"/>
+  <testcase name="fixedPublicChapterUrlRemainsRelativeAndResolvesWithOriginalOptions" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.006">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[#letter1, {&quot;webView&quot;:true}]&gt; but was:&lt;[]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[#letter1, {&quot;webView&quot;:true}]&gt; but was:&lt;[]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:115)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at com.htmake.reader.utils.PublicMetadataPageDiagnosticTest.fixedPublicChapterUrlRemainsRelativeAndResolvesWithOriginalOptions(PublicMetadataPageDiagnosticTest.kt:111)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:27)
+	at org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)
+	at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:110)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:182)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:164)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:412)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:56)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="detailsSourceRoundtripsAndParsesGeneratedMetadataViaRealWebBook" classname="com.htmake.reader.utils.PublicMetadataPageDiagnosticTest" time="0.029"/>
+  <system-out><![CDATA[13:41:17.992 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceUrl']
+13:41:18.003 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceName']
+13:41:18.003 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceGroup']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceComment']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookUrlPattern']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['serialNumber']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['httpUserAgent']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchUrl']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindUrl']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['bookSourceType']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['enable']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchList']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchName']
+13:41:18.004 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchAuthor']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchIntroduce']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchKind']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchNoteUrl']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchCoverUrl']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleSearchLastChapter']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindList']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindName']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindAuthor']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindIntroduce']
+13:41:18.005 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindKind']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindNoteUrl']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindCoverUrl']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleFindLastChapter']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookInfoInit']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookName']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookAuthor']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleIntroduce']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookKind']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleCoverUrl']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookLastChapter']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterUrl']
+13:41:18.006 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterList']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterName']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleContentUrl']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleChapterUrlNext']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookContent']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleBookContentReplace']
+13:41:18.007 [Test worker] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['ruleContentUrlNext']
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

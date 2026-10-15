@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "22f949ccb3befff4d66af793598889b5879b0c45",
+  "testedMergeSnapshot": "d74875d2ea057500cadedcb66af4c7942e3f8d96",
+  "run": {
+    "id": 38049613409,
+    "sourceRevision": "22f949ccb3befff4d66af793598889b5879b0c45",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38049613409",
+    "conclusion": "success",
+    "actualJobs": [
+      {
+        "id": 114205919270,
+        "name": "Build and smoke-test the full Reader image",
+        "runnerName": "GitHub Actions 1000004445",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      }
+    ],
+    "optionalSkippedJobs": 7
+  },
+  "actualCamoufox": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "navigationContractPresent": true,
+    "earlyNavigationContractPresent": true,
+    "endlessNavigationContractPresent": true,
+    "promiseContractPresent": true,
+    "stateDeletionContractPresent": true,
+    "sourceNavigationContractPresent": true,
+    "numericalThreadContractPresent": true,
+    "utf8PostContractPresent": true,
+    "originHeaderContractPresent": true,
+    "postRedirectHeaderContractPresent": true,
+    "scriptRedirectHeaderContractPresent": true,
+    "loopbackProxyContractPresent": true,
+    "xmlSha256": "4eaf2237cca6b8307787432ece835a2c8c671eb9c4e83f99a1d75354f34eaf83"
+  },
+  "defaultFormPostActualTargetContractAccepted": true,
+  "actualPackagedWorkerHttps": {
+    "actualReportSha256": "6ade0b7636eae53f944b248784b6061bed18af22f4f15f3f732a9b51c02c754f",
+    "architecture": "amd64",
+    "acceptedSubset": {
+      "acceptedPackagedWorkerHttpsSubset": true,
+      "positiveCases": 10,
+      "negativeCertificateControls": 2,
+      "targetRequests": 24,
+      "parsedHeaderFields": 334,
+      "readerApiOrProductionAccepted": false
+    },
+    "actualResources": {
+      "scope": "packaged worker generated HTTPS; no Reader API or real accounts",
+      "kernel": "6.17.0-1022-azure",
+      "architecture": "x86_64",
+      "memoryPeakBytes": 629018624,
+      "memoryCurrentBytes": 88399872,
+      "memoryMaxBytes": 2147483648,
+      "memoryHighBytes": "max",
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "memoryStatBytes": {
+        "anon": 84258816,
+        "file": 106496,
+        "shmem": 98304,
+        "kernel": 3411968,
+        "kernel_stack": 32768,
+        "pagetables": 421888,
+        "sock": 0,
+        "file_mapped": 0,
+        "file_dirty": 0,
+        "file_writeback": 0,
+        "inactive_file": 8192,
+        "active_file": 0,
+        "slab_reclaimable": 2628152,
+        "slab_unreclaimable": 310304
+      },
+      "swapCurrentBytes": 0,
+      "swapMaxBytes": 0,
+      "pidsPeak": 152,
+      "pidsCurrent": 2,
+      "pidsMax": 256,
+      "pidsEvents": {
+        "max": 0
+      },
+      "cpuQuota": "200000",
+      "cpuPeriod": 100000
+    }
+  },
+  "packagedWorkerHttpsGateExecutedByThisRun": true,
+  "explicitJsonUtf8ActualTargetContractAccepted": true,
+  "chromiumActualTests": 23,
+  "chromiumSkipped": 0,
+  "sourceDocumentHelperCases": 3,
+  "async": {
+    "asyncReaderCases": 2,
+    "singleExecutionAndPostVerified": true,
+    "sameUserAsyncCookieDeletionVerified": true,
+    "jsonSha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+  },
+  "metadata": {
+    "generatedBrowserBackedMetadataCases": 1,
+    "savedSourceAndDetailParserVerified": true,
+    "realSiteMetadataOrAuthenticationProven": false,
+    "jsonSha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+  },
+  "actualCompleteImageDefaultUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "d74875d2ea057500cadedcb66af4c7942e3f8d96",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 7.892,
+    "xmlSha256": "5bb680590a5af380070eaa49decda397788d75ed1692be61ce141c5bea3b5a79",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "116f4e7d351bb27c69222d01f329edf054037a5bc3ef21828e2f48b8fac8c83b",
+        "bytes": 82792,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "0a775080e26958f02bedead877cf103835563e7f5b9fcbae0bcc39511f4c163f",
+        "bytes": 33495,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "uiArtifactPaths": [
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\reader-dev\\reader-dev\\browser-poc\\build\\test-results\\test\\TEST-com.medwarp.reader.browserpoc.NativeImageDefaultUiTest.xml",
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\_temp\\native-default-ui\\VERIFIED.json",
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\_temp\\native-default-ui\\native-default-ui-generated-login.png",
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\_temp\\native-default-ui\\native-default-ui-generated-logout.png",
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\_temp\\native-default-ui\\native-default-ui-generated-reading.png",
+    "full\\native-default-ui-generated-d74875d2ea057500cadedcb66af4c7942e3f8d96\\_temp\\native-default-ui\\native-default-ui-generated-shelf.png"
+  ],
+  "finalServerBudgetIncludesUiJourney": true,
+  "fullJarSha256": "fcd28a8d974666f12de6671570f2435a9161789d29f20314c7e1f28bf8f2285f",
+  "thisJavaAndFullJarDigestsMatch": true,
+  "ownJavaReceiptSha256": "5beb148d0e08822b776e0cb8e26c019fe5297f9dafa464ea74e7fa16784184af",
+  "memoryPeakBytes": 885784576,
+  "pidsPeak": 195,
+  "ordinarySwapAllowanceBytes": 1073741824,
+  "observedSwapBytes": 0,
+  "userReportsUnchanged": 58,
+  "localImageStarted": false,
+  "registryPublished": false,
+  "productionChanged": false,
+  "currentFinalThreeWayAccepted": false,
+  "fullGoalComplete": false,
+  "headerSecurityBusinessFixAccepted": false,
+  "headerSecurityThreeWayExecutedOnHostedRunner": false,
+  "sourceProxyParameterFlowCompiledAccepted": true,
+  "originalJarThreeWayAccepted": false,
+  "javaEgressHttpsBusinessChainAccepted": false,
+  "rawArtifactArchiveChecksumRecomputed": false
+}

@@ -1,0 +1,450 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-06",
+  "evidenceKind": "local-actual-language-unit-build-not-final-browser-acceptance",
+  "sourceHeadBeforeCommit": "929d518d6f90e80ac1f6c87446e0cbd59a7bca18",
+  "nodeLanguage": {
+    "tests": 26,
+    "passed": 26,
+    "failures": 0,
+    "skipped": 0,
+    "reporter": "tap",
+    "source": "actual worker helper strings",
+    "realBrowser": false
+  },
+  "python": {
+    "tests": 142,
+    "executed": 141,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skipReason": "POSIX symlink case on Windows",
+    "includesNodeSubprocess": true
+  },
+  "releaseStructuralAndIntegrity": {
+    "tests": 54,
+    "passed": 54,
+    "failures": 0,
+    "skipped": 0,
+    "realPublication": false
+  },
+  "javaKotlin": {
+    "junitFiles": 41,
+    "tests": 149,
+    "executed": 123,
+    "skipped": 26,
+    "failures": 0,
+    "errors": 0,
+    "defaultEngine": {
+      "tests": 15,
+      "executed": 0,
+      "skipped": 15,
+      "reason": "Local final Linux Camoufox not provided; not acceptance"
+    },
+    "files": [
+      {
+        "file": "TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+        "name": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+        "tests": 6,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "c833a1f9c1859d96b82b6ae74705234843084ec25a92dbcc84e1bbbaa7e47f87"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+        "name": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+        "tests": 5,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "4e794498c4fafa8ddc0c59565eb465951fd514096285def8b0a8139bf89b1293"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+        "name": "com.htmake.reader.api.controller.FileControllerPathTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "62d4562fb0c92a5cd48b05e4d2c2bd0f4117216d621528b568449ea78770fb76"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+        "name": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+        "tests": 4,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "082b6bae747321e45012164bcf28d2563507177b96c954918502084110cc7b1a"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+        "name": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "631cf6330b5975601d33e6cb1fb893747134cb230fcc4788e8b05b768b8bf16b"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+        "name": "com.htmake.reader.api.controller.SourceScanCursorTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "3a0e617726786059448814cc555d1a37b5bcf264c9ed403bee9d5883cce7105c"
+      },
+      {
+        "file": "TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+        "name": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+        "tests": 5,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "be07f61ca9bf185b92c66f0302bbe5683733046d41ec79edcc62e7e154d3f6c4"
+      },
+      {
+        "file": "TEST-com.htmake.reader.entity.LicenseTest.xml",
+        "name": "com.htmake.reader.entity.LicenseTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "afd3c9475e7f14e1c66f611bd9ab0905625c976f423f002e562579f5c0b5fd31"
+      },
+      {
+        "file": "TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+        "name": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "b17e41fe0273611f5e534aef5b29f86d40a7584b33d8d821d63aa00c47f7f443"
+      },
+      {
+        "file": "TEST-com.htmake.reader.ReaderApplicationTests.xml",
+        "name": "com.htmake.reader.ReaderApplicationTests",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "fe5bc434803e5d43f9802656f34ed47c44d9c7305650ce82e5a701931f94e2bc"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+        "name": "com.htmake.reader.utils.BrowserCookieJarTest",
+        "tests": 20,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "d0f4dfbbe745092b00d8515d2e33c072fbfc89788d81953304b5b956f4b23912"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "name": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+        "tests": 11,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "8164801ab1610c6f28e280346d87688e669977cc87e731b5d3e0b9397e5661cb"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+        "name": "com.htmake.reader.utils.BrowserEgressProxyTest",
+        "tests": 5,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "1a07350649370b036b30e37c690ba15e75ab82cea4ed28c9a4ae87634fc722b6"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+        "name": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+        "tests": 4,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "3f55f5f51e04b898e212e5966bceb6069945136041814ba5aac0d9f54f2ec1be"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+        "name": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+        "tests": 5,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "4f61852a291b910a132391c675196d433fba9155c8a8f50c010b7dcc53da1454"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+        "name": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "72c6f6c44ca1456957aceae37ecfff61f8f76a4918c1180992746416b9b8a2ec"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+        "name": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "12931032f86801b2a77e2bc6ca3a459846033ed4830d32870306592beee70cad"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+        "name": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "9ee5ac2c1e0a3e0a462710f55cd7ae35d1eabacfbe2e4608e1c128061e4838dd"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "name": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 15,
+        "skipped": 15,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "7409f622f5989a4547c34522176ba0b8eb1664e94a1d88b7af0c9146955b6987"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "name": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "cecb8cfd14abab7cfbc1dd4177123ee9733c8ea30ca47331ccd704c11c44ac86"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+        "name": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "603fb65a83a32de30eecbd8a299e4cd73e0f33d083cf0548a02b5489b86de3bb"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "name": "com.htmake.reader.utils.LocalWebviewRendererTest",
+        "tests": 11,
+        "skipped": 11,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "fc6a97ce999eaf559c760dba45dba5c9187c7d83b88c64e6e8eaa055db21adbd"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+        "name": "com.htmake.reader.utils.RemoteWebviewContractTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "a854806e02cdde8e948ff16c3155a0a190c303298b6f118de2a0c9ed452f3e26"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+        "name": "com.htmake.reader.utils.StorageReadConsistencyTest",
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "64cda5665576263046733e26d2eed324427b0522adcf6466c1a3ded24ebb2273"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+        "name": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "70e657e3820d5ac7a3c1ba5241101392ce4a5fde8098c0335d8357dd60ed3c69"
+      },
+      {
+        "file": "TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+        "name": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "6786b419a394940ad4e6f496828db7b51fbd1785b12e1ec91bb4ca14381216cd"
+      },
+      {
+        "file": "TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+        "name": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "419b5dd892c03703279043ba8d13543312a0a3004c6f44f80b0405eff7247338"
+      },
+      {
+        "file": "TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+        "name": "com.htmake.reader.WebResourceEncodingTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "d8c05ba8ceb7c7c72e5b2dcd8a991b3e6ca5666eafd23758e2c9529bed430d5e"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+        "name": "io.legado.app.data.entities.BookChapterSerializationTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "f07ac440e73dfe005a9384745aadd516e93d5ab5ea9e4ba666208327283d6887"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+        "name": "io.legado.app.data.entities.BookLocalEpubPathTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "1c2c47a9b0e514273de01ed73c7eaac5b05d6ca1f99d63f5ef11bb5af8f51769"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+        "name": "io.legado.app.data.entities.BookLocalPdfPathTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "7e842cfb85e20f7cd3e3fd4b3f64e131403a816882069e59c64b24cb2d17daff"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+        "name": "io.legado.app.data.entities.RssArticleSerializationTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "f38b4a620a1f85b35a8a36f5db25110e1cf53acf1b8bdfc864e260e47e06c3d2"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+        "name": "io.legado.app.data.entities.RssSourceSerializationTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "918e9a736bb2b1d2a532dda521c55b1faeb4eef46bcba1611c0ad6426293ebe0"
+      },
+      {
+        "file": "TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+        "name": "io.legado.app.data.entities.SearchBookSerializationTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "22ea79c2a03ecde3d6d9c7d8e48a9b2398b47945842f14a0c6aae84f37abe40b"
+      },
+      {
+        "file": "TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+        "name": "io.legado.app.model.localBook.TextFileContentTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "1440826f62702ef67d5e50ccaa77150accca91ca9b1f3dc7460952ce4c06a317"
+      },
+      {
+        "file": "TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+        "name": "io.legado.app.model.rss.RssParserDefaultTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "92699c595cd325c35e3b83e4f9ec80c7f1d7fcda06df4b873aa38511c13434d3"
+      },
+      {
+        "file": "TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+        "name": "io.legado.app.utils.EncoderUtilsTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "6ea636bcda2ae455e962c6dcab3f10fb5b026c3d55357f8bed61f937b4e31c28"
+      },
+      {
+        "file": "TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+        "name": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "79c9a96f950094e240d9d00fad592a4532a3213294cbbefed6f464d08e4f32ee"
+      },
+      {
+        "file": "TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+        "name": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "35ff0dec2d3aee1ced3afa7dc2493b3f7c80807173101641c1dca29c0eece542"
+      },
+      {
+        "file": "TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+        "name": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+        "tests": 10,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "e924100654ff05bc369de93344e84270cda8da4d5e74e2274650f99d7374154c"
+      },
+      {
+        "file": "TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+        "name": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+        "tests": 2,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "sha256": "9ffb26411a94ecf1ddb148da97c3ec8937afba55efb4c3ee3b63ca96a827ca9a"
+      }
+    ]
+  },
+  "intermediatePackageRejected": {
+    "jarSha256": "0baaed0915345a1e3a73b5cbc3a881d75c6d2a156d7bd69527bc545991d93cbc",
+    "packagedWorkerSha256": "d1dbfda83dd75e4d7c4e604c509c46efec9e357e77e1e9dc9b2ecae0a8f82df3",
+    "workerMatchesFinalSource": false,
+    "reason": "Source completed native Promise adoption while prior Gradle build was in progress; final resource rebuild required",
+    "published": false
+  },
+  "finalPackage": {
+    "jarSha256": "7e05f00f75a95870ec6c2d5454f7d4ce0cbdfda49724a6dfdb64112902b57269",
+    "jarBytes": 285676526,
+    "packagedWorkerSha256": "a1a2a1c5d6aa445e24e5a08c7dcd579831255f19bf1bd9c472ecfdab711f48c9",
+    "sourceWorkerSha256": "a1a2a1c5d6aa445e24e5a08c7dcd579831255f19bf1bd9c472ecfdab711f48c9",
+    "workerMatchesSource": true,
+    "gradleResourceRebuildExit": 0,
+    "relativePath": "build/libs/reader-4.0.7.jar",
+    "notFormalRelease": true
+  },
+  "workspaceProtection": {
+    "reportsBefore": 58,
+    "reportsAfter": 58,
+    "changedReports": 0,
+    "userReaderLeftUntouched": true
+  },
+  "realCookieUsed": false,
+  "realBookBodyRead": false,
+  "originalJarExecuted": false,
+  "productionChanged": false,
+  "notProven": [
+    "Modified worker actual default Camoufox contracts",
+    "Promise original/archived/default three-way compatibility",
+    "Qidian authenticated parsing",
+    "Current image prolonged load",
+    "Formal release or production"
+  ]
+}

@@ -86,7 +86,7 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
         }
         val userNameSpace = getUserNameSpace(context)
         val bookGroupOrder = context.bodyAsJson?.getJsonArray("order") ?: return returnData.setErrorMsg("参数错误")
-        var bookGroupList = com.htmake.reader.utils.asJsonArray(getUserStorage(userNameSpace, "bookGroup")) ?: JsonArray()
+        val bookGroupList = com.htmake.reader.utils.asJsonArray(getUserStorage(userNameSpace, "bookGroup")) ?: JsonArray()
         val orderMap = mutableMapOf<Long, Int>()
         for (i in 0 until bookGroupOrder.size()) {
             val item = bookGroupOrder.getJsonObject(i) ?: continue
@@ -94,13 +94,11 @@ class BookGroupController(coroutineContext: CoroutineContext): BaseController(co
             val order = item.getInteger("order") ?: continue
             orderMap[groupId] = order
         }
-        val groupList = bookGroupList.getList()
         for (i in 0 until bookGroupList.size()) {
-            val group = bookGroupList.getJsonObject(i)?.mapTo(BookGroup::class.java) ?: continue
-            orderMap[group.groupId]?.let { group.order = it }
-            groupList[i] = JsonObject.mapFrom(group)
+            val group = bookGroupList.getJsonObject(i) ?: continue
+            val groupId = group.getLong("groupId") ?: continue
+            orderMap[groupId]?.let { group.put("order", it) }
         }
-        bookGroupList = JsonArray(groupList)
         saveUserStorage(userNameSpace, "bookGroup", bookGroupList)
         return returnData.setData("")
     }

@@ -1,0 +1,1508 @@
+{
+  "generatedOnly": true,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "74fbd5a5a4b77a78352b54e82dc446590197eb99ffe2a96495acff7834084306",
+  "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+  "archivedRenderer": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "realAuthenticatedSourceTested": false,
+  "originalProductionRendererVersionProven": false,
+  "slice": "readerwebview95b7924a3428.slice",
+  "containerCgroups": [
+    "0::/readerwebview95b7924a3428.slice/docker-3a2d1277a4720cdd5b2c4d849a66a69be33400b5259db1404bd5f0550b076ade.scope",
+    "0::/readerwebview95b7924a3428.slice/docker-6f78b4723134ed7d8632fca14448f196831c01c0e4862b36f7367bb1cef6d5e1.scope"
+  ],
+  "probeCompleted": true,
+  "budgetAccepted": true,
+  "overallAccepted": true,
+  "executionLayout": "serial-renderers-shared-fixture",
+  "historicalRendererStoppedBeforeCamoufox": true,
+  "resourceSamples": [
+    {
+      "phase": "probe-start",
+      "elapsedMs": 0,
+      "memoryCurrentBytes": 112996352,
+      "memoryAnonBytes": 34607104,
+      "memoryFileBytes": 75001856,
+      "memoryShmemBytes": 0,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 9
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 2,
+      "memoryCurrentBytes": 112996352,
+      "memoryAnonBytes": 34607104,
+      "memoryFileBytes": 75001856,
+      "memoryShmemBytes": 0,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 9
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 1005,
+      "memoryCurrentBytes": 213725184,
+      "memoryAnonBytes": 47316992,
+      "memoryFileBytes": 76800000,
+      "memoryShmemBytes": 0,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 14
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 2009,
+      "memoryCurrentBytes": 278495232,
+      "memoryAnonBytes": 47316992,
+      "memoryFileBytes": 76800000,
+      "memoryShmemBytes": 0,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 29
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 3013,
+      "memoryCurrentBytes": 384729088,
+      "memoryAnonBytes": 188203008,
+      "memoryFileBytes": 190218240,
+      "memoryShmemBytes": 36864,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 30
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 4017,
+      "memoryCurrentBytes": 406315008,
+      "memoryAnonBytes": 197136384,
+      "memoryFileBytes": 202846208,
+      "memoryShmemBytes": 40960,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 30
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 5020,
+      "memoryCurrentBytes": 463753216,
+      "memoryAnonBytes": 253911040,
+      "memoryFileBytes": 203808768,
+      "memoryShmemBytes": 40960,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 30
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 6024,
+      "memoryCurrentBytes": 523587584,
+      "memoryAnonBytes": 296079360,
+      "memoryFileBytes": 221061120,
+      "memoryShmemBytes": 45056,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 36
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 7028,
+      "memoryCurrentBytes": 552632320,
+      "memoryAnonBytes": 324820992,
+      "memoryFileBytes": 221245440,
+      "memoryShmemBytes": 61440,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 40
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 8031,
+      "memoryCurrentBytes": 699621376,
+      "memoryAnonBytes": 325136384,
+      "memoryFileBytes": 361078784,
+      "memoryShmemBytes": 77824,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 119
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 9035,
+      "memoryCurrentBytes": 805806080,
+      "memoryAnonBytes": 337874944,
+      "memoryFileBytes": 457662464,
+      "memoryShmemBytes": 77824,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 50
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 10039,
+      "memoryCurrentBytes": 1067036672,
+      "memoryAnonBytes": 397062144,
+      "memoryFileBytes": 659509248,
+      "memoryShmemBytes": 4722688,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 71
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 11044,
+      "memoryCurrentBytes": 1016823808,
+      "memoryAnonBytes": 336855040,
+      "memoryFileBytes": 663027712,
+      "memoryShmemBytes": 81920,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 167
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 12048,
+      "memoryCurrentBytes": 1015648256,
+      "memoryAnonBytes": 340365312,
+      "memoryFileBytes": 663126016,
+      "memoryShmemBytes": 81920,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 69
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 13051,
+      "memoryCurrentBytes": 1026453504,
+      "memoryAnonBytes": 345190400,
+      "memoryFileBytes": 663126016,
+      "memoryShmemBytes": 81920,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 201
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 14057,
+      "memoryCurrentBytes": 1020526592,
+      "memoryAnonBytes": 343887872,
+      "memoryFileBytes": 663146496,
+      "memoryShmemBytes": 102400,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 69
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 15064,
+      "memoryCurrentBytes": 1025130496,
+      "memoryAnonBytes": 343822336,
+      "memoryFileBytes": 663146496,
+      "memoryShmemBytes": 102400,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 199
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 16068,
+      "memoryCurrentBytes": 1027588096,
+      "memoryAnonBytes": 350212096,
+      "memoryFileBytes": 661209088,
+      "memoryShmemBytes": 106496,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 79
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 17074,
+      "memoryCurrentBytes": 1028075520,
+      "memoryAnonBytes": 350130176,
+      "memoryFileBytes": 661209088,
+      "memoryShmemBytes": 106496,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 211
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 18078,
+      "memoryCurrentBytes": 741957632,
+      "memoryAnonBytes": 71405568,
+      "memoryFileBytes": 661270528,
+      "memoryShmemBytes": 110592,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 40
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 19082,
+      "memoryCurrentBytes": 810340352,
+      "memoryAnonBytes": 128397312,
+      "memoryFileBytes": 672129024,
+      "memoryShmemBytes": 110592,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 43
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 20089,
+      "memoryCurrentBytes": 890748928,
+      "memoryAnonBytes": 195182592,
+      "memoryFileBytes": 685711360,
+      "memoryShmemBytes": 114688,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 44
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 21092,
+      "memoryCurrentBytes": 956162048,
+      "memoryAnonBytes": 256741376,
+      "memoryFileBytes": 689709056,
+      "memoryShmemBytes": 114688,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 44
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 22096,
+      "memoryCurrentBytes": 994054144,
+      "memoryAnonBytes": 293834752,
+      "memoryFileBytes": 690495488,
+      "memoryShmemBytes": 114688,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 44
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 23102,
+      "memoryCurrentBytes": 1040363520,
+      "memoryAnonBytes": 320131072,
+      "memoryFileBytes": 710475776,
+      "memoryShmemBytes": 118784,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 48
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 24105,
+      "memoryCurrentBytes": 1071452160,
+      "memoryAnonBytes": 353779712,
+      "memoryFileBytes": 707637248,
+      "memoryShmemBytes": 135168,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 54
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 25109,
+      "memoryCurrentBytes": 1099882496,
+      "memoryAnonBytes": 369491968,
+      "memoryFileBytes": 715284480,
+      "memoryShmemBytes": 151552,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 84
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 26115,
+      "memoryCurrentBytes": 1104326656,
+      "memoryAnonBytes": 368279552,
+      "memoryFileBytes": 715284480,
+      "memoryShmemBytes": 151552,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 207
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 27120,
+      "memoryCurrentBytes": 1073364992,
+      "memoryAnonBytes": 360894464,
+      "memoryFileBytes": 698322944,
+      "memoryShmemBytes": 151552,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 75
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 28124,
+      "memoryCurrentBytes": 1079799808,
+      "memoryAnonBytes": 362053632,
+      "memoryFileBytes": 698322944,
+      "memoryShmemBytes": 151552,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 211
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 29130,
+      "memoryCurrentBytes": 1074118656,
+      "memoryAnonBytes": 363859968,
+      "memoryFileBytes": 693346304,
+      "memoryShmemBytes": 155648,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 95
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 30133,
+      "memoryCurrentBytes": 1080799232,
+      "memoryAnonBytes": 365121536,
+      "memoryFileBytes": 693346304,
+      "memoryShmemBytes": 155648,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 227
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 31138,
+      "memoryCurrentBytes": 1079836672,
+      "memoryAnonBytes": 369324032,
+      "memoryFileBytes": 693436416,
+      "memoryShmemBytes": 172032,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 102
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 32142,
+      "memoryCurrentBytes": 1079398400,
+      "memoryAnonBytes": 368590848,
+      "memoryFileBytes": 693436416,
+      "memoryShmemBytes": 172032,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 64
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 33146,
+      "memoryCurrentBytes": 1077235712,
+      "memoryAnonBytes": 368955392,
+      "memoryFileBytes": 691081216,
+      "memoryShmemBytes": 176128,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 160
+    },
+    {
+      "phase": "historical-pair",
+      "elapsedMs": 34150,
+      "memoryCurrentBytes": 1184342016,
+      "memoryAnonBytes": 465854464,
+      "memoryFileBytes": 705830912,
+      "memoryShmemBytes": 14921728,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 82
+    },
+    {
+      "phase": "historical-pair-complete",
+      "elapsedMs": 34552,
+      "memoryCurrentBytes": 761864192,
+      "memoryAnonBytes": 61788160,
+      "memoryFileBytes": 691056640,
+      "memoryShmemBytes": 143360,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 35
+    },
+    {
+      "phase": "historical-renderer-stopped",
+      "elapsedMs": 44777,
+      "memoryCurrentBytes": 709701632,
+      "memoryAnonBytes": 14823424,
+      "memoryFileBytes": 691056640,
+      "memoryShmemBytes": 143360,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 4
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 44777,
+      "memoryCurrentBytes": 709701632,
+      "memoryAnonBytes": 14823424,
+      "memoryFileBytes": 691056640,
+      "memoryShmemBytes": 143360,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 4
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 45780,
+      "memoryCurrentBytes": 779603968,
+      "memoryAnonBytes": 41361408,
+      "memoryFileBytes": 695074816,
+      "memoryShmemBytes": 180224,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 22
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 46782,
+      "memoryCurrentBytes": 864985088,
+      "memoryAnonBytes": 41361408,
+      "memoryFileBytes": 695074816,
+      "memoryShmemBytes": 180224,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 23
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 47787,
+      "memoryCurrentBytes": 900296704,
+      "memoryAnonBytes": 179826688,
+      "memoryFileBytes": 714858496,
+      "memoryShmemBytes": 184320,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 23
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 48790,
+      "memoryCurrentBytes": 941252608,
+      "memoryAnonBytes": 220831744,
+      "memoryFileBytes": 715026432,
+      "memoryShmemBytes": 184320,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 24
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 49793,
+      "memoryCurrentBytes": 966504448,
+      "memoryAnonBytes": 245866496,
+      "memoryFileBytes": 715059200,
+      "memoryShmemBytes": 188416,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 28
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 50796,
+      "memoryCurrentBytes": 1002303488,
+      "memoryAnonBytes": 245866496,
+      "memoryFileBytes": 715059200,
+      "memoryShmemBytes": 188416,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 34
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 51798,
+      "memoryCurrentBytes": 1050984448,
+      "memoryAnonBytes": 323534848,
+      "memoryFileBytes": 721039360,
+      "memoryShmemBytes": 253952,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 39
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 52801,
+      "memoryCurrentBytes": 1249021952,
+      "memoryAnonBytes": 415268864,
+      "memoryFileBytes": 825716736,
+      "memoryShmemBytes": 253952,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 50
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 53803,
+      "memoryCurrentBytes": 1257529344,
+      "memoryAnonBytes": 498921472,
+      "memoryFileBytes": 745549824,
+      "memoryShmemBytes": 1216512,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 111
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 54806,
+      "memoryCurrentBytes": 1607172096,
+      "memoryAnonBytes": 505520128,
+      "memoryFileBytes": 1087971328,
+      "memoryShmemBytes": 1216512,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 109
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 55808,
+      "memoryCurrentBytes": 1743241216,
+      "memoryAnonBytes": 554868736,
+      "memoryFileBytes": 1171632128,
+      "memoryShmemBytes": 2674688,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 135
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 56812,
+      "memoryCurrentBytes": 1870106624,
+      "memoryAnonBytes": 646803456,
+      "memoryFileBytes": 1203904512,
+      "memoryShmemBytes": 17547264,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 169
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 57817,
+      "memoryCurrentBytes": 1586278400,
+      "memoryAnonBytes": 368558080,
+      "memoryFileBytes": 1210503168,
+      "memoryShmemBytes": 253952,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 42
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 58820,
+      "memoryCurrentBytes": 1591824384,
+      "memoryAnonBytes": 356073472,
+      "memoryFileBytes": 1228787712,
+      "memoryShmemBytes": 253952,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 42
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 59822,
+      "memoryCurrentBytes": 1740517376,
+      "memoryAnonBytes": 475742208,
+      "memoryFileBytes": 1253036032,
+      "memoryShmemBytes": 258048,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 68
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 60825,
+      "memoryCurrentBytes": 1850236928,
+      "memoryAnonBytes": 543080448,
+      "memoryFileBytes": 1290055680,
+      "memoryShmemBytes": 36900864,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 133
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 61827,
+      "memoryCurrentBytes": 1881317376,
+      "memoryAnonBytes": 624549888,
+      "memoryFileBytes": 1225162752,
+      "memoryShmemBytes": 38084608,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 163
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 62831,
+      "memoryCurrentBytes": 1880592384,
+      "memoryAnonBytes": 659046400,
+      "memoryFileBytes": 1202081792,
+      "memoryShmemBytes": 52953088,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 164
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 63833,
+      "memoryCurrentBytes": 1848066048,
+      "memoryAnonBytes": 625704960,
+      "memoryFileBytes": 1204846592,
+      "memoryShmemBytes": 55652352,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 132
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 64835,
+      "memoryCurrentBytes": 1850060800,
+      "memoryAnonBytes": 625704960,
+      "memoryFileBytes": 1204846592,
+      "memoryShmemBytes": 55652352,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 121
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 65838,
+      "memoryCurrentBytes": 1849712640,
+      "memoryAnonBytes": 626122752,
+      "memoryFileBytes": 1206775808,
+      "memoryShmemBytes": 53551104,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 120
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 66840,
+      "memoryCurrentBytes": 1849049088,
+      "memoryAnonBytes": 625729536,
+      "memoryFileBytes": 1206792192,
+      "memoryShmemBytes": 53567488,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 118
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 67845,
+      "memoryCurrentBytes": 1537867776,
+      "memoryAnonBytes": 352428032,
+      "memoryFileBytes": 1178423296,
+      "memoryShmemBytes": 258048,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 42
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 68848,
+      "memoryCurrentBytes": 1678323712,
+      "memoryAnonBytes": 483074048,
+      "memoryFileBytes": 1183719424,
+      "memoryShmemBytes": 528384,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 79
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 69850,
+      "memoryCurrentBytes": 1802543104,
+      "memoryAnonBytes": 560992256,
+      "memoryFileBytes": 1225035776,
+      "memoryShmemBytes": 38506496,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 135
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 70853,
+      "memoryCurrentBytes": 1943367680,
+      "memoryAnonBytes": 674656256,
+      "memoryFileBytes": 1248473088,
+      "memoryShmemBytes": 53555200,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 179
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 71856,
+      "memoryCurrentBytes": 1918582784,
+      "memoryAnonBytes": 645648384,
+      "memoryFileBytes": 1254502400,
+      "memoryShmemBytes": 57966592,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 134
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 72859,
+      "memoryCurrentBytes": 1902125056,
+      "memoryAnonBytes": 630648832,
+      "memoryFileBytes": 1254019072,
+      "memoryShmemBytes": 57430016,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 131
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 73861,
+      "memoryCurrentBytes": 1901207552,
+      "memoryAnonBytes": 631603200,
+      "memoryFileBytes": 1252081664,
+      "memoryShmemBytes": 55255040,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 121
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 74863,
+      "memoryCurrentBytes": 1900535808,
+      "memoryAnonBytes": 631603200,
+      "memoryFileBytes": 1252118528,
+      "memoryShmemBytes": 55291904,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 120
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 75866,
+      "memoryCurrentBytes": 1503592448,
+      "memoryAnonBytes": 296304640,
+      "memoryFileBytes": 1200898048,
+      "memoryShmemBytes": 258048,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 37
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 76871,
+      "memoryCurrentBytes": 1596223488,
+      "memoryAnonBytes": 386838528,
+      "memoryFileBytes": 1201328128,
+      "memoryShmemBytes": 274432,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 50
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 77873,
+      "memoryCurrentBytes": 1712312320,
+      "memoryAnonBytes": 386838528,
+      "memoryFileBytes": 1201328128,
+      "memoryShmemBytes": 274432,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 92
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 78876,
+      "memoryCurrentBytes": 1805242368,
+      "memoryAnonBytes": 583081984,
+      "memoryFileBytes": 1204256768,
+      "memoryShmemBytes": 3182592,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 149
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 79878,
+      "memoryCurrentBytes": 1875705856,
+      "memoryAnonBytes": 638238720,
+      "memoryFileBytes": 1219174400,
+      "memoryShmemBytes": 17932288,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 153
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 80880,
+      "memoryCurrentBytes": 1519517696,
+      "memoryAnonBytes": 311422976,
+      "memoryFileBytes": 1201573888,
+      "memoryShmemBytes": 278528,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 39
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 81883,
+      "memoryCurrentBytes": 1622061056,
+      "memoryAnonBytes": 412098560,
+      "memoryFileBytes": 1201573888,
+      "memoryShmemBytes": 278528,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 50
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 82886,
+      "memoryCurrentBytes": 1723232256,
+      "memoryAnonBytes": 507453440,
+      "memoryFileBytes": 1202855936,
+      "memoryShmemBytes": 1560576,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 95
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 83888,
+      "memoryCurrentBytes": 1846046720,
+      "memoryAnonBytes": 622354432,
+      "memoryFileBytes": 1205620736,
+      "memoryShmemBytes": 4325376,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 156
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 84890,
+      "memoryCurrentBytes": 1897877504,
+      "memoryAnonBytes": 669868032,
+      "memoryFileBytes": 1209323520,
+      "memoryShmemBytes": 20500480,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 156
+    },
+    {
+      "phase": "camoufox",
+      "elapsedMs": 85893,
+      "memoryCurrentBytes": 1216749568,
+      "memoryAnonBytes": 14848000,
+      "memoryFileBytes": 1197899776,
+      "memoryShmemBytes": 28672,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 4
+    },
+    {
+      "phase": "probe-finished",
+      "elapsedMs": 86795,
+      "memoryCurrentBytes": 1309200384,
+      "memoryAnonBytes": 16789504,
+      "memoryFileBytes": 1213628416,
+      "memoryShmemBytes": 28672,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pidsCurrent": 2
+    }
+  ],
+  "privateNetworkNamespaceInode": 4026532560,
+  "probeExitCode": 0,
+  "aggregateBudget": {
+    "scope": "both test containers and all their probe/Java/browser descendants",
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1952653312,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "removedOwnedTestContainers": [
+    "6f78b4723134ed7d8632fca14448f196831c01c0e4862b36f7367bb1cef6d5e1",
+    "3a2d1277a4720cdd5b2c4d849a66a69be33400b5259db1404bd5f0550b076ade"
+  ],
+  "originalJarUnchanged": true,
+  "restoredJarUnchanged": true
+}

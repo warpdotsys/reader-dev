@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "ac0bb598f8b4fa3b5ceb11bc8890378e71f2935b",
+  "testedMergeSnapshot": "1bf74f4f7b19907f55ead3cf44a7620be6064472",
+  "run": {
+    "id": 38038919081,
+    "sourceRevision": "ac0bb598f8b4fa3b5ceb11bc8890378e71f2935b",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38038919081",
+    "conclusion": "success",
+    "actualJobs": [
+      {
+        "id": 114175089009,
+        "name": "Build one shared Java Kotlin JAR",
+        "runnerName": "GitHub Actions 1000004411",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114176011365,
+        "name": "Build and test native amd64 image",
+        "runnerName": "GitHub Actions 1000004414",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114176011366,
+        "name": "Build and test native arm64 image",
+        "runnerName": "GitHub Actions 1000004413",
+        "runnerLabels": [
+          "ubuntu-24.04-arm"
+        ]
+      },
+      {
+        "id": 114176645252,
+        "name": "Reload and run tested arm64 image",
+        "runnerName": "GitHub Actions 1000004415",
+        "runnerLabels": [
+          "ubuntu-24.04-arm"
+        ]
+      },
+      {
+        "id": 114176645309,
+        "name": "Reload and run tested amd64 image",
+        "runnerName": "GitHub Actions 1000004416",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114177138108,
+        "name": "Exercise both publisher imports without registry credentials",
+        "runnerName": "GitHub Actions 1000004417",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      }
+    ],
+    "optionalSkippedJobs": 0
+  },
+  "actualCamoufox": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "navigationContractPresent": true,
+    "earlyNavigationContractPresent": true,
+    "endlessNavigationContractPresent": true,
+    "promiseContractPresent": true,
+    "stateDeletionContractPresent": true,
+    "sourceNavigationContractPresent": true,
+    "numericalThreadContractPresent": true,
+    "utf8PostContractPresent": true,
+    "originHeaderContractPresent": true,
+    "postRedirectHeaderContractPresent": true,
+    "scriptRedirectHeaderContractPresent": true,
+    "loopbackProxyContractPresent": true,
+    "xmlSha256": "c47519afe5488366257f89703ecfd562bec99899aeea9f27d9812b992f4a3974"
+  },
+  "helperCases": 3,
+  "publisherFilesAccepted": 24,
+  "metadata": [
+    {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "1bf74f4f7b19907f55ead3cf44a7620be6064472",
+      "jarSha256": "574ec14dc7b35daed93969e670fe6f5ed7a6ef933a32fbfc0e867a0f66bbff18",
+      "archiveSha256": "5997604fb017022880cb6e16a02ac2d9b38fc6bb2262cad48ea5b4392cb1a59a",
+      "imageId": "sha256:3569694934544aca80c8c57c896836101bafbf8420b6a8f29e02886ff897fb4e"
+    },
+    {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "1bf74f4f7b19907f55ead3cf44a7620be6064472",
+      "jarSha256": "574ec14dc7b35daed93969e670fe6f5ed7a6ef933a32fbfc0e867a0f66bbff18",
+      "archiveSha256": "66696009fb2c4507d17a27c122edc775b4b3f1098f0a133a5a6f033d4e1a1b09",
+      "imageId": "sha256:d3cd414f7ac6ada8b74a815e961d36c210c8f66af62a13ca838555da80b107ab"
+    }
+  ],
+  "thisJavaFullAndNativeJarDigestsMatch": true,
+  "ownJavaReceiptSha256": "25bd2d9c00aa92b8b0e0c04b9e62e96876d3b5a19ae57ab191c0664f3cbd444b",
+  "ownFullReceiptSha256": "d6fb4c637204c65f0909fc44a4e2c7ed8a2f1abb1cf6a778d6da048c990dff71",
+  "maxMemoryPeakBytes": 897863680,
+  "maxPidsPeak": 201,
+  "ordinarySwapAllowanceBytes": [
+    1073741824,
+    1073741824,
+    1073741824,
+    1073741824
+  ],
+  "observedSwapBytes": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "localArchiveHashesRecomputed": false,
+  "userReportsUnchanged": 58,
+  "registryPublished": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "transferFiles": [
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "da68cd10462d8903923fb49a001646152641025ce9d7175d255b1a87945421ad"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/BROWSER_SYNTHETIC.json",
+      "sha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/DEFAULT_UI.json",
+      "sha256": "9aa9bc5cebec38b853d7ae2f17cc1377d3146e07dcded63c440d465b3cb77815"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/IMAGE_IDENTITY.json",
+      "sha256": "b675c6e124e4a963255b641615b6a392f6d2473df2c71e6a90a2001e516f4ffa"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/JAR_IDENTITY.json",
+      "sha256": "873700b7f3dc249f1491e68356c91ee397eddbac27decab791b3d7ab8421029d"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/metadata.json",
+      "sha256": "81a484779b2bf5ef639cad69578e7f7b8a3d76f020cdcd2596d26b2833a3de17"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-1bf74f4f7b19907f55ead3cf44a7620be6064472/RELEASE_IDENTITY.json",
+      "sha256": "6a330cffaca5e55b1cea11712038ed7277ec4984949dd42a9d00508f7d7a24fb"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "b3e4f38432146e4451d1f408d0e5fd1cca767b4ced827570bb3a33c46b32ace5"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/BROWSER_SYNTHETIC.json",
+      "sha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/DEFAULT_UI.json",
+      "sha256": "9aa9bc5cebec38b853d7ae2f17cc1377d3146e07dcded63c440d465b3cb77815"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/IMAGE_IDENTITY.json",
+      "sha256": "89c29c664d1a07858f1de504128b94967fec5fec5e1f7c104c9031e6d482a1af"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/JAR_IDENTITY.json",
+      "sha256": "de9b94eb92089e4ab5cafd8527b3c6d2ad3b188db7591fd4882a613faab42580"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/metadata.json",
+      "sha256": "56dc4cd161c01ad01171bcf53a9ca233e939bd031e273584033e115cbd79e135"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-1bf74f4f7b19907f55ead3cf44a7620be6064472/RELEASE_IDENTITY.json",
+      "sha256": "6a330cffaca5e55b1cea11712038ed7277ec4984949dd42a9d00508f7d7a24fb"
+    }
+  ],
+  "productJarMatchesPreviousBb6": false,
+  "headerSecurityBusinessFixAccepted": false,
+  "headerSecurityThreeWayExecutedOnHostedRunner": false,
+  "actualLocalHeaderSecurityCharacterizationRecordedSeparately": true,
+  "originHeaderHttpWorkerSubsetVerified": true,
+  "localCharacterizationReceiptSha256": "fc7985b98b05142a2482163486c6648116c013db4913ae6c95984b852b3e4ea2"
+}

@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getBookshelf, saveBook } from '@/api/bookshelf'
+import { ElMessageBox } from 'element-plus'
+import { ElMessage } from '@/utils/message'
+import { getBookshelf, saveBook, saveBookProgress } from '@/api/bookshelf'
 import { getBookInfo, getBookToc, searchBookSource, searchBookSourceSSE } from '@/api/books'
 import { getInvalidBookSources } from '@/api/sources'
 import { deleteBookCache, getShelfBookWithCacheInfo, searchBookContent } from '@/api/cache'
 import { exportBook, type ExportFormat } from '@/api/export'
 import { hanText, syncHanMode } from '@/utils/hanMode'
 import { proxyImageUrl } from '@/utils/imageProxy'
+import { authenticatedReaderUrl } from '@/utils/tokenAuthentication'
 import { uploadFile, mkdir } from '@/api/file'
-import { post } from '@/api/request'
 import { downloadBlob } from '@/utils/download'
 import { relocateChapterIndex } from '@/utils/progressRelocate'
 import { buildTocEntries } from '@/utils/tocPreview'
-import { clearLocalBook } from '@/utils/readerLocalCache'
+import { clearLocalBook, localChapterCacheScope } from '@/utils/readerLocalCache'
 import ChapterCacheDialog from '@/components/ChapterCacheDialog.vue'
 import { useUserStore } from '@/stores/user'
 import { isNotImplemented } from '@/utils/errors'
@@ -96,9 +97,7 @@ const displayTags = computed<string[]>(() => {
 /** 自定义封面走 file/download 内联流：展示时补当前 accessToken（重新登录后仍可显示） */
 function resolveCoverUrl(url: string): string {
   if (!url.startsWith('/reader3/file/')) return url
-  const token = store.accessToken
-  if (!token || url.includes('accessToken=')) return url
-  return `${url}${url.includes('?') ? '&' : '?'}accessToken=${encodeURIComponent(token)}`
+  return authenticatedReaderUrl(url, store.accessToken)
 }
 
 function coverInitial(name: string): string {
@@ -165,6 +164,8 @@ async function load() {
   }
   // GAP 82：书架书 → 拉取单书缓存状态（silent；未实现隐藏）
   if (shelfBook.value) void loadShelfCacheInfo()
+  // 用户可能在书架请求尚未返回时打开目录；此时来源信息还不可用。
+  if (isTocTabOpen()) void openToc()
 }
 
 /** 由详情信息组装完整 Book JSON（saveBook 入架 body：type/group 用默认值 0） */
@@ -316,9 +317,8 @@ const COVER_MAX_MB = 10
 /** 上传的封面经 file/download（stream=1 内联）展示，URL 存 customCoverUrl */
 function coverDownloadUrl(name: string): string {
   const base = `/reader3/file/download?path=covers/${encodeURIComponent(name)}&home=__HOME__&stream=1`
-  return store.accessToken
-    ? `${base}&accessToken=${encodeURIComponent(store.accessToken)}`
-    : base
+  // 存储只含资源路径，凭据在显示/下载时补入，避免把会话 token 写入书籍元数据。
+  return base
 }
 
 function openCoverPicker() {
@@ -367,6 +367,9 @@ async function onCoverPick(e: Event) {
 /* ================= GAP 18：目录预览（getBookToc → 前 50 章 → 点击进阅读器跳章） ================= */
 
 const activeTab = ref<'detail' | 'toc'>('detail')
+function isTocTabOpen(): boolean {
+  return activeTab.value === 'toc'
+}
 const tocChapters = ref<BookChapter[]>([])
 const tocLoading = ref(false)
 const tocLoaded = ref(false)
@@ -382,6 +385,7 @@ function tocParams(): { bookUrl: string; origin: string } | null {
 
 async function openToc() {
   activeTab.value = 'toc'
+  if (loading.value) return
   if (tocLoaded.value) return
   const p = tocParams()
   if (!p) {
@@ -706,13 +710,7 @@ async function relocateProgressAfterSwitch(r: SearchBook) {
     const newTitle = toc[newIdx]?.title ?? b.durChapterTitle ?? ''
     b.durChapterIndex = newIdx
     b.durChapterTitle = newTitle
-    await post('/saveBookProgress', {
-      bookUrl: b.bookUrl,
-      durChapterIndex: newIdx,
-      durChapterPos: 0,
-      durChapterTime: Date.now(),
-      durChapterTitle: newTitle,
-    }).catch(() => {
+    await saveBookProgress(b.bookUrl, newIdx).catch(() => {
       /* 写回失败静默——阅读器内有范围守卫 */
     })
   } catch {
@@ -912,6 +910,11 @@ const cacheClearBusy = ref(false)
 async function clearBookCache() {
   const b = shelfBook.value
   if (!b || cacheClearBusy.value) return
+  const scope = localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL)
+  const token = store.accessToken
+  const stillCurrent = () => scope === localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL)
+    && token === store.accessToken && b.bookUrl === shelfBook.value?.bookUrl
+  if (!scope) return
   try {
     await ElMessageBox.confirm('清除本书服务器与本机缓存后，正文/目录将重新从书源拉取。确定清除？', '清除缓存', {
       confirmButtonText: '清除',
@@ -921,12 +924,15 @@ async function clearBookCache() {
   } catch {
     return // 用户取消
   }
+  if (!stillCurrent()) return
   cacheClearBusy.value = true
   try {
     const res = await deleteBookCache(b.bookUrl)
+    if (!stillCurrent()) return
     // legacy 对齐：deleteBookCache 成功返回 data=""（无删除计数）
     void res
-    const localDeleted = await clearLocalBook(b.bookUrl)
+    const localDeleted = await clearLocalBook(scope, b.bookUrl)
+    if (!stillCurrent()) return
     ElMessage.success(`已清除本书缓存（本机 ${localDeleted} 条）`)
     // GAP 82：清除后刷新单书缓存状态
     void loadShelfCacheInfo()

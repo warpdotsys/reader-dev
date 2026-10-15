@@ -17,6 +17,8 @@ object ReaderAdapter : ReaderAdapterInterface {
     @Volatile
     internal var webviewRenderer: WebviewRenderer = RemoteWebview
 
+    override fun managesWebviewCookies(): Boolean = webviewRenderer.managesBrowserCookies
+
     override fun getWorkDir(subPath: String): String {
         return com.htmake.reader.utils.getWorkDir(subPath)
     }

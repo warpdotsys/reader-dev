@@ -12,6 +12,11 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import me.ag2s.epublib.util.EpubArchivePolicy
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.nio.file.LinkOption
 
 /**
  * @Date: 2019-07-19 23:43
@@ -44,38 +49,38 @@ fun File.unzip(descDir: String): Boolean {
     if (!this.exists()) {
         return false
     }
-    val buffer = ByteArray(1024)
-    var outputStream: OutputStream? = null
-    var inputStream: InputStream? = null
     try {
-        val zf = ZipFile(this.toString())
-        val entries = zf.entries()
-        while (entries.hasMoreElements()) {
-            val zipEntry: ZipEntry = entries.nextElement() as ZipEntry
-            val zipEntryName: String = zipEntry.name
-
-            val descFilePath: String = descDir + File.separator + zipEntryName
-            if (zipEntry.isDirectory) {
-                createDir(descFilePath)
-            } else {
-                inputStream = zf.getInputStream(zipEntry)
-                val descFile: File = createFile(descFilePath)
-                outputStream = FileOutputStream(descFile)
-
-                var len: Int
-                while (inputStream.read(buffer).also { len = it } > 0) {
-                    outputStream.write(buffer, 0, len)
+        val root = Paths.get(descDir).toAbsolutePath().normalize()
+        EpubArchivePolicy.noSymbolicParents(root)
+        EpubArchivePolicy.open(this, EpubArchivePolicy.GENERAL_ZIP).use { archive ->
+            val entries = EpubArchivePolicy.validateMetadata(archive, EpubArchivePolicy.GENERAL_ZIP).values
+            val targets = entries.associateWith { EpubArchivePolicy.extractionTarget(root, it.name) }
+            // Validate every path before creating a file; Path equality also rejects Windows case aliases.
+            if (targets.values.toSet().size != targets.size) {
+                throw EpubArchivePolicy.ArchiveException("ZIP 解包路径存在冲突")
+            }
+            val budget = EpubArchivePolicy.Budget(EpubArchivePolicy.GENERAL_ZIP.expandedBytes)
+            val buffer = ByteArray(8192)
+            for (entry in entries) {
+                val target = targets.getValue(entry)
+                EpubArchivePolicy.extractionTarget(root, entry.name)
+                EpubArchivePolicy.entryStream(archive, entry, EpubArchivePolicy.GENERAL_ZIP, budget).use { input ->
+                    if (entry.isDirectory) {
+                        while (input.read(buffer) >= 0) { /* Verify directory CRC/size too. */ }
+                        Files.createDirectories(target)
+                    } else {
+                        Files.createDirectories(target.parent)
+                        Files.newOutputStream(target, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
+                            StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS).use { output ->
+                            input.copyTo(output, 8192)
+                        }
+                    }
                 }
-                inputStream.close()
-                outputStream.close()
             }
         }
         return true
     } catch(e: Exception) {
         e.printStackTrace()
-    } finally {
-        inputStream?.close()
-        outputStream?.close()
     }
     return false
 }

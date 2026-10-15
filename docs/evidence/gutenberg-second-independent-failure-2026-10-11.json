@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "observationIndependentlyVerified": true,
+  "businessAccepted": false,
+  "sourceRevision": "7739ab8516dd60b872ff3a0227cb18e19b8b1948",
+  "runId": 38115252638,
+  "jobId": 114398767257,
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38115252638",
+  "testedImageRevision": "ccbdad907fb803ca4f75a38d182cb86009372dc9",
+  "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+  "imageId": "sha256:aa3b64d75108514eb9d1a1ee49dc97f80ba42e447aa7de008b6c5f634f47f8fc",
+  "sourceNativeRun": 38111391710,
+  "sourceNativeReceiptSha256": "c467cd98c43e11365f0861889974b3cfc0401d62a6e813bba3df836e29740903",
+  "observedMetadata": {
+    "authorMatches": true,
+    "dataIsObject": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "isSuccess": true,
+    "nameMatches": true,
+    "status": 200
+  },
+  "observedToc": {
+    "chapterCount": 28,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "fixedBookChapterUrlsValid": false,
+    "isSuccess": true,
+    "status": 200
+  },
+  "businessApiCalls": {
+    "/getBookInfo": 1,
+    "/getChapterList": 1
+  },
+  "chapterExecuted": false,
+  "rawChapterUrlValuesRetained": false,
+  "rawRelativeUrlsObservedByThisReceipt": false,
+  "readerEngineRootCauseProven": false,
+  "resourceGuardAccepted": true,
+  "memoryPeakBytes": 942919680,
+  "pidsPeak": 184,
+  "seconds": 9.924,
+  "swapConfiguredAndObservedZero": true,
+  "sourceRulesRetained": true,
+  "maximumObservedProcesses": {
+    "browser": 7,
+    "driver": 1,
+    "worker": 1
+  },
+  "cookieRowsBefore": 0,
+  "cookieRowsAfter": 0,
+  "generatedSessionRevoked": true,
+  "ownedContainerRemoved": true,
+  "originalOrRemoteParityProven": false,
+  "realAuthenticationProven": false,
+  "rawBodyOrCookiePublished": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "files": {
+    "CLEANUP.json": {
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    "CONTAINER_STATE.json": {
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    "GUTENBERG_REPORT.json": {
+      "bytes": 1629,
+      "sha256": "e4cfb73a1c4d59b676fff1ade9a059c74bb1d006d917a513c2d1a4faf27804a8"
+    },
+    "LOADED_IDENTITY.json": {
+      "bytes": 259,
+      "sha256": "80968467ebdd0a9a1432f5cd84d95c25bdbf23690a3ab9611ea28d31e59840a7"
+    },
+    "PRELOAD_IDENTITY.json": {
+      "bytes": 258,
+      "sha256": "86a947966513c27712b4ccce05b421541442bf5f01f3cc8f9cc1ffee1168c0c1"
+    },
+    "RUNNING_JAR_IDENTITY.json": {
+      "bytes": 190,
+      "sha256": "5fde471f1bfb3292b27a4ac0f98a404b0ee67731e9801a4607a30e98b4a7ee3b"
+    },
+    "RUNTIME_RESOURCE_BUDGET.json": {
+      "bytes": 973,
+      "sha256": "868cb518b075693b6c6514232950e8e68320823d2dcecef257427ebbb1340fa8"
+    },
+    "SOURCE_RUN.json": {
+      "bytes": 316,
+      "sha256": "53a79d5c38696810568b8351f1b7fbe1ef7a7f2fcb5cb1854f24456033e8a6ca"
+    },
+    "WORKER_DIAGNOSTICS.json": {
+      "bytes": 165,
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    }
+  }
+}

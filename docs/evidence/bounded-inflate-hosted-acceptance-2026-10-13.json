@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "b2ed46bcfb524deec155c91dc694748d7f8f186e",
+  "testedMergeSnapshot": "00cae19fa38033a20a96268c5071050f3fff2def",
+  "scope": "own four completed hosted workflows and exact downloaded JAR; no local hosted-JAR or whole Native book execution",
+  "javaVueReceiptSha256": "df540b58be967d997e72dfacea1e2f2c2c948a2bc179aa737bc59803da913e13",
+  "fullReceiptSha256": "570e114eda6ef5686ffec7a506d14fec13f91f50716a987fd42fd87f992aed62",
+  "nativeReceiptSha256": "20e3b8312ab2b7e91bd10ff4345e52fdd8138f037242ab5734f6591ecefe3a12",
+  "exactJarComparisonReceiptSha256": "a8bd692334f167171e5cce4d88c03077b7d368dbdb9ce5b284bbe4e274ef598b",
+  "java": {
+    "runId": 38349440433,
+    "hostedUbuntuRunner": true,
+    "jobs": 1,
+    "conclusion": "success",
+    "junit": {
+      "counts": {
+        "tests": 222,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 35
+      },
+      "suites": 47,
+      "reportSetSha256": "fa0dbb7220db2b3cc12b3825120256cd4320622e79e22f50d94e003352d93d1c"
+    },
+    "twoCleanBytesEqual": true,
+    "reproducibilityReportSha256": "405b0b16ebe861fbe2b476d901c384aa681f94cfe20742c31c5ca0c39c62b955",
+    "reportedHostedJarSha256": "8f2e1bbce57570da8b8d5949bc2711a45fb5a617e9d7f0ae168adc8fa9a0c77b",
+    "reportedHostedJarBytes": 285682001
+  },
+  "vue": {
+    "runId": 38349440364,
+    "hostedUbuntuRunner": true,
+    "jobs": 2,
+    "conclusion": "success",
+    "junit": {
+      "counts": {
+        "tests": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": 25,
+      "reportSetSha256": "086036b96c8652b0fe90a33e7ab299879a6d79722e5d2fc595247651b43ed315"
+    },
+    "independentlyDownloadedFrontendWorkerSha256": "17c47eaf29cd3684b6dd8326205cba435d70344e66deb059bb585285a47f138a",
+    "localWorkerSha256": "17c47eaf29cd3684b6dd8326205cba435d70344e66deb059bb585285a47f138a",
+    "localAndHostedWorkerBytesEqual": true
+  },
+  "full": {
+    "schemaVersion": 1,
+    "sourceRevision": "b2ed46bcfb524deec155c91dc694748d7f8f186e",
+    "testedMergeSnapshot": "00cae19fa38033a20a96268c5071050f3fff2def",
+    "fullRun": 38349440732,
+    "fullJob": 115138218985,
+    "jarSha256": "8f2e1bbce57570da8b8d5949bc2711a45fb5a617e9d7f0ae168adc8fa9a0c77b",
+    "ownFullWorkflowAccepted": true,
+    "hostedPythonTests": 755,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 11.957,
+    "fullImageUi": {
+      "schemaVersion": 1,
+      "scope": "complete-image-default-ui-generated-journey",
+      "testedRevision": "00cae19fa38033a20a96268c5071050f3fff2def",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 12.416,
+      "xmlSha256": "5c47652a8d51869db0d465089b13e8dbd9d0444ce8bcaaf4ecc3bb03713d97aa",
+      "screenshots": [
+        {
+          "file": "native-default-ui-generated-login.png",
+          "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+          "bytes": 34204,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-shelf.png",
+          "sha256": "a0486b673d5a38d71650b78e3b1b16bd36f74b4588d513d7d7fa5478f43baa15",
+          "bytes": 48662,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-reading.png",
+          "sha256": "bd0f0e327c4b8ac4e7197ab0797f6df409da036c9463ab18b99339f4d6157768",
+          "bytes": 33359,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-logout.png",
+          "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+          "bytes": 34077,
+          "width": 1280,
+          "height": 900
+        }
+      ],
+      "clientRunsOutsideServerResourceBudget": true,
+      "realAccountOrPrivateBooksTested": false,
+      "productionOrLongRunProven": false
+    },
+    "generatedLoginAndReadingScreenshotsVisuallyReviewed": false,
+    "readerHttpsBusiness": {
+      "acceptedCurrentReaderHttpsBusinessSubset": true,
+      "generatedScenarios": 8,
+      "actualTargetRequests": 12,
+      "actualConnectTunnels": 14,
+      "parsedHeaderFields": 178,
+      "negativeCertificateControls": 2,
+      "generatedUserNamespaces": 2,
+      "proxySocketOwnershipVerifiedByLiveProducer": true,
+      "originalJarThreeWayAccepted": false,
+      "fullNativeImageLocallyAccepted": false,
+      "realSiteLoginAccepted": false,
+      "productionChanged": false,
+      "fullGoalComplete": false,
+      "acceptedCertificateHintMessages": true
+    },
+    "workerHttps": {
+      "acceptedPackagedWorkerHttpsSubset": true,
+      "positiveCases": 10,
+      "negativeCertificateControls": 2,
+      "targetRequests": 24,
+      "parsedHeaderFields": 334,
+      "readerApiOrProductionAccepted": false
+    },
+    "fullServerOnlyMemoryPeakBytes": 848605184,
+    "fullServerOnlyPidsPeak": 195,
+    "fullUiClientOutsideServerResourceBudget": true,
+    "imageBuildStepSeconds": 247,
+    "ghaCacheImportManifestObserved": true,
+    "cachedBuildStepCount": 7,
+    "cacheExportSeconds": [
+      81.4
+    ],
+    "strictSixtySecondTotalCacheExportCapProven": false,
+    "causalCacheSpeedupProven": false,
+    "latestWholeNativeImageLocallyAccepted": false,
+    "nativeWholeWorkflowAccepted": false,
+    "realBookFullAcceptance": false,
+    "rawLogOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "native": {
+    "schemaVersion": 1,
+    "sourceRevision": "b2ed46bcfb524deec155c91dc694748d7f8f186e",
+    "testedMergeSnapshot": "00cae19fa38033a20a96268c5071050f3fff2def",
+    "nativeRunId": 38349440366,
+    "nativeSixHostedJobsAccepted": true,
+    "nativeArchitectures": [
+      "amd64",
+      "arm64"
+    ],
+    "metadata": {
+      "amd64": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "4.0.7",
+        "revision": "00cae19fa38033a20a96268c5071050f3fff2def",
+        "jarSha256": "8f2e1bbce57570da8b8d5949bc2711a45fb5a617e9d7f0ae168adc8fa9a0c77b",
+        "archiveSha256": "71bf4d3a486d5cfb4cf8b3825f0f414d54e325cf1ba7fa4f083aa4dd58f5caef",
+        "imageId": "sha256:785d3d84402211359ce57c41ac0841e716f3dce4b3b5483b5b1bf3e76396a44d"
+      },
+      "arm64": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "4.0.7",
+        "revision": "00cae19fa38033a20a96268c5071050f3fff2def",
+        "jarSha256": "8f2e1bbce57570da8b8d5949bc2711a45fb5a617e9d7f0ae168adc8fa9a0c77b",
+        "archiveSha256": "766e90e3815308f817f883de1f45769c1cb652df0f5fd73156b732e68f7ae1da",
+        "imageId": "sha256:0475f1b3e68f0e125c11444d5148fc09312ebb66ce6df2e8378429a3d8ea10f2"
+      }
+    },
+    "checks": [
+      {
+        "architecture": "amd64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "amd64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      }
+    ],
+    "publisherSmallJsonFiles": 32,
+    "camoufoxContractTests": 24,
+    "hostedPythonTests": 755,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 11.957,
+    "jvmTests": 222,
+    "jvmSkipped": 35,
+    "maximumPublisherResourceSubsetMemoryBytes": 927227904,
+    "maximumPublisherResourceSubsetPids": 201,
+    "largeArchivesLocallyDownloadedOrRehashed": false,
+    "currentWholeImageLocallyAccepted": false,
+    "realBookPressureAccepted": false,
+    "rawLogsOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "exactHostedJarSha256": "8f2e1bbce57570da8b8d5949bc2711a45fb5a617e9d7f0ae168adc8fa9a0c77b",
+  "exactHostedJarBytes": 285682001,
+  "exactHostedJarDownloadedAndIndependentlyRehashed": true,
+  "commonJarEntriesCompared": 1516,
+  "hashedFrontendAssetRenames": 52,
+  "nonVueJarContentDifferences": 0,
+  "localAndHostedWholeJarBytesEqual": false,
+  "allEpubWorkerBytesEqual": true,
+  "generatedScreenshotsVisuallyReviewed": {
+    "login": true,
+    "reading": true,
+    "shelf": false,
+    "logout": false
+  },
+  "localAuthorizedLargeBookTwoFreshCandidateInstancesAccepted": true,
+  "exactHostedJarActualLargeBookAccepted": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "realSiteAuthenticationAndRemainingThreeWayAccepted": false,
+  "localAttemptFailure": {
+    "stage": "WSL virtual-machine creation before generated volume or Reader start",
+    "code": "0x800705aa",
+    "hostFreePhysicalMemoryKBObserved": 224348,
+    "totalVisibleMemoryKB": 16478072,
+    "wslRunningInstanceObserved": false,
+    "readerProcessStarted": false,
+    "authorizedBodyReadAtFailedAttempt": false,
+    "existingUserProcessesTerminated": false,
+    "systemRestarted": false
+  },
+  "dependenciesAllSafeProven": false,
+  "productionChanged": false,
+  "released": false,
+  "merged": false,
+  "goalComplete": false
+}

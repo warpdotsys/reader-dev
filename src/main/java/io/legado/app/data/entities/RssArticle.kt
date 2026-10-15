@@ -20,6 +20,7 @@ data class RssArticle(
     var variable: String? = null
 ): RuleDataInterface {
 
+    @Transient
     private var _userNameSpace = ""
 
     override fun hashCode() = link.hashCode()

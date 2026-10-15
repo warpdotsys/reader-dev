@@ -1,0 +1,27 @@
+{
+  "scope": "only stopped authorized EPUB test input copies",
+  "removedFiles": [
+    {
+      "path": "/home/chong/.cache/reader-authorized-epub-f5c9-20261011-i-vubc52t2/inputs/original.jar",
+      "bytes": 72913887,
+      "sha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c"
+    },
+    {
+      "path": "/home/chong/.cache/reader-authorized-epub-f5c9-20261011-i-vubc52t2/inputs/restored.jar",
+      "bytes": 285671807,
+      "sha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b"
+    },
+    {
+      "path": "/home/chong/.cache/reader-authorized-epub-f5c9-20261011-i-vubc52t2/inputs/authorized.epub",
+      "bytes": 37809796,
+      "sha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31"
+    }
+  ],
+  "removedCount": 3,
+  "removedBytes": 396395490,
+  "sourceOriginalAndBackupAndCiDownloadRetainedAndHashed": true,
+  "temporaryCopiesRecreatableFromRetainedBytes": true,
+  "otherDirectoriesDeleted": false,
+  "otherPrivateBooksRead": 0,
+  "authorizedEpubBytesHashed": true
+}

@@ -304,6 +304,10 @@ def main():
         parser.error("--local-browser-only requires an existing --browser-executable")
     if args.browser_executable and not args.local_browser_only:
         parser.error("--browser-executable is only used with --local-browser-only")
+    if not args.local_browser_only:
+        from original_jar_safety import require_original_jar_isolation
+
+        require_original_jar_isolation()
     for path in ((JAVA, RESTORED) if args.local_browser_only else (JAVA, ORIGINAL, RESTORED)):
         if not path.is_file():
             raise FileNotFoundError(path)

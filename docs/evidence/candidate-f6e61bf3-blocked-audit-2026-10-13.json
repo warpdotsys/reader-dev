@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "codeCandidateRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "version": "6.1.0",
+  "scope": "remaining authentic-site and accurate full-image execution paths; not a successful business acceptance",
+  "consecutiveBlockingGoalTurns": 3,
+  "blockingCondition": "remaining authentic browser session and exact isolated image cannot be safely accessed",
+  "latestServerReadOnlyRevalidation": {
+    "target": "cdn.medwarp.cn:22",
+    "result": "Connection timed out during banner exchange",
+    "currentRemoteTaskStateProven": false,
+    "observationTimeoutTreatedAsTargetTaskTermination": false,
+    "downloadOrTestRestarted": false
+  },
+  "latestBrowserRevalidation": {
+    "preferredBrowserToolResult": "failed to write kernel assets: os error 3",
+    "standardComputerUseChromeWindowReturned": true,
+    "chromeWindowTitleIndicatedQidian": true,
+    "actualCurrentUrlVerified": false,
+    "accessibilityReadResult": "Computer Use has been stopped for this turn because it could not determine the current browser URL on Windows with enough confidence to enforce policy",
+    "urlSafetyBarrierBypassed": false,
+    "cookiesReadOrExported": false,
+    "trueSiteAuthenticationAccepted": false
+  },
+  "currentLocalFallbackReadOnlyRevalidation": {
+    "runningWslDistributionNames": [],
+    "relevantDockerOrJavaProcesses": [],
+    "freePhysicalMemoryBytes": 503869440,
+    "totalPhysicalMemoryBytes": 16873545728,
+    "requiredWholeImageIsolationMemoryBytes": 2147483648,
+    "usableLocalFullImageRuntimeProven": false,
+    "virtualMachineStarted": false,
+    "userProcessesStopped": false,
+    "resourceLimitsRelaxed": false,
+    "memoryObservationIsTimeSpecific": true
+  },
+  "completedEvidenceRetained": {
+    "ownFourHostedWorkflowsIndependentlyAccepted": true,
+    "ownSixNativeJobsIndependentlyAccepted": true,
+    "actualJarDownloadedAndRehashed": true,
+    "jarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "embeddedManifestVersion": "6.1.0",
+    "ownTwoCleanCompleteJarBytesEqual": true,
+    "ownGeneratedLoginReadingLogoutAccepted": true,
+    "generationNotSubstitutedForRealAccount": true
+  },
+  "remainingRequirementsNotRemoved": [
+    "current exact full-image original-JAR/archived-renderer/embedded-renderer real-site script and cookie comparison",
+    "current locally authorized Qidian session search and free first-chapter authentication",
+    "current exact full-image authorized single-book and long-run scope",
+    "final legacy integration and formal delivery audit"
+  ],
+  "workspacePreservation": {
+    "protectedReportHashesMatched": 58,
+    "protectedReportContentsDecoded": false,
+    "originalAndReadOnlyBackupUnchanged": true,
+    "authorizedSingleEpubHashUnchanged": true
+  },
+  "productionChanged": false,
+  "privateBodiesOrCredentialsPublished": false,
+  "formalTagOrDeploymentPerformed": false,
+  "goalComplete": false,
+  "recoveryRequiresUserInputOrExternalStateChange": true
+}

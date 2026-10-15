@@ -1,0 +1,561 @@
+{
+  "source": "6d39892607e7cc0ced216cf24f79fc7c4313c170",
+  "testedPrMergeRevision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae",
+  "nativeSourceRun": 37280524092,
+  "scope": "two native GitHub-hosted network-none containers; exact tested single-image bytes reused without rebuilding; generated data only; not days of production load, real authentication, final local runtime, or subsequent source acceptance",
+  "quota": {
+    "cpus": 2,
+    "memoryBytes": 2147483648,
+    "pids": 256,
+    "swapBytes": 0,
+    "uid": 10001
+  },
+  "independentAudit": "All seven files per architecture and every trace row were downloaded and checked by the local auditor, not inferred only from workflow success.",
+  "cleanup": {
+    "stateFileCapturedBeforeRemoval": true,
+    "successfulDockerRmOutputObserved": true,
+    "amd64ContainerId": "1ccf96f930f1678887cb9886dd99e320c597a584f80110aea35c6ccef12310e5",
+    "arm64ContainerId": "d49d40f8f133fbbfe27bf98de67303729b6bcd5c34dd08563df5f59916aec98f",
+    "postRemovalInspectNotRecorded": true
+  },
+  "architectures": [
+    {
+      "report": {
+        "scope": "one offline native full Reader image; generated data only",
+        "expectedImageRevision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae",
+        "requestedSeconds": 1800,
+        "accounts": 4,
+        "rounds": 120,
+        "successfulSearches": 488,
+        "faults": [
+          {
+            "kind": "navigationTimeout",
+            "failedReturnDataVerified": true,
+            "seconds": 7.578,
+            "ownedWorkerKilled": false,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 346050560,
+              "memoryPeakBytes": 873025536,
+              "pidsCurrent": 42,
+              "pidsPeak": 199,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          },
+          {
+            "kind": "scriptWatchdog",
+            "failedReturnDataVerified": true,
+            "seconds": 25.032,
+            "ownedWorkerKilled": false,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 373956608,
+              "memoryPeakBytes": 873025536,
+              "pidsCurrent": 42,
+              "pidsPeak": 199,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          },
+          {
+            "kind": "workerExit",
+            "failedReturnDataVerified": true,
+            "seconds": 2.232,
+            "ownedWorkerKilled": true,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 384278528,
+              "memoryPeakBytes": 873025536,
+              "pidsCurrent": 39,
+              "pidsPeak": 199,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          }
+        ],
+        "samples": [
+          {
+            "round": 116,
+            "method": "POST",
+            "elapsedSeconds": 1737.071,
+            "maxRequestSeconds": 14.083,
+            "memoryCurrentBytes": 435388416,
+            "memoryPeakBytes": 941006848,
+            "pidsCurrent": 42,
+            "pidsPeak": 199,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 117,
+            "method": "GET",
+            "elapsedSeconds": 1755.791,
+            "maxRequestSeconds": 18.708,
+            "memoryCurrentBytes": 435449856,
+            "memoryPeakBytes": 941006848,
+            "pidsCurrent": 42,
+            "pidsPeak": 199,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 118,
+            "method": "POST",
+            "elapsedSeconds": 1770.433,
+            "maxRequestSeconds": 14.63,
+            "memoryCurrentBytes": 435556352,
+            "memoryPeakBytes": 941006848,
+            "pidsCurrent": 41,
+            "pidsPeak": 199,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 119,
+            "method": "GET",
+            "elapsedSeconds": 1789.727,
+            "maxRequestSeconds": 19.283,
+            "memoryCurrentBytes": 435470336,
+            "memoryPeakBytes": 941006848,
+            "pidsCurrent": 42,
+            "pidsPeak": 199,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 120,
+            "method": "POST",
+            "elapsedSeconds": 1807.31,
+            "maxRequestSeconds": 17.57,
+            "memoryCurrentBytes": 435597312,
+            "memoryPeakBytes": 941006848,
+            "pidsCurrent": 42,
+            "pidsPeak": 199,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        ],
+        "passed": true,
+        "releaseIdentity": {
+          "version": "4.0.7",
+          "buildRevision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae"
+        },
+        "coldRequestSeconds": 6.718286462999998,
+        "coldQuiescent": {
+          "memoryCurrentBytes": 325763072,
+          "memoryPeakBytes": 768045056,
+          "pidsCurrent": 38,
+          "pidsPeak": 178,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "warmQuiescent": {
+          "memoryCurrentBytes": 334946304,
+          "memoryPeakBytes": 840552448,
+          "pidsCurrent": 41,
+          "pidsPeak": 188,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "continuousSeconds": 1807.31,
+        "finalQuiescent": {
+          "memoryCurrentBytes": 435331072,
+          "memoryPeakBytes": 941006848,
+          "pidsCurrent": 42,
+          "pidsPeak": 199,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "resources": {
+          "scope": "one offline native full Reader image; generated data only",
+          "kernel": "6.17.0-1022-azure",
+          "architecture": "x86_64",
+          "memoryPeakBytes": 941006848,
+          "memoryCurrentBytes": 435331072,
+          "memoryMaxBytes": 2147483648,
+          "memoryEvents": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          },
+          "swapCurrentBytes": 0,
+          "swapMaxBytes": 0,
+          "pidsPeak": 199,
+          "pidsCurrent": 42,
+          "pidsMax": 256,
+          "pidsEvents": {
+            "max": 0
+          },
+          "cpuQuota": "200000",
+          "cpuPeriod": 100000
+        },
+        "targetMethods": {
+          "GET": 251,
+          "POST": 240
+        },
+        "targetCookieOrShapeErrors": 0,
+        "totalSeconds": 1876.337
+      },
+      "jobId": 111675559165,
+      "loadedIdentity": {
+        "phase": "loaded",
+        "architecture": "amd64",
+        "revision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae",
+        "jarSha256": "1eda492acc5ce22501ec922ddc9dc1ef8444968c49b8519db915364a8978de3a",
+        "imageId": "sha256:24efc62d9a86bebec34004593e950d99faed12be9efd34f27d5e79257cd661a4"
+      },
+      "allTraceRowsAudited": 120,
+      "runner": "GitHub Actions 1000003626",
+      "architecture": "amd64",
+      "artifactZipBytes": 5479,
+      "runId": 37283105720,
+      "lastQuietMemoryBytes": 435597312,
+      "files": [
+        {
+          "sha256": "3fa7662bee9799d7b9aee472381799f4fe6f041e9e7ed0176bed41fd80b331e1",
+          "bytes": 217,
+          "name": "CONTAINER_STATE.json"
+        },
+        {
+          "sha256": "cb67f5117549092586d22337ecdd64576785e793cdf01ecf21f81696db4cf205",
+          "bytes": 259,
+          "name": "LOADED_IDENTITY.json"
+        },
+        {
+          "sha256": "f6c467fdbf81b7a44ccf66463ac2249997ef42c3eb513401deee90c2ca1cab46",
+          "bytes": 258,
+          "name": "PRELOAD_IDENTITY.json"
+        },
+        {
+          "sha256": "1df4a601fa32faa1b74e1ba8164e65bb5196d4c3582487ed1ae64c65e942dfe2",
+          "bytes": 165,
+          "name": "RUNNING_JAR_IDENTITY.json"
+        },
+        {
+          "sha256": "5da3bbf6313330a098f225f8c62e26114079b87c6b86eb58ddf51ff386862a47",
+          "bytes": 5006,
+          "name": "SOAK_REPORT.json"
+        },
+        {
+          "sha256": "a3ec748a14e02af5f377a84a42a50c5e6dbf4d22ac153182f7f8a77decd7024f",
+          "bytes": 29843,
+          "name": "SOAK_TRACE.jsonl"
+        },
+        {
+          "sha256": "1edaeb76d8e0dc51d56c42e6e398cc3285f4b319028ed12636a1598eab2809bd",
+          "bytes": 316,
+          "name": "SOURCE_RUN.json"
+        }
+      ],
+      "artifactId": 11333744399,
+      "runnerLabel": "ubuntu-24.04",
+      "firstQuietMemoryBytes": 385634304
+    },
+    {
+      "report": {
+        "scope": "one offline native full Reader image; generated data only",
+        "expectedImageRevision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae",
+        "requestedSeconds": 1800,
+        "accounts": 4,
+        "rounds": 132,
+        "successfulSearches": 536,
+        "faults": [
+          {
+            "kind": "navigationTimeout",
+            "failedReturnDataVerified": true,
+            "seconds": 7.282,
+            "ownedWorkerKilled": false,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 340865024,
+              "memoryPeakBytes": 874602496,
+              "pidsCurrent": 42,
+              "pidsPeak": 188,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          },
+          {
+            "kind": "scriptWatchdog",
+            "failedReturnDataVerified": true,
+            "seconds": 25.023,
+            "ownedWorkerKilled": false,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 366886912,
+              "memoryPeakBytes": 874602496,
+              "pidsCurrent": 42,
+              "pidsPeak": 191,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          },
+          {
+            "kind": "workerExit",
+            "failedReturnDataVerified": true,
+            "seconds": 1.992,
+            "ownedWorkerKilled": true,
+            "healthyRecoveryVerified": true,
+            "afterRecovery": {
+              "memoryCurrentBytes": 367243264,
+              "memoryPeakBytes": 874602496,
+              "pidsCurrent": 43,
+              "pidsPeak": 191,
+              "browserProcesses": {
+                "worker": 0,
+                "browser": 0,
+                "driver": 0
+              }
+            }
+          }
+        ],
+        "samples": [
+          {
+            "round": 128,
+            "method": "POST",
+            "elapsedSeconds": 1757.225,
+            "maxRequestSeconds": 10.543,
+            "memoryCurrentBytes": 440684544,
+            "memoryPeakBytes": 936366080,
+            "pidsCurrent": 42,
+            "pidsPeak": 192,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 129,
+            "method": "GET",
+            "elapsedSeconds": 1772.862,
+            "maxRequestSeconds": 15.623,
+            "memoryCurrentBytes": 440594432,
+            "memoryPeakBytes": 936366080,
+            "pidsCurrent": 42,
+            "pidsPeak": 192,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 130,
+            "method": "POST",
+            "elapsedSeconds": 1788.309,
+            "maxRequestSeconds": 15.433,
+            "memoryCurrentBytes": 440844288,
+            "memoryPeakBytes": 936366080,
+            "pidsCurrent": 42,
+            "pidsPeak": 192,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 131,
+            "method": "GET",
+            "elapsedSeconds": 1798.695,
+            "maxRequestSeconds": 10.371,
+            "memoryCurrentBytes": 440758272,
+            "memoryPeakBytes": 936366080,
+            "pidsCurrent": 42,
+            "pidsPeak": 192,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          },
+          {
+            "round": 132,
+            "method": "POST",
+            "elapsedSeconds": 1810.618,
+            "maxRequestSeconds": 11.908,
+            "memoryCurrentBytes": 440606720,
+            "memoryPeakBytes": 936366080,
+            "pidsCurrent": 42,
+            "pidsPeak": 192,
+            "browserProcesses": {
+              "worker": 0,
+              "browser": 0,
+              "driver": 0
+            }
+          }
+        ],
+        "passed": true,
+        "releaseIdentity": {
+          "version": "4.0.7",
+          "buildRevision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae"
+        },
+        "coldRequestSeconds": 3.5686364789999914,
+        "coldQuiescent": {
+          "memoryCurrentBytes": 337195008,
+          "memoryPeakBytes": 737992704,
+          "pidsCurrent": 38,
+          "pidsPeak": 179,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "warmQuiescent": {
+          "memoryCurrentBytes": 339419136,
+          "memoryPeakBytes": 835678208,
+          "pidsCurrent": 41,
+          "pidsPeak": 188,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "continuousSeconds": 1810.618,
+        "finalQuiescent": {
+          "memoryCurrentBytes": 440606720,
+          "memoryPeakBytes": 936366080,
+          "pidsCurrent": 42,
+          "pidsPeak": 192,
+          "browserProcesses": {
+            "worker": 0,
+            "browser": 0,
+            "driver": 0
+          }
+        },
+        "resources": {
+          "scope": "one offline native full Reader image; generated data only",
+          "kernel": "6.17.0-1022-azure",
+          "architecture": "aarch64",
+          "memoryPeakBytes": 936366080,
+          "memoryCurrentBytes": 440606720,
+          "memoryMaxBytes": 2147483648,
+          "memoryEvents": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          },
+          "swapCurrentBytes": 0,
+          "swapMaxBytes": 0,
+          "pidsPeak": 192,
+          "pidsCurrent": 42,
+          "pidsMax": 256,
+          "pidsEvents": {
+            "max": 0
+          },
+          "cpuQuota": "200000",
+          "cpuPeriod": 100000
+        },
+        "targetMethods": {
+          "GET": 275,
+          "POST": 264
+        },
+        "targetCookieOrShapeErrors": 0,
+        "totalSeconds": 1873.217
+      },
+      "jobId": 111675574469,
+      "loadedIdentity": {
+        "phase": "loaded",
+        "architecture": "arm64",
+        "revision": "f29e3e04b37b9cb16a8835cd1a6cc4f509290eae",
+        "jarSha256": "1eda492acc5ce22501ec922ddc9dc1ef8444968c49b8519db915364a8978de3a",
+        "imageId": "sha256:1d0efaa8912ca530f2e7141ff62582cbe88c9968e76aa776863e8ff89d9f646c"
+      },
+      "allTraceRowsAudited": 132,
+      "runner": "GitHub Actions 1000003627",
+      "architecture": "arm64",
+      "artifactZipBytes": 5736,
+      "runId": 37283110096,
+      "lastQuietMemoryBytes": 440606720,
+      "files": [
+        {
+          "sha256": "9a9ea1ccfff2510101cbeec08746e473ae3a8346ba7dc536ee9cf48aa7a10874",
+          "bytes": 217,
+          "name": "CONTAINER_STATE.json"
+        },
+        {
+          "sha256": "fd621426df817ee6c7a2c047f875d44136bf306423b817856f9b21c5b047ad06",
+          "bytes": 259,
+          "name": "LOADED_IDENTITY.json"
+        },
+        {
+          "sha256": "6eae60c66dc683462473f8a751d8f1d4800f5f283ea4b180590c075f73c96198",
+          "bytes": 258,
+          "name": "PRELOAD_IDENTITY.json"
+        },
+        {
+          "sha256": "1df4a601fa32faa1b74e1ba8164e65bb5196d4c3582487ed1ae64c65e942dfe2",
+          "bytes": 165,
+          "name": "RUNNING_JAR_IDENTITY.json"
+        },
+        {
+          "sha256": "52e3b6e3c6835d6d07f3397b94a3aefaaf6bd19d393c1ec6ea0efb365dbb760b",
+          "bytes": 5012,
+          "name": "SOAK_REPORT.json"
+        },
+        {
+          "sha256": "28bfce5a3e50e504b7d2af602682809c115a4828eabdb548f145cfe13b68855b",
+          "bytes": 32849,
+          "name": "SOAK_TRACE.jsonl"
+        },
+        {
+          "sha256": "1edaeb76d8e0dc51d56c42e6e398cc3285f4b319028ed12636a1598eab2809bd",
+          "bytes": 316,
+          "name": "SOURCE_RUN.json"
+        }
+      ],
+      "artifactId": 11335100048,
+      "runnerLabel": "ubuntu-24.04-arm",
+      "firstQuietMemoryBytes": 367677440
+    }
+  ]
+}

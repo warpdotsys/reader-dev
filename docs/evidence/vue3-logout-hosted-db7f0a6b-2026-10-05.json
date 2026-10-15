@@ -1,0 +1,440 @@
+{
+  "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+  "testedPrMergeRevision": "dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+  "scope": "fresh hosted generated tests; not original JAR HTTP blackbox, real credentials, long production workload or release publication",
+  "workflows": [
+    {
+      "conclusion": "success",
+      "databaseId": 37275695481,
+      "event": "pull_request",
+      "headSha": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37275695481",
+      "workflowName": "Java Kotlin CI"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37275695493,
+      "event": "pull_request",
+      "headSha": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37275695493",
+      "workflowName": "Vue 3 preview build"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37275695526,
+      "event": "pull_request",
+      "headSha": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37275695526",
+      "workflowName": "Browser image integration"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37275695518,
+      "event": "pull_request",
+      "headSha": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "status": "completed",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37275695518",
+      "workflowName": "Native release artifact rehearsal"
+    }
+  ],
+  "uniqueUiTests": 20,
+  "uiSkipped": 0,
+  "uiFailures": 0,
+  "uiErrors": 0,
+  "proofs": {
+    "core": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695493,
+      "artifactId": 11330875018,
+      "artifactName": "vue3-core-browser-reports-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "artifactBytes": 9357,
+      "result": {
+        "skipped": 0,
+        "xmlReportsIndividuallyAudited": 17,
+        "failures": 0,
+        "tests": 17,
+        "errors": 0,
+        "reports": [
+          {
+            "tests": 1,
+            "sha256": "3ac0f8a0a338baa8ab33a9d65ffd18ba99cea8897afca618f1209b9b6a589ecf",
+            "time": "2.464",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "46444e9cbc1519453071284d750107bf1130d9581015f88ffb778ae6b2a429af",
+            "time": "14.422",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "d1e5210b52621a18fb395d41f47ac50d53e03b832f139efad230f58deb67bf0c",
+            "time": "7.444",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "36fb6912d996d90bd1c83bdb0c3ceaea33d44e199d3dbeb508675219b7b268fa",
+            "time": "3.294",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "74bc2d9c195fbccecc3cd4ff2f0113d0ca1b26a556a65bf19dc11f6ad6395193",
+            "time": "4.684",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "21192027ce5874542e585ff365c6f250369f099b21ed7c509f9d3e15281d7b5d",
+            "time": "5.386",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "68c5372825729044fe5c2e2b34aa1d6d489cc50f5cfb6ff04602a76ccf782c23",
+            "time": "18.529",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "cf4e848305acc2a8fee70c7e8ecc047cd7b99b9ce1d9863360f9071adba09299",
+            "time": "3.408",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "28bc1ca8fe9dd922031da95d167a9709aa6de99126d3a9a2319a0d387052cbee",
+            "time": "23.43",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "ef0dbc3416b4491a5902322e91fee62c2738f78f6c9708ee6657866245374e88",
+            "time": "3.73",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "dbc6aa4a893cb8f88d32747159fbfb91fe714001ab7667abb1568eeafc9d03a9",
+            "time": "4.876",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "39294868fb68d9349a92bce71c0fad3d524a885ebf91703a823882d6bf24289b",
+            "time": "4.585",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "6bab76ee23b58b1e921f5b5dc2f7c01c8e0c25d263b7bf2942dfa62cc41bdd28",
+            "time": "15.694",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "34e85add5190994f1300dd4ef5f1239eaa1f47cc13450878dd6751fe829aa59f",
+            "time": "6.785",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "98d8adccdd727d10679c59d0a1d30b965376f6126a8a55ebfc3df811a97dc2e7",
+            "time": "6.268",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "c7024fd57d8ac4c5c769eb57ceb684c8433c2379febe579fb7e4be07cecc95f4",
+            "time": "10.644",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml"
+          },
+          {
+            "tests": 1,
+            "sha256": "dded805218d54d3a8e666c4acea3aae24b3ca9660431eb22592a788ffa6b3398",
+            "time": "7.455",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml"
+          }
+        ]
+      }
+    },
+    "manager": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695493,
+      "artifactId": 11330740432,
+      "artifactName": "vue3-manager-namespace-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "artifactBytes": 159509,
+      "result": {
+        "skipped": 0,
+        "reports": [
+          {
+            "time": "5.592",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+            "sha256": "37782d89ea5588692bc519d2e572c0e684e269ed6ef0fc4ca687097be5093492",
+            "tests": 1
+          },
+          {
+            "time": "3.631",
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+            "sha256": "fa614a74fa9a15b9677bd14021f081bc7c9b6b1a8dd356554d3ec7f5b3c53087",
+            "tests": 1
+          }
+        ],
+        "xmlReportsIndividuallyAudited": 2,
+        "failures": 0,
+        "tests": 2,
+        "errors": 0
+      }
+    },
+    "subdir": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695493,
+      "artifactId": 11330436178,
+      "artifactName": "vue3-subdir-browser-reports-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "artifactBytes": 530,
+      "result": {
+        "xmlReportsIndividuallyAudited": 1,
+        "skipped": 0,
+        "failures": 0,
+        "tests": 1,
+        "reports": [
+          {
+            "sha256": "c945f97631bdb0d1a5032b4de121ab8dca40175e50e8a63ea1415e400e1a62ba",
+            "tests": 1,
+            "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+            "time": "3.073"
+          }
+        ],
+        "errors": 0
+      }
+    },
+    "cam": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695526,
+      "artifactId": 11330830666,
+      "artifactName": "camoufox-contract-report",
+      "artifactBytes": 917,
+      "result": {
+        "tests": 12,
+        "reports": [
+          {
+            "time": "99.015",
+            "tests": 12,
+            "name": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+            "sha256": "bdc49c1ab83eb2f37f4b4e10d242b0e9dd381d8ff972d66a8c68a320e1fb3b6e"
+          }
+        ],
+        "xmlReportsIndividuallyAudited": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    "smoke": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695526,
+      "artifactId": 11329709631,
+      "artifactName": "bundled-browser-synthetic-and-resources",
+      "artifactBytes": 895,
+      "result": {
+        "scope": "one complete hosted Reader image; generated short sequential and four-account burst",
+        "actualJsonReportsAudited": 2,
+        "identityCookieRequestResourceFieldsPassed": true,
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "pidsMax": 256,
+        "observations": {
+          "pidsPeak": 176,
+          "memoryPeakBytes": 784838656,
+          "actualSwapBytes": 0,
+          "configuredSwapMaxBytes": 1073741824
+        },
+        "budgetSha256": "8540c4f36aea383e8484620d4650afc6ebb948f838428da4adb13751faeafa59",
+        "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      }
+    },
+    "native": {
+      "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+      "runId": 37275695518,
+      "artifactId": 11330228457,
+      "artifactName": "reader-publisher-import-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "artifactBytes": 7077,
+      "result": {
+        "actualJsonReportsAudited": 20,
+        "testedPrMergeRevision": "dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+        "sharedJarSha256": "63b74ea6192ed92523587cd73fe58f9772afaee7577dcff733b39591ccc2023c",
+        "identityCookieRequestResourceFieldsPassed": true,
+        "architectures": {
+          "arm64": {
+            "budgets": {
+              "arm64-transfer": {
+                "pidsPeak": 179,
+                "memoryPeakBytes": 787693568,
+                "configuredSwapMaxBytes": 1073741824,
+                "actualSwapBytes": 0
+              },
+              "arm64": {
+                "pidsPeak": 176,
+                "memoryPeakBytes": 756494336,
+                "configuredSwapMaxBytes": 1073741824,
+                "actualSwapBytes": 0
+              }
+            },
+            "archiveSha256": "4d850a28ec851626fe5aa843e24b603501df9a33e70ea6bdbdae3f0a074f7483",
+            "imageId": "sha256:cb6601c6ab0ad9fc9da8193d60fa6c3f329cee997a521dc5f4c5e31cedcc6b85"
+          },
+          "amd64": {
+            "budgets": {
+              "amd64-transfer": {
+                "pidsPeak": 179,
+                "memoryPeakBytes": 826773504,
+                "configuredSwapMaxBytes": 1073741824,
+                "actualSwapBytes": 0
+              },
+              "amd64": {
+                "pidsPeak": 184,
+                "memoryPeakBytes": 827858944,
+                "configuredSwapMaxBytes": 1073741824,
+                "actualSwapBytes": 0
+              }
+            },
+            "archiveSha256": "3624b9e43991791d9dbff4c3d8146be9c813e9bcb556ffe7bfbcceca2177f9fa",
+            "imageId": "sha256:763e89bebf143b06013f94a184c24e4633d4b2453f8891ffc38791dc53034577"
+          }
+        },
+        "limits": [
+          "generated short samples, not real authentication or sustained load",
+          "configured swap remains permitted although actual use was zero",
+          "consumer import proof is not registry publication"
+        ]
+      }
+    }
+  },
+  "actualNativeRunners": [
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "name": "Build one shared Java Kotlin JAR",
+      "runner_name": "GitHub Actions 1000003607",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04-arm"
+      ],
+      "name": "Build and test native arm64 image",
+      "runner_name": "GitHub Actions 1000003611",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "name": "Build and test native amd64 image",
+      "runner_name": "GitHub Actions 1000003612",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04-arm"
+      ],
+      "name": "Reload and run tested arm64 image",
+      "runner_name": "GitHub Actions 1000003613",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "name": "Reload and run tested amd64 image",
+      "runner_name": "GitHub Actions 1000003614",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "name": "Exercise both publisher imports without registry credentials",
+      "runner_name": "GitHub Actions 1000003615",
+      "status": "completed"
+    }
+  ],
+  "screenshotArtifacts": [
+    {
+      "id": 11329659577,
+      "name": "vue3-logout-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "bytes": 106795
+    },
+    {
+      "id": 11329559635,
+      "name": "vue3-cross-tab-dbfc9ae0008e6a0f284170828e8f96315ae6657e",
+      "bytes": 215354
+    }
+  ],
+  "allEightGeneratedScreenshotsViewed": true,
+  "screenshots": [
+    {
+      "name": "vue3-logout-generated-first-button.png",
+      "bytes": 34131,
+      "sha256": "b80b46d8871821460e2b808e7da3ae333a8f4e16f003f6c4f1ed0de9c3249860"
+    },
+    {
+      "name": "vue3-logout-generated-offline-local-only.png",
+      "bytes": 38021,
+      "sha256": "8cfbcab1732bf0d6556b5e0303e55f0b6937afb6577b4141293429af6731410f"
+    },
+    {
+      "name": "vue3-logout-generated-remembered-survives.png",
+      "bytes": 44790,
+      "sha256": "4d76b89f5538253247f3ddb768cdcb2ce7acc319a754cf333fb9bae9c311430e"
+    },
+    {
+      "name": "vue3-cross-tab-generated-first-after-second-login.png",
+      "bytes": 46276,
+      "sha256": "edede66a638fecb32ddf434ed6712eb2d952f7f39ada891e17581c17e38b5864"
+    },
+    {
+      "name": "vue3-cross-tab-generated-first-reconnected.png",
+      "bytes": 50407,
+      "sha256": "1198cb928d7adefe5fea1c277763dc0eb5e1095f61df78812ed2ba71e338f08a"
+    },
+    {
+      "name": "vue3-cross-tab-generated-old-cookie-cache-refused.png",
+      "bytes": 43378,
+      "sha256": "349195033c447c0109a22eaeda3702fae0b8464ba9a45ad283f7e15046059bcd"
+    },
+    {
+      "name": "vue3-cross-tab-generated-second-after-first-logout.png",
+      "bytes": 46389,
+      "sha256": "96ceb37ca1881fd077712f575b5e1c76ca0e8cbebaca0e8ec78bb1c9f11c82f4"
+    },
+    {
+      "name": "vue3-cross-tab-generated-second-survives-first-logout.png",
+      "bytes": 46394,
+      "sha256": "bb3a87b2312f304210f645af830ee41e86328450f2b045dd28f1bb407b558d03"
+    }
+  ],
+  "knownLimits": [
+    "offline logout clears local identity but original server token may remain valid; actually tested accepted",
+    "only current token revoked, not all devices or history",
+    "late logout race unit-covered, not real delayed UI acceptance",
+    "footer overlap and stacked notices remain visible; some screenshots include existing fade-in animation",
+    "all formats/admin/SSE, real authenticated three-way, sustained load, final local image run and production not complete",
+    "configured swap permits 1 GiB although all actual use was zero",
+    "optional soak/provenance/archived-remote checks skipped, not counted as acceptance",
+    "no PR merge, registry publication, Release, production mutation, private body or multi-GiB local image download"
+  ]
+}

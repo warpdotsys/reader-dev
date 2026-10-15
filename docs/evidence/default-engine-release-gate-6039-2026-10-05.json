@@ -1,0 +1,1800 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-05",
+  "scope": "6039 release default-engine gate, generated-only hosted tests; does not accept the subsequent endless-navigation increment",
+  "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+  "testedPrMergeRevision": "5dd028a985eea3c344600e5297f97e1bb2340e6b",
+  "runtimeSourceHashes": {
+    "worker": "64ee8363aeb767b4b7da2f038fe4ab96a2387fa2e7b2eb9ba7b32da2f601c7fe",
+    "storage": "8c046086ff6ebf4c79318b08933602add9f8b1a709390bfef2e6ddfb908cfd24"
+  },
+  "runs": [
+    {
+      "runId": 37303329703,
+      "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+      "conclusion": "success",
+      "completedAt": "2026-10-05T11:50:39Z",
+      "jobs": [
+        {
+          "id": 111741022679,
+          "name": "Build one shared Java Kotlin JAR",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003679",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        },
+        {
+          "id": 111743139673,
+          "name": "Build and test native amd64 image",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003684",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        },
+        {
+          "id": 111743139811,
+          "name": "Build and test native arm64 image",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003683",
+          "labels": [
+            "ubuntu-24.04-arm"
+          ]
+        },
+        {
+          "id": 111744468497,
+          "name": "Reload and run tested arm64 image",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003685",
+          "labels": [
+            "ubuntu-24.04-arm"
+          ]
+        },
+        {
+          "id": 111744468589,
+          "name": "Reload and run tested amd64 image",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003686",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        },
+        {
+          "id": 111746026333,
+          "name": "Exercise both publisher imports without registry credentials",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003687",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        }
+      ]
+    },
+    {
+      "runId": 37303329691,
+      "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+      "conclusion": "success",
+      "completedAt": "2026-10-05T11:35:37Z",
+      "jobs": [
+        {
+          "id": 111741022574,
+          "name": "Build and smoke-test the full Reader image",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003678",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        }
+      ]
+    },
+    {
+      "runId": 37303329735,
+      "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+      "conclusion": "success",
+      "completedAt": "2026-10-05T11:31:47Z",
+      "jobs": [
+        {
+          "id": 111741023071,
+          "name": "Test and build JAR",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003680",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        }
+      ]
+    },
+    {
+      "runId": 37303329877,
+      "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+      "conclusion": "success",
+      "completedAt": "2026-10-05T11:36:33Z",
+      "jobs": [
+        {
+          "id": 111741023806,
+          "name": "build",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003681",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        },
+        {
+          "id": 111741024065,
+          "name": "Isolated Vue 3 browser journeys in Chromium",
+          "conclusion": "success",
+          "runnerName": "GitHub Actions 1000003682",
+          "labels": [
+            "ubuntu-24.04"
+          ]
+        }
+      ]
+    }
+  ],
+  "verifiedReleaseOrder": {
+    "sharedJarJobId": 111741022679,
+    "python": "3.10",
+    "pinnedBrowser": "152.0.4-beta.30",
+    "runtimeInstallStep": 8,
+    "actualContractAndPackagedWorkerComparisonStep": 9,
+    "gateStartedUtc": "2026-10-05T11:32:51Z",
+    "gateCompletedUtc": "2026-10-05T11:35:59Z",
+    "reportUploadStep": 10,
+    "sharedJarUploadStep": 11,
+    "sharedJarUploadStartedUtc": "2026-10-05T11:36:00Z",
+    "sharedJarUploadCompletedUtc": "2026-10-05T11:36:09Z",
+    "allStepsConclusion": "success",
+    "newFailurePathInjected": false
+  },
+  "unitReports": [
+    {
+      "runId": 37303329735,
+      "artifactId": 11342766578,
+      "zipBytes": 30585,
+      "suites": 41,
+      "tests": 147,
+      "actualExecuted": 123,
+      "skipped": 24,
+      "failures": 0,
+      "errors": 0,
+      "skippedClasses": {
+        "CamoufoxWebviewRendererTest": 13,
+        "LocalWebviewRendererTest": 11
+      },
+      "storageActualCases": 3,
+      "storageSeconds": 0.262,
+      "storageXmlSha256": "97a37d8c264aa24e112be2609d42c0fcbf2fb100bab51c187df6ead800dd01c0"
+    },
+    {
+      "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+      "testedPrMergeRevision": "5dd028a985eea3c344600e5297f97e1bb2340e6b",
+      "runId": 37303329703,
+      "artifact": {
+        "id": 11342976152,
+        "name": "reader-release-java-contracts-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+        "zipBytes": 30617
+      },
+      "actualSuites": 41,
+      "tests": 147,
+      "actualExecuted": 123,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 24,
+      "verified": {
+        "storageCasesActual": 3,
+        "storageSeconds": 0.262,
+        "storageXmlSha256": "2a8221cc5881e8f46cbc2d71a0ca5d49209b70d2275dc5e0ed225237a8bb356a"
+      }
+    }
+  ],
+  "releaseCamoufox": {
+    "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+    "testedPrMergeRevision": "5dd028a985eea3c344600e5297f97e1bb2340e6b",
+    "runId": 37303329703,
+    "artifact": {
+      "id": 11342612393,
+      "name": "reader-release-camoufox-contract-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+      "zipBytes": 963
+    },
+    "actualSuites": 1,
+    "tests": 13,
+    "actualExecuted": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "verified": {
+      "errors": 0,
+      "failures": 0,
+      "navigationContractPresent": true,
+      "skipped": 0,
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "tests": 13,
+      "xmlSha256": "3fa187fcd8123822e4bd2135e017b0cea688cd26d8ba8b375fc69bf1d612b059"
+    }
+  },
+  "browserCamoufox": {
+    "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+    "testedPrMergeRevision": "5dd028a985eea3c344600e5297f97e1bb2340e6b",
+    "runId": 37303329691,
+    "artifact": {
+      "id": 11342906327,
+      "name": "camoufox-contract-report",
+      "zipBytes": 963
+    },
+    "actualSuites": 1,
+    "tests": 13,
+    "actualExecuted": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "verified": {
+      "errors": 0,
+      "failures": 0,
+      "navigationContractPresent": true,
+      "skipped": 0,
+      "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+      "tests": 13,
+      "xmlSha256": "ca08a971aecde43898e7e2a5491d94ecc9dffd513b015a21a735c26325994b8e"
+    }
+  },
+  "chromium": {
+    "artifactId": 11342726641,
+    "zipBytes": 2130,
+    "actualSuites": 3,
+    "tests": 23,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "vue": {
+    "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+    "runId": 37303329877,
+    "artifacts": [
+      {
+        "id": 11342592378,
+        "name": "vue3-core-browser-reports-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+        "zipBytes": 9991
+      },
+      {
+        "id": 11343012209,
+        "name": "vue3-manager-namespace-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+        "zipBytes": 157353
+      },
+      {
+        "id": 11343316377,
+        "name": "vue3-subdir-browser-reports-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+        "zipBytes": 530
+      }
+    ],
+    "result": {
+      "actualXmlReportsAudited": 21,
+      "tests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+          "tests": 1,
+          "seconds": 2.393,
+          "sha256": "b039c2ccd7bd8fd3cfc6b7d49454975a6e0d0491a143f270c875954538a3cf31"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+          "tests": 1,
+          "seconds": 13.651,
+          "sha256": "fae3e264934c79dfe7e30acd2f7e45b00614ab694202bc10b5549104e43a6e2a"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+          "tests": 1,
+          "seconds": 7.053,
+          "sha256": "6652fe933227980db47293cdb8ccb6379831ec2ce091205a220356109d0d35c5"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+          "tests": 1,
+          "seconds": 3.098,
+          "sha256": "25f4f2dfa136cb35dedd4734f04f7e8debfcb6d31bd625064ef78fd04e383186"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+          "tests": 1,
+          "seconds": 4.966,
+          "sha256": "47101a65743f91e1413acdb752dda02d18ae3a8b8cebc74716ff9e4664073019"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+          "tests": 1,
+          "seconds": 5.248,
+          "sha256": "8c50b41a31748a1ccc06c7073f18e4363431bdc2f4425b2f199715b011540dc8"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+          "tests": 1,
+          "seconds": 18.246,
+          "sha256": "62015bee97920e578a658799c849da98eabc851502de3c109e8c7cf67c3e90c6"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+          "tests": 1,
+          "seconds": 11.566,
+          "sha256": "e9c3a4491c671403bae185bfbe5315594eab1e8acbd865cf6f79ccedbeebe0a6"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+          "tests": 1,
+          "seconds": 2.757,
+          "sha256": "37c18c4adb8543d329008737990d15bfe926b3a070dca15df91fd6c5e312f3ab"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+          "tests": 1,
+          "seconds": 22.935,
+          "sha256": "e42827b1608fe27ff1130684191f43960940323ee2bc6895df22d8fd468f868b"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+          "tests": 1,
+          "seconds": 3.535,
+          "sha256": "6bc556af73587a69b9980dada1c4c3b532eb3e0a348a0e447184e9d6818f5c9a"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+          "tests": 1,
+          "seconds": 4.855,
+          "sha256": "bbe46514c425585d450eb97594c5fb0dadc3d1f83c2569707089d58cda476e76"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+          "tests": 1,
+          "seconds": 4.507,
+          "sha256": "daeb539a5811b9584195d495fd62cb344acfdb9795e076db7a183e765f9d011c"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+          "tests": 1,
+          "seconds": 16.807,
+          "sha256": "7d31f51a99fa9d6e06a3c41ed9045bce122bdfea5e95ad76987bd627fb35a087"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+          "tests": 1,
+          "seconds": 7.512,
+          "sha256": "08e3f6434bd2ff29d30b2017ca92f338b7a41a198847b72cbc192b3a0e7180d0"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+          "tests": 1,
+          "seconds": 7.048,
+          "sha256": "5e41bce5ab5c17aa309879dec3264e0e8403ec487235d5dbab65e48dbbeb2cf7"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+          "tests": 1,
+          "seconds": 9.802,
+          "sha256": "7598926dc45737e48fc179c10653adce513bd977cbf38f414ae4f25e0a90ed28"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+          "tests": 1,
+          "seconds": 13.048,
+          "sha256": "b4beea8dd480b5694a7bae8c479ebb2d12e41bd5584bdea7fe8a59fcc4e40a4c"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "seconds": 5.418,
+          "sha256": "0b5e11f34c8aca77022b40c497f4e52631076553ed3fef33e9476ba4a272b34f"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "seconds": 3.566,
+          "sha256": "94b4cb2bdbc8d82595fe6635963738d6a9f5428e78d857a0198ec51892a35554"
+        },
+        {
+          "name": "com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest",
+          "tests": 1,
+          "seconds": 3.031,
+          "sha256": "78c5971956ff4c5734494a580bd3410f6ccd222e7ed0264d690afce257d5008e"
+        }
+      ]
+    }
+  },
+  "oneCompleteImage": {
+    "artifactId": 11342647424,
+    "zipBytes": 896,
+    "actualJsonReportsAudited": 2,
+    "identityCookieRequestResourceFieldsPassed": true,
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "memoryPeakBytes": 821723136,
+    "pidsPeak": 191,
+    "configuredSwapMaxBytes": 1073741824,
+    "actualSwapBytes": 0,
+    "memoryLimitEvents": 0,
+    "pidLimitEvents": 0
+  },
+  "native": {
+    "sourceHead": "6039a7f29f42dc529d7d2b30cd539d8e06d42b2e",
+    "runId": 37303329703,
+    "artifacts": [
+      {
+        "id": 11343193543,
+        "name": "reader-publisher-import-5dd028a985eea3c344600e5297f97e1bb2340e6b",
+        "zipBytes": 7078
+      }
+    ],
+    "result": {
+      "actualJsonReportsAudited": 20,
+      "testedPrMergeRevision": "5dd028a985eea3c344600e5297f97e1bb2340e6b",
+      "sharedJarSha256": "c0a8547518dc0e7be865c3f28c9d953aaefb4cb923a48566963c321a52cf0cb2",
+      "identityCookieRequestResourceFieldsPassed": true,
+      "architectures": {
+        "arm64": {
+          "budgets": {
+            "arm64": {
+              "pidsPeak": 187,
+              "memoryPeakBytes": 859873280,
+              "configuredSwapMaxBytes": 1073741824,
+              "actualSwapBytes": 0
+            },
+            "arm64-transfer": {
+              "pidsPeak": 188,
+              "memoryPeakBytes": 840974336,
+              "configuredSwapMaxBytes": 1073741824,
+              "actualSwapBytes": 0
+            }
+          },
+          "imageId": "sha256:a86bb0fa7aed2d4363280fbfa900764f3bfaa23d6f9393e4042cc07a0b2d93d1",
+          "archiveSha256": "d431df943dbb245d513eb3f45ba97d740e61874c1661c15f901fa7ec0583801d"
+        },
+        "amd64": {
+          "budgets": {
+            "amd64-transfer": {
+              "pidsPeak": 197,
+              "memoryPeakBytes": 823541760,
+              "configuredSwapMaxBytes": 1073741824,
+              "actualSwapBytes": 0
+            },
+            "amd64": {
+              "pidsPeak": 189,
+              "memoryPeakBytes": 838225920,
+              "configuredSwapMaxBytes": 1073741824,
+              "actualSwapBytes": 0
+            }
+          },
+          "imageId": "sha256:2d1a3c2b58f73d2128ea67d024c102604f375c0296f7d9bd48b951e22e82a5f5",
+          "archiveSha256": "7c6e16e6bd5110561e3f2c687d7224c961f3aadadbe861af68714175cdfc0378"
+        }
+      },
+      "limits": [
+        "generated short samples, not real authentication or sustained load",
+        "configured swap remains permitted although actual use was zero",
+        "consumer import proof is not registry publication"
+      ]
+    }
+  },
+  "proofFiles": {
+    "xml": 108,
+    "json": 22,
+    "records": [
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+        "sha256": "81701a9c2e0ce578ac0a0a38986bba5d31d838a2f1b5e1e51b45fa42566e0a72",
+        "suite": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.028
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+        "sha256": "24ec6871ea37cc1df97c9ac76056926e7fb90583799cc09fc1427c903d2d2935",
+        "suite": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.006
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+        "sha256": "deee50402d63306e23ef21ce2cb124a8d7f31629728f69d8f1e13acc06c91cba",
+        "suite": "com.htmake.reader.api.controller.FileControllerPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.007
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+        "sha256": "f80871666bc6ae11aea2da4222c17863acccffd118685602a1cade13d14502bf",
+        "suite": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.002
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+        "sha256": "291fa1dde66af094100630c595eeaa9e66db157404432133ae579548b4abc363",
+        "suite": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.03
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+        "sha256": "2be6ef3d2de0af392b373e807cdbe73a6e881af7f41a5e755bf5f249b6eaa344",
+        "suite": "com.htmake.reader.api.controller.SourceScanCursorTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+        "sha256": "7ab61e20a7e5a2fb19ad47ba08f73a6d95fc9c52f71697a78504c88875176829",
+        "suite": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.217
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.entity.LicenseTest.xml",
+        "sha256": "ffae97278a1a0e88616168ea412d50e3a2ef6bd57df56906802bc0441d8a2965",
+        "suite": "com.htmake.reader.entity.LicenseTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.021
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+        "sha256": "358a4a7dfb2c0902471d2c163e409431bd30c398609f5935041c6a7f11c7cecb",
+        "suite": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.ReaderApplicationTests.xml",
+        "sha256": "bef63c92df4e92d53cce120ebba97da53cc190c462af6294a6b908c939f2907f",
+        "suite": "com.htmake.reader.ReaderApplicationTests",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.209
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+        "sha256": "9311632136e4588179e1011bba58f038ea3b83b89d711cfd477921ff7be3bf1a",
+        "suite": "com.htmake.reader.utils.BrowserCookieJarTest",
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.102
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "sha256": "0b72de1b4eed53cc26b43806b062dae9058f0999c396f7588614d4b799ae0902",
+        "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.026
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+        "sha256": "4cb1c4f88663d1b53c507d85cc2ce4d10f444b28702de73c72a9372a323efb8d",
+        "suite": "com.htmake.reader.utils.BrowserEgressProxyTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.112
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+        "sha256": "83bad392fdf2296a593f69516b9b0bd5b58a4960a51e226be8d597522a349bcf",
+        "suite": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.017
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+        "sha256": "9f7c81e03357b7241f5b7cd2ed592a844895eb2f8c599ccc2a22f545548b2f7f",
+        "suite": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.025
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+        "sha256": "cfd29d934fe9a5bb64ecf63c0aa6fd25f4a090bfa2d7a68f18aa36169eb776e0",
+        "suite": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+        "sha256": "f2c6dd6afe8343c7fae3fb016642dca23d836975c853302da964eac0015c544c",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.371
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+        "sha256": "c2fd2d6d1487389c0990b9aea2e2f1f540593d0c74d09bb8378ef8e1d9620a57",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.754
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "16c60af72556554de6c6cbb259b250a4a5aabfee26ea9aa30003e301ffc521d6",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 13,
+        "seconds": 0.005,
+        "finiteNavigationSeconds": 0
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "fe558cdfdecc1173e257ef7582eeae96d09096f6a08abe69c55718a4c953581b",
+        "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.033
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+        "sha256": "2418fd8c836a365f58e7edd484365c1bd4627f798f26761395517b86ceb15a25",
+        "suite": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.003
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "828aefd2c3507b529d2c0d6201f319e2a173810183177ca0d33c90eb91ad384d",
+        "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 11,
+        "seconds": 0.003
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+        "sha256": "bc66272e50a0b54441fb56298ac064343ccc1df9bd6fa9f7a632cdd4942c0676",
+        "suite": "com.htmake.reader.utils.RemoteWebviewContractTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.159
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+        "sha256": "97a37d8c264aa24e112be2609d42c0fcbf2fb100bab51c187df6ead800dd01c0",
+        "suite": "com.htmake.reader.utils.StorageReadConsistencyTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.262
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+        "sha256": "9c9b57dae2dcd7ca34e5412e4aefcc4ead4388ee0dceab4b29e3f9a4b1acc418",
+        "suite": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.199
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+        "sha256": "bcc14ec084400bede519976231ad7cb58460fc0873dac51d1c78f4006d4371e3",
+        "suite": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.033
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+        "sha256": "d07417ff3a19a6b4781a313141ad690e721a9ef9cd5c74231278baf0a0e7ac68",
+        "suite": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.006
+      },
+      {
+        "kind": "java",
+        "file": "TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+        "sha256": "9e55055e2588a348b1fccaeb121cba9dabea47e77cce77bab4a4e133bbd3df04",
+        "suite": "com.htmake.reader.WebResourceEncodingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.004
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+        "sha256": "7bfef0d83edade9cf7ecbf23cecd7efaffabb0e7f266864f5081d9cb845b6293",
+        "suite": "io.legado.app.data.entities.BookChapterSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+        "sha256": "20106bfe066293c6aac7c0a76181c3b29daacbc9081c4fdac6a6fc34606e05bb",
+        "suite": "io.legado.app.data.entities.BookLocalEpubPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.003
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+        "sha256": "9b9c295054070a096ca77e7bf85f93b708186243b017b5484f01c3b0f756d30d",
+        "suite": "io.legado.app.data.entities.BookLocalPdfPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+        "sha256": "74d30516ecc2242963d5fd76e739b976906eaf2a0f81fcdeee2b8652fcfe39f3",
+        "suite": "io.legado.app.data.entities.RssArticleSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+        "sha256": "457e6802a8c0f354b275ddd757b509907a9442ca307338d455ca606fd8231fd1",
+        "suite": "io.legado.app.data.entities.RssSourceSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.038
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+        "sha256": "85dad2c0791f1117b3e388ea2f64b63eb655e742544376b942e5d9d895907f8c",
+        "suite": "io.legado.app.data.entities.SearchBookSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.007
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+        "sha256": "4936e5e080e97b71a42a6e23d2f6de7b9d6a0256586bf422a54fbc81080f0818",
+        "suite": "io.legado.app.model.localBook.TextFileContentTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.005
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+        "sha256": "d3253162a22134806a3fbec9e90c6ddce5e643b965a5b4cf5c2a75b7b3bbfd12",
+        "suite": "io.legado.app.model.rss.RssParserDefaultTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.004
+      },
+      {
+        "kind": "java",
+        "file": "TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+        "sha256": "aa284b15fedc9021c71c884dbead8f3f029d48d243db85b14118cf56a1c21ad5",
+        "suite": "io.legado.app.utils.EncoderUtilsTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.283
+      },
+      {
+        "kind": "java",
+        "file": "TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+        "sha256": "4222446661718007b460b86be7f2c05e6549c0796aa653fdbc7e552234e0014a",
+        "suite": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.01
+      },
+      {
+        "kind": "java",
+        "file": "TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+        "sha256": "79bb4c2e16968c649b802548e518c5f834506e9a0a42e1dc02faec40684429a6",
+        "suite": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.002
+      },
+      {
+        "kind": "java",
+        "file": "TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+        "sha256": "9e2b71e785c5b95f99d16241f5ce8b49c5cc3e76d923ebeea92453d036af9da3",
+        "suite": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.016
+      },
+      {
+        "kind": "java",
+        "file": "TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+        "sha256": "7ec62a761a031d7d67331e30ddf50176a01e711b02d9e4d6bd11cb87c615ef58",
+        "suite": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.DirectEpubExtractorTest.xml",
+        "sha256": "2453c85651391a997c1cfe97c3349a7b2490be3f8d758ddeb6c76bc361454773",
+        "suite": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.042
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.EpubCacheMoveTest.xml",
+        "sha256": "c95e602895d250e7a778666c7bf006b22bd2998910feb0a3b8ba086188a263d1",
+        "suite": "com.htmake.reader.api.controller.EpubCacheMoveTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.009
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.FileControllerPathTest.xml",
+        "sha256": "de84872325a4322693e939b4a674e5910521ea9ce96a0c7315e04e86ee7ef7c8",
+        "suite": "com.htmake.reader.api.controller.FileControllerPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.01
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.RemoteBookSourcePayloadTest.xml",
+        "sha256": "26cdc2ac485cd379c3a81a1afc0a174e2a431f239454f576932b75fb747f9660",
+        "suite": "com.htmake.reader.api.controller.RemoteBookSourcePayloadTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.003
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceLoginSecurityTest.xml",
+        "sha256": "441188b9730a4acfc2b26f977dcef93907710f5ab50c49cfc9f387ea5d018a3a",
+        "suite": "com.htmake.reader.api.controller.SourceLoginSecurityTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.04
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceScanCursorTest.xml",
+        "sha256": "0c192e65bf5afad794bf9d9ff56598a272bab23a21508c0f9442f3be7cf7b8ac",
+        "suite": "com.htmake.reader.api.controller.SourceScanCursorTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.api.controller.SourceSubscriptionControllerTest.xml",
+        "sha256": "0d1be7581674535df87affc925a025a60bea89207d05575fb78c87d0e455d7a6",
+        "suite": "com.htmake.reader.api.controller.SourceSubscriptionControllerTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.356
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.entity.LicenseTest.xml",
+        "sha256": "e73661e0b440a6a48f85a71beb5c398cb2fc76a46a778719a4191d845716f1ff",
+        "suite": "com.htmake.reader.entity.LicenseTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.027
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.init.ReaderAdapterWebviewTest.xml",
+        "sha256": "f3bb5dc7966e32f4d0ab2b0e7bdcb5c429664b78010c4f9cb34b023bccab2c5f",
+        "suite": "com.htmake.reader.init.ReaderAdapterWebviewTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.ReaderApplicationTests.xml",
+        "sha256": "44d8a8a85b4a570afc9a86587da55689c61c3a48bdc36315ba2fe93535204b4b",
+        "suite": "com.htmake.reader.ReaderApplicationTests",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.289
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserCookieJarTest.xml",
+        "sha256": "a6d6025b8e873e2168ad2c5a552ba23e61354904181ee3daa3fb24cbe0126a85",
+        "suite": "com.htmake.reader.utils.BrowserCookieJarTest",
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.181
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "sha256": "325f59e8d4f9a997ee41971c5d4af1e600461c32b5c40e38e6ccf197995972d9",
+        "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.036
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserEgressProxyTest.xml",
+        "sha256": "d66b71d4b87f03def735c9780edb15deb2c1b606b4ba7bd202b8a60fd17b4f03",
+        "suite": "com.htmake.reader.utils.BrowserEgressProxyTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.113
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest.xml",
+        "sha256": "755e93fea24aba53459667f7638f251980f4f12720df995050c8ba9e3febc725",
+        "suite": "com.htmake.reader.utils.BrowserNetworkPolicyDiagnosticTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.041
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserNetworkPolicyTest.xml",
+        "sha256": "5f5ce51503d237fa51b8add77f2e1b3fe0fa90488c936cbd439bd0a2265d55ba",
+        "suite": "com.htmake.reader.utils.BrowserNetworkPolicyTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.06
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.BrowserUpstreamProxyTest.xml",
+        "sha256": "8b0658388d120f30ba103e33ceca04f27c43bf1547b3c4f1b90920a5aa8c9321",
+        "suite": "com.htmake.reader.utils.BrowserUpstreamProxyTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest.xml",
+        "sha256": "7ab24367d325361c0bc7b83c74a76a2223c13011d47f9b02ab1f293480603be8",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererNetworkDiagnosticTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.587
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest.xml",
+        "sha256": "d5344be50e6d6c93a711196f79da326872d69d1a491020ef4e32ef6399094aa4",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererOutputLimitTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 1.144
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "36b64f8e8219a238f7f29b85c79ac0e5fe46fdee575b3314a50a544d2ac136c4",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 13,
+        "seconds": 0.007,
+        "finiteNavigationSeconds": 0.001
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "674447814a1293dab7f833e85857a3a72afcd05540a7048d52a35143a0dea7bd",
+        "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.059
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererGuardTest.xml",
+        "sha256": "94348d07ba3c57f572d8877c323401b4536fb4505d6470330d46fa8d99936bdc",
+        "suite": "com.htmake.reader.utils.LocalWebviewRendererGuardTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.003
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "cc1897cef8b1f9b200a2cbfa0396c9def18f95bfc3d2eae3f7284af0cad545be",
+        "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 11,
+        "seconds": 0.004
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.RemoteWebviewContractTest.xml",
+        "sha256": "2e2f1b2fdfeebb37a1bbddb0483ddd7b3cdf03509fdd134ad56b4f88ee8a09e2",
+        "suite": "com.htmake.reader.utils.RemoteWebviewContractTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.429
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.StorageReadConsistencyTest.xml",
+        "sha256": "2a8221cc5881e8f46cbc2d71a0ca5d49209b70d2275dc5e0ed225237a8bb356a",
+        "suite": "com.htmake.reader.utils.StorageReadConsistencyTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.262
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.WebviewCookieCompatibilityTest.xml",
+        "sha256": "acd4967a4e7f6f5f1986fc3b8092979c5dcfa8457301c9d9b6411236caf6b608",
+        "suite": "com.htmake.reader.utils.WebviewCookieCompatibilityTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.203
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.utils.ZipEntryBoundaryTest.xml",
+        "sha256": "daeba9f73f152331cf89c24f8998245a238dea06b5a691ac3eb7a08a4ca6ee82",
+        "suite": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.042
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.verticle.RestVerticleLoggingTest.xml",
+        "sha256": "729235dd0dd96a1bb56ad35e0bb7b26217446ca8a2bb5a0c22713fb9ccd356bf",
+        "suite": "com.htmake.reader.verticle.RestVerticleLoggingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.008
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-com.htmake.reader.WebResourceEncodingTest.xml",
+        "sha256": "463d44c604b584ebc820df55f33e11e74cae9e6de102da29f698167913a49d72",
+        "suite": "com.htmake.reader.WebResourceEncodingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.006
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.BookChapterSerializationTest.xml",
+        "sha256": "fb6a2e3221b64588595294ac76bc8b51d484f55c9e1dd1c79b0a04295555646c",
+        "suite": "io.legado.app.data.entities.BookChapterSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.BookLocalEpubPathTest.xml",
+        "sha256": "8409ad8f3278830d9b1c33c3f3bb824f2282b740a271875547096493a1404e79",
+        "suite": "io.legado.app.data.entities.BookLocalEpubPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.004
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.BookLocalPdfPathTest.xml",
+        "sha256": "8e0b446d66caf7695d8a398c982ebe746a2fd19012f08e5943b2d69fb812cb00",
+        "suite": "io.legado.app.data.entities.BookLocalPdfPathTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.003
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.RssArticleSerializationTest.xml",
+        "sha256": "d6fbffca9809ac97c74486f8a5f7f9d5efd8b882f60440435ba3ce17d93ef961",
+        "suite": "io.legado.app.data.entities.RssArticleSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.001
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.RssSourceSerializationTest.xml",
+        "sha256": "ce1d739ac3d9250b37ac689f0f8ddb31db55bf356dc47e2c4d4c79d72b713568",
+        "suite": "io.legado.app.data.entities.RssSourceSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.045
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.data.entities.SearchBookSerializationTest.xml",
+        "sha256": "7dfac5fbfa40b037a3bdddace0d1682460b57ee804490071311c09dc17ea427d",
+        "suite": "io.legado.app.data.entities.SearchBookSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.008
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.model.localBook.TextFileContentTest.xml",
+        "sha256": "dcd357570f78061da70a8516d398ca630b0c9c65d36d840eaa829c44055cf8bc",
+        "suite": "io.legado.app.model.localBook.TextFileContentTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.005
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.model.rss.RssParserDefaultTest.xml",
+        "sha256": "717d1d8238254d87074a45f9eb75984d2c65af45e385d1e664237dbcd1abbb50",
+        "suite": "io.legado.app.model.rss.RssParserDefaultTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.006
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-io.legado.app.utils.EncoderUtilsTest.xml",
+        "sha256": "6f6e4e2a866767614e2664cab8114c660c42a34591ebfe7a6060c2c952b5b503",
+        "suite": "io.legado.app.utils.EncoderUtilsTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.795
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-me.ag2s.epublib.epub.EpubLazyIntegrityTest.xml",
+        "sha256": "3065ce523b310db9a3c84d6bc3461134070e407eba6b7fb1199d27b7df0e0048",
+        "suite": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.012
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest.xml",
+        "sha256": "b01d66325180a18944431a13bb46d98966ac26eff2e80655220253e6b80c7cb5",
+        "suite": "me.ag2s.epublib.epub.ResourcesLoaderOpfEncodingTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.002
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-me.ag2s.epublib.util.EpubArchivePolicyTest.xml",
+        "sha256": "3f57c1b71e099937fde9d0e74bf8b519c43174e00b2fb01c7a6dad9fb85c318f",
+        "suite": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.021
+      },
+      {
+        "kind": "release-java",
+        "file": "TEST-me.ag2s.epublib.util.ResourceUtilEncodingTest.xml",
+        "sha256": "d83850e37b418a33520b762a788a06d667082f61fb8426a497798229fecd0d0d",
+        "suite": "me.ag2s.epublib.util.ResourceUtilEncodingTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0
+      },
+      {
+        "kind": "release-cam",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "3fa187fcd8123822e4bd2135e017b0cea688cd26d8ba8b375fc69bf1d612b059",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 113.976,
+        "finiteNavigationSeconds": 11.554
+      },
+      {
+        "kind": "browser-cam",
+        "file": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+        "sha256": "ca08a971aecde43898e7e2a5491d94ecc9dffd513b015a21a735c26325994b8e",
+        "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 79.483,
+        "finiteNavigationSeconds": 8.949
+      },
+      {
+        "kind": "xml",
+        "file": "TEST-com.htmake.reader.utils.BrowserDocumentSnapshotTest.xml",
+        "sha256": "cb3c55c5dd7da1fd1f632281eba50760f2506e227f4162a8877341c62d4a51c0",
+        "suite": "com.htmake.reader.utils.BrowserDocumentSnapshotTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.059
+      },
+      {
+        "kind": "xml",
+        "file": "TEST-com.htmake.reader.utils.ChromiumLaunchPolicyTest.xml",
+        "sha256": "95cd81e9951ca35959377fbabbcbc40a7ae1a750632f8ec02739f0f47a2715b2",
+        "suite": "com.htmake.reader.utils.ChromiumLaunchPolicyTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.082
+      },
+      {
+        "kind": "xml",
+        "file": "TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml",
+        "sha256": "a0315b61ab166b7c45b0093049e672582451f1cf57829f2a07376c2237b07b1f",
+        "suite": "com.htmake.reader.utils.LocalWebviewRendererTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 20.687
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+        "sha256": "b039c2ccd7bd8fd3cfc6b7d49454975a6e0d0491a143f270c875954538a3cf31",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 2.393
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+        "sha256": "fae3e264934c79dfe7e30acd2f7e45b00614ab694202bc10b5549104e43a6e2a",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 13.651
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+        "sha256": "6652fe933227980db47293cdb8ccb6379831ec2ce091205a220356109d0d35c5",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 7.053
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+        "sha256": "25f4f2dfa136cb35dedd4734f04f7e8debfcb6d31bd625064ef78fd04e383186",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 3.098
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+        "sha256": "47101a65743f91e1413acdb752dda02d18ae3a8b8cebc74716ff9e4664073019",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 4.966
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+        "sha256": "8c50b41a31748a1ccc06c7073f18e4363431bdc2f4425b2f199715b011540dc8",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 5.248
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+        "sha256": "62015bee97920e578a658799c849da98eabc851502de3c109e8c7cf67c3e90c6",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 18.246
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+        "sha256": "e9c3a4491c671403bae185bfbe5315594eab1e8acbd865cf6f79ccedbeebe0a6",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 11.566
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+        "sha256": "37c18c4adb8543d329008737990d15bfe926b3a070dca15df91fd6c5e312f3ab",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 2.757
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+        "sha256": "e42827b1608fe27ff1130684191f43960940323ee2bc6895df22d8fd468f868b",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 22.935
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+        "sha256": "6bc556af73587a69b9980dada1c4c3b532eb3e0a348a0e447184e9d6818f5c9a",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 3.535
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+        "sha256": "bbe46514c425585d450eb97594c5fb0dadc3d1f83c2569707089d58cda476e76",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 4.855
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+        "sha256": "daeb539a5811b9584195d495fd62cb344acfdb9795e076db7a183e765f9d011c",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 4.507
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+        "sha256": "7d31f51a99fa9d6e06a3c41ed9045bce122bdfea5e95ad76987bd627fb35a087",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 16.807
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+        "sha256": "08e3f6434bd2ff29d30b2017ca92f338b7a41a198847b72cbc192b3a0e7180d0",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 7.512
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+        "sha256": "5e41bce5ab5c17aa309879dec3264e0e8403ec487235d5dbab65e48dbbeb2cf7",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 7.048
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+        "sha256": "7598926dc45737e48fc179c10653adce513bd977cbf38f414ae4f25e0a90ed28",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 9.802
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+        "sha256": "b4beea8dd480b5694a7bae8c479ebb2d12e41bd5584bdea7fe8a59fcc4e40a4c",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 13.048
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+        "sha256": "0b5e11f34c8aca77022b40c497f4e52631076553ed3fef33e9476ba4a272b34f",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 5.418
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+        "sha256": "94b4cb2bdbc8d82595fe6635963738d6a9f5428e78d857a0198ec51892a35554",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 3.566
+      },
+      {
+        "kind": "vue",
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest.xml",
+        "sha256": "78c5971956ff4c5734494a580bd3410f6ccd222e7ed0264d690afce257d5008e",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 3.031
+      },
+      {
+        "kind": "smoke",
+        "file": "bundled-browser-resource-budget.json",
+        "sha256": "5a837ae7ec661d883f3936b6b48b16de27c1adc07207c6ff4860d6ebb867b79e"
+      },
+      {
+        "kind": "smoke",
+        "file": "bundled-browser-synthetic.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "4e781224e08ab82d3338c553c24c2cb67887f185b2cd1ccc9cfe5d64fe25d45c"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-JAR_IDENTITY.json",
+        "sha256": "aef4a764ed2000d7395ec7455113a95337e5d461e4e8332b2f45bda1c02e30f7"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-metadata.json",
+        "sha256": "5d7644f5fa7668f5218f766f7d09d7317d66b710c1d676f35c4968fb15615437"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-RELEASE_IDENTITY.json",
+        "sha256": "8b2728535f126de81199ae23edf163875d08bd914363bdace5a4171358c8bc73"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "9abbdc83bd101c14ab7dd44b7bdef91fc990d0983db1dcaefe5cb435bf76c2aa"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "477e14ced57aaa4fc7594671386568f28d7f2e2f509e1da3c99dca7094c39ffe"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-transfer-JAR_IDENTITY.json",
+        "sha256": "aef4a764ed2000d7395ec7455113a95337e5d461e4e8332b2f45bda1c02e30f7"
+      },
+      {
+        "kind": "native",
+        "file": "amd64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "8b2728535f126de81199ae23edf163875d08bd914363bdace5a4171358c8bc73"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "e1341fa84f6001d098a317b8a4c3af22ba44662b91aa9cd7afc773ec0e6e9c85"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-JAR_IDENTITY.json",
+        "sha256": "9e29d0afbd241bd5a8c4f230b747e4f4acf1bf70cf291841438bc04dacc5ff97"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-metadata.json",
+        "sha256": "31cf343889e33ba687053fb1ad39b8b4891b7b8375d8eb725b2d2d1b4e13369d"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-RELEASE_IDENTITY.json",
+        "sha256": "8b2728535f126de81199ae23edf163875d08bd914363bdace5a4171358c8bc73"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-transfer-BROWSER_RESOURCE_BUDGET.json",
+        "sha256": "16996fb425a533d8bb17dfbd43cbe36d10971df2625783596110799301a60cc3"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-transfer-BROWSER_SYNTHETIC.json",
+        "sha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-transfer-IMAGE_IDENTITY.json",
+        "sha256": "b4a7819c168ecf62f146aff8450b38b1caf3fd8f134a36aef7a5ea36702dd76f"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-transfer-JAR_IDENTITY.json",
+        "sha256": "9e29d0afbd241bd5a8c4f230b747e4f4acf1bf70cf291841438bc04dacc5ff97"
+      },
+      {
+        "kind": "native",
+        "file": "arm64-transfer-RELEASE_IDENTITY.json",
+        "sha256": "8b2728535f126de81199ae23edf163875d08bd914363bdace5a4171358c8bc73"
+      }
+    ]
+  },
+  "acceptanceLimits": [
+    "Full JVM suites execute 123 of 147 cases in each of two separate jobs; skipped real browsers are independently verified, not counted as unit passes.",
+    "Both actual default-engine reports have 13 cases; the subsequent 14th endless-navigation contract is not covered by this source.",
+    "Generated sources/cookies only; no real Qidian authentication, original JAR comparison, private book text, or production validation.",
+    "Short generated image samples only; configured swap allows 1 GiB despite actual zero use.",
+    "Publisher import without registry credentials is not GitHub Release or registry publication.",
+    "New failure-artifact retention is structurally checked, not validated by deliberately failing this Native gate.",
+    "Vue XML journeys were independently checked; downloaded generated manager PNGs were not newly visually inspected.",
+    "No image archives or JARs were downloaded locally for this receipt."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "verifiedArchiveSha256": "ad30339a93f1e69db243533ea924189c499fee150cc9c8d4356d94801499bce3",
+  "ciImageIdKind": "image config digest",
+  "ciImageId": "sha256:ea2814b82bba7b3318347797ed93a7f5937437c5572276a6f3a9a18bb3ae56b2",
+  "serverImageIdKind": "OCI manifest digest",
+  "serverImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+  "ociManifestBlobDigestVerified": true,
+  "manifestReferencesCiConfig": true,
+  "serverDockerVersion": "29.7.2",
+  "serverStore": "io.containerd.snapshotter.v1",
+  "sourceRunId": 37187152865,
+  "sourceArtifactId": 11297951137
+}

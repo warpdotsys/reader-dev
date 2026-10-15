@@ -1,16 +1,20 @@
 import request, { type RequestOptions } from './request'
 import type { ReturnData, FileItem } from '@/types'
+import { useUserStore } from '@/stores/user'
+import { captureRequestSession, isRequestSessionCurrent } from './requestSession'
+import type { RequestSessionSnapshot } from './requestSession'
 
 /** secure 模式书仓写操作的管理密码（FileManageView 弹窗确认后设置；仅保存在本标签页） */
-let fileSecureKey = ''
+let fileCredential: { key: string; session: RequestSessionSnapshot } | null = null
 
 export function setFileSecureKey(key: string): void {
-  fileSecureKey = key
+  fileCredential = key ? { key, session: captureRequestSession(useUserStore()) } : null
 }
 
 /** Send the manager secret in a header so it is not copied into proxy URL logs. */
 function secureHeaders(): Record<string, string> | undefined {
-  return fileSecureKey ? { 'X-Reader-Secure-Key': fileSecureKey } : undefined
+  return fileCredential && isRequestSessionCurrent(fileCredential.session, useUserStore())
+    ? { 'X-Reader-Secure-Key': fileCredential.key } : undefined
 }
 
 /**

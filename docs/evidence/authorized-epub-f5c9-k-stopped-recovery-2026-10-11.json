@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "scope": "exact stopped K diagnostic finite stdout recovery",
+  "unitInactiveAndMainPidZero": true,
+  "ownedContainersRemaining": 0,
+  "cleanup": [],
+  "stoppedStateEntriesFoundOnThisAttempt": 0,
+  "priorAttemptReachedStdoutSchemaCheckAfterOwnedStateCleanup": true,
+  "wholeRunAccepted": false,
+  "resourceBudgetAccepted": false,
+  "completeResourceReportAvailable": false,
+  "timeoutRootCauseProven": false,
+  "productFixAccepted": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "privateLogOrBodyReadByRecovery": false,
+  "streams": {
+    "server": {
+      "bytes": 484,
+      "sha256": "e7b5e462048e763ef5d6547936867c5f4a60cd570226c2cf38b4638228fb96d4",
+      "rowKeys": [
+        "identity",
+        "serverReady"
+      ],
+      "businessObservationAvailable": false
+    },
+    "client": {
+      "bytes": 48743,
+      "sha256": "0a22b8bce6726eabeee3db19ba6b7e07000cc36e4820cdb829b0338941106444",
+      "rowKeys": [
+        "identity",
+        "standaloneObservation"
+      ],
+      "businessObservationAvailable": true,
+      "recoveredInnerSha256": "d68fafe2b0e34a4cc1f9d6b6fe21a7240e3d3ea30ecc31ef59dce9f8a89bea5b"
+    }
+  }
+}

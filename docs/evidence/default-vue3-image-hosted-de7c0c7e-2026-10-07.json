@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-07",
+  "scope": "own hosted candidate reports independently checked; not release, production, real authentication or subsequent UI edits",
+  "sourceHead": "de7c0c7ece2d6d2535b44e4e33caef85826eab3e",
+  "testedMergeRevision": "bed59dc85d0315fb657c9060968d503606a62de6",
+  "runs": {
+    "java": {"id": 37484590395, "status": "completed", "conclusion": "success"},
+    "vue": {"id": 37484590435, "status": "completed", "conclusion": "success"},
+    "fullImage": {"id": 37484590411, "status": "completed", "conclusion": "success"},
+    "native": {"id": 37484590448, "status": "completed", "conclusion": "success"}
+  },
+  "artifacts": {
+    "publisher": 11424255730,
+    "fullSmoke": 11424065429,
+    "fullCamoufox": 11424005189,
+    "nativeCamoufox": 11423221159,
+    "nativeJava": 11422328642,
+    "nativeSourceDocument": 11423330958,
+    "coreVue": 11422748145,
+    "subdirectoryVue": 11422887583,
+    "loginVisual": 11422649081,
+    "localReadingVisual": 11423171448,
+    "shelfVisual": 11423256013,
+    "shelfOfflineVisual": 11423405625
+  },
+  "independentGuardsPassed": {
+    "defaultUiReports": 5,
+    "asyncReaderReports": 5,
+    "resourceBudgetReports": 5,
+    "nativeIdentitySets": 4,
+    "nativeSharedJarAndUiEqual": true,
+    "camoufoxSuites": 2,
+    "camoufoxCasesEach": 18,
+    "camoufoxFailuresErrorsSkipped": 0,
+    "sourceDocumentHelperSuites": 2,
+    "sourceDocumentHelperCasesEach": 3,
+    "coreVueCases": 18,
+    "subdirectoryVueCases": 1,
+    "vueFailuresErrorsSkipped": 0,
+    "loginGeometryCases": 14,
+    "nativeJavaTotal": 161,
+    "nativeJavaPassed": 132,
+    "nativeJavaSkipped": 29,
+    "nativeJavaFailuresErrors": 0,
+    "fullChromiumPassed": 23,
+    "fullChromiumFailuresErrorsSkipped": 0
+  },
+  "nativeIdentity": {
+    "version": "4.0.7",
+    "sharedJarSha256": "7848cc5e367e0872c2ac07b520698a1b7ec0a486d3219ec8df1e09f07af17d33",
+    "amd64": {
+      "imageId": "sha256:2805f85f5ea96cdd831ffed410dfeb7066860ab15dfebdd55ac2f904781f971d",
+      "archiveSha256RecordedByCI": "a7a349529ec4f97687b5f1c066df4b0880186524fe6b11f7907458d99b3bffb6"
+    },
+    "arm64": {
+      "imageId": "sha256:b5bb368533b919712fa645d67add6abad14a6d581673585f7ce96789fc35c5b5",
+      "archiveSha256RecordedByCI": "b4db223f6d194943aba518886d2c6dea4974ceb6122c0f20204ef38652fa837d"
+    },
+    "largeImageArchivesDownloadedOrRehashedLocally": false
+  },
+  "fullWorkflowJarSha256": "656d3fb4362dd0c068dde64669c2cbb025394f54356f0fb4210f3891055019e6",
+  "fullWorkflowAndNativeJarBytesEqual": false,
+  "differentWorkflowBuildsNotClaimedBitReproducible": true,
+  "defaultUi": {
+    "entrySha256": "f73d5e23547b4da88b5100b702297f9ffcf2d22a18523701c9e167816964ae74",
+    "nativeFourReportsSha256Each": "d7cf34dd01187a160e2cd778d81a5eb85f839f614c3243c4c352d76ed10f3a57",
+    "fullReportSha256": "5fa40900454c053c4c6c4d357f873fac5fa169fafda1603ae39f093c8a1866f7",
+    "routes": ["/", "/login", "/search", "/reader/generated-book"],
+    "packagedHtmlJsCssByteMatches": true,
+    "staticProbeIsNotRenderedAcceptance": true
+  },
+  "shortSmokeBudgets": {
+    "cpuCount": 2,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "swapMaxBytes": 1073741824,
+    "swapCurrentBytesAll": 0,
+    "memoryLimitAndOomAndPidLimitEventsAll": 0,
+    "observations": [
+      {"phase": "amd64 built", "memoryPeakBytes": 870690816, "pidsPeak": 198},
+      {"phase": "amd64 loaded", "memoryPeakBytes": 843173888, "pidsPeak": 208},
+      {"phase": "arm64 built", "memoryPeakBytes": 797011968, "pidsPeak": 196},
+      {"phase": "arm64 loaded", "memoryPeakBytes": 818860032, "pidsPeak": 194},
+      {"phase": "full-image smoke", "memoryPeakBytes": 836128768, "pidsPeak": 202}
+    ]
+  },
+  "reportManifests": {
+    "algorithm": "SHA256 of case-sensitive lexicographically sorted relative/path + space + SHA256(file) + newline; paths use slash; UTF-8",
+    "publisher": {"files": 24, "bytes": 15244, "sha256": "ea5dbf1f6cf8b1b3a2daa7c9cf6a553f7fb364f70f80cbf83e732d0ca00da437"},
+    "full": {"files": 3, "bytes": 3227, "sha256": "232fd7c7e34a7ba6deea8b8db972cd0025aeb2d0b08887b179e771a67a48dc30"},
+    "nativeJavaAndHelper": {"files": 43, "bytes": 88787, "sha256": "541ea5029bb1078ba9585be9a54a8a891ee95719c3b51a0b9440301e13267a6c"},
+    "fullChromiumAndHelper": {"files": 4, "bytes": 4903, "sha256": "6ad941ecf562d619bef87facafda83bd5f5a75b59d4a387b403d9f36e91daacd"},
+    "vue": {"files": 19, "bytes": 11001, "sha256": "d424161b752d62d7049a410c9b1fcd5500704d131e8d1c26c252c1a9dec2deee"}
+  },
+  "camoufoxXmlSha256": {
+    "native": "9a58fabe79ed02d52aa9c8f26640027ea8bb9f031c6d056196613504856856b9",
+    "full": "d8d753dd449b92b321f53f0757bedca882ac40a7b0a5027f2008a4cbf82e6576"
+  },
+  "helperReportSha256Each": "c59409ca1c57a5701102033ef31998d8070ab5c8d813d5b9015a70a5ab9ae9ad",
+  "loginGeometrySha256": "95d967bab2a80ae02fbce3f349acd117e374bfb2324d73eacfbb225b21dd3abe",
+  "boundaries": {
+    "thisRevisionLongSoakExecuted": false,
+    "realCredentialsImported": false,
+    "privateBodyRead": false,
+    "originalJarParityExecuted": false,
+    "realQidianFixed": false,
+    "tagCreated": false,
+    "registryWritten": false,
+    "productionChanged": false,
+    "subsequentMobileLayoutFixAcceptedHere": false
+  }
+}

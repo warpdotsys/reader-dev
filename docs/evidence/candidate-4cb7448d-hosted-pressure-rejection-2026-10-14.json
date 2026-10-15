@@ -1,0 +1,445 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "4cb7448ddd78c82c219f06f9514396397402a413",
+  "testedMergeSnapshot": "cec538cbe3ba3dc5d89be61aa8d1085d69a2e275",
+  "jarSha256": "39995ba1d0990d1d9125d75c6e5fc9d8caa3ab0e9929a79a851145013e40028f",
+  "nativeRunId": 38568740919,
+  "nativeWorkflowConclusion": "failure",
+  "nativeWorkflowAccepted": false,
+  "publisherExecuted": false,
+  "publicGeneratedInputOnly": true,
+  "privateBooksOrRealCredentialsUsed": false,
+  "builtImages": {
+    "scope": "native built images only; three fresh generated rounds per architecture",
+    "readingScenesAccepted": 48,
+    "architectures": {
+      "amd64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "cec538cbe3ba3dc5d89be61aa8d1085d69a2e275",
+        "jarSha256": "39995ba1d0990d1d9125d75c6e5fc9d8caa3ab0e9929a79a851145013e40028f",
+        "architecture": "amd64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1657888768,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11897047588,
+        "artifactZipSha256": "06812b21d9a576d8a67fe35e6b287d923a744011b814aa42e3976f627f414c00",
+        "reportSha256": "3791ea187ceb0d3105e9049fe37e0397ccd5ad52d7e585052d5e0a7f09a98b39",
+        "imageId": "sha256:f9bacffc9fdd0f42faceb11e6872435757cb42dc370505610e6f66c0f6b8649a",
+        "roundSeconds": [
+          29.085,
+          25.995,
+          28.877
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      },
+      "arm64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "cec538cbe3ba3dc5d89be61aa8d1085d69a2e275",
+        "jarSha256": "39995ba1d0990d1d9125d75c6e5fc9d8caa3ab0e9929a79a851145013e40028f",
+        "architecture": "arm64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1653563392,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11897367194,
+        "artifactZipSha256": "4ae6ad85a5d1a0dc4c96a98f05befdff9ce93de3e0b2160080878d9e9944f366",
+        "reportSha256": "78887df13f3436a3791d15d5a1fdbd973347a5f096e0c09e2dc20ff96111a41c",
+        "imageId": "sha256:2bf4f6dd9c14464326e7993da65e816205be55f1635f6dda9ec53194be337e9f",
+        "roundSeconds": [
+          25.872,
+          25.312,
+          26.403
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      }
+    }
+  },
+  "freshRunnerReload": {
+    "amd64": {
+      "artifactId": 11896919391,
+      "zipSha256": "c33240213f81ee5b3f96bf4e1b62ed3564028dbcc890dd1153019f0ee8deabf4",
+      "reportSha256": "d222c711b77dcc80d5b3b4e35592317fa98b8e7915ec29a71efdbb2aae34e212",
+      "seriesAccepted": false,
+      "imageId": "sha256:f9bacffc9fdd0f42faceb11e6872435757cb42dc370505610e6f66c0f6b8649a",
+      "jarSha256": "39995ba1d0990d1d9125d75c6e5fc9d8caa3ab0e9929a79a851145013e40028f",
+      "rounds": [
+        {
+          "round": 1,
+          "accepted": true,
+          "executionReturnCode": 0,
+          "phase": "complete",
+          "scenes": [
+            "html806",
+            "raw805",
+            "raw805Refresh",
+            "raw806",
+            "text805",
+            "text805Return",
+            "text806",
+            "text806Refresh"
+          ],
+          "exceptionType": null,
+          "frames": null,
+          "visibleState": null,
+          "seconds": 36.055,
+          "budget": {
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "memoryMaxBytes": 2147483648,
+            "memoryHighBytes": 1610612736,
+            "memoryPeakBytes": 1660375040,
+            "swapMaxBytes": 0,
+            "pidsMax": 512,
+            "memoryEvents": {
+              "low": 0,
+              "high": 7726,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0
+            },
+            "pidsEvents": {
+              "max": 0
+            }
+          },
+          "cleanup": {
+            "ownedContainerRemoved": true,
+            "generatedDataCleared": true,
+            "generatedBytesRemoved": 171337407
+          },
+          "parentStopped": true,
+          "dispatchFailure": null,
+          "workerFailure": null
+        },
+        {
+          "round": 2,
+          "accepted": false,
+          "executionReturnCode": 2,
+          "phase": "uiExceptionBeforeOwnedCleanup",
+          "scenes": [
+            "html806",
+            "raw805",
+            "raw806",
+            "text805",
+            "text806",
+            "text806Refresh"
+          ],
+          "exceptionType": "TimeoutError",
+          "frames": [
+            {
+              "file": "main.py",
+              "function": "main",
+              "line": 59
+            },
+            {
+              "file": "ui.py",
+              "function": "ui",
+              "line": 355
+            },
+            {
+              "file": "_generated.py",
+              "function": "wait_for",
+              "line": 20539
+            },
+            {
+              "file": "_sync_base.py",
+              "function": "_sync",
+              "line": 115
+            },
+            {
+              "file": "_locator.py",
+              "function": "wait_for",
+              "line": 748
+            },
+            {
+              "file": "_frame.py",
+              "function": "wait_for_selector",
+              "line": 394
+            },
+            {
+              "file": "_connection.py",
+              "function": "send",
+              "line": 76
+            },
+            {
+              "file": "_connection.py",
+              "function": "wrap_api_call",
+              "line": 632
+            }
+          ],
+          "visibleState": {
+            "rawIframePresent": false,
+            "rawErrorPresent": true,
+            "rawErrorDownloadTimeout": false,
+            "rawErrorWorkerTimeout": true,
+            "rawErrorWorkerStarting": false,
+            "rawErrorWorkerReceiving": false,
+            "rawErrorWorkerExpanding": false,
+            "rawErrorWorkerTransferring": true,
+            "rawErrorWorkerFailure": false,
+            "genericChapterErrorPresent": true,
+            "loadingStateCount": 0
+          },
+          "seconds": 58.282,
+          "budget": {
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "memoryMaxBytes": 2147483648,
+            "memoryHighBytes": 1610612736,
+            "memoryPeakBytes": 1688686592,
+            "swapMaxBytes": 0,
+            "pidsMax": 512,
+            "memoryEvents": {
+              "low": 0,
+              "high": 18350,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0
+            },
+            "pidsEvents": {
+              "max": 0
+            }
+          },
+          "cleanup": {
+            "ownedContainerRemoved": true,
+            "generatedDataCleared": true,
+            "generatedBytesRemoved": 171337546
+          },
+          "parentStopped": true,
+          "dispatchFailure": null,
+          "workerFailure": "AssertionError"
+        }
+      ],
+      "independentSeriesConsumerRejected": true,
+      "thirdRoundExecuted": false
+    },
+    "arm64": {
+      "artifactId": 11897099127,
+      "zipSha256": "d332cd3d55cfb4fbe471d60c97d5ff94dd353da65a61ff247841fa5f305b6073",
+      "reportSha256": "ca46b1f73176298eaebbff943643959291c25bfe750fb4214aca04ffeb544959",
+      "seriesAccepted": true,
+      "imageId": "sha256:2bf4f6dd9c14464326e7993da65e816205be55f1635f6dda9ec53194be337e9f",
+      "jarSha256": "39995ba1d0990d1d9125d75c6e5fc9d8caa3ab0e9929a79a851145013e40028f",
+      "rounds": [
+        {
+          "round": 1,
+          "accepted": true,
+          "executionReturnCode": 0,
+          "phase": "complete",
+          "scenes": [
+            "html806",
+            "raw805",
+            "raw805Refresh",
+            "raw806",
+            "text805",
+            "text805Return",
+            "text806",
+            "text806Refresh"
+          ],
+          "exceptionType": null,
+          "frames": null,
+          "visibleState": null,
+          "seconds": 26.465,
+          "budget": {
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "memoryMaxBytes": 2147483648,
+            "memoryHighBytes": 1610612736,
+            "memoryPeakBytes": 1644982272,
+            "swapMaxBytes": 0,
+            "pidsMax": 512,
+            "memoryEvents": {
+              "low": 0,
+              "high": 3860,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0
+            },
+            "pidsEvents": {
+              "max": 0
+            }
+          },
+          "cleanup": {
+            "ownedContainerRemoved": true,
+            "generatedDataCleared": true,
+            "generatedBytesRemoved": 171337543
+          },
+          "parentStopped": true,
+          "dispatchFailure": null,
+          "workerFailure": null
+        },
+        {
+          "round": 2,
+          "accepted": true,
+          "executionReturnCode": 0,
+          "phase": "complete",
+          "scenes": [
+            "html806",
+            "raw805",
+            "raw805Refresh",
+            "raw806",
+            "text805",
+            "text805Return",
+            "text806",
+            "text806Refresh"
+          ],
+          "exceptionType": null,
+          "frames": null,
+          "visibleState": null,
+          "seconds": 26.855,
+          "budget": {
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "memoryMaxBytes": 2147483648,
+            "memoryHighBytes": 1610612736,
+            "memoryPeakBytes": 1641693184,
+            "swapMaxBytes": 0,
+            "pidsMax": 512,
+            "memoryEvents": {
+              "low": 0,
+              "high": 2298,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0
+            },
+            "pidsEvents": {
+              "max": 0
+            }
+          },
+          "cleanup": {
+            "ownedContainerRemoved": true,
+            "generatedDataCleared": true,
+            "generatedBytesRemoved": 171337544
+          },
+          "parentStopped": true,
+          "dispatchFailure": null,
+          "workerFailure": null
+        },
+        {
+          "round": 3,
+          "accepted": true,
+          "executionReturnCode": 0,
+          "phase": "complete",
+          "scenes": [
+            "html806",
+            "raw805",
+            "raw805Refresh",
+            "raw806",
+            "text805",
+            "text805Return",
+            "text806",
+            "text806Refresh"
+          ],
+          "exceptionType": null,
+          "frames": null,
+          "visibleState": null,
+          "seconds": 29.135,
+          "budget": {
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "memoryMaxBytes": 2147483648,
+            "memoryHighBytes": 1610612736,
+            "memoryPeakBytes": 1643749376,
+            "swapMaxBytes": 0,
+            "pidsMax": 512,
+            "memoryEvents": {
+              "low": 0,
+              "high": 6384,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0
+            },
+            "pidsEvents": {
+              "max": 0
+            }
+          },
+          "cleanup": {
+            "ownedContainerRemoved": true,
+            "generatedDataCleared": true,
+            "generatedBytesRemoved": 171337405
+          },
+          "parentStopped": true,
+          "dispatchFailure": null,
+          "workerFailure": null
+        }
+      ],
+      "threeFreshRoundsIndependentlyAccepted": true
+    }
+  },
+  "fullRunId": 38568740861,
+  "fullOwnReportsIndependentlyAccepted": true,
+  "frontendTests": 383,
+  "actualChromiumTests": 25,
+  "loginLayouts": 14,
+  "hostedPythonTests": 807,
+  "hostedPythonSkipped": 0,
+  "fullGeneratedUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "cec538cbe3ba3dc5d89be61aa8d1085d69a2e275",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 12.842,
+    "xmlSha256": "8619e821719c67e2b466088bd8bb2895b92974d12df836b2bf5d1df5b7d5e9a9",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "5cc1e86186cd40f88169d36f19bfce19c9c2b30dedc443951a81eca8828a3e2c",
+        "bytes": 49206,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "2acaebacaa8d1ce313c45662fb90680f28cc8f0ebe871afdeeef919084cbf26d",
+        "bytes": 33608,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "fullGeneratedScreenshotsActuallyViewed": true,
+  "fullUiClientOutsideServerBudget": true,
+  "cacheExportSeconds": [
+    88.1
+  ],
+  "strictSixtySecondCacheCapProven": false,
+  "onlyCausalFixProven": false,
+  "currentWholeNativeImageLocallyAccepted": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

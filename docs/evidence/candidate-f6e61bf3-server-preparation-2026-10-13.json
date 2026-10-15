@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "version": "6.1.0",
+  "scope": "public software preparation and fixed public HTTPS preflight only; no Reader business executed",
+  "authorizedRoot": "/var/tmp/reader-generated-fragments-20261003.RMZay2",
+  "freshSoftwareDirectory": "accurate-native-f6e61bf3-20261013.uzcq04it",
+  "serverInitialReadOnlyObservation": {
+    "freeDiskBytes": 22734520320,
+    "availableMemoryBytes": 2263904256,
+    "existingOldSmokeAliasImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+    "newCandidateDirectoriesBeforePreparation": []
+  },
+  "fixedPublicPreflight": {
+    "url": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "httpStatus": 200,
+    "bodyBytes": 468370,
+    "bodySha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+    "sameHashAsEarlierAuthorizedCapture": true,
+    "seconds": 0.741,
+    "tlsVerificationDisabled": false,
+    "redirectsAllowed": false,
+    "credentialsUsed": false,
+    "rawPublicBodySaved": false,
+    "requestedCpuQuotaPercent": 200,
+    "requestedMemoryMaxBytes": 536870912,
+    "requestedSwapMaxBytes": 0,
+    "readerStarted": false
+  },
+  "sourceTransfer": {
+    "firstAttempt": "TimeoutExpired; partial owned input files preserved",
+    "secondAttempt": "CalledProcessError; operation outcome inspected instead of blindly repeated",
+    "lastSuccessfulIndependentRemoteHashObservation": {
+      "reader_image_identity.py": {
+        "bytes": 8071,
+        "sha256": "cc0dd6263611306a794114c1a25d16c77ef00f9ee8f1c3f5d4643c83146ae5b6"
+      },
+      "load_server.py": {
+        "bytes": 7527,
+        "sha256": "c3f5a29d4e3810b9ee599565dbb2669cdd7a1e311211308fd6d27cd66f13bc09"
+      },
+      "fetch_server.py": {
+        "bytes": 4280,
+        "sha256": "d508a7d7484c628357fe7ff4c9654d74c7f5b42879b316bde093e9bd10e1aff8"
+      }
+    },
+    "completeSourcesMatchLocalBytes": true,
+    "lastSuccessfulSoftwareDirectoryListing": [],
+    "laterSourceReadBeforeDownloadTimedOut": true
+  },
+  "lastLocalReadOnlyConnectivityObservation": {
+    "serverResolvedAddress": "50.114.172.103",
+    "ssh": {
+      "result": "banner-timeout",
+      "seconds": 5.036
+    },
+    "publicReaderHead": {
+      "url": "https://read.medwarp.cn/",
+      "result": "timeout",
+      "deadlineSeconds": 8,
+      "credentialsUsed": false
+    },
+    "causeProven": false,
+    "productionOutageProven": false,
+    "currentServerStateAfterTimeoutProven": false
+  },
+  "exactNativeArtifact": {
+    "id": 11823129196,
+    "nativeRunId": 38411330281,
+    "expectedOuterZipBytes": 2174961682,
+    "expectedOuterZipSha256": "1c350d773958374f9d9b1ae3360299a71532a98fef2dadd9dba7879bf4678504",
+    "expectedInnerArchiveSha256": "6aa82394c82bdb03eeeeef0fad546ac48a26325c1c8a18707bd367b5ceefe965",
+    "expectedOriginalImageConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+    "expectedJarSha256": "1f114993a273eb2d5dc30d47ff3b10446ce30fccd04bb6a49e46f42cef2138c5",
+    "archiveDownloadedOrLoadedThisTurn": false,
+    "expectationsNotPresentedAsActualDownloadedBytes": true
+  },
+  "newReaderStarted": false,
+  "businessCalls": 0,
+  "realSiteCookieScriptAccepted": false,
+  "trueQidianAuthenticationAccepted": false,
+  "browserCredentialsReadOrExported": false,
+  "githubLoginTokenTransferred": false,
+  "shortLivedArtifactDownloadUrlSaved": false,
+  "privateBooksRead": 0,
+  "productionChanged": false,
+  "globalNetworkOrSshConfigurationChanged": false,
+  "releaseTagCreated": false,
+  "overallBusinessAccepted": false,
+  "goalComplete": false
+}

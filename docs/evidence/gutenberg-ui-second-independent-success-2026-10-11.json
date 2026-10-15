@@ -1,0 +1,229 @@
+{
+  "actualHostedJob": 114411471064,
+  "actualNetworkUiBusinessPassed": true,
+  "actualUiAcceptedSubset": {
+    "accepted": true,
+    "actualUiApiResponseCounts": {
+      "getBookContent": 3,
+      "getBookInfo": 3,
+      "getChapterList": 2,
+      "login": 2,
+      "logout": 2,
+      "saveBook": 1,
+      "saveBookProgress": 3
+    },
+    "combinedTwoGiBBudgetProven": false,
+    "expectedImageRevision": "ffa8ddc1e77e15df97fee6f1a60e406afd317ca5",
+    "fullGoalComplete": false,
+    "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+    "paintedIndices": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "productionChanged": false
+  },
+  "allExtractedBytesMatchExactArchive": true,
+  "artifactId": 11693639865,
+  "artifactZipDigestRecomputed": true,
+  "artifactZipSha256": "b13fcd11cb1ab45420162f238677e7874c2e48356313ea48d6ccb2360aede0a3",
+  "bodyPicturesExported": false,
+  "combinedTwoGiBBudgetProven": false,
+  "externalClientBudget": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 96346112,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryHighBytes": "max",
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 798932992,
+    "memoryStatBytes": {
+      "active_file": 0,
+      "anon": 80670720,
+      "file": 5767168,
+      "file_dirty": 5672960,
+      "file_mapped": 0,
+      "file_writeback": 0,
+      "inactive_file": 5767168,
+      "kernel": 7507968,
+      "kernel_stack": 32768,
+      "pagetables": 4411392,
+      "shmem": 0,
+      "slab_reclaimable": 2606480,
+      "slab_unreclaimable": 443032,
+      "sock": 4096
+    },
+    "pidsCurrent": 2,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 168,
+    "scope": "disposable packaged-browser UI test CLIENT only; Reader server excluded",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "sha256": "c42fc6be4c30a5b7b673f1324e4a0f4bbbc5e5ce0bfe057f7c8184a28832a872"
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "name": "GUTENBERG_REPORT.json",
+      "sha256": "65a9758c5a0f684af4440ca7ffde993282b696e3c7ec14fba3d31a990f0b70fd"
+    },
+    {
+      "name": "GUTENBERG_UI_REPORT.json",
+      "sha256": "6ff72ba5f5e04d04a6cd02b2a3c35c265281210450a9ecfda9b797acd851d3a0"
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "sha256": "68363bef577b6f2443fe9815d0f1cd70f4c16db625d226d3193634a0435a400d"
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "sha256": "8b6e015321266827b48276b7fabef74f0dc2ac95f0bf78cd03bd2ace49fabb27"
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "sha256": "0dcf671802141980ca06d69c4c84455e81eeec58251281078d5f37683b8bec1d"
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "sha256": "150e9925b3f86334d47956941bdb3575a6aef8a3e4b35adf8246cc1cafe38f60"
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "sha256": "3f818982264943e6895f18dca93aea086e5d660a7c1dc7be92e94530ac0c6539"
+    },
+    {
+      "name": "UI_BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "7872ea2d6ffe0d7520389d75643a69961ee4c74b11ca6d6d4cf599401fa6d309"
+    },
+    {
+      "name": "UI_CLIENT_CLEANUP.json",
+      "sha256": "1d150ed09774f2dfe5356883c49ec416c245cab300146a207ab8efdf1c2c261f"
+    },
+    {
+      "name": "UI_SERVER_RESOURCE_BUDGET.json",
+      "sha256": "850b8893e7a48495f95ce8251dcb88a76859a6ba5eeeab3b16c70abedbf20947"
+    },
+    {
+      "name": "WORKER_DIAGNOSTICS.json",
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    },
+    {
+      "name": "ui-login.png",
+      "sha256": "7d1f0a014abb92ce90bc63a7bef092f868176fdbef196dda0b42d3c9b49fbdee"
+    },
+    {
+      "name": "ui-logout.png",
+      "sha256": "40c21761781367d6ea9f13f22c4004dcc608c1e91738a09019ed9da28688f356"
+    }
+  ],
+  "fullGoalComplete": false,
+  "generatedSessionRevoked": true,
+  "imageId": "sha256:157eb65f3c2310b41550790605036369f0190a2c9c851bfe5033840322a4ee3f",
+  "imageRevision": "ffa8ddc1e77e15df97fee6f1a60e406afd317ca5",
+  "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "linuxValidationPythonSkipped": 0,
+  "linuxValidationPythonTests": 666,
+  "loginAndLogoutPicturesPassedMachinePixelGate": {
+    "login": {
+      "distinctPixelValues": 1122,
+      "height": 900,
+      "nonDominantPixels": 29940,
+      "width": 1280
+    },
+    "logout": {
+      "distinctPixelValues": 1113,
+      "height": 900,
+      "nonDominantPixels": 29940,
+      "width": 1280
+    }
+  },
+  "mainAgentManualPictureReviewConfirmedByThisScript": false,
+  "nativeSourceRun": 38117044841,
+  "originalOrRemoteParityProven": false,
+  "ownedContainersRemoved": true,
+  "paintedCharacters": [
+    6822,
+    7332,
+    7332,
+    6822
+  ],
+  "paintedIndices": [
+    0,
+    1,
+    1,
+    0
+  ],
+  "privateLocalBooksRead": 0,
+  "productionChanged": false,
+  "rawBodyOrRealCredentialsPersisted": false,
+  "runId": 38119618382,
+  "schemaVersion": 1,
+  "serverLifetimeBudget": {
+    "architecture": "x86_64",
+    "cgroupRoot": "/sys/fs/cgroup",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 919760896,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryHighBytes": "max",
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1054720000,
+    "memoryStatBytes": {
+      "active_file": 135168,
+      "anon": 871542784,
+      "file": 26648576,
+      "file_dirty": 0,
+      "file_mapped": 7344128,
+      "file_writeback": 0,
+      "inactive_file": 5816320,
+      "kernel": 20889600,
+      "kernel_stack": 3178496,
+      "pagetables": 9166848,
+      "shmem": 20697088,
+      "slab_reclaimable": 3425936,
+      "slab_unreclaimable": 4954832,
+      "sock": 0
+    },
+    "pidsCurrent": 194,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 211,
+    "scope": "same Reader server lifetime: API then actual default UI; test client excluded",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "sourceRevision": "8f8095dbbd4d89b88947f30cd76b0ddced25302f",
+  "sourceRulesSeededByApiNotUi": true,
+  "uiElapsedSeconds": 27.456,
+  "userReportsUnchanged": 58,
+  "wholeFixedAnonymousUiAcceptancePassed": true
+}

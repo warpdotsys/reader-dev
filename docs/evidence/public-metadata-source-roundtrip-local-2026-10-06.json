@@ -1,0 +1,48 @@
+{
+  "recordedDate": "2026-10-06",
+  "scope": "generated source and HTML; real JVM conversion, save serialization and WebBook parsing; no HTTP or browser",
+  "sourceInputFromExactProbeTemplate": true,
+  "productConversionChanged": false,
+  "originalJarExecuted": false,
+  "externalNetworkRequested": false,
+  "realCredentialsOrBookBodyUsed": false,
+  "red": {
+    "tests": 7,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "xmlSha256": "3712c3c804b24005fdd843bc8ebf88c50d62b4db807cd0057be596f25377337e",
+    "failedCases": [
+      "exactProbeSourceRetainsRulesThroughSaveAndReaderDeserialization",
+      "savedProbeSourceParsesGeneratedMetadataAndDiagnosticViaWebBook"
+    ],
+    "causeObservedLocally": "SourceAnalyzer treats a missing ruleToc as the legacy format and drops nested detail rules"
+  },
+  "green": {
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "xmlSha256": "d333583a9a3959f2d0622a88795afb51fdacb701d50f5ca8fdce87ebaa676bba",
+    "probeFix": "explicit ruleToc object format marker; no chapter rules or operation",
+    "coversSavedRuleRoundtrip": true,
+    "coversGeneratedNormalAndEmptyDocument": true,
+    "characterizesUnchangedMissingMarkerBehavior": true
+  },
+  "python": {
+    "targetedActualTests": 36,
+    "fullTotalTests": 181,
+    "fullActualTests": 180,
+    "environmentSkipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "protectedWorkspaceFilesHashed": 58,
+  "protectedWorkspaceFilesChanged": 0,
+  "limits": [
+    "Not an HTTP saveBookSource/getBookSource endpoint test",
+    "Not a live Camoufox or Qidian test",
+    "Not original-JAR format parity evidence",
+    "Not a production source-format repair or deployment"
+  ]
+}

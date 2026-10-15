@@ -1,0 +1,664 @@
+{
+  "scope": "exact original and bb6afa4e generated repaired form type and full parsed-target-header differential",
+  "sourceRevision": "bb6afa4e2295a1bfabc88ae45ef8e68b364f631d",
+  "testedMergeSnapshot": "9a86d3b70d70c0041f084569dc31891056d527d5",
+  "currentJarSha256": "a873136863b8f9fba61dd4245325771e983b34e613f97b398f040b41fbb3f3cd",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "rawWireBytesCaptured": false,
+  "literalAllHeaderParityAccepted": false,
+  "fullGoalComplete": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "currentWholeNativeImageExecutedLocally": false,
+  "protectedUserFilesUnchanged": 58,
+  "runs": [
+    {
+      "name": "j",
+      "rawReportSha256": "a8766b4dfbbaa37da8497341f85b5ead7f5084c8067d486488f67ee5ad879a5c",
+      "searchResponseCount": 15,
+      "headerObservationCount": 15,
+      "probeExitCode": 0,
+      "strictAccepted": true,
+      "memoryPeakBytes": 1611649024,
+      "pidsPeak": 244,
+      "memoryHighEvents": 5176,
+      "seconds": 41.753,
+      "aggregateBudgetAccepted": true,
+      "ownedContainersRemaining": 0,
+      "adoptedZombiesReaped": 20
+    },
+    {
+      "name": "k",
+      "rawReportSha256": "fa00b27f5f93a12c54dcbbb9a22301589559787f26ed6fd6cccd0b5cb563a96e",
+      "searchResponseCount": 18,
+      "headerObservationCount": 18,
+      "probeExitCode": 1,
+      "strictAccepted": false,
+      "memoryPeakBytes": 1611661312,
+      "pidsPeak": 241,
+      "memoryHighEvents": 5078,
+      "seconds": 47.836,
+      "aggregateBudgetAccepted": true,
+      "ownedContainersRemaining": 0,
+      "adoptedZombiesReaped": 24
+    }
+  ],
+  "reviewedHeaders": [
+    {
+      "run": "j",
+      "caseIndex": 0,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "j",
+      "caseIndex": 1,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 13,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "cookie": {
+          "original": [],
+          "camoufox": [
+            "session=alpha=="
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "j",
+      "caseIndex": 2,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "j",
+      "caseIndex": 3,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "j",
+      "caseIndex": 4,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 6,
+      "camoufoxFieldCount": 15,
+      "diagnosticValueDifferences": {
+        "accept": {
+          "original": [],
+          "camoufox": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ]
+        },
+        "accept-encoding": {
+          "original": [],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "close"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-dest": {
+          "original": [],
+          "camoufox": [
+            "document"
+          ]
+        },
+        "sec-fetch-mode": {
+          "original": [],
+          "camoufox": [
+            "navigate"
+          ]
+        },
+        "sec-fetch-site": {
+          "original": [],
+          "camoufox": [
+            "none"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        },
+        "upgrade-insecure-requests": {
+          "original": [],
+          "camoufox": [
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 0,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 1,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 13,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "cookie": {
+          "original": [],
+          "camoufox": [
+            "session=alpha=="
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 2,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 3,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 10,
+      "camoufoxFieldCount": 12,
+      "diagnosticValueDifferences": {
+        "accept-encoding": {
+          "original": [
+            "gzip, deflate"
+          ],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [
+            "en-US"
+          ],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "Keep-Alive"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 4,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 6,
+      "camoufoxFieldCount": 15,
+      "diagnosticValueDifferences": {
+        "accept": {
+          "original": [],
+          "camoufox": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ]
+        },
+        "accept-encoding": {
+          "original": [],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "close"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-dest": {
+          "original": [],
+          "camoufox": [
+            "document"
+          ]
+        },
+        "sec-fetch-mode": {
+          "original": [],
+          "camoufox": [
+            "navigate"
+          ]
+        },
+        "sec-fetch-site": {
+          "original": [],
+          "camoufox": [
+            "none"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        },
+        "upgrade-insecure-requests": {
+          "original": [],
+          "camoufox": [
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "run": "k",
+      "caseIndex": 5,
+      "originalRestoredLiteralFieldPairsEqual": true,
+      "originalCamoufoxLiteralFieldPairsEqual": false,
+      "originalFieldCount": 6,
+      "camoufoxFieldCount": 15,
+      "diagnosticValueDifferences": {
+        "accept": {
+          "original": [],
+          "camoufox": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          ]
+        },
+        "accept-encoding": {
+          "original": [],
+          "camoufox": [
+            "gzip, deflate, br, zstd"
+          ]
+        },
+        "accept-language": {
+          "original": [],
+          "camoufox": [
+            "en-US,en;q=0.9"
+          ]
+        },
+        "connection": {
+          "original": [
+            "close"
+          ],
+          "camoufox": [
+            "keep-alive"
+          ]
+        },
+        "content-length": {
+          "original": [
+            "44"
+          ],
+          "camoufox": [
+            "60"
+          ]
+        },
+        "content-type": {
+          "original": [
+            "application/x-www-form-urlencoded; charset=UTF-8"
+          ],
+          "camoufox": [
+            "application/json; charset=utf-8"
+          ]
+        },
+        "priority": {
+          "original": [],
+          "camoufox": [
+            "u=0, i"
+          ]
+        },
+        "sec-fetch-dest": {
+          "original": [],
+          "camoufox": [
+            "document"
+          ]
+        },
+        "sec-fetch-mode": {
+          "original": [],
+          "camoufox": [
+            "navigate"
+          ]
+        },
+        "sec-fetch-site": {
+          "original": [],
+          "camoufox": [
+            "none"
+          ]
+        },
+        "sec-fetch-user": {
+          "original": [],
+          "camoufox": [
+            "?1"
+          ]
+        },
+        "upgrade-insecure-requests": {
+          "original": [],
+          "camoufox": [
+            "1"
+          ]
+        }
+      }
+    }
+  ],
+  "defaultFormPostTypeActualTargetAccepted": true,
+  "explicitJsonUtf8RemainsCorrect": true,
+  "prior33ObservationReceiptSha256": "6579cc7bb98d5cede4c6e6db5aba4b6be0bfb1bb2e729fbe5d6ab8eff8a71a92"
+}

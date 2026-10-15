@@ -1,0 +1,503 @@
+{
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "74fbd5a5a4b77a78352b54e82dc446590197eb99ffe2a96495acff7834084306",
+  "fixtureSha256": {
+    "ncx": "96ab4c49198aecb8fbf4ddceb6bed997b9d06dcb7d4ae79c74f1ff03d814bc0f",
+    "nav": "16887fa26dc1753758b1675da6d1c0d4a2f404a53a914638f8195aa06958975d"
+  },
+  "originalExecuted": true,
+  "network": "private-loopback-only-netns",
+  "javaUserId": 65534,
+  "privateBookRead": false,
+  "jarInputsUnchanged": true,
+  "original": {
+    "accessTokenNamespaced": true,
+    "cases": {
+      "ncx": {
+        "save": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": {
+              "bookUrl": "storage/data/__OWNER__/ncx.epub",
+              "tocUrl": "toc",
+              "origin": "loc_book",
+              "originName": "storage/data/__OWNER__/ncx.epub",
+              "name": "Generated ncx",
+              "author": "测试作者",
+              "type": 0,
+              "group": 0,
+              "latestChapterTime": "__OBSERVED_TIME__",
+              "lastCheckTime": "__OBSERVED_TIME__",
+              "lastCheckCount": 0,
+              "totalChapterNum": 0,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "__OBSERVED_TIME__",
+              "canUpdate": true,
+              "order": 0,
+              "originOrder": 0,
+              "useReplaceRule": true,
+              "isInShelf": true
+            }
+          },
+          "replacementCharacter": false
+        },
+        "toc": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "url": "Text/shared.xhtml",
+                "title": "第二节锚点",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/ncx.epub",
+                "index": 0
+              }
+            ]
+          },
+          "replacementCharacter": false
+        },
+        "content": [
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/ncx.epub/index/OEBPS/Text/shared.xhtml",
+                "content": {
+                  "sha256": "e88f14daae8f9ab040b6823545cd5d0f3f1bb9eae8882033f4f5f39c3cdeee57",
+                  "characters": 6258,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          }
+        ],
+        "download": {
+          "status": 200,
+          "bytes": 2079,
+          "sha256": "96ab4c49198aecb8fbf4ddceb6bed997b9d06dcb7d4ae79c74f1ff03d814bc0f",
+          "contentType": "application/epub+zip",
+          "contentDisposition": ""
+        },
+        "shelf": {
+          "bookUrl": "storage/data/__OWNER__/ncx.epub",
+          "tocUrl": "toc",
+          "origin": "loc_book",
+          "originName": "storage/data/__OWNER__/ncx.epub",
+          "name": "Generated ncx",
+          "author": "测试作者",
+          "type": 0,
+          "group": 0,
+          "latestChapterTitle": "第二节锚点",
+          "latestChapterTime": "__OBSERVED_TIME__",
+          "lastCheckTime": "__OBSERVED_TIME__",
+          "lastCheckCount": 1,
+          "totalChapterNum": 1,
+          "durChapterTitle": "第二节锚点",
+          "durChapterIndex": 0,
+          "durChapterPos": 0,
+          "durChapterTime": "__OBSERVED_TIME__",
+          "canUpdate": true,
+          "order": 0,
+          "originOrder": 0,
+          "useReplaceRule": true,
+          "isInShelf": true
+        },
+        "facts": {
+          "sourceUnchanged": true,
+          "anonymousDenied": true,
+          "otherNamespaceDenied": true,
+          "tokenChapterListMatchesSession": true
+        }
+      },
+      "nav": {
+        "save": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": {
+              "bookUrl": "storage/data/__OWNER__/nav.epub",
+              "tocUrl": "toc",
+              "origin": "loc_book",
+              "originName": "storage/data/__OWNER__/nav.epub",
+              "name": "Generated nav",
+              "author": "测试作者",
+              "type": 0,
+              "group": 0,
+              "latestChapterTime": "__OBSERVED_TIME__",
+              "lastCheckTime": "__OBSERVED_TIME__",
+              "lastCheckCount": 0,
+              "totalChapterNum": 0,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "__OBSERVED_TIME__",
+              "canUpdate": true,
+              "order": 0,
+              "originOrder": 0,
+              "useReplaceRule": true,
+              "isInShelf": true
+            }
+          },
+          "replacementCharacter": false
+        },
+        "toc": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "url": "Text/shared.xhtml",
+                "title": "重复目录",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/nav.epub",
+                "index": 0
+              },
+              {
+                "url": "Text/later.xhtml",
+                "title": "NAV 后一文件",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/nav.epub",
+                "index": 1
+              }
+            ]
+          },
+          "replacementCharacter": false
+        },
+        "content": [
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/nav.epub/index/OEBPS/Text/shared.xhtml",
+                "content": {
+                  "sha256": "4e5525bd22f923a4775dd30c73dd8021930de8fe58b443d31886a83dad21db19",
+                  "characters": 4171,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          },
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/nav.epub/index/OEBPS/Text/later.xhtml",
+                "content": {
+                  "sha256": "06a859d55e0496be0a8a4eaa5799aafea2f39c67fd4e9846aaba19262ecdbd00",
+                  "characters": 4106,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          }
+        ],
+        "download": {
+          "status": 200,
+          "bytes": 3027,
+          "sha256": "16887fa26dc1753758b1675da6d1c0d4a2f404a53a914638f8195aa06958975d",
+          "contentType": "application/epub+zip",
+          "contentDisposition": ""
+        },
+        "shelf": {
+          "bookUrl": "storage/data/__OWNER__/nav.epub",
+          "tocUrl": "toc",
+          "origin": "loc_book",
+          "originName": "storage/data/__OWNER__/nav.epub",
+          "name": "Generated nav",
+          "author": "测试作者",
+          "type": 0,
+          "group": 0,
+          "latestChapterTitle": "NAV 后一文件",
+          "latestChapterTime": "__OBSERVED_TIME__",
+          "lastCheckTime": "__OBSERVED_TIME__",
+          "lastCheckCount": 2,
+          "totalChapterNum": 2,
+          "durChapterTitle": "NAV 后一文件",
+          "durChapterIndex": 1,
+          "durChapterPos": 0,
+          "durChapterTime": "__OBSERVED_TIME__",
+          "canUpdate": true,
+          "order": 0,
+          "originOrder": 0,
+          "useReplaceRule": true,
+          "isInShelf": true
+        },
+        "facts": {
+          "sourceUnchanged": true,
+          "anonymousDenied": true,
+          "otherNamespaceDenied": true,
+          "tokenChapterListMatchesSession": true
+        }
+      }
+    }
+  },
+  "restored": {
+    "accessTokenNamespaced": true,
+    "cases": {
+      "ncx": {
+        "save": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": {
+              "bookUrl": "storage/data/__OWNER__/ncx.epub",
+              "tocUrl": "toc",
+              "origin": "loc_book",
+              "originName": "storage/data/__OWNER__/ncx.epub",
+              "name": "Generated ncx",
+              "author": "测试作者",
+              "type": 0,
+              "group": 0,
+              "latestChapterTime": "__OBSERVED_TIME__",
+              "lastCheckTime": "__OBSERVED_TIME__",
+              "lastCheckCount": 0,
+              "totalChapterNum": 0,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "__OBSERVED_TIME__",
+              "canUpdate": true,
+              "order": 0,
+              "originOrder": 0,
+              "useReplaceRule": true,
+              "isInShelf": true
+            }
+          },
+          "replacementCharacter": false
+        },
+        "toc": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "url": "Text/shared.xhtml",
+                "title": "第二节锚点",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/ncx.epub",
+                "index": 0
+              }
+            ]
+          },
+          "replacementCharacter": false
+        },
+        "content": [
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/ncx.epub/index/OEBPS/Text/shared.xhtml",
+                "content": {
+                  "sha256": "e88f14daae8f9ab040b6823545cd5d0f3f1bb9eae8882033f4f5f39c3cdeee57",
+                  "characters": 6258,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          }
+        ],
+        "download": {
+          "status": 200,
+          "bytes": 2079,
+          "sha256": "96ab4c49198aecb8fbf4ddceb6bed997b9d06dcb7d4ae79c74f1ff03d814bc0f",
+          "contentType": "application/epub+zip",
+          "contentDisposition": ""
+        },
+        "shelf": {
+          "bookUrl": "storage/data/__OWNER__/ncx.epub",
+          "tocUrl": "toc",
+          "origin": "loc_book",
+          "originName": "storage/data/__OWNER__/ncx.epub",
+          "name": "Generated ncx",
+          "author": "测试作者",
+          "type": 0,
+          "group": 0,
+          "latestChapterTitle": "第二节锚点",
+          "latestChapterTime": "__OBSERVED_TIME__",
+          "lastCheckTime": "__OBSERVED_TIME__",
+          "lastCheckCount": 1,
+          "totalChapterNum": 1,
+          "durChapterTitle": "第二节锚点",
+          "durChapterIndex": 0,
+          "durChapterPos": 0,
+          "durChapterTime": "__OBSERVED_TIME__",
+          "canUpdate": true,
+          "order": 0,
+          "originOrder": 0,
+          "useReplaceRule": true,
+          "isInShelf": true
+        },
+        "facts": {
+          "sourceUnchanged": true,
+          "anonymousDenied": true,
+          "otherNamespaceDenied": true,
+          "tokenChapterListMatchesSession": true
+        }
+      },
+      "nav": {
+        "save": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": {
+              "bookUrl": "storage/data/__OWNER__/nav.epub",
+              "tocUrl": "toc",
+              "origin": "loc_book",
+              "originName": "storage/data/__OWNER__/nav.epub",
+              "name": "Generated nav",
+              "author": "测试作者",
+              "type": 0,
+              "group": 0,
+              "latestChapterTime": "__OBSERVED_TIME__",
+              "lastCheckTime": "__OBSERVED_TIME__",
+              "lastCheckCount": 0,
+              "totalChapterNum": 0,
+              "durChapterIndex": 0,
+              "durChapterPos": 0,
+              "durChapterTime": "__OBSERVED_TIME__",
+              "canUpdate": true,
+              "order": 0,
+              "originOrder": 0,
+              "useReplaceRule": true,
+              "isInShelf": true
+            }
+          },
+          "replacementCharacter": false
+        },
+        "toc": {
+          "status": 200,
+          "body": {
+            "isSuccess": true,
+            "errorMsg": "",
+            "data": [
+              {
+                "url": "Text/shared.xhtml",
+                "title": "重复目录",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/nav.epub",
+                "index": 0
+              },
+              {
+                "url": "Text/later.xhtml",
+                "title": "NAV 后一文件",
+                "isVolume": false,
+                "baseUrl": "",
+                "bookUrl": "storage/data/__OWNER__/nav.epub",
+                "index": 1
+              }
+            ]
+          },
+          "replacementCharacter": false
+        },
+        "content": [
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/nav.epub/index/OEBPS/Text/shared.xhtml",
+                "content": {
+                  "sha256": "4e5525bd22f923a4775dd30c73dd8021930de8fe58b443d31886a83dad21db19",
+                  "characters": 4171,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          },
+          {
+            "status": 200,
+            "body": {
+              "isSuccess": true,
+              "errorMsg": "",
+              "data": {
+                "url": "__API_ROOT__/book-assets/__OWNER__/nav.epub/index/OEBPS/Text/later.xhtml",
+                "content": {
+                  "sha256": "06a859d55e0496be0a8a4eaa5799aafea2f39c67fd4e9846aaba19262ecdbd00",
+                  "characters": 4106,
+                  "replacementCharacters": 0
+                }
+              }
+            },
+            "replacementCharacter": false
+          }
+        ],
+        "download": {
+          "status": 200,
+          "bytes": 3027,
+          "sha256": "16887fa26dc1753758b1675da6d1c0d4a2f404a53a914638f8195aa06958975d",
+          "contentType": "application/epub+zip",
+          "contentDisposition": ""
+        },
+        "shelf": {
+          "bookUrl": "storage/data/__OWNER__/nav.epub",
+          "tocUrl": "toc",
+          "origin": "loc_book",
+          "originName": "storage/data/__OWNER__/nav.epub",
+          "name": "Generated nav",
+          "author": "测试作者",
+          "type": 0,
+          "group": 0,
+          "latestChapterTitle": "NAV 后一文件",
+          "latestChapterTime": "__OBSERVED_TIME__",
+          "lastCheckTime": "__OBSERVED_TIME__",
+          "lastCheckCount": 2,
+          "totalChapterNum": 2,
+          "durChapterTitle": "NAV 后一文件",
+          "durChapterIndex": 1,
+          "durChapterPos": 0,
+          "durChapterTime": "__OBSERVED_TIME__",
+          "canUpdate": true,
+          "order": 0,
+          "originOrder": 0,
+          "useReplaceRule": true,
+          "isInShelf": true
+        },
+        "facts": {
+          "sourceUnchanged": true,
+          "anonymousDenied": true,
+          "otherNamespaceDenied": true,
+          "tokenChapterListMatchesSession": true
+        }
+      }
+    }
+  },
+  "equal": true,
+  "projection": "Full JSON except named positive timestamps; XHTML replaced by exact normalized-byte hash",
+  "maskedTimeFields": [
+    "durChapterTime",
+    "lastCheckTime",
+    "latestChapterTime"
+  ],
+  "limitations": [
+    "Generated two-fixture backend/API sample, not the original UI",
+    "No original or production remote WebView, authenticated real source, or production storage",
+    "Frontend anchor pixels and iframe sandbox are verified by a separate browser journey"
+  ]
+}

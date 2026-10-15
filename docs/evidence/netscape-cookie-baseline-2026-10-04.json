@@ -1,0 +1,8 @@
+{
+  "generatedOnly": true,
+  "baselineJarSha256": "BA1E3ACB91F04BD6A3A10C7406A76E11CB82C1BF3D41212D22D14BEF6953085C",
+  "actualIsSuccess": false,
+  "actualErrorMsg": "Cookie 包含非法控制字符",
+  "netscapeRejectionReproduced": true,
+  "realQidianCredentialUsed": false
+}

@@ -1,0 +1,144 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "0145944340be4723c7457da5923bc5af85c709b3",
+  "testedImageRevision": "1d93cc49237538cb902d3ad4687176e06d6f4a4e",
+  "runId": 37460945863,
+  "jobId": 112260065898,
+  "runConclusion": "failure",
+  "sourceNativeRunId": 37458668950,
+  "sourceNativeRunConclusion": "success",
+  "artifactId": 11411523298,
+  "artifactSizeBytes": 3635,
+  "githubDeclaredArchiveSha256": "3c9497d75e21551bc1f5dafe66c2d482a30824efd61de3f11458427b930b8754",
+  "scope": "one anonymous metadata request in the exact tested amd64 image; no chapter or credentials",
+  "source": "https://www.qidian.com/book/1010400217/",
+  "identities": {
+    "preloadLoadedAndRunningIdentitiesIndependentlyMatched": true,
+    "imageId": "sha256:84144130e4239f232dc0171de49f971a66a55c4aafd5f4dfda49cd040298c51c",
+    "sharedJarSha256": "210df8b4af3ab7fc1f20db74cb7b3855c13a4e0399507e50724fcbb0fe7ecb5b",
+    "localImageArchiveBytesRehashed": false
+  },
+  "metadataObservation": {
+    "bookInfoApiCalls": 1,
+    "requestSeconds": 7.19,
+    "httpStatus": 200,
+    "isSuccess": false,
+    "dataIsNull": true,
+    "errorMsgIsString": true,
+    "errorMessageLength": 70,
+    "workerErrorCategory": "SourceScriptStateLost",
+    "pageDiagnostics": null,
+    "pageCaptureMode": "bounded-dom",
+    "sourceScriptMode": "boundedMetadataDom",
+    "metadataDomWaitBudgetMs": 8000,
+    "sourceScriptSynthesizesMetadata": false,
+    "metadataValuesPersisted": false,
+    "rawErrorPersisted": false,
+    "sourceDefinitionRoundtrip": {
+      "cookieJarDisabled": true,
+      "dataIsObject": true,
+      "metadataRulesMatch": true,
+      "modernTocMarkerPresent": true,
+      "passed": true,
+      "sourceUrlMatches": true
+    }
+  },
+  "workerDiagnostics": {
+    "originalFiniteDiagnosticParserIndependentlyPassed": true,
+    "rawLogsPersisted": false,
+    "records": [
+      {
+        "errorClass": "SourceScriptStateLost",
+        "kind": "sourceStateMissing",
+        "mainFrameNavigationObserved": true,
+        "operation": "sourceScriptRead"
+      }
+    ],
+    "schemaVersion": 1,
+    "scope": "finite worker stderr labels; not raw logs or page content",
+    "truncated": false
+  },
+  "resourceBudget": {
+    "originalBudgetGuardIndependentlyPassed": true,
+    "budgetGuardRequireNoSwap": true,
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 319410176,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 855392256,
+    "pidsCurrent": 35,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 189,
+    "scope": "one anonymous default-Camoufox metadata request",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "processMonitorPassed": true,
+    "maximumObservedProcesses": {
+      "browser": 7,
+      "driver": 1,
+      "worker": 1
+    },
+    "runtimeUid": 10001,
+    "privateNetworkGuardEnabled": true,
+    "publishedPorts": 0,
+    "containerOomKilled": false
+  },
+  "cleanup": {
+    "cookieRowsBefore": 0,
+    "cookieRowsAfter": 0,
+    "generatedCookieSessionRevokedVerified": true,
+    "logoutObservation": {
+      "dataIsNeedLogin": true,
+      "errorMsgEmpty": true,
+      "httpStatus": 200,
+      "isSuccess": true
+    },
+    "postLogoutProtectedObservation": {
+      "dataIsNeedLogin": true,
+      "errorMsgEmpty": false,
+      "httpStatus": 200,
+      "isSuccess": false
+    },
+    "allDeviceTokenRevocationProven": false,
+    "ownedContainerRemoved": true,
+    "probeExit": 1
+  },
+  "exactNineJsonFilesIndependentlyVerified": true,
+  "independentlyRecomputedFileSha256": {
+    "CLEANUP.json": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff",
+    "CONTAINER_STATE.json": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b",
+    "LOADED_IDENTITY.json": "3051d7082dd588dce520709031ae4c929e7d6942d948886c468258d073c9a454",
+    "PRELOAD_IDENTITY.json": "4d75aa1920a6c71ac9a66223f83e14d6f7952e38961686b9121e6c196c574bf6",
+    "PUBLIC_METADATA_REPORT.json": "dd68417659c2eea9f0fb95f8dad75674d6db29cb37c9ad2e0f03107a56d5f06b",
+    "RUNNING_JAR_IDENTITY.json": "e2aae4a542f7c5139838cd8b5416b22e5c204c83815ea25fe341e6878107db46",
+    "RUNTIME_RESOURCE_BUDGET.json": "74675867efc907dc78152869f7ae2cb9242fe78a13d9090e26d720bd02ce8f2e",
+    "SOURCE_RUN.json": "3b7a85ad09c16641aa34d201a8c70849e07b5131116aa852b46625b95765ee65",
+    "WORKER_DIAGNOSTICS.json": "4aded82cdec445f6feec45d1fcc638070ff72e7fbb7627f0f9fbf7b7cad3c29a"
+  },
+  "evidenceBoundaries": {
+    "sourceLoadAndSnapshotRaceFixesProveRealSiteSuccess": false,
+    "missingSnapshotProvesEmptyDom": false,
+    "mainFrameNavigationProvesNewDocument": false,
+    "captchaOrUniqueRootCauseProven": false,
+    "realCredentialsImported": false,
+    "chapterBodyRequested": false,
+    "browserSessionExported": false,
+    "originalJarOrArchivedParityProven": false,
+    "realAuthenticationProven": false,
+    "productionChanged": false,
+    "humanBrowserObservation": "free first chapter visible without an obstructing CAPTCHA overlay; CAPTCHA iframe retained; not Reader authentication or backend parity"
+  }
+}

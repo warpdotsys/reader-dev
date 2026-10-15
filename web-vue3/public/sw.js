@@ -71,8 +71,7 @@ if (typeof self !== 'undefined' && typeof self.addEventListener === 'function') 
     event.waitUntil(
       caches
         .open(SHELL_CACHE)
-        .then((cache) => cache.addAll(PRECACHE_URLS))
-        .then(() => self.skipWaiting()),
+        .then((cache) => cache.addAll(PRECACHE_URLS)),
     )
   })
 

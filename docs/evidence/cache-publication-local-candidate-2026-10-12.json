@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated-only local JDK11/Gradle6.1.1 candidate, not hosted acceptance",
+  "oldUncoordinatedInvalidReads": 81,
+  "oldXmlSha256": "8f6ff264d684e4b79030ecace6f53b7eece9757e03e317f139e98c3e72efc436",
+  "newReaderInvalidResults": 0,
+  "newWriterUpdatesIndividuallyConfirmed": 160,
+  "newReaderChecks": 400,
+  "newTargetedTests": 8,
+  "newTargetedSkipped": 0,
+  "newTargetedStderrCharacters": 0,
+  "targetedSnapshotSha256": {
+    "final-concurrency.xml": "8e37d09d564603993cbdcd41c4e57a585b0a2b24c4c75476466a13f277692589",
+    "final-metadata.xml": "3a59438c94fe643f50a3609c325c44e2f67553f32b123a3544f107d8e45ab931"
+  },
+  "fullLocalJvmSuites": 47,
+  "fullLocalJvmTotals": {
+    "tests": 222,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 35
+  },
+  "atomicOnlyRejectedSnapshotSha256": "fc8b35f1c812a2dda664179ba1ae3f40fb869f80aea11a8ff90dc26e666cf1e6",
+  "atomicOnlyInvalidReads": 3,
+  "lockOnlyPassedWithIoErrorsSnapshotSha256": "81a7641b42b8ba67a694b54f82a152267be974b53ae6ea478ac0ab7d627b80de",
+  "lockOnlyCaughtAccessDeniedEvents": 2,
+  "intermediateFailuresOrWarningsOverwritten": false,
+  "atomicReplacementRequired": true,
+  "nonAtomicFallbackAllowed": false,
+  "boundedAccessDeniedRetries": 3,
+  "maximumAddedPublicationWaitMs": 15,
+  "readerOrBrowserTimeoutExtended": false,
+  "legacyIntegerDefaultsPreserved": true,
+  "malformedOrWrongKeyMetadataDeletedOrFabricated": false,
+  "hostedCandidateAccepted": false,
+  "originalThreeWayOrRealBookOrGoalAccepted": false,
+  "rawPayloadsOrBodiesOrLogsPublished": false,
+  "productionChanged": false
+}

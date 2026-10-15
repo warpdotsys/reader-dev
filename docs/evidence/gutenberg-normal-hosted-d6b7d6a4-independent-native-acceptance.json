@@ -1,0 +1,717 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "d6b7d6a43a6719f6fd51ac85bfe6ab724fd9d989",
+  "testedMergeSnapshot": "fd515aff059a589a904448e77414ed5dca15f907",
+  "run": {
+    "id": 38113466292,
+    "sourceRevision": "d6b7d6a43a6719f6fd51ac85bfe6ab724fd9d989",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38113466292",
+    "conclusion": "success",
+    "actualJobs": [
+      {
+        "id": 114393609413,
+        "name": "Build one shared Java Kotlin JAR",
+        "runnerName": "GitHub Actions 1000004537",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114395041467,
+        "name": "Build and test native arm64 image",
+        "runnerName": "GitHub Actions 1000004538",
+        "runnerLabels": [
+          "ubuntu-24.04-arm"
+        ]
+      },
+      {
+        "id": 114395041492,
+        "name": "Build and test native amd64 image",
+        "runnerName": "GitHub Actions 1000004539",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114395902107,
+        "name": "Reload and run tested arm64 image",
+        "runnerName": "GitHub Actions 1000004540",
+        "runnerLabels": [
+          "ubuntu-24.04-arm"
+        ]
+      },
+      {
+        "id": 114395902184,
+        "name": "Reload and run tested amd64 image",
+        "runnerName": "GitHub Actions 1000004541",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114396740955,
+        "name": "Exercise both publisher imports without registry credentials",
+        "runnerName": "GitHub Actions 1000004542",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      }
+    ],
+    "optionalSkippedJobs": 0
+  },
+  "actualCamoufox": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "navigationContractPresent": true,
+    "earlyNavigationContractPresent": true,
+    "endlessNavigationContractPresent": true,
+    "promiseContractPresent": true,
+    "stateDeletionContractPresent": true,
+    "sourceNavigationContractPresent": true,
+    "numericalThreadContractPresent": true,
+    "utf8PostContractPresent": true,
+    "originHeaderContractPresent": true,
+    "postRedirectHeaderContractPresent": true,
+    "scriptRedirectHeaderContractPresent": true,
+    "loopbackProxyContractPresent": true,
+    "xmlSha256": "28b085d92d3f7c57416ad7ccb81d905d5239b339aed0d6ec691362dc3a099d34"
+  },
+  "helperCases": 3,
+  "publisherFilesAccepted": 32,
+  "actualPackagedWorkerHttps": [
+    {
+      "actualReportSha256": "c173bd62ac2907960d002862ab335dcff5c51f0334bd7fc473ce72fce9d555d6",
+      "architecture": "amd64",
+      "acceptedSubset": {
+        "acceptedPackagedWorkerHttpsSubset": true,
+        "positiveCases": 10,
+        "negativeCertificateControls": 2,
+        "targetRequests": 24,
+        "parsedHeaderFields": 334,
+        "readerApiOrProductionAccepted": false
+      },
+      "actualResources": {
+        "scope": "packaged worker generated HTTPS; no Reader API or real accounts",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 613076992,
+        "memoryCurrentBytes": 86745088,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 82825216,
+          "file": 135168,
+          "shmem": 114688,
+          "kernel": 3416064,
+          "kernel_stack": 32768,
+          "pagetables": 413696,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 4096,
+          "file_writeback": 0,
+          "inactive_file": 16384,
+          "active_file": 4096,
+          "slab_reclaimable": 2653760,
+          "slab_unreclaimable": 358872
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 158,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "phase": "built"
+    },
+    {
+      "actualReportSha256": "a0e545d241c28af98982c5e8d6ff2dccc08c96ccdd7806b581b9115e60f62e29",
+      "architecture": "amd64",
+      "acceptedSubset": {
+        "acceptedPackagedWorkerHttpsSubset": true,
+        "positiveCases": 10,
+        "negativeCertificateControls": 2,
+        "targetRequests": 24,
+        "parsedHeaderFields": 334,
+        "readerApiOrProductionAccepted": false
+      },
+      "actualResources": {
+        "scope": "packaged worker generated HTTPS; no Reader API or real accounts",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 547606528,
+        "memoryCurrentBytes": 86933504,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 82784256,
+          "file": 151552,
+          "shmem": 114688,
+          "kernel": 3485696,
+          "kernel_stack": 49152,
+          "pagetables": 425984,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 32768,
+          "active_file": 4096,
+          "slab_reclaimable": 2659072,
+          "slab_unreclaimable": 327576
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 156,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "phase": "transferred"
+    },
+    {
+      "actualReportSha256": "42e5020891a199e8b2b7da958abd7755a648f20f39abfe9e940661ee3cce0f43",
+      "architecture": "arm64",
+      "acceptedSubset": {
+        "acceptedPackagedWorkerHttpsSubset": true,
+        "positiveCases": 10,
+        "negativeCertificateControls": 2,
+        "targetRequests": 24,
+        "parsedHeaderFields": 334,
+        "readerApiOrProductionAccepted": false
+      },
+      "actualResources": {
+        "scope": "packaged worker generated HTTPS; no Reader API or real accounts",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "aarch64",
+        "memoryPeakBytes": 574476288,
+        "memoryCurrentBytes": 86425600,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 82616320,
+          "file": 139264,
+          "shmem": 114688,
+          "kernel": 3493888,
+          "kernel_stack": 98304,
+          "pagetables": 409600,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 24576,
+          "active_file": 0,
+          "slab_reclaimable": 2641176,
+          "slab_unreclaimable": 358176
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 153,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "phase": "built"
+    },
+    {
+      "actualReportSha256": "3c2daf143145a6e3e42ce12189e95d0c556ade6585de1a8b305ba1bafd7d8663",
+      "architecture": "arm64",
+      "acceptedSubset": {
+        "acceptedPackagedWorkerHttpsSubset": true,
+        "positiveCases": 10,
+        "negativeCertificateControls": 2,
+        "targetRequests": 24,
+        "parsedHeaderFields": 334,
+        "readerApiOrProductionAccepted": false
+      },
+      "actualResources": {
+        "scope": "packaged worker generated HTTPS; no Reader API or real accounts",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "aarch64",
+        "memoryPeakBytes": 562290688,
+        "memoryCurrentBytes": 86540288,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 82518016,
+          "file": 135168,
+          "shmem": 106496,
+          "kernel": 3420160,
+          "kernel_stack": 32768,
+          "pagetables": 413696,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 28672,
+          "active_file": 0,
+          "slab_reclaimable": 2661288,
+          "slab_unreclaimable": 303616
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 154,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "phase": "transferred"
+    }
+  ],
+  "packagedWorkerHttpsGateExecutedByThisRun": true,
+  "actualPackagedReaderHttps": [
+    {
+      "actualReportSha256": "7acf193f63c1c5c33e59e1b7938ae9779bffd9f949879abb52cdb8e78aa72347",
+      "architecture": "amd64",
+      "acceptedSubset": {
+        "acceptedCurrentReaderHttpsBusinessSubset": true,
+        "generatedScenarios": 8,
+        "actualTargetRequests": 12,
+        "actualConnectTunnels": 14,
+        "parsedHeaderFields": 178,
+        "negativeCertificateControls": 2,
+        "generatedUserNamespaces": 2,
+        "proxySocketOwnershipVerifiedByLiveProducer": true,
+        "originalJarThreeWayAccepted": false,
+        "fullNativeImageLocallyAccepted": false,
+        "realSiteLoginAccepted": false,
+        "productionChanged": false,
+        "fullGoalComplete": false,
+        "acceptedCertificateHintMessages": true
+      },
+      "actualResources": {
+        "scope": "actual packaged Reader API generated HTTPS through owned JVM and selected upstream proxy",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 985673728,
+        "memoryCurrentBytes": 81231872,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 77172736,
+          "file": 221184,
+          "shmem": 208896,
+          "kernel": 3313664,
+          "kernel_stack": 32768,
+          "pagetables": 376832,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 4096,
+          "file_writeback": 0,
+          "inactive_file": 12288,
+          "active_file": 0,
+          "slab_reclaimable": 2556456,
+          "slab_unreclaimable": 346128
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 191,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "readerCleanup": {
+        "javaExitedBeforeOuterCleanup": true,
+        "javaExitCode": 143,
+        "privateLogBytes": 2993,
+        "realCredentialsImported": false
+      },
+      "phase": "built"
+    },
+    {
+      "actualReportSha256": "40b5228b6ca22c5c5f0b760ce535c049edc38e4daf53aab81456914ac3c5d0c4",
+      "architecture": "amd64",
+      "acceptedSubset": {
+        "acceptedCurrentReaderHttpsBusinessSubset": true,
+        "generatedScenarios": 8,
+        "actualTargetRequests": 12,
+        "actualConnectTunnels": 14,
+        "parsedHeaderFields": 178,
+        "negativeCertificateControls": 2,
+        "generatedUserNamespaces": 2,
+        "proxySocketOwnershipVerifiedByLiveProducer": true,
+        "originalJarThreeWayAccepted": false,
+        "fullNativeImageLocallyAccepted": false,
+        "realSiteLoginAccepted": false,
+        "productionChanged": false,
+        "fullGoalComplete": false,
+        "acceptedCertificateHintMessages": true
+      },
+      "actualResources": {
+        "scope": "actual packaged Reader API generated HTTPS through owned JVM and selected upstream proxy",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "x86_64",
+        "memoryPeakBytes": 969617408,
+        "memoryCurrentBytes": 83116032,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 79093760,
+          "file": 208896,
+          "shmem": 208896,
+          "kernel": 3330048,
+          "kernel_stack": 32768,
+          "pagetables": 389120,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 0,
+          "active_file": 0,
+          "slab_reclaimable": 2559336,
+          "slab_unreclaimable": 330104
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 190,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "readerCleanup": {
+        "javaExitedBeforeOuterCleanup": true,
+        "javaExitCode": 143,
+        "privateLogBytes": 2985,
+        "realCredentialsImported": false
+      },
+      "phase": "transferred"
+    },
+    {
+      "actualReportSha256": "7772d336ea72ab0c7ffb200b43f81e1cdd0527bea2149908e17f5cfc12702005",
+      "architecture": "arm64",
+      "acceptedSubset": {
+        "acceptedCurrentReaderHttpsBusinessSubset": true,
+        "generatedScenarios": 8,
+        "actualTargetRequests": 12,
+        "actualConnectTunnels": 14,
+        "parsedHeaderFields": 178,
+        "negativeCertificateControls": 2,
+        "generatedUserNamespaces": 2,
+        "proxySocketOwnershipVerifiedByLiveProducer": true,
+        "originalJarThreeWayAccepted": false,
+        "fullNativeImageLocallyAccepted": false,
+        "realSiteLoginAccepted": false,
+        "productionChanged": false,
+        "fullGoalComplete": false,
+        "acceptedCertificateHintMessages": true
+      },
+      "actualResources": {
+        "scope": "actual packaged Reader API generated HTTPS through owned JVM and selected upstream proxy",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "aarch64",
+        "memoryPeakBytes": 981921792,
+        "memoryCurrentBytes": 81133568,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 77160448,
+          "file": 278528,
+          "shmem": 274432,
+          "kernel": 3461120,
+          "kernel_stack": 114688,
+          "pagetables": 397312,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 4096,
+          "active_file": 0,
+          "slab_reclaimable": 2559016,
+          "slab_unreclaimable": 386696
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 187,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "readerCleanup": {
+        "javaExitedBeforeOuterCleanup": true,
+        "javaExitCode": 143,
+        "privateLogBytes": 2993,
+        "realCredentialsImported": false
+      },
+      "phase": "built"
+    },
+    {
+      "actualReportSha256": "8823273578bcbfe586a27d5cc8fb5790234ee6e7963e6d16c38944db4a5a03c4",
+      "architecture": "arm64",
+      "acceptedSubset": {
+        "acceptedCurrentReaderHttpsBusinessSubset": true,
+        "generatedScenarios": 8,
+        "actualTargetRequests": 12,
+        "actualConnectTunnels": 14,
+        "parsedHeaderFields": 178,
+        "negativeCertificateControls": 2,
+        "generatedUserNamespaces": 2,
+        "proxySocketOwnershipVerifiedByLiveProducer": true,
+        "originalJarThreeWayAccepted": false,
+        "fullNativeImageLocallyAccepted": false,
+        "realSiteLoginAccepted": false,
+        "productionChanged": false,
+        "fullGoalComplete": false,
+        "acceptedCertificateHintMessages": true
+      },
+      "actualResources": {
+        "scope": "actual packaged Reader API generated HTTPS through owned JVM and selected upstream proxy",
+        "kernel": "6.17.0-1022-azure",
+        "architecture": "aarch64",
+        "memoryPeakBytes": 985997312,
+        "memoryCurrentBytes": 81424384,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": "max",
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "memoryStatBytes": {
+          "anon": 77074432,
+          "file": 208896,
+          "shmem": 208896,
+          "kernel": 3334144,
+          "kernel_stack": 65536,
+          "pagetables": 380928,
+          "sock": 0,
+          "file_mapped": 0,
+          "file_dirty": 0,
+          "file_writeback": 0,
+          "inactive_file": 0,
+          "active_file": 0,
+          "slab_reclaimable": 2557448,
+          "slab_unreclaimable": 318624
+        },
+        "swapCurrentBytes": 0,
+        "swapMaxBytes": 0,
+        "pidsPeak": 192,
+        "pidsCurrent": 2,
+        "pidsMax": 256,
+        "pidsEvents": {
+          "max": 0
+        },
+        "cpuQuota": "200000",
+        "cpuPeriod": 100000
+      },
+      "readerCleanup": {
+        "javaExitedBeforeOuterCleanup": true,
+        "javaExitCode": 143,
+        "privateLogBytes": 2993,
+        "realCredentialsImported": false
+      },
+      "phase": "transferred"
+    }
+  ],
+  "packagedReaderHttpsGateExecutedByThisRun": true,
+  "metadata": [
+    {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "fd515aff059a589a904448e77414ed5dca15f907",
+      "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+      "archiveSha256": "1ceae9f4ac95bbeec7f313bb60d6317b17f9d9ba17f4abb0bfe946640802cbb3",
+      "imageId": "sha256:464d88d8ecf96b3e25da4923365f51f9193f277eff447102ab05382a00d3c4fc"
+    },
+    {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "fd515aff059a589a904448e77414ed5dca15f907",
+      "jarSha256": "9b9d0c9808968c0390022156a5fcbfcc03f595ed228f124afbb06e830cd7dd84",
+      "archiveSha256": "18ad9a0ca47cf56e30c2a0436ac81cfa6dc16855b7b3f100e66e792e6e6a31b8",
+      "imageId": "sha256:41564046a1d1a79793eb60025f8cd2b730a92fc0f929a88c34c1618e0813c813"
+    }
+  ],
+  "thisJavaFullAndNativeJarDigestsMatch": true,
+  "ownJavaReceiptSha256": "fc7fc61ad2f7e564580787c43659a1328ea41665553f747da6223786dd68b368",
+  "ownFullReceiptSha256": "c3a939de3a75eb2773a45c97e90405d2a0d7e368a0146b052ec7140b2f4eb542",
+  "maxMemoryPeakBytes": 915451904,
+  "maxPidsPeak": 202,
+  "ordinarySwapAllowanceBytes": [
+    1073741824,
+    1073741824,
+    1073741824,
+    1073741824
+  ],
+  "observedSwapBytes": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "localArchiveHashesRecomputed": false,
+  "userReportsUnchanged": 58,
+  "registryPublished": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "transferFiles": [
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_READER_TLS.json",
+      "sha256": "40b5228b6ca22c5c5f0b760ce535c049edc38e4daf53aab81456914ac3c5d0c4"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "0f447c5a0cef31dab385740d3753c740244f9feb429df1b7ad839fa45f5103e3"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_SYNTHETIC.json",
+      "sha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_TLS.json",
+      "sha256": "a0e545d241c28af98982c5e8d6ff2dccc08c96ccdd7806b581b9115e60f62e29"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/DEFAULT_UI.json",
+      "sha256": "ccacd3c12b18c1aabdca76cb2ff82fd856a6c726be6384840607438d97248d01"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/IMAGE_IDENTITY.json",
+      "sha256": "8104fe3cc717d25041d731544c840658f341e2de99b764be68c924e482480c6b"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/JAR_IDENTITY.json",
+      "sha256": "b51dc96409dade7d7f8c27b21c2b1d351d7fe097186d5c4ffb13261213bf4519"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/metadata.json",
+      "sha256": "0641331402c215038b3ddaec5ffe8cf50865c05fed5a663167a43ec5cec07b72"
+    },
+    {
+      "path": "native/reader-native-transfer-amd64-fd515aff059a589a904448e77414ed5dca15f907/RELEASE_IDENTITY.json",
+      "sha256": "816e9e2d99b65a168a25e296d0961b1f429e916ef2afefdb3f99f1c241bdd34f"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_READER_TLS.json",
+      "sha256": "8823273578bcbfe586a27d5cc8fb5790234ee6e7963e6d16c38944db4a5a03c4"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "b466ff598494be579bec7af481dd6f7df2430a5ce917bc54155c8915c67eef94"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_SYNTHETIC.json",
+      "sha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/BROWSER_TLS.json",
+      "sha256": "3c2daf143145a6e3e42ce12189e95d0c556ade6585de1a8b305ba1bafd7d8663"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/DEFAULT_UI.json",
+      "sha256": "ccacd3c12b18c1aabdca76cb2ff82fd856a6c726be6384840607438d97248d01"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/IMAGE_IDENTITY.json",
+      "sha256": "f1a95259ab8be46a5a963d8cbc48e9cec6b384441eceddc1de674575a7b8e2bb"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/JAR_IDENTITY.json",
+      "sha256": "83e30abd972392822b623792d35b72f8178694a2caad69e7e33ec791c505bb8e"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/metadata.json",
+      "sha256": "48e70a9c30c0b4d4a0e0283237b09d46dffcb13ba585b0cf92a90fb1f9cf7b9c"
+    },
+    {
+      "path": "native/reader-native-transfer-arm64-fd515aff059a589a904448e77414ed5dca15f907/RELEASE_IDENTITY.json",
+      "sha256": "816e9e2d99b65a168a25e296d0961b1f429e916ef2afefdb3f99f1c241bdd34f"
+    }
+  ],
+  "headerSecurityBusinessFixAccepted": false,
+  "headerSecurityThreeWayExecutedOnHostedRunner": false,
+  "sourceProxyParameterFlowCompiledAccepted": true,
+  "originalJarThreeWayAccepted": false,
+  "javaEgressHttpsBusinessChainAccepted": false,
+  "rawArtifactArchiveChecksumRecomputed": false,
+  "actualReaderHttpsBusinessGateAccepted": true
+}

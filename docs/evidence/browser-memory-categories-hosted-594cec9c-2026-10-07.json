@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "scope": "Own collector hosted generated acceptance; not original parity, real source, long soak or production",
+  "sourceHead": "594cec9c5300883ea98e569db6a6d31b9ab4c6ee",
+  "testedMergeRevision": "fc5e2446f4b7cee9b01e823ee24974926fc5e898",
+  "observedTerminalRuns": [
+    {"id": 37582943952, "workflow": "Java Kotlin CI", "conclusion": "success"},
+    {"id": 37582943921, "workflow": "Vue 3 preview build", "conclusion": "success"},
+    {"id": 37582943956, "workflow": "Browser image integration", "conclusion": "success"},
+    {"id": 37582943967, "workflow": "Native release artifact rehearsal", "conclusion": "success", "actualJobs": 6}
+  ],
+  "independentAudit": {
+    "path": "build/hosted-memory-categories-594cec9c-20261007-a/independent-acceptance.json",
+    "sha256": "65cab6abe21b443eaed12e2ccef29e6fea442a761cb58549517d71987c916bb2",
+    "nativeContractActualTests": 19,
+    "nativeContractFailures": 0,
+    "nativeContractErrors": 0,
+    "nativeContractSkipped": 0,
+    "publisherExactFileCount": 24,
+    "existingUiAsyncBudgetGuardsReexecuted": 15,
+    "actualMemoryStatReports": 5,
+    "memoryStatFieldCount": 14,
+    "maxMemoryPeakBytes": 844652544,
+    "maxPidsPeak": 197,
+    "memoryMaxEvents": 0,
+    "oomEvents": 0,
+    "pidsMaxEvents": 0,
+    "actualSwapBytes": 0,
+    "configuredSwapMaxBytes": 1073741824,
+    "userReportHashesChecked": 58,
+    "userReportHashesChanged": 0
+  },
+  "downloadedArtifacts": [
+    {"id": 11465384637, "run": 37582943967, "name": "reader-publisher-import-fc5e2446f4b7cee9b01e823ee24974926fc5e898", "zipBytes": 10788},
+    {"id": 11466100975, "run": 37582943967, "name": "reader-release-camoufox-contract-fc5e2446f4b7cee9b01e823ee24974926fc5e898", "zipBytes": 1131},
+    {"id": 11465726568, "run": 37582943956, "name": "bundled-browser-synthetic-and-resources", "zipBytes": 1818}
+  ],
+  "nativeSharedJarSha256": "b49b2972a183dff54bcb8a6a20c0c1762c358072a95f63510d9669be8f427945",
+  "fullIndependentlyBuiltJarSha256": "49303d8ee7e26fbfe32541050ec608cb9a003755d7c814f79da21010f3be7b44",
+  "currentMemorySamples": [
+    {"phase": "amd64", "currentBytes": 345530368, "anonBytes": 325890048, "fileBytes": 13316096},
+    {"phase": "amd64-transfer", "currentBytes": 333893632, "anonBytes": 304611328, "fileBytes": 22872064},
+    {"phase": "arm64", "currentBytes": 329703424, "anonBytes": 310124544, "fileBytes": 13262848},
+    {"phase": "arm64-transfer", "currentBytes": 339718144, "anonBytes": 311173120, "fileBytes": 22093824},
+    {"phase": "full", "currentBytes": 309932032, "anonBytes": 290484224, "fileBytes": 13225984}
+  ],
+  "limitations": [
+    "Current categories do not decompose peak and overlap; no subtraction from mandatory total budget",
+    "Hosted normal swap configuration is not the local zero-swap budget",
+    "No retroactive interpretation of the previous public-source failure",
+    "Not a new source or tool encoding three-way acceptance",
+    "No registry write or production deployment"
+  ]
+}

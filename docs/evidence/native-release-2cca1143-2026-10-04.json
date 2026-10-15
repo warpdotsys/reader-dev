@@ -1,0 +1,50 @@
+{
+  "sourceCommit": "2cca1143a795537b3a26e293588e5cd59aaaa28b",
+  "testedMergeCommit": "a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5",
+  "workflowRun": "https://github.com/warpdotsys/reader-dev/actions/runs/37195595659",
+  "workflowConclusion": "success",
+  "hostedRunnerLabels": ["ubuntu-24.04", "ubuntu-24.04-arm"],
+  "successfulJobs": 6,
+  "artifact": "reader-publisher-import-a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5",
+  "artifactId": 11301456585,
+  "artifactDownloadBytes": 7033,
+  "jsonReportsLocallyChecked": 20,
+  "actualRuntimeReleaseObjectsChecked": 4,
+  "actualRuntimeJarIdentitiesChecked": 4,
+  "sharedJarSha256": "f9f1ad0aaca9e0f16c21d5279187456c9da9db6d832f2c9f922b035dd744cd0d",
+  "nativeImages": [
+    {
+      "architecture": "amd64",
+      "imageId": "sha256:8bafd7224b9393b8152e36cbbf5c660d2be79aa5b4e0cc36f669f7f1d5f055a0",
+      "archiveSha256RecordedOnRunner": "04d56d583ef5cb608de8d0f09b7a9ee46b02e214f968516fe91377b30f04d207",
+      "builtMemoryPeakBytes": 800178176,
+      "reloadedMemoryPeakBytes": 806432768,
+      "builtPidsPeak": 180,
+      "reloadedPidsPeak": 178
+    },
+    {
+      "architecture": "arm64",
+      "imageId": "sha256:f95e5902099ac176a40034f83e599a65c1c6b2240888f1209d0b605737bf280a",
+      "archiveSha256RecordedOnRunner": "16f693f931a7630ff6f95e1632bea123fad2098de870e0210213fb2d148d4ac1",
+      "builtMemoryPeakBytes": 804515840,
+      "reloadedMemoryPeakBytes": 800141312,
+      "builtPidsPeak": 177,
+      "reloadedPidsPeak": 177
+    }
+  ],
+  "commonBudget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "memoryAndPidsLimitEvents": 0,
+    "actualSwapCurrentBytesAllFourRuns": 0,
+    "swapMaxBytes": 1073741824
+  },
+  "limits": [
+    "small JSON evidence checked locally; full archives handled only on GitHub runners",
+    "not a registry digest or a production deployment",
+    "generated accounts and sources only; not authenticated Qidian or original-JAR three-way proof",
+    "short synthetic tests do not prove sustained load or enforced zero swap"
+  ]
+}

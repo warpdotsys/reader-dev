@@ -1,0 +1,21 @@
+{
+  "scope": "only completed snapshot test JAR input copies",
+  "removedFiles": [
+    {
+      "path": "/home/chong/.cache/reader-gutenberg-f5c9-20261011-b-geyxgmq_/inputs/original.jar",
+      "bytes": 72913887,
+      "sha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c"
+    },
+    {
+      "path": "/home/chong/.cache/reader-gutenberg-f5c9-20261011-b-geyxgmq_/inputs/restored.jar",
+      "bytes": 285671807,
+      "sha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b"
+    }
+  ],
+  "removedCount": 2,
+  "removedBytes": 358585694,
+  "sourceOriginalAndBackupAndCiDownloadRetainedAndHashed": true,
+  "temporaryCopiesRecreatableFromRetainedBytes": true,
+  "otherDirectoriesDeleted": false,
+  "privateBookBodiesRead": 0
+}

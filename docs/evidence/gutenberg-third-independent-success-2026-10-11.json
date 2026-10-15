@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "observationIndependentlyVerified": true,
+  "businessAccepted": true,
+  "scope": "fixed anonymous metadata, complete 28-row TOC and first chapter; not three-way/authentication",
+  "sourceRevision": "cc17b0ceb964632221168ce1c996c162ab348696",
+  "runId": 38117042668,
+  "jobId": 114403888620,
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38117042668",
+  "testedImageRevision": "ec6af77a25a1d048e1751bdf983d3a1894d629ff",
+  "jarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "imageId": "sha256:75bfc0e1c63cb2e8e2e8d85cdbc31d9b4cb831a24e3bd3cefc09a5d57a20156d",
+  "sourceNativeRun": 38115254938,
+  "sourceNativeReceiptSha256": "d6dd331db814df924cdc90af0067a3fbb5deff9cab7e265eb5b72a481f6f8211",
+  "metadata": {
+    "authorMatches": true,
+    "dataIsObject": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "isSuccess": true,
+    "nameMatches": true,
+    "status": 200
+  },
+  "toc": {
+    "baseUrlsMatchFixedBook": true,
+    "canonicalTocSha256": "61af49ad646781649f796440dec95dbed27308ca1c7d119b0bc92c287f9450c7",
+    "chapterCount": 28,
+    "chapterTitlesPresent": true,
+    "chaptersRemainInFixedBook": true,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "fixedBookChapterUrlsValid": true,
+    "fragmentsMatchExpected": true,
+    "indicesSequential": true,
+    "isSuccess": true,
+    "noVolumeEntries": true,
+    "relativeChapterUrls": 28,
+    "status": 200,
+    "webViewOptionsRetained": true
+  },
+  "chapter": {
+    "characters": 6822,
+    "errorMsgEmpty": true,
+    "fields": [
+      "data",
+      "errorMsg",
+      "isSuccess"
+    ],
+    "firstLetterMarkerPresent": true,
+    "isNotResourceUrl": true,
+    "isSuccess": true,
+    "noScriptTag": true,
+    "replacementCharacters": 0,
+    "sha256": "ea86a20b840b56b45f9870836bbf8f02ac0a9051f7a2819a6291fe32640a5366",
+    "status": 200
+  },
+  "businessApiCalls": {
+    "/getBookContent": 1,
+    "/getBookInfo": 1,
+    "/getChapterList": 1
+  },
+  "maximumObservedProcesses": {
+    "browser": 7,
+    "driver": 1,
+    "worker": 1
+  },
+  "resourceGuardAccepted": true,
+  "memoryPeakBytes": 958705664,
+  "pidsPeak": 184,
+  "seconds": 20.043,
+  "swapConfiguredAndObservedZero": true,
+  "sourceRulesRetained": true,
+  "cookieRowsBefore": 0,
+  "cookieRowsAfter": 0,
+  "generatedSessionRevoked": true,
+  "ownedContainerRemoved": true,
+  "originalOrRemoteParityProven": false,
+  "realAuthenticationProven": false,
+  "rawBodyOrCookiePublished": false,
+  "actualExternalTargetRequestCountMeasured": false,
+  "wholeNativeArchiveLocallyRehashed": false,
+  "ordinaryCc17HostedCiAcceptedByThisReceipt": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "files": {
+    "CLEANUP.json": {
+      "bytes": 54,
+      "sha256": "c42fc6be4c30a5b7b673f1324e4a0f4bbbc5e5ce0bfe057f7c8184a28832a872"
+    },
+    "CONTAINER_STATE.json": {
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    "GUTENBERG_REPORT.json": {
+      "bytes": 2370,
+      "sha256": "79d6cd7452a0c9ac2626bd3cb218d153ed93e31c4021f30207b5332ceac0d15d"
+    },
+    "LOADED_IDENTITY.json": {
+      "bytes": 259,
+      "sha256": "9d3872c805ccb2b0b0d9687ecc810ffa7498208f5e069be46088a5240edc9932"
+    },
+    "PRELOAD_IDENTITY.json": {
+      "bytes": 258,
+      "sha256": "2237a24a38be82118aeb4d328fcc49bfb791dbe4e86f5d8426098a3f1f5abe56"
+    },
+    "RUNNING_JAR_IDENTITY.json": {
+      "bytes": 190,
+      "sha256": "d5add2b6253840abfca9ac9b50dcc3bbe0ea49e931aa3ca2c8e243992e564f07"
+    },
+    "RUNTIME_RESOURCE_BUDGET.json": {
+      "bytes": 973,
+      "sha256": "332fc80598a6466d40edc696547b5b0a587bfd8c920a10d891ada6e1ad25df58"
+    },
+    "SOURCE_RUN.json": {
+      "bytes": 316,
+      "sha256": "a1f4e463e227ede9ffe75b3a9c8df757948ac26938d6e43185b2b462a94393fc"
+    },
+    "WORKER_DIAGNOSTICS.json": {
+      "bytes": 165,
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    }
+  }
+}

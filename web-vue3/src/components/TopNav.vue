@@ -8,10 +8,10 @@
  * Props:
  * - variant: 'nav'（品牌 + 导航链接，默认）| 'minimal'（返回按钮 + 品牌）
  * - active: 当前路由路径（匹配的链接加 .active 高亮）
- * - links: 要显示的导航键（默认全量；'users' 仅 showUsersLink 时按管理员身份门控）
+ * - links: 要显示的导航键（默认全量；'users' 仅 showUsersLink 时显示）
  * - showUser: 是否显示用户名 chip（默认 true）
  * - showLogout: 是否显示退出按钮（默认 false；点击 emit('logout')）
- * - showUsersLink: 是否显示「用户」入口（默认 false；仅管理员可见，不受 secure 模式限制）
+ * - showUsersLink: 是否显示「用户」入口（默认 false；数据访问仍需管理密码验证）
  * - backLabel: minimal 变体返回按钮文案（默认空 = 仅图标）
  * - dense: 紧凑顶栏（探索页风格：小间距/细边框）
  *
@@ -89,7 +89,7 @@ const NAV_LINKS: Record<string, { to: string; i18n: string }> = {
 const visibleLinks = computed(() => {
   const out: { to: string; label: string }[] = []
   for (const key of props.links) {
-    if (key === 'users' && !(props.showUsersLink && store.isAdmin)) continue
+    if (key === 'users' && !props.showUsersLink) continue
     const def = NAV_LINKS[key]
     if (!def) continue
     out.push({ to: def.to, label: t(def.i18n) })
@@ -125,7 +125,7 @@ const visibleLinks = computed(() => {
 
     <slot />
 
-    <div v-if="variant === 'nav'" class="user-area">
+    <div v-if="variant === 'nav'" class="user-area" role="navigation" aria-label="全局导航" tabindex="0">
       <button
         v-for="link in visibleLinks"
         :key="link.to"
@@ -174,6 +174,7 @@ const visibleLinks = computed(() => {
   top: 0;
   z-index: 20;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 24px;
   padding: 14px 32px;
@@ -233,12 +234,17 @@ const visibleLinks = computed(() => {
 }
 .user-area {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 14px;
   margin-left: auto;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
 }
 .nav-link {
+  flex-shrink: 0;
+  white-space: nowrap;
   padding: 5px 2px;
   border: none;
   background: none;
@@ -258,11 +264,14 @@ const visibleLinks = computed(() => {
   font-weight: 400;
 }
 .user-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   font-size: 13px;
   font-weight: 400;
   color: var(--text-2);
 }
 .logout-btn {
+  flex-shrink: 0;
   padding: 6px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -333,5 +342,19 @@ const visibleLinks = computed(() => {
   .user-area .default-config-btn {
     flex-shrink: 0;
   }
+}
+/* Short landscape/keyboard viewports keep navigation on one scrollable line.
+   Do not shrink labels or cover the remaining content with a multi-row sticky bar. */
+@media (max-width: 720px) and (max-height: 400px) {
+  .user-area {
+    flex-wrap: nowrap;
+    width: 100%;
+    margin-left: 0;
+    overscroll-behavior-x: contain;
+  }
+}
+.user-area:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 </style>

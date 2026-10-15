@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-04",
+  "scope": "explicitly authorized local isolated Reader; four necessary Qidian session fields only",
+  "listener": "127.0.0.1:18944",
+  "jarSha256": "cdd3786c8f7ed023c92d8ae35a55040f9162e3de3d2af61c3cd67426e4347d9b",
+  "renderer": "existing local Chromium capability baseline; not packaged Camoufox",
+  "generatedReaderAccount": true,
+  "bookSource": "https://www.qidian.com",
+  "unchangedOfficialDesktopRuleFromAuthorizedSnapshot": true,
+  "thirdPartyProxyMobileRuleNotExecuted": true,
+  "import": {"format": "netscape", "necessarySessionFields": 4, "actualImported": 4, "listingRedacted": true, "authenticatedQidianReadProven": false},
+  "actualUi": {"generatedAccountLoginReachedShelf": true, "singleSourceSearchAttempted": true, "errorType": "BrowserNetworkPolicyViolation", "error": "本地 WebView 已阻止本机、内网或保留地址", "searchPassed": false},
+  "dns": {"systemAnswerAtObservation": "198.18.1.220", "userConfirmedProxyFakeIp": true, "publicHttpsDnsAnswersAlsoObserved": true, "privateNetworkProtectionNotDisabled": true,
+    "processOnlyPublicHostsSnapshotPrepared": true, "snapshotUsedInRetest": true, "systemHostsOrProxyModified": false},
+  "dnsRetest": {
+    "testPid": 60528, "processOwnedDirectlyByProbe": true,
+    "cookieImported": 4, "httpStatus": 200, "isSuccess": false, "seconds": 6.053, "expectedTitleMatches": 0,
+    "error": "com.htmake.reader.utils.BrowserNetworkPolicyViolation: 本地 WebView 渲染触及了本机或非公网网络资源，已中止",
+    "initialHostCheckPassedButResourceGuardFailed": true,
+    "exactBlockedResourceNotIdentified": true, "freeBodyRequested": false,
+    "cookieCleared": true, "postCleanupCookieRows": 0, "sessionFieldNamesInCapturedLogs": false,
+    "processStopped": true, "testPortClosed": true, "userReader18931Preserved": true
+  },
+  "ordinaryBookInfo": {"httpStatus": 200, "isSuccess": true, "seconds": 1.299, "expectedTitleMatched": false, "coverUrlPresent": false, "validBookMetadataProven": false},
+  "ordinaryToc": {"httpStatus": 200, "isSuccess": false, "seconds": 0.727, "chapterCount": 0, "errorCategory": "toc parse failure", "freeBodyNotRequested": true},
+  "cleanup": {
+    "clearEndpointPassed": true, "postCleanupCookieRows": 0,
+    "actualUiReportedSavedSources": 0,
+    "remainingCookieCacheFiles": 1, "remainingCookieCacheBytes": 88, "emptyStructuredCookieListVerified": true, "sessionFieldNamesInCache": false,
+    "sessionFieldNamesInTwoLogs": false, "ordinaryFileLoggerCreated": false,
+    "actualQidianLogoutNotCalled": true, "agentCreatedReaderTabClosed": true, "agentCreatedPublicSiteTabClosed": true,
+    "testJvmPid": 4056, "testJvmStopped": true, "firstStopDeniedByWindowsPermissions": true, "userClosedFirstTestPidAndAbsenceVerified": true,
+    "userReader18931NotStopped": true
+  },
+  "screenshotsLocalOnly": {
+    "searchError": "build/qidian-reader-isolated-20261004-a/reader-network-guard.png",
+    "searchErrorSha256": "dd50c4790cfd2164e46dbcba887017ebe990ff6227d32f8ba935d8889359ae09",
+    "credentialCleared": "build/qidian-reader-isolated-20261004-a/reader-cookie-cleaned.png",
+    "credentialClearedSha256": "f1e3795edffe32640ab7c409fb269c5080deb25bc7780e7f34c08628db0ae58f"
+  },
+  "limits": [
+    "source requests did not demonstrate site authentication or successful Reader reading",
+    "Fake-IP rejection is a local proxy-resolution condition, not evidence Qidian is an actual intranet service",
+    "empty or incorrect metadata under successful ReturnData is not accepted as success",
+    "no free chapter body, purchases, subscriptions or real account changes in this Reader run",
+    "no credential files, snapshots, raw HTML or chapter bodies uploaded to GitHub, CI or servers",
+    "no original JAR or old remote engine with these real credentials; no authenticated three-way result",
+    "resource guard still failed after process-only DNS test; blocked resource not yet identified",
+    "source inspection shows the old local Chromium baseline reads flat legacy cookies, not the structured Netscape records; this is not authenticated Camoufox parity",
+    "both test JVMs are now stopped; no real credential or chapter body in reports or CI"
+  ]
+}

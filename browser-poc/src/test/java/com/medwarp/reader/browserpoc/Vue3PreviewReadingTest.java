@@ -27,7 +27,7 @@ public class Vue3PreviewReadingTest {
     }
 
     @Test
-    public void bookDetailTocAndFirstChapterRender() throws Exception {
+    public void bookDetailTocReadingRefreshAndExportRender() throws Exception {
         String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
         String fixtureUrl = System.getenv("READER_BOOK_FIXTURE_URL");
         String executable = System.getProperty("browser.executable", "");
@@ -80,10 +80,36 @@ public class Vue3PreviewReadingTest {
                 }
                 assertTrue(page.locator(".reader-content").innerText()
                         .contains("第一段，中文与 UTF-8。"));
-                page.locator(".chapter-nav button").last().click();
+                // Keep an unrelated query and fragment while updating only the entry chapter.
+                page.navigate(page.url() + "&probe=keep#route-probe");
+                page.getByText("第一段，中文与 UTF-8。").waitFor();
+                Response progress = page.waitForResponse(response -> URI.create(response.url()).getPath()
+                                .endsWith("/reader3/saveBookProgress"),
+                        () -> page.locator(".chapter-nav button").last().click());
+                assertEquals(200, progress.status());
+                assertTrue("The legacy progress endpoint must accept the Vue 3 chapter update",
+                        progress.text().contains("\"isSuccess\":true"));
                 page.getByText("终章内容固定。").waitFor();
                 assertTrue(page.locator(".reader-content").innerText()
                         .contains("终章内容固定。"));
+                page.waitForCondition(() -> URI.create(page.url()).getQuery()
+                        .contains("chapter=1"));
+                assertTrue("Chapter replacement must retain unrelated entry context",
+                        URI.create(page.url()).getQuery().contains("probe=keep"));
+                assertEquals("route-probe", URI.create(page.url()).getFragment());
+                page.reload();
+                page.getByText("终章内容固定。").waitFor();
+                assertTrue("Refresh must stay at the current chapter, not the old TOC entry",
+                        page.locator(".reader-content").innerText().contains("终章内容固定。"));
+
+                page.locator(".chapter-nav button").first().click();
+                page.getByText("第一段，中文与 UTF-8。").waitFor();
+                page.waitForCondition(() -> URI.create(page.url()).getQuery()
+                        .contains("chapter=0"));
+                page.reload();
+                page.getByText("第一段，中文与 UTF-8。").waitFor();
+                assertTrue(URI.create(page.url()).getQuery().contains("probe=keep"));
+                assertEquals("route-probe", URI.create(page.url()).getFragment());
 
                 page.navigate(previewUrl + "/book/" + java.net.URLEncoder.encode(bookUrl,
                         java.nio.charset.StandardCharsets.UTF_8));

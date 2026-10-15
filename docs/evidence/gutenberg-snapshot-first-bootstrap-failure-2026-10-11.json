@@ -1,0 +1,372 @@
+{
+  "scope": "exact original b26 / restored f5 JAR; captured public HTML via same loopback HTTP alias, historical/Camoufox; no WAN, not three-way real-site HTTPS or current whole-image acceptance",
+  "passed": false,
+  "readerStarted": false,
+  "browserStarted": false,
+  "productionChanged": false,
+  "realCredentialsImported": false,
+  "privateBookBodyRead": false,
+  "referenceLayersDownloaded": false,
+  "freshDirectory": "/home/chong/.cache/reader-gutenberg-f5c9-20261011-nq72j947",
+  "referenceManifestDigest": "sha256:88c250043bd33715ca372b749c1dca055c14e4550882caf968bd7af933d53573",
+  "referenceConfigDigest": "sha256:5d85fb04eb6a8900d56956f5598b50487209b72c736441bc954221ae8ac4e6bb",
+  "referencePreviouslyDownloadedNotDownloadedAgain": true,
+  "realAuthenticatedSourceTested": false,
+  "threeWayExecuted": false,
+  "browserBinaryBytesModified": false,
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "currentJarSha256": "f5c9da58803d361849d3cf4e946a3b952081a0a770baf536ec1b6a18e0d6262b",
+  "currentJarSourceRevision": "1ddf1210307f9e963c5ee0358ec936b210ef3d6c",
+  "currentJarTestedMergeSnapshot": "3645657599e77ac2c338bdb6bce35a950e50775b",
+  "currentJarDownloadSourceRevision": "7739ab85",
+  "currentJarDownloadRun": 38115254938,
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "notLatestWholeNativeImageAcceptance": true,
+  "comparatorCommandHeapMiB": {
+    "initial": 128,
+    "maximum": 768
+  },
+  "runtimeControlGoMaxProcs": 2,
+  "javaOrBrowserThreadPolicyChanged": false,
+  "referencePid1AdoptedZombieReaperEnabled": true,
+  "referenceSourceAndBrowserBytesChanged": false,
+  "executedComparatorSha256": "f074f863c26982ebb01d328d0961290c727f8635387c28b42faae39b079fac27",
+  "strictThreeWayHeaderSecurityAccepted": false,
+  "realSiteMetadataOrAuthenticationProven": false,
+  "fullGoalComplete": false,
+  "httpsTested": false,
+  "executedPid1ReaperModuleSha256": "33dc3f3282a9c4ad3a0d6fec4bb5d9d3ca70b560845b72e5694549c6ebe43ea8",
+  "resourceSamples": [
+    {
+      "phase": "bothOwnedRuntimesReady",
+      "elapsedMs": 1641,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 23,
+          "memory.current": 187461632,
+          "memory.peak": 307060736,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 10,
+          "memory.current": 14954496,
+          "memory.peak": 306515968,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142139392,
+          "memory.peak": 142139392,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29831168,
+          "memory.peak": 29831168,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 1642,
+      "groups": {
+        "parent": {
+          "pids.current": 10,
+          "pids.peak": 23,
+          "memory.current": 187461632,
+          "memory.peak": 307060736,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 10,
+          "memory.current": 14954496,
+          "memory.peak": 306515968,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142139392,
+          "memory.peak": 142139392,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 1,
+          "pids.peak": 6,
+          "memory.current": 29831168,
+          "memory.peak": 29831168,
+          "pids.max.events": 0
+        }
+      }
+    },
+    {
+      "phase": "actualHistoricalPair",
+      "elapsedMs": 2142,
+      "groups": {
+        "parent": {
+          "pids.current": 12,
+          "pids.peak": 23,
+          "memory.current": 561430528,
+          "memory.peak": 561639424,
+          "pids.max.events": 0
+        },
+        "launcher": {
+          "pids.current": 1,
+          "pids.peak": 10,
+          "memory.current": 14688256,
+          "memory.peak": 306515968,
+          "pids.max.events": 0
+        },
+        "server": {
+          "pids.current": 8,
+          "pids.peak": 8,
+          "memory.current": 142139392,
+          "memory.peak": 142139392,
+          "pids.max.events": 0
+        },
+        "client": {
+          "pids.current": 3,
+          "pids.peak": 6,
+          "memory.current": 404066304,
+          "memory.peak": 404275200,
+          "pids.max.events": 0
+        }
+      }
+    }
+  ],
+  "executedReclaimModuleSha256": "dcbb25125d093e4e71e10ce8c05939e35482196c7324ee9fb4563fdfb7e6c9d9",
+  "executedProbeSha256": "ad22523cbfd1d8ad918f0f91d3fbfc5657ac9e84d2248fd789609d597240f7f0",
+  "executedInnerSha256": "e36c930d96cefd7e8f2c94502200e2d3192e3ffcdb886f53a3af15f57df6491f",
+  "executionSetupDelta": "captured public HTML, four actual business APIs per side; one guarded reclaim of stopped historical leaf before Camoufox; no global cache or product memory-policy change",
+  "earlierTimeoutRootCauseProven": false,
+  "sameBytesAsOwn1ddf1210Rebuild": true,
+  "captureReceiptSha256": "ac947c962a7ee2a0958d5a4b78627282b89a55c7e6a203643a89c1f3756f47e9",
+  "capture": {
+    "bytes": 468370,
+    "captureOnlyNotReaderParity": true,
+    "credentialsOrCookieSent": false,
+    "privateLocalBooksRead": 0,
+    "rawBodyUploadedToGitHub": false,
+    "redirectFollowed": false,
+    "schemaVersion": 1,
+    "sha256": "23403a6a3b1cace42a06d6c378a6f1acf8ec97c940c652d12fe3c0d30275e58f",
+    "siteSearchRequested": false,
+    "sourceUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "status": 200,
+    "tlsErrorsIgnored": false,
+    "utf8DecodedStrictly": true
+  },
+  "preflightResources": {
+    "scope": "exact original b26 / restored f5 JAR; captured public HTML via same loopback HTTP alias, historical/Camoufox; no WAN, not three-way real-site HTTPS or current whole-image acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 307060736,
+    "memoryCurrentBytes": 13402112,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 11169792,
+      "file": 1183744,
+      "shmem": 0,
+      "kernel": 335872,
+      "kernel_stack": 0,
+      "pagetables": 102400,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 4096,
+      "file_writeback": 0,
+      "inactive_file": 176128,
+      "active_file": 995328,
+      "slab_reclaimable": 116464,
+      "slab_unreclaimable": 46240
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 2,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "phase": "actualHistoricalPairBeforeCamoufox",
+  "serverDriverExitCode": 0,
+  "serverPrivateStderrBytes": 0,
+  "operation": "hostReadGeneratedPrivateTmpfsControl",
+  "serverOwnedPid": 726,
+  "serverIdentity": {
+    "kind": "server",
+    "uid": 10001,
+    "gid": 10001,
+    "groups": [],
+    "capsZero": true,
+    "noNewPrivileges": true,
+    "cpuSet": [
+      0,
+      1
+    ],
+    "interfaces": [
+      "lo"
+    ],
+    "cgroup": "/system.slice/reader-three-way-gutenberg-f5c9-20261011-a.service/server",
+    "namespaces": {
+      "user": 4026532232,
+      "net": 4026532237,
+      "mnt": 4026532233,
+      "pid": 4026532236,
+      "ipc": 4026532235,
+      "uts": 4026532234
+    }
+  },
+  "serverIndependentHostIdentityAndReadOnlyInputsAccepted": true,
+  "clientDriverExitCode": 0,
+  "clientPrivateStderrBytes": 0,
+  "clientOwnedPid": 754,
+  "clientIdentity": {
+    "kind": "client",
+    "uid": 10001,
+    "gid": 10001,
+    "groups": [],
+    "capsZero": true,
+    "noNewPrivileges": true,
+    "cpuSet": [
+      0,
+      1
+    ],
+    "interfaces": [
+      "lo"
+    ],
+    "cgroup": "/system.slice/reader-three-way-gutenberg-f5c9-20261011-a.service/client",
+    "namespaces": {
+      "user": 4026532232,
+      "net": 4026532237,
+      "mnt": 4026532299,
+      "pid": 4026532306,
+      "ipc": 4026532305,
+      "uts": 4026532300
+    }
+  },
+  "clientIndependentHostIdentityAndReadOnlyInputsAccepted": true,
+  "ownedPrivateTmpfsControlIndependentlyReadable": true,
+  "threeWayObservation": {
+    "probeExitCode": 1,
+    "probeArguments": [
+      "/usr/bin/python3",
+      "/verification-scripts/compare-gutenberg-snapshot.py",
+      "--java",
+      "/opt/java/openjdk/bin/java",
+      "--original",
+      "/verification-inputs/original.jar",
+      "--restored",
+      "/verification-inputs/restored.jar",
+      "--report",
+      "/storage/three-way.json",
+      "--snapshot",
+      "/verification-snapshot/public-page.html",
+      "--phase-handoff-dir",
+      "/storage/phases"
+    ],
+    "privateStdoutBytes": 0,
+    "privateStderrBytes": 569,
+    "rawProbeLogsPublished": false,
+    "realCredentialsImported": false,
+    "fullGoalComplete": false,
+    "boundedDiagnosticMarkerCounts": {
+      "TimeoutException": 0,
+      "TimeoutError": 0,
+      "OutOfMemoryError": 0,
+      "Failed to launch": 0,
+      "Script execution timed out": 0,
+      "Navigation timeout": 0,
+      "Cannot allocate memory": 0
+    },
+    "rawPublicPageOrLogsPublished": false,
+    "preservedCompletedHistoricalPair": null,
+    "failedSideReports": {}
+  },
+  "failureType": "AssertionError",
+  "cleanup": [
+    {
+      "id": "reader-three-way-gutenberg-f5c9-20261011-a-client",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    },
+    {
+      "id": "reader-three-way-gutenberg-f5c9-20261011-a-server",
+      "stoppedAndPidZeroIndependentlyObserved": true,
+      "deleted": true
+    }
+  ],
+  "originalSourceStillUnchanged": true,
+  "serverStopObservations": [
+    {
+      "referenceNodeExitCode": -15,
+      "expectedOwnedTermination": true,
+      "privateNodeLogBytes": 40,
+      "rawNodeLogPublished": false
+    }
+  ],
+  "serverAdoptedZombieReaps": [],
+  "ownedContainersRemaining": 0,
+  "finalResources": {
+    "scope": "exact original b26 / restored f5 JAR; captured public HTML via same loopback HTTP alias, historical/Camoufox; no WAN, not three-way real-site HTTPS or current whole-image acceptance",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "memoryPeakBytes": 561639424,
+    "memoryCurrentBytes": 492630016,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryStatBytes": {
+      "anon": 10022912,
+      "file": 479395840,
+      "shmem": 0,
+      "kernel": 2772992,
+      "kernel_stack": 0,
+      "pagetables": 253952,
+      "sock": 0,
+      "file_mapped": 0,
+      "file_dirty": 28672,
+      "file_writeback": 0,
+      "inactive_file": 458809344,
+      "active_file": 20590592,
+      "slab_reclaimable": 2146864,
+      "slab_unreclaimable": 195000
+    },
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0,
+    "pidsPeak": 23,
+    "pidsCurrent": 1,
+    "pidsMax": 256,
+    "pidsEvents": {
+      "max": 0
+    },
+    "cpuQuota": "200000",
+    "cpuPeriod": 100000
+  },
+  "aggregateBudgetAccepted": true,
+  "seconds": 3.963
+}

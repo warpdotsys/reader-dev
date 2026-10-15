@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-08",
+  "sourceRevision": "6b4919e9fe6fc59bd6647dbccb8500f6b5841ef9",
+  "testedMergeSnapshot": "1fd515416aa098c8191c38713d1cd0b57c160010",
+  "workflows": {
+    "java": {
+      "id": 37780063406,
+      "sourceRevision": "6b4919e9fe6fc59bd6647dbccb8500f6b5841ef9",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37780063406",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113320621351,
+          "name": "Test and build JAR"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    },
+    "vue": {
+      "id": 37780063346,
+      "sourceRevision": "6b4919e9fe6fc59bd6647dbccb8500f6b5841ef9",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37780063346",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113320620882,
+          "name": "Isolated Vue 3 browser journeys in Chromium"
+        },
+        {
+          "id": 113320621081,
+          "name": "build"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    },
+    "full": {
+      "id": 37780064083,
+      "sourceRevision": "6b4919e9fe6fc59bd6647dbccb8500f6b5841ef9",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37780064083",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113320623296,
+          "name": "Build and smoke-test the full Reader image"
+        }
+      ],
+      "optionalSkippedJobs": 6
+    },
+    "native": {
+      "id": 37780063334,
+      "sourceRevision": "6b4919e9fe6fc59bd6647dbccb8500f6b5841ef9",
+      "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37780063334",
+      "conclusion": "success",
+      "actualJobs": [
+        {
+          "id": 113320620927,
+          "name": "Build one shared Java Kotlin JAR"
+        },
+        {
+          "id": 113324121986,
+          "name": "Build and test native amd64 image"
+        },
+        {
+          "id": 113324121988,
+          "name": "Build and test native arm64 image"
+        },
+        {
+          "id": 113326025876,
+          "name": "Reload and run tested arm64 image"
+        },
+        {
+          "id": 113326025889,
+          "name": "Reload and run tested amd64 image"
+        },
+        {
+          "id": 113328060689,
+          "name": "Exercise both publisher imports without registry credentials"
+        }
+      ],
+      "optionalSkippedJobs": 0
+    }
+  },
+  "actualUiJourneys": 25,
+  "uiSkipped": 0,
+  "generatedSettingsScreenshots": [
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-settings-generated-opds-unavailable.png",
+      "sha256": "c44b9bd24431557d672422a63ad22d763e9df5ba15a16b4658e66e4bc31b1037",
+      "bytes": 76729,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-settings-generated-tts-added.png",
+      "sha256": "e5ec32ff809d8b8c65ccc511333edf7fa6cdf87804cc3ea99c8298feb17fcf9d",
+      "bytes": 81490,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-settings-generated-tts-edited.png",
+      "sha256": "217411558ba7096f874795776685d52a3b92c05ef99dc2498351fa5d660c6b1a",
+      "bytes": 79399,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-settings-generated-tts-rejected.png",
+      "sha256": "81dc4a78fb4ad620ef8baa937ac48ea68e5b97d3697c27f116aea1dd51a38a8b",
+      "bytes": 80967,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-txt-rule-generated-created.png",
+      "sha256": "1d7f3bb09cf96f5c64db54dbd4b1af04c0f2f3638214f9484b44977b78edf8fd",
+      "bytes": 86519,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-txt-rule-generated-deleted.png",
+      "sha256": "84690f97a756786fb83d1d1fbcdfff2b5a21bf0d6587148de4b349d548442d11",
+      "bytes": 92631,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-txt-rule-generated-disabled.png",
+      "sha256": "372650ab2ff558a6239d4ddd705f04c3165d45f45320b25c6466a47bbb60e7a6",
+      "bytes": 86473,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-1fd515416aa098c8191c38713d1cd0b57c160010/vue3-txt-rule-generated-invalid.png",
+      "sha256": "71ed4e401d2f6e2cf9ee01c5f2f8e859ab6ce706be926162210951792b697dfc",
+      "bytes": 84452,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "screenshotsIndividuallyViewed": 8,
+  "renderedSaveLifecycleAccepted": true,
+  "allVisualIssuesResolved": false,
+  "missingTtsDisplayTypeObserved": true,
+  "oldToastPermanentPersistenceProven": false,
+  "hostedFrontendTests": 278,
+  "hostedScreenshotGuardTests": 20,
+  "hostedTypesAndBuildPassed": true,
+  "jvmSuites": 42,
+  "jvmTests": 170,
+  "jvmEnvironmentSkipped": 31,
+  "pythonTests": 382,
+  "pythonSeconds": 9.662,
+  "jarSha256": "a966ce101671b9a3a96b7b48b81c60f4fb2ec322fe16178c2800f5c335053a84",
+  "jarBytes": 285649093,
+  "jarEntryCount": 1562,
+  "exactByteRebuildAccepted": true,
+  "ownJavaFullAndNativeJarDigestsMatch": true,
+  "fullCamoufox": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 20,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "navigationContractPresent": true,
+    "earlyNavigationContractPresent": true,
+    "endlessNavigationContractPresent": true,
+    "promiseContractPresent": true,
+    "stateDeletionContractPresent": true,
+    "sourceNavigationContractPresent": true,
+    "numericalThreadContractPresent": true,
+    "utf8PostContractPresent": true,
+    "xmlSha256": "4b236602679e9b784196179341819a08f3014b436234c42b3223afb93a6f6c25"
+  },
+  "nativeCamoufox": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 20,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "navigationContractPresent": true,
+    "earlyNavigationContractPresent": true,
+    "endlessNavigationContractPresent": true,
+    "promiseContractPresent": true,
+    "stateDeletionContractPresent": true,
+    "sourceNavigationContractPresent": true,
+    "numericalThreadContractPresent": true,
+    "utf8PostContractPresent": true,
+    "xmlSha256": "a2f4cbe27d51d19de3b1c9633ddd02be02eb4913b579477d240a2fc9b9c00349"
+  },
+  "sourceDocumentHelperCases": 3,
+  "chromiumContractCases": 23,
+  "fullMemoryPeakBytes": 853102592,
+  "fullPidsPeak": 200,
+  "nativeMemoryPeakBytes": 851968000,
+  "nativePidsPeak": 203,
+  "ordinarySwapAllowanceBytes": 1073741824,
+  "observedSwapBytes": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "nativeMetadata": [
+    {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "1fd515416aa098c8191c38713d1cd0b57c160010",
+      "jarSha256": "a966ce101671b9a3a96b7b48b81c60f4fb2ec322fe16178c2800f5c335053a84",
+      "archiveSha256": "bc932b34f7ba029a56ca177c78a6e7387a4bc0c83a8abcc356263f881ede0bba",
+      "imageId": "sha256:b0d15a1384d2991f2d9a7d720419112bc6fcd8b574c7a1fb79b64af7d5ecb338"
+    },
+    {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "1fd515416aa098c8191c38713d1cd0b57c160010",
+      "jarSha256": "a966ce101671b9a3a96b7b48b81c60f4fb2ec322fe16178c2800f5c335053a84",
+      "archiveSha256": "68eae6aeabc8c920e0e59408ce62e4bca78f9727b7aa343c1a78b79726a6eb64",
+      "imageId": "sha256:7ae6e943f6df7d7aa251b74da54940401745e0eee711d90c2b5b172009c51a27"
+    }
+  ],
+  "localNewArchiveHashesRecomputed": false,
+  "independentReceiptSha256": {
+    "uiJava": "fd5643e2d8e408b19c0e9078b49e20a30009055d1506da785f7ae3650342d576",
+    "full": "63db54ffe192dd264cc94e2327417ea02378af84c3ece3dbc2e4b8a773d733e5",
+    "native": "ad4a85978dcc2d8a51d93466f7bedd3c67e4abcf8cc7abc83b9e46978b4ffe85"
+  },
+  "opdsBackendImplemented": false,
+  "officialUidmapInstalled": true,
+  "localWslExactImageExecutionAccepted": false,
+  "userReportsUnchanged": 58,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "registryPublished": false,
+  "productionChanged": false,
+  "currentFinalThreeWayAccepted": false,
+  "fullGoalComplete": false
+}

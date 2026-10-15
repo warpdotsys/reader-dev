@@ -1,0 +1,533 @@
+{
+  "schemaVersion": 1,
+  "scope": "generated navigation and same-size file-upload accounting plus uncommitted import-lifecycle candidate tests",
+  "rawDiagnosticSha256": "6098e962e9e79cbb95e6e230ad36abe615faf5ae53a29370751679d7d5bb81c3",
+  "innerProbeSha256": "91fcd93da14340318649cff1ccae007c1a17052f5824a377274b61785a22f6b2",
+  "hostProbeSha256": "ae574fb3da932a0ab615129d8066de230c8ff63e5ddd1a9fb76b1da88b2a5cb6",
+  "generatedPayloadBytes": 37809796,
+  "generatedCompleteUploadAccepted": true,
+  "readerExecuted": false,
+  "realBookReadOrCopied": false,
+  "forcedGcUsed": false,
+  "readerRefreshFixed": false,
+  "newImportCandidateRealBrowserAccepted": false,
+  "latestWholeImageAccepted": false,
+  "realCredentialsImported": false,
+  "otherPrivateBooksRead": 0,
+  "productionChanged": false,
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "uid": 10001,
+  "capsZero": true,
+  "noNewPrivileges": true,
+  "loopbackOnly": true,
+  "cpuCount": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapMaxBytes": 0,
+  "memoryPeakBytes": 1611452416,
+  "pidsPeak": 158,
+  "memoryEvents": {
+    "low": 0,
+    "high": 721,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "pidsEvents": {
+    "max": 0
+  },
+  "seconds": 23.684,
+  "ownedInstancesStopped": true,
+  "generatedTmpfsRemovedWithNamespace": true,
+  "sourceFileHashesCanonicalUtf8Lf": {
+    "web-vue3/src/views/BookshelfView.vue": "c79932aa414ceec55656bb616be6208b394a8863b34ba3d712f730d1db2aa902",
+    "web-vue3/src/views/bookshelfImportLifecycle.test.mjs": "4f9bce9f7944d2ada6ede385616d29a519ab278e50abfaabf46712d2f85151ed"
+  },
+  "localLifecycleTests": 14,
+  "allFrontendTests": 352,
+  "failures": 0,
+  "skips": 0,
+  "frontendJUnitSha256": "0ba1444e0156620c7809c2259a24c682aa1b7f75fed6cd4c41b854f785113377",
+  "measurements": [
+    {
+      "phase": "initialChinesePage",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 76910592,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96435200,
+          "privateCleanDirtyBytesSum": 95748096
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 88784896,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 133288960,
+          "privateCleanDirtyBytesSum": 132571136
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 181993472,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 297336832,
+          "privateCleanDirtyBytesSum": 262098944
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39686144,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 75407360,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 115187712,
+          "privateCleanDirtyBytesSum": 59506688
+        }
+      },
+      "cgroupCurrentBytes": 1610350592,
+      "highEvents": 555
+    },
+    {
+      "phase": "navigation1",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 76951552,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96467968,
+          "privateCleanDirtyBytesSum": 95780864
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 90816512,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 135320576,
+          "privateCleanDirtyBytesSum": 134602752
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 185413632,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 300761088,
+          "privateCleanDirtyBytesSum": 265457664
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39689216,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 79425536,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 119285760,
+          "privateCleanDirtyBytesSum": 63541248
+        }
+      },
+      "cgroupCurrentBytes": 1608609792,
+      "highEvents": 583
+    },
+    {
+      "phase": "navigation2",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 76988416,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96504832,
+          "privateCleanDirtyBytesSum": 95817728
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 92848128,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 137483264,
+          "privateCleanDirtyBytesSum": 136765440
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 187052032,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 302392320,
+          "privateCleanDirtyBytesSum": 267100160
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39689216,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 84144128,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 124014592,
+          "privateCleanDirtyBytesSum": 68259840
+        }
+      },
+      "cgroupCurrentBytes": 1609121792,
+      "highEvents": 610
+    },
+    {
+      "phase": "navigation3",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77021184,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96537600,
+          "privateCleanDirtyBytesSum": 95850496
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 94806016,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 139441152,
+          "privateCleanDirtyBytesSum": 138723328
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 189751296,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 305081344,
+          "privateCleanDirtyBytesSum": 269799424
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39710720,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 88809472,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 128668672,
+          "privateCleanDirtyBytesSum": 72925184
+        }
+      },
+      "cgroupCurrentBytes": 1608056832,
+      "highEvents": 635
+    },
+    {
+      "phase": "navigation4",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77041664,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96558080,
+          "privateCleanDirtyBytesSum": 95870976
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 96837632,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 141472768,
+          "privateCleanDirtyBytesSum": 140754944
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 190865408,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 306195456,
+          "privateCleanDirtyBytesSum": 270913536
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39710720,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 91906048,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 131765248,
+          "privateCleanDirtyBytesSum": 76021760
+        }
+      },
+      "cgroupCurrentBytes": 1595359232,
+      "highEvents": 692
+    },
+    {
+      "phase": "navigation5",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77074432,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96586752,
+          "privateCleanDirtyBytesSum": 95899648
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 97296384,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 142193664,
+          "privateCleanDirtyBytesSum": 141475840
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 184610816,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 299772928,
+          "privateCleanDirtyBytesSum": 264704000
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39705600,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 97009664,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 137095168,
+          "privateCleanDirtyBytesSum": 81133568
+        }
+      },
+      "cgroupCurrentBytes": 1603121152,
+      "highEvents": 692
+    },
+    {
+      "phase": "afterSameSizeFileChoice",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77307904,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96832512,
+          "privateCleanDirtyBytesSum": 96145408
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 97447936,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 142345216,
+          "privateCleanDirtyBytesSum": 141627392
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 185155584,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 299762688,
+          "privateCleanDirtyBytesSum": 264237056
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39678976,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 95854592,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 136615936,
+          "privateCleanDirtyBytesSum": 80097280
+        }
+      },
+      "cgroupCurrentBytes": 1607917568,
+      "highEvents": 692
+    },
+    {
+      "phase": "afterVerifiedUpload",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77484032,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 96996352,
+          "privateCleanDirtyBytesSum": 96309248
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 97640448,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 142537728,
+          "privateCleanDirtyBytesSum": 141819904
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 182423552,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 296866816,
+          "privateCleanDirtyBytesSum": 261242880
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39678976,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 96227328,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 137283584,
+          "privateCleanDirtyBytesSum": 80535552
+        }
+      },
+      "cgroupCurrentBytes": 1607897088,
+      "highEvents": 694
+    },
+    {
+      "phase": "afterNavigationClearsFile",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77500416,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 97012736,
+          "privateCleanDirtyBytesSum": 96325632
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 99581952,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 144479232,
+          "privateCleanDirtyBytesSum": 143761408
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 184492032,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 298935296,
+          "privateCleanDirtyBytesSum": 263311360
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42295296,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39678976,
+          "privateCleanDirtyBytesSum": 15441920
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 100356096,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 141412352,
+          "privateCleanDirtyBytesSum": 84664320
+        }
+      },
+      "cgroupCurrentBytes": 1608220672,
+      "highEvents": 712
+    },
+    {
+      "phase": "afterThreeSecondIdleNoForcedGc",
+      "groups": {
+        "python": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 77508608,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 97018880,
+          "privateCleanDirtyBytesSum": 96333824
+        },
+        "driver": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 99581952,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 144477184,
+          "privateCleanDirtyBytesSum": 143761408
+        },
+        "browser-main": {
+          "processes": 1,
+          "statusAnonRssBytesSum": 176410624,
+          "rollupAvailableProcesses": 1,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 290706432,
+          "privateCleanDirtyBytesSum": 254926848
+        },
+        "browser-service": {
+          "processes": 4,
+          "statusAnonRssBytesSum": 42393600,
+          "rollupAvailableProcesses": 4,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 39920640,
+          "privateCleanDirtyBytesSum": 15523840
+        },
+        "content": {
+          "processes": 2,
+          "statusAnonRssBytesSum": 91201536,
+          "rollupAvailableProcesses": 2,
+          "rollupUnavailableProcesses": 0,
+          "pssBytesSum": 132432896,
+          "privateCleanDirtyBytesSum": 75522048
+        }
+      },
+      "cgroupCurrentBytes": 1587896320,
+      "highEvents": 721
+    }
+  ],
+  "limitations": [
+    "No Vue, Reader API, real archive, decompression or existing storage in this generated page.",
+    "Generated page has no-store cache policy; not identical to real Reader navigation.",
+    "Sequential PSS and private-clean-dirty sums are not a simultaneous cgroup peak breakdown.",
+    "One generated run is not steady-state memory or proof against a Reader leak.",
+    "Product lifecycle candidate changed after this generated diagnostic; its tests are generated-state evidence only.",
+    "Confirmed large-book raw-refresh failure in the prior precise hosted JAR remains a release blocker."
+  ]
+}

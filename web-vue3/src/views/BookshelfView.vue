@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import {
   addBookGroup,
   addBookGroupMulti,
@@ -13,6 +14,7 @@ import {
   refreshLocalBook,
   removeBookGroup,
   removeBookGroupMulti,
+  saveBook,
   saveBookGroup,
   saveBookGroupOrder,
   setBookGroups,
@@ -25,7 +27,7 @@ import {
   saveBookmark,
   saveBookmarks,
 } from '@/api/bookmarks'
-import { uploadLocalBook, importBookPreview } from '@/api/upload'
+import { discardImportPreview, importBookPreview, type LocalBookImportPreview } from '@/api/upload'
 import { searchBookContent } from '@/api/cache'
 import { exportBook, type ExportFormat } from '@/api/export'
 import { downloadBlob } from '@/utils/download'
@@ -34,10 +36,15 @@ import { moveGroupTo } from '@/utils/groupOrder'
 import { decodeGroupMask, encodeGroupMask, isInLegacyBookGroup } from '@/utils/groupContract'
 import { parseShelfView, shelfViewMetrics, type ShelfViewMode } from '@/utils/shelfView'
 import { proxyImageUrl } from '@/utils/imageProxy'
+import { authenticatedReaderUrl } from '@/utils/tokenAuthentication'
+import { localChapterCacheScope } from '@/utils/readerLocalCache'
+import { canUseOfflineShelf, loadOfflineShelf, saveOfflineShelf } from '@/utils/shelfOfflineCache'
+import { captureRequestSession, isRequestSessionCurrent } from '@/api/requestSession'
+import { logout as logoutApi } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { probeSecureMode } from '@/api/users'
 import TopNav from '@/components/TopNav.vue'
-import type { Book, BookGroup, Bookmark, ContentSearchHit, ImportPreview } from '@/types'
+import type { Book, BookGroup, Bookmark, ContentSearchHit } from '@/types'
 
 const router = useRouter()
 const store = useUserStore()
@@ -138,40 +145,12 @@ function hoverPreview(book: Book): string | null {
 const books = ref<Book[]>([])
 const loading = ref(true)
 const refreshing = ref(false)
-/** 离线书架缓存（legacy helper.js 本地书架缓存：服务端不可达时展示最近一次数据） */
-const OFFLINE_SHELF_KEY = 'reader_shelf_offline'
+/** 元数据与章节缓存使用同一部署/账号/实际配置空间隔离规则。 */
+const offlineShelfScope = computed(() => localChapterCacheScope(store, window.location.origin + import.meta.env.BASE_URL))
 const offlineShelf = ref(false)
-
-interface ShelfOfflineCache {
-  books: Book[]
-  groups: BookGroup[]
-  ts: number
-}
-
-function saveOfflineShelf() {
-  try {
-    const data: ShelfOfflineCache = {
-      books: books.value,
-      groups: groups.value,
-      ts: Date.now(),
-    }
-    localStorage.setItem(OFFLINE_SHELF_KEY, JSON.stringify(data))
-  } catch {
-    /* ignore */
-  }
-}
-
-function loadOfflineShelf(): ShelfOfflineCache | null {
-  try {
-    const raw = JSON.parse(localStorage.getItem(OFFLINE_SHELF_KEY) ?? '') as unknown
-    if (!raw || typeof raw !== 'object') return null
-    const o = raw as Partial<ShelfOfflineCache>
-    if (!Array.isArray(o.books) || !Array.isArray(o.groups)) return null
-    return { books: o.books, groups: o.groups, ts: typeof o.ts === 'number' ? o.ts : 0 }
-  } catch {
-    return null
-  }
-}
+let shelfLoadVersion = 0
+let shelfMounted = false
+let shelfDisposed = false
 const keyword = ref('')
 watch(keyword, (k) => {
   if (searchMode.value === 'full') triggerContentSearch(k)
@@ -412,11 +391,13 @@ let suppressClick = false
 /* ================= 导入本地书 ================= */
 interface ImportItem {
   file: File
-  status: 'pending' | 'uploading' | 'done' | 'error'
+  status: 'preparing' | 'pending' | 'uploading' | 'done' | 'error'
   progress: number
   error?: string
-  /** 导入预览（POST /reader3/importBookPreview；undefined=探测中 / null=未实现或失败 → 直接上传） */
-  preview?: ImportPreview | null
+  /** 后端已经保存的临时本地书与目录；确认后由 book 提交给 /saveBook。 */
+  preview?: LocalBookImportPreview
+  /** saveBook 发出后，即使响应丢失也不能断言资产未入架，禁止自动删除。 */
+  saveAttempted?: boolean
 }
 
 const importOpen = ref(false)
@@ -429,6 +410,38 @@ const importDone = ref(false)
 const importSummary = ref('')
 const acceptTip = ref('')
 const importItems = ref<ImportItem[]>([])
+let importSession = 0
+let importCloseTimer: number | undefined
+
+function isCurrentImportSession(session: number): boolean {
+  return !shelfDisposed && importOpen.value && session === importSession
+}
+
+function clearImportCloseTimer() {
+  if (importCloseTimer !== undefined) window.clearTimeout(importCloseTimer)
+  importCloseTimer = undefined
+}
+
+function scheduleImportClose(session: number) {
+  clearImportCloseTimer()
+  const timer = window.setTimeout(() => {
+    if (importCloseTimer !== timer) return
+    importCloseTimer = undefined
+    if (isCurrentImportSession(session)) closeImport()
+  }, 800)
+  importCloseTimer = timer
+}
+
+/** 失效后只回收从未提交入架的预览；不删除进行中或结果未知的 saveBook 资产。 */
+function disposeImportSession() {
+  importSession++
+  clearImportCloseTimer()
+  const released = importItems.value
+  importItems.value = []
+  importOpen.value = false
+  uploadBusy.value = false
+  for (const item of released) discardPreview(item)
+}
 
 /** 整体进度：按文件大小加权 */
 const totalProgress = computed(() => {
@@ -442,12 +455,12 @@ const hasPending = computed(() => importItems.value.some((it) => it.status === '
 const hasPendingCount = computed(() => importItems.value.filter((it) => it.status === 'pending').length)
 const failedCount = computed(() => importItems.value.filter((it) => it.status === 'error').length)
 
-/* ================= 导入预览（POST /reader3/importBookPreview：选文件后先探测；404/未实现 → 直接上传） ================= */
+/* ================= 导入预览（真实 Java/Kotlin：上传保存 → 返回 Book/目录 → saveBook 入书架） ================= */
 
 /** 是否任一文件拿到预览数据（后端实现判定） */
 const previewSupported = computed(() => importItems.value.some((it) => it.preview != null))
 /** 是否仍有文件在探测预览中 */
-const previewChecking = computed(() => importItems.value.some((it) => it.preview === undefined))
+const previewChecking = computed(() => importItems.value.some((it) => it.status === 'preparing'))
 /** 拿到预览数据的文件（用于弹窗展示） */
 const previewedItems = computed(() => importItems.value.filter((it) => it.preview != null))
 
@@ -455,29 +468,41 @@ const previewedItems = computed(() => importItems.value.filter((it) => it.previe
 function previewChapters(item: ImportItem): string[] {
   const p = item.preview
   if (!p) return []
-  const raw = Array.isArray(p.chapters) ? p.chapters : p.chapterList
-  if (!Array.isArray(raw)) return []
-  return raw
-    .map((c) => (typeof c === 'string' ? c : (c?.title ?? '')))
+  return p.chapters
+    .map((c) => c.title ?? '')
     .filter((t) => !!t)
     .slice(0, 5)
 }
 
 function previewChapterCount(item: ImportItem): number {
-  const p = item.preview
-  if (!p) return 0
-  if (typeof p.chapterCount === 'number' && p.chapterCount >= 0) return p.chapterCount
-  const raw = Array.isArray(p.chapters) ? p.chapters : p.chapterList
-  return Array.isArray(raw) ? raw.length : 0
+  return item.preview?.chapters.length ?? 0
 }
 
-/** 单文件导入预览：成功 → 预览数据（弹窗展示，确认后仍走 uploadLocalBook）；404/未实现/失败 → preview=null 直接上传 */
-async function checkPreview(item: ImportItem) {
+/**
+ * 单文件预览同时完成 Java/Kotlin 的资产保存。接口失败时不伪造“直接上传”
+ * 降级：该路由在原版中不存在，继续会得到 404 且无法入书架。
+ */
+async function checkPreview(item: ImportItem, session: number) {
   try {
     const res = await importBookPreview(item.file)
-    item.preview = res.data ?? null
-  } catch {
-    item.preview = null
+    const preview = res.data?.[0]
+    if (!preview?.book?.bookUrl || !preview.book.origin) {
+      if (!isCurrentImportSession(session) || !importItems.value.includes(item)) return
+      item.status = 'error'
+      item.error = '服务器未返回可导入书籍'
+      return
+    }
+    // 用户在请求完成前关闭弹窗时，回收已经保存但未入架的用户资产。
+    if (!isCurrentImportSession(session) || !importItems.value.includes(item)) {
+      discardUnconfirmedPreview(preview)
+      return
+    }
+    item.preview = preview
+    item.status = 'pending'
+  } catch (err) {
+    if (!isCurrentImportSession(session) || !importItems.value.includes(item)) return
+    item.status = 'error'
+    item.error = err instanceof Error ? err.message : '解析书籍失败'
   }
 }
 
@@ -492,18 +517,16 @@ function isSupported(file: File): boolean {
   return (
     name.endsWith('.epub') ||
     name.endsWith('.txt') ||
-    name.endsWith('.mobi') ||
-    name.endsWith('.azw3') ||
     name.endsWith('.pdf') ||
-    name.endsWith('.fb2') ||
-    name.endsWith('.docx') ||
-    file.type === 'application/epub+zip' ||
-    file.type === 'text/plain' ||
-    file.type.startsWith('text/')
+    name.endsWith('.cbz') ||
+    name.endsWith('.umd')
   )
 }
 
 function openImport() {
+  if (shelfDisposed || importOpen.value || uploadBusy.value) return
+  clearImportCloseTimer()
+  importSession++
   importOpen.value = true
   uploadBusy.value = false
   importDone.value = false
@@ -516,27 +539,30 @@ function openImport() {
 
 function closeImport() {
   if (uploadBusy.value) return
-  importOpen.value = false
+  disposeImportSession()
   document.body.style.overflow = ''
 }
 
 function addFiles(files: File[]) {
-  if (uploadBusy.value) return
+  if (!isCurrentImportSession(importSession) || uploadBusy.value) return
   const valid = files.filter(isSupported)
   const ignored = files.length - valid.length
   const added: ImportItem[] = []
   for (const f of valid) {
-    const item: ImportItem = { file: f, status: 'pending', progress: 0, preview: undefined }
+    // checkPreview 持有同一个响应式对象；直接修改 push 前的原始对象不会触发模板更新。
+    const item = reactive<ImportItem>({ file: f, status: 'preparing', progress: 0 })
     importItems.value.push(item)
     added.push(item)
   }
-  acceptTip.value = ignored > 0 ? `已忽略 ${ignored} 个不支持的文件（支持 .epub / .txt / .mobi / .azw3 / .pdf / .fb2 / .docx）` : ''
+  acceptTip.value = ignored > 0 ? `已忽略 ${ignored} 个不支持的文件（支持 .epub / .txt / .pdf / .cbz / .umd）` : ''
   if (valid.length > 0) {
+    clearImportCloseTimer()
     importDone.value = false
     importSummary.value = ''
   }
-  // 导入预览（后端 /reader3/importBookPreview；404/未实现 → 直接上传降级）
-  for (const item of added) void checkPreview(item)
+  // 后端预览会保存资产，成功后才允许“开始导入”。
+  const session = importSession
+  for (const item of added) void checkPreview(item, session)
 }
 
 function onPick(e: Event) {
@@ -562,9 +588,27 @@ function onDrop(e: DragEvent) {
   addFiles(Array.from(e.dataTransfer?.files ?? []))
 }
 
+function discardUnconfirmedPreview(preview: LocalBookImportPreview) {
+  void discardImportPreview(preview).catch(() => {
+    if (!shelfDisposed) ElMessage.warning('未入架的预览文件清理失败，可在文件管理中检查')
+  })
+}
+
+function discardPreview(item: ImportItem) {
+  const preview = item.preview
+  item.preview = undefined
+  if (preview && item.status !== 'done' && !item.saveAttempted) discardUnconfirmedPreview(preview)
+}
+
+function importFormat(file: File): string {
+  const dot = file.name.lastIndexOf('.')
+  return dot >= 0 ? file.name.slice(dot + 1).toUpperCase() : '未知格式'
+}
+
 function removeItem(i: number) {
   if (uploadBusy.value) return
-  importItems.value.splice(i, 1)
+  const [item] = importItems.value.splice(i, 1)
+  if (item) discardPreview(item)
 }
 
 /**
@@ -582,7 +626,7 @@ async function checkImportDuplicates(): Promise<boolean> {
   const shelfNames = new Set(shelf.map((b) => b.name.trim()).filter(Boolean))
   const dups = new Set<string>()
   for (const item of importItems.value) {
-    const name = (item.preview?.name || item.file.name.replace(/\.[^.]+$/, '')).trim()
+    const name = (item.preview?.book.name || item.file.name.replace(/\.[^.]+$/, '')).trim()
     if (name && shelfNames.has(name)) dups.add(name)
   }
   if (dups.size === 0) return true
@@ -600,54 +644,57 @@ async function checkImportDuplicates(): Promise<boolean> {
   }
 }
 
-/** 逐个上传（每个文件一次 multipart POST），完成后自动刷新书架 */
+/** 逐个确认入架。文件已由 importBookPreview 保存，此处只提交原版 Book JSON。 */
 async function startUpload() {
-  if (uploadBusy.value || importItems.value.length === 0) return
-  // GAP 126：同名书确认弹窗（取消则中止本次导入）
-  if (!(await checkImportDuplicates())) {
-    ElMessage.info('已取消导入')
-    return
-  }
+  if (!isCurrentImportSession(importSession) || uploadBusy.value || previewChecking.value || !hasPending.value) return
+  const session = importSession
+  const items = importItems.value.filter(item => item.status === 'pending')
+  // 确认弹窗期间也锁住提交，防止重复保存或关闭后向新会话写入旧结果。
   uploadBusy.value = true
   importDone.value = false
-  let ok = 0
-  for (let i = 0; i < importItems.value.length; i++) {
-    const item = importItems.value[i]
-    uploadIndex.value = i
-    item.status = 'uploading'
-    item.progress = 0
-    try {
-      await uploadLocalBook(item.file, (p) => (item.progress = p))
-      item.status = 'done'
-      item.progress = 100
-      ok++
-    } catch (err) {
-      item.status = 'error'
-      item.error = err instanceof Error ? err.message : '导入失败'
+  try {
+    // GAP 126：同名书确认弹窗（取消则中止本次导入）
+    const confirmed = await checkImportDuplicates()
+    if (!isCurrentImportSession(session)) return
+    if (!confirmed) {
+      ElMessage.info('已取消导入')
+      return
     }
+    for (let i = 0; i < items.length; i++) {
+      if (!isCurrentImportSession(session)) return
+      const item = items[i]
+      uploadIndex.value = i
+      item.status = 'uploading'
+      item.progress = 0
+      try {
+        if (!item.preview) throw new Error('书籍尚未解析完成')
+        item.saveAttempted = true
+        await saveBook(item.preview.book)
+        item.status = 'done'
+        item.progress = 100
+      } catch (err) {
+        item.status = 'error'
+        item.error = err instanceof Error ? err.message : '导入失败'
+      }
+    }
+    if (!isCurrentImportSession(session)) return
+    importDone.value = true
+    const ok = importItems.value.filter(item => item.status === 'done').length
+    const failed = importItems.value.length - ok
+    importSummary.value =
+      failed > 0 ? `导入完成：${ok} 本成功，${failed} 本失败` : `导入完成，共 ${ok} 本`
+    await load() // 刷新书架（getBookshelf）
+    if (isCurrentImportSession(session) && failed === 0) scheduleImportClose(session)
+  } finally {
+    if (isCurrentImportSession(session)) uploadBusy.value = false
   }
-  uploadBusy.value = false
-  importDone.value = true
-  const failed = importItems.value.length - ok
-  importSummary.value =
-    failed > 0 ? `导入完成：${ok} 本成功，${failed} 本失败` : `导入完成，共 ${ok} 本`
-  await load() // 刷新书架（getBookshelf）
-  if (failed === 0) window.setTimeout(() => closeImport(), 800)
 }
 
 /* ================= OPDS 服务器入口（外部阅读器：legado/静读等） ================= */
 const opdsOpen = ref(false)
-const opdsCopied = ref(false)
-
-/** OPDS 地址 = 当前 host + /opds（secure 模式附带 accessToken=用户名:token） */
-const opdsUrl = computed(() => {
-  const base = `${window.location.origin}/opds`
-  return store.accessToken ? `${base}?accessToken=${encodeURIComponent(store.accessToken)}` : base
-})
 
 function openOpds() {
   opdsOpen.value = true
-  opdsCopied.value = false
   document.body.style.overflow = 'hidden'
 }
 
@@ -656,26 +703,10 @@ function closeOpds() {
   document.body.style.overflow = ''
 }
 
-async function copyOpdsUrl() {
-  const text = opdsUrl.value
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {
-    // 剪贴板 API 不可用（非 https 等）：textarea 降级
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-  }
-  opdsCopied.value = true
-  window.setTimeout(() => (opdsCopied.value = false), 1600)
-}
-
 onBeforeUnmount(() => {
+  shelfDisposed = true
+  disposeImportSession()
+  shelfLoadVersion++
   if (longPressTimer) clearTimeout(longPressTimer)
   wrapObserver?.disconnect()
   window.removeEventListener('scroll', onWindowScroll)
@@ -720,9 +751,7 @@ function coverSrc(book: Book): string | null {
 /** 自定义封面走 file/download 内联流（GAP 19）：展示时补当前 accessToken（重新登录后仍可显示） */
 function resolveCoverUrl(url: string): string {
   if (!url.startsWith('/reader3/file/')) return url
-  const token = store.accessToken
-  if (!token || url.includes('accessToken=')) return url
-  return `${url}${url.includes('?') ? '&' : '?'}accessToken=${encodeURIComponent(token)}`
+  return authenticatedReaderUrl(url, store.accessToken)
 }
 
 function hasCover(book: Book): boolean {
@@ -1349,18 +1378,41 @@ watch([keyword, activeGroup, sortMode], () => {
   window.scrollTo({ top: Math.max(0, wrap.getBoundingClientRect().top + window.scrollY - 96) })
 })
 
+// 身份变化同步隐藏上一空间；等待 store 一次更新完成再加载最终空间。
+watch([offlineShelfScope, () => store.sessionRevision], () => {
+  const version = ++shelfLoadVersion
+  books.value = []
+  groups.value = []
+  selected.value = new Set()
+  activeGroup.value = null
+  offlineShelf.value = false
+  loading.value = false
+  refreshing.value = false
+  void nextTick(() => {
+    if (shelfMounted && !shelfDisposed && version === shelfLoadVersion && store.accessToken) void load()
+  })
+}, { flush: 'sync' })
+
 async function load(silent = false) {
-  if (!silent) loading.value = true
-  else refreshing.value = true
+  const version = ++shelfLoadVersion
+  const session = captureRequestSession(store)
+  const scope = offlineShelfScope.value
+  const current = () => !shelfDisposed && version === shelfLoadVersion &&
+    scope === offlineShelfScope.value && isRequestSessionCurrent(session, store)
+  loading.value = !silent
+  refreshing.value = silent
+  offlineShelf.value = false
   try {
     const [res, gRes] = await Promise.all([
       getBookshelf(silent),
-      getBookGroups().catch(() => ({ isSuccess: false, errorMsg: '', data: [] as BookGroup[] })),
+      getBookGroups().catch(() => null),
     ])
+    if (!current()) return
     books.value = res.data ?? []
-    groups.value = gRes.data ?? []
+    groups.value = gRes?.data ?? []
     offlineShelf.value = false
-    saveOfflineShelf()
+    // 分组失败可以展示本次在线书架，但不能用伪空分组覆盖完整的离线快照。
+    if (res.isSuccess && gRes?.isSuccess) saveOfflineShelf(scope, { books: books.value, groups: groups.value, ts: Date.now() })
     // 数据刷新后清理已失效的选中项
     if (selected.value.size) {
       const valid = new Set(books.value.map((b) => b.bookUrl))
@@ -1370,9 +1422,20 @@ async function load(silent = false) {
     if (activeGroup.value !== null && !groups.value.some((g) => g.id === activeGroup.value)) {
       activeGroup.value = null
     }
-  } catch {
+  } catch (error) {
+    if (!current()) return
+    if ((error as { code?: string })?.code === 'READER_NAMESPACE_UNVERIFIED') {
+      // 管理密钥可能被服务端撤销/替换；不要把旧成功界面伪装成本次空间核对通过。
+      books.value = []
+      groups.value = []
+      selected.value = new Set()
+      activeGroup.value = null
+      ElMessage.warning(error instanceof Error ? error.message : '请重新验证管理密码')
+      return
+    }
+    if (!canUseOfflineShelf(error)) return
     // 错误提示已由拦截器统一处理；服务端不可达时降级最近一次本地缓存（离线书架）
-    const cached = loadOfflineShelf()
+    const cached = loadOfflineShelf(scope)
     if (cached) {
       books.value = cached.books
       groups.value = cached.groups
@@ -1380,14 +1443,24 @@ async function load(silent = false) {
       if (!silent) ElMessage.warning('服务端暂不可用，已展示离线书架缓存')
     }
   } finally {
-    loading.value = false
-    refreshing.value = false
+    if (current()) {
+      loading.value = false
+      refreshing.value = false
+    }
   }
 }
 
-function logout() {
-  store.clear()
-  void router.replace('/login')
+const logoutBusy = ref(false)
+async function logout() {
+  if (logoutBusy.value) return
+  logoutBusy.value = true
+  try {
+    const outcome = await logoutApi()
+    if (outcome === 'superseded') return
+    if (outcome === 'local-only') ElMessage.warning('已退出本机；服务端令牌尚未确认撤销')
+    else ElMessage.success('已退出登录')
+    await router.replace('/login')
+  } finally { logoutBusy.value = false }
 }
 
 
@@ -2066,7 +2139,8 @@ async function doRemoveFromShelf() {
 }
 
 onMounted(() => {
-  // 旧会话可能未带 isAdmin 标记：后台探测一次，管理员入口/系统配置按钮据此恢复显示
+  shelfMounted = true
+  // 刷新后真实验证本标签页管理密码；不能信任旧角色/空间标志。
   void probeSecureMode().catch(() => false)
   wrapObserver = new ResizeObserver(() => {
     const w = gridWrapRef.value?.clientWidth ?? 0
@@ -2157,7 +2231,7 @@ onMounted(() => {
 
       <template #extra>
         <button class="nav-link" type="button" title="全部书签（跨书）" @click="openBookmarks">书签</button>
-        <button class="nav-link" type="button" title="OPDS 服务器（外部阅读器连接）" @click="openOpds">OPDS</button>
+        <button class="nav-link" type="button" title="OPDS 服务器（当前后端尚未实现）" @click="openOpds">OPDS</button>
       </template>
     </TopNav>
 
@@ -2559,12 +2633,12 @@ onMounted(() => {
                 <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
               </svg>
               <p class="dz-text">点击选择文件，或将文件拖拽到此处</p>
-              <p class="dz-sub">支持 .epub / .txt / .mobi / .azw3 / .pdf / .fb2 / .docx · 可多选</p>
+              <p class="dz-sub">支持 .epub / .txt / .pdf / .cbz / .umd · 可多选</p>
               <input
                 ref="fileInput"
                 class="visually-hidden"
                 type="file"
-                accept=".epub,.txt,.mobi,.azw3,.pdf,.fb2,.docx,application/epub+zip,text/plain"
+                accept=".epub,.txt,.pdf,.cbz,.umd,application/epub+zip,text/plain"
                 multiple
                 @change="onPick"
               />
@@ -2573,11 +2647,12 @@ onMounted(() => {
 
             <!-- 文件列表：逐个状态 + 细字进度 -->
             <ul v-if="importItems.length" class="file-list">
-              <li v-for="(item, i) in importItems" :key="`${item.file.name}-${i}`" class="file-row">
+              <li v-for="(item, i) in importItems" :key="`${item.file.name}-${i}`" class="file-row" :class="{ 'has-error': item.status === 'error' }">
                 <span class="file-name" :title="item.file.name">{{ item.file.name }}</span>
                 <span class="file-size">{{ fmtSize(item.file.size) }}</span>
                 <span class="file-state" :class="item.status">
-                  <template v-if="item.status === 'pending'">待导入</template>
+                  <template v-if="item.status === 'preparing'">正在解析…</template>
+                  <template v-else-if="item.status === 'pending'">待导入</template>
                   <template v-else-if="item.status === 'uploading'">
                     <svg class="mini-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                       <path d="M21 12a9 9 0 1 1-6.2-8.56" />
@@ -2590,7 +2665,7 @@ onMounted(() => {
                   <template v-else>{{ item.error || '导入失败' }}</template>
                 </span>
                 <button
-                  v-if="item.status === 'pending' && !uploadBusy"
+                  v-if="(item.status === 'preparing' || item.status === 'pending' || item.status === 'error') && !uploadBusy"
                   class="file-remove"
                   type="button"
                   title="移除"
@@ -2603,26 +2678,26 @@ onMounted(() => {
               </li>
             </ul>
 
-            <!-- 导入预览（后端 /reader3/importBookPreview：书名/作者/格式/章节数/前 5 章标题；未实现则隐藏并直接上传） -->
+            <!-- 导入预览：后端已保存资产；确认后以返回的 Book 调用 /saveBook 入书架。 -->
             <div v-if="previewSupported" class="preview-panel">
               <p class="preview-title">导入预览</p>
               <div v-for="(item, i) in previewedItems" :key="`pv-${i}`" class="preview-item">
                 <p class="preview-head">
-                  <span class="preview-name" :title="item.preview?.name || item.file.name">
-                    {{ item.preview?.name || item.file.name }}
+                  <span class="preview-name" :title="item.preview?.book.name || item.file.name">
+                    {{ item.preview?.book.name || item.file.name }}
                   </span>
                   <span class="preview-meta">
-                    {{ item.preview?.author ? item.preview.author + ' · ' : '' }}{{ item.preview?.format || '未知格式' }} · {{ previewChapterCount(item) }} 章
+                    {{ item.preview?.book.author ? item.preview.book.author + ' · ' : '' }}{{ importFormat(item.file) }} · {{ previewChapterCount(item) }} 章
                   </span>
                 </p>
                 <ol v-if="previewChapters(item).length" class="preview-chapters">
                   <li v-for="(ch, j) in previewChapters(item)" :key="j">{{ ch }}</li>
                 </ol>
               </div>
-              <p class="preview-tip">预览由服务器解析 · 确认无误后点击「开始导入」（确认后仍走上传接口）</p>
+              <p class="preview-tip">预览由服务器解析并临时保存 · 确认无误后点击「开始导入」加入书架</p>
             </div>
             <p v-else-if="importItems.length && !previewChecking" class="preview-tip muted">
-              服务器未提供导入预览（POST /reader3/importBookPreview），将直接上传
+              没有可导入的书籍；请查看每个文件的错误提示
             </p>
 
             <!-- 底部：整体进度 / 摘要 + 操作 -->
@@ -2631,7 +2706,7 @@ onMounted(() => {
                 <svg class="mini-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                   <path d="M21 12a9 9 0 1 1-6.2-8.56" />
                 </svg>
-                <span>正在导入 {{ uploadIndex + 1 }} / {{ importItems.length }} · {{ totalProgress }}%</span>
+                <span>正在加入书架 {{ uploadIndex + 1 }} / {{ importItems.length }} · {{ totalProgress }}%</span>
               </div>
               <div v-else-if="importDone" class="overall" :class="{ hasError: failedCount > 0 }">
                 {{ importSummary }}
@@ -2643,7 +2718,7 @@ onMounted(() => {
                 <button
                   class="accent-btn"
                   type="button"
-                  :disabled="uploadBusy || !hasPending"
+                  :disabled="uploadBusy || previewChecking || !hasPending"
                   @click="startUpload"
                 >
                   {{ uploadBusy ? '导入中…' : hasPending ? `开始导入（${hasPendingCount}）` : '开始导入' }}
@@ -2655,7 +2730,7 @@ onMounted(() => {
       </Transition>
     </Teleport>
 
-    <!-- OPDS 服务器弹窗（外部阅读器连接地址 + 复制） -->
+    <!-- 保留入口说明未实现的能力，不生成带登录凭据的无效地址。 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="opdsOpen" class="dlg-overlay" @click.self="closeOpds">
@@ -2675,13 +2750,7 @@ onMounted(() => {
                 </svg>
               </button>
             </div>
-            <p class="opds-tip">将以下地址粘贴到外部阅读器（legado、静读天下等）的 OPDS 地址栏，即可同步书架与阅读。地址已附带登录凭证，请勿分享给他人。</p>
-            <div class="opds-row">
-              <span class="opds-url mono" :title="opdsUrl">{{ opdsUrl }}</span>
-              <button class="accent-btn" type="button" @click="copyOpdsUrl">
-                {{ opdsCopied ? '已复制' : '复制' }}
-              </button>
-            </div>
+            <p class="opds-tip" role="status">当前 Java/Kotlin 服务端尚未实现 OPDS 书架服务，暂时无法连接外部阅读器。本页不会生成或复制带登录凭据的无效地址；你仍可继续使用网页书架和阅读。</p>
           </div>
         </div>
       </Transition>
@@ -3359,7 +3428,8 @@ onMounted(() => {
 
 /* 搜索框（细边框圆角 8px）：输入行 + 范围切换行 */
 .search-box {
-  flex: 1;
+  flex: 1 1 260px;
+  min-width: min(240px, 100%);
   max-width: 420px;
   margin: 0 auto;
 }
@@ -3838,7 +3908,9 @@ onMounted(() => {
   transform: translateX(-50%);
   z-index: 1000;
   width: max-content;
-  max-width: min(280px, calc(100vw - 24px));
+  /* 隐藏的绝对定位浮层也会扩大滚动区域；以卡片为边界而不是只限视口宽。 */
+  max-width: min(280px, 100%);
+  overflow-wrap: anywhere;
   padding: 12px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -4234,6 +4306,18 @@ onMounted(() => {
   border: 1px solid var(--border);
   background: var(--bg);
 }
+.file-row.has-error {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 20px;
+}
+.file-row.has-error .file-state.error {
+  grid-row: 2;
+  grid-column: 1 / -1;
+}
+.file-row.has-error .file-remove {
+  grid-row: 1;
+  grid-column: 3;
+}
 .file-name {
   flex: 1;
   min-width: 0;
@@ -4271,10 +4355,10 @@ onMounted(() => {
 .file-state.error {
   color: #cf4444;
   min-width: 0;
-  max-width: 130px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .state-icon {
   width: 12px;
@@ -4665,6 +4749,12 @@ onMounted(() => {
   gap: 22px;
   flex: 1;
   min-width: 0;
+  /* Long user-defined tabs must scroll inside their own area, not paint over actions. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.group-tabs::-webkit-scrollbar {
+  display: none;
 }
 .group-tab {
   position: relative;
@@ -5738,6 +5828,32 @@ onMounted(() => {
 
 /* 小屏手机：书架列数继续加密 + 底部操作栏避开手势区 */
 @media (max-width: 480px) {
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 8px 10px;
+  }
+  .section-title {
+    grid-column: 1 / -1;
+  }
+  .section-head .count,
+  .section-head .manage-btn {
+    white-space: nowrap;
+  }
+  .section-head .import-btn {
+    margin-left: 0;
+  }
+  .group-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .group-tabs {
+    flex-basis: 100%;
+  }
+  .group-tabs + .group-manage {
+    margin-left: auto;
+  }
   .book-grid {
     grid-template-columns: repeat(auto-fill, minmax(var(--card-w, 104px), 1fr));
     gap: 20px 12px;

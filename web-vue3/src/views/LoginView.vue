@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/message'
 import { login as loginApi } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { t } from '@/utils/i18n'
@@ -44,7 +44,7 @@ async function submit() {
       // GAP 90：注册模式携带邀请码（后端 register 校验 code 参数）
       code: mode.value === 'register' && form.code.trim() ? form.code.trim() : undefined,
     })
-    store.setSession(res.data.accessToken, res.data.username, remember.value, res.data.isAdmin === true)
+    store.setSession(res.data.accessToken, res.data.username, remember.value)
     ElMessage.success(mode.value === 'login' ? t('login.welcomeBack') : t('login.registered'))
     // GAP 127：登录成功回跳 redirect query（仅限站内路径，防开放重定向）
     const q = route.query.redirect
@@ -160,7 +160,9 @@ async function submit() {
 <style scoped>
 .login-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
@@ -169,6 +171,7 @@ async function submit() {
 
 .login-panel {
   width: min(340px, 100%);
+  flex-shrink: 0;
   padding: 56px 8px 40px;
 }
 
@@ -357,10 +360,8 @@ async function submit() {
 }
 
 .login-footer {
-  position: fixed;
-  bottom: 20px;
-  left: 0;
-  right: 0;
+  /* 页脚随表单进入文档流：矮屏允许滚动，不能覆盖注册/提交控件。 */
+  flex-shrink: 0;
   text-align: center;
   font-size: 11px;
   font-weight: 300;

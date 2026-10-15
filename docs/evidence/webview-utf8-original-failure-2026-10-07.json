@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual isolated generated original-side failure; no six-case or three-way acceptance",
+  "serverRunDirectory": "/var/tmp/reader-generated-fragments-20261003.RMZay2/webview-threeway-utf8-20261007-a/run",
+  "unit": "reader-threeway-utf8-20261007-a.service",
+  "invocationId": "15dfdadf8378416895272a7681308b9e",
+  "terminal": {"activeState": "failed", "subState": "failed", "mainPid": 0, "execMainStatus": 1},
+  "rawDownloadedFiles": [
+    {"name": "provenance.json", "bytes": 9949, "sha256": "1d4e2df36b922292db872f0da90892dd87b37a67fa51c527afc9fdbb8d990d3c"},
+    {"name": "probe.log", "bytes": 2994, "sha256": "6ce3575cfd2267a6e63b26cbc27c73e54ca263d7a67c43cc40ada7380218b5e3"},
+    {"name": "three-way.original-failed.json", "bytes": 211, "sha256": "3c38498d4ad295727e8121733a3aceef7499d41f9586e93e71566d08838374ba"}
+  ],
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+  "observedFailure": {
+    "failureType": "TimeoutError",
+    "probeStackStage": "original first /reader3/searchBook response read",
+    "completedSearches": [],
+    "lastObservedSearchResponse": null,
+    "renderCookieHeaders": [],
+    "renderRequestFields": [],
+    "originalStartupLogged": true,
+    "precedingStartupLoginAndSourceGuardsReached": true,
+    "precedingApiRawResponsesPersisted": false,
+    "sixthUtf8SearchExecuted": false
+  },
+  "aggregateBudget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 562421760,
+    "memoryMaxEvents": 0,
+    "oomEvents": 0,
+    "oomKillEvents": 0,
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsMaxEvents": 0,
+    "resourceSampleCount": 19
+  },
+  "probeCompleted": false,
+  "budgetAccepted": false,
+  "overallAccepted": false,
+  "cleanup": {
+    "removedOwnedContainerCount": 2,
+    "independentlyObservedOwnedContainersRemaining": 0,
+    "originalJarUnchanged": true,
+    "restoredJarUnchanged": true
+  },
+  "limitations": [
+    "First search timeout does not establish an encoding defect or historical renderer root cause",
+    "Old failure report lacks actual renderer logs and CPU counters; later diagnostics cannot retrofit them",
+    "Preceding API guards are established by executed control flow, not separately preserved raw HTTP responses",
+    "No restored or Camoufox side completed; no complete three-way.json"
+  ]
+}

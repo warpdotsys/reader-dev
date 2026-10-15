@@ -91,16 +91,12 @@ public class LazyResource extends Resource {
 
       // Log.d(TAG, "Initializing lazy resource: " + this.getHref());
 
-      InputStream in = resourceProvider.getResourceStream(this.originalHref);
-      byte[] readData = IOUtil.toByteArray(in, (int) this.cachedSize);
-      if (readData == null) {
-        throw new IOException(
-            "Could not load the contents of resource: " + this.getHref());
-      } else {
+      try (InputStream in = resourceProvider.getResourceStream(this.originalHref)) {
+        // Never preallocate an attacker-declared size; the provider caps actual output.
+        byte[] readData = IOUtil.toByteArray(in, (int) Math.min(8192, Math.max(0, this.cachedSize)));
+        if (readData == null) throw new IOException("EPUB 资源无法加载");
         this.data = readData;
       }
-
-      in.close();
     }
 
     return data;

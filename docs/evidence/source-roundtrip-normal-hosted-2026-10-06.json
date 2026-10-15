@@ -1,0 +1,62 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "11c9595d3c9d30560a90383a1813faa85e382f57",
+  "testedMergeRevision": "81a478550e134c81aa521c1406515feba3edc782",
+  "normalRuns": [
+    {"id": 37446289286, "name": "Java Kotlin CI", "status": "completed", "conclusion": "success"},
+    {"id": 37446289381, "name": "Vue 3 preview build", "status": "completed", "conclusion": "success"},
+    {"id": 37446289279, "name": "Browser image integration", "status": "completed", "conclusion": "success"},
+    {"id": 37446289416, "name": "Native release artifact rehearsal", "status": "completed", "conclusion": "success"}
+  ],
+  "independentlyConsumedXml": [
+    {"run": 37446289286, "artifactId": 11402824742, "artifactSizeBytes": 31451, "githubDeclaredArchiveSha256": "fd0914926994c236b26480bdee8757e84498192e9d52bdf3ee275f7c7ef8e367", "suite": "PublicMetadataPageDiagnosticTest", "tests": 9, "skipped": 0, "failures": 0, "errors": 0, "xmlSha256": "5d581d5a6c38430d8e18a94049552b2a7e0621f43d4264fe3c08c5ecdd7e46ff"},
+    {"run": 37446289279, "artifactId": 11403862153, "artifactSizeBytes": 1024, "githubDeclaredArchiveSha256": "1eded9ad6f56af0e8b6c6c75d82c3adb479fb37950aac224f505de0c80851dc5", "suite": "CamoufoxWebviewRendererTest", "tests": 16, "skipped": 0, "failures": 0, "errors": 0, "xmlSha256": "ff08fcbe07dfc39396cba20a005b57f4583f0870cab97b96e6feb83ab95ff30a", "pinned16ContractGuardExecuted": true},
+    {"run": 37446289416, "artifactId": 11403327547, "artifactSizeBytes": 1023, "githubDeclaredArchiveSha256": "3800d93c62f8404bb6231b40a4376bd651025b6c5dd78847bdf856cf66fb1676", "suite": "CamoufoxWebviewRendererTest", "tests": 16, "skipped": 0, "failures": 0, "errors": 0, "xmlSha256": "a5395750e6004053c6dda5c3fda75ee75f96430369460bbacf48a1384887df96", "pinned16ContractGuardExecuted": true}
+  ],
+  "publisherArtifact": {
+    "id": 11404184380,
+    "name": "reader-publisher-import-81a478550e134c81aa521c1406515feba3edc782",
+    "sizeBytes": 7636,
+    "githubDeclaredArchiveSha256": "f2524bbe0e3c0f17c1a190efa99cb1ea3a0c5dd8429101e1cb20f84d61967d68",
+    "exact20JsonFileSetVerified": true,
+    "originalAsyncGuardExecutionsPassed": 4,
+    "originalBudgetGuardExecutionsPassed": 4,
+    "budgetGuardRequireNoSwap": false,
+    "runningJarReleaseAndTransferIdentitiesMatched": true,
+    "sharedJarSha256": "58e039c6798cf449192b268589ec41d56bd9cbbb7f96bf60067e56d21f300303",
+    "architectures": [
+      {"architecture": "amd64", "imageId": "sha256:a6ba965f0c91c3bee3104d7021e030fefffc096c6c854d1c14b613d18d50a66d", "declaredImageArchiveSha256": "7dbb5ce3ae4a9fdc18f205d7a7779350c12f80198903f3eadc3ad2e403261534", "nativeMemoryPeakBytes": 851615744, "nativePidsPeak": 192, "reloadMemoryPeakBytes": 883576832, "reloadPidsPeak": 198, "observedSwapCurrentBytes": 0, "configuredSwapMaxBytes": 1073741824},
+      {"architecture": "arm64", "imageId": "sha256:0d147302d39499b14fe36d690adcfc3db30123417b2582a726cf7d42c7140bac", "declaredImageArchiveSha256": "dc4709c776e05fa44d54eeb637c0aa5963a6b977d7af832aa16c1985510aa33b", "nativeMemoryPeakBytes": 848916480, "nativePidsPeak": 191, "reloadMemoryPeakBytes": 833589248, "reloadPidsPeak": 197, "observedSwapCurrentBytes": 0, "configuredSwapMaxBytes": 1073741824}
+    ],
+    "independentlyRecomputedFileSha256": {
+      "amd64-BROWSER_RESOURCE_BUDGET.json": "fbda292d04e6f421f42566ee537a5c719a638a33f676e243283e5dcfbbf3c644",
+      "amd64-BROWSER_SYNTHETIC.json": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "amd64-JAR_IDENTITY.json": "aa4c89848fc48827b6cc3da9cf2e6a18fc226bc3a1355ad09746fb6c65ac2a98",
+      "amd64-metadata.json": "8ee53e0c0a0ca68ed85eb442746001ee91c0868d9dceeb0c08eea80292e6b1f1",
+      "amd64-RELEASE_IDENTITY.json": "d0c2d4f2dbdead39838143c0db6275db19711c786df5df987b8cc03621007fe4",
+      "amd64-transfer-BROWSER_RESOURCE_BUDGET.json": "22cc492664227498f268e48a9ecbf0ba796adc460a90f25dc896d162db3a2f17",
+      "amd64-transfer-BROWSER_SYNTHETIC.json": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "amd64-transfer-IMAGE_IDENTITY.json": "a7764beee3cbfa87aab4e60762e4be36ebba4cdfc52da18ee77fb318b5704e1e",
+      "amd64-transfer-JAR_IDENTITY.json": "aa4c89848fc48827b6cc3da9cf2e6a18fc226bc3a1355ad09746fb6c65ac2a98",
+      "amd64-transfer-RELEASE_IDENTITY.json": "d0c2d4f2dbdead39838143c0db6275db19711c786df5df987b8cc03621007fe4",
+      "arm64-BROWSER_RESOURCE_BUDGET.json": "cec4b2b0bf3415514df1dffdcf65baaeb58f24a1d4d632dfb8d98f89f113a3ea",
+      "arm64-BROWSER_SYNTHETIC.json": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "arm64-JAR_IDENTITY.json": "323c78b0d667ac2459f022172352e8e870fb4b480a10a5aca2ce3407f7d10baa",
+      "arm64-metadata.json": "daf5e808c8d4dc20fc8caf36f2dd93e6c69f4f39e03b83622f18197cc802787b",
+      "arm64-RELEASE_IDENTITY.json": "d0c2d4f2dbdead39838143c0db6275db19711c786df5df987b8cc03621007fe4",
+      "arm64-transfer-BROWSER_RESOURCE_BUDGET.json": "77c8ff2bc04bbe6370f16708a786bf47fb63ee770224a64d7536457ca67355dc",
+      "arm64-transfer-BROWSER_SYNTHETIC.json": "c140172c0523820c147137841eb1351e623a7d0a5c67cd2cf24bc0cc92b9d868",
+      "arm64-transfer-IMAGE_IDENTITY.json": "0fcecb9aa6fe883e3af594d6e5838ab99059727f0e2d9741ae7a9923f74da43b",
+      "arm64-transfer-JAR_IDENTITY.json": "323c78b0d667ac2459f022172352e8e870fb4b480a10a5aca2ce3407f7d10baa",
+      "arm64-transfer-RELEASE_IDENTITY.json": "d0c2d4f2dbdead39838143c0db6275db19711c786df5df987b8cc03621007fe4"
+    }
+  },
+  "largeJarAndImageArtifactsDownloadedToLocalMachine": false,
+  "releaseTagRegistryOrProductionModified": false,
+  "notProven": [
+    "The new 17-contract diagnostics candidate",
+    "Actual public metadata, authentication or chapter success through Reader",
+    "Original-JAR or historical-engine same-input HTTP parity",
+    "Long-duration or production acceptance"
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "recordedDate": "2026-10-05",
+  "baseSourceHead": "c9603db49d2ef0a80c2c3ba49415c2415c713dbc",
+  "scope": "Local generated-data UI verification of the uncommitted source snapshot on this base. Not a clean-commit hosted build, original-JAR parity, real account validation or production.",
+  "candidate": {
+    "path": "build/manager-visual-20261005-a/candidate-b/reader.jar",
+    "sha256": "c1cb602ad956930af97744fbc9a20df5821b32281fde37809ff01e6adac3f8cb",
+    "uiPrefix": "BOOT-INF/classes/web-vue3/",
+    "currentDistFiles": 81,
+    "jarUiFiles": 81,
+    "byteMatchedFiles": 81,
+    "extraStaleFiles": 0,
+    "frontendTypecheck": true,
+    "frontendBuild": true,
+    "gradleBootJar": true
+  },
+  "sourceFiles": [
+    {
+      "path": "web-vue3/src/api/request.ts",
+      "physicalWorktreeSha256": "e4150e98608b5d52841e1d743147977642b801168513a5df8e554ce22eb1510c",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/api/requestErrorMessage.ts",
+      "physicalWorktreeSha256": "0a2bf3eadd05402327df3221858e70f0ed03f5e200f71215d47eef82446ff337",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/api/requestErrorMessage.test.ts",
+      "physicalWorktreeSha256": "2acb0d58b705dde1a13ea71e3ee0c188e6e1d2a55be56e4bd0d031d9a2cd4a9f",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/UserManageView.vue",
+      "physicalWorktreeSha256": "18079863dd20769aa44cfdecdee9436b2e41f1b212fd6c6c52d1deb67d55a35a",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "browser-poc/src/test/java/com/medwarp/reader/browserpoc/Vue3PreviewManagerNamespaceTest.java",
+      "physicalWorktreeSha256": "81dfe90b574ea3ada9eaad2c3943ce711248f923cf1bb33c44c915c8fe13c437",
+      "notGitBlobSha": true
+    }
+  ],
+  "baseline": {
+    "candidateJarSha256": "8a8b6bf2d6d8c7e403b6c336a364f686916f3e207252d499f158a3d8bfeca96e",
+    "manager": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "failedAssertion": "Manager permission label must not fragment into vertical characters: 本地书仓 expected:<1> but was:<4>",
+      "xmlSha256": "d072583aeae7e5254e6ba674dce5456a239fd1450206851ef4b31a49f0a430d6"
+    },
+    "requestErrorFormatter": {
+      "scope": "The previous interceptor display expression copied verbatim into the same pure helper interface; not a historical JAR test.",
+      "tests": 8,
+      "failures": 7,
+      "errors": 0,
+      "skipped": 0,
+      "xmlSha256": "5503ca622dd741b63c6d2a1c3ff97153ad05e87edf76eb4503a64e3a3bdc80b0"
+    }
+  },
+  "frontendFinal": {
+    "path": "build/manager-visual-20261005-a/frontend-all-final.xml",
+    "actualTestcases": 233,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "19cf132d7ee2093a0000e8baa33de88ceb9618bc76ec7e86ab9d99928eab1e67"
+  },
+  "chromiumJourneys": [
+    {
+      "suite": "Vue3PreviewManagerNamespaceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 11.965,
+      "xmlSha256": "56ec0b735572c263d42be9154e67f672d1796383e9d5cb46d6766f7a64b5b6ca",
+      "assertions": [
+        "1280x720 and 375x812 single-line label text geometry",
+        "switch-label association and accessible names",
+        "narrow root does not overflow and table ArrowRight scrolls",
+        "real manager-key, userNS/header and reload journey preserved",
+        "one visible grouped Chinese transport error",
+        "own/system separation and next-account isolation to the journey end"
+      ]
+    },
+    {
+      "suite": "Vue3PreviewSecureFileTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.346,
+      "xmlSha256": "17c610384af7d2f76786a7cb68a1a3c2e27084457609cfcff8141d2a7f6badf3",
+      "assertions": [
+        "generated secure-key retry creates isolated local-store directory"
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "build/manager-visual-20261005-a/candidate-b/vue3-manager-generated-authorized.png",
+      "bytes": 49164,
+      "sha256": "752a582b116ce1bcc8cf3ca4e8d75b457bc6e01acbff32448382c7034737a9f4",
+      "visuallyReviewed": true,
+      "observation": "Four whole labels in a two-column permission grid."
+    },
+    {
+      "path": "build/manager-visual-20261005-a/candidate-b/vue3-manager-generated-permissions-narrow.png",
+      "bytes": 37161,
+      "sha256": "a9ce4b8a7afd3d5a41c78e65b1f58476e5291b3cf186a5befc40492dca872fcc",
+      "visuallyReviewed": true,
+      "observation": "375px view; table scrolls inside its focused region. Offscreen columns still require scrolling."
+    },
+    {
+      "path": "build/manager-visual-20261005-a/candidate-b/vue3-manager-generated-own-offline.png",
+      "bytes": 68869,
+      "sha256": "cbb8357bdb6bbeff936fa287bdba81e831ea66881c5b4491a7dc7d3f3e6b8e5a",
+      "visuallyReviewed": true,
+      "observation": "Chinese network notice grouped with repeat badge; other warning notices still overlap the top search region."
+    },
+    {
+      "path": "build/manager-visual-20261005-a/candidate-b/vue3-manager-generated-wrong-space-rejected.png",
+      "bytes": 51808,
+      "sha256": "051b8af2a6353436c151c1e5e4b46807e7f549b0e276e800e98211ca142eb9cd",
+      "visuallyReviewed": true,
+      "observation": "Wrong space rejected; no other-namespace generated books visible."
+    }
+  ],
+  "isolation": {
+    "readerBind": "127.0.0.1:18945",
+    "fixtureBind": "127.0.0.1:18946",
+    "generatedAccountsAndMetadataOnly": true,
+    "readerHeapMiB": 512,
+    "readerActiveProcessors": 2,
+    "ownProcessesClosedByHeldNativeHandles": true,
+    "portsRecheckedAndClosed": [
+      18945,
+      18946
+    ],
+    "userReaderPreserved": {
+      "bind": "127.0.0.1:18931",
+      "pid": 61244
+    },
+    "noRealCredentials": true,
+    "noRealLocalBookBody": true,
+    "noProductionMutation": true
+  },
+  "limitations": [
+    "Not a complete Chinese localization audit; unknown backend or view-specific text can remain unchanged.",
+    "Business error strings retain server priority and the original rejected error object.",
+    "Grouping handles identical transport errors only; other warning/toast overlap remains known.",
+    "The bbfcda53 30-minute soaks apply to their old exact image bytes, not this UI rebuild.",
+    "Hosted validation for the source commit containing this change is pending.",
+    "Not formally released or deployed."
+  ]
+}

@@ -1,0 +1,700 @@
+{
+  "schema": 1,
+  "recordedDate": "2026-10-05",
+  "baseSourceHead": "4aca0a49a5b326031703f42be2b55746de2a4427",
+  "scope": "Local verification of an uncommitted source snapshot on this base, using generated accounts, metadata, books and loopback fixtures only. Not a clean hosted build, original-JAR Vue 2 parity, real login validation or production.",
+  "sourceFiles": [
+    {
+      "path": "browser-poc/src/test/java/com/medwarp/reader/browserpoc/Vue3PreviewManagerNamespaceTest.java",
+      "physicalWorktreeSha256": "7c65346c7be524b9847a5ad619c1b8a5b3b57127fa49387a86f3d69d6572b9e9",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/api/request.ts",
+      "physicalWorktreeSha256": "3c5b6f52a1fe455d1d080ea1e69dba5814708a2190b4eaa5e627294b26fa7aa4",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/components/ChapterCacheDialog.vue",
+      "physicalWorktreeSha256": "08aab767557c76323a37282b60e5ad829c5920f33a2a703571ac9787b70845e8",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/components/TopNav.vue",
+      "physicalWorktreeSha256": "9b99a05de8009700669652d98cb161c676a9493fb49e0ffd4906d6f6bc848443",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/styles/main.css",
+      "physicalWorktreeSha256": "31336ea79000122ac6348729f92836ff462f1d9f7b5405c137ad9c0fda26fee4",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/utils/download.ts",
+      "physicalWorktreeSha256": "88ee917760dffe8045c4ef5cedc4fbd2c198c168528b09c8d3b4ed54c7d4d645",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/utils/message.ts",
+      "physicalWorktreeSha256": "a3e5ef25cc205491ee40e39c5267b5a9b55b927abf11f4340b1d270b49b5e835",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/utils/messageOptions.test.ts",
+      "physicalWorktreeSha256": "582d60a417514ccbd6d58a47c01f4053496b9856a83b87db40b8837d44ac0202",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/utils/messageOptions.ts",
+      "physicalWorktreeSha256": "a93ef73b1ea08b28e6e6da193f564f6c21bebd5b3e15ed9ceee5b10cb3a75e56",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/BookDetailView.vue",
+      "physicalWorktreeSha256": "d0e98cbd2fdb35027186172b56460e907ef1354d9e41cd5ddcd028b4de6c4f73",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/BookshelfView.vue",
+      "physicalWorktreeSha256": "4c51c0f014f0228e116c6e408628df507c26ada345eac4a8636bca4c4ce7292e",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/ExploreView.vue",
+      "physicalWorktreeSha256": "1a9521dabf0bab4ab0043469a2e276ab74247759219d21086881331c40d26b79",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/FileManageView.vue",
+      "physicalWorktreeSha256": "8b6b4c6c97f711fa43e233cdfc812ca6e16dc3b0511650bd9e0ad9277fce4040",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/LoginView.vue",
+      "physicalWorktreeSha256": "fce0eef94fcca073e87998879d88b137ca58df76f1bc45f9e438e441cde330ef",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/ReaderView.vue",
+      "physicalWorktreeSha256": "aea2a5d2e3414bb3c9052c6479db6de4754d4c29b2e405fdcfcff6023d8663a3",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/ReplaceRuleView.vue",
+      "physicalWorktreeSha256": "e8544f87558b376d082567b5bd93b2276c78ef2e1039d152905462f397f3ac2d",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/RssView.vue",
+      "physicalWorktreeSha256": "2739d27f811d26587a3c0edd012f46dbbfa9dc344950c74f3d1c63b73da956b7",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/SearchView.vue",
+      "physicalWorktreeSha256": "4f60707eea86412fa9f64412da7e6e032633d81e148d05a5cba46be93e28f8e7",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/SettingsView.vue",
+      "physicalWorktreeSha256": "b93412614d7f5ac84d6b7d5eae60208104c794aef6b3faf924f359bc892a655b",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/SourceManageView.vue",
+      "physicalWorktreeSha256": "502a7bd6765bc88e17b3b2ccfbacc037cb61dcc62c811105f6fb158247664c39",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/StoreView.vue",
+      "physicalWorktreeSha256": "2b718e4e91a67ba22f63da50551f97a1f6c410c990df5d2c171f0f2e240049fb",
+      "notGitBlobSha": true
+    },
+    {
+      "path": "web-vue3/src/views/UserManageView.vue",
+      "physicalWorktreeSha256": "294b7df849dacc7c8077827577415b16cf6dc4c90af1b2abb557ffa7fb8fd85e",
+      "notGitBlobSha": true
+    }
+  ],
+  "dependencies": {
+    "packageLockSha256": "97411e99e38534951c7e5f39cc81f625563f8d433808513c23c52402a26b4b27",
+    "elementPlusLocked": "2.14.3",
+    "existingLocalNodeModules": "2.14.6",
+    "existingNodeModulesPreserved": true,
+    "isolatedInstall": "npm@11.6.2 ci --ignore-scripts --no-audit --no-fund in a new generated staging directory",
+    "node": "24.19.0",
+    "vite": "7.3.6",
+    "jdk": "11.0.8",
+    "gradle": "6.1.1",
+    "caveats": [
+      "An early fresh staging directory lacked relative source inputs; ENOENT was a harness setup error, not a product failure.",
+      "The locked Element Plus type rejected customClass as an array; implementation corrected to string before final build.",
+      "The original lock file and original node_modules were not replaced."
+    ]
+  },
+  "baseline": {
+    "phase": "baseline",
+    "jarSha256": "c1cb602ad956930af97744fbc9a20df5821b32281fde37809ff01e6adac3f8cb",
+    "reports": [
+      {
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 10.288,
+        "sha256": "2106055e09d8abff776a11f1599d73ff8cc98315c9eb2a5cf43a89f5a69f7d8f",
+        "failureMessages": [
+          "java.lang.AssertionError: Visible notices must not cover navigation or the shelf search controls expected:<false> but was:<true>"
+        ],
+        "stdout": ""
+      },
+      {
+        "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+        "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 3.398,
+        "sha256": "14801a8b01e6132d92486571817959cd9c1316c2a9d460fc1b08aed07d1f0cf7",
+        "failureMessages": [],
+        "stdout": ""
+      }
+    ],
+    "screenshots": [
+      {
+        "file": "vue3-manager-generated-authorized.png",
+        "bytes": 48854,
+        "sha256": "7574b01e5ae66a0e9168ca496e4ab136715c1801bfba9697e856ba522327e72c"
+      },
+      {
+        "file": "vue3-manager-generated-own-offline.png",
+        "bytes": 69652,
+        "sha256": "a331b831d1b5fbab3fab7d543198657641cb37c117e436a8eeb3e018f28fa8dc"
+      },
+      {
+        "file": "vue3-manager-generated-permissions-narrow.png",
+        "bytes": 37203,
+        "sha256": "be189e3aaa602898ccb67e80c47485b0a6482bc9da2915f9b7f53b22399971f2"
+      },
+      {
+        "file": "vue3-manager-generated-wrong-space-rejected.png",
+        "bytes": 48360,
+        "sha256": "2648259bbf5cbfcf787045d74a6707060622e2089cd20af9f389c9652fa16833"
+      }
+    ]
+  },
+  "intermediateFailures": [
+    {
+      "phase": "candidate",
+      "jarSha256": "4be3b7f5415c73ff7fb33958dee7a7d07140dc7c360c02626f773c61e2e1c520",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 19.699,
+          "sha256": "672312bebc82da6c3617dfe0208029f8c1f46c3cd80c9642ae4f8c48732682d7",
+          "failureMessages": [
+            "java.lang.AssertionError: Real repeated offline refreshes must retain several warning notices"
+          ],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 6.716,
+          "sha256": "c7a2f7d301cd2b00a3904fb35f521f99e68e4f6c9a7c357f56e215536bf0ce50",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "classification": "Incorrect test assumption: manual refresh intentionally suppresses a new offline warning. Corrected to non-silent real namespace switches."
+    },
+    {
+      "phase": "candidate-b",
+      "jarSha256": "4be3b7f5415c73ff7fb33958dee7a7d07140dc7c360c02626f773c61e2e1c520",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 20.964,
+          "sha256": "f850a87d0537ced89ec289bc473f29e02331c121d70edcb317e9f82f97387e51",
+          "failureMessages": [
+            "java.lang.AssertionError: Every notice stays inside the viewport with existing lower controls left clear expected:<true> but was:<false>"
+          ],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 5.6,
+          "sha256": "08c6cccc2512a88e5f17095860fe42286d4f1e9b3fb9a40ccb6f5ee61de38653",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "classification": "Actual footer entrance-transform layout failure; final fixed-bar position reserved."
+    },
+    {
+      "phase": "candidate-c",
+      "jarSha256": "02bd72fd42c8b24c5e119bdfd334fef8c9973bf26122693da5696fdc2e5d2627",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 12.099,
+          "sha256": "713ac65ea5c4e6b4b416eac9e5f46dfb9287647ff3ed24f71d08629762c88b39",
+          "failureMessages": [
+            "java.lang.AssertionError: A short viewport must still expose a readable notification line expected:<true> but was:<false>"
+          ],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 4.774,
+          "sha256": "79b0ea1ac3795d69ddee995b7efe0ca6f997800711a49330f3000c21f6b3b9f5",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "classification": "Actual 375x320 readable-line failure; measured message region 2px, safeTop 290px. Short sticky navigation took 278px."
+    },
+    {
+      "phase": "candidate-d",
+      "jarSha256": "02bd72fd42c8b24c5e119bdfd334fef8c9973bf26122693da5696fdc2e5d2627",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 15.059,
+          "sha256": "381442d3e905eb8c5f1a329e5e0fb6a5dd20b34c889750692de2baf631888307",
+          "failureMessages": [
+            "java.lang.AssertionError: A short viewport must still expose a readable notification line expected:<true> but was:<false>"
+          ],
+          "stdout": "NOTICE_VIEWPORT {\"width\":375,\"height\":320,\"clientHeight\":16,\"scrollHeight\":369,\"regionHeight\":2,\"safeTop\":\"290px\",\"bottom\":\"16px\"}\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 5.748,
+          "sha256": "03c60a662935230530c6f7015541de7f1dea4105571114964bf169954e346f3d",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "classification": "Actual 375x320 readable-line failure; measured message region 2px, safeTop 290px. Short sticky navigation took 278px."
+    }
+  ],
+  "final": {
+    "jarPath": "build/notification-layout-20261005-a/candidate-f/reader.jar",
+    "jarSha256": "6fa6bddf259c31854683234169f71b71fcaa9dadd41f1e3670c4e1aa3bf7a970",
+    "vue3Entries": 81,
+    "distFiles": 81,
+    "byteMatchedFiles": 81,
+    "extraStaleFiles": 0,
+    "frontend": {
+      "actualTestcases": 239,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "typecheck": true,
+      "viteBuild": true,
+      "gradleBootJar": true,
+      "xmlPath": "build/notification-layout-20261005-a/frontend-all-final-short-nav.xml",
+      "xmlSha256": "481f182776db8bd908a0108da7f2ddc76435acab29f41b8afcab6ea3e6661394",
+      "apiAudit": {
+        "literalRoutes": 92,
+        "registered": 92,
+        "missing": 0,
+        "scope": "Static route names only; not parameter, permission, dynamic-call or response parity."
+      }
+    },
+    "managerAndSecureFile": {
+      "phase": "candidate-f",
+      "jarSha256": "6fa6bddf259c31854683234169f71b71fcaa9dadd41f1e3670c4e1aa3bf7a970",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 18.126,
+          "sha256": "de8b2dcf8ce46b0362575dafd92bf37d3a6e4ccfc34c8822451469d17a03dd40",
+          "failureMessages": [],
+          "stdout": "NOTICE_VIEWPORT {\"width\":375,\"height\":320,\"clientHeight\":74,\"scrollHeight\":369,\"regionHeight\":100,\"safeTop\":\"192px\",\"bottom\":\"16px\"}\nMANAGER_NAMESPACE legacyUserNS=actual noFakeIsAdmin=verified wrongKey=denied namespaceProof=actual silentFallback=rejected reload=reverified systemShelf=isolated ownOffline=isolated nextAccount=reverify credentialUrl=absent\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 5.604,
+          "sha256": "66e8e28af091e3ee0b2ab11692710785046d8d883242a9d7276f612d12c97ffb",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "vue3-manager-generated-authorized.png",
+          "bytes": 48847,
+          "sha256": "398811eba251831bbc8698f6884ef5dc16cc0f41471451f705eba9cc070b5300"
+        },
+        {
+          "file": "vue3-manager-generated-notices-manage-footer.png",
+          "bytes": 103134,
+          "sha256": "df60990212b46e9dc9e36ce3ce202661bcc38c6e3514f991c4e72522d930c816"
+        },
+        {
+          "file": "vue3-manager-generated-notices-narrow-short-before-scroll.png",
+          "bytes": 25817,
+          "sha256": "82194ed50392763c6a2db307620541449336e256c13f84b0ca4fe806e15841cf"
+        },
+        {
+          "file": "vue3-manager-generated-notices-narrow-short.png",
+          "bytes": 24607,
+          "sha256": "460caf1a53c9ede55932b7a36516ae9282756131dac85c01c6d064ea0a8f0a3f"
+        },
+        {
+          "file": "vue3-manager-generated-notices-short.png",
+          "bytes": 39716,
+          "sha256": "244b54f2d30f69a60c9f64848db84b7a3c27554a9548de55b1bb94da2c64804d"
+        },
+        {
+          "file": "vue3-manager-generated-own-offline.png",
+          "bytes": 73098,
+          "sha256": "02ef00947309936809545847eccdfbff28dda8cb9befe29306dcbceac08d4c93"
+        },
+        {
+          "file": "vue3-manager-generated-permissions-narrow.png",
+          "bytes": 36959,
+          "sha256": "383307d9456eb8850595a80d5d3205bda005ee616d17b1c27ee0733c2113be84"
+        },
+        {
+          "file": "vue3-manager-generated-wrong-space-rejected.png",
+          "bytes": 52452,
+          "sha256": "fcb1bcb1ffd949754660df02e224f79836154ddef9f34105b5f631e2971383d7"
+        }
+      ]
+    },
+    "coreJourneys": {
+      "phase": "candidate-core",
+      "jarSha256": "6fa6bddf259c31854683234169f71b71fcaa9dadd41f1e3670c4e1aa3bf7a970",
+      "reports": [
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewBackupTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 14.564,
+          "sha256": "ac7ddf7898b4dc8ab9d995f2a8dccd34aa754d440f9c6d0c72a815af667ec56d",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 33.582,
+          "sha256": "5f8adaad01461cafd137ff5594ca68dd67374b85f7de96f9965d9e694c2b9489",
+          "failureMessages": [],
+          "stdout": "CROSS_TAB sentFirstIdentity=true visibleFirstIdentity=true actualNamespace=tabada4571e40f renderedSecond=false cachedSecondUnderFirst=false\nCROSS_TAB_REFRESH first-reconnected actual-status/ReturnData/namespace/book-card verified\nCROSS_TAB_LOGOUT isSuccess=true errorMsg= data=NEED_LOGIN\nCROSS_TAB_REFRESH second-after-first-logout actual-status/ReturnData/namespace/book-card verified\nCROSS_TAB_COMPLETE read/write/info/missing/invalid/legacy-cookie/history/old-cache/logout verified with generated accounts\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 14.217,
+          "sha256": "a24f809c465093537b4ced527084057be414155625fcbdcf62283667c52ec9ae",
+          "failureMessages": [],
+          "stdout": "Seven tiny malformed imports: HTTP 200, failed ReturnData/omitted null data, visible Chinese errors, unchanged valid preview; valid UI retry/read PASS\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewFileTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 9.782,
+          "sha256": "9b22370b7c515bbd6d2e82e89b6465e7e8c36c674dd61493fe04a5758044ad76",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewGroupTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 11.531,
+          "sha256": "99a87eb1a2dacf91337afc2dad5ace4ae3fddaa5b97cdb7e24aab232a9cb6f55",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 9.716,
+          "sha256": "d4abe749d7da9c9636a738742161813381bc233c90ab5da454a035754b7c5b51",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 29.535,
+          "sha256": "50666523f5757c57c56cc02dba1c718dc01a5ccb049eb76227d24f51a48ffc72",
+          "failureMessages": [],
+          "stdout": "Generated EPUB: stalled download aborted at the 60-second browser-clock deadline, ordinary reading and real retry PASS\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 14.789,
+          "sha256": "9845ae0989cba353d33c73d4547cdef788eb3e9fd887ffe53376ec552bbff730",
+          "failureMessages": [],
+          "stdout": "LOGIN_LAYOUT_GENERATED_PASSED sizes=7 modes=2 native-hit=checked scroll=checked keyboard=checked generated-register=passed generated-login=passed external-group=not-opened\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLoginTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 6.037,
+          "sha256": "6a22c1369e38b49580f07b6bba8603d49414a1afdba53fd5dba4d673d352ea4b",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 32.372,
+          "sha256": "ac9a97931f1d7c9c9f5ce851ff98b1674f1ed03689f2ba6dd3a43a619b2360c0",
+          "failureMessages": [],
+          "stdout": "LOGOUT_COMPLETE bookshelf/settings/cancel/mixed-reload/signed-out/offline-warning/other-token preserved; generated accounts only\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReadingTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 7.404,
+          "sha256": "49da69f2c1192a5c11a7b305f5c2ada25bd65576cfbf25f30a38435892c2ad32",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 9.131,
+          "sha256": "26327881c16e50483e5e8bf67f969d5aed6a966c5d699659efc4548419e10015",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSearchTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.654,
+          "sha256": "e9d83f4531d28e92c4e76157a2641e166ee22c96a8cfb9969176c831eff180ac",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 14.593,
+          "sha256": "b26599e007b51447a59487ad176aa673103253d1f24c6d10c8327cb6f44b8842",
+          "failureMessages": [],
+          "stdout": "SESSION_RACE mode=0 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\nSESSION_RACE mode=1 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\nSESSION_RACE mode=2 oldAccount=ignored oldSuccess=discarded oldSession=ignored currentExpiry=login retry=bookshelf\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 11.601,
+          "sha256": "a7373e66c59c63326a935ad9c61cf385b78bd96175958009fa9a75d75ea359d6",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 7.136,
+          "sha256": "3ccb259c9d45fe25d0de10ac8df0f970bbb763de6bfd06863d1cd6259d680f83",
+          "failureMessages": [],
+          "stdout": "SHELF_OFFLINE crossAccount=hidden ownAccount=restored business=notOffline server503=restored recovery=online legacy=untouched credentials=notInKey lateRefresh=discarded partialGroups=preserved\n"
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 17.079,
+          "sha256": "444754bcc0ed36f1b9b54b649f4d6345f2a6e4c9c03e61ebda67c693da2d455d",
+          "failureMessages": [],
+          "stdout": ""
+        },
+        {
+          "file": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSourceTest.xml",
+          "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "seconds": 8.516,
+          "sha256": "a2f122b0b08d015aa52abe27b8cad0567f95626013b90e9dcb37e77d84b7e58b",
+          "failureMessages": [],
+          "stdout": ""
+        }
+      ],
+      "actualTestcases": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "generatedScreenshots": 56
+    },
+    "shortViewport": {
+      "width": 375,
+      "height": 320,
+      "clientHeight": 74,
+      "scrollHeight": 369,
+      "regionHeight": 100,
+      "safeTop": "192px",
+      "bottom": "16px",
+      "assertions": [
+        "All real warning notices retained without a message cap",
+        "Clipped visible notices do not intersect header or search",
+        "Real search-input click receives focus",
+        "Actual fixed manager footer stays clear",
+        "Keyboard navigation scroll changes scrollLeft",
+        "Message End changes scrollTop",
+        "Geometry rechecked after keyboard/document movement",
+        "Real close-all hides the empty region",
+        "Logout and next-account namespace assertions still reach the end"
+      ]
+    },
+    "finalManagerScreenshotsViewed": 8
+  },
+  "compatibility": {
+    "backendRoutesAndAuthUnchanged": true,
+    "returnDataClassificationUnchanged": true,
+    "nativeMessageTimersSeverityCallbacksGroupingAndHandlersPreserved": true,
+    "notificationAdapterNoCredentialAccessOrExtraRequests": true,
+    "noGlobalMessageCap": true,
+    "defaultBrowserNotValidatedByHostChrome": true
+  },
+  "preservation": {
+    "userReports": 58,
+    "userReportPathAndSha256Mismatches": 0,
+    "originalJarNotModified": true,
+    "privateLocalBookBodiesNotRead": true,
+    "realCookiesNotImported": true,
+    "previousGeneratedDist": "build/notification-layout-20261005-a/previous-dist-preserved",
+    "previousGeneratedDistFiles": 81,
+    "cleanup": "Owned Reader and mock-source processes stopped through exact handles; final listener check confirms no 18945/18946 listeners. User Reader 127.0.0.1:18931/PID 61244 retained.",
+    "ownedTestListenersAfterCleanup": 0,
+    "userReaderListenerPreserved": true,
+    "newProcesses": [
+      "candidate-f Reader 14572 / fixture 51832",
+      "candidate-core Reader 28504 / fixture 49024"
+    ]
+  },
+  "limits": [
+    "Self-commit hosted source/merge/JAR/image reports still pending. Prior 6a14781f and 4aca0a49 green runs do not validate these new bytes.",
+    "Generated host-Chrome UI tests do not validate default Linux Camoufox or original-JAR/remote authenticated three-way comparisons.",
+    "Real mobile virtual keyboard/visual viewport, exceptionally tiny displays, extremely long accounts/messages and dedicated reading/PWA footer visual coverage remain unverified.",
+    "Transient notifications may still cover content cards or text; navigation/search and tested manager footer clearance is the demonstrated scope.",
+    "No tag, registry push, release, deployment, production data import or deletion of user work.",
+    "No bytecode patch was used."
+  ],
+  "rollback": "Revert only this notification adapter/style/import and short-screen TopNav source change plus its tests, rebuild from the existing lock, keep previous Chinese-error/permission-label fixes. No data migration, reset or overwrite of the original JAR."
+}

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "scope": "Generated-only API phase diagnostics and same-run historical JAR/remote/Camoufox observations; not new final native image, real authenticated source, strict UTF-8 or production acceptance",
+  "sourceHeadAtExecution": "b17109db4e6d73b9dddeef453618e44cacd160ff",
+  "tests": {
+    "windowsPython": {
+      "tests": 330,
+      "passed": 329,
+      "skipped": 1,
+      "elapsedSeconds": 20.724,
+      "logSha256": "adca72b0feffb4f1cc73f4c649f782f972350e0f49e147ac75d813d83a112dbe"
+    },
+    "apiPhaseWindows": {
+      "tests": 7,
+      "skipped": 0
+    },
+    "apiPhaseWsl": {
+      "tests": 7,
+      "skipped": 0,
+      "javaOrBrowserExecuted": false
+    },
+    "testFileSha256": "501c8c47725dbb4032e2fa7261fbc6e0ed8abdeebe3b1843a6e664bbded36d60"
+  },
+  "uidmap": {
+    "version": "1:4.17.4-2ubuntu3",
+    "origin": "Ubuntu official resolute/main",
+    "finalNonRootImageLocallyAccepted": false
+  },
+  "independentAcceptanceSha256": "f2d2ed2eb32806d3d9f4cee2fdeef7883da32cff195a1f723c8e4b2f23917330",
+  "sameRunThreeWay": {
+    "schemaVersion": 1,
+    "sameRunGeneratedThreeWayAccepted": true,
+    "sourceHead": "b17109db4e6d73b9dddeef453618e44cacd160ff",
+    "scriptBytesAtRun": "Generated-only diagnostic phase increment, current uncommitted script bytes; fixed historical JARs/image, not final release",
+    "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+    "restoredJarSha256": "221d41efbab68fa61e2117a4db888c1d8996d671c99f4a034c233c55002d1a43",
+    "runtimeImageId": "sha256:190e971278aa1530536b3c635d8bdeb344f0101e445bd2c61750f4417a62ffaf",
+    "fullSearchResultsPerSide": 5,
+    "actualMetadataCallsPerSide": 1,
+    "metadataFieldsPerSide": 22,
+    "clockContract": {
+      "restored": {
+        "mode": "exact-static-json-and-bounded-default-clocks",
+        "fullRawReturnDataEqual": false,
+        "nonClockFullJsonEqual": true,
+        "clockFieldsFreshInEachOwnRequestWindow": true,
+        "clockFields": {
+          "durChapterTime": {
+            "left": 1791425700172,
+            "right": 1791425718928
+          },
+          "lastCheckTime": {
+            "left": 1791425700172,
+            "right": 1791425718928
+          },
+          "latestChapterTime": {
+            "left": 1791425700172,
+            "right": 1791425718928
+          }
+        },
+        "leftRequestWindowMs": {
+          "started": 1791425700161,
+          "completed": 1791425702652
+        },
+        "rightRequestWindowMs": {
+          "started": 1791425718913,
+          "completed": 1791425721244
+        }
+      },
+      "camoufox": {
+        "mode": "exact-static-json-and-bounded-default-clocks",
+        "fullRawReturnDataEqual": false,
+        "nonClockFullJsonEqual": true,
+        "clockFieldsFreshInEachOwnRequestWindow": true,
+        "clockFields": {
+          "durChapterTime": {
+            "left": 1791425700172,
+            "right": 1791425769957
+          },
+          "lastCheckTime": {
+            "left": 1791425700172,
+            "right": 1791425769957
+          },
+          "latestChapterTime": {
+            "left": 1791425700172,
+            "right": 1791425769957
+          }
+        },
+        "leftRequestWindowMs": {
+          "started": 1791425700161,
+          "completed": 1791425702652
+        },
+        "rightRequestWindowMs": {
+          "started": 1791425769947,
+          "completed": 1791425775467
+        }
+      }
+    },
+    "aggregateBudget": {
+      "scope": "both test containers and all their probe/Java/browser descendants",
+      "cpuQuota": 200000,
+      "cpuPeriod": 100000,
+      "memoryMaxBytes": 2147483648,
+      "memoryPeakBytes": 2120466432,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "swapMaxBytes": 0,
+      "pidsMax": 512,
+      "pidsEvents": {
+        "max": 0
+      }
+    },
+    "sampleCount": 89,
+    "elapsedMs": 94819,
+    "sampledMaxPids": 238,
+    "terminalUnit": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "InvocationID": ""
+    },
+    "remainingOwnedContainers": 0,
+    "archivedRendererStopExitCode": 137,
+    "inputFilesVerified": 6,
+    "userReportsUnchanged": 58,
+    "realAuthenticatedSourceTested": false,
+    "strictUtf8ThreeWayAccepted": false,
+    "newNativeJarUsed": false,
+    "productionChanged": false,
+    "fullGoalComplete": false,
+    "rawFiles": [
+      {
+        "path": "observed/archived-renderer-stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "observed/archived-renderer-stdout.log",
+        "bytes": 3079,
+        "sha256": "9f19a54df9e0129ec1007e003d30ad1419b890194a5603a0693547c73be4e0c3"
+      },
+      {
+        "path": "observed/host-cleanup.json",
+        "bytes": 1829,
+        "sha256": "2d7d296b9a9f0bcd8f7f4f1ce5079dfe8387ba71f2533b14e20d11975b08f771"
+      },
+      {
+        "path": "observed/probe.log",
+        "bytes": 336,
+        "sha256": "85a542ccfc3b474c06dceca178de6ad61076670e5f4602553a81329eafda53c0"
+      },
+      {
+        "path": "observed/provenance.json",
+        "bytes": 85989,
+        "sha256": "c209295c510c67ec7f354c4bc2a225886dfc23172d1b746e83918f3021ddf949"
+      },
+      {
+        "path": "observed/results/phases/camoufox-permitted",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "observed/results/phases/remote-complete",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "observed/results/three-way.historical-observation.json",
+        "bytes": 21664,
+        "sha256": "ed6b64827611f7bad06c31151a844f37bc932dab13920027a3d8a49088ca9ce7"
+      },
+      {
+        "path": "observed/results/three-way.json",
+        "bytes": 33628,
+        "sha256": "1375c70f67855216c47ec6e767396b9f0e26f9c01fee2f1e93e3aec11a7cb2e6"
+      }
+    ]
+  },
+  "earlierFailureEvidenceRetained": true,
+  "previousTimeoutSoleRootCauseProven": false
+}

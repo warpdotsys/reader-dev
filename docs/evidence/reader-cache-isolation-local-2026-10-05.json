@@ -1,0 +1,31 @@
+{
+  "scope": "Generated loopback Reader UI, fresh Chrome context, two generated accounts; no private body or real credential",
+  "candidateJarSha256": "c8b30b2d8f75d08865ebbeaf81a9cfe84cb38b993147a7a7dd4bcc60370baed8",
+  "finalTestSourceSha256": "575c6e79b6a2bdcbab38dca8c701a7498895315f8357fc7a390aa9ddb9ec60d5",
+  "frontend": {"tests": 195, "failures": 0, "skipped": 0, "cancelled": 0, "seconds": 10.4157047, "concurrency": 2},
+  "build": {"typeCheck": true, "viteBuild": true, "bootJar": true, "gradleSeconds": 253, "maxWorkers": 2},
+  "core": {"phase": "candidate-core-b", "suites": 13, "tests": 13, "failures": 0, "errors": 0, "skipped": 0,
+    "reports": [
+      {"suite": "Backup", "seconds": 8.648, "xmlSha256": "48978f8a42fc833271185e3b3c03f3f97fa5117320028468106f68bff12c5e03"},
+      {"suite": "EpubSafety", "seconds": 23.112, "xmlSha256": "6c2c35f024d9a444a40e1b45241d3ed14170c799e4338382e248edeafdb226f0"},
+      {"suite": "File", "seconds": 10.174, "xmlSha256": "ef4dc36c2f1ce18a616c9857deb6e215b8c230cdf9255cb4887efea0c5e4e425"},
+      {"suite": "Group", "seconds": 11.928, "xmlSha256": "c3106cf56171245739ba967143843405042a56de57874de9b350bd28da7eb07d"},
+      {"suite": "LocalCacheIsolation", "seconds": 21.053, "xmlSha256": "11e88dcb95585f02981560d8c58d419ee63d1e4a11a7d87ccd1d1b7a0555fd8b"},
+      {"suite": "LocalReading", "seconds": 38.216, "xmlSha256": "650993faf3c696efeeadd951c013adac8e122c75fbda42aad16894e191528cb8"},
+      {"suite": "Login", "seconds": 7.182, "xmlSha256": "aa3a4d80de70a1f428b58809fee43981e2e4d99dfb11d05fd197fc1877273ffe"},
+      {"suite": "Reading", "seconds": 8.617, "xmlSha256": "19176cf6b3bece6237cdba1fb0002ba7f57d6f3f0c16b65aab1a9aef95e6589f"},
+      {"suite": "ReplaceRule", "seconds": 11.015, "xmlSha256": "624bdcbea22cf536a624a9bb2b8da32ea2207e27178649426d140ab3fdf743f7"},
+      {"suite": "Search", "seconds": 10.15, "xmlSha256": "5d5ae2ab5d28858ea5e58d2a9340c31a92348aab1feabc4ac511b80e4b93c300"},
+      {"suite": "ShelfLayout", "seconds": 14.017, "xmlSha256": "40894dcabbf163dbddec15f8ee036ee563590ab73e809ca04d0db7ce705a9122"},
+      {"suite": "SourceCookie", "seconds": 25.237, "xmlSha256": "8d7fdb96dec151bff1cd788fb6a172679ac6e8d636d42e4d82d73da8ecd349c5"},
+      {"suite": "Source", "seconds": 8.528, "xmlSha256": "bcf703fa30ebfd162e3b055fab0cb372e2e198e416ea83b3e203987ff37f617e"}
+    ]},
+  "negativeEvidence": [
+    {"phase": "baseline", "jarSha256": "1c1c24bd90a7d08f48ef016d1b2578650d4aba0574aa3b53662d5b1ea2bf302f", "failure": "Edit payload does not match legacy contract; account switch not reached", "xmlSha256": "cbc089e7b4d9de99ccdb2767400870896461a061d87809df0b5727259a1bf2f1"},
+    {"phase": "edit-fixed", "jarSha256": "790699a5c5f76e338c1a5945e425ec4f7bc47fec7a15b525032600be3f657419", "failure": "Second user UI reuses first user IndexedDB body, while second user backend returns original fixture", "xmlSha256": "0d97f991503bb3f8f4c511ed4844c3894dd1d0ca07fe1e8cfc835ffc99fe230b"},
+    {"phase": "candidate-core", "jarSha256": "c8b30b2d8f75d08865ebbeaf81a9cfe84cb38b993147a7a7dd4bcc60370baed8", "tests": 13, "failures": 1, "skipped": 0, "failure": "Overbroad test counter also counted legitimate next-chapter image preload; narrowed to exact index=0", "xmlSha256": "f5c9d8226a79d77101a80b9e48e122f31bd54e935e73808a74d690894006496a"}
+  ],
+  "isolation": {"oldSharedDatabasePreservedAndNotRead": true, "secondUserClearDoesNotDeleteFirstUserCache": true, "firstUserCurrentChapterDownloadRequestsAfterRelogin": 0, "databaseNamesDoNotContainAccessToken": true},
+  "cleanup": {"ownedReaderAndFixtureExited": true, "userReaderPort": 18931, "userReaderPid": 61244, "userReaderUntouched": true},
+  "limits": ["not real Qidian or original-JAR authenticated differential", "not built-in Camoufox runtime acceptance", "not all formats, cross-tab sessions or late authentication errors", "not Windows total-resource hard limit", "not merged, released or deployed"]
+}

@@ -1,0 +1,362 @@
+package com.medwarp.reader.browserpoc;
+
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+import org.junit.Assume;
+import org.junit.Test;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+/** New Vue 3 cookie-management API: real JSON array, persistence and user isolation. */
+public class Vue3PreviewSourceCookieTest {
+    @Test
+    public void setListIsolateAndClearSourceCookie() {
+        String previewUrl = System.getenv("READER_VUE3_PREVIEW_URL");
+        String executable = System.getProperty("browser.executable", "");
+        Assume.assumeTrue(previewUrl != null && !previewUrl.isEmpty()
+                && !executable.isEmpty() && Files.isRegularFile(Path.of(executable))
+                && "1".equals(System.getenv("READER_VUE3_ISOLATED")));
+        URI preview = URI.create(previewUrl);
+        assertEquals("http", preview.getScheme());
+        assertTrue("Only isolated loopback Reader is allowed",
+                "127.0.0.1".equals(preview.getHost()) || "localhost".equals(preview.getHost()));
+
+        try (Playwright playwright = Playwright.create(new Playwright.CreateOptions()
+                .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")))) {
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
+                    .setExecutablePath(Path.of(executable)).setHeadless(true));
+            try {
+                Page owner = browser.newPage();
+                Page stranger = browser.newPage();
+                register(owner, previewUrl);
+                register(stranger, previewUrl);
+                String domain = "cookie-" + UUID.randomUUID().toString().replace("-", "") + ".example";
+                String sourceA = "https://a." + domain + "/path";
+                String sourceB = "https://b." + domain + "/path";
+                Map<String, String> sources = Map.of("a", sourceA, "b", sourceB);
+                Object ownerResult = owner.evaluate("async (sources) => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const endpoint=(name)=>'/reader3/'+name+'?accessToken='+encodeURIComponent(token);" +
+                        "const post=async(name,body)=>(await fetch(endpoint(name),{method:'POST'," +
+                        "headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();" +
+                        "const read=async()=>(await fetch(endpoint('getBookSourceCookie'))).json();" +
+                        "const savedA=await post('saveBookSource',{bookSourceUrl:sources.a,bookSourceName:'Cookie A'});" +
+                        "const savedB=await post('saveBookSource',{bookSourceUrl:sources.b,bookSourceName:'Cookie B'});" +
+                        "const denied=await post('setBookSourceCookie',{bookSource:JSON.stringify({bookSourceUrl:'https://unimported.example'}),cookie:'x=y'});" +
+                        "const set=await post('setBookSourceCookie',{bookSource:sources.a,cookie:'session=probe'});" +
+                        "const listed=await read();" +
+                        "return {saved:savedA.isSuccess&&savedB.isSuccess,denied:!denied.isSuccess," +
+                        "set:set.isSuccess,array:Array.isArray(listed.data)," +
+                        "found:Array.isArray(listed.data)&&[sources.a,sources.b].every(url=>" +
+                        "listed.data.some(row=>row.sourceUrl===url&&row.hasCookie===true&&" +
+                        "row.cookie.includes('***')&&!row.cookie.includes('session=probe')))};" +
+                        "}", sources);
+                assertEquals(Map.of("saved", true, "denied", true, "set", true,
+                        "array", true, "found", true), ownerResult);
+
+                Object isolated = stranger.evaluate("async (sources) => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const response=await fetch('/reader3/getBookSourceCookie?accessToken='+encodeURIComponent(token));" +
+                        "const result=await response.json();" +
+                        "return result.isSuccess&&Array.isArray(result.data)&&" +
+                        "!result.data.some(row=>row.sourceUrl===sources.a||row.sourceUrl===sources.b);" +
+                        "}", sources);
+                assertEquals(true, isolated);
+
+                Object cleared = owner.evaluate("async (sources) => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const endpoint=(name)=>'/reader3/'+name+'?accessToken='+encodeURIComponent(token);" +
+                        "const response=await fetch(endpoint('setBookSourceCookie'),{method:'POST'," +
+                        "headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookSource:sources.b,cookie:''})});" +
+                        "const set=await response.json();" +
+                        "const listed=await (await fetch(endpoint('getBookSourceCookie'))).json();" +
+                        "return set.isSuccess&&set.data.cleared===true&&" +
+                        "[sources.a,sources.b].every(url=>set.data.clearedSourceUrls.includes(url))&&" +
+                        "Array.isArray(listed.data)&&" +
+                        "!listed.data.some(row=>row.sourceUrl===sources.a||row.sourceUrl===sources.b);" +
+                        "}", sources);
+                assertEquals(true, cleared);
+
+                // Old versions wrote this unscoped flag. It must not override the
+                // current account's server state, including after cookie revocation.
+                owner.evaluate("url => localStorage.setItem('reader_src_login_'+url,'1')", sourceA);
+                owner.navigate(previewUrl + "/sources");
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("An obsolete local marker is not server authentication", 0,
+                        owner.locator(".source-badge.logged").count());
+
+                Locator loginOpener = owner.locator(".source-row").filter(new Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='登录书源']");
+                loginOpener.click();
+                owner.locator("[aria-label='书源登录'] .manual-box textarea").waitFor();
+                exerciseDialogKeyboard(owner, "书源登录", loginOpener);
+                loginOpener.click();
+                assertEquals("Reopening a login must not retain an unsaved cookie", "",
+                        owner.locator("[aria-label='书源登录'] .manual-box textarea").inputValue());
+                // The last empty value deliberately has no final newline: trimming
+                // TABs would destroy its seventh Netscape field before submission.
+                String generatedCredential = "# Netscape HTTP Cookie File\n" +
+                        "#HttpOnly_." + domain + "\tTRUE\t/auth\tTRUE\t0\tcredentialProbe\tNotReal-Qidian-12345\n" +
+                        "." + domain + "\tTRUE\t/\tFALSE\t0\temptyProbe\t";
+                owner.locator("[aria-label='书源登录'] .manual-box textarea").fill(generatedCredential);
+                com.microsoft.playwright.Response importResponse = owner.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/setBookSourceCookie"),
+                        () -> owner.locator("[aria-label='书源登录'] .manual-box .accent-btn").click());
+                assertEquals(200, importResponse.status());
+                Map<?, ?> importedResult = (Map<?, ?>) owner.evaluate("text => JSON.parse(text)", importResponse.text());
+                assertEquals("Netscape import must succeed", true, importedResult.get("isSuccess"));
+                Map<?, ?> importedData = (Map<?, ?>) importedResult.get("data");
+                assertEquals("Netscape metadata must reach the backend unchanged",
+                        "netscape", importedData.get("format"));
+                assertEquals("Both Secure/path-scoped and empty-value records must survive",
+                        2, ((Number) importedData.get("imported")).intValue());
+                owner.waitForFunction("document.querySelector('.login-msg')?.textContent.includes('未验证')");
+                assertEquals("Saving a cookie is not proof of a successful site login",
+                        "Cookie 已保存（未验证）", owner.locator(".login-state-text").innerText());
+                assertFalse("Do not expose even a prefix of the submitted credential",
+                        owner.locator("body").innerText().contains("NotReal-Qidian"));
+                String runnerTemp = System.getenv("RUNNER_TEMP");
+                if (runnerTemp != null && !runnerTemp.isEmpty()) {
+                    owner.screenshot(new Page.ScreenshotOptions()
+                            .setPath(Path.of(runnerTemp).resolve("vue3-source-cookie-stored.png")));
+                }
+                owner.locator("[aria-label='书源登录'] .dlg-close").click();
+                owner.reload();
+                owner.locator(".source-row").first().waitFor();
+                owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
+                assertTrue(owner.locator(".source-badge.logged").first().innerText().contains("Cookie 已保存"));
+
+                Locator editOpener = owner.locator(".source-row").filter(new Locator.FilterOptions()
+                        .setHasText("Cookie A")).locator("button[title^='编辑书源']");
+                editOpener.click();
+                exerciseDialogKeyboard(owner, "编辑书源", editOpener);
+                editOpener.click();
+                com.microsoft.playwright.Locator editorCookie = owner.locator(
+                        "[aria-label='编辑书源'] [placeholder^='粘贴普通 Cookie 头或 Netscape 导出']");
+                assertEquals("A single-line input would silently discard Netscape line breaks",
+                        "TEXTAREA", editorCookie.evaluate("element => element.tagName"));
+                assertEquals("Closing the editor must discard an unsaved cookie", "", editorCookie.inputValue());
+                editorCookie.fill(generatedCredential);
+                assertEquals("Both editor lines and final empty field must survive", generatedCredential,
+                        editorCookie.inputValue());
+                com.microsoft.playwright.Response editedImport = owner.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/setBookSourceCookie"),
+                        () -> owner.locator("[aria-label='编辑书源'] .accent-btn[type=submit]").click());
+                assertEquals(200, editedImport.status());
+                Map<?, ?> editedResult = (Map<?, ?>) owner.evaluate("text => JSON.parse(text)", editedImport.text());
+                assertEquals(true, editedResult.get("isSuccess"));
+                Map<?, ?> editedData = (Map<?, ?>) editedResult.get("data");
+                assertEquals("netscape", editedData.get("format"));
+                assertEquals(2, ((Number) editedData.get("imported")).intValue());
+                owner.waitForFunction("!document.querySelector('[aria-label=\"编辑书源\"]')");
+                assertFalse(owner.locator("body").innerText().contains("NotReal-Qidian"));
+
+                assertEquals(true, owner.evaluate("async url => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const result=await (await fetch('/reader3/setBookSourceCookie?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookSource:url,cookie:''})})).json();" +
+                        "return result.isSuccess&&result.data.cleared===true;}", sourceB));
+                owner.waitForResponse(response -> URI.create(response.url()).getPath().endsWith("/reader3/getBookSourceCookie"),
+                        owner::reload);
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Server revocation must win over any surviving local flag", 0,
+                        owner.locator(".source-badge.logged").count());
+                // Restore only generated credentials to make the account-switch
+                // check meaningful: the first account has cookies, the second does not.
+                assertEquals(true, owner.evaluate("async url => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const result=await (await fetch('/reader3/setBookSourceCookie?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookSource:url,cookie:'session=generated-switch-test'})})).json();" +
+                        "return result.isSuccess&&result.data.success===true;}", sourceA));
+                owner.reload();
+                owner.waitForFunction("document.querySelectorAll('.source-badge.logged').length===2");
+
+                // Same browser origin, different authenticated account. No old UI
+                // marker may carry authentication over to the second namespace.
+                assertEquals(true, stranger.evaluate("async (sources) => {" +
+                        "const token=localStorage.getItem('reader_access_token');" +
+                        "const post=async(source)=>(await fetch('/reader3/saveBookSource?accessToken='+" +
+                        "encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify(source)})).json();" +
+                        "return (await post({bookSourceUrl:sources.a,bookSourceName:'Cookie A'})).isSuccess&&" +
+                        "(await post({bookSourceUrl:sources.b,bookSourceName:'Cookie B'})).isSuccess;}", sources));
+                String otherUsername = (String) stranger.evaluate("() => localStorage.getItem('reader_username')");
+                // The legacy backend prefers its session cookie to a query token.
+                // Exercise an actual logout/login, not an artificial token swap
+                // while keeping the previous account's authenticated session.
+                owner.navigate(previewUrl + "/");
+                owner.locator(".bookshelf-page").waitFor();
+                owner.locator(".logout-btn").click();
+                owner.locator(".login-page").waitFor();
+                owner.locator("input[autocomplete=username]").fill(otherUsername);
+                owner.locator("input[autocomplete=current-password]").fill("CookieProbe-2026");
+                owner.locator(".submit-btn").click();
+                owner.locator(".bookshelf-page").waitFor();
+                owner.waitForResponse(response -> URI.create(response.url()).getPath().endsWith("/reader3/getBookSourceCookie"),
+                        () -> owner.navigate(previewUrl + "/sources"));
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Account switching must not inherit a source cookie badge", 0,
+                        owner.locator(".source-badge.logged").count());
+                // The same keyboard contract must hold at a narrow viewport.
+                owner.setViewportSize(375, 812);
+                Locator cookieOpener = owner.locator("button[title^='Cookie 管理']");
+                cookieOpener.click();
+                owner.waitForFunction("document.querySelector('.cookie-mgr-note')?.textContent.includes('0 个')");
+                assertEquals(0, owner.locator(".cookie-list .cookie-row").count());
+                exerciseDialogKeyboard(owner, "Cookie 管理", cookieOpener);
+
+                Locator addOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("新增书源").setExact(true));
+                addOpener.click();
+                exerciseDialogKeyboard(owner, "新增书源", addOpener);
+                Locator importOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("远程导入").setExact(true));
+                importOpener.click();
+                exerciseDialogKeyboard(owner, "远程导入书源", importOpener);
+                Locator sourceRow = owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("Cookie A"));
+                Locator debugOpener = sourceRow.locator("button[title^='调试书源']");
+                debugOpener.click();
+                exerciseDialogKeyboard(owner, "书源调试", debugOpener);
+                Locator deleteOpener = sourceRow.locator("button[title='删除书源']");
+                deleteOpener.click();
+                exerciseDialogKeyboard(owner, "删除书源", deleteOpener); // Cancel only; do not delete even generated sources.
+
+                Locator localImportOpener = owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("本地导入").setExact(true));
+                com.microsoft.playwright.FileChooser chooser = owner.waitForFileChooser(localImportOpener::click);
+                chooser.setFiles(new com.microsoft.playwright.options.FilePayload("keyboard-generated.json", "application/json",
+                        "[{\"bookSourceUrl\":\"https://keyboard-preview.example\",\"bookSourceName\":\"生成键盘预览\"}]"
+                                .getBytes(StandardCharsets.UTF_8)));
+                exerciseDialogKeyboard(owner, "导入本地书源", localImportOpener);
+                assertEquals("Cancelling a preview must not import a source", 0,
+                        owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("生成键盘预览")).count());
+
+                // Real scrolling, not an artificial DOM spacer: save only generated
+                // book metadata against the second account's existing test source.
+                owner.setViewportSize(1280, 720);
+                assertEquals(32, ((Number) owner.evaluate("async source => {" +
+                        "for(let index=0;index<32;index++){" +
+                        "const response=await fetch('/reader3/saveBook',{method:'POST'," +
+                        "credentials:'same-origin',headers:{'Content-Type':'application/json'}," +
+                        "body:JSON.stringify({bookUrl:source+'/book-'+index,origin:source,tocUrl:source+'/toc'," +
+                        "name:'生成滚动测试 '+index,author:'生成作者',canUpdate:false})});" +
+                        "const result=await response.json();" +
+                        "if(response.status!==200||!result.isSuccess)throw new Error('Generated shelf setup failed');}" +
+                        "const shelf=await(await fetch('/reader3/getBookshelf',{credentials:'same-origin'})).json();" +
+                        "if(!shelf.isSuccess)throw new Error('Generated shelf read failed');" +
+                        "return shelf.data.length;}", sourceA)).intValue());
+                owner.navigate(previewUrl + "/");
+                owner.getByText("共 32 本", new Page.GetByTextOptions().setExact(false)).waitFor();
+                owner.locator(".book-card").first().waitFor();
+                owner.mouse().move(80, 650);
+                owner.mouse().wheel(0, 600);
+                owner.waitForFunction("window.scrollY > 100");
+                owner.evaluate("window.scrollTo(0, 0)");
+                owner.waitForFunction("window.scrollY === 0");
+                // A full page reload replaces body and conceals this lifecycle bug.
+                // Use the visible Vue router control and prove the document survived.
+                owner.evaluate("window.__readerLifecycleProbe='generated-same-document'");
+                owner.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON,
+                        new Page.GetByRoleOptions().setName("书源").setExact(true)).click();
+                owner.locator(".source-row").first().waitFor();
+                assertEquals("Source navigation must not replace the document", "generated-same-document",
+                        owner.evaluate("window.__readerLifecycleProbe"));
+                owner.locator(".source-row").filter(new Locator.FilterOptions().setHasText("Cookie A"))
+                        .locator("button[title^='登录书源']").click();
+                owner.locator("[aria-label='书源登录']").waitFor();
+                assertEquals("An open source modal should lock background scroll", "hidden",
+                        owner.evaluate("document.body.style.overflow"));
+                owner.goBack();
+                owner.locator(".bookshelf-page").waitFor();
+                assertEquals("History navigation must not replace the document", "generated-same-document",
+                        owner.evaluate("window.__readerLifecycleProbe"));
+                owner.locator(".book-card").first().waitFor();
+                owner.mouse().move(80, 650);
+                owner.mouse().wheel(0, 600);
+                try {
+                    owner.waitForFunction("window.scrollY > 100", null,
+                            new Page.WaitForFunctionOptions().setTimeout(2500));
+                } catch (RuntimeException failure) {
+                    throw new AssertionError("History navigation from source modal must restore actual shelf scrolling; overflow="
+                            + owner.evaluate("document.body.style.overflow"), failure);
+                }
+                assertEquals("Leaving sources must release its modal scroll lock", "",
+                        owner.evaluate("document.body.style.overflow"));
+            } finally {
+                browser.close();
+            }
+        }
+    }
+
+    private static void exerciseDialogKeyboard(Page page, String label, Locator opener) {
+        Locator dialog = page.getByRole("删除书源".equals(label)
+                        ? com.microsoft.playwright.options.AriaRole.ALERTDIALOG : com.microsoft.playwright.options.AriaRole.DIALOG,
+                new Page.GetByRoleOptions().setName(label).setExact(true));
+        dialog.waitFor();
+        assertTrue("Opening " + label + " must move focus into the dialog",
+                (Boolean) dialog.evaluate("element => element.contains(document.activeElement)"));
+        if ("书源登录".equals(label)) {
+            dialog.locator(".manual-box textarea").fill("unsaved=generated-keyboard-only");
+        } else if ("编辑书源".equals(label)) {
+            dialog.locator("[placeholder^='粘贴普通 Cookie 头或 Netscape 导出']")
+                    .fill("unsaved=generated-keyboard-only");
+        }
+        int controls = ((Number) dialog.evaluate("element => Array.from(element.querySelectorAll(" +
+                "'button, input, textarea, select, a[href], [tabindex]'))" +
+                ".filter(item => item.tabIndex >= 0 && !item.matches(':disabled') &&" +
+                "item.getClientRects().length > 0).length")).intValue();
+        assertTrue("A dialog should offer usable keyboard controls", controls > 0);
+        for (String key : new String[]{"Tab", "Shift+Tab"}) {
+            for (int index = 0; index <= controls; index++) {
+                page.keyboard().press(key);
+                assertTrue(label + " must keep " + key + " focus within its modal",
+                        (Boolean) dialog.evaluate("element => element.contains(document.activeElement)"));
+            }
+        }
+        String screenshotRoot = System.getenv("RUNNER_TEMP");
+        if (screenshotRoot != null && !screenshotRoot.isEmpty()) {
+            String imageName = "书源登录".equals(label) ? "login" : "编辑书源".equals(label) ? "editor"
+                    : "Cookie 管理".equals(label) ? "cookie-mobile" : null;
+            if (imageName != null) {
+                // Hosted Chromium is fast enough to finish keyboard checks during
+                // the legitimate enter animation; capture only its settled state.
+                page.waitForCondition(() -> (Boolean) dialog.evaluate("element => {" +
+                        "const overlay=element.closest('.dlg-overlay');" +
+                        "return overlay && !overlay.matches('.dlg-enter-active, .dlg-enter-from, .dlg-leave-active')" +
+                        "&& getComputedStyle(overlay).opacity==='1' && getComputedStyle(element).opacity==='1';}"));
+                page.screenshot(new Page.ScreenshotOptions()
+                        .setPath(Path.of(screenshotRoot).resolve("vue3-source-dialog-" + imageName + ".png")));
+            }
+        }
+        page.keyboard().press("Escape");
+        page.waitForFunction("label => !Array.from(document.querySelectorAll('[role=dialog], [role=alertdialog]'))" +
+                ".some(element => element.getAttribute('aria-label') === label)", label);
+        assertTrue("Closing " + label + " must restore focus to its opener",
+                (Boolean) opener.evaluate("element => element === document.activeElement"));
+    }
+
+    private static void register(Page page, String previewUrl) {
+        page.navigate(previewUrl + "/login");
+        page.locator(".mode-switch button").nth(1).click();
+        page.locator("input[autocomplete=username]").fill("vue" +
+                UUID.randomUUID().toString().replace("-", "").substring(0, 10));
+        page.locator("input[autocomplete=current-password]").fill("CookieProbe-2026");
+        page.locator(".submit-btn").click();
+        page.locator(".bookshelf-page").waitFor();
+    }
+}

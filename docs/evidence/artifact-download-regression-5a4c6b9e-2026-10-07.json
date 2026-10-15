@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "scope": "unchanged old large AMD64 archive: downloader, loaded image, actual generated detail/async/default UI and original resource guards; not new publisher, original parity, real site, real authentication or production",
+  "probeSourceHead": "5a4c6b9e17146cfda8c826e1ed78aebe3ede1248",
+  "probeRun": 37617035487,
+  "originalSourceHead": "3eb418c96ea442473ed318fe50a223d618079e8a",
+  "imageRevision": "15ed874af760345fdba262d487ebb5b736912d5e",
+  "originalArtifactId": 11479257168,
+  "originalArtifactZipBytes": 2174844316,
+  "metadataIdentity": {
+    "schemaVersion": 1,
+    "architecture": "amd64",
+    "version": "4.0.7",
+    "revision": "15ed874af760345fdba262d487ebb5b736912d5e",
+    "jarSha256": "dd0a8ae6ff258874e1de8a5fd88f1dbc5e7518eaf50156137ae2a48a50812869",
+    "archiveSha256": "fc706b2e516bf43abb87669a1ccf0f2c44686d68cf95cbeabbaefb6493274c47",
+    "imageId": "sha256:51f11e8a1255f3c9debca3079af18de95c989039e512f3d200ee7cbd00815905"
+  },
+  "metadataReader": {
+    "schemaVersion": 1,
+    "scope": "generated-delayed-dom",
+    "bookInfoApiCalls": 1,
+    "status": 200,
+    "isSuccess": true,
+    "errorMsg": "",
+    "dataIsObject": true,
+    "nameMatches": true,
+    "authorMatches": true,
+    "coverMatches": true,
+    "pageDiagnostics": {
+      "nameSelectorPresent": true,
+      "authorSelectorPresent": true,
+      "coverSelectorPresent": true,
+      "bodyHasText": true,
+      "bodyHasExpectedBookTitle": true,
+      "bodyHasExpectedAuthor": true,
+      "bodyHasSafetyPhrase": false,
+      "captchaContainerPresent": false
+    },
+    "sourceDefinitionRoundtrip": {
+      "dataIsObject": true,
+      "sourceUrlMatches": true,
+      "cookieJarDisabled": true,
+      "modernTocMarkerPresent": true,
+      "metadataRulesMatch": true,
+      "passed": true
+    },
+    "sourceScriptSha256": "045f640185166e2d9415e09b1e2d574ba45cf6119345ba180f4fe6e5a9bf4b04",
+    "diagnosticRuleSha256": "603a86357f45c3b850ec3c8cce2fe98266053aa1276fdf7178fbd5a4fe61166a",
+    "targetRequestCount": 1,
+    "targetRequest": {
+      "httpMethod": "GET",
+      "body": null,
+      "testHeader": null,
+      "cookie": ""
+    }
+  },
+  "runtimeResource": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 351948800,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 854257664,
+    "memoryStatBytes": {
+      "active_file": 12087296,
+      "anon": 322686976,
+      "file": 22900736,
+      "file_dirty": 61440,
+      "file_mapped": 3051520,
+      "file_writeback": 0,
+      "inactive_file": 6586368,
+      "kernel": 5996544,
+      "kernel_stack": 671744,
+      "pagetables": 1138688,
+      "shmem": 4227072,
+      "slab_reclaimable": 3416616,
+      "slab_unreclaimable": 709440,
+      "sock": 0
+    },
+    "pidsCurrent": 41,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 197,
+    "scope": "one full Reader image; sequential probes plus four-account burst",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  },
+  "originalGuardCalls": 3,
+  "metadataReaderGuardCalls": 1,
+  "largeArchiveDownloadedLocally": false,
+  "realSiteMetadataOrAuthenticationProven": false,
+  "oldFailedRunsReclassifiedAsSuccess": false,
+  "userReportHashesChecked": 58,
+  "userReportHashesChanged": 0,
+  "files": [
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/BROWSER_RESOURCE_BUDGET.json",
+      "bytes": 824,
+      "sha256": "91a15274778ec22bf8ebba2e48f3de7e193804d2b06e133a2b3a8e3ffe31acab"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/BROWSER_SYNTHETIC.json",
+      "bytes": 2350,
+      "sha256": "b9c4bbaa43204a8b98cc1e737bf51369a9121c180104be866a7e1a9ecd39f6f7"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/DEFAULT_UI.json",
+      "bytes": 1355,
+      "sha256": "a18c60a4f1b3cc27dd409fd20db6cdfdaa5c7cf1146a60ff4106e56755776817"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/IMAGE_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "5d0ec8c8279feeedda4bf272ecd26a9628693630faeeb3d782bcba91dc9feffb"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/JAR_IDENTITY.json",
+      "bytes": 171,
+      "sha256": "a369c7285d80202326a2e1c43706099b3a4f8b8e9d532078026d30716486efca"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/metadata.json",
+      "bytes": 390,
+      "sha256": "c51a877c587ca61943ccafe6c3493a75292638d76fad7b1113cecdf58eb86337"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/PRELOAD_IDENTITY.json",
+      "bytes": 258,
+      "sha256": "f1f5567279f9ae2a390e01f55634e2a26daba9859ac27fa5a59e7e6ded0a8d66"
+    },
+    {
+      "path": "build/existing-artifact-regression-5a4c6b9e-20261007-a/RELEASE_IDENTITY.json",
+      "bytes": 88,
+      "sha256": "01e3c25f35d0bd893d30c9e2efe42cae839ceec8b6a85dbf7fd445422f99965a"
+    }
+  ],
+  "probeConclusion": "success",
+  "probeJob": 112777772914,
+  "artifactReportId": 11479813063,
+  "artifactReportZipBytes": 3608,
+  "artifactZipDownloadSha256": "4ab3afb71ee6b02467a683fae41645f3450ba27dce811c95221d7ec36ca28e26",
+  "independentAuditSha256": "11a3b34e88498c689e99b3f52f13b98e5348e073cdcaa65a257093ff117f4e60",
+  "doesNotReclassifyOriginalFailure": true,
+  "strictConfiguredNoSwapProven": false
+}

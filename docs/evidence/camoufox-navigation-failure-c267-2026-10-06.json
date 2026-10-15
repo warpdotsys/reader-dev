@@ -1,0 +1,50 @@
+{
+  "recordedDate": "2026-10-06",
+  "sourceCommit": "c2679e7b69217bd7d869028fa86907c59a6926dd",
+  "testedMergeRevision": "7b2c2748214e95fd8e2a130840b74884934560a3",
+  "nativeRun": {
+    "id": 37430408602,
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37430408602",
+    "conclusion": "failure",
+    "failedJobId": 112159693177,
+    "failedStep": "Verify packaged default engine contracts before exporting the shared JAR",
+    "downstreamSkippedIsSuccess": false
+  },
+  "separateFullImageRun": {
+    "id": 37430408844,
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/37430408844",
+    "status": "completed",
+    "conclusion": "success",
+    "doesNotOverrideNativeFailure": true
+  },
+  "failedArtifact": {
+    "id": 11396937561,
+    "name": "reader-release-camoufox-contract-7b2c2748214e95fd8e2a130840b74884934560a3",
+    "sizeBytes": 1379,
+    "githubDeclaredArchiveSha256": "32e0e97357af0bdf918feca462b646df7facdf138070c8db29f95fb578e1f9ac",
+    "archiveHashWasRecomputedLocally": false,
+    "xmlName": "TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml",
+    "xmlSha256RecomputedLocally": "4d675d9721c0c9867807ec581cdbf78374e159ac430d89ad269eeef3c1118cd8"
+  },
+  "actualXml": {
+    "suite": "com.htmake.reader.utils.CamoufoxWebviewRendererTest",
+    "tests": 15,
+    "skipped": 0,
+    "failures": 1,
+    "errors": 0,
+    "failedCase": "generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost",
+    "caseSeconds": 8.671,
+    "workerErrorClass": "Error",
+    "workerFailureOperation": null,
+    "workerFailureKind": null,
+    "strictReportValidatorExitCode": 1
+  },
+  "boundaries": {
+    "uniqueRootCauseProven": false,
+    "flakyClassificationProven": false,
+    "diagnosticPatchIsARecoveryFix": false,
+    "originalFailureWasReclassified": false,
+    "captchaOrRealAuthenticationProven": false,
+    "productionChanged": false
+  }
+}

@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Request;
 import com.microsoft.playwright.Response;
 import org.junit.Assume;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +46,10 @@ public class Vue3PreviewFileTest {
                 page.locator("input[autocomplete=username]").fill("file" +
                         UUID.randomUUID().toString().replace("-", "").substring(0, 10));
                 page.locator("input[autocomplete=current-password]").fill("FileProbe-2026");
-                page.locator(".submit-btn").click();
+                Response login = page.waitForResponse(
+                        response -> URI.create(response.url()).getPath().endsWith("/reader3/login"),
+                        () -> page.locator(".submit-btn").click());
+                assertLegacyLogin(login);
                 page.locator(".bookshelf-page").waitFor();
                 page.navigate(previewUrl + "/files");
                 page.locator(".file-page").waitFor();
@@ -58,8 +63,14 @@ public class Vue3PreviewFileTest {
                 String moveDir = "move-dir-" + suffix;
                 String movedDir = "moved-" + suffix;
                 String binaryName = "binary-" + suffix + ".bin";
-                assertTrue(api(page, "/file/save", Map.of("path", "/" + oldName,
-                        "content", "reader-rename-preserves-content", "home", "__HOME__")));
+                Request initialSaveRequest = page.waitForRequest(
+                        request -> URI.create(request.url()).getPath().endsWith("/reader3/file/save"),
+                        () -> apiText(page, "/file/save", Map.of("path", "/" + oldName,
+                                "content", "reader-rename-preserves-content", "home", "__HOME__")));
+                String initialSave = initialSaveRequest.response().text();
+                assertTrue("Initial user-home file/save failed: " + initialSave
+                                + "; request body=" + initialSaveRequest.postData(),
+                        isSuccess(initialSave));
                 assertTrue(api(page, "/file/save", Map.of("path", "/" + collisionName,
                         "content", "do-not-overwrite", "home", "__HOME__")));
                 try {
@@ -164,12 +175,30 @@ public class Vue3PreviewFileTest {
     }
 
     private static boolean api(Page page, String path, Map<String, String> body) {
-        Object result = page.evaluate("async ({path, body}) => {" +
+        return isSuccess(apiText(page, path, body));
+    }
+
+    private static String apiText(Page page, String path, Map<String, String> body) {
+        Map<String, Object> request = new HashMap<>();
+        request.put("endpoint", path);
+        request.putAll(body);
+        Object result = page.evaluate("async ({endpoint, ...body}) => {" +
                 "const token = localStorage.getItem('reader_access_token');" +
-                "const response = await fetch('/reader3' + path + '?accessToken=' + encodeURIComponent(token)," +
+                "const response = await fetch('/reader3' + endpoint + '?accessToken=' + encodeURIComponent(token)," +
                 "{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});" +
-                "return (await response.json()).isSuccess; }", Map.of("path", path, "body", body));
-        return Boolean.TRUE.equals(result);
+                "return await response.text(); }", request);
+        return String.valueOf(result);
+    }
+
+    private static boolean isSuccess(String json) {
+        return json.contains("\"isSuccess\":true");
+    }
+
+    private static void assertLegacyLogin(Response login) {
+        assertEquals(200, login.status());
+        String response = login.text();
+        assertTrue("Registration/login did not return the legacy success envelope: " + response,
+                isSuccess(response));
     }
 
     private static String apiData(Page page, String path, String file) {

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "f1bcfaabb8cf938f3ad9f9f8eb658a91cd8b3d81",
+  "testedMergeSnapshot": "48ec69ee5623a83e5c5d7ad94d67ac39d9706fd8",
+  "nativeRun": 38407271509,
+  "nativeJarArtifactId": 11820046488,
+  "actualJarDownloadedAndRehashed": true,
+  "jarSha256": "66d1ddfb4de5eb9470578c7bd8a83cd411eaf0c313983c72c7530bc4d73c2199",
+  "jarBytes": 285683559,
+  "jarEntries": 1568,
+  "ownDoubleCleanJarDigestMatched": true,
+  "manifestHeadersRead": {
+    "Manifest-Version": "1.0",
+    "Main-Class": "org.springframework.boot.loader.JarLauncher",
+    "Start-Class": "com.htmake.reader.ReaderApplicationKt",
+    "Spring-Boot-Version": "2.1.6.RELEASE",
+    "Spring-Boot-Classes": "BOOT-INF/classes/",
+    "Spring-Boot-Lib": "BOOT-INF/lib/"
+  },
+  "embeddedImplementationVersion": null,
+  "embeddedVersionGateAccepted": false,
+  "failure": "Implementation-Version missing from actual candidate JAR",
+  "jarModified": false,
+  "originalJarOrPrivateBodiesRead": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

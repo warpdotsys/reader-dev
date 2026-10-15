@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "f6e61bf3be91ade4e66c4c22fe76bf2a1fd6ed41",
+  "testedMergeSnapshot": "27512eca06d9889df4bf217a7e1291aed589210f",
+  "imageId": "sha256:ca2f025c986dec440a4a89ae4e04e9f1b92672fdf894c70aa67895dee8ffc880",
+  "originalDockerConfigDigest": "sha256:c76a847715d1efe04f84e92c320465412db1f23d147db61eff6c235b35318850",
+  "scope": "Exact f6 image authorized single-book UI attempt; failed raw EPUB reload download, not full reading acceptance",
+  "wholeImageAuthorizedBookAccepted": false,
+  "completeReadingScenes": 6,
+  "expectedReadingScenes": 8,
+  "bodyFreeObservation": {
+    "passed": false,
+    "readerEightScenesAccepted": false,
+    "exceptionType": "TimeoutError",
+    "boundedFailureFrames": [
+      {
+        "file": "inner-persistent.py",
+        "function": "<module>",
+        "line": 54
+      },
+      {
+        "file": "ui_persistent.py",
+        "function": "ui",
+        "line": 351
+      },
+      {
+        "file": "_generated.py",
+        "function": "wait_for",
+        "line": 20539
+      },
+      {
+        "file": "_sync_base.py",
+        "function": "_sync",
+        "line": 115
+      },
+      {
+        "file": "_locator.py",
+        "function": "wait_for",
+        "line": 748
+      },
+      {
+        "file": "_frame.py",
+        "function": "wait_for_selector",
+        "line": 394
+      },
+      {
+        "file": "_connection.py",
+        "function": "send",
+        "line": 76
+      },
+      {
+        "file": "_connection.py",
+        "function": "wrap_api_call",
+        "line": 632
+      }
+    ],
+    "primaryUiFailureCode": "timeout",
+    "activePhase": "uiExceptionBeforeOwnedCleanup",
+    "boundedVisibleState": {
+      "rawIframePresent": false,
+      "rawErrorPresent": true,
+      "rawErrorDownloadTimeout": true,
+      "rawErrorWorkerTimeout": false,
+      "rawErrorWorkerStarting": false,
+      "rawErrorWorkerReceiving": false,
+      "rawErrorWorkerExpanding": false,
+      "rawErrorWorkerFailure": false,
+      "genericChapterErrorPresent": true,
+      "loadingStateCount": 0
+    },
+    "seconds": 158.752,
+    "ownedJavaStopped": true,
+    "passiveSamplerStopped": true,
+    "sourceEpubStillUnchanged": true,
+    "packagedJarStillUnchanged": true,
+    "browserAndContextStopped": true,
+    "generatedDiskStorageBudget": {
+      "budgetBytes": 536870912,
+      "maximumBytesObserved": 88198747,
+      "maximumFilesObserved": 1688,
+      "samples": 108,
+      "budgetExceeded": false,
+      "metadataReadErrors": [],
+      "fileBodiesRead": false,
+      "namesPublished": false,
+      "monitorStopped": true
+    },
+    "wrongPasswordContractAndUiAccepted": true,
+    "existingOriginalAccountLoginAccepted": true,
+    "importPreviewViaUiSucceeded": true,
+    "importSaveViaUiSucceeded": true,
+    "logoutThreeFieldContractAccepted": true,
+    "revokedTokenRejectedByRealApi": true,
+    "freshContextReloginAccepted": true,
+    "newTabDoesNotAdoptCookieOnlyIdentityAccepted": true
+  },
+  "aggregateBudget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryPeakBytes": 1612709888,
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "memoryEvents": {
+      "low": 0,
+      "high": 85210,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 4994
+    },
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "cleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1",
+      "ActiveState": "failed",
+      "SubState": "failed"
+    },
+    "ownedContainersRemaining": 0,
+    "generatedFilesRemoved": 1688,
+    "generatedBytesRemoved": 88198747,
+    "bookCopyRemoved": true,
+    "bookCopyBytesRemoved": 37809796,
+    "generatedDataRemoved": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false,
+    "privateBodiesReadForCleanup": false
+  },
+  "rawReceiptSha256": {
+    "observation": {
+      "bytes": 446110,
+      "sha256": "a20ac16a0d3375e6792e94e3ed53f76f1410150a5ce4ce6badf4c928f279b545"
+    },
+    "provenance": {
+      "bytes": 2577,
+      "sha256": "fb77ca04c644a72fc80ee3d0c6ab1ec38e15198df3bd67d6b1b1fb58f7e55a5a"
+    },
+    "launch": {
+      "bytes": 393,
+      "sha256": "6e33ea003d37a274373bc9e10f6fb464f7fe2c41db16730d383ad521ae5cea2c"
+    },
+    "cleanup": {
+      "bytes": 489,
+      "sha256": "bcab9c395e1d459cf8b9a115aacf2e868d1394ffc43873db5150d523508e381c"
+    }
+  },
+  "productCodeModified": false,
+  "productionChanged": false,
+  "privateBodiesNamesHashesOrCredentialsPublished": false,
+  "goalComplete": false
+}

@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+  "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+  "scope": "own hosted workflows, actual D jar, generated complete-image UI, built and fresh-runner pressure; not server or production parity",
+  "java": {
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "javaRun": 38575919666,
+    "ownHostedJavaIndependentlyAccepted": true,
+    "junit": {
+      "tests": 222,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 35
+    },
+    "archiveReceipts": {
+      "java": {
+        "artifactId": 11899299055,
+        "zipBytes": 36919,
+        "zipSha256": "76286acc6fe350ab098d928541e8edf6a471dcb3e0a1b4bb897f0b2d503e4895",
+        "allExtractedBytesMatchArchive": true
+      },
+      "repro": {
+        "artifactId": 11900366337,
+        "zipBytes": 453,
+        "zipSha256": "986abe4f794737410ef38d663e760a0b098c01696ba266a5d5d9b18eee98d9eb",
+        "allExtractedBytesMatchArchive": true
+      }
+    },
+    "reproducibility": {
+      "archiveBytesMatch": true,
+      "archiveCommentMatches": true,
+      "contentDifferences": 0,
+      "entryOrderMatches": true,
+      "firstEntryCount": 1568,
+      "firstJarBytes": 285684333,
+      "firstJarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+      "firstOnlyEntries": 0,
+      "passed": true,
+      "schemaVersion": 1,
+      "scope": "two separate Boot JAR files; complete bytes and all entries, without normalization",
+      "secondEntryCount": 1568,
+      "secondJarBytes": 285684333,
+      "secondJarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+      "secondOnlyEntries": 0,
+      "zipMetadataDifferences": 0
+    },
+    "largeJarOrImageDownloaded": false,
+    "currentNativeOrRealBookAccepted": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "vue": {
+    "schemaVersion": 1,
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "vueRunId": 38575918930,
+    "twoHostedJobsAccepted": true,
+    "frontendTests": 394,
+    "frontendFailures": 0,
+    "typecheckAndViteAccepted": true,
+    "actualChromiumTests": {
+      "tests": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "chromiumSuites": 25,
+    "chromiumReportSetSha256": "032195db00cb22fff8b8cef71cd839feebf603321d596fe052960fd7bad3aa78",
+    "generatedLoginLayoutsAccepted": 14,
+    "downloadedGeneratedPublicFilesRehashed": true,
+    "actualPrivateLargeBookAccepted": false,
+    "realSiteAuthenticationAccepted": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "full": {
+    "schemaVersion": 1,
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "fullRun": 38575919844,
+    "fullJob": 115892853652,
+    "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+    "ownFullWorkflowAccepted": true,
+    "hostedPythonTests": 807,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 13.143,
+    "fullImageUi": {
+      "schemaVersion": 1,
+      "scope": "complete-image-default-ui-generated-journey",
+      "testedRevision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 12.793,
+      "xmlSha256": "c1027ebc23a4140d6535254991810ec9503c188728cd8c27386d00f68f823d3e",
+      "screenshots": [
+        {
+          "file": "native-default-ui-generated-login.png",
+          "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+          "bytes": 34204,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-shelf.png",
+          "sha256": "5c69ff1c3c6952b0f967bd212e96381ae79ffdd5378146f72906d358f950152b",
+          "bytes": 49164,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-reading.png",
+          "sha256": "6b1a3a24ee80c3ed53df05c7acd541f52b8125323fed04914f5abc8e3a3686c1",
+          "bytes": 33308,
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "file": "native-default-ui-generated-logout.png",
+          "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+          "bytes": 34077,
+          "width": 1280,
+          "height": 900
+        }
+      ],
+      "clientRunsOutsideServerResourceBudget": true,
+      "realAccountOrPrivateBooksTested": false,
+      "productionOrLongRunProven": false
+    },
+    "generatedLoginAndReadingScreenshotsVisuallyReviewed": true,
+    "visualReviewScope": "four generated complete-image screenshots at 1280x900 only; not a real-account or full responsive audit",
+    "readerHttpsBusiness": {
+      "acceptedCurrentReaderHttpsBusinessSubset": true,
+      "generatedScenarios": 8,
+      "actualTargetRequests": 12,
+      "actualConnectTunnels": 14,
+      "parsedHeaderFields": 178,
+      "negativeCertificateControls": 2,
+      "generatedUserNamespaces": 2,
+      "proxySocketOwnershipVerifiedByLiveProducer": true,
+      "originalJarThreeWayAccepted": false,
+      "fullNativeImageLocallyAccepted": false,
+      "realSiteLoginAccepted": false,
+      "productionChanged": false,
+      "fullGoalComplete": false,
+      "acceptedCertificateHintMessages": true
+    },
+    "workerHttps": {
+      "acceptedPackagedWorkerHttpsSubset": true,
+      "positiveCases": 10,
+      "negativeCertificateControls": 2,
+      "targetRequests": 24,
+      "parsedHeaderFields": 334,
+      "readerApiOrProductionAccepted": false
+    },
+    "fullServerOnlyMemoryPeakBytes": 883040256,
+    "fullServerOnlyPidsPeak": 196,
+    "fullUiClientOutsideServerResourceBudget": true,
+    "imageBuildStepSeconds": 275,
+    "ghaCacheImportManifestObserved": true,
+    "cachedBuildStepCount": 7,
+    "unknownStepLogBoundToActualJobAndBuildWindow": false,
+    "cacheExportSeconds": [
+      97.9
+    ],
+    "strictSixtySecondTotalCacheExportCapProven": false,
+    "causalCacheSpeedupProven": false,
+    "latestWholeNativeImageLocallyAccepted": false,
+    "nativeWholeWorkflowAccepted": false,
+    "realBookFullAcceptance": false,
+    "rawLogOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "native": {
+    "schemaVersion": 1,
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "nativeRunId": 38575919033,
+    "nativeSixHostedJobsAccepted": true,
+    "nativeArchitectures": [
+      "amd64",
+      "arm64"
+    ],
+    "metadata": {
+      "amd64": {
+        "schemaVersion": 1,
+        "architecture": "amd64",
+        "version": "6.1.0",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "archiveSha256": "c014f571f54afbb2daa93b1cf6cb35fe1f21e06876f46fcc6e4f82c3c077f39f",
+        "imageId": "sha256:be59965d3bcba61656a57d1f4341b7e721ecb6a30a93a783a2411a693a7169b5"
+      },
+      "arm64": {
+        "schemaVersion": 1,
+        "architecture": "arm64",
+        "version": "6.1.0",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "archiveSha256": "d07b2ef105091b3aa7419cb9d6b65a4d9fffc945e9c54164aa3eab3e5e6b2644",
+        "imageId": "sha256:1607fc6978d42519366cea423e9280c8e12a9abd544464f768d5b560da54f7e1"
+      }
+    },
+    "checks": [
+      {
+        "architecture": "amd64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "amd64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "native",
+        "sevenProducerReportTypesAccepted": true
+      },
+      {
+        "architecture": "arm64",
+        "phase": "transferred",
+        "sevenProducerReportTypesAccepted": true
+      }
+    ],
+    "publisherSmallJsonFiles": 32,
+    "camoufoxContractTests": 24,
+    "hostedPythonTests": 807,
+    "hostedPythonSkipped": 0,
+    "hostedPythonSeconds": 13.143,
+    "jvmTests": 222,
+    "jvmSkipped": 35,
+    "maximumPublisherResourceSubsetMemoryBytes": 870428672,
+    "maximumPublisherResourceSubsetPids": 202,
+    "largeArchivesLocallyDownloadedOrRehashed": false,
+    "currentWholeImageLocallyAccepted": false,
+    "realBookPressureAccepted": false,
+    "rawLogsOrPrivateBodiesPublished": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "builtPressure": {
+    "schemaVersion": 1,
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "nativeRun": 38575919033,
+    "scope": "native built images only; three fresh generated rounds per architecture",
+    "readingScenesAccepted": 48,
+    "architectures": {
+      "amd64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "architecture": "amd64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1650556928,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11901822397,
+        "artifactZipSha256": "531f3ede15ca082be3ecfdf6b8217f4681fe47089b9d22586a3629709e8d461a",
+        "reportSha256": "77a1d2e09131c5de9d59c547b6270264a1a9e102a3b6645e7d92ff218f0871c8",
+        "imageId": "sha256:be59965d3bcba61656a57d1f4341b7e721ecb6a30a93a783a2411a693a7169b5",
+        "roundSeconds": [
+          34.588,
+          32.041,
+          28.298
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      },
+      "arm64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "architecture": "arm64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1647828992,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11902646479,
+        "artifactZipSha256": "33900b98cfe54ec80ec688462dd38c12a3be9c4c412b90e36f619b1d12d28498",
+        "reportSha256": "0812801ee98b62c171375de567fb2af66149c77d0cf7bd81b683a8b95bfd2d32",
+        "imageId": "sha256:1607fc6978d42519366cea423e9280c8e12a9abd544464f768d5b560da54f7e1",
+        "roundSeconds": [
+          27.18,
+          27.496,
+          31.693
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      }
+    },
+    "fullNativeWorkflowAccepted": false,
+    "freshRunnerReloadPressureAccepted": false,
+    "originalOrPrivateBookCompatibilityAccepted": false,
+    "uniqueCausalFixOrLongTermStabilityProven": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "reloadedPressure": {
+    "schemaVersion": 1,
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "nativeRun": 38575919033,
+    "scope": "fresh-runner reloaded images only; three fresh generated rounds per architecture",
+    "readingScenesAccepted": 48,
+    "architectures": {
+      "amd64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "architecture": "amd64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1652199424,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11902149296,
+        "artifactZipSha256": "4e63270a9d74f859033325bfded35c6d8620da1f9bae999f5ebef96599b5e2ed",
+        "reportSha256": "0fa03ddbce45fa06c3f64a173e996f20a49c24b36fe7d8a0103b862c64ae4b09",
+        "imageId": "sha256:be59965d3bcba61656a57d1f4341b7e721ecb6a30a93a783a2411a693a7169b5",
+        "roundSeconds": [
+          24.845,
+          22.842,
+          24.08
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      },
+      "arm64": {
+        "accepted": true,
+        "scope": "three-fresh-default-image-generated-large-epub-rounds",
+        "revision": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+        "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+        "architecture": "arm64",
+        "rounds": 3,
+        "readingScenes": 24,
+        "maximumAggregatePeakBytes": 1652305920,
+        "hostPageCacheColdProven": false,
+        "privateBookOrRealAccountTested": false,
+        "productionOrLongRunProven": false,
+        "artifactId": 11902254284,
+        "artifactZipSha256": "2dc7952e4c10822cf8b915e4bcfb303aa5d50ea12f82b0d6425684925856d8de",
+        "reportSha256": "91ffe15f3d3fa185a025d136c0fee5005456f7e364fded101258afb06a69fa23",
+        "imageId": "sha256:1607fc6978d42519366cea423e9280c8e12a9abd544464f768d5b560da54f7e1",
+        "roundSeconds": [
+          27.809,
+          36.872,
+          28.433
+        ],
+        "allGeneratedDataCleared": true,
+        "allOwnedContainersRemoved": true,
+        "allParentsEmptyAndStopped": true
+      }
+    },
+    "fullNativeWorkflowAccepted": false,
+    "freshRunnerReloadPressureAccepted": true,
+    "originalOrPrivateBookCompatibilityAccepted": false,
+    "uniqueCausalFixOrLongTermStabilityProven": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "downloadedJar": {
+    "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+    "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+    "nativeRun": 38575919033,
+    "artifactId": 11901445644,
+    "artifactZipSha256": "27e67a0b97e72077cfe4ec2131eb775c557240bccab0144a174226596a95920c",
+    "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+    "jarBytes": 285684333,
+    "entryCount": 1568,
+    "artifactAndJarBytesLocallyRehashed": true,
+    "manifestAndOriginalEntrypointVerified": true,
+    "nonVue3EntriesByteIdenticalToBaseline": true,
+    "newWorkerHasResultTransferPhase": true,
+    "actualPackagedBoundedTransferAckProtocolVerified": true,
+    "newWorkerSha256": "f6486d0373847fac1ee75f4e27298382868e59e43072289a61c09dde7c8b17de",
+    "actualReaderChunkPagehideAndBfcacheBranchVerified": true,
+    "readerChunkSha256": "fa6aaf216d235b62616ea9ec303c425bf341e89cc9360555b6614f714f29dacb",
+    "downloadDrive": "D",
+    "largeImageDownloaded": false,
+    "privateBookRead": false,
+    "nativeSixJobsAccepted": false,
+    "realBookAccepted": false,
+    "productionChanged": false,
+    "goalComplete": false
+  },
+  "allFourOwnHostedWorkflowsIndependentlyAccepted": true,
+  "aggregatePressureReadingScenes": 96,
+  "accurateWholeMirrorOnServerAccepted": false,
+  "currentOriginalAccountAndAuthorizedBookAccepted": false,
+  "currentRealSiteThreeWayAccepted": false,
+  "currentLongRunAccepted": false,
+  "uniqueCausalFixProven": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

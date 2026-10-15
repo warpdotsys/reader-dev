@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "bb6afa4e2295a1bfabc88ae45ef8e68b364f631d",
+  "testedMergeSnapshot": "9a86d3b70d70c0041f084569dc31891056d527d5",
+  "hostedRunIds": [
+    38030983280,
+    38030983284,
+    38030983259,
+    38030983318
+  ],
+  "allFourOwnHostedWorkflowsIndependentlyAccepted": true,
+  "nativeActualJobs": 6,
+  "nativePublisherJsonFiles": 24,
+  "receipts": {
+    "independent-java-acceptance.json": "5b7472920415110a9c4df880570b915843308712f3309425de2b9ad76f088bcd",
+    "independent-ui-java-acceptance-v2.json": "ddc178113e3ebfa64386395d184fec4def65ec67dd0488cc13e7eab618e44f0b",
+    "independent-full-acceptance.json": "6a78eddf70761468e0ed1d4b46c209640cdbbdc41c6f397a34e256da5281e143",
+    "independent-native-acceptance.json": "5805b60dc5a1f87f4a604ee83e3cc8f7d33992e28b8f44ee7ab98137efa8fb49"
+  },
+  "jarSha256": "a873136863b8f9fba61dd4245325771e983b34e613f97b398f040b41fbb3f3cd",
+  "jarBytes": 285666064,
+  "jarEntries": 1569,
+  "pythonTests": 471,
+  "pythonSkipped": 0,
+  "jvmTests": 188,
+  "jvmSkippedExistingEnvironment": 31,
+  "actualUiTests": 25,
+  "uiSkipped": 0,
+  "actualCamoufoxTests": 20,
+  "camoufoxSkipped": 0,
+  "formPostTargetTypeActuallyAccepted": true,
+  "explicitJsonUtf8ActuallyAccepted": true,
+  "completeImageDefaultUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "9a86d3b70d70c0041f084569dc31891056d527d5",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 8.346,
+    "xmlSha256": "7f7e743bfb54db9c81179dd24bea7579e162d5d6a80a36ba7dc8db13102b44e3",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "773cbc3aa7cf01d09fbcc3c0d5f6547591cc603c498ac911d7b9339b959714f4",
+        "bytes": 81814,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "5b00a6ef8b0d9e0282c37930fcc82b3d7b45953a4eb3f04ea6fd15f26ba0779c",
+        "bytes": 33365,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "nativeMetadata": [
+    {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "4.0.7",
+      "revision": "9a86d3b70d70c0041f084569dc31891056d527d5",
+      "jarSha256": "a873136863b8f9fba61dd4245325771e983b34e613f97b398f040b41fbb3f3cd",
+      "archiveSha256": "55740aae9150a5ffb917a456463ddb032fa0ff62fa25bbdaf63e47e1244fac11",
+      "imageId": "sha256:c9c870da248447f9ba46ee9c3aea85d48ac8a9f903f6cc872b366d1bf52edca0"
+    },
+    {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "4.0.7",
+      "revision": "9a86d3b70d70c0041f084569dc31891056d527d5",
+      "jarSha256": "a873136863b8f9fba61dd4245325771e983b34e613f97b398f040b41fbb3f3cd",
+      "archiveSha256": "1ebca45a29b6de7cca43ff8cf5a11fafbb52ada0dd15b1254443913874d3bfda",
+      "imageId": "sha256:b42123c46fbad49131954297e5167f23e517b8a2e7e911e462e0fb10b4cf1bb2"
+    }
+  ],
+  "nativeMaxMemoryPeakBytes": 875327488,
+  "nativeMaxPidsPeak": 211,
+  "fullMemoryPeakBytes": 881217536,
+  "fullPidsPeak": 194,
+  "ordinarySwapMayBeAllowed": true,
+  "nativeObservedSwapBytes": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "exactLocalDifferentialReceiptSha256": "5651d4f7977226a8e5d3c45493ddc7485b454a22b2eb64b8faae267ff127d21e",
+  "historicalUtf8StrictParityAccepted": false,
+  "allHeadersLiteralParityAccepted": false,
+  "localCurrentWholeNativeImageExecuted": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "released": false,
+  "fullGoalComplete": false
+}

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "scope": "Generated-only native archived API logging and exact owned process diagnosis; not compatibility or production acceptance",
+  "archivedImage": "hectorqin/remote-webview@sha256:b61d8e86f69a743baa06aadb58cdba6d1e11c5baa45cec05a908d541ce9a684a",
+  "archivedSourceOrImageModified": false,
+  "browserApiMethodsWrapped": false,
+  "apiLoggingE": {
+    "unit": "reader-historical-api-log-20261007-e.service",
+    "invocationIdAtStart": "a5a35d6cf411400a843cc95799806446",
+    "helperSourceSha256": "70cab2c90b95be26a79ffbb8373c5cd5040646def5da855ed87eee78fa85df8e",
+    "onlyAddedContainerEnvironment": {"DEBUG": "pw:api"},
+    "terminalExecMainStatus": 1,
+    "mainPid": 0,
+    "overallAccepted": false,
+    "actualApiPhases": [
+      {"operation": "browserType.launch", "status": "started"},
+      {"operation": "browserType.launch", "status": "succeeded"},
+      {"operation": "browser.newContext", "status": "started"}
+    ],
+    "newContextSuccessOrFailureObserved": false,
+    "originalCompletedSearches": 0,
+    "targetRequests": 0,
+    "memoryPeakBytes": 543961088,
+    "ownedContainersRemoved": 2,
+    "independentlyObservedOwnedContainersRemaining": 0,
+    "inputJarsUnchanged": true,
+    "rawFiles": [
+      {"name": "provenance.json", "bytes": 42662, "sha256": "fe0113fa5d301c21f88b3f3ae1563b53722536abf4d27d4319755c7f9310821a"},
+      {"name": "probe.log", "bytes": 2994, "sha256": "52066eff0a0f2a33730e62a697b60546dc1bb65c10ffbc0bb4771d1d7ae844e3"},
+      {"name": "archived-renderer-stderr.log", "bytes": 188, "sha256": "17cc9ffa493d4689ff7680b413eb55da580f7983a13ea54669772138fd5b376d"},
+      {"name": "api-logging.json", "bytes": 384, "sha256": "ae93f9115a35473a77015c31573c351029c3a509f7d28459cea928aec87bbb63"},
+      {"name": "results/three-way.original-failed.json", "bytes": 211, "sha256": "3c38498d4ad295727e8121733a3aceef7499d41f9586e93e71566d08838374ba"}
+    ]
+  },
+  "ownedProcessObservationF": {
+    "unit": "reader-historical-api-log-20261007-f.service",
+    "invocationIdAtStart": "53ad0d916be34da2bf2f518a691c28d8",
+    "executedHelperSourceSha256": "9c6e820fe739f396d2e6509270f6cddfb8b6d321f0cc01d3298aa7e184376a6a",
+    "onlyAddedContainerEnvironment": {"DEBUG": "pw:api,pw:browser"},
+    "terminalExecMainStatus": 1,
+    "mainPid": 0,
+    "overallAccepted": false,
+    "failureLocation": "original readiness/getSystemInfo wait before search",
+    "javaExecuted": true,
+    "startupCompletedProven": false,
+    "actualBrowserApiPhases": 0,
+    "originalCompletedSearches": 0,
+    "targetRequests": 0,
+    "memoryPeakBytes": 259117056,
+    "observedAfterProbeExitBeforeOwnedCleanup": {
+      "runtimeProcesses": 2,
+      "runtimeThreads": 2,
+      "historicalProcesses": 1,
+      "historicalThreads": 7,
+      "runtimePidsMaxEvents": 0,
+      "historicalPidsMaxEvents": 0,
+      "argvEnvironmentOrUserFilesRead": false
+    },
+    "ownedContainersRemoved": 2,
+    "independentlyObservedOwnedContainersRemaining": 0,
+    "inputJarsUnchanged": true,
+    "rawFiles": [
+      {"name": "provenance.json", "bytes": 12817, "sha256": "2a5031d298c1f1f731dc080a9d4d4b0ae460f08dfb473e895612afd34d6b54b5"},
+      {"name": "probe.log", "bytes": 921, "sha256": "c75d7b749fbc45e90a9f4c7d0df655a13ffa15e23f56e3705d65fa076c7d4f19"},
+      {"name": "owned-processes-before-cleanup.json", "bytes": 1675, "sha256": "dc1eb1ff5195b38c1445e439818582f49780b37cda6c4b64e1c124cf2d5df40f"},
+      {"name": "api-logging.json", "bytes": 446, "sha256": "cb00c4fb1cd332be728300e4fdbb116de111ee97e5e9faadaa829616bf125c2b"},
+      {"name": "results/three-way.original-failed.json", "bytes": 211, "sha256": "3c38498d4ad295727e8121733a3aceef7499d41f9586e93e71566d08838374ba"}
+    ]
+  },
+  "aggregateBudget": {"cpuCount": 2, "memoryMaxBytes": 2147483648, "swapMaxBytes": 0, "slicePidsMax": 512, "containerPidsMax": 256},
+  "observedAggregateMemoryMaxOomAndPidsLimitEvents": 0,
+  "privateRawLogsPublished": false,
+  "limitations": [
+    "Native API logging locates E at newContext but does not uniquely explain why it stalls",
+    "F does not reach browser launch, so its process/PID counters do not explain or exclude the cause of E",
+    "Readiness timeout is not proof that the original JAR cannot start or that a specific API failed",
+    "Java has exited before the F process snapshot; it is not a live-JVM thread observation",
+    "Temporary SSH observation failures were not treated as unit termination or used to restart a unit",
+    "No real credentials, private book body, production mount or public website accessed"
+  ]
+}

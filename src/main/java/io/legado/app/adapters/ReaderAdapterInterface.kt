@@ -14,6 +14,9 @@ interface ReaderAdapterInterface {
 
     fun getCacheDir(): String
 
+    /** Remote renderers still need Reader's legacy Cookie request header. */
+    fun managesWebviewCookies(): Boolean = false
+
     suspend fun getStrResponseByRemoteWebview(
         url: String? = null,
         html: String? = null,

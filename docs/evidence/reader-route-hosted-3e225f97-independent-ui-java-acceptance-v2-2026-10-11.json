@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "3e225f97efe1036e405490e0b4b253f1285a7ce4",
+  "testedMergeSnapshot": "f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7",
+  "vue": {
+    "id": 38127563420,
+    "sourceRevision": "3e225f97efe1036e405490e0b4b253f1285a7ce4",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38127563420",
+    "conclusion": "success",
+    "actualJobs": [
+      {
+        "id": 114434992065,
+        "name": "Isolated Vue 3 browser journeys in Chromium",
+        "runnerName": "GitHub Actions 1000004598",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      },
+      {
+        "id": 114434992186,
+        "name": "build",
+        "runnerName": "GitHub Actions 1000004601",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      }
+    ],
+    "optionalSkippedJobs": 0
+  },
+  "java": {
+    "id": 38127563432,
+    "sourceRevision": "3e225f97efe1036e405490e0b4b253f1285a7ce4",
+    "url": "https://github.com/warpdotsys/reader-dev/actions/runs/38127563432",
+    "conclusion": "success",
+    "actualJobs": [
+      {
+        "id": 114434992254,
+        "name": "Test and build JAR",
+        "runnerName": "GitHub Actions 1000004600",
+        "runnerLabels": [
+          "ubuntu-24.04"
+        ]
+      }
+    ],
+    "optionalSkippedJobs": 0
+  },
+  "actualUiTests": 25,
+  "uiSkipped": 0,
+  "uiContracts": [
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+      "seconds": 1.996,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewBookshelfImportTest",
+      "seconds": 10.783,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewCrossTabTest",
+      "seconds": 11.101,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+      "seconds": 6.663,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewFileTest",
+      "seconds": 2.743,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+      "seconds": 4.543,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalCacheIsolationTest",
+      "seconds": 4.339,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+      "seconds": 18.038,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginLayoutTest",
+      "seconds": 10.927,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+      "seconds": 2.403,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewLogoutTest",
+      "seconds": 21.574,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+      "seconds": 2.847,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewReplaceRuleTest",
+      "seconds": 4.396,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+      "seconds": 2.99,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSessionRaceTest",
+      "seconds": 9.621,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSettingsDialogTest",
+      "seconds": 8.842,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+      "seconds": 13.745,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewShelfOfflineIsolationTest",
+      "seconds": 4.002,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceCookieTest",
+      "seconds": 8.008,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSourceTest",
+      "seconds": 6.353,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewTtsCacheIsolationTest",
+      "seconds": 7.101,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewTxtTocRuleTest",
+      "seconds": 4.526,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest",
+      "seconds": 6.837,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest",
+      "seconds": 3.016,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.medwarp.reader.browserpoc.Vue3PreviewSubdirectoryTest",
+      "seconds": 2.608,
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "generatedSettingsScreenshots": [
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-opds-unavailable.png",
+      "sha256": "cad839943f2f43fa712ffe8bc22adaf99fe6702c24adefdfdae16cd656b754ea",
+      "bytes": 74638,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-added.png",
+      "sha256": "d6bc7a664c00ce99d05239000144cd29be5297369cba7dd79669b570eb24782c",
+      "bytes": 81229,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-edit-offline.png",
+      "sha256": "c15e4b187339a2e16474eeaa349c9a654ffdea10e0e9ec427c8ea354612fa67d",
+      "bytes": 85452,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-edit-stale.png",
+      "sha256": "26a143919d6996049d6e2414d200c3cc1c384633c8019e682b817e7b1b7560b9",
+      "bytes": 79038,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-edited.png",
+      "sha256": "8e26b2f78548a99dd59b3bb2f067d635e1c63816e96f58fd955ea4d95689fa28",
+      "bytes": 76179,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-rejected.png",
+      "sha256": "c96f46803b1d7dd7dee52e6204018a38cb1ede6a61ac09d89ddc31adec8176a4",
+      "bytes": 80832,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-settings-generated-tts-rename-conflict.png",
+      "sha256": "a61d444cb7731e3d43e02296d4732c37421002e7afb177a16c8c3333ed34ea0c",
+      "bytes": 86076,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-txt-rule-generated-created.png",
+      "sha256": "4e2e889a9c2c642745b042b219fccf92dde08226a49e8dcc2565a06ccc150dbe",
+      "bytes": 86421,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-txt-rule-generated-deleted.png",
+      "sha256": "6f005499cca42216ce71e72eb927de779f492ec0038b5ad09f670fe7545cb7e8",
+      "bytes": 92466,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-txt-rule-generated-disabled.png",
+      "sha256": "ef53a00308c8b04aba20f9637efacdef31898ff15026b07c7f61b0f564b25013",
+      "bytes": 86380,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "vue/vue3-settings-dialogs-f18023ce9ab1b8a5f2d8b5997bae0fe602f9e9b7/vue3-txt-rule-generated-invalid.png",
+      "sha256": "b5500ad11c10a92a18fae95c8fe4cd381d44ad41ca99872806bb8085e9b1285a",
+      "bytes": 84232,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "visualReviewPerformedByThisScript": false,
+  "hostedFrontendTests": 304,
+  "hostedScreenshotGuardTests": 20,
+  "hostedTypesAndBuildPassed": true,
+  "jvmSuites": 44,
+  "jvmTests": 207,
+  "jvmSkipped": 35,
+  "pythonTests": 717,
+  "sourceProxyParameterFlow": {
+    "tests": 4,
+    "skipped": 0,
+    "explicitRendererDouble": true,
+    "realBrowserAcceptedByTheseMethods": false,
+    "suiteSha256": "d8a6d740b1494da59265b72429e4f9d6b3654b3c8e87bc96445a4b5f6cd721c6"
+  },
+  "errorLogTests": {
+    "tests": 9,
+    "skipped": 0,
+    "actualLoopbackHttpErrorExecuted": true,
+    "actualLoopbackBusinessErrorExecuted": true,
+    "suiteSha256": "f9e2e3973dabfcf18683a7fcecb79671d1d68c64968e9b9d8767af087af8a89f"
+  },
+  "publicAuthorTests": {
+    "tests": 20,
+    "skipped": 0,
+    "newAuthorCases": 2,
+    "newTocAndContentCases": 2,
+    "suiteSha256": "8d94a78c4c54fd6d6e3bf0934bbbe75d5ed2075265b17aab1cf6918014e3565f"
+  },
+  "pythonSeconds": 12.738,
+  "exactByteRebuildAccepted": true,
+  "jarSha256": "be87f00490fc53a0462c48b06cc5500c6fea80ee07ee3f48b2fde035eb83eeab",
+  "jarBytes": 285672055,
+  "jarEntryCount": 1570,
+  "ttsEditPersistenceTests": 11,
+  "ttsEditSuiteSha256": "209ae5448b99a62b2c8359c609f9dfb03e1c9ae5af52606c89dd9332e9a9c9f2",
+  "reproducibilityReportSha256": "41c6ac6c8a5c8b2444763af2a6620c1a01b95461badf95f95f05a48dfa2f2d41",
+  "opdsBackendImplemented": false,
+  "ttsRejectedResponseFixtureCount": 1,
+  "userReportsUnchanged": 58,
+  "localReaderStarted": false,
+  "realCredentialsImported": false,
+  "privateBookBodiesRead": 0,
+  "productionChanged": false,
+  "currentFinalThreeWayAccepted": false,
+  "fullGoalComplete": false,
+  "unchangedProductJarMatchesC594": false,
+  "targetHeadersActuallyExecuted": false,
+  "headerSecurityBusinessFixAccepted": false,
+  "headerSecurityThreeWayExecutedOnHostedRunner": false,
+  "sourceProxyParameterFlowCompiledAccepted": true,
+  "originalJarThreeWayAccepted": false,
+  "javaEgressHttpsBusinessChainAccepted": false,
+  "rawArtifactArchiveChecksumRecomputed": false,
+  "actualReaderHttpsBusinessGateAccepted": false
+}

@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-03",
+  "evidenceScope": "Local generated regression; hosted final source verification recorded separately",
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "originalInputsUnchanged": true,
+  "builds": {
+    "serverApiJar": {
+      "path": "build/epub-server-budget-candidate/reader-4.0.7.jar",
+      "sha256": "0687b5a83b910166256ea1235429a5008686a0551c3971ed24ff3325e7d8069b",
+      "bytes": 285642677
+    },
+    "finalUiJar": {
+      "path": "build/epub-server-budget-candidate-b/reader-4.0.7.jar",
+      "sha256": "d17b6cd32f17e98994f47f60048a26b4de5cdb82c61ce6f7b6826fc5a28f1066",
+      "bytes": 285642721
+    },
+    "backendClassBytesEqual": true,
+    "backendClasses": 1052,
+    "backendClassListingSha256": "45c522ebb8c855706004a19ee32917bee4f9d370d5b8a5aaf06273016d1e01df"
+  },
+  "effectiveFailureBaseline": {
+    "generatedOnly": true,
+    "maxPayloadBytes": 131072,
+    "suites": [
+      {
+        "suite": "ZipEntryBoundaryTest",
+        "tests": 2,
+        "failures": 2,
+        "skipped": 0,
+        "sha256": "e7a867c1aa4cff7f0bf395fd45fe672ec03c026e361b616a459da2d04c501f52"
+      },
+      {
+        "suite": "EpubLazyIntegrityTest",
+        "tests": 2,
+        "failures": 2,
+        "skipped": 0,
+        "sha256": "f6a803801df7c3bb4cd03235acf0e71959e72f9c5d753eb8d18337a0de93564b"
+      }
+    ],
+    "uiClipping": {
+      "jarSha256": "0687b5a83b910166256ea1235429a5008686a0551c3971ed24ff3325e7d8069b",
+      "tests": 1,
+      "failures": 1,
+      "skipped": 0,
+      "seconds": 8.285,
+      "sha256": "bcb7d52e0cc9febb8cbf7b01125f0e5402a32d32f72cf7b4d3dffd4105a9da79"
+    },
+    "excluded": [
+      "Initial assertThrows compilation error on old JUnit",
+      "Sandbox dependency AccessDenied failure",
+      "Unencoded reader URL in new diagnostic fixture"
+    ]
+  },
+  "root": {
+    "suites": 35,
+    "tests": 109,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 20
+  },
+  "archiveSuites": [
+    {
+      "suite": "com.htmake.reader.api.controller.DirectEpubExtractorTest",
+      "tests": 6,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.485,
+      "sha256": "f912e74d24eae9411f798f6ac206008d8fa7ffbac78bfc84606bce654752d322"
+    },
+    {
+      "suite": "com.htmake.reader.utils.ZipEntryBoundaryTest",
+      "tests": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.059,
+      "sha256": "9240a191c8d8c49eb6df4fbf02bc701d935f4e121253e6764be21098278f4e67"
+    },
+    {
+      "suite": "me.ag2s.epublib.epub.EpubLazyIntegrityTest",
+      "tests": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.072,
+      "sha256": "2d796ef8a4f647769e4b169ed556f2c577cf35ca33f9c2c1c991088638185984"
+    },
+    {
+      "suite": "me.ag2s.epublib.util.EpubArchivePolicyTest",
+      "tests": 10,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.187,
+      "sha256": "78dbee6d0923cb73ebf29c0ea443447be2ebcb34bafd302369e1b4b6b7c3ec4e"
+    }
+  ],
+  "browser": [
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewBackupTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 3.425,
+      "sha256": "61f95dfb59f00a7709527e2a4a90dbd672cc49bb507c29f409a88796ae341813"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewEpubSafetyTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 14.589,
+      "sha256": "2484f16e9229d1836c8091582cb37fd637fbae25cbe40bf4a34b8587f060b3ea"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLocalReadingTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 19.417,
+      "sha256": "0722cce3f3238e32a728fdcb8b166cfaac23b8eb4e5563956b9bd4825971445d"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewLoginTest",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 2.984,
+      "sha256": "d576ecd40e815db0497ff51c7619fd332103733dc11f58789c9313504abc30f9"
+    }
+  ],
+  "frontend": {
+    "tests": 173,
+    "passed": 173,
+    "failed": 0,
+    "skipped": 0,
+    "typeCheckPassed": true,
+    "viteBuildPassed": true
+  },
+  "safetyJourney": {
+    "malformedCases": 7,
+    "maximumEachFixtureBytes": 8192,
+    "sameNamePreviewBytesUnchanged": true,
+    "validRetryImportSaveRead": true,
+    "httpStatus": 200,
+    "failedEnvelopeFields": [
+      "isSuccess",
+      "errorMsg"
+    ],
+    "nullDataOmitted": true,
+    "readableErrorAtWidths": [
+      1280,
+      390
+    ],
+    "noPrivateBookUsed": true
+  },
+  "screenshots": [
+    {
+      "generatedOnly": true,
+      "path": "build/epub-server-budget-browser-final-20261003/vue3-epub-safety-synthetic.png",
+      "sha256": "52c26797f27bb874d5bf123013c0ccfcea57a653df262a688d155f6609612107",
+      "viewed": true
+    },
+    {
+      "generatedOnly": true,
+      "path": "build/epub-server-budget-browser-final-20261003/vue3-epub-safety-mobile-synthetic.png",
+      "sha256": "62bcc92801cdcacd513a42ee58d621c0bcc6499561a0e4bf7de0f2ccc33f058d",
+      "viewed": true
+    }
+  ],
+  "authorizedLocalEpub": {
+    "onlyExplicitlyAuthorizedBook": true,
+    "accepted": true,
+    "compressedBytes": 37809796,
+    "expandedBytes": 49382784,
+    "entries": 1673,
+    "largestEntryBytes": 1963103,
+    "scanMilliseconds": 308,
+    "jvmProcessors": 2,
+    "jvmMaxHeapMiB": 128,
+    "inputSha256": "bd8c68194bb26a3c3bc5edc7b6baa7023c584441f1c2835f71fab3a3bf3ced31",
+    "inputUnchanged": true,
+    "namesOrTextPrinted": false,
+    "uploadedToGitHub": false,
+    "wholeBookUiAcceptance": false
+  },
+  "limits": {
+    "compressedMiB": 256,
+    "expandedMiB": 1024,
+    "entryMiB": 32,
+    "textMiB": 16,
+    "entryCount": 10000,
+    "centralIndexMiB": 16,
+    "eagerTotalMiB": 64,
+    "cooperativeReadSeconds": 30
+  },
+  "productionChanged": false,
+  "formalReleasePublished": false,
+  "limitations": [
+    "20 root renderer tests skipped locally; not acceptance evidence",
+    "Byte caps are not total RSS, pixel or XML expansion limits",
+    "No complete XML schema, reparse point or concurrent replacement proof",
+    "Generic ZIP extraction is not a fully transactional restore",
+    "Server differential and final-source hosted acceptance have separate evidence"
+  ]
+}

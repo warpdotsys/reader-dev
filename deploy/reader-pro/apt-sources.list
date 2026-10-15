@@ -1,0 +1,7 @@
+# Historical Ubuntu Jammy snapshot source; no longer copied by the complete
+# Reader Dockerfile after snapshot.ubuntu.com returned persistent 5xx during
+# the 2026-09-29 hosted builds. Kept to document the previous build input,
+# not as a fallback or an active package source.
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy main universe
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy-updates main universe
+deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20250101T000000Z jammy-security main universe

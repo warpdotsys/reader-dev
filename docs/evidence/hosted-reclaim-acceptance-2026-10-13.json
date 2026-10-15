@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8dacfff3e99a1c1fac9f476386744ed2654d2fbc",
+  "testedMergeSnapshot": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+  "scope": "own hosted ordinary acceptance only; not borrowed private-book, three-way, or long-run results",
+  "consumerReceiptSha256": {
+    "verified-java-vue-small.json": "27566fc75b3f38bd40ecfffde60a5b0c959ea5e65452d21c9eb8bb7ab1d2f987",
+    "independent-full-reports.json": "24aa7fa3a029ab33fcc3c17279d2f6f941cbda87d2765b662d7dad8778fc92d7",
+    "independent-native-small-acceptance.json": "10fd5c5a8b180d801b621b7e393c51a6c84d03ab15753c8b67f82fdf269ce474",
+    "visual-review.json": "695f59d317197070908a9d1fc0c20eb1f3e8caf90e1543a02bee310ffa29ec58"
+  },
+  "independentlyAccepted": {
+    "verified-java-vue-small.json": {
+      "schemaVersion": 1,
+      "sourceRevision": "8dacfff3e99a1c1fac9f476386744ed2654d2fbc",
+      "testedMergeSnapshot": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+      "scope": "own hosted small artifacts independently accepted; no new hosted JAR or whole Native local acceptance",
+      "java": {
+        "runId": 38367712551,
+        "hostedUbuntuRunner": true,
+        "jobs": 1,
+        "conclusion": "success",
+        "junit": {
+          "counts": {
+            "tests": 222,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 35
+          },
+          "suites": 47,
+          "reportSetSha256": "ed28f42c49f64304c4dc75684664e81fb24901fe82128d8e9fd5f922692f6c1f"
+        },
+        "twoCleanBytesEqual": true,
+        "reproducibilityReportSha256": "087301e4ba1315ac9adcfc764360beb9028467f4e0bc80c072336b299598cfd5",
+        "reportedHostedJarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+        "reportedHostedJarBytes": 285683521
+      },
+      "vue": {
+        "runId": 38367712713,
+        "hostedUbuntuRunner": true,
+        "jobs": 2,
+        "conclusion": "success",
+        "junit": {
+          "counts": {
+            "tests": 25,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "suites": 25,
+          "reportSetSha256": "5d016ac78181bfdf29063666ec4480a850083c15401fb5a3ec610032a2483adb"
+        },
+        "coldFrontendTests": 376,
+        "coldFrontendFailures": 0,
+        "typecheckAndViteAccepted": true
+      },
+      "currentLocalJarBuilt": false,
+      "localAndHostedJarBytesEqual": null,
+      "hostedJarDownloadedAndRehashed": false,
+      "hostedActualAuthorizedLargeBookAccepted": false,
+      "latestWholeNativeImageLocallyAccepted": false,
+      "browserAndNativeWorkflowsAccepted": false,
+      "reportArchivesLocallyRehashed": false,
+      "screenshotsVisuallyExamined": false,
+      "productionChanged": false,
+      "goalComplete": false
+    },
+    "independent-full-reports.json": {
+      "schemaVersion": 1,
+      "sourceRevision": "8dacfff3e99a1c1fac9f476386744ed2654d2fbc",
+      "testedMergeSnapshot": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+      "fullRun": 38367712789,
+      "fullJob": 115196740069,
+      "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+      "ownFullWorkflowAccepted": true,
+      "hostedPythonTests": 760,
+      "hostedPythonSkipped": 0,
+      "hostedPythonSeconds": 11.842,
+      "fullImageUi": {
+        "schemaVersion": 1,
+        "scope": "complete-image-default-ui-generated-journey",
+        "testedRevision": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 12.236,
+        "xmlSha256": "d46218baa4363ffcc2d13a1ab9b28feb485f427e532c1b8da7b7fd0b81d1c91d",
+        "screenshots": [
+          {
+            "file": "native-default-ui-generated-login.png",
+            "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+            "bytes": 34204,
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "file": "native-default-ui-generated-shelf.png",
+            "sha256": "d1fc8dc11a2152f1280c5bcdc77bdd5d1e8a2f908921452aa0f33a8361dd8eb3",
+            "bytes": 49445,
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "file": "native-default-ui-generated-reading.png",
+            "sha256": "4792202205248c407590b1d5d9361bd188bb52a6ff8a43a31af344b2562b7e37",
+            "bytes": 33436,
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "file": "native-default-ui-generated-logout.png",
+            "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+            "bytes": 34077,
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        "clientRunsOutsideServerResourceBudget": true,
+        "realAccountOrPrivateBooksTested": false,
+        "productionOrLongRunProven": false
+      },
+      "generatedLoginAndReadingScreenshotsVisuallyReviewed": false,
+      "readerHttpsBusiness": {
+        "acceptedCurrentReaderHttpsBusinessSubset": true,
+        "generatedScenarios": 8,
+        "actualTargetRequests": 12,
+        "actualConnectTunnels": 14,
+        "parsedHeaderFields": 178,
+        "negativeCertificateControls": 2,
+        "generatedUserNamespaces": 2,
+        "proxySocketOwnershipVerifiedByLiveProducer": true,
+        "originalJarThreeWayAccepted": false,
+        "fullNativeImageLocallyAccepted": false,
+        "realSiteLoginAccepted": false,
+        "productionChanged": false,
+        "fullGoalComplete": false,
+        "acceptedCertificateHintMessages": true
+      },
+      "workerHttps": {
+        "acceptedPackagedWorkerHttpsSubset": true,
+        "positiveCases": 10,
+        "negativeCertificateControls": 2,
+        "targetRequests": 24,
+        "parsedHeaderFields": 334,
+        "readerApiOrProductionAccepted": false
+      },
+      "fullServerOnlyMemoryPeakBytes": 840212480,
+      "fullServerOnlyPidsPeak": 194,
+      "fullUiClientOutsideServerResourceBudget": true,
+      "imageBuildStepSeconds": 252,
+      "ghaCacheImportManifestObserved": true,
+      "cachedBuildStepCount": 8,
+      "cacheExportSeconds": [
+        66.9
+      ],
+      "strictSixtySecondTotalCacheExportCapProven": false,
+      "causalCacheSpeedupProven": false,
+      "latestWholeNativeImageLocallyAccepted": false,
+      "nativeWholeWorkflowAccepted": false,
+      "realBookFullAcceptance": false,
+      "rawLogOrPrivateBodiesPublished": false,
+      "productionChanged": false,
+      "goalComplete": false
+    },
+    "independent-native-small-acceptance.json": {
+      "schemaVersion": 1,
+      "sourceRevision": "8dacfff3e99a1c1fac9f476386744ed2654d2fbc",
+      "testedMergeSnapshot": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+      "nativeRunId": 38367712342,
+      "nativeSixHostedJobsAccepted": true,
+      "nativeArchitectures": [
+        "amd64",
+        "arm64"
+      ],
+      "metadata": {
+        "amd64": {
+          "schemaVersion": 1,
+          "architecture": "amd64",
+          "version": "4.0.7",
+          "revision": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+          "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+          "archiveSha256": "bee6dab53a9d8bd37e828ec3aa27b1dab18929e57618d85eb73b245035fdb7e5",
+          "imageId": "sha256:422a583e77a8e840a042fa5f85230920bc7ee43b4f226c2fdf810bdd9b6e6454"
+        },
+        "arm64": {
+          "schemaVersion": 1,
+          "architecture": "arm64",
+          "version": "4.0.7",
+          "revision": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+          "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+          "archiveSha256": "f39e0ecf9a77f54122e0e9c2f25e4e6e054004f1f629a2780784467baabe1e9a",
+          "imageId": "sha256:89dcb9271c2c3937f67af6205e77038ab190451b5fc249dba86557f261d4843c"
+        }
+      },
+      "checks": [
+        {
+          "architecture": "amd64",
+          "phase": "native",
+          "sevenProducerReportTypesAccepted": true
+        },
+        {
+          "architecture": "amd64",
+          "phase": "transferred",
+          "sevenProducerReportTypesAccepted": true
+        },
+        {
+          "architecture": "arm64",
+          "phase": "native",
+          "sevenProducerReportTypesAccepted": true
+        },
+        {
+          "architecture": "arm64",
+          "phase": "transferred",
+          "sevenProducerReportTypesAccepted": true
+        }
+      ],
+      "publisherSmallJsonFiles": 32,
+      "camoufoxContractTests": 24,
+      "hostedPythonTests": 760,
+      "hostedPythonSkipped": 0,
+      "hostedPythonSeconds": 11.842,
+      "jvmTests": 222,
+      "jvmSkipped": 35,
+      "maximumPublisherResourceSubsetMemoryBytes": 877752320,
+      "maximumPublisherResourceSubsetPids": 200,
+      "largeArchivesLocallyDownloadedOrRehashed": false,
+      "currentWholeImageLocallyAccepted": false,
+      "realBookPressureAccepted": false,
+      "rawLogsOrPrivateBodiesPublished": false,
+      "productionChanged": false,
+      "goalComplete": false
+    },
+    "visual-review.json": {
+      "schemaVersion": 1,
+      "sourceRevision": "8dacfff3e99a1c1fac9f476386744ed2654d2fbc",
+      "testedMergeSnapshot": "54abb8ea036092ab49f1c7486395b0b711d98b93",
+      "fullRun": 38367712789,
+      "reviewedGeneratedScreenshots": [
+        "native-default-ui-generated-login.png",
+        "native-default-ui-generated-reading.png"
+      ],
+      "chineseLabelsLegible": true,
+      "loginFormVisuallyPresent": true,
+      "generatedSecondChapterRendered": true,
+      "noBlankPageObserved": true,
+      "realAccountOrPrivateBookVisuallyReviewed": false,
+      "allPossibleUiEncodingBugsExcluded": false,
+      "productionReviewed": false
+    }
+  },
+  "productionChanged": false,
+  "registryPublished": false,
+  "releaseCreated": false,
+  "goalComplete": false
+}

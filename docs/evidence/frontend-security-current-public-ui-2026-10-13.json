@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "548a387949a40b1ce06fac0ba9d44c3d6c39c65a",
+  "runId": 38357513168,
+  "actualHostedJob": 115163730479,
+  "artifactId": 11793606650,
+  "artifactZipSha256": "06557a96b3aa7255c9e79c50839d925fa6e2f1d7d48c988851657f7448933c41",
+  "artifactZipDigestRecomputed": true,
+  "allExtractedBytesMatchExactArchive": true,
+  "nativeSourceRun": 38354402243,
+  "imageRevision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+  "imageId": "sha256:de1f40226f5946cd56bc4bf04b0c030ba9dd933ce393024771e88bfa133b061f",
+  "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+  "actualUiAcceptedSubset": {
+    "accepted": true,
+    "actualUiApiResponseCounts": {
+      "getBookContent": 3,
+      "getBookInfo": 3,
+      "getChapterList": 2,
+      "login": 2,
+      "logout": 2,
+      "saveBook": 1,
+      "saveBookProgress": 3
+    },
+    "combinedTwoGiBBudgetProven": false,
+    "expectedImageRevision": "87b0e768951ff0e4e063a095d50138a36aefab04",
+    "fullGoalComplete": false,
+    "jarSha256": "16f432e5341da9f89a55d82d10b383cd25c5c4cd74b82eebb3fa797071fc6e5a",
+    "paintedIndices": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "productionChanged": false
+  },
+  "actualNetworkUiBusinessPassed": true,
+  "wholeFixedAnonymousUiAcceptancePassed": true,
+  "loginAndLogoutPicturesPassedMachinePixelGate": {
+    "login": {
+      "distinctPixelValues": 1122,
+      "height": 900,
+      "nonDominantPixels": 29940,
+      "width": 1280
+    },
+    "logout": {
+      "distinctPixelValues": 1113,
+      "height": 900,
+      "nonDominantPixels": 29940,
+      "width": 1280
+    }
+  },
+  "bodyPicturesExported": false,
+  "uiElapsedSeconds": 29.428,
+  "paintedIndices": [
+    0,
+    1,
+    1,
+    0
+  ],
+  "paintedCharacters": [
+    6822,
+    7332,
+    7332,
+    6822
+  ],
+  "linuxValidationPythonTests": 755,
+  "linuxValidationPythonSkipped": 0,
+  "serverLifetimeBudget": {
+    "architecture": "x86_64",
+    "cgroupRoot": "/sys/fs/cgroup",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 962293760,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryHighBytes": "max",
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1047453696,
+    "memoryStatBytes": {
+      "active_file": 131072,
+      "anon": 885956608,
+      "file": 55443456,
+      "file_dirty": 0,
+      "file_mapped": 39415808,
+      "file_writeback": 0,
+      "inactive_file": 5885952,
+      "kernel": 20787200,
+      "kernel_stack": 3260416,
+      "pagetables": 9097216,
+      "shmem": 49426432,
+      "slab_reclaimable": 3519312,
+      "slab_unreclaimable": 4780856,
+      "sock": 0
+    },
+    "pidsCurrent": 199,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 199,
+    "scope": "same Reader server lifetime: API then actual default UI; test client excluded",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "externalClientBudget": {
+    "architecture": "x86_64",
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryCurrentBytes": 94449664,
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryHighBytes": "max",
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 799674368,
+    "memoryStatBytes": {
+      "active_file": 0,
+      "anon": 80719872,
+      "file": 5763072,
+      "file_dirty": 5672960,
+      "file_mapped": 0,
+      "file_writeback": 0,
+      "inactive_file": 5763072,
+      "kernel": 7303168,
+      "kernel_stack": 49152,
+      "pagetables": 4370432,
+      "shmem": 0,
+      "slab_reclaimable": 2590832,
+      "slab_unreclaimable": 274504,
+      "sock": 0
+    },
+    "pidsCurrent": 3,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 166,
+    "scope": "disposable packaged-browser UI test CLIENT only; Reader server excluded",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 0
+  },
+  "combinedTwoGiBBudgetProven": false,
+  "sourceRulesSeededByApiNotUi": true,
+  "generatedSessionRevoked": true,
+  "ownedContainersRemoved": true,
+  "rawBodyOrRealCredentialsPersisted": false,
+  "privateLocalBooksRead": 0,
+  "userReportsUnchanged": 58,
+  "productionChanged": false,
+  "originalOrRemoteParityProven": false,
+  "fullGoalComplete": false,
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "sha256": "c42fc6be4c30a5b7b673f1324e4a0f4bbbc5e5ce0bfe057f7c8184a28832a872"
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "name": "GUTENBERG_REPORT.json",
+      "sha256": "a99ce02e3a92ab857d95b83325721ebbec9de560f779e42e67213f8e546aab03"
+    },
+    {
+      "name": "GUTENBERG_UI_REPORT.json",
+      "sha256": "3420f2a33495f377a0ee2a14bc5054f7ae1473085fc5df86540f11b776cdaa04"
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "sha256": "b232baa25ce4befc89a0d4e60b851538b4800a75cc5b112124103e4705b9a27c"
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "sha256": "766d41e6a0ac29ee81e71d18b6c8220f0f6aa9bf2791dc69b57df3b32bccf5cd"
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "sha256": "09080ce59a73a8299915ece5c70d6f27c492556f38d8486b390762ee609c8be6"
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "sha256": "eefee29be8a7fa19eb38b6b86a3ade6391cf339e9a3d0fb54acbbdad48f9e740"
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "sha256": "9c7f57ca20af1f502ade456164b055f7bcd3546a2ea7dc44231167a8a5fa822e"
+    },
+    {
+      "name": "UI_BROWSER_RESOURCE_BUDGET.json",
+      "sha256": "2b7f963a09acdc2a24a350edbf21d8b6c29a05994c3b75c07b223fbdb217ea67"
+    },
+    {
+      "name": "UI_CLIENT_CLEANUP.json",
+      "sha256": "1d150ed09774f2dfe5356883c49ec416c245cab300146a207ab8efdf1c2c261f"
+    },
+    {
+      "name": "UI_SERVER_RESOURCE_BUDGET.json",
+      "sha256": "4a0c63b79846f360639bd502b35da0009fb6da4958dfc0ba5bb1c6de1cba4751"
+    },
+    {
+      "name": "WORKER_DIAGNOSTICS.json",
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    },
+    {
+      "name": "ui-login.png",
+      "sha256": "7d1f0a014abb92ce90bc63a7bef092f868176fdbef196dda0b42d3c9b49fbdee"
+    },
+    {
+      "name": "ui-logout.png",
+      "sha256": "40c21761781367d6ea9f13f22c4004dcc608c1e91738a09019ed9da28688f356"
+    }
+  ],
+  "rawReceiptSha256": "8910f0043fc39eb418968c1ec1d3bc6afcc0dd12ab77dec65274a8cc52c4762b",
+  "productSourceRevision": "548a387949a40b1ce06fac0ba9d44c3d6c39c65a",
+  "probeAndProductRevisionsExplicitlyBound": true,
+  "mainAgentActuallyViewedLoginAndLogoutPictures": true,
+  "chineseLoginAndLogoutTextReadable": true,
+  "blankLoginOrLogoutPageObserved": false,
+  "currentOriginalRemoteCamThreeWayAccepted": false,
+  "currentPrivateBookOrRealSiteAuthenticationAccepted": false,
+  "currentThirtyMinuteSoaksAccepted": false
+}

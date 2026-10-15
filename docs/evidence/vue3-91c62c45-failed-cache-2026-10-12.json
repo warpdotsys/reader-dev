@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "91c62c451ecbad6fb4b63a56457702890e1611af",
+  "testedMergeSnapshot": "618f3454416872988902ff0c496df9a6edfaab66",
+  "vueRunId": 38235053059,
+  "workflowTerminalConclusion": "failure",
+  "browserTests": 22,
+  "failed": 5,
+  "passed": 17,
+  "skipped": 0,
+  "errors": 0,
+  "failures": [
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewGroupTest",
+      "test": "groupCrudAndMultiMembershipUseLegacyStorageContract",
+      "finiteFailure": "malformed_metadata_json_541"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewReadingTest",
+      "test": "bookDetailTocReadingRefreshAndExportRender",
+      "finiteFailure": "malformed_metadata_json_541"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewSearchTest",
+      "test": "exactSearchThenSelectedSourceSearch",
+      "finiteFailure": "unshelved_content_unavailable"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewShelfLayoutTest",
+      "test": "hiddenAndHoveredPreviewsStayInsideShelfAtAllDensities",
+      "finiteFailure": "malformed_metadata_json_541"
+    },
+    {
+      "suite": "com.medwarp.reader.browserpoc.Vue3PreviewTtsCacheIsolationTest",
+      "test": "fullTextAudioCacheAndSettingsRemainInTheirOwnAccount",
+      "finiteFailure": "malformed_metadata_json_541"
+    }
+  ],
+  "artifactId": 11739879398,
+  "artifactZipDigestFromGithub": "sha256:623e3c28ed5759c0d6d8a8bb6c31451002af902c356a8849da23ddeaed2bb39f",
+  "artifactZipLocallyRehashed": false,
+  "testsDisabledOrTimeoutExtendedOrRunReplaced": false,
+  "oldGeneratedConcurrencyXmlSha256": "8f6ff264d684e4b79030ecace6f53b7eece9757e03e317f139e98c3e72efc436",
+  "oldACacheSourceSha256": "fc7e5404cfb966cea3399241499981d015e8cb5a5704a8f82ba81b85abb2291f",
+  "oldGeneratedStringInvalidReads": 81,
+  "generatedOnlyCacheFixture": true,
+  "cacheRaceUniqueCauseOfAllFiveFailuresProven": false,
+  "newCandidateHostedAccepted": false,
+  "rawBodiesLogsOrScreenshotsPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

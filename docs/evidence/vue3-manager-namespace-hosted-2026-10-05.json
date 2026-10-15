@@ -1,0 +1,53 @@
+{
+  "source": "91cc9f70d83e237753af1623d7140a583690120a",
+  "testedPrMergeRevision": "c10642dd1d5be40d4469a354c34b50ddc37ca5d9",
+  "scope": "GitHub-hosted generated journeys and short native image tests, not production or new original-JAR/authenticated-site parity",
+  "workflows": {
+    "javaKotlin": { "run": 37263104356, "conclusion": "success" },
+    "vue3": { "run": 37263104353, "conclusion": "failure" },
+    "browserImage": { "run": 37263104394, "conclusion": "success" },
+    "nativeRehearsal": { "run": 37263104377, "conclusion": "success" }
+  },
+  "core": {
+    "artifactId": 11325531280,
+    "artifactBytes": 8927,
+    "xmlReportsIndividuallyRead": 15,
+    "tests": 15,
+    "passed": 14,
+    "skipped": 0,
+    "failures": 1,
+    "errors": 0,
+    "failure": {
+      "class": "Vue3PreviewShelfLayoutTest",
+      "message": "hidden width=1024 density=0: {viewport=1024, document=1049}",
+      "seconds": 3.791,
+      "xmlSha256": "0463967021b2e36c589c2363aa253fcaea092b1622650a287ceb076e63386658"
+    },
+    "managerAndSubdirectory": "Not executed after the preceding failure; no success claimed"
+  },
+  "native": {
+    "artifactId": 11325885380,
+    "artifactBytes": 7070,
+    "actualJsonReportsAudited": 20,
+    "identityCookieRequestResourceFieldsPassed": true,
+    "sharedJarSha256": "dab3d36ceb895a1d836ae1bfa4c310132de577bbaaacfc4183b3fe0a9495ca83",
+    "nativeJobs": 6,
+    "runnerLabels": ["ubuntu-24.04", "ubuntu-24.04-arm"],
+    "observedMemoryPeakBytes": { "amd64Producer": 777244672, "amd64Consumer": 743751680, "arm64Producer": 849682432, "arm64Consumer": 771645440 },
+    "allActualSwapBytes": 0
+  },
+  "fullImageSmoke": {
+    "artifactId": 11325896465,
+    "artifactBytes": 895,
+    "jsonReportsAudited": 2,
+    "identityCookieRequestResourceFieldsPassed": true,
+    "memoryPeakBytes": 813375488,
+    "pidsPeak": 175,
+    "actualSwapBytes": 0,
+    "budgetSha256": "09abda90bc0af3825eef7813345ff3e33149f3afe5a43dc4915928e67117553c",
+    "syntheticSha256": "4b6eeb5c81bdfd7ae159f5492fcecb3e02d05014eb1a0247aa6bfaa15b533a2b"
+  },
+  "camoufoxContract": { "artifactId": 11325770461, "artifactBytes": 922, "tests": 12, "skipped": 0, "failures": 0, "errors": 0, "seconds": 103.351, "xmlSha256": "57d994453f35a393373c3c997daccedb33f7b4c1ac67745e27a80abd7cffe0d9" },
+  "resourceBudget": { "cpuQuota": 200000, "cpuPeriod": 100000, "memoryMaxBytes": 2147483648, "pidsMax": 256, "memoryLimitAndOomEvents": 0, "pidMaxEvents": 0, "configuredSwapMaxBytes": 1073741824 },
+  "limits": ["Native consumer import is not registry publication", "Archived original provenance, remote reference and soak gates were skipped", "Local layout fix still requires a new source-specific hosted run", "No large image artifact downloaded to the local machine"]
+}

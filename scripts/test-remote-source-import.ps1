@@ -7,7 +7,11 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 if (-not $JavaHome) { $JavaHome = Join-Path $root ".tools\jdk-11.0.8" }
-if (-not $Jar) { $Jar = Join-Path $root "build\libs\reader-4.0.7.jar" }
+if (-not $Jar) {
+    . (Join-Path $PSScriptRoot 'reader-project-version.ps1')
+    $buildVersion = Get-ReaderBuildVersion -ProjectRoot $root
+    $Jar = Join-Path $root "build\libs\reader-$buildVersion.jar"
+}
 $java = Join-Path $JavaHome "bin\java.exe"
 $python = (Get-Command python -ErrorAction Stop).Source
 foreach ($path in @($java, $python, $Jar)) {

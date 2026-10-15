@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "runId": 37728643627,
+  "probeRevision": "ce12b21bd7ca521eb918608896da7b6a7c42979d",
+  "nativeSourceRevision": "ba3ce4789577d04d7465c9cd6ac7c3a33e84a538",
+  "runtimeRevision": "7e4b9e509822473c6d98d17c8bb0b922fe28a406",
+  "jarSha256": "61fdc23d71c8ad0c68e120500223562f94186190d595fc6ec172657c9dcf2dde",
+  "imageId": "sha256:a651cf756ed697564f5b6126981522df4be9bb38ecf208fd8af045ebd8bc6d91",
+  "diagnosticEvidenceAccepted": true,
+  "businessProbePassed": false,
+  "userAgentMode": "browser-native",
+  "browserUserAgentActuallyObserved": false,
+  "earlierControlRun": 37722140916,
+  "earlierControlMetadataReportSha256": "c3eeeb2c6f8889f986271672e5f99530b44c6f7755f7c8e60dfed81dae49e780",
+  "completeFiniteMetadataObservationMatchesControl": true,
+  "uniqueCauseProven": false,
+  "observedHttpStatus": 200,
+  "responseSuccessWithoutMetadata": true,
+  "snapshotStructure": {
+    "bodyHasChildElements": false,
+    "frameElementPresent": false,
+    "headScriptElementPresent": true,
+    "headTitleElementPresent": false,
+    "rawBodyTagHint": true,
+    "rawEmpty": false,
+    "rawHeadTagHint": true,
+    "rawHtmlTagHint": true,
+    "rawWhitespaceOnly": false
+  },
+  "requestSeconds": 5.85,
+  "memoryPeakBytes": 812363776,
+  "pidsPeak": 183,
+  "requireNoSwap": true,
+  "reportedOwnedContainerRemoved": true,
+  "independentHostRemainingContainerCount": null,
+  "rawArchiveDigestRecomputedLocally": false,
+  "userReportsUnchanged": 58,
+  "realCredentialsImported": false,
+  "chapterBodyRequested": false,
+  "productionChanged": false,
+  "fullGoalComplete": false,
+  "files": [
+    {
+      "name": "CLEANUP.json",
+      "bytes": 54,
+      "sha256": "c256d8a652691358459ff212e02f1f65441921150336566dfc4d3cde948fd2ff"
+    },
+    {
+      "name": "CONTAINER_STATE.json",
+      "bytes": 61,
+      "sha256": "16ca3db095e6346d1caa932322db258fe14cf74eeb66723ae1d75ff9110ba91b"
+    },
+    {
+      "name": "LOADED_IDENTITY.json",
+      "bytes": 259,
+      "sha256": "d89a13c270ed3fe43c8679ce2a38f886e88341386067f896703f7bc0f433028e"
+    },
+    {
+      "name": "PRELOAD_IDENTITY.json",
+      "bytes": 258,
+      "sha256": "474d5b70e722900a33766b040681174143c677479f5eb6e227a5ee8e62e3e77d"
+    },
+    {
+      "name": "PUBLIC_METADATA_REPORT.json",
+      "bytes": 3495,
+      "sha256": "7f81c7d9f08f0f2237cb68e155cfbe5b4207ccb769eaf7a01cdc56b3b56dbf44"
+    },
+    {
+      "name": "RUNNING_JAR_IDENTITY.json",
+      "bytes": 190,
+      "sha256": "8dd2a3a9b9aa054504f783ba3bc181d2657129f0cfc33954eb94916abcdecc9d"
+    },
+    {
+      "name": "RUNTIME_RESOURCE_BUDGET.json",
+      "bytes": 923,
+      "sha256": "18dffba439bb54f499eda6e793936ed674ba0de1a9507e2c0ffeeb7aa0485a0f"
+    },
+    {
+      "name": "SOURCE_RUN.json",
+      "bytes": 316,
+      "sha256": "afa593c1d0d25fbbef7aff5b895e92c9c3553617c30b9cfa82216c25aa42dfc9"
+    },
+    {
+      "name": "WORKER_DIAGNOSTICS.json",
+      "bytes": 165,
+      "sha256": "98f87440cae5edae6f26a09c3d220d3a2dadc19b3e46b65751810acaef0f2fc8"
+    }
+  ]
+}

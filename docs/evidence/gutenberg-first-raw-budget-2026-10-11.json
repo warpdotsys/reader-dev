@@ -1,0 +1,43 @@
+{
+  "architecture": "x86_64",
+  "cpuPeriod": 100000,
+  "cpuQuota": "200000",
+  "kernel": "6.17.0-1022-azure",
+  "memoryCurrentBytes": 360075264,
+  "memoryEvents": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "memoryHighBytes": "max",
+  "memoryMaxBytes": 2147483648,
+  "memoryPeakBytes": 851341312,
+  "memoryStatBytes": {
+    "active_file": 131072,
+    "anon": 348094464,
+    "file": 5951488,
+    "file_dirty": 5701632,
+    "file_mapped": 32768,
+    "file_writeback": 0,
+    "inactive_file": 5734400,
+    "kernel": 5500928,
+    "kernel_stack": 573440,
+    "pagetables": 1200128,
+    "shmem": 86016,
+    "slab_reclaimable": 2971728,
+    "slab_unreclaimable": 700280,
+    "sock": 0
+  },
+  "pidsCurrent": 35,
+  "pidsEvents": {
+    "max": 0
+  },
+  "pidsMax": 256,
+  "pidsPeak": 180,
+  "scope": "fixed Gutenberg anonymous bundled Reader; three finite business calls",
+  "swapCurrentBytes": 0,
+  "swapMaxBytes": 0
+}

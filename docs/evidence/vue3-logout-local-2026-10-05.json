@@ -1,0 +1,232 @@
+{
+  "scope": "generated local accounts only; no private body, website cookies, production mutation or new original JAR HTTP blackbox",
+  "originalJarSha256Rechecked": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "baseline": {
+    "jarSha256": "4efb5598e505ddb8fbc316e4944b2a331ce39a524be6c7c83a7c8f36970d848e",
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0, "seconds": 29.102,
+    "testSourceSha256": "845a767eb2e838c396355f283d25d5925e0e48f0130c3998ce72c00abb4c66b7",
+    "xmlSha256": "de2095af411ca8a96e8921eabaedb68d519566757b63cc4b8810c769cf0ae6ba",
+    "reason": "actual button displayed login page but no POST /reader3/logout observed before 10s timeout",
+    "directory": "build/logout-isolation-20261005-a/logout-before",
+    "screenshotViewed": true
+  },
+  "candidate": {
+    "jarSha256": "2e7ba6f499b4f9cc17d0aec2e150048e17b912d5e83bc168ddc523af62414742",
+    "packagedUiFilesByteAudited": 81,
+    "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 32.049,
+    "testSourceSha256": "7022fb2a357afa3573da2d46168510debace5de80f3570000c40689a080df59d",
+    "xmlSha256": "fdd796884116e6b3704b61ec5004799705bd8faad96b397c198bc71099b47f13",
+    "completionMarkerAudited": true,
+    "allThreeGeneratedScreenshotsViewed": true,
+    "actualAcceptedTokenAfterOfflineLogout": true,
+    "directory": "build/logout-isolation-20261005-a/logout-after"
+  },
+  "frontendTests": { "tests": 225, "failed": 0, "skipped": 0, "cancelled": 0 },
+  "typecheck": "passed",
+  "productionUiBuild": "passed",
+  "registeredLiteralRoutes": "92/92; logout dynamic query checked by actual UI test",
+  "releaseSafetyTests": { "tests": 47, "failed": 0, "skipped": 0, "cancelled": 0 },
+  "actionlint": "passed",
+  "sourceSha256": {
+    "logoutSession.ts": "5b78423f904d62ab1e63bfb2ac083b776b6e7a6921435d998d7a9564a8c54359",
+    "auth.ts": "bfb0fcc44afb18b7ac212b2668962e21584251c23671896071098f3f346aa7aa",
+    "user.ts": "288f08bc4d3c890ac63efb20cc46f4f99f9434b28879b7e82bcf1216f4154832",
+    "Vue3PreviewCrossTabTest.java": "5052a34346fc4e280aaf3866b43267c6782c3f0aa1059f5fa417610b05f2d58c"
+  },
+  "coreAndManagerRegression": {
+  "uniqueClasses": 19,
+  "tests": 19,
+  "skipped": 0,
+  "failures": 0,
+  "errors": 0,
+  "coreDirectory": "build/logout-isolation-20261005-a/logout-core",
+  "core": [
+    {
+      "name": "Login",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 2.985,
+      "xmlSha256": "d1324185921466fba007b6a33f39cba3f7c66d17ed33a8858b01bce90dbd38e1"
+    },
+    {
+      "name": "Logout",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 34.361,
+      "xmlSha256": "77dd91a82f559cc07971b50eaffe325a94a17bdd6f7bde16231acb4eee32bcc6"
+    },
+    {
+      "name": "Reading",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.519,
+      "xmlSha256": "9b7a54b2218e59ab0f8e87eb1b72aaf690ab921aa54a1d7f6e3608356a5c6e7f"
+    },
+    {
+      "name": "LocalReading",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 22.1,
+      "xmlSha256": "b2e318ab977ee115d4217ca9888bc40d2059c96ee4c6ad997c78dedd6ca8912c"
+    },
+    {
+      "name": "LocalCacheIsolation",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 5.622,
+      "xmlSha256": "302a8cea110b3f26cecb2e133d54582a762ca50d4b71ef9a5c83ff6c62a6964f"
+    },
+    {
+      "name": "SessionRace",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 17.404,
+      "xmlSha256": "9a67faf2d6fdfdb62f88391adedfdda922eb5a9ab6fbcce8a4071f5c938138f3"
+    },
+    {
+      "name": "CrossTab",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 22.754,
+      "xmlSha256": "2c455b2149baf009166aab2d53464dfe67b0e0b95c823306ecae8a1af89df47d"
+    },
+    {
+      "name": "ShelfOfflineIsolation",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 7.946,
+      "xmlSha256": "683b2538e2f0a548758976012823c5d5c64080769dc67c2b179bbf6e34600fba"
+    },
+    {
+      "name": "EpubSafety",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 10.143,
+      "xmlSha256": "b2dd319b593905cdac953b66818319404e7d2745bd21194504ef0dae82c9d9bd"
+    },
+    {
+      "name": "ShelfLayout",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 7.659,
+      "xmlSha256": "0d86446ce95518e9e8b8c10dc04a658b8c04c085da92dad7f909d892f31a2d41"
+    },
+    {
+      "name": "Search",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 5.103,
+      "xmlSha256": "910ffd510375c9d0151d97651e401b88ba9e5b5350fed8474777934f63e89f6a"
+    },
+    {
+      "name": "Source",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 5.437,
+      "xmlSha256": "33a502a4ec7444a49ae1e898d5e4e2ee8bec3cb3eb78dc8f06399c77f171ac11"
+    },
+    {
+      "name": "SourceCookie",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 12.601,
+      "xmlSha256": "2351657b484c42896df3969199d095f45dc1ea64788b3070427b037230cac4dd"
+    },
+    {
+      "name": "Group",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 6.68,
+      "xmlSha256": "290d7f4369261c8707e58eda83acf989ea0bf37cc98c37ffbf361d35031c0db8"
+    },
+    {
+      "name": "ReplaceRule",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 5.865,
+      "xmlSha256": "faed413cf2c8d12ec1ed952505f94f0e18b7eadf456a895e12330d59396cd6fc"
+    },
+    {
+      "name": "File",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.938,
+      "xmlSha256": "d46db77581813e5b3a56a8c832a0830d90cdb1cbc0b6df99d13e432881abe2de"
+    },
+    {
+      "name": "Backup",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 7.981,
+      "xmlSha256": "2e93b7810016ec86a9c69d45d43f1b68459714be19aa71cebf5ff26dadaec4db"
+    }
+  ],
+  "managerDirectory": "build/legacy-manager-20261005-a/logout-manager",
+  "manager": [
+    {
+      "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewManagerNamespaceTest.xml",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 9.986,
+      "xmlSha256": "c736c8b2da751a871dce568607ce80c786e80bb7ba4f5e992b1d0a19f4582728"
+    },
+    {
+      "name": "TEST-com.medwarp.reader.browserpoc.Vue3PreviewSecureFileTest.xml",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 2.841,
+      "xmlSha256": "e3c7b62c98bf8a97fdf71d24964e44fb29adeed96e4487df2128c11beed83696"
+    }
+  ],
+  "scope": "generated local Chromium journeys; not hosted, private bodies or full production acceptance"
+},
+  "hostedVerification": {
+    "source": "db7f0a6b5aed082477a117a1746ae9c14853ae58",
+    "receipt": "vue3-logout-hosted-db7f0a6b-2026-10-05.json",
+    "allFourWorkflowsPassed": true,
+    "actualUiTestsIndividuallyAudited": 20,
+    "actualCamoufoxTestsAudited": 12,
+    "actualNativeJsonReportsAudited": 20,
+    "actualSingleImageJsonReportsAudited": 2,
+    "note": "15d0186e proof still belongs only to its previous source"
+  },
+  "limits": ["no all-device logout", "offline token may remain valid", "late logout UI race only unit-covered", "footer overlap and stacked notices observed", "no full production or real authenticated three-way acceptance"]
+}

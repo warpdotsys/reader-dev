@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "scope": "exact helper and tests with isolated minimal patched dependency probe; not full frontend or browser acceptance",
+  "basedOnRevision": "b2ed46bcfb524deec155c91dc694748d7f8f186e",
+  "productSourceChangesIncluded": true,
+  "versions": {
+    "axios": "1.20.0",
+    "vue": "3.5.42",
+    "@vue/server-renderer": "3.5.42",
+    "nanoid": "3.3.18",
+    "source-map-js": "1.2.2"
+  },
+  "sourceSha256": {
+    "web-vue3/package.json": "372f1340d7d9430b15e97d5de29138e1253a588f8fd2fa10d060fc68eed1b117",
+    "web-vue3/package-lock.json": "77228c43fb5578a8203260f8bdcef2521309fa86a4038548020a4e43d3634928",
+    "web-vue3/src/api/readerFetch.ts": "456534a965d984700d5e1068f4fa172e1574a94f2934e0618cc1cebdf19cce62",
+    "web-vue3/src/api/readerFetch.test.ts": "8acb36636a462baefc2976f3d82b98a7ef0da61844c104bbd1148658d6cbd6f0",
+    "web-vue3/src/api/request.ts": "2a385481abda20a65e9e551dd7742245657d66c9cd1ef77323eef75ae54608fe",
+    "web-vue3/src/utils/dependencySecurity.test.mjs": "8dea5fb19d964657fd55bfeb7145eb378cdcdbdfe76d619969fe942600518639"
+  },
+  "exactProductHelperAndTestBytesUsed": true,
+  "localProbe": {
+    "tests": 10,
+    "failures": 0,
+    "skipped": 0,
+    "nodeVersion": "v24.19.0",
+    "childMaximumJavascriptHeapMiB": 128,
+    "childTimeoutMilliseconds": 5000,
+    "realUsersCookiesOrPrivateBodyImported": false
+  },
+  "unguardedPatchedAxiosCounterexampleRetained": {
+    "runtime": "Node 24.19 fetch",
+    "resolvedRequestHeadersCorrect": true,
+    "secondFetchInitMissingOwnHeadersAndMethod": true,
+    "inheritedAuthorizationObservedAtGeneratedLoopbackServer": true
+  },
+  "rejectedProbeAttempts": [
+    {
+      "pass": 3,
+      "fail": 2,
+      "reason": "nonwritable pollution descriptor and indexed query boundary sample"
+    },
+    {
+      "pass": 4,
+      "fail": 1,
+      "reason": "real inherited-header observation, not accepted"
+    },
+    {
+      "pass": 9,
+      "fail": 1,
+      "reason": "Node default FormData MIME also wrong without guard; explicit multipart fixture used"
+    }
+  ],
+  "productionLockAudit": {
+    "high": 0,
+    "critical": 0,
+    "total": 0,
+    "onlyCurrentRegisteredDependencyAdvisories": true
+  },
+  "unrelatedLockPackageRecordsChanged": false,
+  "javaKotlinOrUserStorageChanged": false,
+  "fullFrontendColdInstallTestsAccepted": false,
+  "fullVueTypecheckAccepted": false,
+  "hostedNewCandidateAccepted": false,
+  "latestWholeNativeLocallyAccepted": false,
+  "remainingOriginalAndRemoteThreeWayAccepted": false,
+  "released": false,
+  "merged": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

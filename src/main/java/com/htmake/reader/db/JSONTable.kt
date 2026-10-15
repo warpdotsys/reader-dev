@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject
 import com.htmake.reader.utils.getStorage
 import com.htmake.reader.utils.saveStorage
 import com.htmake.reader.utils.asJsonArray
+import com.htmake.reader.utils.withStorageWriteLock
 
 /**
  * JSON file-based table implementation using getStorage/saveStorage pattern.
@@ -32,7 +33,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         entity: T,
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)?,
         checker: (JsonObject, T) -> Boolean
-    ) {
+    ) = withStorageWriteLock("data", userNameSpace, name) {
         var allData = readAll()
         var existingIndex = -1
 
@@ -61,7 +62,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         entities: Array<T>,
         onCheckEnd: ((T, Boolean, JsonArray) -> Unit)?,
         checker: (JsonObject, T) -> Boolean
-    ) {
+    ) = withStorageWriteLock("data", userNameSpace, name) {
         var allData = readAll()
 
         for (entity in entities) {
@@ -87,7 +88,7 @@ class JSONTable<T>(userNameSpace: String, name: String) : DB<T>(userNameSpace, n
         save()
     }
 
-    override fun delete(predicate: (JsonObject) -> Boolean) {
+    override fun delete(predicate: (JsonObject) -> Boolean) = withStorageWriteLock("data", userNameSpace, name) {
         var allData = readAll()
         val removeIndexes = ArrayList<Int>()
         for (i in 0 until allData.size()) {

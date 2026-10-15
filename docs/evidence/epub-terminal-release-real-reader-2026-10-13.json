@@ -1,0 +1,757 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "1dd6979d4f05c0cc075e59b99aabce6b3681f18c",
+  "testedMergeSnapshot": "2651c7d1b25f4aeb9c6ec7dd90245d600fa065c4",
+  "jarSha256": "a031311612b75c9fbfe80e8323dd52cc3eca992701c6e311b491e60effdd0c83",
+  "jarBytes": 285674123,
+  "jarIndependentlyDownloadedAndRebuiltBytesEqual": true,
+  "backendDependenciesAndBrowserWorkerUnchanged": true,
+  "vueResourcesOnlyChanged": true,
+  "scope": "exact new JAR, original-generated account UI chain and full-reading attempts; metadata classifier corrected",
+  "runs": [
+    {
+      "probe": "z",
+      "rawReportSha256": "cc8e5254de49da262ebdddcbe1e83f8fef92f40b59b583ffb44c8d4fbb91a64f",
+      "hostProbeSha256": "28aa5d77b4b48d8a713c0e7f276e904e684fec80b8d553a3e9b2f3404bba9115",
+      "pressureProbeSha256": "296e4b40ef92c1c498bfaa22140af23daa7f6f8af6701c8ffb41ea531ca03cdc",
+      "actualUiProbeSha256": "e93c86dfafe9fba29eec277f5cb3b3273610a5a524091b5cc62a5aea318a1646",
+      "readingPassed": false,
+      "readingCasesCompleted": 6,
+      "readingCasesRequired": 8,
+      "caseNames": [
+        "text805",
+        "text806",
+        "text806Refresh",
+        "html806",
+        "raw806",
+        "raw805"
+      ],
+      "authChecksAccepted": true,
+      "failurePhase": "worker-expanding-on-raw805-refresh",
+      "processNameOnlyClassifierAmbiguous": true,
+      "classificationUsesExecutableBasename": false,
+      "phaseMemorySamples": [
+        {
+          "phase": "uiWrongPassword",
+          "cgroupAnonBytes": 627572736,
+          "cgroupFileBytes": 955187200,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 78356480,
+              "statusRssFileBytesSum": 22753280,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 239833088,
+              "statusRssFileBytesSum": 26906624,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 253075456,
+              "statusRssFileBytesSum": 190529536,
+              "statusRssShmemBytesSum": 45064192,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9199616,
+              "statusRssFileBytesSum": 25972736,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 23040000,
+              "statusRssFileBytesSum": 54763520,
+              "statusRssShmemBytesSum": 598016,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 45203456,
+              "statusRssFileBytesSum": 148623360,
+              "statusRssShmemBytesSum": 18681856,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "cgroupAnonBytes": 879722496,
+          "cgroupFileBytes": 699748352,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 79515648,
+              "statusRssFileBytesSum": 15769600,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 244633600,
+              "statusRssFileBytesSum": 26873856,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 409735168,
+              "statusRssFileBytesSum": 189034496,
+              "statusRssShmemBytesSum": 45232128,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9199616,
+              "statusRssFileBytesSum": 25972736,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 33214464,
+              "statusRssFileBytesSum": 75059200,
+              "statusRssShmemBytesSum": 897024,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 132739072,
+              "statusRssFileBytesSum": 181923840,
+              "statusRssShmemBytesSum": 22798336,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "cgroupAnonBytes": 1086504960,
+          "cgroupFileBytes": 487391232,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 81526784,
+              "statusRssFileBytesSum": 5787648,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 292745216,
+              "statusRssFileBytesSum": 16601088,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 534732800,
+              "statusRssFileBytesSum": 160735232,
+              "statusRssShmemBytesSum": 45301760,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9203712,
+              "statusRssFileBytesSum": 23769088,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 33296384,
+              "statusRssFileBytesSum": 72888320,
+              "statusRssShmemBytesSum": 897024,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 172716032,
+              "statusRssFileBytesSum": 281026560,
+              "statusRssShmemBytesSum": 34299904,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRaw806",
+          "cgroupAnonBytes": 1069817856,
+          "cgroupFileBytes": 505122816,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 81788928,
+              "statusRssFileBytesSum": 7241728,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 310747136,
+              "statusRssFileBytesSum": 16998400,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 447975424,
+              "statusRssFileBytesSum": 150863872,
+              "statusRssShmemBytesSum": 45256704,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9203712,
+              "statusRssFileBytesSum": 23769088,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 33296384,
+              "statusRssFileBytesSum": 72888320,
+              "statusRssShmemBytesSum": 897024,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 216236032,
+              "statusRssFileBytesSum": 189702144,
+              "statusRssShmemBytesSum": 27000832,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRaw805Refresh",
+          "cgroupAnonBytes": 986886144,
+          "cgroupFileBytes": 564150272,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 81956864,
+              "statusRssFileBytesSum": 3870720,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 317136896,
+              "statusRssFileBytesSum": 16556032,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 365334528,
+              "statusRssFileBytesSum": 79572992,
+              "statusRssShmemBytesSum": 45551616,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9203712,
+              "statusRssFileBytesSum": 16384,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 33296384,
+              "statusRssFileBytesSum": 49152,
+              "statusRssShmemBytesSum": 897024,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 209215488,
+              "statusRssFileBytesSum": 81342464,
+              "statusRssShmemBytesSum": 18849792,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiExceptionBeforeOwnedCleanup",
+          "cgroupAnonBytes": 914419712,
+          "cgroupFileBytes": 480870400,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 82669568,
+              "statusRssFileBytesSum": 3559424,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 313737216,
+              "statusRssFileBytesSum": 11853824,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 362070016,
+              "statusRssFileBytesSum": 74579968,
+              "statusRssShmemBytesSum": 45527040,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            },
+            "other": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 9203712,
+              "statusRssFileBytesSum": 4096,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 33296384,
+              "statusRssFileBytesSum": 6729728,
+              "statusRssShmemBytesSum": 897024,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 142381056,
+              "statusRssFileBytesSum": 74076160,
+              "statusRssShmemBytesSum": 18829312,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        }
+      ],
+      "memoryPeakBytes": 1623543808,
+      "memoryHighEvents": 91660,
+      "pidsPeak": 242,
+      "hardMemoryOomOrPidEvents": 0,
+      "seconds": 125.729,
+      "allOwnedProcessesStopped": true,
+      "temporaryInputCopiesCleanedBytes": 37824508
+    },
+    {
+      "probe": "z2",
+      "rawReportSha256": "f15d946c3601e3185b3eedd0f0bef36046600f4e2cd057f11c83d5a4b61a9f17",
+      "hostProbeSha256": "0791a8ca5a265f5326c52a08cddf846bdfa7b02a26908ea8a01049e3c3efec55",
+      "pressureProbeSha256": "13a40abfc3e531422ba0d7ded5ad9dcc9b0f2137c2e0e85cd9465474a1c3bf39",
+      "actualUiProbeSha256": "e93c86dfafe9fba29eec277f5cb3b3273610a5a524091b5cc62a5aea318a1646",
+      "readingPassed": false,
+      "readingCasesCompleted": 6,
+      "readingCasesRequired": 8,
+      "caseNames": [
+        "text805",
+        "text806",
+        "text806Refresh",
+        "html806",
+        "raw806",
+        "raw805"
+      ],
+      "authChecksAccepted": true,
+      "failurePhase": "worker-expanding-on-raw805-refresh",
+      "processNameOnlyClassifierAmbiguous": false,
+      "classificationUsesExecutableBasename": true,
+      "phaseMemorySamples": [
+        {
+          "phase": "uiWrongPassword",
+          "cgroupAnonBytes": 604942336,
+          "cgroupFileBytes": 978341888,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 78397440,
+              "statusRssFileBytesSum": 22671360,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 242540544,
+              "statusRssFileBytesSum": 26902528,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 86929408,
+              "statusRssFileBytesSum": 47636480,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 145543168,
+              "statusRssFileBytesSum": 143953920,
+              "statusRssShmemBytesSum": 25985024,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 32186368,
+              "statusRssFileBytesSum": 80527360,
+              "statusRssShmemBytesSum": 589824,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 39809024,
+              "statusRssFileBytesSum": 140259328,
+              "statusRssShmemBytesSum": 15278080,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiImportPreview",
+          "cgroupAnonBytes": 826146816,
+          "cgroupFileBytes": 753733632,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 79613952,
+              "statusRssFileBytesSum": 16621568,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 246640640,
+              "statusRssFileBytesSum": 26873856,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 98594816,
+              "statusRssFileBytesSum": 38428672,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 263405568,
+              "statusRssFileBytesSum": 162754560,
+              "statusRssShmemBytesSum": 26230784,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 4,
+              "statusRssAnonBytesSum": 42364928,
+              "statusRssFileBytesSum": 100610048,
+              "statusRssShmemBytesSum": 884736,
+              "memoryStatusMeasuredProcesses": 4,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 125095936,
+              "statusRssFileBytesSum": 185389056,
+              "statusRssShmemBytesSum": 22093824,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRead805Text",
+          "cgroupAnonBytes": 983339008,
+          "cgroupFileBytes": 554946560,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 81739776,
+              "statusRssFileBytesSum": 5771264,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 312807424,
+              "statusRssFileBytesSum": 16797696,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 100732928,
+              "statusRssFileBytesSum": 20758528,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 348041216,
+              "statusRssFileBytesSum": 152440832,
+              "statusRssShmemBytesSum": 26275840,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 4,
+              "statusRssAnonBytesSum": 42500096,
+              "statusRssFileBytesSum": 98856960,
+              "statusRssShmemBytesSum": 884736,
+              "memoryStatusMeasuredProcesses": 4,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 3,
+              "statusRssAnonBytesSum": 170528768,
+              "statusRssFileBytesSum": 287834112,
+              "statusRssShmemBytesSum": 33759232,
+              "memoryStatusMeasuredProcesses": 3,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRaw806",
+          "cgroupAnonBytes": 990609408,
+          "cgroupFileBytes": 583622656,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 82034688,
+              "statusRssFileBytesSum": 7225344,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 339185664,
+              "statusRssFileBytesSum": 16961536,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 101470208,
+              "statusRssFileBytesSum": 20910080,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 263491584,
+              "statusRssFileBytesSum": 151736320,
+              "statusRssShmemBytesSum": 26230784,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 4,
+              "statusRssAnonBytesSum": 42500096,
+              "statusRssFileBytesSum": 96706560,
+              "statusRssShmemBytesSum": 884736,
+              "memoryStatusMeasuredProcesses": 4,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 191086592,
+              "statusRssFileBytesSum": 194019328,
+              "statusRssShmemBytesSum": 19828736,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiRaw805Refresh",
+          "cgroupAnonBytes": 1037979648,
+          "cgroupFileBytes": 539590656,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 82235392,
+              "statusRssFileBytesSum": 4591616,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 334446592,
+              "statusRssFileBytesSum": 17858560,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 102076416,
+              "statusRssFileBytesSum": 15515648,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 252358656,
+              "statusRssFileBytesSum": 76263424,
+              "statusRssShmemBytesSum": 26431488,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 4,
+              "statusRssAnonBytesSum": 42500096,
+              "statusRssFileBytesSum": 10522624,
+              "statusRssShmemBytesSum": 884736,
+              "memoryStatusMeasuredProcesses": 4,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 253399040,
+              "statusRssFileBytesSum": 94244864,
+              "statusRssShmemBytesSum": 18448384,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        },
+        {
+          "phase": "uiExceptionBeforeOwnedCleanup",
+          "cgroupAnonBytes": 1029959680,
+          "cgroupFileBytes": 474992640,
+          "processStatusMemoryGroups": {
+            "python": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 83132416,
+              "statusRssFileBytesSum": 3653632,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "java": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 334888960,
+              "statusRssFileBytesSum": 10915840,
+              "statusRssShmemBytesSum": 32768,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-driver": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 100528128,
+              "statusRssFileBytesSum": 21409792,
+              "statusRssShmemBytesSum": 0,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-main": {
+              "processes": 1,
+              "statusRssAnonBytesSum": 375988224,
+              "statusRssFileBytesSum": 40828928,
+              "statusRssShmemBytesSum": 26406912,
+              "memoryStatusMeasuredProcesses": 1,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-service": {
+              "processes": 4,
+              "statusRssAnonBytesSum": 42500096,
+              "statusRssFileBytesSum": 196608,
+              "statusRssShmemBytesSum": 884736,
+              "memoryStatusMeasuredProcesses": 4,
+              "memoryStatusMissingProcesses": 0
+            },
+            "browser-content": {
+              "processes": 2,
+              "statusRssAnonBytesSum": 121651200,
+              "statusRssFileBytesSum": 71036928,
+              "statusRssShmemBytesSum": 17809408,
+              "memoryStatusMeasuredProcesses": 2,
+              "memoryStatusMissingProcesses": 0
+            }
+          }
+        }
+      ],
+      "memoryPeakBytes": 1619947520,
+      "memoryHighEvents": 45776,
+      "pidsPeak": 238,
+      "hardMemoryOomOrPidEvents": 0,
+      "seconds": 151.22,
+      "allOwnedProcessesStopped": true,
+      "temporaryInputCopiesCleanedBytes": 37824508
+    }
+  ],
+  "mainThreadNameWasNodeDriverInActualMetadataProbe": true,
+  "metadataProbeRawSha256": "ea648b57fc940bb318df9483622423872fe6675c41e6e8d7f86684f3abedeeb9",
+  "statusMemorySumsAreNotUniquePrivateMemoryOrWholeCgroupBreakdown": true,
+  "oldAmbiguousBrowserMainTotalsMustNotBeAttributedToFirefoxAlone": true,
+  "terminalReleaseProvenToFixHardRefresh": false,
+  "soleTimeoutCauseProven": false,
+  "stablePerformanceOrLeakAbsenceProven": false,
+  "cpuLimit": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapMaxBytes": 0,
+  "downloadDeadlineMilliseconds": 60000,
+  "workerDeadlineMilliseconds": 15000,
+  "authorizedBookCount": 1,
+  "otherPrivateBooksRead": 0,
+  "realCredentialsOrExistingStorageImported": false,
+  "tokensUrlsEntryNamesBodiesOrPrivateHashesPublished": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "originalRemoteBundledBrowserThreeWayCompleted": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

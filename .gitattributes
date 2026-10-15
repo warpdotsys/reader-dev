@@ -1,1 +1,84 @@
 *.java linguist-language=Kotlin
+
+# Preserve these captured evidence bytes and SHA-256 on Windows/Linux checkouts.
+docs/evidence/proxy-appdir-hosted-*-22f949cc-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/reader-business-https-22f949cc-2026-10-10.json -text
+docs/evidence/reader-business-https-independent-2026-10-10.json -text
+docs/evidence/origin-header-fcd-current-jar-three-way-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/reader-fcd-three-way-raw-2026-10-10.json -text
+
+docs/evidence/portable-reader-tls-*-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/portable-parent-hosted-*-5ecbc609-2026-10-10.json -text whitespace=cr-at-eol
+
+docs/evidence/reader-https-hosted-*-c29e682b-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/certificate-hints-local-verification-2026-10-10.json -text
+docs/evidence/certificate-hints-local-parent-protocol-2026-10-10.xml -text whitespace=cr-at-eol
+docs/evidence/certificate-hints-hosted-*-fc0860f1-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/certificate-hints-hosted-*-c1581a9e-2026-10-10.json -text whitespace=cr-at-eol
+docs/evidence/browser-soak-30min-c1581a9e-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/tts-notification-*-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/three-way-public-archive-failure-c1581a9e-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/three-way-local-metadata-pair-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/header-contract-full-failure-a5cd1e74-2026-10-11.xml -text whitespace=cr-at-eol
+
+docs/evidence/header-diagnostic-*-685aab2f-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/metadata-standalone-9b9d-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/metadata-three-way-9b9d-reclaim-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/reclaim-stopped-browser-cgroup-executed-2026-10-11.py -text whitespace=-blank-at-eof
+docs/evidence/stopped-cache-hosted-8e74b255-*.json -text whitespace=cr-at-eol
+docs/evidence/authorized-epub-9b9d-*-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/hash-compat-hosted-8b250346-*.json -text whitespace=cr-at-eol
+docs/evidence/gutenberg-*-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/gutenberg-author-rule-local-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-normal-hosted-d6b7d6a4-*.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-local-2026-10-11.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-local-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-toc-rule-local-*-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/gutenberg-normal-hosted-7739ab85-*.json -text whitespace=cr-at-eol
+docs/evidence/opds-shelf-hosted-7739ab85-2026-10-11.xml -text whitespace=cr-at-eol
+docs/evidence/opds-frontend-product-byte-delta-2026-10-11.json -text whitespace=cr-at-eol
+
+# Preserve exact LF bytes for the terminal-release candidate's public receipts.
+docs/evidence/authorized-epub-308d-ready-2026-10-12.json -text
+docs/evidence/epub-full-reader-ui-pressure-2026-10-13.json -text
+docs/evidence/epub-idle-java-firefox-decode-2026-10-12.json -text
+docs/evidence/epub-node-decode-counters-2026-10-12.json -text
+docs/evidence/epub-pure-firefox-decode-2026-10-12.json -text
+docs/evidence/epub-ready-partial-2026-10-12.json -text
+docs/evidence/epub-real-business-prefix-2026-10-12.json -text
+docs/evidence/epub-real-file-download-2026-10-12.json -text
+docs/evidence/epub-real-stream-read-2026-10-12.json -text
+docs/evidence/gha-ready-7bf-hosted-2026-10-12.json -text
+docs/evidence/original-account-relogin-2026-10-13.json -text
+docs/evidence/epub-terminal-release-local-2026-10-13.json -text
+docs/evidence/epub-terminal-release-hosted-2026-10-13.json -text
+docs/evidence/epub-terminal-release-real-reader-2026-10-13.json -text
+docs/evidence/generated-upload-memory-2026-10-13.json -text
+docs/evidence/import-lifecycle-local-reader-2026-10-13.json -text
+docs/evidence/import-lifecycle-real-reader-2026-10-13.json -text
+docs/evidence/e31-hosted-acceptance-2026-10-13.json -text
+docs/evidence/epub-allocation-trial-rejected-2026-10-13.json -text
+docs/evidence/epub-worker-handoff-2026-10-13.json -text
+docs/evidence/epub-handoff-comparison-unreached-2026-10-13.json -text
+docs/evidence/epub-main-handoff-incomplete-2026-10-13.json -text
+
+# Preserve these finite negative/readiness receipts and the shared test predicate.
+docs/evidence/epub-disk-storage-negative-2026-10-13.json -text
+docs/evidence/native-deflate-worker-capability-2026-10-13.json -text
+docs/evidence/native-deflate-reader-trial-2026-10-13.json -text
+docs/evidence/native-deflate-trial-rejected-2026-10-13.json -text
+docs/evidence/epub-generated-readiness-2026-10-13.json -text
+docs/evidence/epub-authorized-readiness-unreached-2026-10-13.json -text
+docs/evidence/frame-readiness-hosted-acceptance-2026-10-13.json -text
+docs/evidence/epub-bounded-inflate-candidate-2026-10-13.json -text
+docs/evidence/epub-bounded-disk-two-runs-2026-10-13.json -text
+docs/evidence/bounded-inflate-hosted-acceptance-2026-10-13.json -text
+docs/evidence/frontend-security-deps-local-2026-10-13.json -text
+docs/evidence/frontend-security-deps-hosted-2026-10-13.json -text
+docs/evidence/frontend-security-current-public-ui-2026-10-13.json -text
+docs/evidence/frontend-security-current-soaks-2026-10-13.json -text
+docs/evidence/frontend-security-current-jar-2026-10-13.json -text
+docs/evidence/frontend-security-current-metadata-2026-10-13.json -text
+docs/evidence/frontend-security-current-utf8-2026-10-13.json -text
+browser-poc/src/test/resources/epub-frame-readiness.js text eol=lf

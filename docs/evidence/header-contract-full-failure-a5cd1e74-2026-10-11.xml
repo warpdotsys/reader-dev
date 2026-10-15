@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.htmake.reader.utils.CamoufoxWebviewRendererTest" tests="24" skipped="0" failures="1" errors="0" timestamp="2026-10-10T16:00:49" hostname="runnervmmprz5" time="233.395">
+  <properties/>
+  <testcase name="endlessGeneratedNavigationTimesOutAndTheNextRenderRecovers" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="9.086"/>
+  <testcase name="generatedNavigationBeforeDomReadyReturnsFinalDocumentWithoutReplayingPost" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="3.129"/>
+  <testcase name="pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="7.773"/>
+  <testcase name="sourceJavaScriptDeletionOverridesSameResponseSetCookie" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="8.028"/>
+  <testcase name="importedHostOnlyCookieRetainsPathForSubresources" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="5.911"/>
+  <testcase name="scriptPromiseFailuresAreBoundedAndTheNextRenderRecovers" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="13.881"/>
+  <testcase name="cookiesArePersistedPerReaderNamespace" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="7.943"/>
+  <testcase name="sourceRegexReturnsTheResourceUrlWithoutFetchingIt" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="3.1"/>
+  <testcase name="unmatchedSourceRegexTimesOutAndTheNextRenderRecovers" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="7.858"/>
+  <testcase name="existingHttpOnlyCookieCanBeRenewed" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="9.358"/>
+  <testcase name="generatedScriptAndResourceRedirectsRespectOriginHeaderPolicy" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="5.773"/>
+  <testcase name="generatedClientNavigationReturnsTheFinalDocumentWithoutReplayingPost" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="44.532"/>
+  <testcase name="javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="24.483"/>
+  <testcase name="quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="7.046"/>
+  <testcase name="numericalLibraryImportsDoNotAllocateTheHostCpuThreadPool" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="0.483"/>
+  <testcase name="generatedSourceRuleRunsOnceInTheDocumentThatCompletesLoad" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="6.753"/>
+  <testcase name="stalledMainNavigationFailsInsteadOfReturningProxyErrorPage" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="8.027"/>
+  <testcase name="generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="12.72">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[Bearer GENERATED_NOT_A_REAL_CREDENTIAL]&gt; but was:&lt;[]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[Bearer GENERATED_NOT_A_REAL_CREDENTIAL]&gt; but was:&lt;[]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:115)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at com.htmake.reader.utils.CamoufoxWebviewRendererTest$GeneratedHeaderFixture.assertOriginHeaders(CamoufoxWebviewRendererTest.kt:1094)
+	at com.htmake.reader.utils.CamoufoxWebviewRendererTest$generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts$1.invokeSuspend(CamoufoxWebviewRendererTest.kt:922)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:106)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:274)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source)
+	at com.htmake.reader.utils.CamoufoxWebviewRendererTest.generatedRuleHeadersStayOnTheirOriginAcrossRedirectsAndScripts(CamoufoxWebviewRendererTest.kt:913)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.lang.Thread.run(Thread.java:829)
+</failure>
+  </testcase>
+  <testcase name="generatedPostRedirectsPreserveBodyCookiesAndOriginHeaders" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="13.789"/>
+  <testcase name="importedNetscapeCookiesRetainScopeInRealBrowserRequests" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="9.758"/>
+  <testcase name="generatedLoopbackRedirectCannotBypassTheEgressProxy" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="5.674"/>
+  <testcase name="generatedSourceStateDeletionFailsWithoutReplayingSideEffectsAndRecovers" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="5.839"/>
+  <testcase name="generatedUtf8PostPreservesRawBytesAndSourceScriptResult" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="2.868"/>
+  <testcase name="getPostScriptsAndSubresourcesUseTheBrowser" classname="com.htmake.reader.utils.CamoufoxWebviewRendererTest" time="9.581"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

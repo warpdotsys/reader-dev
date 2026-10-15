@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "scope": "current 30e8 Reader baseline HTTP/JVM thread groups only, no browser/book/production acceptance",
+  "rawReportSha256": "66fa870b6d1a43bbed902b1a58e31dda3008578e8b40f30bba8e83876933c533",
+  "currentJarSha256": "30e8cafcea6b07781aae8039c5ae0230340c189884f61eba445bab72e5b440af",
+  "runtimeImageId": "sha256:401d895c31a39634bf29654a7fbb29527272d287c8c1219b12794bbe1970bc44",
+  "uid": 10001,
+  "gid": 10001,
+  "capabilitiesZero": true,
+  "noNewPrivileges": true,
+  "loopbackOnly": true,
+  "samples": [
+    {
+      "phase": "ready",
+      "observedThreads": 29,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 1,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "registered",
+      "observedThreads": 29,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 1,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "loggedIn",
+      "observedThreads": 29,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 1,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "emptyShelf",
+      "observedThreads": 30,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 2,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "defaultGroups",
+      "observedThreads": 31,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 3,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "idleAfterFiveSeconds",
+      "observedThreads": 31,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 3,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    },
+    {
+      "phase": "loggedOut",
+      "observedThreads": 31,
+      "disappearedDuringRead": 0,
+      "groups": {
+        "vertxEventLoop": 3,
+        "vertxInternalWorker": 3,
+        "vertxWorker": 0,
+        "coroutineDispatcher": 3,
+        "readerBrowser": 0,
+        "okHttp": 0,
+        "forkJoin": 0,
+        "scheduler": 1,
+        "jvmRuntime": 18,
+        "other": 3
+      },
+      "rawThreadNamesExported": false
+    }
+  ],
+  "seconds": 26.147,
+  "memoryPeakBytes": 398225408,
+  "pidsPeak": 37,
+  "aggregateCpuLimit": 2,
+  "memoryMaxBytes": 2147483648,
+  "memoryHighBytes": 1610612736,
+  "pidsMax": 256,
+  "swapCurrentBytes": 0,
+  "swapMaxBytes": 0,
+  "hardMemoryOomPidEvents": 0,
+  "memoryHighEvents": 0,
+  "generatedAuthenticationAndLogoutAccepted": true,
+  "unitInactivePidZero": true,
+  "ownedContainersRemaining": 0,
+  "priorFailedRuns": [
+    {
+      "run": "a",
+      "rawSha256": "9afd4054de3b8793f102d11e60e645f2fdb6311cfd5f12fbc8bb850bb5b1c5c4",
+      "acceptedOrOverwritten": false
+    },
+    {
+      "run": "b",
+      "rawSha256": "3b9cd0d05ffc91c30463c8d88af484e1e62e763d3d0f5fc1c690854f0c31ba2a",
+      "acceptedOrOverwritten": false
+    }
+  ],
+  "rawThreadNamesOrLogsExported": false,
+  "privateDataRead": false,
+  "browserStarted": false,
+  "largeBookPressureAccepted": false,
+  "earlierSeventyThreadCauseProven": false,
+  "threadPoolOrBudgetChanged": false,
+  "latestWholeNativeImageLocallyAccepted": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

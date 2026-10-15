@@ -1,5 +1,5 @@
-import { get } from './request'
-import { useUserStore } from '@/stores/user'
+import { get, post } from './request'
+import { readerRequestContext } from './requestContext'
 import { openSSEPost } from './sse'
 import type { BookChapter, BookContent, BookInfo, ReturnData, SearchBook } from '@/types'
 
@@ -53,19 +53,21 @@ export function searchBookSourceSSE(
   bookSource: string,
   cbs: SourceSSECallbacks,
 ): Promise<{ abort: () => void }> {
-  const token = useUserStore().accessToken
+  const context = readerRequestContext()
   return openSSEPost(
     '/reader3/searchBookSourceSSE',
     { url, bookSource },
     { onBooks: cbs.onBooks, onEnd: cbs.onEnd, onErrorEvent: cbs.onErrorEvent, onStreamError: cbs.onStreamError },
-    token,
+    context.params.accessToken ?? null,
+    context,
   )
 }
 
 /**
  * GET /reader3/getBookContent：旧后端仅在 chapterUrl 为空且 index >= 0 时
  * 从目录中解析 BookChapter；直接传 chapterUrl 无法获取正文。
- * epubContent=1 且为 EPUB 本地书 → 返回 HTML 结构化正文（legacy 参数对齐；缺省/0 = 纯文本不变）
+ * EPUB 本地书的缺省响应是资源 URL；epubContent=1 返回 { url, content } XHTML。
+ * 普通 TXT/网络书缺省响应才是纯文本。阅读组件负责 EPUB 的排版或文本转换。
  */
 export async function getBookContent(
   bookUrl: string,
@@ -91,4 +93,10 @@ export async function getBookContent(
     // the Rust UI expected { content }. EPUB HTML mode already returns a map.
     data: typeof response.data === 'string' ? { content: response.data } : response.data,
   }
+}
+
+/** Persist custom text using the legacy chapter index, not the Rust URL-shaped payload. */
+export function saveBookContent(bookUrl: string, index: number, content: string): Promise<ReturnData<string>> {
+  if (!bookUrl || !Number.isInteger(index) || index < 0) return Promise.reject(new Error('书籍或章节编号无效'))
+  return post<string>('/saveBookContent', { url: bookUrl, index, content })
 }

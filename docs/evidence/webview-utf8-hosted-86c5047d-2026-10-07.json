@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "scope": "Hosted generated contract acceptance; not original six-case parity, real authentication or production",
+  "sourceHead": "86c5047d22cd0e2a6a841f64d33533f9398810db",
+  "testedMergeRevision": "3250682951e22698e992c3a835aba6370288ce95",
+  "observedTerminalRuns": [
+    {"id": 37586778326, "workflow": "Java Kotlin CI", "conclusion": "success"},
+    {"id": 37586778116, "workflow": "Vue 3 preview build", "conclusion": "success"},
+    {"id": 37586778218, "workflow": "Browser image integration", "conclusion": "success"},
+    {"id": 37586778072, "workflow": "Native release artifact rehearsal", "conclusion": "success", "actualJobs": 6}
+  ],
+  "independentAudit": {
+    "path": "build/utf8-threeway-hosted-86c5047d-20261007-a/independent-acceptance.json",
+    "sha256": "72269853684a8f560c3d72565a3cb4f5da3b07ec4d59c9b7a46db3dc1f3437c5",
+    "nativeBrowserActualTests": 19,
+    "fullBrowserActualTests": 19,
+    "browserFailuresErrorsSkipped": 0,
+    "nativeHelperDocumentCases": 3,
+    "fullHelperDocumentCases": 3,
+    "sharedJavaTests": 162,
+    "sharedJavaSkipped": 30,
+    "sharedJavaFailuresErrors": 0,
+    "vueCoreActualTests": 18,
+    "vueSubdirectoryActualTests": 1,
+    "vueFailuresErrorsSkipped": 0,
+    "shelfGeometryObservations": 18,
+    "customGroupObservations": 3,
+    "publisherExactFileCount": 24,
+    "existingUiAsyncBudgetGuardsReexecuted": 15,
+    "actualMemoryStatReports": 5,
+    "maxMemoryPeakBytes": 940109824,
+    "maxPidsPeak": 195,
+    "memoryMaxEvents": 0,
+    "oomEvents": 0,
+    "pidsMaxEvents": 0,
+    "actualSwapBytes": 0,
+    "configuredSwapMaxBytes": 1073741824,
+    "userReportHashesChecked": 58,
+    "userReportHashesChanged": 0
+  },
+  "hostedPurePythonLog": {"tests": 249, "seconds": 8.793, "result": "OK", "browserExecutedByThesePureTests": false},
+  "nativeSharedJarSha256": "7c55ba758d16d855f3a14dda328a5d522c18654d5a329abab2f3af0607a60dd1",
+  "fullIndependentlyBuiltJarSha256": "2c34ee0480f3f7d3e7e44cf17d2c4391f14ce04e0d720460d4dba780da996f39",
+  "nativeImages": {
+    "amd64": "sha256:27848bdc4d5fc46a928897df91ba5e15923c642860ca468e8fb4d5e3fc77145d",
+    "arm64": "sha256:e5442e40338cd242f360d98088163001640e2d2da3f0e591431a2103ce9ba3fd"
+  },
+  "visualReview": {"generated320PixelCustomGroupScreenshotViewed": true, "allScreenshotsViewed": false},
+  "limitations": [
+    "Pure Python fixture tests do not execute the six-case original/historical/Camoufox differential",
+    "Normal hosted swap configuration is not the server differential zero-swap budget",
+    "Independent workflows build different JAR bytes; the server uses the separately identified 221d41ef input",
+    "No registry publication, release or production deployment"
+  ]
+}

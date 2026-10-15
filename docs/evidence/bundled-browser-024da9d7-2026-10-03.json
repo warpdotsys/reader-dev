@@ -1,0 +1,109 @@
+{
+  "gitCommit": "024da9d75600924eac3393b233b669b08935e191",
+  "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/37090043943",
+  "artifact": "bundled-browser-synthetic-and-resources",
+  "camoufoxContract": {
+    "artifact": "camoufox-contract-report",
+    "tests": 11,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "durationSeconds": 85.151,
+    "testNames": [
+      "pageJavaScriptDeletionBeforeDomReadyDoesNotResurrectCookies",
+      "sourceJavaScriptDeletionOverridesSameResponseSetCookie",
+      "importedHostOnlyCookieRetainsPathForSubresources",
+      "cookiesArePersistedPerReaderNamespace",
+      "sourceRegexReturnsTheResourceUrlWithoutFetchingIt",
+      "unmatchedSourceRegexTimesOutAndTheNextRenderRecovers",
+      "existingHttpOnlyCookieCanBeRenewed",
+      "javaScriptStructuredResultsUseTheArchivedWebviewResponseFormat",
+      "quotedCookieReplayMatchesWhatTheBrowserActuallyAccepted",
+      "stalledMainNavigationFailsInsteadOfReturningProxyErrorPage",
+      "getPostScriptsAndSubresourcesUseTheBrowser"
+    ]
+  },
+  "synthetic": {
+    "searches": [
+      {
+        "key": "alice-first",
+        "count": 1
+      },
+      {
+        "key": "bob-first",
+        "count": 1
+      },
+      {
+        "key": "alice-second",
+        "count": 1
+      },
+      {
+        "key": "alice-third",
+        "count": 1
+      }
+    ],
+    "cookieSequence": [
+      "",
+      "",
+      "session=alpha==",
+      ""
+    ],
+    "legacyReferenceCases": [
+      {
+        "case": "script",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "targetRequest": {
+          "httpMethod": "GET",
+          "body": null,
+          "testHeader": null
+        }
+      },
+      {
+        "case": "post",
+        "status": 200,
+        "isSuccess": true,
+        "errorMsg": "",
+        "count": 1,
+        "targetRequest": {
+          "httpMethod": "POST",
+          "body": "q=post",
+          "testHeader": "synthetic"
+        }
+      }
+    ],
+    "concurrentRequests": 4,
+    "concurrentBookCounts": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "resourceBudget": {
+    "cpuPeriod": 100000,
+    "cpuQuota": "200000",
+    "kernel": "6.17.0-1022-azure",
+    "memoryEvents": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 809115648,
+    "pidsCurrent": 37,
+    "pidsEvents": {
+      "max": 0
+    },
+    "pidsMax": 256,
+    "pidsPeak": 177,
+    "scope": "one full Reader image; sequential probes plus four-account burst",
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.medwarp.reader.browserpoc.Vue3PreviewBookshelfImportTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-11T05:23:54" hostname="LAPTOP-U8HHJC5R" time="7.961">
+  <properties/>
+  <testcase name="previewThenConfirmAddsTxtBookToShelfWithoutUploadLocalBook" classname="com.medwarp.reader.browserpoc.Vue3PreviewBookshelfImportTest" time="7.961"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

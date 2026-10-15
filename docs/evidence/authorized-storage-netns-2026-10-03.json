@@ -1,0 +1,85 @@
+{
+  "originalJarSha256": "b26fb4769d689d98ff26408ce79a275d719f360906c84acf52ff404e98030c8c",
+  "restoredJarSha256": "ba1e3acb91f04bd6a3a10c7406a76e11cb82c1bf3d41212d22d14bef6953085c",
+  "originalExecuted": true,
+  "network": "private-loopback-only-netns",
+  "privateDataPublished": false,
+  "sourceUnchanged": true,
+  "inputFileCount": 5,
+  "inputBytes": 5954537,
+  "originalFacts": {
+    "loginSucceeded": true,
+    "accessTokenNamespaced": true,
+    "tokenOnlyShelfEqual": true,
+    "anonymousShelfDenied": true,
+    "otherNamespaceEmpty": true,
+    "businessFilesUnchanged": true
+  },
+  "restoredFacts": {
+    "loginSucceeded": true,
+    "accessTokenNamespaced": true,
+    "tokenOnlyShelfEqual": true,
+    "anonymousShelfDenied": true,
+    "otherNamespaceEmpty": true,
+    "businessFilesUnchanged": true
+  },
+  "routes": {
+    "getBookshelf?refresh=0": {
+      "originalStatus": 200,
+      "restoredStatus": 200,
+      "statusEqual": true,
+      "isSuccessEqual": true,
+      "errorMsgEqual": true,
+      "envelopeFieldsEqual": true,
+      "originalCount": 169,
+      "restoredCount": 169,
+      "dataEqual": true,
+      "jsonTypesComparedStrictly": true,
+      "replacementCharacterObserved": false
+    },
+    "getBookGroups": {
+      "originalStatus": 200,
+      "restoredStatus": 200,
+      "statusEqual": true,
+      "isSuccessEqual": true,
+      "errorMsgEqual": true,
+      "envelopeFieldsEqual": true,
+      "originalCount": 5,
+      "restoredCount": 5,
+      "dataEqual": true,
+      "jsonTypesComparedStrictly": true,
+      "replacementCharacterObserved": false
+    },
+    "getBookSources?simple=0": {
+      "originalStatus": 200,
+      "restoredStatus": 200,
+      "statusEqual": true,
+      "isSuccessEqual": true,
+      "errorMsgEqual": true,
+      "envelopeFieldsEqual": true,
+      "originalCount": 429,
+      "restoredCount": 429,
+      "dataEqual": true,
+      "jsonTypesComparedStrictly": true,
+      "replacementCharacterObserved": true
+    },
+    "getReplaceRules": {
+      "originalStatus": 200,
+      "restoredStatus": 200,
+      "statusEqual": true,
+      "isSuccessEqual": true,
+      "errorMsgEqual": true,
+      "envelopeFieldsEqual": true,
+      "originalCount": 27,
+      "restoredCount": 27,
+      "dataEqual": true,
+      "jsonTypesComparedStrictly": true,
+      "replacementCharacterObserved": false
+    }
+  },
+  "limitations": [
+    "No book files, production accounts, saved Cookie jars or caches",
+    "No searches, WebView renders, source logins, SSE or downloads",
+    "A synthetic account is used; this is not production-user authentication"
+  ]
+}

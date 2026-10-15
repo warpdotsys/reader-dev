@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-04",
+  "sourceCommit": "2cca1143a795537b3a26e293588e5cd59aaaa28b",
+  "testedMergeCommit": "a678bdbe75b2a15a6ab5a3acd1254f44c277c9d5",
+  "generatedCredentialsOnly": true,
+  "workflowRuns": [
+    {"name": "Java Kotlin CI", "runId": 37195595626, "conclusion": "success"},
+    {"name": "Vue 3 preview build", "runId": 37195595637, "conclusion": "success"},
+    {"name": "Browser image integration", "runId": 37195595791, "conclusion": "success"},
+    {"name": "Native release artifact rehearsal", "runId": 37195595659, "conclusion": "success"}
+  ],
+  "camoufox": {
+    "artifactId": 11300847613,
+    "tests": 12,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "xmlSha256": "EF96CABB8C9FAD8D8213F62E779430D64A1DADEF418E52E1D5FC59B68E6C6F57",
+    "netscapeCase": "importedNetscapeCookiesRetainScopeInRealBrowserRequests",
+    "netscapeCaseSeconds": 7.727,
+    "netscapeCaseActuallyExecuted": true
+  },
+  "coreUi": {
+    "artifactId": 11301231134,
+    "tests": 12,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "sourceCookieXmlSha256": "089DB5228FA46EBDC081E101287D2CAF013AF1AD6144055C63D28AA7011BF42E"
+  },
+  "bundledImageSynthetic": {
+    "artifactId": 11300872689,
+    "fourAccountBurstSucceeded": true,
+    "getAndPostRequestShapeChecked": true,
+    "memoryPeakBytes": 809807872,
+    "pidsPeak": 184,
+    "memoryMaxBytes": 2147483648,
+    "pidsMax": 256,
+    "limitEvents": 0,
+    "swapCurrentBytes": 0,
+    "swapMaxBytes": 1073741824
+  },
+  "limits": [
+    "actual XML and small JSON artifacts checked locally; no complete image archive downloaded",
+    "archived remote, original JAR provenance and public pairing probe jobs skipped in this run",
+    "not an authenticated Qidian Reader or three-way acceptance run",
+    "short synthetic probes do not prove sustained load",
+    "no stable release, registry publishing or production deployment"
+  ]
+}

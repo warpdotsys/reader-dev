@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "scope": "Hosted generated reports of 450021a4; not the new twentieth contract, original six-case parity, real authentication or production",
+  "sourceHead": "450021a458410f429b0f6e5fbc30307c6097e006",
+  "testedMergeRevision": "be622eef8a75b25aa9d33946e87271854302637c",
+  "observedTerminalRuns": [
+    {"id": 37594912598, "workflow": "Java Kotlin CI", "conclusion": "success"},
+    {"id": 37594912652, "workflow": "Vue 3 preview build", "conclusion": "success"},
+    {"id": 37594912539, "workflow": "Browser image integration", "conclusion": "success", "actualNormalJobs": 1, "optionalJobsSkipped": 5},
+    {"id": 37594912560, "workflow": "Native release artifact rehearsal", "conclusion": "success", "actualJobs": 6}
+  ],
+  "independentAudit": {
+    "path": "build/hosted-renderer-diagnostics-450021a4-20261007-a/independent-acceptance.json",
+    "sha256": "c94723737062f7fa0aaef7584060561e46ee6934f5744792ae426b748277ba7a",
+    "frozenGitNineteenContractGuardSha256": "351ac44aa090bb7c52084b227780f98b1e9eaa1e3a13016a7c3ff00ca251c465",
+    "oldReportsRejectedByCurrentTwentyContractGate": true,
+    "nativeActualBrowserTests": 19,
+    "fullActualBrowserTests": 19,
+    "browserFailuresErrorsSkipped": 0,
+    "nativeHelperCases": 3,
+    "fullHelperCases": 3,
+    "sharedJavaTests": 162,
+    "sharedJavaSkipped": 30,
+    "sharedJavaFailuresErrors": 0,
+    "vueCoreActualTests": 18,
+    "vueSubdirectoryActualTests": 1,
+    "vueFailuresErrorsSkipped": 0,
+    "shelfGeometryObservations": 18,
+    "customGroupObservations": 3,
+    "publisherExactFileCount": 24,
+    "existingUiAsyncBudgetGuardsReexecuted": 15,
+    "actualMemoryStatReports": 5,
+    "maxMemoryPeakBytes": 867692544,
+    "maxPidsPeak": 204,
+    "memoryMaxEvents": 0,
+    "oomEvents": 0,
+    "pidsMaxEvents": 0,
+    "actualSwapBytes": 0,
+    "configuredSwapMaxBytes": 1073741824,
+    "userReportHashesChecked": 58,
+    "userReportHashesChanged": 0
+  },
+  "nativeSharedJarSha256": "d128218d4e2ac5431053dfb5736191895770428fd28523a3e325bf5a6cba3f01",
+  "fullIndependentlyBuiltJarSha256": "967e03e228fb0242e24eb6e61a7ab204ac2babb1c0c02e9b3c32930334556b3c",
+  "nativeImages": {
+    "amd64": "sha256:ff5ba4bb157e685cffe02b977da7c811efbee5d640c32142e6137fb97bf77ce4",
+    "arm64": "sha256:764dae94475f73d4f40930adeda7b2fdd6b71531c6ba4d58d9f46e65df6c1d73"
+  },
+  "limitations": [
+    "Optional original-JAR, public-metadata, historical-reference and soak jobs were not executed by this normal hosted run",
+    "Nineteen-case acceptance was audited against the frozen source revision, not by weakening the new twenty-case gate",
+    "These JARs are not the server input 221d41ef",
+    "No new large image or JAR downloaded, registry publication, formal release or production deployment"
+  ]
+}

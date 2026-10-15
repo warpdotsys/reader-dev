@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "c2970fbfc0eba698fa332a344233d1bbdc689477",
+  "testedMergeSnapshot": "e06ea3b107c26579e41c033b6e1bbb3939e0bbcf",
+  "originalConfigDigest": "sha256:0298b97d5ca14af28ed2e43a8a46eb9ee56ca51169bd46dd3feb2ffca4789fb8",
+  "loadedDockerImageId": "sha256:ad24bd8ecfd307271fe3b8661ad791ea3d6ea1327430f8b10be6718a6153998f",
+  "jarSha256": "012b12d407faa230990ac165af320f6c166141db81a81c0ffd6e6a7c3c89fb2d",
+  "preciseSoftwareAndDocker29IdentityAccepted": true,
+  "cases": {
+    "defaultFirst": {
+      "completedScenes": 6,
+      "requiredScenes": 8,
+      "accepted": false,
+      "seconds": 76.717,
+      "readerDownloadOrWorkerTimeoutCaptured": false,
+      "iframeObservationTimeoutCaptured": true,
+      "budget": {
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryPeakBytes": 1612804096,
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "memoryEvents": {
+          "low": 0,
+          "high": 30137,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 3119
+        },
+        "pidsEvents": {
+          "max": 0
+        }
+      },
+      "transfers": [
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "headersDurationMs": 11.295000000000002,
+          "bodyDurationMs": 0.07508593749999903
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "headersDurationMs": 9.254,
+          "bodyDurationMs": 331.726162109375
+        },
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "headersDurationMs": 30.858999999999998,
+          "bodyDurationMs": 0.07984179687500159
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "headersDurationMs": 8.99,
+          "bodyDurationMs": 29442.716833984374
+        }
+      ]
+    },
+    "explicitMinimumHeap64": {
+      "completedScenes": 8,
+      "variantAccepted": true,
+      "defaultImageAccepted": false,
+      "seconds": 51.017,
+      "budget": {
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryPeakBytes": 1612414976,
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "memoryEvents": {
+          "low": 0,
+          "high": 5206,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 4964
+        },
+        "pidsEvents": {
+          "max": 0
+        }
+      },
+      "javaAnonRefreshSampleBytes": [
+        353501184,
+        354189312
+      ],
+      "transfers": [
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "bodyDurationMs": 0.08207812500000244
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "bodyDurationMs": 238.21184765625
+        },
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "bodyDurationMs": 0.09992187499999972
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "bodyDurationMs": 731.947998046875
+        }
+      ]
+    },
+    "defaultReverse": {
+      "completedScenes": 8,
+      "defaultImageAcceptedForThisFiniteRun": true,
+      "seconds": 47.294,
+      "budget": {
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "memoryMaxBytes": 2147483648,
+        "memoryHighBytes": 1610612736,
+        "memoryPeakBytes": 1612824576,
+        "swapMaxBytes": 0,
+        "pidsMax": 512,
+        "memoryEvents": {
+          "low": 0,
+          "high": 4616,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 2252
+        },
+        "pidsEvents": {
+          "max": 0
+        }
+      },
+      "javaAnonRefreshSampleBytes": [
+        419536896
+      ],
+      "transfers": [
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "bodyDurationMs": 0.08804492187500301
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw806",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "bodyDurationMs": 615.44010546875
+        },
+        {
+          "kind": "selected-path-check",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 302,
+          "bodyDurationMs": 0.07497265625000082
+        },
+        {
+          "kind": "selected-file-download",
+          "phase": "uiRaw805Refresh",
+          "httpStatus": 200,
+          "responseBodyBytes": 37809796,
+          "bodyDurationMs": 740.9600078125
+        }
+      ]
+    }
+  },
+  "strictContentHeadingLoginAndOriginalStorageAssertionsUnchanged": true,
+  "productDownloadSeconds": 60,
+  "productWorkerSeconds": 15,
+  "uiObserverSeconds": 30,
+  "defaultJvmOptionsUnchanged": true,
+  "minimumHeapAloneProvenToFixIntermittentFailure": false,
+  "cacheOrRunOrderAsUniqueCauseProven": false,
+  "allThreeOwnedScopesIndependentlyCleaned": true,
+  "authorizedBookCopyBytesRemoved": 113429388,
+  "generatedBytesRemoved": 264579162,
+  "generatedFilesRemoved": 5064,
+  "actualDefaultWholeImageSingleBookEightScenesAccepted": true,
+  "stableColdAndRepeatedReadingProven": false,
+  "currentRealSiteAuthenticationAccepted": false,
+  "privateBodiesNamesOrBodyHashesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false,
+  "independentReceiptSha256": {
+    "a": "3db0d63d1677bdcf7dd17af62ef44400a39018df392517953327735534ee39db",
+    "b": "2e20c852a78b0b8002a606d5ed19ad03f285a9a9cf8f42ebf3355fa079b2815e",
+    "c": "2f91ed6c3f7df9cb5bad78fed13c872766c934cb1f3ce929b3b95cfd7bad4892"
+  },
+  "independentSoftwareReceiptSha256": "b8489760fe74b65a27fcf8c73b6ace15a794172d920060e9c405c26b95ef18b8"
+}

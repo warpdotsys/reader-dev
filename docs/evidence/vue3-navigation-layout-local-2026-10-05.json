@@ -1,0 +1,33 @@
+{
+  "scope": "Generated 32-character account, metadata and files only; no private bodies, production writes or new original-Pro-JAR differential",
+  "baseline": {
+    "jarSha256": "721bbc9b91d3cf6ba8b3ecd88f2664530cc88928bec003de61c172101c4eb7a2",
+    "tests": 1, "skipped": 0, "failures": 1, "errors": 0,
+    "seconds": 15.937,
+    "xmlSha256": "f123eaef85a3e9153152af2bc46ffafae160c98f4ee53926fd5b9717517ffe8b",
+    "observation": "1024px viewport / 1130px document; overflow belongs to user-area, user-chip and logout-btn. This baseline is a restored candidate, not the original Pro JAR.",
+    "note": "The fixed test additionally asserts all 12 real links and usable search width; its text is not identical to the baseline probe"
+  },
+  "candidate": {
+    "jarSha256": "7cd93beef1af6b0cfd1cc8759059cc48ffe01e8266507acfc3b2534ed581774f",
+    "jarBytes": 285665941,
+    "packagedCurrentUiFilesCheckedBySha256": 81,
+    "frontendTests": 213, "frontendSkipped": 0, "frontendFailures": 0,
+    "typecheck": "passed", "viteBuild": "passed", "registeredStaticApiRoutes": 92,
+    "layout": {
+      "tests": 1, "skipped": 0, "failures": 0, "errors": 0,
+      "seconds": 22.092,
+      "viewportWidths": [1135, 1024, 768], "densitiesPerViewport": 3,
+      "realNavigationLinks": 12, "minimumSearchWidth": 240,
+      "hiddenAndEdgeHoveredBoundsChecked": true,
+      "xmlSha256": "b7c2103a7151fa0ddd7d9619c0fec27d52cb33d30f29ed121067d75cce15aa9a",
+      "frozenTestSourceSha256": "78de7909e3ba21786eb395fbbd372fce3b29d721b0cc7cf38773ec06aa61417b",
+      "generatedScreenshotSha256": "243b33fb0d1b5c58dbf8966beff0a28da022703a92b0ba0872e7534c420d72ec"
+    },
+    "managerNamespace": { "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 13.287, "xmlSha256": "c2c366037120b84f2c56c51dc9de1a0c816ce879f8079001058be505021b9404" },
+    "secureFile": { "tests": 1, "skipped": 0, "failures": 0, "errors": 0, "seconds": 4.384, "xmlSha256": "5943ec2a9e30e3a6419fd4a647ab645a0ca7c1dc55a3bad67f162f81e91943d1" },
+    "screenshotsVisuallyInspected": ["layout", "manager-authorized", "manager-wrong-space-rejected", "manager-own-offline"]
+  },
+  "cleanup": { "ownedReaderAndFixtureClosed": true, "userReaderPort": 18931, "userReaderPid": 61244, "userReaderUnchanged": true },
+  "limits": ["Not all core journeys were rerun locally on the layout-only candidate; source-specific hosted full suite remains mandatory", "Known repeated toasts still overlap the top area", "No merge, release, registry publication, deployment or production data migration"]
+}
