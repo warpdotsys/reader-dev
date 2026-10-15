@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Plan, inspect, or (only when explicitly enabled) manage the logon task for one
     Reader Pro candidate profile.
@@ -31,6 +31,10 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5.1 otherwise decodes this source as the system ANSI
+# codepage. Keep the UTF-8 BOM above and use explicit UTF-8 for JSON/errors.
+[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+$OutputEncoding = [Console]::OutputEncoding
 
 function Fail([string]$Message) { throw "ReaderCandidateAutostart: $Message" }
 

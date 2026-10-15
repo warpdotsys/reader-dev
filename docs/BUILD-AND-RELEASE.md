@@ -27,6 +27,8 @@ npm run build --prefix web-vue3
 
 Windows 将 `./gradlew` 替换为 `./gradlew.bat`。许可证服务独立构建：进入 `license-server` 后运行 `./gradlew test fatJar --max-workers=2 --no-daemon`。仅本机 JAR 成功不能代替完整镜像验收。
 
+完整 Python 契约在 Linux runner 执行；Windows runner 单独执行 PowerShell 维护测试，不能在 Windows 上把依赖 `fcntl` 的 Linux 测试失败误判为产品回归。含中文的 PowerShell 5.1 源文件使用 UTF-8 BOM，进程输出与测试解码显式使用 UTF-8，避免依赖本机代码页；参见 [PowerShell 编码说明](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1)。
+
 ## 临时版本准备
 
 1. 在 `release/**` 分支统一更新应用、CLI、两套前端和根锁文件的基础版本；修改 `preview.json`，例如基础版本 `6.1.1`、候选标签 `v6.1.1-preview.1`。

@@ -69,7 +69,7 @@ class CandidateAutostartTests(unittest.TestCase):
         self.launcher.write_text("param([string]$Action, [string]$CandidateId)\nexit 0\n", encoding="utf-8")
         Path(str(self.launcher) + ".sha256").write_text(sha256(self.launcher), encoding="ascii")
         self.adapter = self.root / "candidate-test-scheduler-adapter.ps1"
-        self.adapter.write_text(adapter_source(), encoding="utf-8")
+        self.adapter.write_text(adapter_source(), encoding="utf-8-sig")
         self.profile = self.root / "candidate-profile.json"
         self.profile.write_text(json.dumps({
             "schemaVersion": 1, "candidateId": self.candidate_id,
@@ -88,7 +88,8 @@ class CandidateAutostartTests(unittest.TestCase):
         command = [PS, "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "RemoteSigned",
                    "-File", str(SCRIPT), "-Action", action, "-ProfilePath", str(self.profile),
                    "-TestSchedulerAdapterPath", str(self.adapter), *extra]
-        result = subprocess.run(command, text=True, capture_output=True, env=env, timeout=30)
+        result = subprocess.run(command, text=True, encoding="utf-8", errors="strict",
+                                capture_output=True, env=env, timeout=30)
         self.assertEqual(expect, result.returncode, result.stdout + result.stderr)
         return result
 
@@ -147,6 +148,11 @@ class CandidateAutostartTests(unittest.TestCase):
 
 
 class SourceContractTests(unittest.TestCase):
+    def test_powershell_51_source_and_output_have_explicit_utf8_boundaries(self):
+        self.assertTrue(SCRIPT.read_bytes().startswith(b"\xef\xbb\xbf"))
+        source = SCRIPT.read_text(encoding="utf-8-sig")
+        self.assertIn("[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)", source)
+
     def test_profile_grammar_and_real_scheduler_guards_are_present(self):
         source = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("'^[a-z][a-z0-9-]{2,62}$'", source)
