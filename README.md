@@ -20,11 +20,11 @@
 
 ## 当前开发主线
 
-2026-10-13 当前验收入口：[交付状态及已知问题](docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)、[完整目标验收矩阵](docs/GOAL-EVIDENCE-MATRIX-2026-10-13.md)、[正式发布就绪核查](docs/DELIVERY-READINESS-2026-10-13.md)。当前代码候选`f6e61bf3`的Java／Vue／Full／Native四条GitHub托管流程已独立接受，精准证据保存于[本候选收据](docs/evidence/candidate-f6e61bf3-hosted-acceptance-2026-10-13.json)。以下历史记录及准确548a归档的单书／长测／原件三方保持原身份，不移借当前镜像。PR56仍为以legacy为base的草稿，尚未合并、正式发版或生产切换。
+2026-10-15：[v6.1.0 正式版](https://github.com/warpdotsys/reader-dev/releases/tag/v6.1.0)已由 GitHub 托管 runner 发布，Java/Kotlin 主线 PR #56 已合入默认分支 `legacy`。完整镜像默认 Vue 3，并内置 Camoufox、Python、JRE 和运行依赖。当前入口：[交付记录](docs/DELIVERY-V6.1.0-2026-10-15.md)、[交付状态](docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)、[完整目标验收矩阵](docs/GOAL-EVIDENCE-MATRIX-2026-10-13.md)、[版本说明及已知问题](docs/releases/v6.1.0.md)。
 
-候选已按用户选择统一为v6.1.0，项目／根包锁版本与[待发说明及已知问题](docs/releases/v6.1.0.md)已同步。本版本托管验收通过，实际下载JAR的MANIFEST版本6.1.0与双clean完整字节一致，默认镜像生成账号登录／阅读／退出已验收。2026-10-14准确当前镜像14层／包内JAR及真实公开页脚本／Cookie三方12调用已独立验收；[原件default共享空间缺陷及当前修复契约](docs/REAL-GUTENBERG-COOKIE-2026-10-14.md)明确保留。起点真实认证、准确新镜像单书／匿名目录正文／长测及最终发布仍缺，尚未创建标签或部署。本机PowerShell 7构建入口为`pwsh -NoProfile -File .\scripts\build.ps1`，不清空保存授权输入的build目录；独立CI仍执行双clean字节一致验证。
+正式标签完成双 clean JAR 字节一致及双架构原生 / 新 runner 重载共 96 个生成大书场景；发布器复用已验收归档，没有重建应用。**生产部署因 SSH 连接超时失败，当前容器、真实生产登录及本次回滚尚未核实。** 需恢复连接后先检查远端状态，不能将软件发布视为已上线或盲目重跑。起点真实认证已停止且未验证，不再要求个人 Chrome 会话。本机 PowerShell 7 构建入口为 `pwsh -NoProfile -File .\scripts\build.ps1`，保留授权输入所在的 build 目录。下列旧候选、单书及长测记录保留各自身份；正式镜像与生产状态以当前交付记录为准。
 
-内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。候选单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，线上也尚未切换。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
+内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，本次生产切换尚未验收。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
 
 浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。完整镜像默认界面为 Vue 3，保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变。`de7c0c7e` 自己的镜像构建、重载、发布导入和默认入口已独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)，不覆盖随后新增的手机布局修复。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
 
