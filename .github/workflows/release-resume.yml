@@ -45,28 +45,42 @@ jobs:
           GHCR_IMAGE: ${{ vars.GHCR_IMAGE }}
           DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
         run: python3 scripts/verify-release-resume-inputs.py --tag "$RELEASE_TAG" --source-run "$SOURCE_RUN" --output release-resume-inputs.json
-      - name: Refuse a configured registry without reported push access before downloading images
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
-        run: |
-          python3 scripts/check-registry-publish-access.py --output registry-access.json
-          python3 -c 'import json; value=json.load(open("registry-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
-      - name: Preserve bounded recovery input and grant evidence
+      - name: Preserve bounded immutable recovery input evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-resume-inputs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            release-resume-inputs.json
-            registry-access.json
+          path: release-resume-inputs.json
+          if-no-files-found: error
+          retention-days: 90
+
+  verify-registry-access:
+    name: Verify registry publish access without image writes
+    needs: verify-resume-inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Inspect grants separately from non-secret output production
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKERHUB_IMAGE: ${{ needs.verify-resume-inputs.outputs.dockerhub-image }}
+        run: |
+          python3 scripts/check-registry-publish-access.py --output registry-access.json
+          python3 -c 'import json; value=json.load(open("registry-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
+      - name: Preserve non-secret registry grant evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-resume-access-${{ github.run_id }}-${{ github.run_attempt }}
+          path: registry-access.json
           if-no-files-found: error
           retention-days: 90
 
   build-and-publish-images:
     name: Publish only the two verified native images and their manifest
-    needs: verify-resume-inputs
+    needs: [verify-resume-inputs, verify-registry-access]
     runs-on: ubuntu-24.04
     timeout-minutes: 80
     env:
@@ -83,6 +97,16 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ needs.verify-resume-inputs.outputs.tag }}
+      - name: Refuse empty or malformed non-secret publish outputs before artifact downloads
+        env:
+          PUBLISH_GHCR: ${{ needs.verify-resume-inputs.outputs.ghcr-image }}
+          PUBLISH_DOCKERHUB: ${{ needs.verify-resume-inputs.outputs.dockerhub-image }}
+        run: |
+          set -euo pipefail
+          : "${PUBLISH_GHCR:?Missing validated GHCR repository output}"
+          : "${PUBLISH_DOCKERHUB:?Missing validated Docker Hub repository output}"
+          [[ "$PUBLISH_GHCR" =~ ^ghcr\.io/[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
+          [[ "$PUBLISH_DOCKERHUB" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'

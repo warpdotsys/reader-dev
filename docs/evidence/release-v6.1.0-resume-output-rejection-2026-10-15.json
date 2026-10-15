@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "resumeRun": 38673680058,
+  "publisherWorkflowRevision": "162863d17da96ddeb6cea45e1a38e3c6372f4864",
+  "applicationSourceRun": 38667600061,
+  "applicationRevision": "cc4593a1f707b30366005974f45eb1436da9b8fb",
+  "inputAndReportedRegistryGrantChecksPassed": true,
+  "inputJob": 116222320448,
+  "publisherJob": 116222398326,
+  "observedWarnings": [
+    "Skip output 'ghcr-image' since it may contain secret.",
+    "Skip output 'dockerhub-image' since it may contain secret."
+  ],
+  "observedFailure": "Error parsing reference: :v6.1.0-amd64 is not a valid repository/tag",
+  "newRegistryPushStartedInThisResume": false,
+  "githubReleaseJobSkipped": true,
+  "productionDeploymentJobSkipped": true,
+  "cause": "Public registry output producer shared a job with a username secret matching the public namespace substring",
+  "fix": "Separate secret-free outputs and credential inspection into dependent jobs; reject empty public outputs before artifact downloads",
+  "maskingDisabledOrEncodedAround": false,
+  "credentialsOrTokensExported": false,
+  "applicationRebuilt": false,
+  "readingTestsRepeated": false,
+  "tagMoved": false,
+  "fullGoalComplete": false
+}

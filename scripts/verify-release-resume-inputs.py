@@ -31,9 +31,13 @@ def validate_source(run,jobs,artifacts,tag,revision,run_id):
     require(run['id']==run_id and run['event']=='push' and run['head_branch']==tag
         and run['head_sha']==revision and run['status']=='completed' and run['conclusion']=='failure'
         and run['path']=='.github/workflows/release.yml','Not a failed stable-tag release run')
-    require(len(jobs)==12 and len({job['name'] for job in jobs})==12,'Unexpected source job set')
+    optional_registry='Verify registry publish access without image writes'
+    registry_present=any(job['name']==optional_registry for job in jobs)
+    require(len(jobs)==12+int(registry_present) and len({job['name'] for job in jobs})==len(jobs),'Unexpected source job set')
     indexed={job['name']:job for job in jobs}
-    for name,labels in REQUIRED.items():
+    required=dict(REQUIRED)
+    if registry_present:required[optional_registry]=['ubuntu-24.04']
+    for name,labels in required.items():
         job=indexed.get(name,{})
         require(job.get('status')=='completed' and job.get('conclusion')=='success'
             and job.get('labels')==labels and job.get('runner_name','').startswith('GitHub Actions '),
@@ -119,7 +123,9 @@ def main():
     with Path(os.environ['GITHUB_OUTPUT']).open('a',encoding='utf-8') as output:
         for key,value in values.items():output.write(key+'='+value+'\n')
     report=dict(schemaVersion=1,sourceRun=source_run,sourceRunAttempt=run['run_attempt'],
-        sourceRevision=revision,tag=args.tag,requiredSourceJobs=sorted(REQUIRED),
+        sourceRevision=revision,tag=args.tag,requiredSourceJobs=sorted([*REQUIRED]+([
+            'Verify registry publish access without image writes'] if any(job['name']=='Verify registry publish access without image writes'
+                for job in jobs_response['jobs']) else [])),
         artifactMetadata=selected,images={'ghcr':ghcr,'dockerhub':dockerhub},
         sourcePublisherFailedButAllBuildsAndPressurePassed=True,
         sourceReleaseAndProductionSkipped=True,applicationRebuilt=False,

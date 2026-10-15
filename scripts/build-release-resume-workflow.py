@@ -55,22 +55,36 @@ jobs:
           GHCR_IMAGE: ${{ vars.GHCR_IMAGE }}
           DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
         run: python3 scripts/verify-release-resume-inputs.py --tag "$RELEASE_TAG" --source-run "$SOURCE_RUN" --output release-resume-inputs.json
-      - name: Refuse a configured registry without reported push access before downloading images
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
-        run: |
-          python3 scripts/check-registry-publish-access.py --output registry-access.json
-          python3 -c 'import json; value=json.load(open("registry-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
-      - name: Preserve bounded recovery input and grant evidence
+      - name: Preserve bounded immutable recovery input evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-resume-inputs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            release-resume-inputs.json
-            registry-access.json
+          path: release-resume-inputs.json
+          if-no-files-found: error
+          retention-days: 90
+
+  verify-registry-access:
+    name: Verify registry publish access without image writes
+    needs: verify-resume-inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Inspect grants separately from non-secret output production
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKERHUB_IMAGE: ${{ needs.verify-resume-inputs.outputs.dockerhub-image }}
+        run: |
+          python3 scripts/check-registry-publish-access.py --output registry-access.json
+          python3 -c 'import json; value=json.load(open("registry-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
+      - name: Preserve non-secret registry grant evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-resume-access-${{ github.run_id }}-${{ github.run_attempt }}
+          path: registry-access.json
           if-no-files-found: error
           retention-days: 90
 
@@ -88,7 +102,7 @@ def render(canonical):
     deploy=canonical[middle:final]
     github=canonical[final:]
     publisher=replace(publisher,'needs: [verify-release-inputs, verify-vue3-e2e, build-native-images]',
-        'needs: verify-release-inputs',1)
+        'needs: [verify-release-inputs, verify-registry-access]',1)
     publisher=replace(publisher,'          digest-mismatch: error\n',
         '          digest-mismatch: error\n          github-token: ${{ github.token }}\n'
         '          run-id: ${{ needs.verify-release-inputs.outputs.source-run }}\n',4)

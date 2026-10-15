@@ -82,11 +82,18 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/verify_camoufox_wheel_lock.py deploy/reader-pro/requirements-camoufox.lock
+  verify-registry-access:
+    name: Verify registry publish access without image writes
+    needs: verify-release-inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Refuse missing Docker Hub push grants before expensive builds
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DOCKERHUB_IMAGE: ${{ needs.verify-release-inputs.outputs.dockerhub-image }}
         run: |
           python3 scripts/check-registry-publish-access.py --output "$RUNNER_TEMP/registry-publish-access.json"
           python3 -c 'import json,os; value=json.load(open(os.environ["RUNNER_TEMP"]+"/registry-publish-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
@@ -101,7 +108,7 @@ jobs:
 
   verify-vue3-e2e:
     name: Require complete Vue 3 browser journeys for this release commit
-    needs: verify-release-inputs
+    needs: [verify-release-inputs, verify-registry-access]
     permissions:
       contents: read
     uses: ./.github/workflows/vue3-preview.yml
@@ -126,6 +133,16 @@ jobs:
       dockerhub-digest: ${{ steps.digest.outputs.dockerhub-digest }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Refuse empty or malformed non-secret publish outputs before artifact downloads
+        env:
+          PUBLISH_GHCR: ${{ needs.verify-release-inputs.outputs.ghcr-image }}
+          PUBLISH_DOCKERHUB: ${{ needs.verify-release-inputs.outputs.dockerhub-image }}
+        run: |
+          set -euo pipefail
+          : "${PUBLISH_GHCR:?Missing validated GHCR repository output}"
+          : "${PUBLISH_DOCKERHUB:?Missing validated Docker Hub repository output}"
+          [[ "$PUBLISH_GHCR" =~ ^ghcr\.io/[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
+          [[ "$PUBLISH_DOCKERHUB" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'

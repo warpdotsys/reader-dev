@@ -23,3 +23,11 @@ Docker 的[官方认证说明](https://docs.docker.com/reference/api/registry/au
 - 仍要求两仓库的同一双架构清单和匿名可读验证、正式 GitHub Release、不可变镜像部署、快照 / 救援与公开版本检查。没有删减原发布门禁。
 
 新输入 / 规范派生共 16 项单元测试、凭据只读检查 8 项已通过；128 项原发布结构回归通过。真实 GitHub 输入预检已接受本次原 run 的 13 个制品角色。上述不等于续发、生产登录或回滚验收已完成；结果须另行记录。
+
+## 首次续发的编排错误及修正
+
+[首次续发 38673680058](https://github.com/warpdotsys/reader-dev/actions/runs/38673680058)的输入和授权检查成功，但在 Docker tag 前被拒绝：两个镜像路径的作业输出为空。前置作业同时使用 Docker Hub 用户名 Secret，而公开仓库路径含相同账号字符串，GitHub 明确记录 `Skip output 'ghcr-image'` 与 `Skip output 'dockerhub-image'`。这是本次新增编排的问题，不归咎于阅读测试或用户凭据。
+
+按 GitHub 的[作业输出保护规则](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idoutputs)，修正为无凭据的公开配置输出作业与单独的凭据检查作业；不禁用脱敏、不编码绕过、不导出密码或 Token。发布器显式依赖两项检查，任何路径为空会在下载大制品前停止。正常发布流程同步分离这两类职责；新增回归检查防止再混入。续发 18 项输入 / 派生检查通过，原 16 项结果保留时点。
+
+首次续发没有进入任何镜像推送，GitHub Release 与生产仍跳过；v6.1.0 标签不动，原失败及同制品归档保留，应用没有重建或重跑阅读场景。

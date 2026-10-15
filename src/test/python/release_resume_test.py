@@ -71,6 +71,13 @@ class ResumeInputTests(unittest.TestCase):
     def test_duplicate_artifact_names_rejected(self):
         self.artifacts.append(copy.deepcopy(self.artifacts[0]))
         with self.assertRaises(ValueError):self.verify()
+    def test_future_separate_registry_job_must_pass_if_present(self):
+        extra=dict(name='Verify registry publish access without image writes',status='completed',
+            conclusion='success',runner_name='GitHub Actions generated',labels=['ubuntu-24.04'])
+        self.jobs.append(extra)
+        self.assertEqual(len(self.verify()),13)
+        extra['conclusion']='failure'
+        with self.assertRaises(ValueError):self.verify()
     def test_registry_paths_cannot_contain_commands_or_tags(self):
         VERIFY.validate_registry_images('ghcr.io/generated/reader','generated/reader')
         for value in ('generated/reader:latest','generated/reader\nother','../repo','generated/reader;echo'):
@@ -100,5 +107,14 @@ class ResumeWorkflowTests(unittest.TestCase):
             self.assertIn(token,self.actual)
     def test_renderer_fails_if_canonical_shape_moves(self):
         with self.assertRaises(ValueError):RENDER.render(self.canonical.replace('    timeout-minutes: 80','    timeout-minutes: 81'))
+    def test_credential_jobs_never_produce_public_registry_job_outputs(self):
+        recovery_exporter=self.actual.split('  verify-resume-inputs:',1)[1].split('  verify-registry-access:',1)[0]
+        normal_exporter=self.canonical.split('  verify-release-inputs:',1)[1].split('  verify-registry-access:',1)[0]
+        for value in (recovery_exporter,normal_exporter):
+            self.assertNotIn('secrets.DOCKERHUB_USERNAME',value)
+            self.assertNotIn('secrets.DOCKERHUB_PASSWORD',value)
+        self.assertIn('needs: [verify-resume-inputs, verify-registry-access]',self.actual)
+        self.assertIn('needs: [verify-release-inputs, verify-registry-access]',self.canonical)
+        self.assertIn('Missing validated GHCR repository output',self.actual)
 
 if __name__=='__main__':unittest.main()
