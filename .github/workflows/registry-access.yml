@@ -1,0 +1,29 @@
+name: Read-only registry publish access
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: Inspect reported registry grants without writing images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Inspect only grants; never print tokens or passwords
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+        run: python3 scripts/check-registry-publish-access.py --output registry-access.json
+      - name: Preserve bounded non-secret grant observation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-access-${{ github.run_id }}-${{ github.run_attempt }}
+          path: registry-access.json
+          if-no-files-found: error
+          retention-days: 14
