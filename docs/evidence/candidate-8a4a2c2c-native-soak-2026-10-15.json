@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "scope": "bounded offline generated-request backend and bundled-browser soaks; not frontend continuous EPUB reading",
+  "sourceRevision": "8a4a2c2c2c669c7cfe7de9248682a7bb3adf7398",
+  "testedMergeSnapshot": "7555ca99175d023d67e41b3b7958885957936601",
+  "nativeRun": 38658110409,
+  "jarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+  "localIndependentAcceptanceSha256": "b252fc3c9e818d194807c34eee1c754fd3ac11a2fdf1f7496d7c3ce7b5ec7074",
+  "independentlyRecomputedArchiveDigestsAndReportConsumers": true,
+  "budget": {
+    "cpu": 2,
+    "hardMemoryBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "swapMaxBytes": 0,
+    "productionPolicyChanged": false
+  },
+  "architectures": [
+    {
+      "architecture": "amd64",
+      "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38662026727",
+      "runnerLabels": [
+        "ubuntu-24.04"
+      ],
+      "artifactId": 11940637552,
+      "artifactZipBytes": 11337,
+      "artifactZipSha256": "2733b58d822d758c4f6fa9deadb8fe949657087904150430a7453862a5e84168",
+      "sourceImageConfigId": "sha256:fff0212310b898f4b6eb3e0b02533c16b4f1674da6e36e221b9063003a6b19bd",
+      "continuousSeconds": 1803.534,
+      "rounds": 104,
+      "successfulSearches": 424,
+      "memoryPeakBytes": 1002725376,
+      "quiescentMemoryChangeBytes": 63176704,
+      "maxObservedRequestSeconds": 23.803,
+      "navigationTimeoutRecovered": true,
+      "scriptWatchdogRecovered": true,
+      "ownedWorkerExitRecovered": true,
+      "browserWorkerAndDriverZeroAfterEachRecovery": true,
+      "hardMemoryOomAndPidLimitEvents": 0,
+      "independentRemovalAndParentCleanupAccepted": true
+    },
+    {
+      "architecture": "arm64",
+      "runUrl": "https://github.com/warpdotsys/reader-dev/actions/runs/38662038115",
+      "runnerLabels": [
+        "ubuntu-24.04-arm"
+      ],
+      "artifactId": 11940408621,
+      "artifactZipBytes": 11473,
+      "artifactZipSha256": "d02eb4a701bb4b0269947eaecc167e89038ba57f07aee04be86afecf2c83a7d7",
+      "sourceImageConfigId": "sha256:132b8195f418f37ce49428aea6e8df8143f2ef713d90daa33528edd3c48af633",
+      "continuousSeconds": 1805.925,
+      "rounds": 111,
+      "successfulSearches": 452,
+      "memoryPeakBytes": 1008144384,
+      "quiescentMemoryChangeBytes": 45727744,
+      "maxObservedRequestSeconds": 22.368,
+      "navigationTimeoutRecovered": true,
+      "scriptWatchdogRecovered": true,
+      "ownedWorkerExitRecovered": true,
+      "browserWorkerAndDriverZeroAfterEachRecovery": true,
+      "hardMemoryOomAndPidLimitEvents": 0,
+      "independentRemovalAndParentCleanupAccepted": true
+    }
+  ],
+  "privateBodiesOrCredentialsInEvidence": false,
+  "productionChanged": false,
+  "productionCapacityOrLeakAbsenceProven": false,
+  "realSiteAuthenticationProven": false,
+  "frontendContinuousEpubReadingProven": false,
+  "fullGoalComplete": false
+}

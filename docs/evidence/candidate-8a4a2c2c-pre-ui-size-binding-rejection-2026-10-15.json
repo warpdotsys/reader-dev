@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8a4a2c2c2c669c7cfe7de9248682a7bb3adf7398",
+  "scope": "pre-UI test-harness size binding rejection, not a book-reading result",
+  "readingScenesExecuted": 0,
+  "staleExpectedJarBytes": 285684333,
+  "actualVerifiedJarBytes": 285684839,
+  "actualVerifiedJarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+  "observation": {
+    "passed": false,
+    "readerEightScenesAccepted": false,
+    "beforeRegularObservationStarted": true,
+    "exceptionType": "AssertionError",
+    "boundedFailureFrames": [
+      {
+        "file": "run_inner_persistent.py",
+        "function": "<module>",
+        "line": 6
+      },
+      {
+        "file": "runpy.py",
+        "function": "run_path",
+        "line": 289
+      },
+      {
+        "file": "runpy.py",
+        "function": "_run_module_code",
+        "line": 96
+      },
+      {
+        "file": "runpy.py",
+        "function": "_run_code",
+        "line": 86
+      },
+      {
+        "file": "inner-persistent.py",
+        "function": "<module>",
+        "line": 35
+      }
+    ]
+  },
+  "cleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1",
+      "ActiveState": "failed"
+    },
+    "ownedContainersRemaining": 0,
+    "bookCopyRemoved": true,
+    "bookCopyBytesRemoved": 37809796,
+    "generatedDataRemoved": true,
+    "generatedFilesRemoved": 0,
+    "generatedBytesRemoved": 0,
+    "ownedParentSliceInactive": true,
+    "beforeRegularObservationStarted": true,
+    "readingScenesExecuted": 0,
+    "reason": "test helper retained previous expected JAR byte count; exact current hash and actual size verified",
+    "staleExpectedJarBytes": 285684333,
+    "actualVerifiedJarBytes": 285684839,
+    "productionChanged": false,
+    "privateBodiesReadForCleanup": false
+  },
+  "receiptHashes": {
+    "observation": {
+      "bytes": 636,
+      "sha256": "bd70c8b8db316bcaeb66bdac87aff0bef2e34f8d42794bc8e57549fd8ea9521f"
+    },
+    "provenance": {
+      "bytes": 2569,
+      "sha256": "bf21f587d4de47233e708375277409171779ff57afae2a0ab47ebf84972da77b"
+    },
+    "launch": {
+      "bytes": 399,
+      "sha256": "f4e6dbff0c2adfa7a612378c6e6e6b07221618bb18f2cfff313b89348a69e673"
+    },
+    "cleanup": {
+      "bytes": 717,
+      "sha256": "3c7a31911a73dc2ed1e5fb334edb5be2203a8a5f2bd0746fb7e60db9059100c3"
+    }
+  },
+  "productReadingFailureProven": false,
+  "productOrAssertionsWeakened": false,
+  "productionChanged": false
+}

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8a4a2c2c2c669c7cfe7de9248682a7bb3adf7398",
+  "testedMergeSnapshot": "7555ca99175d023d67e41b3b7958885957936601",
+  "version": "6.1.0",
+  "fourOwnHostedWorkflowsAccepted": true,
+  "nativeSixOwnHostedJobsAccepted": true,
+  "runIds": {
+    "java": 38658110550,
+    "vue": 38658110422,
+    "full": 38658110415,
+    "native": 38658110409
+  },
+  "junit": {
+    "tests": 222,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 35
+  },
+  "reproducibility": {
+    "archiveBytesMatch": true,
+    "archiveCommentMatches": true,
+    "contentDifferences": 0,
+    "entryOrderMatches": true,
+    "firstEntryCount": 1568,
+    "firstJarBytes": 285684839,
+    "firstJarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+    "firstOnlyEntries": 0,
+    "passed": true,
+    "schemaVersion": 1,
+    "scope": "two separate Boot JAR files; complete bytes and all entries, without normalization",
+    "secondEntryCount": 1568,
+    "secondJarBytes": 285684839,
+    "secondJarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+    "secondOnlyEntries": 0,
+    "zipMetadataDifferences": 0
+  },
+  "frontendTests": 405,
+  "actualChromiumTests": 25,
+  "loginLayouts": 14,
+  "hostedPythonTests": 807,
+  "hostedPythonSkipped": 0,
+  "fullImageGeneratedUi": {
+    "schemaVersion": 1,
+    "scope": "complete-image-default-ui-generated-journey",
+    "testedRevision": "7555ca99175d023d67e41b3b7958885957936601",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 12.004,
+    "xmlSha256": "085bb807bf5c7d4be8cefa042438a51c93d5faa17f7ac763e8a748adac1108fc",
+    "screenshots": [
+      {
+        "file": "native-default-ui-generated-login.png",
+        "sha256": "e137a1c0587fcd9001cb7fd233f7564bef7dd50a882d47c47b4c372b1be9da8a",
+        "bytes": 34204,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-shelf.png",
+        "sha256": "51d562a89a74da2b710ee6a2434f6cda321619696855833782d0b8d5add0addc",
+        "bytes": 49456,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-reading.png",
+        "sha256": "f91059846b690703ce9ed886ef039043d1ab5899202218e14b47d7a8ae825728",
+        "bytes": 33286,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "file": "native-default-ui-generated-logout.png",
+        "sha256": "e07bc5ac8fce8a97250149b4d73c886ce3d106152e0206097c28c43d548b6b09",
+        "bytes": 34077,
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "clientRunsOutsideServerResourceBudget": true,
+    "realAccountOrPrivateBooksTested": false,
+    "productionOrLongRunProven": false
+  },
+  "fourGeneratedUiScreenshotsActuallyViewed": true,
+  "nativeMetadata": {
+    "amd64": {
+      "schemaVersion": 1,
+      "architecture": "amd64",
+      "version": "6.1.0",
+      "revision": "7555ca99175d023d67e41b3b7958885957936601",
+      "jarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+      "archiveSha256": "b415c79e68f6139ff90f9fb7ec83bf70cb6d3d56b70a37b6b2437c32ae5f73d8",
+      "imageId": "sha256:fff0212310b898f4b6eb3e0b02533c16b4f1674da6e36e221b9063003a6b19bd"
+    },
+    "arm64": {
+      "schemaVersion": 1,
+      "architecture": "arm64",
+      "version": "6.1.0",
+      "revision": "7555ca99175d023d67e41b3b7958885957936601",
+      "jarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+      "archiveSha256": "b4a43cc8661cabc4647f856f240fd4675b788a90eae067480e2c796166d3a4b8",
+      "imageId": "sha256:132b8195f418f37ce49428aea6e8df8143f2ef713d90daa33528edd3c48af633"
+    }
+  },
+  "builtReadingScenes": 48,
+  "reloadReadingScenes": 48,
+  "strictGeneratedReadingScenes": 96,
+  "independentReceiptHashes": {
+    "independent-java-acceptance.json": "9ddc392a777804e256238a53b3e6f891605ee084dcf9666c0044af31de16db8f",
+    "independent-vue-acceptance.json": "0c24aa98c62349bc5e2e1e96af4343eb4dfb0ce5d7ad3e5fd13522ec9a1e5fb5",
+    "independent-full-reports.json": "387f662e8c48b8021637e3e66b636c265a543d46ac6d0167d7f65441c0d6ce7a",
+    "independent-native-small-acceptance.json": "127cf5e5b4747e95e66bd9273b78dc71532f9643609f0139be1b2b093bdd2ce7",
+    "independent-built-pressure-acceptance.json": "bbe5eec829a21c936d0b581e9608af9d2924e6660994275f17b307e3a05e30af",
+    "independent-reloaded-pressure-acceptance.json": "3d0ceef6d6808dc99d6a764790afe74c5c368f208d03bc1f69a3d2360d139735"
+  },
+  "downloadedJarIdentity": {
+    "artifactId": 11937846476,
+    "artifactZipSha256": "50a05f1431923f38879ac465314f320beb3e82b6c40887cee5ad65dfd2bb8347",
+    "jarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+    "jarBytes": 285684839,
+    "entryCount": 1568,
+    "artifactAndJarBytesLocallyRehashed": true,
+    "manifestAndOriginalEntrypointVerified": true,
+    "nonVue3EntriesByteIdenticalToBaseline": true,
+    "newWorkerSha256": "836bd2aeac73558efc8bbc521675e9ad88249e34c7fc9fd4b5933930b5be6d1e",
+    "actualPackagedWorkerMatchesLocalPooledBufferBuild": true,
+    "actualReaderChunkPagehideAndBfcacheBranchVerified": true,
+    "readerChunkSha256": "159e8ddebcce3d12969f2991ad8790794563d12fa1b14a05cd61d637f9f0bba6",
+    "downloadDrive": "D"
+  },
+  "serverBookProofIncludedInThisHostedSnapshot": false,
+  "subsequentServerBookProof": "candidate-8a4a2c2c-authorized-epub-default-2026-10-15.json",
+  "previous80RealBookFailureRetained": true,
+  "currentImageRealWebsiteAuthenticationAccepted": false,
+  "productionChanged": false,
+  "merged": false,
+  "tagged": false,
+  "released": false,
+  "goalComplete": false
+}

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8a4a2c2c2c669c7cfe7de9248682a7bb3adf7398",
+  "jarSha256": "b4954ac70229f4514146b8e077909874bfc5aeee779f71fde903622638ed1ee0",
+  "actualThreeWayPublicCookieScriptAccepted": true,
+  "comparison": {
+    "allThreeExecuteActualBrowserScriptOnFixedRealHttpsPage": true,
+    "currentGeneratedManualCookieReplay": true,
+    "allThreeBrowserDomFreshOtherUserAndClearedCookieAbsent": true,
+    "currentBothRenderersCookieStoreUserIsolationProven": true,
+    "originalBookRequestCookieNamespace": "default",
+    "originalCookieStoreUserIsolationProven": false,
+    "originalSharedCookieInputObservedInSecondUser": true,
+    "originalNamespaceDefectNotReintroduced": true,
+    "seededCookieVisibility": {
+      "camoufox": true,
+      "original": false,
+      "restored": false
+    },
+    "threeWaySeededCookieVisibilityEqual": false,
+    "allRawMetadataReturnDataAndDefaultClocksPreserved": true,
+    "fullLiteralJsonParityClaimed": false,
+    "trueWebsiteAuthenticationClaimed": false
+  },
+  "fixedPublicUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+  "businessSeconds": 81.601,
+  "controllerSeconds": 85.918,
+  "budget": {
+    "scope": "both test containers and all their probe/Java/browser descendants",
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1611632640,
+    "memoryEvents": {
+      "low": 0,
+      "high": 2174,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 51
+    },
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsEvents": {
+      "max": 0
+    },
+    "memoryHighBytes": 1610612736
+  },
+  "publicTlsTunnels": 14,
+  "receiptHashes": {
+    "launch.json": {
+      "bytes": 448,
+      "sha256": "0df7c69f2f24c5e7163e75700f66d735955154176dadb89d894b4664c1f7a362"
+    },
+    "provenance.json": {
+      "bytes": 77810,
+      "sha256": "f51a826f713371fadde1dc17a47cebe2f56df138057d23b5ef7c80e786a7a794"
+    },
+    "results/REAL_COOKIE_SCRIPT.json": {
+      "bytes": 67041,
+      "sha256": "65d411686bcf8e9e20d27dca561b4ff102929e68a3980a7ea5f9ad31d7ccfd9d"
+    },
+    "cleanup.json": {
+      "bytes": 493,
+      "sha256": "37d655f1f8c2109e3cbe34af0a8836f29de7daa51fad091eeec1ca31440d38ef"
+    }
+  },
+  "cleanup": {
+    "ownedContainersRemaining": 0,
+    "ownedParentSliceInactive": true,
+    "ownedBrokerSocketRemoved": true,
+    "productionChanged": false,
+    "privateBooksRead": 0,
+    "realCredentialsImported": false
+  },
+  "websiteAuthenticationAccepted": false,
+  "privateBookReadingAccepted": false,
+  "fullGoalComplete": false
+}

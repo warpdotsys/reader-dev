@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "8a4a2c2c2c669c7cfe7de9248682a7bb3adf7398",
+  "testedMergeSnapshot": "7555ca99175d023d67e41b3b7958885957936601",
+  "scope": "8a4a2c2c exact default image; one authorized EPUB and original-generated account, eight strict scenes",
+  "variantBusinessAccepted": false,
+  "defaultImageAccepted": true,
+  "eightScenesAccepted": true,
+  "variant": null,
+  "uiBusinessAssertionsAndThirtySecondWaitUnchanged": true,
+  "productSixtyAndFifteenSecondDeadlinesUnchanged": true,
+  "originalJarGeneratedAccountAndStorageAccepted": true,
+  "actualEntryPointAndUiUsed": true,
+  "strictRefreshContentAndHeadingComparisonsAccepted": true,
+  "seconds": 46.133,
+  "aggregateBudget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryPeakBytes": 1612836864,
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "memoryEvents": {
+      "low": 0,
+      "high": 4547,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 2561
+    },
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "transferMetrics": [
+    {
+      "kind": "selected-path-check",
+      "phase": "uiRaw806",
+      "httpStatus": 200,
+      "responseBodyBytes": 302,
+      "bodyDurationMs": 0.07991992187499974
+    },
+    {
+      "kind": "selected-file-download",
+      "phase": "uiRaw806",
+      "httpStatus": 200,
+      "responseBodyBytes": 37809796,
+      "bodyDurationMs": 624.0451953125
+    },
+    {
+      "kind": "selected-path-check",
+      "phase": "uiRaw805Refresh",
+      "httpStatus": 200,
+      "responseBodyBytes": 302,
+      "bodyDurationMs": 0.0810507812499992
+    },
+    {
+      "kind": "selected-file-download",
+      "phase": "uiRaw805Refresh",
+      "httpStatus": 200,
+      "responseBodyBytes": 37809796,
+      "bodyDurationMs": 819.187115234375
+    }
+  ],
+  "javaAnonRefreshSampleBytes": [
+    402354176
+  ],
+  "uniqueCausalFixProven": false,
+  "currentDefaultMirrorOrProductionFixed": false,
+  "cleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "ownedContainersRemaining": 0,
+    "generatedFilesRemoved": 1688,
+    "generatedBytesRemoved": 88194388,
+    "bookCopyRemoved": true,
+    "bookCopyBytesRemoved": 37809796,
+    "generatedDataRemoved": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false,
+    "privateBodiesReadForCleanup": false
+  },
+  "receiptSha256": {
+    "observation": "fa6969b4905afef95d2c038633b4eb46f4e19db6367facbc0abb561f6147dbce",
+    "provenance": "fa2bb37fb772d2161c9c4063d517da77897f1c1635618c27e70b5ab9ac580ff4",
+    "launch": "1e82efc43743db730f5e034e59762f3ec988155aa3f1ffddc3e9b1e2b73f30b5",
+    "cleanup": "5eaf6921ccd295559017ed50480adc0fd16ae8c5d8ad896c2fce1790d16bde58"
+  },
+  "privateBodiesNamesOrBodyHashesPublished": false,
+  "productionChanged": false,
+  "goalComplete": false
+}
