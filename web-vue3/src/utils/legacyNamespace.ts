@@ -10,7 +10,7 @@ export class NamespaceProofError extends Error {
 /** 全局管理/状态接口没有账号数据空间，不能要求它们返回空间凭据。 */
 const GLOBAL_APIS = new Set(['/login', '/logout', '/getUserInfo', '/getUserList', '/addUser', '/updateUser',
   '/deleteUsers', '/resetPassword', '/clearInactiveUsers', '/getSystemInfo', '/getLicense',
-  '/importLicense', '/decryptLicense', '/supplyLicense'])
+  '/importLicense', '/decryptLicense', '/supplyLicense', '/sendCodeToEmail'])
 
 export interface LegacyNamespaceContext {
   params: Record<string, string>

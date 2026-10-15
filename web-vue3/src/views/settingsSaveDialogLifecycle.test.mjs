@@ -19,6 +19,10 @@ const functions = ['closeAddToc', 'confirmAddToc', 'closeAddTts', 'confirmAddTts
 const executable = ts.transpileModule(functions, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
 }).outputText
+const opdsExports = {}
+vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../utils/opdsConnection.ts', import.meta.url), 'utf8'), {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+}).outputText, { exports: opdsExports })
 
 function deferred() {
   let resolve, reject
@@ -131,7 +135,7 @@ test('empty name falls back to the regex and an explicitly disabled rule remains
   assert.equal(f.context.tocDialogOpen.value, false)
 })
 
-// OPDS uses generated transport doubles here. Its real backend remains unavailable.
+// Generated transport doubles prove component lifecycle only, not backend or UI acceptance.
 const variants = [
   { name: 'TTS add', save: 'confirmAddTts', close: 'closeAddTts', busy: 'ttsBusy', open: 'ttsDialogOpen', throws: false },
   { name: 'TTS edit', save: 'confirmEditTts', close: 'closeEditTts', busy: 'ttsSaving', open: 'ttsEditing', throws: false },
@@ -150,7 +154,10 @@ function otherFixture(kind, options = {}) {
     opdsCfgBusy: { value: false }, opdsCfgOpen: { value: true },
     opdsCfg: { value: { enabled: false, username: '', passwordSet: false } },
     opdsForm: { value: { username: 'generated-opds', password: 'GeneratedOnly-2026' } },
-    opdsCfgMsg: { value: '' }, opdsCfgMsgError: { value: false }, opdsTestPassword: '',
+    opdsCfgMsg: { value: '' }, opdsCfgMsgError: { value: false }, opdsTestPassword: { value: '' },
+    opdsPersonalMode: { value: true }, opdsLoadError: { value: '' },
+    opdsGeneration: 0, opdsDisposed: false, validateOpdsAccount: opdsExports.validateOpdsAccount,
+    opdsProbe: undefined, opdsTesting: { value: false }, opdsTestOk: { value: null }, opdsTestMsg: { value: '' },
     document: { body: { style: { overflow: 'hidden' } } },
     newTtsId: () => 'generated-only',
     ElMessage: { warning: value => calls.warning.push(value), success: value => calls.success.push(value),
@@ -166,13 +173,55 @@ function otherFixture(kind, options = {}) {
     loadTtsList: async () => { calls.load++; return await options.load?.() ?? true },
     saveOpdsSettings: async (username, password) => {
       calls.save.push({ username, password })
-      return await options.save?.() ?? { isSuccess: true, data: { enabled: true, username } }
+      return await options.save?.() ?? { isSuccess: true, data: { enabled: !!username, username, passwordSet: !!username } }
     },
   }
   vm.runInNewContext(executable, context)
   return { calls, context, save: () => context[kind.save](), close: () => context[kind.close](),
     isOpen: () => !!context[kind.open].value, isBusy: () => context[kind.busy].value }
 }
+
+test('OPDS same account accepts blank password and consumes only acknowledged state', async () => {
+  const f = otherFixture(variants[2])
+  f.context.opdsCfg.value = { enabled: true, username: 'generated-opds', passwordSet: true }
+  f.context.opdsForm.value.password = ''
+  await f.save()
+  assert.deepEqual(f.calls.save, [{ username: 'generated-opds', password: '' }])
+  assert.equal(f.isOpen(), false)
+  assert.equal(f.context.opdsTestPassword.value, '')
+})
+
+test('OPDS business failure or incomplete success cannot close dialog or pretend saved', async () => {
+  for (const result of [{ isSuccess: false, errorMsg: 'generated refusal' },
+    { isSuccess: true, data: { enabled: true, username: 'generated-opds' } }]) {
+    const f = otherFixture(variants[2], { save: () => result })
+    await f.save()
+    assert.equal(f.isOpen(), true)
+    assert.equal(f.context.opdsCfg.value.enabled, false)
+    assert.equal(f.calls.success.length, 0)
+  }
+})
+
+test('OPDS obsolete save response cannot fill a new session or retain its secret', async () => {
+  const gate = deferred()
+  let current = true
+  const f = otherFixture(variants[2], { save: () => gate.promise, current: () => current })
+  const pending = f.save()
+  current = false
+  f.context.opdsGeneration++
+  gate.resolve({ isSuccess: true, data: { enabled: true, username: 'generated-opds', passwordSet: true } })
+  await pending
+  assert.equal(f.context.opdsCfg.value.enabled, false)
+  assert.equal(f.context.opdsTestPassword.value, '')
+  assert.equal(f.calls.success.length, 0)
+})
+
+test('OPDS system configuration mode performs no account mutation', async () => {
+  const f = otherFixture(variants[2])
+  f.context.opdsPersonalMode.value = false
+  await f.save()
+  assert.equal(f.calls.save.length, 0)
+})
 
 test('TTS edit sends the original snapshot and clears it only after a confirmed save', async () => {
   const f = otherFixture(variants[1])

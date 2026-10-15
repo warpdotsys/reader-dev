@@ -41,10 +41,10 @@ test('关于页不得继承 Rust 发布履历或显示后端未提供的统计�
   assert.match(client, /不含版本号/)
 })
 
-test('设置页仅在用户主动复制时提供完整 OPDS 令牌地址', async () => {
+test('设置页 OPDS 地址始终不携带主账号令牌', async () => {
   const view = await source('web-vue3/src/views/SettingsView.vue')
-  assert.match(view, /const opdsDisplayUrl = computed\(\(\) => opdsUrl\.value\.replace\(/)
-  assert.match(view, /<span class="row-value mono">\{\{ opdsDisplayUrl \}\}<\/span>/)
+  assert.match(view, /const opdsUrl = computed\(\(\) => opdsCatalogUrl\(window\.location\.origin\)\)/)
+  assert.match(view, /<span class="row-value mono">\{\{ opdsUrl \}\}<\/span>/)
   assert.match(view, /async function copyOpdsUrl\(\) \{\s*if \(await copyText\(opdsUrl\.value\)\)/)
-  assert.doesNotMatch(view, /<span class="row-value mono">\{\{ opdsUrl \}\}<\/span>/)
+  assert.doesNotMatch(view.slice(view.indexOf('/* ================= OPDS 访问'), view.indexOf('/** 复制文本')), /Bearer|encodeURIComponent\(store.accessToken\)/)
 })

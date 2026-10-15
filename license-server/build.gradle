@@ -19,6 +19,10 @@ tasks.withType(AbstractArchiveTask) {
 dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.46.1.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    // Jakarta Mail is the API; Angus is Eclipse's maintained implementation.
+    implementation 'jakarta.mail:jakarta.mail-api:2.1.5'
+    implementation 'org.eclipse.angus:angus-mail:2.0.5'
+    runtimeOnly 'org.eclipse.angus:angus-activation:2.0.3'
     implementation 'org.slf4j:slf4j-nop:1.7.36'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
 }

@@ -1,4 +1,4 @@
-name: Release and deploy Reader Pro
+name: Stable release Reader Pro
 
 # GitHub tag globs cannot express the full SemVer grammar. This broad trigger
 # is followed by a strict stable-tag check before any build or registry write.
@@ -6,6 +6,7 @@ on:
   push:
     tags:
       - 'v*'
+      - '!v*-*'
 
 permissions:
   contents: read
@@ -237,6 +238,8 @@ jobs:
 
   deploy-production:
     name: Deploy immutable image to production
+    # Publication does not authorize access to a production host.
+    if: ${{ vars.READER_ENABLE_PRODUCTION_DEPLOY == 'true' }}
     needs: [verify-release-inputs, build-and-publish-images, publish-github-release]
     runs-on: ubuntu-24.04
     timeout-minutes: 30

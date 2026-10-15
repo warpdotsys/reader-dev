@@ -23,9 +23,10 @@ test('phone shelf retains readable heading and all actions on separate grid and 
   assert.match(phone, /\.group-tabs\s*\{[^}]*flex-basis:\s*100%/)
 })
 
-test('unavailable OPDS shelf service does not promise sync or create credential-bearing links', () => {
-  assert.match(shelf, /当前 Java\/Kotlin 服务端尚未实现 OPDS 书架服务/)
-  assert.match(shelf, /本页不会生成或复制带登录凭据的无效地址/)
+test('OPDS shelf entry routes to independent account settings without promising progress sync', () => {
+  assert.match(shelf, /OPDS 1\.2 提供本人书架中的本地 TXT、EPUB、PDF 下载/)
+  assert.match(shelf, /配置 OPDS 独立账号/)
+  assert.match(shelf, /不使用网页登录密码，不同步网页阅读进度/)
   assert.doesNotMatch(shelf, /const opdsUrl|function copyOpdsUrl|opdsCopied/)
   assert.doesNotMatch(shelf, /即可同步书架与阅读/)
   assert.doesNotMatch(shelf, /class="opds-url/)

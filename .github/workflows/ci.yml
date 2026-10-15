@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [legacy]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -15,19 +16,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Test and build JAR
+  contracts:
+    name: Fast source and release safety checks
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Set up Temurin JDK 11
-        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
-        with:
-          distribution: temurin
-          java-version: '11'
-          cache: gradle
       - name: Set up Node.js 24
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -38,6 +33,16 @@ jobs:
         run: |
           node --check src/main/resources/simple-web/assets/js/context-path-20260923.js
           node scripts/test-simple-web-context-path.js
+      - name: Lint every Actions workflow with a pinned verified tool
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool_dir=$(mktemp -d "$RUNNER_TEMP/actionlint.XXXXXX")
+          curl --fail --location --retry 2 --output "$tool_dir/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          printf '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  %s\n' "$tool_dir/actionlint.tar.gz" | sha256sum -c -
+          tar -xzf "$tool_dir/actionlint.tar.gz" -C "$tool_dir" actionlint
+          "$tool_dir/actionlint" -shellcheck='' -pyflakes='' .github/workflows/*.yml
       - name: Verify formal release safety invariants without publishing
         run: |
           node scripts/check-reader-version.mjs
@@ -45,6 +50,7 @@ jobs:
           node scripts/check-release-pipeline.mjs
           node --test scripts/check-release-pipeline.test.mjs
           node --test scripts/release-native-artifacts.test.mjs scripts/verify-release-manifest.test.mjs
+          node --test scripts/prepare-preview.test.mjs
       - name: Verify browser protocol and differential CLI safety without a browser download
         shell: bash
         run: |
@@ -58,6 +64,24 @@ jobs:
           path: ${{ runner.temp }}/reader-python-contracts.log
           if-no-files-found: warn
           retention-days: 14
+
+  build:
+    name: Test and reproducibly build Reader
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web-vue3/package-lock.json
       - name: Build and test
         run: |
           npm ci --prefix web-vue3
@@ -98,6 +122,14 @@ jobs:
           python3 scripts/verify-reader-jar-reproducibility.py \
             --first "$RUNNER_TEMP/reader-jar-reproducibility/first.jar" \
             --second "$jar" > "$RUNNER_TEMP/reader-jar-reproducibility/REPRODUCIBILITY.json"
+      - name: Preserve the exact tested Reader bytes for candidate comparison
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reader-ci-jar-${{ github.sha }}
+          path: ${{ runner.temp }}/reader-jar-reproducibility/first.jar
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 7
       - name: Preserve exact-byte rebuild result including a failed comparison
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -106,3 +138,92 @@ jobs:
           path: ${{ runner.temp }}/reader-jar-reproducibility/REPRODUCIBILITY.json
           if-no-files-found: error
           retention-days: 14
+
+  license-jar-smoke:
+    name: License server fat JAR gate
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Temurin JDK 11
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+      - name: Build and test the standalone license server
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x license-server/gradlew
+          (
+            cd license-server
+            ./gradlew clean test fatJar --max-workers=2 --no-build-cache --no-daemon --stacktrace
+          )
+          jar=$(find license-server/build/libs -maxdepth 1 -type f -name 'reader-license-server-*-all.jar' -print -quit)
+          test -n "$jar"
+          test -s "$jar"
+          install -d "$RUNNER_TEMP/license-jar-artifacts"
+          install -m 0644 "$jar" "$RUNNER_TEMP/license-jar-artifacts/first.jar"
+          sha256sum "$RUNNER_TEMP/license-jar-artifacts/first.jar" > "$RUNNER_TEMP/license-jar-artifacts/FIRST.SHA256"
+      - name: Preserve license server JUnit XML including failures and skips
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: license-server-junit-${{ github.sha }}
+          path: license-server/build/test-results/test/TEST-*.xml
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Smoke the isolated fat JAR trial and activation flow
+        shell: bash
+        run: |
+          set -euo pipefail
+          smoke_parent=$(mktemp -d "$RUNNER_TEMP/license-jar-smoke.XXXXXX")
+          trap 'rm -rf "$smoke_parent"' EXIT
+          timeout --signal=TERM --kill-after=5s 60s python3 scripts/smoke-license-jar.py \
+            --java "$(command -v java)" \
+            --jar "$RUNNER_TEMP/license-jar-artifacts/first.jar" \
+            --root "$smoke_parent/runtime" \
+            --report "$RUNNER_TEMP/license-jar-artifacts/SMOKE.json"
+      - name: Verify a second clean standalone fat JAR is byte-identical
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd license-server
+            ./gradlew clean fatJar --max-workers=2 --no-build-cache --no-daemon --stacktrace
+          )
+          jar=$(find license-server/build/libs -maxdepth 1 -type f -name 'reader-license-server-*-all.jar' -print -quit)
+          test -n "$jar"
+          test -s "$jar"
+          cmp --silent "$RUNNER_TEMP/license-jar-artifacts/first.jar" "$jar"
+          sha256sum "$jar" > "$RUNNER_TEMP/license-jar-artifacts/SECOND.SHA256"
+      - name: Preserve license fat JAR smoke and reproducibility evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: license-jar-gate-${{ github.sha }}
+          path: ${{ runner.temp }}/license-jar-artifacts/
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-maintenance-contracts:
+    name: Windows PowerShell generated maintenance fixtures
+    needs: contracts
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Exercise PowerShell 5.1 with generated scheduler adapters only
+        shell: pwsh
+        run: |
+          if (!(Get-Command powershell.exe -ErrorAction SilentlyContinue)) { throw 'Windows PowerShell 5.1 is required' }
+          if (!(Test-Path D:\)) { throw 'Generated fixtures require the hosted D drive' }
+          python -B -m unittest discover -s src/test/python -p local_reader_autostart_test.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Generated PowerShell contracts failed' }

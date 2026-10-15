@@ -2231,7 +2231,7 @@ onMounted(() => {
 
       <template #extra>
         <button class="nav-link" type="button" title="全部书签（跨书）" @click="openBookmarks">书签</button>
-        <button class="nav-link" type="button" title="OPDS 服务器（当前后端尚未实现）" @click="openOpds">OPDS</button>
+        <button class="nav-link" type="button" title="OPDS 服务器（独立账号）" @click="openOpds">OPDS</button>
       </template>
     </TopNav>
 
@@ -2730,7 +2730,7 @@ onMounted(() => {
       </Transition>
     </Teleport>
 
-    <!-- 保留入口说明未实现的能力，不生成带登录凭据的无效地址。 -->
+    <!-- 目录 URL 不携带凭据；独立账号在设置中管理。 -->
     <Teleport to="body">
       <Transition name="dlg">
         <div v-if="opdsOpen" class="dlg-overlay" @click.self="closeOpds">
@@ -2750,7 +2750,8 @@ onMounted(() => {
                 </svg>
               </button>
             </div>
-            <p class="opds-tip" role="status">当前 Java/Kotlin 服务端尚未实现 OPDS 书架服务，暂时无法连接外部阅读器。本页不会生成或复制带登录凭据的无效地址；你仍可继续使用网页书架和阅读。</p>
+            <p class="opds-tip">OPDS 1.2 提供本人书架中的本地 TXT、EPUB、PDF 下载。请先在设置中配置独立账号，再将设置页的目录地址填入兼容阅读器；不使用网页登录密码，不同步网页阅读进度。</p>
+            <button class="accent-btn" type="button" @click="closeOpds(); router.push('/settings')">配置 OPDS 独立账号</button>
           </div>
         </div>
       </Transition>

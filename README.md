@@ -1,58 +1,49 @@
-# reader-pro-restored
+# Reader Pro
 
-本目录用于从 `reader-pro-3.2.14.jar` 恢复可维护、可重复构建的 Java/Kotlin 混合工程。
+从原版 Reader Pro 恢复并持续维护的 Java/Kotlin 阅读服务。后端以原始 `reader-pro-3.2.14.jar` 的行为和存储格式为兼容基线，提供 Vue 3 界面，并保留原版 Vue 2 入口。项目不再进行 Go/Rust 全量重写。
 
-## 证据边界
+## 版本与支持范围
 
-- `reference/original/reader-pro-3.2.14.original.jar`：原始 JAR 的只读备份，不参与写入或原地修改。
-- `reference/original/SHA256SUMS.txt`：原始 JAR 的 SHA-256 记录。
-- `reports/`：结构、版本、源码溯源、恢复风险及差分报告。
-- `src/` 与构建文件：仅在确认最接近的真实源码骨架后建立。
+- **稳定版：** [v6.1.0](https://github.com/warpdotsys/reader-dev/releases/tag/v6.1.0)，默认维护分支为 `legacy`。
+- **当前候选：** `v6.1.1-preview.1`，应用内部版本为 `6.1.1`。这是未完成第二阶段验收的临时版本，不是新的稳定版，不自动部署生产。
+- **推荐运行形态：** Linux AMD64/ARM64 完整镜像，包含 JRE、Python、固定版本 Camoufox 和运行依赖。单独 JAR 不包含浏览器运行时，不能替代完整镜像。
 
-状态术语：
+请先阅读[临时版本说明与已知问题](docs/releases/v6.1.1-preview.1.md)。旧版本的测试结果不自动适用于新候选；网页被打开也不代表使用者已验收。
 
-- **已从 JAR 验证**：由归档内容、字节码、资源或实际运行直接确认。
-- **已从近似源码推断**：来自 Git 历史或相似源码，尚未证明与 JAR 同版。
-- **已成功重建**：恢复工程本地编译或运行测试已实际通过。
-- **尚未验证**：没有足够证据或测试覆盖。
+## 开始使用
 
-不得覆盖原始 JAR，不得以空实现替代缺失业务逻辑。
+稳定版安装参考[部署说明](deploy/reader-pro/README.md)。候选构建和下载入口见[构建与发版](docs/BUILD-AND-RELEASE.md)。测试候选时必须使用独立数据目录，不能直接挂载唯一一份正式 `storage`。
 
-## 当前开发主线
+完整镜像默认使用 Vue 3；`READER_APP_WEBUI=vue2` 可切回原版界面。普通 JAR 的默认入口仍是原版界面，启动时使用 `--reader.app.webUi=vue3` 可选择已打包的 Vue 3。
 
-2026-10-15：[v6.1.0 正式版](https://github.com/warpdotsys/reader-dev/releases/tag/v6.1.0)已由 GitHub 托管 runner 发布，Java/Kotlin 主线 PR #56 已合入默认分支 `legacy`。完整镜像默认 Vue 3，并内置 Camoufox、Python、JRE 和运行依赖。当前入口：[交付记录](docs/DELIVERY-V6.1.0-2026-10-15.md)、[交付状态](docs/CURRENT-DELIVERY-STATUS-2026-10-13.md)、[完整目标验收矩阵](docs/GOAL-EVIDENCE-MATRIX-2026-10-13.md)、[版本说明及已知问题](docs/releases/v6.1.0.md)。
+本机运行须同时设置回环监听和新的工作目录；仅换端口并不能隔离存储。不要把管理密码、访问令牌或许可证私钥写进仓库、公开命令示例或问题反馈。
 
-正式标签完成双 clean JAR 字节一致及双架构原生 / 新 runner 重载共 96 个生成大书场景；发布器复用已验收归档，没有重建应用。**生产部署因 SSH 连接超时失败，当前容器、真实生产登录及本次回滚尚未核实。** 需恢复连接后先检查远端状态，不能将软件发布视为已上线或盲目重跑。起点真实认证已停止且未验证，不再要求个人 Chrome 会话。本机 PowerShell 7 构建入口为 `pwsh -NoProfile -File .\scripts\build.ps1`，保留授权输入所在的 build 目录。下列旧候选、单书及长测记录保留各自身份；正式镜像与生产状态以当前交付记录为准。
+## 开发与验证
 
-内置浏览器、参考 Rust 分支设计语言的 Vue 3 界面、项目 Markdown 文档是当前主要工作。单容器镜像内置 Camoufox，Vue 3 可通过 `-PreaderWebUi=vue3` 打包并以 `--reader.app.web-ui=vue3` 选择；普通 JAR 仍默认原版 Vue 2 和远程渲染配置，本次生产切换尚未验收。原始 JAR 的行为和数据格式仍是后端兼容基线。实施顺序、验收门槛和已知边界见 [维护路线图](docs/ROADMAP.md)与 [Vue 3 UI 迁移核查](docs/VUE3-UI-MIGRATION.md)。
+使用 JDK 11、仓库 Gradle Wrapper 和 Node.js 24。Node 依赖由锁文件安装。下列命令应在**新建的独立检出目录**运行；不要在包含私人测试输入的旧 `build/` 目录执行 `clean`。
 
-浏览器的独立功能探针见 [browser-poc](browser-poc/README.md)。项目维护一个完整 JAR 和一个正式镜像定义：JAR 包含 Java renderer 与 Python worker，固定版本的 Camoufox 浏览器、Python/JRE 运行时及系统依赖由镜像携带，不要求宿主机 Chrome 或独立 WebView 容器。完整镜像默认界面为 Vue 3，保留 `READER_APP_WEBUI=vue2` 回退；普通 JAR 默认值不变。`de7c0c7e` 自己的镜像构建、重载、发布导入和默认入口已独立验收，详见[默认 Vue 3 候选增量](docs/DEFAULT-VUE3-IMAGE-2026-10-06.md)，不覆盖随后新增的手机布局修复。现有远程渲染配置暂留作浏览器回滚。此前 `08cccfca` 自己的[正常门禁](docs/CAMOUFOX-SOURCE-DOCUMENT-2026-10-06.md)和[双架构离线长测](docs/BROWSER-SOAK-2026-10-06.md)已通过，不覆盖最新制品；起点匿名解析仍失败，真实认证三方、全部书源兼容、指纹能力及生产切换尚未验收。
-
-2026-10-07 手机分组遮挡修复 `e5cc2ba8` 及 `c3307ded` 长分组回归已独立托管验收，见[界面证据](docs/SHELF-MOBILE-CONTROLS-2026-10-07.md)。数值线程池修复 `09163efe` 自己的四条工作流／原生六作业也已通过，两套真实契约各 19 项及小身份／UI／预算报告独立核对，见[修复范围与资源风险](docs/CAMOUFOX-NUMERICAL-THREADS-2026-10-07.md)。后续新增有限[内存分类观测](docs/BROWSER-MEMORY-CATEGORIES-2026-10-07.md)，本机 helper 停止后的大项实为文件页记账，其自己的 `594cec9c` hosted 也已完成，5 份实际分类／原预算独立核对；不扣缓存放宽守卫、不倒填起点失败原因。[起点实站专项](docs/PUBLIC-METADATA-IMAGE-2026-10-06.md)及本机旧 worker 的触限／解析红灯仍保留，不能以普通 CI 成功发“已修好”的版本；未切换生产。
-
-隔离本机测试可加 `--reader.server.bindAddress=127.0.0.1`，让 HTTP 服务仅监听回环地址；默认值仍为 `0.0.0.0`，不改变现有容器反向代理的连通性。仅改监听地址不会隔离 `storage/data`，仍须另设全新 `reader.app.workDir`。
-
-## 新许可证中心
-
-`license-server/` 是为 `https://license.medwarp.cn` 新建的独立服务。它不保存任何硬编码私钥、管理员令牌或 SMTP 凭据；SQLite、签名密钥和审计记录均放在部署时指定的持久化数据目录。
-
-2026-09-19 已部署到 `cdn.medwarp.cn`：容器 `reader-license` 仅监听 `127.0.0.1:18087`，由现有宝塔 Nginx 的 `license.medwarp.cn` TLS 虚拟主机分流。生产密钥保存在 `/opt/reader-license/data`，恢复版客户端已经固定对应公钥。证书签发、自动续期 dry-run、容器重启持久性和公网端到端激活/吊销均已实测通过。
-
-旧中心没有发现独立源码，原 JAR 也只包含公钥。不过，JAR 字节码和 `origin/feat/migrate-pro-features` 中的近似源码足以验证激活、在线校验、ReturnData 以及 RSA 分段格式。旧私钥无法从公钥恢复，因此：
-
-- 恢复版继续尝试旧公钥，以便读取已有 `storage/data/license.key`；
-- 新中心生成新的迁移密钥，恢复版通过 `reader.app.licensePublicKey` 固定其公钥；
-- 未修改的原始 `reader-pro-3.2.14.jar` 不能接受新中心签发的许可证。
-
-可重复构建：
-
-```powershell
-.\scripts\build.ps1
-
-$env:JAVA_HOME = (Resolve-Path '.tools\jdk-11.0.8').Path
-Push-Location license-server
-.\gradlew.bat clean test fatJar --no-daemon
-Pop-Location
+```bash
+npm ci --prefix web-vue3
+npm test --prefix web-vue3
+npm run build --prefix web-vue3
+./gradlew -PreaderWebUi=vue3 test bootJar --max-workers=2 --no-build-cache --no-daemon
 ```
 
-部署和 API 说明见 `license-server/README.md`，恢复证据与验证边界见 `reports/LICENSE-CENTER-RECOVERY.md`。
+Windows 使用 `gradlew.bat`。仅构建旧界面的本机安全入口为 `pwsh -NoProfile -File ./scripts/build.ps1 -JavaHome <JDK11目录>`；该脚本不会清空既有 `build/`。完整镜像、浏览器契约和可重复构建由 GitHub 托管 runner 验证。
+
+## 功能与限制
+
+- 书源、书架、分组及 TXT/EPUB/PDF 阅读沿用恢复后的业务实现；第三方书源是否可用取决于站点规则、网络与授权状态。
+- 候选增加独立 OPDS 鉴权、目录及本人书架内本地文件下载。Windows 原生运行若缺少安全目录句柄会拒绝下载，不能通过放松路径检查解决。
+- [许可证中心](license-server/README.md)支持独立部署、SMTP 验证码和试用申领。测试邮件送达不代表生产邮箱投递成功。
+- 新候选的完整备份恢复与自启工具仍为实验性开发，不能作为生产运维入口。详见[维护工具状态](scripts/local-reader/README.md)。
+
+## 文档入口
+
+- [构建与发版](docs/BUILD-AND-RELEASE.md)：Actions 分工、制品身份、候选草稿与稳定发布。
+- [候选版本说明](docs/releases/v6.1.1-preview.1.md)：变更、已知问题、验收范围及升级回滚。
+- [第二阶段状态](docs/SECOND-STAGE-ACCEPTANCE-2026-10-15.md)：已完成层次和暂停时仍缺少的验收。
+- [v6.1.0 交付记录](docs/DELIVERY-V6.1.0-2026-10-15.md)：上一稳定版历史，不能视为当前生产状态证明。
+- [维护路线图](docs/ROADMAP.md)和[Vue 3 迁移核查](docs/VUE3-UI-MIGRATION.md)：设计与兼容性背景。
+
+原始 JAR、只读备份与历史差分报告保留各自证据身份。不会以空实现、反编译伪代码或跳过的测试宣称功能完成。

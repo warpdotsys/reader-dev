@@ -61,7 +61,7 @@ apply(plugin = "kotlin")
 apply(plugin = "io.github.fvarrui.javapackager.plugin")
 
 group = "com.htmake"
-version = "6.1.0"
+version = "6.1.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -208,7 +208,9 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 // The retained 3.2.14 frontend has the former centre URL embedded in its
 // minified bundle. Rewrite only that literal in generated resources, leaving
 // the extracted reference asset byte-for-byte available for provenance.
-val vue3Dist = file("web-vue3/dist")
+// Allow an explicitly prepared build output on another drive; CI continues to
+// use the default npm build. Do not overwrite a user's existing dist to test it.
+val vue3Dist = file(project.findProperty("readerVue3Dist") ?: "web-vue3/dist")
 val verifyVue3UiDist = tasks.register("verifyVue3UiDist") {
     doLast {
         require(File(vue3Dist, "index.html").isFile) {

@@ -11,7 +11,7 @@ const sourceRoot = resolve(fileURLToPath(new URL('../', import.meta.url)))
 const stubs: Record<string, string> = {
   '@/router': 'export default { currentRoute: { value: { fullPath: \'/\' } }, replace() {} }',
   '@/stores/user': 'const store={accessToken:\'\',username:\'\',isAdmin:false,defaultConfigMode:false,sessionRevision:0,clear(){}}; export const useUserStore=()=>store',
-  './requestContext': 'export const readerRequestContext=()=>({params:{},headers:{},isCurrent:()=>true})',
+  './requestContext': 'export const readerRequestContext=()=>({params:{},headers:{"X-Reader-Secure-Key":"generated-context-key"},isCurrent:()=>true})',
   '@/utils/legacyNamespace': 'export const assertLegacyNamespace=()=>{}',
   '@/utils/message': 'export const ElMessage={error(){}}',
 }
@@ -97,6 +97,21 @@ test('GET 未提供 signal 时不制造取消信号', async () => {
   await get<string>('/generated-no-signal')
   assert.ok(seen)
   assert.equal(seen.signal, undefined)
+})
+
+test('显式单次管理密码不被已存管理密码覆盖，大小写不敏感', async () => {
+  const observed: InternalAxiosRequestConfig[] = []
+  request.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+    observed.push(config)
+    return success(config)
+  }
+  await post('/importLicense', { content: 'generated-key' }, {
+    silent: true, headers: { 'x-reader-secure-key': 'generated-once-key' },
+  })
+  await get('/getUserList')
+  assert.equal(observed[0].headers.get('X-Reader-Secure-Key'), 'generated-once-key')
+  assert.equal(observed[1].headers.get('X-Reader-Secure-Key'), 'generated-context-key')
+  assert.ok(!JSON.stringify(observed[0].params).includes('generated-once-key'))
 })
 
 test('POST 既有 signal 透传保持不变', async () => {

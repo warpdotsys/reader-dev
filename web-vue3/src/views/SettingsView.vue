@@ -5,6 +5,7 @@ import { ElMessageBox } from 'element-plus'
 import { ElMessage } from '@/utils/message'
 import { version as VERSION } from '../../package.json'
 import TopNav from '@/components/TopNav.vue'
+import LicensePanel from '@/components/LicensePanel.vue'
 import {
   deleteHttpTts,
   deleteHttpTtsMany,
@@ -42,6 +43,7 @@ import { resetUserPassword } from '@/api/users'
 import { getUserConfig, saveUserConfig } from '@/api/userConfig'
 import { getReadingStats } from '@/api/stats'
 import { getOpdsSettings, saveOpdsSettings } from '@/api/opds'
+import { opdsCatalogUrl, probeOpdsCatalog, validateOpdsAccount } from '@/utils/opdsConnection'
 import { setGlobalHanMode, syncHanMode } from '@/utils/hanMode'
 import { isDefaultTxtTocRuleId, txtTocRuleKey } from '@/utils/tocRules'
 import {
@@ -1079,16 +1081,12 @@ async function runClearTtsCache() {
 }
 
 /* ================= OPDS 访问 ================= */
-/** OPDS 地址 = 当前 host + /opds（secure 模式附带 accessToken=用户名:token，外部阅读器免输入密码） */
-const opdsUrl = computed(() => {
-  const base = `${window.location.origin}/opds`
-  return store.accessToken ? `${base}?accessToken=${encodeURIComponent(store.accessToken)}` : base
-})
-/** 地址仍可一键复制，但页面和无障碍树不直接暴露访问令牌。 */
-const opdsDisplayUrl = computed(() => opdsUrl.value.replace(/([?&]accessToken=)[^&#]+/, '$1已隐藏'))
+/** 外部阅读器使用独立 Basic 账号；目录地址不包含任何凭据。 */
+const opdsUrl = computed(() => opdsCatalogUrl(window.location.origin))
 const opdsCopied = ref(false)
+const opdsPersonalMode = computed(() => !(store.isAdmin && store.defaultConfigMode))
 
-/* GAP 53：OPDS 独立账号 + 测试连接（GET/POST /reader3/getOpdsSettings|saveOpdsSettings；fetch /opds 验证） */
+/* OPDS 独立账号 + 测试连接；目录与后端 /reader3/opds/catalog 保持一致。 */
 const opdsCfg = ref<{ enabled: boolean; username: string; passwordSet: boolean }>({
   enabled: false,
   username: '',
@@ -1100,24 +1098,56 @@ const opdsCfgMsg = ref('')
 const opdsCfgMsgError = ref(false)
 const opdsForm = ref({ username: '', password: '' })
 /** 配置时输入的密码留内存：测试连接用 Basic 认证（服务端不回传密码） */
-let opdsTestPassword = ''
+const opdsTestPassword = ref('')
 const opdsTesting = ref(false)
 const opdsTestOk = ref<boolean | null>(null)
 const opdsTestMsg = ref('')
+const opdsLoadError = ref('')
+let opdsGeneration = 0
+let opdsDisposed = false
+let opdsProbe: AbortController | undefined
+
+function resetOpdsSession() {
+  opdsGeneration++
+  opdsProbe?.abort()
+  opdsProbe = undefined
+  opdsTesting.value = false
+  opdsCfgBusy.value = false
+  opdsCfgOpen.value = false
+  opdsTestPassword.value = ''
+  opdsForm.value = { username: '', password: '' }
+  opdsCfg.value = { enabled: false, username: '', passwordSet: false }
+  opdsTestOk.value = null
+  opdsTestMsg.value = ''
+  opdsLoadError.value = ''
+  document.body.style.overflow = ''
+}
+
+watch([() => store.sessionRevision, () => store.accessToken, opdsPersonalMode], () => {
+  resetOpdsSession()
+  void loadOpdsCfg()
+}, { flush: 'sync' })
+onBeforeUnmount(() => { opdsDisposed = true; resetOpdsSession() })
 
 async function loadOpdsCfg() {
+  if (!opdsPersonalMode.value || opdsDisposed) return
+  const generation = opdsGeneration
+  const context = readerRequestContext()
   try {
     const res = await getOpdsSettings()
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
     const d = res.data
-    if (d) {
-      opdsCfg.value = { enabled: !!d.enabled, username: d.username || '', passwordSet: !!d.passwordSet }
-    }
-  } catch {
-    /* 后端不可用：保持默认 */
+    if (!res.isSuccess || !d || typeof d.passwordSet !== 'boolean') throw new Error(res.errorMsg || 'OPDS 配置响应无效')
+    opdsCfg.value = { enabled: !!d.enabled, username: d.username || '', passwordSet: d.passwordSet }
+    opdsLoadError.value = ''
+  } catch (error) {
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
+    opdsLoadError.value = error instanceof Error ? error.message : '无法读取 OPDS 配置'
   }
 }
 
 function openOpdsCfg() {
+  if (!opdsPersonalMode.value) return
   opdsForm.value = { username: opdsCfg.value.username, password: '' }
   opdsCfgMsg.value = ''
   opdsCfgMsgError.value = false
@@ -1128,81 +1158,90 @@ function openOpdsCfg() {
 function closeOpdsCfg() {
   if (opdsCfgBusy.value) return
   opdsCfgOpen.value = false
+  opdsForm.value.password = ''
   document.body.style.overflow = ''
 }
 
 /** 保存账号（username 空 = 禁用独立账号） */
 async function saveOpdsCfg() {
-  if (opdsCfgBusy.value) return
+  if (opdsCfgBusy.value || !opdsPersonalMode.value) return
   const username = opdsForm.value.username.trim()
   const password = opdsForm.value.password
-  if (username && password.length < 4) {
-    opdsCfgMsg.value = '密码至少 4 位'
+  const validation = validateOpdsAccount(username, password, opdsCfg.value)
+  if (validation) {
+    opdsCfgMsg.value = validation
     opdsCfgMsgError.value = true
     return
   }
-  if (username && !password && opdsCfg.value.username !== username) {
-    opdsCfgMsg.value = '新账号需填写密码'
-    opdsCfgMsgError.value = true
-    return
-  }
+  // A pending configuration read or probe must not overwrite this newer edit.
+  const generation = ++opdsGeneration
+  opdsProbe?.abort()
+  opdsProbe = undefined
+  opdsTesting.value = false
+  opdsTestOk.value = null
+  opdsTestMsg.value = ''
+  const context = readerRequestContext()
   opdsCfgBusy.value = true
   opdsCfgMsg.value = ''
+  opdsCfgMsgError.value = false
   try {
     const res = await saveOpdsSettings(username, password)
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
     const d = res.data
+    if (!res.isSuccess || !d || typeof d.passwordSet !== 'boolean') throw new Error(res.errorMsg || 'OPDS 设置未确认保存')
     opdsCfg.value = {
-      enabled: !!d?.enabled,
-      username: d?.username ?? username,
-      passwordSet: !!d?.enabled,
+      enabled: d.enabled,
+      username: d.username,
+      passwordSet: d.passwordSet,
     }
     // 本次输入的密码留内存供「测试连接」Basic 认证使用（刷新后失效——服务端不回传密码）
-    if (username && password) opdsTestPassword = password
-    if (!username) opdsTestPassword = ''
+    if (username && password) opdsTestPassword.value = password
+    if (!username) opdsTestPassword.value = ''
+    opdsLoadError.value = ''
     ElMessage.success(username ? 'OPDS 账号已保存' : '已禁用 OPDS 独立账号')
   } catch (error) {
-    // This compatibility adapter rejects locally, outside the request interceptor.
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
     opdsCfgMsg.value = error instanceof Error ? error.message : 'OPDS 设置保存失败'
     opdsCfgMsgError.value = true
     return
   } finally {
-    opdsCfgBusy.value = false
+    if (generation === opdsGeneration) opdsCfgBusy.value = false
   }
   closeOpdsCfg()
 }
 
-/** 测试连接：fetch /opds——配置了独立账号且密码在内存 → Basic 认证；否则带 accessToken */
+/** 实际读取并校验 Atom 目录，不把 HTML 登录页或 HTTP 200 当成功。 */
 async function testOpds() {
-  if (opdsTesting.value) return
+  if (opdsTesting.value || !opdsPersonalMode.value) return
+  if (!opdsCfg.value.enabled || !opdsTestPassword.value) {
+    opdsTestOk.value = false
+    opdsTestMsg.value = '请先配置独立账号，并输入本次测试使用的 OPDS 密码'
+    return
+  }
+  const generation = opdsGeneration
+  const context = readerRequestContext()
+  const controller = new AbortController()
+  opdsProbe = controller
+  const timeout = window.setTimeout(() => controller.abort(), 15000)
   opdsTesting.value = true
   opdsTestOk.value = null
   opdsTestMsg.value = '测试中…'
   try {
-    const url = `${window.location.origin}/opds`
-    const headers: Record<string, string> = { Accept: 'application/atom+xml, application/opds+json, */*' }
-    const user = opdsCfg.value.username.trim()
-    if (opdsCfg.value.enabled && user && opdsTestPassword) {
-      headers.Authorization = `Basic ${btoa(`${user}:${opdsTestPassword}`)}`
-    } else if (store.accessToken) {
-      // 独立账号密码不可用（未在本会话配置）→ 回退 accessToken
-      headers.Authorization = `Bearer ${store.accessToken}`
-    }
-    const resp = await fetch(url, { headers })
-    if (resp.ok) {
-      opdsTestOk.value = true
-      opdsTestMsg.value = `连接成功（HTTP ${resp.status} · ${resp.headers.get('content-type')?.split(';')[0] || 'OPDS'}）`
-    } else if (resp.status === 401 || resp.status === 403) {
-      opdsTestOk.value = false
-      opdsTestMsg.value = `连接失败：认证未通过（HTTP ${resp.status}）——请检查 OPDS 账号或 accessToken`
-    } else {
-      opdsTestOk.value = false
-      opdsTestMsg.value = `连接失败（HTTP ${resp.status}）`
-    }
+    await probeOpdsCatalog(window.location.origin, opdsCfg.value.username, opdsTestPassword.value, controller.signal)
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
+    opdsTestOk.value = true
+    opdsTestMsg.value = '连接成功：独立账号认证和 Atom 目录校验通过'
   } catch (err) {
+    if (opdsDisposed || generation !== opdsGeneration || !context.isCurrent()) return
     opdsTestOk.value = false
-    opdsTestMsg.value = `连接失败：${err instanceof Error ? err.message : '网络错误'}`
+    opdsTestMsg.value = controller.signal.aborted ? '连接测试超时或已取消' : `连接失败：${err instanceof Error ? err.message : '网络错误'}`
   } finally {
-    opdsTesting.value = false
+    window.clearTimeout(timeout)
+    if (generation === opdsGeneration) {
+      opdsTesting.value = false
+      opdsTestPassword.value = ''
+      opdsProbe = undefined
+    }
   }
 }
 
@@ -1687,12 +1726,14 @@ async function runExportData() {
         </div>
       </section>
 
+      <LicensePanel />
+
       <!-- OPDS 访问 -->
       <section class="card">
         <h2 class="card-title">OPDS 访问</h2>
         <div class="row">
           <span class="row-label">OPDS 地址</span>
-          <span class="row-value mono">{{ opdsDisplayUrl }}</span>
+          <span class="row-value mono">{{ opdsUrl }}</span>
           <button class="row-action" type="button" @click="copyOpdsUrl">
             {{ opdsCopied ? '已复制' : '复制' }}
           </button>
@@ -1701,22 +1742,28 @@ async function runExportData() {
         <div class="row">
           <span class="row-label">OPDS 账号</span>
           <span class="row-value">
-            {{ opdsCfg.enabled ? opdsCfg.username + (opdsCfg.passwordSet ? '（已设密码）' : '') : '未配置（使用登录账号）' }}
+            {{ opdsLoadError || (opdsCfg.enabled ? opdsCfg.username + (opdsCfg.passwordSet ? '（已设密码）' : '') : '未配置（OPDS 访问已禁用）') }}
           </span>
-          <button class="row-action" type="button" @click="openOpdsCfg">
+          <button class="row-action" type="button" :disabled="!opdsPersonalMode" @click="openOpdsCfg">
             {{ opdsCfg.enabled ? '修改' : '配置' }}
           </button>
+        </div>
+        <div v-if="opdsCfg.enabled && opdsPersonalMode" class="row">
+          <label class="row-label" for="opds-test-password">本次测试密码</label>
+          <input id="opds-test-password" v-model="opdsTestPassword" class="field-input" type="password"
+            autocomplete="off" maxlength="128" :disabled="opdsTesting" placeholder="仅留在内存，测试后清除" />
         </div>
         <div class="row">
           <span class="row-label">测试连接</span>
           <span class="row-value opds-test" :class="{ ok: opdsTestOk === true, fail: opdsTestOk === false }">
             {{ opdsTestMsg || '校验 OPDS 服务是否可访问（用当前配置账号）' }}
           </span>
-          <button class="row-action" type="button" :disabled="opdsTesting" @click="testOpds">
+          <button class="row-action" type="button" :disabled="opdsTesting || !opdsPersonalMode" @click="testOpds">
             {{ opdsTesting ? '测试中…' : '测试连接' }}
           </button>
         </div>
-        <p class="card-note">外部阅读器（如 legado、静读天下等）可通过此地址连接书架。页面已隐藏 accessToken；点击复制会得到完整地址，请仅粘贴到可信的阅读器中。</p>
+        <p v-if="!opdsPersonalMode" class="card-note">独立账号只对应本人书架，请先退出系统配置模式。</p>
+        <p class="card-note">支持 OPDS 1.2 的阅读器可使用此地址及独立账号访问本人书架中的本地 TXT、EPUB、PDF。地址不含登录令牌；不支持同步网页阅读进度。非本机访问请配置 HTTPS。</p>
       </section>
 
       <!-- 数据备份 -->
@@ -1964,8 +2011,10 @@ async function runExportData() {
                   v-model="opdsForm.username"
                   class="field-input"
                   type="text"
-                  placeholder="留空 = 禁用独立账号（回退登录账号）"
+                  placeholder="3–64 位英文、数字或 _.-；留空禁用"
                   spellcheck="false"
+                  autocomplete="off"
+                  maxlength="64"
                   :disabled="opdsCfgBusy"
                 />
               </label>
@@ -1976,11 +2025,12 @@ async function runExportData() {
                   class="field-input"
                   type="password"
                   autocomplete="new-password"
-                  placeholder="至少 4 位（已配置且不改则留空）"
+                  placeholder="12–128 位；同账号不改密码可留空"
+                  maxlength="128"
                   :disabled="opdsCfgBusy"
                 />
               </label>
-              <p class="field-tip">外部阅读器用此账号 + 密码连接 OPDS（secure 模式优先于登录账号校验）</p>
+              <p class="field-tip">此账号只用于 OPDS，不改变网页登录密码。留空用户名会禁用 OPDS，不回退主账号认证。</p>
               <p v-if="opdsCfgMsg" class="field-tip" :class="{ error: opdsCfgMsgError }">{{ opdsCfgMsg }}</p>
               <div class="dlg-actions">
                 <button class="ghost-btn" type="button" :disabled="opdsCfgBusy" @click="closeOpdsCfg">取消</button>

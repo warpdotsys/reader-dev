@@ -209,6 +209,8 @@ jobs:
 
   deploy-production:
     name: Deploy immutable image to production
+    # Publication does not authorize access to a production host.
+    if: ${{ vars.READER_ENABLE_PRODUCTION_DEPLOY == 'true' }}
     needs: [verify-resume-inputs, build-and-publish-images, publish-github-release]
     runs-on: ubuntu-24.04
     timeout-minutes: 30

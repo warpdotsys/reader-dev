@@ -141,8 +141,21 @@ jobs:
           READER_CAMOUFOX_BROWSER_VERSION: '152.0.4-beta.30'
         run: |
           set -euo pipefail
-          ./gradlew -PreaderWebUi=vue3 test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' --max-workers=2 --no-daemon
+          if command -v google-chrome >/dev/null 2>&1; then
+            chrome="$(command -v google-chrome)"
+          elif command -v chromium >/dev/null 2>&1; then
+            chrome="$(command -v chromium)"
+          else
+            npx --yes playwright@1.63.0 install chromium
+            chrome="$(find "$HOME/.cache/ms-playwright" -type f -name chrome -path '*/chrome-linux*/chrome' -print -quit)"
+          fi
+          test -n "$chrome" && test -x "$chrome"
+          export READER_BROWSER_EXECUTABLE="$chrome"
+          ./gradlew -PreaderWebUi=vue3 test --tests 'com.htmake.reader.utils.CamoufoxWebviewRendererTest' \
+            --tests 'com.htmake.reader.utils.LocalWebviewRendererTest' --max-workers=2 --no-daemon
           python3 scripts/verify-camoufox-contracts.py build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          python3 scripts/verify-browser-jvm-contracts.py --results-dir build/test-results/test \
+            --json-output build/browser-jvm-contracts.json
           # A source-tree test is not enough if another worker was put in the JAR.
           version='${{ steps.jar.outputs.version }}'
           cmp <(unzip -p "dist/reader-pro-v${version}.jar" BOOT-INF/classes/camoufox/worker.py) src/main/resources/camoufox/worker.py
@@ -154,7 +167,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: reader-release-camoufox-contract-${{ github.sha }}
-          path: build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+          path: |
+            build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
+            build/test-results/test/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml
+            build/browser-jvm-contracts.json
           if-no-files-found: error
           retention-days: 14
       - name: Preserve actual source document observations including failures

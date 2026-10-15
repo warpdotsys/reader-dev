@@ -8,20 +8,30 @@ async function source(path) {
   return readFile(new URL(path, root), 'utf8')
 }
 
-test('OPDS、阅读统计和服务监控不调用恢复版不存在的路由', async () => {
-  const [router, opds, stats, serverStats] = await Promise.all([
+test('阅读统计和服务监控不调用恢复版不存在的路由', async () => {
+  const [router, stats, serverStats] = await Promise.all([
     source('src/main/java/com/htmake/reader/api/YueduApi.kt'),
-    source('web-vue3/src/api/opds.ts'),
     source('web-vue3/src/api/stats.ts'),
     source('web-vue3/src/api/serverStats.ts'),
   ])
 
-  for (const route of ['getOpdsSettings', 'saveOpdsSettings', 'getReadingStats', 'getServerStats']) {
+  for (const route of ['getReadingStats', 'getServerStats']) {
     assert.doesNotMatch(router, new RegExp(`"/reader3/${route}"`))
   }
-  for (const client of [opds, stats, serverStats]) {
+  for (const client of [stats, serverStats]) {
     assert.match(client, /Promise\.reject\(new Error\(/)
   }
+})
+
+test('OPDS 配置只调用真实独立账号路由，不持久化密码或伪造成功', async () => {
+  const [router, client] = await Promise.all([
+    source('src/main/java/com/htmake/reader/api/YueduApi.kt'), source('web-vue3/src/api/opds.ts'),
+  ])
+  assert.match(router, /router\.get\("\/reader3\/getOpdsSettings"\)/)
+  assert.match(router, /router\.post\("\/reader3\/saveOpdsSettings"\)/)
+  assert.match(client, /get<OpdsSettings>\('\/getOpdsSettings'/)
+  assert.match(client, /post<OpdsSettings>\('\/saveOpdsSettings', \{ username, password \}/)
+  assert.doesNotMatch(client, /localStorage|Promise\.resolve|unavailable/)
 })
 
 test('TTS 使用 Java/Kotlin 已注册的 book/tts，并保留 legacy 字段语义', async () => {

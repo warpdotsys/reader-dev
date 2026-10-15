@@ -37,6 +37,7 @@ on:
       - 'src/test/python/public_metadata_probe_test.py'
       - 'src/test/javascript/public-metadata-wait.test.mjs'
       - 'scripts/verify-camoufox-contracts.py'
+      - 'scripts/verify-browser-jvm-contracts.py'
       - 'scripts/verify-source-document-observation.py'
       - 'src/test/python/source_document_observation_report_test.py'
       - 'scripts/report-browser-cgroup.py'
@@ -95,6 +96,7 @@ on:
       - 'src/test/python/camoufox_script_javascript_test.py'
       - 'src/test/javascript/camoufox-source-script.test.mjs'
       - 'src/test/python/camoufox_contract_report_test.py'
+      - 'src/test/python/browser_jvm_contracts_test.py'
       - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
@@ -135,6 +137,7 @@ on:
       - 'src/test/python/public_metadata_probe_test.py'
       - 'src/test/javascript/public-metadata-wait.test.mjs'
       - 'scripts/verify-camoufox-contracts.py'
+      - 'scripts/verify-browser-jvm-contracts.py'
       - 'scripts/verify-source-document-observation.py'
       - 'src/test/python/source_document_observation_report_test.py'
       - 'scripts/report-browser-cgroup.py'
@@ -193,6 +196,7 @@ on:
       - 'src/test/python/camoufox_script_javascript_test.py'
       - 'src/test/javascript/camoufox-source-script.test.mjs'
       - 'src/test/python/camoufox_contract_report_test.py'
+      - 'src/test/python/browser_jvm_contracts_test.py'
       - 'src/test/python/browser_cgroup_report_test.py'
       - 'src/test/python/compare_webview_cookie_safety_test.py'
       - 'src/test/python/public_webview_probe_test.py'
@@ -588,6 +592,28 @@ jobs:
           python3 scripts/verify-camoufox-contracts.py build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml
           timeout 60s "$READER_CAMOUFOX_PYTHON" scripts/verify-source-document-observation.py \
             --browser-version "$READER_CAMOUFOX_BROWSER_VERSION" > build/source-document-observation.json
+      - name: Verify all 35 browser JVM contracts actually executed
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report_dir="$RUNNER_TEMP/browser-jvm-contract-report"
+          install -d "$report_dir"
+          local_report="$RUNNER_TEMP/local-chromium-contract-report/TEST-com.htmake.reader.utils.LocalWebviewRendererTest.xml"
+          camoufox_report="build/test-results/test/TEST-com.htmake.reader.utils.CamoufoxWebviewRendererTest.xml"
+          if test -f "$local_report"; then cp "$local_report" "$report_dir/"; fi
+          if test -f "$camoufox_report"; then cp "$camoufox_report" "$report_dir/"; fi
+          python3 scripts/verify-browser-jvm-contracts.py \
+            --results-dir "$report_dir" \
+            --json-output "$report_dir/SUMMARY.json"
+      - name: Preserve full browser JVM contract matrix
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-jvm-contract-report
+          path: ${{ runner.temp }}/browser-jvm-contract-report/
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve Camoufox contract report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

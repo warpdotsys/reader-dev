@@ -150,7 +150,11 @@ class LicenseController(coroutineContext: CoroutineContext) : BaseController(cor
                     response.result().bodyAsJsonObject()
                 }.onSuccess { payload ->
                     if (payload.getBoolean("isSuccess", false)) {
-                        context.success(result.setData(payload.getValue("data") ?: "", payload.getString("errorMsg", "")))
+                        // RoutingContext.success serializes ReturnData with Gson.
+                        // A nested Vert.x JsonObject then becomes {"map": {...}},
+                        // breaking the centre's data.key wire contract. Send a
+                        // top-level JsonObject through its native JSON encoder.
+                        context.success(trialSuccessResponse(payload))
                     } else {
                         context.success(result.setErrorMsg(payload.getString("errorMsg", "请求失败")))
                     }
@@ -160,3 +164,8 @@ class LicenseController(coroutineContext: CoroutineContext) : BaseController(cor
             }
     }
 }
+
+internal fun trialSuccessResponse(payload: JsonObject): JsonObject = JsonObject()
+    .put("isSuccess", true)
+    .put("errorMsg", payload.getString("errorMsg", ""))
+    .put("data", payload.getValue("data") ?: "")

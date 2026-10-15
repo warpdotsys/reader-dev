@@ -47,7 +47,11 @@ request.interceptors.request.use((config) => {
   config.readerSession = captureRequestSession(store)
   const context = readerRequestContext()
   config.params = { ...config.params, ...context.params }
-  for (const [name, value] of Object.entries(context.headers)) config.headers.set(name, value)
+  for (const [name, value] of Object.entries(context.headers)) {
+    // Explicit one-request credentials must not be silently replaced by a
+    // previously stored management key. Namespace proof still validates access.
+    if (!config.headers.has(name)) config.headers.set(name, value)
+  }
   return config
 })
 

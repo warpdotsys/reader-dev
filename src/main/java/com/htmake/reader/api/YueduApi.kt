@@ -30,6 +30,7 @@ import com.htmake.reader.api.controller.LicenseController
 import com.htmake.reader.api.controller.SourceLoginController
 import com.htmake.reader.api.controller.TxtTocRuleController
 import com.htmake.reader.api.controller.SourceSubscriptionController
+import com.htmake.reader.api.controller.OpdsController
 import com.htmake.reader.utils.error
 import com.htmake.reader.utils.logRequestFailure
 import com.htmake.reader.utils.success
@@ -261,6 +262,16 @@ class YueduApi : RestVerticle() {
         val sourceLoginController = SourceLoginController(coroutineContext)
         val txtTocRuleController = TxtTocRuleController(coroutineContext)
         val sourceSubscriptionController = SourceSubscriptionController(coroutineContext, bookSourceController)
+        val opdsController = OpdsController(coroutineContext)
+
+        // OPDS credentials are deliberately separate from Reader sessions.  The
+        // feed routes themselves require HTTP Basic and never accept accessToken.
+        router.get("/reader3/getOpdsSettings").coroutineHandler { opdsController.getSettings(it) }
+        router.post("/reader3/saveOpdsSettings").coroutineHandler { opdsController.saveSettings(it) }
+        router.get("/reader3/opds/catalog").coroutineHandlerWithoutRes { opdsController.catalog(it) }
+        router.get("/reader3/opds/local").coroutineHandlerWithoutRes { opdsController.localCatalog(it) }
+        router.get("/reader3/opds/online").coroutineHandlerWithoutRes { opdsController.onlineCatalog(it) }
+        router.get("/reader3/opds/download/:id").coroutineHandlerWithoutRes { opdsController.download(it) }
 
         /** 书源模块 */
         router.post("/reader3/saveBookSource").coroutineHandler { bookSourceController.saveBookSource(it) }

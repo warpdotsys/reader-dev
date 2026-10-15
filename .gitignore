@@ -1,5 +1,8 @@
 HELP.md
 .gradle/
+.gradle-user-home/
+/candidate-inputs/
+/dist-preview/
 build/
 out/
 runtime/

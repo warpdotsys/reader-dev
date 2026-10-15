@@ -22,6 +22,9 @@ test('系统空间拒绝缺失/错误的后端空间确认；全局用户管理�
     assert.doesNotThrow(() => assertLegacyNamespace({ systemNamespace: true }, path, 'default'))
   }
   assert.doesNotThrow(() => assertLegacyNamespace({ systemNamespace: true }, '/reader3/getUserList', null))
+  for (const path of ['/getLicense', '/sendCodeToEmail', '/supplyLicense', '/importLicense']) {
+    assert.doesNotThrow(() => assertLegacyNamespace({ systemNamespace: true }, path, null))
+  }
   assert.doesNotThrow(() => assertLegacyNamespace({ systemNamespace: false }, '/getBookshelf', null))
 })
 
