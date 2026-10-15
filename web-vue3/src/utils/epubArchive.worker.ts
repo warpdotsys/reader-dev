@@ -1,4 +1,4 @@
-import { expandEpubArchive } from './epubArchive'
+import { expandEpubForTransfer } from './epubArchive'
 import { EPUB_TRANSFER_BATCH_BYTES, EPUB_TRANSFER_BATCH_ENTRIES } from './epubTransfer'
 
 const scope = globalThis as unknown as {
@@ -8,6 +8,8 @@ const scope = globalThis as unknown as {
 }
 
 let files: Map<string, Uint8Array> | null = null
+let groups: [string, Uint8Array][][] = []
+let groupIndex = 0
 let started = false
 let closed = false
 let sequence = 0
@@ -18,6 +20,7 @@ function closeTransfer(): void {
   closed = true
   files?.clear()
   files = null
+  groups.length = 0
   scope.onmessage = null
   scope.close()
 }
@@ -38,17 +41,21 @@ function sendNextBatch(): void {
   }
   const batch: [string, Uint8Array][] = []
   let batchBytes = 0
-  for (const [name, data] of files) {
-    if (batch.length && (batch.length >= EPUB_TRANSFER_BATCH_ENTRIES
-      || batchBytes + data.byteLength > EPUB_TRANSFER_BATCH_BYTES)) break
-    // An already-budgeted resource larger than 2 MiB travels alone, intact.
-    batch.push([name, data])
-    batchBytes += data.byteLength
-    files.delete(name)
+  while (groupIndex < groups.length) {
+    const group = groups[groupIndex]!
+    const size = group.reduce((total, [, data]) => total + data.byteLength, 0)
+    if (batch.length && (batch.length + group.length > EPUB_TRANSFER_BATCH_ENTRIES
+      || batchBytes + size > EPUB_TRANSFER_BATCH_BYTES)) break
+    // A shared buffer and all its views travel together: never detach a later
+    // file's bytes by splitting its backing buffer across acknowledgements.
+    batch.push(...group)
+    batchBytes += size
+    for (const [name] of group) files.delete(name)
+    groups[groupIndex++] = []
   }
   entries += batch.length
   bytes += batchBytes
-  scope.postMessage({ batch: sequence, files: batch }, batch.map(([, data]) => data.buffer as ArrayBuffer))
+  scope.postMessage({ batch: sequence, files: batch }, [...new Set(batch.map(([, data]) => data.buffer as ArrayBuffer))])
 }
 
 scope.onmessage = event => {
@@ -58,7 +65,15 @@ scope.onmessage = event => {
       if (!(event.data instanceof ArrayBuffer)) throw new Error('EPUB Worker 输入协议无效')
       started = true
       scope.postMessage({ phase: 'expanding' }, [])
-      files = expandEpubArchive(new Uint8Array(event.data))
+      files = expandEpubForTransfer(new Uint8Array(event.data))
+      const byBuffer = new Map<ArrayBuffer, [string, Uint8Array][]>()
+      for (const entry of files) {
+        const buffer = entry[1].buffer as ArrayBuffer
+        let group = byBuffer.get(buffer)
+        if (!group) { group = []; byBuffer.set(buffer, group) }
+        group.push(entry)
+      }
+      groups = [...byBuffer.values()]
       scope.postMessage({ phase: 'transferring' }, [])
       sendNextBatch()
       return

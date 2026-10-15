@@ -20,6 +20,7 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
     const worker = createWorker()
     let finished = false
     const received = new Map<string, Uint8Array>()
+    const receivedBuffers = new WeakSet<ArrayBuffer>()
     let sequence = 0
     let receivedBytes = 0
     let phase: 'starting' | 'ready' | 'expanding' | 'transferring' = 'starting'
@@ -81,11 +82,11 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
         finish(new Error('EPUB 解压 Worker 返回无效数据')); return
       }
       const names = new Set<string>()
+      const bufferRanges = new Map<ArrayBuffer, [number, number][]>()
       let batchBytes = 0
       for (const entry of reply.files) {
         if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== 'string' || !entry[0]
           || !(entry[1] instanceof Uint8Array) || !(entry[1].buffer instanceof ArrayBuffer)
-          || entry[1].byteOffset !== 0 || entry[1].byteLength !== entry[1].buffer.byteLength
           || received.has(entry[0]) || names.has(entry[0])) {
           finish(new Error('EPUB 解压 Worker 返回无效数据')); return
         }
@@ -94,6 +95,20 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
         if (entry[1].byteLength > limit) { finish(new Error('EPUB 解压 Worker 资源超过原版排版上限')); return }
         names.add(entry[0])
         batchBytes += entry[1].byteLength
+        const buffer = entry[1].buffer as ArrayBuffer
+        if (receivedBuffers.has(buffer)) { finish(new Error('EPUB 解压 Worker 返回重复缓冲')); return }
+        let ranges = bufferRanges.get(buffer)
+        if (!ranges) { ranges = []; bufferRanges.set(buffer, ranges) }
+        ranges.push([entry[1].byteOffset, entry[1].byteLength])
+      }
+      for (const [buffer, ranges] of bufferRanges) {
+        ranges.sort(([offsetA, sizeA], [offsetB, sizeB]) => offsetA - offsetB || sizeA - sizeB)
+        let position = 0
+        for (const [offset, size] of ranges) {
+          if (offset !== position) { finish(new Error('EPUB 解压 Worker 返回重叠或缺失资源字节')); return }
+          position += size
+        }
+        if (position !== buffer.byteLength) { finish(new Error('EPUB 解压 Worker 返回无关缓冲字节')); return }
       }
       if ((reply.files.length > 1 && batchBytes > EPUB_TRANSFER_BATCH_BYTES)
         || received.size + names.size > EPUB_ARCHIVE_LIMITS.entries
@@ -101,6 +116,7 @@ export function expandEpubInWorker(bytes: Uint8Array, signal?: AbortSignal,
         finish(new Error('EPUB 解压 Worker 资源超过原版排版上限')); return
       }
       for (const [name, data] of reply.files as [string, Uint8Array][]) received.set(name, data)
+      for (const buffer of bufferRanges.keys()) receivedBuffers.add(buffer)
       receivedBytes += batchBytes
       sequence++
       try { worker.postMessage({ batchAccepted: sequence - 1 }, []) }

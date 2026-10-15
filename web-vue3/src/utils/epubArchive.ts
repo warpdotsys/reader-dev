@@ -1,6 +1,7 @@
 /** 先检查 ZIP 目录预算，再按小块核对实际输出；不信任条目声明的大小。 */
 import { Unzip, unzipSync, type UnzipFileInfo } from 'fflate'
 import { BoundedEpubInflate } from './epubInflate.ts'
+import { packedEpubResourceAllocator } from './epubResourceBuffers.ts'
 
 export interface EpubArchiveLimits {
   compressedBytes: number
@@ -42,6 +43,16 @@ function entryLimit(key: string, limits: Readonly<EpubArchiveLimits>): number {
 
 export function expandEpubArchive(bytes: Uint8Array,
   limits: Readonly<EpubArchiveLimits> = EPUB_ARCHIVE_LIMITS): Map<string, Uint8Array> {
+  return expandEpubOutput(bytes, limits, false)
+}
+
+/** Worker专用：仍完整核对全部条目，仅将输出放入有界共享缓冲，减少转移对象。 */
+export function expandEpubForTransfer(bytes: Uint8Array,
+  limits: Readonly<EpubArchiveLimits> = EPUB_ARCHIVE_LIMITS): Map<string, Uint8Array> {
+  return expandEpubOutput(bytes, limits, true)
+}
+
+function expandEpubOutput(bytes: Uint8Array, limits: Readonly<EpubArchiveLimits>, packed: boolean): Map<string, Uint8Array> {
   if (bytes.length > limits.compressedBytes) throw new Error('EPUB 文件超过原版排版下载上限（64 MiB）')
   const declared = new Map<string, UnzipFileInfo>()
   let reserved = 0
@@ -60,6 +71,8 @@ export function expandEpubArchive(bytes: Uint8Array,
     declared.set(key, entry)
     return false
   } })
+  const allocate = packed ? packedEpubResourceAllocator(new Map([...declared]
+    .filter(([name]) => !name.endsWith('/')).map(([name, entry]) => [name, entry.originalSize]))) : null
   const files = new Map<string, Uint8Array>()
   const seen = new Set<string>()
   let expanded = 0
@@ -78,7 +91,7 @@ export function expandEpubArchive(bytes: Uint8Array,
     // aggregate budgets. Fill one owned destination instead of retaining all
     // emitted chunks and allocating/copying another complete resource at EOF.
     // DEFLATE emits at most 64 KiB per callback; no output-ratio-sized temporary.
-    const result = key.endsWith('/') ? undefined : new Uint8Array(expected.originalSize)
+    const result = key.endsWith('/') ? undefined : allocate ? allocate(key) : new Uint8Array(expected.originalSize)
     file.ondata = (error, chunk, final) => {
       if (error) throw error
       if (chunk) {

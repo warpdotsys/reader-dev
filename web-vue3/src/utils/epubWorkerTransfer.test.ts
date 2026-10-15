@@ -53,7 +53,7 @@ test('消费者核对每批条数、实际字节、子视图及重复路径；�
     [['a', new Uint8Array(1024 * 1024 + 1)], ['b', new Uint8Array(1024 * 1024)]],
     [['a.xhtml', new Uint8Array(4 * 1024 * 1024 + 1)]]]) {
     const f = fixture()
-    const rejected = assert.rejects(f.result, /无效数据|超过原版排版上限/)
+    const rejected = assert.rejects(f.result, /无效数据|超过原版排版上限|无关缓冲字节|重叠或缺失资源字节/)
     f.reply({ batch: 0, files })
     await rejected
     assert.equal(f.sent.length, 1)
@@ -77,6 +77,46 @@ test('消费者批次确认仍在创建时的15秒总期限内，任何中间结
   await rejected
   assert.equal(f.terminated, 1)
   assert.equal(f.worker.onmessage, null)
+})
+
+test('消费者接受同批完整共享视图，包括逆序和空项，保持每项字节且只确认一次', async () => {
+  const f = fixture()
+  const bytes = new Uint8Array([1, 2, 3, 4])
+  f.reply({ batch: 0, files: [['b.bin', bytes.subarray(2)], ['empty.bin', bytes.subarray(2, 2)],
+    ['a.bin', bytes.subarray(0, 2)]] })
+  assert.deepEqual(f.sent.at(-1), { batchAccepted: 0 })
+  assert.equal(f.sent.length, 2)
+  f.reply({ complete: true, entries: 3, bytes: 4 })
+  const result = await f.result
+  assert.deepEqual(result.get('a.bin'), new Uint8Array([1, 2]))
+  assert.deepEqual(result.get('b.bin'), new Uint8Array([3, 4]))
+  assert.equal(result.get('a.bin')!.buffer, result.get('b.bin')!.buffer)
+  assert.equal(f.terminated, 1)
+})
+
+test('消费者拒绝共享视图的重叠、缺口和隐藏头尾，不确认不完整缓冲', async () => {
+  for (const ranges of [[[0, 3], [2, 4]], [[0, 1], [2, 4]], [[1, 2], [2, 4]],
+    [[0, 1], [1, 3]], [[0, 2], [0, 2]]]) {
+    const f = fixture()
+    const bytes = new Uint8Array([1, 2, 3, 4])
+    const files = ranges.map(([start, end], n) => [`${n}.bin`, bytes.subarray(start, end)])
+    const rejected = assert.rejects(f.result, /重叠或缺失资源字节|无关缓冲字节/)
+    f.reply({ batch: 0, files })
+    await rejected
+    assert.equal(f.sent.length, 1)
+    assert.equal(f.terminated, 1)
+  }
+})
+
+test('消费者拒绝跨批重放同一缓冲，即使名称不同且完整计数可伪造', async () => {
+  const f = fixture()
+  const bytes = new Uint8Array([1, 2, 3])
+  f.reply({ batch: 0, files: [['a.bin', bytes]] })
+  const rejected = assert.rejects(f.result, /重复缓冲/)
+  f.reply({ batch: 1, files: [['b.bin', bytes]] })
+  await rejected
+  assert.equal(f.sent.length, 2)
+  assert.equal(f.terminated, 1)
 })
 
 test('消费者收到一批后取消，迟到结果/完成不能恢复文件或再确认；确认发送失败也拒绝', async () => {

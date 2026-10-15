@@ -32,7 +32,11 @@ export class BoundedEpubInflate {
     if (this.decoder.ended) {
       if (chunk.length) throw new Error('EPUB ZIP DEFLATE 结束后存在多余数据')
     } else {
-      if (!this.decoder.push(chunk, final) || this.decoder.err) {
+      // Pako detects the raw stream terminator itself. Z_FINISH can stop at a
+      // full 64 KiB output buffer with pending output (Z_BUF_ERROR), even for a
+      // complete valid stream. Keep draining normally; the framing final flag
+      // below still requires an actual DEFLATE end and exact compressed count.
+      if (!this.decoder.push(chunk, false) || this.decoder.err) {
         throw new Error('EPUB ZIP DEFLATE 无效或无法解压')
       }
       // 固定 2.1.0 的输入计数；禁止成功流后剩余压缩字节被静默忽略。

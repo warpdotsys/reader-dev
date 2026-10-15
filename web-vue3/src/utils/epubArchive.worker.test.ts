@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
 import { zipSync } from 'fflate'
-import { expandEpubArchive } from './epubArchive.ts'
+import { expandEpubArchive, expandEpubForTransfer } from './epubArchive.ts'
 import { expandEpubInWorker, type EpubArchiveWorker } from './epubWorker.ts'
 import { EPUB_TRANSFER_BATCH_BYTES, EPUB_TRANSFER_BATCH_ENTRIES } from './epubTransfer.ts'
 
@@ -24,7 +24,7 @@ function producer(decode: (input: Uint8Array) => Map<string, Uint8Array>, actual
     close() { closed++ },
     Uint8Array, ArrayBuffer, Error, exports: {},
     require(name: string) {
-      if (name === './epubArchive') return { expandEpubArchive: decode }
+      if (name === './epubArchive') return { expandEpubForTransfer: decode }
       assert.equal(name, './epubTransfer')
       return { EPUB_TRANSFER_BATCH_BYTES, EPUB_TRANSFER_BATCH_ENTRIES }
     },
@@ -139,6 +139,30 @@ test('实际 Worker 拒绝未知、逆序、混合和重复确认，错误后清
   assert.equal(fixture.closed, 1)
 })
 
+test('实际共享解码整组转移：70个资源只转两个缓冲，同组后续视图不被提前分离', () => {
+  const entries = Object.fromEntries(Array.from({ length: 70 }, (_, n) => [`generated/${n}.bin`, new Uint8Array([n, 9])]))
+  const zip = zipSync(entries)
+  let decoded: Map<string, Uint8Array> | undefined
+  const fixture = producer(bytes => { decoded = expandEpubForTransfer(bytes); return decoded }, true)
+  send(fixture, zip.buffer)
+  const result = new Map<string, Uint8Array>()
+  let transfers = 0
+  while (!fixture.closed) {
+    const batch = fixture.messages.at(-1)!
+    assert.equal(batch.transfer.length, 1)
+    transfers += batch.transfer.length
+    assert.ok(batch.transfer.every(buffer => (buffer as ArrayBuffer).byteLength === 0))
+    for (const [name, data] of batch.value.files) result.set(name, data)
+    send(fixture, { batchAccepted: batch.value.batch })
+  }
+  assert.equal(transfers, 2)
+  assert.equal(decoded!.size, 0)
+  for (const [name, expected] of Object.entries(entries)) assert.deepEqual(result.get(name), expected)
+  assert.equal(result.get('generated/0.bin')!.buffer, result.get('generated/63.bin')!.buffer)
+  assert.notEqual(result.get('generated/63.bin')!.buffer, result.get('generated/64.bin')!.buffer)
+  assert.equal(fixture.messages.at(-1)!.value.bytes, 140)
+})
+
 test('实际 Worker 解码失败不宣告完成或传递，仍关闭且过滤非 EPUB 私有错误', () => {
   for (const error of [new Error('EPUB generated limit'), new Error('PRIVATE_PATH_OR_CONTENT')]) {
     const fixture = producer(() => { throw error })
@@ -168,7 +192,7 @@ test('实际生产者与消费者连通：真实ZIP/ArrayBuffer转移/多批确�
   for (let n = 0; n < 130; n++) entries[`generated/${n}.bin`] = new Uint8Array([n, 1, 2])
   entries['generated/large.bin'] = new Uint8Array(3 * 1024 * 1024).fill(17)
   const input = zipSync(entries)
-  const transport = producer(bytes => expandEpubArchive(bytes), true)
+  const transport = producer(bytes => expandEpubForTransfer(bytes), true)
   let cursor = 0
   let terminated = 0
   const worker: EpubArchiveWorker = {

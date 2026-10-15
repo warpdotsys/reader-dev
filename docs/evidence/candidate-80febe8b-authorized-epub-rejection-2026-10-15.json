@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+  "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+  "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+  "loadedDockerImageId": "sha256:2e0d9b2bd112992f5a1cff67976ee3b41aa5c5ec77e068f5a46c90960ac2c8e0",
+  "readingScenesAccepted": 6,
+  "readingScenesRequired": 8,
+  "sceneNames": [
+    "text805",
+    "text806",
+    "text806Refresh",
+    "html806",
+    "raw806",
+    "raw805"
+  ],
+  "actualWorkerFifteenSecondTimeoutVisible": true,
+  "workerPhase": "transferring",
+  "refreshDownloadBytes": 37809796,
+  "refreshDownloadBodyMs": 1064.39901953125,
+  "seconds": 78.16,
+  "boundedVisibleState": {
+    "rawIframePresent": false,
+    "rawErrorPresent": true,
+    "rawErrorDownloadTimeout": false,
+    "rawErrorWorkerTimeout": true,
+    "rawErrorWorkerStarting": false,
+    "rawErrorWorkerReceiving": false,
+    "rawErrorWorkerExpanding": false,
+    "rawErrorWorkerTransferring": true,
+    "rawErrorWorkerFailure": false,
+    "genericChapterErrorPresent": true,
+    "loadingStateCount": 0
+  },
+  "budget": {
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryHighBytes": 1610612736,
+    "memoryPeakBytes": 1613193216,
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "memoryEvents": {
+      "low": 0,
+      "high": 22361,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 4717
+    },
+    "pidsEvents": {
+      "max": 0
+    }
+  },
+  "cleanup": {
+    "schemaVersion": 1,
+    "controllerProperties": {
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1",
+      "ActiveState": "failed",
+      "SubState": "failed"
+    },
+    "ownedContainersRemaining": 0,
+    "generatedFilesRemoved": 1688,
+    "generatedBytesRemoved": 88190659,
+    "bookCopyRemoved": true,
+    "bookCopyBytesRemoved": 37809796,
+    "generatedDataRemoved": true,
+    "ownedParentSliceInactive": true,
+    "productionChanged": false,
+    "privateBodiesReadForCleanup": false
+  },
+  "receiptHashes": {
+    "observation": {
+      "bytes": 272314,
+      "sha256": "a2864efb4047bb819694d76796c705d1443b0981bf98dfbab689f8fe4e77da58"
+    },
+    "provenance": {
+      "bytes": 2577,
+      "sha256": "04a0b3e0ca88de11d92d3363b598cbf7f6259c100f095a09d45702e1eabfc343"
+    },
+    "launch": {
+      "bytes": 399,
+      "sha256": "b5d0c2e1cbea82ef7ab9c5b9ce2c4fc9e7b002ea13fcb83c1838df577740ca19"
+    },
+    "cleanup": {
+      "bytes": 489,
+      "sha256": "4efd02c74fb0e8450ce49c1a1765cc3efa985a756a51708ef5e1e40f1d8e9a21"
+    }
+  },
+  "privateBodiesNamesOrBodyHashesPublished": false,
+  "generatedNinetySixScenesDoNotOverrideRealBookRejection": true,
+  "defaultImageRealBookAccepted": false,
+  "productionChanged": false,
+  "goalComplete": false
+}

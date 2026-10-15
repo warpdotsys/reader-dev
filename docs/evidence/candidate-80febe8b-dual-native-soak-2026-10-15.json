@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "scope": "80febe8b dual-native generated-only offline soaks; independently consumed exact archives and raw reports",
+  "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+  "testedMergeSnapshot": "5fbcd45ebaadaf37b6165d2401268ad9ab405ba7",
+  "nativeRun": 38575919033,
+  "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+  "consumer": "verify_both.py",
+  "consumerActualToolExitCode": 0,
+  "memoryPolicy": "high-1536m",
+  "architectures": [
+    {
+      "architecture": "amd64",
+      "runId": 38653164259,
+      "artifactId": 11936812881,
+      "artifactZipBytes": 11354,
+      "artifactZipSha256": "944546f0c7763e1be52815a0116624f4f486d5d84c36bfd72f5b711fd0aca73e",
+      "rawReportSha256": "87156a269c119aa96061afa80349284f023c5f4d03e364bf8c92c291a2d7f7f2",
+      "accepted": true,
+      "continuousSeconds": 1819.108,
+      "rounds": 103,
+      "successfulSearches": 420,
+      "memoryPeakBytes": 1005117440,
+      "parentPeakBytes": 1005133824,
+      "quiescentMemoryChangeBytes": 47251456,
+      "faultKindsWithFailedReturnDataAndHealthyRecovery": [
+        "navigationTimeout",
+        "scriptWatchdog",
+        "workerExit"
+      ],
+      "postRecoveryOwnedWorkerBrowserDriverCounts": [
+        0,
+        0,
+        0
+      ],
+      "hardMemoryOomPidEvents": 0,
+      "parentHighEvents": 0,
+      "parentCleanupAndIndependentContainerRemovalVerified": true
+    },
+    {
+      "architecture": "arm64",
+      "runId": 38653170156,
+      "artifactId": 11937341217,
+      "artifactZipBytes": 11694,
+      "artifactZipSha256": "f05058021461d2bd2c8c533f9a169c4ea3a80403a5f053e9b0da9fc4b02c9f2b",
+      "rawReportSha256": "b8cb100a894dbec0d0b3e7866c13d1cc1e03658ae6409307f1110053ff7073eb",
+      "accepted": true,
+      "continuousSeconds": 1811.475,
+      "rounds": 121,
+      "successfulSearches": 492,
+      "memoryPeakBytes": 969220096,
+      "parentPeakBytes": 969236480,
+      "quiescentMemoryChangeBytes": 51060736,
+      "faultKindsWithFailedReturnDataAndHealthyRecovery": [
+        "navigationTimeout",
+        "scriptWatchdog",
+        "workerExit"
+      ],
+      "postRecoveryOwnedWorkerBrowserDriverCounts": [
+        0,
+        0,
+        0
+      ],
+      "hardMemoryOomPidEvents": 0,
+      "parentHighEvents": 0,
+      "parentCleanupAndIndependentContainerRemovalVerified": true
+    }
+  ],
+  "userReportsUnchanged": 58,
+  "originalJarUnchanged": true,
+  "productionChanged": false,
+  "defaultMemoryPolicyChanged": false,
+  "productionCapacityOrLeakAbsenceProven": false,
+  "privateBookOrFrontendReadingSoakAccepted": false,
+  "realWebsiteAuthenticationAccepted": false,
+  "fullGoalComplete": false
+}

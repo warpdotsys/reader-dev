@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "80febe8b7b1cd27830b95ae2d4c385c17c8e3c59",
+  "jarSha256": "91b05dfce041df8662fea0c4ad172468e882737c6a064fa26886310419c90185",
+  "actualThreeWayPublicReadingAccepted": true,
+  "comparison": {
+    "defaultClocksFreshInOwnActualWindows": true,
+    "firstTwoChaptersFullReturnDataEqual": true,
+    "jsonTypesAndAllNonClockFieldsCompared": true,
+    "literalFullMetadataEqual": false,
+    "nonClockMetadataFullJsonEqual": true,
+    "tocFullReturnDataEqual": true
+  },
+  "fixedPublicUrl": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+  "businessSeconds": 116.038,
+  "controllerSeconds": 120.523,
+  "budget": {
+    "scope": "both test containers and all their probe/Java/browser descendants",
+    "cpuQuota": 200000,
+    "cpuPeriod": 100000,
+    "memoryMaxBytes": 2147483648,
+    "memoryPeakBytes": 1611853824,
+    "memoryEvents": {
+      "low": 0,
+      "high": 3343,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 89
+    },
+    "swapMaxBytes": 0,
+    "pidsMax": 512,
+    "pidsEvents": {
+      "max": 0
+    },
+    "memoryHighBytes": 1610612736
+  },
+  "publicTlsTunnels": 23,
+  "receiptHashes": {
+    "launch.json": {
+      "bytes": 448,
+      "sha256": "e623dc54c51b203cd5e118eb889ce66edc9ad1c3f121b7bf16aeae263ff0c5f8"
+    },
+    "provenance.json": {
+      "bytes": 111607,
+      "sha256": "f567a0f135ff3437c16ac62f60c712726af3a7378a2f6a16ec7b550c89c3e9d9"
+    },
+    "results/REAL_THREE_WAY.json": {
+      "bytes": 16212,
+      "sha256": "15985e5fb0c9c3fc8f5cadec25298330d408eef91c20feb42057dffbc6dd322e"
+    },
+    "cleanup.json": {
+      "bytes": 493,
+      "sha256": "72779a1ed923b4f5192821a549f9606819731c98865f6611a84154bc20432ac6"
+    }
+  },
+  "cleanup": {
+    "ownedContainersRemaining": 0,
+    "ownedParentSliceInactive": true,
+    "ownedBrokerSocketRemoved": true,
+    "productionChanged": false,
+    "privateBooksRead": 0,
+    "realCredentialsImported": false
+  },
+  "websiteAuthenticationAccepted": false,
+  "privateBookReadingAccepted": false,
+  "fullGoalComplete": false
+}

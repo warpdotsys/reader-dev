@@ -49,6 +49,23 @@ test('EPUB DEFLATE：结束早于 ZIP 描述符的空 final 只完成一次', ()
   assert.deepEqual(Buffer.concat(result.chunks), Buffer.from(expected))
 })
 
+test('EPUB DEFLATE：末块耗尽输入时仍排空64KiB边界后的有效输出，不伪报截断', () => {
+  for (const length of [65536, 65537, 65538, 1048577, 1048578]) {
+    const expected = new Uint8Array(length).fill(1)
+    const compressed = deflateSync(expected)
+    const result = collect(compressed.length, length)
+    result.decoder.push(compressed, true)
+    assert.equal(result.finals, 1)
+    assert.ok(result.chunks.every(chunk => chunk.length <= EPUB_INFLATE_CHUNK_BYTES))
+    assert.deepEqual(Buffer.concat(result.chunks), Buffer.from(expected))
+    const truncated = compressed.subarray(0, compressed.length - 1)
+    assert.throws(() => collect(truncated.length, length).decoder.push(truncated, true), /截断|无效/)
+    const trailing = new Uint8Array(compressed.length + 1)
+    trailing.set(compressed)
+    assert.throws(() => collect(trailing.length, length).decoder.push(trailing, true), /多余数据/)
+  }
+})
+
 test('EPUB DEFLATE：截断、破损以及相同/后续块的尾随垃圾均拒绝', () => {
   const compressed = deflateSync(new TextEncoder().encode('generated '.repeat(100)))
   const truncated = compressed.subarray(0, compressed.length - 1)
