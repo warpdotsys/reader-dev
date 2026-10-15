@@ -82,6 +82,22 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/verify_camoufox_wheel_lock.py deploy/reader-pro/requirements-camoufox.lock
+      - name: Refuse missing Docker Hub push grants before expensive builds
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+        run: |
+          python3 scripts/check-registry-publish-access.py --output "$RUNNER_TEMP/registry-publish-access.json"
+          python3 -c 'import json,os; value=json.load(open(os.environ["RUNNER_TEMP"]+"/registry-publish-access.json")); assert value["completed"] and value["observations"]["configured"]["push"] is True'
+      - name: Preserve non-secret early publish-access observation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-publish-access-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/registry-publish-access.json
+          if-no-files-found: warn
+          retention-days: 14
 
   verify-vue3-e2e:
     name: Require complete Vue 3 browser journeys for this release commit
